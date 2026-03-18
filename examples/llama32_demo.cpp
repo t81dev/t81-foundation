@@ -137,7 +137,7 @@ int main() {
 
   // Add hash to symbol pool
   weight_names.push_back(hash_str);
-  int hash_symbol_index = weight_names.size();  // 1-based index (last element)
+  int hash_symbol_index = static_cast<int>(weight_names.size());  // 1-based index (last element)
 
   program.symbol_pool = weight_names;
 

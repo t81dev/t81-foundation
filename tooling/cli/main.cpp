@@ -20,8 +20,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <optional>
 #include <random>
 #include <regex>
@@ -40,12 +40,13 @@
 #include <io.h>
 #endif
 
+#include "core/vm/internal/memory_segments.hpp"
 #include "logging.hpp"
 #include "t81/axion/policy_validator.hpp"
-#include "t81/config.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/cli/driver.hpp"
+#include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/frontend/ir_generator.hpp"
 #include "t81/frontend/lexer.hpp"
@@ -59,20 +60,19 @@
 #include "t81/isa/program.hpp"
 #include "t81/tracing/canonhash.hpp"
 #include "t81/vm/vm.hpp"
-#include "core/vm/internal/memory_segments.hpp"
 #include "t81/weights.hpp"
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
 #endif
 #if defined(T81_HAS_TUI)
-#include "tooling/tui/common.hpp"
-#include "tooling/tui/studio.hpp"
-#include "tooling/tui/agent.hpp"
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
+#include "tooling/tui/agent.hpp"
+#include "tooling/tui/common.hpp"
+#include "tooling/tui/studio.hpp"
 #endif
 
 namespace fs = std::filesystem;
@@ -944,7 +944,8 @@ Notes:
   Requires build with -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.
   MLIR output is compatible with: mlir-opt, mlir-cpu-runner, LLVM ORC JIT.
   Use 't81 llvm compile' for direct TISC → LLVM IR (no MLIR intermediate).
-)";}
+)";
+}
 
 void print_help_llvm() {
   std::cerr << R"(
@@ -966,7 +967,8 @@ Notes:
   The generated @t81_main() function uses a flat [243 x i64] integer register
   file and [243 x double] float register file mirroring the T81VM layout.
   Invoke the IR with: lli output.ll  or compile with: llc -o output.s output.ll
-)";}
+)";
+}
 
 void print_help_c() {
   std::cerr << R"(
@@ -998,7 +1000,8 @@ Current subset v0:
 Notes:
   Requires build with -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.
   Unsupported constructs fail closed with explicit diagnostics.
-)";}
+)";
+}
 
 void print_help_rust() {
   std::cerr << R"(
@@ -1028,7 +1031,8 @@ Status:
     assignment, arithmetic/bitwise/comparison/logical expressions,
     if/else, while, and return
   - unsupported constructs fail closed with explicit diagnostics
-)";}
+)";
+}
 
 void print_help_python() {
   std::cerr << R"(
@@ -1057,7 +1061,8 @@ Status:
     assignment, arithmetic/bitwise/comparison/logical expressions,
     if/else, while, same-file helper calls, and return
   - unsupported constructs fail closed with explicit diagnostics
-)";}
+)";
+}
 
 void print_help_advanced() {
   std::cerr << R"(
@@ -1432,8 +1437,8 @@ More command groups:
 
 bool print_help_topic(std::string_view topic, const char* prog) {
   // Removed topics: return false so caller can emit recommendation/error.
-  if (topic == "compile" || topic == "run" || topic == "profile" ||
-      topic == "disasm" || topic == "debug" || topic == "check" || topic == "lint") {
+  if (topic == "compile" || topic == "run" || topic == "profile" || topic == "disasm" ||
+      topic == "debug" || topic == "check" || topic == "lint") {
     return false;
   }
   if (topic == "code") {
@@ -1736,7 +1741,8 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "until") {
-      std::cerr << "Usage: t81 vm until <file.tisc> --pc <n> [--policy <file>] [--steps N] [--json]\n";
+      std::cerr
+          << "Usage: t81 vm until <file.tisc> --pc <n> [--policy <file>] [--steps N] [--json]\n";
       return true;
     }
     if (sub == "step") {
@@ -1748,11 +1754,13 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "stack") {
-      std::cerr << "Usage: t81 vm stack <file.tisc> [--policy <file>] [--steps N] [--limit N] [--json]\n";
+      std::cerr
+          << "Usage: t81 vm stack <file.tisc> [--policy <file>] [--steps N] [--limit N] [--json]\n";
       return true;
     }
     if (sub == "mem") {
-      std::cerr << "Usage: t81 vm mem <file.tisc> --addr <n> [--policy <file>] [--steps N] [--json]\n";
+      std::cerr
+          << "Usage: t81 vm mem <file.tisc> --addr <n> [--policy <file>] [--steps N] [--json]\n";
       return true;
     }
     if (sub == "state") {
@@ -1840,7 +1848,8 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "multi-run") {
-      std::cerr << "Usage: t81 determinism multi-run <file.tisc> --count <n> [--policy <file>] [--json]\n";
+      std::cerr << "Usage: t81 determinism multi-run <file.tisc> --count <n> [--policy <file>] "
+                   "[--json]\n";
       return true;
     }
   }
@@ -1936,7 +1945,8 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "get") {
-      std::cerr << "Usage: t81 canonfs get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root <path>]\n";
+      std::cerr << "Usage: t81 canonfs get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root "
+                   "<path>]\n";
       return true;
     }
     if (sub == "stat") {
@@ -1952,11 +1962,13 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "snapshot-diff") {
-      std::cerr << "Usage: t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]\n";
+      std::cerr
+          << "Usage: t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]\n";
       return true;
     }
     if (sub == "rollback") {
-      std::cerr << "Usage: t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]\n";
+      std::cerr << "Usage: t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root "
+                   "<path>]\n";
       return true;
     }
     if (sub == "gc") {
@@ -2000,7 +2012,8 @@ bool handle_help_request(const std::string& command, const std::vector<std::stri
       print_usage(prog);
       return true;
     }
-    if (command_args.size() >= 2 && print_family_subcommand_help(command_args[0], command_args[1])) {
+    if (command_args.size() >= 2 &&
+        print_family_subcommand_help(command_args[0], command_args[1])) {
       return true;
     }
     if (print_help_topic(command_args[0], prog)) {
@@ -2212,8 +2225,9 @@ Args parse_args(int argc, char* argv[]) {
     } else if (arg == "-V" || arg == "--version") {
       if (a.command == "fmt" || a.command == "code" || a.command == "project" ||
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
-          a.command == "man" || a.command == "feedback" || a.command == "c" || a.command == "rust" || a.command == "python" ||
-          a.command == "llvm" || a.command == "mlir") {
+          a.command == "man" || a.command == "feedback" || a.command == "c" ||
+          a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+          a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         a.need_version = true;
@@ -2233,7 +2247,8 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
                  a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
-                 a.command == "c" || a.command == "rust" || a.command == "python" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "c" || a.command == "rust" || a.command == "python" ||
+                 a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2251,8 +2266,9 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" ||
-                 a.command == "c" || a.command == "rust" || a.command == "python" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "memory-stats" || a.command == "tier" || a.command == "c" ||
+                 a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+                 a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -2484,7 +2500,8 @@ int run_weights_import(const Args& args) {
   try {
     if (opts.format == "safetensors") {
       if (!has_extension_ci(opts.input, ".safetensors")) {
-        error("weights import: --format safetensors requires a .safetensors input file. Run 't81 help "
+        error("weights import: --format safetensors requires a .safetensors input file. Run 't81 "
+              "help "
               "weights import'.");
         return 1;
       }
@@ -2706,7 +2723,8 @@ int run_weights_quantize(const Args& args) {
 
 int run_weights_export(const Args& args) {
   if (args.command_args.size() < 4 || args.command_args[2] != "--to-safetensors") {
-    error("weights export requires: export <model.t81w> --to-safetensors <output>. Run 't81 help weights export'.");
+    error("weights export requires: export <model.t81w> --to-safetensors <output>. Run 't81 help "
+          "weights export'.");
     return 1;
   }
   const fs::path input = args.command_args[1];
@@ -2747,7 +2765,8 @@ int run_weights_export(const Args& args) {
   std::vector<ExportTensor> tensors;
   tensors.reserve(mf.native.size());
   for (const auto& [name, tensor] : mf.native) {
-    tensors.push_back(ExportTensor{name, tensor.shape, tensor.num_trits(), unpack_native_trits(tensor)});
+    tensors.push_back(
+        ExportTensor{name, tensor.shape, tensor.num_trits(), unpack_native_trits(tensor)});
   }
 
   std::string header_text;
@@ -2758,11 +2777,9 @@ int run_weights_export(const Args& args) {
     std::uint64_t offset = sizeof(std::uint64_t) + header_len;
     for (std::size_t index = 0; index < tensors.size(); ++index) {
       const auto& tensor = tensors[index];
-      header << "\"" << json_escape(tensor.name) << "\":{"
-             << "\"dtype\":\"I8\","
-             << "\"shape\":[";
-      const uint64_t shape_product =
-          std::accumulate(tensor.shape.begin(), tensor.shape.end(), uint64_t{1}, std::multiplies<uint64_t>());
+      header << "\"" << json_escape(tensor.name) << "\":{" << "\"dtype\":\"I8\"," << "\"shape\":[";
+      const uint64_t shape_product = std::accumulate(tensor.shape.begin(), tensor.shape.end(),
+                                                     uint64_t{1}, std::multiplies<uint64_t>());
       if (!tensor.shape.empty() && shape_product == tensor.trits) {
         for (std::size_t i = 0; i < tensor.shape.size(); ++i) {
           header << tensor.shape[i];
@@ -2773,7 +2790,8 @@ int run_weights_export(const Args& args) {
       } else {
         header << tensor.trits;
       }
-      header << "],\"data_offsets\":[" << offset << "],\"data_lengths\":[" << tensor.raw.size() << "]}";
+      header << "],\"data_offsets\":[" << offset << "],\"data_lengths\":[" << tensor.raw.size()
+             << "]}";
       offset += tensor.raw.size();
       if (index + 1 < tensors.size()) {
         header << ",";
@@ -2985,7 +3003,8 @@ int run_policy_run(const Args& args) {
 
 int run_policy_validate(const Args& args) {
   if (args.command_args.size() < 2) {
-    error("policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
+    error(
+        "policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
     return 1;
   }
   fs::path input;
@@ -3000,12 +3019,14 @@ int run_policy_validate(const Args& args) {
     } else if (input.empty()) {
       input = fs::path(token);
     } else {
-      error("policy validate: unexpected argument '" + token + "'. Run 't81 help policy validate'.");
+      error("policy validate: unexpected argument '" + token +
+            "'. Run 't81 help policy validate'.");
       return 1;
     }
   }
   if (input.empty()) {
-    error("policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
+    error(
+        "policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
     return 1;
   }
   t81::axion::Policy policy;
@@ -3061,7 +3082,8 @@ int run_policy_validate(const Args& args) {
     std::cout << "Policy valid: " << input.string() << "\n";
     if (g_flags.verbose) {
       std::cout << "Tier: " << policy.tier << "\n";
-      if (policy.max_instructions) std::cout << "Max Instructions: " << *policy.max_instructions << "\n";
+      if (policy.max_instructions)
+        std::cout << "Max Instructions: " << *policy.max_instructions << "\n";
       if (policy.max_stack) std::cout << "Max Stack: " << *policy.max_stack << "\n";
       if (policy.max_recursion) std::cout << "Max Recursion: " << *policy.max_recursion << "\n";
     }
@@ -3156,16 +3178,18 @@ int run_policy(const Args& args) {
       if (std::find(policy.allowed_tensor_hashes.begin(), policy.allowed_tensor_hashes.end(),
                     model_hash) == policy.allowed_tensor_hashes.end()) {
         if (as_json) {
-          std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": false,\n  \"model_hash\": \""
-                    << json_escape(model_hash) << "\",\n  \"rule\": \"hash_not_allowed\"\n}\n";
+          std::cout
+              << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": false,\n  \"model_hash\": \""
+              << json_escape(model_hash) << "\",\n  \"rule\": \"hash_not_allowed\"\n}\n";
         } else {
           error("Policy test failed: model hash is not allowed.");
         }
         return 1;
       }
       if (as_json) {
-        std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": true,\n  \"model_hash\": \""
-                  << json_escape(model_hash) << "\",\n  \"rule\": \"hash_valid\"\n}\n";
+        std::cout
+            << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": true,\n  \"model_hash\": \""
+            << json_escape(model_hash) << "\",\n  \"rule\": \"hash_valid\"\n}\n";
       } else {
         info("Policy test passed.");
       }
@@ -3175,11 +3199,11 @@ int run_policy(const Args& args) {
     auto violation = t81::axion::PolicyValidator::validate_tensor_hash(model_hash, policy_text);
     const bool ok = violation.has_value() && !violation->is_violation;
     if (as_json) {
-      std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": "
-                << (ok ? "true" : "false") << ",\n  \"model_hash\": \"" << json_escape(model_hash)
-                << "\",\n  \"rule\": \"" << json_escape(violation ? violation->rule : "unknown")
-                << "\",\n  \"reason\": \""
-                << json_escape(violation ? violation->reason : "validation unavailable") << "\"\n}\n";
+      std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": " << (ok ? "true" : "false")
+                << ",\n  \"model_hash\": \"" << json_escape(model_hash) << "\",\n  \"rule\": \""
+                << json_escape(violation ? violation->rule : "unknown") << "\",\n  \"reason\": \""
+                << json_escape(violation ? violation->reason : "validation unavailable")
+                << "\"\n}\n";
     } else if (violation) {
       std::cout << t81::axion::PolicyValidator::generate_policy_report(*violation) << "\n";
     }
@@ -3189,8 +3213,9 @@ int run_policy(const Args& args) {
     bool as_json = false;
     fs::path search_dir = discover_repo_root();
     for (std::size_t i = 1; i < args.command_args.size(); ++i) {
-      if (args.command_args[i] == "--json") { as_json = true; }
-      else if (args.command_args[i] == "--dir" && i + 1 < args.command_args.size()) {
+      if (args.command_args[i] == "--json") {
+        as_json = true;
+      } else if (args.command_args[i] == "--dir" && i + 1 < args.command_args.size()) {
         search_dir = fs::path(args.command_args[++i]);
       }
     }
@@ -3537,8 +3562,7 @@ int run_axion(const Args& args) {
       } else {
         std::cout << "null,\n";
       }
-      std::cout << "  \"state_snapshot\": "
-                << json_nullable_axion(state.active_snapshot) << ",\n"
+      std::cout << "  \"state_snapshot\": " << json_nullable_axion(state.active_snapshot) << ",\n"
                 << "  \"state_snapshot_present\": " << (state_snapshot_present ? "true" : "false")
                 << ",\n"
                 << "  \"state_updated\": ";
@@ -3565,8 +3589,8 @@ int run_axion(const Args& args) {
                 << "Stored objects: " << object_count << "\n"
                 << "Snapshots: " << snapshot_count << "\n"
                 << "Active snapshot: " << (snapshot_hash ? *snapshot_hash : "<none>") << "\n"
-                << "State snapshot: "
-                << (state.active_snapshot ? *state.active_snapshot : "<none>") << "\n"
+                << "State snapshot: " << (state.active_snapshot ? *state.active_snapshot : "<none>")
+                << "\n"
                 << "State snapshot present: " << (state_snapshot_present ? "yes" : "no") << "\n"
                 << "Active tier: " << state.tier << "\n";
       if (!issues.empty()) {
@@ -3582,7 +3606,8 @@ int run_axion(const Args& args) {
   if (sub == "optimize") {
     const auto previous_state = read_axion_state(canonfs_root);
     std::string snapshot_error;
-    const auto snapshot_hash = t81::cli::canonfs_capture_snapshot_hash(canonfs_root, &snapshot_error);
+    const auto snapshot_hash =
+        t81::cli::canonfs_capture_snapshot_hash(canonfs_root, &snapshot_error);
     if (!snapshot_hash) {
       error("axion optimize: failed to capture current CanonFS snapshot: " + snapshot_error);
       return 1;
@@ -3620,11 +3645,13 @@ int run_axion(const Args& args) {
                 << "}\n";
     } else {
       info("Axion optimize: captured CanonFS snapshot, diffed it against the previous state, and "
-           "recorded requested tier " + std::to_string(target_tier) + ".");
+           "recorded requested tier " +
+           std::to_string(target_tier) + ".");
       std::cout << "Optimization receipt recorded.\n";
       std::cout << "Tier: " << target_tier << "\n";
       std::cout << "Previous snapshot: "
-                << (previous_state.active_snapshot ? *previous_state.active_snapshot : "<none>") << "\n";
+                << (previous_state.active_snapshot ? *previous_state.active_snapshot : "<none>")
+                << "\n";
       std::cout << "Snapshot: " << (snapshot_hash ? *snapshot_hash : "<none>") << "\n";
       std::cout << "Only previous: " << only_previous.size() << "\n";
       std::cout << "Only current:  " << only_current.size() << "\n";
@@ -3651,12 +3678,10 @@ int run_axion(const Args& args) {
     auto result = vm->run_to_halt();
     const bool ok = static_cast<bool>(result);
     if (json_out) {
-      std::cout << "{"
-                << "\"schema\":\"t81.axion-simulate.v1\","
-                << "\"ok\":" << (ok ? "true" : "false") << ","
-                << "\"status\":\"" << (ok ? "ok" : "trap") << "\","
-                << "\"action\":\"simulate\","
-                << "\"program\":\"" << json_escape(simulate_file) << "\","
+      std::cout << "{" << "\"schema\":\"t81.axion-simulate.v1\","
+                << "\"ok\":" << (ok ? "true" : "false") << "," << "\"status\":\""
+                << (ok ? "ok" : "trap") << "\"," << "\"action\":\"simulate\"," << "\"program\":\""
+                << json_escape(simulate_file) << "\","
                 << "\"trace_entries\":" << vm->state().trace.size() << ","
                 << "\"axion_events\":" << vm->state().axion_log.size();
       if (ok) {
@@ -3681,8 +3706,9 @@ int run_axion(const Args& args) {
       error("axion explain requires a policy file argument.");
       return 1;
     }
-    std::ifstream ifs(explain_file, fs::path(explain_file).extension() == ".axionb" ? std::ios::binary
-                                                                                     : std::ios::in);
+    std::ifstream ifs(explain_file, fs::path(explain_file).extension() == ".axionb"
+                                        ? std::ios::binary
+                                        : std::ios::in);
     if (!ifs) {
       error("axion explain: could not open file: " + explain_file);
       return 1;
@@ -3697,7 +3723,8 @@ int run_axion(const Args& args) {
       }
       policy = std::move(res.value());
     } else {
-      std::string policy_text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+      std::string policy_text((std::istreambuf_iterator<char>(ifs)),
+                              std::istreambuf_iterator<char>());
       auto parsed = t81::axion::parse_policy(policy_text);
       if (!parsed) {
         error("axion explain: policy parse error: " + parsed.error());
@@ -3708,17 +3735,15 @@ int run_axion(const Args& args) {
     }
     const bool ok = !violation || !violation->is_violation;
     if (json_out) {
-      std::cout << "{"
-                << "\"schema\":\"t81.axion-explain.v1\","
-                << "\"ok\":" << (ok ? "true" : "false") << ","
-                << "\"policy\":\"" << json_escape(explain_file) << "\","
-                << "\"tier\":" << policy.tier << ","
+      std::cout << "{" << "\"schema\":\"t81.axion-explain.v1\","
+                << "\"ok\":" << (ok ? "true" : "false") << "," << "\"policy\":\""
+                << json_escape(explain_file) << "\"," << "\"tier\":" << policy.tier << ","
                 << "\"allowed_tensor_hashes\":" << policy.allowed_tensor_hashes.size() << ","
                 << "\"loop_hints\":" << policy.loops.size() << ","
                 << "\"match_guards\":" << policy.match_guards.size();
       if (violation) {
-        std::cout << ",\"rule\":\"" << json_escape(violation->rule) << "\","
-                  << "\"reason\":\"" << json_escape(violation->reason) << "\"";
+        std::cout << ",\"rule\":\"" << json_escape(violation->rule) << "\"," << "\"reason\":\""
+                  << json_escape(violation->reason) << "\"";
       }
       std::cout << "}\n";
     } else {
@@ -3788,8 +3813,8 @@ int run_axion(const Args& args) {
       std::cout << "CanonFS root:  " << canonfs_root.string() << "\n";
       std::cout << "State file:    " << (state.present ? "present" : "missing") << "\n";
       std::cout << "Tier:          " << state.tier << "\n";
-      std::cout << "State snap:    "
-                << (state.active_snapshot ? *state.active_snapshot : "<none>") << "\n";
+      std::cout << "State snap:    " << (state.active_snapshot ? *state.active_snapshot : "<none>")
+                << "\n";
       std::cout << "Snapshots:     " << snap_count << "\n";
       std::cout << "Objects:       " << obj_count << "\n";
       std::cout << "Recent snaps:  " << recent.size() << " (tail=" << log_tail_n << ")\n";
@@ -3837,8 +3862,10 @@ int run_axion(const Args& args) {
                 << "  \"snapshots\": " << snap_count << ",\n"
                 << "  \"objects\": " << obj_count << ",\n"
                 << "  \"tier\": " << state.tier << ",\n"
-                << "  \"from\": " << (from_hash.empty() ? "null" : "\"" + json_escape(from_hash) + "\"") << ",\n"
-                << "  \"to\": " << (to_hash.empty() ? "null" : "\"" + json_escape(to_hash) + "\"") << ",\n"
+                << "  \"from\": "
+                << (from_hash.empty() ? "null" : "\"" + json_escape(from_hash) + "\"") << ",\n"
+                << "  \"to\": " << (to_hash.empty() ? "null" : "\"" + json_escape(to_hash) + "\"")
+                << ",\n"
                 << "  \"only_from_count\": " << only_from.size() << ",\n"
                 << "  \"only_to_count\": " << only_to.size() << "\n"
                 << "}\n";
@@ -3856,13 +3883,13 @@ int run_axion(const Args& args) {
     return 0;
   }
 
-  error("axion: unknown subcommand '" + sub +
-        "'. Run 't81 axion --help' for usage.");
+  error("axion: unknown subcommand '" + sub + "'. Run 't81 axion --help' for usage.");
   return 1;
 }
 
 int run_canonfs_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_canonfs(); });
   }
 
@@ -4048,13 +4075,11 @@ int run_canonfs_command(const Args& args) {
       } else {
         std::cout << "\n";
       }
-      std::cout
-                << "}\n";
+      std::cout << "}\n";
     } else {
       std::cout << "GC" << (dry_run ? " dry-run" : "") << ": "
-                << (dry_run ? "would remove " : "removed ") << removed
-                << " object(s), " << (dry_run ? "would free " : "freed ") << bytes_freed
-                << " byte(s)\n";
+                << (dry_run ? "would remove " : "removed ") << removed << " object(s), "
+                << (dry_run ? "would free " : "freed ") << bytes_freed << " byte(s)\n";
     }
     return 0;
   }
@@ -4074,7 +4099,8 @@ int run_canonfs_command(const Args& args) {
           break;
         }
         if (fs::is_symlink(obj.symlink_status())) {
-          errors.push_back(obj.path().filename().string() + ": symlinked objects are not permitted");
+          errors.push_back(obj.path().filename().string() +
+                           ": symlinked objects are not permitted");
           continue;
         }
         if (!obj.is_regular_file() || obj.path().extension() != ".blk") {
@@ -4110,7 +4136,8 @@ int run_canonfs_command(const Args& args) {
         ++checked_snapshots;
         const fs::path manifest = snap.path() / "MANIFEST.txt";
         if (!fs::exists(manifest)) {
-          errors.push_back("snapshot " + snap.path().filename().string() + ": missing MANIFEST.txt");
+          errors.push_back("snapshot " + snap.path().filename().string() +
+                           ": missing MANIFEST.txt");
           continue;
         }
         for (auto it = fs::recursive_directory_iterator(snap.path(), ec);
@@ -4258,7 +4285,8 @@ struct DeterminismBaselineEntry {
   DeterminismRunRecord record;
 };
 
-bool capture_determinism_run_record(const fs::path& input, const std::optional<fs::path>& policy_path,
+bool capture_determinism_run_record(const fs::path& input,
+                                    const std::optional<fs::path>& policy_path,
                                     DeterminismRunRecord& record, std::string& error_message) {
   try {
     auto program = t81::tisc::load_program(input.string());
@@ -4295,7 +4323,8 @@ bool capture_determinism_run_record(const fs::path& input, const std::optional<f
 }
 
 std::vector<DeterminismBaselineEntry> collect_determinism_baseline_entries(
-    const fs::path& source_dir, const std::optional<fs::path>& policy_path, std::string& error_message) {
+    const fs::path& source_dir, const std::optional<fs::path>& policy_path,
+    std::string& error_message) {
   std::vector<DeterminismBaselineEntry> entries;
   std::error_code ec;
   for (const auto& entry : fs::recursive_directory_iterator(source_dir, ec)) {
@@ -4354,20 +4383,34 @@ bool parse_determinism_baseline_file(const fs::path& baseline_file, fs::path& so
     entry.record.ok = (match[2].str() == "true");
     if (match[4].matched && !match[4].str().empty()) {
       const std::string trap_name = match[4].str();
-      if (trap_name == "DecodeFault") entry.record.trap = t81::vm::Trap::DecodeFault;
-      else if (trap_name == "TypeFault") entry.record.trap = t81::vm::Trap::TypeFault;
-      else if (trap_name == "BoundsFault") entry.record.trap = t81::vm::Trap::BoundsFault;
-      else if (trap_name == "StackFault") entry.record.trap = t81::vm::Trap::StackFault;
-      else if (trap_name == "DivisionFault") entry.record.trap = t81::vm::Trap::DivisionFault;
-      else if (trap_name == "SecurityFault") entry.record.trap = t81::vm::Trap::SecurityFault;
-      else if (trap_name == "TierFault") entry.record.trap = t81::vm::Trap::TierFault;
-      else if (trap_name == "ShapeFault") entry.record.trap = t81::vm::Trap::ShapeFault;
-      else if (trap_name == "TrapInstruction") entry.record.trap = t81::vm::Trap::TrapInstruction;
-      else if (trap_name == "Unimplemented") entry.record.trap = t81::vm::Trap::Unimplemented;
-      else if (trap_name == "AssertionFailed") entry.record.trap = t81::vm::Trap::AssertionFailed;
-      else if (trap_name == "EthicsViolation") entry.record.trap = t81::vm::Trap::EthicsViolation;
-      else if (trap_name == "CapabilityDenied") entry.record.trap = t81::vm::Trap::CapabilityDenied;
-      else if (trap_name == "None") entry.record.trap = t81::vm::Trap::None;
+      if (trap_name == "DecodeFault")
+        entry.record.trap = t81::vm::Trap::DecodeFault;
+      else if (trap_name == "TypeFault")
+        entry.record.trap = t81::vm::Trap::TypeFault;
+      else if (trap_name == "BoundsFault")
+        entry.record.trap = t81::vm::Trap::BoundsFault;
+      else if (trap_name == "StackFault")
+        entry.record.trap = t81::vm::Trap::StackFault;
+      else if (trap_name == "DivisionFault")
+        entry.record.trap = t81::vm::Trap::DivisionFault;
+      else if (trap_name == "SecurityFault")
+        entry.record.trap = t81::vm::Trap::SecurityFault;
+      else if (trap_name == "TierFault")
+        entry.record.trap = t81::vm::Trap::TierFault;
+      else if (trap_name == "ShapeFault")
+        entry.record.trap = t81::vm::Trap::ShapeFault;
+      else if (trap_name == "TrapInstruction")
+        entry.record.trap = t81::vm::Trap::TrapInstruction;
+      else if (trap_name == "Unimplemented")
+        entry.record.trap = t81::vm::Trap::Unimplemented;
+      else if (trap_name == "AssertionFailed")
+        entry.record.trap = t81::vm::Trap::AssertionFailed;
+      else if (trap_name == "EthicsViolation")
+        entry.record.trap = t81::vm::Trap::EthicsViolation;
+      else if (trap_name == "CapabilityDenied")
+        entry.record.trap = t81::vm::Trap::CapabilityDenied;
+      else if (trap_name == "None")
+        entry.record.trap = t81::vm::Trap::None;
       else {
         error_message = "determinism baseline: unknown trap value '" + trap_name + "'";
         return false;
@@ -4387,7 +4430,8 @@ bool parse_determinism_baseline_file(const fs::path& baseline_file, fs::path& so
 }
 
 int run_determinism_command(const char* command_name, const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_determinism(); });
   }
 
@@ -4440,7 +4484,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
         fs::path source_dir;
         std::vector<DeterminismBaselineEntry> baseline_entries;
         std::string parse_error;
-        if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries, parse_error)) {
+        if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries,
+                                             parse_error)) {
           error(parse_error);
           return 1;
         }
@@ -4504,7 +4549,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
     repro_args.command_args = positional;
     return run_repro_hash(command_name, repro_args);
   }
-  if (action == "verify-run" || action == "compare-run" || action == "certify" || action == "explain") {
+  if (action == "verify-run" || action == "compare-run" || action == "certify" ||
+      action == "explain") {
     if (positional.size() != 1) {
       error("determinism " + action + " requires exactly one .tisc input file.");
       return 1;
@@ -4531,7 +4577,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
         if (!ifs) {
           throw std::runtime_error("Could not open policy file: " + policy_path->string());
         }
-        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(ifs)),
+                            std::istreambuf_iterator<char>());
         program.axion_policy_text = content;
       }
       auto vm = t81::vm::make_interpreter_vm();
@@ -4676,11 +4723,15 @@ int run_determinism_command(const char* command_name, const Args& args) {
                   << "  \"run2_trace_sha3_512\": \"" << run2.trace_hash << "\"";
         if (run1.trap || run2.trap) {
           std::cout << ",\n  \"run1_trap\": ";
-          if (run1.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\"";
-          else std::cout << "null";
+          if (run1.trap)
+            std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\"";
+          else
+            std::cout << "null";
           std::cout << ",\n  \"run2_trap\": ";
-          if (run2.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"";
-          else std::cout << "null";
+          if (run2.trap)
+            std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"";
+          else
+            std::cout << "null";
         }
         std::cout << "\n}\n";
       } else if (identical) {
@@ -4702,20 +4753,30 @@ int run_determinism_command(const char* command_name, const Args& args) {
                   << "  \"run1_trace_sha3_512\": \"" << run1.trace_hash << "\",\n"
                   << "  \"run2_trace_sha3_512\": \"" << run2.trace_hash << "\",\n"
                   << "  \"mismatch_index\": ";
-        if (mismatch_index) std::cout << *mismatch_index << ",\n";
-        else std::cout << "null,\n";
+        if (mismatch_index)
+          std::cout << *mismatch_index << ",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"lhs_detail\": ";
-        if (lhs_detail) std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
-        else std::cout << "null,\n";
+        if (lhs_detail)
+          std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"rhs_detail\": ";
-        if (rhs_detail) std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
-        else std::cout << "null,\n";
+        if (rhs_detail)
+          std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"run1_trap\": ";
-        if (run1.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
-        else std::cout << "null,\n";
+        if (run1.trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"run2_trap\": ";
-        if (run2.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (run2.trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Program:   " << input.string() << "\n";
@@ -4737,20 +4798,30 @@ int run_determinism_command(const char* command_name, const Args& args) {
                 << "  \"run1_trace_sha3_512\": \"" << run1.trace_hash << "\",\n"
                 << "  \"run2_trace_sha3_512\": \"" << run2.trace_hash << "\",\n"
                 << "  \"mismatch_index\": ";
-      if (mismatch_index) std::cout << *mismatch_index << ",\n";
-      else std::cout << "null,\n";
+      if (mismatch_index)
+        std::cout << *mismatch_index << ",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"lhs_detail\": ";
-      if (lhs_detail) std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
-      else std::cout << "null,\n";
+      if (lhs_detail)
+        std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"rhs_detail\": ";
-      if (rhs_detail) std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
-      else std::cout << "null,\n";
+      if (rhs_detail)
+        std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"run1_trap\": ";
-      if (run1.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
-      else std::cout << "null,\n";
+      if (run1.trap)
+        std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"run2_trap\": ";
-      if (run2.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
-      else std::cout << "null\n";
+      if (run2.trap)
+        std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
+      else
+        std::cout << "null\n";
       std::cout << "}\n";
     } else if (identical) {
       std::cout << "determinism-explain: runs are identical\n";
@@ -4795,7 +4866,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
           error("Could not open policy file: " + policy_path->string());
           return 1;
         }
-        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(ifs)),
+                            std::istreambuf_iterator<char>());
         program.axion_policy_text = content;
       }
       auto vm = t81::vm::make_interpreter_vm();
@@ -4806,7 +4878,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
         printed += line;
         printed.push_back('\n');
       }
-      const auto signature = sha3_512_text(render_trace_for_determinism(vm->state()) + "\n--\n" + printed);
+      const auto signature =
+          sha3_512_text(render_trace_for_determinism(vm->state()) + "\n--\n" + printed);
       signatures.push_back(signature);
       if (!result) {
         ok = false;
@@ -4881,7 +4954,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
 
   if (action == "baseline") {
     if (positional.empty()) {
-      error("determinism baseline requires an output directory. Run 't81 help determinism baseline'.");
+      error("determinism baseline requires an output directory. Run 't81 help determinism "
+            "baseline'.");
       return 1;
     }
     const fs::path out_dir = fs::path(positional[0]);
@@ -4889,7 +4963,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
     std::error_code ec;
     fs::create_directories(out_dir, ec);
     std::string collect_error;
-    const auto entries = collect_determinism_baseline_entries(source_dir, policy_path, collect_error);
+    const auto entries =
+        collect_determinism_baseline_entries(source_dir, policy_path, collect_error);
     if (!collect_error.empty()) {
       error(collect_error);
       return 1;
@@ -4906,11 +4981,11 @@ int run_determinism_command(const char* command_name, const Args& args) {
         << "  \"entries\": [\n";
     for (std::size_t i = 0; i < entries.size(); ++i) {
       ofs << "    {\"relative_path\": \"" << json_escape(entries[i].relative_path)
-          << "\", \"ok\": " << (entries[i].record.ok ? "true" : "false")
-          << ", \"trap\": "
-          << json_nullable_string(entries[i].record.trap
-                                      ? std::optional<std::string>{t81::vm::to_string(*entries[i].record.trap)}
-                                      : std::nullopt)
+          << "\", \"ok\": " << (entries[i].record.ok ? "true" : "false") << ", \"trap\": "
+          << json_nullable_string(
+                 entries[i].record.trap
+                     ? std::optional<std::string>{t81::vm::to_string(*entries[i].record.trap)}
+                     : std::nullopt)
           << ", \"artifact_sha3_512\": \"" << entries[i].record.artifact_sha3_512
           << "\", \"output_sha3_512\": \"" << entries[i].record.output_sha3_512
           << "\", \"trace_sha3_512\": \"" << entries[i].record.trace_sha3_512 << "\"}";
@@ -4931,7 +5006,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
                 << "  \"count\": " << entries.size() << "\n"
                 << "}\n";
     } else {
-      std::cout << "Baseline written: " << baseline_file.string() << " (" << entries.size() << " entries)\n";
+      std::cout << "Baseline written: " << baseline_file.string() << " (" << entries.size()
+                << " entries)\n";
     }
     return 0;
   }
@@ -4950,7 +5026,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
     fs::path source_dir;
     std::vector<DeterminismBaselineEntry> baseline_entries;
     std::string parse_error;
-    if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries, parse_error)) {
+    if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries,
+                                         parse_error)) {
       error(parse_error);
       return 1;
     }
@@ -4970,7 +5047,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
       }
       DeterminismRunRecord current_record;
       std::string capture_error;
-      if (!capture_determinism_run_record(current_file, policy_path, current_record, capture_error)) {
+      if (!capture_determinism_run_record(current_file, policy_path, current_record,
+                                          capture_error)) {
         ok = false;
         first_path = entry.relative_path;
         reason = "execution_error";
@@ -5024,16 +5102,23 @@ int run_determinism_command(const char* command_name, const Args& args) {
                 << "  \"ok\": " << (ok ? "true" : "false") << ",\n"
                 << "  \"baseline\": \"" << json_escape(baseline_file.string()) << "\",\n"
                 << "  \"first_mismatch\": ";
-      if (first_path) std::cout << "\"" << json_escape(*first_path) << "\",\n";
-      else std::cout << "null,\n";
+      if (first_path)
+        std::cout << "\"" << json_escape(*first_path) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"reason\": ";
-      if (reason) std::cout << "\"" << json_escape(*reason) << "\",\n";
-      else std::cout << "null,\n";
+      if (reason)
+        std::cout << "\"" << json_escape(*reason) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"expected_trace_sha3_512\": "
-                << json_nullable_string(expected ? std::optional<std::string>{expected->trace_sha3_512} : std::nullopt)
+                << json_nullable_string(expected
+                                            ? std::optional<std::string>{expected->trace_sha3_512}
+                                            : std::nullopt)
                 << ",\n";
       std::cout << "  \"current_trace_sha3_512\": "
-                << json_nullable_string(current ? std::optional<std::string>{current->trace_sha3_512} : std::nullopt)
+                << json_nullable_string(
+                       current ? std::optional<std::string>{current->trace_sha3_512} : std::nullopt)
                 << "\n}\n";
     } else if (ok) {
       std::cout << "No baseline mismatch found.\n";
@@ -5050,7 +5135,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
 
 int run_tensor_command(const char* command_name, const Args& args) {
   (void)command_name;
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     print_help_tensor();
     return 0;
   }
@@ -5081,7 +5167,8 @@ int run_tensor_command(const char* command_name, const Args& args) {
       } else if (path.empty()) {
         path = fs::path(token);
       } else {
-        error("tensor inspect: unexpected argument '" + token + "'. Run 't81 help tensor inspect'.");
+        error("tensor inspect: unexpected argument '" + token +
+              "'. Run 't81 help tensor inspect'.");
         return 1;
       }
     }
@@ -5090,7 +5177,8 @@ int run_tensor_command(const char* command_name, const Args& args) {
       return 1;
     }
     if (!has_extension_ci(path, ".t81w")) {
-      error("tensor inspect currently supports .t81w artifacts. Use 't81 tensor hash' for raw files.");
+      error("tensor inspect currently supports .t81w artifacts. Use 't81 tensor hash' for raw "
+            "files.");
       return 1;
     }
     Args info_args = args;
@@ -5107,7 +5195,8 @@ int run_tensor_command(const char* command_name, const Args& args) {
 }
 
 int run_vm_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_vm(); });
   }
 
@@ -5115,12 +5204,11 @@ int run_vm_command(const Args& args) {
 
   // Validate action before parsing further to give a clear "unknown action" error
   // rather than a misleading "requires a .tisc input file" message.
-  static constexpr std::string_view kVmActions[] = {
-      "run", "debug", "trace", "until", "step", "regs", "stack", "mem",
-      "state", "profile", "explain-trap"};
-  const bool known_action =
-      std::any_of(std::begin(kVmActions), std::end(kVmActions),
-                  [&](std::string_view a) { return a == action; });
+  static constexpr std::string_view kVmActions[] = {"run",   "debug",   "trace",       "until",
+                                                    "step",  "regs",    "stack",       "mem",
+                                                    "state", "profile", "explain-trap"};
+  const bool known_action = std::any_of(std::begin(kVmActions), std::end(kVmActions),
+                                        [&](std::string_view a) { return a == action; });
   if (!known_action) {
     error("vm: unknown action '" + action + "'. Run 't81 help vm'.");
     return 1;
@@ -5206,7 +5294,8 @@ int run_vm_command(const Args& args) {
     }
     return t81::cli::run_tisc(input, policy_path, true, trace_path);
   }
-  if (action == "until" || action == "step" || action == "regs" || action == "stack" || action == "mem") {
+  if (action == "until" || action == "step" || action == "regs" || action == "stack" ||
+      action == "mem") {
     auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
@@ -5225,7 +5314,8 @@ int run_vm_command(const Args& args) {
     if (action == "until" && target_pc && vm->state().contexts[0].pc == *target_pc) {
       reached_target_pc = true;
     }
-    for (; executed_steps < step_count && !vm->state().halted && !reached_target_pc; ++executed_steps) {
+    for (; executed_steps < step_count && !vm->state().halted && !reached_target_pc;
+         ++executed_steps) {
       auto result = vm->step();
       if (!result) {
         trap = result.error();
@@ -5255,8 +5345,10 @@ int run_vm_command(const Args& args) {
                   << "  \"reached_target_pc\": " << (reached_target_pc ? "true" : "false") << ",\n"
                   << "  \"halted\": " << (state.halted ? "true" : "false") << ",\n"
                   << "  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Target PC:      " << *target_pc << "\n";
@@ -5281,8 +5373,10 @@ int run_vm_command(const Args& args) {
                   << "  \"pc\": " << ctx.pc << ",\n"
                   << "  \"halted\": " << (state.halted ? "true" : "false") << ",\n"
                   << "  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Steps executed: " << executed_steps << "\n";
@@ -5309,14 +5403,16 @@ int run_vm_command(const Args& args) {
           std::cout << "\n";
         }
         std::cout << "  ],\n  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         for (std::size_t reg = 0; reg < ctx.registers.size(); ++reg) {
           if (reg < 9 || ctx.registers[reg] != 0) {
-            std::cout << "R" << reg << ": " << ctx.registers[reg] << " [tag="
-                      << static_cast<int>(ctx.register_tags[reg]) << "]\n";
+            std::cout << "R" << reg << ": " << ctx.registers[reg]
+                      << " [tag=" << static_cast<int>(ctx.register_tags[reg]) << "]\n";
           }
         }
         std::cout << "PC: " << ctx.pc << "\n";
@@ -5334,19 +5430,23 @@ int run_vm_command(const Args& args) {
                   << "  \"stack_used\": " << used << ",\n"
                   << "  \"entries\": [\n";
         std::size_t emitted = 0;
-        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit; ++addr, ++emitted) {
+        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit;
+             ++addr, ++emitted) {
           std::cout << "    {\"addr\": " << addr << ", \"value\": " << state.memory[addr] << "}";
           if (addr + 1 < ctx.stack_base && emitted + 1 < stack_limit) std::cout << ",";
           std::cout << "\n";
         }
         std::cout << "  ],\n  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Stack used: " << used << "\n";
         std::size_t emitted = 0;
-        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit; ++addr, ++emitted) {
+        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit;
+             ++addr, ++emitted) {
           std::cout << "[" << addr << "] " << state.memory[addr] << "\n";
         }
       }
@@ -5370,8 +5470,10 @@ int run_vm_command(const Args& args) {
                 << "  \"value\": " << state.memory[*memory_addr] << ",\n"
                 << "  \"tag\": " << static_cast<int>(state.memory_tags[*memory_addr]) << ",\n"
                 << "  \"trap\": ";
-      if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-      else std::cout << "null\n";
+      if (trap)
+        std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+      else
+        std::cout << "null\n";
       std::cout << "}\n";
     } else {
       std::cout << "Memory[" << *memory_addr << "]: " << state.memory[*memory_addr]
@@ -5446,9 +5548,8 @@ int run_vm_command(const Args& args) {
     vm->load_program(program);
     const auto started = std::chrono::steady_clock::now();
     auto result = vm->run_to_halt();
-    const auto elapsed =
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() -
-                                                              started);
+    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - started);
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
     const bool ok = static_cast<bool>(result);
@@ -5472,7 +5573,8 @@ int run_vm_command(const Args& args) {
         if (ok) {
           std::cout << "  \"trap\": null\n";
         } else {
-          std::cout << "  \"trap\": \"" << json_escape(t81::vm::to_string(result.error())) << "\"\n";
+          std::cout << "  \"trap\": \"" << json_escape(t81::vm::to_string(result.error()))
+                    << "\"\n";
         }
         std::cout << "}\n";
         return ok ? 0 : 1;
@@ -5544,7 +5646,8 @@ int run_profile_command(const Args& args) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
     }
-    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") != args.command_args.end()) {
+    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") !=
+        args.command_args.end()) {
       vm_args.command_args.push_back("--json");
     }
     return run_vm_command(vm_args);
@@ -5557,7 +5660,8 @@ int run_profile_command(const Args& args) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
     }
-    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") != args.command_args.end()) {
+    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") !=
+        args.command_args.end()) {
       vm_args.command_args.push_back("--json");
     }
     return run_vm_command(vm_args);
@@ -5576,7 +5680,8 @@ int required_tier_for_program(const t81::tisc::Program& program) {
 }
 
 int run_tier_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_tier(); });
   }
 
@@ -5685,7 +5790,8 @@ int run_tier_command(const Args& args) {
 }
 
 int run_tisc_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_tisc(); });
   }
 
@@ -5696,11 +5802,19 @@ int run_tisc_command(const Args& args) {
     fs::path input1, input2;
     for (std::size_t i = 1; i < args.command_args.size(); ++i) {
       const auto& tok = args.command_args[i];
-      if (tok == "--json") as_json = true;
-      else if (tok == "-h" || tok == "--help") { print_help_tisc_diff(); return 0; }
-      else if (input1.empty()) input1 = fs::path(tok);
-      else if (input2.empty()) input2 = fs::path(tok);
-      else { error("tisc diff: unexpected argument '" + tok + "'."); return 1; }
+      if (tok == "--json")
+        as_json = true;
+      else if (tok == "-h" || tok == "--help") {
+        print_help_tisc_diff();
+        return 0;
+      } else if (input1.empty())
+        input1 = fs::path(tok);
+      else if (input2.empty())
+        input2 = fs::path(tok);
+      else {
+        error("tisc diff: unexpected argument '" + tok + "'.");
+        return 1;
+      }
     }
     if (input1.empty() || input2.empty()) {
       error("tisc diff requires two .tisc input files. Run 't81 help tisc diff'.");
@@ -5709,8 +5823,8 @@ int run_tisc_command(const Args& args) {
     const auto prog1 = t81::tisc::load_program(input1.string());
     const auto prog2 = t81::tisc::load_program(input2.string());
     auto insn_eq = [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {
-      return x.opcode == y.opcode && x.a == y.a && x.b == y.b &&
-             x.c == y.c && x.literal_kind == y.literal_kind;
+      return x.opcode == y.opcode && x.a == y.a && x.b == y.b && x.c == y.c &&
+             x.literal_kind == y.literal_kind;
     };
     const std::size_t max_i = std::max(prog1.insns.size(), prog2.insns.size());
     std::size_t diffs = 0;
@@ -5736,9 +5850,11 @@ int run_tisc_command(const Args& args) {
         std::cout << "identical\n";
       } else {
         for (std::size_t idx = 0; idx < max_i; ++idx) {
-          if (idx >= prog1.insns.size()) { std::cout << "+ [" << idx << "] <rhs extra>\n"; }
-          else if (idx >= prog2.insns.size()) { std::cout << "- [" << idx << "] <lhs extra>\n"; }
-          else if (!insn_eq(prog1.insns[idx], prog2.insns[idx])) {
+          if (idx >= prog1.insns.size()) {
+            std::cout << "+ [" << idx << "] <rhs extra>\n";
+          } else if (idx >= prog2.insns.size()) {
+            std::cout << "- [" << idx << "] <lhs extra>\n";
+          } else if (!insn_eq(prog1.insns[idx], prog2.insns[idx])) {
             std::cout << "! [" << idx << "] differs\n";
           }
         }
@@ -5903,7 +6019,8 @@ int run_tisc_command(const Args& args) {
 }
 
 int run_ir_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_ir(); });
   }
 
@@ -5999,9 +6116,9 @@ int run_ir_command(const Args& args) {
     for (std::size_t i = 0; i < instructions.size(); ++i) {
       const auto& inst = instructions[i];
       rendered << "    {\"index\":" << i << ",\"opcode\":\"" << ir_opcode_name(inst.opcode)
-               << "\",\"primitive\":\"" << ir_primitive_name(inst.primitive) << "\",\"boolean_result\":"
-               << (inst.boolean_result ? "true" : "false") << ",\"relation\":\""
-               << ir_relation_name(inst.relation) << "\",\"operands\":[";
+               << "\",\"primitive\":\"" << ir_primitive_name(inst.primitive)
+               << "\",\"boolean_result\":" << (inst.boolean_result ? "true" : "false")
+               << ",\"relation\":\"" << ir_relation_name(inst.relation) << "\",\"operands\":[";
       for (std::size_t j = 0; j < inst.operands.size(); ++j) {
         rendered << "\"" << json_escape(format_ir_operand(inst.operands[j])) << "\"";
         if (j + 1 != inst.operands.size()) {
@@ -6038,8 +6155,7 @@ int run_ir_command(const Args& args) {
     std::cout << std::setw(20) << std::left << ir_opcode_name(inst.opcode);
     std::cout << " [" << ir_primitive_name(inst.primitive) << (inst.boolean_result ? " Bool" : "")
               << "]";
-    if (inst.boolean_result &&
-        inst.relation != t81::tisc::ir::ComparisonRelation::None) {
+    if (inst.boolean_result && inst.relation != t81::tisc::ir::ComparisonRelation::None) {
       std::cout << " <" << ir_relation_name(inst.relation) << ">";
     }
     if (!inst.operands.empty()) {
@@ -6092,18 +6208,10 @@ int run_repro_hash(const char* command_name, const Args& args) {
   fs::path workdir = fs::temp_directory_path() / ("t81-repro-hash-" + std::to_string(dist(gen)));
   fs::path hash_out = workdir / "hash.txt";
 
-  std::vector<std::string> argv = {"python3",
-                                   script_path->string(),
-                                   "--t81-bin",
-                                   exe_path.string(),
-                                   "--fixtures-dir",
-                                   fixtures_arg,
-                                   "--workdir",
-                                   workdir.string(),
-                                   "--hash-out",
-                                   hash_out.string(),
-                                   "--expected-hash-file",
-                                   expected_arg};
+  std::vector<std::string> argv = {"python3",         script_path->string(),  "--t81-bin",
+                                   exe_path.string(), "--fixtures-dir",       fixtures_arg,
+                                   "--workdir",       workdir.string(),       "--hash-out",
+                                   hash_out.string(), "--expected-hash-file", expected_arg};
 
   const auto capture = run_process_capture(argv, repo_root);
   if (!capture.stdout_text.empty()) {
@@ -6308,108 +6416,198 @@ std::string json_escape(std::string_view text) {
 const char* ir_opcode_name(t81::tisc::ir::Opcode op) {
   using Opcode = t81::tisc::ir::Opcode;
   switch (op) {
-    case Opcode::ADD: return "ADD";
-    case Opcode::SUB: return "SUB";
-    case Opcode::MUL: return "MUL";
-    case Opcode::DIV: return "DIV";
-    case Opcode::MOD: return "MOD";
-    case Opcode::FADD: return "FADD";
-    case Opcode::FSUB: return "FSUB";
-    case Opcode::FMUL: return "FMUL";
-    case Opcode::FDIV: return "FDIV";
-    case Opcode::FRACADD: return "FRACADD";
-    case Opcode::FRACSUB: return "FRACSUB";
-    case Opcode::FRACMUL: return "FRACMUL";
-    case Opcode::FRACDIV: return "FRACDIV";
-    case Opcode::NEG: return "NEG";
-    case Opcode::CMP: return "CMP";
-    case Opcode::MOV: return "MOV";
-    case Opcode::LOADI: return "LOADI";
-    case Opcode::LOAD: return "LOAD";
-    case Opcode::STORE: return "STORE";
-    case Opcode::PUSH: return "PUSH";
-    case Opcode::POP: return "POP";
-    case Opcode::JMP: return "JMP";
-    case Opcode::JZ: return "JZ";
-    case Opcode::JNZ: return "JNZ";
-    case Opcode::JN: return "JN";
-    case Opcode::JP: return "JP";
-    case Opcode::CALL: return "CALL";
-    case Opcode::RET: return "RET";
-    case Opcode::I2F: return "I2F";
-    case Opcode::F2I: return "F2I";
-    case Opcode::I2FRAC: return "I2FRAC";
-    case Opcode::FRAC2I: return "FRAC2I";
-    case Opcode::MAKE_OPTION_SOME: return "MAKE_OPTION_SOME";
-    case Opcode::MAKE_OPTION_NONE: return "MAKE_OPTION_NONE";
-    case Opcode::MAKE_RESULT_OK: return "MAKE_RESULT_OK";
-    case Opcode::MAKE_RESULT_ERR: return "MAKE_RESULT_ERR";
-    case Opcode::OPTION_IS_SOME: return "OPTION_IS_SOME";
-    case Opcode::OPTION_UNWRAP: return "OPTION_UNWRAP";
-    case Opcode::RESULT_IS_OK: return "RESULT_IS_OK";
-    case Opcode::RESULT_UNWRAP_OK: return "RESULT_UNWRAP_OK";
-    case Opcode::RESULT_UNWRAP_ERR: return "RESULT_UNWRAP_ERR";
-    case Opcode::PRINT: return "PRINT";
-    case Opcode::STRLEN: return "STRLEN";
-    case Opcode::STREMPTY: return "STREMPTY";
-    case Opcode::VECLEN: return "VECLEN";
-    case Opcode::VECEMPTY: return "VECEMPTY";
-    case Opcode::VECFIRST: return "VECFIRST";
-    case Opcode::VECLAST: return "VECLAST";
-    case Opcode::VECPUSH: return "VECPUSH";
-    case Opcode::VECPOP: return "VECPOP";
-    case Opcode::STRCONCAT: return "STRCONCAT";
-    case Opcode::STRSTARTSWITH: return "STRSTARTSWITH";
-    case Opcode::STRENDSWITH: return "STRENDSWITH";
-    case Opcode::STRCONTAINS: return "STRCONTAINS";
-    case Opcode::STRINDEXOF: return "STRINDEXOF";
-    case Opcode::STRREPLACE: return "STRREPLACE";
-    case Opcode::STRVECNEW: return "STRVECNEW";
-    case Opcode::STRVECPUSH: return "STRVECPUSH";
-    case Opcode::STRSPLIT: return "STRSPLIT";
-    case Opcode::STRJOIN: return "STRJOIN";
-    case Opcode::WEIGHTS_LOAD: return "WEIGHTS_LOAD";
-    case Opcode::TGET: return "TGET";
-    case Opcode::TNEW: return "TNEW";
-    case Opcode::TSET: return "TSET";
-    case Opcode::TSHAPE: return "TSHAPE";
-    case Opcode::BITAND: return "BITAND";
-    case Opcode::BITOR: return "BITOR";
-    case Opcode::BITXOR: return "BITXOR";
-    case Opcode::BITNOT: return "BITNOT";
-    case Opcode::BITSHL: return "BITSHL";
-    case Opcode::BITSHR: return "BITSHR";
-    case Opcode::BITUSHR: return "BITUSHR";
-    case Opcode::MAKE_COMPLEX: return "MAKE_COMPLEX";
-    case Opcode::NOP: return "NOP";
-    case Opcode::HALT: return "HALT";
-    case Opcode::TRAP: return "TRAP";
-    case Opcode::LABEL: return "LABEL";
-    default: return "UNKNOWN";
+    case Opcode::ADD:
+      return "ADD";
+    case Opcode::SUB:
+      return "SUB";
+    case Opcode::MUL:
+      return "MUL";
+    case Opcode::DIV:
+      return "DIV";
+    case Opcode::MOD:
+      return "MOD";
+    case Opcode::FADD:
+      return "FADD";
+    case Opcode::FSUB:
+      return "FSUB";
+    case Opcode::FMUL:
+      return "FMUL";
+    case Opcode::FDIV:
+      return "FDIV";
+    case Opcode::FRACADD:
+      return "FRACADD";
+    case Opcode::FRACSUB:
+      return "FRACSUB";
+    case Opcode::FRACMUL:
+      return "FRACMUL";
+    case Opcode::FRACDIV:
+      return "FRACDIV";
+    case Opcode::NEG:
+      return "NEG";
+    case Opcode::CMP:
+      return "CMP";
+    case Opcode::MOV:
+      return "MOV";
+    case Opcode::LOADI:
+      return "LOADI";
+    case Opcode::LOAD:
+      return "LOAD";
+    case Opcode::STORE:
+      return "STORE";
+    case Opcode::PUSH:
+      return "PUSH";
+    case Opcode::POP:
+      return "POP";
+    case Opcode::JMP:
+      return "JMP";
+    case Opcode::JZ:
+      return "JZ";
+    case Opcode::JNZ:
+      return "JNZ";
+    case Opcode::JN:
+      return "JN";
+    case Opcode::JP:
+      return "JP";
+    case Opcode::CALL:
+      return "CALL";
+    case Opcode::RET:
+      return "RET";
+    case Opcode::I2F:
+      return "I2F";
+    case Opcode::F2I:
+      return "F2I";
+    case Opcode::I2FRAC:
+      return "I2FRAC";
+    case Opcode::FRAC2I:
+      return "FRAC2I";
+    case Opcode::MAKE_OPTION_SOME:
+      return "MAKE_OPTION_SOME";
+    case Opcode::MAKE_OPTION_NONE:
+      return "MAKE_OPTION_NONE";
+    case Opcode::MAKE_RESULT_OK:
+      return "MAKE_RESULT_OK";
+    case Opcode::MAKE_RESULT_ERR:
+      return "MAKE_RESULT_ERR";
+    case Opcode::OPTION_IS_SOME:
+      return "OPTION_IS_SOME";
+    case Opcode::OPTION_UNWRAP:
+      return "OPTION_UNWRAP";
+    case Opcode::RESULT_IS_OK:
+      return "RESULT_IS_OK";
+    case Opcode::RESULT_UNWRAP_OK:
+      return "RESULT_UNWRAP_OK";
+    case Opcode::RESULT_UNWRAP_ERR:
+      return "RESULT_UNWRAP_ERR";
+    case Opcode::PRINT:
+      return "PRINT";
+    case Opcode::STRLEN:
+      return "STRLEN";
+    case Opcode::STREMPTY:
+      return "STREMPTY";
+    case Opcode::VECLEN:
+      return "VECLEN";
+    case Opcode::VECEMPTY:
+      return "VECEMPTY";
+    case Opcode::VECFIRST:
+      return "VECFIRST";
+    case Opcode::VECLAST:
+      return "VECLAST";
+    case Opcode::VECPUSH:
+      return "VECPUSH";
+    case Opcode::VECPOP:
+      return "VECPOP";
+    case Opcode::STRCONCAT:
+      return "STRCONCAT";
+    case Opcode::STRSTARTSWITH:
+      return "STRSTARTSWITH";
+    case Opcode::STRENDSWITH:
+      return "STRENDSWITH";
+    case Opcode::STRCONTAINS:
+      return "STRCONTAINS";
+    case Opcode::STRINDEXOF:
+      return "STRINDEXOF";
+    case Opcode::STRREPLACE:
+      return "STRREPLACE";
+    case Opcode::STRVECNEW:
+      return "STRVECNEW";
+    case Opcode::STRVECPUSH:
+      return "STRVECPUSH";
+    case Opcode::STRSPLIT:
+      return "STRSPLIT";
+    case Opcode::STRJOIN:
+      return "STRJOIN";
+    case Opcode::WEIGHTS_LOAD:
+      return "WEIGHTS_LOAD";
+    case Opcode::TGET:
+      return "TGET";
+    case Opcode::TNEW:
+      return "TNEW";
+    case Opcode::TSET:
+      return "TSET";
+    case Opcode::TSHAPE:
+      return "TSHAPE";
+    case Opcode::BITAND:
+      return "BITAND";
+    case Opcode::BITOR:
+      return "BITOR";
+    case Opcode::BITXOR:
+      return "BITXOR";
+    case Opcode::BITNOT:
+      return "BITNOT";
+    case Opcode::BITSHL:
+      return "BITSHL";
+    case Opcode::BITSHR:
+      return "BITSHR";
+    case Opcode::BITUSHR:
+      return "BITUSHR";
+    case Opcode::MAKE_COMPLEX:
+      return "MAKE_COMPLEX";
+    case Opcode::NOP:
+      return "NOP";
+    case Opcode::HALT:
+      return "HALT";
+    case Opcode::TRAP:
+      return "TRAP";
+    case Opcode::LABEL:
+      return "LABEL";
+    default:
+      return "UNKNOWN";
   }
 }
 
 const char* ir_primitive_name(t81::tisc::ir::PrimitiveKind kind) {
   using PrimitiveKind = t81::tisc::ir::PrimitiveKind;
   switch (kind) {
-    case PrimitiveKind::Integer: return "Int";
-    case PrimitiveKind::Float: return "Float";
-    case PrimitiveKind::Fraction: return "Frac";
-    case PrimitiveKind::Boolean: return "Bool";
-    default: return "Unknown";
+    case PrimitiveKind::Integer:
+      return "Int";
+    case PrimitiveKind::Float:
+      return "Float";
+    case PrimitiveKind::Fraction:
+      return "Frac";
+    case PrimitiveKind::Boolean:
+      return "Bool";
+    default:
+      return "Unknown";
   }
 }
 
 const char* ir_relation_name(t81::tisc::ir::ComparisonRelation relation) {
   using Relation = t81::tisc::ir::ComparisonRelation;
   switch (relation) {
-    case Relation::Less: return "Less";
-    case Relation::LessEqual: return "LessEqual";
-    case Relation::Greater: return "Greater";
-    case Relation::GreaterEqual: return "GreaterEqual";
-    case Relation::Equal: return "Equal";
-    case Relation::NotEqual: return "NotEqual";
-    default: return "None";
+    case Relation::Less:
+      return "Less";
+    case Relation::LessEqual:
+      return "LessEqual";
+    case Relation::Greater:
+      return "Greater";
+    case Relation::GreaterEqual:
+      return "GreaterEqual";
+    case Relation::Equal:
+      return "Equal";
+    case Relation::NotEqual:
+      return "NotEqual";
+    default:
+      return "None";
   }
 }
 
@@ -6446,7 +6644,8 @@ std::string trap_explanation_text(t81::vm::Trap trap) {
     case Trap::FFIMemoryExhausted:
       return "An FFI action exhausted available memory.";
     case Trap::DecodeFault:
-      return "The VM could not decode the TISC artifact. Rebuild the program and validate it with 't81 tisc validate'.";
+      return "The VM could not decode the TISC artifact. Rebuild the program and validate it with "
+             "'t81 tisc validate'.";
     case Trap::TypeFault:
       return "A runtime value had the wrong type tag for the executed instruction.";
     case Trap::BoundsFault:
@@ -6464,7 +6663,8 @@ std::string trap_explanation_text(t81::vm::Trap trap) {
     case Trap::TrapInstruction:
       return "The program executed an explicit TRAP instruction.";
     case Trap::Unimplemented:
-      return "The program hit an opcode or runtime feature that is not implemented in this VM build.";
+      return "The program hit an opcode or runtime feature that is not implemented in this VM "
+             "build.";
     case Trap::AssertionFailed:
       return "A program assertion failed.";
     case Trap::EthicsViolation:
@@ -6503,7 +6703,8 @@ std::string sha3_512_file(const fs::path& path) {
   if (!in) {
     throw std::runtime_error("Could not open input file: " + path.string());
   }
-  std::vector<std::uint8_t> raw((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  std::vector<std::uint8_t> raw((std::istreambuf_iterator<char>(in)),
+                                std::istreambuf_iterator<char>());
   return t81::crypto::sha3_512_hex(raw);
 }
 
@@ -6599,6 +6800,8 @@ ProcessCaptureResult run_process_capture(
     return result;
   }
 #if defined(_WIN32)
+  (void)cwd;
+  (void)env_overrides;
   std::string cmd;
   for (std::size_t i = 0; i < argv.size(); ++i) {
     if (i != 0) {
@@ -6608,7 +6811,8 @@ ProcessCaptureResult run_process_capture(
   }
   TempCaptureFile out_file("capture", ".out");
   TempCaptureFile err_file("capture", ".err");
-  cmd += " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
+  cmd +=
+      " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
   const int status = std::system(cmd.c_str());
   if (status == -1) {
     return result;
@@ -6616,8 +6820,10 @@ ProcessCaptureResult run_process_capture(
   result.exit_code = decode_system_status(status);
   std::ifstream out_stream(out_file.path, std::ios::binary);
   std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)), std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)), std::istreambuf_iterator<char>());
+  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
+                            std::istreambuf_iterator<char>());
+  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
+                            std::istreambuf_iterator<char>());
   return result;
 #else
   TempCaptureFile out_file("capture", ".out");
@@ -6663,8 +6869,10 @@ ProcessCaptureResult run_process_capture(
   result.exit_code = decode_system_status(status);
   std::ifstream out_stream(out_file.path, std::ios::binary);
   std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)), std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)), std::istreambuf_iterator<char>());
+  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
+                            std::istreambuf_iterator<char>());
+  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
+                            std::istreambuf_iterator<char>());
   return result;
 #endif
 }
@@ -6758,10 +6966,8 @@ int run_env_toolchain(const Args& args) {
   };
 
   std::vector<ToolProbe> probes = {
-      {"cmake", "cmake", false, std::nullopt},
-      {"ctest", "ctest", false, std::nullopt},
-      {"python3", "python3", false, std::nullopt},
-      {"clang++", "clang++", false, std::nullopt},
+      {"cmake", "cmake", false, std::nullopt},     {"ctest", "ctest", false, std::nullopt},
+      {"python3", "python3", false, std::nullopt}, {"clang++", "clang++", false, std::nullopt},
       {"g++", "g++", false, std::nullopt},
   };
 
@@ -6782,16 +6988,17 @@ int run_env_toolchain(const Args& args) {
   if (as_json) {
     std::cout << "{\n"
               << "  \"schema\": \"t81.env-toolchain.v1\",\n"
-              << "  \"ok\": " << ((probes[0].available && probes[1].available &&
-                                      probes[2].available && any_compiler)
-                                         ? "true"
-                                         : "false")
+              << "  \"ok\": "
+              << ((probes[0].available && probes[1].available && probes[2].available &&
+                   any_compiler)
+                      ? "true"
+                      : "false")
               << ",\n"
               << "  \"tools\": [\n";
     for (std::size_t i = 0; i < probes.size(); ++i) {
       const auto& probe = probes[i];
-      std::cout << "    {\"name\":\"" << json_escape(probe.name) << "\",\"available\":"
-                << (probe.available ? "true" : "false") << ",\"version\":";
+      std::cout << "    {\"name\":\"" << json_escape(probe.name)
+                << "\",\"available\":" << (probe.available ? "true" : "false") << ",\"version\":";
       if (probe.version) {
         std::cout << "\"" << json_escape(*probe.version) << "\"}";
       } else {
@@ -6897,7 +7104,8 @@ int run_env_diag(const Args& args) {
 
   std::cout << "repo_root:             " << repo_root.string() << "\n";
   std::cout << "build_dir:             " << build_dir.string() << "\n";
-  std::cout << "build metadata:        " << (build_metadata_present ? "present" : "missing") << "\n";
+  std::cout << "build metadata:        " << (build_metadata_present ? "present" : "missing")
+            << "\n";
   std::cout << "toolchain:             " << (toolchain_ok ? "ok" : "incomplete") << "\n";
   std::cout << "canonfs_root:          " << canonfs_root.string() << "\n";
   std::cout << "canonfs_ready:         " << (canonfs_ready ? "yes" : "no") << "\n";
@@ -6957,8 +7165,9 @@ int run_env_clean(const Args& args) {
 
   std::vector<fs::path> removed_paths;
   const std::vector<fs::path> targets = {
-      abs_build_dir / "CMakeCache.txt", abs_build_dir / "CMakeFiles", abs_build_dir / "CTestTestfile.cmake",
-      abs_build_dir / "Testing",        abs_build_dir / "build.ninja", abs_build_dir / ".ninja_deps",
+      abs_build_dir / "CMakeCache.txt",      abs_build_dir / "CMakeFiles",
+      abs_build_dir / "CTestTestfile.cmake", abs_build_dir / "Testing",
+      abs_build_dir / "build.ninja",         abs_build_dir / ".ninja_deps",
       abs_build_dir / ".ninja_log"};
 
   for (const auto& target : targets) {
@@ -7061,7 +7270,8 @@ int run_doctor(const Args& args) {
                            : ("CanonFS root missing at " + canonfs_root.string()),
                "Run a CanonFS command such as `t81 canonfs snapshot` or set T81_CANONFS_ROOT.");
     const fs::path objects_dir = canonfs_root / "objects";
-    const bool objects_ok = !root_exists || !fs::exists(objects_dir) || fs::is_directory(objects_dir);
+    const bool objects_ok =
+        !root_exists || !fs::exists(objects_dir) || fs::is_directory(objects_dir);
     push_check("canonfs_objects_dir", objects_ok,
                fs::exists(objects_dir) ? (objects_ok ? "objects directory readable"
                                                      : "objects path exists but is not a directory")
@@ -7071,17 +7281,19 @@ int run_doctor(const Args& args) {
     const bool snapshots_ok =
         !root_exists || !fs::exists(snapshots_dir) || fs::is_directory(snapshots_dir);
     push_check("canonfs_snapshots_dir", snapshots_ok,
-               fs::exists(snapshots_dir) ? (snapshots_ok ? "snapshots directory readable"
-                                                         : "snapshots path exists but is not a directory")
-                                         : "snapshots directory not present yet",
+               fs::exists(snapshots_dir)
+                   ? (snapshots_ok ? "snapshots directory readable"
+                                   : "snapshots path exists but is not a directory")
+                   : "snapshots directory not present yet",
                "Ensure CanonFS snapshot storage is intact under <root>/snapshots.");
   };
 
   auto run_vm_checks = [&]() {
     const bool build_metadata_present = fs::exists(build_dir / "CTestTestfile.cmake");
     push_check("build_dir_present", build_metadata_present,
-               build_metadata_present ? ("CTest metadata found in " + build_dir.string())
-                                      : ("build dir is missing CTest metadata at " + build_dir.string()),
+               build_metadata_present
+                   ? ("CTest metadata found in " + build_dir.string())
+                   : ("build dir is missing CTest metadata at " + build_dir.string()),
                "Run: cmake -S . -B build && cmake --build build");
     const fs::path vm_binary = build_dir / "t81";
     const bool vm_binary_present = fs::exists(vm_binary);
@@ -7139,9 +7351,10 @@ int run_doctor(const Args& args) {
     std::cout << "  \"checks\": [\n";
     for (size_t i = 0; i < checks.size(); ++i) {
       const auto& check = checks[i];
-      std::cout << "    {\"id\":\"" << json_escape(check.id) << "\",\"ok\":"
-                << (check.ok ? "true" : "false") << ",\"detail\":\"" << json_escape(check.detail)
-                << "\",\"remediation\":\"" << json_escape(check.remediation) << "\"}";
+      std::cout << "    {\"id\":\"" << json_escape(check.id)
+                << "\",\"ok\":" << (check.ok ? "true" : "false") << ",\"detail\":\""
+                << json_escape(check.detail) << "\",\"remediation\":\""
+                << json_escape(check.remediation) << "\"}";
       if (i + 1 != checks.size()) {
         std::cout << ",";
       }
@@ -7248,7 +7461,8 @@ int run_test_command(const Args& args) {
     std::string lowered = stderr_text;
     for (char& c : lowered) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     if (lowered.find("output-junit") != std::string::npos &&
-        (lowered.find("unknown") != std::string::npos || lowered.find("unrecognized") != std::string::npos ||
+        (lowered.find("unknown") != std::string::npos ||
+         lowered.find("unrecognized") != std::string::npos ||
          lowered.find("invalid") != std::string::npos)) {
       used_junit = false;
       ctest_argv.erase(std::remove(ctest_argv.begin(), ctest_argv.end(), "--output-junit"),
@@ -7301,7 +7515,8 @@ int run_test_command(const Args& args) {
   TestSummary summary = parse_summary(stdout_text + "\n" + stderr_text);
   if (used_junit && fs::exists(junit_file.path)) {
     std::ifstream junit_in(junit_file.path, std::ios::binary);
-    const std::string xml((std::istreambuf_iterator<char>(junit_in)), std::istreambuf_iterator<char>());
+    const std::string xml((std::istreambuf_iterator<char>(junit_in)),
+                          std::istreambuf_iterator<char>());
     std::smatch m;
     if (std::regex_search(xml, m, std::regex("tests=\"([0-9]+)\"")) && m.size() == 2) {
       summary.total = std::atoi(m[1].str().c_str());
@@ -7315,8 +7530,7 @@ int run_test_command(const Args& args) {
     if (summary.total >= 0 && summary.failed >= 0) {
       summary.passed = summary.total - summary.failed - std::max(0, summary.skipped);
     }
-    if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) &&
-        m.size() == 2) {
+    if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) && m.size() == 2) {
       summary.duration_sec = std::atof(m[1].str().c_str());
     }
   }
@@ -7601,7 +7815,8 @@ int run_fmt_command(const Args& args) {
   return 0;
 }
 
-bool parse_package_field(const std::string& text, const std::string& field, std::string& value_out) {
+bool parse_package_field(const std::string& text, const std::string& field,
+                         std::string& value_out) {
   const std::regex re("\\(" + field + "\\s+\"([^\"]+)\"\\)");
   std::smatch match;
   if (!std::regex_search(text, match, re) || match.size() < 2) {
@@ -7937,7 +8152,8 @@ complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
 }
 
 int run_completion_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     print_help_completion();
     return args.command_args.empty() ? 1 : 0;
   }
@@ -8068,7 +8284,8 @@ int run_man_command(const Args& args) {
 }
 
 int run_feedback_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     print_help_feedback();
     return args.command_args.empty() ? 1 : 0;
   }
@@ -8616,7 +8833,8 @@ int main(int argc, char* argv[]) {
       if (!args.command_args.empty()) {
         auto removed = removed_help_topic_recommendation(args.command_args[0]);
         if (removed) {
-          error("Help topic '" + args.command_args[0] + "' has been removed. Use '" + *removed + "'.");
+          error("Help topic '" + args.command_args[0] + "' has been removed. Use '" + *removed +
+                "'.");
           return 1;
         }
       }
@@ -8694,7 +8912,8 @@ int main(int argc, char* argv[]) {
 
     if (args.command == "compile") {
       if (args.policy) {
-        error("compile does not support --policy yet; pass policy at runtime with 't81 run --policy'.");
+        error("compile does not support --policy yet; pass policy at runtime with 't81 run "
+              "--policy'.");
         return 1;
       }
       fs::path out = args.output.value_or(args.input.stem().string() + ".tisc");
@@ -8871,8 +9090,8 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "init") {
       if (!args.command_args.empty() &&
           (args.command_args[0] == "-h" || args.command_args[0] == "--help")) {
-          return emit_help([&] { print_help_init(); });
-        }
+        return emit_help([&] { print_help_init(); });
+      }
       if (args.command_args.empty()) {
         error("init requires a project name. Run 't81 help init'.");
         return 1;
@@ -8994,8 +9213,10 @@ int main(int argc, char* argv[]) {
         } else if ((tok == "--help" || tok == "-h")) {
           return emit_help([&] { print_help_llvm(); });
         } else if (tok[0] != '-') {
-          if (la.input.empty()) la.input = tok;
-          else la.output = tok;
+          if (la.input.empty())
+            la.input = tok;
+          else
+            la.output = tok;
         } else {
           error("llvm: unknown option '" + tok + "'. Run 't81 help llvm'.");
           return 1;
@@ -9032,8 +9253,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_c(); });
         } else if (tok[0] != '-') {
-          if (ca.input.empty()) ca.input = tok;
-          else ca.output = tok;
+          if (ca.input.empty())
+            ca.input = tok;
+          else
+            ca.output = tok;
         } else {
           error("c: unknown option '" + tok + "'. Run 't81 help c'.");
           return 1;
@@ -9070,8 +9293,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_rust(); });
         } else if (tok[0] != '-') {
-          if (ra.input.empty()) ra.input = tok;
-          else ra.output = tok;
+          if (ra.input.empty())
+            ra.input = tok;
+          else
+            ra.output = tok;
         } else {
           error("rust: unknown option '" + tok + "'. Run 't81 help rust'.");
           return 1;
@@ -9108,8 +9333,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_python(); });
         } else if (tok[0] != '-') {
-          if (pa.input.empty()) pa.input = tok;
-          else pa.output = tok;
+          if (pa.input.empty())
+            pa.input = tok;
+          else
+            pa.output = tok;
         } else {
           error("python: unknown option '" + tok + "'. Run 't81 help python'.");
           return 1;
@@ -9142,8 +9369,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_mlir(); });
         } else if (tok[0] != '-') {
-          if (ma.input.empty()) ma.input = tok;
-          else ma.output = tok;
+          if (ma.input.empty())
+            ma.input = tok;
+          else
+            ma.output = tok;
         } else {
           error("mlir: unknown option '" + tok + "'. Run 't81 help mlir'.");
           return 1;
@@ -9151,9 +9380,8 @@ int main(int argc, char* argv[]) {
       }
       return t81::cli::run_mlir(ma);
 
-    // ── TUI frontends ─────────────────────────────────────────────────────
-    } else if (args.command == "studio" || args.command == "agent" ||
-               args.command == "ui") {
+      // ── TUI frontends ─────────────────────────────────────────────────────
+    } else if (args.command == "studio" || args.command == "agent" || args.command == "ui") {
 #if defined(T81_HAS_TUI)
       {
         std::error_code ec;
@@ -9174,24 +9402,24 @@ int main(int argc, char* argv[]) {
       {
         using namespace ftxui;
         std::vector<std::string> choices = {
-          "Studio  —  Human Operator Interface",
-          "Agent   —  AI-Native / Agentic Interface",
-          "Cancel",
+            "Studio  —  Human Operator Interface",
+            "Agent   —  AI-Native / Agentic Interface",
+            "Cancel",
         };
         int selected = 0;
         bool cancelled = false;
-        auto screen  = ScreenInteractive::Fullscreen();
-        auto menu_c  = Menu(&choices, &selected);
-        auto root    = Renderer(menu_c, [&]() -> Element {
+        auto screen = ScreenInteractive::Fullscreen();
+        auto menu_c = Menu(&choices, &selected);
+        auto root = Renderer(menu_c, [&]() -> Element {
           return vbox({
-            text("  T81 Foundation  —  Choose Interface") | bold
-              | color(Color::Cyan),
-            separator(),
-            menu_c->Render(),
-            separator(),
-            text("  Arrow keys, Enter to select, Escape to cancel.")
-              | color(Color::GrayDark),
-          }) | border | size(WIDTH, EQUAL, 52) | center;
+                     text("  T81 Foundation  —  Choose Interface") | bold | color(Color::Cyan),
+                     separator(),
+                     menu_c->Render(),
+                     separator(),
+                     text("  Arrow keys, Enter to select, Escape to cancel.") |
+                         color(Color::GrayDark),
+                 }) |
+                 border | size(WIDTH, EQUAL, 52) | center;
         });
         root = CatchEvent(root, [&](Event e) -> bool {
           if (e == Event::Escape) {
@@ -9199,7 +9427,10 @@ int main(int argc, char* argv[]) {
             screen.ExitLoopClosure()();
             return true;
           }
-          if (e == Event::Return) { screen.ExitLoopClosure()(); return true; }
+          if (e == Event::Return) {
+            screen.ExitLoopClosure()();
+            return true;
+          }
           return false;
         });
         screen.Loop(root);
