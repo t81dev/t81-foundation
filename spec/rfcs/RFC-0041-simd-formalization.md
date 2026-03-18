@@ -1,9 +1,9 @@
-# RFC-0032: Formalization of SIMD Operations for Deterministic Ternary Computing
+# RFC-0041: Formalization of SIMD Operations for Deterministic Ternary Computing
 
 - **Author(s):** T81 Foundation Architecture Team
 - **Status:** Draft
 - **Created:** 2026-03-18
-- **Supersedes:** None (builds on RFC-0016, RFC-0018, RFC-0031)
+- **Supersedes:** None (builds on RFC-0016, RFC-0018, RFC-0040)
 
 ## Summary
 
@@ -463,21 +463,21 @@ namespace t81::simd::kernel {
 
 | ID | Criterion | Status |
 | :--- | :--- | :--- |
-| [A-0032-01] | All SIMD operations produce bit-exact results across x86_64 and ARM64 | |
-| [A-0032-02] | Performance benchmarks meet or exceed targets (≥2x SWAR speedup) | |
-| [A-0032-03] | VM integration passes full conformance test suite | |
-| [A-0032-04] | JIT integration maintains determinism invariants | |
-| [A-0032-05] | Backward compatibility maintained through deprecation cycle | |
-| [A-0032-06] | Cross-platform property tests achieve 99.9% pass rate | |
-| [A-0032-07] | Boundary condition tests (63,64,65,127,128,129 bytes) pass | |
-| [A-0032-08] | Documentation and migration guide complete | |
+| [A-0041-01] | All SIMD operations produce bit-exact results across x86_64 and ARM64 | |
+| [A-0041-02] | Performance benchmarks meet or exceed targets (≥2x SWAR speedup) | |
+| [A-0041-03] | VM integration passes full conformance test suite | |
+| [A-0041-04] | JIT integration maintains determinism invariants | |
+| [A-0041-05] | Backward compatibility maintained through deprecation cycle | |
+| [A-0041-06] | Cross-platform property tests achieve 99.9% pass rate | |
+| [A-0041-07] | Boundary condition tests (63,64,65,127,128,129 bytes) pass | |
+| [A-0041-08] | Documentation and migration guide complete | |
 
 ## References
 
 - RFC-0001: Architecture Principles
 - RFC-0002: Deterministic Execution Contract  
 - RFC-0028: Deterministic Trace-JIT
-- RFC-0031: Formalization of SWAR Operations
+- RFC-0040: Formalization of SWAR Operations
 - RFC-0016: Register-native SIMD T81 Limb (superseded by RFC-0017)
 - RFC-0018: SIMD T81 Arithmetic – Native addition & multiplication
 - `include/t81/experimental/packed_trit_vector.hpp` (current implementation)
