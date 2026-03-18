@@ -228,9 +228,9 @@ namespace t81::swar::kernel {
 ## Implementation Roadmap
 
 ### Phase 1: API Stabilization (Week 1-2)
-- [ ] Create `include/t81/swar/swar.hpp` with stable API
-- [ ] Implement compatibility shim in experimental namespace
-- [ ] Add comprehensive unit tests for all SWAR operations
+- [x] Create `include/t81/swar/swar.hpp` with stable API
+- [x] Implement compatibility shim in experimental namespace
+- [x] Add comprehensive unit tests for all SWAR operations
 
 ### Phase 2: VM Integration (Week 3-4)  
 - [ ] Add TISC opcodes for SWAR operations

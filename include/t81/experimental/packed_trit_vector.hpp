@@ -21,6 +21,12 @@
 #include "t81/types/Result.hpp"
 #include "t81/types/T81Int.hpp"
 
+namespace t81::swar::kernel {
+void t_not(const uint8_t* src, uint8_t* dst, size_t n);
+void t_and(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n);
+void t_or(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n);
+}  // namespace t81::swar::kernel
+
 namespace t81::experimental {
 
 class ComputeTritVector;
@@ -411,7 +417,7 @@ public:
   }
 
   // Phase 2C: SWAR Implementations (Exposed for verification/benchmarking)
-  Result<ComputeTritVector> t_not_swar() const {
+  [[deprecated("Use t81::swar::t_not_swar instead")]] Result<ComputeTritVector> t_not_swar() const {
     ComputeTritVector res = *this;
     kernel_not_swar(data_.data(), res.data_.data(), data_.size());
     if (count_ % 4 != 0 && !res.data_.empty()) {
@@ -420,7 +426,8 @@ public:
     return Result<ComputeTritVector>::success(std::move(res));
   }
 
-  Result<ComputeTritVector> t_and_swar(const ComputeTritVector& other) const {
+  [[deprecated("Use t81::swar::t_and_swar instead")]] Result<ComputeTritVector> t_and_swar(
+      const ComputeTritVector& other) const {
     if (count_ != other.count_) {
       return Result<ComputeTritVector>::failure(
           T81Symbol::intern("LENGTH_MISMATCH"),
@@ -435,7 +442,8 @@ public:
     return Result<ComputeTritVector>::success(std::move(res));
   }
 
-  Result<ComputeTritVector> t_or_swar(const ComputeTritVector& other) const {
+  [[deprecated("Use t81::swar::t_or_swar instead")]] Result<ComputeTritVector> t_or_swar(
+      const ComputeTritVector& other) const {
     if (count_ != other.count_) {
       return Result<ComputeTritVector>::failure(
           T81Symbol::intern("LENGTH_MISMATCH"),
@@ -743,77 +751,15 @@ public:
 
   // SWAR Kernels
   static void kernel_not_swar(const uint8_t* src, uint8_t* dst, size_t n) {
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-      uint64_t x;
-      std::memcpy(&x, src + i, 8);
-      uint64_t low = x & 0x5555555555555555ULL;
-      uint64_t res = x ^ (low << 1);
-      std::memcpy(dst + i, &res, 8);
-    }
-    for (; i < n; ++i) {
-      uint8_t x = src[i];
-      uint8_t low = x & 0x55;
-      dst[i] = x ^ (low << 1);
-    }
+    t81::swar::kernel::t_not(src, dst, n);
   }
 
   static void kernel_and_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n) {
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-      uint64_t a, b;
-      std::memcpy(&a, src_a + i, 8);
-      std::memcpy(&b, src_b + i, 8);
-
-      uint64_t H = (a | b) & 0xAAAAAAAAAAAAAAAAULL;
-      uint64_t L_content = (a & b) & 0x5555555555555555ULL;
-      uint64_t res = H | (H >> 1) | L_content;
-
-      std::memcpy(dst + i, &res, 8);
-    }
-    for (; i < n; ++i) {
-      uint8_t a = src_a[i];
-      uint8_t b = src_b[i];
-
-      uint8_t H = (a | b) & 0xAA;
-      uint8_t L_content = (a & b) & 0x55;
-      dst[i] = H | (H >> 1) | L_content;
-    }
+    t81::swar::kernel::t_and(src_a, src_b, dst, n);
   }
 
   static void kernel_or_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n) {
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-      uint64_t a, b;
-      std::memcpy(&a, src_a + i, 8);
-      std::memcpy(&b, src_b + i, 8);
-
-      uint64_t h_a = a & 0xAAAAAAAAAAAAAAAAULL;
-      uint64_t h_b = b & 0xAAAAAAAAAAAAAAAAULL;
-      uint64_t l_a = a & 0x5555555555555555ULL;
-      uint64_t l_b = b & 0x5555555555555555ULL;
-
-      uint64_t H = h_a & h_b;
-      uint64_t mask = (h_a | h_b) >> 1;
-      uint64_t L = (l_a & l_b) | ((l_a | l_b) & ~mask);
-      uint64_t res = H | (H >> 1) | L;
-
-      std::memcpy(dst + i, &res, 8);
-    }
-    for (; i < n; ++i) {
-      uint8_t a = src_a[i];
-      uint8_t b = src_b[i];
-
-      uint8_t h_a = a & 0xAA;
-      uint8_t h_b = b & 0xAA;
-      uint8_t l_a = a & 0x55;
-      uint8_t l_b = b & 0x55;
-
-      uint8_t H = h_a & h_b;
-      uint8_t mask = (h_a | h_b) >> 1;
-      uint8_t L = (l_a & l_b) | ((l_a | l_b) & ~mask);
-      dst[i] = H | (H >> 1) | L;
-    }
+    t81::swar::kernel::t_or(src_a, src_b, dst, n);
   }
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
@@ -1051,3 +997,5 @@ inline Result<PackedTritVector> PackedTritVector::from_compute(const ComputeTrit
 }
 
 }  // namespace t81::experimental
+
+#include "t81/swar/swar.hpp"
