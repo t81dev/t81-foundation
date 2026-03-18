@@ -15,11 +15,11 @@
 #include <compare>
 #include <cstddef>
 #include <span>
+#include "t81/determinism/canon_hash81.hpp"
 #include "t81/types/T81Float.hpp"
 #include "t81/types/T81Int.hpp"
 #include "t81/types/T81Symbol.hpp"
 #include "t81/types/T81Tensor.hpp"
-#include "t81/determinism/canon_hash81.hpp"
 
 namespace t81 {
 
@@ -38,6 +38,11 @@ using Weight81 = T81Float<72, 9>;  // 81-trit floating weight
 #include <sstream>
 #include <type_traits>
 #include <vector>
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4324)  // structure was padded due to alignment specifier
+#endif
 
 namespace detail {
 template <typename T>
