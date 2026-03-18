@@ -267,12 +267,20 @@ std::string finalize_process_output(std::string result, int status) {
 std::string exec_command(const std::string& cmd) {
     std::string result;
     // NOLINTNEXTLINE(cert-env33-c) — intentional subprocess execution
+#ifdef _WIN32
+    FILE* pipe = _popen(cmd.c_str(), "r");
+#else
     FILE* pipe = popen(cmd.c_str(), "r");
+#endif
     if (!pipe) return "[error: could not launch subprocess]";
     char buf[512];
     while (fgets(buf, sizeof(buf), pipe) != nullptr)
         result += buf;
+#ifdef _WIN32
+    const int rc = _pclose(pipe);
+#else
     const int rc = pclose(pipe);
+#endif
 #if defined(_WIN32)
     const int status = rc;
 #else
