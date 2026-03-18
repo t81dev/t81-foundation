@@ -99,7 +99,7 @@ public:
     }
   }
 };
-} // namespace t81::v1
+}  // namespace t81::v1
 
 int main() {
   t81::v1::BigIntAllocationGuardrailTest::run();

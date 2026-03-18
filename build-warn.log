@@ -1,6 +1,0 @@
-[1/6] Building CXX object CMakeFiles/t81_bigint_allocation_guardrail_test.dir/tests/cpp/bigint_allocation_guardrail_test.cpp.o
-[2/6] Linking CXX executable t81_bigint_allocation_guardrail_test
-[3/6] Building CXX object CMakeFiles/t81_cli_stress_test.dir/tests/cpp/cli_stress_test.cpp.o
-[4/6] Linking CXX executable t81_cli_stress_test
-[5/6] Building CXX object CMakeFiles/tnn_stdlib_test.dir/tests/cpp/tnn_stdlib_test.cpp.o
-[6/6] Linking CXX executable tnn_stdlib_test
