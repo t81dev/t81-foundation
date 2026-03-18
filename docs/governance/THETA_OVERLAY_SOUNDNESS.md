@@ -1,12 +1,12 @@
 # Formal Θ-Overlay Soundness Proofs
 
-This document formalizes the mapping of the system's "Nine Theta Principles" to explicit runtime bounds evaluated actively by the Axion Kernel during all execution paths in the T81 architecture, ensuring robust policy encapsulation.
+This document formalizes the mapping of the system's "Nine Theta Principles" to explicit runtime bounds evaluated actively by the Axion Governance Kernel during all execution paths in the T81 architecture, ensuring robust policy encapsulation.
 
 ## The Semantic Boundary
 T81 utilizes a ternary (base-81) abstraction stack wherein execution bounds are evaluated preemptively per machine cycle instruction trap. The Θ-overlay serves as an immutable governance wrapper dictating execution bounds. Its semantics formally override all local component-level runtime security policies.
 
 ### Soundness Property Mapping
-The Axion execution trap triggers `check_ethics()`, which intercepts the requested machine operation. The Axion Kernel statically implements the boundaries represented conceptually by the Nine Theta Principles:
+The Axion execution trap triggers `check_ethics()`, which intercepts the requested machine operation. The Axion Governance Kernel statically implements the boundaries represented conceptually by the Nine Theta Principles:
 
 | Core Principle | Axion Context Enforcement | Soundness Demonstration |
 | --- | --- | --- |

@@ -49,7 +49,7 @@ The stack delivers:
 | **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, session manager, t81sh shell; 15/15 acceptance criteria implemented; boot sequence, session lifecycle, and shell infrastructure working |
 | **Cross-Platform Determinism CI** | ✅ Stable | Daily GitHub Actions workflow compares T81Lang bytecode hashes across Linux x86\_64 (gcc-14) and macOS ARM64 (clang); publicly auditable evidence record; production-ready cross-platform determinism validation |
 | **Hanoi VM** | ✅ Alpha | RFC-0000 §4 ethics-first boot; 81-slot deterministic scheduler; snapshot management; RFC-0000 §7 command surface (status, optimize, simulate, snapshot, rollback); comprehensive test suite; Alpha-ready microkernel |
-| **Axion OS Kernel** | ✅ Alpha | Complete governance system with 100% test coverage (28/28 tests); production-ready policy engine and ethics evaluation; Θ₁-Θ₉ principles fully implemented; comprehensive API documentation and integration examples; Alpha-ready kernel with deterministic decision making and full T81 stack integration |
+| **Axion OS** | ✅ Alpha | Complete governance system with 100% test coverage (28/28 tests); production-ready policy engine and ethics evaluation; Θ₁-Θ₉ principles fully implemented; comprehensive API documentation and integration examples; Alpha-ready kernel with deterministic decision making and full T81 stack integration |
 
 ---
 
@@ -78,7 +78,7 @@ The stack delivers:
 │  FFIDispatcher · FFILibraryRegistry                         │
 │  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
 └─────────────────────────────────────────────────────────────┘
-  Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
+  Experimental: TernaryOS (Axion OS) · Cognitive Tiers
 ```
 
 ### Key components
@@ -381,7 +381,7 @@ But subsystem boundaries are only partly real. Some are explicit and well-bounde
 
 Contracts and interfaces are stronger in docs than in some implementations. T81VM requires Axion to query execution mode, but the spec says the public `get_execution_mode()` surface is not yet exposed. Scheduling decisions are supposed to be Axion-visible, but the same spec says deterministic scheduling events are not yet first-class trace entries. Axion’s CanonFS observability is described as partial, and the Axion spec openly says its five subsystems are “architectural targets.” That is not fatal; it is evidence that some boundaries are still aspirational. ([GitHub][15])
 
-Naming consistency is weak. “Axion” names both the governance kernel and the operating-system track. The OS progress log explicitly says `Axion = operating system` while the Axion spec says the Axion Kernel is the supervisory intelligence above executable layers. That creates avoidable ambiguity at exactly the layer where the project most needs conceptual precision. ([GitHub][20])
+Naming consistency is weak. “Axion” names both the governance kernel and the operating-system track. The OS progress log explicitly says `Axion = operating system` while the Axion spec says the Axion Governance Kernel is the supervisory intelligence above executable layers. That creates avoidable ambiguity at exactly the layer where the project most needs conceptual precision. ([GitHub][20])
 
 Documentation is not fully aligned with implementation. The most obvious symptoms are version/status conflicts across README, releases, control center, specs, and build metadata. There is also a more structural issue: several subsystem README files emphasize that they are only navigation aids and do not change authority, which implies the project already recognizes doc-sprawl risk. That recognition is correct; the sprawl is visible. ([GitHub][1])
 

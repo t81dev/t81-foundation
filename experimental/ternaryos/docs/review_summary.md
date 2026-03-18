@@ -19,7 +19,7 @@ Naming note:
 - display: `VMSVGA`-shaped binding over the ternary framebuffer + TTF renderer
 
 The next kernel-integration path is now explicit in
-[RFC-00B3: Axion Kernel Architecture](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
+[RFC-00B3: Axion OS Architecture](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
 
 The official promotion target remains:
 

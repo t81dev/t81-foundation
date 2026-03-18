@@ -1,7 +1,7 @@
 # AX-M5 Evidence: Determinism Stewardship (Axion §1.1)
 
 **Evidence ID:** AX-M5-2026-03-04  
-**Specification Section:** Axion Kernel §1.1 - Determinism Stewardship  
+**Specification Section:** Axion Governance Kernel §1.1 - Determinism Stewardship
 **Target Date:** 2026-03-10 (Completed 2026-03-04)  
 **Status:** ✅ EVIDENCE COMPLETE
 

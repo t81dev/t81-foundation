@@ -76,7 +76,7 @@
 │  FFIDispatcher · FFILibraryRegistry                         │
 │  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
 └─────────────────────────────────────────────────────────────┘
-  Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
+  Experimental: TernaryOS (Axion OS) · Cognitive Tiers
 ```
 
 ### 关键部件
@@ -365,7 +365,7 @@ T81 Foundation 并非单一项目。它是一个多层的代码库，结合了�
 
 存在真正的分层模型。架构概述呈现了从 T81Lang 到 TISC、到 T81VM、到 Axion、到 CanonFS 的连贯链条，实验层被明确显示为可选的/非 DCP 的。DCP 和确定性注册表通过将保证缩小到指定的已验证表面来强化了这一点。这是架构自我意识的强烈标志。 ([GitHub][2])
 
-但是，子系统边界只是部分真实的。核心执行边界似乎相当真实：数据类型、ISA、解释器和选定的确定性序列化/测试表面。在这个核心之外，边界变得模糊。"Axion" 既指稳定堆栈中的治理内核，也指实验性操作系统。T81VM 规范是 Beta 阶段，而仪表板称其为 Stable 阶段。Axion 规范是 Alpha 阶段，而实现矩阵称 Axion Kernel 为 Stable 阶段。OS 进度文档仍然使用内部名称 `ternaryos`。这不是一个微小的措辞问题；这意味着架构有多个重叠的自我描述。 ([GitHub][6])
+但是，子系统边界只是部分真实的。核心执行边界似乎相当真实：数据类型、ISA、解释器和选定的确定性序列化/测试表面。在这个核心之外，边界变得模糊。"Axion" 既指稳定堆栈中的治理内核，也指实验性操作系统。T81VM 规范是 Beta 阶段，而仪表板称其为 Stable 阶段。Axion 规范是 Alpha 阶段，而实现矩阵称 Axion Governance Kernel 为 Stable 阶段。OS 进度文档仍然使用内部名称 `ternaryos`。这不是一个微小的措辞问题；这意味着架构有多个重叠的自我描述。 ([GitHub][6])
 
 接口部分显式部分隐式。规范在命名必需的行为、不变量和一致性程序方面做得很好。CI 还命名了对齐检查。但仍有几个关键接口被跟踪为不完整或间接：没有通过干净的公共 API 公开 VM 执行模式；调度器事件并非一等跟踪事件；主动的 Axion 非确定性检测仅实现部分。这意味着一些合约的规范比实现要好。 ([GitHub][8])
 
@@ -463,7 +463,7 @@ T81Lang 比众多实验性语言更成熟，因为它具备标准语法、类型
 | 规范与实现不匹配 | ISA，VM，Axion | 严重 | TISC 规范 1.1 与 README 中的 TISC 1.2；VM 规范 Beta 版与仪表板中的 Stable 版；Axion 规范 Alpha 版与矩阵中的 Stable 版 | 增加自动化状态同步检查，核对规范版本/状态、仪表板和 README。 ([GitHub][12]) |
 | 治理形式主义风险 | Axion，认知分层 | 高 | Axion 规范表示确定性管理是部分的；复杂性指标是部分的 | 将公开声明严格限制在已实现且经验证的实施点和钩子上。 ([GitHub][6]) |
 | 过度扩展 | 实验性，AI，OS，硬件 | 高 | DCP 剔除了众多外部表面，而 README/路线图涵盖了硬件、确定性云、认知 | 冻结针对外部表面的营销；在根目录文档中发布一份“核心 vs 研究”的对照图。 ([GitHub][9]) |
-| 术语/命名混乱 | Axion，TernaryOS，内核 | 高 | 进度日志称使用内部 `ternaryos` 的 Axion OS；规范将 Axion Kernel 作为监督层 | 持续重命名治理内核或操作系统内核，或者为它们添加前缀。 ([GitHub][7]) |
+| 术语/命名混乱 | Axion，TernaryOS，内核 | 高 | 进度日志称使用内部 `ternaryos` 的 Axion OS；规范将 Axion Governance Kernel 作为监督层 | 持续重命名治理内核或操作系统内核，或者为它们添加前缀。 ([GitHub][7]) |
 | 实验性内容扩散 | `experimental`, `experiments/ ai`, `legacy`, `internal`, notebooks/pdf/archive | 高 | 庞大的代码库表面，包含了大量支持状态不明的目录 | 按照顶层目录发布支持状态分类：核心维护、支持维护、实验性、遗留、归档、仅内部使用。 ([GitHub][1]) |
 | 测试盲区 | VM 调度，编译器重现，JIT | 中 | 调度跟踪事件不是一级事件；编译器生成部分；JIT 未包含在 DCP 中 | 在进一步扩展功能之前，将缺失的跟踪面提升为一级测试。 ([GitHub][8]) |
 | 维护风险 | 文档 + 代码 + 仪表板 | 中 | 庞大的文档网络，包含多个状态仪表板和权力层级 | 从机器可读的元数据中生成矩阵/仪表板。 ([GitHub][2]) |

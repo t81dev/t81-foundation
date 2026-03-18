@@ -49,7 +49,7 @@ La pila ofrece:
 | **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, administrador de sesiones, shell t81sh; 15/15 criterios de aceptación implementados; secuencia de arranque, ciclo de vida de sesión y arquitectura de shell en funcionamiento |
 | **Cross-Platform Determinism CI** | ✅ Stable | Flujo de trabajo diario de GitHub Actions que compara hashes de código de bytes de T81Lang en Linux x86\_64 (gcc-14) y macOS ARM64 (clang); registro de evidencia auditable públicamente; validación de determinismo multiplataforma lista para producción |
 | **Hanoi VM** | ✅ Alpha | RFC-0000 §4 arranque centrado en la ética; programador determinista de 81 ranuras; gestión de instantáneas; RFC-0000 §7 superficie de comandos (status, optimize, simulate, snapshot, rollback); conjunto de pruebas completo; microkernel listo para Alpha |
-| **Axion OS Kernel** | ✅ Alpha | Sistema completo de gobernanza con 100% de cobertura de pruebas (28/28 pruebas); motor de políticas listo para producción y evaluación de ética; Principios Θ₁-Θ₉ completamente implementados; documentación completa de API y ejemplos de integración; kernel listo para Alpha con toma de decisiones determinista y completa integración con la pila T81 |
+| **Axion OS** | ✅ Alpha | Sistema completo de gobernanza con 100% de cobertura de pruebas (28/28 pruebas); motor de políticas listo para producción y evaluación de ética; Principios Θ₁-Θ₉ completamente implementados; documentación completa de API y ejemplos de integración; kernel listo para Alpha con toma de decisiones determinista y completa integración con la pila T81 |
 
 ---
 
@@ -78,7 +78,7 @@ La pila ofrece:
 │  FFIDispatcher · FFILibraryRegistry                         │
 │  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
 └─────────────────────────────────────────────────────────────┘
-  Experimental: TernaryOS (Axion OS Kernel) · Cognitive Tiers
+  Experimental: TernaryOS (Axion OS) · Cognitive Tiers
 ```
 
 ### Componentes clave
@@ -291,7 +291,7 @@ Propósito: Inmutabilidad centrada en su contenido de origen con un alcance perm
 
 ### Núcleo / SO / Axion OS surfaces
 
-Propósito: base estructural que conforma el operativo, gestor, procesador, rutinas MMU y del tipo HAL, sistemas de arranque e intercomunicaciones. Ubicaciones principales: `experimental/ternaryos/`, `kernel/`, información referida sobre los procesos al OS. Madurez: host en desarrollo de fases experimentales que avanza y demuestra consistencias fuertes, aún no está consolidado al completo. Riesgo clave: confunciones acerca del Axion Kernel y el Axion-como-kernel de gobernanza operativo. ([GitHub][7])
+Propósito: base estructural que conforma el operativo, gestor, procesador, rutinas MMU y del tipo HAL, sistemas de arranque e intercomunicaciones. Ubicaciones principales: `experimental/ternaryos/`, `kernel/`, información referida sobre los procesos al OS. Madurez: host en desarrollo de fases experimentales que avanza y demuestra consistencias fuertes, aún no está consolidado al completo. Riesgo clave: confunciones acerca del Axion Governance Kernel y el Axion-como-kernel de gobernanza operativo. ([GitHub][7])
 
 ### Inteligencia Artificial / IA
 
@@ -419,7 +419,7 @@ El trabajo en el sistema operativo es considerablemente más profundo que una no
 
 Pero todavía es mejor clasificarlo como un prototipo alojado avanzado, no un kernel completo. El registro de progreso describe repetidamente las rutas de simulación alojadas, las rutas de desarrollo QEMU, las estructuras de VirtualBox, los paquetes de transferencia de artefactos recuperados y el trabajo abierto del adaptador de hardware real. La arquitectura avanza a través de fragmentos por etapas y la validación respaldada por la simulación, lo cual es respetable, pero no es lo mismo que un sistema operativo autónomo maduro. ([GitHub][7])
 
-La división de nombres también importa. "Axion" se refiere al sistema operativo en el registro de progreso, mientras que la especificación define "Axion Kernel" como la capa de inteligencia de supervisión del ecosistema. Estos conceptos están relacionados, pero no son idénticos. Ese conflicto de nombres seguirá causando confusión hasta que el repositorio trace una línea semántica más estricta. ([GitHub][7])
+La división de nombres también importa. "Axion" se refiere al sistema operativo en el registro de progreso, mientras que la especificación define "Axion Governance Kernel" como la capa de inteligencia de supervisión del ecosistema. Estos conceptos están relacionados, pero no son idénticos. Ese conflicto de nombres seguirá causando confusión hasta que el repositorio trace una línea semántica más estricta. ([GitHub][7])
 
 Veredicto: actualmente, este es un prototipo arquitectónico avanzado / sustrato de sistema operativo parcial con subsistemas reales, que aún no es un sistema operativo de uso general o de producción. ([GitHub][7])
 
@@ -461,7 +461,7 @@ La mayor amenaza es la pérdida de credibilidad a través del desvío debido a l
 | Desajuste entre las especificaciones y la implementación | ISA, VM, Axion | Crítica | Especificación de TISC 1.1 frente a README TISC 1.2; especificación beta de la VM frente a Panel de control Estable; especificación Alpha de Axion frente a Matriz Estable | Agregar comprobaciones de sincronización automática de estado para la versión/el estado de la especificación frente a los paneles de control frente a README. ([GitHub][12]) |
 | Riesgo de teatro de la gobernanza | Axion, niveles cognitivos | Alta | La especificación de Axion indica que la administración del determinismo es parcial; las métricas de complejidad son parciales | Limitar las afirmaciones públicas únicamente a los ganchos implementados y los puntos de control verificados. ([GitHub][6]) |
 | Extensión excesiva | Experimental, Inteligencia Artificial (IA), Sistema Operativo (SO), hardware | Alta | El perfil de núcleo determinista (DCP) excluye muchas superficies exteriores, mientras que README y la hoja de ruta abarcan hardware, nube determinista, cognición | Congelar la comercialización de superficies exteriores; publicar un mapa de “núcleo versus investigación” en los documentos de la raíz. ([GitHub][9]) |
-| Confusión de terminología/nombres | Axion, TernaryOS, kernel | Alta | El registro de progreso dice sistema operativo (SO) Axion con el interno `ternaryos`; la especificación usa Axion Kernel como capa de supervisión | Cambiar de nombre o colocar prefijos en el kernel de gobernanza frente al kernel del sistema operativo sistemáticamente. ([GitHub][7]) |
+| Confusión de terminología/nombres | Axion, TernaryOS, kernel | Alta | El registro de progreso dice sistema operativo (SO) Axion con el interno `ternaryos`; la especificación usa Axion Governance Kernel como capa de supervisión | Cambiar de nombre o colocar prefijos en el kernel de gobernanza frente al kernel del sistema operativo sistemáticamente. ([GitHub][7]) |
 | Expansión experimental | `experimental`, `experiments/ ai`, `legacy`, `internal`, cuadernos/pdf/archivo | Alta | Amplia superficie del repositorio con muchos directorios de soporte/estado no claro | Publicar una taxonomía de estado de soporte por directorio de nivel superior: núcleo mantenido, soporte mantenido, experimental, legado, archivado, solo interno. ([GitHub][1]) |
 | Puntos ciegos de las pruebas | Programación de máquinas virtuales, reproducción de compiladores, JIT | Media | Los eventos de seguimiento de programación no son de primera clase; la emisión de compiladores es parcial; el JIT se excluye del DCP | Elevar las superficies de seguimiento faltantes a pruebas de primera clase antes de continuar con la expansión de funciones. ([GitHub][8]) |
 | Riesgo de mantenimiento | Documentos, código y paneles de control | Media | Reduxado marco de documentación con múltiples paneles de control de estado y capas de autoridad | Generar matrices/paneles de control a partir de metadatos legibles por máquinas. ([GitHub][2]) |

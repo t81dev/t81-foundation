@@ -7,7 +7,6 @@
 // derived from ternary codec operation. It MUST NOT be linked against by any
 // target in the deterministic core build (RFC-0032 §6.1).
 //
-// Relocated from experiments/ai/quantization/ternary_codec.cpp per RFC-0032 Phase 1 (C-01).
 
 #include "t81/math/quantization/ternary_codec.hpp"
 

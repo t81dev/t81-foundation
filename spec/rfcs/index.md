@@ -53,7 +53,7 @@ This index tracks RFC status and intended disposition.
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
-| RFC-00B3 | Axion Kernel Architecture | accepted | All §8 acceptance criteria met; two open questions resolved (capability model, device registry) |
+| RFC-00B3 | Axion Governance Kernel Architecture | accepted | All §8 acceptance criteria met; two open questions resolved (capability model, device registry) |
 | RFC-00B4 | Userland Service Contract | accepted | Stable service/runtime request and result boundary before syscall and ABI widening |
 | RFC-00B5 | Governed Event Interrupt Model | integrated | Slices 26–28 complete: WaitForDevice, interrupt policy gate, unhandled IRQ governance (UnhandledInterruptDropped); 3214/3214 assertions; open questions narrowed to policy/prioritization |
 | RFC-00B6 | Minimal Syscall and Capability Boundary | accepted | All §8 criteria met; open question resolved (Slice 22): `ClaimDevice`/`ReleaseDevice`/`QueryDevice` wired as `KernelCallKind` entries with ownership enforcement; proved by `[AC-22d-01..08]` |

@@ -1,7 +1,6 @@
 // tests/determinism/evidence_collector.cpp
 //
 // RFC-0032 Phase 5 (C-06): promoted determinism evidence collector.
-// Promoted from: experiments/ai/determinism/evidence_collector.cpp
 //
 // Violations removed:
 //   • std::chrono timing fields in ExecutionEvidence (wall-clock, non-deterministic)

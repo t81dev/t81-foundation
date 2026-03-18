@@ -1,0 +1,21 @@
+# ninja log v5
+1	29	1773793238431903649	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-mkdir	7fa94341948bc3ab
+1	29	1773793238431903649	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-mkdir	7fa94341948bc3ab
+29	852	1773793239255903639	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-download	19d7b51b3e9ada43
+29	852	1773793239255903639	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-download	19d7b51b3e9ada43
+853	879	1773793239279903639	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-update	bc20e12276b8acbe
+853	879	1773793239279903639	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-update	bc20e12276b8acbe
+879	904	1773793239307903639	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-patch	ed6b076d4c544990
+879	904	1773793239307903639	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-patch	ed6b076d4c544990
+904	929	1773793239331903638	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-configure	cf26286cfffc17c1
+904	929	1773793239331903638	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-configure	cf26286cfffc17c1
+929	952	1773793239355903638	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-build	e846d5a34d8eb548
+929	952	1773793239355903638	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-build	e846d5a34d8eb548
+953	977	1773793239379903638	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-install	90097abb11e0f276
+953	977	1773793239379903638	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-install	90097abb11e0f276
+977	1002	1773793239403903638	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-test	2ce5ad075947361
+977	1002	1773793239403903638	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-test	2ce5ad075947361
+1002	1039	1773793239439903637	CMakeFiles/ftxui-populate-complete	9a0fe849be6ae421
+1002	1039	1773793239439903637	ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-done	9a0fe849be6ae421
+1002	1039	1773793239439903637	/app/build-cxxstd/_deps/ftxui-subbuild/CMakeFiles/ftxui-populate-complete	9a0fe849be6ae421
+1002	1039	1773793239439903637	/app/build-cxxstd/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-done	9a0fe849be6ae421

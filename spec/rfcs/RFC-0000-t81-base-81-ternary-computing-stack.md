@@ -25,7 +25,7 @@ The T81 stack layers are:
 1. **T81Lang** — Base‑81‑native language with primitives `T81BigInt`, `T81Float`, `T81Fraction` and deterministic semantics.
 2. **TISC** — Ternary instruction set with modular arithmetic, tensor ops, and recursive control.
 3. **T81VM** — Deterministic runtime/JIT with tier promotion: **T81 → T243 → T729 → T2187 → T6561 → T19683**.
-4. **Axion OS Kernel** — Deterministic, capability‑native microkernel with a governed scheduler and ethics‑first boot.
+4. **Axion OS** — Deterministic, capability‑native microkernel with a governed scheduler and ethics‑first boot.
 5. **CanonFS** — Immutable, content‑addressed filesystem using **CanonHash‑81**, **CapabilityGrant**, **CanonParity**, and **CanonLink**.
 6. **Axion Governor** — Immutable, non‑self‑modifying AI that enforces Θ‑overlays, monitors entropy, vetoes unsafe transitions, and orchestrates snapshot/rollback.
 
@@ -51,7 +51,7 @@ All durable state **MUST** be persisted in CanonFS. Syscalls are total, determin
 - Exposes symbolic state for Axion introspection and trace export.
 - Faults are total and typed (e.g., `EthicsViolation`, `CapabilityDenied`).
 
-### 4. Axion OS Kernel Requirements
+### 4. Axion OS Requirements
 
 - Deterministic, policy-governed scheduler (RFC-00B3).
 - Syscalls are total; Axion has veto/stop authority.

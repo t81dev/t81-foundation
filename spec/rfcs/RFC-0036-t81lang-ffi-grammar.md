@@ -32,7 +32,7 @@ policy_qualifier = "deterministic" | "governed" | "quarantined"
 foreign_fn    = "fn" IDENTIFIER "(" param_list? ")" "->" type ";"
 ```
 
-The policy qualifier is optional; omitting it defaults to the Axion Kernel's
+The policy qualifier is optional; omitting it defaults to the Axion Governance Kernel's
 ambient enforcement policy for the current execution context.
 
 ### 2.1  Call syntax

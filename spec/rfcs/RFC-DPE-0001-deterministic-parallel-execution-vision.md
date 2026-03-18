@@ -6,7 +6,7 @@
 **Created:** 2026-03-14
 **Updated:** 2026-03-14
 **Author:** @t81dev
-**Depends on:** RFC-0002 (Deterministic Execution Contract), RFC-00B1 (Ternary MMU), RFC-00B3 (Axion Kernel Architecture)
+**Depends on:** RFC-0002 (Deterministic Execution Contract), RFC-00B1 (Ternary MMU), RFC-00B3 (Axion Governance Kernel Architecture)
 **Superseded-By:** —
 **See also:** RFC-DPE-0002 (TISC Task Graph Primitives), RFC-DPE-0003 (Epoch Execution and Canonical Commit)
 

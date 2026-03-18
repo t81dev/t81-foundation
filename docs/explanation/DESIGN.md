@@ -9,7 +9,7 @@ ______________________________________________________________________
 - **Specification First:** The specifications in `/spec` are the source of truth. The implementation must conform to them. Any deviation in the code is considered a bug.
 - **Determinism by Default:** All components, especially the VM and T81Lang, must be deterministic. Any introduction of non-determinism (e.g., from I/O or entropy sources) must be explicit and managed.
 - **Ternary Native:** While the system runs on binary hardware, the *logical model* is balanced ternary. The implementation must preserve ternary semantics for arithmetic, rounding, and overflow, even when optimized.
-- **Safety and Introspection:** The Axion Kernel is a core part of the architecture, not an afterthought. All subsystems are designed to be introspectable, allowing higher-level components to monitor their invariants and behavior.
+- **Safety and Introspection:** The Axion Governance Kernel is a core part of the architecture, not an afterthought. All subsystems are designed to be introspectable, allowing higher-level components to monitor their invariants and behavior.
 
 ______________________________________________________________________
 

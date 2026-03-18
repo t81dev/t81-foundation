@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -713,7 +713,7 @@ Current spec version: **v1.2** (updated 2026-03-01).
 - **Type System** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
 - **Purity and Effects** → [`t81lang-spec.md`](t81lang-spec.md#3-purity-and-effects)
 
-## Axion Kernel
+## Axion Governance Kernel
 
 - **Responsibilities** → [`axion-kernel.md`](axion-kernel.md#1-responsibilities)
 - **Subsystems** → [`axion-kernel.md`](axion-kernel.md#2-subsystems)

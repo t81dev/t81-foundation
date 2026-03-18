@@ -70,7 +70,7 @@ QEMU virt AArch64 Platform:
 │   ├── Kernel Load Area (0x48000000)
 │   └── Exception Vectors (0x00000000)
 └── TernaryOS Kernel Integration
-    ├── Axion OS Kernel
+    ├── Axion OS
     ├── CanonFS File System
     └── T81VM Runtime
 ```

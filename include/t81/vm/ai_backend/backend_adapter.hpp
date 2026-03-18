@@ -7,7 +7,6 @@
 // attached as the governance engine, emitting pre-execution RFC-0032 §8.2
 // canonical event strings before each opcode.
 //
-// Replaces: experiments/ai/llm_backend/backend_adapter.cpp
 //
 // MUST NOT include <chrono>, <thread>, llama.cpp, or onnx_runtime headers.
 // All inference results are integer/ternary-typed (no floating-point timing).

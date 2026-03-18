@@ -6,7 +6,7 @@
 **Category:** Standards Track\
 **Status:** Final Draft — Authorized for canonfs-rs 1.0\
 **Target v1.0 Release:** Q4 2026\
-**Applies to:** T81 Architecture, HanoiVM, Axion Kernel, CanonNet, T243–T19683 tiers
+**Applies to:** T81 Architecture, HanoiVM, Axion Governance Kernel, CanonNet, T243–T19683 tiers
 
 ______________________________________________________________________
 

@@ -155,7 +155,7 @@ change. Target: 2026-05-15 alongside T81Lang Beta target.
 
 ### RISK-009 — Axion Alpha posture delays Beta promotion
 
-**Description:** Axion Kernel is Alpha with partial spec coverage. Gaps in
+**Description:** Axion Governance Kernel is Alpha with partial spec coverage. Gaps in
 clause-coverage and opcode dispatch concentration affect governance confidence
 for Beta promotion candidacy.
 

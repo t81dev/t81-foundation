@@ -1,7 +1,6 @@
 // kernel/axion/ai_model_loader.cpp
 //
 // TLOADHASH-gated AI model loader — RFC-0032 Phase 3 (C-03).
-// Promoted from experiments/ai/model_provenance/model_manager.cpp.
 //
 // Ad hoc hash verification has been replaced with Axion policy evaluation.
 // Model loading is exclusively gated by the TLOADHASH path in PolicyEngine

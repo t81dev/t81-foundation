@@ -6,7 +6,7 @@ applies_to:
 
 - T81Lang Specification
 - TISC Specification
-- Axion Kernel Specification
+- Axion Governance Kernel Specification
 Status: Superseded
 Type: standards-track
 Created: 2026-02-26

@@ -6,7 +6,7 @@ updated: 2026-03-15
 applies_to:
   - T81Lang Specification (§1, §3.5)
   - TISC Specification (AgentInvoke opcode)
-  - Axion Kernel Specification (AGENT_INVOKE audit event)
+  - Axion Governance Kernel Specification (AGENT_INVOKE audit event)
 ---
 
 ## Summary

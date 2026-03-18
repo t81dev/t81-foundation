@@ -28,7 +28,7 @@ public:
         uint64_t result_addr
     ) {
         if (!g_ffi_dispatcher) {
-            return std::unexpected(Trap::FFINotInitialized);
+            return t81::unexpected(Trap::FFINotInitialized);
         }
         
         // Extract function name from VM memory (simplified)
@@ -39,9 +39,10 @@ public:
         // Create FFI call context
         t81::ffi::FFICallContext context{
             .function_name = function_name,
-            .call_id = ++s_call_id_counter,
+            .function_type = t81::ffi::FFIType::Governed, // placeholder
             .caller_location = "VM_FFI_Call",
             .serialized_args = {}, // Would be populated from VM memory
+            .call_id = ++s_call_id_counter,
             .resource_cost = static_cast<uint32_t>(arg_count * 8)
         };
         
@@ -49,7 +50,7 @@ public:
         auto result = g_ffi_dispatcher->call(context);
         
         if (!result) {
-            return std::unexpected(Trap::FFIPolicyDenied);
+            return t81::unexpected(Trap::FFIPolicyDenied);
         }
         
         // Store result in VM memory at result_addr (simplified)
@@ -65,7 +66,7 @@ public:
         uint64_t version_hash_addr
     ) {
         if (!g_ffi_dispatcher) {
-            return std::unexpected(Trap::FFINotInitialized);
+            return t81::unexpected(Trap::FFINotInitialized);
         }
         
         // Extract library name and version hash from VM memory (simplified)
@@ -77,7 +78,7 @@ public:
         auto result = registry.register_library(library_name, version_hash, {});
         
         if (!result) {
-            return std::unexpected(Trap::FFIRegistrationError);
+            return t81::unexpected(Trap::FFIRegistrationError);
         }
         
         return {};
@@ -90,7 +91,7 @@ public:
         uint64_t policy_value
     ) {
         if (!g_ffi_dispatcher) {
-            return std::unexpected(Trap::FFINotInitialized);
+            return t81::unexpected(Trap::FFINotInitialized);
         }
         
         // Set resource quotas based on policy type
@@ -102,7 +103,7 @@ public:
                 g_ffi_dispatcher->set_resource_quota(1000000000, policy_value);
                 break;
             default:
-                return std::unexpected(Trap::FFIPolicyDenied);
+                return t81::unexpected(Trap::FFIPolicyDenied);
         }
         
         return {};

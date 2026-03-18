@@ -84,7 +84,7 @@
   - [x] Converter from GGUF / SafeTensors
   - [x] T3_K format parser & validation (see `promote_to_tensor` in `core/vm/vm.cpp`)
 
-## 6. Axion Kernel & Safety Invariants (section 12)
+## 6. Axion Governance Kernel & Safety Invariants (section 12)
 - [x] Full enforcement in VM loop (VM hooks `axion::check`)
 - [x] GC hooks for tensor lifetimes
   - [x+] Reference counting / mark-sweep integration (see `mark_and_sweep` in `core/vm/vm.cpp`)

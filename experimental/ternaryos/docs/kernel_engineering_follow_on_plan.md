@@ -1,4 +1,4 @@
-# Axion Kernel Engineering Follow-On Plan
+# Axion OS Engineering Follow-On Plan
 
 Date: 2026-03-13
 Basis: [kernel_architecture_audit.md](kernel_architecture_audit.md)

@@ -6,8 +6,8 @@ project(t81 LANGUAGES C CXX)
 
 # ---------- Version ----------
 set(T81_VERSION_MAJOR 1)
-set(T81_VERSION_MINOR 3)
-set(T81_VERSION_PATCH 6)
+set(T81_VERSION_MINOR 9)
+set(T81_VERSION_PATCH 0)
 set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
 
 # Generate version header
@@ -160,15 +160,6 @@ add_library(t81_core STATIC
   src/canonfs/persistent_driver.cpp
   core/determinism/canon_hash81.cpp
   core/math/t81_soft_math/t81_soft_math.cpp
-  experimental/hanoi/error.cpp
-  experimental/hanoi/in_memory_kernel.cpp
-  experimental/tiers/cog/promotion.cpp
-  experimental/tiers/cog/tier1/symbolic.cpp
-  experimental/tiers/cog/tier2/reflective.cpp
-  experimental/tiers/cog/tier3/recursive.cpp
-  experimental/tiers/cog/tier4/tier4_loop.cpp
-  experimental/distributed/distributed.cpp
-  experimental/tiers/cog/tier5/infinite.cpp
   src/codec/base243.cpp
   src/codec/base81.cpp
   src/codec/base81_balanced.cpp
@@ -193,6 +184,24 @@ target_include_directories(t81_tracing PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_sources(t81_core PRIVATE $<TARGET_OBJECTS:t81_tracing>)
+
+add_library(t81_experimental STATIC
+  experimental/hanoi/error.cpp
+  experimental/hanoi/in_memory_kernel.cpp
+  experimental/tiers/cog/promotion.cpp
+  experimental/tiers/cog/tier1/symbolic.cpp
+  experimental/tiers/cog/tier2/reflective.cpp
+  experimental/tiers/cog/tier3/recursive.cpp
+  experimental/tiers/cog/tier4/tier4_loop.cpp
+  experimental/distributed/distributed.cpp
+  experimental/tiers/cog/tier5/infinite.cpp
+)
+target_link_libraries(t81_experimental PUBLIC t81_core)
+target_compile_features(t81_experimental PUBLIC ${T81_CXX_STD_FEATURE})
+target_include_directories(t81_experimental PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 if(T81_IS_X86_64)
   set(T81_AVX2_SOURCE src/simd/base81_digits_avx2.cpp)
@@ -340,7 +349,7 @@ target_include_directories(t81_jit PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_sources(t81_vm PRIVATE $<TARGET_OBJECTS:t81_jit>)
-target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi)
+target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi t81_experimental)
 
 # =============================================================================
 # LLVM IR Backend (optional)
@@ -1887,10 +1896,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_tensor_unary_test PRIVATE t81_core)
 
   add_executable(t81_hanoi_integration_test tests/cpp/hanoi_integration_test.cpp)
-  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_axion)
+  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_experimental t81_axion)
 
   add_executable(t81_hanoi_command_surface_test tests/cpp/hanoi_command_surface_test.cpp)
-  target_link_libraries(t81_hanoi_command_surface_test PRIVATE t81_core t81_axion)
+  target_link_libraries(t81_hanoi_command_surface_test PRIVATE t81_core t81_experimental t81_axion)
 
   add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
   target_link_libraries(t81_vm_load_store_test PRIVATE t81_vm t81_core)
@@ -2175,28 +2184,28 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_cli_record_enum_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
   add_executable(t81_tier4_test tests/cpp/tier4_test.cpp)
-  target_link_libraries(t81_tier4_test PRIVATE t81_core t81_axion)
+  target_link_libraries(t81_tier4_test PRIVATE t81_core t81_axion t81_experimental)
 
   add_executable(t81_tier5_test tests/cpp/tier5_test.cpp)
-  target_link_libraries(t81_tier5_test PRIVATE t81_core)
+  target_link_libraries(t81_tier5_test PRIVATE t81_core t81_experimental)
 
   add_executable(t81_infinite_opcodes_test tests/cpp/test_infinite_opcodes.cpp)
-  target_link_libraries(t81_infinite_opcodes_test PRIVATE t81_vm t81_isa t81_core)
+  target_link_libraries(t81_infinite_opcodes_test PRIVATE t81_vm t81_isa t81_core t81_experimental)
 
   add_executable(t81_tier4_vm_test tests/cpp/tier4_vm_test.cpp)
-  target_link_libraries(t81_tier4_vm_test PRIVATE t81_vm t81_core)
+  target_link_libraries(t81_tier4_vm_test PRIVATE t81_vm t81_core t81_experimental)
 
   add_executable(t81_tier4_distributed_test tests/cpp/test_tier4_distributed.cpp)
-  target_link_libraries(t81_tier4_distributed_test PRIVATE t81_vm t81_core)
+  target_link_libraries(t81_tier4_distributed_test PRIVATE t81_vm t81_core t81_experimental)
 
   add_executable(tiers_structure_test tests/cpp/tiers_structure_test.cpp)
-  target_link_libraries(tiers_structure_test PRIVATE t81_core)
+  target_link_libraries(tiers_structure_test PRIVATE t81_core t81_experimental)
 
   add_executable(vm_reflection_tier2_test tests/cpp/vm_reflection_tier2_test.cpp)
-  target_link_libraries(vm_reflection_tier2_test PRIVATE t81_vm t81_isa t81_core)
+  target_link_libraries(vm_reflection_tier2_test PRIVATE t81_vm t81_isa t81_core t81_experimental)
   add_test(NAME vm_reflection_tier2_test COMMAND vm_reflection_tier2_test)
   add_executable(reflective_evidence_replay_test tests/cpp/reflective_evidence_replay_test.cpp)
-  target_link_libraries(reflective_evidence_replay_test PRIVATE t81_core)
+  target_link_libraries(reflective_evidence_replay_test PRIVATE t81_core t81_experimental)
   add_test(NAME reflective_evidence_replay_test COMMAND reflective_evidence_replay_test)
 
   add_executable(t81_jit_test tests/cpp/jit_test.cpp)
@@ -2481,7 +2490,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   target_link_libraries(test_T81Tensor_transpose PRIVATE t81_core)
 
   add_executable(performance_advancements_test tests/cpp/performance_advancements_test.cpp)
-  target_link_libraries(performance_advancements_test PRIVATE t81_core t81_axion)
+  target_link_libraries(performance_advancements_test PRIVATE t81_core t81_axion t81_experimental)
 
   add_executable(t81_distributed_tensor_test tests/cpp/distributed_tensor_test.cpp)
   target_link_libraries(t81_distributed_tensor_test PRIVATE t81_core)
@@ -3013,7 +3022,7 @@ if(T81_BUILD_TESTS)
   add_test(NAME t81_symbolic_vm_test COMMAND t81_symbolic_vm_test)
 
   add_executable(tier1_rewrite_confluence_test tests/cpp/tier1_rewrite_confluence_test.cpp)
-  target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core)
+  target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core t81_experimental)
   add_test(NAME tier1_rewrite_confluence_test COMMAND tier1_rewrite_confluence_test)
 
   add_executable(test_t81float_scientific tests/cpp/test_t81float_scientific.cpp)
@@ -3080,6 +3089,7 @@ set(T81_INSTALL_TARGETS
   t81_lang_frontend
   t81_isa
   t81_vm
+  t81_experimental
   t81_llvm
   t81_mlir
   t81_tool_cli
