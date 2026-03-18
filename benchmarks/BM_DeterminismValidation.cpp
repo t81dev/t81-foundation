@@ -38,12 +38,13 @@ using t81::tisc::Program;
 // Deterministically produces r4 = 324 every run.
 Program make_arith_workload() {
   Program p;
-  p.insns.push_back({Opcode::LoadImm, 0, 81, 0});   // r0 = 81
-  p.insns.push_back({Opcode::LoadImm, 1, 27, 0});   // r1 = 27
-  p.insns.push_back({Opcode::Add,     2, 0, 1});    // r2 = r0 + r1
-  p.insns.push_back({Opcode::LoadImm, 3, 3, 0});    // r3 = 3
-  p.insns.push_back({Opcode::Mul,     4, 2, 3});    // r4 = r2 * r3
-  p.insns.push_back({Opcode::Halt,    0, 0, 0});
+  p.insns.reserve(6);
+  p.insns.push_back(Insn{Opcode::LoadImm, 0, 81, 0, t81::tisc::LiteralKind::Int});  // r0 = 81
+  p.insns.push_back(Insn{Opcode::LoadImm, 1, 27, 0, t81::tisc::LiteralKind::Int});  // r1 = 27
+  p.insns.push_back(Insn{Opcode::Add, 2, 0, 1, t81::tisc::LiteralKind::Int});       // r2 = r0 + r1
+  p.insns.push_back(Insn{Opcode::LoadImm, 3, 3, 0, t81::tisc::LiteralKind::Int});   // r3 = 3
+  p.insns.push_back(Insn{Opcode::Mul, 4, 2, 3, t81::tisc::LiteralKind::Int});       // r4 = r2 * r3
+  p.insns.push_back(Insn{Opcode::Halt, 0, 0, 0, t81::tisc::LiteralKind::Int});
   return p;
 }
 
@@ -51,14 +52,15 @@ Program make_arith_workload() {
 // of the dispatch loop.
 Program make_arith_chain_workload() {
   Program p;
+  p.insns.reserve(82);
   // Seed r0 = 1
-  p.insns.push_back({Opcode::LoadImm, 0, 1, 0});
+  p.insns.push_back(Insn{Opcode::LoadImm, 0, 1, 0, t81::tisc::LiteralKind::Int});
   // 40 iterations: r0 += i  (i = 1..40)
   for (int i = 1; i <= 40; ++i) {
-    p.insns.push_back({Opcode::LoadImm, 1, i, 0});  // r1 = i
-    p.insns.push_back({Opcode::Add,     0, 0, 1});  // r0 += r1
+    p.insns.push_back(Insn{Opcode::LoadImm, 1, i, 0, t81::tisc::LiteralKind::Int});
+    p.insns.push_back(Insn{Opcode::Add, 0, 0, 1, t81::tisc::LiteralKind::Int});
   }
-  p.insns.push_back({Opcode::Halt, 0, 0, 0});
+  p.insns.push_back(Insn{Opcode::Halt, 0, 0, 0, t81::tisc::LiteralKind::Int});
   return p;
 }
 
@@ -157,9 +159,9 @@ static void BM_DeterminismValidation_Arith(benchmark::State& state) {
   }
   const double score =
       (unique_hashes == 1 && total > 0) ? 1.0 : (1.0 - (unique_hashes - 1.0) / total);
-  state.counters["unique_hashes"]     = static_cast<double>(unique_hashes);
+  state.counters["unique_hashes"] = static_cast<double>(unique_hashes);
   state.counters["determinism_score"] = score;
-  state.counters["num_runs"]          = static_cast<double>(num_runs);
+  state.counters["num_runs"] = static_cast<double>(num_runs);
   state.SetLabel("CanonHash81 cross-run consistency");
 }
 BENCHMARK(BM_DeterminismValidation_Arith)->Arg(10)->Arg(50)->Repetitions(2);
@@ -179,9 +181,9 @@ static void BM_DeterminismValidation_ArithChain(benchmark::State& state) {
   }
   const double score =
       (unique_hashes == 1 && total > 0) ? 1.0 : (1.0 - (unique_hashes - 1.0) / total);
-  state.counters["unique_hashes"]     = static_cast<double>(unique_hashes);
+  state.counters["unique_hashes"] = static_cast<double>(unique_hashes);
   state.counters["determinism_score"] = score;
-  state.counters["num_runs"]          = static_cast<double>(num_runs);
+  state.counters["num_runs"] = static_cast<double>(num_runs);
   state.SetLabel("CanonHash81 chain cross-run consistency");
 }
 BENCHMARK(BM_DeterminismValidation_ArithChain)->Arg(10)->Arg(50)->Repetitions(2);

@@ -63,17 +63,14 @@ jobs:
       - name: Check for undefined macros
         run: |
           echo "Checking for undefined deterministic macros..."
-          if grep -r "T81_DETERMINISTIC_.*_AVAILABLE" include/; then
-            echo "❌ Found undefined deterministic macros"
-            exit 1
-          else
-            echo "✓ No undefined deterministic macros found"
-          fi
+          if grep -r "T81_DETERMINISTIC_.*_AVAILABLE" include/;
+then echo "❌ Found undefined deterministic macros" exit 1 else echo
+        "✓ No undefined deterministic macros found" fi
 
-      - name: Verify deterministic boundary documentation
-        run: |
-          echo "Checking deterministic boundary documentation..."
-          if [ -f "docs/status/AUDIT_REMEDIATION_CROSSWALK.md" ]; then
+        - name : Verify deterministic boundary documentation run
+    : |
+      echo "Checking deterministic boundary documentation..." if
+          [-f "docs/status/AUDIT_REMEDIATION_CROSSWALK.md"]; then
             echo "✓ Audit crosswalk exists"
           else
             echo "❌ Audit crosswalk missing"
@@ -100,29 +97,23 @@ jobs:
             "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp"
           )
           
-          for file in "${test_files[@]}"; do
-            if [ -f "$file" ]; then
-              echo "✓ $file exists"
-            else
-              echo "❌ $file missing"
-              exit 1
-            fi
-          done
+          for file in "${test_files[@]}";
+do
+  if
+    [-f "$file"];
+then echo "✓ $file exists" else echo "❌ $file missing" exit 1 fi done
 
-      - name: Verify deterministic iterator implementation
-        run: |
-          echo "Checking deterministic iterator implementation..."
-          if grep -q "deterministic_iterator" include/t81/types/T81Map.hpp; then
-            echo "✓ Deterministic iterator implemented"
-          else
-            echo "❌ Deterministic iterator missing"
-            exit 1
-          fi
+        - name : Verify deterministic iterator implementation run
+    : |
+      echo "Checking deterministic iterator implementation..." if grep -
+          q "deterministic_iterator" include / t81 / types / T81Map.hpp;
+then echo "✓ Deterministic iterator implemented" else echo
+        "❌ Deterministic iterator missing" exit 1 fi
 
-      - name: Check T81Float deterministic guards
-        run: |
-          echo "Checking T81Float deterministic guards..."
-          if grep -q "not available in current dmath implementation" include/t81/types/T81Float.hpp; then
+        - name : Check T81Float deterministic guards run
+    : |
+      echo "Checking T81Float deterministic guards..." if grep -
+          q "not available in current dmath implementation" include / t81 / types / T81Float.hpp; then
             echo "✓ T81Float has explicit rejection comments"
           else
             echo "❌ T81Float missing explicit rejection comments"
@@ -140,11 +131,8 @@ jobs:
             "docs/records/status-history/AXION_STATUS.md"
           )
           
-          for doc in "${status_docs[@]}"; do
-            if [ -f "$doc" ]; then
-              echo "✓ $doc exists"
-            else
-              echo "❌ $doc missing"
-              exit 1
-            fi
-          done
+          for doc in "${status_docs[@]}";
+do
+  if
+    [-f "$doc"];
+then echo "✓ $doc exists" else echo "❌ $doc missing" exit 1 fi done

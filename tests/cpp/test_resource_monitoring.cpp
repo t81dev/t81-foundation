@@ -7,7 +7,7 @@
 using namespace t81;
 using namespace t81::tisc;
 
-static void fail(const char* msg) {
+[[noreturn]] static void fail(const char* msg) {
   std::cerr << "test_resource_monitoring failure: " << msg << "\n";
   std::exit(1);
 }
@@ -15,7 +15,6 @@ static void fail(const char* msg) {
 static bool expect(bool cond, const char* msg) {
   if (!cond) {
     fail(msg);
-    return false;
   }
   return true;
 }
