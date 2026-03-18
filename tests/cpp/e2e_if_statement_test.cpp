@@ -23,7 +23,7 @@ void test_if_statement_true() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 1 &&
                  "VM register R1 has incorrect value for true branch");
@@ -48,7 +48,7 @@ void test_if_statement_false() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 0 &&
                  "VM register R1 has incorrect value for false branch");
@@ -73,7 +73,7 @@ void test_if_else_statement() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 123 &&
                  "VM register R1 has incorrect value for else branch");
