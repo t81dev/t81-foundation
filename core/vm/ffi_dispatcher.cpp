@@ -8,7 +8,11 @@
 
 #include <chrono>
 #include <unordered_map>
+#ifndef _WIN32
 #include <dlfcn.h>
+#else
+#include <windows.h>
+#endif
 #include <cstring>
 #include <algorithm>
 
@@ -22,10 +26,10 @@ class FFIInstructions {
 public:
     // FFI_CALL - Call foreign function with governance
     static std::expected<void, Trap> ffi_call(
-        State& state,
-        uint8_t function_index,
+        [[maybe_unused]] State& state,
+        [[maybe_unused]] uint8_t function_index,
         uint64_t arg_count,
-        uint64_t result_addr
+        [[maybe_unused]] uint64_t result_addr
     ) {
         if (!g_ffi_dispatcher) {
             return t81::unexpected(Trap::FFINotInitialized);
@@ -61,9 +65,9 @@ public:
     
     // FFI_REGISTER - Register foreign library
     static std::expected<void, Trap> ffi_register(
-        State& state,
-        uint64_t library_name_addr,
-        uint64_t version_hash_addr
+        [[maybe_unused]] State& state,
+        [[maybe_unused]] uint64_t library_name_addr,
+        [[maybe_unused]] uint64_t version_hash_addr
     ) {
         if (!g_ffi_dispatcher) {
             return t81::unexpected(Trap::FFINotInitialized);
@@ -86,7 +90,7 @@ public:
     
     // FFI_POLICY_SET - Set FFI policy
     static std::expected<void, Trap> ffi_policy_set(
-        State& state,
+        [[maybe_unused]] State& state,
         uint64_t policy_type,
         uint64_t policy_value
     ) {
