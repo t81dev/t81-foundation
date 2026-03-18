@@ -35,14 +35,19 @@ static int g_pass = 0;
 static int g_fail = 0;
 
 static void check(bool cond, const char* label) {
-  if (cond) { std::printf("  PASS  %s\n", label); ++g_pass; }
-  else       { std::printf("  FAIL  %s\n", label); ++g_fail; }
+  if (cond) {
+    std::printf("  PASS  %s\n", label);
+    ++g_pass;
+  } else {
+    std::printf("  FAIL  %s\n", label);
+    ++g_fail;
+  }
 }
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-static std::vector<std::unique_ptr<Stmt>> parse_source(const std::string& src,
-                                                        bool* had_error = nullptr) {
+[[maybe_unused]] static std::vector<std::unique_ptr<Stmt>> parse_source(const std::string& src,
+                                                                        bool* had_error = nullptr) {
   Lexer lex(src);
   Parser p(lex, "test");
   auto stmts = p.parse();
@@ -85,8 +90,7 @@ static void test_tnn_matmul() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TWMATMUL),
-        "[AC-1] std.tnn.matmul lowers to TWMATMUL");
+  check(has_opcode(instrs, Opcode::TWMATMUL), "[AC-1] std.tnn.matmul lowers to TWMATMUL");
 }
 
 // ─── AC-2: std.tnn.quant → TQUANT ───────────────────────────────────────────
@@ -101,8 +105,7 @@ static void test_tnn_quant() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TQUANT),
-        "[AC-2] std.tnn.quant lowers to TQUANT");
+  check(has_opcode(instrs, Opcode::TQUANT), "[AC-2] std.tnn.quant lowers to TQUANT");
 }
 
 // ─── AC-3: std.tnn.attn → TATTN ─────────────────────────────────────────────
@@ -117,8 +120,7 @@ static void test_tnn_attn() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TATTN),
-        "[AC-3] std.tnn.attn lowers to TATTN");
+  check(has_opcode(instrs, Opcode::TATTN), "[AC-3] std.tnn.attn lowers to TATTN");
 }
 
 // ─── AC-4: std.tnn.embed → TWEMBED ──────────────────────────────────────────
@@ -133,8 +135,7 @@ static void test_tnn_embed() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TWEMBED),
-        "[AC-4] std.tnn.embed lowers to TWEMBED");
+  check(has_opcode(instrs, Opcode::TWEMBED), "[AC-4] std.tnn.embed lowers to TWEMBED");
 }
 
 // ─── AC-5: std.tnn.accum → TERNACCUM ────────────────────────────────────────
@@ -151,8 +152,7 @@ static void test_tnn_accum() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TERNACCUM),
-        "[AC-5] std.tnn.accum lowers to TERNACCUM");
+  check(has_opcode(instrs, Opcode::TERNACCUM), "[AC-5] std.tnn.accum lowers to TERNACCUM");
 }
 
 // ─── AC-6: std.tnn.act → TACT ───────────────────────────────────────────────
@@ -169,8 +169,7 @@ static void test_tnn_act() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TACT),
-        "[AC-6] std.tnn.act lowers to TACT");
+  check(has_opcode(instrs, Opcode::TACT), "[AC-6] std.tnn.act lowers to TACT");
 }
 
 // ─── AC-7: wrong arity is a SA error ────────────────────────────────────────
@@ -200,10 +199,10 @@ static void test_forward_pass_composition() {
     }
   )";
   auto instrs = lower(src);
-  check(has_opcode(instrs, Opcode::TQUANT),   "[AC-8] forward pass emits TQUANT");
+  check(has_opcode(instrs, Opcode::TQUANT), "[AC-8] forward pass emits TQUANT");
   check(has_opcode(instrs, Opcode::TWMATMUL), "[AC-8] forward pass emits TWMATMUL");
-  check(has_opcode(instrs, Opcode::TERNACCUM),"[AC-8] forward pass emits TERNACCUM");
-  check(has_opcode(instrs, Opcode::TACT),     "[AC-8] forward pass emits TACT");
+  check(has_opcode(instrs, Opcode::TERNACCUM), "[AC-8] forward pass emits TERNACCUM");
+  check(has_opcode(instrs, Opcode::TACT), "[AC-8] forward pass emits TACT");
 }
 
 // ─── main ─────────────────────────────────────────────────────────────────────
