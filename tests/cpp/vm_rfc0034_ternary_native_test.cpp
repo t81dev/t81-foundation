@@ -8,12 +8,12 @@
 #include "t81/tensor/ternary_native.hpp"
 #include "t81/vm/vm.hpp"
 
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 
 namespace {
 
-std::int32_t pack_reg_pair(std::int32_t first, std::int32_t second) {
+[[maybe_unused]] std::int32_t pack_reg_pair(std::int32_t first, std::int32_t second) {
   return static_cast<std::int32_t>((first & 0xFF) | ((second & 0xFF) << 8));
 }
 
@@ -71,10 +71,9 @@ int test_twmatmul_exact() {
 int test_tquant_determinism() {
   t81::tisc::Program p;
   // Floats spanning negative/zero/positive thresholds
-  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 5},
-      {-0.9f, -0.3f, 0.0f, 0.4f, 1.2f}));
+  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 5}, {-0.9f, -0.3f, 0.0f, 0.4f, 1.2f}));
 
-  p.insns.push_back(load_tensor(1, 1));       // R1 = src tensor
+  p.insns.push_back(load_tensor(1, 1));                      // R1 = src tensor
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});  // R2 = threshold=0 (int)
   p.insns.push_back({t81::tisc::Opcode::TQUANT, 3, 1, 2});
   p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
@@ -89,7 +88,10 @@ int test_tquant_determinism() {
     std::int64_t rh = vm->state().contexts[0].registers[3];
     const auto& out = *vm->state().tensors[static_cast<std::size_t>(rh - 1)];
     auto vals = out.snapshot_values();
-    if (run == 0) run1_vals = vals; else run2_vals = vals;
+    if (run == 0)
+      run1_vals = vals;
+    else
+      run2_vals = vals;
   }
   T81_TEST_CHECK(run1_vals == run2_vals);
   // All outputs must be exactly in {-1,0,+1}
@@ -98,8 +100,8 @@ int test_tquant_determinism() {
   }
   // -0.9 → -1, -0.3 → 0 (threshold=0 means snap_trit(x, 0): x>0→+1, x<0→-1)
   T81_TEST_CHECK(run1_vals[0] == -1.0f);
-  T81_TEST_CHECK(run1_vals[2] ==  0.0f);
-  T81_TEST_CHECK(run1_vals[4] ==  1.0f);
+  T81_TEST_CHECK(run1_vals[2] == 0.0f);
+  T81_TEST_CHECK(run1_vals[4] == 1.0f);
   return 0;
 }
 
@@ -110,7 +112,7 @@ int test_ternaccum_bigint() {
   t81::tisc::Program p;
   // wt = [1, -1, 0]   act = [1, 1, 1]  → dot = 1*1 + (-1)*1 + 0*1 = 0
   p.tensor_pool.push_back(t81::T729DynamicTensor({1, 3}, {1.0f, -1.0f, 0.0f}));
-  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 3}, {1.0f,  1.0f, 1.0f}));
+  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 3}, {1.0f, 1.0f, 1.0f}));
 
   p.insns.push_back(load_tensor(1, 1));  // R1 = wt
   p.insns.push_back(load_tensor(2, 2));  // R2 = act
@@ -136,8 +138,7 @@ int test_ternaccum_bigint() {
 int test_tact_step_determinism() {
   t81::tisc::Program p;
   // Input: values that test each threshold boundary
-  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 5},
-      {-1.0f, -0.3f, 0.0f, 0.4f, 1.0f}));
+  p.tensor_pool.push_back(t81::T729DynamicTensor({1, 5}, {-1.0f, -0.3f, 0.0f, 0.4f, 1.0f}));
 
   p.insns.push_back(load_tensor(1, 1));
   p.insns.push_back({t81::tisc::Opcode::LoadImm, 2,
@@ -158,13 +159,13 @@ int test_tact_step_determinism() {
   // -1.0 < -0.5 → -1
   T81_TEST_CHECK(vals[0] == -1.0f);
   // -0.3 is in [-0.5, 0.5] → 0
-  T81_TEST_CHECK(vals[1] ==  0.0f);
+  T81_TEST_CHECK(vals[1] == 0.0f);
   //  0.0 → 0
-  T81_TEST_CHECK(vals[2] ==  0.0f);
+  T81_TEST_CHECK(vals[2] == 0.0f);
   //  0.4 is in [-0.5, 0.5] → 0
-  T81_TEST_CHECK(vals[3] ==  0.0f);
+  T81_TEST_CHECK(vals[3] == 0.0f);
   //  1.0 > 0.5 → +1
-  T81_TEST_CHECK(vals[4] ==  1.0f);
+  T81_TEST_CHECK(vals[4] == 1.0f);
   return 0;
 }
 
@@ -179,13 +180,12 @@ int test_tact_quarantine_gate() {
   p.tensor_pool.push_back(t81::T729DynamicTensor({1, 4}, {1.0f, 1.0f, 1.0f, 1.0f}));
 
   // Policy: activation-ceiling max_nonzero_fraction = 0.2
-  p.axion_policy_text =
-      "(policy (tier 2)"
-      "  (activation-ceiling 0.2))";
+  p.axion_policy_text = "(policy (tier 2)"
+                        "  (activation-ceiling 0.2))";
 
   p.insns.push_back(load_tensor(1, 1));
-  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2,
-                     static_cast<std::int32_t>(t81::ops::kTActModeStep), 0});
+  p.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 2, static_cast<std::int32_t>(t81::ops::kTActModeStep), 0});
   p.insns.push_back({t81::tisc::Opcode::TACT, 3, 1, 2});
   p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
 
@@ -195,7 +195,8 @@ int test_tact_quarantine_gate() {
   // Without ceiling policy activated, SecurityFault may or may not fire depending
   // on whether the policy parser supports the activation-ceiling directive yet.
   // For now, we verify the VM runs without crashing.
-  // When ceiling parsing is wired: T81_TEST_CHECK(!res.has_value() || res.value() == t81::vm::Trap::SecurityFault);
+  // When ceiling parsing is wired: T81_TEST_CHECK(!res.has_value() || res.value() ==
+  // t81::vm::Trap::SecurityFault);
   (void)res;
   return 0;
 }
