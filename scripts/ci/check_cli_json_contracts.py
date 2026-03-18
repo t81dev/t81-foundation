@@ -77,11 +77,11 @@ def main() -> int:
                 f"{context}: schema mismatch (got={obj.get('schema')}, expected={expected_schema})"
             )
 
-    check_object_schema(["doctor", "--json"], "t81.doctor.v1", "doctor --json")
+    check_object_schema(["env", "doctor", "--json"], "t81.doctor.v1", "env doctor --json")
     check_object_schema(
-        ["test", "--json", "--list", "--build-dir", str(t81_bin.parent)],
+        ["code", "test", "--json", "--list", "--build-dir", str(t81_bin.parent)],
         "t81.test.v1",
-        "test --json --list",
+        "code test --json --list",
     )
 
     with tempfile.TemporaryDirectory(prefix="t81-cli-json-contracts-") as temp_dir:
@@ -94,9 +94,9 @@ def main() -> int:
             encoding="utf-8",
         )
         check_object_schema(
-            ["fmt", "--json", str(fmt_file)],
+            ["code", "fmt", "--json", str(fmt_file)],
             "t81.fmt.v1",
-            "fmt --json",
+            "code fmt --json",
         )
 
         # pkg check
@@ -106,9 +106,9 @@ def main() -> int:
             encoding="utf-8",
         )
         check_object_schema(
-            ["pkg", "check", str(manifest), "--json"],
+            ["internal", "pkg", "check", str(manifest), "--json"],
             "t81.pkg-check.v1",
-            "pkg check --json",
+            "internal pkg check --json",
         )
 
         # policy run

@@ -31,7 +31,7 @@ void test_let_statement_e2e() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   for (int i = 0; i < 5; ++i) {
     std::cout << "R" << i << " = " << vm->state().contexts[0].registers[i] << "\n";

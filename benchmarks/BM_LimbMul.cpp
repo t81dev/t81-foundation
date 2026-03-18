@@ -25,6 +25,11 @@ static void BM_LimbMul_Booth(benchmark::State& state) {
 }
 BENCHMARK(BM_LimbMul_Booth)->Unit(benchmark::kMillisecond);
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+
 static void BM_LimbMul_Booth_Binary(benchmark::State& state) {
     std::uint64_t a = 0x123456789abcdef0ULL;
     std::uint64_t b = 0x0fedcba987654321ULL;
@@ -32,7 +37,13 @@ static void BM_LimbMul_Booth_Binary(benchmark::State& state) {
     state.SetLabel("work: ops/iter=4096");
     for (auto _ : state) {
         for (int i = 0; i < kBatchOps; ++i) {
+#if defined(_MSC_VER) && !defined(__clang__)
+            // MSVC does not support __int128. Use _umul128
+            unsigned __int64 highProduct;
+            benchmark::DoNotOptimize(_umul128(a, b, &highProduct));
+#else
             benchmark::DoNotOptimize(static_cast<unsigned __int128>(a) * b);
+#endif
         }
     }
     state.SetItemsProcessed(state.iterations() * kBatchOps);
@@ -65,7 +76,12 @@ static void BM_LimbMul_Booth_Real_Binary(benchmark::State& state) {
     state.SetLabel("work: ops/iter=4096");
     for (auto _ : state) {
         for (int i = 0; i < kBatchOps; ++i) {
+#if defined(_MSC_VER) && !defined(__clang__)
+            unsigned __int64 highProduct;
+            benchmark::DoNotOptimize(_umul128(a, b, &highProduct));
+#else
             benchmark::DoNotOptimize(static_cast<unsigned __int128>(a) * b);
+#endif
         }
     }
     state.SetItemsProcessed(state.iterations() * kBatchOps);
@@ -146,11 +162,20 @@ static void BM_Limb54Mul_Booth_Binary(benchmark::State& state) {
     state.SetLabel("work: ops/iter=4096");
     for (auto _ : state) {
         for (int i = 0; i < kBatchOps; ++i) {
+#if defined(_MSC_VER) && !defined(__clang__)
+            unsigned __int64 highProduct;
+            benchmark::DoNotOptimize(_umul128(a, b, &highProduct));
+#else
             benchmark::DoNotOptimize(static_cast<unsigned __int128>(a) * b);
+#endif
         }
     }
     state.SetItemsProcessed(state.iterations() * kBatchOps);
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 BENCHMARK(BM_Limb54Mul_Booth_Binary)->Unit(benchmark::kMillisecond);
 
 static void BM_Limb54Add_KoggeStone(benchmark::State& state) {
