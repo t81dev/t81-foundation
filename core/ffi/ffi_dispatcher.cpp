@@ -4,7 +4,11 @@
 
 #include <chrono>
 #include <unordered_map>
+#ifndef _WIN32
 #include <dlfcn.h>
+#else
+#include <windows.h>
+#endif
 #include <cstring>
 #include <algorithm>
 
@@ -205,6 +209,7 @@ FFICallResult FFIDispatcher::execute_call_(
     
     try {
         // Load library if not already loaded
+#ifndef _WIN32
         void* handle = dlopen(function.library_name.c_str(), RTLD_LAZY);
         if (!handle) {
             return FFICallResult{
@@ -216,11 +221,23 @@ FFICallResult FFIDispatcher::execute_call_(
                 .provenance_hash = ""
             };
         }
+#else
+        HMODULE handle = LoadLibraryA(function.library_name.c_str());
+        if (!handle) {
+            return FFICallResult{
+                .status = FFIResult::ExternalError,
+                .result = {},
+                .error_message = "Failed to load library",
+                .execution_time_ns = 0,
+                .audit_events = {"LibraryLoad"},
+                .provenance_hash = ""
+            };
+        }
         
         // Get function pointer
-        void* func_ptr = dlsym(handle, function.name.c_str());
+        void* func_ptr = (void*)GetProcAddress(handle, function.name.c_str());
         if (!func_ptr) {
-            dlclose(handle);
+            FreeLibrary(handle);
             return FFICallResult{
                 .status = FFIResult::ExternalError,
                 .result = {},
@@ -230,6 +247,7 @@ FFICallResult FFIDispatcher::execute_call_(
                 .provenance_hash = ""
             };
         }
+#endif
         
         // For deterministic functions, we could cache results
         if (function.type == FFIType::Deterministic) {
@@ -250,7 +268,11 @@ FFICallResult FFIDispatcher::execute_call_(
             cache_result_(cache_key, result);
         }
         
+#ifndef _WIN32
         dlclose(handle);
+#else
+        FreeLibrary(handle);
+#endif
         
         return result;
         
