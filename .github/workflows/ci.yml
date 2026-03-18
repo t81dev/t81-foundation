@@ -479,6 +479,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          mkdir -p .t81_canonfs/objects .t81_canonfs/snapshots
           python3 scripts/ci/check_cli_docs_smoke.py \
             --manual docs/user-guide/reference/cli-user-manual.md \
             --cwd . \

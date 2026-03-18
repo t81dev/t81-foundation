@@ -35,22 +35,22 @@ public:
   }
 
   // Stub other visitors as we don't expect them in this specific corpus
-  std::any visit(const CallExpr& expr) override { return std::string("call"); }
-  std::any visit(const MatchExpr& expr) override { return std::string("match"); }
-  std::any visit(const VectorLiteralExpr& expr) override { return std::string("vector"); }
-  std::any visit(const FieldAccessExpr& expr) override { return std::string("field"); }
-  std::any visit(const RecordLiteralExpr& expr) override { return std::string("record"); }
-  std::any visit(const EnumLiteralExpr& expr) override { return std::string("enum"); }
-  std::any visit(const SymbolLiteralExpr& expr) override { return std::string("symbol"); }
-  std::any visit(const InfiniteLiteralExpr& expr) override { return std::string("infinite"); }
-  std::any visit(const IndexExpr& expr) override { return std::string("index"); }
-  std::any visit(const BlockExpr& expr) override { return std::string("block"); }
-  std::any visit(const IfExpr& expr) override { return std::string("if"); }
-  std::any visit(const SimpleTypeExpr& expr) override { return std::string("type"); }
-  std::any visit(const GenericTypeExpr& expr) override { return std::string("generic_type"); }
-  std::any visit(const InferExpr& expr) override { return std::string("infer"); }
-  std::any visit(const SetLiteralExpr& expr) override { return std::string("set"); }
-  std::any visit(const MapLiteralExpr& expr) override { return std::string("map"); }
+  std::any visit(const CallExpr&) override { return std::string("call"); }
+  std::any visit(const MatchExpr&) override { return std::string("match"); }
+  std::any visit(const VectorLiteralExpr&) override { return std::string("vector"); }
+  std::any visit(const FieldAccessExpr&) override { return std::string("field"); }
+  std::any visit(const RecordLiteralExpr&) override { return std::string("record"); }
+  std::any visit(const EnumLiteralExpr&) override { return std::string("enum"); }
+  std::any visit(const SymbolLiteralExpr&) override { return std::string("symbol"); }
+  std::any visit(const InfiniteLiteralExpr&) override { return std::string("infinite"); }
+  std::any visit(const IndexExpr&) override { return std::string("index"); }
+  std::any visit(const BlockExpr&) override { return std::string("block"); }
+  std::any visit(const IfExpr&) override { return std::string("if"); }
+  std::any visit(const SimpleTypeExpr&) override { return std::string("type"); }
+  std::any visit(const GenericTypeExpr&) override { return std::string("generic_type"); }
+  std::any visit(const InferExpr&) override { return std::string("infer"); }
+  std::any visit(const SetLiteralExpr&) override { return std::string("set"); }
+  std::any visit(const MapLiteralExpr&) override { return std::string("map"); }
 
 private:
   std::string parenthesize(std::string_view name, std::vector<const Expr*> exprs) {
