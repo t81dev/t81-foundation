@@ -2986,15 +2986,31 @@ int run_policy_run(const Args& args) {
     error("policy run requires an input .apl or .axionb file. Run 't81 help policy run'.");
     return 1;
   }
+  auto emit_json_error = [&](std::string_view message) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.policy-run.v1\",\n";
+    std::cout << "  \"valid\": false,\n";
+    std::cout << "  \"policy\": \"" << json_escape(input.string()) << "\",\n";
+    std::cout << "  \"error\": \"" << json_escape(message) << "\"\n";
+    std::cout << "}\n";
+  };
   t81::axion::Policy policy;
   if (input.extension() == ".axionb") {
     std::ifstream ifs(input, std::ios::binary);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     auto res = t81::axion::Policy::deserialize(ifs);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy deserialization error: " + res.error());
+        return 1;
+      }
       error("Policy deserialization error: " + res.error());
       return 1;
     }
@@ -3002,12 +3018,20 @@ int run_policy_run(const Args& args) {
   } else {
     std::ifstream ifs(input);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     auto res = t81::axion::parse_policy(content);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy parse error: " + res.error());
+        return 1;
+      }
       error("Policy parse error: " + res.error());
       return 1;
     }
@@ -3075,15 +3099,31 @@ int run_policy_validate(const Args& args) {
         "policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
     return 1;
   }
+  auto emit_json_error = [&](std::string_view message) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.policy-validate.v1\",\n";
+    std::cout << "  \"valid\": false,\n";
+    std::cout << "  \"policy\": \"" << json_escape(input.string()) << "\",\n";
+    std::cout << "  \"error\": \"" << json_escape(message) << "\"\n";
+    std::cout << "}\n";
+  };
   t81::axion::Policy policy;
   if (input.extension() == ".axionb") {
     std::ifstream ifs(input, std::ios::binary);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     auto res = t81::axion::Policy::deserialize(ifs);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy deserialization error: " + res.error());
+        return 1;
+      }
       error("Policy deserialization error: " + res.error());
       return 1;
     }
@@ -3091,12 +3131,20 @@ int run_policy_validate(const Args& args) {
   } else {
     std::ifstream ifs(input);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     auto res = t81::axion::parse_policy(content);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy parse error: " + res.error());
+        return 1;
+      }
       error("Policy parse error: " + res.error());
       return 1;
     }
