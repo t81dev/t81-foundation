@@ -27,6 +27,19 @@ The stack delivers:
 
 ---
 
+## Table of Contents
+- [Project Status](#project-status)
+- [Architecture & Ecosystem Overview](#architecture--ecosystem-overview)
+- [Key Components](#key-components)
+- [Quick Start](#quick-start)
+- [Determinism Verification](#determinism-verification)
+- [Documentation](#documentation)
+- [Governance](#governance)
+- [The Ternary Advantage](#the-ternary-advantage)
+- [License](#license)
+
+---
+
 ## Project Status
 
 **Phase: Active Development** — v1.9.0-Stable; 369/369 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
