@@ -613,6 +613,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(axion_log_result.exit_code == 0);
     T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"schema\": \"t81.axion-log.v1\""));
     T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"tail\": 1"));
+    T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
 
     const auto axion_optimize_result = run_cli(t81_bin, {"axion", "optimize", "--tier", "2", "--json"});
     T81_TEST_CHECK(axion_optimize_result.exit_code == 0);
@@ -634,6 +635,11 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(axion_snapshot_diff_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(axion_snapshot_diff_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot-diff.v1\""));
+
+    const auto axion_audit_result = run_cli(t81_bin, {"axion", "audit", "--json"});
+    T81_TEST_CHECK(axion_audit_result.exit_code == 0);
+    T81_TEST_CHECK(contains(axion_audit_result.stdout_text, "\"schema\": \"t81.axion-audit.v1\""));
+    T81_TEST_CHECK(contains(axion_audit_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
 
     const auto weights_verify_help = run_cli(t81_bin, {"help", "weights", "verify"});
     T81_TEST_CHECK(weights_verify_help.exit_code == 0);

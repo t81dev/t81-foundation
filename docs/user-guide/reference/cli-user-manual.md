@@ -449,10 +449,13 @@ state file or a recorded active snapshot that no longer exists.
 `axion optimize` captures a fresh snapshot, records the requested tier, and reports manifest
 delta counts against the previous active snapshot.
 `axion log` reads the persisted Axion state from `<canonfs-root>/axion/state.json` and
-prints the current tier, active snapshot, and recent snapshot receipts. `--tail <n>` limits
-output to the last `n` entries. `--json` uses schema `t81.axion-log.v1`.
+prints the current tier, active snapshot, and recent snapshot history. `--tail <n>` limits
+output to the last `n` entries. `--json` uses schema `t81.axion-log.v1` and currently reports
+`receipt_persistence: "not_persisted"` because receipt storage is not implemented in the current
+release line.
 `axion audit` defaults to diffing the recorded active snapshot against the latest snapshot,
-which makes it useful as a quick “what changed since last governor state” check.
+which makes it useful as a quick “what changed since last governor state” check. The JSON surface
+also reports `receipt_persistence: "not_persisted"` for the same reason.
 `axion explain --json` uses schema `t81.axion-explain.v1`.
 `axion status --json` uses schema `t81.axion-status.v1`.
 `axion optimize --json` uses schema `t81.axion-optimize.v1`.
