@@ -39,7 +39,7 @@ extern "C" std::int64_t t81_ffi_bytes_checksum(const std::uint8_t* data, std::ui
 
 extern "C" t81::ffi::FFIByteSpanResult t81_ffi_bytes_result_bridge() {
   static const std::uint8_t payload[] = {0x41, 0x00, 0x42, 0x7f};
-  t81::ffi::FFIByteSpanResult result{};
+  t81::ffi::FFIByteSpanResult result;
   result.data = payload;
   result.size = static_cast<std::uint32_t>(sizeof(payload));
   return result;
@@ -51,7 +51,7 @@ extern "C" std::int64_t t81_ffi_mix_i64_strlen(std::int64_t base, const char* te
 
 extern "C" t81::ffi::FFIStringListResult t81_ffi_pair_strings_bridge() {
   static const char* payload[] = {"alpha", "beta"};
-  t81::ffi::FFIStringListResult result{};
+  t81::ffi::FFIStringListResult result;
   result.items = payload;
   result.count = 2;
   return result;
