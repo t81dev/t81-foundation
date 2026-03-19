@@ -1,7 +1,7 @@
 # Frozen Core Profile
 
 Status: Constitutional — Do Not Edit Without Major Version Bump
-Last Updated: 2026-03-14
+Last Updated: 2026-03-19
 Authority: `spec/tisc-spec.md` > `docs/product/DETERMINISTIC_CORE_PROFILE.md` > this document
 
 ## What This Document Is
@@ -88,10 +88,10 @@ The following are **outside the Frozen Core** and carry **no DCP guarantees**:
 | Cognitive Tiers | `experimental/tiers/` | Non-DCP | Experimental; consensus determinism not verified |
 | Hanoi VM | `experimental/hanoi/` | Non-DCP | Experimental kernel surface |
 | Distributed Compute | `experimental/distributed/` | Non-DCP | Network-layer; non-deterministic by design |
-| Axion Governance Kernel | `kernel/axion/` | Partially Verified | Alpha; scope-bounded — see `DRIFT_DECOMPOSITION.md` |
-| Axion OS | `experimental/ternaryos/` | Non-DCP | Alpha; experimental OS kernel path governed by RFC-00B3 and external promotion gates |
-| T81Lang Frontend | `lang/frontend/` | Beta | Draft spec; determinism partial (fixture-bounded) |
-| T81Graph | `lang/frontend/` (graph surface) | Draft | No determinism tests; no DCP scope |
+| Axion Governance Kernel | `kernel/axion/` | Governed non-DCP | Scope-bounded evidence exists, but broader kernel/governance behavior is outside the current DCP boundary |
+| Axion OS | `experimental/ternaryos/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates |
+| T81Lang Frontend | `lang/frontend/` | Governed non-DCP | Compiler/toolchain determinism remains partial and fixture-bounded; language-spec stability does not imply DCP promotion |
+| T81Graph | `lang/frontend/` (graph surface) | Governed non-DCP | Useful implemented surface, but not a verified deterministic surface as a whole |
 | llama.cpp adapter | `third_party/llama.cpp`, `tooling/model/` | Governed non-DCP | AGI inference; practical reproducibility only |
 | Hardware FPU | — | Excluded | Platform-dependent; use `T81Float` soft-float instead |
 | Network IO | — | Excluded | Non-deterministic by design |
@@ -144,3 +144,4 @@ unresolved regardless of PR scope.
 - `docs/governance/FREEZE_ENFORCEMENT.md` (breach protocol)
 - `docs/status/DRIFT_DECOMPOSITION.md` (where the core drifts)
 - `docs/status/DETERMINISM_AUDIT_LOG.md` (audit history)
+- `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md` (surface classification boundary)
