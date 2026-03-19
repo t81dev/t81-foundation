@@ -59,6 +59,8 @@ This index tracks RFC status and intended disposition.
 | RFC-0046 | Deterministic Scheduling and Execution Ordering | draft | Defines the constitutional scheduling rule across program order, dependency order, canonical commit order, and future multi-core/distributed execution |
 | RFC-0047 | Deterministic JIT and Lowering Rules | draft | Constrains Trace-JIT and future lowering-based acceleration so optimization remains interpreter-equivalent, policy-boundary-safe, and subordinate to backend/memory/scheduling governance |
 | RFC-0048 | Deterministic Surface Definition and Governance Boundaries | draft | Defines the constitutional classes for DCP, governed non-DCP, experimental, and out-of-scope surfaces, plus the promotion/demotion rules that control deterministic claims |
+| RFC-0049 | Canonical Ternary Arithmetic Semantics | draft | Defines the mathematical oracle for addition, subtraction, multiplication, comparison, carry, normalization, and overflow so every governed backend shares one arithmetic contract |
+| RFC-0050 | Vectorized Ternary Operations for TISC | draft | Defines when vector execution is an ISA/VM semantic surface versus an internal backend optimization, including lane ordering, width, trace, and fallback rules |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
