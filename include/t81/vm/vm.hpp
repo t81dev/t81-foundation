@@ -18,6 +18,10 @@ namespace t81::axion {
 class DeterminismDetector;
 }  // namespace t81::axion
 
+namespace t81::canonfs {
+class Driver;
+}  // namespace t81::canonfs
+
 namespace t81::vm {
 
 class IVirtualMachine {
@@ -49,6 +53,11 @@ public:
   /// Attach a CanonFS driver rooted at the given path.
   /// Overrides T81_CANONFS_ROOT for this VM instance.
   virtual void set_canonfs_root(const std::filesystem::path& /*root*/) {}
+
+  /// Attach a CanonFS driver directly.
+  /// Intended for tests and benchmarks that need a preloaded non-persistent
+  /// fixture while exercising the same VM load path.
+  virtual void set_canonfs_driver(std::shared_ptr<t81::canonfs::Driver> /*driver*/) {}
   
   /// Initialize FFI subsystem with policy engine
   virtual void initialize_ffi_subsystem(t81::axion::Engine& policy_engine) = 0;

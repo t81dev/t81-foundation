@@ -393,6 +393,11 @@ public:
         event.value = 0;
         event.verdict.kind = t81::axion::VerdictKind::Deny;
         event.verdict.reason = parse_error;
+        event.structured.reason = parse_error;
+        event.structured.decision = "deny";
+        event.structured.event_type = "policy_parse_failure";
+        event.structured.reason_code = "AXION_POLICY_PARSE_FAILED";
+        event.structured.pc = 0;
         state_.axion_log.push_back(event);
       }
     }
@@ -6937,7 +6942,12 @@ public:
   void set_canonfs_root(const std::filesystem::path& root) override {
     std::error_code ec;
     std::filesystem::create_directories(root, ec);
-    canonfs_driver_ = t81::canonfs::make_persistent_driver(root);
+    canonfs_driver_ = std::shared_ptr<t81::canonfs::Driver>(
+        t81::canonfs::make_persistent_driver(root).release());
+  }
+
+  void set_canonfs_driver(std::shared_ptr<t81::canonfs::Driver> driver) override {
+    canonfs_driver_ = std::move(driver);
   }
   
   void initialize_ffi_subsystem(t81::axion::Engine& policy_engine) override {
@@ -7397,7 +7407,7 @@ private:
   State state_{};
   t81::tisc::Program program_{};
   std::unique_ptr<t81::axion::Engine> axion_engine_;
-  std::unique_ptr<t81::canonfs::Driver> canonfs_driver_;
+  std::shared_ptr<t81::canonfs::Driver> canonfs_driver_;
   t81::axion::DeterminismDetector* determinism_detector_{nullptr};
   static constexpr std::size_t kGcInterval  = 64;
   /// RFC-0006 §2.3: canonical byte threshold = 3^12 = 531441 bytes.

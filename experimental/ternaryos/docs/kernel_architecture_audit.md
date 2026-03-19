@@ -473,7 +473,7 @@ The shell is a hosted durable-session demo, not yet userland.
 
 Reference:
 
-- [shell_session.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/shell/shell_session.cpp)
+- [shell_session.cpp](/Users/t81dev/Code/t81-foundation/src/axion/shell/shell_session.cpp)
 
 What it proves:
 
