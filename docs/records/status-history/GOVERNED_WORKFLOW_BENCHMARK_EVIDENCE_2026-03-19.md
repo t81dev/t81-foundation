@@ -49,6 +49,7 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 - `BM_GovernedCLI_VMTrace_Export_Accumulator`
 - `BM_GovernedCLI_VMTrace_Export_SystemIntegration`
 - `BM_GovernedCLI_VMTrace_Export_WithPolicy`
+- `BM_GovernedCLI_VMTrace_Export_NeuralNet`
 - `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
@@ -75,6 +76,7 @@ Current local run:
 | `BM_GovernedCLI_VMTrace_Export_Accumulator` | `8.20 ms` | same subprocess path on the loop-oriented accumulator artifact, writing a `47`-byte trace file |
 | `BM_GovernedCLI_VMTrace_Export_SystemIntegration` | `9.19 ms` | same subprocess path on the richer system-integration artifact, writing a `970`-byte trace file |
 | `BM_GovernedCLI_VMTrace_Export_WithPolicy` | `8.47 ms` | same subprocess path on hello-world with `--policy examples/system_integration.apl`, writing a `118`-byte trace file |
+| `BM_GovernedCLI_VMTrace_Export_NeuralNet` | `9.94 ms` | same subprocess path on the tensor-heavy neural-net artifact, writing a `2523`-byte trace file |
 | `BM_GovernedCLI_AxionLog_JSON` | `12.82 ms` | end-to-end `t81 axion log --json` subprocess path, writing an `893`-byte JSON payload |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
@@ -176,6 +178,7 @@ Current local result:
 - `t81 vm trace <artifact> -o <trace>` on accumulator: about `8.20 ms`
 - `t81 vm trace <artifact> -o <trace>` on system-integration: about `9.19 ms`
 - `t81 vm trace <artifact> -o <trace> --policy examples/system_integration.apl`: about `8.47 ms`
+- `t81 vm trace <artifact> -o <trace>` on neural-net: about `9.94 ms`
 - `t81 axion log --json`: about `12.82 ms`
 
 The useful reading is:
@@ -188,6 +191,9 @@ The useful reading is:
   slowest case
 - the current simple policy-file case does not dominate the subprocess cost on
   this host; it sits in the same general band as the other `vm trace` runs
+- the tensor-heavy neural-net case produces the largest trace payload in the
+  current CLI trace set (`2523` bytes) and lands near the high end of the
+  runtime band, but still does not justify a simple bytes-to-time model
 - the five-layer stack now gives an honest decomposition from in-memory
   signature work up through end-to-end CLI export
 
@@ -278,5 +284,5 @@ difference.
    of only carrying the `4096` representative row here.
 2. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
    and cold-cache splits instead of one blended persistent path.
-3. Add tensor-heavy CLI export cases so the subprocess lane is not limited to
-   arithmetic/control-flow-heavy artifacts plus one simple policy case.
+3. Add a CanonFS-backed or weights-backed CLI export case so the subprocess
+   lane includes storage-governed AI/tensor paths, not just general VM traces.
