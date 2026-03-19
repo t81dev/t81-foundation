@@ -50,7 +50,7 @@ Clarify:
 | Surface | Scope | Guarantee | Verification Mechanism | CI Enforced | Status |
 | ------- | ----- | --------- | ---------------------- | ----------- | ------ |
 | **TISC Opcode Semantics** | Instruction Behavior | Bit-Exact | `tests/cpp/vm_determinism_property_test.cpp`<br>`tests/cpp/test_tritwise_backend_equivalence.cpp` | Yes (`ci.yml`) | **Verified** |
-| **VM Interpreter Execution** | Dispatch Loop | Bit-Exact | `tests/cpp/vm_trace_test.cpp`<br>`tests/cpp/vm_determinism_property_test.cpp` | Yes (`ci.yml`) | **Verified** |
+| **VM Interpreter Execution** | Dispatch Loop | Bit-Exact | `tests/cpp/vm_trace_test.cpp`<br>`tests/cpp/vm_determinism_property_test.cpp`<br>`tests/cpp/vm_tensor_get_set_conformance_test.cpp`<br>`tests/cpp/vm_state_transition_conformance_matrix_test.cpp` | Yes (`ci.yml`) | **Verified** |
 | **Data Type Canonical Encoding** | Binary Format (Trit/Tryte) | Bit-Exact | `tests/cpp/v1_canonical_numeric_contract_test.cpp`<br>`tests/cpp/tisc_binary_io_determinism_test.cpp` | Yes (`ci.yml`) | **Verified** |
 | **Soft-Float Deterministic Math** | `T81Float` Operations | Strict Rounding | `tests/cpp/test_T81Float_arithmetic.cpp`<br>`tests/cpp/test_T81Float_rounding.cpp` | Yes (`ci.yml`) | **Verified** |
 | **Compiler Bytecode Emission** | T81Lang to TISC | Bit-Exact (Fixtures) | `scripts/ci/t81lang_repro_gate.py` | Yes (`repro-ledger.yml`) | **Partial** |
@@ -113,6 +113,7 @@ Explicitly list areas that are:
 | Surface | Test Path | CI Job | Repro Script |
 | ------- | --------- | ------ | ------------ |
 | **TISC Execution** | `tests/cpp/vm_determinism_property_test.cpp` | `ci.yml` | N/A |
+| **VM Memory / State Determinism** | `tests/cpp/vm_tensor_get_set_conformance_test.cpp`<br>`tests/cpp/vm_state_transition_conformance_matrix_test.cpp` | `ci.yml` (`determinism-slice`) | N/A |
 | **Tritwise Ops** | `tests/cpp/test_tritwise_backend_equivalence.cpp` | `ci.yml` | N/A |
 | **Axion Epoch Runtime (scheduler + audit parity)** | `experimental/ternaryos/tests/epoch_submission_test.cpp`<br>`experimental/ternaryos/tests/epoch_audit_test.cpp` | `ci.yml` (`axion-epoch-determinism`) | N/A |
 | **Compiler Repro** | `tests/fixtures/t81lang_determinism/*.t81` | `repro-ledger.yml` | `scripts/ci/t81lang_repro_gate.py` |
