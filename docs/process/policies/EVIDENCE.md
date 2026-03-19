@@ -30,6 +30,7 @@ truth, not hand-maintained example hashes.
 | **TISC Binary (.tisc)** | `t81 code build` | `t81 internal repro-hash` / `t81lang_repro_gate.py` | *Varies by version (see CI logs)* |
 | **T3_K Quantized Model** | `t81 weights` | `scripts/ci/t3k_repro_gate.py` | *Varies by version (see CI logs)* |
 | **Trace Log** | `t81 trace` | `tests/cpp/vm_trace_test.cpp` | *Stable per minor version* |
+| **CLI Replay Bundle** | `scripts/ci/collect_cli_replay_bundle.py` | `cli_replay_bundle.sha256` + status-history evidence note | *Varies by commit (see latest replay bundle evidence)* |
 
 ## 3. Coverage Analysis
 

@@ -584,6 +584,21 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(policy_test_result.exit_code == 0);
     T81_TEST_CHECK(contains(policy_test_result.stdout_text, "\"schema\": \"t81.policy-test.v1\""));
 
+    const fs::path denied_policy_file = make_temp_path("t81-cli-policy-deny", ".apl");
+    {
+      std::ofstream out(denied_policy_file);
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-tensor-hashes [\"sha3-256:other-hash\"]))\n";
+    }
+    const auto policy_deny_result =
+        run_cli(t81_bin, {"policy", "test", denied_policy_file.string(), "--model-hash",
+                          "sha3-256:test-hash", "--json"});
+    T81_TEST_CHECK(policy_deny_result.exit_code == 1);
+    T81_TEST_CHECK(contains(policy_deny_result.stdout_text, "\"schema\": \"t81.policy-test.v1\""));
+    T81_TEST_CHECK(contains(policy_deny_result.stdout_text, "\"ok\": false"));
+    T81_TEST_CHECK(contains(policy_deny_result.stdout_text, "\"rule\": \"hash_not_allowed\""));
+
     const auto axion_explain_result =
         run_cli(t81_bin, {"axion", "explain", policy_file.string(), "--json"});
     T81_TEST_CHECK(axion_explain_result.exit_code == 0);
@@ -598,6 +613,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(axion_log_result.exit_code == 0);
     T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"schema\": \"t81.axion-log.v1\""));
     T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"tail\": 1"));
+    T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
 
     const auto axion_optimize_result = run_cli(t81_bin, {"axion", "optimize", "--tier", "2", "--json"});
     T81_TEST_CHECK(axion_optimize_result.exit_code == 0);
@@ -619,6 +635,11 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(axion_snapshot_diff_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(axion_snapshot_diff_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot-diff.v1\""));
+
+    const auto axion_audit_result = run_cli(t81_bin, {"axion", "audit", "--json"});
+    T81_TEST_CHECK(axion_audit_result.exit_code == 0);
+    T81_TEST_CHECK(contains(axion_audit_result.stdout_text, "\"schema\": \"t81.axion-audit.v1\""));
+    T81_TEST_CHECK(contains(axion_audit_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
 
     const auto weights_verify_help = run_cli(t81_bin, {"help", "weights", "verify"});
     T81_TEST_CHECK(weights_verify_help.exit_code == 0);
@@ -643,6 +664,26 @@ int main(int argc, char* argv[]) {
     const auto policy_validate_result = run_cli(t81_bin, {"policy", "validate", policy_file.string(), "--json"});
     T81_TEST_CHECK(policy_validate_result.exit_code == 0);
     T81_TEST_CHECK(contains(policy_validate_result.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+
+    const fs::path invalid_policy_file = make_temp_path("t81-cli-policy-invalid", ".apl");
+    {
+      std::ofstream out(invalid_policy_file);
+      out << "(policy (tier 1) (unknown-clause 1))\n";
+    }
+    const auto invalid_policy_validate_result =
+        run_cli(t81_bin, {"policy", "validate", invalid_policy_file.string(), "--json"});
+    T81_TEST_CHECK(invalid_policy_validate_result.exit_code == 1);
+    T81_TEST_CHECK(
+        contains(invalid_policy_validate_result.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(contains(invalid_policy_validate_result.stdout_text, "\"valid\": false"));
+    T81_TEST_CHECK(contains(invalid_policy_validate_result.stdout_text, "\"error\": \"Policy parse error:"));
+
+    const auto invalid_policy_run_result =
+        run_cli(t81_bin, {"policy", "run", invalid_policy_file.string(), "--json"});
+    T81_TEST_CHECK(invalid_policy_run_result.exit_code == 1);
+    T81_TEST_CHECK(contains(invalid_policy_run_result.stdout_text, "\"schema\": \"t81.policy-run.v1\""));
+    T81_TEST_CHECK(contains(invalid_policy_run_result.stdout_text, "\"valid\": false"));
+    T81_TEST_CHECK(contains(invalid_policy_run_result.stdout_text, "\"error\": \"Policy parse error:"));
 
     std::error_code baseline_ec;
     fs::create_directories(baseline_dir, baseline_ec);
@@ -679,6 +720,8 @@ int main(int argc, char* argv[]) {
     fs::remove(trace_file, ignore_ec);
     fs::remove(trace_extra, ignore_ec);
     fs::remove(policy_file, ignore_ec);
+    fs::remove(denied_policy_file, ignore_ec);
+    fs::remove(invalid_policy_file, ignore_ec);
     fs::remove_all(baseline_dir, ignore_ec);
     fs::remove_all(baseline_source_dir, ignore_ec);
   }
@@ -907,7 +950,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(completion_result.stdout_text, "compile lower pipeline help"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "fsck"));
     T81_TEST_CHECK(contains(completion_result.stdout_text, "repair"));
-    T81_TEST_CHECK(!contains(completion_result.stdout_text, " model "));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "__fish_seen_subcommand_from ai"));
+    T81_TEST_CHECK(contains(completion_result.stdout_text, "backend model verify inference"));
     T81_TEST_CHECK(!contains(completion_result.stdout_text, " bench "));
   }
 

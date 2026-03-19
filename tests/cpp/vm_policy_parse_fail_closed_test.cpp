@@ -30,13 +30,21 @@ void run_policy_parse_fail_closed_test() {
   T81_TEST_CHECK(result.error() == t81::vm::Trap::SecurityFault);
 
   bool saw_parse_error = false;
+  bool saw_structured_parse_error = false;
   for (const auto& event : vm->state().axion_log) {
     if (event.verdict.reason.find("Axion policy parse failed:") != std::string::npos) {
       saw_parse_error = true;
+      if (event.structured.decision == "deny" &&
+          event.structured.event_type == "policy_parse_failure" &&
+          event.structured.reason_code == "AXION_POLICY_PARSE_FAILED" &&
+          event.structured.reason == event.verdict.reason) {
+        saw_structured_parse_error = true;
+      }
       break;
     }
   }
   T81_TEST_CHECK(saw_parse_error);
+  T81_TEST_CHECK(saw_structured_parse_error);
 }
 
 void run_policy_unknown_clause_fail_closed_test() {
@@ -61,13 +69,21 @@ void run_policy_unknown_clause_fail_closed_test() {
   T81_TEST_CHECK(result.error() == t81::vm::Trap::SecurityFault);
 
   bool saw_parse_error = false;
+  bool saw_structured_parse_error = false;
   for (const auto& event : vm->state().axion_log) {
     if (event.verdict.reason.find("Axion policy parse failed:") != std::string::npos) {
       saw_parse_error = true;
+      if (event.structured.decision == "deny" &&
+          event.structured.event_type == "policy_parse_failure" &&
+          event.structured.reason_code == "AXION_POLICY_PARSE_FAILED" &&
+          event.structured.reason == event.verdict.reason) {
+        saw_structured_parse_error = true;
+      }
       break;
     }
   }
   T81_TEST_CHECK(saw_parse_error);
+  T81_TEST_CHECK(saw_structured_parse_error);
 }
 
 }  // namespace

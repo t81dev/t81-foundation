@@ -36,7 +36,9 @@ int main() {
   const bool saw_predispatch_deny = std::any_of(log.begin(), log.end(), [](const auto& event) {
     return event.opcode == t81::tisc::Opcode::Nop &&
            event.verdict.kind == t81::axion::VerdictKind::Deny &&
-           event.verdict.reason == "unit-test predispatch deny";
+           event.verdict.reason == "unit-test predispatch deny" &&
+           event.structured.decision == "deny" &&
+           event.structured.reason == "unit-test predispatch deny";
   });
   T81_TEST_CHECK(saw_predispatch_deny);
 
