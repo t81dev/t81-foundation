@@ -102,7 +102,7 @@ jobs:
       - name: Run determinism slice (ctest)
         run: |
           ctest --test-dir build --output-on-failure \
-            -R '(jit|vm_|determinism|bigint|trace|canonical|repro)'
+            -R '(jit|vm_|determinism|bigint|trace|canonical|repro|tritwise_backend_equivalence)'
 
       # ── Record platform metadata alongside hash ──────────────────────────
       - name: Annotate hash artifact
