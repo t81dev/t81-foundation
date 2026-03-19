@@ -42,6 +42,7 @@
 
 #include "core/vm/internal/memory_segments.hpp"
 #include "logging.hpp"
+#include "tooling/cli/ai/ai_cli_shared.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
@@ -1359,6 +1360,10 @@ Examples:
 )";
 }
 
+void print_help_ai() {
+  t81::cli::ai::print_usage("t81 ai");
+}
+
 void print_usage(const char* prog) {
   std::cerr << R"(T81 Foundation - Ternary-Native Computing Stack
 Version )" << T81_VERSION
@@ -1382,6 +1387,7 @@ Commands:
   ir <action> [args]                    IR inspection for frontend lowering
   tier   <action> [args]                Cognitive tier inspection and gating
   tensor <action> [args]                Tensor artifact canonicalization and inspection
+  ai     <action> [args]                AI model, inference, quantization, and workflow tools
   weights <action> [args]               Model weights import, inspect, and verify
   policy <action> [args]                Axion policy compile, validate, and test
   axion <action> [args]                 Axion governor and policy-facing operations
@@ -1425,6 +1431,7 @@ More command groups:
   t81 help tisc
   t81 help ir
   t81 help tier
+  t81 help ai
   t81 help weights
   t81 help policy
   t81 help axion
@@ -1471,6 +1478,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "tensor") {
     print_help_tensor();
+    return true;
+  }
+  if (topic == "ai") {
+    print_help_ai();
     return true;
   }
   if (topic == "policy") {
@@ -2231,6 +2242,7 @@ Args parse_args(int argc, char* argv[]) {
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
           a.command == "man" || a.command == "feedback" || a.command == "c" ||
           a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+          a.command == "ai" ||
           a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
@@ -2247,6 +2259,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
+                 a.command == "ai" ||
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
@@ -2267,6 +2280,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
+                 a.command == "ai" ||
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
@@ -8003,7 +8017,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -8044,6 +8058,9 @@ std::string build_bash_completion() {
     ;;
     tensor)
       COMPREPLY=( $(compgen -W "canonize hash inspect" -- "${cur}") )
+      ;;
+    ai)
+      COMPREPLY=( $(compgen -W "backend model verify inference quantization benchmark policy workflow observability run quantize" -- "${cur}") )
       ;;
     weights)
       COMPREPLY=( $(compgen -W "import info verify export quantize" -- "${cur}") )
@@ -8103,6 +8120,7 @@ commands=(
   'ir:IR inspection for frontend lowering'
   'tier:cognitive tier inspection and gating'
   'tensor:tensor artifact tools'
+  'ai:AI model, inference, quantization, and workflow tools'
   'weights:model weight tools'
   'policy:Axion policy tools'
   'axion:Axion governor tools'
@@ -8168,6 +8186,9 @@ case $state in
       tensor)
         _values 'tensor action' canonize hash inspect
         ;;
+      ai)
+        _values 'ai action' backend model verify inference quantization benchmark policy workflow observability run quantize
+        ;;
       weights)
         _values 'weights action' import info verify export quantize
         ;;
@@ -8208,7 +8229,7 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export validate profile'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl profile'
@@ -8222,6 +8243,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from tisc' -a 'disasm validate sta
 complete -c t81 -f -n '__fish_seen_subcommand_from ir' -a 'show dump export validate'
 complete -c t81 -f -n '__fish_seen_subcommand_from tier' -a 'info check gate'
 complete -c t81 -f -n '__fish_seen_subcommand_from tensor' -a 'canonize hash inspect'
+complete -c t81 -f -n '__fish_seen_subcommand_from ai' -a 'backend model verify inference quantization benchmark policy workflow observability run quantize'
 complete -c t81 -f -n '__fish_seen_subcommand_from weights' -a 'import info verify export quantize'
 complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile validate run test list'
 complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log audit'
@@ -9134,6 +9156,23 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "tensor") {
       return run_tensor_command(argv[0], args);
+
+    } else if (args.command == "ai") {
+      std::vector<std::string_view> ai_args;
+      ai_args.reserve(args.command_args.size() + (args.output ? 2U : 0U));
+      for (const auto& token : args.command_args) {
+        ai_args.emplace_back(token);
+      }
+      std::string ai_output_flag;
+      std::string ai_output_value;
+      if (args.output) {
+        const std::string subcommand = args.command_args.empty() ? "" : args.command_args.front();
+        ai_output_flag = (subcommand == "quantize") ? "--output" : "--out";
+        ai_output_value = args.output->string();
+        ai_args.emplace_back(ai_output_flag);
+        ai_args.emplace_back(ai_output_value);
+      }
+      return t81::cli::ai::run("t81 ai", ai_args);
 
     } else if (args.command == "vm") {
       return run_vm_command(args);

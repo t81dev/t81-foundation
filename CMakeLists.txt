@@ -1439,8 +1439,8 @@ if(T81_BUILD_TUI)
   endif()
 endif()
 
-add_executable(t81 tooling/cli/main.cpp)
-target_link_libraries(t81 PRIVATE t81_lang_frontend t81_isa t81_vm t81_tool_cli)
+add_executable(t81 tooling/cli/main.cpp tooling/cli/ai/ai_cli_shared.cpp)
+target_link_libraries(t81 PRIVATE t81_lang_frontend t81_isa t81_vm t81_tool_cli t81_axion t81_math_quantization t81_core)
 target_include_directories(t81 PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -1497,11 +1497,11 @@ endif()
 option(T81_ENABLE_AI_EXPERIMENTS "Build the experimental AI CLI compatibility surface" OFF)
 
 # RFC-0032 Phase 5 (C-07) — promoted AI CLI tool (no sleep_for / no llama.cpp)
-add_executable(t81_ai_cli tooling/cli/ai/t81_ai_cli.cpp)
+add_executable(t81_ai_cli tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
 target_link_libraries(t81_ai_cli PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
 
 if(T81_ENABLE_AI_EXPERIMENTS)
-  add_executable(t81_ai tooling/cli/ai/t81_ai_cli.cpp)
+  add_executable(t81_ai tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
   target_link_libraries(t81_ai PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
   set_target_properties(t81_ai PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/experiments/ai/ux_tools")
