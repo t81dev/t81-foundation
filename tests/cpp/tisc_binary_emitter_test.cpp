@@ -147,6 +147,28 @@ void test_bigint_literal_pool_mapping() {
   std::cout << "BinaryEmitterTest test_bigint_literal_pool_mapping passed!" << std::endl;
 }
 
+void test_ffi_call_symbol_pool_mapping() {
+  IntermediateProgram ir_program;
+  Instruction ffi_call{Opcode::FFI_CALL, {Register{7}, Immediate{3}}};
+  ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
+  ffi_call.text_literal = "bridge_target";
+  ir_program.add_instruction(ffi_call);
+  ir_program.add_instruction({Opcode::HALT, {}});
+
+  t81::tisc::BinaryEmitter emitter;
+  auto program = emitter.emit(ir_program);
+
+  assert(program.symbol_pool.size() == 1);
+  assert(program.symbol_pool[0] == "bridge_target");
+  assert(program.insns[0].opcode == t81::tisc::Opcode::FFICall);
+  assert(program.insns[0].a == 7);
+  assert(program.insns[0].b == 3);
+  assert(program.insns[0].c == 1);
+  assert(program.insns[0].literal_kind == t81::tisc::LiteralKind::SymbolHandle);
+
+  std::cout << "BinaryEmitterTest test_ffi_call_symbol_pool_mapping passed!" << std::endl;
+}
+
 void test_string_opcode_mappings() {
   IntermediateProgram ir_program;
   ir_program.add_instruction({Opcode::STRCONCAT, {Register{1}, Register{2}, Register{3}}});
@@ -231,6 +253,7 @@ int main() {
   test_print_opcode_mapping();
   test_float_literal_pool_mapping();
   test_bigint_literal_pool_mapping();
+  test_ffi_call_symbol_pool_mapping();
   test_string_opcode_mappings();
   test_bitwise_opcode_mappings();
   test_bitwise_pretty_printer();

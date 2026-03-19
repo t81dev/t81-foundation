@@ -1033,8 +1033,12 @@ Fault behavior:
 
 ### 5.18 Governed Foreign Function Interface (RFC-0036 + RFC-00B8)
 
-*Status: **accepted** — 2026-03-16. Implementation: `core/vm/vm.cpp` (FFICall,
-FFIRegister, FFIPolicySet), `core/vm/ffi_dispatcher.cpp`. Opcode bytes: §2.20.*
+*Status: **accepted** — 2026-03-18 alignment refresh. Implementation exists in
+`core/vm/vm.cpp` (FFICall, FFIRegister, FFIPolicySet), `core/vm/ffi_dispatcher.cpp`,
+and the RFC-0036 frontend path, with VM evidence covering success, failure, audit-trail,
+quarantine, and real system-library calls. The runtime remains beta for promotion
+purposes while broader schemas, ecosystem bindings, and the sandbox-boundary decision
+remain open. Opcode bytes: §2.20.*
 
 `FFI_CALL` enables T81Lang `foreign {}` blocks to invoke external functions
 through the governed `FFIDispatcher`. Policy enforcement, resource quotas, and
@@ -1042,14 +1046,15 @@ audit trails are applied before and after every foreign call.
 
 | Mnemonic | Opcode Byte | Operands | Description |
 | :--- | :--- | :--- | :--- |
-| `FFICall` | 0xC8 (200) | `R_FUNC_IDX, R_ARG_COUNT, R_RESULT` | Invoke foreign function; `text_literal` field carries the resolved name. Policy check before dispatch; audit event on completion. |
+| `FFICall` | 0xC8 (200) | `R_DEST, ARG_COUNT, FUNC_SYMBOL` | Invoke foreign function; `text_literal` / encoded symbol pool entry carries the resolved name. Policy check before dispatch; audit event on completion. |
 | `FFIRegister` | 0xC9 (201) | `R_LIB_NAME, R_VERSION_HASH` | Register foreign library by name and version hash in `FFILibraryRegistry`. |
 | `FFIPolicySet` | 0xCA (202) | `R_POLICY_TYPE, R_POLICY_VALUE` | Set per-call FFI policy (determinism, quota, isolation). |
 
 **FFI_CALL IR encoding:** at the IR level, `FFI_CALL` carries the function name
 in the `text_literal` field of the instruction; operands are `{dest_reg, Immediate{arg_count}}`.
-The VM dispatcher resolves the name to a function pointer via `FFILibraryRegistry`
-at runtime.
+Binary emission preserves `arg_count` in operand `B` and stores the resolved symbol-pool
+index in operand `C`. The VM dispatcher resolves that encoded symbol to a function via
+`FFILibraryRegistry` at runtime.
 
 **Policy qualifiers** map to Axion policy modes enforced at dispatch time:
 

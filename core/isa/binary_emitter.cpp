@@ -516,7 +516,11 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
           }
           case LiteralKind::SymbolHandle: {
             int symbol_index = ensure_symbol(*instr.text_literal);
-            vm_insn.b = symbol_index;
+            if (instr.opcode == ir::Opcode::FFI_CALL) {
+              vm_insn.c = symbol_index;
+            } else {
+              vm_insn.b = symbol_index;
+            }
             break;
           }
           case LiteralKind::BigIntHandle: {

@@ -31,6 +31,19 @@ t81::weights::NativeTensor make_native_tensor_for_elements(uint64_t elements) {
   return tensor;
 }
 
+t81::weights::NativeTensor make_native_vector_for_elements(uint64_t elements) {
+  t81::weights::NativeTensor tensor;
+  tensor.shape = {elements};
+  tensor.trits = elements;
+  tensor.format = t81::weights::NativeFormat::BalancedTernary;
+  const uint64_t limb_count = (tensor.trits + 47) / 48;
+  tensor.data.reserve(static_cast<size_t>(limb_count));
+  for (uint64_t i = 0; i < limb_count; ++i) {
+    tensor.data.push_back((i % 2 == 0) ? 0x123456789abcdef0ULL : 0x0fedcba987654321ULL);
+  }
+  return tensor;
+}
+
 t81::T729DynamicTensor make_host_tensor_for_elements(uint64_t elements) {
   const uint64_t side = static_cast<uint64_t>(std::sqrt(static_cast<double>(elements)));
   std::vector<float> data;
@@ -42,6 +55,30 @@ t81::T729DynamicTensor make_host_tensor_for_elements(uint64_t elements) {
   return t81::T729DynamicTensor::from_host_float_data(
       {static_cast<int>(side), static_cast<int>(side)}, std::move(data),
       t81::TensorNumericClass::HostFloat);
+}
+
+t81::T729DynamicTensor make_host_ternary_tensor_for_elements(uint64_t elements) {
+  const uint64_t side = static_cast<uint64_t>(std::sqrt(static_cast<double>(elements)));
+  std::vector<float> data;
+  data.reserve(static_cast<std::size_t>(side * side));
+  static constexpr float kPattern[] = {-1.0f, 0.0f, 1.0f, 0.0f};
+  for (uint64_t i = 0; i < side * side; ++i) {
+    data.push_back(kPattern[i % 4]);
+  }
+  return t81::T729DynamicTensor::from_host_float_data(
+      {static_cast<int>(side), static_cast<int>(side)}, std::move(data),
+      t81::TensorNumericClass::ExactTrit);
+}
+
+t81::T729DynamicTensor make_host_ternary_vector_for_elements(uint64_t elements) {
+  std::vector<float> data;
+  data.reserve(static_cast<std::size_t>(elements));
+  static constexpr float kPattern[] = {-1.0f, 0.0f, 1.0f, 0.0f};
+  for (uint64_t i = 0; i < elements; ++i) {
+    data.push_back(kPattern[i % 4]);
+  }
+  return t81::T729DynamicTensor::from_host_float_data(
+      {static_cast<int>(elements)}, std::move(data), t81::TensorNumericClass::ExactTrit);
 }
 
 t81::tisc::Program make_weights_load_loop_program(uint64_t elements) {
@@ -206,6 +243,201 @@ t81::tisc::Program make_host_tensor_rope_loop_program(uint64_t elements) {
   return program;
 }
 
+t81::tisc::Program make_weights_twembed_loop_program(uint64_t elements) {
+  t81::tisc::Program program = make_weights_load_loop_program(elements);
+
+  t81::tisc::Insn load_idx;
+  load_idx.opcode = t81::tisc::Opcode::LoadImm;
+  load_idx.a = 2;
+  load_idx.b = 1;
+
+  t81::tisc::Insn twembed;
+  twembed.opcode = t81::tisc::Opcode::TWEMBED;
+  twembed.a = 3;
+  twembed.b = 1;
+  twembed.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {program.insns[0], load_idx, twembed, jump};
+  return program;
+}
+
+t81::tisc::Program make_host_tensor_twembed_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+
+  t81::tisc::Insn load_table;
+  load_table.opcode = t81::tisc::Opcode::LoadImm;
+  load_table.a = 1;
+  load_table.b = 1;
+  load_table.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_idx;
+  load_idx.opcode = t81::tisc::Opcode::LoadImm;
+  load_idx.a = 2;
+  load_idx.b = 1;
+
+  t81::tisc::Insn twembed;
+  twembed.opcode = t81::tisc::Opcode::TWEMBED;
+  twembed.a = 3;
+  twembed.b = 1;
+  twembed.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_table, load_idx, twembed, jump};
+  return program;
+}
+
+t81::tisc::Program make_weights_twmatmul_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.symbol_pool = {"tensorA"};
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+
+  auto model = std::make_shared<t81::weights::ModelFile>();
+  model->native["tensorA"] = make_native_tensor_for_elements(elements);
+  program.weights_model = model;
+
+  t81::tisc::Insn load_act;
+  load_act.opcode = t81::tisc::Opcode::LoadImm;
+  load_act.a = 1;
+  load_act.b = 1;
+  load_act.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_w;
+  load_w.opcode = t81::tisc::Opcode::WeightsLoad;
+  load_w.a = 2;
+  load_w.b = 1;
+
+  t81::tisc::Insn twmatmul;
+  twmatmul.opcode = t81::tisc::Opcode::TWMATMUL;
+  twmatmul.a = 3;
+  twmatmul.b = 1;
+  twmatmul.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_act, load_w, twmatmul, jump};
+  return program;
+}
+
+t81::tisc::Program make_host_tensor_twmatmul_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+
+  t81::tisc::Insn load_act;
+  load_act.opcode = t81::tisc::Opcode::LoadImm;
+  load_act.a = 1;
+  load_act.b = 1;
+  load_act.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_w;
+  load_w.opcode = t81::tisc::Opcode::LoadImm;
+  load_w.a = 2;
+  load_w.b = 2;
+  load_w.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn twmatmul;
+  twmatmul.opcode = t81::tisc::Opcode::TWMATMUL;
+  twmatmul.a = 3;
+  twmatmul.b = 1;
+  twmatmul.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_act, load_w, twmatmul, jump};
+  return program;
+}
+
+t81::tisc::Program make_weights_tattn_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.symbol_pool = {"tensorA"};
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));  // Q
+  program.tensor_pool.push_back(make_host_tensor_for_elements(elements));          // V
+
+  auto model = std::make_shared<t81::weights::ModelFile>();
+  model->native["tensorA"] = make_native_tensor_for_elements(elements);  // K
+  program.weights_model = model;
+
+  t81::tisc::Insn load_q;
+  load_q.opcode = t81::tisc::Opcode::LoadImm;
+  load_q.a = 1;
+  load_q.b = 1;
+  load_q.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_k;
+  load_k.opcode = t81::tisc::Opcode::WeightsLoad;
+  load_k.a = 2;
+  load_k.b = 1;
+
+  t81::tisc::Insn load_v;
+  load_v.opcode = t81::tisc::Opcode::LoadImm;
+  load_v.a = 3;
+  load_v.b = 2;
+  load_v.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn tattn;
+  tattn.opcode = t81::tisc::Opcode::TATTN;
+  tattn.a = 4;
+  tattn.b = 1;
+  tattn.c = static_cast<std::int32_t>(2 | (3 << 8));
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_q, load_k, load_v, tattn, jump};
+  return program;
+}
+
+t81::tisc::Program make_host_tensor_tattn_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));  // Q
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));  // K
+  program.tensor_pool.push_back(make_host_tensor_for_elements(elements));          // V
+
+  t81::tisc::Insn load_q;
+  load_q.opcode = t81::tisc::Opcode::LoadImm;
+  load_q.a = 1;
+  load_q.b = 1;
+  load_q.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_k;
+  load_k.opcode = t81::tisc::Opcode::LoadImm;
+  load_k.a = 2;
+  load_k.b = 2;
+  load_k.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_v;
+  load_v.opcode = t81::tisc::Opcode::LoadImm;
+  load_v.a = 3;
+  load_v.b = 3;
+  load_v.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn tattn;
+  tattn.opcode = t81::tisc::Opcode::TATTN;
+  tattn.a = 4;
+  tattn.b = 1;
+  tattn.c = static_cast<std::int32_t>(2 | (3 << 8));
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_q, load_k, load_v, tattn, jump};
+  return program;
+}
+
 t81::tisc::Program make_weights_expand_loop_program(uint64_t elements) {
   t81::tisc::Program program = make_weights_load_loop_program(elements);
 
@@ -219,6 +451,173 @@ t81::tisc::Program make_weights_expand_loop_program(uint64_t elements) {
   jump.a = 0;
 
   program.insns = {program.insns[0], texp, jump};
+  return program;
+}
+
+t81::tisc::Program make_weights_tquant_loop_program(uint64_t elements) {
+  t81::tisc::Program program = make_weights_load_loop_program(elements);
+
+  t81::tisc::Insn load_thr;
+  load_thr.opcode = t81::tisc::Opcode::LoadImm;
+  load_thr.a = 2;
+  load_thr.b = 0;
+
+  t81::tisc::Insn tquant;
+  tquant.opcode = t81::tisc::Opcode::TQUANT;
+  tquant.a = 3;
+  tquant.b = 1;
+  tquant.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {program.insns[0], load_thr, tquant, jump};
+  return program;
+}
+
+t81::tisc::Program make_weights_tact_loop_program(uint64_t elements) {
+  t81::tisc::Program program = make_weights_load_loop_program(elements);
+
+  t81::tisc::Insn load_mode;
+  load_mode.opcode = t81::tisc::Opcode::LoadImm;
+  load_mode.a = 2;
+  load_mode.b = 1;
+
+  t81::tisc::Insn tact;
+  tact.opcode = t81::tisc::Opcode::TACT;
+  tact.a = 3;
+  tact.b = 1;
+  tact.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {program.insns[0], load_mode, tact, jump};
+  return program;
+}
+
+t81::tisc::Program make_host_tensor_tquant_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+
+  t81::tisc::Insn load_src;
+  load_src.opcode = t81::tisc::Opcode::LoadImm;
+  load_src.a = 1;
+  load_src.b = 1;
+  load_src.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_thr;
+  load_thr.opcode = t81::tisc::Opcode::LoadImm;
+  load_thr.a = 2;
+  load_thr.b = 0;
+
+  t81::tisc::Insn tquant;
+  tquant.opcode = t81::tisc::Opcode::TQUANT;
+  tquant.a = 3;
+  tquant.b = 1;
+  tquant.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_src, load_thr, tquant, jump};
+  return program;
+}
+
+t81::tisc::Program make_host_tensor_tact_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+
+  t81::tisc::Insn load_src;
+  load_src.opcode = t81::tisc::Opcode::LoadImm;
+  load_src.a = 1;
+  load_src.b = 1;
+  load_src.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_mode;
+  load_mode.opcode = t81::tisc::Opcode::LoadImm;
+  load_mode.a = 2;
+  load_mode.b = 1;
+
+  t81::tisc::Insn tact;
+  tact.opcode = t81::tisc::Opcode::TACT;
+  tact.a = 3;
+  tact.b = 1;
+  tact.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_src, load_mode, tact, jump};
+  return program;
+}
+
+t81::tisc::Program make_weights_ternaccum_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.symbol_pool = {"tensorA"};
+  program.tensor_pool.push_back(make_host_ternary_vector_for_elements(elements));
+
+  auto model = std::make_shared<t81::weights::ModelFile>();
+  model->native["tensorA"] = make_native_vector_for_elements(elements);
+  program.weights_model = model;
+
+  t81::tisc::Insn load_w;
+  load_w.opcode = t81::tisc::Opcode::WeightsLoad;
+  load_w.a = 1;
+  load_w.b = 1;
+
+  t81::tisc::Insn load_a;
+  load_a.opcode = t81::tisc::Opcode::LoadImm;
+  load_a.a = 2;
+  load_a.b = 1;
+  load_a.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn ternaccum;
+  ternaccum.opcode = t81::tisc::Opcode::TERNACCUM;
+  ternaccum.a = 3;
+  ternaccum.b = 1;
+  ternaccum.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_w, load_a, ternaccum, jump};
+  return program;
+}
+
+t81::tisc::Program make_host_tensor_ternaccum_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.tensor_pool.push_back(make_host_ternary_vector_for_elements(elements));
+  program.tensor_pool.push_back(make_host_ternary_vector_for_elements(elements));
+
+  t81::tisc::Insn load_w;
+  load_w.opcode = t81::tisc::Opcode::LoadImm;
+  load_w.a = 1;
+  load_w.b = 1;
+  load_w.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_a;
+  load_a.opcode = t81::tisc::Opcode::LoadImm;
+  load_a.a = 2;
+  load_a.b = 2;
+  load_a.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn ternaccum;
+  ternaccum.opcode = t81::tisc::Opcode::TERNACCUM;
+  ternaccum.a = 3;
+  ternaccum.b = 1;
+  ternaccum.c = 2;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_w, load_a, ternaccum, jump};
   return program;
 }
 
@@ -429,6 +828,72 @@ static void BM_NativeWeightsLoadAndExp_T81Native(benchmark::State& state) {
 }
 BENCHMARK(BM_NativeWeightsLoadAndExp_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
 
+static void BM_NativeWeightsLoadAndTQUANT_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_tquant_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTQUANT_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTQUANT_Binary(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_host_tensor_tquant_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTQUANT_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTACT_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_tact_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTACT_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTACT_Binary(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_host_tensor_tact_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTACT_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTERNACCUM_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_ternaccum_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTERNACCUM_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTERNACCUM_Binary(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_host_tensor_ternaccum_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTERNACCUM_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
 static void BM_NativeWeightsLoadAndExp_Binary(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));
   auto program = make_host_tensor_unary_loop_program(elements, t81::tisc::Opcode::TExp);
@@ -527,6 +992,72 @@ static void BM_NativeWeightsLoadAndRoPE_Binary(benchmark::State& state) {
   state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
 }
 BENCHMARK(BM_NativeWeightsLoadAndRoPE_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTWEMBED_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_twembed_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTWEMBED_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTWEMBED_Binary(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_host_tensor_twembed_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTWEMBED_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTWMATMUL_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_twmatmul_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTWMATMUL_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTWMATMUL_Binary(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_host_tensor_twmatmul_loop_program(elements);
+  benchmark_program_loop(state, program, 4);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTWMATMUL_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTATTN_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_tattn_loop_program(elements);
+  benchmark_program_loop(state, program, 5);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTATTN_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
+
+static void BM_NativeWeightsLoadAndTATTN_Binary(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_host_tensor_tattn_loop_program(elements);
+  benchmark_program_loop(state, program, 5);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("comparison=structural-advantage; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsLoadAndTATTN_Binary)->Arg(64)->RangeMultiplier(4)->Range(256, 65536);
 
 static void BM_NativeWeightsDecode_T81Native(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));

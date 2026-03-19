@@ -169,10 +169,16 @@ const std::map<std::string, std::pair<std::string, std::string>> T81_ADVANTAGES 
     {"BM_NativeWeightsLoad", {{}, "Governed ternary-native weights load path"}},
     {"BM_NativeWeightsPromote", {{}, "Governed ternary-native tensor materialization path"}},
     {"BM_NativeWeightsLoadAndExp", {{}, "Governed ternary-native exponentiation path"}},
+    {"BM_NativeWeightsLoadAndTQUANT", {{}, "Governed ternary-native quantization path"}},
+    {"BM_NativeWeightsLoadAndTACT", {{}, "Governed ternary-native activation path"}},
+    {"BM_NativeWeightsLoadAndTERNACCUM", {{}, "Governed ternary-native dot-product path"}},
     {"BM_NativeWeightsLoadAndSiLU", {{}, "Governed ternary-native SiLU path"}},
     {"BM_NativeWeightsLoadAndSoftmax", {{}, "Governed ternary-native softmax path"}},
     {"BM_NativeWeightsLoadAndRMSNorm", {{}, "Governed ternary-native RMSNorm path"}},
     {"BM_NativeWeightsLoadAndRoPE", {{}, "Governed ternary-native RoPE path"}},
+    {"BM_NativeWeightsLoadAndTWEMBED", {{}, "Governed ternary-native embedding gather path"}},
+    {"BM_NativeWeightsLoadAndTWMATMUL", {{}, "Governed ternary-native matmul path"}},
+    {"BM_NativeWeightsLoadAndTATTN", {{}, "Governed ternary-native attention path"}},
     {"BM_NegationSpeed_T81Native", {{}, "PSHUFB-powered native negation"}},
     {"BM_LimbAdd_T81Native", {{}, "Register-native prefix addition"}}
 };

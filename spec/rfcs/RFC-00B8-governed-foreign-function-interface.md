@@ -1,6 +1,6 @@
 # RFC-00B8: Governed Foreign Function Interface
 
-**Status:** proposed
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** T81VM runtime, T81Lang compiler, Axion governance kernel
 **Created:** 2026-03-16
@@ -19,10 +19,10 @@ This RFC defines a governed Foreign Function Interface (FFI) for T81 that enable
 T81 needs to integrate with existing ecosystems (filesystems, hardware accelerators, cryptographic libraries, system services) while maintaining its core value proposition of deterministic, auditable computation. Traditional FFI designs create uncontrolled escape hatches that bypass governance and determinism guarantees.
 
 Current gaps:
-- No mechanism to call existing C libraries from T81Lang
+- No production-grade FFI marshalling beyond the current scalar/string bridge
 - No integration path for GPU acceleration in governed inference mode
-- Limited ability to interface with OS-level services
-- Missing bridge to established mathematical and scientific computing ecosystems
+- Limited audited coverage of the VM opcode path compared with the language/parser surface
+- Missing boundary hardening beyond governed loading and policy mediation
 
 ## 3. Proposal
 
@@ -178,6 +178,8 @@ let socket = foreign.raw_socket(AF_INET, SOCK_STREAM, 0)
 - Basic FFI dispatcher in T81VM
 - T81Lang compiler FFI syntax support
 - Axion policy integration for FFI calls
+- Status 2026-03-18: implemented, including VM bridge round-trip for
+  `FFICall`/`FFIRegister`/`FFIPolicySet`
 
 ### 4.2 Phase 2: Governance Integration (2026-Q3)
 - Policy engine extensions for FFI governance
@@ -207,8 +209,8 @@ let socket = foreign.raw_socket(AF_INET, SOCK_STREAM, 0)
 
 ### 5.3 Security Considerations
 - FFI functions must be explicitly declared and registered
-- Dynamic loading restricted to vetted libraries
-- Sandboxing for quarantined operations
+- Dynamic loading is governed and policy-mediated, not sandboxed
+- Quarantined operations are blocked by policy unless explicitly admitted
 - Audit trail provides forensic capability
 
 ## 6. Compatibility
@@ -225,19 +227,47 @@ This RFC extends but does not break existing T81 contracts:
 1. **Performance Overhead**: What is the governance cost for FFI calls?
 2. **Library Management**: How to version and validate external libraries?
 3. **Cross-Platform**: Handle platform-specific FFI differences?
-4. **Error Propagation**: Best practices for FFI error handling?
+4. **Error Propagation**: Best practices for richer FFI error/result handling?
 5. **Resource Limits**: Appropriate default quotas for FFI operations?
+6. **Sandbox Boundary**: Should quarantined FFI remain governed-loading only, or gain a real isolation boundary?
 
 ## 8. Acceptance Criteria
 
-This RFC can move from `proposed` to `accepted` when:
+This RFC moves from `proposed` to `accepted` when:
 
 - FFI instruction set is defined and implemented in TISC ISA
 - T81VM FFI dispatcher with governance integration exists
 - T81Lang compiler supports FFI syntax and annotations
 - Axion policy engine can govern FFI calls
+- VM-level bridge tests prove opcode encoding, symbol resolution, and result/trap writeback
 - Test suite demonstrates deterministic and governed FFI modes
-- Security audit validates FFI sandboxing and type safety
+- Security audit validates governed loading, policy mediation, and type safety
+
+Status 2026-03-18: met in-repo. Remaining work is promotion hardening and broader
+ecosystem scope, not an `accepted` blocker.
+
+## 9. Implementation Status (2026-03-18)
+
+Implemented:
+- `FFICall`, `FFIRegister`, and `FFIPolicySet` opcodes in the TISC registry and VM dispatch
+- `foreign {}` syntax and `foreign.<name>(args)` lowering in T81Lang
+- `FFIDispatcher` and `FFILibraryRegistry`
+- VM bridge round-trip for encoded function-name symbols, register-backed library registration,
+  and concrete success/failure path execution through the current scalar bridge
+- current bridge covers no-arg `uint64_t`, unary `int64_t`, binary `int64_t`,
+  unary string-arg to integer-result, no-arg string-result, unary double-arg to double-result,
+  no-arg double-result, unary bytes-arg to integer-result, and no-arg bytes-result
+  call shapes end to end, plus mixed-type ordered arguments such as `(int64_t, string) -> int64_t`
+  and initial structured argument/return paths materialized as `StringVectorHandle`
+- real external-library VM evidence through the system C library for no-arg integer,
+  unary integer, unary string, and unary double call shapes
+- governance evidence for audit-trail emission on success and fail-closed quarantine behavior
+- RFC-0036 language acceptance tests plus focused VM bridge regression coverage
+
+Not yet complete:
+- real sandbox/isolation for quarantined FFI
+- broader structured schema coverage than the current `StringVectorHandle` path
+- additional ecosystem bindings and performance evidence for eventual `stable`
 
 ---
 

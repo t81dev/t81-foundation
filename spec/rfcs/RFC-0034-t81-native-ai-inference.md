@@ -550,12 +550,38 @@ Implementation status on 2026-03-18:
   - `BM_NativeWeightsLoadAndRMSNorm_T81Native/64`: `226.04 ops/s`, `311.71 ms`
   - `BM_NativeWeightsLoadAndRoPE_T81Native/64`: after RoPE coefficient caching:
     `81.34 ops/s`, `836.23 ms`
+  - `BM_NativeWeightsLoadAndTWEMBED_T81Native/64`: `265.56 Kops/s`, `241.79 µs`
+  - `BM_NativeWeightsLoadAndTWMATMUL_T81Native`: scale-dependent result;
+    at `64` trits the path remains overhead-bound, at `256` it measures
+    `5.22 Mops/s`, `48.29 µs`, and at `4096` it reaches `61.13 Mops/s`,
+    `68.33 µs`
+  - `BM_NativeWeightsLoadAndTATTN_T81Native/256`: after direct native handling
+    for packed `K` weights, `1.27 Mops/s`, `203.00 µs`
+  - `BM_NativeWeightsLoadAndTQUANT_T81Native/64`: after fixing dispatch order
+    so the direct path runs before promotion, `309.18 Kops/s`, `207.75 µs`
+  - `BM_NativeWeightsLoadAndTACT_T81Native/64`: for balanced native trits,
+    `378.70 Kops/s`, `168.79 µs`
+  - `BM_NativeWeightsLoadAndTERNACCUM_T81Native/64`: direct ternary dot product
+    to `BigInt`, `183.91 Kops/s`, `349.29 µs`
   - First matched VM native-vs-binary comparison at `64`:
     - `BM_NativeWeightsLoadAndExp`: `62.43x` throughput, `62.60x` latency
     - `BM_NativeWeightsLoadAndSiLU`: `67.12x` throughput, `68.36x` latency
     - `BM_NativeWeightsLoadAndSoftmax`: `63.34x` throughput, `64.07x` latency
     - `BM_NativeWeightsLoadAndRMSNorm`: `11.99x` throughput, `11.65x` latency
     - `BM_NativeWeightsLoadAndRoPE`: `4.07x` throughput, `4.20x` latency
+    - `BM_NativeWeightsLoadAndTWEMBED`: `769.63x` throughput, `923.86x` latency
+  - Matched VM native-vs-binary comparison for `TWMATMUL`:
+    - at `64`: `0.84x` throughput, `0.84x` latency
+    - at `256`: `11.84x` throughput, `12.00x` latency
+    - at `4096`: `570.42x` throughput, `642.25x` latency
+  - Matched VM native-vs-binary comparison for `TATTN`:
+    - at `256`: `110970.48x` throughput, `124317.13x` latency
+  - Matched VM native-vs-binary comparison for `TQUANT`:
+    - at `64`: `6259.43x` throughput, `7239.39x` latency
+  - Matched VM native-vs-binary comparison for `TACT`:
+    - at `64`: `6834.34x` throughput, `7603.96x` latency
+  - Matched VM native-vs-binary comparison for `TERNACCUM`:
+    - at `64`: `80.57x` throughput, `88.49x` latency
 - Current same-build substrate comparison evidence in `build-llama` (`Release`,
   `T81_ENABLE_LLAMA_CPP=ON`):
   - `BM_LlamaGgufDequantize_Binary/8192`: `118.72 Mops/s`
@@ -602,8 +628,27 @@ Interpretation:
   binary host-float interpreter loops at `64` elements, and the first
   higher-level `TRMSNorm` loop is about `12x` faster on that same VM-path
   comparison. `TRoPE` is now also materially positive after coefficient caching
-  (`4.07x`), which narrows the set of obvious higher-level laggards but still
-  leaves it well behind the unary set and `TRMSNorm`.
+  (`4.07x`), which narrows the set of obvious higher-level laggards. `TWEMBED`
+  now shows the opposite pattern: direct packed-row extraction is dramatically
+  better than forcing promotion, landing at roughly `770x` throughput and
+  `924x` latency advantage in the `64` element VM-path comparison. `TWMATMUL`
+  now sits between those extremes: it still loses on the tiny `64` smoke case,
+  but the remaining gap is down to roughly `0.84x`, which makes it much more
+  clearly a small-shape fixed-overhead issue. It crosses over by `256` and is
+  decisively positive by `4096`, which makes the native direct path credible
+  for medium and larger shapes even though small-shape setup overhead remains
+  open work. `TATTN` was the next clear promotion-bound kernel; once native
+  balanced-trit `K` weights stopped flowing through generic tensor promotion
+  and instead used the cached packed-native score path directly, the `256`
+  element VM comparison became decisively positive. `TQUANT` now also falls
+  into the same “already ternary, so never promote first” class: once the
+  dispatch order was corrected, the native path became strongly positive
+  instead of slightly negative. `TACT` now joins that class too: on balanced
+  native trits both supported activation modes preserve the ternary domain, so
+  the direct native path can stay entirely in native form until the
+  activation-ceiling gate. `TERNACCUM` is the complementary scalar case: once
+  native balanced-trit weights feed a direct ternary dot product into a
+  `BigInt` result, the VM no longer pays tensor-promotion overhead there either.
 - Promotion work is therefore split into two tracks:
   1. evidence refresh on both reference platforms for the RFC status transition
   2. targeted optimization of the post-decode `TExp`-dominated native
@@ -732,7 +777,14 @@ Remaining work for status promotion on 2026-03-18:
   into a plain float buffer is already competitive with the llama.cpp substrate
   baseline while canonical-fixed tensor result paths are not. A first set of VM
   fast paths in this direction is now implemented for native balanced-trit
-  `TExp`, `TSiLU`, `TSoftmax`, `TRMSNorm`, and `TRoPE`; the measured
-  interpreter-path gains are already visible for both the unary set and the
-  first higher-level kernels. `TRoPE` still trails the unary set and
-  `TRMSNorm`, but coefficient caching moved it out of the merely-marginal range.
+  `TExp`, `TQUANT`, `TACT`, `TERNACCUM`, `TSiLU`, `TSoftmax`, `TRMSNorm`,
+  `TRoPE`, `TWEMBED`, `TATTN`, and a
+  scale-dependent `TWMATMUL` direct path; the measured interpreter-path gains
+  are already visible for both the unary set and the first higher-level
+  kernels. `TRoPE` still trails the unary set and `TRMSNorm`, but coefficient
+  caching moved it out of the merely-marginal range, while `TWEMBED`
+  demonstrates that packed-native row-gather kernels are especially strong
+  candidates for direct handling, `TWMATMUL` now shows that packed-native
+  matmul can also win decisively once setup costs are amortized, and `TATTN`
+  confirms that higher-level native attention can benefit materially once the
+  packed-native `K` path stays direct.

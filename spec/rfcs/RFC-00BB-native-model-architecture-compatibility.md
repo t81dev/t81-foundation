@@ -220,15 +220,25 @@ Current execution evidence note:
   points to result representation, not import/profile admission, as the next
   gating factor for moving dense families toward `native_supported`. A first VM
   fast-path set following that result is now in place for native balanced-trit
-  ops (`TExp`, `TSiLU`, `TSoftmax`, `TRMSNorm`, `TRoPE`) and has materially improved
-  measured interpreter-path execution, but it does not yet eliminate the
-  broader need for lighter-weight native result handling across the remaining
-  native surface. The matched VM native-vs-binary comparisons are now positive
-  at roughly `62x-67x` for the unary set, `11.99x` for the first higher-level
-  `TRMSNorm` loop, and `4.07x` for `TRoPE` after coefficient caching. That is
-  enough to show execution-side progress beyond mere import admission, but it
-  also makes clear that some higher-level kernels will still need deeper
-  follow-on optimization than the unary set.
+  ops (`TExp`, `TQUANT`, `TACT`, `TERNACCUM`, `TSiLU`, `TSoftmax`, `TRMSNorm`,
+  `TRoPE`, `TWEMBED`, `TWMATMUL`, `TATTN`)
+  and has materially improved measured interpreter-path execution, but it does
+  not yet eliminate the broader need for lighter-weight native result handling
+  across the remaining native surface. The matched VM native-vs-binary
+  comparisons are now positive at roughly `62x-67x` for the unary set, `11.99x`
+  for the first higher-level `TRMSNorm` loop, `4.07x` for `TRoPE` after
+  coefficient caching, `769.63x` for `TWEMBED` after direct packed row
+  extraction, and a scale-dependent `TWMATMUL` result that is now only slightly
+  negative at `64` (`0.84x`) before crossing to `11.84x` at `256` and
+  `570.42x` at `4096`. `TATTN` is now also materially positive after bypassing
+  native `K` promotion, reaching `110970.48x` at `256` in the current VM-path
+  comparison, and `TQUANT` reaches `6259.43x` at `64` once its dispatch order
+  stops forcing promotion first. `TACT` behaves similarly at `64`
+  (`6834.34x`) because balanced native trits stay in-domain for both supported
+  activation modes, while `TERNACCUM` reaches `80.57x` with a direct scalar
+  ternary dot-product path into `BigInt`. That is enough to show
+  execution-side progress beyond mere import admission, but it also makes clear
+  that different kernel classes will need different optimization styles.
 - That means additional profiles can still be added under this RFC, but moving
   any family from `experimental_native` toward `native_supported` now depends
   not only on conversion correctness and rejection discipline, but also on
