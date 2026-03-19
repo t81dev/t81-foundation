@@ -79,6 +79,7 @@ Current coverage:
 - `BM_GovernedCLI_VMTrace_Export_NeuralNet`
 - `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedCLI_CodeRun_WeightsModelHash`
+- `BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_NoPolicy`
@@ -129,7 +130,9 @@ Interpretation note:
   family also now includes a CanonFS-backed `code run --weights-model
   sha3-256:...` lane, which measures model-hash resolution and runtime
   execution through the real CLI subprocess path rather than only the in-memory
-  tensor benchmarks.
+  tensor benchmarks. That lane now also has a matched `--policy` variant, so
+  the subprocess-level governance cost can be compared on the same model-backed
+  workflow instead of inferred from lower-level VM-only paths.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.

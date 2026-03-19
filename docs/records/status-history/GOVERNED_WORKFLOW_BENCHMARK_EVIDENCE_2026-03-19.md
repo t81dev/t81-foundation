@@ -52,6 +52,7 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 - `BM_GovernedCLI_VMTrace_Export_NeuralNet`
 - `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedCLI_CodeRun_WeightsModelHash`
+- `BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_HashFixture_NoPolicy`
@@ -79,7 +80,8 @@ Current local run:
 | `BM_GovernedCLI_VMTrace_Export_WithPolicy` | `8.47 ms` | same subprocess path on hello-world with `--policy examples/system_integration.apl`, writing a `118`-byte trace file |
 | `BM_GovernedCLI_VMTrace_Export_NeuralNet` | `9.94 ms` | same subprocess path on the tensor-heavy neural-net artifact, writing a `2523`-byte trace file |
 | `BM_GovernedCLI_AxionLog_JSON` | `12.82 ms` | end-to-end `t81 axion log --json` subprocess path, writing an `893`-byte JSON payload |
-| `BM_GovernedCLI_CodeRun_WeightsModelHash` | `12.39 ms` | end-to-end `t81 code run tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model sha3-256:...` with `T81_CANONFS_ROOT` set, using a real `267`-byte `.t81w` stored in CanonFS |
+| `BM_GovernedCLI_CodeRun_WeightsModelHash` | `10.47 ms` | end-to-end `t81 code run tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model sha3-256:...` with `T81_CANONFS_ROOT` set, using a real `267`-byte `.t81w` stored in CanonFS |
+| `BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy` | `9.56 ms` | same CanonFS-backed `code run --weights-model` subprocess path with a matched allowlist policy authorizing that exact model hash |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
 | `BM_GovernedTensorLoad_HashFixture_NoPolicy/4096` | `41.01 µs` | in-memory preloaded hash fixture via `TLoadHash` |
@@ -182,7 +184,8 @@ Current local result:
 - `t81 vm trace <artifact> -o <trace> --policy examples/system_integration.apl`: about `8.47 ms`
 - `t81 vm trace <artifact> -o <trace>` on neural-net: about `9.94 ms`
 - `t81 axion log --json`: about `12.82 ms`
-- `t81 code run ... --weights-model sha3-256:...` with CanonFS-backed `.t81w`: about `12.39 ms`
+- `t81 code run ... --weights-model sha3-256:...` with CanonFS-backed `.t81w`: about `10.47 ms`
+- same CanonFS-backed `code run --weights-model` path with a matched allowlist policy: about `9.56 ms`
 
 The useful reading is:
 
@@ -201,6 +204,10 @@ The useful reading is:
   low-double-digit millisecond band as the CLI export commands, but it covers a
   meaningfully different operator workflow: subprocess startup, source compile,
   CanonFS hash resolution, `.t81w` parse, and runtime tensor execution
+- the matched allow-policy variant also lands in that same band; in this short
+  local run it measured slightly faster than the no-policy case, which should be
+  treated as benchmark noise rather than evidence that policy makes the
+  subprocess path faster
 - the five-layer stack now gives an honest decomposition from in-memory
   signature work up through end-to-end CLI export
 
