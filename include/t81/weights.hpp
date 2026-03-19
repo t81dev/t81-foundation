@@ -44,6 +44,7 @@ struct ModelFile {
   NativeModel native;
   std::string checksum;
   std::string format;
+  std::map<std::string, std::string> provenance;
   uint64_t file_size = 0;
   double bits_per_trit = 0.0;
   double sparsity = 0.0;

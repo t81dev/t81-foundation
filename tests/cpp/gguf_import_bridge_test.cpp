@@ -1,5 +1,8 @@
 #include "test_runtime_check.hpp"
+#include "t81/isa/program.hpp"
 #include "t81/model/gguf_import_bridge.hpp"
+#include "t81/tensor/native.hpp"
+#include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 
 #include <filesystem>
@@ -152,6 +155,85 @@ void write_multi_tensor_gguf(const fs::path& path,
   }
 }
 
+fs::path find_repo_model(std::string_view filename) {
+  const std::vector<fs::path> candidates = {
+      fs::path("models") / filename,
+      fs::path("..") / "models" / filename,
+  };
+  for (const auto& candidate : candidates) {
+    if (fs::exists(candidate)) {
+      return fs::weakly_canonical(candidate);
+    }
+  }
+  return {};
+}
+
+std::vector<float> decode_balanced_ternary_row(const t81::weights::NativeTensor& native,
+                                               std::size_t row_index) {
+  T81_TEST_CHECK(native.format == t81::weights::NativeFormat::BalancedTernary);
+  T81_TEST_CHECK(native.shape.size() == 2);
+  const std::size_t rows = static_cast<std::size_t>(native.shape[0]);
+  const std::size_t cols = static_cast<std::size_t>(native.shape[1]);
+  T81_TEST_CHECK(row_index < rows);
+
+  const std::size_t row_offset = row_index * cols;
+  const std::size_t row_end = row_offset + cols;
+  uint64_t remaining = native.trits;
+  if (remaining == 0 && !native.data.empty()) {
+    remaining = static_cast<uint64_t>(native.data.size()) * 48;
+  }
+  T81_TEST_CHECK(remaining >= row_end);
+
+  std::vector<float> row;
+  row.reserve(cols);
+  std::size_t global_offset = 0;
+  for (uint64_t limb : native.data) {
+    const std::size_t count = static_cast<std::size_t>(std::min<uint64_t>(48, remaining));
+    if (global_offset >= row_end) {
+      break;
+    }
+    if (global_offset + count <= row_offset) {
+      global_offset += count;
+      remaining -= count;
+      continue;
+    }
+
+    std::vector<float> block(count, 0.0f);
+    uint64_t value = limb;
+    for (int i = 47; i >= 0; --i) {
+      const uint64_t digit = value % 3;
+      value /= 3;
+      if (static_cast<std::size_t>(i) >= count) {
+        continue;
+      }
+      switch (digit) {
+        case 0:
+          block[static_cast<std::size_t>(i)] = -1.0f;
+          break;
+        case 1:
+          block[static_cast<std::size_t>(i)] = 0.0f;
+          break;
+        case 2:
+          block[static_cast<std::size_t>(i)] = 1.0f;
+          break;
+        default:
+          T81_TEST_CHECK(false);
+      }
+    }
+
+    const std::size_t local_begin = row_offset > global_offset ? row_offset - global_offset : 0;
+    const std::size_t local_end = std::min(count, row_end - global_offset);
+    row.insert(row.end(), block.begin() + static_cast<std::ptrdiff_t>(local_begin),
+               block.begin() + static_cast<std::ptrdiff_t>(local_end));
+
+    global_offset += count;
+    remaining -= count;
+  }
+
+  T81_TEST_CHECK(row.size() == cols);
+  return row;
+}
+
 }  // namespace
 
 int main() {
@@ -184,6 +266,12 @@ int main() {
 
   auto imported = t81::weights::load_gguf(temp);
   T81_TEST_CHECK(imported.format == "GGUF(llama.cpp bridge; arch=llama; profile=llama-dense-v1)");
+  T81_TEST_CHECK(imported.provenance.at("source_path") == temp.string());
+  T81_TEST_CHECK(imported.provenance.at("bridge_backend") == "llama.cpp");
+  T81_TEST_CHECK(imported.provenance.at("bridge_revision") ==
+                 t81::model::GgufImportBridge::bridge_revision());
+  T81_TEST_CHECK(imported.provenance.at("source_sha3_512").rfind("sha3-512:", 0) == 0);
+  T81_TEST_CHECK(imported.provenance.at("source_sha3_512").size() == 137);
   T81_TEST_CHECK(imported.tensors.size() == 1);
   T81_TEST_CHECK(imported.native.find("model.layers.0.self_attn.q_proj.weight") != imported.native.end());
   T81_TEST_CHECK(imported.native.at("model.layers.0.self_attn.q_proj.weight").shape.size() == 2);
@@ -225,6 +313,73 @@ int main() {
   T81_TEST_CHECK(imported_gemma.tensors.size() == 1);
   T81_TEST_CHECK(imported_gemma.native.find("model.layers.0.self_attn.q_proj.weight") !=
                  imported_gemma.native.end());
+
+  const fs::path llama_ggml =
+      fs::temp_directory_path() / "t81-gguf-import-bridge-llama-ggml-style.gguf";
+  write_minimal_gguf(llama_ggml, "llama", "blk.0.attn_q.weight");
+  auto imported_llama_ggml = t81::weights::load_gguf(llama_ggml);
+  T81_TEST_CHECK(imported_llama_ggml.format ==
+                 "GGUF(llama.cpp bridge; arch=llama; profile=llama-dense-v1)");
+  T81_TEST_CHECK(imported_llama_ggml.native.find("blk.0.attn_q.weight") !=
+                 imported_llama_ggml.native.end());
+
+  const fs::path tinyllama = find_repo_model("tinyllama-1.1b.Q2_K.gguf");
+  T81_TEST_CHECK(!tinyllama.empty());
+  auto imported_tinyllama = t81::weights::load_gguf(tinyllama);
+  T81_TEST_CHECK(imported_tinyllama.format ==
+                 "GGUF(llama.cpp bridge; arch=llama; profile=llama-dense-v1)");
+  T81_TEST_CHECK(imported_tinyllama.native.find("blk.0.attn_q.weight") !=
+                 imported_tinyllama.native.end());
+  const fs::path tinyllama_t81w = fs::temp_directory_path() / "t81-gguf-import-bridge-tinyllama.t81w";
+  t81::weights::save_t81w(imported_tinyllama.native, tinyllama_t81w);
+  auto reloaded_tinyllama = t81::weights::load_t81w(tinyllama_t81w);
+  T81_TEST_CHECK(reloaded_tinyllama.native.find("blk.0.attn_q.weight") !=
+                 reloaded_tinyllama.native.end());
+  auto tinyllama_model = std::make_shared<t81::weights::ModelFile>(std::move(reloaded_tinyllama));
+
+  t81::tisc::Program tinyllama_program;
+  tinyllama_program.symbol_pool = {"blk.0.attn_q.weight"};
+  tinyllama_program.weights_model = tinyllama_model;
+  tinyllama_program.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
+  tinyllama_program.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  tinyllama_program.insns.push_back({t81::tisc::Opcode::TWEMBED, 3, 1, 2});
+  tinyllama_program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+  tinyllama_program.axion_policy_text = "(policy (tier 5))";
+
+  auto tinyllama_vm = t81::vm::make_interpreter_vm();
+  tinyllama_vm->load_program(tinyllama_program);
+  auto& tinyllama_state = const_cast<t81::vm::State&>(tinyllama_vm->state());
+  tinyllama_state.contexts[0].tier_status.current = t81::cog::TierId::Tier5;
+  tinyllama_state.contexts[0].tier_status.label = "tier-5-test";
+  auto tinyllama_step1 = tinyllama_vm->step();
+  T81_TEST_CHECK(tinyllama_step1.has_value());
+  T81_TEST_CHECK(tinyllama_vm->state().contexts[0].register_tags[1] ==
+                 t81::vm::ValueTag::WeightsTensorHandle);
+  T81_TEST_CHECK(tinyllama_vm->state().contexts[0].registers[1] > 0);
+  auto tinyllama_step2 = tinyllama_vm->step();
+  T81_TEST_CHECK(tinyllama_step2.has_value());
+  auto tinyllama_result = tinyllama_vm->step();
+  T81_TEST_CHECK(tinyllama_result.has_value());
+  T81_TEST_CHECK(tinyllama_vm->state().contexts[0].register_tags[3] ==
+                 t81::vm::ValueTag::TensorHandle);
+
+  const auto embed_handle = tinyllama_vm->state().contexts[0].registers[3];
+  const auto& embed_tensor = tinyllama_state.tensors[static_cast<std::size_t>(embed_handle - 1)];
+  T81_TEST_CHECK(embed_tensor.has_value());
+  T81_TEST_CHECK(embed_tensor->shape().size() == 2);
+  T81_TEST_CHECK(embed_tensor->shape()[0] == 1);
+  T81_TEST_CHECK(embed_tensor->numeric_class() == t81::TensorNumericClass::ExactTrit);
+
+  const auto native_it = tinyllama_model->native.find("blk.0.attn_q.weight");
+  T81_TEST_CHECK(native_it != tinyllama_model->native.end());
+  const auto expected_values = decode_balanced_ternary_row(native_it->second, 0);
+  T81_TEST_CHECK(embed_tensor->shape()[1] == static_cast<int>(expected_values.size()));
+  const auto actual_values = embed_tensor->snapshot_values();
+  const std::size_t row_width = expected_values.size();
+  T81_TEST_CHECK(actual_values.size() == row_width);
+  for (std::size_t i = 0; i < row_width; ++i) {
+    T81_TEST_CHECK(actual_values[i] == expected_values[i]);
+  }
 
   const fs::path invalid_llama =
       fs::temp_directory_path() / "t81-gguf-import-bridge-invalid-llama.gguf";

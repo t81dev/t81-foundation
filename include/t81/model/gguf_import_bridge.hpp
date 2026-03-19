@@ -25,6 +25,8 @@ public:
   static t81::expected<std::unique_ptr<GgufImportBridge>, std::string> open(
       const std::filesystem::path& model_path);
 
+  static std::string bridge_revision();
+
   virtual ~GgufImportBridge() = default;
 
   virtual std::string model_architecture() const = 0;

@@ -16,6 +16,8 @@ namespace t81::model {
 
 namespace {
 
+constexpr std::string_view kGgufImportBridgeRevision = "llama.cpp-bridge-v1";
+
 #if defined(T81_HAS_LLAMA_CPP)
 
 struct GgufContextDeleter {
@@ -209,6 +211,10 @@ t81::expected<std::unique_ptr<GgufImportBridge>, std::string> GgufImportBridge::
   return t81::make_unexpected(
       "GGUF import bridge is unavailable in this build (reconfigure with -DT81_ENABLE_LLAMA_CPP=ON)");
 #endif
+}
+
+std::string GgufImportBridge::bridge_revision() {
+  return std::string(kGgufImportBridgeRevision);
 }
 
 }  // namespace t81::model

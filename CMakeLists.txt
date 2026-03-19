@@ -1746,7 +1746,7 @@ if(T81_BUILD_TESTS)
   target_link_libraries(t81_native_weights_metrics_test PRIVATE t81_tool_model t81_core)
   if(T81_ENABLE_LLAMA_CPP)
     add_executable(t81_gguf_import_bridge_test tests/cpp/gguf_import_bridge_test.cpp)
-    target_link_libraries(t81_gguf_import_bridge_test PRIVATE t81_tool_model t81_core)
+    target_link_libraries(t81_gguf_import_bridge_test PRIVATE t81_tool_model t81_vm t81_core)
   endif()
 
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)

@@ -1,6 +1,6 @@
 # RFC-00BA: llama.cpp GGUF Ingestion Bridge
 
-**Status:** proposed
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** tooling model import path, optional CLI integration, internal build graph
 **Created:** 2026-03-18
@@ -244,8 +244,14 @@ Current status on 2026-03-18:
 - `weights import --format gguf` can convert standard non-`T3_K` GGUF models into
   native `.t81w`
 - llama.cpp coupling remains localized to the bridge layer
-- provenance is not yet fully aligned with this RFC's stricter revision-recording
-  language, so the RFC is ready for `proposed` but not yet `accepted`
+- import output now records source GGUF checksum and bridge revision on the
+  `ModelFile` surface and in `weights import` reporting
+- real TinyLlama GGUF conversion is verified in-repo in addition to fixture
+  coverage
+
+Status 2026-03-18: accepted in-repo. Remaining work after acceptance is limited
+to broader provenance persistence choices and future backend replacement
+flexibility, not the core bridge contract itself.
 
 ## 9. Open Questions
 
@@ -263,7 +269,7 @@ This RFC moves from `draft` to `proposed` when:
 - at least one llama.cpp-backed metadata enumeration test passes
 - no T81 public header exposes llama.cpp types
 
-This RFC can move from `proposed` to `accepted` when:
+This RFC moves from `proposed` to `accepted` when:
 
 - `weights import --format gguf` can convert at least one standard non-`T3_K` GGUF model into `.t81w`
 - the import path is covered by automated tests

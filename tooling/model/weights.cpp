@@ -279,7 +279,8 @@ template <typename TensorDesc>
 bool profile_has_required_structure(std::string_view profile, std::span<const TensorDesc> tensors) {
   if (profile == "llama-dense-v1" || profile == "mistral-dense-v1" || profile == "gemma-dense-v1" ||
       profile == "phi3-dense-v1") {
-    return has_named_2d_tensor(tensors, "self_attn.q_proj");
+    return has_named_2d_tensor(tensors, "self_attn.q_proj") ||
+           has_named_2d_tensor(tensors, "attn_q.weight");
   }
   if (profile == "qwen2-dense-v1") {
     return has_named_2d_tensor(tensors, "attn.q_proj.weight");
@@ -661,6 +662,12 @@ void print_info(const ModelFile& mf) {
   if (!mf.format.empty()) {
     std::cout << "Format:       " << mf.format << "\n";
   }
+  if (const auto it = mf.provenance.find("source_sha3_512"); it != mf.provenance.end()) {
+    std::cout << "Source SHA3:  " << it->second << "\n";
+  }
+  if (const auto it = mf.provenance.find("bridge_revision"); it != mf.provenance.end()) {
+    std::cout << "Bridge Rev:   " << it->second << "\n";
+  }
 }
 
 std::string format_bytes_impl(uint64_t bytes) {
@@ -689,6 +696,19 @@ std::string format_count(uint64_t value) {
   char buf[64];
   std::snprintf(buf, sizeof(buf), "%.2f %s", scaled, suffixes[idx]);
   return buf;
+}
+
+std::string sha3_512_file(const std::filesystem::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    throw std::runtime_error("cannot open " + path.string());
+  }
+  std::vector<uint8_t> bytes;
+  char ch = 0;
+  while (in.get(ch)) {
+    bytes.push_back(static_cast<uint8_t>(static_cast<unsigned char>(ch)));
+  }
+  return "sha3-512:" + crypto::sha3_512_hex(bytes);
 }
 
 namespace {
@@ -1582,6 +1602,8 @@ ModelFile load_gguf(const std::filesystem::path& path) {
       throw std::runtime_error("GGUF import could not open llama.cpp bridge: " + bridge.error());
     }
 
+    const std::string source_sha3_512 = sha3_512_file(path);
+    const std::string bridge_revision = t81::model::GgufImportBridge::bridge_revision();
     const std::string architecture = bridge.value()->model_architecture();
     const std::string profile = native_gguf_profile_for_architecture(architecture);
     if (profile.empty()) {
@@ -1632,6 +1654,10 @@ ModelFile load_gguf(const std::filesystem::path& path) {
     }
 
     mf.format = "GGUF(llama.cpp bridge; arch=" + architecture + "; profile=" + profile + ")";
+    mf.provenance.emplace("source_path", path.string());
+    mf.provenance.emplace("source_sha3_512", source_sha3_512);
+    mf.provenance.emplace("bridge_backend", "llama.cpp");
+    mf.provenance.emplace("bridge_revision", bridge_revision);
     return mf;
 #else
     throw std::runtime_error("GGUF import currently supports only native ternary T3_K tensors; "

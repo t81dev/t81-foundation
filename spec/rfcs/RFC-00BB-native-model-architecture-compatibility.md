@@ -1,6 +1,6 @@
 # RFC-00BB: Native Model Architecture Compatibility
 
-**Status:** proposed
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** tooling model conversion, native `.t81w` artifact contract, RFC-0034 execution path
 **Created:** 2026-03-18
@@ -299,6 +299,9 @@ Current status:
 Current evidence state on 2026-03-18:
 
 - real TinyLlama GGUF conversion into native `.t81w` is verified in-repo
+- real TinyLlama family-specific execution is now also verified in-repo via the
+  full `GGUF -> native .t81w -> reload -> VM TWEMBED` path on
+  `blk.0.attn_q.weight`, not just via generic native-weight benchmarks
 - synthetic fixture coverage exists for `gemma`, `mistral`, `phi3`, and `qwen2`
 - native execution evidence now exists for the generic `.t81w` path via
   `docs/records/status-history/NATIVE_WEIGHTS_EXECUTION_EVIDENCE_2026-03-18.md`
@@ -306,11 +309,13 @@ Current evidence state on 2026-03-18:
   family-by-family execution evidence after conversion, starting with the
   already-admitted dense decoder families
 
-Status 2026-03-18: proposed in-repo. The compatibility framework, explicit
-profile matrix, deterministic rejection rules, and first real native-conversion
-path are implemented. The remaining step before `accepted` is tighter
-family-specific end-to-end execution evidence beyond generic native `.t81w`
-execution coverage.
+Status 2026-03-18: accepted in-repo. The compatibility framework, explicit
+profile matrix, deterministic rejection rules, real TinyLlama conversion path,
+and first family-specific `GGUF -> .t81w -> VM` execution evidence are all
+implemented. Remaining work is post-acceptance expansion and hardening:
+additional family-specific execution evidence, more profile coverage, and
+possible promotion of mature families from `experimental_native` toward
+`native_supported`.
 
 ## 9. Open Questions
 
