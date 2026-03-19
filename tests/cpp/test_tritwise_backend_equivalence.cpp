@@ -9,7 +9,6 @@
 using namespace t81::tritwise;
 using t81::experimental::ComputeTritVector;
 
-// Helper to check vector equality
 bool check_vec(const std::vector<int8_t>& a, const std::vector<int8_t>& b) {
   if (a.size() != b.size()) return false;
   for (size_t i = 0; i < a.size(); ++i) {
@@ -18,13 +17,6 @@ bool check_vec(const std::vector<int8_t>& a, const std::vector<int8_t>& b) {
   return true;
 }
 
-// RFC Compliance: Outcome A (No Extension Needed)
-// This test suite validates:
-// 1. Cross-backend byte identity (Scalar vs SWAR vs AVX2 vs NEON).
-// 2. TXor routing to LUT fallback (via truth table verification).
-// 3. Determinism of tritwise operations across all supported platforms.
-
-// Helper to check byte equality
 bool check_bytes(const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
   if (a.size() != b.size()) return false;
   for (size_t i = 0; i < a.size(); ++i) {
@@ -52,7 +44,7 @@ void test_backend_equivalence() {
     auto va = ComputeTritVector::from_trits(a_trits).value();
     auto vb = ComputeTritVector::from_trits(b_trits).value();
 
-    // 1. Scalar Reference (Truth)
+    // Scalar trit oracle
     std::vector<int8_t> ref_and(len), ref_or(len), ref_not(len), ref_xor(len);
     for (size_t i = 0; i < len; ++i) {
       ref_and[i] = std::min(a_trits[i], b_trits[i]);
@@ -66,21 +58,33 @@ void test_backend_equivalence() {
       ref_xor[i] = (int8_t)res;
     }
 
-    // 2. Library Ops (Dispatches to Best Backend)
+    // Scalar packed-byte oracle
+    auto ref_and_cv = va.t_and_ref(vb).value();
+    auto ref_or_cv = va.t_or_ref(vb).value();
+    auto ref_not_cv = va.t_not_ref().value();
+    auto ref_xor_cv = va.t_xor_ref(vb).value();
+
+    assert(check_vec(ref_and_cv.to_trits().value(), ref_and));
+    assert(check_vec(ref_or_cv.to_trits().value(), ref_or));
+    assert(check_vec(ref_not_cv.to_trits().value(), ref_not));
+    assert(check_vec(ref_xor_cv.to_trits().value(), ref_xor));
+
+    // Best-backend dispatch
     auto res_and = va.t_and(vb).value();
     auto res_or = va.t_or(vb).value();
     auto res_not = va.t_not().value();
-    auto res_xor = va.t_xor(vb).value();  // Fallback to LUT
+    auto res_xor = va.t_xor(vb).value();
 
     assert(check_vec(res_and.to_trits().value(), ref_and));
     assert(check_vec(res_or.to_trits().value(), ref_or));
     assert(check_vec(res_not.to_trits().value(), ref_not));
     assert(check_vec(res_xor.to_trits().value(), ref_xor));
+    assert(check_bytes(res_and.data(), ref_and_cv.data()));
+    assert(check_bytes(res_or.data(), ref_or_cv.data()));
+    assert(check_bytes(res_not.data(), ref_not_cv.data()));
+    assert(check_bytes(res_xor.data(), ref_xor_cv.data()));
 
-    // 3. Explicit Backend Validation (Byte-for-Byte)
-    // Verify that SWAR and SIMD (if available) produce IDENTICAL bytes, including padding.
-
-    // Prepare buffers
+    // Explicit backend validation against the scalar packed-byte oracle.
     size_t byte_len = va.data().size();
     std::vector<uint8_t> swar_not(byte_len), swar_and(byte_len), swar_or(byte_len);
     std::vector<uint8_t> simd_not(byte_len), simd_and(byte_len), simd_or(byte_len);
@@ -88,28 +92,53 @@ void test_backend_equivalence() {
     const uint8_t* raw_a = va.data().data();
     const uint8_t* raw_b = vb.data().data();
 
-    // Run SWAR
     ComputeTritVector::kernel_not_swar(raw_a, swar_not.data(), byte_len);
     ComputeTritVector::kernel_and_swar(raw_a, raw_b, swar_and.data(), byte_len);
     ComputeTritVector::kernel_or_swar(raw_a, raw_b, swar_or.data(), byte_len);
+    if (len % 4 != 0 && byte_len != 0) {
+      const uint8_t mask = static_cast<uint8_t>((1u << ((len % 4) * 2)) - 1u);
+      swar_not.back() &= mask;
+      swar_and.back() &= mask;
+      swar_or.back() &= mask;
+    }
 
-    // Run SIMD (AVX2)
+    assert(check_bytes(swar_not, ref_not_cv.data()));
+    assert(check_bytes(swar_and, ref_and_cv.data()));
+    assert(check_bytes(swar_or, ref_or_cv.data()));
+
 #if defined(__x86_64__) && defined(__AVX2__)
     ComputeTritVector::kernel_not_avx2(raw_a, simd_not.data(), byte_len);
     ComputeTritVector::kernel_and_avx2(raw_a, raw_b, simd_and.data(), byte_len);
     ComputeTritVector::kernel_or_avx2(raw_a, raw_b, simd_or.data(), byte_len);
+    if (len % 4 != 0 && byte_len != 0) {
+      const uint8_t mask = static_cast<uint8_t>((1u << ((len % 4) * 2)) - 1u);
+      simd_not.back() &= mask;
+      simd_and.back() &= mask;
+      simd_or.back() &= mask;
+    }
 
+    assert(check_bytes(simd_not, ref_not_cv.data()));
+    assert(check_bytes(simd_and, ref_and_cv.data()));
+    assert(check_bytes(simd_or, ref_or_cv.data()));
     assert(check_bytes(swar_not, simd_not));
     assert(check_bytes(swar_and, simd_and));
     assert(check_bytes(swar_or, simd_or));
 #endif
 
-    // Run SIMD (NEON)
 #if defined(__aarch64__) && defined(__ARM_NEON)
     ComputeTritVector::kernel_not_neon(raw_a, simd_not.data(), byte_len);
     ComputeTritVector::kernel_and_neon(raw_a, raw_b, simd_and.data(), byte_len);
     ComputeTritVector::kernel_or_neon(raw_a, raw_b, simd_or.data(), byte_len);
+    if (len % 4 != 0 && byte_len != 0) {
+      const uint8_t mask = static_cast<uint8_t>((1u << ((len % 4) * 2)) - 1u);
+      simd_not.back() &= mask;
+      simd_and.back() &= mask;
+      simd_or.back() &= mask;
+    }
 
+    assert(check_bytes(simd_not, ref_not_cv.data()));
+    assert(check_bytes(simd_and, ref_and_cv.data()));
+    assert(check_bytes(simd_or, ref_or_cv.data()));
     assert(check_bytes(swar_not, simd_not));
     assert(check_bytes(swar_and, simd_and));
     assert(check_bytes(swar_or, simd_or));
