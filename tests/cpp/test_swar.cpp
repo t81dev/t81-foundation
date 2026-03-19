@@ -19,6 +19,12 @@ bool check_vec(const std::vector<int8_t>& a, const std::vector<int8_t>& b) {
   return true;
 }
 
+void require(bool condition) {
+  if (!condition) {
+    std::abort();
+  }
+}
+
 void test_swar_basics() {
   std::cout << "[SWAR] Testing Basic Logic..." << std::endl;
   std::mt19937 rng(42);
@@ -97,6 +103,31 @@ void test_swar_inplace() {
     assert(t_or_inplace(v, v2).is_ok());
     auto expected = t_or_swar(v1, v2).value();
     assert(check_vec(v.to_trits().value(), expected.to_trits().value()));
+  }
+
+  // Public SWAR aliasing contract: src == dst is deterministic and preserves
+  // canonical bytes for idempotent self-composition.
+  {
+    auto v = ComputeTritVector::from_trits(t1_data).value();
+    const auto* before = v.data().data();
+    require(t_and_inplace(v, v).is_ok());
+    require(v.data().data() == before);
+    require(check_vec(v.to_trits().value(), v1_orig));
+
+    v = ComputeTritVector::from_trits(t1_data).value();
+    before = v.data().data();
+    require(t_or_inplace(v, v).is_ok());
+    require(v.data().data() == before);
+    require(check_vec(v.to_trits().value(), v1_orig));
+  }
+
+  // Tail padding must remain canonical after in-place mutation on partial-byte
+  // vectors. For 3 trits only the low 6 bits may be used.
+  {
+    auto v = ComputeTritVector::from_trits({1, -1, 0}).value();
+    auto other = ComputeTritVector::from_trits({0, 1, -1}).value();
+    require(t_or_inplace(v, other).is_ok());
+    require((v.data()[0] & 0xC0) == 0);
   }
 }
 
