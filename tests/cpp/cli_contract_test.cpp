@@ -896,6 +896,8 @@ int main(int argc, char* argv[]) {
     model["mat_b"] = mat_b;
 
     t81::weights::save_t81w(model, model_path);
+    const auto loaded_model = t81::weights::load_t81w(model_path);
+    T81_TEST_CHECK(!loaded_model.checksum.empty());
 
     const auto put_model_result =
         run_cli(t81_bin, {"canonfs", "put-file", model_path.string(), "--canonfs-root", canonfs_root.string()});
@@ -909,16 +911,49 @@ int main(int argc, char* argv[]) {
     const fs::path tensor_fixture = fs::absolute(t81_bin).parent_path().parent_path() / "tests" /
                                     "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
     T81_TEST_CHECK(fs::exists(tensor_fixture));
+    const fs::path allow_policy = make_temp_path("t81-cli-contract-model-allow", ".apl");
+    const fs::path deny_policy = make_temp_path("t81-cli-contract-model-deny", ".apl");
+
+    {
+      std::ofstream out(allow_policy);
+      T81_TEST_CHECK(static_cast<bool>(out));
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:"
+          << loaded_model.checksum
+          << "\"]))\n";
+    }
+    {
+      std::ofstream out(deny_policy);
+      T81_TEST_CHECK(static_cast<bool>(out));
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))\n";
+    }
 
     set_env("T81_CANONFS_ROOT", canonfs_root.string());
     const auto model_run_result =
         run_cli(t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash});
+    const auto allowed_model_run_result = run_cli(
+        t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash, "--policy",
+                  allow_policy.string()});
+    const auto denied_model_run_result = run_cli(
+        t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash, "--policy",
+                  deny_policy.string()});
     unset_env("T81_CANONFS_ROOT");
 
     T81_TEST_CHECK(model_run_result.exit_code == 0);
     T81_TEST_CHECK(contains(model_run_result.stdout_text, "<tensor#1>"));
+    T81_TEST_CHECK(allowed_model_run_result.exit_code == 0);
+    T81_TEST_CHECK(contains(allowed_model_run_result.stdout_text, "<tensor#1>"));
+    T81_TEST_CHECK(denied_model_run_result.exit_code != 0);
+    T81_TEST_CHECK(contains(denied_model_run_result.stderr_text, "SecurityFault"));
+    T81_TEST_CHECK(
+        contains(denied_model_run_result.stderr_text, "allowed-ternary-model-hashes"));
 
     fs::remove(model_path, ignore_ec);
+    fs::remove(allow_policy, ignore_ec);
+    fs::remove(deny_policy, ignore_ec);
     fs::remove_all(canonfs_root, ignore_ec);
   }
 
