@@ -75,6 +75,7 @@ Current coverage:
 - `BM_GovernedCLI_VMTrace_Export`
 - `BM_GovernedCLI_VMTrace_Export_Accumulator`
 - `BM_GovernedCLI_VMTrace_Export_SystemIntegration`
+- `BM_GovernedCLI_VMTrace_Export_WithPolicy`
 - `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
@@ -120,7 +121,8 @@ Interpretation note:
   from the in-process emit lane.
   The `vm-trace` lane now includes both a tiny hello-world artifact and a
   looping accumulator artifact plus a larger system-integration artifact to
-  avoid overfitting conclusions to one trivial trace.
+  avoid overfitting conclusions to one trivial trace, and a policy-file case so
+  the subprocess layer includes an explicitly governed export path.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.

@@ -579,6 +579,42 @@ static void BM_GovernedCLI_VMTrace_Export_SystemIntegration(benchmark::State& st
 }
 BENCHMARK(BM_GovernedCLI_VMTrace_Export_SystemIntegration);
 
+static void BM_GovernedCLI_VMTrace_Export_WithPolicy(benchmark::State& state) {
+  const auto repo_root = std::filesystem::current_path();
+  const auto t81_bin = repo_root / "build" / "t81";
+  const auto workdir = governed_emit_root("cli-vm-trace-policy");
+  const auto artifact = workdir / "hello-policy.tisc";
+  const auto trace_out = workdir / "hello-policy.trace";
+  const auto policy = repo_root / "examples" / "system_integration.apl";
+  std::error_code ec;
+  std::filesystem::create_directories(workdir, ec);
+  const std::string build_cmd =
+      shell_quote(t81_bin) + " code build " + shell_quote(repo_root / "examples" / "hello_world.t81") +
+      " -o " + shell_quote(artifact) + " >/dev/null";
+  if (run_shell_command(build_cmd) != 0) {
+    state.SkipWithError("failed to prepare policy CLI trace artifact");
+    std::filesystem::remove_all(workdir, ec);
+    return;
+  }
+  state.SetLabel("workflow=cli-export, command=vm-trace, governance=policy-file");
+  for (auto _ : state) {
+    const std::string cmd = shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) +
+                            " --policy " + shell_quote(policy) + " -o " + shell_quote(trace_out) +
+                            " >/dev/null 2>/dev/null";
+    const int rc = run_shell_command(cmd);
+    benchmark::DoNotOptimize(static_cast<long long>(rc));
+    if (rc != 0) {
+      state.SkipWithError("t81 vm trace with policy failed");
+      break;
+    }
+  }
+  if (std::filesystem::exists(trace_out, ec)) {
+    state.counters["trace_bytes"] = static_cast<double>(std::filesystem::file_size(trace_out, ec));
+  }
+  std::filesystem::remove_all(workdir, ec);
+}
+BENCHMARK(BM_GovernedCLI_VMTrace_Export_WithPolicy);
+
 static void BM_GovernedCLI_AxionLog_JSON(benchmark::State& state) {
   const auto repo_root = std::filesystem::current_path();
   const auto t81_bin = repo_root / "build" / "t81";
