@@ -1,6 +1,6 @@
 # /docs/status — Control Surface
 
-Last Updated: 2026-03-15
+Last Updated: 2026-03-19
 Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
 This directory is a cockpit, not an archive.
@@ -12,6 +12,14 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 
 ---
 
+## Classification Note
+
+- **DCP / verified deterministic surface** means the surface is inside the deterministic-core boundary and backed by registry/enforcement evidence.
+- **Governed non-DCP** means the surface is policy-bounded and important, but not entitled to full deterministic-surface claims.
+- **Experimental / non-DCP** means the surface is outside release-grade deterministic guarantees unless later promoted.
+
+---
+
 ## The Six Questions
 
 | Question | Document |
@@ -20,7 +28,7 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 | What is drifting? | `DRIFT_DECOMPOSITION.md` |
 | What is risky? | `ACTIVE_RISKS.md` |
 | What is blocked / being hardened? | `HARDENING_BACKLOG.md` |
-| What is experimental and explicitly non-DCP? | `EXTENSION_PROFILE.md` |
+| What is governed non-DCP or experimental? | `EXTENSION_PROFILE.md` |
 | What is the review protocol? | `GOVERNANCE_REVIEW_CADENCE.md` |
 
 ---
@@ -29,11 +37,11 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 
 ### Dashboard
 
-- `PROJECT_CONTROL_CENTER.md` — phase, health, gates, drift summary, top risks, next decisions
+- `PROJECT_CONTROL_CENTER.md` — phase, health, gates, drift summary, top risks, next decisions, and deterministic-surface classification
 
 ### Constitutional
 
-- `FROZEN_CORE_PROFILE.md` — directory boundary, opcode whitelist, determinism guarantees, exclusions, firewall
+- `FROZEN_CORE_PROFILE.md` — directory boundary, opcode whitelist, DCP guarantees, exclusions, firewall
 
 ### Alignment Truth
 
@@ -52,7 +60,7 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 
 ### Experimental Boundary
 
-- `EXTENSION_PROFILE.md` — what is not frozen, what can break, what has no determinism guarantees
+- `EXTENSION_PROFILE.md` — governed non-DCP and experimental surfaces; what is not frozen, what can break, what has no DCP guarantee
 - `AI_RFC_BACKLOG.md` — prioritized AI RFC execution order, ownership, dependencies, and compliance snapshot
 
 ### Governance Protocol
