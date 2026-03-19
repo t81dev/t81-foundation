@@ -264,6 +264,64 @@ static void test_pool_audit_semantics_match_unbounded() {
         "[RFC-0046-56] timeout last audit kind identical");
 }
 
+static void test_pool_policy_fault_audit_semantics_match_unbounded() {
+  std::printf("\n[RFC-0046/DPE-09] Policy-fault audit semantics match for bounded vs unbounded dispatch\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-57] bootstrap unbounded policy-audit state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-58] bootstrap pooled policy-audit state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  const KernelEpochPolicyGate deny_gate{deny_all_gate, nullptr};
+  const auto eg = make_trivial_epoch(907);
+  const auto programs = std::vector<t81::tisc::Program>{make_valid_program()};
+
+  const auto unbounded_result = axion_kernel_submit_epoch(
+      unbounded_state, eg, programs, deny_gate, /*pool=*/nullptr, /*timeout_ms=*/std::nullopt);
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_result = axion_kernel_submit_epoch(
+      pooled_state, eg, programs, deny_gate, &pool, /*timeout_ms=*/std::nullopt);
+
+  check(unbounded_result.status == KernelEpochStatus::Aborted_PolicyFault,
+        "[RFC-0046-59] unbounded policy-denied epoch status == Aborted_PolicyFault");
+  check(pooled_result.status == KernelEpochStatus::Aborted_PolicyFault,
+        "[RFC-0046-60] pooled policy-denied epoch status == Aborted_PolicyFault");
+  check(unbounded_state.counters.policy_faults == pooled_state.counters.policy_faults,
+        "[RFC-0046-61] policy fault counters identical");
+  check(unbounded_state.counters.audit_events_recorded == pooled_state.counters.audit_events_recorded,
+        "[RFC-0046-62] policy fault total audit events identical");
+  check(unbounded_state.counters.epoch_audit_submissions == pooled_state.counters.epoch_audit_submissions,
+        "[RFC-0046-63] policy fault audit submissions identical");
+  check(unbounded_state.counters.epoch_audit_aborts == pooled_state.counters.epoch_audit_aborts,
+        "[RFC-0046-64] policy fault epoch abort counters identical");
+  check(unbounded_state.last_audit_event.has_value() && pooled_state.last_audit_event.has_value(),
+        "[RFC-0046-65] policy fault last_audit_event present for both schedulers");
+  if (!unbounded_state.last_audit_event.has_value() || !pooled_state.last_audit_event.has_value()) {
+    return;
+  }
+  check(unbounded_state.last_audit_event->kind == KernelAuditEventKind::EpochAbortedPolicyFault,
+        "[RFC-0046-66] unbounded last_audit_event.kind == EpochAbortedPolicyFault");
+  check(pooled_state.last_audit_event->kind == KernelAuditEventKind::EpochAbortedPolicyFault,
+        "[RFC-0046-67] pooled last_audit_event.kind == EpochAbortedPolicyFault");
+  check(unbounded_state.last_audit_event->kind == pooled_state.last_audit_event->kind,
+        "[RFC-0046-68] policy fault last_audit_event.kind identical");
+  check(!unbounded_state.audit_log.empty() && !pooled_state.audit_log.empty(),
+        "[RFC-0046-69] policy fault audit logs populated for both schedulers");
+  if (!unbounded_state.audit_log.empty() && !pooled_state.audit_log.empty()) {
+    check(unbounded_state.audit_log.back().kind == KernelAuditEventKind::EpochAbortedPolicyFault,
+          "[RFC-0046-70] unbounded audit_log.back().kind == EpochAbortedPolicyFault");
+    check(pooled_state.audit_log.back().kind == KernelAuditEventKind::EpochAbortedPolicyFault,
+          "[RFC-0046-71] pooled audit_log.back().kind == EpochAbortedPolicyFault");
+  }
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -282,6 +340,7 @@ int main() {
   test_timeout_epoch_audit(state);
   test_policy_denied_epoch_audit(state);
   test_pool_audit_semantics_match_unbounded();
+  test_pool_policy_fault_audit_semantics_match_unbounded();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
