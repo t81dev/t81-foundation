@@ -8,7 +8,7 @@
 #include "t81/swar/swar.hpp"
 
 using namespace t81::swar;
-using ComputeTritVector = t81::experimental::ComputeTritVector;
+using ComputeTritVector = t81::ComputeTritVector;
 
 // Helper to check vector equality
 bool check_vec(const std::vector<int8_t>& a, const std::vector<int8_t>& b) {

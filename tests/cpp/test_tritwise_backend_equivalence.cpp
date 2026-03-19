@@ -7,7 +7,7 @@
 #include "t81/tritwise/tritwise.hpp"
 
 using namespace t81::tritwise;
-using t81::experimental::ComputeTritVector;
+using t81::ComputeTritVector;
 
 bool check_vec(const std::vector<int8_t>& a, const std::vector<int8_t>& b) {
   if (a.size() != b.size()) return false;
