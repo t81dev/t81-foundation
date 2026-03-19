@@ -72,6 +72,8 @@ Current coverage:
 - `BM_GovernedRender_Arith_AllowPolicy`
 - `BM_GovernedEmit_Arith_NoPolicy`
 - `BM_GovernedEmit_Arith_AllowPolicy`
+- `BM_GovernedCLI_VMTrace_Export`
+- `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_NoPolicy`
@@ -111,6 +113,9 @@ Interpretation note:
   the signature-only lane, but still excludes file I/O.
 - `BM_GovernedEmit_*` writes those rendered payloads to temp files and flushes
   them, so formatting cost and file-emission cost can be compared separately.
+- `BM_GovernedCLI_*` shells out to the built `t81` binary for end-to-end export
+  paths, so process startup and CLI orchestration cost are measured separately
+  from the in-process emit lane.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.

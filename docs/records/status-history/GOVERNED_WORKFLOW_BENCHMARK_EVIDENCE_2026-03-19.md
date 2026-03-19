@@ -45,6 +45,8 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 - `BM_GovernedRender_Arith_AllowPolicy`
 - `BM_GovernedEmit_Arith_NoPolicy`
 - `BM_GovernedEmit_Arith_AllowPolicy`
+- `BM_GovernedCLI_VMTrace_Export`
+- `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_HashFixture_NoPolicy`
@@ -66,6 +68,8 @@ Current local run:
 | `BM_GovernedRender_Arith_AllowPolicy` | `17.24 µs` | same render path with simple allow policy |
 | `BM_GovernedEmit_Arith_NoPolicy` | `506.80 µs` | write the rendered `975` trace bytes and `1411` audit JSON bytes to temp files and flush |
 | `BM_GovernedEmit_Arith_AllowPolicy` | `459.18 µs` | same emit path with simple allow policy |
+| `BM_GovernedCLI_VMTrace_Export` | `10.39 ms` | end-to-end `t81 vm trace <artifact> -o <trace>` subprocess path, writing a `118`-byte trace file |
+| `BM_GovernedCLI_AxionLog_JSON` | `12.82 ms` | end-to-end `t81 axion log --json` subprocess path, writing an `893`-byte JSON payload |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
 | `BM_GovernedTensorLoad_HashFixture_NoPolicy/4096` | `41.01 µs` | in-memory preloaded hash fixture via `TLoadHash` |
@@ -155,6 +159,24 @@ The useful reading is:
   - render formatting
   - write emission
 
+### End-to-end CLI export cost
+
+The `BM_GovernedCLI_*` pair shells out to the built `t81` binary and measures
+operator-style export paths instead of only in-process helpers.
+
+Current local result:
+
+- `t81 vm trace <artifact> -o <trace>`: about `10.39 ms`
+- `t81 axion log --json`: about `12.82 ms`
+
+The useful reading is:
+
+- CLI/process overhead is substantially larger than the in-process emit lane
+- the in-process emit lane is still useful because it isolates formatting and
+  write cost from process startup, argument parsing, and broader CLI setup
+- the five-layer stack now gives an honest decomposition from in-memory
+  signature work up through end-to-end CLI export
+
 ### Tensor-path policy cost
 
 For the `4096`-element tensor case:
@@ -209,6 +231,8 @@ difference.
   involving CLI file I/O
 - temp-file trace/audit emission can be measured directly in-repo as a separate
   write-cost layer
+- end-to-end CLI export cost can be measured directly in-repo as a distinct
+  process/orchestration layer
 - policy-on vs policy-off tensor loading can be measured directly within a
   fixed path
 - `TLoadHash` can now be benchmarked against a non-persistent in-memory fixture
@@ -221,7 +245,8 @@ difference.
   persistent-driver path
 - it does not establish a policy-overhead bound for all workloads
 - it does not measure broader CLI orchestration around argument parsing,
-  terminal I/O, or user-facing reporting
+  terminal interactivity, or user-facing TTY rendering beyond the specific
+  subprocess commands exercised here
 - it does not extend DCP / Verified determinism claims
 
 ## Known Caveats
@@ -237,7 +262,7 @@ difference.
 
 1. Record the `4` and `256` tensor rows in a dedicated evidence table instead
    of only carrying the `4096` representative row here.
-2. Add CLI end-to-end trace/audit export benchmarks if shell/process overhead
-   needs to be measured in addition to in-process write cost.
-3. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
+2. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
    and cold-cache splits instead of one blended persistent path.
+3. Add larger trace/audit snapshots so export scaling is characterized beyond
+   the current small arithmetic-chain workload.
