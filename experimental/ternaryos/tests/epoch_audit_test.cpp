@@ -196,6 +196,74 @@ static void test_policy_denied_epoch_audit(KernelRuntimeState& state) {
         "[DPE-09-05] last_epoch_audit_kind != EpochAborted for policy fault");
 }
 
+// ── RFC-0046 / DPE-09 scheduler parity: audit semantics survive pool choice ──
+
+static void test_pool_audit_semantics_match_unbounded() {
+  std::printf("\n[RFC-0046/DPE-09] Audit semantics match for bounded vs unbounded dispatch\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-43] bootstrap unbounded audit state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-44] bootstrap pooled audit state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  const auto success_epoch = make_trivial_epoch(905);
+  const auto success_programs = std::vector<t81::tisc::Program>{make_valid_program()};
+
+  const auto unbounded_success = axion_kernel_submit_epoch(
+      unbounded_state, success_epoch, success_programs);
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_success = axion_kernel_submit_epoch(
+      pooled_state, success_epoch, success_programs, /*gate=*/{}, &pool, /*timeout_ms=*/std::nullopt);
+
+  check(unbounded_success.status == KernelEpochStatus::Ok,
+        "[RFC-0046-45] unbounded successful epoch status == Ok");
+  check(pooled_success.status == KernelEpochStatus::Ok,
+        "[RFC-0046-46] pooled successful epoch status == Ok");
+  check(unbounded_state.counters.epoch_audit_submissions ==
+            pooled_state.counters.epoch_audit_submissions,
+        "[RFC-0046-47] successful epoch audit submissions identical");
+  check(unbounded_state.counters.epoch_audit_commits ==
+            pooled_state.counters.epoch_audit_commits,
+        "[RFC-0046-48] successful epoch audit commits identical");
+  check(unbounded_state.counters.audit_events_recorded ==
+            pooled_state.counters.audit_events_recorded,
+        "[RFC-0046-49] successful epoch total audit events identical");
+  check(unbounded_state.last_epoch_audit_kind == pooled_state.last_epoch_audit_kind,
+        "[RFC-0046-50] successful epoch last audit kind identical");
+
+  const auto timeout_epoch = make_trivial_epoch(906);
+  const auto timeout_programs = std::vector<t81::tisc::Program>{make_valid_program()};
+  const auto unbounded_timeout = axion_kernel_submit_epoch(
+      unbounded_state, timeout_epoch, timeout_programs,
+      /*gate=*/{}, /*pool=*/nullptr, std::chrono::milliseconds{0});
+  const auto pooled_timeout = axion_kernel_submit_epoch(
+      pooled_state, timeout_epoch, timeout_programs,
+      /*gate=*/{}, &pool, std::chrono::milliseconds{0});
+
+  check(unbounded_timeout.status == KernelEpochStatus::Aborted_Timeout,
+        "[RFC-0046-51] unbounded timeout epoch status == Aborted_Timeout");
+  check(pooled_timeout.status == KernelEpochStatus::Aborted_Timeout,
+        "[RFC-0046-52] pooled timeout epoch status == Aborted_Timeout");
+  check(unbounded_state.counters.epoch_audit_submissions ==
+            pooled_state.counters.epoch_audit_submissions,
+        "[RFC-0046-53] timeout audit submissions identical");
+  check(unbounded_state.counters.epoch_audit_aborts ==
+            pooled_state.counters.epoch_audit_aborts,
+        "[RFC-0046-54] timeout audit aborts identical");
+  check(unbounded_state.counters.audit_events_recorded ==
+            pooled_state.counters.audit_events_recorded,
+        "[RFC-0046-55] timeout total audit events identical");
+  check(unbounded_state.last_epoch_audit_kind == pooled_state.last_epoch_audit_kind,
+        "[RFC-0046-56] timeout last audit kind identical");
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -213,6 +281,7 @@ int main() {
   test_faulted_epoch_audit(state);
   test_timeout_epoch_audit(state);
   test_policy_denied_epoch_audit(state);
+  test_pool_audit_semantics_match_unbounded();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
