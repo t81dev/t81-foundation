@@ -7,7 +7,7 @@
 <!-- T81-SPEED-START -->
 <!-- T81-SPEED-END -->
 
-# T81 Foundation — Deterministic Ternary Architecture
+# T81 — Deterministic Ternary Architecture
 
 ![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
 ![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
@@ -16,9 +16,9 @@
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-Leveraging the theoretical efficiency of base-e computation, **T81 Foundation** is a deterministic computing architecture built on **balanced ternary arithmetic** ({-1, 0, +1}) with a full-chain governance model covering instruction set, virtual machine, language compiler, and AI inference environment.
+Leveraging the theoretical efficiency of base-e computation, **T81** is a deterministic computing architecture built on **balanced ternary arithmetic** ({-1, 0, +1}) with a full-chain governance model covering instruction set, virtual machine, language compiler, and AI inference environment.
 
-The stack delivers:
+The architecture delivers:
 
 - **bit-exact reproducibility** — every execution path produces an identical trace hash across supported platforms
 - **governed AI inference** — Axion policy engine intercepts and audits every privileged operation before side effects
