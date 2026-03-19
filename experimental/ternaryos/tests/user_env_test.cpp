@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cinttypes>
 #include <cstdio>
 #include <string>
 #include <string_view>
@@ -144,7 +145,7 @@ static void test_ac3_integrity_violation() {
 
   check(!result.success, "AC-3a: boot fails when a binary hash mismatches");
 
-  const auto* bad_record = std::find_if(
+  const auto bad_record = std::find_if(
     result.spawn_log.begin(), result.spawn_log.end(),
     [](const SpawnRecord& s) { return s.service_id == "t81-canonfs-daemon"; });
   check(bad_record != result.spawn_log.end() && !bad_record->integrity_ok,
@@ -153,7 +154,7 @@ static void test_ac3_integrity_violation() {
         "AC-3c: t81-canonfs-daemon not started on integrity failure");
 
   // Gate event for the failed service should be Deny.
-  const auto* ev = std::find_if(
+  const auto ev = std::find_if(
     result.gate_events.begin(), result.gate_events.end(),
     [](const AxionGateEvent& e) {
       return e.subject == "t81-canonfs-daemon" && e.op == "BootService";

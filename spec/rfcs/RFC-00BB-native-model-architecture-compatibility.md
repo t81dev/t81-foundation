@@ -1,6 +1,6 @@
 # RFC-00BB: Native Model Architecture Compatibility
 
-**Status:** draft
+**Status:** proposed
 **Type:** standards-track
 **Applies-To:** tooling model conversion, native `.t81w` artifact contract, RFC-0034 execution path
 **Created:** 2026-03-18
@@ -306,6 +306,12 @@ Current evidence state on 2026-03-18:
   family-by-family execution evidence after conversion, starting with the
   already-admitted dense decoder families
 
+Status 2026-03-18: proposed in-repo. The compatibility framework, explicit
+profile matrix, deterministic rejection rules, and first real native-conversion
+path are implemented. The remaining step before `accepted` is tighter
+family-specific end-to-end execution evidence beyond generic native `.t81w`
+execution coverage.
+
 ## 9. Open Questions
 
 1. Should compatibility profile identifiers live inside `.t81w` headers or sidecar records?
@@ -315,7 +321,7 @@ Current evidence state on 2026-03-18:
 
 ## 10. Acceptance Criteria
 
-This RFC can move from `draft` to `proposed` when:
+This RFC moves from `draft` to `proposed` when:
 
 - a compatibility-state model exists
 - architecture detection rules are documented

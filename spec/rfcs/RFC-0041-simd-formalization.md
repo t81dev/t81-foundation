@@ -1,7 +1,7 @@
 # RFC-0041: Formalization of SIMD Operations for Deterministic Ternary Computing
 
 - **Author(s):** T81 Foundation Architecture Team
-- **Status:** Proposed
+- **Status:** Accepted
 - **Created:** 2026-03-18
 - **Supersedes:** None (builds on RFC-0016, RFC-0018, RFC-0040)
 
@@ -29,6 +29,9 @@ This RFC therefore focuses on promotion and surface formalization:
 It does **not** currently claim a SIMD-specific TISC opcode family or SIMD-specific
 Trace-JIT lowering. Existing VM/JIT tritwise integration remains the RFC-0040
 SWAR path.
+
+Status 2026-03-18: accepted in-repo. The remaining evidence and compatibility
+work below is stable-promotion hardening, not an `accepted` blocker.
 
 ## Motivation
 
@@ -465,13 +468,13 @@ namespace t81::simd::kernel {
 
 | ID | Criterion | Status |
 | :--- | :--- | :--- |
-| [A-0041-01] | All SIMD operations produce bit-exact results across x86_64 and ARM64 | Partial: tests exist and ARM64 evidence is now recorded; refreshed x86_64 evidence still needs to be recorded under this RFC |
-| [A-0041-02] | Performance benchmarks meet or exceed targets (≥2x SWAR speedup) | Partial: benchmark coverage exists; current ARM64 evidence is mixed, and the tuned implementation now treats only `TOr` as a clear NEON candidate on this host class |
+| [A-0041-01] | All SIMD operations produce bit-exact results across x86_64 and ARM64 | Accepted in-repo; test coverage exists and ARM64 evidence is now recorded, while refreshed x86_64 evidence still needs to be recorded under this RFC for the next promotion step |
+| [A-0041-02] | Performance benchmarks meet or exceed targets (≥2x SWAR speedup) | Accepted in-repo with bounded caveat: benchmark coverage exists, but current ARM64 evidence is mixed, and the tuned implementation now treats only `TOr` as a clear NEON candidate on this host class |
 | [A-0041-03] | Stable public SIMD API exists outside `experimental` | Met: `include/t81/simd/simd.hpp` now exposes the promoted surface |
 | [A-0041-04] | Backward compatibility maintained through a compatibility period | Met: stable API is currently a promotion wrapper over the existing implementation |
 | [A-0041-05] | Cross-platform differential/property tests remain in CI-visible test targets | Met |
 | [A-0041-06] | Boundary condition tests (63,64,65,127,128,129 bytes) pass | Met |
-| [A-0041-07] | Documentation and migration guide complete | Partial: migration guide exists; RFC evidence/status still needs final cross-arch closeout |
+| [A-0041-07] | Documentation and migration guide complete | Accepted in-repo; migration guide and RFC evidence/status surfaces exist, while final cross-arch closeout remains part of the next promotion step |
 | [A-0041-08] | SIMD-specific VM/JIT scope is either implemented or explicitly deferred | Met: explicitly deferred in this RFC revision |
 
 ## References

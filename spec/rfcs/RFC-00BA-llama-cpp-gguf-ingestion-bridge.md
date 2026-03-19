@@ -1,6 +1,6 @@
 # RFC-00BA: llama.cpp GGUF Ingestion Bridge
 
-**Status:** draft
+**Status:** proposed
 **Type:** standards-track
 **Applies-To:** tooling model import path, optional CLI integration, internal build graph
 **Created:** 2026-03-18
@@ -236,6 +236,17 @@ It does not solve the stated user need of converting real llama.cpp models from 
 - add CanonFS-backed conversion evidence
 - document supported formats and failure modes
 
+Current status on 2026-03-18:
+
+- the internal bridge interface exists
+- the bridge is build-gated behind `T81_ENABLE_LLAMA_CPP`
+- metadata enumeration and float export tests exist
+- `weights import --format gguf` can convert standard non-`T3_K` GGUF models into
+  native `.t81w`
+- llama.cpp coupling remains localized to the bridge layer
+- provenance is not yet fully aligned with this RFC's stricter revision-recording
+  language, so the RFC is ready for `proposed` but not yet `accepted`
+
 ## 9. Open Questions
 
 1. Should the first bridge implementation use llama.cpp public APIs only, or may it include internal loader headers?
@@ -245,7 +256,7 @@ It does not solve the stated user need of converting real llama.cpp models from 
 
 ## 10. Acceptance Criteria
 
-This RFC can move from `draft` to `proposed` when:
+This RFC moves from `draft` to `proposed` when:
 
 - an internal bridge interface exists
 - the bridge is build-gated behind `T81_ENABLE_LLAMA_CPP`

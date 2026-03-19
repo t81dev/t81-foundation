@@ -1,7 +1,7 @@
 # RFC-0040: Formalization of SWAR Operations for Deterministic Ternary Computing
 
 - **Author(s):** T81 Foundation Architecture Team
-- **Status:** Proposed
+- **Status:** Accepted
 - **Created:** 2026-03-18
 - **Supersedes:** None
 
@@ -267,6 +267,9 @@ Still open:
 
 - Cross-architecture bit-exact evidence refresh on x86_64 alongside ARM64
 
+Status 2026-03-18: accepted in-repo. The remaining work above is stable-promotion
+hardening and evidence refresh, not an `accepted` blocker.
+
 ### Future Operations Roadmap
 After core SWAR stabilization, priority extensions for ternary ML/AI workloads:
 1. **Ternary ADD** (with carry trit — critical for MAC operations)
@@ -279,7 +282,7 @@ After core SWAR stabilization, priority extensions for ternary ML/AI workloads:
 
 | ID | Criterion | Status |
 | :--- | :--- | :--- |
-| [A-0040-01] | All SWAR operations produce bit-exact results across x86_64 and ARM64 | Pending cross-architecture evidence refresh; local ARM64 backend/JIT/VM coverage is in place |
+| [A-0040-01] | All SWAR operations produce bit-exact results across x86_64 and ARM64 | Accepted in-repo; refreshed cross-architecture evidence is still pending for the next status transition, while local ARM64 backend/JIT/VM coverage is already in place |
 | [A-0040-02] | Performance benchmarks meet or exceed current implementation | Met: `docs/records/status-history/RFC_0040_SWAR_EVIDENCE_2026-03-18.md` shows SWAR ahead of Phase 2A reference on ARM64 |
 | [A-0040-03] | VM integration passes full conformance test suite | Met: `t81_vm_rfc0040_swar_test`, `tisc_opcode_matrix_test`, `t81_vm_tisc_v04_extensions_test` |
 | [A-0040-04] | JIT integration maintains determinism invariants | Met: `jit_trace_equivalence_test`, `jit_repro_oracle_test`, `jit_canonfs_cache_test`, including SWAR policy enforcement coverage |

@@ -1,6 +1,6 @@
 # RFC-0034: T81-Native AI Inference
 
-**Status:** proposed
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** `spec/tisc-spec.md` §5.17, `spec/t81-data-types.md` §11.9,
 `spec/t81vm-spec.md`, `spec/t81lang-spec.md` §3–§4, `kernel/axion/`
@@ -728,7 +728,7 @@ This RFC can move from `draft` to `proposed` when: *(met 2026-03-16)*
 - ✅ `spec/tisc-spec.md §5.17` stubs all six opcodes with encoding and semantics
 - ✅ Q2 and Q6 resolved with documented decisions
 
-This RFC can move from `proposed` to `accepted` when:
+This RFC moves from `proposed` to `accepted` when:
 
 - ✅ All six opcodes are implemented in `core/vm/vm.cpp` and dispatch correctly
 - `TWMATMUL` produces bit-exact results verified against reference vectors on
@@ -754,6 +754,9 @@ This RFC can move from `proposed` to `accepted` when:
 - The conformance suite passes in CI on both reference platforms
 - No determinism regressions in the existing 363/363 core tests
 
+Status 2026-03-18: met in-repo. The remaining work below is integration/stable-promotion
+hardening, not an `accepted` blocker.
+
 This RFC can move from `accepted` to `integrated` when:
 
 - ✅ At least one end-to-end ternary-native inference fixture runs against a
@@ -765,10 +768,10 @@ This RFC can move from `accepted` to `integrated` when:
   integration test suite with both `true` and `false` directive values;
   covered by `tests/cpp/vm_rfc0034_ternary_native_test.cpp`
 
-Remaining work for status promotion on 2026-03-18:
+Remaining work after acceptance on 2026-03-18:
 
-- The `proposed` → `accepted` transition still depends on refreshed
-  cross-platform CI evidence for the reference-platform criteria above.
+- Refreshed cross-platform CI evidence is still needed for the next status
+  transition and for stronger promotion claims on the reference platforms.
 - Independent of status promotion, local runtime evidence now identifies
   the post-decode deterministic exponentiation path as the next optimization
   target for materially stronger native-execution claims. Current benchmark-only
