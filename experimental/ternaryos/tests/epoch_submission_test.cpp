@@ -79,6 +79,29 @@ static t81::tisc::Program make_trivial_program() {
   return p;
 }
 
+static EpochGraph make_three_task_epoch(uint64_t epoch_id) {
+  EpochGraph eg;
+  eg.epoch_id = epoch_id;
+  for (int i = 0; i < 3; ++i) {
+    TaskDescriptor task;
+    task.epoch_id = epoch_id;
+    task.task_seq = static_cast<uint64_t>(i);
+    eg.tasks.push_back(task);
+  }
+  return eg;
+}
+
+static std::vector<t81::tisc::Program> make_three_task_programs() {
+  std::vector<t81::tisc::Program> programs(3);
+  for (int i = 0; i < 3; ++i) {
+    programs[i].insns = {
+        {t81::tisc::Opcode::LoadImm, 1, static_cast<std::int32_t>(7 + i)},
+        {t81::tisc::Opcode::Halt},
+    };
+  }
+  return programs;
+}
+
 // ── [AC-22s-01/02] Single-task epoch increments counters ─────────────────────
 
 static void test_successful_epoch_increments_counters(KernelRuntimeState& state) {
@@ -192,6 +215,48 @@ static void test_consecutive_epochs_accumulate_counters(KernelRuntimeState& stat
         "[AC-22s-05] last_committed_epoch_id == 302 (most recent epoch)");
 }
 
+// ── RFC-0046 / DPE-06 kernel equivalence: bounded pool == unbounded ─────────
+
+static void test_pool_dispatch_matches_unbounded_epoch_hash() {
+  std::printf("\n[RFC-0046/DPE-06] Kernel submit: bounded pool matches unbounded dispatch\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-06] bootstrap unbounded state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-07] bootstrap pooled state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  const auto epoch = make_three_task_epoch(400);
+  const auto programs = make_three_task_programs();
+
+  const auto unbounded_result = axion_kernel_submit_epoch(unbounded_state, epoch, programs);
+
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_result = axion_kernel_submit_epoch(
+      pooled_state, epoch, programs, /*gate=*/{}, &pool, /*timeout_ms=*/std::nullopt);
+
+  check(unbounded_result.ok(), "[RFC-0046-08] unbounded dispatch result ok");
+  check(pooled_result.ok(), "[RFC-0046-09] bounded pool dispatch result ok");
+  if (!unbounded_result.ok() || !pooled_result.ok()) {
+    return;
+  }
+
+  check(unbounded_result.epoch_hash == pooled_result.epoch_hash,
+        "[RFC-0046-10] epoch hash identical for bounded vs unbounded dispatch");
+  check(unbounded_state.epoch.last_committed_epoch_hash == pooled_state.epoch.last_committed_epoch_hash,
+        "[RFC-0046-11] retained last committed epoch hash identical");
+  check(unbounded_state.epoch.epoch_task_executions == pooled_state.epoch.epoch_task_executions,
+        "[RFC-0046-12] task execution counts identical");
+  check(unbounded_state.epoch.epochs_committed == pooled_state.epoch.epochs_committed,
+        "[RFC-0046-13] commit counters identical");
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -209,6 +274,7 @@ int main() {
   test_runtime_view_reflects_epoch_state(state);
   test_faulted_task_aborts_epoch(state);
   test_consecutive_epochs_accumulate_counters(state);
+  test_pool_dispatch_matches_unbounded_epoch_hash();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
