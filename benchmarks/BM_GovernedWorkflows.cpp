@@ -84,22 +84,27 @@ std::vector<std::byte> serialize_tensor(const t81::weights::NativeTensor& tensor
   return buffer;
 }
 
-Program make_weights_load_program(uint64_t elements) {
+Program make_weights_load_program(uint64_t elements, bool with_allow_policy) {
   Program program;
   program.symbol_pool = {"tensorA"};
   auto model = std::make_shared<t81::weights::ModelFile>();
   model->native["tensorA"] = make_balanced_tensor(elements);
   program.weights_model = model;
+  if (with_allow_policy) {
+    program.axion_policy_text = "(policy (tier 1) (max-instructions 32))";
+  }
   program.insns.push_back({Opcode::WeightsLoad, 1, 1, 0});
   program.insns.push_back({Opcode::Halt, 0, 0, 0});
   return program;
 }
 
-Program make_tloadhash_program(const std::string& hash_symbol) {
+Program make_tloadhash_program(const std::string& hash_symbol, bool with_allow_policy) {
   Program program;
   program.symbol_pool.push_back(hash_symbol);
-  program.axion_policy_text =
-      "(policy (tier 1) (allowed-tensor-hashes [\"" + hash_symbol + "\"]))";
+  if (with_allow_policy) {
+    program.axion_policy_text =
+        "(policy (tier 1) (allowed-tensor-hashes [\"" + hash_symbol + "\"]))";
+  }
 
   Insn load_hash{Opcode::LoadImm, 1, 1, 0};
   load_hash.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
@@ -160,9 +165,9 @@ static void BM_GovernedVMRun_Arith_AllowPolicy(benchmark::State& state) {
 }
 BENCHMARK(BM_GovernedVMRun_Arith_AllowPolicy)->Repetitions(3);
 
-static void BM_GovernedTensorLoad_LocalWeights(benchmark::State& state) {
+static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));
-  const Program prog = make_weights_load_program(elements);
+  const Program prog = make_weights_load_program(elements, false);
   state.SetLabel("workflow=tensor-load, source=local-weights, governance=none");
   state.counters["tensor_elements"] = static_cast<double>(elements);
   for (auto _ : state) {
@@ -172,9 +177,23 @@ static void BM_GovernedTensorLoad_LocalWeights(benchmark::State& state) {
     benchmark::DoNotOptimize(result);
   }
 }
-BENCHMARK(BM_GovernedTensorLoad_LocalWeights)->Arg(4)->Arg(256)->Arg(4096);
+BENCHMARK(BM_GovernedTensorLoad_LocalWeights_NoPolicy)->Arg(4)->Arg(256)->Arg(4096);
 
-static void BM_GovernedTensorLoad_CanonFSHash(benchmark::State& state) {
+static void BM_GovernedTensorLoad_LocalWeights_AllowPolicy(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  const Program prog = make_weights_load_program(elements, true);
+  state.SetLabel("workflow=tensor-load, source=local-weights, governance=allow-policy");
+  state.counters["tensor_elements"] = static_cast<double>(elements);
+  for (auto _ : state) {
+    auto vm = t81::vm::make_interpreter_vm();
+    vm->load_program(prog);
+    auto result = vm->run_to_halt(10000);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(BM_GovernedTensorLoad_LocalWeights_AllowPolicy)->Arg(4)->Arg(256)->Arg(4096);
+
+static void BM_GovernedTensorLoad_CanonFSHash_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));
   const auto root = governed_benchmark_root(elements);
   const std::string hash_symbol = ensure_canonfs_tensor(elements, root);
@@ -182,7 +201,30 @@ static void BM_GovernedTensorLoad_CanonFSHash(benchmark::State& state) {
     state.SkipWithError("failed to write CanonFS tensor fixture");
     return;
   }
-  const Program prog = make_tloadhash_program(hash_symbol);
+  const Program prog = make_tloadhash_program(hash_symbol, false);
+  state.SetLabel("workflow=tensor-load, source=canonfs-hash, governance=none");
+  state.counters["tensor_elements"] = static_cast<double>(elements);
+  for (auto _ : state) {
+    auto vm = t81::vm::make_interpreter_vm();
+    vm->set_canonfs_root(root);
+    vm->load_program(prog);
+    auto result = vm->run_to_halt(10000);
+    benchmark::DoNotOptimize(result);
+  }
+  std::error_code ec;
+  std::filesystem::remove_all(root, ec);
+}
+BENCHMARK(BM_GovernedTensorLoad_CanonFSHash_NoPolicy)->Arg(4)->Arg(256)->Arg(4096);
+
+static void BM_GovernedTensorLoad_CanonFSHash_AllowPolicy(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  const auto root = governed_benchmark_root(elements);
+  const std::string hash_symbol = ensure_canonfs_tensor(elements, root);
+  if (hash_symbol.empty()) {
+    state.SkipWithError("failed to write CanonFS tensor fixture");
+    return;
+  }
+  const Program prog = make_tloadhash_program(hash_symbol, true);
   state.SetLabel("workflow=tensor-load, source=canonfs-hash, governance=allow-policy");
   state.counters["tensor_elements"] = static_cast<double>(elements);
   for (auto _ : state) {
@@ -195,6 +237,6 @@ static void BM_GovernedTensorLoad_CanonFSHash(benchmark::State& state) {
   std::error_code ec;
   std::filesystem::remove_all(root, ec);
 }
-BENCHMARK(BM_GovernedTensorLoad_CanonFSHash)->Arg(4)->Arg(256)->Arg(4096);
+BENCHMARK(BM_GovernedTensorLoad_CanonFSHash_AllowPolicy)->Arg(4)->Arg(256)->Arg(4096);
 
 }  // namespace
