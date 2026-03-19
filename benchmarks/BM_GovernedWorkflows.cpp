@@ -7,6 +7,7 @@
 #include <memory>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #ifdef _WIN32
@@ -152,6 +153,59 @@ std::pair<std::shared_ptr<t81::canonfs::Driver>, std::string> make_in_memory_has
   return {std::move(driver), "sha3-256:" + write->hash.h.to_string()};
 }
 
+std::size_t mix_hash(std::size_t seed, std::size_t value) {
+  seed ^= value + 0x9e3779b97f4a7c15ULL + (seed << 6U) + (seed >> 2U);
+  return seed;
+}
+
+std::size_t hash_text(std::string_view text) {
+  return std::hash<std::string_view>{}(text);
+}
+
+std::string_view verdict_kind_name(t81::axion::VerdictKind kind) {
+  switch (kind) {
+    case t81::axion::VerdictKind::Allow:
+      return "allow";
+    case t81::axion::VerdictKind::Deny:
+      return "deny";
+    case t81::axion::VerdictKind::Defer:
+      return "defer";
+    case t81::axion::VerdictKind::Warn:
+      return "warn";
+    case t81::axion::VerdictKind::Quarantine:
+      return "quarantine";
+  }
+  return "unknown";
+}
+
+std::size_t materialize_observability_signature(const t81::vm::State& state) {
+  std::size_t signature = 0;
+  signature = mix_hash(signature, state.trace.size());
+  signature = mix_hash(signature, state.axion_log.size());
+  for (const auto& entry : state.trace) {
+    signature = mix_hash(signature, entry.pc);
+    signature = mix_hash(signature, static_cast<std::size_t>(entry.opcode));
+    signature = mix_hash(signature, hash_text(t81::tisc::opcode_name(entry.opcode)));
+    signature = mix_hash(signature,
+                         entry.trap.has_value() ? static_cast<std::size_t>(*entry.trap) + 1U : 0U);
+  }
+  for (const auto& event : state.axion_log) {
+    signature = mix_hash(signature, static_cast<std::size_t>(event.opcode));
+    signature = mix_hash(signature, static_cast<std::size_t>(event.tag));
+    signature = mix_hash(signature, static_cast<std::size_t>(event.value));
+    signature = mix_hash(signature, hash_text(verdict_kind_name(event.verdict.kind)));
+    signature = mix_hash(signature, hash_text(event.verdict.reason));
+    signature = mix_hash(signature, hash_text(event.structured.decision));
+    signature = mix_hash(signature, hash_text(event.structured.event_type));
+    signature = mix_hash(signature, hash_text(event.structured.reason));
+    signature = mix_hash(signature, hash_text(event.structured.reason_code));
+    signature = mix_hash(signature, static_cast<std::size_t>(event.structured.policy_id));
+    signature = mix_hash(signature, static_cast<std::size_t>(event.structured.pc));
+    signature = mix_hash(signature, static_cast<std::size_t>(event.structured.handle_id));
+  }
+  return signature;
+}
+
 static void BM_GovernedVMRun_Arith_NoPolicy(benchmark::State& state) {
   const Program prog = make_arith_chain_program(false);
   state.SetLabel("workflow=vm-run, governance=none, workload=arith-chain");
@@ -177,6 +231,47 @@ static void BM_GovernedVMRun_Arith_AllowPolicy(benchmark::State& state) {
   state.SetItemsProcessed(state.iterations() * prog.insns.size());
 }
 BENCHMARK(BM_GovernedVMRun_Arith_AllowPolicy)->Repetitions(3);
+
+static void BM_GovernedObservability_Arith_NoPolicy(benchmark::State& state) {
+  const Program prog = make_arith_chain_program(false);
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto run = vm->run_to_halt(10000);
+  if (!run.has_value()) {
+    state.SkipWithError("failed to build no-policy observability snapshot");
+    return;
+  }
+  const auto& snapshot = vm->state();
+  state.SetLabel("workflow=observability, source=vm-state, governance=none, workload=arith-chain");
+  state.counters["trace_entries"] = static_cast<double>(snapshot.trace.size());
+  state.counters["axion_events"] = static_cast<double>(snapshot.axion_log.size());
+  for (auto _ : state) {
+    auto signature = materialize_observability_signature(snapshot);
+    benchmark::DoNotOptimize(signature);
+  }
+}
+BENCHMARK(BM_GovernedObservability_Arith_NoPolicy);
+
+static void BM_GovernedObservability_Arith_AllowPolicy(benchmark::State& state) {
+  const Program prog = make_arith_chain_program(true);
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto run = vm->run_to_halt(10000);
+  if (!run.has_value()) {
+    state.SkipWithError("failed to build allow-policy observability snapshot");
+    return;
+  }
+  const auto& snapshot = vm->state();
+  state.SetLabel(
+      "workflow=observability, source=vm-state, governance=allow-policy, workload=arith-chain");
+  state.counters["trace_entries"] = static_cast<double>(snapshot.trace.size());
+  state.counters["axion_events"] = static_cast<double>(snapshot.axion_log.size());
+  for (auto _ : state) {
+    auto signature = materialize_observability_signature(snapshot);
+    benchmark::DoNotOptimize(signature);
+  }
+}
+BENCHMARK(BM_GovernedObservability_Arith_AllowPolicy);
 
 static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));

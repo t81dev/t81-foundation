@@ -15,6 +15,7 @@ It focuses on two questions:
 - what policy enforcement costs within each tensor-load path
 - how a local tensor-load workflow compares to a CanonFS-hash tensor-load
   workflow at fixed governance
+- what observability materialization costs for a completed governed VM run
 
 It does **not** claim that CanonFS overhead has been isolated from all other
 factors. The CanonFS workflow currently exercises a different opcode path and a
@@ -38,6 +39,8 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 
 - `BM_GovernedVMRun_Arith_NoPolicy`
 - `BM_GovernedVMRun_Arith_AllowPolicy`
+- `BM_GovernedObservability_Arith_NoPolicy`
+- `BM_GovernedObservability_Arith_AllowPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_HashFixture_NoPolicy`
@@ -53,6 +56,8 @@ Current local run:
 |---|---:|---|
 | `BM_GovernedVMRun_Arith_NoPolicy` | `321.29 Kops/s`, `255.63 µs` | arithmetic chain, no policy |
 | `BM_GovernedVMRun_Arith_AllowPolicy` | `309.55 Kops/s`, `264.98 µs` | same arithmetic chain, simple allow policy |
+| `BM_GovernedObservability_Arith_NoPolicy` | `668.55 ns` | stable signature over completed run with `82` trace entries and `6` Axion events |
+| `BM_GovernedObservability_Arith_AllowPolicy` | `658.55 ns` | same observability materialization path with simple allow policy |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
 | `BM_GovernedTensorLoad_HashFixture_NoPolicy/4096` | `41.01 µs` | in-memory preloaded hash fixture via `TLoadHash` |
@@ -82,6 +87,23 @@ The main conclusion is narrow:
 
 - simple policy enforcement on this VM arithmetic workload is measurable but
   not catastrophic
+
+### Observability materialization cost
+
+The `BM_GovernedObservability_*` pair measures a post-run stable signature over
+the VM `trace` and `axion_log`, not execution.
+
+For the exercised arithmetic-chain snapshot:
+
+- both runs carry `82` trace entries and `6` Axion events
+- materialization cost is about `0.66 µs` in either governance state
+
+The useful reading is:
+
+- once a small governed run has completed, deriving a stable in-process
+  observability signature over its current trace/audit state is cheap on this
+  host
+- this does not measure CLI text rendering, file I/O, or report generation
 
 ### Tensor-path policy cost
 
@@ -131,6 +153,8 @@ difference.
 
 - the benchmark harness can express governance-aware operational comparisons
 - policy-on vs policy-off VM execution can be measured directly in-repo
+- post-run observability materialization over `trace` and `axion_log` can be
+  measured directly in-repo
 - policy-on vs policy-off tensor loading can be measured directly within a
   fixed path
 - `TLoadHash` can now be benchmarked against a non-persistent in-memory fixture
@@ -142,6 +166,8 @@ difference.
 - it does not isolate every internal persistence cost from the broader
   persistent-driver path
 - it does not establish a policy-overhead bound for all workloads
+- it does not measure CLI formatting or report-writing overhead for trace/audit
+  export
 - it does not extend DCP / Verified determinism claims
 
 ## Known Caveats
@@ -157,7 +183,7 @@ difference.
 
 1. Record the `4` and `256` tensor rows in a dedicated evidence table instead
    of only carrying the `4096` representative row here.
-2. Add governed trace-generation and policy-audit benchmarks to complement the
-   current execution-path slice.
+2. Extend the observability lane to benchmark CLI-grade formatting and export,
+   not just in-process signature materialization.
 3. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
    and cold-cache splits instead of one blended persistent path.
