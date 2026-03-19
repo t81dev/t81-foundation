@@ -322,6 +322,61 @@ static void test_pool_policy_fault_audit_semantics_match_unbounded() {
   }
 }
 
+static void test_pool_task_fault_audit_semantics_match_unbounded() {
+  std::printf("\n[RFC-0046/DPE-09] Task-fault audit semantics match for bounded vs unbounded dispatch\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-72] bootstrap unbounded task-fault audit state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-73] bootstrap pooled task-fault audit state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  const auto eg = make_trivial_epoch(908);
+  const auto programs = std::vector<t81::tisc::Program>{make_faulted_program()};
+
+  const auto unbounded_result = axion_kernel_submit_epoch(
+      unbounded_state, eg, programs, /*gate=*/{}, /*pool=*/nullptr, /*timeout_ms=*/std::nullopt);
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_result = axion_kernel_submit_epoch(
+      pooled_state, eg, programs, /*gate=*/{}, &pool, /*timeout_ms=*/std::nullopt);
+
+  check(unbounded_result.status == KernelEpochStatus::Aborted_TaskFault,
+        "[RFC-0046-74] unbounded task-fault epoch status == Aborted_TaskFault");
+  check(pooled_result.status == KernelEpochStatus::Aborted_TaskFault,
+        "[RFC-0046-75] pooled task-fault epoch status == Aborted_TaskFault");
+  check(unbounded_state.counters.audit_events_recorded == pooled_state.counters.audit_events_recorded,
+        "[RFC-0046-76] task-fault total audit events identical");
+  check(unbounded_state.counters.epoch_audit_submissions == pooled_state.counters.epoch_audit_submissions,
+        "[RFC-0046-77] task-fault audit submissions identical");
+  check(unbounded_state.counters.epoch_audit_aborts == pooled_state.counters.epoch_audit_aborts,
+        "[RFC-0046-78] task-fault audit aborts identical");
+  check(unbounded_state.last_epoch_audit_kind == pooled_state.last_epoch_audit_kind,
+        "[RFC-0046-79] task-fault last epoch audit kind identical");
+  check(unbounded_state.last_audit_event.has_value() && pooled_state.last_audit_event.has_value(),
+        "[RFC-0046-80] task-fault last_audit_event present for both schedulers");
+  if (!unbounded_state.last_audit_event.has_value() || !pooled_state.last_audit_event.has_value()) {
+    return;
+  }
+  check(unbounded_state.last_audit_event->kind == KernelAuditEventKind::EpochAborted,
+        "[RFC-0046-81] unbounded last_audit_event.kind == EpochAborted");
+  check(pooled_state.last_audit_event->kind == KernelAuditEventKind::EpochAborted,
+        "[RFC-0046-82] pooled last_audit_event.kind == EpochAborted");
+  check(!unbounded_state.audit_log.empty() && !pooled_state.audit_log.empty(),
+        "[RFC-0046-83] task-fault audit logs populated for both schedulers");
+  if (!unbounded_state.audit_log.empty() && !pooled_state.audit_log.empty()) {
+    check(unbounded_state.audit_log.back().kind == KernelAuditEventKind::EpochAborted,
+          "[RFC-0046-84] unbounded audit_log.back().kind == EpochAborted");
+    check(pooled_state.audit_log.back().kind == KernelAuditEventKind::EpochAborted,
+          "[RFC-0046-85] pooled audit_log.back().kind == EpochAborted");
+  }
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -341,6 +396,7 @@ int main() {
   test_policy_denied_epoch_audit(state);
   test_pool_audit_semantics_match_unbounded();
   test_pool_policy_fault_audit_semantics_match_unbounded();
+  test_pool_task_fault_audit_semantics_match_unbounded();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
