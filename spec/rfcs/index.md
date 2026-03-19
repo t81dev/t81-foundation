@@ -65,6 +65,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0052 | Canonical Dataflow and State-Driven Execution | draft | Defines canonical dependency graph, state identity, readiness, propagation, and CanonFS-linked execution rules above DPE |
 | RFC-0053 | Distributed Deterministic Execution Protocol | draft | Defines cross-node state identity, global commit order, conflict resolution, replay artifacts, and failure behavior for future distributed execution |
 | RFC-0054 | CanonFS Object Identity and Persistence Contract | draft | Reconciles CanonFS object identity, persistent-driver guarantees, capability semantics, parity semantics, and user-visible reference naming |
+| RFC-0055 | Native Ternary Hardware Target and Interop Contract | draft | Separates native ternary hardware targets from accelerator-only targets; defines TISC semantic authority, hardware interop obligations, and promotion rules for future external ternary platforms |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
