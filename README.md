@@ -20,10 +20,10 @@ Leveraging the theoretical efficiency of base-e computation, **T81** is a determ
 
 The architecture delivers:
 
-- **bit-exact reproducibility** — every execution path produces an identical trace hash across supported platforms
+- **bit-exact reproducibility on verified surfaces** — governed deterministic surfaces produce identical trace hashes across supported platforms
 - **governed AI inference** — Axion policy engine intercepts and audits every privileged operation before side effects
 - **content-addressed provenance** — CanonFS records all artifacts, model weights, and runtime state immutably
-- **deterministic parallel execution** — DPE task graph model (RFC-DPE-0002) enables concurrent TISC workloads with epoch-committed outputs
+- **deterministic parallel execution for governed epoch semantics** — DPE task graph model (RFC-DPE-0002) enables concurrent TISC workloads with epoch-committed outputs under the current determinism surface
 
 ---
 
@@ -44,21 +44,27 @@ The architecture delivers:
 
 **Phase: Active Development** — v1.9.0-Stable; 369/369 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
 
+Deterministic-surface classification follows the governance model introduced by the Determinism Surface Registry and RFC-0048:
+
+- **DCP / verified deterministic surface**: semantics, boundary, and replay proof are governed and CI-enforced
+- **Governed non-DCP**: policy-bounded and architecturally important, but not yet entitled to full deterministic claims
+- **Experimental**: active design or validation surface; no deterministic guarantee claim
+
 | Component | Maturity | Notes |
 | :--- | :--- | :--- |
 | **TISC ISA** | ❄️ Frozen | v1.9.0; opcode semantics immutable under v1.x; `AgentInvoke` (RFC-0015), 6 ternary-native inference (RFC-0034), 3 FFI (RFC-00B8), 2 lattice crypto (RFC-0038), 1 KEM ring (RFC-0039) |
 | **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; clean audit |
-| **T81VM** | ✅ Stable | Full TISC v1.9.0 dispatch; `AgentInvoke` + ternary-native inference + FFI + lattice crypto + NTRU-KEM opcodes; 369/369 tests |
-| **T81Lang** | ✅ Stable | spec v1.9.0 Stable; `agent`/`behavior` (RFC-0015); `foreign {}` FFI (RFC-0036); `std.tnn.*` TNN stdlib (RFC-0037); `std.crypto.*` lattice crypto + NTRU-KEM (RFC-0038/0039); contextual identifier support throughout |
-| **Axion Governance Kernel** | ✅ Stable | Canonical reason strings; every `AgentInvoke` + `TACT` activation gate emits audit event |
-| **Ternary-Native Inference** | ✅ Stable | RFC-0034 + RFC-0037: `TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`; `std.tnn.*` T81Lang stdlib (6 builtins → TISC ops); multiplication-free inference; T81WTN weight format; production-ready ternary inference operations |
-| **Lattice Cryptography** | ✅ Stable | RFC-0038+0039: `POLYMUL`, `POLYMOD`, `TVecSub`; full ring {+,−,×,mod} over Z\[x\]/(x^n+1); `std.crypto.{polyadd,polysub,polymul,polymod,ntru_encrypt,ntru_decrypt}`; production-ready lattice cryptography |
-| **Governed FFI** | ✅ Stable | RFC-00B8 + RFC-0036: `FFIDispatcher`, `FFILibraryRegistry`, 3 VM opcodes; `foreign [policy] { fn … }` T81Lang grammar; `foreign.<name>(args)` → `FFI_CALL`; production-ready governed foreign function interface |
-| **TUI Frontends** | ✅ Beta | `t81 studio` (human operator) + `t81 agent` (AI-native); FTXUI v5.0.0; RFC-0033 accepted; production-ready terminal interfaces |
-| **DPE (Parallel Execution)** | ✅ Stable | RFC-DPE-0001–0009 all accepted; task graph, epoch history ring, epoch audit events, timeout fully implemented; production-ready deterministic parallel execution |
-| **Cognitive Tiers** | ✅ Beta | Tier4 Cognition (RFC-0021): `Tier4Loop`, `SelfModel` (81-entry ring), `RecursiveImprovementBounds`, `TierAwarePlanner`; experimental cognitive architecture ready for beta testing |
-| **TernaryOS User Environment** | ✅ Beta | RFC-00B9: t81-init, session manager, t81sh shell; 15/15 acceptance criteria implemented; boot sequence, session lifecycle, and shell infrastructure working |
-| **Axion OS** | ✅ Alpha | Complete governance system with 100% test coverage; production-ready policy engine and ethics evaluation; Alpha-ready kernel with deterministic decision making and full T81 stack integration |
+| **T81VM** | ✅ Stable | DCP / verified deterministic surface for the interpreter and current supported-platform trace parity; full TISC v1.9.0 dispatch with `AgentInvoke`, ternary-native inference, FFI, lattice crypto, and NTRU-KEM opcodes; 369/369 tests |
+| **T81Lang** | ✅ Stable | Governed non-DCP overall: spec v1.9.0 Stable with active compiler determinism controls, but compiler emission remains partially verified rather than fully promoted as a verified deterministic surface |
+| **Axion Governance Kernel** | ✅ Stable | Governed non-DCP overall: canonical reason strings and audit hooks are live, but the full kernel/governance surface is broader than the currently verified deterministic registry |
+| **Ternary-Native Inference** | ✅ Stable | Governed non-DCP: RFC-0034 + RFC-0037 opcode/runtime/stdlib surface is implemented and evidenced, but not all inference-adjacent execution paths are yet promoted as verified deterministic surfaces |
+| **Lattice Cryptography** | ✅ Stable | Governed non-DCP: RFC-0038+0039 surface is implemented and policy-bounded; deterministic promotion remains surface-specific rather than implied for the entire crypto vertical |
+| **Governed FFI** | ✅ Stable | Governed non-DCP: RFC-00B8 + RFC-0036 VM/language bridge is implemented end to end, but sandbox and broader schema promotion remain open before stronger deterministic claims |
+| **TUI Frontends** | ✅ Beta | Governed non-DCP: operator and agent TUIs are production-usable interfaces, but UI/runtime integration is not itself a verified deterministic surface |
+| **DPE (Parallel Execution)** | ✅ Stable | Governed deterministic execution model with accepted RFC-DPE-0001–0009; deterministic epoch semantics are in place, while broader surface promotion remains governed by the registry and companion RFC chain |
+| **Cognitive Tiers** | ✅ Beta | Experimental / non-DCP: Tier4 Cognition remains governance-bounded but not a verified deterministic surface |
+| **TernaryOS User Environment** | ✅ Beta | Governed non-DCP / beta: implemented and policy-bounded, but not currently presented as a verified deterministic surface |
+| **Axion OS** | ✅ Alpha | Governed non-DCP / alpha: active governance architecture, but not yet a promoted verified deterministic surface as a whole |
 
 ---
 
@@ -151,13 +157,13 @@ ctest --test-dir build --output-on-failure
 
 ## Determinism Verification
 
-Every release is verified for bit-exact cross-platform reproducibility.
+Verified deterministic surfaces are checked for bit-exact cross-platform reproducibility.
 
 ```bash
 ./scripts/ci/run_determinism_slice.sh
 ```
 
-Verified platforms: **Linux x86_64**, **macOS ARM64**. Any divergence in VM trace hashes is a critical defect.
+Verified platforms for the current core surface: **Linux x86_64**, **macOS ARM64**. Any divergence on a verified deterministic surface is a critical defect.
 
 ---
 
@@ -187,7 +193,7 @@ T81 Foundation operates under a **Continuous Governance (C2)** model. All contri
 
 The deterministic surface is defined in `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`. Changes to frozen surfaces (TISC ISA, Data Types) require a major version bump.
 
-> **Boundary note:** Experimental surfaces (Cognitive Tiers, Distributed, Trace-JIT, TernaryOS, llama.cpp adapter) are governed non-DCP and must not be presented as verified deterministic components.
+> **Boundary note:** DCP, governed non-DCP, experimental, and out-of-scope classifications are defined constitutionally in RFC-0048. Public docs must not present governed non-DCP or experimental surfaces as verified deterministic components.
 
 ---
 
