@@ -312,19 +312,19 @@ int run_shell_command(const std::string& command) {
   return std::system(command.c_str());
 }
 
-void write_small_weights_model(const std::filesystem::path& model_path) {
+void write_small_weights_model(const std::filesystem::path& model_path, bool alternate = false) {
   t81::weights::NativeModel model;
 
   t81::weights::NativeTensor mat_a;
   mat_a.shape = {2, 2};
   mat_a.trits = 4;
-  mat_a.data = {40};
+  mat_a.data = {alternate ? 67ULL : 40ULL};
   model["mat_a"] = mat_a;
 
   t81::weights::NativeTensor mat_b;
   mat_b.shape = {2, 2};
   mat_b.trits = 4;
-  mat_b.data = {67};
+  mat_b.data = {alternate ? 40ULL : 67ULL};
   model["mat_b"] = mat_b;
 
   t81::weights::save_t81w(model, model_path);
@@ -333,8 +333,9 @@ void write_small_weights_model(const std::filesystem::path& model_path) {
 std::string prepare_cli_weights_model_hash(const std::filesystem::path& t81_bin,
                                            const std::filesystem::path& canonfs_root,
                                            const std::filesystem::path& model_path,
-                                           const std::filesystem::path& hash_out_path) {
-  write_small_weights_model(model_path);
+                                           const std::filesystem::path& hash_out_path,
+                                           bool alternate = false) {
+  write_small_weights_model(model_path, alternate);
   const std::string put_cmd = shell_quote(t81_bin) + " canonfs put-file " + shell_quote(model_path) +
                               " --canonfs-root " + shell_quote(canonfs_root) + " >" +
                               shell_quote(hash_out_path) + " 2>/dev/null";
@@ -348,12 +349,12 @@ std::string prepare_cli_weights_model_hash(const std::filesystem::path& t81_bin,
   return model_hash;
 }
 
-bool write_cli_weights_policy(const std::filesystem::path& policy_path, std::string_view model_hash) {
+bool write_cli_weights_policy(const std::filesystem::path& policy_path, std::string_view model_checksum) {
   std::ostringstream policy;
   policy << "(policy\n"
          << "  (tier 1)\n"
          << "  (max-instructions 128)\n"
-         << "  (allowed-tensor-hashes [\"" << model_hash << "\"]))\n";
+         << "  (allowed-ternary-model-hashes [\"sha3-512:" << model_checksum << "\"]))\n";
   return write_text_file(policy_path, policy.str());
 }
 
@@ -804,12 +805,20 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy(benchmark::State&
   std::error_code ec;
   std::filesystem::create_directories(canonfs_root, ec);
   const std::string model_hash = prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out);
+  std::string model_checksum;
   if (model_hash.empty()) {
     state.SkipWithError("failed to prepare CanonFS-backed weights model fixture");
     std::filesystem::remove_all(workdir, ec);
     return;
   }
-  if (!write_cli_weights_policy(policy_path, model_hash)) {
+  try {
+    model_checksum = t81::weights::load_t81w(model_path).checksum;
+  } catch (...) {
+    state.SkipWithError("failed to load CLI weights checksum");
+    std::filesystem::remove_all(workdir, ec);
+    return;
+  }
+  if (model_checksum.empty() || !write_cli_weights_policy(policy_path, model_checksum)) {
     state.SkipWithError("failed to write CLI weights policy fixture");
     std::filesystem::remove_all(workdir, ec);
     return;
@@ -837,6 +846,72 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy(benchmark::State&
   std::filesystem::remove_all(workdir, ec);
 }
 BENCHMARK(BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy);
+
+static void BM_GovernedCLI_CodeRun_WeightsModelHash_DenyPolicy(benchmark::State& state) {
+  const auto repo_root = std::filesystem::current_path();
+  const auto t81_bin = repo_root / "build" / "t81";
+  const auto workdir = governed_emit_root("cli-code-run-weights-model-deny-policy");
+  const auto canonfs_root = workdir / "canonfs";
+  const auto model_path = workdir / "small_model.t81w";
+  const auto denied_model_path = workdir / "other_model.t81w";
+  const auto hash_out = workdir / "model_hash.txt";
+  const auto denied_hash_out = workdir / "other_model_hash.txt";
+  const auto policy_path = workdir / "deny-model.apl";
+  const auto stderr_path = workdir / "deny.stderr";
+  const auto program = repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
+  std::error_code ec;
+  std::filesystem::create_directories(canonfs_root, ec);
+  const std::string model_hash =
+      prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out, false);
+  const std::string denied_hash =
+      prepare_cli_weights_model_hash(t81_bin, canonfs_root, denied_model_path, denied_hash_out, true);
+  std::string model_checksum;
+  std::string denied_model_checksum;
+  if (model_hash.empty() || denied_hash.empty() || model_hash == denied_hash) {
+    state.SkipWithError("failed to prepare mismatched CanonFS-backed weights fixtures");
+    std::filesystem::remove_all(workdir, ec);
+    return;
+  }
+  try {
+    model_checksum = t81::weights::load_t81w(model_path).checksum;
+    denied_model_checksum = t81::weights::load_t81w(denied_model_path).checksum;
+  } catch (...) {
+    state.SkipWithError("failed to load CLI deny-policy checksums");
+    std::filesystem::remove_all(workdir, ec);
+    return;
+  }
+  if (model_checksum.empty() || denied_model_checksum.empty() || model_checksum == denied_model_checksum ||
+      !write_cli_weights_policy(policy_path, denied_model_checksum)) {
+    state.SkipWithError("failed to write CLI deny-policy fixture");
+    std::filesystem::remove_all(workdir, ec);
+    return;
+  }
+
+  state.SetLabel(
+      "workflow=cli-run, command=code-run, source=canonfs-weights-model, governance=deny-policy, workload=matmul-weights");
+  for (auto _ : state) {
+    const std::string cmd = "env T81_CANONFS_ROOT=" + shell_quote(canonfs_root) + " " +
+                            shell_quote(t81_bin) + " code run " + shell_quote(program) +
+                            " --weights-model " + shell_quote_text(model_hash) +
+                            " --policy " + shell_quote(policy_path) + " >/dev/null 2>" +
+                            shell_quote(stderr_path);
+    const int rc = run_shell_command(cmd);
+    benchmark::DoNotOptimize(static_cast<long long>(rc));
+    if (rc == 0) {
+      state.SkipWithError("t81 code run deny-policy unexpectedly succeeded");
+      break;
+    }
+  }
+  if (std::filesystem::exists(stderr_path, ec)) {
+    state.counters["stderr_bytes"] = static_cast<double>(std::filesystem::file_size(stderr_path, ec));
+  }
+  if (std::filesystem::exists(model_path, ec)) {
+    state.counters["model_bytes"] = static_cast<double>(std::filesystem::file_size(model_path, ec));
+  }
+  state.counters["model_hash_chars"] = static_cast<double>(model_hash.size());
+  std::filesystem::remove_all(workdir, ec);
+}
+BENCHMARK(BM_GovernedCLI_CodeRun_WeightsModelHash_DenyPolicy);
 
 static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));

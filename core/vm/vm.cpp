@@ -717,6 +717,42 @@ public:
         auto handle = ctx.registers[reg];
         const auto* native = weights_tensor(handle);
         if (!native) return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
+        if (state_.policy.has_value()) {
+          if (!state_.policy->allowed_ternary_model_hashes.empty()) {
+            const bool hash_allowed =
+                state_.weights_model != nullptr && !state_.weights_model->checksum.empty() &&
+                std::any_of(state_.policy->allowed_ternary_model_hashes.begin(),
+                            state_.policy->allowed_ternary_model_hashes.end(),
+                            [&](const std::string& allowed) {
+                              return hash_matches_policy_entry(allowed, state_.weights_model->checksum);
+                            });
+            if (!hash_allowed) {
+              const std::string checksum =
+                  state_.weights_model != nullptr ? state_.weights_model->checksum : "";
+              t81::axion::Verdict verdict{
+                  t81::axion::VerdictKind::Deny,
+                  checksum.empty()
+                      ? "WLOAD denied (allowed-ternary-model-hashes: missing model checksum)"
+                      : "WLOAD denied (allowed-ternary-model-hashes mismatch checksum=sha3-512:" +
+                            checksum + ")"};
+              record_axion_event(program_.insns[current_pc].opcode, static_cast<int32_t>(reg), handle,
+                                 verdict);
+              return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+            }
+          }
+          if (state_.policy->ternary_weight_domain_check) {
+            auto decoded = t81::vm::internal::decode_native_tensor(
+                *native, t81::vm::internal::TensorDecodeMode::StrictCanonical);
+            if (!decoded.has_value() || !is_exact_ternary_tensor(*decoded)) {
+              t81::axion::Verdict verdict{
+                  t81::axion::VerdictKind::Deny,
+                  "WLOAD denied (ternary-weight-domain-check failed)"};
+              record_axion_event(program_.insns[current_pc].opcode, static_cast<int32_t>(reg), handle,
+                                 verdict);
+              return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
+            }
+          }
+        }
         auto promoted = t81::vm::internal::decode_native_tensor(
             *native, t81::vm::internal::TensorDecodeMode::StrictCanonical);
         if (!promoted.has_value()) {

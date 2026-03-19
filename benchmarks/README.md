@@ -80,6 +80,7 @@ Current coverage:
 - `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedCLI_CodeRun_WeightsModelHash`
 - `BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy`
+- `BM_GovernedCLI_CodeRun_WeightsModelHash_DenyPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_NoPolicy`
@@ -132,7 +133,9 @@ Interpretation note:
   execution through the real CLI subprocess path rather than only the in-memory
   tensor benchmarks. That lane now also has a matched `--policy` variant, so
   the subprocess-level governance cost can be compared on the same model-backed
-  workflow instead of inferred from lower-level VM-only paths.
+  workflow instead of inferred from lower-level VM-only paths, plus a matched
+  deny-policy variant that measures fail-closed rejection for the same
+  CanonFS-backed model workflow.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.
