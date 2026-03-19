@@ -12,8 +12,16 @@ This document defines the threat landscape for T81's determinism guarantees. It 
 * `INCIDENT_RESPONSE.md` (Defines incident handling protocol)
 * `../../spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md` (backend substitution constraints)
 * `../../spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md` (proof and breach model)
+* `../../spec/rfcs/RFC-0044-stable-packed-trit-vector-interface.md` (shared packed-trit substrate)
 * `../../spec/rfcs/RFC-0045-deterministic-memory-model.md` (memory visibility and aliasing)
 * `../../spec/rfcs/RFC-0046-deterministic-scheduling-and-execution-ordering.md` (ordering and concurrency constraints)
+* `../../spec/rfcs/RFC-0047-deterministic-jit-and-lowering-rules.md` (lowering constraints)
+* `../../spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md` (boundary classification)
+* `../../spec/rfcs/RFC-0049-canonical-ternary-arithmetic-semantics.md` (arithmetic oracle)
+* `../../spec/rfcs/RFC-0050-vectorized-ternary-operations-for-tisc.md` (vector semantics)
+* `../../spec/rfcs/RFC-0051-deterministic-heterogeneous-acceleration.md` (accelerator threat boundary)
+* `../../spec/rfcs/RFC-0052-canonical-dataflow-and-state-driven-execution.md` (dataflow/state model)
+* `../../spec/rfcs/RFC-0053-distributed-deterministic-execution-protocol.md` (distributed threat boundary)
 
 **Clarification:**
 Determinism guarantees apply exclusively to surfaces explicitly listed as **Verified** in the [Determinism Surface Registry](DETERMINISM_SURFACE_REGISTRY.md).
@@ -179,6 +187,8 @@ The following risks are acknowledged but not fully mitigated:
 * **Distributed Tiers:** Consensus mechanisms for distributed execution are not yet verified surfaces.
 * **External Model Formats:** Importing third-party models (SafeTensors/GGUF) relies on external parsers which may have edge cases.
 * **Draft Memory/Scheduling Governance:** RFC-0045 and RFC-0046 define direction, but not all current implementation assumptions are yet audited against them.
+* **Draft Arithmetic / Vector / Accelerator Governance:** RFC-0049, RFC-0050, and RFC-0051 define direction, but current implementation surfaces are not yet fully audited against them.
+* **Draft Dataflow / Distributed Governance:** RFC-0052 and RFC-0053 define future execution constitutions, but current reactive/distributed surfaces remain non-verified.
 
 ---
 
@@ -205,6 +215,6 @@ Once RFC-0043 is accepted, breach classification should be aligned with its hard
 * **New Surfaces:** Any addition to `DETERMINISM_SURFACE_REGISTRY.md` triggers a requirement to update this threat analysis.
 * **Breaking Changes:** Any breaking change proposal (RFC) must include an impact analysis referencing this document.
 * **Incident Linkage:** Severity 2/3 determinism incidents must be handled under `docs/governance/INCIDENT_RESPONSE.md`.
-* **Governed AGI Linkage:** AGI-facing surface promotions must reference
-  `docs/status/GOVERNED_AGI_PROMOTION_PIPELINE.md` and include explicit risk
-  treatment updates in this document.
+* **Governed AGI Linkage:** AGI-facing surface promotions must remain aligned
+  with the current boundary model and include explicit risk treatment updates in
+  this document.

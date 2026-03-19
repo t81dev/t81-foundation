@@ -62,9 +62,10 @@ status boundaries.
 
 ## Operational Notes (2026-03-19)
 
-- RFC-0042 through RFC-0048 were added as the draft horizontal governance chain
-  for backend equivalence, conformance, packed-trit stabilization, memory,
-  scheduling, JIT lowering, and deterministic-surface boundaries.
+- RFC-0042 through RFC-0053 now form the draft governance chain for backend
+  equivalence, conformance, packed-trit stabilization, memory, scheduling, JIT
+  lowering, deterministic-surface boundaries, arithmetic semantics, vector
+  semantics, heterogeneous acceleration, dataflow, and distributed execution.
 - Public status documents are being aligned so they distinguish verified DCP
   surfaces from governed non-DCP and experimental surfaces.
 

@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Maintenance / Governance Alignment** — v1.9.0-Stable; core release surface remains active, while RFC-0042 through RFC-0048 are open draft governance layers that define backend equivalence, validation, memory, scheduling, JIT, and deterministic-surface boundaries.
+**Maintenance / Governance Alignment** — v1.9.0-Stable; core release surface remains active, while RFC-0042 through RFC-0053 are open draft governance layers that define backend equivalence, validation, packed-trit substrate, memory, scheduling, JIT, deterministic-surface boundaries, arithmetic semantics, vector semantics, heterogeneous acceleration, dataflow, and distributed execution.
 
 ---
 
@@ -29,7 +29,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- |
 | Overall | Green — release branch remains healthy; determinism and structural-integrity gates remain the controlling signals |
 | Release Readiness | **GO** for the current shipped core profile; broader verticals remain classified per DCP / governed non-DCP / experimental boundaries |
-| Current Main | `c7a2ff68` — public status/docs aligned to RFC-0048 deterministic-surface classification; governance RFC chain RFC-0042..RFC-0048 now drafted |
+| Current Main | `644bda94` — governance RFC chain now extends through RFC-0053, covering arithmetic, vector, acceleration, dataflow, and distributed execution in draft form |
 | Open Blockers | None |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
 | Determinism Registry | Verified surfaces remain the only source of DCP-strength deterministic claims |
@@ -41,7 +41,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Gate | Date | State |
 | :--- | :--- | :--- |
-| Deterministic-surface governance chain (RFC-0042..RFC-0048) | 2026-03-19 | **Open** — draft constitutional layer added; promotion into active governance docs underway |
+| Deterministic-surface governance chain (RFC-0042..RFC-0053) | 2026-03-19 | **Open** — full horizontal and expansion draft layer added; promotion into active governance docs underway |
 | C2 Month-Close execution | 2026-03-31 | **Closed** — executed 2026-03-14; post-close addendum 2026-03-16; all 6 checklist items PASS; March 2026 governance window closed clean |
 | T81Lang Stable promotion | 2026-03-16 | **Closed** — language-spec stability review completed; this does not by itself promote the entire language toolchain into DCP / verified deterministic status |
 | RFC-0015 agentic constructs closure | 2026-03-16 | **Closed** — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
@@ -68,7 +68,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
-| T81VM | Controlled | DCP / verified deterministic surface for interpreter execution and current supported-platform replay parity; broader VM-adjacent acceleration remains governed by the registry and RFC-0042..RFC-0047 |
+| T81VM | Controlled | DCP / verified deterministic surface for interpreter execution and current supported-platform replay parity; broader VM-adjacent acceleration remains governed by the registry and RFC-0042..RFC-0053 |
 | T81Lang | Controlled | Governed non-DCP overall; language spec is stable, but compiler/toolchain-wide deterministic promotion remains partial and evidence-bound |
 | Axion Governance Kernel | Controlled | Governed non-DCP; important governance/runtime surface with active evidence, but broader kernel behavior is not automatically a verified deterministic surface |
 | Axion OS | Medium | Governed non-DCP / experimental kernel track; significant implementation progress, but whole-system promotion remains evidence-gated and outside the current DCP |
@@ -83,7 +83,7 @@ Full decomposition: `DRIFT_DECOMPOSITION.md`
 
 | ID | Risk | Severity |
 | :--- | :--- | :--- |
-| R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium |
+| R-05 | Governed non-DCP surface growth outpacing boundary and evidence updates | Medium |
 | R-06 | Documentation maintenance burden after reorganization | Low |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low |
 
@@ -124,7 +124,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 4. **Closed** — TernaryOS QEMU x86_64 EFI boot lane: BOOTX64.EFI validated, all 5 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete` (evidence: `TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`)
 5. **TBD** — TernaryOS bare-metal boot: actual x86_64 VirtualBox host execution + evidence return (next external milestone; see `experimental/ternaryos/docs/kernel_execution_plan.md`)
 6. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
-7. **Active now** — Governance closure path: connect RFC-0042..RFC-0048 to registry, threat model, and promotion evidence so public status claims remain classification-correct
+7. **Active now** — Governance closure path: connect RFC-0042..RFC-0053 to registry, threat model, and promotion evidence so public status claims remain classification-correct
 
 ---
 

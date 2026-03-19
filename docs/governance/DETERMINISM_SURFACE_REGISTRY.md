@@ -17,8 +17,16 @@ Reference:
 * `docs/guides/jit-equivalence-plan.md` (Future Roadmap)
 * `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md` (backend substitution constitution)
 * `spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md` (proof and CI model)
+* `spec/rfcs/RFC-0044-stable-packed-trit-vector-interface.md` (packed-trit substrate)
 * `spec/rfcs/RFC-0045-deterministic-memory-model.md` (state visibility and aliasing)
 * `spec/rfcs/RFC-0046-deterministic-scheduling-and-execution-ordering.md` (ordering constitution)
+* `spec/rfcs/RFC-0047-deterministic-jit-and-lowering-rules.md` (lowering and trace equivalence constraints)
+* `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md` (surface classification constitution)
+* `spec/rfcs/RFC-0049-canonical-ternary-arithmetic-semantics.md` (arithmetic oracle)
+* `spec/rfcs/RFC-0050-vectorized-ternary-operations-for-tisc.md` (ISA/VM vector semantics)
+* `spec/rfcs/RFC-0051-deterministic-heterogeneous-acceleration.md` (accelerator boundary)
+* `spec/rfcs/RFC-0052-canonical-dataflow-and-state-driven-execution.md` (dataflow/state model)
+* `spec/rfcs/RFC-0053-distributed-deterministic-execution-protocol.md` (distributed execution constitution)
 
 ---
 
@@ -61,6 +69,13 @@ The following draft RFCs define the constitutional model that verified determini
 | **RFC-0044** | Stable packed-trit substrate beneath SWAR and SIMD surfaces |
 | **RFC-0045** | Canonical memory visibility, handle identity, and aliasing model |
 | **RFC-0046** | Program-order / dependency-order / canonical-commit scheduling constitution |
+| **RFC-0047** | Deterministic lowering and JIT constraints for alternate execution paths |
+| **RFC-0048** | DCP / governed non-DCP / experimental boundary constitution |
+| **RFC-0049** | Canonical arithmetic oracle for trit, packed, native, VM, and backend arithmetic |
+| **RFC-0050** | Semantic vector execution model at the ISA/VM layer |
+| **RFC-0051** | Heterogeneous acceleration rules for GPU and other accelerator backends |
+| **RFC-0052** | Canonical dataflow and state-driven propagation model above DPE |
+| **RFC-0053** | Distributed deterministic execution protocol for future cross-node execution |
 
 Until these RFCs are accepted and fully integrated, they should be treated as draft governance direction rather than an expansion of currently verified guarantees.
 
@@ -84,8 +99,10 @@ Explicitly list areas that are:
 **Experimental / Planned:**
 
 * **Distributed Cognitive Tiers** (`experimental/tiers/`, `experimental/distributed/`): Consensus determinism is planned but not verified.
-* **JIT Optimizations**: Trace-JIT equivalence remains constrained by RFC-0042 and RFC-0043 direction, but is not yet a fully verified surface.
-* **Backend Acceleration Beyond Current Verified CPU Paths**: Any future backend must satisfy RFC-0042 equivalence and RFC-0043 validation requirements before deterministic claims are expanded.
+* **JIT Optimizations**: Trace-JIT equivalence remains constrained by RFC-0042, RFC-0043, and RFC-0047 direction, but is not yet a fully verified surface.
+* **Backend Acceleration Beyond Current Verified CPU Paths**: Any future backend must satisfy RFC-0042 equivalence, RFC-0043 validation, RFC-0049 arithmetic, and RFC-0051 accelerator-boundary requirements before deterministic claims are expanded.
+* **Dataflow/Reactive Execution Beyond Current DPE Scope**: Any future state-driven execution surface must satisfy RFC-0052 before deterministic claims are expanded.
+* **Distributed Execution**: Any future cross-node execution surface must satisfy RFC-0053 before deterministic claims are expanded.
 * **External Hardware Accelerators**: Behavior on non-CPU devices is currently undefined.
 
 ---
