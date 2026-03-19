@@ -25,6 +25,12 @@ bool check_bytes(const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
   return true;
 }
 
+void require(bool condition) {
+  if (!condition) {
+    std::abort();
+  }
+}
+
 void test_backend_equivalence() {
   std::cout << "[Equivalence] Testing Backend Equivalence (Scalar vs SWAR vs SIMD)..." << std::endl;
   std::mt19937 rng(42);
@@ -173,9 +179,49 @@ void test_txor_fallback_routing() {
   }
 }
 
+void test_public_tritwise_memory_semantics() {
+  std::cout << "[Memory] Testing Public Tritwise In-Place Semantics..." << std::endl;
+
+  auto original = ComputeTritVector::from_trits({-1, 0, 1, -1, 1, 0, -1}).value();
+  auto expected_self = original.to_trits().value();
+
+  {
+    auto v = original;
+    const auto* before = v.data().data();
+    require(tritwise_and(v, v).is_ok());
+    require(v.data().data() == before);
+    require(check_vec(v.to_trits().value(), expected_self));
+  }
+
+  {
+    auto v = original;
+    const auto* before = v.data().data();
+    require(tritwise_or(v, v).is_ok());
+    require(v.data().data() == before);
+    require(check_vec(v.to_trits().value(), expected_self));
+  }
+
+  {
+    auto v = ComputeTritVector::from_trits({1, -1, 0}).value();
+    auto other = ComputeTritVector::from_trits({0, 1, -1}).value();
+    require(tritwise_or(v, other).is_ok());
+    require((v.data()[0] & 0xC0) == 0);
+  }
+
+  {
+    auto v = ComputeTritVector::from_trits({1, -1, 0}).value();
+    auto before = v.to_trits().value();
+    require(tritwise_not(v).is_ok());
+    require(tritwise_not(v).is_ok());
+    require(check_vec(v.to_trits().value(), before));
+    require((v.data()[0] & 0xC0) == 0);
+  }
+}
+
 int main() {
   test_backend_equivalence();
   test_txor_fallback_routing();
+  test_public_tritwise_memory_semantics();
   std::cout << "All backend equivalence tests passed." << std::endl;
   return 0;
 }
