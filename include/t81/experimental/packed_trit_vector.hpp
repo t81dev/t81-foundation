@@ -226,6 +226,39 @@ public:
     return from_phase1(other);
   }
 
+  static Result<ComputeTritVector> from_packed(const std::vector<uint8_t>& packed,
+                                               size_t trit_count) {
+    if (packed.size() != bytes_for_trits(trit_count)) {
+      return Result<ComputeTritVector>::failure(
+          T81Symbol::intern("INVALID_PACKED_LENGTH"),
+          T81String("Packed byte length does not match trit count"),
+          T81Symbol::intern("ComputeTritVector"));
+    }
+
+    for (size_t i = 0; i < trit_count; ++i) {
+      size_t byte_idx = i / 4;
+      size_t bit_idx = (i % 4) * 2;
+      uint8_t val = (packed[byte_idx] >> bit_idx) & 0x03;
+      if (val == 2) {
+        return Result<ComputeTritVector>::failure(T81Symbol::intern("INVALID_PACKED_DATA"),
+                                                  T81String("Encountered invalid 2-bit pattern"),
+                                                  T81Symbol::intern("ComputeTritVector"));
+      }
+    }
+
+    if (trit_count % 4 != 0 && !packed.empty()) {
+      const uint8_t valid_mask = static_cast<uint8_t>((1u << ((trit_count % 4) * 2)) - 1u);
+      if ((packed.back() & static_cast<uint8_t>(~valid_mask)) != 0) {
+        return Result<ComputeTritVector>::failure(
+            T81Symbol::intern("INVALID_TAIL_PADDING"),
+            T81String("Unused trailing packed bits must be zero"),
+            T81Symbol::intern("ComputeTritVector"));
+      }
+    }
+
+    return Result<ComputeTritVector>::success(ComputeTritVector(packed, trit_count));
+  }
+
   size_t size() const { return count_; }
   const std::vector<uint8_t>& data() const { return data_; }
   // Non-const data access for in-place benchmarks/tests that need raw pointers,

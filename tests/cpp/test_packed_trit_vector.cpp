@@ -125,6 +125,26 @@ void test_phase2a_conversion() {
   assert(check_vec(p2.to_trits().value(), trits));
 }
 
+void test_phase2a_from_packed_validation() {
+  std::cout << "[Phase 2A] Testing Packed-Byte Validation..." << std::endl;
+
+  auto valid = ComputeTritVector::from_packed({0x13}, 4);
+  assert(!valid.is_err());
+  assert(check_vec(valid.value().to_trits().value(), std::vector<int8_t>({-1, 0, 1, 0})));
+
+  auto invalid_pattern = ComputeTritVector::from_packed({0x02}, 1);
+  assert(invalid_pattern.is_err());
+  assert(invalid_pattern.error().code.value() == T81Symbol::intern("INVALID_PACKED_DATA").value());
+
+  auto invalid_tail = ComputeTritVector::from_packed({0xD3}, 3);
+  assert(invalid_tail.is_err());
+  assert(invalid_tail.error().code.value() == T81Symbol::intern("INVALID_TAIL_PADDING").value());
+
+  auto invalid_length = ComputeTritVector::from_packed({}, 1);
+  assert(invalid_length.is_err());
+  assert(invalid_length.error().code.value() == T81Symbol::intern("INVALID_PACKED_LENGTH").value());
+}
+
 void test_cross_representation_consistency() {
   std::cout << "[Cross-Rep] Testing Consistency..." << std::endl;
   std::vector<int8_t> t1 = {-1, 0, 1, 1, -1};
@@ -491,6 +511,7 @@ int main() {
   test_txor_truth_table();
   test_phase2a_roundtrip();
   test_phase2a_conversion();
+  test_phase2a_from_packed_validation();
   test_cross_representation_consistency();
   test_randomized_determinism();
   test_errors();
