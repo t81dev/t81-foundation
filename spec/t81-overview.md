@@ -107,7 +107,7 @@ Each doc stands alone and contributes to the cohesive whole.
 
 ## T81Lang
 
-Current spec version: **v1.2** (updated 2026-03-01 to match implementation).
+Current spec version: **v1.9.0** (updated 2026-03-01 to match implementation).
 
 - **Core Grammar (EBNF)** → [`t81lang-spec.md`](t81lang-spec.md#1-core-grammar)
 - **Type System** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)
