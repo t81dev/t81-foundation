@@ -1,5 +1,6 @@
 # ── Build artifacts ─────────────────────────────────────────
 build/
+build-llama/
 build-warn-strict/
 cmake-build/
 out/
