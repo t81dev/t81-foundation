@@ -516,7 +516,7 @@ ______________________________________________________________________
 
 # 10. Status
 
-This document is v1.2 of the T81 Data Types Standard (freeze exception applied
+This document is v1.9.0 of the T81 Data Types Standard (freeze exception applied
 2026-03-01). The §2 primitive types and §3–§8 normative rules are the frozen
 DCP surface. §11 (Extended Type Inventory) is additive and non-DCP unless the
 types listed there have individually been promoted to Verified status in the
@@ -707,7 +707,7 @@ ______________________________________________________________________
 
 ## T81Lang
 
-Current spec version: **v1.2** (updated 2026-03-01).
+Current spec version: **v1.9.0** (updated 2026-03-01).
 
 - **Core Grammar** → [`t81lang-spec.md`](t81lang-spec.md#1-core-grammar)
 - **Type System** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)

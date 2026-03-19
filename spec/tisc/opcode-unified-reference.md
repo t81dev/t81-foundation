@@ -340,7 +340,7 @@ All opcodes in this class operate on TensorHandle registers and are Tier 2+ only
 
 ## 8. Deferred Extensions
 
-These operations are NOT part of the TISC v1.1.0 Core ISA but are tracked for potential future inclusion (v1.2+ or v2.0).
+These operations are NOT part of the TISC v1.1.0 Core ISA but are tracked for potential future inclusion (v1.9.0+ or v2.0).
 
 - **RotL / RotR**: Bitwise Rotate Left/Right. Currently polyfilled via shifts.
 - **PopCount**: Population Count.
