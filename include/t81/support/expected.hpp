@@ -65,7 +65,8 @@ public:
 
   template <typename Err = E, std::enable_if_t<!std::is_same_v<T, std::decay_t<Err>> &&
                                                    !std::is_same_v<expected, std::decay_t<Err>> &&
-                                                   !std::is_same_v<unexpect_t, std::decay_t<Err>>,
+                                                   !std::is_same_v<unexpect_t, std::decay_t<Err>> &&
+                                                   !std::is_same_v<unexpected<E>, std::decay_t<Err>>,
                                                int> = 0>
   expected(Err&& error) : has_(false), storage_(std::in_place_index<1>, std::forward<Err>(error)) {}
 

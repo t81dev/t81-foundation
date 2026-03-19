@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -139,13 +140,16 @@ int main() {
                              {-2.0f, -0.1f, 0.2f, 3.0f}, "weight");
   bool saw_invalid_llama_profile = false;
   try {
-    [[maybe_unused]] auto invalid_profile = t81::weights::load_safetensors(invalid_llama_profile_path);
+    (void)t81::weights::load_safetensors(invalid_llama_profile_path);
   } catch (const std::exception& e) {
     saw_invalid_llama_profile =
         std::string(e.what()).find("required architecture tensor signals were not found with valid shapes") !=
         std::string::npos;
   }
-  assert(saw_invalid_llama_profile);
+  if (!saw_invalid_llama_profile) {
+    std::cerr << "expected invalid llama profile to be rejected\n";
+    return 1;
+  }
 
   const fs::path invalid_llama_shape_path = make_temp_path("t81-f32-invalid-llama-shape");
   write_f32_safetensors_file(invalid_llama_shape_path,
@@ -154,25 +158,31 @@ int main() {
                              {-2.0f, -0.1f, 0.2f, 3.0f}, "model.layers.0.self_attn.q_proj.weight", "[4]");
   bool saw_invalid_llama_shape = false;
   try {
-    [[maybe_unused]] auto invalid_shape = t81::weights::load_safetensors(invalid_llama_shape_path);
+    (void)t81::weights::load_safetensors(invalid_llama_shape_path);
   } catch (const std::exception& e) {
     saw_invalid_llama_shape =
         std::string(e.what()).find("required architecture tensor signals were not found with valid shapes") !=
         std::string::npos;
   }
-  assert(saw_invalid_llama_shape);
+  if (!saw_invalid_llama_shape) {
+    std::cerr << "expected invalid llama tensor shape to be rejected\n";
+    return 1;
+  }
 
   const fs::path invalid_llama_metadata_path = make_temp_path("t81-f32-invalid-llama-metadata");
   write_f32_safetensors_file(invalid_llama_metadata_path, "{\"architecture\":\"llama\"}",
                              {-2.0f, -0.1f, 0.2f, 3.0f}, "model.layers.0.self_attn.q_proj.weight");
   bool saw_invalid_llama_metadata = false;
   try {
-    [[maybe_unused]] auto invalid_metadata = t81::weights::load_safetensors(invalid_llama_metadata_path);
+    (void)t81::weights::load_safetensors(invalid_llama_metadata_path);
   } catch (const std::exception& e) {
     saw_invalid_llama_metadata =
         std::string(e.what()).find("required scalar metadata was not found") != std::string::npos;
   }
-  assert(saw_invalid_llama_metadata);
+  if (!saw_invalid_llama_metadata) {
+    std::cerr << "expected invalid llama metadata to be rejected\n";
+    return 1;
+  }
 
   const fs::path invalid_llama_moe_path = make_temp_path("t81-f32-invalid-llama-moe");
   write_multi_f32_safetensors_file(
@@ -185,23 +195,29 @@ int main() {
       });
   bool saw_invalid_llama_moe = false;
   try {
-    [[maybe_unused]] auto invalid_moe = t81::weights::load_safetensors(invalid_llama_moe_path);
+    (void)t81::weights::load_safetensors(invalid_llama_moe_path);
   } catch (const std::exception& e) {
     saw_invalid_llama_moe =
         std::string(e.what()).find("mixture-of-experts tensors are not supported") != std::string::npos;
   }
-  assert(saw_invalid_llama_moe);
+  if (!saw_invalid_llama_moe) {
+    std::cerr << "expected llama moe tensors to be rejected\n";
+    return 1;
+  }
 
   const auto bitnet_forced = t81::weights::load_bitnet_safetensors(generic_path);
   assert(bitnet_forced.format == "SafeTensors(bitnet-b1.58; profile=bitnet-b1.58-v1)");
 
   bool saw_invalid = false;
   try {
-    [[maybe_unused]] auto invalid = t81::weights::load_safetensors(invalid_path);
+    (void)t81::weights::load_safetensors(invalid_path);
   } catch (const std::exception& e) {
     saw_invalid = std::string(e.what()).find("BitNet-compatible") != std::string::npos;
   }
-  assert(saw_invalid);
+  if (!saw_invalid) {
+    std::cerr << "expected invalid BitNet-compatible tensor to be rejected\n";
+    return 1;
+  }
 
   fs::remove(generic_path);
   fs::remove(bitnet_path);

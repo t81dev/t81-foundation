@@ -38,6 +38,16 @@ std::string system_library_name() {
 #endif
 }
 
+std::string system_double_library_name() {
+#ifdef __APPLE__
+  return "/usr/lib/libSystem.B.dylib";
+#elif defined(_WIN32)
+  return "";
+#else
+  return "libm.so.6";
+#endif
+}
+
 std::string system_success_function_name() {
 #ifdef _WIN32
   return "GetCurrentProcessId";
@@ -163,7 +173,7 @@ void register_success_target() {
           t81::ffi::FFIFunction{
               .name = system_double_function_name(),
               .type = t81::ffi::FFIType::Deterministic,
-              .library_name = system_library_name(),
+              .library_name = system_double_library_name(),
               .version_hash = "bridge-success-v1",
               .param_types = {"double"},
               .return_type = "double",

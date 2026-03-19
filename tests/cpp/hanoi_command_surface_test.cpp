@@ -3,6 +3,7 @@
 // RFC-0000 §7 — Hanoi VM command surface testing.
 
 #include <cassert>
+#include <cinttypes>
 #include <string>
 #include <vector>
 
@@ -23,7 +24,7 @@ int main() {
   assert(status->booted == true);
   assert(status->active_snapshots >= 1);  // root snapshot
   assert(status->total_processes == 0);
-  std::printf("✅ Status: booted=%s, snapshots=%zu, processes=%zu\n",
+  std::printf("✅ Status: booted=%s, snapshots=%" PRIu64 ", processes=%" PRIu64 "\n",
               status->booted ? "true" : "false", status->active_snapshots, status->total_processes);
 
   // Test optimize command
@@ -56,7 +57,7 @@ int main() {
   assert(sim_result->completed == true);
   assert(sim_result->steps_executed == 3);
   assert(sim_result->trace.size() == 3);
-  std::printf("✅ Simulation: %zu steps, completed=%s\n", sim_result->steps_executed,
+  std::printf("✅ Simulation: %" PRIu64 " steps, completed=%s\n", sim_result->steps_executed,
               sim_result->completed ? "true" : "false");
   for (const auto& trace : sim_result->trace) {
     std::printf("  %s\n", trace.c_str());
@@ -86,7 +87,7 @@ int main() {
   auto final_status = kernel->status();
   assert(final_status.has_value());
   assert(final_status->active_snapshots >= 2);  // root + created snapshot
-  std::printf("✅ Final status: %zu active snapshots\n", final_status->active_snapshots);
+  std::printf("✅ Final status: %" PRIu64 " active snapshots\n", final_status->active_snapshots);
 
   std::printf("\n🎉 All Hanoi command surface tests passed!\n");
   std::printf("✅ RFC-0000 §7 command surface fully implemented\n");
