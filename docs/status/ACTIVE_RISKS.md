@@ -1,6 +1,6 @@
 # Active Risks
 
-Last Updated: 2026-03-15
+Last Updated: 2026-03-19
 Owner: @t81dev
 Cadence: Weekly refresh
 
@@ -10,7 +10,7 @@ No prose. If a risk needs an essay, escalate it.
 
 | ID | Risk | Severity | Owner | Mitigation | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| R-05 | AGI-facing surface growth outpacing promotion evidence updates | Medium | @t81dev | Surface inventory refreshed each monthly governance cadence | Monitoring |
+| R-05 | Governed non-DCP surface growth outpacing boundary and evidence updates | Medium | @t81dev | Refresh status/registry/boundary docs each monthly governance cadence and require RFC-0048-consistent public claims | Monitoring |
 | R-06 | Documentation maintenance burden after reorganization | Low | @t81dev | Content-based structure reduces maintenance overhead; automated link checking in CI | Monitoring |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
 | R-09 | Test failures impacting release readiness — 5 tests failing (98.5% success rate) | Medium | @t81dev | **✅ RESOLVED** - Primary failures fixed; 344/344 passing. R-18 (TLOADHASH) also closed — stale CMake generator mismatch was root cause. | **Closed** |
@@ -23,11 +23,11 @@ No prose. If a risk needs an essay, escalate it.
 | **R-16** | **VM OOB register-index crashes** — SymLoad, ReflCap, ReflJustify accessed `register_tags[insn.b]` without `reg_ok()` guard, discovered by fuzz_vm | Added `!reg_ok(insn.b)` guard to all three dispatch cases; `85a0b438` | **2026-03-10** |
 | **R-17** | **binary_io OOM on corrupt/empty .tisc** — length-prefix read without sanity check allowed attacker-controlled allocation up to 2⁶⁴ elements (→ OOM-kill, exit 137) | `read_checked_size()` helper added; throws on EOF or count > 16M; `85a0b438` | **2026-03-10** |
 | **R-18** | **3 TLOADHASH tests failing** — `t81_vm_tloadhash_conformance_test`, `t81_vm_tloadhash_canonical_fixed_test`, `t81_vm_tloadhash_decodefault_determinism_matrix_test` appearing as SEGFAULTs in CI | Root cause was stale CMake generator mismatch (Unix Makefiles vs Ninja) in asio/googlebenchmark/ftxui subbuilds. After clearing stale subbuild caches and reconfiguring with the default Ninja preset, all 3 tests pass. Not a code defect. 344/344 passing. | **2026-03-15** |
-| **R-02** | **Axion Alpha posture delays Beta promotion** | **Resolved through successful 2026-03-10 Beta candidacy review and promotion** | **2026-03-10** |
+| **R-02** | **Axion maturity posture delayed governance closure** | **Resolved through the 2026-03-10 review cycle; later boundary work now classifies Axion as governed non-DCP rather than implicitly DCP-adjacent** | **2026-03-10** |
 | R-07 | CodeQL push trigger missing on `main` — required context not populated | `ad6c2777` added push trigger to `codeql.yml` | 2026-02-26 |
 | R-09 | March release packet blocked by required-context mismatch | GO stamped on `1ec312e3`; both required contexts completed/success | 2026-02-28 |
 | R-03 | Single-owner concentration — all GO/HOLD decisions gated on @t81dev | `docs/governance/APPROVAL_DELEGATION.md` published (GOV-01) | 2026-03-05 |
-| R-04 | T81Graph lang-side serialization gap (BG-09) blocks DCP candidacy | Language runtime invokes `serialize_canonical()` for T81Graph; stable serialization verified | 2026-03-04 |
+| R-04 | T81Graph lang-side serialization gap blocked deterministic-surface review | Language runtime invokes `serialize_canonical()` for T81Graph; stable serialization verified | 2026-03-04 |
 | R-10 | VM dispatch concentration in policy bridge increases maintenance risk | FW-02 closed: Axion opcode pre-dispatch moved outside the main VM opcode switch (`dispatch_axion_opcode_from_step`), with centralized helper routing retained | 2026-03-05 |
 | **R-14** | **T81Lang test failures blocking release readiness** — 11 failing tests causing subprocess abortions and CI instability | **All 11 failing tests fixed; 100% test success rate (285/285) achieved** | **2026-03-04** |
 | **R-11** | **Parser specification violations** — Operator precedence not matching T81 spec (§A.1.1) | **Parser fixed to match specification; all regression tests passing** | **2026-03-03** |
