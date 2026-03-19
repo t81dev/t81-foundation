@@ -1,7 +1,7 @@
 # Decision Log
 
 Status: Active
-Last Updated: 2026-03-14
+Last Updated: 2026-03-19
 Owner: Project Management / Governance
 Version: 1.0.0
 
@@ -165,8 +165,9 @@ promotion pipeline.
 
 **References:**
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md` (§ AGI-Facing Boundary Classification)
-- `docs/status/GOVERNED_AGI_PROMOTION_PIPELINE.md`
+- `docs/status/EXTENSION_PROFILE.md`
 - `docs/status/IMPLEMENTATION_MATRIX.md`
+- `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
 - `CMakeLists.txt` (`T81_EXPORT_LLAMA_ADAPTER` guard)
 
 ---

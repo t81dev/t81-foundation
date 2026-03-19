@@ -1,10 +1,12 @@
 # Governance Review Cadence
 
-Last Updated: 2026-03-14
+Last Updated: 2026-03-19
 Owner: @t81dev
 
 Defines: monthly review checklist, drift review protocol, registry update
 procedure, and promotion gate checklist. Prevents decay.
+
+Classification note: implementation maturity and governance boundary status are distinct. Surfaces may be stable in product terms while remaining governed non-DCP rather than Verified / DCP.
 
 ---
 
@@ -84,11 +86,11 @@ Run monthly alongside 1c above. Takes ~15 minutes.
 
 ## 3. Registry Update Procedure
 
-Run when a surface changes maturity (Partial → Verified, or Verified → downgraded).
+Run when a surface changes deterministic-governance status (for example Partial → Verified, governed non-DCP → Verified Candidate, or Verified → downgraded).
 
 1. Update `docs/governance/DETERMINISM_SURFACE_REGISTRY.md` — change the Status field.
 2. Update `FROZEN_CORE_PROFILE.md` §4 (Verified Determinism Surfaces) to match.
-3. Update `EXTENSION_PROFILE.md` if the surface moved in or out of Experimental.
+3. Update `EXTENSION_PROFILE.md` if the surface moved between experimental, governed non-DCP, or Verified/DCP scope.
 4. Update `IMPLEMENTATION_MATRIX.md` row (Promotion State column).
 5. Add a dated entry to `DETERMINISM_AUDIT_LOG.md`.
 6. Update `DRIFT_DECOMPOSITION.md` — mark the relevant row Closed or re-open it.
@@ -99,9 +101,9 @@ Run when a surface changes maturity (Partial → Verified, or Verified → downg
 
 ## 4. Promotion Gate Protocol
 
-For a surface to be promoted from Experimental to Verified Candidate to Verified:
+For a surface to be promoted from experimental or governed non-DCP into Verified / DCP scope:
 
-### Stage 1: Experimental → Verified Candidate
+### Stage 1: Experimental or Governed non-DCP → Verified Candidate
 
 Required evidence:
 - [ ] Architecture Decision Record (ADR) published in `docs/architecture/adr/`
@@ -111,7 +113,7 @@ Required evidence:
 - [ ] Incident-response controls documented and operational
 - [ ] No open Severity-2/3 incidents on the surface
 - [ ] Promotion evidence snapshot: `python3 scripts/governance/t81lang_promotion_gate_snapshot.py` (or equivalent)
-- [ ] Surface registered in `EXTENSION_PROFILE.md` with Promotion State updated
+- [ ] Surface registered in `EXTENSION_PROFILE.md` with classification updated
 
 ### Stage 2: Verified Candidate → Verified (DCP eligible)
 
@@ -121,7 +123,7 @@ Required evidence (in addition to Stage 1):
 - [ ] All Verified Candidate evidence current (no stale entries)
 - [ ] Registry status set to Verified
 - [ ] `FROZEN_CORE_PROFILE.md` updated to include the surface
-- [ ] `EXTENSION_PROFILE.md` row removed or updated to Verified
+- [ ] `EXTENSION_PROFILE.md` row removed or updated to reflect Verified / DCP status
 - [ ] `DRIFT_DECOMPOSITION.md` row marked Closed
 
 ### Rollback Triggers
@@ -132,7 +134,7 @@ A Verified surface must be immediately downgraded if:
 - A Severity-2 or higher incident is opened on the surface
 
 Rollback procedure: registry downgrade → `FROZEN_CORE_PROFILE.md` update →
-critical defect opened → surface reverts to Partial or Experimental.
+critical defect opened → surface reverts to Partial, governed non-DCP, or Experimental as appropriate.
 
 ---
 
@@ -194,3 +196,4 @@ Runbook reference: `docs/records/status-history/C2_MONTH_CLOSE_RUNBOOK_2026-03-3
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 - `docs/governance/FREEZE_ENFORCEMENT.md`
 - `docs/governance/SPEC_AUTHORITY_MODEL.md`
+- `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
