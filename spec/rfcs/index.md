@@ -61,6 +61,9 @@ This index tracks RFC status and intended disposition.
 | RFC-0048 | Deterministic Surface Definition and Governance Boundaries | draft | Defines the constitutional classes for DCP, governed non-DCP, experimental, and out-of-scope surfaces, plus the promotion/demotion rules that control deterministic claims |
 | RFC-0049 | Canonical Ternary Arithmetic Semantics | draft | Defines the mathematical oracle for addition, subtraction, multiplication, comparison, carry, normalization, and overflow so every governed backend shares one arithmetic contract |
 | RFC-0050 | Vectorized Ternary Operations for TISC | draft | Defines when vector execution is an ISA/VM semantic surface versus an internal backend optimization, including lane ordering, width, trace, and fallback rules |
+| RFC-0051 | Deterministic Heterogeneous Acceleration | draft | Constrains GPU and other accelerator backends through explicit kernel-class, transfer, reduction, fallback, and promotion rules so heterogeneous execution cannot silently expand the deterministic surface |
+| RFC-0052 | Canonical Dataflow and State-Driven Execution | draft | Defines canonical dependency graph, state identity, readiness, propagation, and CanonFS-linked execution rules above DPE |
+| RFC-0053 | Distributed Deterministic Execution Protocol | draft | Defines cross-node state identity, global commit order, conflict resolution, replay artifacts, and failure behavior for future distributed execution |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
