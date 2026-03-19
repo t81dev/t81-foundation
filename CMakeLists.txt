@@ -676,7 +676,7 @@ if(T81_ENABLE_TERNARYOS)
   endif()
 
   add_library(t81_ternaryos_shell STATIC
-    experimental/ternaryos/shell/shell_session.cpp)
+    src/axion/shell/shell_session.cpp)
   target_include_directories(t81_ternaryos_shell PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -685,7 +685,7 @@ if(T81_ENABLE_TERNARYOS)
 
   # RFC-00B9 — TernaryOS User Environment (t81-init, session manager, t81sh)
   add_library(t81_ternaryos_userenv STATIC
-    experimental/ternaryos/userenv/user_env.cpp)
+    src/axion/userenv/user_env.cpp)
   target_include_directories(t81_ternaryos_userenv PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -1284,6 +1284,11 @@ if(T81_ENABLE_TERNARYOS)
     target_link_libraries(t81_ternaryos_user_env_test PRIVATE t81_ternaryos_userenv)
     add_test(NAME t81_ternaryos_user_env_test COMMAND t81_ternaryos_user_env_test)
 
+    add_executable(t81_axion_userenv_include_surface_test
+      tests/cpp/axion_userenv_include_surface_test.cpp)
+    target_link_libraries(t81_axion_userenv_include_surface_test PRIVATE t81_ternaryos_userenv)
+    add_test(NAME t81_axion_userenv_include_surface_test COMMAND t81_axion_userenv_include_surface_test)
+
     if(T81_ENABLE_DPE)
       add_executable(t81_ternaryos_epoch_submission_test
         experimental/ternaryos/tests/epoch_submission_test.cpp)
@@ -1620,6 +1625,9 @@ if(T81_BUILD_TESTS)
 
   add_executable(canonfs_integrity_matrix_test tests/cpp/canonfs_integrity_matrix_test.cpp)
   target_link_libraries(canonfs_integrity_matrix_test PRIVATE t81_core t81_axion)
+
+  add_executable(canonfs_identity_contract_test tests/cpp/canonfs_identity_contract_test.cpp)
+  target_link_libraries(canonfs_identity_contract_test PRIVATE t81_core t81_axion)
 
   add_executable(t81_ir_encoding_test tests/cpp/ir_encoding_test.cpp)
   target_link_libraries(t81_ir_encoding_test PRIVATE t81_core)
@@ -2623,6 +2631,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_tensor_reshape_test
     t81_tensor_loader_test
     t81_canonfs_io_test
+    canonfs_persistent_driver_test
+    canonfs_identity_contract_test
     canonfs_read_verify_test
     canonfs_read_verify_env_contract_test
     canonfs_integrity_matrix_test

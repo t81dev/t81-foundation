@@ -1,6 +1,6 @@
 // experimental/ternaryos/shell/shell_startup_snapshot.cpp
 
-#include "shell_session.hpp"
+#include "t81/axion/shell/shell_session.hpp"
 
 #include <cstdio>
 #include <fstream>
