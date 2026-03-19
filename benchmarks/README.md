@@ -78,6 +78,7 @@ Current coverage:
 - `BM_GovernedCLI_VMTrace_Export_WithPolicy`
 - `BM_GovernedCLI_VMTrace_Export_NeuralNet`
 - `BM_GovernedCLI_AxionLog_JSON`
+- `BM_GovernedCLI_CodeRun_WeightsModelHash`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_NoPolicy`
@@ -124,7 +125,11 @@ Interpretation note:
   looping accumulator artifact plus a larger system-integration artifact to
   avoid overfitting conclusions to one trivial trace, and a policy-file case so
   the subprocess layer includes an explicitly governed export path. It now also
-  includes `neural_net.t81` as the first tensor-heavy CLI export profile.
+  includes `neural_net.t81` as the first tensor-heavy CLI export profile. The
+  family also now includes a CanonFS-backed `code run --weights-model
+  sha3-256:...` lane, which measures model-hash resolution and runtime
+  execution through the real CLI subprocess path rather than only the in-memory
+  tensor benchmarks.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.

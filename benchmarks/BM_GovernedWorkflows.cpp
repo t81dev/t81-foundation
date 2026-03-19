@@ -1,5 +1,6 @@
 #include <benchmark/benchmark.h>
 
+#include <cctype>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -262,6 +263,24 @@ bool write_text_file(const std::filesystem::path& path, std::string_view text) {
   return static_cast<bool>(out);
 }
 
+std::string read_text_file(const std::filesystem::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) return {};
+  std::ostringstream buffer;
+  buffer << in.rdbuf();
+  return buffer.str();
+}
+
+std::string trim_ascii_whitespace(std::string text) {
+  while (!text.empty() && std::isspace(static_cast<unsigned char>(text.front()))) {
+    text.erase(text.begin());
+  }
+  while (!text.empty() && std::isspace(static_cast<unsigned char>(text.back()))) {
+    text.pop_back();
+  }
+  return text;
+}
+
 std::string shell_quote(const std::filesystem::path& path) {
   std::string s = path.string();
   std::string out = "'";
@@ -276,8 +295,57 @@ std::string shell_quote(const std::filesystem::path& path) {
   return out;
 }
 
+std::string shell_quote_text(std::string_view text) {
+  std::string out = "'";
+  for (char c : text) {
+    if (c == '\'') {
+      out += "'\\''";
+    } else {
+      out.push_back(c);
+    }
+  }
+  out += "'";
+  return out;
+}
+
 int run_shell_command(const std::string& command) {
   return std::system(command.c_str());
+}
+
+void write_small_weights_model(const std::filesystem::path& model_path) {
+  t81::weights::NativeModel model;
+
+  t81::weights::NativeTensor mat_a;
+  mat_a.shape = {2, 2};
+  mat_a.trits = 4;
+  mat_a.data = {40};
+  model["mat_a"] = mat_a;
+
+  t81::weights::NativeTensor mat_b;
+  mat_b.shape = {2, 2};
+  mat_b.trits = 4;
+  mat_b.data = {67};
+  model["mat_b"] = mat_b;
+
+  t81::weights::save_t81w(model, model_path);
+}
+
+std::string prepare_cli_weights_model_hash(const std::filesystem::path& t81_bin,
+                                           const std::filesystem::path& canonfs_root,
+                                           const std::filesystem::path& model_path,
+                                           const std::filesystem::path& hash_out_path) {
+  write_small_weights_model(model_path);
+  const std::string put_cmd = shell_quote(t81_bin) + " canonfs put-file " + shell_quote(model_path) +
+                              " --canonfs-root " + shell_quote(canonfs_root) + " >" +
+                              shell_quote(hash_out_path) + " 2>/dev/null";
+  if (run_shell_command(put_cmd) != 0) {
+    return {};
+  }
+  const std::string model_hash = trim_ascii_whitespace(read_text_file(hash_out_path));
+  if (model_hash.rfind("sha3-256:", 0) != 0) {
+    return {};
+  }
+  return model_hash;
 }
 
 static void BM_GovernedVMRun_Arith_NoPolicy(benchmark::State& state) {
@@ -675,6 +743,45 @@ static void BM_GovernedCLI_AxionLog_JSON(benchmark::State& state) {
   std::filesystem::remove_all(workdir, ec);
 }
 BENCHMARK(BM_GovernedCLI_AxionLog_JSON);
+
+static void BM_GovernedCLI_CodeRun_WeightsModelHash(benchmark::State& state) {
+  const auto repo_root = std::filesystem::current_path();
+  const auto t81_bin = repo_root / "build" / "t81";
+  const auto workdir = governed_emit_root("cli-code-run-weights-model");
+  const auto canonfs_root = workdir / "canonfs";
+  const auto model_path = workdir / "small_model.t81w";
+  const auto hash_out = workdir / "model_hash.txt";
+  const auto program = repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
+  std::error_code ec;
+  std::filesystem::create_directories(canonfs_root, ec);
+  const std::string model_hash = prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out);
+  if (model_hash.empty()) {
+    state.SkipWithError("failed to prepare CanonFS-backed weights model fixture");
+    std::filesystem::remove_all(workdir, ec);
+    return;
+  }
+
+  state.SetLabel(
+      "workflow=cli-run, command=code-run, source=canonfs-weights-model, workload=matmul-weights");
+  for (auto _ : state) {
+    const std::string cmd = "env T81_CANONFS_ROOT=" + shell_quote(canonfs_root) + " " +
+                            shell_quote(t81_bin) + " code run " + shell_quote(program) +
+                            " --weights-model " + shell_quote_text(model_hash) +
+                            " >/dev/null 2>/dev/null";
+    const int rc = run_shell_command(cmd);
+    benchmark::DoNotOptimize(static_cast<long long>(rc));
+    if (rc != 0) {
+      state.SkipWithError("t81 code run --weights-model failed");
+      break;
+    }
+  }
+  if (std::filesystem::exists(model_path, ec)) {
+    state.counters["model_bytes"] = static_cast<double>(std::filesystem::file_size(model_path, ec));
+  }
+  state.counters["model_hash_chars"] = static_cast<double>(model_hash.size());
+  std::filesystem::remove_all(workdir, ec);
+}
+BENCHMARK(BM_GovernedCLI_CodeRun_WeightsModelHash);
 
 static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));
