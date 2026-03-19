@@ -289,6 +289,8 @@ of ad hoc integration logic.
 1. Keep RFC-00B0 HAL work separate from claims about native ternary hardware
    support.
 2. Define a hardware target profile template for any future candidate platform.
+   - [x] Template: [RFC-0055-hardware-target-profile-template.md](RFC-0055-hardware-target-profile-template.md)
+   - [x] Schema: [RFC-0055-hardware-target-profile-schema.json](RFC-0055-hardware-target-profile-schema.json)
 3. Require conformance matrices for any first hardware proof-of-concept.
 4. Promote only after the hardware interop layer, fault model, and trace/policy
    preservation are executable and documented.
