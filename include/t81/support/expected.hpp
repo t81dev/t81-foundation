@@ -85,8 +85,8 @@ public:
   expected(unexpected<E>&& unexp)
       : has_(false), storage_(std::in_place_index<1>, std::move(unexp).error()) {}
 
-  template <typename G,
-            std::enable_if_t<!std::is_same_v<E, G> && std::is_constructible_v<E, const G&>, int> = 0>
+  template <typename G, std::enable_if_t<
+                            !std::is_same_v<E, G> && std::is_constructible_v<E, const G&>, int> = 0>
   expected(const unexpected<G>& unexp)
       : has_(false), storage_(std::in_place_index<1>, unexp.error()) {}
 
@@ -178,8 +178,8 @@ public:
   expected(const unexpected<E>& unexp) : has_(false), error_(unexp.error()) {}
   expected(unexpected<E>&& unexp) : has_(false), error_(std::move(unexp).error()) {}
 
-  template <typename G,
-            std::enable_if_t<!std::is_same_v<E, G> && std::is_constructible_v<E, const G&>, int> = 0>
+  template <typename G, std::enable_if_t<
+                            !std::is_same_v<E, G> && std::is_constructible_v<E, const G&>, int> = 0>
   expected(const unexpected<G>& unexp) : has_(false), error_(unexp.error()) {}
 
   template <typename G,
