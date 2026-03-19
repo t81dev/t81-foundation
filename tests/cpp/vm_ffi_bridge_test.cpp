@@ -106,21 +106,19 @@ std::string quarantined_test_function_name() { return "t81_ffi_quarantined_probe
 
 void register_bridge_target() {
   auto& registry = t81::ffi::FFILibraryRegistry::instance();
-  auto result = registry.register_library(
-      unavailable_library_name(),
-      "bridge-test-v1",
-      {t81::ffi::FFIFunction{
-          .name = "bridge_target",
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = unavailable_library_name(),
-          .version_hash = "bridge-test-v1",
-          .param_types = {},
-          .return_type = "uint64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      }});
+  auto result = registry.register_library(unavailable_library_name(), "bridge-test-v1",
+                                          {t81::ffi::FFIFunction{
+                                              .name = "bridge_target",
+                                              .type = t81::ffi::FFIType::Deterministic,
+                                              .library_name = unavailable_library_name(),
+                                              .version_hash = "bridge-test-v1",
+                                              .param_types = {},
+                                              .return_type = "uint64_t",
+                                              .is_variadic = false,
+                                              .policy_reason = "VM bridge regression",
+                                              .resource_quota = 64,
+                                              .required_capabilities = {},
+                                          }});
   if (!result && result.error().find("already registered") == std::string::npos) {
     std::cerr << "unexpected FFI registry error: " << result.error() << "\n";
     std::abort();
@@ -129,208 +127,204 @@ void register_bridge_target() {
 
 void register_success_target() {
   auto& registry = t81::ffi::FFILibraryRegistry::instance();
-  auto result = registry.register_library(
-      system_library_name(),
-      "bridge-success-v1",
-      {
-          t81::ffi::FFIFunction{
-              .name = system_success_function_name(),
-              .type = t81::ffi::FFIType::Deterministic,
-              .library_name = system_library_name(),
-              .version_hash = "bridge-success-v1",
-              .param_types = {},
-              .return_type = "uint64_t",
-              .is_variadic = false,
-              .policy_reason = "VM bridge success regression",
-              .resource_quota = 64,
-              .required_capabilities = {},
-          },
+  auto result =
+      registry.register_library(system_library_name(), "bridge-success-v1",
+                                {
+                                    t81::ffi::FFIFunction{
+                                        .name = system_success_function_name(),
+                                        .type = t81::ffi::FFIType::Deterministic,
+                                        .library_name = system_library_name(),
+                                        .version_hash = "bridge-success-v1",
+                                        .param_types = {},
+                                        .return_type = "uint64_t",
+                                        .is_variadic = false,
+                                        .policy_reason = "VM bridge success regression",
+                                        .resource_quota = 64,
+                                        .required_capabilities = {},
+                                    },
 #ifndef _WIN32
-          t81::ffi::FFIFunction{
-              .name = unary_system_function_name(),
-              .type = t81::ffi::FFIType::Deterministic,
-              .library_name = system_library_name(),
-              .version_hash = "bridge-success-v1",
-              .param_types = {"int64_t"},
-              .return_type = "int64_t",
-              .is_variadic = false,
-              .policy_reason = "VM bridge unary success regression",
-              .resource_quota = 64,
-              .required_capabilities = {},
-          },
-          t81::ffi::FFIFunction{
-              .name = system_string_function_name(),
-              .type = t81::ffi::FFIType::Deterministic,
-              .library_name = system_library_name(),
-              .version_hash = "bridge-success-v1",
-              .param_types = {"string"},
-              .return_type = "int64_t",
-              .is_variadic = false,
-              .policy_reason = "VM bridge external string regression",
-              .resource_quota = 64,
-              .required_capabilities = {},
-          },
-          t81::ffi::FFIFunction{
-              .name = system_double_function_name(),
-              .type = t81::ffi::FFIType::Deterministic,
-              .library_name = system_double_library_name(),
-              .version_hash = "bridge-success-v1",
-              .param_types = {"double"},
-              .return_type = "double",
-              .is_variadic = false,
-              .policy_reason = "VM bridge external double regression",
-              .resource_quota = 64,
-              .required_capabilities = {},
-          },
+                                    t81::ffi::FFIFunction{
+                                        .name = unary_system_function_name(),
+                                        .type = t81::ffi::FFIType::Deterministic,
+                                        .library_name = system_library_name(),
+                                        .version_hash = "bridge-success-v1",
+                                        .param_types = {"int64_t"},
+                                        .return_type = "int64_t",
+                                        .is_variadic = false,
+                                        .policy_reason = "VM bridge unary success regression",
+                                        .resource_quota = 64,
+                                        .required_capabilities = {},
+                                    },
+                                    t81::ffi::FFIFunction{
+                                        .name = system_string_function_name(),
+                                        .type = t81::ffi::FFIType::Deterministic,
+                                        .library_name = system_library_name(),
+                                        .version_hash = "bridge-success-v1",
+                                        .param_types = {"string"},
+                                        .return_type = "int64_t",
+                                        .is_variadic = false,
+                                        .policy_reason = "VM bridge external string regression",
+                                        .resource_quota = 64,
+                                        .required_capabilities = {},
+                                    },
+                                    t81::ffi::FFIFunction{
+                                        .name = system_double_function_name(),
+                                        .type = t81::ffi::FFIType::Deterministic,
+                                        .library_name = system_double_library_name(),
+                                        .version_hash = "bridge-success-v1",
+                                        .param_types = {"double"},
+                                        .return_type = "double",
+                                        .is_variadic = false,
+                                        .policy_reason = "VM bridge external double regression",
+                                        .resource_quota = 64,
+                                        .required_capabilities = {},
+                                    },
 #endif
-      });
+                                });
   if (!result && result.error().find("already registered") == std::string::npos) {
     std::cerr << "unexpected FFI registry error: " << result.error() << "\n";
     std::abort();
   }
 }
 
-void register_unary_success_target() {
-  register_success_target();
-}
+void register_unary_success_target() { register_success_target(); }
 
 void register_binary_success_target() {
   auto& registry = t81::ffi::FFILibraryRegistry::instance();
-  auto result = registry.register_library(
-      binary_test_library_name(),
-      "bridge-binary-v1",
-      {t81::ffi::FFIFunction{
-          .name = binary_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {"int64_t", "int64_t"},
-          .return_type = "int64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge binary success regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = string_arg_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {"string"},
-          .return_type = "int64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge string-arg regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = string_result_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {},
-          .return_type = "string",
-          .is_variadic = false,
-          .policy_reason = "VM bridge string-result regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = double_arg_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {"double"},
-          .return_type = "double",
-          .is_variadic = false,
-          .policy_reason = "VM bridge double-arg regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = double_result_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {},
-          .return_type = "double",
-          .is_variadic = false,
-          .policy_reason = "VM bridge double-result regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = bytes_arg_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {"bytes"},
-          .return_type = "int64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge bytes-arg regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = bytes_result_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {},
-          .return_type = "bytes",
-          .is_variadic = false,
-          .policy_reason = "VM bridge bytes-result regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = mixed_arg_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {"int64_t", "string"},
-          .return_type = "int64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge mixed-arg regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = string_list_result_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {},
-          .return_type = "string[]",
-          .is_variadic = false,
-          .policy_reason = "VM bridge string-list-result regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = string_list_arg_test_function_name(),
-          .type = t81::ffi::FFIType::Deterministic,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {"string[]"},
-          .return_type = "int64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge string-list-arg regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      },
-       t81::ffi::FFIFunction{
-          .name = quarantined_test_function_name(),
-          .type = t81::ffi::FFIType::Quarantined,
-          .library_name = binary_test_library_name(),
-          .version_hash = "bridge-binary-v1",
-          .param_types = {},
-          .return_type = "int64_t",
-          .is_variadic = false,
-          .policy_reason = "VM bridge quarantine regression",
-          .resource_quota = 64,
-          .required_capabilities = {},
-      }});
+  auto result =
+      registry.register_library(binary_test_library_name(), "bridge-binary-v1",
+                                {t81::ffi::FFIFunction{
+                                     .name = binary_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {"int64_t", "int64_t"},
+                                     .return_type = "int64_t",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge binary success regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = string_arg_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {"string"},
+                                     .return_type = "int64_t",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge string-arg regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = string_result_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {},
+                                     .return_type = "string",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge string-result regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = double_arg_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {"double"},
+                                     .return_type = "double",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge double-arg regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = double_result_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {},
+                                     .return_type = "double",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge double-result regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = bytes_arg_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {"bytes"},
+                                     .return_type = "int64_t",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge bytes-arg regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = bytes_result_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {},
+                                     .return_type = "bytes",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge bytes-result regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = mixed_arg_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {"int64_t", "string"},
+                                     .return_type = "int64_t",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge mixed-arg regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = string_list_result_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {},
+                                     .return_type = "string[]",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge string-list-result regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = string_list_arg_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {"string[]"},
+                                     .return_type = "int64_t",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge string-list-arg regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = quarantined_test_function_name(),
+                                     .type = t81::ffi::FFIType::Quarantined,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {},
+                                     .return_type = "int64_t",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge quarantine regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 }});
   if (!result && result.error().find("already registered") == std::string::npos) {
     std::cerr << "unexpected FFI registry error: " << result.error() << "\n";
     std::abort();
@@ -341,9 +335,8 @@ void test_vm_ffi_call_uses_encoded_symbol() {
   register_bridge_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = "bridge_target";
   ir_program.add_instruction(ffi_call);
@@ -368,9 +361,8 @@ void test_vm_ffi_call_success_writes_result_register() {
   register_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{3}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{3}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = system_success_function_name();
   ir_program.add_instruction(ffi_call);
@@ -404,16 +396,13 @@ void test_vm_ffi_call_unary_argument_round_trip() {
   t81::tisc::ir::IntermediateProgram ir_program;
 #ifndef _WIN32
   ir_program.add_instruction(
-      {t81::tisc::ir::Opcode::LOADI,
-       {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{-42}}});
+      {t81::tisc::ir::Opcode::LOADI, {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{-42}}});
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{4}, t81::tisc::ir::Immediate{1}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{4}, t81::tisc::ir::Immediate{1}}};
 #else
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{4}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{4}, t81::tisc::ir::Immediate{0}}};
 #endif
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = unary_system_function_name();
@@ -464,9 +453,8 @@ void test_vm_ffi_call_system_string_argument_round_trip() {
   load_symbol.text_literal = "ffi-system";
   ir_program.add_instruction(load_symbol);
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{17}, t81::tisc::ir::Immediate{1}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{17}, t81::tisc::ir::Immediate{1}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = system_string_function_name();
   ir_program.add_instruction(ffi_call);
@@ -501,15 +489,13 @@ void test_vm_ffi_call_system_double_argument_round_trip() {
   register_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction load_float{t81::tisc::ir::Opcode::LOADI,
-                                        {t81::tisc::ir::Register{1}}};
+  t81::tisc::ir::Instruction load_float{t81::tisc::ir::Opcode::LOADI, {t81::tisc::ir::Register{1}}};
   load_float.literal_kind = t81::tisc::LiteralKind::FloatHandle;
   load_float.text_literal = "-6.5";
   ir_program.add_instruction(load_float);
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{18}, t81::tisc::ir::Immediate{1}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{18}, t81::tisc::ir::Immediate{1}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = system_double_function_name();
   ir_program.add_instruction(ffi_call);
@@ -548,14 +534,12 @@ void test_vm_ffi_register_reads_symbol_registers() {
   t81::tisc::Program program;
   program.symbol_pool = {"bridge.lib", "deadbeef"};
 
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 1, 1, 0,
-                           t81::tisc::LiteralKind::SymbolHandle});
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 2, 0,
-                           t81::tisc::LiteralKind::SymbolHandle});
   program.insns.push_back(
-      {t81::tisc::Opcode::FFIRegister, 1, 2, 0, t81::tisc::LiteralKind::Int});
-  program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0,
-                           t81::tisc::LiteralKind::Int});
+      {t81::tisc::Opcode::LoadImm, 1, 1, 0, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 2, 2, 0, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back({t81::tisc::Opcode::FFIRegister, 1, 2, 0, t81::tisc::LiteralKind::Int});
+  program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0, t81::tisc::LiteralKind::Int});
 
   auto vm = t81::vm::make_interpreter_vm();
   t81::axion::PolicyEngine policy_engine(std::nullopt);
@@ -583,16 +567,13 @@ void test_vm_ffi_call_binary_argument_round_trip() {
 
   t81::tisc::ir::IntermediateProgram ir_program;
   ir_program.add_instruction(
-      {t81::tisc::ir::Opcode::LOADI,
-       {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{7}}});
+      {t81::tisc::ir::Opcode::LOADI, {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{7}}});
   ir_program.add_instruction(
-      {t81::tisc::ir::Opcode::LOADI,
-       {t81::tisc::ir::Register{2}, t81::tisc::ir::Immediate{35}}});
+      {t81::tisc::ir::Opcode::LOADI, {t81::tisc::ir::Register{2}, t81::tisc::ir::Immediate{35}}});
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{2}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{5}, t81::tisc::ir::Immediate{2}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{5}, t81::tisc::ir::Immediate{2}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = binary_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -616,8 +597,7 @@ void test_vm_ffi_call_binary_argument_round_trip() {
   const auto& state = vm->state();
   const auto& ctx = state.contexts[state.current_context];
   if (ctx.register_tags[5] != t81::vm::ValueTag::Int || ctx.registers[5] != 42) {
-    std::cerr << "expected t81_ffi_add_i64(7, 35) to produce 42, got "
-              << ctx.registers[5] << "\n";
+    std::cerr << "expected t81_ffi_add_i64(7, 35) to produce 42, got " << ctx.registers[5] << "\n";
     std::abort();
   }
 }
@@ -636,9 +616,8 @@ void test_vm_ffi_call_string_argument_round_trip() {
   load_symbol.text_literal = "hello bridge";
   ir_program.add_instruction(load_symbol);
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{6}, t81::tisc::ir::Immediate{1}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{6}, t81::tisc::ir::Immediate{1}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = string_arg_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -662,8 +641,7 @@ void test_vm_ffi_call_string_argument_round_trip() {
   const auto& state = vm->state();
   const auto& ctx = state.contexts[state.current_context];
   if (ctx.register_tags[6] != t81::vm::ValueTag::Int || ctx.registers[6] != 12) {
-    std::cerr << "expected strlen('hello bridge') to produce 12, got "
-              << ctx.registers[6] << "\n";
+    std::cerr << "expected strlen('hello bridge') to produce 12, got " << ctx.registers[6] << "\n";
     std::abort();
   }
 }
@@ -676,9 +654,8 @@ void test_vm_ffi_call_string_result_round_trip() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{7}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{7}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = string_result_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -721,15 +698,13 @@ void test_vm_ffi_call_double_argument_round_trip() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction load_float{t81::tisc::ir::Opcode::LOADI,
-                                        {t81::tisc::ir::Register{1}}};
+  t81::tisc::ir::Instruction load_float{t81::tisc::ir::Opcode::LOADI, {t81::tisc::ir::Register{1}}};
   load_float.literal_kind = t81::tisc::LiteralKind::FloatHandle;
   load_float.text_literal = "6.5";
   ir_program.add_instruction(load_float);
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{8}, t81::tisc::ir::Immediate{1}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{8}, t81::tisc::ir::Immediate{1}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = double_arg_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -771,9 +746,8 @@ void test_vm_ffi_call_double_result_round_trip() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{9}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{9}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = double_result_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -817,14 +791,12 @@ void test_vm_ffi_call_bytes_argument_round_trip() {
   t81::tisc::Program program;
   program.symbol_pool.emplace_back(std::string("A\0B\x7f", 4));
   program.symbol_pool.emplace_back(bytes_arg_test_function_name());
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 1, 1, 0,
-                           t81::tisc::LiteralKind::SymbolHandle});
-  program.insns.push_back({t81::tisc::Opcode::Push, 1, 0, 0,
-                           t81::tisc::LiteralKind::Int});
-  program.insns.push_back({t81::tisc::Opcode::FFICall, 10, 1, 2,
-                           t81::tisc::LiteralKind::SymbolHandle});
-  program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0,
-                           t81::tisc::LiteralKind::Int});
+  program.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 1, 1, 0, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back({t81::tisc::Opcode::Push, 1, 0, 0, t81::tisc::LiteralKind::Int});
+  program.insns.push_back(
+      {t81::tisc::Opcode::FFICall, 10, 1, 2, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0, t81::tisc::LiteralKind::Int});
 
   auto vm = t81::vm::make_interpreter_vm();
   t81::axion::PolicyEngine policy_engine(std::nullopt);
@@ -854,9 +826,8 @@ void test_vm_ffi_call_bytes_result_round_trip() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{11}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{11}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = bytes_result_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -900,8 +871,7 @@ void test_vm_ffi_call_mixed_argument_round_trip() {
 
   t81::tisc::ir::IntermediateProgram ir_program;
   ir_program.add_instruction(
-      {t81::tisc::ir::Opcode::LOADI,
-       {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{30}}});
+      {t81::tisc::ir::Opcode::LOADI, {t81::tisc::ir::Register{1}, t81::tisc::ir::Immediate{30}}});
   t81::tisc::ir::Instruction load_symbol{t81::tisc::ir::Opcode::LOADI,
                                          {t81::tisc::ir::Register{2}}};
   load_symbol.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
@@ -909,9 +879,8 @@ void test_vm_ffi_call_mixed_argument_round_trip() {
   ir_program.add_instruction(load_symbol);
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{1}}});
   ir_program.add_instruction({t81::tisc::ir::Opcode::PUSH, {t81::tisc::ir::Register{2}}});
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{12}, t81::tisc::ir::Immediate{2}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{12}, t81::tisc::ir::Immediate{2}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = mixed_arg_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -948,9 +917,8 @@ void test_vm_ffi_call_string_list_result_round_trip() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{13}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{13}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = string_list_result_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -973,8 +941,7 @@ void test_vm_ffi_call_string_list_result_round_trip() {
 
   const auto& state = vm->state();
   const auto& ctx = state.contexts[state.current_context];
-  if (ctx.register_tags[13] != t81::vm::ValueTag::StringVectorHandle ||
-      ctx.registers[13] <= 0) {
+  if (ctx.register_tags[13] != t81::vm::ValueTag::StringVectorHandle || ctx.registers[13] <= 0) {
     std::cerr << "expected StringVectorHandle result from structured FFI call\n";
     std::abort();
   }
@@ -995,22 +962,17 @@ void test_vm_ffi_call_string_list_argument_round_trip() {
 
   t81::tisc::Program program;
   program.symbol_pool = {"alpha", "beta", string_list_arg_test_function_name()};
-  program.insns.push_back({t81::tisc::Opcode::StrVecNew, 1, 0, 0,
-                           t81::tisc::LiteralKind::Int});
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 1, 0,
-                           t81::tisc::LiteralKind::SymbolHandle});
-  program.insns.push_back({t81::tisc::Opcode::StrVecPush, 1, 2, 0,
-                           t81::tisc::LiteralKind::Int});
-  program.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 2, 0,
-                           t81::tisc::LiteralKind::SymbolHandle});
-  program.insns.push_back({t81::tisc::Opcode::StrVecPush, 1, 3, 0,
-                           t81::tisc::LiteralKind::Int});
-  program.insns.push_back({t81::tisc::Opcode::Push, 1, 0, 0,
-                           t81::tisc::LiteralKind::Int});
-  program.insns.push_back({t81::tisc::Opcode::FFICall, 14, 1, 3,
-                           t81::tisc::LiteralKind::SymbolHandle});
-  program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0,
-                           t81::tisc::LiteralKind::Int});
+  program.insns.push_back({t81::tisc::Opcode::StrVecNew, 1, 0, 0, t81::tisc::LiteralKind::Int});
+  program.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 2, 1, 0, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back({t81::tisc::Opcode::StrVecPush, 1, 2, 0, t81::tisc::LiteralKind::Int});
+  program.insns.push_back(
+      {t81::tisc::Opcode::LoadImm, 3, 2, 0, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back({t81::tisc::Opcode::StrVecPush, 1, 3, 0, t81::tisc::LiteralKind::Int});
+  program.insns.push_back({t81::tisc::Opcode::Push, 1, 0, 0, t81::tisc::LiteralKind::Int});
+  program.insns.push_back(
+      {t81::tisc::Opcode::FFICall, 14, 1, 3, t81::tisc::LiteralKind::SymbolHandle});
+  program.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0, t81::tisc::LiteralKind::Int});
 
   auto vm = t81::vm::make_interpreter_vm();
   t81::axion::PolicyEngine policy_engine(std::nullopt);
@@ -1036,9 +998,8 @@ void test_vm_ffi_call_emits_audit_trail() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{15}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{15}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = string_result_test_function_name();
   ir_program.add_instruction(ffi_call);
@@ -1081,9 +1042,8 @@ void test_vm_ffi_quarantine_fails_closed() {
   register_binary_success_target();
 
   t81::tisc::ir::IntermediateProgram ir_program;
-  t81::tisc::ir::Instruction ffi_call{
-      t81::tisc::ir::Opcode::FFI_CALL,
-      {t81::tisc::ir::Register{16}, t81::tisc::ir::Immediate{0}}};
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{16}, t81::tisc::ir::Immediate{0}}};
   ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
   ffi_call.text_literal = quarantined_test_function_name();
   ir_program.add_instruction(ffi_call);
