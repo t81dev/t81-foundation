@@ -1718,6 +1718,10 @@ if(T81_BUILD_TESTS)
                  tests/cpp/vm_predispatch_policy_deny_logging_test.cpp)
   target_link_libraries(t81_vm_predispatch_policy_deny_logging_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_ai_predispatch_deny_audit_test
+                 tests/cpp/vm_ai_predispatch_deny_audit_test.cpp)
+  target_link_libraries(t81_vm_ai_predispatch_deny_audit_test PRIVATE t81_vm t81_axion t81_core)
+
   add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
   target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
 
@@ -2701,6 +2705,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_tensor_helper_predicates_test
     t81_vm_tensor_provenance_trace_test
     t81_vm_predispatch_policy_deny_logging_test
+    t81_vm_ai_predispatch_deny_audit_test
     t81_vm_fault_test
     t81_vm_deterministic_fault_test
     t81_vm_fault_family_determinism_matrix_test

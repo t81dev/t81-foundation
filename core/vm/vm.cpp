@@ -393,6 +393,11 @@ public:
         event.value = 0;
         event.verdict.kind = t81::axion::VerdictKind::Deny;
         event.verdict.reason = parse_error;
+        event.structured.reason = parse_error;
+        event.structured.decision = "deny";
+        event.structured.event_type = "policy_parse_failure";
+        event.structured.reason_code = "AXION_POLICY_PARSE_FAILED";
+        event.structured.pc = 0;
         state_.axion_log.push_back(event);
       }
     }
