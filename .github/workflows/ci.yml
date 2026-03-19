@@ -95,14 +95,17 @@ jobs:
           python3 scripts/governance/check_translation_staleness.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_translation_semantic_alignment.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_docs_structure.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/governance/check_active_docs_link_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_license_policy.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_repo_artifact_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_public_api_semver.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_spec_code_alignment_baseline.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_stdlib_surface_baseline.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_stdlib_promotion_snapshot.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/governance/check_status_label_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_cognitive_tier_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_overclaim_guardrails.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/governance/check_rfc_lifecycle_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Run governance audit wrapper
         run: |
