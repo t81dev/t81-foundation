@@ -29,7 +29,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- |
 | Overall | Green — release branch remains healthy; determinism and structural-integrity gates remain the controlling signals |
 | Release Readiness | **GO** for the current shipped core profile; broader verticals remain classified per DCP / governed non-DCP / experimental boundaries |
-| Current Main | `b2def94d` — governance RFC chain now extends through RFC-0053, and Axion epoch scheduler/audit parity is now CI-enforced through the dedicated `axion-epoch-determinism` lane |
+| Current Main | `61c2edf6` — governance RFC chain extends through RFC-0053, Axion epoch scheduler/audit parity is CI-enforced through `axion-epoch-determinism`, and VM memory/state proofs are explicitly registered in the determinism governance surface |
 | Open Blockers | None |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
 | Determinism Registry | Verified surfaces remain the only source of DCP-strength deterministic claims |

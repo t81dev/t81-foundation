@@ -3,8 +3,8 @@
 Status: Active
 Last Updated: 2026-03-19
 Owner: @t81dev
-Reference Candidate: `b2def94d` (origin/main, 2026-03-19)
-Current Main Head: `b2def94d` (origin/main, 2026-03-19; Axion epoch scheduler/audit parity lane wired into CI and governance docs)
+Reference Candidate: `61c2edf6` (origin/main, 2026-03-19)
+Current Main Head: `61c2edf6` (origin/main, 2026-03-19; Axion epoch parity and VM memory/state determinism proofs are wired into CI and governance docs)
 
 ## Purpose
 
