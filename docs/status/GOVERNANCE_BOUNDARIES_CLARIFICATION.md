@@ -3,6 +3,10 @@
 ## Overview
 This document clarifies the governance boundaries and deterministic profile enforcement for the T81VM and associated components.
 
+Primary operational classification source:
+
+- [GOVERNANCE_SURFACE_REGISTER.md](/Users/t81dev/Code/t81-foundation/docs/governance/GOVERNANCE_SURFACE_REGISTER.md)
+
 ## Boundaries
 
 - Core Deterministic Profile (DCP) strictly isolates experimental features.

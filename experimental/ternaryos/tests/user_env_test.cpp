@@ -18,9 +18,9 @@
 // AC-14  A service with an unrecognised capability is refused at spawn time
 // AC-15  t81sh T81Lang REPL shares VM state across lines within a session
 
-#include "../userenv/service_registry.hpp"
-#include "../userenv/session_manager.hpp"
-#include "../userenv/t81sh.hpp"
+#include "t81/axion/userenv/service_registry.hpp"
+#include "t81/axion/userenv/session_manager.hpp"
+#include "t81/axion/userenv/t81sh.hpp"
 
 #include <algorithm>
 #include <cassert>

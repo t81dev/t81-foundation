@@ -15,6 +15,9 @@ The supported local ritual in this document verifies the T81Lang compiler
 fixture corpus and its aggregate reproducibility hash. That is the operator
 entry point for the determinism evidence surfaced by the CLI and CI gates.
 
+For the newer governed CLI workflow replay ritual, see
+[CLI_REPLAY_BUNDLES.md](/Users/t81dev/Code/t81-foundation/docs/reference/CLI_REPLAY_BUNDLES.md).
+
 ## 2. Supported Environment
 
 To reproduce the canonical T81Lang fixture hash, use the following known-good

@@ -151,15 +151,11 @@ static void test_sched_tick_round_robin() {
 
   // No Running thread yet — set A as running
   cpu.registers[0] = 10;
-  // Manually set A running via first tick (it will save cpu → A, then switch to B)
   bool switched = sched.tick(cpu);
-  // After first tick: A was saved (it was "current" = nullptr before, so we just pick B)
-  // Actually: tick() sees cur=nullptr, picks next_ready (A=tid1), sets running, restores A
-  // Let's verify: running thread is now tidA or tidB?
-  // tick with no current: picks first ready = A (tid 1), sets running, restores
-  // cpu.registers[0] should be ctxA.registers[0] = 10
-  check(switched || !switched, "tick returns without crash"); // just verify it runs
-  (void)tidA; (void)tidB;
+  check(switched, "first tick: scheduler selects an initial running thread");
+  check(sched.current_tid() == tidA, "first tick: thread A becomes running first");
+  check(cpu.registers[0] == 10, "first tick: CPU state restored from thread A");
+  (void)tidB;
 
   // Now tick again: saves current (A), picks B, restores B
   cpu.registers[0] = 999; // dirty the register
@@ -222,9 +218,8 @@ static void test_sched_sleep_wake() {
   // Now the running thread should have changed to B (or nobody)
   // tick again from B's perspective
   bool switched = sched.tick(cpu);
-  // B was already running (sleep triggered a tick) — there's no other ready thread
-  // so tick returns false (kept B) or picks B again
-  check(!switched || switched, "tick after sleep-wake: no crash");
+  check(!switched, "tick after sleeping A: no switch because only B is runnable");
+  check(sched.current_tid() == tidB, "tick after sleeping A: thread B remains running");
 
   // Wake A
   bool woke = sched.wake(tidA);
