@@ -1641,6 +1641,10 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_tloadhash_conformance_test tests/cpp/vm_tloadhash_conformance_test.cpp)
   target_link_libraries(t81_vm_tloadhash_conformance_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_tloadhash_custom_driver_test
+                 tests/cpp/vm_tloadhash_custom_driver_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_custom_driver_test PRIVATE t81_vm t81_core)
+
 
   add_executable(t81_vm_tloadhash_canonical_fixed_test
                  tests/cpp/vm_tloadhash_canonical_fixed_test.cpp)
@@ -2686,6 +2690,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_bounds_test
     t81_vm_tensor_test
     t81_vm_tloadhash_conformance_test
+    t81_vm_tloadhash_custom_driver_test
     t81_vm_tloadhash_canonical_fixed_test
     t81_vm_tloadhash_decodefault_determinism_matrix_test
     t81_vm_ai_phase1_attention_conformance_test

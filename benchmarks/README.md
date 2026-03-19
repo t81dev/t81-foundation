@@ -70,6 +70,8 @@ Current coverage:
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_NoPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_AllowPolicy`
+- `BM_GovernedTensorLoad_HashFixture_NoPolicy`
+- `BM_GovernedTensorLoad_HashFixture_AllowPolicy`
 
 Focused local command:
 ```bash
@@ -92,6 +94,9 @@ Interpretation note:
 - `BM_GovernedVMRun_*` is a matched-workload policy-on vs policy-off comparison.
 - `BM_GovernedTensorLoad_*_NoPolicy` vs `*_AllowPolicy` measures policy cost
   within a fixed tensor-load path.
+- `BM_GovernedTensorLoad_HashFixture_*` exercises the same `TLoadHash` opcode
+  against a preloaded in-memory CanonFS fixture, which helps separate
+  hash-resolution path cost from persistent storage cost.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.

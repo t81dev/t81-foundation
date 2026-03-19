@@ -139,6 +139,19 @@ std::string ensure_canonfs_tensor(uint64_t elements, const std::filesystem::path
   return "sha3-256:" + write->hash.h.to_string();
 }
 
+std::pair<std::shared_ptr<t81::canonfs::Driver>, std::string> make_in_memory_hash_fixture(
+    uint64_t elements) {
+  auto driver = std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
+  auto bytes = serialize_tensor(make_balanced_tensor(elements));
+  auto write = driver->write_object(
+      t81::canonfs::ObjectType::CanonTensor,
+      std::span<const std::byte>(bytes.data(), bytes.size()));
+  if (!write.has_value()) {
+    return {nullptr, {}};
+  }
+  return {std::move(driver), "sha3-256:" + write->hash.h.to_string()};
+}
+
 static void BM_GovernedVMRun_Arith_NoPolicy(benchmark::State& state) {
   const Program prog = make_arith_chain_program(false);
   state.SetLabel("workflow=vm-run, governance=none, workload=arith-chain");
@@ -238,5 +251,46 @@ static void BM_GovernedTensorLoad_CanonFSHash_AllowPolicy(benchmark::State& stat
   std::filesystem::remove_all(root, ec);
 }
 BENCHMARK(BM_GovernedTensorLoad_CanonFSHash_AllowPolicy)->Arg(4)->Arg(256)->Arg(4096);
+
+static void BM_GovernedTensorLoad_HashFixture_NoPolicy(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto [driver, hash_symbol] = make_in_memory_hash_fixture(elements);
+  if (!driver || hash_symbol.empty()) {
+    state.SkipWithError("failed to write in-memory hash fixture");
+    return;
+  }
+  const Program prog = make_tloadhash_program(hash_symbol, false);
+  state.SetLabel("workflow=tensor-load, source=hash-fixture, backing=in-memory, governance=none");
+  state.counters["tensor_elements"] = static_cast<double>(elements);
+  for (auto _ : state) {
+    auto vm = t81::vm::make_interpreter_vm();
+    vm->set_canonfs_driver(driver);
+    vm->load_program(prog);
+    auto result = vm->run_to_halt(10000);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(BM_GovernedTensorLoad_HashFixture_NoPolicy)->Arg(4)->Arg(256)->Arg(4096);
+
+static void BM_GovernedTensorLoad_HashFixture_AllowPolicy(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto [driver, hash_symbol] = make_in_memory_hash_fixture(elements);
+  if (!driver || hash_symbol.empty()) {
+    state.SkipWithError("failed to write in-memory hash fixture");
+    return;
+  }
+  const Program prog = make_tloadhash_program(hash_symbol, true);
+  state.SetLabel(
+      "workflow=tensor-load, source=hash-fixture, backing=in-memory, governance=allow-policy");
+  state.counters["tensor_elements"] = static_cast<double>(elements);
+  for (auto _ : state) {
+    auto vm = t81::vm::make_interpreter_vm();
+    vm->set_canonfs_driver(driver);
+    vm->load_program(prog);
+    auto result = vm->run_to_halt(10000);
+    benchmark::DoNotOptimize(result);
+  }
+}
+BENCHMARK(BM_GovernedTensorLoad_HashFixture_AllowPolicy)->Arg(4)->Arg(256)->Arg(4096);
 
 }  // namespace
