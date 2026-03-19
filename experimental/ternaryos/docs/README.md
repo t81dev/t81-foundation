@@ -1,6 +1,6 @@
 # experimental/ternaryos
 
-**Status:** Experimental — non-DCP, not governance-gated.
+**Status:** Governed experimental kernel track overall; RFC-00B9 user-environment slice is governed non-DCP and now has a stable public boundary under `include/t81/axion/` and `src/axion/` in the opt-in TernaryOS build.
 **Progress:** [PROGRESS.md](PROGRESS.md) ← start here
 **Review Summary:** [review_summary.md](review_summary.md)
 **Architecture Audit:** [kernel_architecture_audit.md](kernel_architecture_audit.md)
@@ -118,6 +118,19 @@ Current working release label: `Axion v0.1.0-alpha`
 
 For now, internal paths, namespaces, CMake targets, and test names still use
 `ternaryos` while the external/project-facing name shifts to `Axion`.
+
+The RFC-00B9 user-environment and shell public surface is no longer centered
+only inside `experimental/ternaryos/`. The supported boundary now lives at:
+
+- `include/t81/axion/userenv/`
+- `include/t81/axion/shell/`
+- `src/axion/userenv/`
+- `src/axion/shell/`
+
+The matching headers under `experimental/ternaryos/userenv/` and
+`experimental/ternaryos/shell/` remain as compatibility shims while the
+broader kernel, HAL, MMU, scheduler, IPC, device, and guest-artifact lanes
+stay in `experimental/ternaryos/`.
 
 Naming rule for now:
 - `T81 Foundation` is the umbrella project/ecosystem

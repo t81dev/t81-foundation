@@ -40,6 +40,7 @@ set(BENCHMARK_SUITE_SOURCES
     BM_DispatchOverhead.cpp
     BM_VMSimulation.cpp
     BM_DeterminismValidation.cpp  # RFC-00A2: determinism validation
+    BM_GovernedWorkflows.cpp
 )
 if(T81_ENABLE_DPE)
     list(APPEND BENCHMARK_SUITE_SOURCES BM_DPE.cpp)
