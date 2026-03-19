@@ -28,7 +28,7 @@ jobs:
           cmake-version: '3.20.x'
 
       - name: Set up GCC
-        uses: egor-tensin/setup-gcc@eaa888eb19115a521fa72b65cd94fe1f25bbcaac # v1
+        uses: egor-tensin/setup-gcc@a2861a8b8538f49cf2850980acccf6b05a1b2ae4 # v2.0
         with:
           version: latest
           platform: x64
