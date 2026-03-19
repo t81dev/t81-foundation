@@ -38,16 +38,6 @@ std::string system_library_name() {
 #endif
 }
 
-std::string system_double_library_name() {
-#ifdef __APPLE__
-  return "/usr/lib/libSystem.B.dylib";
-#elif defined(_WIN32)
-  return "";
-#else
-  return "libm.so.6";
-#endif
-}
-
 std::string system_success_function_name() {
 #ifdef _WIN32
   return "GetCurrentProcessId";
@@ -72,13 +62,17 @@ std::string system_string_function_name() {
 #endif
 }
 
-std::string system_double_function_name() {
-#ifdef _WIN32
-  return "";
+#ifndef _WIN32
+std::string system_double_library_name() {
+#ifdef __APPLE__
+  return "/usr/lib/libSystem.B.dylib";
 #else
-  return "fabs";
+  return "libm.so.6";
 #endif
 }
+
+std::string system_double_function_name() { return "fabs"; }
+#endif
 
 std::string binary_test_library_name() { return T81_VM_FFI_TESTLIB_PATH; }
 

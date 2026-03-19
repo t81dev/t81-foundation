@@ -3,6 +3,10 @@
 #include <cstdint>
 #include <random>
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#endif
+
 #include "t81/types/T81Int.hpp"
 #include "t81/types/T81Limb.hpp"
 
@@ -41,6 +45,19 @@ TernaryWide4096 add_wide(const TernaryWide4096& lhs, const TernaryWide4096& rhs)
 }  // namespace
 
 namespace {
+uint64_t add_with_carry(uint64_t lhs, uint64_t rhs, uint64_t carry_in, uint64_t& sum) {
+#ifdef _MSC_VER
+  unsigned __int64 local_sum = 0;
+  const auto carry_out = _addcarry_u64(static_cast<unsigned char>(carry_in), lhs, rhs, &local_sum);
+  sum = local_sum;
+  return static_cast<uint64_t>(carry_out);
+#else
+  __uint128_t tmp = static_cast<__uint128_t>(lhs) + rhs + carry_in;
+  sum = static_cast<uint64_t>(tmp);
+  return static_cast<uint64_t>(tmp >> 64);
+#endif
+}
+
 template <size_t LIMBS>
 void RunBinaryCarry(benchmark::State& state, uint64_t seed) {
   alignas(64) std::array<uint64_t, LIMBS> a{};
@@ -53,9 +70,7 @@ void RunBinaryCarry(benchmark::State& state, uint64_t seed) {
   for (auto _ : state) {
     uint64_t carry = 0;
     for (size_t i = 0; i < LIMBS; ++i) {
-      __uint128_t tmp = static_cast<__uint128_t>(a[i]) + b[i] + carry;
-      result[i] = static_cast<uint64_t>(tmp);
-      carry = static_cast<uint64_t>(tmp >> 64);
+      carry = add_with_carry(a[i], b[i], carry, result[i]);
     }
     benchmark::DoNotOptimize(result);
     benchmark::DoNotOptimize(carry);
@@ -70,7 +85,8 @@ static void BM_Add_1024_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<kBinaryLimbs>(state, 0xC0FFEE);
 }
 BENCHMARK(BM_Add_1024_bit_binary_carry_propagate)
-    ->Name("BM_Add_1024_bit/binary_carry_propagate")->Repetitions(3);
+    ->Name("BM_Add_1024_bit/binary_carry_propagate")
+    ->Repetitions(3);
 
 static void BM_Add_1024_bit_binary_checked(benchmark::State& state) {
   alignas(64) std::array<uint64_t, kBinaryLimbs> a{};
@@ -83,9 +99,7 @@ static void BM_Add_1024_bit_binary_checked(benchmark::State& state) {
   for (auto _ : state) {
     uint64_t carry = 0;
     for (size_t i = 0; i < kBinaryLimbs; ++i) {
-      __uint128_t tmp = static_cast<__uint128_t>(a[i]) + b[i] + carry;
-      result[i] = static_cast<uint64_t>(tmp);
-      carry = static_cast<uint64_t>(tmp >> 64);
+      carry = add_with_carry(a[i], b[i], carry, result[i]);
     }
     result[kBinaryLimbs] = carry;
     benchmark::DoNotOptimize(result);
@@ -95,26 +109,28 @@ static void BM_Add_1024_bit_binary_checked(benchmark::State& state) {
   state.counters["work_per_iter"] = 1.0;
   state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
-BENCHMARK(BM_Add_1024_bit_binary_checked)
-    ->Name("BM_Add_1024_bit/binary_checked")->Repetitions(3);
+BENCHMARK(BM_Add_1024_bit_binary_checked)->Name("BM_Add_1024_bit/binary_checked")->Repetitions(3);
 
 static void BM_Add_2048_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<32>(state, 0xBEEFBEEF);
 }
 BENCHMARK(BM_Add_2048_bit_binary_carry_propagate)
-    ->Name("BM_Add_2048_bit/binary_carry_propagate")->Repetitions(3);
+    ->Name("BM_Add_2048_bit/binary_carry_propagate")
+    ->Repetitions(3);
 
 static void BM_Add_4096_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<64>(state, 0xFEEDFACE);
 }
 BENCHMARK(BM_Add_4096_bit_binary_carry_propagate)
-    ->Name("BM_Add_4096_bit/binary_carry_propagate")->Repetitions(3);
+    ->Name("BM_Add_4096_bit/binary_carry_propagate")
+    ->Repetitions(3);
 
 static void BM_Add_8192_bit_binary_carry_propagate(benchmark::State& state) {
   RunBinaryCarry<128>(state, 0xDEADBEEF);
 }
 BENCHMARK(BM_Add_8192_bit_binary_carry_propagate)
-    ->Name("BM_Add_8192_bit/binary_carry_propagate")->Repetitions(3);
+    ->Name("BM_Add_8192_bit/binary_carry_propagate")
+    ->Repetitions(3);
 
 static void BM_Add_1024_bit_ternary_koggestone(benchmark::State& state) {
   std::mt19937_64 rng(0xC0FFEE);
@@ -124,7 +140,8 @@ static void BM_Add_1024_bit_ternary_koggestone(benchmark::State& state) {
     try {
       auto result = a + b;
       benchmark::DoNotOptimize(result);
-    } catch (const std::overflow_error&) {}
+    } catch (const std::overflow_error&) {
+    }
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations());
@@ -132,7 +149,8 @@ static void BM_Add_1024_bit_ternary_koggestone(benchmark::State& state) {
   state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_1024_bit_ternary_koggestone)
-    ->Name("BM_Add_1024_bit/ternary_koggestone")->Repetitions(3);
+    ->Name("BM_Add_1024_bit/ternary_koggestone")
+    ->Repetitions(3);
 
 static void BM_Add_4096_bit_ternary_koggestone(benchmark::State& state) {
   std::mt19937_64 rng(0xAFFE5ED);
@@ -142,7 +160,8 @@ static void BM_Add_4096_bit_ternary_koggestone(benchmark::State& state) {
     try {
       auto result = add_wide(a, b);
       benchmark::DoNotOptimize(result);
-    } catch (const std::overflow_error&) {}
+    } catch (const std::overflow_error&) {
+    }
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations());
@@ -150,7 +169,8 @@ static void BM_Add_4096_bit_ternary_koggestone(benchmark::State& state) {
   state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_4096_bit_ternary_koggestone)
-    ->Name("BM_Add_4096_bit/ternary_koggestone")->Repetitions(3);
+    ->Name("BM_Add_4096_bit/ternary_koggestone")
+    ->Repetitions(3);
 
 static void BM_Add_2048_bit_ternary_koggestone(benchmark::State& state) {
   std::mt19937_64 rng(0x1337BEEF);
@@ -160,7 +180,8 @@ static void BM_Add_2048_bit_ternary_koggestone(benchmark::State& state) {
     try {
       auto result = a + b;
       benchmark::DoNotOptimize(result);
-    } catch (const std::overflow_error&) {}
+    } catch (const std::overflow_error&) {
+    }
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations());
@@ -168,7 +189,8 @@ static void BM_Add_2048_bit_ternary_koggestone(benchmark::State& state) {
   state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_2048_bit_ternary_koggestone)
-    ->Name("BM_Add_2048_bit/ternary_koggestone")->Repetitions(3);
+    ->Name("BM_Add_2048_bit/ternary_koggestone")
+    ->Repetitions(3);
 
 static void BM_Add_8192_bit_ternary_koggestone(benchmark::State& state) {
   constexpr size_t kChunks = 4;
@@ -192,7 +214,8 @@ static void BM_Add_8192_bit_ternary_koggestone(benchmark::State& state) {
         result.segments[i] = a.segments[i] + b.segments[i];
       }
       benchmark::DoNotOptimize(result);
-    } catch (const std::overflow_error&) {}
+    } catch (const std::overflow_error&) {
+    }
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations());
@@ -200,7 +223,8 @@ static void BM_Add_8192_bit_ternary_koggestone(benchmark::State& state) {
   state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_8192_bit_ternary_koggestone)
-    ->Name("BM_Add_8192_bit/ternary_koggestone")->Repetitions(3);
+    ->Name("BM_Add_8192_bit/ternary_koggestone")
+    ->Repetitions(3);
 
 static void BM_Add_16384_bit_ternary_koggestone(benchmark::State& state) {
   constexpr size_t kChunks = 8;
@@ -224,7 +248,8 @@ static void BM_Add_16384_bit_ternary_koggestone(benchmark::State& state) {
         result.segments[i] = a.segments[i] + b.segments[i];
       }
       benchmark::DoNotOptimize(result);
-    } catch (const std::overflow_error&) {}
+    } catch (const std::overflow_error&) {
+    }
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations());
@@ -232,10 +257,12 @@ static void BM_Add_16384_bit_ternary_koggestone(benchmark::State& state) {
   state.SetLabel("comparison=apples-to-apples; work: ops/iter=1 (one whole-width add)");
 }
 BENCHMARK(BM_Add_16384_bit_ternary_koggestone)
-    ->Name("BM_Add_16384_bit/ternary_koggestone")->Repetitions(3);
+    ->Name("BM_Add_16384_bit/ternary_koggestone")
+    ->Repetitions(3);
 
 static void BM_Add_16384_bit_binary_carry_propagate(benchmark::State& state) {
- RunBinaryCarry<256>(state, 0xC0DE1234);
+  RunBinaryCarry<256>(state, 0xC0DE1234);
 }
 BENCHMARK(BM_Add_16384_bit_binary_carry_propagate)
-    ->Name("BM_Add_16384_bit/binary_carry_propagate")->Repetitions(3);
+    ->Name("BM_Add_16384_bit/binary_carry_propagate")
+    ->Repetitions(3);
