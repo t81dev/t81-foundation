@@ -1,5 +1,5 @@
 #pragma once
-// experimental/dpe/epoch_commit.hpp
+// include/t81/dpe/epoch_commit.hpp
 //
 // RFC-DPE-0003 §2–6: Epoch canonical commit engine.
 //
@@ -10,7 +10,7 @@
 //   §5  EpochHash = CanonHash81(epoch_id ∥ input_snapshot ∥ committed_deltas_hash)
 //   §6  Epoch abort on TaskFault — canonical state is never mutated on abort
 
-#include "task_graph.hpp"
+#include "t81/dpe/task_graph.hpp"
 
 #include <map>
 #include <optional>

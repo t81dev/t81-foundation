@@ -1,8 +1,8 @@
-// experimental/dpe/thread_pool.cpp
+// src/dpe/thread_pool.cpp
 //
 // RFC-DPE-0006: DpeThreadPool implementation.
 
-#include "thread_pool.hpp"
+#include "t81/dpe/thread_pool.hpp"
 
 namespace t81::dpe {
 

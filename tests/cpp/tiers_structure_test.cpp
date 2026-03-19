@@ -1,7 +1,7 @@
 #include <cassert>
 #include <iostream>
 
-#include "t81/experimental/cog/tier1/symbolic.hpp"
+#include "t81/cog/v1/symbolic_graph.hpp"
 #include "t81/experimental/cog/tier2/reflective.hpp"
 #include "t81/experimental/cog/tier3/recursive.hpp"
 #include "t81/experimental/cog/tier5/infinite.hpp"

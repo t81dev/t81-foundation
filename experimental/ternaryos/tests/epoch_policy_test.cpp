@@ -19,7 +19,7 @@
 #include "../kernel/kernel_main.hpp"
 #include "../kernel/kernel_service_contract.hpp"
 
-#include "experimental/dpe/task_graph.hpp"
+#include "t81/dpe/task_graph.hpp"
 
 #include "t81/isa/opcodes.hpp"
 #include "t81/isa/program.hpp"

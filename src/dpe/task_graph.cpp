@@ -1,8 +1,8 @@
-// experimental/dpe/task_graph.cpp
+// src/dpe/task_graph.cpp
 //
 // RFC-DPE-0002: TISC Task Graph Primitive layer — implementation.
 
-#include "task_graph.hpp"
+#include "t81/dpe/task_graph.hpp"
 
 #include <algorithm>
 #include <cstring>

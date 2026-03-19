@@ -1,5 +1,5 @@
 #pragma once
-// experimental/dpe/thread_pool.hpp
+// include/t81/dpe/thread_pool.hpp
 //
 // RFC-DPE-0006 §2: DpeThreadPool — bounded worker pool for epoch-level
 // parallel dispatch.

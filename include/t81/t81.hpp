@@ -97,6 +97,7 @@
 #include "t81/axion/context.hpp"
 #include "t81/axion/engine.hpp"
 #include "t81/axion/verdict.hpp"
+#include "t81/cog/v1/symbolic_graph.hpp"
 #include "t81/conversion.hpp"
 #include "t81/native.hpp"
 

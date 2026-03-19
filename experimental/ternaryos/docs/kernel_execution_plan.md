@@ -658,7 +658,7 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 
 **Slice 13 — DPE Task Graph Primitives [DONE] (commit 129b5e74):**
 
-- RFC-DPE-0002 `experimental/dpe/` module: `t81_dpe` library + 36-assertion test suite.
+- RFC-DPE-0002 DPE module (now `include/t81/dpe/` + `src/dpe/`): `t81_dpe` library + 36-assertion test suite.
 - `TaskDescriptor`, `EpochGraph`, `TaskId` (CanonHash81 content-addressed), `DeltaBuffer`,
   `EpochAcceptor` — full data model and canonical serialisation.
 - Epoch acceptance: Kahn's cycle detection (`[DPE-02-02]`), exclusive-region conflict
@@ -672,7 +672,7 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 
 **Slice 15 — DPE Epoch Commit Engine / RFC-DPE-0003 [DONE]:**
 
-- `experimental/dpe/epoch_commit.hpp` + `epoch_commit.cpp`: `commit_epoch()`.
+- `include/t81/dpe/epoch_commit.hpp` + `src/dpe/epoch_commit.cpp`: `commit_epoch()`.
 - Canonical commit: TaskId-ascending sort → TVA-ascending delta application →
   last-writer-in-canonical-order for non-exclusive overlapping pages.
 - `EpochHash = CanonHash81(epoch_id ∥ input_snapshot ∥ committed_deltas_hash)`.
@@ -688,7 +688,7 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 
 **Slice 14 — DPE Task Runner / [DPE-02-05] [DONE]:**
 
-- `experimental/dpe/task_runner.hpp` + `task_runner.cpp`: `DpeTaskRunner::run_direct()`.
+- `include/t81/dpe/task_runner.hpp` + `src/dpe/task_runner.cpp`: `DpeTaskRunner::run_direct()`.
 - Executes a TISC program through a fresh `IVirtualMachine` instance; collects
   `DeltaRecord`s for declared `output_regions` via post-execution memory diff.
 - `t81_dpe_task_runner_test`: 17 assertions across 4 test functions.
@@ -839,7 +839,7 @@ kernel/user boundary end-to-end and unblocks both DPE implementation
 
 **Slice 20 — RFC-DPE-0006: Bounded Thread Pool [DONE]:**
 
-- `DpeThreadPool` class added to `experimental/dpe/thread_pool.hpp/.cpp`:
+- `DpeThreadPool` class added to `include/t81/dpe/thread_pool.hpp` + `src/dpe/thread_pool.cpp`:
   N worker threads, `std::queue` + `std::mutex` + two `condition_variable`s
   (`cv_` for workers, `idle_cv_` for `wait_idle()`), `pending_` counter.
 - `submit()` enqueues a `std::function<void()>`, increments `pending_`, notifies

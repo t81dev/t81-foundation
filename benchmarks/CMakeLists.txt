@@ -41,13 +41,20 @@ set(BENCHMARK_SUITE_SOURCES
     BM_VMSimulation.cpp
     BM_DeterminismValidation.cpp  # RFC-00A2: determinism validation
 )
+if(T81_ENABLE_DPE)
+    list(APPEND BENCHMARK_SUITE_SOURCES BM_DPE.cpp)
+endif()
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND BENCHMARK_SUITE_SOURCES BM_Base81SIMD.cpp)
 endif()
 
 add_executable(benchmark_runner ${BENCHMARK_RUNNER_SOURCES} ${BENCHMARK_SUITE_SOURCES})
 
-target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_core t81_lang_frontend t81_isa t81_vm t81_tool_model)
+if(T81_ENABLE_DPE)
+    target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_lang_frontend t81_tool_model t81_dpe)
+else()
+    target_link_libraries(benchmark_runner PRIVATE benchmark::benchmark t81_lang_frontend t81_tool_model t81_vm)
+endif()
 
 if(T81_ENABLE_LLAMA_CPP)
     target_compile_definitions(benchmark_runner PRIVATE T81_HAS_LLAMA_CPP=1)

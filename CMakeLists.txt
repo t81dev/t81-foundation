@@ -166,6 +166,7 @@ add_library(t81_core STATIC
   src/codec/base81_packed.cpp
   src/codec/metadata.cpp
   src/codec/trit_packing.cpp
+  src/cog/v1/symbolic_graph.cpp
   src/crypto/sha3.cpp
   src/setun/bridge.cpp
 )
@@ -189,7 +190,6 @@ add_library(t81_experimental STATIC
   experimental/hanoi/error.cpp
   experimental/hanoi/in_memory_kernel.cpp
   experimental/tiers/cog/promotion.cpp
-  experimental/tiers/cog/tier1/symbolic.cpp
   experimental/tiers/cog/tier2/reflective.cpp
   experimental/tiers/cog/tier3/recursive.cpp
   experimental/tiers/cog/tier4/tier4_loop.cpp
@@ -1333,16 +1333,16 @@ endif()
 # Experimental DPE — Deterministic Parallel Execution (RFC-DPE-0002+)
 # Enable with -DT81_ENABLE_DPE=ON
 # =============================================================================
-option(T81_ENABLE_DPE "Enable experimental DPE task graph primitives (RFC-DPE-0002)" OFF)
+option(T81_ENABLE_DPE "Enable DPE task graph primitives (RFC-DPE-0002)" OFF)
 
 if(T81_ENABLE_DPE)
-  message(STATUS "[t81] T81_ENABLE_DPE=ON — building experimental DPE task graph")
+  message(STATUS "[t81] T81_ENABLE_DPE=ON — building DPE task graph")
 
   add_library(t81_dpe STATIC
-    experimental/dpe/task_graph.cpp
-    experimental/dpe/task_runner.cpp
-    experimental/dpe/epoch_commit.cpp
-    experimental/dpe/thread_pool.cpp
+    src/dpe/task_graph.cpp
+    src/dpe/task_runner.cpp
+    src/dpe/epoch_commit.cpp
+    src/dpe/thread_pool.cpp
   )
   target_include_directories(t81_dpe PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -1353,39 +1353,44 @@ if(T81_ENABLE_DPE)
 
   if(T81_BUILD_TESTS)
     add_executable(t81_dpe_task_graph_test
-      experimental/dpe/tests/task_graph_test.cpp)
+      tests/cpp/dpe/task_graph_test.cpp)
     target_link_libraries(t81_dpe_task_graph_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_task_graph_test COMMAND t81_dpe_task_graph_test)
 
     add_executable(t81_dpe_task_runner_test
-      experimental/dpe/tests/task_runner_test.cpp)
+      tests/cpp/dpe/task_runner_test.cpp)
     target_link_libraries(t81_dpe_task_runner_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_task_runner_test COMMAND t81_dpe_task_runner_test)
 
     add_executable(t81_dpe_epoch_commit_test
-      experimental/dpe/tests/epoch_commit_test.cpp)
+      tests/cpp/dpe/epoch_commit_test.cpp)
     target_link_libraries(t81_dpe_epoch_commit_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_epoch_commit_test COMMAND t81_dpe_epoch_commit_test)
 
     add_executable(t81_dpe_epoch_dag_test
-      experimental/dpe/tests/epoch_dag_test.cpp)
+      tests/cpp/dpe/epoch_dag_test.cpp)
     target_link_libraries(t81_dpe_epoch_dag_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_epoch_dag_test COMMAND t81_dpe_epoch_dag_test)
 
     add_executable(t81_dpe_epoch_parallel_test
-      experimental/dpe/tests/epoch_parallel_test.cpp)
+      tests/cpp/dpe/epoch_parallel_test.cpp)
     target_link_libraries(t81_dpe_epoch_parallel_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_epoch_parallel_test COMMAND t81_dpe_epoch_parallel_test)
 
     add_executable(t81_dpe_thread_pool_test
-      experimental/dpe/tests/thread_pool_test.cpp)
+      tests/cpp/dpe/thread_pool_test.cpp)
     target_link_libraries(t81_dpe_thread_pool_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_thread_pool_test COMMAND t81_dpe_thread_pool_test)
 
     add_executable(t81_dpe_float_reduction_test
-      experimental/dpe/tests/dpe_float_reduction_test.cpp)
+      tests/cpp/dpe/dpe_float_reduction_test.cpp)
     target_link_libraries(t81_dpe_float_reduction_test PRIVATE t81_dpe)
     add_test(NAME t81_dpe_float_reduction_test COMMAND t81_dpe_float_reduction_test)
+
+    add_executable(t81_dpe_include_surface_test
+      tests/cpp/dpe/include_surface_test.cpp)
+    target_link_libraries(t81_dpe_include_surface_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_include_surface_test COMMAND t81_dpe_include_surface_test)
   endif()
 endif()
 
@@ -1489,9 +1494,18 @@ endif()
 
 endif()
 
+option(T81_ENABLE_AI_EXPERIMENTS "Build the experimental AI CLI compatibility surface" OFF)
+
 # RFC-0032 Phase 5 (C-07) — promoted AI CLI tool (no sleep_for / no llama.cpp)
 add_executable(t81_ai_cli tooling/cli/ai/t81_ai_cli.cpp)
 target_link_libraries(t81_ai_cli PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+
+if(T81_ENABLE_AI_EXPERIMENTS)
+  add_executable(t81_ai tooling/cli/ai/t81_ai_cli.cpp)
+  target_link_libraries(t81_ai PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+  set_target_properties(t81_ai PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/experiments/ai/ux_tools")
+endif()
 
 # =============================================================================
 # All tests — exactly as you wrote them
@@ -3064,6 +3078,12 @@ if(T81_BUILD_TESTS)
   add_executable(tier1_rewrite_confluence_test tests/cpp/tier1_rewrite_confluence_test.cpp)
   target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core t81_experimental)
   add_test(NAME tier1_rewrite_confluence_test COMMAND tier1_rewrite_confluence_test)
+
+  add_executable(t81_cog_symbolic_graph_include_surface_test
+    tests/cpp/cog_symbolic_graph_include_surface_test.cpp)
+  target_link_libraries(t81_cog_symbolic_graph_include_surface_test PRIVATE t81_core)
+  add_test(NAME t81_cog_symbolic_graph_include_surface_test
+           COMMAND t81_cog_symbolic_graph_include_surface_test)
 
   add_executable(test_t81float_scientific tests/cpp/test_t81float_scientific.cpp)
   target_link_libraries(test_t81float_scientific PRIVATE t81_core t81_isa t81_lang_frontend)

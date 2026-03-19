@@ -6,8 +6,8 @@
 #include "../ipc/canon_message.hpp"
 
 #ifdef T81_ENABLE_DPE
-#include "experimental/dpe/task_graph.hpp"
-#include "experimental/dpe/epoch_commit.hpp"
+#include "t81/dpe/task_graph.hpp"
+#include "t81/dpe/epoch_commit.hpp"
 #include "t81/isa/program.hpp"
 #endif
 

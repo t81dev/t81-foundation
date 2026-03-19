@@ -1,4 +1,4 @@
-// experimental/dpe/tests/epoch_dag_test.cpp
+// tests/cpp/dpe/epoch_dag_test.cpp
 //
 // RFC-DPE-0004 acceptance tests: DAG-Ordered Multi-Task Epoch Execution.
 //
@@ -14,8 +14,8 @@
 //                topological ordering change; its committed result equals
 //                the pre-DPE-0004 single-task result.
 
-#include "../task_graph.hpp"
-#include "../task_runner.hpp"
+#include "t81/dpe/task_graph.hpp"
+#include "t81/dpe/task_runner.hpp"
 #include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"
 

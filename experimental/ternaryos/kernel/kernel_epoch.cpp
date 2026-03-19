@@ -5,8 +5,8 @@
 #include "kernel_epoch.hpp"
 #include "kernel_main.hpp"
 
-#include "experimental/dpe/task_graph.hpp"
-#include "experimental/dpe/task_runner.hpp"
+#include "t81/dpe/task_graph.hpp"
+#include "t81/dpe/task_runner.hpp"
 
 #include <chrono>
 #include <map>

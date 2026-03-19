@@ -1,4 +1,4 @@
-// experimental/dpe/tests/epoch_commit_test.cpp
+// tests/cpp/dpe/epoch_commit_test.cpp
 //
 // RFC-DPE-0003 conformance tests for the epoch canonical commit engine.
 //
@@ -11,7 +11,7 @@
 //   [DPE-03-04]  EpochHash is identical across two independent executions
 //                of the same epoch against the same input_snapshot
 
-#include "../epoch_commit.hpp"
+#include "t81/dpe/epoch_commit.hpp"
 
 #include <cassert>
 #include <cstdio>

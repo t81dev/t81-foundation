@@ -1,4 +1,4 @@
-// experimental/dpe/tests/task_runner_test.cpp
+// tests/cpp/dpe/task_runner_test.cpp
 //
 // RFC-DPE-0002 conformance tests requiring real TISC VM integration.
 //
@@ -12,7 +12,7 @@
 //   [DPE-runner-02]  DpeTaskRunner does NOT emit DeltaRecords for pages that
 //                    are declared but not written.
 
-#include "../task_runner.hpp"
+#include "t81/dpe/task_runner.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"

@@ -1,8 +1,8 @@
-// experimental/dpe/epoch_commit.cpp
+// src/dpe/epoch_commit.cpp
 //
 // RFC-DPE-0003 §2–6: Epoch canonical commit implementation.
 
-#include "epoch_commit.hpp"
+#include "t81/dpe/epoch_commit.hpp"
 
 #include <algorithm>
 #include <cstring>

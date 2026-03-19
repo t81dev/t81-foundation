@@ -21,7 +21,7 @@
 #include "../kernel/kernel_main.hpp"
 #include "../hal/hal.hpp"
 
-#include "experimental/dpe/task_graph.hpp"
+#include "t81/dpe/task_graph.hpp"
 
 #include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"

@@ -1,4 +1,4 @@
-// experimental/dpe/tests/task_graph_test.cpp
+// tests/cpp/dpe/task_graph_test.cpp
 //
 // RFC-DPE-0002 conformance tests for TISC Task Graph Primitives.
 //
@@ -11,7 +11,7 @@
 //                state unchanged
 //   [DPE-02-05]  Covered in task_runner_test.cpp (requires TISC VM integration)
 
-#include "../task_graph.hpp"
+#include "t81/dpe/task_graph.hpp"
 
 #include <cassert>
 #include <cstdio>

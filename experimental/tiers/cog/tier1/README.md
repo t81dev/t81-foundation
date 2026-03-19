@@ -18,5 +18,5 @@ This module implements Tier 1 of the Cognitive Framework, corresponding to T243 
 - Ensure all symbolic operations are side-effect free and traceable.
 
 ## See Also
-- `include/t81/experimental/cog/tier1/symbolic.hpp`
+- `include/t81/cog/v1/symbolic_graph.hpp`
 - `../../docs/explanation/cognitive_tiers.md`

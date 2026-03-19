@@ -84,8 +84,7 @@ namespace fs = std::filesystem;
 #define XSTR(x) STR(x)
 
 constexpr const char* T81_VERSION = T81_VERSION_STR;
-constexpr const char* T81_FULL_VERSION =
-    "T81 Foundation " T81_VERSION_STR " (" __DATE__ " " __TIME__ ")";
+constexpr const char* T81_FULL_VERSION = "T81 Foundation " T81_VERSION_STR;
 constexpr const char* T81_FMT_VERSION = "t81-fmt " T81_VERSION_STR;
 struct TempTiscFile {
   fs::path path;
@@ -424,7 +423,7 @@ void print_help_profile() {
   std::cerr << R"(
 Usage: t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json] [--weights-model <model.t81w|sha3-256:hash>]
 
-Compiles (if needed) and reports VM runtime and memory metrics.
+Compiles (if needed) and reports deterministic VM execution and memory metrics.
 
 Example:
   t81 code profile program.t81 --json
@@ -3352,54 +3351,35 @@ int run_axion(const Args& args) {
     return count;
   };
 
-  auto latest_snapshot_hash = [&](const fs::path& root) -> std::optional<std::string> {
+  auto sorted_snapshot_hashes = [&](const fs::path& root) {
+    std::vector<std::string> hashes;
     std::error_code ec;
     const fs::path snapshots_root = root / "snapshots";
     if (!fs::exists(snapshots_root, ec)) {
-      return std::nullopt;
+      return hashes;
     }
-    fs::file_time_type latest_time;
-    std::optional<std::string> latest_hash;
     for (const auto& entry : fs::directory_iterator(snapshots_root, ec)) {
       if (ec || !entry.is_directory()) {
         continue;
       }
-      const auto ts = entry.last_write_time(ec);
-      if (ec) {
-        continue;
-      }
-      if (!latest_hash || ts > latest_time) {
-        latest_time = ts;
-        latest_hash = entry.path().filename().string();
-      }
+      hashes.push_back(entry.path().filename().string());
     }
-    return latest_hash;
+    std::sort(hashes.begin(), hashes.end(), std::greater<std::string>{});
+    return hashes;
+  };
+
+  auto latest_snapshot_hash = [&](const fs::path& root) -> std::optional<std::string> {
+    const auto hashes = sorted_snapshot_hashes(root);
+    if (hashes.empty()) {
+      return std::nullopt;
+    }
+    return hashes.front();
   };
 
   auto recent_snapshot_hashes = [&](const fs::path& root, std::size_t limit) {
-    std::vector<std::pair<fs::file_time_type, std::string>> snapshots;
-    std::error_code ec;
-    const fs::path snapshots_root = root / "snapshots";
-    if (!fs::exists(snapshots_root, ec)) {
-      return std::vector<std::string>{};
-    }
-    for (const auto& entry : fs::directory_iterator(snapshots_root, ec)) {
-      if (ec || !entry.is_directory()) {
-        continue;
-      }
-      const auto ts = entry.last_write_time(ec);
-      if (ec) {
-        continue;
-      }
-      snapshots.emplace_back(ts, entry.path().filename().string());
-    }
-    std::sort(snapshots.begin(), snapshots.end(),
-              [](const auto& lhs, const auto& rhs) { return lhs.first > rhs.first; });
-    std::vector<std::string> hashes;
-    const std::size_t count = std::min(limit, snapshots.size());
-    hashes.reserve(count);
-    for (std::size_t i = 0; i < count; ++i) {
-      hashes.push_back(std::move(snapshots[i].second));
+    auto hashes = sorted_snapshot_hashes(root);
+    if (hashes.size() > limit) {
+      hashes.resize(limit);
     }
     return hashes;
   };
@@ -3413,7 +3393,6 @@ int run_axion(const Args& args) {
     bool present = false;
     int tier = 1;
     std::optional<std::string> active_snapshot;
-    std::optional<std::time_t> updated;
   };
 
   auto read_axion_state = [&](const fs::path& root) {
@@ -3434,13 +3413,6 @@ int run_axion(const Args& args) {
                           std::regex("\"active_snapshot\"\\s*:\\s*\"([^\"]+)\"")) &&
         match.size() == 2) {
       snapshot.active_snapshot = match[1].str();
-    }
-    if (std::regex_search(state_text, match, std::regex(R"("updated"\s*:\s*([0-9]+))")) &&
-        match.size() == 2) {
-      try {
-        snapshot.updated = static_cast<std::time_t>(std::stoll(match[1].str()));
-      } catch (...) {
-      }
     }
     return snapshot;
   };
@@ -3465,7 +3437,7 @@ int run_axion(const Args& args) {
     return lines;
   };
 
-  auto write_axion_state = [&](int tier, std::string_view active_snapshot) -> bool {
+  auto write_axion_state = [&](int tier) -> bool {
     std::error_code ec;
     fs::create_directories(axion_state_path(canonfs_root).parent_path(), ec);
     if (ec) {
@@ -3479,14 +3451,7 @@ int run_axion(const Args& args) {
     }
     out << "{\n"
         << "  \"schema\": \"t81.axion-state.v1\",\n"
-        << "  \"tier\": " << tier << ",\n"
-        << "  \"active_snapshot\": ";
-    if (active_snapshot.empty()) {
-      out << "null,\n";
-    } else {
-      out << "\"" << json_escape(active_snapshot) << "\",\n";
-    }
-    out << "  \"updated\": " << std::time(nullptr) << "\n"
+        << "  \"tier\": " << tier << "\n"
         << "}\n";
     return static_cast<bool>(out);
   };
@@ -3598,13 +3563,8 @@ int run_axion(const Args& args) {
       std::cout << "  \"state_snapshot\": " << json_nullable_axion(state.active_snapshot) << ",\n"
                 << "  \"state_snapshot_present\": " << (state_snapshot_present ? "true" : "false")
                 << ",\n"
-                << "  \"state_updated\": ";
-      if (state.updated) {
-        std::cout << *state.updated << ",\n";
-      } else {
-        std::cout << "null,\n";
-      }
-      std::cout << "  \"tier\": " << state.tier << ",\n"
+                << "  \"state_updated\": null,\n"
+                << "  \"tier\": " << state.tier << ",\n"
                 << "  \"issues\": [\n";
       for (std::size_t i = 0; i < issues.size(); ++i) {
         std::cout << "    \"" << json_escape(issues[i]) << "\"";
@@ -3638,6 +3598,11 @@ int run_axion(const Args& args) {
 
   if (sub == "optimize") {
     const auto previous_state = read_axion_state(canonfs_root);
+    const auto previous_snapshot = previous_state.active_snapshot ? previous_state.active_snapshot
+                                                                  : latest_snapshot_hash(canonfs_root);
+    if (!write_axion_state(target_tier)) {
+      return 1;
+    }
     std::string snapshot_error;
     const auto snapshot_hash =
         t81::cli::canonfs_capture_snapshot_hash(canonfs_root, &snapshot_error);
@@ -3647,16 +3612,13 @@ int run_axion(const Args& args) {
     }
     std::vector<std::string> only_previous;
     std::vector<std::string> only_current;
-    if (previous_state.active_snapshot && *previous_state.active_snapshot != *snapshot_hash) {
-      const auto previous_lines = read_manifest_lines(*previous_state.active_snapshot);
+    if (previous_snapshot && *previous_snapshot != *snapshot_hash) {
+      const auto previous_lines = read_manifest_lines(*previous_snapshot);
       const auto current_lines = read_manifest_lines(*snapshot_hash);
       std::set_difference(previous_lines.begin(), previous_lines.end(), current_lines.begin(),
                           current_lines.end(), std::back_inserter(only_previous));
       std::set_difference(current_lines.begin(), current_lines.end(), previous_lines.begin(),
                           previous_lines.end(), std::back_inserter(only_current));
-    }
-    if (!write_axion_state(target_tier, snapshot_hash.value_or(""))) {
-      return 1;
     }
     if (json_out) {
       std::cout << "{\n"
@@ -3666,7 +3628,7 @@ int run_axion(const Args& args) {
                 << "  \"action\": \"optimize\",\n"
                 << "  \"tier\": " << target_tier << ",\n"
                 << "  \"previous_snapshot\": "
-                << json_nullable_axion(previous_state.active_snapshot) << ",\n"
+                << json_nullable_axion(previous_snapshot) << ",\n"
                 << "  \"active_snapshot\": ";
       if (snapshot_hash) {
         std::cout << "\"" << json_escape(*snapshot_hash) << "\",\n";
@@ -3682,8 +3644,7 @@ int run_axion(const Args& args) {
            std::to_string(target_tier) + ".");
       std::cout << "Optimization receipt recorded.\n";
       std::cout << "Tier: " << target_tier << "\n";
-      std::cout << "Previous snapshot: "
-                << (previous_state.active_snapshot ? *previous_state.active_snapshot : "<none>")
+      std::cout << "Previous snapshot: " << (previous_snapshot ? *previous_snapshot : "<none>")
                 << "\n";
       std::cout << "Snapshot: " << (snapshot_hash ? *snapshot_hash : "<none>") << "\n";
       std::cout << "Only previous: " << only_previous.size() << "\n";
@@ -5214,13 +5175,50 @@ int run_tensor_command(const char* command_name, const Args& args) {
             "files.");
       return 1;
     }
-    Args info_args = args;
-    info_args.command = "weights";
-    info_args.command_args = {"info", path.string()};
-    if (as_json) {
-      info_args.command_args.emplace_back("--json");
+    try {
+      auto mf = t81::weights::load_t81w(path);
+      if (as_json) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.tensor-inspect.v1\",\n"
+                  << "  \"ok\": true,\n"
+                  << "  \"model\": \"" << json_escape(path.string()) << "\",\n"
+                  << "  \"parameters\": " << mf.total_parameters << ",\n"
+                  << "  \"trits\": " << mf.total_trits << ",\n"
+                  << "  \"file_size_bytes\": " << mf.file_size << ",\n"
+                  << "  \"bits_per_trit\": " << std::fixed << std::setprecision(6)
+                  << mf.bits_per_trit << ",\n"
+                  << "  \"sparsity\": " << std::fixed << std::setprecision(6) << mf.sparsity
+                  << ",\n"
+                  << "  \"format\": \"" << json_escape(mf.format) << "\",\n"
+                  << "  \"checksum_sha3_512\": \"" << json_escape(mf.checksum) << "\"\n"
+                  << "}\n";
+        std::cout << std::defaultfloat;
+        return 0;
+      }
+      std::cout << "Tensor artifact: " << path << "\n";
+      std::cout << "Parameters:      " << t81::weights::format_count(mf.total_parameters) << "\n";
+      std::cout << "Trits:           " << t81::weights::format_count(mf.total_trits) << "\n";
+      std::cout << "File size:       " << mf.file_size << " bytes\n";
+      std::cout << "Bits per trit:   " << std::fixed << std::setprecision(6) << mf.bits_per_trit
+                << "\n";
+      std::cout << "Sparsity:        " << mf.sparsity << "\n";
+      std::cout << "Format:          " << mf.format << "\n";
+      std::cout << "Checksum:        " << mf.checksum << "\n";
+      std::cout << std::defaultfloat;
+      return 0;
+    } catch (const std::exception& ex) {
+      if (as_json) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.tensor-inspect.v1\",\n"
+                  << "  \"ok\": false,\n"
+                  << "  \"model\": \"" << json_escape(path.string()) << "\",\n"
+                  << "  \"error\": \"" << json_escape(ex.what()) << "\"\n"
+                  << "}\n";
+        return 1;
+      }
+      error(std::string("tensor inspect: ") + ex.what());
+      return 1;
     }
-    return run_weights_info(info_args);
   }
 
   error("tensor: unknown subcommand '" + action + "'. Run 't81 help tensor'.");
@@ -5249,6 +5247,7 @@ int run_vm_command(const Args& args) {
 
   std::optional<fs::path> policy_path;
   std::optional<fs::path> trace_path = args.output;
+  std::optional<std::string> display_program;
   bool as_json = false;
   std::size_t step_count = 1;
   std::size_t stack_limit = 10;
@@ -5264,6 +5263,12 @@ int run_vm_command(const Args& args) {
         return 1;
       }
       policy_path = fs::path(args.command_args[i]);
+    } else if (token == "--display-program") {
+      if (++i >= args.command_args.size()) {
+        error("vm: missing value for --display-program.");
+        return 1;
+      }
+      display_program = args.command_args[i];
     } else if (token == "--json") {
       as_json = true;
     } else if ((token == "--count" || token == "--steps" || token == "--limit" ||
@@ -5310,6 +5315,7 @@ int run_vm_command(const Args& args) {
     error("vm " + action + " expects a .tisc input file.");
     return 1;
   }
+  const std::string rendered_program = display_program.value_or(input.string());
 
   if (action == "run") {
     if (trace_path) {
@@ -5535,7 +5541,7 @@ int run_vm_command(const Args& args) {
       std::cout << "{\n";
       std::cout << "  \"schema\": \"t81.vm-state.v1\",\n";
       std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
-      std::cout << "  \"program\": \"" << json_escape(input.string()) << "\",\n";
+      std::cout << "  \"program\": \"" << json_escape(rendered_program) << "\",\n";
       std::cout << "  \"halted\": " << (state.halted ? "true" : "false") << ",\n";
       std::cout << "  \"pc\": " << ctx.pc << ",\n";
       std::cout << "  \"sp\": " << ctx.sp << ",\n";
@@ -5551,7 +5557,7 @@ int run_vm_command(const Args& args) {
       std::cout << "}\n";
       return ok ? 0 : 1;
     }
-    std::cout << "Program:       " << input.string() << "\n";
+    std::cout << "Program:       " << rendered_program << "\n";
     std::cout << "Status:        " << (ok ? "ok" : "trap") << "\n";
     std::cout << "Halted:        " << (state.halted ? "yes" : "no") << "\n";
     std::cout << "PC:            " << ctx.pc << "\n";
@@ -5579,10 +5585,7 @@ int run_vm_command(const Args& args) {
     }
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
-    const auto started = std::chrono::steady_clock::now();
     auto result = vm->run_to_halt();
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
-        std::chrono::steady_clock::now() - started);
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
     const bool ok = static_cast<bool>(result);
@@ -5592,8 +5595,9 @@ int run_vm_command(const Args& args) {
         std::cout << "{\n";
         std::cout << "  \"schema\": \"t81.vm-profile.v1\",\n";
         std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
-        std::cout << "  \"program\": \"" << json_escape(input.string()) << "\",\n";
-        std::cout << "  \"elapsed_us\": " << elapsed.count() << ",\n";
+        std::cout << "  \"program\": \"" << json_escape(rendered_program) << "\",\n";
+        std::cout << "  \"elapsed_us\": null,\n";
+        std::cout << "  \"timing_mode\": \"suppressed_for_determinism\",\n";
         std::cout << "  \"trace_entries\": " << state.trace.size() << ",\n";
         std::cout << "  \"axion_events\": " << state.axion_log.size() << ",\n";
         std::cout << "  \"memory_words\": " << state.memory.size() << ",\n";
@@ -5612,8 +5616,8 @@ int run_vm_command(const Args& args) {
         std::cout << "}\n";
         return ok ? 0 : 1;
       }
-      std::cout << "Program:          " << input.string() << "\n";
-      std::cout << "Elapsed:          " << elapsed.count() << " us\n";
+      std::cout << "Program:          " << rendered_program << "\n";
+      std::cout << "Elapsed:          suppressed for deterministic output\n";
       std::cout << "Trace entries:    " << state.trace.size() << "\n";
       std::cout << "Axion events:     " << state.axion_log.size() << "\n";
       std::cout << "Memory words:     " << state.memory.size() << "\n";
@@ -5633,7 +5637,7 @@ int run_vm_command(const Args& args) {
     if (as_json) {
       std::cout << "{\n";
       std::cout << "  \"schema\": \"t81.vm-trap-explain.v1\",\n";
-      std::cout << "  \"program\": \"" << json_escape(input.string()) << "\",\n";
+      std::cout << "  \"program\": \"" << json_escape(rendered_program) << "\",\n";
       std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
       if (ok) {
         std::cout << "  \"trap\": null,\n";
@@ -5662,25 +5666,40 @@ int run_profile_command(const Args& args) {
     error("profile requires a .t81 or .tisc input file.");
     return 1;
   }
+  const bool as_json = std::find(args.command_args.begin(), args.command_args.end(), "--json") !=
+                       args.command_args.end();
   if (args.input.extension() == ".t81") {
     auto weights_model_ptr = load_weights_model_optional(args.weights_model);
     if (args.weights_model && !weights_model_ptr) {
       return 1;
     }
-    TempTiscFile temp(args.input.stem().string());
-    int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
+    const std::string stable_name =
+        "t81-profile-" + sha3_512_text(fs::absolute(args.input).string()).substr(0, 24) + ".tisc";
+    const fs::path temp_path = fs::temp_directory_path() / stable_name;
+    struct TempCleanup {
+      fs::path path;
+      ~TempCleanup() {
+        std::error_code ec;
+        fs::remove(path, ec);
+      }
+    } cleanup{temp_path};
+    const bool old_quiet = g_flags.quiet;
+    if (as_json) {
+      g_flags.quiet = true;
+    }
+    int rc = t81::cli::compile(args.input, temp_path, {}, {}, weights_model_ptr);
+    g_flags.quiet = old_quiet;
     if (rc != 0) {
       return rc;
     }
     Args vm_args = args;
     vm_args.command = "vm";
-    vm_args.command_args = {"profile", temp.path.string()};
+    vm_args.command_args = {"profile", temp_path.string(), "--display-program", args.input.string()};
     if (args.policy) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
     }
-    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") !=
-        args.command_args.end()) {
+    if (as_json) {
       vm_args.command_args.push_back("--json");
     }
     return run_vm_command(vm_args);
@@ -5693,8 +5712,7 @@ int run_profile_command(const Args& args) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
     }
-    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") !=
-        args.command_args.end()) {
+    if (as_json) {
       vm_args.command_args.push_back("--json");
     }
     return run_vm_command(vm_args);
@@ -7524,7 +7542,7 @@ int run_test_command(const Args& args) {
     int skipped = -1;
     double duration_sec = -1.0;
   };
-  auto parse_summary = [](const std::string& text) -> TestSummary {
+  auto parse_summary = [list_only](const std::string& text) -> TestSummary {
     TestSummary summary;
     std::smatch match;
     std::regex pass_fail_re(R"((\d+)% tests passed,\s*(\d+)\s*tests failed out of\s*(\d+))");
@@ -7537,7 +7555,7 @@ int run_test_command(const Args& args) {
     std::regex total_only_re(R"(Total Tests:\s*(\d+))");
     if (summary.total < 0 && std::regex_search(text, match, total_only_re) && match.size() == 2) {
       summary.total = std::stoi(match[1].str());
-      summary.passed = summary.total;
+      summary.passed = list_only ? 0 : summary.total;
       summary.failed = 0;
       summary.skipped = 0;
     }
@@ -7548,6 +7566,7 @@ int run_test_command(const Args& args) {
     return summary;
   };
   TestSummary summary = parse_summary(stdout_text + "\n" + stderr_text);
+  int not_run = 0;
   if (used_junit && fs::exists(junit_file.path)) {
     std::ifstream junit_in(junit_file.path, std::ios::binary);
     const std::string xml((std::istreambuf_iterator<char>(junit_in)),
@@ -7562,12 +7581,34 @@ int run_test_command(const Args& args) {
     if (std::regex_search(xml, m, std::regex("disabled=\"([0-9]+)\"")) && m.size() == 2) {
       summary.skipped = std::atoi(m[1].str().c_str());
     }
+    int junit_errors = 0;
+    if (std::regex_search(xml, m, std::regex("errors=\"([0-9]+)\"")) && m.size() == 2) {
+      junit_errors = std::atoi(m[1].str().c_str());
+    }
     if (summary.total >= 0 && summary.failed >= 0) {
-      summary.passed = summary.total - summary.failed - std::max(0, summary.skipped);
+      summary.failed += junit_errors;
+      summary.passed =
+          std::max(0, summary.total - summary.failed - std::max(0, summary.skipped));
     }
     if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) && m.size() == 2) {
       summary.duration_sec = std::atof(m[1].str().c_str());
     }
+  }
+  if (list_only && summary.total >= 0) {
+    not_run = summary.total;
+  }
+  const bool infrastructure_failure =
+      rc != 0 &&
+      (summary.total < 0 ||
+       ((summary.failed <= 0) && (summary.passed >= summary.total || summary.passed > 0)));
+  if (infrastructure_failure) {
+    if (summary.total < 0) {
+      summary.total = 0;
+    }
+    not_run = std::max(not_run, summary.total);
+    summary.passed = 0;
+    summary.failed = std::max(summary.failed, 0);
+    summary.skipped = std::max(summary.skipped, 0);
   }
 
   if (as_json) {
@@ -7587,13 +7628,17 @@ int run_test_command(const Args& args) {
     std::cout << "    \"passed\": " << summary.passed << ",\n";
     std::cout << "    \"failed\": " << summary.failed << ",\n";
     std::cout << "    \"skipped\": " << summary.skipped << ",\n";
+    std::cout << "    \"not_run\": " << not_run << ",\n";
     std::cout << "    \"duration_sec\": " << std::fixed << std::setprecision(3)
               << summary.duration_sec << "\n";
     std::cout << std::defaultfloat;
     std::cout << "  },\n";
     std::cout << "  \"stdout_bytes\": " << stdout_bytes << ",\n";
     std::cout << "  \"stderr_bytes\": " << stderr_bytes << ",\n";
-    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text") << "\"\n";
+    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text")
+              << "\",\n";
+    std::cout << "  \"infrastructure_failure\": " << (infrastructure_failure ? "true" : "false")
+              << "\n";
     std::cout << "}\n";
     return rc == 0 ? 0 : 2;
   }
@@ -7603,7 +7648,8 @@ int run_test_command(const Args& args) {
   if (!g_flags.quiet) {
     std::ostringstream oss;
     oss << "test summary: total=" << summary.total << " passed=" << summary.passed
-        << " failed=" << summary.failed << " skipped=" << summary.skipped;
+        << " failed=" << summary.failed << " skipped=" << summary.skipped
+        << " not_run=" << not_run;
     if (summary.duration_sec >= 0.0) {
       oss << " duration_sec=" << std::fixed << std::setprecision(3) << summary.duration_sec;
     }
@@ -7957,7 +8003,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -8066,6 +8112,9 @@ commands=(
   'python:Experimental Python-subset frontend to MLIR'
   'llvm:LLVM IR backend — translate TISC to LLVM IR/bitcode'
   'mlir:MLIR frontend — translate TISC to MLIR or LLVM IR'
+  'studio:human operator TUI'
+  'agent:AI-native TUI'
+  'ui:interactive TUI launcher'
   'completion:print completion script'
   'man:show or install man page'
   'feedback:local CLI feedback loop'
@@ -8159,7 +8208,7 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export validate profile'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl profile'
@@ -8954,7 +9003,7 @@ int main(int argc, char* argv[]) {
 
     if (args.command == "compile") {
       if (args.policy) {
-        error("compile does not support --policy yet; pass policy at runtime with 't81 run "
+        error("compile does not support --policy yet; pass policy at runtime with 't81 code run "
               "--policy'.");
         return 1;
       }

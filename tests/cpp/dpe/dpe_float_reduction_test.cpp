@@ -1,4 +1,4 @@
-// experimental/dpe/tests/dpe_float_reduction_test.cpp
+// tests/cpp/dpe/dpe_float_reduction_test.cpp
 //
 // RFC-DPE-0003 [DPE-03-05]: T81Float operations inside tasks use the strict
 // deterministic path; hash divergence from non-canonical float is detectable.
@@ -17,9 +17,9 @@
 //                  bytes for that float word (content-addressable, no handle
 //                  index leakage).
 
-#include "../epoch_commit.hpp"
-#include "../task_graph.hpp"
-#include "../task_runner.hpp"
+#include "t81/dpe/epoch_commit.hpp"
+#include "t81/dpe/task_graph.hpp"
+#include "t81/dpe/task_runner.hpp"
 #include "t81/isa/opcodes.hpp"
 #include "t81/isa/program.hpp"
 

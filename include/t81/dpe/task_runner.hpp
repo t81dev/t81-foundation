@@ -1,5 +1,5 @@
 #pragma once
-// experimental/dpe/task_runner.hpp
+// include/t81/dpe/task_runner.hpp
 //
 // RFC-DPE-0002 §5 / [DPE-02-05]: DpeTaskRunner — run a single TISC task
 // through the T81VM and collect DeltaRecords for declared output regions.
@@ -14,7 +14,7 @@
 //   = kDpePageSize/8 words.  This is sufficient for [DPE-02-05] and the
 //   hosted test layer; a real MMU translation layer is deferred to Slice 15+.
 
-#include "task_graph.hpp"
+#include "t81/dpe/task_graph.hpp"
 #include "t81/isa/program.hpp"
 
 #include <array>

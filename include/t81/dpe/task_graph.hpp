@@ -1,5 +1,5 @@
 #pragma once
-// experimental/dpe/task_graph.hpp
+// include/t81/dpe/task_graph.hpp
 //
 // RFC-DPE-0002 §3–6: TISC Task Graph Primitive layer.
 //

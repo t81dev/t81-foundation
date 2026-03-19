@@ -1,4 +1,4 @@
-// experimental/dpe/tests/thread_pool_test.cpp
+// tests/cpp/dpe/thread_pool_test.cpp
 //
 // RFC-DPE-0006 acceptance tests: Bounded Thread Pool for Epoch Execution.
 //
@@ -10,10 +10,10 @@
 //   [DPE-06-03]  A 1-worker pool serialises tasks correctly.
 //   [DPE-06-04]  DpeThreadPool destructor cleanly joins all workers.
 
-#include "../task_graph.hpp"
-#include "../task_runner.hpp"
-#include "../epoch_commit.hpp"
-#include "../thread_pool.hpp"
+#include "t81/dpe/task_graph.hpp"
+#include "t81/dpe/task_runner.hpp"
+#include "t81/dpe/epoch_commit.hpp"
+#include "t81/dpe/thread_pool.hpp"
 #include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"
 

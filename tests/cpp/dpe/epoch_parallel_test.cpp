@@ -1,4 +1,4 @@
-// experimental/dpe/tests/epoch_parallel_test.cpp
+// tests/cpp/dpe/epoch_parallel_test.cpp
 //
 // RFC-DPE-0005 acceptance tests: Level-Parallel Epoch Execution.
 //
@@ -14,9 +14,9 @@
 //   [DPE-05-04]  The EpochHash from parallel execution matches the EpochHash
 //                from sequential (single-thread) execution of the same epoch.
 
-#include "../task_graph.hpp"
-#include "../task_runner.hpp"
-#include "../epoch_commit.hpp"
+#include "t81/dpe/task_graph.hpp"
+#include "t81/dpe/task_runner.hpp"
+#include "t81/dpe/epoch_commit.hpp"
 #include "t81/isa/program.hpp"
 #include "t81/isa/opcodes.hpp"
 

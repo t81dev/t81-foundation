@@ -1,4 +1,4 @@
-// experimental/dpe/task_runner.cpp
+// src/dpe/task_runner.cpp
 //
 // RFC-DPE-0002 §5 / [DPE-02-05]: DpeTaskRunner implementation.
 // RFC-DPE-0003 [DPE-03-05]: T81Float determinism in DPE tasks.
@@ -12,7 +12,7 @@
 //     float pool via intern_float(), producing a fresh handle that is then
 //     stored with set_memory_word_tagged().
 
-#include "task_runner.hpp"
+#include "t81/dpe/task_runner.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/vm/state.hpp"  // ValueTag
 
