@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-0055-hardware-target-profile.schema.json",
+  "title": "T81 Native Ternary Hardware Target Profile",
+  "description": "Validation schema for RFC-0055 hardware target profiles submitted by vendors.",
+  "type": "object",
+  "required": [
+    "profile_metadata",
+    "vendor_and_target_identity",
+    "execution_and_semantic_model",
+    "boot_and_privilege_rules",
+    "memory_and_addressing_contract",
+    "interrupt_and_device_semantics",
+    "trace_audit_and_canonfs_preservation",
+    "equivalence_and_conformance_claims",
+    "experimental_promotion_status"
+  ],
+  "properties": {
+    "profile_metadata": {
+      "type": "object",
+      "required": ["status", "type", "applies_to", "created"],
+      "properties": {
+        "status": { "type": "string", "enum": ["draft", "proposed", "accepted", "rejected", "superseded"] },
+        "type": { "type": "string", "enum": ["hardware-profile"] },
+        "applies_to": { "type": "string", "description": "Target device or family" },
+        "created": { "type": "string", "format": "date" },
+        "updated": { "type": "string", "format": "date" }
+      }
+    },
+    "vendor_and_target_identity": {
+      "type": "object",
+      "required": [
+        "vendor_name",
+        "target_family",
+        "target_name_sku",
+        "isa_name",
+        "isa_revision",
+        "integration_mode"
+      ],
+      "properties": {
+        "vendor_name": { "type": "string" },
+        "target_family": { "type": "string" },
+        "target_name_sku": { "type": "string" },
+        "isa_name": { "type": "string" },
+        "isa_revision": { "type": "string" },
+        "integration_mode": {
+          "type": "string",
+          "enum": ["Direct TISC", "Verified Lowering", "Hosted Compatibility"]
+        }
+      }
+    },
+    "execution_and_semantic_model": {
+      "type": "object",
+      "required": ["tisc_compatibility", "unsupported_tisc_features"],
+      "properties": {
+        "tisc_compatibility": { "type": "string" },
+        "lowering_boundary": { "type": "string" },
+        "unsupported_tisc_features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["feature", "fallback_behavior"],
+            "properties": {
+              "feature": { "type": "string" },
+              "fallback_behavior": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "boot_and_privilege_rules": {
+      "type": "object",
+      "required": [
+        "boot_entry_format",
+        "privilege_levels",
+        "kernel_user_boundary",
+        "ethics_first_boot_gating"
+      ],
+      "properties": {
+        "boot_entry_format": { "type": "string" },
+        "privilege_levels": { "type": "string" },
+        "kernel_user_boundary": { "type": "string" },
+        "ethics_first_boot_gating": { "type": "string" }
+      }
+    },
+    "memory_and_addressing_contract": {
+      "type": "object",
+      "required": [
+        "address_space_model",
+        "word_trit_granularity",
+        "page_size_alignment",
+        "endianness_packing_rules",
+        "dma_device_memory_rules"
+      ],
+      "properties": {
+        "address_space_model": { "type": "string", "enum": ["Physical", "Virtual", "Both"] },
+        "word_trit_granularity": { "type": "string" },
+        "page_size_alignment": { "type": "string" },
+        "endianness_packing_rules": { "type": "string" },
+        "dma_device_memory_rules": { "type": "string" }
+      }
+    },
+    "interrupt_and_device_semantics": {
+      "type": "object",
+      "required": [
+        "interrupt_translation",
+        "trap_classification",
+        "unhandled_interrupt_behavior"
+      ],
+      "properties": {
+        "interrupt_translation": { "type": "string" },
+        "trap_classification": { "type": "string" },
+        "unhandled_interrupt_behavior": { "type": "string" }
+      }
+    },
+    "trace_audit_and_canonfs_preservation": {
+      "type": "object",
+      "required": [
+        "canonical_trace_semantics",
+        "axion_audit_hook_firing",
+        "canonfs_object_identity"
+      ],
+      "properties": {
+        "canonical_trace_semantics": { "type": "string" },
+        "axion_audit_hook_firing": { "type": "string" },
+        "canonfs_object_identity": { "type": "string" }
+      }
+    },
+    "equivalence_and_conformance_claims": {
+      "type": "object",
+      "required": [
+        "backend_equivalence_rfc0042",
+        "conformance_matrix_rfc0043",
+        "memory_ordering_rfc0045_0046"
+      ],
+      "properties": {
+        "backend_equivalence_rfc0042": { "type": "string" },
+        "conformance_matrix_rfc0043": { "type": "string" },
+        "memory_ordering_rfc0045_0046": { "type": "string" }
+      }
+    },
+    "experimental_promotion_status": {
+      "type": "object",
+      "required": ["current_status"],
+      "properties": {
+        "current_status": {
+          "type": "string",
+          "enum": ["Experimental", "Governed Non-DCP", "DCP-Eligible"]
+        },
+        "justification_for_promotion": { "type": "string" },
+        "documentation_link": { "type": "string", "format": "uri" }
+      }
+    }
+  }
+}
