@@ -68,6 +68,8 @@ Current coverage:
 - `BM_GovernedVMRun_Arith_AllowPolicy`
 - `BM_GovernedObservability_Arith_NoPolicy`
 - `BM_GovernedObservability_Arith_AllowPolicy`
+- `BM_GovernedRender_Arith_NoPolicy`
+- `BM_GovernedRender_Arith_AllowPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_CanonFSHash_NoPolicy`
@@ -102,6 +104,9 @@ Interpretation note:
 - `BM_GovernedObservability_*` materializes a stable signature over `trace` and
   `axion_log` from a completed VM run. This measures observability processing
   cost, not program execution cost.
+- `BM_GovernedRender_*` formats replay-safe trace text and compact Axion audit
+  JSON from a completed VM run. This is closer to CLI/operator export work than
+  the signature-only lane, but still excludes file I/O.
 - local-weights vs CanonFS-hash remains a workflow-level path comparison and
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.

@@ -41,6 +41,8 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 - `BM_GovernedVMRun_Arith_AllowPolicy`
 - `BM_GovernedObservability_Arith_NoPolicy`
 - `BM_GovernedObservability_Arith_AllowPolicy`
+- `BM_GovernedRender_Arith_NoPolicy`
+- `BM_GovernedRender_Arith_AllowPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_HashFixture_NoPolicy`
@@ -58,6 +60,8 @@ Current local run:
 | `BM_GovernedVMRun_Arith_AllowPolicy` | `309.55 Kops/s`, `264.98 µs` | same arithmetic chain, simple allow policy |
 | `BM_GovernedObservability_Arith_NoPolicy` | `668.55 ns` | stable signature over completed run with `82` trace entries and `6` Axion events |
 | `BM_GovernedObservability_Arith_AllowPolicy` | `658.55 ns` | same observability materialization path with simple allow policy |
+| `BM_GovernedRender_Arith_NoPolicy` | `17.35 µs` | render `975` trace bytes plus `1411` audit JSON bytes from the same `82`-trace / `6`-event snapshot |
+| `BM_GovernedRender_Arith_AllowPolicy` | `17.24 µs` | same render path with simple allow policy |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
 | `BM_GovernedTensorLoad_HashFixture_NoPolicy/4096` | `41.01 µs` | in-memory preloaded hash fixture via `TLoadHash` |
@@ -104,6 +108,28 @@ The useful reading is:
   observability signature over its current trace/audit state is cheap on this
   host
 - this does not measure CLI text rendering, file I/O, or report generation
+
+### Render/export formatting cost
+
+The `BM_GovernedRender_*` pair formats two export-style payloads from the same
+completed run:
+
+- replay-safe trace text
+- compact Axion audit JSON
+
+For the exercised arithmetic-chain snapshot:
+
+- both runs render `975` bytes of trace text and `1411` bytes of audit JSON
+- rendering cost is about `17.3 µs` in either governance state
+
+The useful reading is:
+
+- string formatting/export preparation is materially more expensive than the
+  signature-only observability pass
+- for this small snapshot, render preparation is still much cheaper than the
+  VM execution-path benchmarks and much more representative of CLI export work
+  than the hash-only lane
+- this still excludes filesystem write cost
 
 ### Tensor-path policy cost
 
@@ -155,6 +181,8 @@ difference.
 - policy-on vs policy-off VM execution can be measured directly in-repo
 - post-run observability materialization over `trace` and `axion_log` can be
   measured directly in-repo
+- export-style trace/audit rendering can be measured directly in-repo without
+  involving CLI file I/O
 - policy-on vs policy-off tensor loading can be measured directly within a
   fixed path
 - `TLoadHash` can now be benchmarked against a non-persistent in-memory fixture
@@ -166,8 +194,7 @@ difference.
 - it does not isolate every internal persistence cost from the broader
   persistent-driver path
 - it does not establish a policy-overhead bound for all workloads
-- it does not measure CLI formatting or report-writing overhead for trace/audit
-  export
+- it does not measure filesystem write cost for trace/audit export
 - it does not extend DCP / Verified determinism claims
 
 ## Known Caveats
@@ -183,7 +210,7 @@ difference.
 
 1. Record the `4` and `256` tensor rows in a dedicated evidence table instead
    of only carrying the `4096` representative row here.
-2. Extend the observability lane to benchmark CLI-grade formatting and export,
-   not just in-process signature materialization.
+2. Add file-emission benchmarks for trace/audit export so formatting and write
+   cost are separated.
 3. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
    and cold-cache splits instead of one blended persistent path.

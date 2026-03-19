@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <sstream>
 #include <span>
 #include <string>
 #include <string_view>
@@ -206,6 +207,40 @@ std::size_t materialize_observability_signature(const t81::vm::State& state) {
   return signature;
 }
 
+std::string render_trace_text(const t81::vm::State& state) {
+  std::ostringstream out;
+  for (const auto& entry : state.trace) {
+    out << "PC=" << entry.pc << ' ' << t81::tisc::opcode_name(entry.opcode);
+    if (entry.trap) {
+      out << " trap=" << t81::vm::to_string(*entry.trap);
+    }
+    out << '\n';
+  }
+  return out.str();
+}
+
+std::string render_axion_audit_json(const t81::vm::State& state) {
+  std::ostringstream out;
+  out << "{\"schema\":\"t81.axion-events.v1\",\"events\":[";
+  for (std::size_t i = 0; i < state.axion_log.size(); ++i) {
+    const auto& event = state.axion_log[i];
+    if (i != 0) out << ',';
+    out << "{\"opcode\":\"" << t81::tisc::opcode_name(event.opcode) << "\""
+        << ",\"decision\":\"" << event.structured.decision << "\""
+        << ",\"verdict\":\"" << verdict_kind_name(event.verdict.kind) << "\""
+        << ",\"reason\":\"" << event.verdict.reason << "\""
+        << ",\"canonical_reason\":\"" << event.structured.to_canonical_reason_string() << "\""
+        << ",\"event_type\":\"" << event.structured.event_type << "\""
+        << ",\"reason_code\":\"" << event.structured.reason_code << "\""
+        << ",\"pc\":" << event.structured.pc
+        << ",\"policy_id\":" << event.structured.policy_id
+        << ",\"handle_id\":" << event.structured.handle_id
+        << "}";
+  }
+  out << "]}";
+  return out.str();
+}
+
 static void BM_GovernedVMRun_Arith_NoPolicy(benchmark::State& state) {
   const Program prog = make_arith_chain_program(false);
   state.SetLabel("workflow=vm-run, governance=none, workload=arith-chain");
@@ -272,6 +307,58 @@ static void BM_GovernedObservability_Arith_AllowPolicy(benchmark::State& state) 
   }
 }
 BENCHMARK(BM_GovernedObservability_Arith_AllowPolicy);
+
+static void BM_GovernedRender_Arith_NoPolicy(benchmark::State& state) {
+  const Program prog = make_arith_chain_program(false);
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto run = vm->run_to_halt(10000);
+  if (!run.has_value()) {
+    state.SkipWithError("failed to build no-policy render snapshot");
+    return;
+  }
+  const auto& snapshot = vm->state();
+  const auto trace_bytes = render_trace_text(snapshot).size();
+  const auto audit_bytes = render_axion_audit_json(snapshot).size();
+  state.SetLabel("workflow=render, source=vm-state, governance=none, workload=arith-chain");
+  state.counters["trace_entries"] = static_cast<double>(snapshot.trace.size());
+  state.counters["axion_events"] = static_cast<double>(snapshot.axion_log.size());
+  state.counters["trace_bytes"] = static_cast<double>(trace_bytes);
+  state.counters["audit_bytes"] = static_cast<double>(audit_bytes);
+  for (auto _ : state) {
+    auto trace_text = render_trace_text(snapshot);
+    auto audit_json = render_axion_audit_json(snapshot);
+    benchmark::DoNotOptimize(trace_text);
+    benchmark::DoNotOptimize(audit_json);
+  }
+}
+BENCHMARK(BM_GovernedRender_Arith_NoPolicy);
+
+static void BM_GovernedRender_Arith_AllowPolicy(benchmark::State& state) {
+  const Program prog = make_arith_chain_program(true);
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto run = vm->run_to_halt(10000);
+  if (!run.has_value()) {
+    state.SkipWithError("failed to build allow-policy render snapshot");
+    return;
+  }
+  const auto& snapshot = vm->state();
+  const auto trace_bytes = render_trace_text(snapshot).size();
+  const auto audit_bytes = render_axion_audit_json(snapshot).size();
+  state.SetLabel("workflow=render, source=vm-state, governance=allow-policy, workload=arith-chain");
+  state.counters["trace_entries"] = static_cast<double>(snapshot.trace.size());
+  state.counters["axion_events"] = static_cast<double>(snapshot.axion_log.size());
+  state.counters["trace_bytes"] = static_cast<double>(trace_bytes);
+  state.counters["audit_bytes"] = static_cast<double>(audit_bytes);
+  for (auto _ : state) {
+    auto trace_text = render_trace_text(snapshot);
+    auto audit_json = render_axion_audit_json(snapshot);
+    benchmark::DoNotOptimize(trace_text);
+    benchmark::DoNotOptimize(audit_json);
+  }
+}
+BENCHMARK(BM_GovernedRender_Arith_AllowPolicy);
 
 static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));
