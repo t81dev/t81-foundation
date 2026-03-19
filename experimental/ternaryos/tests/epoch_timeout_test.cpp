@@ -161,6 +161,67 @@ static void test_syscall_timeout(KernelRuntimeState& state) {
         "[DPE-08-06] epoch_committed == false on timeout");
 }
 
+// ── RFC-0046 / DPE-08 scheduler parity: timeout semantics survive pool choice ──
+
+static void test_pool_timeout_semantics_match_unbounded() {
+  std::printf("\n[RFC-0046/DPE-08] Timeout semantics match for bounded vs unbounded dispatch\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-14] bootstrap unbounded timeout state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-15] bootstrap pooled timeout state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  axion_kernel_tick(unbounded_state);
+  axion_kernel_tick(pooled_state);
+
+  const auto generous_epoch = make_trivial_epoch(901);
+  const auto timeout_epoch = make_trivial_epoch(902);
+  const auto programs = std::vector<t81::tisc::Program>{make_valid_program()};
+
+  const auto unbounded_ok = axion_kernel_submit_epoch(
+      unbounded_state, generous_epoch, programs, /*gate=*/{}, /*pool=*/nullptr,
+      std::chrono::milliseconds{5000});
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_ok = axion_kernel_submit_epoch(
+      pooled_state, generous_epoch, programs, /*gate=*/{}, &pool,
+      std::chrono::milliseconds{5000});
+
+  check(unbounded_ok.status == KernelEpochStatus::Ok,
+        "[RFC-0046-16] unbounded generous-timeout epoch is Ok");
+  check(pooled_ok.status == KernelEpochStatus::Ok,
+        "[RFC-0046-17] pooled generous-timeout epoch is Ok");
+  if (unbounded_ok.ok() && pooled_ok.ok()) {
+    check(unbounded_ok.epoch_hash == pooled_ok.epoch_hash,
+          "[RFC-0046-18] generous-timeout epoch hash identical");
+  }
+
+  const auto unbounded_aborts_before = unbounded_state.epoch.epochs_aborted;
+  const auto pooled_aborts_before = pooled_state.epoch.epochs_aborted;
+
+  const auto unbounded_timeout = axion_kernel_submit_epoch(
+      unbounded_state, timeout_epoch, programs, /*gate=*/{}, /*pool=*/nullptr,
+      std::chrono::milliseconds{0});
+  const auto pooled_timeout = axion_kernel_submit_epoch(
+      pooled_state, timeout_epoch, programs, /*gate=*/{}, &pool,
+      std::chrono::milliseconds{0});
+
+  check(unbounded_timeout.status == KernelEpochStatus::Aborted_Timeout,
+        "[RFC-0046-19] unbounded zero-timeout epoch aborts");
+  check(pooled_timeout.status == KernelEpochStatus::Aborted_Timeout,
+        "[RFC-0046-20] pooled zero-timeout epoch aborts");
+  check(unbounded_state.epoch.epochs_aborted == unbounded_aborts_before + 1,
+        "[RFC-0046-21] unbounded zero-timeout increments abort count");
+  check(pooled_state.epoch.epochs_aborted == pooled_aborts_before + 1,
+        "[RFC-0046-22] pooled zero-timeout increments abort count");
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -181,6 +242,7 @@ int main() {
   test_generous_timeout(state);
   test_zero_timeout(state);
   test_syscall_timeout(state);
+  test_pool_timeout_semantics_match_unbounded();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
