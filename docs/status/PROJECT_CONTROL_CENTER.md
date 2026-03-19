@@ -1,7 +1,7 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-16
+Last Updated: 2026-03-19
 Owner: @t81dev
 Version: 1.9.0
 
@@ -11,7 +11,15 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Maintenance** — v1.9.0-Stable; RFC program 100% complete (49/49 active RFCs accepted; 11 superseded); all drafts closed; no open blockers
+**Maintenance / Governance Alignment** — v1.9.0-Stable; core release surface remains active, while RFC-0042 through RFC-0048 are open draft governance layers that define backend equivalence, validation, memory, scheduling, JIT, and deterministic-surface boundaries.
+
+---
+
+## Classification Note
+
+- **DCP / verified deterministic surface**: explicitly inside the deterministic-core boundary and enforced through the registry, conformance evidence, and CI gates.
+- **Governed non-DCP**: architecturally important and policy-bounded, but not yet entitled to full deterministic-surface claims.
+- **Experimental / non-DCP**: outside release-grade deterministic guarantees unless later promoted through governance.
 
 ---
 
@@ -19,13 +27,13 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — **369/369 tests passing (100%)** |
-| Release Readiness | **GO** — v1.9.0-Stable tagged; all RFC drafts closed 2026-03-16 |
-| Current Main | `dddf8273` — RFC-00B5 Slice 28 integrated (UnhandledInterruptDropped); RFC-00B5 → `integrated`; QEMU x86_64 EFI boot lane validated (`hal_main_result=0`, `kernel_boot_ready_slice=complete`); 3214/3214 ternaryos assertions; 369/369 core tests |
+| Overall | Green — release branch remains healthy; determinism and structural-integrity gates remain the controlling signals |
+| Release Readiness | **GO** for the current shipped core profile; broader verticals remain classified per DCP / governed non-DCP / experimental boundaries |
+| Current Main | `c7a2ff68` — public status/docs aligned to RFC-0048 deterministic-surface classification; governance RFC chain RFC-0042..RFC-0048 now drafted |
 | Open Blockers | None |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
-| Determinism Registry | All Verified surfaces clean; CanonHash81 determinism_score=1.0 confirmed |
-| Structural Integrity | **Green** — 369/369 tests passing (100%); conformance suite 27/27 programs pass |
+| Determinism Registry | Verified surfaces remain the only source of DCP-strength deterministic claims |
+| Structural Integrity | Green — conformance, freeze, and determinism enforcement remain the governing release criteria |
 
 ---
 
@@ -33,8 +41,9 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Gate | Date | State |
 | :--- | :--- | :--- |
+| Deterministic-surface governance chain (RFC-0042..RFC-0048) | 2026-03-19 | **Open** — draft constitutional layer added; promotion into active governance docs underway |
 | C2 Month-Close execution | 2026-03-31 | **Closed** — executed 2026-03-14; post-close addendum 2026-03-16; all 6 checklist items PASS; March 2026 governance window closed clean |
-| T81Lang Stable promotion | 2026-03-16 | **Closed** — spec v1.3 Stable; §3.2 I/O channels defined; TG-01 waived (non-normative translations); all TG-02..TG-06 met |
+| T81Lang Stable promotion | 2026-03-16 | **Closed** — language-spec stability review completed; this does not by itself promote the entire language toolchain into DCP / verified deterministic status |
 | RFC-0015 agentic constructs closure | 2026-03-16 | **Closed** — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
 | RFC-0011 grammar modernization closure | 2026-03-16 | **Closed** — 7/7 AC met; all features realized via RFC-0003/0007/0015/0029 |
 | RFC-00A2 benchmark spec closure | 2026-03-16 | **Closed** — 6/6 AC met; BM_DeterminismValidation suite; determinism_score=1.0 |
@@ -59,12 +68,12 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- | :--- |
 | TISC ISA | None | Frozen |
 | Data Types | None | Frozen; audit closed 2026-02-27 |
-| T81VM | **RESOLVED** | **✅ PROMOTED TO STABLE** - TV-01..TV-06 criteria satisfied; complete spec implementation (sections 0-7); deterministic execution verified (27/27 tests); runtime stability confirmed (54/54 VM tests); Axion integration stable (2/2 spec tests); performance benchmarks established (19.12s execution); production-ready deterministic virtual machine |
-| T81Lang | **RESOLVED** | **✅ PROMOTED TO STABLE** - spec v1.9.0 Stable (2026-03-16); §3.2 VM I/O channels defined; all 11 sections complete; 369/369 tests passing; deterministic compilation verified (21 fixtures); feature registry 100%; translation waiver granted (non-normative, 2026-Q2). Review record: `T81LANG_STABLE_PROMOTION_EVIDENCE_2026-03-16.md` |
-| Axion Governance Kernel | **RESOLVED** | **✅ PROMOTED TO STABLE** - Beta candidacy review PASSED 2026-03-15; P4/P5 satisfied; AX-M6 verbatim reason-string concatenation implemented and verified (5/5 canonical reason tests); 54/54 tests passing; production-ready governance capabilities verified; §2.5 policy subsystem separation deferred to post-Stable |
-| Axion OS | Medium | Experimental RFC-00B3 path active; kernel-owned handoff, MMU fault reporting, persistent runtime state, active device arbitration, runtime-owned scheduler/IPC execution, deterministic kernel loop, FIFO fault delivery, process-group fault policy with manual acknowledgement gate, an audit-only supervisor layer, the first service-facing runtime contract with healthy/faulted-group semantics, stable diagnostics, stable audit summaries, per-device ownership detail views, the first narrow service-facing action (supervisor fault-group acknowledgement), supervisor-facing recovery/report flows, a second narrow service-facing action for deterministic device claim/release, explicit request/action rejection semantics, and a first kernel-owned service runtime layer with deterministic service registration, deterministic service unregister, deterministic service suspend/resume, same-supervisor lifecycle control, explicit service health transitions, audit-visible service lifecycle transitions, retained supervisor inventory lifecycle metadata, per-entry supervisor inventory transition metadata, compact supervisor-status lifecycle metadata, aligned supervisor-recovery lifecycle metadata, aligned fault-summary lifecycle metadata, aligned runtime-status lifecycle metadata, aligned audit-summary lifecycle metadata, aligned device-summary lifecycle metadata, aligned service-status transition metadata, stable service detail, richer supervisor-owned inventory, explicit kernel-owned address-space ownership diagnostics, internal pager-needed fault-state diagnostics, deterministic internal pager handoff diagnostics, deterministic internal pager resolution diagnostics, and a real kernel-owned pager worker with duplicate unresolved fault coalescing, retained backlog/load diagnostics, ready-behind-active diagnostics, ready-backlog depth tracking, retained receipt identities/ordinals, active-work handoff ordinals, queued-head identities/ordinals, a bounded deterministic ready-bypass parking rule, retained ready-bypass deferral diagnostics, retained parked-cycle and parked-episode diagnostics, live parked-ready backlog diagnostics, retained parked-resumption diagnostics, retained parked-resume backlog diagnostics, retained parked-resume handoff diagnostics, retained parked-resumed-head handoff diagnostics, retained parked-resolved-head diagnostics, retained parked-resolved remaining-work diagnostics, retained parked-resolution follow-on diagnostics, retained parked-resolution successor completion diagnostics, retained blocker/blocked address-space identities, retained stall ordinals, retained blocked-side stall ordinals, retained blocked-side backlog depth, retained activation identities/ordinals, retained completion identities/ordinals, a terminal parked-head failure policy with retained terminal diagnostics, a kernel-owned boot-critical pager auto-resolution policy with retained resolution diagnostics, explicit boot-progress/fail runtime reporting, and a now-closed RFC-00B5 interrupt summary-convergence slice with kernel-owned interrupt intake, deterministic loop delivery, stable queue/accounting/audit surfaces, and record-level intake/delivery provenance are implemented; the current boot-ready kernel slice is closed, the local external boot-lane packaging phase is closed, staged ARM guest validation is in place, and a local QEMU x86_64 EFI diagnostic lane now executes the staged `BOOTX64.EFI` candidate and validates the shipped `x86_64` handoff contract. The next interrupt milestone is actual RFC-00B5 policy/handler behavior, while the external boot milestone remains actual `x86_64` VirtualBox host execution and evidence return (tracked in `experimental/ternaryos/docs/kernel_execution_plan.md`) |
-| T81Graph | **RESOLVED** | **✅ PROMOTED TO BETA** - All graph operations work from language level; comprehensive test suite (6/6 passing); DCP verification complete; experimental status outdated |
-| Experimental | — | Non-DCP by definition |
+| T81VM | Controlled | DCP / verified deterministic surface for interpreter execution and current supported-platform replay parity; broader VM-adjacent acceleration remains governed by the registry and RFC-0042..RFC-0047 |
+| T81Lang | Controlled | Governed non-DCP overall; language spec is stable, but compiler/toolchain-wide deterministic promotion remains partial and evidence-bound |
+| Axion Governance Kernel | Controlled | Governed non-DCP; important governance/runtime surface with active evidence, but broader kernel behavior is not automatically a verified deterministic surface |
+| Axion OS | Medium | Governed non-DCP / experimental kernel track; significant implementation progress, but whole-system promotion remains evidence-gated and outside the current DCP |
+| T81Graph | Medium | Governed non-DCP; useful language/VM surface, but not yet a promoted verified deterministic surface |
+| Experimental | — | Experimental / non-DCP by definition |
 
 Full decomposition: `DRIFT_DECOMPOSITION.md`
 
@@ -99,9 +108,9 @@ Recent commit audit: `docs/records/audits/RECENT_COMMIT_AUDIT_2026-03-05.md`
 
 ---
 
-## Experimental / Non-DCP (Do Not Overclaim)
+## Experimental and Governed Non-DCP (Do Not Overclaim)
 
-Cognitive Tiers · Hanoi VM · Distributed · Trace-JIT · llama.cpp adapter · std.io/sys/async/agent
+Cognitive Tiers · Hanoi VM · Distributed · Trace-JIT · llama.cpp adapter · std.io/sys/async/agent · broad Axion OS runtime claims beyond the current verified registry boundary
 
 Full boundary: `EXTENSION_PROFILE.md`
 
@@ -110,11 +119,12 @@ Full boundary: `EXTENSION_PROFILE.md`
 ## Next Decision Points
 
 1. **2026-03-31** — C2 Month-Close runbook executed and stamped in `docs/records/audits/2026-03-governance-review.md` (**Completed 2026-03-10**)
-2. **2026-05-15** — T81Lang spec promotion: bytecode deterministic compilation profile; full spec-section traceability audit
+2. **2026-05-15** — T81Lang promotion follow-on: bytecode deterministic compilation profile; full spec-section traceability audit; clarify compiler-surface promotion against RFC-0043/RFC-0048
 3. **Closed** — RFC-00B5 interrupt governance: Slice 28 `UnhandledInterruptDropped` done; RFC-00B5 → `integrated`; 3214/3214 ternaryos assertions
 4. **Closed** — TernaryOS QEMU x86_64 EFI boot lane: BOOTX64.EFI validated, all 5 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete` (evidence: `TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`)
 5. **TBD** — TernaryOS bare-metal boot: actual x86_64 VirtualBox host execution + evidence return (next external milestone; see `experimental/ternaryos/docs/kernel_execution_plan.md`)
 6. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
+7. **Active now** — Governance closure path: connect RFC-0042..RFC-0048 to registry, threat model, and promotion evidence so public status claims remain classification-correct
 
 ---
 
