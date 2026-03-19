@@ -4,7 +4,7 @@
 #include <random>
 #include <vector>
 
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 #include "t81/swar/swar.hpp"
 
 using namespace t81::swar;

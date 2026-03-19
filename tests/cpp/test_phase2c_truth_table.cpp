@@ -2,9 +2,8 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 
-using namespace t81::experimental;
 using namespace t81;
 
 // Helper to format trit

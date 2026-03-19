@@ -1,12 +1,12 @@
 #pragma once
 
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 #include "t81/types/Result.hpp"
 
 namespace t81::tritwise {
 
-using experimental::ComputeTritVector;
-using experimental::PackedTritVector;
+using t81::ComputeTritVector;
+using t81::PackedTritVector;
 
 /**
  * @brief Tritwise AND operation (In-Place).

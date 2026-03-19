@@ -2,13 +2,13 @@
 
 #include <cstddef>
 
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 #include "t81/types/Result.hpp"
 
 namespace t81::simd {
 
-using ComputeTritVector = t81::experimental::ComputeTritVector;
-using PackedTritVector = t81::experimental::PackedTritVector;
+using ComputeTritVector = t81::ComputeTritVector;
+using PackedTritVector = t81::PackedTritVector;
 
 inline constexpr std::size_t avx2_threshold_bytes() {
   return ComputeTritVector::AVX2_THRESHOLD_BYTES;
@@ -64,13 +64,9 @@ inline constexpr bool is_neon_available() {
 #endif
 }
 
-inline constexpr std::size_t get_optimal_threshold() {
-  return t_or_threshold_bytes();
-}
+inline constexpr std::size_t get_optimal_threshold() { return t_or_threshold_bytes(); }
 
-inline Result<ComputeTritVector> t_not(const ComputeTritVector& input) {
-  return input.t_not();
-}
+inline Result<ComputeTritVector> t_not(const ComputeTritVector& input) { return input.t_not(); }
 
 inline Result<ComputeTritVector> t_and(const ComputeTritVector& a, const ComputeTritVector& b) {
   return a.t_and(b);
@@ -80,9 +76,7 @@ inline Result<ComputeTritVector> t_or(const ComputeTritVector& a, const ComputeT
   return a.t_or(b);
 }
 
-inline Result<ComputeTritVector> t_neg(const ComputeTritVector& input) {
-  return t_not(input);
-}
+inline Result<ComputeTritVector> t_neg(const ComputeTritVector& input) { return t_not(input); }
 
 inline Result<ComputeTritVector> t_min(const ComputeTritVector& a, const ComputeTritVector& b) {
   return t_and(a, b);
@@ -92,9 +86,7 @@ inline Result<ComputeTritVector> t_max(const ComputeTritVector& a, const Compute
   return t_or(a, b);
 }
 
-inline Result<bool> t_not_inplace(ComputeTritVector& input) {
-  return input.t_not_inplace();
-}
+inline Result<bool> t_not_inplace(ComputeTritVector& input) { return input.t_not_inplace(); }
 
 inline Result<bool> t_and_inplace(ComputeTritVector& a, const ComputeTritVector& b) {
   return a.t_and_inplace(b);
@@ -122,13 +114,11 @@ inline void t_not_swar(const uint8_t* src, uint8_t* dst, std::size_t len) {
   ComputeTritVector::kernel_not_swar(src, dst, len);
 }
 
-inline void t_and_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst,
-                       std::size_t len) {
+inline void t_and_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, std::size_t len) {
   ComputeTritVector::kernel_and_swar(src_a, src_b, dst, len);
 }
 
-inline void t_or_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst,
-                      std::size_t len) {
+inline void t_or_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, std::size_t len) {
   ComputeTritVector::kernel_or_swar(src_a, src_b, dst, len);
 }
 

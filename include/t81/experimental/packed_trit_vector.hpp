@@ -1005,4 +1005,18 @@ inline Result<PackedTritVector> PackedTritVector::from_compute(const ComputeTrit
 
 }  // namespace t81::experimental
 
+namespace t81 {
+
+using PackedTritVector = experimental::PackedTritVector;
+using ComputeTritVector = experimental::ComputeTritVector;
+
+namespace packed {
+
+using PackedTritVector = t81::PackedTritVector;
+using ComputeTritVector = t81::ComputeTritVector;
+
+}  // namespace packed
+
+}  // namespace t81
+
 #include "t81/swar/swar.hpp"

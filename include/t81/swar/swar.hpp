@@ -4,14 +4,12 @@
 #include <cstring>
 #include <vector>
 
+#include "t81/packed_trit_vector.hpp"
 #include "t81/types/Result.hpp"
-
-// We use ComputeTritVector as the underlying data container per the RFC
-#include "t81/experimental/packed_trit_vector.hpp"
 
 namespace t81::swar {
 
-using ComputeTritVector = t81::experimental::ComputeTritVector;
+using ComputeTritVector = t81::ComputeTritVector;
 
 // Forward declarations for kernel functions
 namespace kernel {
