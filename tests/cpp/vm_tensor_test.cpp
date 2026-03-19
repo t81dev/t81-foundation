@@ -7,6 +7,7 @@
 #include "t81/tensor.hpp"
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/native.hpp"
+#include "t81/tensor/ternary_native.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 
@@ -161,6 +162,10 @@ int main() {
   native_model->native["weightsA"] = native_exp_tensor;
   native_exp_program.weights_model = native_model;
   native_exp_program.insns.push_back({tisc::Opcode::WeightsLoad, 1, 1, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::LoadImm, 5, 0, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::TQUANT, 6, 1, 5});
+  native_exp_program.insns.push_back({tisc::Opcode::LoadImm, 7, 1, 0});
+  native_exp_program.insns.push_back({tisc::Opcode::TACT, 8, 1, 7});
   native_exp_program.insns.push_back({tisc::Opcode::TExp, 2, 1, 0});
   native_exp_program.insns.push_back({tisc::Opcode::TSiLU, 3, 1, 0});
   native_exp_program.insns.push_back({tisc::Opcode::TSoftmax, 4, 1, 0});
@@ -179,6 +184,30 @@ int main() {
   T81_TEST_CHECK(native_exp_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
   T81_TEST_CHECK(std::fabs(native_exp_res.value().data()[0] - std::exp(-1.0f)) < 1e-4f);
   T81_TEST_CHECK(std::fabs(native_exp_res.value().data()[3] - std::exp(-1.0f)) < 1e-4f);
+
+  const auto native_tquant_handle = native_exp_vm->state().contexts[0].registers[6];
+  const auto& native_tquant_res =
+      const_cast<vm::State&>(native_exp_vm->state())
+          .tensors[static_cast<std::size_t>(native_tquant_handle - 1)];
+  T81_TEST_CHECK(native_tquant_res.has_value());
+  T81_TEST_CHECK(native_tquant_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_tquant_res.value().numeric_class() == t81::TensorNumericClass::ExactTrit);
+  T81_TEST_CHECK(native_tquant_res.value().data()[0] == -1.0f);
+  T81_TEST_CHECK(native_tquant_res.value().data()[1] == -1.0f);
+  T81_TEST_CHECK(native_tquant_res.value().data()[2] == -1.0f);
+  T81_TEST_CHECK(native_tquant_res.value().data()[3] == -1.0f);
+
+  const auto native_tact_handle = native_exp_vm->state().contexts[0].registers[8];
+  const auto& native_tact_res =
+      const_cast<vm::State&>(native_exp_vm->state())
+          .tensors[static_cast<std::size_t>(native_tact_handle - 1)];
+  T81_TEST_CHECK(native_tact_res.has_value());
+  T81_TEST_CHECK(native_tact_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_tact_res.value().numeric_class() == t81::TensorNumericClass::ExactTrit);
+  T81_TEST_CHECK(native_tact_res.value().data()[0] == -1.0f);
+  T81_TEST_CHECK(native_tact_res.value().data()[1] == -1.0f);
+  T81_TEST_CHECK(native_tact_res.value().data()[2] == -1.0f);
+  T81_TEST_CHECK(native_tact_res.value().data()[3] == -1.0f);
 
   const auto native_silu_handle = native_exp_vm->state().contexts[0].registers[3];
   const auto& native_silu_res =
@@ -263,6 +292,100 @@ int main() {
   for (std::size_t i = 0; i < native_rope_expected.data().size(); ++i) {
     T81_TEST_CHECK(std::fabs(native_rope_res.value().data()[i] - native_rope_expected.data()[i]) <
                    1e-4f);
+  }
+
+  [[maybe_unused]] tisc::Program native_embed_program;
+  native_embed_program.symbol_pool = {"weightsA"};
+  native_embed_program.weights_model = native_model;
+  native_embed_program.insns.push_back({tisc::Opcode::WeightsLoad, 1, 1, 0});
+  native_embed_program.insns.push_back({tisc::Opcode::LoadImm, 2, 1, 0});
+  native_embed_program.insns.push_back({tisc::Opcode::TWEMBED, 3, 1, 2});
+  native_embed_program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  [[maybe_unused]] auto native_embed_vm = vm::make_interpreter_vm();
+  native_embed_vm->load_program(native_embed_program);
+  [[maybe_unused]] auto native_embed_result = native_embed_vm->run_to_halt();
+  T81_TEST_CHECK(native_embed_result.has_value());
+  const auto native_embed_handle = native_embed_vm->state().contexts[0].registers[3];
+  const auto& native_embed_res =
+      const_cast<vm::State&>(native_embed_vm->state())
+          .tensors[static_cast<std::size_t>(native_embed_handle - 1)];
+  T81_TEST_CHECK(native_embed_res.has_value());
+  T81_TEST_CHECK(native_embed_res.value().shape() == std::vector<int>({1, 2}));
+  T81_TEST_CHECK(native_embed_res.value().numeric_class() == t81::TensorNumericClass::ExactTrit);
+  T81_TEST_CHECK(native_embed_res.value().data()[0] == -1.0f);
+  T81_TEST_CHECK(native_embed_res.value().data()[1] == -1.0f);
+
+  [[maybe_unused]] tisc::Program native_twmatmul_program;
+  native_twmatmul_program.symbol_pool = {"weightsA"};
+  native_twmatmul_program.tensor_pool.push_back(
+      t81::T729DynamicTensor::from_host_float_data({2, 2}, std::vector<float>{1.0f, 0.0f, -1.0f, 1.0f},
+                                                   t81::TensorNumericClass::ExactTrit));
+  native_twmatmul_program.weights_model = native_model;
+  tisc::Insn native_tw_act{tisc::Opcode::LoadImm, 1, 1, 0};
+  native_tw_act.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  native_twmatmul_program.insns.push_back(native_tw_act);
+  native_twmatmul_program.insns.push_back({tisc::Opcode::WeightsLoad, 2, 1, 0});
+  native_twmatmul_program.insns.push_back({tisc::Opcode::TWMATMUL, 3, 1, 2});
+  native_twmatmul_program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  [[maybe_unused]] auto native_twmatmul_vm = vm::make_interpreter_vm();
+  native_twmatmul_vm->load_program(native_twmatmul_program);
+  [[maybe_unused]] auto native_twmatmul_result = native_twmatmul_vm->run_to_halt();
+  T81_TEST_CHECK(native_twmatmul_result.has_value());
+  const auto native_twmatmul_handle = native_twmatmul_vm->state().contexts[0].registers[3];
+  const auto& native_twmatmul_res =
+      const_cast<vm::State&>(native_twmatmul_vm->state())
+          .tensors[static_cast<std::size_t>(native_twmatmul_handle - 1)];
+  T81_TEST_CHECK(native_twmatmul_res.has_value());
+  T81_TEST_CHECK(native_twmatmul_res.value().shape() == std::vector<int>({2, 2}));
+  T81_TEST_CHECK(native_twmatmul_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  const auto native_twmatmul_expected =
+      t81::ops::twmatmul(native_twmatmul_program.tensor_pool[0], *decoded_native);
+  T81_TEST_CHECK(native_twmatmul_res.value().data().size() ==
+                 native_twmatmul_expected.data().size());
+  for (std::size_t i = 0; i < native_twmatmul_expected.data().size(); ++i) {
+    T81_TEST_CHECK(std::fabs(native_twmatmul_res.value().data()[i] -
+                             native_twmatmul_expected.data()[i]) < 1e-4f);
+  }
+
+  [[maybe_unused]] tisc::Program native_tattn_program;
+  native_tattn_program.symbol_pool = {"weightsA"};
+  native_tattn_program.tensor_pool.push_back(
+      t81::T729DynamicTensor::from_host_float_data({2, 2}, std::vector<float>{1.0f, 0.0f, -1.0f, 1.0f},
+                                                   t81::TensorNumericClass::ExactTrit));
+  native_tattn_program.tensor_pool.push_back(
+      t81::T729DynamicTensor::from_host_float_data({2, 2}, std::vector<float>{0.5f, 1.0f, 1.5f, 2.0f},
+                                                   t81::TensorNumericClass::HostFloat));
+  native_tattn_program.weights_model = native_model;
+  tisc::Insn native_tattn_q{tisc::Opcode::LoadImm, 1, 1, 0};
+  native_tattn_q.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  tisc::Insn native_tattn_v{tisc::Opcode::LoadImm, 3, 2, 0};
+  native_tattn_v.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  native_tattn_program.insns.push_back(native_tattn_q);
+  native_tattn_program.insns.push_back({tisc::Opcode::WeightsLoad, 2, 1, 0});
+  native_tattn_program.insns.push_back(native_tattn_v);
+  native_tattn_program.insns.push_back(
+      {tisc::Opcode::TATTN, 4, 1, static_cast<std::int32_t>(2 | (3 << 8))});
+  native_tattn_program.insns.push_back({tisc::Opcode::Halt, 0, 0, 0});
+
+  [[maybe_unused]] auto native_tattn_vm = vm::make_interpreter_vm();
+  native_tattn_vm->load_program(native_tattn_program);
+  [[maybe_unused]] auto native_tattn_result = native_tattn_vm->run_to_halt();
+  T81_TEST_CHECK(native_tattn_result.has_value());
+  const auto native_tattn_handle = native_tattn_vm->state().contexts[0].registers[4];
+  const auto& native_tattn_res =
+      const_cast<vm::State&>(native_tattn_vm->state())
+          .tensors[static_cast<std::size_t>(native_tattn_handle - 1)];
+  T81_TEST_CHECK(native_tattn_res.has_value());
+  T81_TEST_CHECK(native_tattn_res.value().shape() == std::vector<int>({2, 2}));
+  const auto native_tattn_expected =
+      t81::ops::tattn(native_tattn_program.tensor_pool[0], *decoded_native,
+                      native_tattn_program.tensor_pool[1]);
+  T81_TEST_CHECK(native_tattn_res.value().data().size() == native_tattn_expected.data().size());
+  for (std::size_t i = 0; i < native_tattn_expected.data().size(); ++i) {
+    T81_TEST_CHECK(std::fabs(native_tattn_res.value().data()[i] -
+                             native_tattn_expected.data()[i]) < 1e-4f);
   }
 
   // Shape checks via literal handles.

@@ -60,7 +60,7 @@ struct FFICallContext {
 // FFI call result with audit data
 struct FFICallResult {
     FFIResult status;
-    std::variant<uint64_t, int64_t, double, std::string, void*> result;
+    std::variant<uint64_t, int64_t, double, std::string, std::vector<std::string>, void*> result;
     std::string error_message;
     uint64_t execution_time_ns;
     std::vector<std::string> audit_events;

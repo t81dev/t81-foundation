@@ -4272,6 +4272,7 @@ std::any IRGenerator::visit(const CallExpr& expr) {
             ffi.opcode = tisc::ir::Opcode::FFI_CALL;
             ffi.operands = {dest.reg,
                             tisc::ir::Immediate{static_cast<long long>(expr.arguments.size())}};
+            ffi.literal_kind = tisc::LiteralKind::SymbolHandle;
             ffi.text_literal = fn_part;
             ffi.primitive = tisc::ir::PrimitiveKind::Integer;
             emit(ffi);

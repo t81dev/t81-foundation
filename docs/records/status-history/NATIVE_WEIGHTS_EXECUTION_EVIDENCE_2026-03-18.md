@@ -60,6 +60,30 @@ env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
   ./build-llama/benchmarks/benchmark_runner \
   --benchmark_filter='BM_NativeWeightsLoadAnd(RMSNorm|RoPE|Exp|SiLU|Softmax)_(T81Native|Binary)/64$' \
   --benchmark_min_time=0.00001s
+env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+  ./build-llama/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_NativeWeightsLoadAndTWEMBED_(T81Native|Binary)/64$' \
+  --benchmark_min_time=0.00001s
+env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+  ./build-llama/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_NativeWeightsLoadAndTWMATMUL_(T81Native|Binary)/(64|256|4096)$' \
+  --benchmark_min_time=0.00001s
+env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+  ./build-llama/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_NativeWeightsLoadAndTATTN_(T81Native|Binary)/256$' \
+  --benchmark_min_time=0.00001s
+env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+  ./build-llama/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_NativeWeightsLoadAndTQUANT_(T81Native|Binary)/64$' \
+  --benchmark_min_time=0.00001s
+env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+  ./build-llama/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_NativeWeightsLoadAndTACT_(T81Native|Binary)/64$' \
+  --benchmark_min_time=0.00001s
+env T81_BENCHMARK_PROFILE=deep T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+  ./build-llama/benchmarks/benchmark_runner \
+  --benchmark_filter='BM_NativeWeightsLoadAndTERNACCUM_(T81Native|Binary)/64$' \
+  --benchmark_min_time=0.00001s
 ```
 
 Observed results:
@@ -95,6 +119,27 @@ Observed results:
   - `BM_NativeWeightsLoadAndRoPE`: after RoPE coefficient caching in the
     generic and native paths, native `81.34 ops/s`, binary `19.96 ops/s`
     (`4.07x` throughput, `4.20x` latency)
+  - `BM_NativeWeightsLoadAndTWEMBED`: native `265.56 Kops/s`, binary `345.05 ops/s`
+    (`769.63x` throughput, `923.86x` latency)
+  - `BM_NativeWeightsLoadAndTWMATMUL`:
+    - at `64`: native `376.47 Kops/s`, binary `450.70 Kops/s`
+      (`0.84x` throughput, `0.84x` latency)
+    - at `256`: native `5.22 Mops/s`, binary `441.38 Kops/s`
+      (`11.84x` throughput, `12.00x` latency)
+    - at `4096`: native `61.13 Mops/s`, binary `107.17 Kops/s`
+      (`570.42x` throughput, `642.25x` latency)
+  - `BM_NativeWeightsLoadAndTATTN`:
+    - at `256`: native `1.27 Mops/s`, binary `11.48 ops/s`
+      (`110970.48x` throughput, `124317.13x` latency)
+  - `BM_NativeWeightsLoadAndTQUANT`:
+    - at `64`: native `309.18 Kops/s`, binary `49.39 ops/s`
+      (`6259.43x` throughput, `7239.39x` latency)
+  - `BM_NativeWeightsLoadAndTACT`:
+    - at `64`: native `378.70 Kops/s`, binary `55.41 ops/s`
+      (`6834.34x` throughput, `7603.96x` latency)
+  - `BM_NativeWeightsLoadAndTERNACCUM`:
+    - at `64`: native `183.91 Kops/s`, binary `2.28 Kops/s`
+      (`80.57x` throughput, `88.49x` latency)
 
 ## Interpretation
 
@@ -154,6 +199,43 @@ Observed results:
   no longer merely marginal. It also confirms that some higher-level kernels
   can still move materially with bounded algorithm-level cleanup before deeper
   representation changes are required.
+- `TWEMBED` is now the clearest example of a kernel that should never have been
+  forced through full native tensor promotion. Direct row extraction from the
+  packed balanced-trit table yields a very large VM-path win at `64` elements:
+  `769.63x` throughput and `923.86x` latency over the binary host-tensor path.
+  That makes table-gather style native kernels a strong target class for
+  continued direct packed-native handling.
+- `TWMATMUL` now shows a more nuanced crossover story rather than a flat loss.
+  The tiny `64`-trit smoke case is still fixed-overhead dominated and remains
+  slower than the binary host-tensor path, though the latest activation-side
+  scratch-buffer cleanup narrowed that gap to about `0.84x`. By `256` trits the native path
+  is already materially positive (`11.84x`), and by `4096` trits it is
+  decisively ahead (`570.42x`). That means the current native matmul kernel is
+  usable evidence for medium and larger shapes, with remaining work focused on
+  reducing small-shape setup overhead rather than replacing the steady-state
+  kernel.
+- `TATTN` turned out to be the next clear promotion-bound kernel. Once the VM
+  stopped promoting native balanced-trit `K` weights and instead executed the
+  attention score path directly from the cached packed-native view, the `256`
+  trit VM comparison flipped from slightly negative to decisively positive:
+  native `1.27 Mops/s` versus binary `11.48 ops/s`. That result is strong
+  enough to treat direct native attention as established, not speculative.
+- `TQUANT` is now another clear example of a direct-path win. The first
+  benchmark run looked negative only because dispatch still promoted the native
+  weights handle before checking the direct path. After fixing the dispatch
+  order, the balanced-trit quantization fast path at `64` measures
+  `309.18 Kops/s` versus `49.39 ops/s` for the binary host-tensor route,
+  which is another strong signal that already-ternary native kernels should
+  bypass generic promotion entirely.
+- `TACT` now lands in the same category. For balanced native trits both
+  supported activation modes map the native domain back onto itself, so the VM
+  can skip promotion and return the direct ternary result before applying the
+  existing activation-ceiling gate. At `64`, that yields `378.70 Kops/s`
+  versus `55.41 ops/s` for the binary host-tensor path.
+- `TERNACCUM` is now covered by the same native-vs-binary evidence style. It
+  does not need tensor result allocation at all, just a direct ternary dot
+  product into a `BigInt` handle, and at `64` that yields `183.91 Kops/s`
+  versus `2.28 Kops/s` for the binary host-tensor route.
 - This snapshot does not establish superiority over `llama.cpp` for end-user
   prompt inference. It establishes that T81's native ternary path is real,
   measurable, and now instrumented well enough to target the next bottleneck.

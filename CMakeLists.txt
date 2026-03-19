@@ -1782,6 +1782,12 @@ if(T81_BUILD_TESTS)
   endif()
   add_test(NAME t81_tritwise_backend_equivalence_test COMMAND t81_tritwise_backend_equivalence_test)
 
+  add_executable(t81_simd_api_test tests/cpp/simd_api_test.cpp)
+  target_link_libraries(t81_simd_api_test PRIVATE t81_core)
+  if(T81_IS_X86_64 AND NOT MSVC)
+    target_compile_options(t81_simd_api_test PRIVATE -mavx2 -mfma)
+  endif()
+
   add_executable(t81_phase2c_truth_table_test tests/cpp/test_phase2c_truth_table.cpp)
   target_link_libraries(t81_phase2c_truth_table_test PRIVATE t81_core)
 
@@ -2251,6 +2257,11 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   # RFC-0036 — Governed Foreign Function Interface (T81Lang `foreign {}` syntax)
   add_executable(t81lang_foreign_ffi_test tests/cpp/t81lang_foreign_ffi_test.cpp)
   target_link_libraries(t81lang_foreign_ffi_test PRIVATE t81_vm t81_lang_frontend t81_core)
+  add_library(ffi_bridge_testlib SHARED tests/cpp/ffi_bridge_testlib.cpp)
+  add_executable(vm_ffi_bridge_test tests/cpp/vm_ffi_bridge_test.cpp)
+  target_link_libraries(vm_ffi_bridge_test PRIVATE t81_vm t81_isa t81_core)
+  target_compile_definitions(
+    vm_ffi_bridge_test PRIVATE T81_VM_FFI_TESTLIB_PATH="$<TARGET_FILE:ffi_bridge_testlib>")
 
   # RFC-0037 — TNN stdlib (std.tnn.* builtins → RFC-0034 TISC opcodes)
   add_executable(tnn_stdlib_test tests/cpp/tnn_stdlib_test.cpp)
@@ -2779,6 +2790,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     vm_gc_safepoint_test
     agent_constructs_test
     t81lang_foreign_ffi_test
+    vm_ffi_bridge_test
     tnn_stdlib_test
     lattice_crypto_test
     ntru_kem_test
@@ -2800,6 +2812,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_cli_model_resolution_test
     t81_vm_rfc0034_ternary_native_test
     t81_vm_rfc0040_swar_test
+    t81_simd_api_test
   )
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND T81_TEST_TARGETS t81_base81_simd_test)

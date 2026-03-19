@@ -37,8 +37,19 @@ void account_tensor_allocation(State& state, std::size_t tensor_elements);
 
 std::optional<t81::T729DynamicTensor> decode_native_tensor(const t81::weights::NativeTensor& native,
                                                            TensorDecodeMode mode);
+std::optional<std::vector<std::int8_t>> decode_balanced_ternary_trits(
+    const t81::weights::NativeTensor& native);
 std::optional<t81::T729DynamicTensor> native_tensor_unary_exp_direct(
     const t81::weights::NativeTensor& native);
+std::optional<t81::T729DynamicTensor> native_tensor_quant_direct(
+    const t81::weights::NativeTensor& native, const std::vector<std::int8_t>& trits,
+    float threshold);
+std::optional<t81::T729DynamicTensor> native_tensor_tact_direct(
+    const t81::weights::NativeTensor& native, const std::vector<std::int8_t>& trits,
+    std::uint8_t mode);
+std::optional<t81::v1::T81BigInt> native_tensor_ternaccum_direct(
+    const t81::weights::NativeTensor& native, const std::vector<std::int8_t>& trits,
+    const t81::T729DynamicTensor& activations);
 std::optional<t81::T729DynamicTensor> native_tensor_unary_silu_direct(
     const t81::weights::NativeTensor& native);
 std::optional<t81::T729DynamicTensor> native_tensor_unary_softmax_direct(
@@ -47,6 +58,14 @@ std::optional<t81::T729DynamicTensor> native_tensor_rmsnorm_direct(
     const t81::weights::NativeTensor& native, const t81::T729DynamicTensor& weights);
 std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
     const t81::weights::NativeTensor& native, int pos);
+std::optional<t81::T729DynamicTensor> native_tensor_twembed_direct(
+    const t81::weights::NativeTensor& native, std::int64_t index);
+std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
+    const t81::T729DynamicTensor& activations, const t81::weights::NativeTensor& weights,
+    const std::vector<std::int8_t>& weight_trits);
+std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
+    const t81::T729DynamicTensor& q, const t81::weights::NativeTensor& k_native,
+    const std::vector<std::int8_t>& k_trits, const t81::T729DynamicTensor& v);
 
 std::optional<t81::weights::NativeTensor> parse_canon_tensor_object(
     const std::vector<std::byte>& bytes);

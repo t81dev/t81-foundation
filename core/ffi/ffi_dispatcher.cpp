@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <unordered_map>
+#include <optional>
 #ifndef _WIN32
 #include <dlfcn.h>
 #else
@@ -13,6 +14,120 @@
 #include <algorithm>
 
 namespace t81::ffi {
+
+namespace {
+
+constexpr std::size_t kSerializedArgHeaderSize = sizeof(std::uint8_t) + sizeof(std::uint32_t);
+
+struct ByteSpanResult {
+    const std::uint8_t* data{nullptr};
+    std::uint32_t size{0};
+};
+
+struct StringListResult {
+    const char* const* items{nullptr};
+    std::uint32_t count{0};
+};
+
+struct SerializedArgView {
+    std::uint8_t tag{0};
+    const std::uint8_t* payload{nullptr};
+    std::uint32_t size{0};
+};
+
+std::optional<SerializedArgView> arg_view(const FFICallContext& context, std::size_t index) {
+    std::size_t offset = 0;
+    for (std::size_t current = 0; current <= index; ++current) {
+        if (context.serialized_args.size() < offset + kSerializedArgHeaderSize) {
+            return std::nullopt;
+        }
+        const std::uint8_t tag = context.serialized_args[offset];
+        std::uint32_t size = 0;
+        std::memcpy(&size, context.serialized_args.data() + offset + sizeof(tag), sizeof(size));
+        const std::size_t payload_offset = offset + kSerializedArgHeaderSize;
+        if (context.serialized_args.size() < payload_offset + size) {
+            return std::nullopt;
+        }
+        if (current == index) {
+            return SerializedArgView{
+                .tag = tag,
+                .payload = context.serialized_args.data() + payload_offset,
+                .size = size,
+            };
+        }
+        offset = payload_offset + size;
+    }
+    return std::nullopt;
+}
+
+std::optional<std::int64_t> decode_i64_arg(const FFICallContext& context, std::size_t index) {
+    auto view = arg_view(context, index);
+    if (!view.has_value() || view->size != sizeof(std::int64_t)) {
+        return std::nullopt;
+    }
+    std::int64_t value = 0;
+    std::memcpy(&value, view->payload, sizeof(value));
+    return value;
+}
+
+std::optional<std::string> decode_string_arg(const FFICallContext& context, std::size_t index) {
+    auto view = arg_view(context, index);
+    if (!view.has_value()) {
+        return std::nullopt;
+    }
+    return std::string(reinterpret_cast<const char*>(view->payload),
+                       reinterpret_cast<const char*>(view->payload + view->size));
+}
+
+std::optional<double> decode_double_arg(const FFICallContext& context, std::size_t index) {
+    auto view = arg_view(context, index);
+    if (!view.has_value() || view->size != sizeof(double)) {
+        return std::nullopt;
+    }
+    double value = 0.0;
+    std::memcpy(&value, view->payload, sizeof(value));
+    return value;
+}
+
+std::optional<std::string> decode_bytes_arg(const FFICallContext& context, std::size_t index) {
+    auto view = arg_view(context, index);
+    if (!view.has_value()) {
+        return std::nullopt;
+    }
+    return std::string(reinterpret_cast<const char*>(view->payload),
+                       reinterpret_cast<const char*>(view->payload + view->size));
+}
+
+std::optional<std::vector<std::string>> decode_string_list_arg(const FFICallContext& context,
+                                                               std::size_t index) {
+    auto view = arg_view(context, index);
+    if (!view.has_value() || view->size < sizeof(std::uint32_t)) {
+        return std::nullopt;
+    }
+    std::size_t offset = 0;
+    std::uint32_t count = 0;
+    std::memcpy(&count, view->payload + offset, sizeof(count));
+    offset += sizeof(count);
+    std::vector<std::string> values;
+    values.reserve(count);
+    for (std::uint32_t i = 0; i < count; ++i) {
+        if (view->size < offset + sizeof(std::uint32_t)) {
+            return std::nullopt;
+        }
+        std::uint32_t size = 0;
+        std::memcpy(&size, view->payload + offset, sizeof(size));
+        offset += sizeof(size);
+        if (view->size < offset + size) {
+            return std::nullopt;
+        }
+        values.emplace_back(reinterpret_cast<const char*>(view->payload + offset),
+                            reinterpret_cast<const char*>(view->payload + offset + size));
+        offset += size;
+    }
+    return values;
+}
+
+}  // namespace
 
 // Implementation of FFILibraryRegistry
 FFILibraryRegistry& FFILibraryRegistry::instance() {
@@ -365,33 +480,271 @@ std::string FFIDispatcher::compute_provenance_hash_(const std::string& data) {
 
 FFICallResult FFIDispatcher::call_foreign_function_(
     void* func_ptr,
-    [[maybe_unused]] const FFICallContext& context,
+    const FFICallContext& context,
     const FFIFunction& function
 ) {
-    // This is a placeholder implementation
-    // Actual implementation would depend on function signature and calling convention
-    
-    if (function.return_type == "uint64_t") {
-        uint64_t result = 0;
-        // Call function with appropriate casting based on signature
-        auto typed_func = reinterpret_cast<uint64_t(*)()>(func_ptr);
-        result = typed_func();
-        
+    if (function.return_type == "uint64_t" && function.param_types.empty()) {
+        auto typed_func = reinterpret_cast<std::uint64_t(*)()>(func_ptr);
         return FFICallResult{
             .status = FFIResult::Success,
-            .result = result,
+            .result = typed_func(),
             .error_message = "",
-            .execution_time_ns = 0,  // Will be set by caller
+            .execution_time_ns = 0,
             .audit_events = {},
             .provenance_hash = ""
         };
     }
-    
-    // Add more type handling as needed
+
+    if (function.return_type == "int64_t" &&
+        function.param_types.size() == 1 &&
+        function.param_types[0] == "int64_t") {
+        auto arg0 = decode_i64_arg(context, 0);
+        if (!arg0.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing int64_t argument for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        auto typed_func = reinterpret_cast<std::int64_t(*)(std::int64_t)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(*arg0),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "int64_t" &&
+        function.param_types.size() == 2 &&
+        function.param_types[0] == "int64_t" &&
+        function.param_types[1] == "int64_t") {
+        auto arg0 = decode_i64_arg(context, 0);
+        auto arg1 = decode_i64_arg(context, 1);
+        if (!arg0.has_value() || !arg1.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing int64_t arguments for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        auto typed_func = reinterpret_cast<std::int64_t(*)(std::int64_t, std::int64_t)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(*arg0, *arg1),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "int64_t" &&
+        function.param_types.size() == 1 &&
+        function.param_types[0] == "string") {
+        auto arg0 = decode_string_arg(context, 0);
+        if (!arg0.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing string argument for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        auto typed_func = reinterpret_cast<std::int64_t(*)(const char*)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(arg0->c_str()),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "string" && function.param_types.empty()) {
+        auto typed_func = reinterpret_cast<const char*(*)()>(func_ptr);
+        const char* result = typed_func();
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = std::string(result ? result : ""),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "double" && function.param_types.empty()) {
+        auto typed_func = reinterpret_cast<double(*)()>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "double" &&
+        function.param_types.size() == 1 &&
+        function.param_types[0] == "double") {
+        auto arg0 = decode_double_arg(context, 0);
+        if (!arg0.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing double argument for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        auto typed_func = reinterpret_cast<double(*)(double)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(*arg0),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "int64_t" &&
+        function.param_types.size() == 1 &&
+        function.param_types[0] == "bytes") {
+        auto arg0 = decode_bytes_arg(context, 0);
+        if (!arg0.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing bytes argument for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        auto typed_func = reinterpret_cast<std::int64_t(*)(const std::uint8_t*, std::uint32_t)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(reinterpret_cast<const std::uint8_t*>(arg0->data()),
+                                 static_cast<std::uint32_t>(arg0->size())),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "int64_t" &&
+        function.param_types.size() == 2 &&
+        function.param_types[0] == "int64_t" &&
+        function.param_types[1] == "string") {
+        auto arg0 = decode_i64_arg(context, 0);
+        auto arg1 = decode_string_arg(context, 1);
+        if (!arg0.has_value() || !arg1.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing mixed int64_t/string arguments for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        auto typed_func =
+            reinterpret_cast<std::int64_t(*)(std::int64_t, const char*)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(*arg0, arg1->c_str()),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "int64_t" &&
+        function.param_types.size() == 1 &&
+        function.param_types[0] == "string[]") {
+        auto arg0 = decode_string_list_arg(context, 0);
+        if (!arg0.has_value()) {
+            return FFICallResult{
+                .status = FFIResult::TypeMismatch,
+                .result = {},
+                .error_message = "Missing string[] argument for: " + function.name,
+                .execution_time_ns = 0,
+                .audit_events = {"TypeMismatch"},
+                .provenance_hash = ""
+            };
+        }
+        std::vector<const char*> cstrs;
+        cstrs.reserve(arg0->size());
+        for (const auto& value : *arg0) {
+            cstrs.push_back(value.c_str());
+        }
+        auto typed_func =
+            reinterpret_cast<std::int64_t(*)(const char* const*, std::uint32_t)>(func_ptr);
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = typed_func(cstrs.data(), static_cast<std::uint32_t>(cstrs.size())),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "bytes" && function.param_types.empty()) {
+        auto typed_func = reinterpret_cast<ByteSpanResult(*)()>(func_ptr);
+        const ByteSpanResult result = typed_func();
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = std::string(reinterpret_cast<const char*>(result.data),
+                                  reinterpret_cast<const char*>(result.data + result.size)),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
+    if (function.return_type == "string[]" && function.param_types.empty()) {
+        auto typed_func = reinterpret_cast<StringListResult(*)()>(func_ptr);
+        const StringListResult result = typed_func();
+        std::vector<std::string> values;
+        values.reserve(result.count);
+        for (std::uint32_t i = 0; i < result.count; ++i) {
+            const char* item = result.items ? result.items[i] : nullptr;
+            values.emplace_back(item ? item : "");
+        }
+        return FFICallResult{
+            .status = FFIResult::Success,
+            .result = std::move(values),
+            .error_message = "",
+            .execution_time_ns = 0,
+            .audit_events = {},
+            .provenance_hash = ""
+        };
+    }
+
     return FFICallResult{
         .status = FFIResult::TypeMismatch,
         .result = {},
-        .error_message = "Unsupported return type: " + function.return_type,
+        .error_message = "Unsupported FFI signature: " + function.name +
+                         " -> " + function.return_type,
         .execution_time_ns = 0,
         .audit_events = {"TypeMismatch"},
         .provenance_hash = ""

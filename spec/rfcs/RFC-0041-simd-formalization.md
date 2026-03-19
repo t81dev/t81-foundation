@@ -1,13 +1,34 @@
 # RFC-0041: Formalization of SIMD Operations for Deterministic Ternary Computing
 
 - **Author(s):** T81 Foundation Architecture Team
-- **Status:** Draft
+- **Status:** Proposed
 - **Created:** 2026-03-18
 - **Supersedes:** None (builds on RFC-0016, RFC-0018, RFC-0040)
 
 ## Summary
 
 This RFC formalizes the SIMD (Single Instruction Multiple Data) operations currently implemented in the experimental PackedTritVector system, promoting them from experimental to stable within the Deterministic Core Profile (DCP). It establishes SIMD as the highest-performance tier in the scalar → SWAR → SIMD optimization hierarchy, providing maximum throughput for large trit vectors while maintaining strict cross-platform determinism.
+
+## Current Implementation Status
+
+The core SIMD implementation already exists in code and is not greenfield:
+
+- AVX2 kernels for `TNot`, `TAnd`, and `TOr`
+- NEON kernels for `TNot`, `TAnd`, and `TOr`
+- threshold-based dispatch with SWAR fallback tails
+- randomized differential tests against scalar and SWAR backends
+- explicit boundary-size coverage (`63/64/65/127/129`-class cases)
+- benchmark coverage for kernel-level and API-level throughput
+
+This RFC therefore focuses on promotion and surface formalization:
+
+1. stabilize the public API over the existing implementation
+2. record cross-architecture evidence explicitly under RFC-0041
+3. define the deprecation path away from direct external use of `experimental`
+
+It does **not** currently claim a SIMD-specific TISC opcode family or SIMD-specific
+Trace-JIT lowering. Existing VM/JIT tritwise integration remains the RFC-0040
+SWAR path.
 
 ## Motivation
 
@@ -417,60 +438,41 @@ namespace t81::simd::kernel {
 
 ## Implementation Roadmap
 
-### Phase 1: API Stabilization (Week 1-2)
-- [ ] Create `include/t81/simd/simd.hpp` with stable API
-- [ ] Implement compatibility shim in experimental namespace
-- [ ] Add comprehensive unit tests for all SIMD operations
-- [ ] Create architecture-specific test suites
+### Phase 1: API Stabilization
+- [x] Create `include/t81/simd/simd.hpp` with stable API wrappers
+- [x] Preserve compatibility through `experimental::ComputeTritVector`
+- [x] Add dedicated stable-surface regression coverage
 
-### Phase 2: Cross-Platform Validation (Week 3-4)  
-- [ ] Implement property testing across x86_64 and ARM64
-- [ ] Add canonical hash verification for large vectors
-- [ ] Create performance regression test suite
-- [ ] Validate determinism guarantees
+### Phase 2: Cross-Platform Validation
+- [x] Maintain scalar/SWAR/SIMD differential tests in the existing suites
+- [x] Keep explicit boundary-size tests in the packed-trit validation corpus
+- [~] Refresh and record explicit x86_64 and ARM64 evidence under this RFC
+  - ARM64/NEON evidence recorded: `docs/records/status-history/RFC_0041_SIMD_EVIDENCE_2026-03-18.md`
+  - ARM64 tuning now keeps NEON enabled for `TOr` while routing `TAnd` and `TNot` to SWAR on the current host class
+  - x86_64 refresh still pending
 
-### Phase 3: VM Integration (Week 5-6)
-- [ ] Add TISC opcodes for SIMD operations
-- [ ] Update VM dispatch layer with SIMD support
-- [ ] Integrate with Axion policy boundaries
-- [ ] Implement runtime feature detection
+### Phase 3: Documentation & Migration
+- [x] Create migration guidance for callers moving off direct `experimental` usage
+- [~] Complete formal deprecation wording for direct external `experimental` inclusion
+- [~] Add a dedicated RFC-0041 evidence note summarizing current benchmark status
 
-### Phase 4: JIT Integration (Week 7-8)
-- [ ] Extend Trace-JIT to emit SIMD kernels
-- [ ] Add SIMD operation caching to CanonFS
-- [ ] Implement deterministic trace hashing for SIMD
-- [ ] Optimize JIT dispatch for hot loops
-
-### Phase 5: Documentation & Migration (Week 9-10)
-- [ ] Update T81VM specification with SIMD operations
-- [ ] Create migration guide for existing code
-- [ ] Add performance tuning guidelines
-- [ ] Document architecture-specific optimizations
-
-### Phase 6: Extended Validation & Fuzzing (Week 11-12)  
-- [ ] Implement differential fuzzing suite (SIMD vs SWAR)
-- [ ] Validate boundary conditions (63, 64, 65, 127, 128, 129 bytes)
-- [ ] Property-based testing: associativity/commutativity checks
-- [ ] Round-trip tests through TISC VM opcodes
-
-### Phase 7: Future Extensions (Week 13-14)
-- [ ] Prototype AVX-512 support (512-bit vectors)
-- [ ] Investigate SVE support for ARM
-- [ ] Explore RISC-V Vector extension
-- [ ] Benchmark and validate new architectures
+### Deferred Work
+- [ ] SIMD-specific VM opcode surface
+- [ ] SIMD-specific Trace-JIT lowering
+- [ ] AVX-512 / SVE / RISC-V vector follow-ons
 
 ## Acceptance Criteria
 
 | ID | Criterion | Status |
 | :--- | :--- | :--- |
-| [A-0041-01] | All SIMD operations produce bit-exact results across x86_64 and ARM64 | |
-| [A-0041-02] | Performance benchmarks meet or exceed targets (≥2x SWAR speedup) | |
-| [A-0041-03] | VM integration passes full conformance test suite | |
-| [A-0041-04] | JIT integration maintains determinism invariants | |
-| [A-0041-05] | Backward compatibility maintained through deprecation cycle | |
-| [A-0041-06] | Cross-platform property tests achieve 99.9% pass rate | |
-| [A-0041-07] | Boundary condition tests (63,64,65,127,128,129 bytes) pass | |
-| [A-0041-08] | Documentation and migration guide complete | |
+| [A-0041-01] | All SIMD operations produce bit-exact results across x86_64 and ARM64 | Partial: tests exist and ARM64 evidence is now recorded; refreshed x86_64 evidence still needs to be recorded under this RFC |
+| [A-0041-02] | Performance benchmarks meet or exceed targets (≥2x SWAR speedup) | Partial: benchmark coverage exists; current ARM64 evidence is mixed, and the tuned implementation now treats only `TOr` as a clear NEON candidate on this host class |
+| [A-0041-03] | Stable public SIMD API exists outside `experimental` | Met: `include/t81/simd/simd.hpp` now exposes the promoted surface |
+| [A-0041-04] | Backward compatibility maintained through a compatibility period | Met: stable API is currently a promotion wrapper over the existing implementation |
+| [A-0041-05] | Cross-platform differential/property tests remain in CI-visible test targets | Met |
+| [A-0041-06] | Boundary condition tests (63,64,65,127,128,129 bytes) pass | Met |
+| [A-0041-07] | Documentation and migration guide complete | Partial: migration guide exists; RFC evidence/status still needs final cross-arch closeout |
+| [A-0041-08] | SIMD-specific VM/JIT scope is either implemented or explicitly deferred | Met: explicitly deferred in this RFC revision |
 
 ## References
 

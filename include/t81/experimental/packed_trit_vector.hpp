@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -566,7 +567,13 @@ public:
   // outweighs the throughput benefit, so we fall back to SWAR.
   // Determined via benchmarks/BM_PackedTritVector.cpp.
   static constexpr size_t AVX2_THRESHOLD_BYTES = 64;  // ~256 trits (Verified on x86_64)
-  static constexpr size_t NEON_THRESHOLD_BYTES = 64;  // Estimated, to be tuned on ARM
+  static constexpr size_t NEON_THRESHOLD_BYTES = 64;  // Baseline threshold for OR on ARM64
+  static constexpr size_t AVX2_TNOT_THRESHOLD_BYTES = AVX2_THRESHOLD_BYTES;
+  static constexpr size_t AVX2_TAND_THRESHOLD_BYTES = AVX2_THRESHOLD_BYTES;
+  static constexpr size_t AVX2_TOR_THRESHOLD_BYTES = AVX2_THRESHOLD_BYTES;
+  static constexpr size_t NEON_TNOT_THRESHOLD_BYTES = std::numeric_limits<size_t>::max();
+  static constexpr size_t NEON_TAND_THRESHOLD_BYTES = std::numeric_limits<size_t>::max();
+  static constexpr size_t NEON_TOR_THRESHOLD_BYTES = NEON_THRESHOLD_BYTES;
 
   // Inline helpers for fastpaths
   static inline void op_not_64(const uint8_t* src, uint8_t* dst) {
@@ -688,12 +695,12 @@ public:
     }
     T81_PROFILE_RECORD("TNot", len);
 #if defined(__x86_64__) && defined(__AVX2__)
-    if (len >= AVX2_THRESHOLD_BYTES) {
+    if (len >= AVX2_TNOT_THRESHOLD_BYTES) {
       kernel_not_avx2(in, out, len);
       return;
     }
 #elif defined(__aarch64__) && defined(__ARM_NEON)
-    if (len >= NEON_THRESHOLD_BYTES) {
+    if (len >= NEON_TNOT_THRESHOLD_BYTES) {
       kernel_not_neon(in, out, len);
       return;
     }
@@ -712,12 +719,12 @@ public:
     }
     T81_PROFILE_RECORD("TAnd", len);
 #if defined(__x86_64__) && defined(__AVX2__)
-    if (len >= AVX2_THRESHOLD_BYTES) {
+    if (len >= AVX2_TAND_THRESHOLD_BYTES) {
       kernel_and_avx2(a, b, out, len);
       return;
     }
 #elif defined(__aarch64__) && defined(__ARM_NEON)
-    if (len >= NEON_THRESHOLD_BYTES) {
+    if (len >= NEON_TAND_THRESHOLD_BYTES) {
       kernel_and_neon(a, b, out, len);
       return;
     }
@@ -736,12 +743,12 @@ public:
     }
     T81_PROFILE_RECORD("TOr", len);
 #if defined(__x86_64__) && defined(__AVX2__)
-    if (len >= AVX2_THRESHOLD_BYTES) {
+    if (len >= AVX2_TOR_THRESHOLD_BYTES) {
       kernel_or_avx2(a, b, out, len);
       return;
     }
 #elif defined(__aarch64__) && defined(__ARM_NEON)
-    if (len >= NEON_THRESHOLD_BYTES) {
+    if (len >= NEON_TOR_THRESHOLD_BYTES) {
       kernel_or_neon(a, b, out, len);
       return;
     }

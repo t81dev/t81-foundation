@@ -330,6 +330,7 @@ public:
     state_.weights_model = program_.weights_model;
     state_.weights_tensor_refs.clear();
     state_.weights_tensor_handles.clear();
+    state_.weights_tensor_trits.clear();
     tier_telemetry_.assign(state_.contexts.size(), TierTelemetry{});
     ctx.stack_frames.clear();
     ctx.call_depth = 0;
@@ -6256,10 +6257,34 @@ public:
           break;
         }
         if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
-        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
         auto* act_t = tensor_ptr(ctx.registers[insn.b]);
+        if (!act_t) { trap = Trap::DecodeFault; break; }
+        if (ctx.register_tags[insn.c] == ValueTag::WeightsTensorHandle) {
+          const auto handle = ctx.registers[insn.c];
+          const auto* native = weights_tensor(handle);
+          if (native != nullptr) {
+            const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
+            if (cache_idx < state_.weights_tensor_trits.size() &&
+                state_.weights_tensor_trits[cache_idx].has_value()) {
+              if (auto direct = t81::vm::internal::native_tensor_twmatmul_direct(
+                      *act_t, *native, *state_.weights_tensor_trits[cache_idx]);
+                  direct.has_value()) {
+                t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                            "TWMATMUL ternary-weight matmul (RFC-0034)"};
+                record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                                   ctx.registers[insn.b], verdict);
+                auto rh = alloc_tensor(std::move(*direct));
+                if (!rh) { trap = rh.error(); break; }
+                ctx.registers[insn.a] = *rh;
+                ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+                break;
+              }
+            }
+          }
+        }
+        if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
         auto* wt_t  = tensor_ptr(ctx.registers[insn.c]);
-        if (!act_t || !wt_t) { trap = Trap::DecodeFault; break; }
+        if (!wt_t) { trap = Trap::DecodeFault; break; }
         try {
           auto result = t81::ops::twmatmul(*act_t, *wt_t);
           t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
@@ -6281,9 +6306,6 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
-        auto* src_t = tensor_ptr(ctx.registers[insn.b]);
-        if (!src_t) { trap = Trap::DecodeFault; break; }
         // R_THR is a float handle or raw int (converted to threshold).
         float threshold = 0.5f;
         if (ctx.register_tags[insn.c] == ValueTag::FloatHandle) {
@@ -6293,6 +6315,32 @@ public:
         } else {
           threshold = static_cast<float>(ctx.registers[insn.c]);
         }
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto handle = ctx.registers[insn.b];
+          const auto* native = weights_tensor(handle);
+          if (native != nullptr) {
+            const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
+            if (cache_idx < state_.weights_tensor_trits.size() &&
+                state_.weights_tensor_trits[cache_idx].has_value()) {
+              if (auto direct = t81::vm::internal::native_tensor_quant_direct(
+                      *native, *state_.weights_tensor_trits[cache_idx], threshold);
+                  direct.has_value()) {
+                t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                            "TQUANT ternary quantization (RFC-0034)"};
+                record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                                   ctx.registers[insn.b], verdict);
+                auto rh = alloc_tensor(std::move(*direct));
+                if (!rh) { trap = rh.error(); break; }
+                ctx.registers[insn.a] = *rh;
+                ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+                break;
+              }
+            }
+          }
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* src_t = tensor_ptr(ctx.registers[insn.b]);
+        if (!src_t) { trap = Trap::DecodeFault; break; }
         try {
           auto result = t81::ops::tquant(*src_t, threshold);
           t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
@@ -6320,12 +6368,36 @@ public:
         const int k_reg  = kv_regs->first;
         const int v_reg  = kv_regs->second;
         if (auto res = promote_to_tensor(q_reg);  !res) { trap = res.error(); break; }
-        if (auto res = promote_to_tensor(k_reg);  !res) { trap = res.error(); break; }
         if (auto res = promote_to_tensor(v_reg);  !res) { trap = res.error(); break; }
         auto* q_t = tensor_ptr(ctx.registers[q_reg]);
-        auto* k_t = tensor_ptr(ctx.registers[k_reg]);
         auto* v_t = tensor_ptr(ctx.registers[v_reg]);
-        if (!q_t || !k_t || !v_t) { trap = Trap::DecodeFault; break; }
+        if (!q_t || !v_t) { trap = Trap::DecodeFault; break; }
+        if (ctx.register_tags[k_reg] == ValueTag::WeightsTensorHandle) {
+          const auto handle = ctx.registers[k_reg];
+          const auto* native = weights_tensor(handle);
+          if (native != nullptr) {
+            const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
+            if (cache_idx < state_.weights_tensor_trits.size() &&
+                state_.weights_tensor_trits[cache_idx].has_value()) {
+              if (auto direct = t81::vm::internal::native_tensor_tattn_direct(
+                      *q_t, *native, *state_.weights_tensor_trits[cache_idx], *v_t);
+                  direct.has_value()) {
+                t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                            "TATTN ternary QK attention (RFC-0034)"};
+                record_axion_event(insn.opcode, static_cast<int32_t>(q_reg),
+                                   ctx.registers[q_reg], verdict);
+                auto rh = alloc_tensor(std::move(*direct));
+                if (!rh) { trap = rh.error(); break; }
+                ctx.registers[insn.a] = *rh;
+                ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+                break;
+              }
+            }
+          }
+        }
+        if (auto res = promote_to_tensor(k_reg);  !res) { trap = res.error(); break; }
+        auto* k_t = tensor_ptr(ctx.registers[k_reg]);
+        if (!k_t) { trap = Trap::DecodeFault; break; }
         try {
           auto result = t81::ops::tattn(*q_t, *k_t, *v_t);
           t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
@@ -6351,10 +6423,27 @@ public:
           trap = Trap::TypeFault;
           break;
         }
+        const std::int64_t idx = ctx.registers[insn.c];
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto* native = weights_tensor(ctx.registers[insn.b]);
+          if (native != nullptr) {
+            if (auto direct = t81::vm::internal::native_tensor_twembed_direct(*native, idx);
+                direct.has_value()) {
+              t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                          "TWEMBED ternary embed gather (RFC-0034)"};
+              record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                                 ctx.registers[insn.b], verdict);
+              auto rh = alloc_tensor(std::move(*direct));
+              if (!rh) { trap = rh.error(); break; }
+              ctx.registers[insn.a] = *rh;
+              ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+              break;
+            }
+          }
+        }
         if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
         auto* table_t = tensor_ptr(ctx.registers[insn.b]);
         if (!table_t) { trap = Trap::DecodeFault; break; }
-        const std::int64_t idx = ctx.registers[insn.c];
         try {
           auto result = t81::ops::twembed(*table_t, idx);
           t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
@@ -6378,11 +6467,34 @@ public:
           trap = Trap::DecodeFault;
           break;
         }
-        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
         if (auto res = promote_to_tensor(insn.c); !res) { trap = res.error(); break; }
-        auto* wt_t  = tensor_ptr(ctx.registers[insn.b]);
         auto* act_t = tensor_ptr(ctx.registers[insn.c]);
-        if (!wt_t || !act_t) { trap = Trap::DecodeFault; break; }
+        if (!act_t) { trap = Trap::DecodeFault; break; }
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto handle = ctx.registers[insn.b];
+          const auto* native = weights_tensor(handle);
+          if (native != nullptr) {
+            const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
+            if (cache_idx < state_.weights_tensor_trits.size() &&
+                state_.weights_tensor_trits[cache_idx].has_value()) {
+              if (auto direct = t81::vm::internal::native_tensor_ternaccum_direct(
+                      *native, *state_.weights_tensor_trits[cache_idx], *act_t);
+                  direct.has_value()) {
+                t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
+                                            "TERNACCUM ternary dot product (RFC-0034)"};
+                record_axion_event(insn.opcode, static_cast<int32_t>(insn.b),
+                                   ctx.registers[insn.b], verdict);
+                const std::int64_t bh = alloc_bigint(std::move(*direct));
+                ctx.registers[insn.a] = bh;
+                ctx.register_tags[insn.a] = ValueTag::BigIntHandle;
+                break;
+              }
+            }
+          }
+        }
+        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+        auto* wt_t  = tensor_ptr(ctx.registers[insn.b]);
+        if (!wt_t) { trap = Trap::DecodeFault; break; }
         try {
           auto result_tensor = t81::ops::ternaccum(*wt_t, *act_t);
           // Extract scalar BigInt from 1×1 result tensor.
@@ -6412,20 +6524,39 @@ public:
           trap = Trap::TypeFault;
           break;
         }
-        if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
-        auto* src_t = tensor_ptr(ctx.registers[insn.b]);
-        if (!src_t) { trap = Trap::DecodeFault; break; }
         const auto mode = static_cast<std::uint8_t>(ctx.registers[insn.c]);
         if (mode != t81::ops::kTActModeStep && mode != t81::ops::kTActModeTanh) {
           trap = Trap::DecodeFault;
           break;
         }
         T729DynamicTensor tact_result;
-        try {
-          tact_result = t81::ops::tact(*src_t, mode);
-        } catch (...) {
-          trap = Trap::TypeFault;
-          break;
+        bool have_tact_result = false;
+        if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
+          const auto handle = ctx.registers[insn.b];
+          const auto* native = weights_tensor(handle);
+          if (native != nullptr) {
+            const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
+            if (cache_idx < state_.weights_tensor_trits.size() &&
+                state_.weights_tensor_trits[cache_idx].has_value()) {
+              if (auto direct = t81::vm::internal::native_tensor_tact_direct(
+                      *native, *state_.weights_tensor_trits[cache_idx], mode);
+                  direct.has_value()) {
+                tact_result = std::move(*direct);
+                have_tact_result = true;
+              }
+            }
+          }
+        }
+        if (!have_tact_result) {
+          if (auto res = promote_to_tensor(insn.b); !res) { trap = res.error(); break; }
+          auto* src_t = tensor_ptr(ctx.registers[insn.b]);
+          if (!src_t) { trap = Trap::DecodeFault; break; }
+          try {
+            tact_result = t81::ops::tact(*src_t, mode);
+          } catch (...) {
+            trap = Trap::TypeFault;
+            break;
+          }
         }
         // Post-execute activation-ceiling gate (RFC-0034 §5.17.6).
         t81::axion::VerdictKind ceiling_verdict = t81::axion::VerdictKind::Allow;
@@ -6522,39 +6653,41 @@ public:
         break;
       }
       case t81::tisc::Opcode::FFICall: {
-        // Handle FFI call with governance
         auto dispatcher = t81::vm::get_ffi_dispatcher();
         if (!dispatcher) {
           trap = Trap::FFINotInitialized;
           break;
         }
-        
-        // Extract function index, arg count, and result register
-        uint8_t function_index = static_cast<uint8_t>(insn.a);
-        uint64_t arg_count = static_cast<uint64_t>(insn.b);
-        uint64_t result_addr = static_cast<uint64_t>(insn.c);
-        
-        auto result = t81::vm::ffi_call(state_, function_index, arg_count, result_addr);
+
+        auto result = t81::vm::ffi_call(state_, insn.a, static_cast<uint64_t>(insn.b), insn.c);
         if (!result.has_value()) {
           trap = result.error();
         }
         break;
       }
       case t81::tisc::Opcode::FFIRegister: {
-        // Register foreign library
-        uint64_t library_name_addr = static_cast<uint64_t>(insn.a);
-        uint64_t version_hash_addr = static_cast<uint64_t>(insn.b);
-
-        auto result = t81::vm::ffi_register(state_, library_name_addr, version_hash_addr);
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        auto result = t81::vm::ffi_register(state_, insn.a, static_cast<std::int32_t>(insn.b));
         if (!result.has_value()) {
           trap = result.error();
         }
         break;
       }
       case t81::tisc::Opcode::FFIPolicySet: {
-        // Set FFI policy
-        uint64_t policy_type = static_cast<uint64_t>(insn.a);
-        uint64_t policy_value = static_cast<uint64_t>(insn.b);
+        if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+          trap = Trap::DecodeFault;
+          break;
+        }
+        if (ctx.register_tags[insn.a] != ValueTag::Int ||
+            ctx.register_tags[insn.b] != ValueTag::Int) {
+          trap = Trap::TypeFault;
+          break;
+        }
+        uint64_t policy_type = static_cast<uint64_t>(ctx.registers[insn.a]);
+        uint64_t policy_value = static_cast<uint64_t>(ctx.registers[insn.b]);
 
         auto result = t81::vm::ffi_policy_set(state_, policy_type, policy_value);
         if (!result.has_value()) {
@@ -6879,6 +7012,12 @@ private:
       return 0;
     }
     state_.weights_tensor_refs.push_back(&native_iter->second);
+    if (auto decoded = t81::vm::internal::decode_balanced_ternary_trits(native_iter->second);
+        decoded.has_value()) {
+      state_.weights_tensor_trits.push_back(std::move(*decoded));
+    } else {
+      state_.weights_tensor_trits.push_back(std::nullopt);
+    }
     auto handle = static_cast<std::int64_t>(state_.weights_tensor_refs.size());
     state_.weights_tensor_handles.emplace(std::move(key), handle);
     return handle;
