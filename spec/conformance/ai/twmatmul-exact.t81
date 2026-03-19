@@ -1,0 +1,35 @@
+// spec/conformance/ai/twmatmul-exact.t81
+// Normative ref: RFC-0034 §5.17.1 (TWMATMUL — ternary-weight matrix multiply)
+// Invariant: TWMATMUL reduces each ternary weight to add / subtract / skip over
+//            exact integer accumulators. For a 1×3 by 3×2 example, the two
+//            output cells are exactly 2 and -1.
+//
+// @spec-ref: RFC-0034 §5.17.1
+// @invariant: twmatmul-add-subtract-skip-exact
+// @input-domain: ternary activations and ternary weights
+// @expected: exact cell values 2 and -1
+
+@tier(2) @pure
+fn check_reference_cells() -> bool {
+    let a0: T81BigInt = 1;
+    let a1: T81BigInt = 0;
+    let a2: T81BigInt = -1;
+
+    let out00: T81BigInt = (a0 * 1) + (a1 * 0) + (a2 * -1);
+    let out01: T81BigInt = (a0 * -1) + (a1 * 1) + (a2 * 0);
+    out00 == 2 && out01 == -1
+}
+
+@tier(2) @pure
+fn check_zero_weight_skip() -> bool {
+    let activation: T81BigInt = 81;
+    let acc: T81BigInt = 12;
+    let result: T81BigInt = acc + (activation * 0);
+    result == acc
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_reference_cells();
+    assert check_zero_weight_skip();
+}

@@ -41,6 +41,20 @@
         "T81_BUILD_EXAMPLES": "ON",
         "T81_BUILD_BENCHMARKS": "OFF"
       }
+    },
+    {
+      "name": "warn-strict",
+      "displayName": "Strict Warning Scan (local pre-push check)",
+      "description": "Clang build with -Werror and the same warning classes enforced by Windows CI (cl.exe /W4 /WX and clang-cl). Run before pushing to catch -Wswitch, -Wunused, and -Wconversion issues locally. Usage: cmake --preset warn-strict && cmake --build build-warn-strict 2>&1 | head -40",
+      "inherits": "release",
+      "binaryDir": "${sourceDir}/build-warn-strict",
+      "cacheVariables": {
+        "T81_BUILD_TESTS": "ON",
+        "T81_BUILD_EXAMPLES": "OFF",
+        "T81_BUILD_BENCHMARKS": "OFF",
+        "T81_WARN_STRICT": "ON",
+        "CMAKE_CXX_FLAGS": "-Werror -Wswitch -Wunused-variable -Wunused-function -Wno-deprecated-declarations"
+      }
     }
   ],
   "buildPresets": [
@@ -55,6 +69,10 @@
     {
       "name": "ci",
       "configurePreset": "ci"
+    },
+    {
+      "name": "warn-strict",
+      "configurePreset": "warn-strict"
     }
   ],
   "testPresets": [

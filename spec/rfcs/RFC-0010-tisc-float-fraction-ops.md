@@ -20,7 +20,7 @@ ______________________________________________________________________
 
 # Summary
 
-> **Status Note:** This RFC is **Accepted**, but with a caveat on `FDIV` and transcendental operations. The VM implementation of floating-point division and transcendental functions (`sin`, `cos`, etc.) currently relies on host-platform `double` precision and is not strictly bit-deterministic across architectures. Storage and basic arithmetic (`+`, `-`, `*`) remain deterministic.
+> **Status Note:** This RFC is **Accepted** with no outstanding caveats. `FDIV` uses IEEE 754 correctly-rounded division (bit-exact on any conformant platform). Transcendental operations (`sin`, `cos`, `exp`, `log`, `sqrt`, `pow`, and hyperbolic variants) route through the `t81_soft_math` integer-backed implementation (RFC-0030), which provides cross-architecture bit-exact results. The caveat noted in earlier revisions is fully resolved.
 
 Define first-class arithmetic opcodes for `T81Float` and `T81Fraction` so that:
 
@@ -104,8 +104,17 @@ Per `spec/t81vm-spec §4`:
 - Arithmetic must be constant-time w.r.t. secret data if Axion policy requires it, but that is unchanged from integer ops.
 - Handle reuse/deduplication MUST be deterministic to avoid covert channels.
 
-# Open Questions
+## Acceptance Notes (2026-03-15)
 
-1. Do we require deduplication (interning) of float/fraction handles, or is append-only acceptable if program semantics tolerate duplicates?
-2. Should we introduce comparison opcodes (`FCMP`, `FRACCMP`) in the same RFC or a follow-up?
-3. How do these opcodes interact with Axion tier annotations—does heavy float work demand tier escalation?
+Original caveat on `FDIV` and transcendentals resolved:
+
+| Item | Resolution |
+| :--- | :--- |
+| `FDIV` not cross-arch bit-deterministic | IEEE 754 mandates correctly-rounded division; `*lhs / *rhs` on any conformant host is bit-exact |
+| Transcendentals rely on host libm | All transcendental opcodes (`FSin`..`FPow`) route through `T81Float<72,9>::sin()/cos()/...` → `t81_soft_math` integer-backed implementation (RFC-0030); no libm dependency |
+
+Open questions resolved:
+
+1. **Handle deduplication:** Append-only is accepted; `intern_float()` added by RFC-DPE-0003 §13 for cross-task snapshot restoration — interning is opt-in, not mandatory for single-program use.
+2. **Comparison opcodes:** `FCMP`/`FRACCMP` are deferred to a follow-up RFC; not blocking acceptance.
+3. **Axion tier interaction:** Existing tier gate machinery in `t81lang_surface_gate_test` covers float ops; no special escalation required.

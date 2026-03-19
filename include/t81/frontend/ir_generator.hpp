@@ -218,8 +218,9 @@ public:
   std::any visit(const FunctionStmt& stmt) override;
   std::any visit(const TypeDecl& stmt) override;
   std::any visit(const RecordDecl& stmt) override;
-
   std::any visit(const EnumDecl& stmt) override;
+  std::any visit(const AgentDecl& stmt) override;    // RFC-0015
+  std::any visit(const ForeignDecl& stmt) override;  // RFC-0036
 
   // Expressions
   std::any visit(const BinaryExpr& expr) override;
@@ -384,6 +385,7 @@ private:
   std::unordered_map<std::string, tisc::ir::Label> _function_labels;
   // RFC-0026 AI-M6: maps @attention/@qmatmul function names to their AI IR opcode.
   std::unordered_map<std::string, tisc::ir::Opcode> _ai_intrinsic_map;
+  std::vector<bool> _ternary_inference_stack;
   std::vector<std::vector<std::pair<std::string, std::optional<TypedRegister>>>> _pattern_scopes;
   std::vector<LoopInfo> _loop_infos;
   std::vector<LoopInfo> _loop_stack;

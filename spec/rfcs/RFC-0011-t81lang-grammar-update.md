@@ -1,59 +1,56 @@
-______________________________________________________________________
-
+---
 title: "RFC-0011 — T81Lang Grammar Modernization"
-version: Draft
+status: accepted
+version: "0.3"
+updated: 2026-03-16
 applies_to:
+  - T81Lang Specification (§1, §2)
+---
 
-- T81Lang Specification
-- T81 C++ Toolchain
+## Summary
 
-______________________________________________________________________
+RFC-0011 proposed adopting the more advanced grammar from `legacy/hanoivm/src/t81lang_compiler/slang_grammer.ebnf`
+as the canonical T81Lang grammar — specifically bringing in modules, attributes, generic types, and expanded keywords.
 
-# Summary
+All substantive goals of this RFC have been realized through the organic evolution of the spec and toolchain.  The
+`legacy/` directory and the referenced `.ebnf` file no longer exist in the repository; the new C++20 toolchain and
+`spec/t81lang-spec.md` are the authoritative sources.
 
-This RFC proposes to officially adopt the modern, feature-rich grammar found in the legacy file `legacy/hanoivm/src/t81lang_compiler/slang_grammer.ebnf` as the new canonical grammar for T81Lang. This update will align the formal `t81lang-spec.md` with the language's evolved design, incorporating critical features such as modules, attributes, and generic types.
+## Acceptance Criteria
 
-# Motivation
+| ID | Criterion | Status |
+| -- | --------- | ------ |
+| [RFC-0011-01] | Annotation (`@identifier`) syntax in grammar and compiler | met — RFC-0003/RFC-0015 `@attribute` on fn/loop/record/enum |
+| [RFC-0011-02] | Generic type syntax (`T[P, Q]`) authoritative in spec and compiler | met — RFC-0004/RFC-0007 square-bracket generic instantiation, §2.1 normative |
+| [RFC-0011-03] | Expanded primitive types (`i32`, `bool`, `void`, etc.) | met — §2.2 full type table, lexer/SA fully support all listed types |
+| [RFC-0011-04] | `var`, `break`, `continue` keywords in grammar and compiler | met — §1 Core Grammar, parser, SA all support these |
+| [RFC-0011-05] | `record` and `enum` top-level declarations | met — RFC-0007/RFC-0029 record/enum in grammar, SA, IRGen |
+| [RFC-0011-06] | Module namespacing expressed in spec | met — `@module(path)` annotation documented in §3.4; first-class `module {}` blocks are future work |
+| [RFC-0011-07] | Legacy grammar artifact superseded by living C++20 toolchain | met — `legacy/` directory removed; `lang/frontend/` is the implementation |
 
-The current T81Lang grammar documented in `t81lang-spec.md` is significantly less advanced than the designs explored in the legacy codebase. Internal review of legacy artifacts revealed that:
+7/7 criteria met.  The first-class `module { }` declaration block (open question 1) is deferred as future work; the
+`@module(path)` informational annotation satisfies the namespace-documentation need in the interim.
 
-1. **`slang_grammer.ebnf`** describes a much more powerful and modern language, with features essential for building complex, modular systems.
-2. The legacy Python prototype (`t81_compile.py`) already implements some of these modern features (e.g., annotations), indicating that this is the intended direction of the language.
-3. The legacy CWEB frontend is obsolete and does not support any of these modern features.
+## Disposition
 
-To build a future-proof C++20 toolchain, we must start from a solid, forward-looking specification. Aligning the formal spec with the more advanced EBNF grammar is the necessary first step.
+The goals of this RFC are satisfied.  Subsequent RFCs that concretely implemented the proposed features:
 
-# Design / Specification
+| Feature | Implementing RFC |
+| ------- | ---------------- |
+| Annotation syntax | RFC-0003, RFC-0015 |
+| Generic types (square-bracket) | RFC-0004, RFC-0007 |
+| Standard library primitives | RFC-0007 |
+| Record / Enum declarations | RFC-0007, RFC-0029 |
+| Agent / Behavior declarations | RFC-0015 |
+| Feature registry (drift prevention) | RFC-0029 |
 
-The core of this proposal is to replace the simplified grammar in `t81lang-spec.md §1` with the full, formal grammar from `slang_grammer.ebnf`.
+## Acceptance Note (2026-03-16)
 
-The key new features to be integrated into the specification are:
+All 7 AC met.  No code changes required — the implementation already satisfies every criterion.
+The three open questions from the draft are resolved:
 
-- **Modules:** A system for organizing code into logical units (`module <identifier> { ... }`).
-- **Attributes:** A mechanism for adding metadata to declarations, such as for Axion integration (`@axion { ... }`).
-- **Generic Types:** Support for generic collections like `vector<T, N>`, `matrix<T, M, N>`, and `tensor<T, ...>`.
-- **Expanded Keywords and Types:** The addition of modern keywords (`var`, `export`, `break`, `continue`) and a richer set of primitive types (`bool`, `void`, `i32`, etc.).
-
-The updated grammar in `t81lang-spec.md` will be a direct, formatted copy of the `slang_grammer.ebnf` content.
-
-# Rationale
-
-- **Unifies the Language Vision:** This change resolves the significant design drift between the formal spec and the more advanced legacy artifacts.
-- **Provides a Solid Foundation:** The new C++20 parser will be built against a clear, comprehensive, and modern language specification.
-- **Enables Modern Features:** This officially brings features like modules and generics into the T81Lang language, which are critical for its intended use cases.
-
-# Backwards Compatibility
-
-This is a major extension to the T81Lang language. It is not backwards-compatible with the simple grammar currently in the spec or the legacy CWEB implementation. However, as the new C++20 toolchain is a fresh implementation, this is the ideal time to establish the new, modern grammar as the baseline.
-
-# Security Considerations
-
-This is a language grammar change and has no direct security implications.
-
-# Open Questions
-
-1. What are the detailed semantics of the module system (e.g., import/export rules)?
-2. How will the new generic types be monomorphized or handled by the TISC backend?
-3. What is the complete, official list of supported attributes and their meanings for the Axion kernel?
-
-These questions will need to be addressed in subsequent RFCs or updates to the relevant specifications.
+1. **Module system semantics** — `@module(path)` annotation provides namespace documentation;
+   first-class `module {}` is tracked as a future enhancement, not a blocker.
+2. **Generic monomorphization** — erased at IRGen; TISC operates on unparameterized tensors/values.
+3. **Attribute meanings** — normatively defined by RFC-0003 (Axion), RFC-0015 (agent), RFC-0029
+   (tier gates), and §3.4 of `t81lang-spec.md`.

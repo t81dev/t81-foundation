@@ -10,7 +10,7 @@ Source of Truth: VM + opcode headers
   - Bytes 5-8: Operand B (`int32_t`, little-endian)
   - Bytes 9-12: Operand C (`int32_t`, little-endian)
 - **Operands**: All instructions encode three 32-bit signed integer operands (A, B, C). Unused operands for a specific opcode are ignored by the VM but must be present in the binary stream (typically zeroed).
-- **Reserved Ranges**: Opcodes 194 (0xC2) through 255 (0xFF) are reserved for future expansion. Opcodes 174 (0xAE)–193 (0xC1) are assigned: Map/Set scaffolding (174–185), TShape (186), AI-Native Inference / RFC-0026 (187–193).
+- **Reserved Ranges**: Opcodes 200 (0xC8) through 255 (0xFF) are reserved for future expansion. Opcodes 174 (0xAE)–199 (0xC7) are assigned: Map/Set scaffolding (174–185), TShape (186), AI-Native Inference / RFC-0026 (187–193), Ternary-Native Inference / RFC-0034 (194–199).
 - **Determinism**: All implemented opcodes must exhibit bit-exact deterministic behavior across all platforms. Floating point operations (FAdd, etc.) use `T81Float` or deterministic software implementations where hardware checks fail.
 
 ## 2. Opcode Categories
@@ -285,12 +285,83 @@ All opcodes in this class operate on TensorHandle registers. All are Tier 2+ onl
 | SCATTER | 192 (0xC0) | A, B, PACK(IDX,SRC) | Sparse scatter-add: scatter `R[SRC]` into `R[B]` at `R[IDX]`; aliasing detection enforced (AI-M5) | Yes | core/vm/vm.cpp |
 | Int2BigInt | 193 (0xC1) | A, B, C | Convert integer register to BigInt handle | Yes | core/vm/vm.cpp |
 
+### 2.19 Ternary-Native Inference (RFC-0034)
+
+All opcodes in this class require Tier 2+. Weights must be in {−1, 0, +1} (T81Qutrit domain).
+TACT carries a post-execute Axion activation-ceiling gate (§5.17.6).
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| TWMATMUL | 194 (0xC2) | A, B, C | Ternary-weight matmul; T81BigInt accumulator; no FP multiply | Yes | core/vm/vm.cpp |
+| TQUANT | 195 (0xC3) | A, B, C | Quantize tensor to ternary {−1,0,+1} using threshold R[C] | Yes | core/vm/vm.cpp |
+| TATTN | 196 (0xC4) | A, B, PACK(C) | Ternary Q/K attention; ternary matmul + softmax + float V-proj | Yes | core/vm/vm.cpp |
+| TWEMBED | 197 (0xC5) | A, B, C | Row-gather from T81Qutrit embedding table at index R[C] | Yes | core/vm/vm.cpp |
+| TERNACCUM | 198 (0xC6) | A, B, C | Scalar ternary dot product; result stored as T81BigInt handle | Yes | core/vm/vm.cpp |
+| TACT | 199 (0xC7) | A, B, C | Ternary activation (mode R[C]); activation-ceiling Axion gate | Yes | core/vm/vm.cpp |
+
+#### TACT Modes
+
+| Mode Byte | Name | Semantics |
+| :--- | :--- | :--- |
+| `0x01` | TernaryStep | `x > 0.5 → +1; x < −0.5 → −1; else 0` |
+| `0x02` | TanhQuantized | `tanh(x) > 0.5 → +1; tanh(x) < −0.5 → −1; else 0` |
+
+Post-execute Axion `activation-ceiling` verdict model:
+
+| Verdict | Effect |
+| :--- | :--- |
+| Allow | RD committed; PC advances normally |
+| Quarantine | RD not committed; PC does not advance; `SecurityFault` raised |
+| Deny | RD not committed; `ActivationFault` raised |
+
+### 2.20 Governed Foreign Function Interface (RFC-0036 + RFC-00B8)
+
+Opcodes for governed calls to external (non-T81) functions. All are subject to
+`FFIDispatcher` policy enforcement, resource quotas, and Axion audit events.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| FFICall | 200 (0xC8) | A, B, C | Call foreign function; `text_literal` carries function name; policy check before dispatch | Conditional (policy-dependent) | core/vm/vm.cpp |
+| FFIRegister | 201 (0xC9) | A, B | Register foreign library by name `R[A]` and version hash `R[B]` | Yes | core/vm/vm.cpp |
+| FFIPolicySet | 202 (0xCA) | A, B | Set per-call FFI policy type `R[A]` to value `R[B]` | Yes | core/vm/vm.cpp |
+
+### 2.21 Ternary Lattice Cryptography (RFC-0038)
+
+Negacyclic polynomial arithmetic over `{−1, 0, +1}` coefficients in `Z[x]/(x^n + 1)`.
+No integer multiplications — only add/sub/trit-flip. T81BigInt-exact. Tier 2+.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| POLYMUL | 203 (0xCB) | A, B, C | Negacyclic poly multiply: `R[A] = polymul(*tensor(R[B]), *tensor(R[C]))` in `Z[x]/(x^n+1)` | Yes | core/vm/vm.cpp |
+| POLYMOD | 204 (0xCC) | A, B, C | Centered reduction mod q: every coefficient c → `((c%q)+q)%q`, shifted to `(−q/2, q/2]`; `q = R[C]` | Yes | core/vm/vm.cpp |
+
+### 2.22 NTRU-KEM Polynomial Ring Arithmetic (RFC-0039)
+
+Elementwise polynomial subtraction over tensor handles; completes the `{+, −, ×, mod}` ring surface.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| TVecSub | 212 (0xD4) | A, B, C | Elementwise subtraction: `R[A][k] = tensor(R[B])[k] − tensor(R[C])[k]` for all k | Yes | core/vm/vm.cpp |
+
+### 2.23 SWAR Tensor Operations (RFC-0040)
+
+Explicit SWAR dispatch over `ExactTrit` tensor handles. These opcodes are stable
+entry points for RFC-0040 semantics and bypass scalar ternary-trit execution.
+
+| Mnemonic | Numeric Encoding | Operands | Description | Deterministic | Implementation Location |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| TNOT_SWAR | 213 (0xD5) | A, B, C | Exact-trit tensor unary negation via stable SWAR kernels: `R[A] = swar_not(tensor(R[B]))` | Yes | core/vm/vm.cpp |
+| TAND_SWAR | 214 (0xD6) | A, B, C | Exact-trit tensor elementwise ternary min via SWAR: `R[A] = swar_and(tensor(R[B]), tensor(R[C]))` | Yes | core/vm/vm.cpp |
+| TOR_SWAR | 215 (0xD7) | A, B, C | Exact-trit tensor elementwise ternary max via SWAR: `R[A] = swar_or(tensor(R[B]), tensor(R[C]))` | Yes | core/vm/vm.cpp |
+
 ## 3. Reserved / Unused Opcodes
+
 - **Nop (0x00)**: No Operation.
-- **Reserved**: Opcodes 194 (0xC2) through 255 (0xFF) are reserved for future standardization.
+- **Reserved**: Opcodes 216 (0xD8) through 255 (0xFF) are reserved for future standardization.
 
 ## 4. Implementation Consistency Audit
-- **VM Opcode Count**: 194 defined opcodes (0–193).
-- **Header Enum Count**: 194 entries.
+
+- **VM Opcode Count**: 209 defined opcodes (0x00–0xD7); includes RFC-0034, RFC-00B8, RFC-0038, RFC-0039, RFC-0040 additions.
+- **Header Enum Count**: 209 entries in `include/t81/isa/opcodes.hpp`.
 - **Coverage**: All opcodes defined in `include/t81/isa/opcodes.hpp` are present in `core/vm/vm.cpp` dispatch switch.
 - **Discrepancies**: None found.

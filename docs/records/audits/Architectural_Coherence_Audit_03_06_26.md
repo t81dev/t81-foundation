@@ -137,7 +137,7 @@ The T81 ecosystem is layered to provide a deterministic computing substrate:
 - **T81Lang Frontend / Stdlib:** The high-level language exposing ternary-native types (`Int`, `BigInt`, `Qutrit`, `Float`).
 - **TISC ISA:** The Ternary Instruction Set Computer, designed with ternary logic instructions and bit-exact semantic guarantees.
 - **T81VM:** The virtual machine executing TISC bytecode, enforcing limits and bounds.
-- **Axion Engine:** The governance and policy layer, natively integrated into the VM for real-time capability tracking and event auditing.
+- **Axion Governance Engine:** The governance and policy layer, natively integrated into the VM for real-time capability tracking and event auditing.
 - **CanonFS:** Deterministic storage.
 - **AI-Native Execution Surfaces (RFC-0026):** Governed LLM integrations with cognitive tiering and ternary quantization.
 

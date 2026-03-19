@@ -1,7 +1,7 @@
 # AX-M6 Evidence: CanonFS Observability (Axion §1.10)
 
 **Evidence ID:** AX-M6-2026-03-04  
-**Specification Section:** Axion Kernel §1.10 - CanonFS Observability  
+**Specification Section:** Axion Governance Kernel §1.10 - CanonFS Observability
 **Target Date:** 2026-03-12 (Completed 2026-03-04)  
 **Status:** ✅ EVIDENCE COMPLETE
 

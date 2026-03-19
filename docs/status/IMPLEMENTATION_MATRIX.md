@@ -1,12 +1,14 @@
 # Implementation Matrix
 
 Status: Active
-Last Updated: 2026-03-08
+Last Updated: 2026-03-19
 Owner: @t81dev
 
 Alignment truth. One row per subsystem. No narrative.
 
 Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`.
+
+Classification rule: implementation maturity is not the same thing as DCP / verified deterministic status. Promotion State reflects governance boundary status, not just feature completeness.
 
 ---
 
@@ -15,13 +17,22 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | Subsystem | Spec Reference | Spec Authority | Implementation Maturity | Promotion State | Spec-Impl Alignment | Drift Risk | Last Alignment Review | Owner | Target | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Data Types** | `spec/t81-data-types.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Audit 2026-02-27: `Cell` signed-overflow UB fixed, `T81Float` signed-zero canonicalized, `T81Map`/`T81Set` enforcement hardened. Documentation reorganization completed 2026-03-06. |
-| **TISC ISA** | `spec/tisc-spec.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-06 | @t81dev | N/A (maintain) | Frozen DCP surface. Freeze integrity enforced by `check_tisc_freeze_integrity.py`. Documentation reorganization completed 2026-03-06. |
-| **T81VM** | `spec/t81vm-spec.md` | Beta | Beta | Beta | Medium | Low | 2026-03-08 | @t81dev | 2026-04-15 | Non-JIT path DCP-verified. FW-02 closure landed: Axion opcode pre-dispatch moved outside main VM switch. RFC-0026 phase-1 extended: all six opcodes have runtime semantics. TLOADHASH null-canonfs SEGFAULT fixed (2026-03-08): null-guard with hash-format validation; `set_canonfs_root()` API added to `IVirtualMachine`; DecodeFault/BoundsFault taxonomy enforced. 332/332 tests passing. |
-| **T81Lang** | `spec/t81lang-spec.md` | Draft | **Beta** | Beta (impl) / Draft (spec) | Medium | Low | 2026-03-08 | @t81dev | 2026-05-15 | BG-06/BG-07/BG-08/BG-09 closed. Frontend refactor complete (2026-03-08): typed AST (`Expr::resolved_type`), unified builtin registry (`kBuiltinTable`, 130 entries), IRGen extracted to `ir_generator.cpp`; SA dispatch ordering fixed (table-driven fallback after custom handlers). 332/332 tests passing. |
-| **Axion Kernel** | `spec/axion-kernel.md` | Draft | **Beta** | Beta | Medium | Medium | 2026-03-10 | @t81dev | 2026-04-30 | §1.6/1.9 implemented (bounded). AX-M5..M7 evidence closures landed; pending Beta candidacy review cycle. §2.5 remains deferred. Documentation reorganization completed 2026-03-06. |
-| **T81Graph** | Surface inventory (non-normative) | Draft | Draft | Experimental | Medium | Medium | 2026-03-06 | @t81dev | 2026-05-15 | VM opcode lowering and lang-side serialization wiring complete with determinism coverage. Surface remains governed non-DCP until promotion. Documentation reorganization completed 2026-03-06. |
-| **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-03-08 | @t81dev | 2026-06-15 | Experimental, non-DCP. RFC-0000 §6 (2026-03-08): `TierId::Tier6` (T6561, 3^8) added; `MeshReflector`/`MonadState` types in `tier6/distributed_monad.hpp`; Θ₇ entropy containment gate; `promotion.cpp` Tier5→Tier6 promotion path. Tiers 0–6 now modelled. |
-| **Hanoi VM** | `spec/rfcs/RFC-0000` | Draft | **Alpha** | **Experimental** | Low | Medium | 2026-03-08 | @t81dev | 2026-06-30 | RFC-0000 §4 (2026-03-08): `Kernel::boot()` interface added; `InMemoryKernel` evaluates Θ₁–Θ₉ via `check_ethics()` before first spawn; 81-slot scheduler cap enforced (`Error::SchedulerFull`); `EthicsViolation`/`CapabilityDenied` traps in `vm::Trap` enum. Still experimental/non-DCP; no formal spec beyond RFC-0000 normative clauses. |
+| **TISC ISA** | `spec/tisc-spec.md` | **Frozen** | Implemented | **Verified** | High | Low | 2026-03-18 | @t81dev | N/A (maintain) | Frozen DCP surface. Freeze integrity enforced by `check_tisc_freeze_integrity.py`. RFC-0040 SWAR tensor opcodes `TNOT_SWAR`/`TAND_SWAR`/`TOR_SWAR` are now documented and covered in VM/JIT/spec/test surfaces. |
+| **T81VM** | `spec/t81vm-spec.md` | Stable | Stable | **Verified (interpreter DCP scope)** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Interpreter execution on the current supported-platform matrix is a verified deterministic surface. Broader VM-adjacent acceleration, backend substitution, and future lowering paths remain governed by RFC-0042..RFC-0047 rather than implied by implementation maturity. Review record: `docs/records/audits/T81VM_STABLE_PROMOTION_EVIDENCE_2026-03-15.md`. |
+| **T81Lang** | `spec/t81lang-spec.md` | **Stable** | Stable | **Governed non-DCP** | High | Low | 2026-03-19 | @t81dev | N/A (maintain) | Language-spec stability is closed, but the compiler/toolchain surface is not automatically a verified deterministic surface. Deterministic claims remain bounded to explicit evidence such as fixture-based compilation checks and registry-governed replay surfaces. Review record: `docs/records/audits/T81LANG_STABLE_PROMOTION_EVIDENCE_2026-03-16.md`. |
+| **Axion Governance Kernel** | `spec/axion-kernel.md` | Stable | Stable | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Important governance/runtime surface with substantial evidence and closed milestone slices. Experimental kernel epoch scheduler/audit parity is now CI-enforced through `axion-epoch-determinism`, but the broader kernel/governance behavior is not automatically a verified deterministic surface. Review record: `docs/records/audits/AXION_STABLE_PROMOTION_EVIDENCE_2026-03-15.md`. |
+| **T81Graph** | Surface inventory (non-normative) | Draft | Beta | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | VM opcode lowering and lang-side serialization are implemented with bounded evidence, but graph behavior is not yet promoted as a verified deterministic surface as a whole. |
+| **DPE (Parallel Execution)** | RFC-DPE-0001–0009 | **Accepted** | Stable | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Accepted deterministic execution model with epoch/task/history/audit machinery in place. Kernel pooled-vs-unbounded epoch parity is now CI-enforced in the experimental TernaryOS lane, while whole-surface promotion remains governed by the newer equivalence, memory, and scheduling RFC chain rather than implied by implementation completeness alone. |
+| **Cognitive Tiers** | `spec/cognitive-tiers.md` | Draft | Concept / Experimental | **Experimental** | Low | High | 2026-03-19 | @t81dev | 2026-06-15 | Experimental cognitive architecture with active implementation slices and tests. Experimental, non-DCP, non-verified unless promoted through governance. |
+| **Benchmark Suite** | RFC-00A2 | **Accepted** | Stable | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Performance and determinism-evidence tooling is implemented and important, but benchmark infrastructure is an enforcement/support surface rather than itself a DCP deterministic execution surface. |
+| **SIMD Tritwise Acceleration** | RFC-0041 | **Accepted** | Beta | **Governed non-DCP** | Medium | Medium | 2026-03-19 | @t81dev | 2026-04-15 | Core AVX2/NEON packed-trit kernels, threshold dispatch, tail fallback, and evidence are in place. Verified deterministic promotion depends on refreshed cross-architecture evidence and the RFC-0042 backend-equivalence chain. |
+| **TernaryOS User Environment** | RFC-00B9 | **Accepted** | Beta | **Governed non-DCP** | Low | Medium | 2026-03-19 | @t81dev | 2026-06-15 | Acceptance coverage is implemented in the opt-in TernaryOS build. The experimental kernel lane now hard-fails pooled-vs-unbounded epoch execution/audit divergence through `axion-epoch-determinism`, but this surface is not default-on and not currently a verified deterministic surface in the main release boundary. |
+| **Cross-Platform Determinism CI** | GitHub Actions | Non-normative | Accepted | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Cross-platform and proof-lane evidence automation is an enforcement surface that supports DCP and governed non-DCP claims; it is not itself the certified deterministic surface. Current examples include the core determinism slice and the `axion-epoch-determinism` kernel lane. |
+| **Hanoi VM** | `spec/rfcs/RFC-0000` | Draft | Alpha | **Experimental** | Low | Medium | 2026-03-19 | @t81dev | 2026-06-30 | Experimental kernel/runtime research surface with meaningful implementation progress, but still outside DCP and outside verified deterministic-surface status. |
+| **Ternary-Native Inference** | RFC-0034 + RFC-0037 | **Accepted** | Beta | **Governed non-DCP** | Medium | Medium | 2026-03-19 | @t81dev | 2026-06-15 | In-repo opcode/runtime/stdlib work is substantial and evidenced, but the inference vertical is broader than the currently verified deterministic boundary. Promotion remains evidence- and surface-specific. |
+| **Lattice Cryptography** | RFC-0038+0039 | **Accepted** | Stable | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Crypto opcode and stdlib work is implemented and stable in the product sense, but whole-vertical deterministic promotion should not be implied without surface-specific registry status. |
+| **Governed FFI** | RFC-00B8 + RFC-0036 | **Accepted** | Beta | **Governed non-DCP** | Medium | Medium | 2026-03-19 | @t81dev | 2026-05-15 | VM/language bridge is implemented end to end with bounded evidence, but broader schema/sandbox/policy questions keep the FFI surface outside verified deterministic status. |
+| **TUI Frontends** | RFC-0033 | **Accepted** | Beta | **Governed non-DCP** | Low | Low | 2026-03-19 | @t81dev | N/A (maintain) | Production-usable interfaces, but UI/runtime integration is not itself a verified deterministic surface. |
 | **Governed llama.cpp** | `docs/records/archive/project-reports/llama-governed-repro.md` (guidance) | Non-normative | Experimental | **Governed non-DCP** | Medium | Medium | 2026-02-28 | @t81dev | 2026-04-30 | Classified governed non-DCP (DEC-003). Practical reproducibility only. Promotion requires governed AGI pipeline. |
 
 ---
@@ -31,7 +42,7 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 | Layer | Paths | Determinism Status | Promotion State | Governance Gate |
 | :--- | :--- | :--- | :--- | :--- |
 | Deterministic Substrate | `core/types`, `core/isa`, `core/vm`, `include/t81/**` | DCP / registry Verified | Verified | Freeze enforcement + DCP release discipline |
-| Governance Kernel | `kernel/axion` | Partially verified, scope-bounded | Alpha | Axion evidence milestones + incident-response |
+| Governance Kernel | `kernel/axion` | Governed non-DCP, scope-bounded | Governed non-DCP | Axion evidence milestones + incident-response; broader kernel behavior still requires explicit promotion before stronger deterministic claims |
 | AGI Runtime / Research | `runtime/tracing`, `experimental/*`, cognitive tiers | Non-DCP unless promoted | Experimental | Governed AGI promotion pipeline |
 | Governed Inference | `third_party/llama.cpp`, `tooling/model/`, CLI `llama-run` | Governed non-DCP | Experimental | Governed AGI pipeline + release boundary classification |
 
@@ -54,9 +65,10 @@ Authority remains: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 - `docs/status/EXTENSION_PROFILE.md`
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 - `docs/governance/SPEC_AUTHORITY_MODEL.md`
+- `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
 - `docs/architecture/adr/`
 
 ## Versioning Statement
 
 Descriptive control artifact; does not override `/spec` or freeze policy.
-Experimental, non-DCP, non-verified unless promoted through governance
+This matrix is descriptive and must not be read as granting DCP / verified deterministic status beyond the registry and governance boundary documents.

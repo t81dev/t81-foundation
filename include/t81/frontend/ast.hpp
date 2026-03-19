@@ -64,6 +64,8 @@ struct LoopStmt;
 struct TypeDecl;
 struct RecordDecl;
 struct EnumDecl;
+struct AgentDecl;
+struct ForeignDecl;
 
 // --- Base Classes ---
 
@@ -135,6 +137,8 @@ public:
   virtual std::any visit(const TypeDecl& stmt) = 0;
   virtual std::any visit(const RecordDecl& stmt) = 0;
   virtual std::any visit(const EnumDecl& stmt) = 0;
+  virtual std::any visit(const AgentDecl& stmt) = 0;
+  virtual std::any visit(const ForeignDecl& stmt) = 0;
 };
 
 // --- Expression Nodes ---
@@ -605,7 +609,8 @@ struct FunctionStmt : Stmt {
   FunctionStmt(Token name, std::vector<Token> generic_params, std::vector<Parameter> params,
                std::unique_ptr<TypeExpr> return_type, std::vector<std::unique_ptr<Stmt>> body,
                std::optional<std::int64_t> tier = std::nullopt, bool is_pure = false,
-               bool is_axion_verify = false, bool is_attention = false, bool is_qmatmul = false)
+               bool is_axion_verify = false, bool is_attention = false, bool is_qmatmul = false,
+               bool is_ternary_inference = false)
       : name(name),
         generic_params(std::move(generic_params)),
         params(std::move(params)),
@@ -615,7 +620,8 @@ struct FunctionStmt : Stmt {
         is_pure(is_pure),
         is_axion_verify(is_axion_verify),
         is_attention(is_attention),
-        is_qmatmul(is_qmatmul) {}
+        is_qmatmul(is_qmatmul),
+        is_ternary_inference(is_ternary_inference) {}
 
   std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
 
@@ -629,6 +635,7 @@ struct FunctionStmt : Stmt {
   const bool is_axion_verify{false};
   const bool is_attention{false};  // @attention — RFC-0026 AI-M6: lower call sites to ATTN
   const bool is_qmatmul{false};    // @qmatmul  — RFC-0026 AI-M6: lower call sites to QMATMUL
+  const bool is_ternary_inference{false};  // @ternary_inference — lower compatible AI calls to RFC-0034 ops
 };
 
 struct TypeDecl : Stmt {
@@ -684,6 +691,48 @@ struct EnumDecl : Stmt {
   const std::vector<Variant> variants;
   const std::optional<std::int64_t> schema_version;
   const std::optional<std::string> module_path;
+};
+
+/// RFC-0015 §3.2 — A single named behavior within an agent declaration.
+/// Mirrors FunctionStmt but scoped to its parent AgentDecl.
+struct BehaviorDecl {
+  Token name;
+  std::vector<Parameter> params;
+  std::unique_ptr<TypeExpr> return_type;
+  std::vector<std::unique_ptr<Stmt>> body;
+};
+
+/// RFC-0015 §3.1 — Top-level agent declaration.
+/// Syntax: agent <Name> { behavior <name>(<params>) -> <type> { ... } ... }
+struct AgentDecl : Stmt {
+  AgentDecl(Token name, std::vector<BehaviorDecl> behaviors)
+      : name(name), behaviors(std::move(behaviors)) {}
+
+  std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+  const Token name;
+  std::vector<BehaviorDecl> behaviors;
+};
+
+/// RFC-0036 §3.1 — A single foreign function signature inside a `foreign {}` block.
+/// Syntax: fn <name>(<params>) -> <type>;
+struct ForeignFn {
+  Token name;
+  std::vector<Parameter> params;
+  std::unique_ptr<TypeExpr> return_type;
+};
+
+/// RFC-0036 §3.2 — Top-level foreign block declaration.
+/// Syntax: foreign [deterministic|governed|quarantined] { fn <name>(...) -> T; ... }
+struct ForeignDecl : Stmt {
+  ForeignDecl(Token keyword, std::string policy, std::vector<ForeignFn> functions)
+      : keyword(keyword), policy(std::move(policy)), functions(std::move(functions)) {}
+
+  std::any accept(StmtVisitor& visitor) const override { return visitor.visit(*this); }
+
+  const Token keyword;
+  std::string policy;  // "deterministic" | "governed" | "quarantined" | ""
+  std::vector<ForeignFn> functions;
 };
 
 }  // namespace frontend

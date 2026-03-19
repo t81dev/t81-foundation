@@ -149,6 +149,14 @@ enum class Opcode {
   TNEURAL_FWD,
   TNEURAL_BWD,
 
+  // RFC-0034 §5.17 — Ternary-Native Inference Operations (RFC-0037 T81Lang surface)
+  TWMATMUL,   // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT,     // Quantize to ternary:    TQUANT   RD, R_SRC, R_THR
+  TATTN,      // Ternary Q/K attention:  TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED,    // Ternary embed lookup:   TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM,  // Ternary dot product:    TERNACCUM RD, R_WT, R_ACT
+  TACT,       // Ternary activation:     TACT     RD, R_SRC, R_MODE
+
   // Bitwise
   BITAND,
   BITOR,
@@ -197,6 +205,25 @@ enum class Opcode {
 
   // Axion Verification
   AXVERIFY,
+
+  // TISC v0.4 vector helpers (RFC-0005 §2.2 + §2.4)
+  VLOAD,           // VLoad RD, RS_SRC, RS_SHAPE   — reshape RS_SRC to RS_SHAPE
+  VSTORE,          // VStore RD, RS_SRC, RS_SHAPE  — shape-validated copy of RS_SRC
+  VADD,            // VAdd RD, RS1, RS2             — elementwise add on handles
+  VFMA,            // VFma RD, RS1, RS2             — RD = RS1*RS2 + RD (mul-accumulate)
+  READ_ISA_VERSION, // ReadIsaVersion RD            — RD = 4 (TISC v0.4)
+
+  // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
+  AGENT_INVOKE,  // AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
+
+  // RFC-0036 — Governed foreign function call
+  FFI_CALL,  // FFICall RD, arg_count  — text_literal carries the function name
+
+  // RFC-0038 — Ternary Lattice Cryptography Primitives
+  POLYMUL,  // Negacyclic poly multiply: POLYMUL RD, R_A, R_B
+  POLYMOD,  // Centered reduction mod q: POLYMOD RD, R_A, R_Q
+  // RFC-0039 — NTRU-KEM polynomial ring arithmetic
+  TVECSUB,  // Elementwise tensor subtraction: TVECSUB RD, RA, RB
 
   // Pseudo-instructions
   LABEL

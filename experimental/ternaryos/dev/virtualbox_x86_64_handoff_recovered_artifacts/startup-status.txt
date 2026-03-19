@@ -1,0 +1,3 @@
+AXION_STARTUP_STATUS_PLACEHOLDER
+Replace this file with the real guest-produced startup-status.txt recovered
+from the external x86_64 VirtualBox validation host.

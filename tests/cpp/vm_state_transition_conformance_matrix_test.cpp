@@ -1,9 +1,11 @@
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include "t81/isa/program.hpp"
+#include "t81/tensor.hpp"
 #include "t81/vm/vm.hpp"
 
 namespace {
@@ -92,6 +94,26 @@ RunSummary run_and_summarize(const t81::tisc::Program& program, std::size_t max_
     sig = mix(sig, static_cast<std::uint64_t>(entry.opcode));
     sig = mix(sig, entry.trap.has_value() ? static_cast<std::uint64_t>(entry.trap.value()) : 0ULL);
   }
+  sig = mix(sig, st.tensors.size());
+  for (const auto& slot : st.tensors) {
+    sig = mix(sig, slot.has_value() ? 1ULL : 0ULL);
+    if (!slot.has_value()) {
+      continue;
+    }
+    sig = mix(sig, static_cast<std::uint64_t>(slot->numeric_class()));
+    sig = mix(sig, slot->canonical_fixed_authoritative() ? 1ULL : 0ULL);
+    sig = mix(sig, slot->shape().size());
+    for (int dim : slot->shape()) {
+      sig = mix(sig, static_cast<std::uint64_t>(dim));
+    }
+    sig = mix(sig, slot->data().size());
+    for (float value : slot->data()) {
+      std::uint32_t bits = 0;
+      static_assert(sizeof(bits) == sizeof(value));
+      std::memcpy(&bits, &value, sizeof(bits));
+      sig = mix(sig, static_cast<std::uint64_t>(bits));
+    }
+  }
   out.signature = sig;
   return out;
 }
@@ -134,6 +156,61 @@ t81::tisc::Program make_option_result_program() {
   return p;
 }
 
+t81::tisc::Program make_tensor_visibility_program() {
+  t81::tisc::Program p;
+  p.tensor_pool.push_back(t81::T729DynamicTensor({3}, {1.0f, 2.0f, 3.0f}));
+
+  t81::tisc::Insn load_tensor{t81::tisc::Opcode::LoadImm, 1, 1, 0};
+  load_tensor.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  p.insns.push_back(load_tensor);
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 2, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 17, 0});
+  p.insns.push_back({t81::tisc::Opcode::TSet, 1, 2, 3});
+  p.insns.push_back({t81::tisc::Opcode::TGet, 4, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::F2I, 5, 4, 0});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+  return p;
+}
+
+t81::tisc::Program make_tensor_bounds_fault_program() {
+  t81::tisc::Program p;
+  p.tensor_pool.push_back(t81::T729DynamicTensor({2}, {8.0f, 9.0f}));
+
+  t81::tisc::Insn load_tensor{t81::tisc::Opcode::LoadImm, 1, 1, 0};
+  load_tensor.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  p.insns.push_back(load_tensor);
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 5, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 99, 0});
+  p.insns.push_back({t81::tisc::Opcode::TSet, 1, 2, 3});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+  return p;
+}
+
+t81::tisc::Program make_tensor_write_kind_transition_program() {
+  t81::tisc::Program p;
+  p.tensor_pool.push_back(t81::T729DynamicTensor({3}, {1.0f, 2.0f, 3.0f}));
+
+  t81::tisc::Insn load_tensor{t81::tisc::Opcode::LoadImm, 1, 1, 0};
+  load_tensor.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+  p.insns.push_back(load_tensor);
+
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 3, 6, 0});
+  p.insns.push_back({t81::tisc::Opcode::I2F, 4, 3, 0});
+  p.insns.push_back({t81::tisc::Opcode::TSet, 1, 2, 4});
+
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 5, 2, 0});
+  p.insns.push_back({t81::tisc::Opcode::LoadImm, 6, 8, 0});
+  p.insns.push_back({t81::tisc::Opcode::TSet, 1, 5, 6});
+
+  p.insns.push_back({t81::tisc::Opcode::TGet, 7, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::F2I, 8, 7, 0});
+  p.insns.push_back({t81::tisc::Opcode::TGet, 9, 1, 5});
+  p.insns.push_back({t81::tisc::Opcode::F2I, 10, 9, 0});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+  return p;
+}
+
 }  // namespace
 
 int main() {
@@ -148,6 +225,11 @@ int main() {
       {"arith-stack", make_arith_stack_program(), true, t81::vm::Trap::None},
       {"loop-memory", make_loop_memory_program(), true, t81::vm::Trap::None},
       {"option-result", make_option_result_program(), true, t81::vm::Trap::None},
+      {"tensor-visibility", make_tensor_visibility_program(), true, t81::vm::Trap::None},
+      {"tensor-write-kind-transition", make_tensor_write_kind_transition_program(), true,
+       t81::vm::Trap::None},
+      {"tensor-bounds-fault", make_tensor_bounds_fault_program(), false,
+       t81::vm::Trap::BoundsFault},
   };
 
   for (const auto& c : cases) {

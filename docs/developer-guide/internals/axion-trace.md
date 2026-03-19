@@ -230,7 +230,7 @@ predicates change. They exercise the `(require-match-guard ...)` and
 `stack frame allocated` strings so you can prove the policy engine sees the
 exact same Axion trace that the CLI, CanonFS, and auditors depend on.
 
-For more context, see `docs/guides/cli-toolkit.md` and `spec/axion-kernel.md`.
+For more context, see `docs/user-guide/reference/cli-user-manual.md` and `spec/axion-kernel.md`.
 
 ## 5. Policy runner trace
 

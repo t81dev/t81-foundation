@@ -1,0 +1,8 @@
+AXION_STARTUP_SHELL
+prompt=axion> 
+mode=typed-builtins
+commands=help,profile,name set <label> <ref>,name ls,object pin <kind> <name> <ref>,object ls,object show <name>,session status,session checkpoint,session export,session import <ref>,session diff <ref>,session run <ref>,session show durable,session refs,show profile,show session,show ref <canonref>,store put <text>,store put script <line>|<line>|...>,store put ref <ref>,store cp <ref>,store ls,store get <ref>,store rm <ref>,history,history show session,history show object <ref>,history use <ref>,history show durable,clear
+history_anchor=durable
+session_view=local+durable
+durable_ref_count=1
+session_command_count=6

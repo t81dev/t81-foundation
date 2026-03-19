@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________

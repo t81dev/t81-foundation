@@ -25,11 +25,19 @@ int compile(const std::filesystem::path& input, const std::filesystem::path& out
 int run_tisc(const std::filesystem::path& path,
              const std::optional<std::filesystem::path>& policy_path = std::nullopt,
              bool trace_enabled = false,
-             const std::optional<std::filesystem::path>& trace_output_path = std::nullopt);
+             const std::optional<std::filesystem::path>& trace_output_path = std::nullopt,
+             const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr);
 int disasm_tisc(const std::filesystem::path& path);
 int debug_tisc(const std::filesystem::path& path,
-               const std::optional<std::filesystem::path>& policy_path = std::nullopt);
+               const std::optional<std::filesystem::path>& policy_path = std::nullopt,
+               const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr);
 int check_syntax(const std::filesystem::path& path);
+std::optional<std::filesystem::path> resolve_repo_model_path(
+    std::string_view selector, const std::vector<std::string>& allowed_extensions = {},
+    std::string* error_message = nullptr);
+std::shared_ptr<t81::weights::ModelFile> load_weights_model(
+    std::string_view selector, std::string* error_message = nullptr,
+    std::optional<std::filesystem::path>* resolved_path = nullptr);
 int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model = nullptr,
          const std::optional<std::filesystem::path>& policy_path = std::nullopt,
          std::istream& input = std::cin);

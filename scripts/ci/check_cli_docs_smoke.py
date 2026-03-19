@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute marked CLI examples from docs/guides/cli-user-manual.md."""
+"""Execute marked CLI examples from the current CLI user manual."""
 
 from __future__ import annotations
 
@@ -53,7 +53,7 @@ def main() -> int:
     parser.add_argument(
         "--manual",
         type=Path,
-        default=Path("docs/guides/cli-user-manual.md"),
+        default=Path("docs/user-guide/reference/cli-user-manual.md"),
         help="Path to CLI manual markdown file.",
     )
     parser.add_argument(

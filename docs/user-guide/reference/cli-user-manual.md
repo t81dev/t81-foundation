@@ -38,8 +38,8 @@ it is not part of the stable public automation contract.
 Support boundary:
 
 - Domain-first command families such as `code`, `project`, `env`, `canonfs`,
-  `determinism`, `vm`, `tisc`, `ir`, `weights`, `policy`, `axion`, and `trace`
-  are the primary supported operator surface.
+  `determinism`, `vm`, `tisc`, `ir`, `weights`, `policy`, `axion`, `trace`,
+  `studio`, `agent`, and `ui` are the primary supported operator surface.
 - `internal ...` commands are available, but they are operations-focused or
   experimental and should not be treated as beginner or long-term product UX.
 - `llama-run` is explicitly experimental and non-DCP.
@@ -170,6 +170,7 @@ t81 code test [options] [-- <ctest args...>]
 t81 code disasm <file.tisc>
 t81 code debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
 t81 code repl [--weights-model <model.t81w>] [--policy <policy.apl>]
+t81 repl [--weights-model <model.t81w>] [--policy <policy.apl>]
 t81 canonfs put-file <file> [--canonfs-root <path>]
 t81 canonfs put-tensor <file> [--canonfs-root <path>]
 t81 canonfs ls [--json] [--canonfs-root <path>]
@@ -214,15 +215,27 @@ t81 ir show <file.t81>
 t81 ir dump <file.t81>
 t81 ir validate <file.t81> [--json]
 t81 ir export <file.t81> [--json] [-o <file>]
+t81 c <subcommand> [args]
+t81 c compile <input.c> [-o <output>] [options]
 t81 c compile <file.c> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 rust <subcommand> [args]
+t81 rust compile <input.rs> [-o <output>] [options]
 t81 rust compile <file.rs> [-o <file.mlir>] [--emit mlir] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 python <subcommand> [args]
+t81 python compile <input.py> [-o <output>] [options]
+t81 llvm <subcommand> [args]
+t81 llvm compile <input.tisc|input.t81> -o <output> [options]
 t81 llvm compile <file.t81|file.tisc> [-o <file.ll|file.bc>] [--bitcode] [--no-comments]
+t81 mlir <subcommand> [args]
+t81 mlir <subcommand> <input> [-o <output>] [options]
 t81 mlir compile <file.t81|file.tisc> [-o <file.mlir>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
 t81 mlir lower <file.mlir> [-o <file.ll>]
 t81 mlir pipeline <file.t81|file.tisc> [-o <file.ll>] [--mode <compat|dcp>] [--dialect <standard|t81>] [--no-comments]
+t81 tier <info|check|gate> [args]
 t81 tier info [--json]
 t81 tier check <file.tisc> [--json]
 t81 tier gate <file.tisc> --max-tier <n> [--json]
+t81 tensor <subcommand> [args]
 t81 tensor canonize <file>
 t81 tensor hash <file> [--json]
 t81 tensor inspect <model.t81w> [--json]
@@ -253,11 +266,14 @@ t81 trace stats <trace.txt> [--json]
 t81 trace filter <trace.txt> [--opcode <name>] [--trap <name>] [--pc-start <n>] [--pc-end <n>] [--json]
 t81 trace canonicalize <trace.txt> [-o <file>]
 t81 trace export <trace.txt> [--format <json|csv>] [-o <file>]
+t81 studio
+t81 agent [--resume <f>] [--session <f>]
+t81 ui
 t81 project init <project_name>
 t81 project build [file.t81]
 t81 project run [file.t81] [--policy <p>]
 t81 project test [options]
-t81 repl
+t81 repl [--weights-model <model.t81w|sha3-256:hash>] [--policy <policy.apl>]
 t81 env check [--json]
 t81 env doctor [toolchain|canonfs|vm] [--json]
 t81 env paths [--json]
@@ -433,10 +449,13 @@ state file or a recorded active snapshot that no longer exists.
 `axion optimize` captures a fresh snapshot, records the requested tier, and reports manifest
 delta counts against the previous active snapshot.
 `axion log` reads the persisted Axion state from `<canonfs-root>/axion/state.json` and
-prints the current tier, active snapshot, and recent snapshot receipts. `--tail <n>` limits
-output to the last `n` entries. `--json` uses schema `t81.axion-log.v1`.
+prints the current tier, active snapshot, and recent snapshot history. `--tail <n>` limits
+output to the last `n` entries. `--json` uses schema `t81.axion-log.v1` and currently reports
+`receipt_persistence: "not_persisted"` because receipt storage is not implemented in the current
+release line.
 `axion audit` defaults to diffing the recorded active snapshot against the latest snapshot,
-which makes it useful as a quick “what changed since last governor state” check.
+which makes it useful as a quick “what changed since last governor state” check. The JSON surface
+also reports `receipt_persistence: "not_persisted"` for the same reason.
 `axion explain --json` uses schema `t81.axion-explain.v1`.
 `axion status --json` uses schema `t81.axion-status.v1`.
 `axion optimize --json` uses schema `t81.axion-optimize.v1`.

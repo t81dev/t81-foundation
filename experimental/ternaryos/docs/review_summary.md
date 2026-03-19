@@ -1,0 +1,415 @@
+# Axion Phase 4 Review Summary
+
+## Current State
+
+Working release label: `Axion v0.1.0-alpha`
+
+Axion Phases 1 through 3 are implemented and passing. Phase 4 is implemented
+as a VirtualBox-first hosted simulation path with guest-owned storage, network,
+and display seams:
+
+Naming note:
+
+- `Axion` is the OS name
+- `T81 Foundation` remains the umbrella project name
+- `T81VM`, `CanonFS`, and `TISC` remain subsystem/runtime names
+
+- storage: `AHCI`-shaped binding over `IBlockDevice`
+- network: `E1000`-shaped binding over ternary packet/frame translation
+- display: `VMSVGA`-shaped binding over the ternary framebuffer + TTF renderer
+
+The next kernel-integration path is now explicit in
+[RFC-00B3: Axion OS Architecture](../../../spec/rfcs/RFC-00B3-axion-kernel-architecture.md).
+
+The official promotion target remains:
+
+- `x86_64`
+- `VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC`
+
+The next kernel slice is now tracked explicitly in:
+
+- [kernel_execution_plan.md](kernel_execution_plan.md)
+
+The broader structural assessment and follow-on refactor plan now live in:
+
+- [kernel_architecture_audit.md](kernel_architecture_audit.md)
+- [kernel_engineering_follow_on_plan.md](kernel_engineering_follow_on_plan.md)
+
+## What Is Proven Locally
+
+Hosted proof is strong on the current branch:
+
+- all 8 TernOS test binaries pass
+- total assertions: `3807`
+- `t81_ternaryos_hal_boot_test`: `2931/2931`
+- `t81_ternaryos_device_driver_test`: `342/342`
+- `t81_ternaryos_shell_session_test`: `183/183`
+- `t81_ternaryos_scheduler_test`: `120/120`
+- `t81_ternaryos_ipc_test`: `73/73`
+- `t81_ternaryos_mmu_test`: `87/87`
+- `t81_ternaryos_context_switch_test`: `43/43`
+- `t81_ternaryos_page_alloc_test`: `28/28`
+
+Kernel integration proof now also includes:
+
+- a real `hal_main -> axion_kernel_main(...)` handoff
+- kernel-visible MMU fault reporting with deterministic `InvalidTva`,
+  `Unmapped`, and `PermissionDenied` classification
+- a persistent kernel runtime state seeded from `BootContext`, now owning the
+  allocator, page table, scheduler substrate, IPC bus, and fault log
+- active device arbitration for the supported VBox EFI/AHCI/E1000/VMSVGA
+  profile attached to that same runtime boundary
+- deterministic scheduler dispatch and CanonRef-safe IPC execution flowing
+  through that same runtime-owned kernel state
+- a deterministic kernel-step loop with runtime counters and active AHCI claim/release behavior
+- deterministic FIFO fault delivery from the kernel loop over recorded MMU faults
+- delivered MMU faults now route into per-thread runtime state, quarantining the faulting thread and preserving a thread-local fault inbox
+- the owning process group now enters a blocked fault state and must be explicitly acknowledged before a drained thread inbox can recover
+- audit-only governance events are now recorded deterministically for fault delivery, quarantine, process-group fault entry, acknowledgement, and recovery
+- supervisor-facing recovery/report status is now exposed through the same service boundary, including pending-group state, acknowledgement counts, recovered-group counts, and deterministic last-acknowledged/last-recovered group tracking
+- deterministic device claim/release requests now exist through that same service boundary, with healthy groups allowed to arbitrate devices and faulted groups rejected consistently
+- request-side and action-side rejection semantics are now explicit across the stable kernel service boundary
+- stable audit summaries and per-device ownership details are now exposed through that same service boundary for healthy callers
+- a first kernel-owned service runtime layer now exists above the current supervisor/process-group contract, now including deterministic service registration, deterministic service unregister, stable service detail, and richer supervisor-owned inventory
+- that service-runtime layer now also includes deterministic service suspend/resume with stable suspended-state diagnostics in service detail and supervisor inventory views
+- same-supervisor process groups can now suspend/resume managed services through the same stable action surface without widening into a new ABI
+- explicit service health transitions now exist through that same stable action surface, exposing unhealthy-state diagnostics and deterministic unavailable-service rejection
+- successful service lifecycle transitions are now visible through the same deterministic audit summary surface
+- supervisor-owned inventory now also retains the latest managed-service lifecycle transition metadata
+- compact supervisor status now also exposes managed-service lifecycle counts and latest-transition metadata
+- supervisor recovery status now also exposes managed-service lifecycle counts and latest-transition metadata
+- fault summary now also exposes managed-service lifecycle counts and latest-transition metadata
+- runtime status now also exposes managed-service lifecycle counts and latest-transition metadata
+- audit summary now also exposes managed-service lifecycle counts and latest-transition metadata
+- device summary now also exposes managed-service lifecycle counts and latest-transition metadata
+- service status now also exposes the latest service lifecycle kind and sequence
+- supervisor inventory entries now also expose each managed service's latest
+  lifecycle kind and sequence
+- process groups now also bind to explicit kernel-owned address spaces
+- runtime, process-group, supervisor, and service diagnostics now also expose
+  address-space ownership plus mapped-page counts
+- the internal pager worker now applies a bounded ready-bypass rule: one
+  unresolved FIFO head can be bypassed once, and later ready items are then
+  deferred behind it until that head resolves
+- once that cap fires, the worker now parks instead of activating the same
+  unresolved head into a redundant stall cycle
+- repeated parked cycles are now retained explicitly with the latest blocked
+  head, ready queued item, and ready-count seen while the worker stays parked
+- ready-bypass deferrals now count one parked episode for that blocked head,
+  while parked-cycle counters capture how long the worker remained parked
+- parked worker state now also exposes the live ready backlog trapped behind
+  that blocked head, plus a retained high-water mark for that parked backlog
+- parked worker state now also retains explicit parked-resumption transitions
+  once that blocked head becomes ready again
+- parked resumptions now also retain how much ready work was still queued
+  behind the resumed blocked head at that transition point
+- parked resumptions now also retain the concrete queued handoff that remained
+  ready behind that resumed blocked head
+- parked resumptions now also retain the resumed blocked head's own handoff
+  ordinal, so the full two-sided resumption snapshot is explicit
+- the parked path now also retains when that resumed blocked head actually
+  resolves, including its handoff and resolution ordinals
+- parked-head resolution now also retains the queued work still remaining
+  behind that head at the instant it drained
+- the first activation after a parked-head resolution is now retained
+  explicitly, linking the drained head to its deterministic queued successor
+- that queued successor is now also retained through completion, closing the
+  parked-path transition chain from drained head to successor resolution
+- a once-bypassed parked head now also becomes terminal after a fixed number
+  of repeated parked cycles, is removed from the worker queue, and remains
+  explicitly visible through retained terminal-failure diagnostics
+- explicitly marked boot-critical address spaces now auto-map their missing
+  page through a kernel-owned policy path, resolving the blocked head first
+  and retaining that boot-critical resolution in runtime/fault diagnostics
+- runtime and fault summaries now also expose explicit boot-progress/fail state:
+  boot-critical pending counts, boot-critical terminal counts, and direct
+  pending/blocked booleans for the current boot lane
+- that closes the current internal boot-ready kernel slice; the next move is
+  outward to external boot-lane validation rather than more internal pager
+  surface growth
+- the RFC-00B5 interrupt summary-convergence slice is now complete as well:
+  explicit interrupt event intake, deterministic loop delivery after faults,
+  stable runtime/fault/audit queue visibility, per-source accounting, latest
+  interrupt-audit metadata, and record-level intake/delivery provenance now
+  exist without a public interrupt ABI
+- interrupt queue observability is now retained too: latest recorded interrupt,
+  pending-queue high-water mark, and FIFO-head visibility through the same
+  stable summaries
+- deterministic source accounting is now retained too for the current
+  interrupt classes, without introducing priority or controller policy
+- pending interrupt queue composition is now visible too through stable
+  runtime/fault summaries, still without priority or masking semantics
+- pending interrupt queue bounds are now visible too through the same stable
+  summaries: both FIFO head and FIFO tail can be inspected without policy
+  widening
+- stable interrupt-audit correlation is now retained too through those
+  summaries, so the latest interrupt delivery can be matched to its audit
+  sequence without scanning the recent log
+- the typed, wire, TVA-backed, and hosted C ABI layers now support named
+  thread entry registration/spawn and service-owned thread entry spawn
+- `RegisterService` can now retain a service-owned entry descriptor, and
+  `SpawnThreadForService` can execute it inside the owning process group
+- process groups can now also register CanonRef-backed executable objects,
+  query them later, and spawn threads from them through typed, wire, and
+  hosted C ABI entry modes
+- executable registration now validates a canonical `CanonExec` block against
+  the supplied `CanonRef`, so executable objects are no longer only synthetic
+  ref/descriptor records
+- executable objects can now also be registered from mapped caller memory,
+  giving the ABI its first real executable acquisition path over the caller
+  address-space boundary
+- the kernel now also has a bindable `CanonStore`-backed published
+  executable repository, so later executable registration can resolve a
+  validated image by `CanonRef` without requiring the caller to keep the
+  source bytes live, and a fresh kernel can reload that repository from the
+  same external block-device image
+- the kernel can now also resolve those published executable objects directly
+  from a persistent CanonFS root when one is bound, which is the first real
+  CanonFS-backed executable fetch path in the kernel
+- the hosted bootstrap path now auto-attaches that CanonFS executable source
+  from `T81_CANONFS_ROOT`, so the default hosted policy no longer requires an
+  explicit bind call in order to resolve executable objects by `CanonRef`
+- the kernel can now also adopt the VirtualBox guest storage binding as the
+  published executable store, which is the first guest-storage-backed
+  executable object source in the Axion lane
+- those executable-object wire and hosted C responses now also carry the
+  stored executable entry descriptor, not only the CanonRef
+- services can now bind to those registered executable objects by CanonRef,
+  and the service register/query/spawn ABI paths now preserve that backing
+  executable identity
+- **Slice 1A** — real executable section load is now proven: a spawned
+  thread's entry PC is backed by a mapped read+execute ternary page populated
+  from the CanonExec image block; re-spawn reuses the existing mapped page
+  without double-allocation (`[AC-22h]`, 24 assertions)
+- **Slice 2** — blocking IPC is now proven: `BlockOnIpcReceive` parks a
+  thread on an empty inbox via the scheduler sleep/wake API; `SendMessage`
+  wakes any IPC-blocked receiver after delivery; fast-path (message already
+  present) returns immediately without sleeping; runtime status view exposes
+  `ipc_blocks`, `ipc_wakes`, `ipc_blocked_thread_count` (`[AC-22i]`,
+  45 assertions)
+- **Slice 3** — device-wake interrupts are now proven: `WaitForDevice(source)`
+  parks a thread in `device_waiting_tids[source]`; Storage and Network interrupt
+  delivery sends a synthetic `CanonMessage` (tag `"device-wake"`, payload =
+  interrupt sequence) and wakes each waiting thread; Keyboard remains
+  accounting-only; runtime status view exposes `device_wakes` and
+  `device_waiting_thread_count` (`[AC-22j]`, 43 assertions)
+- audit-summary interrupt queue alignment is now retained too: pending
+  interrupt count, pending source composition, and FIFO head/tail visibility
+  are exposed there alongside interrupt history
+- audit-summary interrupt accounting is now aligned too: the aggregate
+  recorded interrupt count is exposed there alongside delivered counts and
+  per-source counters
+- interrupt intake is now audit-visible too: `InterruptRecorded` events are
+  emitted when inputs enter the kernel-owned FIFO, not only when they are
+  later delivered
+- stable interrupt-intake audit correlation is now retained too through the
+  same summaries, so the latest recorded interrupt can be matched to its audit
+  sequence without scanning the recent log
+- latest interrupt audit kind is now retained too through those summaries, so
+  callers can tell whether the newest interrupt-related audit event was intake
+  or delivery without scanning the log
+- interrupt records now retain their own intake provenance too, so pending and
+  delivered queue entries can be matched directly to their `InterruptRecorded`
+  audit sequence
+- delivered interrupt records now retain their own delivery provenance too, so
+  dispatched entries can also be matched directly to their
+  `InterruptDelivered` audit sequence
+- stable latest delivery correlation is now retained too through the summaries,
+  so later interrupt intake does not erase direct access to the latest
+  `InterruptDelivered` audit sequence
+- latest interrupt audit target retention is now present too, so the summaries
+  expose which interrupt sequence the newest interrupt-related audit event
+  refers to
+- latest interrupt audit source retention is now present too, so the summaries
+  expose the interrupt source class targeted by the newest interrupt-related
+  audit event
+- latest interrupt audit payload retention is now present too, so the summaries
+  expose the payload carried by the newest interrupt-related audit event
+- latest interrupt audit timestamp retention is now present too, so the
+  summaries expose the timestamp carried by the newest interrupt-related audit
+  event
+- delivered `Unmapped` faults now also mark the owning address space as
+  pager-needed, while `PermissionDenied` and `InvalidTva` remain explicit
+  policy failures
+- runtime, process-group, service, supervisor, and fault diagnostics now also
+  expose pager-needed address-space state and fault counts
+- pager-needed address spaces now also enter a deterministic internal handoff
+  queue, and diagnostics now distinguish handoff-pending from
+  handoff-dispatched state
+- once the missing mapping appears, the kernel loop now resolves one
+  handed-off pager-needed address space at a time and diagnostics expose that
+  resolved state
+- a first kernel-owned pager worker now also exists, with a FIFO inbox and one
+  active work item for deterministic repeated pager cycles
+- repeated unresolved faults on a worker-owned address space now coalesce
+  instead of creating duplicate pager work items, and diagnostics expose that
+  worker-owned/coalesced state
+- runtime and fault diagnostics now also retain pending-handoff and worker-inbox
+  high-water marks plus worker activation counts, and HAL coverage proves FIFO
+  backlog handling across two queued address spaces
+- runtime and fault diagnostics now also retain worker stall cycles and the
+  narrower backlog-blocked subset when FIFO ordering holds queued work behind
+  an unresolved active item
+- runtime and fault diagnostics now also retain the ready-behind-active subset
+  when queued work is already mappable behind that stalled active item
+- runtime and fault diagnostics now also expose current ready-backlog depth and
+  its retained high-water mark under that same FIFO pressure
+- runtime and fault diagnostics now also retain the stalled active address
+  space alongside the ready queued address space it was blocking
+- runtime and fault diagnostics now also retain the ordinal of the latest
+  stall event that produced that blocker/blocked relationship
+- runtime and fault diagnostics now also retain the exact stall ordinal that
+  exposed the retained ready queued address space
+- runtime and fault diagnostics now also retain the ready-backlog depth
+  observed at that same stall event
+- runtime and fault diagnostics now also retain the last activated address
+  space and activation ordinal after the worker goes idle
+- runtime and fault diagnostics now also retain the last received
+  pager-worker address space and handoff ordinal after the inbox drains
+- runtime and fault diagnostics now also expose the active pager-worker
+  handoff ordinal while work remains in flight
+- runtime and fault diagnostics now also expose the queued-head pager-worker
+  address space and handoff ordinal while work remains in the inbox
+- when the worker is idle and the FIFO head is unresolved, the kernel now
+  selects the earliest already-ready queued item instead of activating the
+  blocked head first
+- runtime and fault diagnostics now also retain the last completed
+  pager-worker address space and resolution ordinal after the worker goes idle
+- the supervisor/service-runtime convergence slice is now complete for the
+  current contract surface
+- the first process-memory ownership slice is now complete as well
+- the first pager-groundwork slice is now complete as well
+- the second pager-groundwork slice is now complete as well
+- the third pager-groundwork slice is now complete as well
+- the fourth pager-groundwork slice is now complete as well
+- the next interrupt-facing kernel slice is no longer another summary field;
+  it is actual RFC-00B5 policy and handler behavior on top of the now-closed
+  interrupt summary-convergence surface, still without a broad ABI or syscall
+  surface
+
+Phase 4 storage proof now covers:
+
+- reboot persistence through the VirtualBox guest bootstrap path
+- recovery after header corruption
+- recovery after torn-header metadata
+- metadata scaling beyond the original 17-entry root-header threshold
+- interrupted-flush durability semantics
+
+Other locally proven Phase 4 behavior:
+
+- TTF text rendering into the guest display path
+- ternary ethernet packet/frame round-trip through the guest network path
+
+ARM diagnostic result:
+
+- local QEMU AArch64 + EDK2 does execute the ARM EFI control app and is now
+  the primary local developer lane
+- local QEMU AArch64 can also boot-probe the staged ARM guest image and inspect
+  its execution markers directly; current probes show the staged image reaches
+  `BOOTAA64.EFI` without needing shell fallback and writes a boot report with
+  `hal_main_result=0`, `kernel_boot_ready_slice=complete`, and
+  `boot_progress_state=ready`
+- local QEMU serial output now also includes `Axion ARMv8 EFI stub`, giving the
+  staged ARM guest a direct live boot signal
+- local QEMU guest probes now also recover `startup-status.txt`, exposing
+  guest-visible Axion state and confirming the current staged bindings for
+  shell, storage, display, and network, plus explicit boot-ready slice and
+  boot-progress status lines
+- local QEMU guest probes now also recover `startup-shell.txt`, exposing the
+  staged Axion shell prompt, durable-history stance, and current typed-builtin
+  command surface from a build-time snapshot generated by the real shell backend,
+  now including durable transcript import via `session import <ref>`
+- local QEMU guest probes now also recover `startup-session.txt`, exposing a
+  backend-generated `show session` snapshot with the active profile and durable
+  state counts
+- local QEMU guest probes now also recover `startup-history.txt`, exposing a
+  backend-generated durable-history view derived from the real Axion shell backend
+- local QEMU guest probes now also recover `startup-store.txt`, exposing a
+  backend-generated `store ls` inventory snapshot from the same shell backend
+- local QEMU guest probes now also recover `startup-ref.txt`, exposing a
+  backend-generated `show ref <canonref>` object retrieval snapshot from the
+  same shell backend
+- local QEMU guest probes now also recover `startup-report.txt`, exposing a
+  consolidated backend-generated shell/session/history/store/ref proof surface
+- local QEMU guest probes now also recover `startup-phase4.txt`, exposing a
+  pure Phase 4 device-layer proof surface derived from the real guest bootstrap:
+  20-object CanonStore recovery across two guest cycles, active overflow
+  metadata past the 17-entry root-header threshold, successful torn-header
+  recovery for the same 20 objects, through `virtualbox-ahci`, a mutable
+  three-present VMSVGA cycle, and a two-batch five-frame E1000 workload
+- the same guest-report contract now also has a synthetic blocked-state
+  validation fixture, proving the external lane distinguishes ready boot
+  progress from blocked boot progress instead of only checking the success case
+- local QEMU x86_64 + EDK2 now also boots the staged `x86_64` guest image,
+  recovers `efi-ran.txt`, `boot-report.txt`, and `startup-status.txt`, and
+  passes the shipped `x86_64` handoff validator against those recovered files
+- local VirtualBox ARM remains non-observable for EFI execution and is now only
+  a secondary diagnostic lane
+- conclusion: the remaining blind spot is the real external `x86_64` VirtualBox
+  path, not the basic EFI artifact shape
+
+## What Is Not Yet Proven
+
+The main remaining unknown is external to this machine:
+
+- does the official `x86_64` VirtualBox guest lane actually boot and expose the
+  staged TernOS payload?
+
+That is the current program blocker for the promotion path.
+
+## Reviewer Ask
+
+Use the packaged `x86_64` handoff bundle and run the official VirtualBox lane on
+an `x86_64` host.
+
+Primary goal:
+
+- prove whether VBox EFI discovers and executes the staged guest path at all
+
+Useful first success signals:
+
+- EFI sees the disk
+- EFI shell sees the filesystem
+- the staged payload runs
+- any deterministic boot marker appears
+
+## Inputs For The Reviewer
+
+See:
+
+- [virtualbox_x86_64_handoff.md](virtualbox_x86_64_handoff.md)
+
+Expected bundle contents:
+
+- guest `.vdi`
+- raw guest image
+- profile summary
+- expected boot-progress contract files
+- demo transcript
+- handoff validation helper
+- recovered-artifacts template directory
+- handoff runbook
+- local synthetic handoff-validator fixture
+- local synthetic negative handoff-validator fixture
+- packaged bundle smoke-check helper and fixture
+- packaged bundle negative smoke-check helper and fixture
+
+## What To Report Back
+
+- host OS and VirtualBox version
+- confirmation that the host/guest lane was truly `x86_64`
+- exact VM settings
+- `VBox.log`
+- screenshots or firmware text
+- whether the staged disk was visible
+- whether any boot path executed
+
+## Program Recommendation
+
+Do not treat subsystem growth as the only path forward. The current local
+kernel path is now:
+
+- keep the external `x86_64` VirtualBox validation ask open
+- use RFC-00B3 as the implementation path for kernel integration after `hal_main`
+- harden the existing service-facing runtime contract before adding more
+  actions or widening the boundary further

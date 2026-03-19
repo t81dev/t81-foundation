@@ -421,14 +421,22 @@ inline T729DynamicTensor rope(const T729DynamicTensor& x, int pos) {
       const detail::DFixed head_dim_fixed = detail::fixed_from_int64(head_dim);
       const auto& input = x.canonical_fixed_data();
       std::vector<detail::DFixed> out = input;
+      std::vector<detail::DFixed> cos_terms(static_cast<std::size_t>(head_dim / 2));
+      std::vector<detail::DFixed> sin_terms(static_cast<std::size_t>(head_dim / 2));
+
+      for (int j = 0; j < head_dim; j += 2) {
+        const detail::DFixed exponent = detail::fixed_from_int64(j) / head_dim_fixed;
+        const detail::DFixed freq =
+            detail::DFixed::one() / t81::core::detail::pow(freq_base, exponent);
+        const detail::DFixed angle = pos_fixed * freq;
+        cos_terms[static_cast<std::size_t>(j / 2)] = t81::core::detail::cos(angle);
+        sin_terms[static_cast<std::size_t>(j / 2)] = t81::core::detail::sin(angle);
+      }
 
       for (std::size_t base = 0; base < input.size(); base += static_cast<std::size_t>(head_dim)) {
         for (int j = 0; j < head_dim; j += 2) {
-          const detail::DFixed exponent = detail::fixed_from_int64(j) / head_dim_fixed;
-          const detail::DFixed freq = detail::DFixed::one() / t81::core::detail::pow(freq_base, exponent);
-          const detail::DFixed angle = pos_fixed * freq;
-          const detail::DFixed f_cos = t81::core::detail::cos(angle);
-          const detail::DFixed f_sin = t81::core::detail::sin(angle);
+          const detail::DFixed& f_cos = cos_terms[static_cast<std::size_t>(j / 2)];
+          const detail::DFixed& f_sin = sin_terms[static_cast<std::size_t>(j / 2)];
           const detail::DFixed v0 = input[base + static_cast<std::size_t>(j)];
           const detail::DFixed v1 = input[base + static_cast<std::size_t>(j + 1)];
           out[base + static_cast<std::size_t>(j)] = v0 * f_cos - v1 * f_sin;
@@ -445,15 +453,23 @@ inline T729DynamicTensor rope(const T729DynamicTensor& x, int pos) {
   const detail::TensorFloat freq_base = detail::TensorFloat::from_double(10000.0);
   const detail::TensorFloat pos_float = detail::TensorFloat::from_double(static_cast<double>(pos));
   const detail::TensorFloat head_dim_float = detail::TensorFloat::from_double(static_cast<double>(head_dim));
+  std::vector<float> cos_terms(static_cast<std::size_t>(head_dim / 2));
+  std::vector<float> sin_terms(static_cast<std::size_t>(head_dim / 2));
+  for (int j = 0; j < head_dim; j += 2) {
+    const detail::TensorFloat exponent =
+        detail::TensorFloat::from_double(static_cast<double>(j)) / head_dim_float;
+    const detail::TensorFloat freq =
+        detail::TensorFloat::from_double(1.0) / t81::core::detail::pow(freq_base, exponent);
+    const detail::TensorFloat angle = pos_float * freq;
+    cos_terms[static_cast<std::size_t>(j / 2)] =
+        static_cast<float>(t81::core::detail::cos(angle).to_double());
+    sin_terms[static_cast<std::size_t>(j / 2)] =
+        static_cast<float>(t81::core::detail::sin(angle).to_double());
+  }
   for (size_t i = 0; i < data.size(); i += static_cast<size_t>(head_dim)) {
     for (int j = 0; j < head_dim; j += 2) {
-      const detail::TensorFloat exponent =
-          detail::TensorFloat::from_double(static_cast<double>(j)) / head_dim_float;
-      const detail::TensorFloat freq =
-          detail::TensorFloat::from_double(1.0) / t81::core::detail::pow(freq_base, exponent);
-      const detail::TensorFloat angle = pos_float * freq;
-      const float f_cos = static_cast<float>(t81::core::detail::cos(angle).to_double());
-      const float f_sin = static_cast<float>(t81::core::detail::sin(angle).to_double());
+      const float f_cos = cos_terms[static_cast<std::size_t>(j / 2)];
+      const float f_sin = sin_terms[static_cast<std::size_t>(j / 2)];
       float v0 = data[i + static_cast<size_t>(j)];
       float v1 = data[i + static_cast<size_t>(j + 1)];
       data[i + static_cast<size_t>(j)] = v0 * f_cos - v1 * f_sin;

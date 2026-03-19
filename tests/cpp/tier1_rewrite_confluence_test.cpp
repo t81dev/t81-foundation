@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "t81/experimental/cog/tier1/symbolic.hpp"
+#include "t81/cog/v1/symbolic_graph.hpp"
 
 namespace {
 using t81::T81Symbol;

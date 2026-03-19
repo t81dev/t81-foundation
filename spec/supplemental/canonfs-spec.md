@@ -1,19 +1,19 @@
-# **canonfs-spec.md — Version 0.4.1**
+# **canonfs-spec.md — Version 0.4.2**
 
 # CanonFS — Canonical File System for Ternary Machines
 
-**Version:** 0.4.1\
+**Version:** 0.4.2\
 **Category:** Standards Track\
-**Status:** Final Draft — Authorized for canonfs-rs 1.0\
+**Status:** Reconciliation Draft — aligned to current T81 CanonFS drivers pending RFC-0054 review\
 **Target v1.0 Release:** Q4 2026\
-**Applies to:** T81 Architecture, HanoiVM, Axion Kernel, CanonNet, T243–T19683 tiers
+**Applies to:** T81 Architecture, HanoiVM, Axion Governance Kernel, CanonNet, T243–T19683 tiers
 
 ______________________________________________________________________
 
 # 1. Abstract
 
 CanonFS is the native filesystem for ternary (T81-class) computing.\
-It is immutable, content-addressed, capability-secured, self-healing, tryte-compressible, and tensor-indexable.
+In the current T81 release line it is primarily an immutable, content-addressed, capability-gated object store with deterministic verification and Axion-observable persistence hooks.
 
 CanonFS replaces:
 
@@ -26,7 +26,7 @@ CanonFS replaces:
 
 **CanonRef = capability + content hash + (optional) sealed envelope metadata**
 
-CanonFS guarantees deterministic indexing, perfect provenance, global uniqueness, and automatic parity-based recovery — all without compromising immutability.
+CanonFS guarantees deterministic indexing, stable object lookup, provenance-friendly content identity, and immutable writes. Richer typed envelopes, parity recovery, and compression-aware canonicalization remain versioned extensions rather than current persistent-driver guarantees.
 
 ______________________________________________________________________
 
@@ -35,21 +35,21 @@ ______________________________________________________________________
 CanonFS is legally defined by five invariants. Violation of any is a protocol-level error:
 
 1. **Immutability** — Once sealed, objects can never be modified.
-2. **Content Addressing** — Object identity is `CanonHash-81(serialized_form)`.
-3. **Capability Binding** — Access requires a signed capability.
-4. **Deterministic Indexing** — The mapping `f(hash)` MUST remain stable forever.
-5. **Self-Healing** — Writes MAY include parity shards for automatic recovery.
+2. **Content Addressing** — Current-release object identity is `CanonHash-81(payload_bytes)`.
+3. **Capability Binding** — The current persistent driver enforces access through published permission masks; richer signed capability objects are future-versioned.
+4. **Deterministic Indexing** — The mapping from CanonRef to on-disk object path MUST remain stable for a given identity function.
+5. **Extension Honesty** — Parity, typed envelopes, and compression-aware canonicalization MUST NOT be described as current persistent-driver guarantees unless implemented end to end.
 
 ______________________________________________________________________
 
 # 3. CanonBlock — 729-Tryte Atomic Unit
 
-A CanonBlock is the indivisible storage atom of CanonFS.
+A CanonBlock is the logical storage atom of CanonFS.
 
 - Size: **exactly 729 trytes**
 - Payload: **721 trytes + 8-tryte metadata tag**
-- Identity: `CanonHash-81(block)`
-- All canonical forms (raw, compressed, sealed) MUST produce the same hash.
+- Identity: `CanonHash-81(block_bytes)`
+- The current drivers persist raw payload bytes. Compression/encryption normalization rules are extension material and are not part of the current persistent-driver contract.
 
 ## 3.1 CanonBlock Forms
 
@@ -59,33 +59,26 @@ A CanonBlock is the indivisible storage atom of CanonFS.
 | Compressed | 0x10–0x1F | LZ81 or Z3std tryte-optimal compression |
 | Encrypted | 0x20–0x2F | CanonSeal AEAD envelope (ternary ChaCha variant) |
 
-Hashing always occurs **post-decompression + decryption**, ensuring identical logical content yields identical identities.
+For the current release line, CanonBlock hashing occurs over the exact persisted payload bytes. Post-decompression/decryption identity equivalence is a future-versioned extension.
 
 ______________________________________________________________________
 
-# 4. CanonHash-81 — Mandatory Hash Function
+# 4. CanonHash-81 — Current Release Identity Function
 
-CanonHash-81 is defined as:
+For the current T81 CanonFS drivers, `CanonHash-81` denotes the project-defined canonical object identity function produced by `t81::hash::hash_bytes(...)` over payload bytes.
 
-```
-
-CanonHash-81(data) := base81_encode( BLAKE3(data)[0..60] )
-
-```
-
-- Output: **81 Base-81 symbols**
-- Security: ≥ 480 bits effective entropy
+- Output: implementation-defined canonical string form used throughout T81
 - Deterministic across platforms
 - Fully content-addressing compliant
-- Upgradeable via future version prefix (reserved)
+- User-facing CanonFS and related CLI surfaces currently expose CanonFS object references as `sha3-256:<hash>`
 
-CanonHash-81 is the sole hash function permitted for CanonFS v0.3–v1.0.
+Changing this identity function requires an explicit migration plan. RFC-0054 defines the reconciliation and compatibility questions that must be answered before any future algorithm or prefix change.
 
 ______________________________________________________________________
 
-# 5. CanonObject — Sealed Envelope Standard (v0.4.1)
+# 5. CanonObject and ObjectType Semantics (v0.4.2)
 
-All objects begin with a one-byte **Type ID**, preventing type confusion attacks.
+The T81 CanonFS API carries an `ObjectType`, but the current drivers do not include `ObjectType` in object identity. In the current release line, `ObjectType` is descriptive API metadata rather than part of the hashed persistent identity.
 
 | Type ID | Object Type | Description |
 |---------|--------------------|----------------------------------------------------------------|
@@ -105,19 +98,34 @@ All objects begin with a one-byte **Type ID**, preventing type confusion attacks
 | 0x17–0x1F | Reserved | |
 | 0x20 | CanonTensor | Canonical tensor object |
 
-Object identity is always:
+Current-release object identity is:
 
 ```
 
-CanonHash-81( TypeID || SerializedPayload )
+CanonHash-81( PayloadBytes )
 
 ```
+
+Future typed-envelope CanonFS versions MAY define identities over `TypeID || SerializedPayload`, but they MUST do so under an explicit compatibility or migration contract.
 
 ______________________________________________________________________
 
-# 6. Capability System v2 (Fully Specified)
+# 6. Capability System
 
-## 6.1 CapabilityGrant v2
+## 6.1 Current Persistent-Driver Capability Contract
+
+The current persistent driver stores capability state as per-object permission masks at `caps/<hash>.cap`.
+
+Current guaranteed fields/semantics are:
+
+- `target`
+- `permissions`
+- bootstrap access before any capability exists for an object
+- read/write enforcement once a capability mask has been published
+
+The richer `CapabilityGrant` structure in the C++ API is forward-looking. The current persistent driver does not persist or verify the full signed grant object described below.
+
+## 6.2 Future CapabilityGrant Object
 
 ```text
 CapabilityGrant ::= {
@@ -130,9 +138,9 @@ CapabilityGrant ::= {
 }
 ```
 
-Capabilities are **content-addressed**, **delegatable**, and **tamper-evident**.
+This structure is a future-versioned CanonFS object model, not a current persistent-driver guarantee.
 
-## 6.2 CanonLink (Optional Display Hint)
+## 6.3 CanonLink (Optional Display Hint)
 
 ```text
 CanonLink ::= {
@@ -151,7 +159,7 @@ CanonFS operations are **Axion-guarded**. Every `AXSET`/`AXREAD`/`AXVERIFY` inte
 
 1. **Meta slot journaling** — Each Axion syscall prepends a deterministic `meta slot axion event segment=meta addr=<value>` entry to the Axion trace before the actual write. CanonFS implementations MUST emit `action=Write` for `AXSET`/`write_object` paths and `action=Read` for `AXREAD`/`read_object` paths so policies can assert them via `(require-axion-event (reason "<substring>"))`.
 2. **Trace hygiene** — Axion traces MUST include the same `meta slot` string every time CanonFS writes persist metadata (e.g., capability grants, snapshots, links). Changing the verbatim string invalidates RFC-0020 policies and must be coordinated through a new RFC.
-3. **CI artifact parity** — The `canonfs_axion_trace_test` reproduction (see `docs/guides/axion-trace.md`) records those exact strings into `build/artifacts/canonfs_axion_trace.log`, providing auditors with a reference trace that CanonFS policies can expect before touching the filesystem.
+3. **CI artifact parity** — The `canonfs_axion_trace_test` reproduction (see `docs/developer-guide/internals/axion-trace.md`) records those exact strings into `build/artifacts/canonfs_axion_trace.log`, providing auditors with a reference trace that CanonFS policies can expect before touching the filesystem.
 
 Maintaining this contract makes CanonFS the canonical source of policy-verified persistence for Axion-aware binaries: canonical trace strings, capability enforcement, and deterministic writes all execute before the block is sealed inside CanonFS.
 
@@ -161,17 +169,19 @@ The reference implementation exposes `make_persistent_driver(root)` (see `includ
 
 Every `write_object`, `read_object_bytes`, `publish_capability`, and `revoke_capability` invocation runs the Axion hook before mutating `objects/` or `caps/`. That hook emits the canonical `meta slot axion event segment=meta addr=<n> action=Write` (for writes) and `action=Read` (for reads), so `scripts/capture-axion-trace.sh` can verify `canonfs_axion_trace_test` produces the same strings auditors expect. Capabilities gate access via the `CANON_PERM_READ`/`CANON_PERM_WRITE` bitmask; when no capabilities exist the driver permits bootstrap writes, but once a capability is published, only callers with the matching mask may read or write the object.
 
-Read paths re-verify content identity by default: after loading bytes, the driver recomputes `CanonHash` and compares it to the requested `CanonRef`. Mismatches fail with deterministic decode errors. A diagnostic override exists via `T81_CANONFS_READ_VERIFY=0`.
+Read paths re-verify content identity by default: after loading bytes, the driver recomputes `CanonHash-81(payload_bytes)` and compares it to the requested `CanonRef`. Mismatches fail with deterministic decode errors. A diagnostic override exists via `T81_CANONFS_READ_VERIFY=0`.
 
-This driver fulfills the Axion observability requirements in a deterministic, disk-backed form: writes now flush to persistent storage, the Axion trace includes the canonical meta slot events before any data touches disk, and audits can replay the resulting `build/artifacts/canonfs_axion_trace.log` snippet to prove that canonical strings preceded persistence.
+This driver fulfills the Axion observability requirements in a deterministic, disk-backed form: writes flush payload bytes to persistent storage, the Axion trace includes the canonical meta slot events before any data touches disk, and audits can replay the resulting `build/artifacts/canonfs_axion_trace.log` snippet to prove that canonical strings preceded persistence.
 
 ______________________________________________________________________
 
-# 7. CanonParity — Reed–Solomon Recovery (v0.4.1)
+# 8. CanonParity — Optional / Future-Versioned Recovery
 
-CanonFS introduces automatic self-healing via parity shards.
+CanonFS parity support is not a current persistent-driver guarantee.
 
-**Default policy:** 3 data + 2 parity (survives any 2 losses)
+The persistent driver currently creates a `parity/` directory but does not persist or consume parity shards for automatic repair. The in-memory implementation may provide stronger parity-related behavior for testing and experimentation.
+
+Any CanonParity wire format or repair workflow described below is future-versioned until the persistent reference driver implements it end to end.
 
 Wire format (v0.4.1):
 
@@ -187,11 +197,11 @@ CanonParity ::= [
 ]
 ```
 
-Implementations MUST verify set_merkle_root before reconstruction.
+Implementations that claim CanonParity support MUST verify `set_merkle_root` before reconstruction.
 
 ______________________________________________________________________
 
-# 8. Tryte-Native Compression (LZ81 & Z3std)
+# 9. Tryte-Native Compression (Extension Material)
 
 | Algo | Code | Typical Ratio | Speed | Use Case |
 | ----- | ---- | ------------- | ------ | ----------------------------- |
@@ -206,11 +216,11 @@ else if repetitiveness >= 0.42    => LZ81
 else                               => Raw
 ```
 
-Compression occurs **before hashing**, ensuring identical logical content yields identical CanonHash-81.
+Compression-normalized identity is not part of the current persistent-driver contract. Implementations that add compressed-object support MUST define the exact hashing boundary explicitly.
 
 ______________________________________________________________________
 
-# 9. CanonIndex — Sparse 81×81 Inverted Index Tensor
+# 10. CanonIndex — Sparse 81×81 Inverted Index Tensor
 
 CanonIndex provides fast search and indexing capabilities.
 
@@ -222,7 +232,7 @@ Useful for full-text search, semantic index, and metadata lookup.
 
 ______________________________________________________________________
 
-# 10. CanonMeta — Sparse Metadata Tensor
+# 11. CanonMeta — Sparse Metadata Tensor
 
 Key/value metadata controlled entirely by hashes.
 
@@ -234,17 +244,17 @@ Used for xattrs, user metadata, or extended ACL semantics.
 
 ______________________________________________________________________
 
-# 11. CanonSeal — Per-Object Encryption
+# 12. CanonSeal — Per-Object Encryption
 
 Encryption is object-local and content-address stable.
 
 - Primitive: **T81-AEAD-81** (ternary ChaCha20-Poly1305 variant)
 - Key: `KDF(capability || object_hash)`
-- Decryption MUST occur **before** hashing for identity conformance.
+- If CanonSeal becomes part of the persistent-driver contract, the identity boundary MUST be versioned explicitly. This is not a current persistent-driver guarantee.
 
 ______________________________________________________________________
 
-# 12. CanonFile — Merkle-81 Tree
+# 13. CanonFile — Merkle-81 Tree
 
 Leaves may be:
 
@@ -252,11 +262,11 @@ Leaves may be:
 - Compressed
 - Encrypted (CanonSeal)
 
-…but all MUST reduce to identical logical content before hashing.
+…but these equivalence rules are future-versioned and not part of the current payload-hash persistent-driver contract.
 
 ______________________________________________________________________
 
-# 13. CanonDirectory — Sparse 81×81 Tensor
+# 14. CanonDirectory — Sparse 81×81 Tensor
 
 ```text
 Directory ::= {
@@ -271,7 +281,7 @@ Deterministic. Immutable. Content-addressable.
 
 ______________________________________________________________________
 
-# 14. Wire Formats (v0.4.1)
+# 15. Wire Formats (Versioned Object Extensions)
 
 | Object | Canonical Wire Format |
 | --------------- | ---------------------------------------------------------------- |
@@ -282,53 +292,61 @@ ______________________________________________________________________
 | CanonSeal | [0x14][nonce 24 trytes][ciphertext][tag 16 trytes] |
 | CanonTensor | [0x20][ver][fmt][rank][res][shape][payload] |
 
-Integers must be little-endian.
+Integers must be little-endian. These wire formats are extension material unless and until a CanonFS implementation explicitly persists them as part of its normative contract.
 
 ______________________________________________________________________
 
-# 15. Storage Semantics (Self-Healing Guaranteed)
+# 16. Storage Semantics (Current Persistent Driver)
 
 Implementations MUST:
 
-- Verify CanonHash-81 on every read
-- Auto-reconstruct lost shards via CanonParity
-- Transparently decompress / decrypt
-- Rebuild CanonIndex and CanonMeta lazily
-- Never expose inconsistencies
+- Verify CanonHash-81 on every read unless explicitly disabled for diagnostics
+- Preserve immutability once `objects/<hash>.blk` is written
+- Expose deterministic capability-mask enforcement once capability state exists
+- Never silently return bytes whose recomputed CanonHash-81 does not match the requested CanonRef
+
+Implementations MAY additionally:
+
+- support parity-backed repair
+- support transparent decompression/decryption
+- support typed CanonObject envelopes
+- support index and metadata rebuilding
 
 Deletion is logical:
 
-**Delete = publish CapabilityRevoke tombstone**
+**Current persistent driver:** remove or alter capability state so future access is denied.
+
+**Future versioned model:** publish `CapabilityRevoke` tombstone objects.
 
 ______________________________________________________________________
 
-# 16. Operational Semantics
+# 17. Operational Semantics
 
 | Operation | Behavior (v0.4.1) |
 | --------- | --------------------------------------------------------------------- |
-| Write | Creates new objects + parity + optional index |
-| Read | Capability validation → hash check → auto-repair → decompress/decrypt |
-| Search | Via CanonIndex (fallback to brute traversal) |
-| Delete | `CapabilityRevoke` tombstone |
-| Recover | Fully automatic |
+| Write | Creates new immutable `objects/<hash>.blk` payload object; current identity hashes payload bytes only |
+| Read | Capability validation → hash check → return bytes |
+| Search | Out of scope for the current persistent reference driver |
+| Delete | Current driver revokes/removes capability state; tombstone model is future-versioned |
+| Recover | Persistent-driver automatic repair is not currently guaranteed |
 
 ______________________________________________________________________
 
-# 17. Reference Implementation Requirements (canonfs-rs 1.0)
+# 18. Reference Implementation Requirements (Current T81 Drivers)
 
 Must implement:
 
-- Rust + BLAKE3 → Base-81
-- LZ81 & Z3std compressors
-- Reed–Solomon GF(3⁹) parity engine
-- Sparse CanonIndex + CanonMeta generators
-- FUSE and HTTP gateways
-- Background repair daemon
+- deterministic object identity via the T81 CanonHash path
+- payload persistence under `objects/<hash>.blk`
+- capability-mask persistence under `caps/<hash>.cap`
+- read-back hash verification
 - Axion policy hooks
+
+Future CanonFS implementations MAY add richer object envelopes, parity, compression, gateways, and repair daemons, but they MUST NOT be presented as current reference-driver guarantees unless implemented.
 
 ______________________________________________________________________
 
-# 18. Compatibility Layer (FUSE)
+# 19. Compatibility Layer (FUSE)
 
 Exposes structured, layered views:
 
@@ -341,7 +359,7 @@ Hidden unless `CANONFS_DEBUG=1` or `-o debug` is enabled.
 
 ______________________________________________________________________
 
-# 19. Future Extensions
+# 20. Future Extensions
 
 Planned for post-1.0:
 

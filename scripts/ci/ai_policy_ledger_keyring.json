@@ -13,8 +13,7 @@
       "not_before": "2026-01-01",
       "not_after": "2026-03-31",
       "material_env": "T81_AI_POLICY_LEDGER_KEY_2026Q1",
-      "kms_key_ref": "kms://t81-foundation/ai/policy-ledger/2026q1",
-      "material_b64": "dDgxLWFpLXBvbGljeS1sZWRnZXItMjAyNnExLXNpZ25pbmcta2V5"
+      "kms_key_ref": "kms://t81-foundation/ai/policy-ledger/2026q1"
     },
     {
       "key_id": "ai-policy-ledger-2026q2",
@@ -23,8 +22,7 @@
       "not_before": "2026-03-15",
       "not_after": "2026-06-30",
       "material_env": "T81_AI_POLICY_LEDGER_KEY_2026Q2",
-      "kms_key_ref": "kms://t81-foundation/ai/policy-ledger/2026q2",
-      "material_b64": "dDgxLWFpLXBvbGljeS1sZWRnZXItMjAyNnEyLXNpZ25pbmcta2V5"
+      "kms_key_ref": "kms://t81-foundation/ai/policy-ledger/2026q2"
     }
   ]
 }

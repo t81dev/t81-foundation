@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -17,9 +17,9 @@ ______________________________________________________________________
 
 # T81 Virtual Machine Specification
 
-Version 1.1 — Beta
+Version 1.9.0 — Stable
 
-Status: Beta\
+Status: Stable\
 Last Revised: 2026-03-01\
 Applies to: TISC, T81Lang, Axion, Cognitive Tiers
 
@@ -357,7 +357,7 @@ Axion policies require precise visibility into every segment transition. The VM 
 6. **Relocation logging** — if GC compacts or moves heap objects, Axion MUST record the deterministic string `heap relocation from=<old> to=<new> size=<n>` before updating the segments so policy runners, trace auditors, and CanonFS can replay the reallocation without ambiguity.
 7. **Deterministic compaction semantics** — heap compaction happens in a canonical way: the allocator resets `heap_ptr` to `layout.heap.start`, clears `heap_frames`, and logs the relocation event before returning control. This ensures repeated compactions produce the same pointer trace and avoids nondeterminism from fragmented free lists.
 
-Maintaining these invariants ensures the deterministic segment trace described in `docs/guides/axion-trace.md` and RFC-0020, letting auditors replay the exact `verdict.reason` strings without inspecting the VM implementation.
+Maintaining these invariants ensures the deterministic segment trace described in `docs/developer-guide/internals/axion-trace.md` and RFC-0020, letting auditors replay the exact `verdict.reason` strings without inspecting the VM implementation.
 
 ______________________________________________________________________
 
@@ -534,7 +534,7 @@ ______________________________________________________________________
 
 ## T81Lang
 
-Current spec version: **v1.2** (updated 2026-03-01).
+Current spec version: **v1.9.0**
 
 - **Compiler → VM Pipeline** → [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline)
 - **Type Behavior in Execution** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)

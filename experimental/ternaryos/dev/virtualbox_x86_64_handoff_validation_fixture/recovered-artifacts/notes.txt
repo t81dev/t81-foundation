@@ -1,0 +1,1 @@
+Synthetic local validation fixture for the x86_64 handoff contract helper.

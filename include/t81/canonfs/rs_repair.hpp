@@ -14,13 +14,15 @@ public:
 
   /**
    * @brief Simple Vandermonde-based encoding for GF(3^9).
+   * Generates kParityShards, where each parity element uses 2 bytes to represent the up-to-19682 GF(3^9) elements.
    */
   static std::vector<std::vector<std::byte>> encode(const std::vector<std::byte>& data) {
     size_t total_size = data.size();
     size_t shard_size = (total_size + kDataShards - 1) / kDataShards;
 
-    std::vector<std::vector<std::byte>> shards(kTotalShards,
-                                               std::vector<std::byte>(shard_size, std::byte{0}));
+    std::vector<std::vector<std::byte>> shards(kTotalShards);
+    for (int i = 0; i < kDataShards; ++i) shards[i].resize(shard_size, std::byte{0});
+    for (int i = kDataShards; i < kTotalShards; ++i) shards[i].resize(shard_size * 2, std::byte{0});
 
     // Split data into kDataShards
     for (size_t i = 0; i < total_size; ++i) {
@@ -38,7 +40,8 @@ public:
           sum = GF3_9::add(sum, GF3_9::mul(x_pow, val_j));
           x_pow = GF3_9::mul(x_pow, x);
         }
-        shards[kDataShards + i][byte_idx] = static_cast<std::byte>(sum & 0xFF);
+        shards[kDataShards + i][byte_idx * 2] = static_cast<std::byte>(sum & 0xFF);
+        shards[kDataShards + i][byte_idx * 2 + 1] = static_cast<std::byte>((sum >> 8) & 0xFF);
       }
     }
     return shards;
@@ -60,15 +63,24 @@ public:
     // Need exactly kDataShards for the matrix inversion
     std::vector<int> used_indices(avail_indices.begin(), avail_indices.begin() + kDataShards);
 
-    // Matrix A: A[i][j] = (used_indices[i] + 1)^j
+    // Matrix A: describes how each available shard was derived from the data (coefficients).
     std::vector<std::vector<GF3_9::value_type>> matrix(kDataShards,
                                                        std::vector<GF3_9::value_type>(kDataShards));
     for (int i = 0; i < kDataShards; ++i) {
-      GF3_9::value_type x = static_cast<GF3_9::value_type>(used_indices[i] + 1);
-      GF3_9::value_type x_pow = 1;
-      for (int j = 0; j < kDataShards; ++j) {
-        matrix[i][j] = x_pow;
-        x_pow = GF3_9::mul(x_pow, x);
+      int idx = used_indices[i];
+      if (idx < kDataShards) {
+        // Data shards are just the raw coefficients.
+        for (int j = 0; j < kDataShards; ++j) {
+          matrix[i][j] = (j == idx) ? 1 : 0;
+        }
+      } else {
+        // Parity shards are polynomial evaluations at X = idx + 1
+        GF3_9::value_type x = static_cast<GF3_9::value_type>(idx + 1);
+        GF3_9::value_type x_pow = 1;
+        for (int j = 0; j < kDataShards; ++j) {
+          matrix[i][j] = x_pow;
+          x_pow = GF3_9::mul(x_pow, x);
+        }
       }
     }
 
@@ -105,15 +117,35 @@ public:
       }
     }
 
+    // Determine data shard size.
+    size_t shard_size = 0;
+    for (int i = 0; i < kTotalShards; ++i) {
+      if (available[i]) {
+        if (i < kDataShards) {
+          shard_size = shards[i].size(); 
+          break;
+        } else {
+          shard_size = shards[i].size() / 2; 
+          break;
+        }
+      }
+    }
+
     // Reconstruct data shards
-    size_t shard_size = shards[used_indices[0]].size();
     std::vector<std::vector<std::byte>> recovered(kDataShards, std::vector<std::byte>(shard_size));
 
     for (size_t byte_idx = 0; byte_idx < shard_size; ++byte_idx) {
       for (int i = 0; i < kDataShards; ++i) {
         GF3_9::value_type sum = 0;
         for (int j = 0; j < kDataShards; ++j) {
-          GF3_9::value_type val_j = static_cast<uint8_t>(shards[used_indices[j]][byte_idx]);
+          int original_idx = used_indices[j];
+          GF3_9::value_type val_j;
+          if (original_idx < kDataShards) {
+            val_j = static_cast<uint8_t>(shards[original_idx][byte_idx]);
+          } else {
+            val_j = static_cast<uint8_t>(shards[original_idx][byte_idx * 2]) |
+                    (static_cast<uint16_t>(shards[original_idx][byte_idx * 2 + 1]) << 8);
+          }
           sum = GF3_9::add(sum, GF3_9::mul(inv[i][j], val_j));
         }
         recovered[i][byte_idx] = static_cast<std::byte>(sum & 0xFF);

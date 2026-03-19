@@ -9,7 +9,7 @@
 #include "t81/python_frontend/compile.hpp"
 #include "t81/rust_frontend/compile.hpp"
 #include "debugger.hpp"
-#include "internal/tooling/logging.hpp"
+#include "logging.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/config.hpp"
@@ -30,6 +30,7 @@
 #include <cctype>
 #include <charconv>
 #include <cstddef>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
@@ -303,6 +304,46 @@ bool load_weights_model_from_path(const fs::path& path,
   }
 }
 
+fs::path discover_canonfs_root_for_weights() {
+  if (const char* env = std::getenv("T81_CANONFS_ROOT")) {
+    if (*env != '\0') {
+      return fs::path(env);
+    }
+  }
+  return fs::current_path() / ".t81_canonfs";
+}
+
+std::vector<fs::path> discover_repo_model_directories() {
+  std::vector<fs::path> out;
+  auto append_if_dir = [&](const fs::path& candidate) {
+    std::error_code ec;
+    if (fs::is_directory(candidate, ec) &&
+        std::find(out.begin(), out.end(), candidate) == out.end()) {
+      out.push_back(candidate);
+    }
+  };
+
+  fs::path cursor = fs::current_path();
+  while (!cursor.empty()) {
+    append_if_dir(cursor / "model");
+    append_if_dir(cursor / "models");
+    if (cursor == cursor.root_path()) {
+      break;
+    }
+    cursor = cursor.parent_path();
+  }
+  return out;
+}
+
+bool extension_allowed(const fs::path& path, const std::vector<std::string>& allowed_extensions) {
+  if (allowed_extensions.empty()) {
+    return true;
+  }
+  const std::string ext = to_lower(path.extension().string());
+  return std::find(allowed_extensions.begin(), allowed_extensions.end(), ext) !=
+         allowed_extensions.end();
+}
+
 bool is_valid_package_name(const std::string& name) {
   if (name.empty()) return false;
   for (char c : name) {
@@ -424,6 +465,41 @@ bool load_canonfs_object(const fs::path& canonfs_root, std::string_view prefixed
   info.size_bytes = bytes.size();
   info.sha3_512 = sha3_512_hex_text(bytes);
   return true;
+}
+
+bool load_weights_model_from_selector(std::string_view selector,
+                                      std::shared_ptr<t81::weights::ModelFile>& model,
+                                      std::optional<fs::path>& model_path, std::string& error) {
+  const std::string text = trim_copy(selector);
+  if (text.empty()) {
+    error = "weights model selector must not be empty";
+    return false;
+  }
+
+  if (text.rfind("sha3-256:", 0) == 0) {
+    std::vector<std::byte> bytes;
+    CanonFsObjectInfo info;
+    const fs::path canonfs_root = discover_canonfs_root_for_weights();
+    if (!load_canonfs_object(canonfs_root, text, bytes, info, error)) {
+      error = "failed to load CanonFS weights object from " + canonfs_root.string() + ": " + error;
+      return false;
+    }
+    try {
+      auto loaded = t81::weights::load_t81w_bytes(bytes);
+      model = std::make_shared<t81::weights::ModelFile>(std::move(loaded));
+      model_path = fs::path(text);
+      return true;
+    } catch (const std::exception& e) {
+      error = std::string("failed to parse CanonFS weights object as .t81w: ") + e.what();
+      return false;
+    }
+  }
+
+  if (auto resolved = t81::cli::resolve_repo_model_path(text, {".t81w"}, &error)) {
+    return load_weights_model_from_path(*resolved, model, model_path, error);
+  }
+
+  return load_weights_model_from_path(fs::path(text), model, model_path, error);
 }
 
 struct SnapshotManifestEntry {
@@ -772,6 +848,99 @@ std::vector<t81::tisc::FunctionMetadata> collect_function_metadata(
 
 namespace t81::cli {
 
+std::optional<fs::path> resolve_repo_model_path(std::string_view selector,
+                                                const std::vector<std::string>& allowed_extensions,
+                                                std::string* error_message) {
+  const std::string text = trim_copy(selector);
+  if (text.empty()) {
+    if (error_message) {
+      *error_message = "model selector must not be empty";
+    }
+    return std::nullopt;
+  }
+
+  const fs::path direct{text};
+  if (fs::exists(direct)) {
+    return fs::absolute(direct);
+  }
+
+  std::vector<fs::path> matches;
+  for (const auto& dir : discover_repo_model_directories()) {
+    const fs::path exact = dir / text;
+    if (fs::is_regular_file(exact) && extension_allowed(exact, allowed_extensions)) {
+      matches.push_back(fs::absolute(exact));
+      continue;
+    }
+
+    const bool selector_looks_complete =
+        !allowed_extensions.empty() && extension_allowed(direct, allowed_extensions);
+    if (selector_looks_complete) {
+      continue;
+    }
+
+    for (const auto& entry : fs::directory_iterator(dir)) {
+      if (!entry.is_regular_file()) {
+        continue;
+      }
+      const fs::path path = entry.path();
+      if (!extension_allowed(path, allowed_extensions)) {
+        continue;
+      }
+      if (path.stem() == text) {
+        matches.push_back(fs::absolute(path));
+      }
+    }
+  }
+
+  std::sort(matches.begin(), matches.end());
+  matches.erase(std::unique(matches.begin(), matches.end()), matches.end());
+  if (matches.size() == 1) {
+    return matches.front();
+  }
+
+  if (error_message) {
+    if (matches.empty()) {
+      std::ostringstream oss;
+      oss << "model '" << text << "' not found under model/ or models/";
+      if (!allowed_extensions.empty()) {
+        oss << " (expected ";
+        for (size_t i = 0; i < allowed_extensions.size(); ++i) {
+          if (i != 0) oss << ", ";
+          oss << allowed_extensions[i];
+        }
+        oss << ")";
+      }
+      *error_message = oss.str();
+    } else {
+      std::ostringstream oss;
+      oss << "model selector '" << text << "' is ambiguous:";
+      for (const auto& match : matches) {
+        oss << ' ' << match.string();
+      }
+      *error_message = oss.str();
+    }
+  }
+  return std::nullopt;
+}
+
+std::shared_ptr<t81::weights::ModelFile> load_weights_model(
+    std::string_view selector, std::string* error_message,
+    std::optional<fs::path>* resolved_path) {
+  std::shared_ptr<t81::weights::ModelFile> model;
+  std::optional<fs::path> local_path;
+  std::string error;
+  if (!load_weights_model_from_selector(selector, model, local_path, error)) {
+    if (error_message) {
+      *error_message = error;
+    }
+    return nullptr;
+  }
+  if (resolved_path) {
+    *resolved_path = std::move(local_path);
+  }
+  return model;
+}
+
 std::optional<t81::tisc::Program> build_program_from_source(
     const std::string& source, const std::string& diag_name,
     const std::shared_ptr<t81::weights::ModelFile>& weights_model) {
@@ -1118,11 +1287,10 @@ int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,
           continue;
         }
         std::string error_msg;
-        fs::path path(args);
-        if (!load_weights_model_from_path(path, active_model, attached_model_path, error_msg)) {
+        if (!load_weights_model_from_selector(args, active_model, attached_model_path, error_msg)) {
           error("Failed to load model: " + error_msg);
         } else {
-          info("Loaded weights model from " + path.string());
+          info("Loaded weights model from " + args);
         }
         continue;
       }
@@ -1174,11 +1342,17 @@ int repl(const std::shared_ptr<t81::weights::ModelFile>& weights_model,
 }
 
 int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, bool trace_enabled,
-             const std::optional<fs::path>& trace_output_path) {
+             const std::optional<fs::path>& trace_output_path,
+             const std::shared_ptr<t81::weights::ModelFile>& weights_model) {
   verbose("Loading TISC program: " + path.string());
 
   auto program = t81::tisc::load_program(path.string());
   verbose("Program loaded (" + std::to_string(program.insns.size()) + " insns)");
+
+  if (weights_model) {
+    program.weights_model = weights_model;
+    verbose("Attached weights model for execution");
+  }
 
   if (policy_path) {
     std::ifstream ifs(*policy_path);
@@ -1267,10 +1441,16 @@ int disasm_tisc(const fs::path& path) {
   return 0;
 }
 
-int debug_tisc(const fs::path& path, const std::optional<fs::path>& policy_path) {
+int debug_tisc(const fs::path& path, const std::optional<fs::path>& policy_path,
+               const std::shared_ptr<t81::weights::ModelFile>& weights_model) {
   verbose("Loading TISC program for debugging: " + path.string());
 
   auto program = t81::tisc::load_program(path.string());
+
+  if (weights_model) {
+    program.weights_model = weights_model;
+    verbose("Attached weights model for debugging");
+  }
 
   if (policy_path) {
     verbose("Loading Axion policy for debugging: " + policy_path->string());
@@ -1958,7 +2138,7 @@ int run_trace_replay(const TraceArgs& args) {
   auto program = t81::tisc::load_program(tisc_path.string());
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
   const auto& current_trace = vm->state().trace;
   std::ifstream ifs(trace_path);
   if (!ifs) {

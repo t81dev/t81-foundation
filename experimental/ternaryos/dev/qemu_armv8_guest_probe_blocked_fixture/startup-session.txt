@@ -1,0 +1,9 @@
+AXION_STARTUP_SESSION
+profile=VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC
+storage=virtualbox-ahci
+display=virtualbox-vmsvga
+recovered_entries=1
+rendered_glyphs=114
+session_command_count=6
+durable_ref_count=1
+durable_anchor=present

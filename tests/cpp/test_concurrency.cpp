@@ -58,26 +58,26 @@ int main() {
 
   // Step 1: Ctx0 executes PC=0 (LoadImm R1, 100) -> Next PC=1
   // Post-step: switch to Ctx1
-  vm->step();
+  (void)vm->step();
   T81_TEST_CHECK(state.contexts[0].registers[1] == 100);
   T81_TEST_CHECK(state.contexts[0].pc == 1);
   T81_TEST_CHECK(state.current_context == 1);  // Switched to 1
 
   // Step 2: Ctx1 executes PC=3 (LoadImm R1, 200) -> Next PC=4
   // Post-step: switch to Ctx0
-  vm->step();
+  (void)vm->step();
   T81_TEST_CHECK(state.contexts[1].registers[1] == 200);
   T81_TEST_CHECK(state.contexts[1].pc == 4);
   T81_TEST_CHECK(state.current_context == 0);  // Switched to 0
 
   // Step 3: Ctx0 executes PC=1 (Inc R1) -> R1=101, Next PC=2
-  vm->step();
+  (void)vm->step();
   T81_TEST_CHECK(state.contexts[0].registers[1] == 101);
   T81_TEST_CHECK(state.contexts[0].pc == 2);
   T81_TEST_CHECK(state.current_context == 1);
 
   // Step 4: Ctx1 executes PC=4 (Inc R1) -> R1=201, Next PC=5
-  vm->step();
+  (void)vm->step();
   T81_TEST_CHECK(state.contexts[1].registers[1] == 201);
   T81_TEST_CHECK(state.contexts[1].pc == 5);
   T81_TEST_CHECK(state.current_context == 0);

@@ -1,9 +1,18 @@
 # RFC-00A4: Ternary Quantization Codec Contract (T3_K and Friends)
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Accepted\
 Author: T81 Foundation Architecture Team\
-Applies to: Quantization Codecs, Ternary Operations, Model Compression
+Applies to: Quantization Codecs, Ternary Operations, Model Compression\
+Updated: 2026-03-15
+
+> **Acceptance note (2026-03-15):** The codec contract defined here is
+> implemented and promoted per RFC-0032 Phase 1.  The canonical implementation
+> is `src/math/quantization/ternary_codec.cpp` with public API at
+> `include/t81/math/quantization/ternary_codec.hpp`.  Functions:
+> `quantize_threshold(values, neg, pos)` and `pack_ternary_to_base81(trits)`.
+> Non-deterministic float metrics (`std::sqrt`, `std::log10`) were removed
+> during promotion.  Gate test: `t81_determinism_codec_test`.
 
 ______________________________________________________________________
 

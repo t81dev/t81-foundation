@@ -46,6 +46,18 @@ int main() {
     assert(approx(d[4], std::exp(4.f)));
   }
 
+  // exp exact-trit fast path
+  {
+    T729DynamicTensor trits({3}, {-1.f, 0.f, 1.f});
+    trits.set_numeric_class(TensorNumericClass::ExactTrit);
+    [[maybe_unused]] auto y = t81::ops::exp(trits);
+    [[maybe_unused]] const auto& d = y.data();
+    assert(y.canonical_fixed_authoritative());
+    assert(approx(d[0], std::exp(-1.f)));
+    assert(approx(d[1], 1.f));
+    assert(approx(d[2], std::exp(1.f)));
+  }
+
   // sqrt
   {
     T729DynamicTensor p({3});

@@ -1,7 +1,7 @@
 # RFC-0028: Deterministic Trace-JIT
 
 Version 0.1 — Standards Track
-Status: Draft
+Status: Accepted
 Author: T81 Foundation Architecture Team
 Applies to: T81VM, TISC, Axion
 
@@ -77,6 +77,73 @@ Maintains full Axion policy visibility through synchronous state materialization
 *   **Relaxed Determinism Profiles:** Allowing the JIT to deviate from bit-exact interpreter results for performance. Explicitly rejected as it violates the foundational principles defined in RFC-0001 and RFC-0002.
 
 # References
-*   RFC-0001: Architecture Principles
-*   RFC-0002: Deterministic Execution Contract
-*   T81 VM Specification (`t81vm-spec.md`)
+
+* RFC-0001: Architecture Principles
+* RFC-0002: Deterministic Execution Contract
+* T81 VM Specification (`t81vm-spec.md`)
+
+______________________________________________________________________
+
+## Acceptance Criteria
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| [A-0028-01] | §1 Shadow execution: interpreter-vs-JIT register/memory equivalence verified | met — `jit_trace_equivalence_test` (430 assertions); `jit_repro_oracle_test` §6 |
+| [A-0028-02] | §2 Canonical trace hash: `CanonHash81(serialised TISC sequence)` attached to every compiled trace; stable across recompiles; discriminates different sequences | met — `JitTrace::trace_hash()`; `jit_repro_oracle_test` [§2-a..c] (6 assertions) |
+| [A-0028-03] | §3 Deterministic register allocation: no host-register nondeterminism | met — `ThreadedJitTrace` operates on the VM's flat R0–R242 register file; no host register mapping needed |
+| [A-0028-04] | §4 CanonFS JIT cache: `canonfs/jit/<trace_hash>.jit` | met — `JitTraceCache` (jit_trace_cache.hpp/cpp); `jit_canonfs_cache_test` 19/19 |
+| [A-0028-05] | §5 Axion OSR / Side-Exit Stubs: `AxRead`/`AxSet`/`AxVerify`/`AxReport` are trace-terminating with `ExitKind::AxionBoundary`; interpreter resumes natively | met — explicit cases in `ThreadedJitTrace::execute()`; `ExitKind::AxionBoundary` in `jit.hpp`; `vm.cpp` handles resume without trace invalidation; `jit_repro_oracle_test` [§5] (5 assertions) |
+| [A-0028-06] | §6 Repro oracle: two runs of a hot program yield identical `CanonHash81(final registers)`; mutated program yields different hash | met — `jit_repro_oracle_test` [§6-a..b] (4 assertions) |
+
+## Acceptance Note (2026-03-15)
+
+[A-0028-02], [A-0028-05], [A-0028-06] met in prior revision. [A-0028-01] and [A-0028-03]
+were already met by earlier work. [A-0028-04] (CanonFS cache) completed 2026-03-15 — all
+six acceptance criteria are now met.
+
+**§2 Canonical Trace Identity** — `JitTrace` gains a `trace_hash_` field (protected,
+`t81::hash::CanonHash81`) and `trace_hash()` accessor. `JitCompiler::compile()` serialises
+each `Insn` as 18 canonical bytes (opcode 2B LE + a 4B LE + b 8B LE + c 4B LE) and calls
+`hash_bytes()` (SHA3-512 truncated to 256 bits). `ThreadedJitTrace::set_trace_hash()` stores
+the result. The hash covers only the instruction sequence, not register/stack state, which
+matches the `canonfs/jit/<trace_hash>.jit` caching key intent.
+
+**§3 Deterministic Register Allocation** — `ThreadedJitTrace` uses the VM's existing flat
+R0–R242 register file stored in `State::contexts[i].registers`. There are no host CPU
+registers involved; the mapping is trivially deterministic by construction.
+
+**§5 Axion OSR** — `AxRead`, `AxSet`, `AxVerify`, and `AxReport` are explicit cases in
+`ThreadedJitTrace::execute()` that trigger an OSR bailout: `ctx.pc` is rewound by one
+(so the interpreter resumes at the Axion opcode), `exit_kind` is set to `AxionBoundary`,
+and the trace returns immediately. The `vm.cpp` post-trace handler returns without
+invalidating the trace so it can be re-entered after the Axion boundary is resolved.
+The exit is annotated in the Axion log as `"axion-boundary"`.
+
+**§6 Repro Oracle** — `tests/cpp/jit_repro_oracle_test.cpp` (15 assertions):
+
+* [§2-a..c]: non-zero hash, stability across recompiles, discrimination across programs
+* [§5]: five distinct `ExitKind` values confirmed at compile time
+* [§6-a..b]: two independent interpreter runs of a 50-iteration hot loop yield identical
+  `CanonHash81(final register file)`; a loop-count mutation produces a different hash
+
+Test suite: `jit_repro_oracle_test` — **15/15 assertions passing**.
+
+**§4 CanonFS JIT Cache** — `JitTraceCache` (`include/t81/jit/jit_trace_cache.hpp`,
+`runtime/jit/jit_trace_cache.cpp`):
+
+* Wraps a `canonfs::Driver` (in-memory or persistent) to store compiled traces as
+  `ObjectType::CanonJitTrace` (0x17) blobs.
+* Wire format (little-endian): 4-byte header (`"JT" version reserved`) + 4-byte count +
+  32-byte trace_hash + 19 bytes per instruction (opcode 2B + a 4B + b 8B + c 4B +
+  literal_kind 1B). `literal_kind` is preserved so `LoadImm` register-tag semantics
+  are intact after deserialisation.
+* In-memory index maps `trace_hash → CanonRef` for O(log n) lookup within a session.
+  The persistent driver retains blob content across process restarts; the index is
+  rebuilt by re-calling `store()` with the recompiled trace (idempotent — same
+  `CanonRef` is returned for identical instruction sequences).
+* Axion hook forwarded to the underlying driver: a `Write`-deny verdict makes
+  `store()` return `std::nullopt`; the trace is never indexed.
+* Integrity check on deserialisation: the recomputed `trace_hash` must match the
+  32-byte value embedded in the payload; mismatch returns `nullptr`.
+
+Test suite: `jit_canonfs_cache_test` — **19/19 assertions passing** ([§4-a..i]).

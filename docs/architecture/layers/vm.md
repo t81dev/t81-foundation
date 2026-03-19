@@ -41,7 +41,7 @@ flowchart TD
     STEP["step()"]
     RUN["run_to_halt()"]
     STATE["State / ThreadContext"]
-    AX["Axion Engine"]
+    AX["Axion Governance Engine"]
     JIT["JitCompiler / compiled traces"]
     HELP["Internal helpers"]
 

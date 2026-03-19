@@ -3,7 +3,7 @@ tags: [proposal, architecture, performance]
 
 # RFC: Introduce t81::T81 – register-native 2-bit-per-trit balanced ternary SIMD integer
 
-**Status:** Proposed  
+**Status:** Accepted
 **Type:** Architecture / Performance Impact  
 **Created:** 2025-11-30  
 **Discussion:** https://github.com/t81dev/t81-foundation/discussions (TBD)
@@ -49,3 +49,23 @@ Balanced ternary already delivers precise arithmetic, but the tryte-based `Cell`
 ## Notes
 
 - This is pre-1.0, so non-breaking additive exports are allowed; the classic `Cell`/`T81Limb` stays immutable.
+
+## Acceptance Criteria
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| [A-0017-01] | `t81::T81` struct in `include/t81/native.hpp`; packs 128 trits as 2 bits/trit in `std::array<uint8_t,32>`; encoding `00=−1, 01=0, 10=+1` | met — `T81::EncodeTrit`/`DecodeTrit`/`PackDigits`/`UnpackDigits`; proved by `t81_native_property_test` [P1] |
+| [A-0017-02] | `operator-()`: negation via AVX2 (`_mm256_sub_epi8(0xAA, v)`) + scalar fallback; `−(−x) == x` | met — `native.hpp` AVX2 + scalar path; proved by `t81_native_property_test` [P2] (2 048 trials) |
+| [A-0017-03] | `operator+()`: addition via carry-map prefix scan (AVX2) + scalar carry chain; `x+0==x`, `x+(−x)==0` | met — `native.hpp` + `simd/prefix_scan.hpp`; proved by `t81_native_property_test` [P3,P4,P5] |
+| [A-0017-04] | Classic ↔ native conversion: `from_classic(T81Limb)` and `to_classic(T81)` round-trip losslessly within 48-trit overlap | met — `include/t81/conversion.hpp`; proved by `t81_native_conversion_test` |
+| [A-0017-05] | `include/t81/t81.hpp` master header includes `native.hpp` and `conversion.hpp`; no breaking changes to `core::T81Limb` / `core::Cell` | met — `t81.hpp` includes both; legacy headers untouched |
+| [A-0017-06] | Scalar fallback compiles and passes on non-AVX2 hosts; `__AVX2__` guard present | met — `#if defined(__x86_64__) && defined(__AVX2__)` guards in `native.hpp` and `prefix_scan.hpp` |
+
+## Acceptance Note (2026-03-15)
+
+All 6 criteria met. `t81::T81` is the register-native performance flagship; `core::T81Limb`
+remains the educational reference. RFC-0016 is superseded — `t81::simd` retains internal
+helpers (`ByteCarryMap`, `AddEntry`, `PrefixScan`) but does not expose a public `simd::T81`.
+
+Test suite: `t81_native_property_test` (15/15), `t81_native_conversion_test` (1/1),
+`t81_simd_add_helpers_test` (27/27) — **43 assertions passing**.

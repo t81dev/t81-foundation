@@ -28,11 +28,10 @@ def parse_index_rows(index_text: str) -> list[tuple[str, str, str]]:
 def read_status_from_rfc(text: str) -> str | None:
     top = "\n".join(text.splitlines()[:120])
     patterns = [
-        re.compile(r"^\s*\*\*Status:\*\*\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
-        re.compile(r"^\s*\*\*Status\*\*:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
-        re.compile(r"^\s*Status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
-        re.compile(r"^\s*status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
-        re.compile(r"^\s*version:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?\*\*Status:\*\*\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?\*\*Status\*\*:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?Status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
     ]
     for pat in patterns:
         m = pat.search(top)
@@ -44,9 +43,10 @@ def read_status_from_rfc(text: str) -> str | None:
 def read_superseded_by(text: str) -> str | None:
     top = "\n".join(text.splitlines()[:150])
     patterns = [
-        re.compile(r"^\s*\*\*Superseded-By:\*\*\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
-        re.compile(r"^\s*Superseded-By:\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
-        re.compile(r"^\s*superseded_by:\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?\*\*Superseded-By:\*\*\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?\*\*Superseded-By\*\*:\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?Superseded-By:\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
+        re.compile(r"^\s*(?:[-*]\s+)?superseded_by:\s*(RFC-[0-9A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
     ]
     for pat in patterns:
         m = pat.search(top)

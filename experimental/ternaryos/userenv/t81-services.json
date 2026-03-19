@@ -1,0 +1,44 @@
+{
+  "services": [
+    {
+      "id": "t81-session-mgr",
+      "binary": "t81-session-mgr",
+      "canon_hash": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
+      "activation": "required",
+      "depends": [],
+      "capabilities": ["SessionCreate", "TtyAllocate"],
+      "start_timeout_ms": 5000,
+      "restart_policy": "always"
+    },
+    {
+      "id": "t81-login",
+      "binary": "t81-login", 
+      "canon_hash": "cafebabecafebabecafebabecafebabecafebabe",
+      "activation": "on_demand",
+      "depends": ["t81-session-mgr"],
+      "capabilities": ["SessionCreate", "TtyRead", "TtyWrite"],
+      "start_timeout_ms": 3000,
+      "restart_policy": "never"
+    },
+    {
+      "id": "t81sh",
+      "binary": "t81sh",
+      "canon_hash": "feedfacefeedfacefeedfacefeedfacefeedface",
+      "activation": "on_demand", 
+      "depends": ["t81-session-mgr"],
+      "capabilities": ["ShellExec", "CanonFSWrite"],
+      "start_timeout_ms": 2000,
+      "restart_policy": "never"
+    },
+    {
+      "id": "canonfs-daemon",
+      "binary": "canonfs-daemon",
+      "canon_hash": "1234567890abcdef1234567890abcdef12345678",
+      "activation": "required",
+      "depends": [],
+      "capabilities": ["CanonFSWrite"],
+      "start_timeout_ms": 8000,
+      "restart_policy": "always"
+    }
+  ]
+}

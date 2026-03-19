@@ -19,6 +19,9 @@ specification authority, freeze boundaries, or determinism claim scope.
 - tiers/
 - ../docs/status/EXPERIMENTAL_SURFACE_INVENTORY.md
 
+Note: `DPE (Parallel Execution)` now lives at `include/t81/dpe/` and `src/dpe/`
+and is no longer part of this directory index.
+
 ## Versioning Statement
 
 Operational index only. Authority hierarchy remains:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -192,6 +193,55 @@ struct StructuredEvent {
   std::string storage_class;
   std::string numeric_class;
   bool strict_core_eligible{false};
+
+  // AX-M6: Verbatim reason-string concatenation for Stable promotion
+  // Returns canonical format: "segment=<name> addr=<value> action=<desc>"
+  // Falls back to the original reason string when structured fields are not
+  // populated — preserving specific audit details emitted by the VM.
+  [[nodiscard]] std::string to_canonical_reason_string() const {
+    std::stringstream ss;
+
+    // Already in canonical segment format — return verbatim.
+    if (reason.find("segment=") != std::string::npos &&
+        reason.find("addr=") != std::string::npos &&
+        reason.find("action=") != std::string::npos) {
+      return reason;
+    }
+
+    // Structured fields not populated — canonical form IS the original reason.
+    // This preserves specific audit details emitted by the VM (e.g.
+    // "stack frame allocated", "policy deny: axreport", "TLOADHASH canonfs_miss hash=...").
+    // Exception: when reason is also empty, emit the full unknown fallback.
+    if (storage_class.empty() && event_type.empty() && reason_code.empty()) {
+      if (!reason.empty()) return reason;
+      return "segment=unknown action=unknown";
+    }
+
+    // Construct canonical format from structured fields.
+    ss << "segment=" << (storage_class.empty() ? "unknown" : storage_class);
+
+    if (handle_id != 0) {
+      ss << " addr=" << handle_id;
+    } else if (!reason.empty()) {
+      size_t addr_pos = reason.find("addr=");
+      if (addr_pos != std::string::npos) {
+        size_t start = addr_pos + 5;
+        size_t end = reason.find(' ', start);
+        if (end == std::string::npos) end = reason.length();
+        ss << " addr=" << reason.substr(start, end - start);
+      }
+    }
+
+    if (!event_type.empty()) {
+      ss << " action=" << event_type;
+    } else if (!reason_code.empty()) {
+      ss << " action=" << reason_code;
+    } else {
+      ss << " action=unknown";
+    }
+
+    return ss.str();
+  }
 };
 
 }  // namespace t81::axion

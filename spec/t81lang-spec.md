@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -17,10 +17,10 @@ ______________________________________________________________________
 
 # T81Lang Specification
 
-Version 1.2 — Draft
+Version 1.9.0 — Stable
 
-Status: Draft\
-Last Revised: 2026-03-01\
+Status: Stable\
+Last Revised: 2026-03-16\
 Applies to: TISC, T81VM, Axion, Data Types
 
 T81Lang is the **high-level, deterministic, ternary-native programming language** of the T81 Ecosystem.\
@@ -75,6 +75,8 @@ A simplified normative grammar follows.\
 program       ::= declaration*
 
 declaration   ::= fn_decl
+                | agent_decl
+                | foreign_decl
                 | type_decl
                 | record_decl
                 | enum_decl
@@ -85,6 +87,13 @@ declaration   ::= fn_decl
 fn_decl       ::= annotation* "fn" identifier
                   [ "[" generic_params "]" ]
                   "(" parameters ")" [ "->" type ] block
+
+agent_decl    ::= "agent" identifier "{" behavior_decl* "}"
+behavior_decl ::= "behavior" identifier "(" parameters ")" "->" type block
+
+foreign_decl  ::= "foreign" [ policy_qualifier ] "{" foreign_fn* "}"
+policy_qualifier ::= "deterministic" | "governed" | "quarantined"
+foreign_fn    ::= "fn" identifier "(" parameters ")" "->" type ";"
 
 annotation    ::= "@" identifier [ "(" annotation_args ")" ]
 annotation_args ::= annotation_arg { "," annotation_arg }
@@ -229,7 +238,7 @@ Tensor[T]              // dynamic-rank tensor
 ```
 
 Angle brackets `<...>` are **legacy** and must not appear in any new code or grammar.
-The C++20 compiler frontend actively rejects this syntax to enforce the modern style.
+The C++23 compiler frontend actively rejects this syntax to enforce the modern style.
 
 - Generic parameters are separated by commas when more than one is required.
 - The first parameter is always the element type.
@@ -401,7 +410,12 @@ fn write_log(x: T81BigInt) -> Unit { ... }
 Effectful operations include:
 
 - memory mutation
-- VM I/O channels (to be defined)
+- VM I/O channels — accessed via `std.io` (`io_stream`, `io_net`) and `std.async`
+  (`async_thread`, `async_promise`) functions, all of which require Tier 2 or above.
+  Every I/O operation lowers to `AXREAD` or `AXSET` TISC opcodes and is intercepted
+  by the Axion governance kernel before any side effect is committed. The `print`
+  built-in is the sole unrestricted I/O surface; it lowers to the `PRINT` opcode and
+  requires no tier annotation.
 - Axion interactions
 - tensor heavy ops (if declared impure via cost annotations)
 
@@ -434,6 +448,51 @@ record Point {
 - `@module(path)` — declares the module namespace using a dot-separated path (e.g.,
   `geometry.shapes`). This is informational metadata; the compiler does not enforce
   module isolation from this annotation alone.
+
+### 3.5 Agent Declarations (RFC-0015)
+
+An `agent` declaration introduces a first-class agentic entity whose named `behavior`
+functions are called via `AGENT_INVOKE` rather than ordinary `CALL`.
+
+#### Syntax
+
+```t81
+agent_decl    ::= "agent" identifier "{" behavior_decl* "}"
+behavior_decl ::= "behavior" identifier "(" parameters ")" "->" type block
+```
+
+#### Semantics
+
+- An `agent` declaration MUST appear at the top level (not inside a function or block).
+- Agent names share the same namespace as functions and variables; duplicate agent names
+  are a compile-time error.
+- Each `behavior` declares a named, stateless function body within the agent.
+  Behavior names MUST be unique within an agent.
+- Behavior names that conflict with language keywords (e.g., `infer`) are permitted
+  as contextual identifiers within the `behavior` position.
+- Behaviors are called via `AgentName.behaviorName(args)` syntax.  The semantic
+  analyzer type-checks argument counts and types against the declared behavior
+  signature; the IR generator lowers the call to `AGENT_INVOKE`.
+- Every `AGENT_INVOKE` emission causes the Axion Policy Kernel to record an audit
+  event before dispatch.
+
+#### `infer` sugar
+
+```t81
+infer AgentName(args)
+```
+
+desugars to `AgentName.infer(args)` and lowers to `AGENT_INVOKE`.  If the named agent
+does not declare a behavior named `infer`, this is a compile-time error.
+
+#### Error conditions
+
+| Condition | Error |
+| --------- | ----- |
+| Duplicate agent name | Semantic error |
+| Call to undeclared behavior | Semantic error |
+| `infer Agent(…)` where agent has no `infer` behavior | Semantic error |
+| Wrong argument count at call site | Semantic error |
 
 ______________________________________________________________________
 
@@ -736,6 +795,15 @@ Maps IR instructions to TISC sequences:
 | matrix mul | `TMATMUL` |
 | fn call | `CALL`, argument push, return capture |
 | recursion | same as fn call; Axion receives call depth |
+| `foreign.<name>(args)` | Push args in order, `FFI_CALL RD, arg_count` with `text_literal = "<name>"`; result in RD |
+| `std.tnn.matmul(act, wt)` | Evaluate args, `TWMATMUL RD, R_ACT, R_WT` |
+| `std.tnn.quant(src, thr)` | Evaluate args, `TQUANT RD, R_SRC, R_THR` |
+| `std.tnn.attn(q, k, v)` | Evaluate args, `TATTN RD, R_Q, PACK(R_K, R_V)` |
+| `std.tnn.embed(table, idx)` | Evaluate args, `TWEMBED RD, R_TABLE, R_IDX` |
+| `std.tnn.accum(wt, act)` | Evaluate args, `TERNACCUM RD, R_WT, R_ACT` |
+| `std.tnn.act(src, mode)` | Evaluate args, `TACT RD, R_SRC, R_MODE` |
+| `std.crypto.polymul(a, b)` | Evaluate args, `POLYMUL RD, R_A, R_B` |
+| `std.crypto.polymod(a, q)` | Evaluate args, `POLYMOD RD, R_A, R_Q` |
 
 Lowering MUST also emit float/fraction/symbol literals into their respective
 program pools before they are referenced by any instruction, and all references
@@ -1047,6 +1115,101 @@ Operates on `T81Bytes`. Mirrors `std.text` with byte semantics.
 | `std.tensor.matmul` | `(Tensor[T], Tensor[T]) → Tensor[T]` | Matrix multiplication (lowers to `TMATMUL`). |
 | `std.tensor.load` | `(T81String) → i32` | Load tensor weights from a named resource; returns a VM handle. |
 
+### 9.7 std.tnn — Ternary Neural Network Operations (RFC-0037)
+
+Multiplication-free neural inference over the ternary weight domain {−1, 0, +1}.
+All functions require Tier 2+. All weights must be `T81Qutrit`-domain tensors
+(values snapped to {−1.0, 0.0, +1.0} by `TQUANT` or pre-quantized on load).
+Accumulators are `T81BigInt`-exact — no floating-point multiply is performed.
+
+See `spec/rfcs/RFC-0037-tnn-stdlib.md` for full normative text and
+`include/t81/tensor/ternary_native.hpp` for the math-layer reference.
+
+| Function | Signature | Lowers to | Description |
+| :--- | :--- | :--- | :--- |
+| `std.tnn.matmul` | `(Tensor, Tensor) → Tensor` | `TWMATMUL` | Ternary-weight matrix multiply; T81BigInt accumulator; output cast to float. |
+| `std.tnn.quant` | `(Tensor, T81Float) → Tensor` | `TQUANT` | Quantize any tensor to ternary {−1,0,+1} using caller-supplied threshold. |
+| `std.tnn.attn` | `(Tensor, Tensor, Tensor) → Tensor` | `TATTN` | Ternary Q/K attention: Q·Kᵀ via `TWMATMUL`, softmax, float V-projection. |
+| `std.tnn.embed` | `(Tensor, T81BigInt) → Tensor` | `TWEMBED` | Row-gather from T81Qutrit embedding table; output stays T81Qutrit. |
+| `std.tnn.accum` | `(Tensor, Tensor) → T81Float` | `TERNACCUM` | Scalar 1-D ternary dot product; returns `T81Float`-wrapped BigInt result. |
+| `std.tnn.act` | `(Tensor, T81BigInt) → T81BigInt` | `TACT` | Ternary activation gate with Axion ceiling policy (mode byte selects function). |
+
+**TACT mode bytes** (normative registry in `spec/tisc/opcode-registry.md §TACT Modes`):
+
+- `0x01` — `TernaryStep`: `x > 0.5 → +1; x < −0.5 → −1; else 0`
+- `0x02` — `TanhQuantized`: `tanh(x) > 0.5 → +1; tanh(x) < −0.5 → −1; else 0`
+
+**Usage example:**
+
+```t81
+fn tnn_layer(input: T81Float, thr: T81Float, wt: Tensor, mode: T81BigInt) -> T81BigInt {
+    let q: Tensor   = std.tnn.quant(input, thr);
+    let z: Tensor   = std.tnn.matmul(q, wt);
+    let a: T81Float = std.tnn.accum(z, q);
+    return std.tnn.act(a, mode);
+}
+```
+
+### 9.8 std.crypto — Ternary Lattice Cryptography (RFC-0038)
+
+Negacyclic polynomial arithmetic over ternary coefficients {−1, 0, +1} in
+`Z[x]/(x^n + 1)` — the primitive building block for NTRU / RLWE / Kyber-style
+post-quantum key encapsulation. No integer multiplications are required:
+ternary × ternary is a trit-flip operation only. Accumulators are `T81BigInt`-exact.
+
+All functions require Tier 2+. See `spec/rfcs/RFC-0038-lattice-crypto.md` and
+`include/t81/tensor/lattice_crypto.hpp` for the normative math-layer reference.
+
+| Function | Signature | Lowers to | Description |
+| :--- | :--- | :--- | :--- |
+| `std.crypto.polymul` | `(Tensor, Tensor) → Tensor` | `POLYMUL` | Negacyclic polynomial multiply in `Z[x]/(x^n+1)`; ternary coefficients; T81BigInt-exact. |
+| `std.crypto.polymod` | `(Tensor, T81BigInt) → Tensor` | `POLYMOD` | Centered coefficient reduction mod q: maps every coefficient to `(−q/2, q/2]`. |
+
+**Negacyclic wrap rule** (normative): when the index `i + j ≥ n` during convolution,
+the resulting coefficient picks up a sign flip from the ring relation `x^n ≡ −1`.
+Formally: `C[k] = Σ A[i]·B[(k−i+n) mod n] · (−1 if i+j ≥ n else +1)`.
+
+**Usage example:**
+
+```t81
+fn poly_keymul(a: Tensor, b: Tensor, q: T81BigInt) -> Tensor {
+    let c: Tensor = std.crypto.polymul(a, b);
+    return std.crypto.polymod(c, q);
+}
+```
+
+### 9.9 foreign — Governed External Functions (RFC-0036)
+
+The `foreign` keyword declares external functions whose signatures are known to the
+semantic analyzer and whose calls lower to `FFI_CALL` at the IR level. Foreign
+functions are not stdlib entries — they are user-declared — but the SA enforces
+their arity and type contracts like any builtin.
+
+**Declaration syntax:**
+
+```t81
+foreign deterministic {
+    fn sin(x: T81Float) -> T81Float;
+    fn exp(x: T81Float) -> T81Float;
+}
+```
+
+**Call syntax:** `foreign.<name>(args)` — the dotted `foreign.` prefix is required
+at all call sites to distinguish FFI calls from T81Lang stdlib calls.
+
+**Policy qualifiers** (normative):
+
+| Qualifier | Semantics |
+| :--- | :--- |
+| `deterministic` | Callee MUST produce bit-identical output for identical inputs; Axion verifies; violation raises `SecurityFault`. |
+| `governed` | Callee is subject to full Axion policy gate (same as built-in effectful calls). |
+| `quarantined` | Callee runs in an isolated context; any side-effects are captured in audit trail before being committed. |
+| *(none)* | Default: Axion observes but does not enforce determinism or isolation. |
+
+**Lowering rule:** `foreign.<name>(a, b)` → push args, emit `FFI_CALL RD, 2` with
+`text_literal = "name"`. The VM dispatcher resolves `name` through the
+`FFILibraryRegistry` at runtime.
+
 ______________________________________________________________________
 
 # Cross-References
@@ -1064,6 +1227,16 @@ ______________________________________________________________________
 
 - **Lowering Targets** → [`tisc-spec.md`](tisc-spec.md#5-opcode-classes)
 - **Execution Semantics** → [`tisc-spec.md`](tisc-spec.md#1-machine-model)
+- **Ternary-Native Inference Opcodes** → [`tisc-spec.md §5.17`](tisc-spec.md#517-ternary-native-inference-operations-rfc-0034) (RFC-0034)
+- **Governed FFI Opcodes** → [`tisc-spec.md §5.18`](tisc-spec.md#518-governed-foreign-function-interface-rfc-0036--rfc-00b8) (RFC-0036 + RFC-00B8)
+- **Lattice Crypto Opcodes** → [`tisc-spec.md §5.19`](tisc-spec.md#519-ternary-lattice-cryptography-rfc-0038) (RFC-0038)
+- **Opcode Registry** → [`tisc/opcode-registry.md`](tisc/opcode-registry.md)
+
+## RFCs
+
+- **RFC-0036** (T81Lang FFI Grammar) → [`spec/rfcs/RFC-0036-t81lang-ffi-grammar.md`](rfcs/RFC-0036-t81lang-ffi-grammar.md)
+- **RFC-0037** (TNN stdlib) → [`spec/rfcs/RFC-0037-tnn-stdlib.md`](rfcs/RFC-0037-tnn-stdlib.md)
+- **RFC-0038** (Lattice Crypto) → [`spec/rfcs/RFC-0038-lattice-crypto.md`](rfcs/RFC-0038-lattice-crypto.md)
 
 ## T81VM
 
@@ -1083,7 +1256,7 @@ ______________________________________________________________________
 
 # Appendix A: Formal Grammar
 
-This appendix contains the complete, normative EBNF grammar for T81Lang v1.2.
+This appendix contains the complete, normative EBNF grammar for T81Lang v1.3.
 The grammar matches the recursive-descent parser in `lang/frontend/parser.cpp`.
 
 ## A.1 Lexical Elements
@@ -1250,12 +1423,21 @@ block ::= "{" statement* expression? "}"
 program ::= declaration*
 
 declaration ::= function_declaration
+              | agent_declaration
+              | foreign_declaration
               | type_declaration
               | record_declaration
               | enum_declaration
               | var_declaration
               | let_declaration
               | statement
+
+agent_declaration   ::= "agent" identifier "{" behavior_declaration* "}"
+behavior_declaration ::= "behavior" identifier "(" parameters? ")" "->" type block
+
+foreign_declaration  ::= "foreign" [ policy_qualifier ] "{" foreign_fn_decl* "}"
+policy_qualifier     ::= "deterministic" | "governed" | "quarantined"
+foreign_fn_decl      ::= "fn" identifier "(" parameters? ")" "->" type ";"
 
 annotation      ::= "@" identifier ( "(" annotation_args ")" )?
 annotation_args ::= annotation_arg ( "," annotation_arg )*

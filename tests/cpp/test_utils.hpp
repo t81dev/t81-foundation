@@ -240,6 +240,26 @@ public:
     return ss.str();
   }
 
+  std::any visit(const AgentDecl& stmt) override {
+    std::stringstream ss;
+    ss << "(agent " << stmt.name.lexeme;
+    for (const auto& b : stmt.behaviors) {
+      ss << " (behavior " << b.name.lexeme << ")";
+    }
+    ss << ")";
+    return ss.str();
+  }
+
+  std::any visit(const ForeignDecl& stmt) override {
+    std::stringstream ss;
+    ss << "(foreign " << stmt.policy;
+    for (const auto& f : stmt.functions) {
+      ss << " (fn " << f.name.lexeme << ")";
+    }
+    ss << ")";
+    return ss.str();
+  }
+
   std::any visit(const BinaryExpr& expr) override {
     return parenthesize(expr.op.lexeme, {std::any(&expr.left), std::any(&expr.right)});
   }
@@ -398,8 +418,8 @@ public:
     return ss.str();
   }
 
-  std::any visit(const SetLiteralExpr& expr) override { return std::string("set"); }
-  std::any visit(const MapLiteralExpr& expr) override { return std::string("map"); }
+  std::any visit(const SetLiteralExpr& /*expr*/) override { return std::string("set"); }
+  std::any visit(const MapLiteralExpr& /*expr*/) override { return std::string("map"); }
 
 private:
   std::string parenthesize(std::string_view name, const std::vector<const Expr*>& exprs) {

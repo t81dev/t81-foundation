@@ -1,9 +1,19 @@
 # RFC-00A5: LLM Backend Adapter Interface (Engine-Agnostic)
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Superseded\
+Superseded-By: RFC-0032 §4 (Phase 4)\
 Author: T81 Foundation Architecture Team\
-Applies to: Inference Backends, LLM Integration, Hardware Abstraction
+Applies to: Inference Backends, LLM Integration, Hardware Abstraction\
+Updated: 2026-03-15
+
+> **Supersession note (2026-03-15):** The engine-agnostic adapter vision
+> described here (llama.cpp, ONNX Runtime, TensorRT backends) was rejected
+> during RFC-0032 audit as fundamentally non-deterministic.  The concrete
+> realization is `T81VmBackend` — a deterministic-only backend that dispatches
+> RFC-0026 AI opcodes (ATTN, QMATMUL, EMBED, WLOAD) through the T81 VM
+> interpreter via the Axion `AIHookEngine`.  See
+> `include/t81/vm/ai_backend/backend_adapter.hpp` and RFC-0032 §4.
 
 ______________________________________________________________________
 

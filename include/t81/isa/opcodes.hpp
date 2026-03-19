@@ -205,6 +205,40 @@ enum class Opcode : std::uint8_t {
   GATHER,   // Sparse gather: GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)
   SCATTER,  // Sparse scatter-add: SCATTER RD, R_DST, PACK(R_IDX, R_SRC)
   Int2BigInt,
+  // TISC v0.4 extensions (RFC-0005 §2.2 + §2.4) — contiguous-layout vector helpers
+  VLoad,          // Shape-aware tensor reshape: VLoad RD, RS_SRC, RS_SHAPE
+  VStore,         // Shape-validated tensor copy: VStore RD, RS_SRC, RS_SHAPE
+  VAdd,           // Elementwise add on handles: VAdd RD, RS1, RS2
+  VFma,           // Fused multiply-accumulate: VFma RD, RS1, RS2  (RD = RS1*RS2 + RD)
+  ReadIsaVersion, // Write ISA version constant: ReadIsaVersion RD
+  // RFC-0006 §2.3 — Deterministic GC safepoint
+  GcSafepoint,    // Explicit GC safepoint: GcSafepoint (no operands); triggers a DGC cycle
+  // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
+  // Encoding: AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
+  // Axion observes every AgentInvoke for tier-check and policy enforcement.
+  AgentInvoke,
+  // RFC-0034 §5.17 — Ternary-Native Inference Operations (Tier 2+)
+  // Opcode bytes: TWMATMUL=0xC2, TQUANT=0xC3, TATTN=0xC4,
+  //               TWEMBED=0xC5, TERNACCUM=0xC6, TACT=0xC7
+  TWMATMUL,   // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT,     // Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
+  TATTN,      // Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED,    // Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM,  // Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
+  TACT,       // Ternary activation:    TACT     RD, R_SRC, R_MODE
+  // RFC-00B8 — Governed Foreign Function Interface
+  FFICall,     // Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
+  FFIRegister, // Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
+  FFIPolicySet, // Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
+  // RFC-0038 — Ternary Lattice Cryptography Primitives
+  POLYMUL,  // Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
+  POLYMOD,  // Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
+  // RFC-0039 — NTRU-KEM polynomial ring arithmetic
+  TVecSub,  // Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
+  // RFC-0040 — Explicit SWAR tensor ops over ExactTrit tensors.
+  TNOT_SWAR,
+  TAND_SWAR,
+  TOR_SWAR,
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -597,12 +631,57 @@ enum class Opcode : std::uint8_t {
       return "SCATTER";
     case Opcode::Int2BigInt:
       return "Int2BigInt";
+    case Opcode::VLoad:
+      return "VLoad";
+    case Opcode::VStore:
+      return "VStore";
+    case Opcode::VAdd:
+      return "VAdd";
+    case Opcode::VFma:
+      return "VFma";
+    case Opcode::ReadIsaVersion:
+      return "ReadIsaVersion";
+    case Opcode::GcSafepoint:
+      return "GcSafepoint";
+    case Opcode::AgentInvoke:
+      return "AgentInvoke";
+    // RFC-0034 §5.17 — Ternary-Native Inference Operations
+    case Opcode::TWMATMUL:
+      return "TWMATMUL";
+    case Opcode::TQUANT:
+      return "TQUANT";
+    case Opcode::TATTN:
+      return "TATTN";
+    case Opcode::TWEMBED:
+      return "TWEMBED";
+    case Opcode::TERNACCUM:
+      return "TERNACCUM";
+    case Opcode::TACT:
+      return "TACT";
+    case Opcode::FFICall:
+      return "FFICall";
+    case Opcode::FFIRegister:
+      return "FFIRegister";
+    case Opcode::FFIPolicySet:
+      return "FFIPolicySet";
+    case Opcode::POLYMUL:
+      return "POLYMUL";
+    case Opcode::POLYMOD:
+      return "POLYMOD";
+    case Opcode::TVecSub:
+      return "TVecSub";
+    case Opcode::TNOT_SWAR:
+      return "TNOT_SWAR";
+    case Opcode::TAND_SWAR:
+      return "TAND_SWAR";
+    case Opcode::TOR_SWAR:
+      return "TOR_SWAR";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TOR_SWAR) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::TOR_SWAR) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -610,6 +689,7 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::Int2BigInt)
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::Int2BigInt);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TOR_SWAR);
 }
+
 }  // namespace t81::tisc

@@ -35,8 +35,10 @@ Status AxionContext::submit(const Signal& sig, const Buffer& in, Buffer& out) {
   submit_ctx.instruction_count = sig.kind;  // Using kind as a pseudo-count for policy matching
 
   // Create a reason for the trace that the policy engine can inspect.
-  submit_ctx.trace_reasons.push_back("signal kind=" + std::to_string(sig.kind));
-  submit_ctx.trace_reasons.push_back("signal flags=" + std::to_string(sig.flags));
+  const std::string reason_kind = "signal kind=" + std::to_string(sig.kind);
+  const std::string reason_flags = "signal flags=" + std::to_string(sig.flags);
+  submit_ctx.trace_reasons.push_back(reason_kind);
+  submit_ctx.trace_reasons.push_back(reason_flags);
 
   Verdict v = evaluate(submit_ctx);
   if (v.kind == VerdictKind::Deny) {

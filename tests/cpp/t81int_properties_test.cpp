@@ -24,7 +24,7 @@ bool run_properties_test(std::mt19937_64& rng) {
   // Reduce safe limit for N=9 to 10 to be absolutely sure we don't hit overflow
   // during associativity/distributivity checks.
   std::int64_t safe_limit = 0;
-  if (N == 9)
+  if constexpr (N == 9)
     safe_limit = 10;
   else
     safe_limit = 1000;

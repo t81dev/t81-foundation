@@ -1,7 +1,8 @@
 # RFC-00A7: UX Integration for AI in T81 (CLI + Observability + Workflows)
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Superseded\
+Superseded-By: RFC-0033\
 Author: T81 Foundation Architecture Team\
 Applies to: CLI Tools, Developer Experience, Observability Systems
 
@@ -494,3 +495,25 @@ ______________________________________________________________________
 - [Deterministic Evidence Protocol](RFC-00A1-deterministic-evidence-protocol.md)
 - [Axion Policy Hooks](RFC-00A6-axion-policy-hooks.md)
 - [LLM Backend Adapter](RFC-00A5-llm-backend-adapter.md)
+
+______________________________________________________________________
+
+## Supersession Note (2026-03-15)
+
+**Status: Superseded by RFC-0033 (Dual TUI Frontends) + existing CLI infrastructure.**
+
+The interactive AI UX surface specified in this RFC is realized through:
+
+- `t81 agent` (RFC-0033 Phase 3) — persistent session, 14 slash commands (`/compile`, `/run`,
+  `/check`, `/hash`, `/infer`, `/axion`, `/policy`, `/allow`, `/trits`, `/tier`, `/save`,
+  `/write`, `/open`, `/clear`), trit-probability bar, context side-panel; covers the
+  interactive inference, policy, and determinism workflow described in §2–3.
+- `t81 studio` (RFC-0033 Phase 2) — CanonFS Browser, Determinism Dashboard, Axion Policy
+  Inspector, Trace Visualizer, REPL, Command Palette; covers the observability surface in §3.
+- Existing `t81` CLI — `t81 weights quantize` (quantization), `t81 run`, `t81 check`,
+  `t81 hash`; covers core AI-adjacent operations.
+
+The `t81 ai <category> <action>` command hierarchy proposed here is not implemented
+and is not on the forward roadmap; the TUI agent interface is the accepted delivery.
+The YAML workflow runner, VS Code extension, and observability dashboard (§4–5) are
+deferred future work tracked as non-blocking follow-ons in RFC-0033 §Future Work.

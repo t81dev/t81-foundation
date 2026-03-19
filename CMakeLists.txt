@@ -4,6 +4,19 @@ if(POLICY CMP0135)
 endif()
 project(t81 LANGUAGES C CXX)
 
+# ---------- Version ----------
+set(T81_VERSION_MAJOR 1)
+set(T81_VERSION_MINOR 9)
+set(T81_VERSION_PATCH 0)
+set(T81_VERSION "${T81_VERSION_MAJOR}.${T81_VERSION_MINOR}.${T81_VERSION_PATCH}")
+
+# Generate version header
+configure_file(
+  include/t81/config.hpp.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/t81/config.hpp
+  @ONLY
+)
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Options
@@ -12,12 +25,14 @@ option(T81_BUILD_TESTS    "Build T81 C++ unit tests" ON)
 option(T81_BUILD_BENCHMARKS "Build T81 benchmark suite" ON)
 option(T81_BUILD_FUZZ_TESTS "Build frontend fuzz target" ON)
 option(T81_RUN_FRONTEND_FUZZ_IN_CTEST "Run frontend fuzz target via ctest matrix" OFF)
+option(T81_ENABLE_LIBFUZZER "Link fuzz_parser/fuzz_vm with libFuzzer driver (-fsanitize=fuzzer); requires Clang with libFuzzer support" OFF)
 option(T81_ENABLE_ASAN "Enable AddressSanitizer for supported compilers" OFF)
 option(T81_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer for supported compilers" OFF)
 option(T81_USE_CXX23 "Build with C++23 language mode (fallback: C++20)" ON)
 option(T81_TRITWISE_PROFILE "Enable profiling for tritwise operations" OFF)
 option(T81_STRICT_DETERMINISTIC_FLOAT "Use deterministic float math paths where available" ON)
 option(T81_ENABLE_LLAMA_CPP "Enable experimental llama.cpp adapter (non-DCP)" OFF)
+option(T81_BUILD_DIAGNOSTICS "Build off-core floating-point diagnostic tools (NOT part of the deterministic core)" OFF)
 option(T81_BUILD_TUI "Build TUI frontends: t81 studio (human) and t81 agent (AI-native) — RFC-0033" ON)
 option(T81_EXPORT_LLAMA_ADAPTER
   "Export/install t81_llama_adapter (currently unsupported with vendored llama.cpp)"
@@ -108,7 +123,14 @@ else()
 endif()
 
 if(MSVC)
-    add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189)
+    add_compile_options(/wd4244 /wd4307 /wd4018 /wd4101 /wd4189 /wd4996 /wd4456)
+endif()
+
+# warn-strict mode: suppress -Wextra subwarnings that are not Windows CI issues.
+# These must come AFTER -Wall/-Wextra above so they take effect.
+option(T81_WARN_STRICT "Strict warning scan mode (warn-strict preset)" OFF)
+if(T81_WARN_STRICT AND NOT MSVC)
+    add_compile_options(-Wno-unused-parameter -Wno-missing-field-initializers)
 endif()
 
 if(NOT MSVC)
@@ -138,21 +160,13 @@ add_library(t81_core STATIC
   src/canonfs/persistent_driver.cpp
   core/determinism/canon_hash81.cpp
   core/math/t81_soft_math/t81_soft_math.cpp
-  experimental/hanoi/error.cpp
-  experimental/hanoi/in_memory_kernel.cpp
-  experimental/tiers/cog/promotion.cpp
-  experimental/tiers/cog/tier1/symbolic.cpp
-  experimental/tiers/cog/tier2/reflective.cpp
-  experimental/tiers/cog/tier3/recursive.cpp
-  experimental/tiers/cog/tier4/tier4_loop.cpp
-  experimental/distributed/distributed.cpp
-  experimental/tiers/cog/tier5/infinite.cpp
   src/codec/base243.cpp
   src/codec/base81.cpp
   src/codec/base81_balanced.cpp
   src/codec/base81_packed.cpp
   src/codec/metadata.cpp
   src/codec/trit_packing.cpp
+  src/cog/v1/symbolic_graph.cpp
   src/crypto/sha3.cpp
   src/setun/bridge.cpp
 )
@@ -172,6 +186,23 @@ target_include_directories(t81_tracing PRIVATE
 )
 target_sources(t81_core PRIVATE $<TARGET_OBJECTS:t81_tracing>)
 
+add_library(t81_experimental STATIC
+  experimental/hanoi/error.cpp
+  experimental/hanoi/in_memory_kernel.cpp
+  experimental/tiers/cog/promotion.cpp
+  experimental/tiers/cog/tier2/reflective.cpp
+  experimental/tiers/cog/tier3/recursive.cpp
+  experimental/tiers/cog/tier4/tier4_loop.cpp
+  experimental/distributed/distributed.cpp
+  experimental/tiers/cog/tier5/infinite.cpp
+)
+target_link_libraries(t81_experimental PUBLIC t81_core)
+target_compile_features(t81_experimental PUBLIC ${T81_CXX_STD_FEATURE})
+target_include_directories(t81_experimental PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
 if(T81_IS_X86_64)
   set(T81_AVX2_SOURCE src/simd/base81_digits_avx2.cpp)
   target_sources(t81_core PRIVATE ${T81_AVX2_SOURCE})
@@ -179,6 +210,22 @@ if(T81_IS_X86_64)
     set_source_files_properties(${T81_AVX2_SOURCE} PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
   endif()
 endif()
+
+# =============================================================================
+# Promoted AI subsystem libraries (RFC-0032)
+# =============================================================================
+
+# t81_math_quantization — deterministic ternary codec (RFC-0032 Phase 1, C-01).
+# Integer-only; no float, no timing, no external deps. Safe for deterministic core.
+add_library(t81_math_quantization STATIC
+  core/math/quantization/ternary_codec.cpp
+)
+target_compile_features(t81_math_quantization PUBLIC ${T81_CXX_STD_FEATURE})
+target_include_directories(t81_math_quantization PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+target_link_libraries(t81_math_quantization PUBLIC t81_core)
 
 # =============================================================================
 # Other libraries
@@ -191,13 +238,24 @@ add_library(t81_axion STATIC
   kernel/axion/policy_engine.cpp
   kernel/axion/policy_serialization.cpp
   kernel/axion/canonfs_hook.cpp
+  # RFC-0032 Phase 3 — promoted AI governance components
+  kernel/axion/ai_hooks.cpp
+  kernel/axion/ai_model_loader.cpp
   src/axion/policy_validator.cpp
 )
 target_link_libraries(t81_axion PUBLIC t81_core)
-target_include_directories(t81_axion PUBLIC
+
+# =============================================================================
+# FFI Library - RFC-00B8 Governed Foreign Function Interface
+# =============================================================================
+add_library(t81_ffi STATIC
+  core/ffi/ffi_dispatcher.cpp
+)
+target_include_directories(t81_ffi PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+target_link_libraries(t81_ffi PUBLIC t81_core)
 
 add_library(t81_io STATIC src/io/tensor_loader.cpp)
 target_link_libraries(t81_io PUBLIC t81_core)
@@ -216,6 +274,7 @@ target_include_directories(t81_c_api
 )
 
 add_library(t81_tool_model STATIC
+  tooling/model/gguf_import_bridge.cpp
   tooling/model/weights.cpp
   tooling/model/weights_t81w_emitter.cpp
 )
@@ -224,6 +283,10 @@ target_include_directories(t81_tool_model PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+if(T81_ENABLE_LLAMA_CPP)
+  target_link_libraries(t81_tool_model PRIVATE $<BUILD_INTERFACE:llama>)
+  target_compile_definitions(t81_tool_model PRIVATE T81_HAS_LLAMA_CPP=1)
+endif()
 
 if(T81_ENABLE_LLAMA_CPP)
   add_library(t81_llama_adapter STATIC
@@ -273,6 +336,10 @@ add_library(t81_vm STATIC
   core/vm/runtime_state_helpers.cpp
   core/vm/gc_helpers.cpp
   core/vm/tensor_helpers.cpp
+  core/vm/ffi_dispatcher.cpp
+  # RFC-0032 Phase 4 — promoted AI VM backend adapter (C-02)
+  core/vm/ai_backend/backend_adapter.cpp
+  core/ffi/ffi_dispatcher.cpp
 )
 target_include_directories(t81_vm PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -280,13 +347,14 @@ target_include_directories(t81_vm PUBLIC
 )
 add_library(t81_jit OBJECT
   runtime/jit/jit_compiler.cpp
+  runtime/jit/jit_trace_cache.cpp   # RFC-0028 §4: CanonFS-backed trace cache
 )
 target_compile_features(t81_jit PUBLIC ${T81_CXX_STD_FEATURE})
 target_include_directories(t81_jit PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 target_sources(t81_vm PRIVATE $<TARGET_OBJECTS:t81_jit>)
-target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion)
+target_link_libraries(t81_vm PUBLIC t81_core t81_isa t81_axion t81_ffi t81_experimental)
 
 # =============================================================================
 # LLVM IR Backend (optional)
@@ -540,6 +608,798 @@ else()
 endif()
 
 # =============================================================================
+# TernOS Phase 1 — HAL experimental scaffold (RFC-00B0)
+# Enable with -DT81_ENABLE_TERNARYOS=ON
+# =============================================================================
+option(T81_ENABLE_TERNARYOS "Enable experimental TernOS HAL scaffold (non-DCP)" OFF)
+
+if(T81_ENABLE_TERNARYOS)
+  message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building experimental TernOS HAL")
+
+  add_library(t81_ternaryos_hal STATIC
+    experimental/ternaryos/hal/hal_main.cpp
+    experimental/ternaryos/hal/hal_c_abi.cpp
+    experimental/ternaryos/hal/interrupt_table.cpp
+    experimental/ternaryos/hal/hosted_stub.cpp
+    experimental/ternaryos/hal/virtualbox_platform.cpp
+    experimental/ternaryos/hal/virtualbox_guest_devices.cpp
+    experimental/ternaryos/hal/qemu_platform.cpp
+    experimental/ternaryos/hal/qemu_kernel_entry.cpp
+    experimental/ternaryos/kernel/kernel_runtime.cpp
+    experimental/ternaryos/kernel/kernel_actions.cpp
+    experimental/ternaryos/kernel/kernel_abi.cpp
+    experimental/ternaryos/kernel/kernel_abi_wire.cpp
+    experimental/ternaryos/kernel/kernel_executable.cpp
+    experimental/ternaryos/kernel/kernel_faults.cpp
+    experimental/ternaryos/kernel/kernel_interrupts.cpp
+    experimental/ternaryos/kernel/kernel_interrupt_policy.cpp
+    experimental/ternaryos/kernel/kernel_loader.cpp
+    experimental/ternaryos/kernel/kernel_lifecycle.cpp
+    experimental/ternaryos/kernel/kernel_trap_shim.cpp
+    experimental/ternaryos/hal/aarch64_trap_entry.cpp
+    experimental/ternaryos/kernel/kernel_pager.cpp
+    experimental/ternaryos/kernel/kernel_queries.cpp
+    experimental/ternaryos/kernel/kernel_runtime_utils.cpp
+    experimental/ternaryos/kernel/kernel_views.cpp
+    experimental/ternaryos/dev/hosted_block_dev.cpp
+    experimental/ternaryos/dev/virtualbox_ahci_dev.cpp
+    experimental/ternaryos/dev/virtualbox_e1000_dev.cpp
+    experimental/ternaryos/dev/virtualbox_vmsvga_dev.cpp
+    experimental/ternaryos/dev/canon_store.cpp
+    experimental/ternaryos/dev/framebuffer.cpp
+    experimental/ternaryos/dev/ttf.cpp
+    experimental/ternaryos/dev/pl011_uart.cpp
+    experimental/ternaryos/dev/gicv3.cpp
+    experimental/ternaryos/mmu/ternary_page_alloc.cpp
+    experimental/ternaryos/mmu/page_table.cpp
+    experimental/ternaryos/sched/context_switch.cpp
+    # Phase 3 — scheduling & IPC
+    experimental/ternaryos/sched/run_queue.cpp
+    experimental/ternaryos/sched/scheduler.cpp
+    experimental/ternaryos/ipc/canon_message.cpp)
+
+  target_include_directories(t81_ternaryos_hal PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+
+  target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
+  target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
+
+  # DPE kernel wiring — compiled into t81_ternaryos_hal only when both flags are ON.
+  if(T81_ENABLE_DPE)
+    target_sources(t81_ternaryos_hal PRIVATE
+      experimental/ternaryos/kernel/kernel_epoch.cpp)
+    target_include_directories(t81_ternaryos_hal PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+    target_link_libraries(t81_ternaryos_hal PUBLIC t81_dpe)
+    target_compile_definitions(t81_ternaryos_hal PUBLIC T81_ENABLE_DPE=1)
+  endif()
+
+  add_library(t81_ternaryos_shell STATIC
+    src/axion/shell/shell_session.cpp)
+  target_include_directories(t81_ternaryos_shell PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  target_link_libraries(t81_ternaryos_shell PUBLIC t81_ternaryos_hal)
+  target_compile_features(t81_ternaryos_shell PUBLIC ${T81_CXX_STD_FEATURE})
+
+  # RFC-00B9 — TernaryOS User Environment (t81-init, session manager, t81sh)
+  add_library(t81_ternaryos_userenv STATIC
+    src/axion/userenv/user_env.cpp)
+  target_include_directories(t81_ternaryos_userenv PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
+  target_link_libraries(t81_ternaryos_userenv PUBLIC t81_ternaryos_shell)
+  target_compile_features(t81_ternaryos_userenv PUBLIC ${T81_CXX_STD_FEATURE})
+
+  add_executable(t81_ternaryos_demo
+    experimental/ternaryos/apps/demo.cpp)
+  target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
+
+  add_executable(t81_ternaryos_shell_demo
+    experimental/ternaryos/apps/shell_demo.cpp)
+  target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_shell)
+
+  add_executable(t81_ternaryos_shell_startup_snapshot
+    experimental/ternaryos/shell/shell_startup_snapshot.cpp)
+  target_link_libraries(t81_ternaryos_shell_startup_snapshot PRIVATE t81_ternaryos_shell)
+
+  add_executable(t81_ternaryos_phase4_startup_snapshot
+    experimental/ternaryos/dev/phase4_startup_snapshot.cpp)
+  target_link_libraries(t81_ternaryos_phase4_startup_snapshot PRIVATE t81_ternaryos_hal)
+
+  add_executable(t81_ternaryos_qemu_slice6_snapshot
+    experimental/ternaryos/dev/qemu_slice6_startup_snapshot.cpp)
+  target_link_libraries(t81_ternaryos_qemu_slice6_snapshot PRIVATE t81_ternaryos_hal)
+
+  if(T81_BUILD_TUI)
+    add_executable(t81_ternaryos_shell_tui
+      experimental/ternaryos/apps/shell_tui.cpp)
+    target_link_libraries(t81_ternaryos_shell_tui PRIVATE
+      t81_ternaryos_shell
+      ftxui::screen
+      ftxui::dom
+      ftxui::component)
+    target_compile_features(t81_ternaryos_shell_tui PRIVATE ${T81_CXX_STD_FEATURE})
+  endif()
+
+  set(T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
+  set(T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
+  find_program(T81_LLVM_CLANG NAMES clang PATHS /opt/homebrew/opt/llvm/bin NO_DEFAULT_PATH)
+  find_program(T81_LLD_LINK NAMES lld-link PATHS /opt/homebrew/bin /opt/homebrew/opt/lld/bin NO_DEFAULT_PATH)
+  if(T81_LLVM_CLANG)
+    set(T81_TERNARYOS_EFI_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64.obj)
+    set(T81_TERNARYOS_X86_64_EFI_SHIM_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64_shim.obj)
+    set(T81_TERNARYOS_X86_64_EFI ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64.EFI)
+    set(T81_TERNARYOS_ARMV8_EFI_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64.obj)
+    set(T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64_CTRL.obj)
+    set(T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64_shim.obj)
+    set(T81_TERNARYOS_ARMV8_EFI ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64.EFI)
+    set(T81_TERNARYOS_ARMV8_EFI_CTRL ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/BOOTAA64_CTRL.EFI)
+    set(T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-shell-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_shell.h)
+    set(T81_TERNARYOS_ARMV8_STARTUP_SESSION_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-session-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_session.h)
+    set(T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-history-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_history.h)
+    set(T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-store-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_store.h)
+    set(T81_TERNARYOS_ARMV8_STARTUP_REF_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-ref-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_REF_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_ref.h)
+    set(T81_TERNARYOS_ARMV8_STARTUP_REPORT_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-report-generated.txt)
+    set(T81_TERNARYOS_ARMV8_STARTUP_REPORT_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_startup_report.h)
+    set(T81_TERNARYOS_ARMV8_PHASE4_STARTUP_TXT ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/startup-phase4-generated.txt)
+    set(T81_TERNARYOS_ARMV8_PHASE4_STARTUP_HDR ${CMAKE_BINARY_DIR}/ternaryos/generated/axion_phase4_startup.h)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_EFI_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+      COMMAND ${T81_LLVM_CLANG}
+              --target=x86_64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_EFI_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h)
+    add_custom_target(t81_ternaryos_virtualbox_efi_obj
+      DEPENDS ${T81_TERNARYOS_EFI_OBJ})
+    list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_efi_obj)
+
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+      COMMAND ${T81_LLVM_CLANG}
+              --target=x86_64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_x86_64_efi_shim.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_x86_64_efi_shim.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h)
+    add_custom_target(t81_ternaryos_virtualbox_x86_64_efi_shim_obj
+      DEPENDS ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ})
+    list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_x86_64_efi_shim_obj)
+
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
+             ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
+             ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+             ${T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR}
+             ${T81_TERNARYOS_ARMV8_STARTUP_REF_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_REF_HDR}
+             ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_TXT}
+             ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_HDR}
+             ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_TXT}
+             ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_HDR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/generated
+      COMMAND $<TARGET_FILE:t81_ternaryos_shell_startup_snapshot>
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REF_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REF_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_HDR}
+      COMMAND $<TARGET_FILE:t81_ternaryos_phase4_startup_snapshot>
+              ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_TXT}
+              ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_HDR}
+      DEPENDS t81_ternaryos_shell_startup_snapshot
+              t81_ternaryos_phase4_startup_snapshot)
+    add_custom_target(t81_ternaryos_shell_startup_snapshot_artifact
+      DEPENDS ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REF_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REF_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_TXT}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_HDR}
+              ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_TXT}
+              ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_HDR})
+    list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_shell_startup_snapshot_artifact)
+
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_ARMV8_EFI_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -I${CMAKE_BINARY_DIR}/ternaryos/generated
+              -o ${T81_TERNARYOS_ARMV8_EFI_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h
+              ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_STORE_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REF_HDR}
+              ${T81_TERNARYOS_ARMV8_STARTUP_REPORT_HDR}
+              ${T81_TERNARYOS_ARMV8_PHASE4_STARTUP_HDR})
+    add_custom_target(t81_ternaryos_virtualbox_armv8_efi_obj
+      DEPENDS ${T81_TERNARYOS_ARMV8_EFI_OBJ})
+    list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_obj)
+
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_control.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_control.c)
+    add_custom_target(t81_ternaryos_virtualbox_armv8_efi_control_obj
+      DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ})
+    list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control_obj)
+
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_shim.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/virtualbox_armv8_efi_shim.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h)
+    add_custom_target(t81_ternaryos_virtualbox_armv8_efi_shim_obj
+      DEPENDS ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
+    list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_shim_obj)
+
+    # ── Slice 8: AArch64 exception vector table assembly ──────────────────────
+    # Compile aarch64_exception_vectors.S for the AArch64 PE/COFF target so
+    # the vector table binary is available for inclusion in EFI images.
+    # The resulting object is not linked into any EFI binary in this slice;
+    # it proves the assembly builds cleanly and can be inspected with objdump.
+    set(T81_TERNARYOS_AARCH64_VECTORS_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/aarch64/aarch64_exception_vectors.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/aarch64
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/aarch64_exception_vectors.S
+              -o ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/aarch64_exception_vectors.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/aarch64_trap_entry.hpp)
+    add_custom_target(t81_ternaryos_aarch64_exception_vectors_obj
+      DEPENDS ${T81_TERNARYOS_AARCH64_VECTORS_OBJ})
+
+    # ── Slice 6: QEMU AArch64 EDK2 guest image ────────────────────────────────
+    set(T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.obj)
+    set(T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_bare.obj)
+    set(T81_TERNARYOS_QEMU_SLICE6_EFI
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.EFI)
+    set(T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/slice6-startup-generated.txt)
+    set(T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR
+        ${CMAKE_BINARY_DIR}/ternaryos/generated/qemu_slice6_startup.h)
+
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT}
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/generated
+      COMMAND $<TARGET_FILE:t81_ternaryos_qemu_slice6_snapshot>
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT}
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR}
+      DEPENDS t81_ternaryos_qemu_slice6_snapshot)
+    add_custom_target(t81_ternaryos_qemu_slice6_snapshot_data
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT}
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR})
+
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fshort-wchar
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_armv8_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -I${CMAKE_BINARY_DIR}/ternaryos/generated
+              -o ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_armv8_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/hal_c_abi.h
+              ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR})
+    add_custom_target(t81_ternaryos_qemu_slice6_efi_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ})
+
+    # Bare-metal kernel entry (post-ExitBootServices PL011/GIC/timer probe).
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_slice6_bare_kernel.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos
+              -o ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/hal/qemu_slice6_bare_kernel.c)
+    add_custom_target(t81_ternaryos_qemu_slice6_bare_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ})
+
+    if(T81_LLD_LINK)
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_X86_64_EFI}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:x64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_X86_64_EFI}
+                ${T81_TERNARYOS_EFI_OBJ}
+                ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ}
+        DEPENDS ${T81_TERNARYOS_EFI_OBJ}
+                ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ})
+      add_custom_target(t81_ternaryos_virtualbox_x86_64_efi
+        DEPENDS ${T81_TERNARYOS_X86_64_EFI})
+      list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_x86_64_efi)
+
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_ARMV8_EFI}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:arm64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_ARMV8_EFI}
+                ${T81_TERNARYOS_ARMV8_EFI_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+        DEPENDS ${T81_TERNARYOS_ARMV8_EFI_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
+      add_custom_target(t81_ternaryos_virtualbox_armv8_efi
+        DEPENDS ${T81_TERNARYOS_ARMV8_EFI})
+      list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi)
+
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_ARMV8_EFI_CTRL}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:arm64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_ARMV8_EFI_CTRL}
+                ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ}
+        DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ})
+      add_custom_target(t81_ternaryos_virtualbox_armv8_efi_control
+        DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL})
+      list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control)
+
+      # Slice 6: link QEMU slice6 BOOTAA64.EFI
+      #   stub (EFI entry + ExitBootServices) + bare kernel (PL011/GIC/timer) + shim
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_EFI}
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+                ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:arm64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_QEMU_SLICE6_EFI}
+                ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
+        DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+                ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
+      add_custom_target(t81_ternaryos_qemu_slice6_efi
+        DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})
+    endif()
+  endif()
+
+  add_custom_target(t81_ternaryos_virtualbox_guest_artifact
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/build_virtualbox_guest_artifact.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
+            x86_64
+    DEPENDS ${T81_TERNARYOS_GUEST_ARTIFACT_DEPS}
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/handoff
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/package_virtualbox_x86_64_handoff.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/handoff
+    DEPENDS t81_ternaryos_virtualbox_guest_artifact
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_bundle_smoke
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_packaged_virtualbox_x86_64_handoff_bundle.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/handoff/ternos_virtualbox_x86_64_handoff
+    DEPENDS t81_ternaryos_virtualbox_x86_64_handoff
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_bundle_negative_smoke
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/expect_packaged_virtualbox_x86_64_handoff_bundle_failure.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/handoff/ternos_virtualbox_x86_64_handoff
+    DEPENDS t81_ternaryos_virtualbox_x86_64_handoff
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_armv8_dev_artifact
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/build_virtualbox_guest_artifact.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+            armv8
+    DEPENDS ${T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS}
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_host_check
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/check_virtualbox_host.sh
+            --soft
+            x86_64
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_armv8_host_check
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/check_virtualbox_host.sh
+            --soft
+            ARMv8
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_armv8_efi_link_check
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/check_efi_link_toolchain.sh
+            armv8
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/efi-link-status.txt
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_armv8_boot_probe
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/probe_virtualbox_armv8_vm.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.vdi
+            5
+    DEPENDS t81_ternaryos_virtualbox_armv8_dev_artifact
+            t81_ternaryos_virtualbox_armv8_host_check
+            t81_ternaryos_virtualbox_armv8_efi_link_check
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_armv8_efi_control_probe
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_control
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/run_qemu_armv8_efi_control.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_control
+    DEPENDS t81_ternaryos_virtualbox_armv8_dev_artifact
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_armv8_guest_probe
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/run_qemu_armv8_guest_probe.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest
+            8
+    DEPENDS t81_ternaryos_virtualbox_armv8_dev_artifact
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_x86_64_guest_probe
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_x86_64_guest
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/run_qemu_x86_64_guest_probe.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/ternos_virtualbox_guest.img
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_x86_64_guest
+    DEPENDS t81_ternaryos_virtualbox_guest_artifact
+    USES_TERMINAL)
+
+  # ── Slice 6: QEMU AArch64 EDK2 disk image + probe ─────────────────────────
+  add_custom_target(t81_ternaryos_qemu_slice6_dev_artifact
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+    DEPENDS t81_ternaryos_qemu_slice6_efi
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_armv8_slice6_probe
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/run_qemu_armv8_slice6_probe.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/qemu_slice6_guest.img
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
+            8
+    DEPENDS t81_ternaryos_qemu_slice6_dev_artifact
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/dev/qemu_armv8_guest_probe_blocked_fixture
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_qemu_armv8_guest_reports.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
+            blocked
+            qemu-armv8-guest-probe-fixture
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_fixture
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/dev/virtualbox_x86_64_handoff_validation_fixture
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_virtualbox_x86_64_handoff.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/expected-boot-report.txt
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/expected-startup-status.txt
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/recovered-artifacts
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_negative_fixture
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/dev/virtualbox_x86_64_handoff_validation_negative_fixture
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/expect_virtualbox_x86_64_handoff_failure.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos/scripts/validate_virtualbox_x86_64_handoff.sh
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/expected-boot-report.txt
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/expected-startup-status.txt
+            ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/recovered-artifacts
+    USES_TERMINAL)
+
+  if(T81_BUILD_TESTS)
+    add_executable(t81_ternaryos_hal_boot_test
+      experimental/ternaryos/tests/hal_boot_test.cpp)
+    target_link_libraries(t81_ternaryos_hal_boot_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_hal_boot_test COMMAND t81_ternaryos_hal_boot_test)
+
+    add_executable(t81_ternaryos_page_alloc_test
+      experimental/ternaryos/tests/ternary_page_alloc_test.cpp)
+    target_link_libraries(t81_ternaryos_page_alloc_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_page_alloc_test COMMAND t81_ternaryos_page_alloc_test)
+
+    add_executable(t81_ternaryos_context_switch_test
+      experimental/ternaryos/tests/context_switch_test.cpp)
+    target_link_libraries(t81_ternaryos_context_switch_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_context_switch_test COMMAND t81_ternaryos_context_switch_test)
+
+    add_executable(t81_ternaryos_mmu_test
+      experimental/ternaryos/tests/mmu_test.cpp)
+    target_link_libraries(t81_ternaryos_mmu_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_mmu_test COMMAND t81_ternaryos_mmu_test)
+
+    # Phase 3 tests
+    add_executable(t81_ternaryos_scheduler_test
+      experimental/ternaryos/tests/scheduler_test.cpp)
+    target_link_libraries(t81_ternaryos_scheduler_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_scheduler_test COMMAND t81_ternaryos_scheduler_test)
+
+    add_executable(t81_ternaryos_ipc_test
+      experimental/ternaryos/tests/ipc_test.cpp)
+    target_link_libraries(t81_ternaryos_ipc_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_ipc_test COMMAND t81_ternaryos_ipc_test)
+
+    add_executable(t81_ternaryos_device_driver_test
+      experimental/ternaryos/tests/device_driver_test.cpp)
+    target_link_libraries(t81_ternaryos_device_driver_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_device_driver_test COMMAND t81_ternaryos_device_driver_test)
+
+    add_executable(t81_ternaryos_shell_session_test
+      experimental/ternaryos/tests/shell_session_test.cpp)
+    target_link_libraries(t81_ternaryos_shell_session_test PRIVATE t81_ternaryos_shell)
+    add_test(NAME t81_ternaryos_shell_session_test COMMAND t81_ternaryos_shell_session_test)
+
+    # RFC-00B9 — TernaryOS User Environment acceptance tests (AC-1 through AC-15)
+    add_executable(t81_ternaryos_user_env_test
+      experimental/ternaryos/tests/user_env_test.cpp)
+    target_link_libraries(t81_ternaryos_user_env_test PRIVATE t81_ternaryos_userenv)
+    add_test(NAME t81_ternaryos_user_env_test COMMAND t81_ternaryos_user_env_test)
+
+    add_executable(t81_axion_userenv_include_surface_test
+      tests/cpp/axion_userenv_include_surface_test.cpp)
+    target_link_libraries(t81_axion_userenv_include_surface_test PRIVATE t81_ternaryos_userenv)
+    add_test(NAME t81_axion_userenv_include_surface_test COMMAND t81_axion_userenv_include_surface_test)
+
+    if(T81_ENABLE_DPE)
+      add_executable(t81_ternaryos_epoch_submission_test
+        experimental/ternaryos/tests/epoch_submission_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_submission_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_submission_test COMMAND t81_ternaryos_epoch_submission_test)
+
+      add_executable(t81_ternaryos_epoch_policy_test
+        experimental/ternaryos/tests/epoch_policy_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_policy_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_policy_test COMMAND t81_ternaryos_epoch_policy_test)
+
+      # RFC-DPE-0003 §10 / RFC-DPE-0006 §4 — SubmitEpoch KernelCallKind ABI tests [DPE-07]
+      add_executable(t81_ternaryos_epoch_syscall_test
+        experimental/ternaryos/tests/epoch_syscall_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_syscall_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_syscall_test COMMAND t81_ternaryos_epoch_syscall_test)
+
+      # RFC-DPE-0007 — Epoch Execution Timeout tests [DPE-08]
+      add_executable(t81_ternaryos_epoch_timeout_test
+        experimental/ternaryos/tests/epoch_timeout_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_timeout_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_timeout_test COMMAND t81_ternaryos_epoch_timeout_test)
+
+      # RFC-DPE-0008 — Epoch Audit Events tests [DPE-09]
+      add_executable(t81_ternaryos_epoch_audit_test
+        experimental/ternaryos/tests/epoch_audit_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_audit_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_audit_test COMMAND t81_ternaryos_epoch_audit_test)
+
+      # RFC-DPE-0009 — Epoch History Ring tests [DPE-10]
+      add_executable(t81_ternaryos_epoch_history_test
+        experimental/ternaryos/tests/epoch_history_test.cpp)
+      target_link_libraries(t81_ternaryos_epoch_history_test PRIVATE t81_ternaryos_hal)
+      add_test(NAME t81_ternaryos_epoch_history_test COMMAND t81_ternaryos_epoch_history_test)
+    endif()
+
+    # RFC-00B6 §5.3.6 — ClaimDevice/ReleaseDevice/QueryDevice KernelCallKind ABI tests [AC-22d]
+    add_executable(t81_ternaryos_device_arbitration_syscall_test
+      experimental/ternaryos/tests/device_arbitration_syscall_test.cpp)
+    target_link_libraries(t81_ternaryos_device_arbitration_syscall_test PRIVATE t81_ternaryos_hal)
+    add_test(NAME t81_ternaryos_device_arbitration_syscall_test
+             COMMAND t81_ternaryos_device_arbitration_syscall_test)
+  endif()
+endif()
+
+# =============================================================================
+# Experimental DPE — Deterministic Parallel Execution (RFC-DPE-0002+)
+# Enable with -DT81_ENABLE_DPE=ON
+# =============================================================================
+option(T81_ENABLE_DPE "Enable DPE task graph primitives (RFC-DPE-0002)" OFF)
+
+if(T81_ENABLE_DPE)
+  message(STATUS "[t81] T81_ENABLE_DPE=ON — building DPE task graph")
+
+  add_library(t81_dpe STATIC
+    src/dpe/task_graph.cpp
+    src/dpe/task_runner.cpp
+    src/dpe/epoch_commit.cpp
+    src/dpe/thread_pool.cpp
+  )
+  target_include_directories(t81_dpe PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  )
+  target_link_libraries(t81_dpe PUBLIC t81_core t81_vm)
+  target_compile_features(t81_dpe PUBLIC ${T81_CXX_STD_FEATURE})
+
+  if(T81_BUILD_TESTS)
+    add_executable(t81_dpe_task_graph_test
+      tests/cpp/dpe/task_graph_test.cpp)
+    target_link_libraries(t81_dpe_task_graph_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_task_graph_test COMMAND t81_dpe_task_graph_test)
+
+    add_executable(t81_dpe_task_runner_test
+      tests/cpp/dpe/task_runner_test.cpp)
+    target_link_libraries(t81_dpe_task_runner_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_task_runner_test COMMAND t81_dpe_task_runner_test)
+
+    add_executable(t81_dpe_epoch_commit_test
+      tests/cpp/dpe/epoch_commit_test.cpp)
+    target_link_libraries(t81_dpe_epoch_commit_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_epoch_commit_test COMMAND t81_dpe_epoch_commit_test)
+
+    add_executable(t81_dpe_epoch_dag_test
+      tests/cpp/dpe/epoch_dag_test.cpp)
+    target_link_libraries(t81_dpe_epoch_dag_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_epoch_dag_test COMMAND t81_dpe_epoch_dag_test)
+
+    add_executable(t81_dpe_epoch_parallel_test
+      tests/cpp/dpe/epoch_parallel_test.cpp)
+    target_link_libraries(t81_dpe_epoch_parallel_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_epoch_parallel_test COMMAND t81_dpe_epoch_parallel_test)
+
+    add_executable(t81_dpe_thread_pool_test
+      tests/cpp/dpe/thread_pool_test.cpp)
+    target_link_libraries(t81_dpe_thread_pool_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_thread_pool_test COMMAND t81_dpe_thread_pool_test)
+
+    add_executable(t81_dpe_float_reduction_test
+      tests/cpp/dpe/dpe_float_reduction_test.cpp)
+    target_link_libraries(t81_dpe_float_reduction_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_float_reduction_test COMMAND t81_dpe_float_reduction_test)
+
+    add_executable(t81_dpe_include_surface_test
+      tests/cpp/dpe/include_surface_test.cpp)
+    target_link_libraries(t81_dpe_include_surface_test PRIVATE t81_dpe)
+    add_test(NAME t81_dpe_include_surface_test COMMAND t81_dpe_include_surface_test)
+  endif()
+endif()
+
+# =============================================================================
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
@@ -584,8 +1444,8 @@ if(T81_BUILD_TUI)
   endif()
 endif()
 
-add_executable(t81 tooling/cli/main.cpp)
-target_link_libraries(t81 PRIVATE t81_lang_frontend t81_isa t81_vm t81_tool_cli)
+add_executable(t81 tooling/cli/main.cpp tooling/cli/ai/ai_cli_shared.cpp)
+target_link_libraries(t81 PRIVATE t81_lang_frontend t81_isa t81_vm t81_tool_cli t81_axion t81_math_quantization t81_core)
 target_include_directories(t81 PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -633,7 +1493,23 @@ target_link_libraries(canonfs_trace_demo PRIVATE t81_core t81_axion)
 
 add_executable(complex_demo examples/complex_demo.cpp)
 target_link_libraries(complex_demo PRIVATE t81_core asio)
+if(WIN32)
+  target_link_libraries(complex_demo PRIVATE ws2_32 mswsock)
+endif()
 
+endif()
+
+option(T81_ENABLE_AI_EXPERIMENTS "Build the experimental AI CLI compatibility surface" OFF)
+
+# RFC-0032 Phase 5 (C-07) — promoted AI CLI tool (no sleep_for / no llama.cpp)
+add_executable(t81_ai_cli tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
+target_link_libraries(t81_ai_cli PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+
+if(T81_ENABLE_AI_EXPERIMENTS)
+  add_executable(t81_ai tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
+  target_link_libraries(t81_ai PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+  set_target_properties(t81_ai PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/experiments/ai/ux_tools")
 endif()
 
 # =============================================================================
@@ -750,6 +1626,9 @@ if(T81_BUILD_TESTS)
   add_executable(canonfs_integrity_matrix_test tests/cpp/canonfs_integrity_matrix_test.cpp)
   target_link_libraries(canonfs_integrity_matrix_test PRIVATE t81_core t81_axion)
 
+  add_executable(canonfs_identity_contract_test tests/cpp/canonfs_identity_contract_test.cpp)
+  target_link_libraries(canonfs_identity_contract_test PRIVATE t81_core t81_axion)
+
   add_executable(t81_ir_encoding_test tests/cpp/ir_encoding_test.cpp)
   target_link_libraries(t81_ir_encoding_test PRIVATE t81_core)
 
@@ -761,6 +1640,11 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_vm_tloadhash_conformance_test tests/cpp/vm_tloadhash_conformance_test.cpp)
   target_link_libraries(t81_vm_tloadhash_conformance_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tloadhash_custom_driver_test
+                 tests/cpp/vm_tloadhash_custom_driver_test.cpp)
+  target_link_libraries(t81_vm_tloadhash_custom_driver_test PRIVATE t81_vm t81_core)
+
 
   add_executable(t81_vm_tloadhash_canonical_fixed_test
                  tests/cpp/vm_tloadhash_canonical_fixed_test.cpp)
@@ -804,6 +1688,12 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_ai_phase1_gather_axis1_test
                  tests/cpp/vm_ai_phase1_gather_axis1_test.cpp)
   target_link_libraries(t81_vm_ai_phase1_gather_axis1_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_rfc0034_ternary_native_test
+                 tests/cpp/vm_rfc0034_ternary_native_test.cpp)
+  target_link_libraries(t81_vm_rfc0034_ternary_native_test PRIVATE t81_vm t81_core)
+  add_executable(t81_vm_rfc0040_swar_test
+                 tests/cpp/vm_rfc0040_swar_test.cpp)
+  target_link_libraries(t81_vm_rfc0040_swar_test PRIVATE t81_vm t81_core)
   add_executable(t81_lang_ai_m6_annotation_lowering_test
                  tests/cpp/lang_ai_m6_annotation_lowering_test.cpp)
   target_link_libraries(t81_lang_ai_m6_annotation_lowering_test
@@ -811,6 +1701,9 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_vm_tensor_shape_faults_test tests/cpp/vm_tensor_shape_faults_test.cpp)
   target_link_libraries(t81_vm_tensor_shape_faults_test PRIVATE t81_vm t81_core)
+
+  add_executable(t81_vm_tisc_v04_extensions_test tests/cpp/vm_tisc_v04_extensions_test.cpp)
+  target_link_libraries(t81_vm_tisc_v04_extensions_test PRIVATE t81_vm t81_core)
 
   add_executable(t81_vm_tensor_get_set_conformance_test
                  tests/cpp/vm_tensor_get_set_conformance_test.cpp)
@@ -829,6 +1722,10 @@ if(T81_BUILD_TESTS)
                  tests/cpp/vm_predispatch_policy_deny_logging_test.cpp)
   target_link_libraries(t81_vm_predispatch_policy_deny_logging_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_ai_predispatch_deny_audit_test
+                 tests/cpp/vm_ai_predispatch_deny_audit_test.cpp)
+  target_link_libraries(t81_vm_ai_predispatch_deny_audit_test PRIVATE t81_vm t81_axion t81_core)
+
   add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
   target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
 
@@ -845,6 +1742,10 @@ if(T81_BUILD_TESTS)
   add_executable(t81_test_axion_opcodes tests/cpp/test_axion_opcodes.cpp)
   target_link_libraries(t81_test_axion_opcodes PRIVATE t81_vm t81_core)
   add_test(NAME t81_test_axion_opcodes COMMAND t81_test_axion_opcodes)
+
+  add_executable(t81_test_axion_m6_canonical_reason tests/cpp/test_axion_m6_canonical_reason.cpp)
+  target_link_libraries(t81_test_axion_m6_canonical_reason PRIVATE t81_core)
+  add_test(NAME t81_test_axion_m6_canonical_reason COMMAND t81_test_axion_m6_canonical_reason)
 
   add_executable(t81_vm_neural_opcodes_test tests/cpp/test_vm_neural_opcodes.cpp)
   target_link_libraries(t81_vm_neural_opcodes_test PRIVATE t81_vm t81_core)
@@ -869,6 +1770,14 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_weights_load_test tests/cpp/weights_load_test.cpp)
   target_link_libraries(t81_weights_load_test PRIVATE t81_vm t81_core t81_tool_model)
+  add_executable(t81_safetensors_import_test tests/cpp/safetensors_import_test.cpp)
+  target_link_libraries(t81_safetensors_import_test PRIVATE t81_tool_model t81_core)
+  add_executable(t81_native_weights_metrics_test tests/cpp/native_weights_metrics_test.cpp)
+  target_link_libraries(t81_native_weights_metrics_test PRIVATE t81_tool_model t81_core)
+  if(T81_ENABLE_LLAMA_CPP)
+    add_executable(t81_gguf_import_bridge_test tests/cpp/gguf_import_bridge_test.cpp)
+    target_link_libraries(t81_gguf_import_bridge_test PRIVATE t81_tool_model t81_vm t81_core)
+  endif()
 
   add_executable(t81_hash_stub_test tests/cpp/hash_stub_test.cpp)
   target_link_libraries(t81_hash_stub_test PRIVATE t81_core)
@@ -902,6 +1811,12 @@ if(T81_BUILD_TESTS)
     target_compile_options(t81_tritwise_backend_equivalence_test PRIVATE -mavx2 -mfma)
   endif()
   add_test(NAME t81_tritwise_backend_equivalence_test COMMAND t81_tritwise_backend_equivalence_test)
+
+  add_executable(t81_simd_api_test tests/cpp/simd_api_test.cpp)
+  target_link_libraries(t81_simd_api_test PRIVATE t81_core)
+  if(T81_IS_X86_64 AND NOT MSVC)
+    target_compile_options(t81_simd_api_test PRIVATE -mavx2 -mfma)
+  endif()
 
   add_executable(t81_phase2c_truth_table_test tests/cpp/test_phase2c_truth_table.cpp)
   target_link_libraries(t81_phase2c_truth_table_test PRIVATE t81_core)
@@ -1033,7 +1948,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_tensor_unary_test PRIVATE t81_core)
 
   add_executable(t81_hanoi_integration_test tests/cpp/hanoi_integration_test.cpp)
-  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_axion)
+  target_link_libraries(t81_hanoi_integration_test PRIVATE t81_core t81_experimental t81_axion)
+
+  add_executable(t81_hanoi_command_surface_test tests/cpp/hanoi_command_surface_test.cpp)
+  target_link_libraries(t81_hanoi_command_surface_test PRIVATE t81_core t81_experimental t81_axion)
 
   add_executable(t81_vm_load_store_test tests/cpp/vm_load_store_test.cpp)
   target_link_libraries(t81_vm_load_store_test PRIVATE t81_vm t81_core)
@@ -1051,6 +1969,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
 
   add_executable(t81_canonfs_driver_test tests/cpp/canonfs_driver_test.cpp)
   target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
+
+  add_executable(t81_canonfs_rs_repair_test tests/cpp/canonfs_rs_repair_test.cpp)
+  target_link_libraries(t81_canonfs_rs_repair_test PRIVATE t81_core)
 
   # RFC-0000 §1: CanonHash-81 reference vector tests.
   add_executable(t81_canonhash81_reference_vectors_test
@@ -1267,8 +2188,21 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_cli_trace_export_test tests/cpp/cli_trace_export_test.cpp)
   target_link_libraries(t81_cli_trace_export_test PRIVATE t81_tool_cli)
 
-  add_executable(t81_cli_contract_test tests/cpp/cli_contract_test.cpp)
-  target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
+  add_executable(t81_cli_model_resolution_test tests/cpp/cli_model_resolution_test.cpp)
+  target_link_libraries(t81_cli_model_resolution_test PRIVATE t81_tool_cli)
+
+  # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
+  if(NOT WIN32)
+    add_executable(t81_cli_contract_test tests/cpp/cli_contract_test.cpp)
+    target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_cli_contract_test PRIVATE t81_tool_model)
+  endif()
+
+  # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
+  if(NOT WIN32)
+    add_executable(t81_cli_stress_test tests/cpp/cli_stress_test.cpp)
+    target_compile_features(t81_cli_stress_test PRIVATE ${T81_CXX_STD_FEATURE})
+  endif()
 
   if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
     add_executable(t81_c_frontend_mlir_smoke_test tests/cpp/c_frontend_mlir_smoke_test.cpp)
@@ -1306,28 +2240,28 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_cli_record_enum_test PRIVATE t81_tool_cli t81_isa t81_vm)
 
   add_executable(t81_tier4_test tests/cpp/tier4_test.cpp)
-  target_link_libraries(t81_tier4_test PRIVATE t81_core t81_axion)
+  target_link_libraries(t81_tier4_test PRIVATE t81_core t81_axion t81_experimental)
 
   add_executable(t81_tier5_test tests/cpp/tier5_test.cpp)
-  target_link_libraries(t81_tier5_test PRIVATE t81_core)
+  target_link_libraries(t81_tier5_test PRIVATE t81_core t81_experimental)
 
   add_executable(t81_infinite_opcodes_test tests/cpp/test_infinite_opcodes.cpp)
-  target_link_libraries(t81_infinite_opcodes_test PRIVATE t81_vm t81_isa t81_core)
+  target_link_libraries(t81_infinite_opcodes_test PRIVATE t81_vm t81_isa t81_core t81_experimental)
 
   add_executable(t81_tier4_vm_test tests/cpp/tier4_vm_test.cpp)
-  target_link_libraries(t81_tier4_vm_test PRIVATE t81_vm t81_core)
+  target_link_libraries(t81_tier4_vm_test PRIVATE t81_vm t81_core t81_experimental)
 
   add_executable(t81_tier4_distributed_test tests/cpp/test_tier4_distributed.cpp)
-  target_link_libraries(t81_tier4_distributed_test PRIVATE t81_vm t81_core)
+  target_link_libraries(t81_tier4_distributed_test PRIVATE t81_vm t81_core t81_experimental)
 
   add_executable(tiers_structure_test tests/cpp/tiers_structure_test.cpp)
-  target_link_libraries(tiers_structure_test PRIVATE t81_core)
+  target_link_libraries(tiers_structure_test PRIVATE t81_core t81_experimental)
 
   add_executable(vm_reflection_tier2_test tests/cpp/vm_reflection_tier2_test.cpp)
-  target_link_libraries(vm_reflection_tier2_test PRIVATE t81_vm t81_isa t81_core)
+  target_link_libraries(vm_reflection_tier2_test PRIVATE t81_vm t81_isa t81_core t81_experimental)
   add_test(NAME vm_reflection_tier2_test COMMAND vm_reflection_tier2_test)
   add_executable(reflective_evidence_replay_test tests/cpp/reflective_evidence_replay_test.cpp)
-  target_link_libraries(reflective_evidence_replay_test PRIVATE t81_core)
+  target_link_libraries(reflective_evidence_replay_test PRIVATE t81_core t81_experimental)
   add_test(NAME reflective_evidence_replay_test COMMAND reflective_evidence_replay_test)
 
   add_executable(t81_jit_test tests/cpp/jit_test.cpp)
@@ -1335,6 +2269,41 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
 
   add_executable(jit_trace_equivalence_test tests/cpp/jit_trace_equivalence_test.cpp)
   target_link_libraries(jit_trace_equivalence_test PRIVATE t81_vm)
+
+  add_executable(jit_repro_oracle_test tests/cpp/jit_repro_oracle_test.cpp)
+  target_link_libraries(jit_repro_oracle_test PRIVATE t81_vm t81_core)
+
+  # RFC-0028 §4: CanonFS-backed trace cache acceptance tests.
+  add_executable(jit_canonfs_cache_test tests/cpp/jit_canonfs_cache_test.cpp)
+  target_link_libraries(jit_canonfs_cache_test PRIVATE t81_vm t81_core)
+
+  add_executable(vm_gc_safepoint_test tests/cpp/vm_gc_safepoint_test.cpp)
+  target_link_libraries(vm_gc_safepoint_test PRIVATE t81_vm t81_core)
+
+  # RFC-0015 — First-Class Agent Constructs
+  add_executable(agent_constructs_test tests/cpp/agent_constructs_test.cpp)
+  target_link_libraries(agent_constructs_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  # RFC-0036 — Governed Foreign Function Interface (T81Lang `foreign {}` syntax)
+  add_executable(t81lang_foreign_ffi_test tests/cpp/t81lang_foreign_ffi_test.cpp)
+  target_link_libraries(t81lang_foreign_ffi_test PRIVATE t81_vm t81_lang_frontend t81_core)
+  add_library(ffi_bridge_testlib SHARED tests/cpp/ffi_bridge_testlib.cpp)
+  add_executable(vm_ffi_bridge_test tests/cpp/vm_ffi_bridge_test.cpp)
+  target_link_libraries(vm_ffi_bridge_test PRIVATE t81_vm t81_isa t81_core)
+  target_compile_definitions(
+    vm_ffi_bridge_test PRIVATE T81_VM_FFI_TESTLIB_PATH="$<TARGET_FILE:ffi_bridge_testlib>")
+
+  # RFC-0037 — TNN stdlib (std.tnn.* builtins → RFC-0034 TISC opcodes)
+  add_executable(tnn_stdlib_test tests/cpp/tnn_stdlib_test.cpp)
+  target_link_libraries(tnn_stdlib_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  # RFC-0038 — Ternary Lattice Cryptography (POLYMUL / POLYMOD)
+  add_executable(lattice_crypto_test tests/cpp/lattice_crypto_test.cpp)
+  target_link_libraries(lattice_crypto_test PRIVATE t81_vm t81_lang_frontend t81_core)
+
+  # RFC-0039 — NTRU-KEM (TVecSub / polyadd / polysub / ntru_encrypt / ntru_decrypt)
+  add_executable(ntru_kem_test tests/cpp/ntru_kem_test.cpp)
+  target_link_libraries(ntru_kem_test PRIVATE t81_vm t81_lang_frontend t81_core)
 
   add_executable(jit_tensor_trace_equivalence_test tests/cpp/jit_tensor_trace_equivalence_test.cpp)
   target_link_libraries(jit_tensor_trace_equivalence_test PRIVATE t81_vm)
@@ -1369,6 +2338,22 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(axion_policy_allow_deny_determinism_test
                  tests/cpp/axion_policy_allow_deny_determinism_test.cpp)
   target_link_libraries(axion_policy_allow_deny_determinism_test PRIVATE t81_vm t81_core)
+
+  # RFC-0032 Phase 3 gate tests — AIHookEngine + AiModelLoader
+  add_executable(axion_ai_hooks_test tests/cpp/axion_ai_hooks_test.cpp)
+  target_link_libraries(axion_ai_hooks_test PRIVATE t81_axion t81_core)
+  add_test(NAME axion_ai_hooks_test COMMAND axion_ai_hooks_test)
+
+  # RFC-0032 Phase 4 gate tests — T81VmBackend (C-02)
+  add_executable(backend_adapter_test tests/cpp/backend_adapter_test.cpp)
+  target_link_libraries(backend_adapter_test PRIVATE t81_vm t81_axion t81_core)
+  add_test(NAME backend_adapter_test COMMAND backend_adapter_test)
+
+  # RFC-0032 Phase 5 gate tests — EvidenceCollector (C-06)
+  add_executable(t81_determinism_evidence_test
+                 tests/determinism/evidence_collector.cpp)
+  target_link_libraries(t81_determinism_evidence_test PRIVATE t81_axion t81_core)
+  add_test(NAME t81_determinism_evidence_test COMMAND t81_determinism_evidence_test)
 
   add_executable(axion_policy_conformance_matrix_test
                  tests/cpp/axion_policy_conformance_matrix_test.cpp)
@@ -1413,6 +2398,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
     add_executable(fuzz_vm tests/fuzz/fuzz_vm.cpp)
     target_link_libraries(fuzz_vm PRIVATE t81_vm t81_core t81_isa)
+
+    if(T81_ENABLE_LIBFUZZER)
+      foreach(_fuzz_target fuzz_parser fuzz_vm)
+        target_compile_options(${_fuzz_target} PRIVATE -fsanitize=fuzzer -DT81_FUZZ_TARGET)
+        target_link_options(${_fuzz_target} PRIVATE -fsanitize=fuzzer)
+      endforeach()
+    endif()
 
   endif()
 
@@ -1516,6 +2508,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_executable(t81_native_conversion_test tests/cpp/test_t81_native_conversion.cpp)
   target_link_libraries(t81_native_conversion_test PRIVATE t81_core)
 
+  add_executable(t81_native_property_test tests/cpp/t81_native_property_test.cpp)
+  target_link_libraries(t81_native_property_test PRIVATE t81_core)
+
   add_executable(t81_limb_bohemian_add_test tests/cpp/test_t81_limb_bohemian_add.cpp)
   target_link_libraries(t81_limb_bohemian_add_test PRIVATE t81_core)
 
@@ -1556,7 +2551,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   target_link_libraries(test_T81Tensor_transpose PRIVATE t81_core)
 
   add_executable(performance_advancements_test tests/cpp/performance_advancements_test.cpp)
-  target_link_libraries(performance_advancements_test PRIVATE t81_core t81_axion)
+  target_link_libraries(performance_advancements_test PRIVATE t81_core t81_axion t81_experimental)
 
   add_executable(t81_distributed_tensor_test tests/cpp/distributed_tensor_test.cpp)
   target_link_libraries(t81_distributed_tensor_test PRIVATE t81_core)
@@ -1644,6 +2639,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_tensor_reshape_test
     t81_tensor_loader_test
     t81_canonfs_io_test
+    canonfs_persistent_driver_test
+    canonfs_identity_contract_test
     canonfs_read_verify_test
     canonfs_read_verify_env_contract_test
     canonfs_integrity_matrix_test
@@ -1687,11 +2684,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_c_api_bigint_test
     t81_tensor_unary_test
     t81_hanoi_integration_test
+    t81_hanoi_command_surface_test
     t81_vm_load_store_test
     t81_vm_illegal_test
     t81_vm_bounds_test
     t81_vm_tensor_test
     t81_vm_tloadhash_conformance_test
+    t81_vm_tloadhash_custom_driver_test
     t81_vm_tloadhash_canonical_fixed_test
     t81_vm_tloadhash_decodefault_determinism_matrix_test
     t81_vm_ai_phase1_attention_conformance_test
@@ -1706,10 +2705,12 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_ai_phase1_gather_axis1_test
     t81_lang_ai_m6_annotation_lowering_test
     t81_vm_tensor_shape_faults_test
+    t81_vm_tisc_v04_extensions_test
     t81_vm_tensor_get_set_conformance_test
     t81_vm_tensor_helper_predicates_test
     t81_vm_tensor_provenance_trace_test
     t81_vm_predispatch_policy_deny_logging_test
+    t81_vm_ai_predispatch_deny_audit_test
     t81_vm_fault_test
     t81_vm_deterministic_fault_test
     t81_vm_fault_family_determinism_matrix_test
@@ -1717,8 +2718,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_axion_log_determinism_test
     t81_reflection_non_interference_test
     t81_canonfs_driver_test
+    t81_canonfs_rs_repair_test
     t81_canonhash81_reference_vectors_test
     t81_weights_load_test
+    t81_safetensors_import_test
+    t81_native_weights_metrics_test
     t81_vm_trace_test
     t81_vm_determinism_property_test
     t81_vm_state_transition_invariants_test
@@ -1742,6 +2746,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_limb_mul_wide_high_test
     t81_limb_add_test
     t81_native_arith_test
+    t81_native_conversion_test
+    t81_simd_add_helpers_test
+    t81_native_property_test
     t81_bigint_v1_baseline_test
     t81_limb54_add_test
     t81_limb54_booth_mul_test
@@ -1812,6 +2819,15 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_tier4_distributed_test
     t81_jit_test
     jit_trace_equivalence_test
+    jit_repro_oracle_test
+    jit_canonfs_cache_test
+    vm_gc_safepoint_test
+    agent_constructs_test
+    t81lang_foreign_ffi_test
+    vm_ffi_bridge_test
+    tnn_stdlib_test
+    lattice_crypto_test
+    ntru_kem_test
     jit_tensor_trace_equivalence_test
     vm_jit_per_instruction_policy_test
     e2e_axion_trace_test
@@ -1827,9 +2843,16 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     performance_advancements_test
     t81_distributed_tensor_test
     tensor_backend_parity_test
+    t81_cli_model_resolution_test
+    t81_vm_rfc0034_ternary_native_test
+    t81_vm_rfc0040_swar_test
+    t81_simd_api_test
   )
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND T81_TEST_TARGETS t81_base81_simd_test)
+  endif()
+  if(T81_ENABLE_LLAMA_CPP)
+    list(APPEND T81_TEST_TARGETS t81_gguf_import_bridge_test)
   endif()
   if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND MLIR_FOUND)
     list(APPEND T81_TEST_TARGETS t81_mlir_t81_dialect_memory_ops_test)
@@ -1850,7 +2873,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
   endforeach()
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
-  add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
+  if(NOT WIN32)
+    add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
+  endif()
+  if(NOT WIN32)
+    add_test(NAME t81_cli_stress_test_runner COMMAND $<TARGET_FILE:t81_cli_stress_test> $<TARGET_FILE:t81>)
+    set_tests_properties(t81_cli_stress_test_runner PROPERTIES TIMEOUT 300)
+  endif()
   add_test(NAME t81_cli_stdlib_fixtures_test COMMAND $<TARGET_FILE:cli_stdlib_fixtures_test>)
   add_test(NAME cli_std_collections_determinism_test COMMAND $<TARGET_FILE:cli_std_collections_determinism_test>)
   add_test(
@@ -1986,10 +3015,16 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_network_test tests/cpp/test_T81Network.cpp)
   target_link_libraries(t81_network_test PRIVATE t81_core asio)
+  if(WIN32)
+    target_link_libraries(t81_network_test PRIVATE ws2_32 mswsock)
+  endif()
   add_test(NAME t81_network_test COMMAND t81_network_test)
 
   add_executable(t81_discovery_test tests/cpp/test_T81Discovery.cpp)
   target_link_libraries(t81_discovery_test PRIVATE t81_core asio)
+  if(WIN32)
+    target_link_libraries(t81_discovery_test PRIVATE ws2_32 mswsock)
+  endif()
   add_test(NAME t81_discovery_test COMMAND t81_discovery_test)
 
   add_executable(t81_category_test tests/cpp/test_T81Category.cpp)
@@ -2061,8 +3096,14 @@ if(T81_BUILD_TESTS)
   add_test(NAME t81_symbolic_vm_test COMMAND t81_symbolic_vm_test)
 
   add_executable(tier1_rewrite_confluence_test tests/cpp/tier1_rewrite_confluence_test.cpp)
-  target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core)
+  target_link_libraries(tier1_rewrite_confluence_test PRIVATE t81_core t81_experimental)
   add_test(NAME tier1_rewrite_confluence_test COMMAND tier1_rewrite_confluence_test)
+
+  add_executable(t81_cog_symbolic_graph_include_surface_test
+    tests/cpp/cog_symbolic_graph_include_surface_test.cpp)
+  target_link_libraries(t81_cog_symbolic_graph_include_surface_test PRIVATE t81_core)
+  add_test(NAME t81_cog_symbolic_graph_include_surface_test
+           COMMAND t81_cog_symbolic_graph_include_surface_test)
 
   add_executable(test_t81float_scientific tests/cpp/test_t81float_scientific.cpp)
   target_link_libraries(test_t81float_scientific PRIVATE t81_core t81_isa t81_lang_frontend)
@@ -2121,12 +3162,14 @@ include(CMakePackageConfigHelpers)
 set(T81_INSTALL_TARGETS
   t81_core
   t81_axion
+  t81_ffi
   t81_tool_model
   t81_io
   t81_c_api
   t81_lang_frontend
   t81_isa
   t81_vm
+  t81_experimental
   t81_llvm
   t81_mlir
   t81_tool_cli
@@ -2190,7 +3233,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/T81ConfigVersion.cmake"
-  VERSION 1.3.2
+  VERSION ${T81_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 
@@ -2202,7 +3245,7 @@ configure_package_config_file(
 
 write_basic_package_version_file(
   "${CMAKE_CURRENT_BINARY_DIR}/T81FoundationConfigVersion.cmake"
-  VERSION 1.3.2
+  VERSION ${T81_VERSION}
   COMPATIBILITY SameMajorVersion
 )
 
@@ -2228,6 +3271,11 @@ target_link_libraries(t81_graph_algorithms_test PRIVATE t81_core)
 add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
 
   # Determinism Stress Tests
+  # RFC-0032 Phase 1 — codec determinism gate tests
+  add_executable(t81_determinism_codec_test tests/determinism/codec/ternary_codec_test.cpp)
+  target_link_libraries(t81_determinism_codec_test PRIVATE t81_math_quantization)
+  add_test(NAME t81_determinism_codec_test COMMAND t81_determinism_codec_test)
+
   add_executable(t81_determinism_primitives_test tests/determinism/test_primitives.cpp)
   target_link_libraries(t81_determinism_primitives_test PRIVATE t81_core)
   add_test(NAME t81_determinism_primitives_test COMMAND t81_determinism_primitives_test)
@@ -2252,10 +3300,22 @@ add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
   target_link_libraries(t81_determinism_new_types_test PRIVATE t81_core)
   add_test(NAME t81_determinism_new_types_test COMMAND t81_determinism_new_types_test)
 
+  # RFC-0032 diagnostics (float-domain; gated; NOT part of the deterministic core)
+  if(T81_BUILD_DIAGNOSTICS)
+    add_executable(t81_codec_metrics_tool tools/diagnostics/ternary_codec_metrics.cpp)
+    target_link_libraries(t81_codec_metrics_tool PRIVATE t81_math_quantization)
+    target_compile_definitions(t81_codec_metrics_tool PRIVATE T81_BUILD_DIAGNOSTICS=1)
+  endif()
+
   # Repository Hardening Deterministic Tests
   add_executable(test_deterministic_float_boundaries tests/cpp/test_deterministic_float_boundaries.cpp)
   target_link_libraries(test_deterministic_float_boundaries PRIVATE t81_core)
   add_test(NAME test_deterministic_float_boundaries COMMAND test_deterministic_float_boundaries)
+
+  # RFC-0030: Deterministic Math Subsystem acceptance test
+  add_executable(test_t81float_soft_math tests/cpp/test_t81float_soft_math.cpp)
+  target_link_libraries(test_t81float_soft_math PRIVATE t81_core)
+  add_test(NAME test_t81float_soft_math COMMAND test_t81float_soft_math)
 
   add_executable(test_map_determinism tests/cpp/test_map_determinism.cpp)
   target_link_libraries(test_map_determinism PRIVATE t81_core)
@@ -2268,3 +3328,8 @@ add_test(NAME t81_graph_algorithms_test COMMAND t81_graph_algorithms_test)
   add_executable(test_axion_evidence_loop_closure_corrected tests/cpp/test_axion_evidence_loop_closure_corrected.cpp)
   target_link_libraries(test_axion_evidence_loop_closure_corrected PRIVATE t81_core t81_isa t81_vm t81_tool_cli t81_axion)
   add_test(NAME test_axion_evidence_loop_closure_corrected COMMAND test_axion_evidence_loop_closure_corrected)
+if(T81_BUILD_TESTS)
+  add_executable(test_swar tests/cpp/test_swar.cpp)
+  target_link_libraries(test_swar PRIVATE t81_core t81_experimental)
+  add_test(NAME test_swar COMMAND test_swar)
+endif()

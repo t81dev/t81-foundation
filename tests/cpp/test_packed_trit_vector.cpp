@@ -3,9 +3,8 @@
 #include <iostream>
 #include <random>
 #include <vector>
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 
-using namespace t81::experimental;
 using namespace t81;
 
 // Helper to check vector equality
@@ -124,6 +123,26 @@ void test_phase2a_conversion() {
   auto p2 = p2_res.value();
 
   assert(check_vec(p2.to_trits().value(), trits));
+}
+
+void test_phase2a_from_packed_validation() {
+  std::cout << "[Phase 2A] Testing Packed-Byte Validation..." << std::endl;
+
+  auto valid = ComputeTritVector::from_packed({0x13}, 4);
+  assert(!valid.is_err());
+  assert(check_vec(valid.value().to_trits().value(), std::vector<int8_t>({-1, 0, 1, 0})));
+
+  auto invalid_pattern = ComputeTritVector::from_packed({0x02}, 1);
+  assert(invalid_pattern.is_err());
+  assert(invalid_pattern.error().code.value() == T81Symbol::intern("INVALID_PACKED_DATA").value());
+
+  auto invalid_tail = ComputeTritVector::from_packed({0xD3}, 3);
+  assert(invalid_tail.is_err());
+  assert(invalid_tail.error().code.value() == T81Symbol::intern("INVALID_TAIL_PADDING").value());
+
+  auto invalid_length = ComputeTritVector::from_packed({}, 1);
+  assert(invalid_length.is_err());
+  assert(invalid_length.error().code.value() == T81Symbol::intern("INVALID_PACKED_LENGTH").value());
 }
 
 void test_cross_representation_consistency() {
@@ -420,19 +439,19 @@ void test_simd_vs_swar() {
     // Not
     // v1.t_not() uses SIMD dispatch (if enabled/large enough), v1.t_not_swar() forces SWAR
     auto not_simd = v1.t_not().value();
-    auto not_swar = v1.t_not_swar().value();
+    auto not_swar = t81::swar::t_not_swar(v1).value();
     assert(check_vec(not_simd.to_trits().value(), not_swar.to_trits().value()));
     assert(not_simd.data() == not_swar.data());
 
     // And
     auto and_simd = v1.t_and(v2).value();
-    auto and_swar = v1.t_and_swar(v2).value();
+    auto and_swar = t81::swar::t_and_swar(v1, v2).value();
     assert(check_vec(and_simd.to_trits().value(), and_swar.to_trits().value()));
     assert(and_simd.data() == and_swar.data());
 
     // Or
     auto or_simd = v1.t_or(v2).value();
-    auto or_swar = v1.t_or_swar(v2).value();
+    auto or_swar = t81::swar::t_or_swar(v1, v2).value();
     assert(check_vec(or_simd.to_trits().value(), or_swar.to_trits().value()));
     assert(or_simd.data() == or_swar.data());
   }
@@ -470,9 +489,9 @@ void test_neon_explicit() {
                                       v1.data().size());
 
     // Compare with SWAR
-    auto not_swar = v1.t_not_swar().value();
-    auto and_swar = v1.t_and_swar(v2).value();
-    auto or_swar = v1.t_or_swar(v2).value();
+    auto not_swar = t81::swar::t_not_swar(v1).value();
+    auto and_swar = t81::swar::t_and_swar(v1, v2).value();
+    auto or_swar = t81::swar::t_or_swar(v1, v2).value();
 
     assert(out_not == not_swar.data());
     assert(out_and == and_swar.data());
@@ -492,6 +511,7 @@ int main() {
   test_txor_truth_table();
   test_phase2a_roundtrip();
   test_phase2a_conversion();
+  test_phase2a_from_packed_validation();
   test_cross_representation_consistency();
   test_randomized_determinism();
   test_errors();

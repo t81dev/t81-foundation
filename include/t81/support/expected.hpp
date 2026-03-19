@@ -48,6 +48,12 @@ private:
   E error_;
 };
 
+template <typename T>
+struct is_unexpected : std::false_type {};
+
+template <typename E>
+struct is_unexpected<unexpected<E>> : std::true_type {};
+
 template <typename E>
 unexpected<std::decay_t<E>> make_unexpected(E&& error) {
   return unexpected<std::decay_t<E>>(std::forward<E>(error));
@@ -65,7 +71,8 @@ public:
 
   template <typename Err = E, std::enable_if_t<!std::is_same_v<T, std::decay_t<Err>> &&
                                                    !std::is_same_v<expected, std::decay_t<Err>> &&
-                                                   !std::is_same_v<unexpect_t, std::decay_t<Err>>,
+                                                   !std::is_same_v<unexpect_t, std::decay_t<Err>> &&
+                                                   !is_unexpected<std::decay_t<Err>>::value,
                                                int> = 0>
   expected(Err&& error) : has_(false), storage_(std::in_place_index<1>, std::forward<Err>(error)) {}
 
@@ -76,6 +83,16 @@ public:
   expected(const unexpected<E>& unexp)
       : has_(false), storage_(std::in_place_index<1>, unexp.error()) {}
   expected(unexpected<E>&& unexp)
+      : has_(false), storage_(std::in_place_index<1>, std::move(unexp).error()) {}
+
+  template <typename G, std::enable_if_t<
+                            !std::is_same_v<E, G> && std::is_constructible_v<E, const G&>, int> = 0>
+  expected(const unexpected<G>& unexp)
+      : has_(false), storage_(std::in_place_index<1>, unexp.error()) {}
+
+  template <typename G,
+            std::enable_if_t<!std::is_same_v<E, G> && std::is_constructible_v<E, G&&>, int> = 0>
+  expected(unexpected<G>&& unexp)
       : has_(false), storage_(std::in_place_index<1>, std::move(unexp).error()) {}
 
   [[nodiscard]] bool has_value() const noexcept { return has_; }
@@ -160,6 +177,14 @@ public:
 
   expected(const unexpected<E>& unexp) : has_(false), error_(unexp.error()) {}
   expected(unexpected<E>&& unexp) : has_(false), error_(std::move(unexp).error()) {}
+
+  template <typename G, std::enable_if_t<
+                            !std::is_same_v<E, G> && std::is_constructible_v<E, const G&>, int> = 0>
+  expected(const unexpected<G>& unexp) : has_(false), error_(unexp.error()) {}
+
+  template <typename G,
+            std::enable_if_t<!std::is_same_v<E, G> && std::is_constructible_v<E, G&&>, int> = 0>
+  expected(unexpected<G>&& unexp) : has_(false), error_(std::move(unexp).error()) {}
 
   [[nodiscard]] bool has_value() const noexcept { return has_; }
   [[nodiscard]] explicit operator bool() const noexcept { return has_; }

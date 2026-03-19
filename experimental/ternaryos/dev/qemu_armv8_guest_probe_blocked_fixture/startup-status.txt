@@ -1,0 +1,13 @@
+AXION_STARTUP_STATUS
+os_name=Axion
+platform_id=virtualbox-armv8:ARMv8Virtual/developer-lane
+phase=5
+shell_mode=typed-builtins
+kernel_boot_ready_slice=complete
+boot_progress_pending=false
+boot_progress_blocked=true
+boot_validation_lane=qemu-armv8-guest-probe-fixture
+storage_binding=virtualbox-ahci
+display_binding=virtualbox-vmsvga
+network_binding=virtualbox-e1000
+memory_map_len=3

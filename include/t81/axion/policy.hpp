@@ -76,6 +76,11 @@ struct Policy {
   struct AlignmentRequirement {
     std::string reason;
   };
+  struct ActivationCeilingPolicy {
+    std::optional<double> max_nonzero_fraction;
+    std::vector<std::string> mode_mask;
+    std::string scope{"thread"};
+  };
 
   int tier{1};
   std::optional<int64_t> max_stack;
@@ -89,6 +94,14 @@ struct Policy {
   std::optional<int64_t> max_symbolic_graphs;
   std::optional<int64_t> max_infinite_forms;
   std::vector<std::string> allowed_tensor_hashes;
+  std::vector<std::string> allowed_ternary_model_hashes;
+  bool ternary_weight_domain_check{true};
+  // RFC-0034 §3.3 — activation-ceiling directive for TACT post-execute gate.
+  // When set, the nonzero-trit fraction of TACT output is checked against this
+  // threshold. Exceeding it triggers Quarantine (SecurityFault) or Deny
+  // (ActivationFault) depending on the verdict returned by the Axion engine.
+  std::optional<double> activation_ceiling_max_nonzero_fraction;  // range [0.0, 1.0]
+  std::optional<ActivationCeilingPolicy> activation_ceiling_policy;
   std::vector<LoopHint> loops;
   std::vector<MatchGuardRequirement> match_guards;
   std::vector<SegmentEventRequirement> segment_requirements;
@@ -112,12 +125,14 @@ struct PolicyToken {
     LBracket,
     RBracket,
     Integer,
+    Float,
     Symbol,
     String,
     End
   } kind{Kind::End};
   std::string text;
   int64_t value{0};
+  double float_value{0.0};
 };
 
 class PolicyLexer {
@@ -147,11 +162,29 @@ public:
     if (std::isdigit(static_cast<unsigned char>(c)) || c == '-' || c == '+') {
       std::size_t start = pos_;
       ++pos_;
-      while (pos_ < src_.size() && std::isdigit(static_cast<unsigned char>(src_[pos_]))) ++pos_;
+      bool saw_dot = false;
+      while (pos_ < src_.size()) {
+        const char ch = src_[pos_];
+        if (std::isdigit(static_cast<unsigned char>(ch))) {
+          ++pos_;
+          continue;
+        }
+        if (ch == '.' && !saw_dot) {
+          saw_dot = true;
+          ++pos_;
+          continue;
+        }
+        break;
+      }
       PolicyToken tok;
-      tok.kind = PolicyToken::Kind::Integer;
       tok.text = std::string(src_.substr(start, pos_ - start));
-      tok.value = std::stoll(tok.text);
+      if (saw_dot) {
+        tok.kind = PolicyToken::Kind::Float;
+        tok.float_value = std::stod(tok.text);
+      } else {
+        tok.kind = PolicyToken::Kind::Integer;
+        tok.value = std::stoll(tok.text);
+      }
       return tok;
     }
     if (c == '"') {
@@ -330,6 +363,84 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
       }
       continue;
     }
+    if (key.text == "activation-ceiling") {
+      Policy::ActivationCeilingPolicy ceiling;
+      auto val = lex.next();
+      if (val.kind == detail::PolicyToken::Kind::Integer || val.kind == detail::PolicyToken::Kind::Float) {
+        const double frac =
+            val.kind == detail::PolicyToken::Kind::Float ? val.float_value : static_cast<double>(val.value);
+        ceiling.max_nonzero_fraction = frac;
+        policy.activation_ceiling_max_nonzero_fraction = frac;
+        policy.activation_ceiling_policy = ceiling;
+        tok = lex.next();
+        if (tok.kind != detail::PolicyToken::Kind::RParen) {
+          return make_error("expected ')'");
+        }
+        continue;
+      }
+      if (val.kind != detail::PolicyToken::Kind::LParen) {
+        return make_error("activation-ceiling requires numeric threshold or clause list");
+      }
+      while (true) {
+        auto field = lex.next();
+        if (field.kind != detail::PolicyToken::Kind::Symbol) {
+          return make_error("expected activation-ceiling field symbol");
+        }
+        if (field.text == "max-nonzero-fraction") {
+          auto frac = lex.next();
+          if (frac.kind != detail::PolicyToken::Kind::Integer &&
+              frac.kind != detail::PolicyToken::Kind::Float) {
+            return make_error("activation-ceiling max-nonzero-fraction requires numeric value");
+          }
+          ceiling.max_nonzero_fraction =
+              frac.kind == detail::PolicyToken::Kind::Float ? frac.float_value
+                                                            : static_cast<double>(frac.value);
+        } else if (field.text == "scope") {
+          auto scope = lex.next();
+          if (scope.kind != detail::PolicyToken::Kind::Symbol &&
+              scope.kind != detail::PolicyToken::Kind::String) {
+            return make_error("activation-ceiling scope requires symbol or string");
+          }
+          ceiling.scope = scope.text;
+        } else if (field.text == "mode-mask") {
+          auto open = lex.next();
+          if (open.kind != detail::PolicyToken::Kind::LBracket) {
+            return make_error("activation-ceiling mode-mask requires '['");
+          }
+          while (true) {
+            auto mode = lex.next();
+            if (mode.kind == detail::PolicyToken::Kind::RBracket) break;
+            if (mode.kind != detail::PolicyToken::Kind::Symbol &&
+                mode.kind != detail::PolicyToken::Kind::String) {
+              return make_error("activation-ceiling mode-mask entries require symbol or string");
+            }
+            ceiling.mode_mask.push_back(mode.text);
+          }
+        } else {
+          return make_error("unknown activation-ceiling field");
+        }
+        auto field_close = lex.next();
+        if (field_close.kind != detail::PolicyToken::Kind::RParen) {
+          return make_error("expected ')' after activation-ceiling field");
+        }
+        auto next = lex.next();
+        if (next.kind == detail::PolicyToken::Kind::RParen) {
+          break;
+        }
+        if (next.kind != detail::PolicyToken::Kind::LParen) {
+          return make_error("expected '(' before activation-ceiling field");
+        }
+      }
+      if (ceiling.max_nonzero_fraction.has_value()) {
+        policy.activation_ceiling_max_nonzero_fraction = *ceiling.max_nonzero_fraction;
+      }
+      policy.activation_ceiling_policy = std::move(ceiling);
+      tok = lex.next();
+      if (tok.kind != detail::PolicyToken::Kind::RParen) {
+        return make_error("expected ')'");
+      }
+      continue;
+    }
     if (key.text == "max-recursion") {
       auto val = lex.next();
       if (val.kind != detail::PolicyToken::Kind::Integer) {
@@ -405,6 +516,47 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
           return make_error("allowed-tensor-hashes requires string literals");
         }
         policy.allowed_tensor_hashes.push_back(val.text);
+      }
+      tok = lex.next();
+      if (tok.kind != detail::PolicyToken::Kind::RParen) {
+        return make_error("expected ')'");
+      }
+      continue;
+    }
+    if (key.text == "allowed-ternary-model-hashes") {
+      auto bracket = lex.next();
+      if (bracket.kind != detail::PolicyToken::Kind::LBracket) {
+        return make_error("allowed-ternary-model-hashes requires '['");
+      }
+      while (true) {
+        auto val = lex.next();
+        if (val.kind == detail::PolicyToken::Kind::RBracket) break;
+        if (val.kind == detail::PolicyToken::Kind::End) {
+          return make_error("unterminated allowed-ternary-model-hashes list");
+        }
+        if (val.kind != detail::PolicyToken::Kind::String) {
+          return make_error("allowed-ternary-model-hashes requires string literals");
+        }
+        policy.allowed_ternary_model_hashes.push_back(val.text);
+      }
+      tok = lex.next();
+      if (tok.kind != detail::PolicyToken::Kind::RParen) {
+        return make_error("expected ')'");
+      }
+      continue;
+    }
+    if (key.text == "ternary-weight-domain-check") {
+      auto val = lex.next();
+      if (val.kind != detail::PolicyToken::Kind::Symbol &&
+          val.kind != detail::PolicyToken::Kind::String) {
+        return make_error("ternary-weight-domain-check requires true/false");
+      }
+      if (val.text == "true") {
+        policy.ternary_weight_domain_check = true;
+      } else if (val.text == "false") {
+        policy.ternary_weight_domain_check = false;
+      } else {
+        return make_error("ternary-weight-domain-check requires true or false");
       }
       tok = lex.next();
       if (tok.kind != detail::PolicyToken::Kind::RParen) {

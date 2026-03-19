@@ -1,8 +1,9 @@
 # RFC-0033: Dual TUI Frontends for T81 – Human Operator & AI-Native Interfaces
 
-**Status:** Draft / Proposed  
-**Authors:** t81dev (grok/jules)  
-**Date:** 2025-03-09  
+**Status:** accepted
+**Authors:** t81dev (grok/jules)
+**Date:** 2025-03-09
+**Accepted:** 2026-03-15
 
 ---
 
@@ -212,3 +213,20 @@ A specialized environment optimized for interaction with Large Language Models a
 * **FTXUI GitHub Repository:** [https://github.com/ArthurSonzogni/FTXUI](https://github.com/ArthurSonzogni/FTXUI)
 * **Design Inspiration:** `lazygit`, `gitui`, and `bottom`.
 * **T81 Architecture Documents:** `DEPENDENCY_FIREWALL.md`, `DETERMINISM_SURFACE_REGISTRY.md`, `RFC-0003`, `RFC-0026`
+
+---
+
+## Acceptance Note (2026-03-15)
+
+All four implementation phases are complete.
+
+| Phase | Status | Evidence |
+| :--- | :--- | :--- |
+| Phase 1 — Infrastructure | Complete | FTXUI v5.0.0 via `FetchContent`; `T81_BUILD_TUI` CMake flag; base `SessionState`/`WorkspaceState`/`CommandEntry` types in `tooling/tui/common.{hpp,cpp}` |
+| Phase 2 — Human Operator TUI | Complete | `tooling/tui/studio.cpp` (1528 lines): Navigation sidebar (7 views), CanonFS Browser, Determinism Dashboard, Axion Policy Inspector, Trace Visualizer, REPL pane, Command Palette (`Ctrl+P`, 31 entries, fuzzy-filter, windowing); `t81 studio` wired in CLI |
+| Phase 3 — AI-Native Interface | Complete | `tooling/tui/agent.cpp` (1076 lines): persistent JSONL session save/load (`~/.t81/sessions/`), `--resume`/`--session` flags, 14 slash commands (`/compile`, `/run`, `/check`, `/hash`, `/infer`, `/axion`, `/policy`, `/allow`, `/trits`, `/tier`, `/save`, `/write`, `/open`, `/clear`), trit-probability bar wired to `llama-run` token output, context side-panel (model/tier/Axion/trace state); `t81 agent` wired in CLI |
+| Phase 4 — CI, Testing, Docs | Complete | `tui_snapshot_test` (11 assertions: session roundtrip, adversarial parsing, 31-entry palette, DOM snapshot, trit-bar widths, palette filter/windowing); binary-size CI gate in `CMakeLists.txt`; user guide at `docs/user-guide/how-to/tui-guide.md` |
+
+Dogfooding milestone (Phase 3 gate): end-to-end workflow `propose patch → /compile → /hash → /allow <hash> → /run` executable entirely within `t81 agent`.
+
+Future work (non-blocking): custom theming engine, enhanced mouse support, distributed TUI monitoring, standardized agent protocol — tracked in RFC §Future Work.

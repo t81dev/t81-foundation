@@ -31,6 +31,7 @@ struct FunctionAttributes {
   bool is_axion_verify{false};
   bool is_attention{false};   // @attention — lower call sites to ATTN opcode (RFC-0026 AI-M6)
   bool is_qmatmul{false};     // @qmatmul  — lower call sites to QMATMUL opcode (RFC-0026 AI-M6)
+  bool is_ternary_inference{false};  // @ternary_inference — lower compatible AI calls to RFC-0034 ops
   std::optional<Token> anchor;
 };
 
@@ -55,6 +56,8 @@ private:
       std::optional<StructuralAttributes> attributes = std::nullopt);
   std::unique_ptr<Stmt> enum_declaration(
       std::optional<StructuralAttributes> attributes = std::nullopt);
+  std::unique_ptr<Stmt> agent_declaration();    // RFC-0015
+  std::unique_ptr<Stmt> foreign_declaration();  // RFC-0036
   std::unique_ptr<Stmt> statement();
   std::unique_ptr<Stmt> var_declaration();
   std::unique_ptr<Stmt> let_declaration();

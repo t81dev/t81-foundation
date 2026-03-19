@@ -49,7 +49,7 @@ void test_expected_void() {
   assert(e2.has_value());
   assert(e2.value() == 42);
 
-  t81::expected<void, int> err(t81::unexpect, 404);
+  [[maybe_unused]] t81::expected<void, int> err(t81::unexpect, 404);
   assert(!err.has_value());
   assert(err.error() == 404);
 }

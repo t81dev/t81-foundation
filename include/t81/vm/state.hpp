@@ -13,8 +13,8 @@
 #include "t81/axion/policy.hpp"
 #include "t81/axion/reasons.hpp"
 #include "t81/axion/verdict.hpp"
+#include "t81/cog/v1/symbolic_graph.hpp"
 #include "t81/experimental/cog/tier.hpp"
-#include "t81/experimental/cog/tier1/symbolic.hpp"
 #include "t81/experimental/cog/tier2/reflective.hpp"
 #include "t81/experimental/cog/tier3/recursive.hpp"
 #include "t81/experimental/cog/tier5/infinite.hpp"
@@ -234,6 +234,10 @@ struct ThreadContext {
   // Tracks (dst_handle, axis, index) tuples used in this execution frame.
   // A second SCATTER to the same tuple raises SecurityFault via Axion deny.
   std::set<std::tuple<std::int64_t, int, std::int64_t>> scatter_used;
+
+  // RFC-0034 §5.17.6: once TACT triggers a quarantine verdict, a repeated
+  // activation-ceiling violation escalates to Deny/ActivationFault.
+  bool activation_quarantined{false};
 };
 
 // Virtual machine register file per spec/t81vm-spec.md.
@@ -377,6 +381,7 @@ struct State {
   std::shared_ptr<t81::weights::ModelFile> weights_model;
   std::vector<const t81::weights::NativeTensor*> weights_tensor_refs;
   std::unordered_map<std::string, std::int64_t> weights_tensor_handles;
+  std::vector<std::optional<std::vector<std::int8_t>>> weights_tensor_trits;
   std::size_t contradiction_events{0};
   std::vector<std::pair<std::int64_t, std::int64_t>> heap_frames;
   std::size_t heap_ptr{0};

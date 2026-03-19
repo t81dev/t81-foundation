@@ -1,14 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="T81 Foundation — Deterministic Ternary Architecture" width="100%">
-</p>
-
-# T81: A Deterministic Ternary Architecture
-
-<p align="center">
-  <a href="https://github.com/t81dev/t81-foundation/releases/latest"><img src="https://img.shields.io/github/v/release/t81dev/t81-foundation?style=for-the-badge&label=Latest%20Release" alt="Latest Release"></a>
-  <a href="https://github.com/t81dev/t81-foundation/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/t81dev/t81-foundation/ci.yml?branch=main&style=for-the-badge&logo=github&label=CI" alt="CI"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License: MIT"></a>
-  <img src="https://img.shields.io/badge/Language-C%2B%2B23-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" alt="Language: C++23">
+  <img src="assets/banner.png" alt="T81 — A Ternary Computing Architecture" width="100%">
 </p>
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
@@ -16,201 +7,241 @@
 <!-- T81-SPEED-START -->
 <!-- T81-SPEED-END -->
 
-T81 Foundation is a deterministic, ternary-native computing stack designed for engineers, researchers, and systems programmers who require mathematically reproducible execution, canonical data handling, and enforceable runtime policies. 
+# T81 — A Ternary Computing Architecture
 
-It combines a stable instruction set, a governed virtual machine, a language frontend, and a public C++ API in one repository. The project is aimed at those building runtimes, language tooling, audit-heavy systems, and reproducible experiments.
+![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
+![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
+![Execution](https://img.shields.io/badge/execution-deterministic-green)
+![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-## Why T81?
+Leveraging the theoretical efficiency of base-e computation, **T81** is a deterministic computing architecture built on **balanced ternary arithmetic** ({-1, 0, +1}) with a full-chain governance model covering instruction set, virtual machine, language compiler, and AI inference environment.
 
-Most modern technology stacks treat determinism, auditability, and governance as secondary concerns—layered on after the runtime already exists. T81 takes the opposite approach:
-- **Built for Determinism:** We build around canonical representations and explicit fault behaviors from the start.
-- **Ternary-Native:** Balanced ternary and base-81 encodings are part of the substrate. Through SWAR vectorization and 2-bit packed trits, T81 achieves native ternary semantics with high performance on binary hardware.
-- **Policy-Aware Execution:** The Axion policy engine enforces runtime decisions dynamically within the execution flow, ensuring governance isn't just an advisory check.
-- **Strict Bounding:** Determinism claims are explicitly scoped to the **Deterministic Core Profile (DCP)**. Experimental features are rigidly isolated to prevent undefined behavior.
+The architecture delivers:
 
-## Architecture & System Status
+- **bit-exact reproducibility on verified surfaces** — governed deterministic surfaces produce identical trace hashes across supported platforms
+- **governed AI inference** — Axion policy engine intercepts and audits every privileged operation before side effects
+- **content-addressed provenance** — CanonFS records all artifacts, model weights, and runtime state immutably
+- **deterministic parallel execution for governed epoch semantics** — DPE task graph model (RFC-DPE-0002) enables concurrent TISC workloads with epoch-committed outputs under the current determinism surface
 
-T81 is vertically integrated, moving from high-level language APIs down to a governed execution substrate. Our maturity is explicit: core boundaries are *Frozen*, while experimental surfaces are clearly marked. T81 is in active development with mixed maturity across the stack.
+---
 
-| Component | Role | Maturity Status |
+## Table of Contents
+- [Project Status](#project-status)
+- [Architecture & Ecosystem Overview](#architecture--ecosystem-overview)
+- [Key Components](#key-components)
+- [Quick Start](#quick-start)
+- [Determinism Verification](#determinism-verification)
+- [Documentation](#documentation)
+- [Governance](#governance)
+- [The Ternary Advantage](#the-ternary-advantage)
+- [License](#license)
+
+---
+
+## Project Status
+
+**Phase: Active Development** — v1.9.0-Stable; 369/369 tests passing; cross-platform determinism verified on Linux x86\_64 + macOS ARM64.
+
+Deterministic-surface classification follows the governance model introduced by the Determinism Surface Registry and RFC-0048:
+
+- **DCP / verified deterministic surface**: semantics, boundary, and replay proof are governed and CI-enforced
+- **Governed non-DCP**: policy-bounded and architecturally important, but not yet entitled to full deterministic claims
+- **Experimental**: active design or validation surface; no deterministic guarantee claim
+
+| Component | Maturity | Notes |
 | :--- | :--- | :--- |
-| **`include/t81/`** | Public C++ API surface for consumers and downstream builds. | **Mixed** |
-| **Data Types** | Core numerics, canonical representations (`core/types/`). | **Frozen** (DCP Verified) |
-| **TISC ISA** | The stable machine contract for serialization and execution. | **Frozen** (DCP Verified) |
-| **T81VM** | The reference runtime path for reproducible execution. | **Beta** |
-| **CanonFS** | Deterministic persistence and identity boundaries. | **Beta** |
-| **T81Lang** | Frontend compiling down to the TISC ISA. | **Beta** |
-| **Axion** | Runtime policy engine integrated into the VM step path. | **Beta** |
+| **TISC ISA** | ❄️ Frozen | v1.9.0; opcode semantics immutable under v1.x; `AgentInvoke` (RFC-0015), 6 ternary-native inference (RFC-0034), 3 FFI (RFC-00B8), 2 lattice crypto (RFC-0038), 1 KEM ring (RFC-0039) |
+| **Data Types** | ❄️ Frozen | BigInt, Float, Complex, Map, Set — bit-stable encoding; clean audit |
+| **T81VM** | ✅ Stable | DCP / verified deterministic surface for the interpreter and current supported-platform trace parity; full TISC v1.9.0 dispatch with `AgentInvoke`, ternary-native inference, FFI, lattice crypto, and NTRU-KEM opcodes; 369/369 tests |
+| **T81Lang** | ✅ Stable | Governed non-DCP overall: spec v1.9.0 Stable with active compiler determinism controls, but compiler emission remains partially verified rather than fully promoted as a verified deterministic surface |
+| **Axion Governance Kernel** | ✅ Stable | Governed non-DCP overall: canonical reason strings and audit hooks are live, but the full kernel/governance surface is broader than the currently verified deterministic registry |
+| **Ternary-Native Inference** | ✅ Stable | Governed non-DCP: RFC-0034 + RFC-0037 opcode/runtime/stdlib surface is implemented and evidenced, but not all inference-adjacent execution paths are yet promoted as verified deterministic surfaces |
+| **Lattice Cryptography** | ✅ Stable | Governed non-DCP: RFC-0038+0039 surface is implemented and policy-bounded; deterministic promotion remains surface-specific rather than implied for the entire crypto vertical |
+| **Governed FFI** | ✅ Stable | Governed non-DCP: RFC-00B8 + RFC-0036 VM/language bridge is implemented end to end, but sandbox and broader schema promotion remain open before stronger deterministic claims |
+| **TUI Frontends** | ✅ Beta | Governed non-DCP: operator and agent TUIs are production-usable interfaces, but UI/runtime integration is not itself a verified deterministic surface |
+| **DPE (Parallel Execution)** | ✅ Stable | Governed deterministic execution model with accepted RFC-DPE-0001–0009; deterministic epoch semantics are in place, while broader surface promotion remains governed by the registry and companion RFC chain |
+| **Cognitive Tiers** | ✅ Beta | Experimental / non-DCP: Tier4 Cognition remains governance-bounded but not a verified deterministic surface |
+| **TernaryOS User Environment** | ✅ Beta | Governed non-DCP / beta: implemented and policy-bounded, but not currently presented as a verified deterministic surface |
+| **Axion OS** | ✅ Alpha | Governed non-DCP / alpha: active governance architecture, but not yet a promoted verified deterministic surface as a whole |
 
-```mermaid
-flowchart LR
-    A[T81Lang / C++ API] -->|compiles to| B[TISC ISA]
-    B -->|executes on| C[T81VM]
-    C -->|guarded by| D[Axion Policy Engine]
-    C -->|persists via| E[CanonFS]
+---
+
+## Architecture & Ecosystem Overview
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  Interfaces                                                 │
+│  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI    │
+├─────────────────────────────────────────────────────────────┤
+│  T81Lang Compiler                                           │
+│  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
+│  agent/behavior (RFC-0015)  ·  foreign {} (RFC-0036)        │
+├─────────────────────────────────────────────────────────────┤
+│  Axion Governance Kernel                                    │
+│  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
+├──────────────────────────────┬──────────────────────────────┤
+│  T81 Virtual Machine         │  DPE Task Graph Runtime      │
+│  TISC interpreter            │  EpochGraph · DeltaBuffer    │
+│  (deterministic)             │  (RFC-DPE-0002)              │
+├──────────────────────────────┴──────────────────────────────┤
+│  TISC ISA v1.9.0  ❄️ Frozen  +  Data Types  ❄️ Frozen       │
+│  Deterministic substrate — CanonHash81 bit-exact traces     │
+├─────────────────────────────────────────────────────────────┤
+│  Governed FFI (RFC-00B8)  ·  Ternary-Native Inference       │
+│  FFIDispatcher · FFILibraryRegistry                         │
+│  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
+└─────────────────────────────────────────────────────────────┘
+  Experimental: TernaryOS · Cognitive Tiers
 ```
 
-*Supported toolchains currently verified in CI include Ubuntu 24.04 with GCC 14 and Clang 18, Ubuntu 24.04 ARM64 with Clang 18, macOS 14 ARM64 with Apple Clang, and Windows Server 2022 with MSVC on a best-effort basis.*
+### Key Components
 
-## Repository Structure
+**TISC ISA v1.9.0** — Ternary Instruction Set Architecture. Frozen under v1.x; the immutable execution contract for the entire stack.
 
-- [`./include/t81/`](./include/t81/) contains the public headers for library consumers.
-- [`./examples/`](./examples/) contains C++ demos, T81Lang samples, and consumer examples.
-- [`./docs/`](./docs/) is the documentation hub for quickstarts, architecture, status, and governance.
-- [`./book/`](./book/) contains longer-form monograph and tutorial-style material.
-- [`./spec/`](./spec/) holds the normative specifications and RFCs.
-- [`./tests/`](./tests/) contains the unit, integration, conformance, and determinism-oriented tests.
-- [`./core/`](./core/) contains core type, ISA, and VM implementation modules.
-- [`./src/`](./src/) contains runtime components such as codecs, IO, and CanonFS.
-- [`./tooling/`](./tooling/) contains CLI and model-tooling code used by the shipped developer workflows.
-- [`./.github/workflows/`](./.github/workflows/) contains CI, reproducibility, documentation, benchmarking, and release automation.
+**T81VM** — Deterministic TISC interpreter. Guarantees bit-identical output across platforms; Axion pre-dispatch isolation keeps governance hooks outside the hot execution path.
 
-## Getting Started
+**Axion Governance Kernel** — Policy engine that intercepts `AXREAD`, `AXSET`, `AXVERIFY`, AI opcodes, and FFI calls before any side effect. Fail-closed on policy parse failure.
 
-### Prerequisites
-- CMake 3.16+
-- A C++23-capable compiler (C++20 supported via `-DT81_USE_CXX23=OFF`)
-- Python 3.10+ (for reproducibility gates)
-- Ninja or Make
+**CanonFS** — Content-addressed filesystem. Stores all code objects, model weights, and runtime artifacts as immutable, hash-identified blobs. Provides provenance for determinism audits.
 
-### Clone and Build
+**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`. Compiler pipeline: lexer → parser → typed AST → semantic analysis → IR generation.
+
+**Ternary-Native Inference (RFC-0034)** — Six TISC opcodes for multiplication-free AI inference using balanced ternary weights {−1, 0, +1}: `TWMATMUL` (matmul), `TQUANT` (quantize to trit), `TATTN` (ternary attention), `TWEMBED` (weight embedding), `TERNACCUM` (scalar dot product), `TACT` (activation with Axion ceiling gate). T81WTN weight format. T81Lang `foreign {}` frontend complete via RFC-0036.
+
+**Governed FFI (RFC-00B8 + RFC-0036)** — Full-stack governed foreign function interface. VM layer (RFC-00B8 Phase 1): `FFIDispatcher` enforces policy checks, resource quotas, and audit trails before any foreign call; `FFILibraryRegistry` tracks registered libraries by name and version hash; three VM opcodes (`FFICall`, `FFIRegister`, `FFIPolicySet`). Language layer (RFC-0036): `foreign deterministic { fn sin(x: T81Float) -> T81Float; }` declares signatures; `foreign.sin(angle)` at call sites lowers to `FFI_CALL` with the function name carried in `text_literal`.
+
+**TUI Frontends** — Two complementary terminal interfaces built on FTXUI v5.0.0:
+- `t81 studio` — navigation sidebar, CanonFS browser, Axion dashboard, determinism trace visualizer, command palette (`Ctrl+P`)
+- `t81 agent` — persistent JSONL session, slash commands (`/compile`, `/run`, `/hash`, `/allow`, `/infer`, `/trits`, …), trit-probability bar
+
+**DPE (Deterministic Parallel Execution)** — Task graph model over the frozen TISC ISA. Tasks declare immutable inputs and buffered output regions; the VM commits all writes atomically at epoch end. No new opcodes required.
+
+---
+
+## Quick Start
+
+### Build from source
+
 ```bash
+# Clone the repository
 git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel
-```
 
-### Run Tests & Verify Determinism
-```bash
-# Run the core test suite
+# Configure and build (Release mode)
+cmake --preset default -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+
+# Run the test suite (369 tests)
 ctest --test-dir build --output-on-failure
-
-# Verify the reproducibility gate
-mkdir -p build/t81lang-repro
-python3 scripts/ci/t81lang_repro_gate.py \
-  --t81-bin build/t81 \
-  --fixtures-dir tests/fixtures/t81lang_determinism \
-  --workdir build/t81lang-repro \
-  --hash-out build/t81lang-repro/hash.txt \
-  --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt
 ```
 
-### Run Shipped Examples
-```bash
-./build/t81_demo
-./build/t81_tensor_ops
-./build/t81_ir_roundtrip
-```
-
-### Compile and run a T81Lang sample
-```bash
-./build/t81 code check examples/hello_world.t81
-./build/t81 code build examples/hello_world.t81 -o build/hello_world.tisc
-./build/t81 code run build/hello_world.tisc
-```
-
-*Other common entry points include `./build/t81 project init`, `./build/t81 env doctor`, `./build/t81 weights ...`, `./build/t81 trace ...`, `./build/t81 canonfs ...`, `./build/t81 determinism ...`, `./build/t81 vm ...`, `./build/t81 tisc ...`, and `./build/t81 ir ...`. See [`./docs/user-guide/reference/cli-user-manual.md`](./docs/user-guide/reference/cli-user-manual.md) for the current command surface.*
-
-### Minimal Consumer Example (C++)
-
-```cpp
-#include <iostream>
-#include <t81/types/T81Int.hpp>
-
-int main() {
-  t81::T81Int<9> value(42);
-  std::cout << value.to_int64() << "\n";
-}
-```
-
-For downstream CMake usage, see [`./examples/consumer_cmake/`](./examples/consumer_cmake/).
-
-**Install and consume as a CMake package**
+### CLI & Interfaces
 
 ```bash
-cmake --install build --prefix /tmp/t81_install
-cmake -S examples/consumer_cmake -B /tmp/t81_consumer_build -DCMAKE_PREFIX_PATH=/tmp/t81_install
-cmake --build /tmp/t81_consumer_build --parallel
-/tmp/t81_consumer_build/t81_consumer
+# Compile a T81Lang program
+./build/t81 code build examples/hello.t81 -o hello.tisc
+
+# Execute with Axion governance
+./build/t81 vm run hello.tisc
+
+# Launch the human operator TUI
+./build/t81 studio
+
+# Launch the AI-native TUI
+./build/t81 agent
 ```
 
-```cmake
-find_package(T81Foundation CONFIG REQUIRED)
-target_link_libraries(t81_consumer PRIVATE T81::t81_core)
-```
+---
 
-## Examples
+## Determinism Verification
 
-- [`./examples/hello_world.t81`](./examples/hello_world.t81) is the smallest end-to-end T81Lang compile and run example.
-- [`./examples/option_result_match.t81`](./examples/option_result_match.t81) demonstrates typed control flow with `Option` and `Result`.
-- [`./examples/tensor_ops.cpp`](./examples/tensor_ops.cpp) demonstrates tensor reshape, slice, transpose, and related operations.
-- [`./examples/axion_policy_runner.cpp`](./examples/axion_policy_runner.cpp) highlights policy-aware execution and trace generation.
-- [`./examples/system-integration/inference.t81`](./examples/system-integration/inference.t81) with [`./examples/system-integration/secure_model.apl`](./examples/system-integration/secure_model.apl) shows a fuller T81Lang + Axion workflow.
-- [`./examples/tisc/`](./examples/tisc/) contains precompiled `.tisc` samples for disassembly, debugging, and runtime inspection.
-- [`./examples/consumer_cmake/`](./examples/consumer_cmake/) shows how a downstream CMake project can consume the public headers and targets.
-
-## Benchmarks
-
-T81 ships a benchmark suite for core numerics, tensor paths, SIMD/base81 work, CanonFS, and VM kernels. The runner now has explicit local profiles: `smoke` by default, bounded `full` for human use, and exhaustive `deep` for research/nightly runs.
+Verified deterministic surfaces are checked for bit-exact cross-platform reproducibility.
 
 ```bash
-cmake --build build --target benchmark_runner
+./scripts/ci/run_determinism_slice.sh
 ```
 
-```bash
-# Default local smoke profile: generates JSON output. Markdown reports are only
-# written if T81_BENCHMARK_WRITE_REPORTS=1 is set.
-./build/benchmarks/benchmark_runner \
-  --benchmark_format=json \
-  --benchmark_out=bench.json
-```
+Verified platforms for the current core surface: **Linux x86_64**, **macOS ARM64**. Any divergence on a verified deterministic surface is a critical defect.
 
-```bash
-# Human-usable full profile:
-T81_BENCHMARK_PROFILE=full ./build/benchmarks/benchmark_runner \
-  --benchmark_format=json \
-  --benchmark_out=bench-full.json
-
-# Exhaustive research/nightly profile:
-T81_BENCHMARK_PROFILE=deep ./build/benchmarks/benchmark_runner \
-  --benchmark_format=json \
-  --benchmark_out=bench-deep.json
-
-# Custom filtered local iteration:
-./build/benchmarks/benchmark_runner \
-  --benchmark_filter='BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|MemoryBandwidth|Add_1024_bit|Add_2048_bit|T81LangCompile|LimbArithThroughput|LimbAdd_T81Native|LimbAdd_T81Limb|LimbAdd_Int128|vs_).*' \
-  --benchmark_format=json \
-  --benchmark_out=bench-smoke.json
-
-# or through the CLI wrapper
-./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
-
-# CLI wrapper keeps report generation off by default
-T81_BENCHMARK_WRITE_REPORTS=1 ./build/t81 internal benchmark --benchmark_filter='BM_(ArithThroughput|T81LangCompile).*'
-```
-
-For methodology and benchmark-specific notes, see [`./benchmarks/README.md`](./benchmarks/README.md) and [`./docs/developer-guide/tools/README.md`](./docs/developer-guide/tools/README.md).
+---
 
 ## Documentation
 
-T81 maintains a rigid documentation hierarchy. **The `/spec` directory is normative.**
-- **Architecture Overview:** [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
-- **Status & Control Center:** [`docs/status/PROJECT_CONTROL_CENTER.md`](docs/status/PROJECT_CONTROL_CENTER.md)
-- **CLI User Manual:** [`docs/user-guide/reference/cli-user-manual.md`](docs/user-guide/reference/cli-user-manual.md)
-- **Reproducibility Guide:** [`docs/reference/REPRODUCIBILITY.md`](docs/reference/REPRODUCIBILITY.md)
-- **Formal Specifications:** [`spec/`](spec/)
-- **Long-form book:** [`book/book-en/README.md`](book/book-en/README.md)
+| Topic | Location |
+| :--- | :--- |
+| Getting Started (C++) | `docs/user-guide/getting-started/cpp-quickstart.md` |
+| Getting Started (AI) | `docs/user-guide/getting-started/ai-quickstart.md` |
+| TUI Guide | `docs/user-guide/how-to/tui-guide.md` |
+| ISA Specification | `spec/tisc-spec.md` |
+| Axion Policy Manual | `docs/user-guide/tutorials/axion-policy-manual.md` |
+| T81Lang Stdlib Reference | `docs/user-guide/reference/T81LANG_STDLIB_REFERENCE.md` |
+| Architecture Overview | `docs/architecture/OVERVIEW.md` |
+| Governance Charter | `docs/governance/README.md` |
+| Project Control Center | `docs/status/PROJECT_CONTROL_CENTER.md` |
 
-## Contributing
+---
 
-Contributions are welcome, but please be aware of our core philosophies:
-1. **Spec-First Authority:** The `/spec` directory dictates the implementation, not the other way around.
-2. **Determinism-First:** Any changes must preserve canonical behavior and pass strict reproducibility gates.
-3. **Bounded Governance:** Experimental features (like Cognitive Tiers) must not bleed into the Deterministic Core Profile.
+## Governance
 
-Start by reading [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). For governance details, review the material in [`docs/governance/`](docs/governance/). For private vulnerability reports, follow [`SECURITY.md`](SECURITY.md).
+T81 Foundation operates under a **Continuous Governance (C2)** model. All contributions must maintain:
+
+- **deterministic execution parity** — trace hashes must match across supported platforms
+- **architectural coherence** — changes that touch the deterministic surface require formal review
+- **reproducibility guarantees** — no floating-point or platform-specific non-determinism in the DCP surface
+
+The deterministic surface is defined in `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`. Changes to frozen surfaces (TISC ISA, Data Types) require a major version bump.
+
+> **Boundary note:** DCP, governed non-DCP, experimental, and out-of-scope classifications are defined constitutionally in RFC-0048. Public docs must not present governed non-DCP or experimental surfaces as verified deterministic components.
+
+---
+
+## The Ternary Advantage
+
+While modern binary hardware is highly optimized for general-purpose computing, **T81 Foundation** exploits the unique mathematical and structural properties of **balanced ternary** ({−1, 0, +1}) to deliver advantages that are difficult or impossible to achieve in conventional binary systems — especially in deterministic execution, governed AI inference, and low-complexity neural workloads.
+
+### 1. O(1) Computational Symmetry — Negation Without Carry
+
+In two's complement binary, negation requires a bitwise NOT followed by +1, which can trigger long carry chains. In balanced ternary, negation is simply flipping the sign of every non-zero trit (+1 ↔ −1, 0 stays 0) — **zero carry propagation**, constant time.
+
+- **Measured performance**: PackedCell negation reaches **~49.9 G-ops/s** on recent x86_64 hardware, outperforming optimized 64-bit integer negation by **~10.9×** (benchmarks verified on Linux x86_64 and macOS ARM64).
+- This symmetry extends naturally to many arithmetic patterns, reducing latency and power in sign-heavy operations.
+
+### 2. Superior Radix Economy & Theoretical Density
+
+The information-theoretic optimum radix for positional number systems is close to *e ≈ 2.718*. Ternary (base 3) is mathematically closer than binary (base 2), delivering **~1.585 bits of information per trit** (log₂(3)).
+
+- In practice this enables higher entropy per digit and more compact representation of symmetric ranges — especially valuable for neural network weights, embeddings, coordinate systems, and large-scale sparse tensors.
+
+### 3. Inherent Bit-Exact Determinism & Platform-Independent Rounding
+
+IEEE 754 floating-point suffers from platform-specific rounding modes, associativity differences, and denormal handling that break reproducibility. Balanced ternary arithmetic is naturally symmetric around zero:
+
+- Rounding uses simple truncation — no direction-dependent bias.
+- Every execution path produces **identical trace hashes** across supported platforms (currently Linux x86_64 + macOS ARM64 verified at 100% parity).
+- This provides rock-solid reproducibility for scientific computing, AI inference auditing, and governed agent runs.
+
+### 4. Multiplication-Free Neural Inference
+
+Balanced ternary weights {−1, 0, +1} allow **multiplication-free dot products** — replace MUL with conditional ADD/SUB (or pure accumulation when skipping zeros). Combined with custom TISC opcodes (`TWMATMUL`, `TQUANT`, `TATTN`, `TWEMBED`, `TERNACCUM`, `TACT`):
+
+- Enables dramatically lower power and higher throughput for AI inference.
+- Aligns with 2024–2026 trends in extreme low-bit models (BitNet b1.58, xTern, ternary transformers), delivering 15–60× energy reduction and 4–90× throughput gains vs FP16/FP32 baselines with minimal accuracy loss.
+- T81WTN weight format + ternary-native operations make this advantage production-ready in the stack.
+
+### 5. Architectural Governance & Security Hooks
+
+Because the entire TISC ISA is ternary-native, the **Axion Governance Kernel** can intercept and audit state transitions at **trit-level granularity** before any side effect occurs. This enables:
+
+- Fail-closed policy enforcement on privileged operations (AI invokes, FFI calls, agent behaviors).
+- Fine-grained ethics gates, provenance tracking via CanonFS, and deterministic audit trails.
+- A security model that is fundamentally more inspectable than black-box binary execution.
+
+These advantages compound in domains where **reproducibility**, **low-complexity inference**, **governed execution**, and **mathematical symmetry** matter most — exactly the target use cases of the T81 architecture.
+
+---
 
 ## License
 
-T81 Foundation is released under the MIT License. See [`LICENSE`](LICENSE).
+MIT License.

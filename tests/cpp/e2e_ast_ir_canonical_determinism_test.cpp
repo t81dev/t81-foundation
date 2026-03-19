@@ -635,8 +635,9 @@ const char* ir_opcode_name(tisc::ir::Opcode op) {
       return "DISTSEAL";
     case O::LABEL:
       return "LABEL";
+    default:
+      return "UNKNOWN";
   }
-  return "UNKNOWN";
 }
 
 std::string ir_repr(const tisc::ir::IntermediateProgram& ir_program) {

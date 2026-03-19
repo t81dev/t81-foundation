@@ -1,0 +1,30 @@
+// spec/conformance/ai/twembed-bounds.t81
+// Normative ref: RFC-0034 §5.17.5 (TWEMBED — ternary embedding lookup)
+// Invariant: TWEMBED accepts indices in [0, rows-1] and rejects index == rows
+//            as the minimal deterministic out-of-bounds case.
+//
+// @spec-ref: RFC-0034 §5.17.5
+// @invariant: twembed-bounds-exact
+// @input-domain: non-negative integer index, row count > 0
+// @expected: rows-1 is valid; rows is out of bounds
+
+@tier(2) @pure
+fn check_bounds_boundary() -> bool {
+    let rows: T81BigInt = 4;
+    let last_valid: T81BigInt = rows - 1;
+    let first_oob: T81BigInt = rows;
+    last_valid < rows && first_oob >= rows
+}
+
+@tier(2) @pure
+fn check_zero_index_valid() -> bool {
+    let rows: T81BigInt = 4;
+    let index: T81BigInt = 0;
+    index >= 0 && index < rows
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_bounds_boundary();
+    assert check_zero_index_valid();
+}

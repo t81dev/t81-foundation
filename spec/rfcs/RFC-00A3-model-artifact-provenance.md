@@ -1,9 +1,17 @@
 # RFC-00A3: Model Artifact Identity and Provenance (GGUF/Safetensors Policy)
 
 Version 0.1 — Standards Track\
-Status: Draft\
+Status: Accepted\
 Author: T81 Foundation Architecture Team\
-Applies to: Model Management, CanonFS Integration, Security Policies
+Applies to: Model Management, CanonFS Integration, Security Policies\
+Updated: 2026-03-15
+
+> **Acceptance note (2026-03-15):** The provenance mechanism defined here is
+> implemented as the TISC `TLOADHASH` instruction + `allowed_tensor_hashes`
+> policy gate (RFC-0025, accepted).  `load_model_via_tloadhash()` is the
+> canonical API surface; the `model_load` Axion hook event is the audit record.
+> See `spec/supplemental/axion-event-registry.md` and
+> `include/t81/axion/ai_model_loader.hpp`.
 
 ______________________________________________________________________
 

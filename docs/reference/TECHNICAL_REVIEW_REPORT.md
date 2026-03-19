@@ -31,7 +31,7 @@
 - **Scope:** Ambitious but managed through modular architecture.
 
 ## 6. DOCUMENTATION AUDIT
-- **Completeness:** Exceptional. `docs/` contains normative specs (`../../spec/`), user guides (`../guides/`), architecture notes (`../explanation/ARCHITECTURE.md`), and policies (`../policies/GOVERNANCE.md`).
+- **Completeness:** Exceptional. `docs/` contains normative specs (`../../spec/`), user guides (`../user-guide/`), architecture notes (`../explanation/ARCHITECTURE.md`), and policies (`../policies/GOVERNANCE.md`).
 - **Sync:** Documentation appears to be kept in sync with code (CI checks structure and links).
 - **Gaps:** `T81Symbolic` documentation is sparse compared to other modules.
 
@@ -44,7 +44,7 @@
 - **Ternary Math:** **Implemented**. `T81Int` handles balanced ternary arithmetic correctly.
 - **Deterministic Float:** **Partial**. Storage is canonical. Arithmetic relies on `double` for division/transcendentals, but `dmath` backend provides deterministic implementations for some functions.
 - **Graph Engine:** **Implemented**. `T81Graph` supports large graphs via heap storage.
-- **Axion Kernel:** **Implemented**. Policy engine hooks are integrated into the VM instruction loop.
+- **Axion Governance Kernel:** **Implemented**. Policy engine hooks are integrated into the VM instruction loop.
 
 ## 9. RED FLAGS & CONCERNS
 - **Float Determinism:** `T81Float` still falls back to host `double` for division and some transcendentals (e.g., `acos`). This is a known "Deferred" item but a critical one for strict determinism.

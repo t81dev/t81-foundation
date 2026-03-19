@@ -1,9 +1,10 @@
 # RFC-0002: Deterministic Execution Contract
 
 Version 0.2 — Standards Track\
-Status: Draft\
+Status: Accepted\
 Author: T81 Foundation\
-Applies to: Data Types, TISC, T81VM, T81Lang, Axion, Cognitive Tiers
+Applies to: Data Types, TISC, T81VM, T81Lang, Axion, Cognitive Tiers\
+Updated: 2026-03-15
 
 ______________________________________________________________________
 
@@ -271,14 +272,31 @@ ______________________________________________________________________
 
 # 11. Conformance Tests
 
-Future versions of the DEC will define:
+The DEC conformance suite is now active. Implementations MUST pass all of
+the following:
 
-- reference test vectors
-- deterministic execution sequences
-- formal proofs of equivalence
-- trace validation harnesses
+**Spec-as-Executable programs** (`spec/conformance/` — RFC-0027):
 
-Implementations MUST pass all deterministic validation suites.
+- `tisc/arithmetic-determinism.t81` — §5.2 bit-exact arithmetic
+- `tisc/division-truncation.t81` — §5.2 integer division
+- `tisc/opcode-determinism.t81` — §5 per-opcode bit-exact output
+- `tisc/bounds-fault-contract.t81` — §5 deterministic BoundsFault
+- `t81vm/determinism-profile.t81` — §1 identical input → identical output
+- `t81vm/axion-log-completeness.t81` — §5 every privileged op emits AxionEvent
+- `ai/attn-determinism.t81` — RFC-0026 §5.15 + RFC-0031 §3 ATTN identity
+- `ai/qmatmul-scale-order.t81` — RFC-0026 §5.15 QMATMUL post-scale ordering
+- `ai/embed-bounds-check.t81` — RFC-0026 §5.15 EMBED bounds predicate
+
+**Determinism gate tests** (`tests/determinism/`):
+
+- `t81_determinism_codec_test` — ternary codec round-trip determinism
+- `t81_determinism_evidence_test` — FNV-1a hash stability + trace reproducibility
+- `t81_determinism_primitives_test`, `test_float.cpp`, `test_containers.cpp`, `test_math.cpp`
+
+**Evidence format:** `evidence-schema-v1` (FNV-1a 64-bit, plain key=value text, no
+wall-clock fields) — see `tests/determinism/README.md`.
+
+Cross-reference: RFC-0031 §Deterministic AI Arithmetic Contract, RFC-0032 §5.
 
 ______________________________________________________________________
 

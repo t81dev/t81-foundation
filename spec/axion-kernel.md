@@ -1,6 +1,6 @@
 ______________________________________________________________________
 
-title: T81 Foundation Specification — Axion Kernel
+title: T81 Foundation Specification — Axion Governance Kernel
 nav:
 
 - [Overview](t81-overview.md)
@@ -8,22 +8,22 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
 
 [← Back to Spec Index](index.md)
 
-# Axion Kernel Specification
+# Axion Governance Kernel Specification
 
-Version 1.0 — Draft
+Version 1.9.0 — Stable
 
-Status: Draft\
-Last Revised: 2026-03-01\
+Status: Stable\
+Last Revised: 2026-03-16\
 Applies to: T81VM, TISC, T81Lang, Cognitive Tiers
 
-The **Axion Kernel** is the supervisory intelligence of the T81 Ecosystem.\
+The **Axion Governance Kernel** is the supervisory intelligence of the T81 Ecosystem.\
 It enforces:
 
 - deterministic execution invariants
@@ -47,7 +47,7 @@ Axion sits **above** all executable layers:
 ┌─────────────────────────────┐
 │     Cognitive Tiers         │
 ├─────────────────────────────┤
-│        Axion Kernel         │  ← THIS LAYER
+│        Axion Governance Kernel         │  ← THIS LAYER
 ├─────────────────────────────┤
 │ T81VM  |  TISC  |  DataTypes│
 ├─────────────────────────────┤
@@ -172,7 +172,7 @@ Axion also receives a deterministic trace of every segment transition and guarde
 
 ## 1.9 Axion API & Policy Enforcement
 
-The Axion Kernel exposes a constrained syscall surface (`AXREAD`, `AXSET`, `AXVERIFY`, `AXTRACE`, etc.) that every privileged opcode must call before performing non-deterministic or privileged actions. Each syscall supplies the opcode, the target addresses or handles, the calling snapshot, and any associated guard metadata (loop id, match metadata, enum/variant ids). The Axion Engine returns a deterministic `Verdict` (Allow/Deny) plus a canonical `reason` string. Denials immediately trigger deterministic `Axion Faults`; allows append the reason to `State::axion_log`.
+The Axion Governance Kernel exposes a constrained syscall surface (`AXREAD`, `AXSET`, `AXVERIFY`, `AXTRACE`, etc.) that every privileged opcode must call before performing non-deterministic or privileged actions. Each syscall supplies the opcode, the target addresses or handles, the calling snapshot, and any associated guard metadata (loop id, match metadata, enum/variant ids). The Axion Governance Engine returns a deterministic `Verdict` (Allow/Deny) plus a canonical `reason` string. Denials immediately trigger deterministic `Axion Faults`; allows append the reason to `State::axion_log`.
 
 Policies are encoded via the `(policy ...)` s-expression embedded in `tisc::Program.axion_policy_text`. Axion parses these forms (see `include/t81/axion/policy.hpp`) and enforces:
 
@@ -193,7 +193,7 @@ Because the policy lexer is deterministic and the verdict strings are canonical 
 
 ## 1.10 CanonFS Observability
 
-Canonical File System (CanonFS) is the deterministic store where Axion writes loop/match policy hints, bounds-fault snippets, and trace exports. Each CanonFS write traverses `AXSET`, so Axion can validate shape/segment constraints and record `meta slot` events before persistence. The `axion_policy_runner` example (documented in `docs/guides/axion-trace.md`) mirrors this path and shows auditors how to capture the required `verdict.reason` strings without digging into VM sources. CanonFS therefore acts as the official audit trail for Axion policy enforcement, and the persistent driver described in `spec/supplemental/canonfs-spec.md` guarantees those `meta slot axion event segment=meta ... action=Write/Read` strings fire before bytes hit `objects/<hash>.blk`.
+Canonical File System (CanonFS) is the deterministic store where Axion writes loop/match policy hints, bounds-fault snippets, and trace exports. Each CanonFS write traverses `AXSET`, so Axion can validate shape/segment constraints and record `meta slot` events before persistence. The `axion_policy_runner` example (documented in `docs/developer-guide/internals/axion-trace.md`) mirrors this path and shows auditors how to capture the required `verdict.reason` strings without digging into VM sources. CanonFS therefore acts as the official audit trail for Axion policy enforcement, and the persistent driver described in `spec/supplemental/canonfs-spec.md` guarantees those `meta slot axion event segment=meta ... action=Write/Read` strings fire before bytes hit `objects/<hash>.blk`.
 
 > **Implementation status (AX-M7):** CanonFS observability integration is
 > partial. Full `AXSET` propagation to CanonFS meta slots and end-to-end

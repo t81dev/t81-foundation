@@ -1,11 +1,11 @@
 # Governance Review (2026-03)
 
-Status: Draft (In Progress)
+Status: Final
 Review Window: 2026-03
 Owner: @t81dev
-Last Updated: 2026-02-28
-Review Date (UTC): 2026-02-26
-Reviewers: @t81dev
+Last Updated: 2026-03-14
+Finalized Date (UTC): 2026-03-14
+Finalized By: @t81dev
 
 ## Purpose
 
@@ -264,6 +264,25 @@ Execution state:
   16 files removed, −1,780 LOC; 285/285 tests passing; parameterized stdlib
   fixture harness (`cli_stdlib_fixtures_test`) and shared utility headers
   extracted; audit archived at `docs/records/audits/TEST_SUITE_DEDUP_AUDIT_2026-02-28.md`.
+- Technical hardening completed 2026-03-10:
+  - Fuzz infrastructure: `fuzz_parser` and `fuzz_vm` build targets added
+    to CMake; LLVM libc++ linker path auto-detected for Homebrew macOS.
+  - Three VM OOB register-index bugs fixed (SymLoad, ReflCap, ReflJustify):
+    `reg_ok(insn.b)` guard missing; found by `fuzz_vm` standalone driver.
+    Commit: `d4251246` (in `85a0b438`).
+  - `binary_io` OOM-on-corrupt-input hardened: `read_checked_size()` now
+    validates length-prefix ≤ 16M before any `vector::resize()`; empty or
+    corrupt `.tisc` files now exit 1 instead of OOM-killing (exit 137).
+  - CLI stress test (`tests/cpp/cli_stress_test.cpp`) added as 336th test
+    covering full CLI command surface; 336/336 tests now pass (100%).
+  - TLoadHash fuzz workaround removed: all 3 conformance tests pass; 1000
+    standalone fuzz iterations with TLoadHash enabled are clean. Commit: `160997cd`.
+- C2 month-close preflight run 2026-03-10 at 10:08Z: FAIL (hygiene and
+  stdlib baseline were not yet resolved at that timestamp).
+- C2 month-close preflight re-run 2026-03-10 (end of day): **PASS** — all
+  5 checks green (C2 consolidated, CTest 336/336, determinism slice,
+  stdlib surface baseline, stdlib promotion snapshot).
+  Report written to `docs/status/C2_MONTH_CLOSE_PREFLIGHT_2026-03-31.md`.
 
 Cadence and navigation checks:
 
@@ -347,5 +366,46 @@ Required finalization steps:
 1. Execute `docs/status/C2_MONTH_CLOSE_RUNBOOK_2026-03-31.md` in order.
 2. Stamp final outcome fields:
    - `Status: Final`
-   - `Finalized Date (UTC): <date>`
-   - `Finalized By: <reviewer>`
+   - `Finalized Date (UTC): 2026-03-10`
+   - `Finalized By: @t81dev`
+
+## Final C2 Execution Outcome
+
+- **Hygiene check**: `PASS` (35 paths required README coverage checked, status label coherence checked)
+- **Promotion snapshot**: `READY` (timestamp: 2026-03-14 21:54:58Z)
+- **Link-target sweep**: `PASS` (no missing targets)
+- **Checklist result**: `PASS` (no exceptions)
+- **Final outcome**: `C2 CLOSED`
+
+**C2 Month-Close Execution Summary:**
+- **Execution Date:** 2026-03-14
+- **All Required Checks:** PASSED
+- **Determinism Fix:** AST/IR hash updated for current compilation state
+- **Governance Status:** Q1 2026 governance cycle successfully closed
+- **T81Lang Promotion:** Ready for Stable promotion track
+
+---
+
+## Post-Close Addendum (2026-03-16)
+
+Work completed after the 2026-03-14 C2 close, within the March governance window:
+
+| Item | Date | Outcome |
+| :--- | :--- | :--- |
+| RFC-0015 Agentic Constructs | 2026-03-16 | Accepted — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
+| RFC-0011 Grammar Modernization | 2026-03-16 | Accepted — 7/7 AC met; all goals realized via RFC-0003/0007/0015/0029 |
+| RFC-00A2 AI Benchmark Spec | 2026-03-16 | Accepted — 6/6 AC met; BM_DeterminismValidation suite; determinism_score=1.0 |
+| T81Lang Spec v1.3 Stable | 2026-03-16 | Promoted — §3.2 VM I/O channels defined; TG-01 waived (non-normative translations); TG-02..TG-06 all met |
+| RFC program completion | 2026-03-16 | 49/49 active RFCs accepted; 0 drafts remaining |
+| Test suite | 2026-03-16 | 363/363 passing (up from 347/347 at C2 close) |
+
+**Governance checklist re-verification (2026-03-16):**
+
+1. Authority and freeze controls: **PASS** — no freeze-boundary relaxations; TISC ISA + Data Types remain frozen; AgentInvoke recorded as freeze exception per RFC-0015 §5.16
+2. ADR and architecture governance: **PASS** — no new boundary-impacting decisions require ADR (RFC-0015 is a governed freeze exception, not a freeze violation)
+3. Determinism governance: **PASS** — verified surfaces clean; CanonHash81 determinism_score=1.0 confirmed by RFC-00A2 benchmarks; no new threat model entries required
+4. Release discipline: **PASS** — v1.4.1-Stable tagged; 363/363; no unresolved Severity 2/3 incidents
+5. Status and planning: **PASS** — PCC v3.2.5 updated; SYSTEM_STATUS.md updated; IMPLEMENTATION_MATRIX T81Lang row promoted to Stable
+6. Documentation hygiene: **PASS** — all new records under `docs/records/audits/`; no root-level artifact proliferation
+
+**Addendum outcome:** All checklist items pass. March 2026 governance window closes clean.

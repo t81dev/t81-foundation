@@ -1,0 +1,6 @@
+Record host details and observations here:
+- host OS / version
+- VirtualBox version
+- VM settings
+- whether EFI discovered the disk
+- whether EFI shell or any boot path executed

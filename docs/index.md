@@ -17,8 +17,8 @@ If you are new to the project, start here. These documents provide the high-leve
 - **[Architecture Overview](architecture/OVERVIEW.md)**
   - Canonical architecture summary with layer boundaries, maturity labels, and evidence links.
 
-- **[Researcher's Guide](records/archive/temporal-guides/how-to/research-guide.md)**
-  - An in-depth exploration of the mathematical foundations of balanced ternary and the five cognitive tiers of execution.
+- **[AI Quickstart Guide](user-guide/getting-started/ai-quickstart.md)**
+  - Practical entry point for the governed AI and model-integration workflows that are currently documented on the live user-guide surface.
 
 ______________________________________________________________________
 
@@ -39,8 +39,8 @@ These documents are the "constitution" of the T81 Foundation. They define the no
 - **[Terminology Alignment Notes](process/policies/terminology-alignment.md)**
   - Canonical term map aligned with `duotronic-whitepaper` and `t81-docs`.
 
-- **[Tensor Library Guide](records/archive/temporal-guides/how-to/tensor-guide.md)**
-  - An in-depth guide to the concepts and API of the T81 tensor library.
+- **[T81Lang Stdlib Reference](user-guide/reference/T81LANG_STDLIB_REFERENCE.md)**
+  - Current reference for standard library surfaces, including tensor-related modules and language-level contracts.
 
 ______________________________________________________________________
 
@@ -54,31 +54,27 @@ For contributors looking to modify the codebase, these resources provide detaile
 - **[CLI User Manual](user-guide/reference/cli-user-manual.md)**
   - Command and operator reference for the shipped `t81` binary.
 
-- **[Guide: Match Expression Demo](records/archive/temporal-guides/guides/match-example.md)**
-  - A live example that compiles and runs an `Option`/`Result` match through the CLI and HanoiVM.
-
-- **[Tutorial: Secure Deployment](records/archive/temporal-guides/guides/secure-deployment-tutorial.md)**
-  - An end-to-end guide to building, securing with Axion policies, and auditing T81 applications.
-- **[Guide: Weight & Model Integration](records/archive/temporal-guides/guides/weights-integration.md)**
-  - How `t81 weights load`, the new `weights.load("<tensor>")` builtin, and the HanoiVM `WeightsLoad` opcode cooperate to keep `.t81w` tensors zero-copy inside the interpreter.
+- **[Axion Policy Manual](user-guide/tutorials/axion-policy-manual.md)**
+  - The current live guide for policy-enforced execution, auditing, and secure operational workflows.
+- **[llama.cpp Integration Guide](user-guide/tutorials/llama_cpp_integration_guide.md)**
+  - The current live guide for weight/model integration and governed llama.cpp workflows.
 - **[Guide: Data Types Overview](developer-guide/internals/data-types-overview.md)**
   - A runnable sample that exercises primitive and structural data types inside `examples/data_types.t81`, plus dedicated high-rank tensor and graph demos for exploring multidimensional indexing behaviors.
-- **[Demo Gallery](records/archive/temporal-guides/guides/demo-gallery.md)**
-  - A quick menu of the match/data-type demos, the `scripts/run-demos.sh` automation, and the IR inspector utility.
 - **[Benchmark Report](../benchmarks/results/archive/benchmarks.md)**
   - Auto-generated archive of T81/binary throughput/latency comparisons produced by `./build/t81 internal benchmark`.
-- **Benchmark Highlights (README)**(`../README.md#benchmark-highlights`)
--  - Summary badges and table excerpted from the latest `docs/../benchmarks/results/archive/benchmarks.md` results so visitors see at-a-glance which families currently lead.
+- **[Benchmark Highlights (README)](../README.md#benchmark-highlights)**
+  - Summary badges and table excerpted from the latest `docs/../benchmarks/results/archive/benchmarks.md` results so visitors see at-a-glance which families currently lead.
 
 - **[Guide: VM Opcodes](developer-guide/internals/vm-opcodes.md)**
   - The process for extending the virtual machine with new instructions.
-- **[Guide: Setun Bridge](records/archive/temporal-guides/guides/setun-bridge.md)**
-  - Setun-style assembly translation to TISC, including label resolution and deterministic diagnostics.
-- **[Guide: Runtime Contract Helpers](records/archive/temporal-guides/guides/runtime-contract-helpers.md)**
-  - Opcode matrix helpers and VM recursion/contradiction safety counters used by hardened runtime checks.
+- **[Axion Trace Guide](developer-guide/internals/axion-trace.md)**
+  - Current trace/audit workflow for canonical `verdict.reason` strings and policy-facing runtime evidence.
 
 - **[C++ API overview](user-guide/reference/public-api-overview.md)** – describes the canonical headers and the `t81::v1` surface; run `cmake --build build --target docs` to generate the Doxygen HTML under `build/api/html/index.html`.
   - Auto-generated, detailed reference for every class and method in the source code. *(Run `cmake --build build --target docs` to generate).*
+
+- **Archived Guides**
+  - Historical guide material remains under `docs/records/archive/temporal-guides/` for reference, but the links above are the maintained entry points for current workflows.
 
 ______________________________________________________________________
 

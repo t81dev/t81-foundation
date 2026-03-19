@@ -5,6 +5,8 @@
 
 #if defined(__x86_64__) && defined(__AVX2__)
 #include <immintrin.h>
+#elif defined(__ARM_NEON)
+#include <arm_neon.h>
 #endif
 
 #include "t81/simd/prefix_scan.hpp"
@@ -74,33 +76,64 @@ struct alignas(32) T81 {
   static uint8_t AddByte(uint8_t lhs, uint8_t rhs, int8_t carry_in) noexcept {
     uint8_t result = 0;
     int8_t carry = carry_in;
-    for (int trit = 0; trit < 4; ++trit) {
-      const int shift = trit * 2;
-      const int8_t a = DecodeTrit((lhs >> shift) & 0x3u);
-      const int8_t b = DecodeTrit((rhs >> shift) & 0x3u);
+
+    // Trit 0
+    {
+      const int8_t a = DecodeTrit(lhs & 0x3u);
+      const int8_t b = DecodeTrit(rhs & 0x3u);
       const simd::AddEntry& entry = simd::LookupAddEntry(a, b);
-      const int table_index = carry + 1;
-      const int8_t sum = entry.sum[table_index];
-      carry = entry.carry[table_index];
-      result |= EncodeTrit(sum) << shift;
+      result |= EncodeTrit(entry.sum[carry + 1]);
+      carry = entry.carry[carry + 1];
+    }
+    // Trit 1
+    {
+      const int8_t a = DecodeTrit((lhs >> 2) & 0x3u);
+      const int8_t b = DecodeTrit((rhs >> 2) & 0x3u);
+      const simd::AddEntry& entry = simd::LookupAddEntry(a, b);
+      result |= EncodeTrit(entry.sum[carry + 1]) << 2;
+      carry = entry.carry[carry + 1];
+    }
+    // Trit 2
+    {
+      const int8_t a = DecodeTrit((lhs >> 4) & 0x3u);
+      const int8_t b = DecodeTrit((rhs >> 4) & 0x3u);
+      const simd::AddEntry& entry = simd::LookupAddEntry(a, b);
+      result |= EncodeTrit(entry.sum[carry + 1]) << 4;
+      carry = entry.carry[carry + 1];
+    }
+    // Trit 3
+    {
+      const int8_t a = DecodeTrit((lhs >> 6) & 0x3u);
+      const int8_t b = DecodeTrit((rhs >> 6) & 0x3u);
+      const simd::AddEntry& entry = simd::LookupAddEntry(a, b);
+      result |= EncodeTrit(entry.sum[carry + 1]) << 6;
     }
     return result;
   }
 
   T81 operator-() const noexcept {
+    // Negation trick: for 2-bit trit encoding 00=−1, 01=0, 10=+1,
+    // the negation of each byte is (0xAA - byte): 0b10101010 − x
+    // flips 00↔10 while leaving 01 unchanged.
 #if defined(__x86_64__) && defined(__AVX2__)
-    const __m256i mask = _mm256_set1_epi8(static_cast<int8_t>(0b10010000));
     const __m256i v = _mm256_load_si256(reinterpret_cast<const __m256i*>(data.data()));
-    const __m256i negated = _mm256_shuffle_epi8(v, mask);
+    const __m256i mask = _mm256_set1_epi8(static_cast<int8_t>(0xAA));
+    const __m256i neg = _mm256_sub_epi8(mask, v);
     T81 result;
-    _mm256_store_si256(reinterpret_cast<__m256i*>(result.data.data()), negated);
+    _mm256_store_si256(reinterpret_cast<__m256i*>(result.data.data()), neg);
+    return result;
+#elif defined(__ARM_NEON)
+    const uint8x16_t mask = vdupq_n_u8(0xAAu);
+    const uint8x16_t lo = vsubq_u8(mask, vld1q_u8(data.data()));
+    const uint8x16_t hi = vsubq_u8(mask, vld1q_u8(data.data() + 16));
+    T81 result;
+    vst1q_u8(result.data.data(), lo);
+    vst1q_u8(result.data.data() + 16, hi);
     return result;
 #else
     std::array<int8_t, 128> digits{};
     UnpackDigits(data, digits);
-    for (int idx = 0; idx < 128; ++idx) {
-      digits[idx] = static_cast<int8_t>(-digits[idx]);
-    }
+    for (int idx = 0; idx < 128; ++idx) digits[idx] = static_cast<int8_t>(-digits[idx]);
     T81 result;
     PackDigits(digits, result.data);
     return result;
@@ -109,37 +142,97 @@ struct alignas(32) T81 {
 
   T81 operator+(const T81& other) const noexcept {
     T81 result;
+
 #if defined(__x86_64__) && defined(__AVX2__)
-    const __m256i lhs = _mm256_load_si256(reinterpret_cast<const __m256i*>(data.data()));
-    const __m256i rhs = _mm256_load_si256(reinterpret_cast<const __m256i*>(other.data.data()));
-    std::array<simd::ByteCarryMap, 32> maps{};
-    simd::BuildCarryMaps(lhs, rhs, maps);
-    simd::PrefixScan(maps);
-    auto carries = simd::CarryIns(maps);
-    alignas(32) uint8_t lhs_bytes[32];
-    alignas(32) uint8_t rhs_bytes[32];
-    alignas(32) uint8_t result_bytes[32];
-    _mm256_store_si256(reinterpret_cast<__m256i*>(lhs_bytes), lhs);
-    _mm256_store_si256(reinterpret_cast<__m256i*>(rhs_bytes), rhs);
-    for (int idx = 0; idx < 32; ++idx) {
-      result_bytes[idx] = AddByte(lhs_bytes[idx], rhs_bytes[idx], carries[idx]);
+    // Common byte-apply helper shared by all ISA paths.
+    // Given per-byte carry-ins from PrefixScan, applies them trit-by-trit.
+    auto apply_carries = [&](const std::array<int8_t, 32>& carries) {
+      const uint8_t* lp = data.data();
+      const uint8_t* rp = other.data.data();
+      uint8_t* dp = result.data.data();
+      for (int i = 0; i < 32; ++i) {
+        const uint8_t lb = lp[i], rb = rp[i];
+        const simd::AddEntry& e0 =
+            simd::LookupAddEntry(DecodeTrit(lb & 0x3u), DecodeTrit(rb & 0x3u));
+        const simd::AddEntry& e1 =
+            simd::LookupAddEntry(DecodeTrit((lb >> 2) & 0x3u), DecodeTrit((rb >> 2) & 0x3u));
+        const simd::AddEntry& e2 =
+            simd::LookupAddEntry(DecodeTrit((lb >> 4) & 0x3u), DecodeTrit((rb >> 4) & 0x3u));
+        const simd::AddEntry& e3 =
+            simd::LookupAddEntry(DecodeTrit((lb >> 6) & 0x3u), DecodeTrit((rb >> 6) & 0x3u));
+        int8_t c = carries[i];
+        const uint8_t b0 = EncodeTrit(e0.sum[c + 1]);
+        c = e0.carry[c + 1];
+        const uint8_t b1 = EncodeTrit(e1.sum[c + 1]);
+        c = e1.carry[c + 1];
+        const uint8_t b2 = EncodeTrit(e2.sum[c + 1]);
+        c = e2.carry[c + 1];
+        const uint8_t b3 = EncodeTrit(e3.sum[c + 1]);
+        dp[i] = b0 | (b1 << 2) | (b2 << 4) | (b3 << 6);
+      }
+    };
+
+    {
+      const __m256i lv = _mm256_load_si256(reinterpret_cast<const __m256i*>(data.data()));
+      const __m256i rv = _mm256_load_si256(reinterpret_cast<const __m256i*>(other.data.data()));
+      std::array<simd::ByteCarryMap, 32> maps{};
+      simd::BuildCarryMaps(lv, rv, maps);
+      simd::PrefixScan(maps);
+      apply_carries(simd::CarryIns(maps));
     }
-    _mm256_store_si256(reinterpret_cast<__m256i*>(result.data.data()),
-                       _mm256_load_si256(reinterpret_cast<__m256i*>(result_bytes)));
+#elif defined(__ARM_NEON)
+    // Common byte-apply helper shared by all ISA paths.
+    // Given per-byte carry-ins from PrefixScan, applies them trit-by-trit.
+    auto apply_carries = [&](const std::array<int8_t, 32>& carries) {
+      const uint8_t* lp = data.data();
+      const uint8_t* rp = other.data.data();
+      uint8_t* dp = result.data.data();
+      for (int i = 0; i < 32; ++i) {
+        const uint8_t lb = lp[i], rb = rp[i];
+        const simd::AddEntry& e0 =
+            simd::LookupAddEntry(DecodeTrit(lb & 0x3u), DecodeTrit(rb & 0x3u));
+        const simd::AddEntry& e1 =
+            simd::LookupAddEntry(DecodeTrit((lb >> 2) & 0x3u), DecodeTrit((rb >> 2) & 0x3u));
+        const simd::AddEntry& e2 =
+            simd::LookupAddEntry(DecodeTrit((lb >> 4) & 0x3u), DecodeTrit((rb >> 4) & 0x3u));
+        const simd::AddEntry& e3 =
+            simd::LookupAddEntry(DecodeTrit((lb >> 6) & 0x3u), DecodeTrit((rb >> 6) & 0x3u));
+        int8_t c = carries[i];
+        const uint8_t b0 = EncodeTrit(e0.sum[c + 1]);
+        c = e0.carry[c + 1];
+        const uint8_t b1 = EncodeTrit(e1.sum[c + 1]);
+        c = e1.carry[c + 1];
+        const uint8_t b2 = EncodeTrit(e2.sum[c + 1]);
+        c = e2.carry[c + 1];
+        const uint8_t b3 = EncodeTrit(e3.sum[c + 1]);
+        dp[i] = b0 | (b1 << 2) | (b2 << 4) | (b3 << 6);
+      }
+    };
+
+    {
+      // Use NEON to load the 32-byte operands into registers, then extract
+      // for the carry-map build. PrefixScan and apply_carries are scalar.
+      const uint8x16x2_t lv = {vld1q_u8(data.data()), vld1q_u8(data.data() + 16)};
+      const uint8x16x2_t rv = {vld1q_u8(other.data.data()), vld1q_u8(other.data.data() + 16)};
+      std::array<simd::ByteCarryMap, 32> maps{};
+      simd::BuildCarryMaps(lv, rv, maps);
+      simd::PrefixScan(maps);
+      apply_carries(simd::CarryIns(maps));
+    }
 #else
-    std::array<int8_t, 128> lhs_digits{};
-    std::array<int8_t, 128> rhs_digits{};
-    std::array<int8_t, 128> sum_digits{};
-    UnpackDigits(data, lhs_digits);
-    UnpackDigits(other.data, rhs_digits);
-    int8_t carry = 0;
-    for (int idx = 0; idx < 128; ++idx) {
-      const simd::AddEntry& entry = simd::LookupAddEntry(lhs_digits[idx], rhs_digits[idx]);
-      const int table_index = carry + 1;
-      sum_digits[idx] = entry.sum[table_index];
-      carry = entry.carry[table_index];
+    {
+      // Portable scalar carry chain (no SIMD).
+      std::array<int8_t, 128> ld{}, rd{}, sd{};
+      UnpackDigits(data, ld);
+      UnpackDigits(other.data, rd);
+      int8_t carry = 0;
+      for (int i = 0; i < 128; ++i) {
+        const simd::AddEntry& e = simd::LookupAddEntry(ld[i], rd[i]);
+        sd[i] = e.sum[carry + 1];
+        carry = e.carry[carry + 1];
+      }
+      PackDigits(sd, result.data);
     }
-    PackDigits(sum_digits, result.data);
 #endif
     return result;
   }

@@ -6,7 +6,7 @@
 
 using namespace t81::ir;
 
-static bool eq(const Insn& a, const Insn& b) {
+[[maybe_unused]] static bool eq(const Insn& a, const Insn& b) {
   if (a.op != b.op) return false;
   if (a.ops != b.ops) return false;
   if (a.imm != b.imm) return false;

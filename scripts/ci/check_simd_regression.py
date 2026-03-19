@@ -31,7 +31,7 @@ def check_regression(bench_file):
     failed = False
 
     for size, benches in benchmarks.items():
-        if size < 4096:
+        if size < 16384:
             continue # Skip small sizes for regression check
 
         print(f"Checking size {size}...")

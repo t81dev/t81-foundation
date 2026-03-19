@@ -1,6 +1,75 @@
 // lang/stdlib/std/agent.t81
-// Agent abstractions.
+// Agent abstractions for cognitive entities.
+//
+// This module provides deterministic agent primitives for building
+// cognitive systems with thermodynamic accounting and belief management.
+//
+// Key Features:
+// - Identity management with unique symbols
+// - Belief state tracking with ternary probabilities
+// - Entropy-based fuel system for operation accounting
+// - Memory management with symbolic trees
+// - Intent specification with quaternions
+//
+// Usage:
+//   import std.agent;
+//   
+//   let agent = std.agent.create("Socrates");
+//   agent.believe("Forms", 0.8);
+//   agent.intend("Philosophy");
+//   let reflection = agent.self_reflect();
 
+// Create a new agent with optional initial fuel
+fn create(name: T81String, fuel_count: T81Int = 5) -> T81Agent {
+    return std.agent.create(name, fuel_count);
+}
+
+// Self-reflection operation - returns belief state summary
+fn self_reflect(agent: T81Agent) -> T81Map<T81Symbol, T81Prob> {
+    return std.agent.self_reflect(agent);
+}
+
+// Update agent's belief about a concept
+fn believe(agent: T81Agent, concept: T81Symbol, confidence: T81Float) -> void {
+    std.agent.believe(agent, concept, confidence);
+}
+
+// Set agent's current intent
+fn intend(agent: T81Agent, intent: T81Symbol) -> void {
+    std.agent.intend(agent, intent);
+}
+
+// Get agent's current intent
+fn current_intent(agent: T81Agent) -> T81Symbol {
+    return std.agent.current_intent(agent);
+}
+
+// Check if agent has sufficient fuel for operation
+fn has_fuel(agent: T81Agent, required: T81Int = 1) -> T81Bool {
+    return std.agent.has_fuel(agent, required);
+}
+
+// Add entropy fuel to agent
+fn refuel(agent: T81Agent, amount: T81Int = 1) -> void {
+    std.agent.refuel(agent, amount);
+}
+
+// Store information in agent's memory
+fn remember(agent: T81Agent, key: T81Symbol, value: T81Symbol) -> void {
+    std.agent.remember(agent, key, value);
+}
+
+// Retrieve information from agent's memory
+fn recall(agent: T81Agent, key: T81Symbol) -> T81Optional<T81Symbol> {
+    return std.agent.recall(agent, key);
+}
+
+// Get agent's unique identity
+fn identity(agent: T81Agent) -> T81Symbol {
+    return std.agent.identity(agent);
+}
+
+// Legacy compatibility wrapper
 fn self_reflect() -> void {
     std.agent.self_reflect();
 }

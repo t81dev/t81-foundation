@@ -2,6 +2,7 @@
 #include "t81/vm/vm.hpp"
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,6 +12,17 @@ using t81::tisc::Insn;
 using t81::tisc::Opcode;
 using t81::tisc::Program;
 using t81::vm::State;
+
+class DenySwarJitTraceExitEngine final : public t81::axion::Engine {
+public:
+  t81::axion::Verdict evaluate(const t81::axion::SyscallContext& ctx) override {
+    if (ctx.syscall == t81::axion::reasons::kJitTraceExit &&
+        ctx.next_opcode == t81::tisc::Opcode::TNOT_SWAR) {
+      return {t81::axion::VerdictKind::Deny, "deny-swar-jit-trace-exit"};
+    }
+    return {t81::axion::VerdictKind::Allow, "allow"};
+  }
+};
 
 bool expect(bool cond, const std::string& message) {
   if (!cond) {
@@ -147,6 +159,35 @@ Program make_hot_bitwise_program() {
       {Opcode::BitUShr, 11, 8, 3},
       {Opcode::Dec, 4, 0, 0},
       {Opcode::JumpIfNotZero, 4, 4, 0},
+      {Opcode::Halt, 0, 0, 0},
+  };
+  return p;
+}
+
+Program make_hot_swar_tensor_program() {
+  Program p;
+  p.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {-1.0f, 0.0f, 1.0f, -1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  p.tensor_pool.push_back([] {
+    t81::T729DynamicTensor tensor({4}, {1.0f, -1.0f, 0.0f, 1.0f});
+    tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+    return tensor;
+  }());
+  p.insns = {
+      {Opcode::LoadImm, 1, 1, 0, t81::tisc::LiteralKind::TensorHandle},
+      {Opcode::LoadImm, 2, 2, 0, t81::tisc::LiteralKind::TensorHandle},
+      {Opcode::LoadImm, 3, 64, 0},
+      {Opcode::LoadImm, 4, 0, 0},
+      // loop at pc=4
+      {Opcode::TNOT_SWAR, 5, 1, 0},
+      {Opcode::TAND_SWAR, 6, 1, 2},
+      {Opcode::TOR_SWAR, 7, 1, 2},
+      {Opcode::Add, 4, 4, 3},
+      {Opcode::Dec, 3, 0, 0},
+      {Opcode::JumpIfNotZero, 4, 3, 0},
       {Opcode::Halt, 0, 0, 0},
   };
   return p;
@@ -416,6 +457,68 @@ bool test_jit_bitwise_trace_determinism() {
   return true;
 }
 
+bool test_jit_swar_tensor_trace_determinism() {
+  const Program program = make_hot_swar_tensor_program();
+  const Snapshot a = run_program(program);
+  const Snapshot b = run_program(program);
+
+  if (!expect(!a.regs.empty(), "swar snapshot A is empty")) return false;
+  if (!expect(!b.regs.empty(), "swar snapshot B is empty")) return false;
+  if (!expect(a.regs == b.regs, "swar register snapshots diverged")) return false;
+  if (!expect(a.tags == b.tags, "swar register-tag snapshots diverged")) return false;
+  if (!expect(a.pc == b.pc, "swar PCs diverged")) return false;
+  if (!expect(a.halted == b.halted, "swar halted flags diverged")) return false;
+  if (!expect(a.trace_reasons == b.trace_reasons, "swar trace reasons diverged")) return false;
+
+  bool saw_enter_at_loop_pc = false;
+  bool saw_exit_kind = false;
+  for (const auto& reason : a.trace_reasons) {
+    if (reason.find("jit trace enter") != std::string::npos &&
+        reason.find("pc=4") != std::string::npos) {
+      saw_enter_at_loop_pc = true;
+    }
+    if (reason.find("jit trace exit") != std::string::npos &&
+        reason.find("exit-kind=") != std::string::npos) {
+      saw_exit_kind = true;
+    }
+  }
+  if (!expect(saw_enter_at_loop_pc, "swar trace missing jit enter at loop pc=4")) return false;
+  if (!expect(saw_exit_kind, "swar trace missing jit exit kind annotation")) return false;
+
+  if (!expect(a.tags[5] == t81::vm::ValueTag::TensorHandle, "swar R5 expected tensor handle")) return false;
+  if (!expect(a.tags[6] == t81::vm::ValueTag::TensorHandle, "swar R6 expected tensor handle")) return false;
+  if (!expect(a.tags[7] == t81::vm::ValueTag::TensorHandle, "swar R7 expected tensor handle")) return false;
+  if (!expect(a.regs[4] == 2080, "swar loop accumulator R4 expected 2080")) return false;
+  return true;
+}
+
+bool test_jit_swar_policy_enforcement() {
+  auto vm = t81::vm::make_interpreter_vm(std::make_unique<DenySwarJitTraceExitEngine>());
+  vm->load_program(make_hot_swar_tensor_program());
+
+  const auto run = vm->run_to_halt(5000);
+  if (!expect(!run.has_value(), "swar policy test expected a trap")) return false;
+  if (!expect(run.error() == t81::vm::Trap::SecurityFault,
+              "swar policy test expected SecurityFault")) {
+    return false;
+  }
+
+  bool saw_trace_enter = false;
+  bool saw_trace_exit = false;
+  for (const auto& entry : vm->state().axion_log) {
+    if (entry.verdict.reason.find("jit trace enter") != std::string::npos) {
+      saw_trace_enter = true;
+    }
+    if (entry.verdict.reason.find("jit trace exit") != std::string::npos) {
+      saw_trace_exit = true;
+    }
+  }
+
+  if (!expect(saw_trace_enter, "swar policy test missing jit trace enter")) return false;
+  if (!expect(saw_trace_exit, "swar policy test missing jit trace exit")) return false;
+  return true;
+}
+
 }  // namespace
 
 int main() {
@@ -425,6 +528,8 @@ int main() {
   if (!test_jit_enum_trace_determinism()) return 1;
   if (!test_jit_call_ret_trace_determinism()) return 1;
   if (!test_jit_bitwise_trace_determinism()) return 1;
+  if (!test_jit_swar_tensor_trace_determinism()) return 1;
+  if (!test_jit_swar_policy_enforcement()) return 1;
   std::cout << "jit trace equivalence test passed\n";
   return 0;
 }

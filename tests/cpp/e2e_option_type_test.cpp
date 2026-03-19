@@ -39,7 +39,7 @@ void test_option_type_e2e() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[2] == 42 &&
                  "VM register R2 has incorrect value");

@@ -65,6 +65,12 @@ std::string token_type_name(TokenType type) {
       return "infinite literal";
     case TokenType::Infer:
       return "'infer'";
+    case TokenType::Agent:
+      return "'agent'";
+    case TokenType::Behavior:
+      return "'behavior'";
+    case TokenType::Foreign:
+      return "'foreign'";
     case TokenType::Train:
       return "'train'";
     case TokenType::Break:
@@ -299,6 +305,9 @@ bool is_dot_field_segment_token(TokenType type) {
     case TokenType::Map:
     case TokenType::Set:
     case TokenType::Tree:
+    case TokenType::Agent:
+    case TokenType::Behavior:
+    case TokenType::Foreign:
       return true;
     default:
       return false;
@@ -426,6 +435,8 @@ std::unique_ptr<Stmt> Parser::declaration() {
     }
     if (match({TokenType::Fn})) return function("function", std::move(function_attrs));
     if (match({TokenType::Recurse})) return recurse_declaration();
+    if (match({TokenType::Agent})) return agent_declaration();    // RFC-0015
+    if (match({TokenType::Foreign})) return foreign_declaration();  // RFC-0036
     if (function_attrs.has_value()) {
       const Token& anchor = function_attrs->anchor.value_or(peek());
       report_error(anchor, "Function attributes may only decorate functions.");
@@ -465,6 +476,106 @@ std::unique_ptr<Stmt> Parser::recurse_declaration() {
   consume(TokenType::LBrace, "Expect '{' before body.");
   std::vector<std::unique_ptr<Stmt>> body = block();
   return std::make_unique<RecurseStmt>(keyword, name, std::move(parameters), std::move(body));
+}
+
+// RFC-0015 §3 — agent declaration.
+// agent_decl -> "agent" IDENTIFIER "{" behavior_decl* "}"
+// behavior_decl -> "behavior" IDENTIFIER "(" parameters? ")" "->" type "{" block "}"
+std::unique_ptr<Stmt> Parser::agent_declaration() {
+  Token agent_name = consume(TokenType::Identifier, "Expect agent name.");
+  consume(TokenType::LBrace, "Expect '{' after agent name.");
+
+  std::vector<BehaviorDecl> behaviors;
+  while (!check(TokenType::RBrace) && !is_at_end()) {
+    consume(TokenType::Behavior, "Expect 'behavior' inside agent body.");
+    // Allow keyword tokens (e.g. 'infer') as behavior names (contextual keywords).
+    if (!check(TokenType::Identifier) && !check(TokenType::Infer)) {
+      report_error(peek(), "Expect behavior name.");
+    }
+    Token bname = advance();
+    consume(TokenType::LParen, "Expect '(' after behavior name.");
+
+    std::vector<Parameter> params;
+    if (!check(TokenType::RParen)) {
+      do {
+        if (params.size() >= 255) {
+          report_error(peek(), "Cannot have more than 255 parameters.");
+          break;
+        }
+        Token pname = consume(TokenType::Identifier, "Expect parameter name.");
+        consume(TokenType::Colon, "Expect ':' after parameter name.");
+        params.push_back({pname, type()});
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RParen, "Expect ')' after behavior parameters.");
+    consume(TokenType::Arrow, "Expect '->' before behavior return type.");
+    auto ret = type();
+    consume(TokenType::LBrace, "Expect '{' before behavior body.");
+    auto body = block();
+
+    BehaviorDecl bd;
+    bd.name = bname;
+    bd.params = std::move(params);
+    bd.return_type = std::move(ret);
+    bd.body = std::move(body);
+    behaviors.push_back(std::move(bd));
+  }
+
+  consume(TokenType::RBrace, "Expect '}' after agent body.");
+  return std::make_unique<AgentDecl>(agent_name, std::move(behaviors));
+}
+
+// RFC-0036 §3 — foreign block declaration.
+// foreign_decl -> "foreign" [ IDENTIFIER ] "{" foreign_fn* "}"
+// foreign_fn   -> "fn" IDENTIFIER "(" parameters? ")" "->" type ";"
+std::unique_ptr<Stmt> Parser::foreign_declaration() {
+  Token keyword = previous();  // The 'foreign' token.
+
+  // Optional policy qualifier: deterministic | governed | quarantined
+  std::string policy;
+  if (check(TokenType::Identifier)) {
+    Token qual = peek();
+    std::string lex(qual.lexeme);
+    if (lex == "deterministic" || lex == "governed" || lex == "quarantined") {
+      advance();
+      policy = std::move(lex);
+    }
+  }
+
+  consume(TokenType::LBrace, "Expect '{' after 'foreign' (policy qualifier).");
+
+  std::vector<ForeignFn> functions;
+  while (!check(TokenType::RBrace) && !is_at_end()) {
+    consume(TokenType::Fn, "Expect 'fn' inside foreign block.");
+    Token fname = consume(TokenType::Identifier, "Expect function name after 'fn'.");
+    consume(TokenType::LParen, "Expect '(' after foreign function name.");
+
+    std::vector<Parameter> params;
+    if (!check(TokenType::RParen)) {
+      do {
+        if (params.size() >= 255) {
+          report_error(peek(), "Cannot have more than 255 parameters.");
+          break;
+        }
+        Token pname = consume(TokenType::Identifier, "Expect parameter name.");
+        consume(TokenType::Colon, "Expect ':' after parameter name.");
+        params.push_back({pname, type()});
+      } while (match({TokenType::Comma}));
+    }
+    consume(TokenType::RParen, "Expect ')' after foreign function parameters.");
+    consume(TokenType::Arrow, "Expect '->' before foreign function return type.");
+    auto ret = type();
+    consume(TokenType::Semicolon, "Expect ';' after foreign function signature.");
+
+    ForeignFn ff;
+    ff.name = fname;
+    ff.params = std::move(params);
+    ff.return_type = std::move(ret);
+    functions.push_back(std::move(ff));
+  }
+
+  consume(TokenType::RBrace, "Expect '}' after foreign block.");
+  return std::make_unique<ForeignDecl>(keyword, std::move(policy), std::move(functions));
 }
 
 // Parses a function declaration.
@@ -509,6 +620,7 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind,
   bool is_axion_verify = false;
   bool is_attention = false;
   bool is_qmatmul = false;
+  bool is_ternary_inference = false;
   if (attributes.has_value()) {
     if (attributes->tier.has_value()) {
       tier = attributes->tier;
@@ -517,10 +629,12 @@ std::unique_ptr<Stmt> Parser::function(const std::string& kind,
     is_axion_verify = attributes->is_axion_verify;
     is_attention = attributes->is_attention;
     is_qmatmul = attributes->is_qmatmul;
+    is_ternary_inference = attributes->is_ternary_inference;
   }
   return std::make_unique<FunctionStmt>(name, std::move(generic_params), std::move(parameters),
                                         std::move(return_type), std::move(body), tier, is_pure,
-                                        is_axion_verify, is_attention, is_qmatmul);
+                                        is_axion_verify, is_attention, is_qmatmul,
+                                        is_ternary_inference);
 }
 
 std::unique_ptr<Stmt> Parser::type_declaration() {
@@ -614,7 +728,13 @@ std::unique_ptr<Stmt> Parser::enum_declaration(std::optional<StructuralAttribute
 // Parses a variable declaration.
 // var_declaration -> "var" IDENTIFIER ( ":" type )? ( "=" expression )? ";" ;
 std::unique_ptr<Stmt> Parser::var_declaration() {
-  Token name = consume(TokenType::Identifier, "Expect variable name.");
+  Token name;
+  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior ||
+      _current.type == TokenType::Foreign) {
+    name = advance();
+  } else {
+    name = consume(TokenType::Identifier, "Expect variable name.");
+  }
   std::unique_ptr<TypeExpr> type_expr = nullptr;
   if (match({TokenType::Colon})) {
     type_expr = type();
@@ -631,7 +751,13 @@ std::unique_ptr<Stmt> Parser::var_declaration() {
 // let_declaration -> "let" ( "mut" )? IDENTIFIER ( ":" type )? "=" expression ";" ;
 std::unique_ptr<Stmt> Parser::let_declaration() {
   bool is_mutable = match({TokenType::Mut});
-  Token name = consume(TokenType::Identifier, "Expect constant name.");
+  Token name;
+  if (_current.type == TokenType::Agent || _current.type == TokenType::Behavior ||
+      _current.type == TokenType::Foreign) {
+    name = advance();
+  } else {
+    name = consume(TokenType::Identifier, "Expect constant name.");
+  }
   std::unique_ptr<TypeExpr> type_expr = nullptr;
   if (match({TokenType::Colon})) {
     type_expr = type();
@@ -1274,7 +1400,7 @@ std::unique_ptr<Expr> Parser::primary() {
     return if_expression();
   } else if (check(TokenType::LBrace)) {
     return block_expression();
-  } else if (match({TokenType::Identifier})) {
+  } else if (match({TokenType::Identifier, TokenType::Agent, TokenType::Behavior, TokenType::Foreign})) {
     Token name = previous();
     Token enum_name_token;
     Token variant_token;
@@ -1679,7 +1805,8 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
     }
     std::string attr_candidate{lookahead.lexeme};
     if (attr_candidate != "tier" && attr_candidate != "pure" && attr_candidate != "axion_verify" &&
-        attr_candidate != "attention" && attr_candidate != "qmatmul") {
+        attr_candidate != "attention" && attr_candidate != "qmatmul" &&
+        attr_candidate != "ternary_inference") {
       break;
     }
     match({TokenType::At});
@@ -1708,6 +1835,11 @@ std::optional<FunctionAttributes> Parser::parse_function_attributes() {
         report_error(name, "Duplicate '@qmatmul' attribute.");
       }
       attrs.is_qmatmul = true;
+    } else if (attr_candidate == "ternary_inference") {
+      if (attrs.is_ternary_inference) {
+        report_error(name, "Duplicate '@ternary_inference' attribute.");
+      }
+      attrs.is_ternary_inference = true;
     } else {
       // attr_candidate == "tier"
       consume(TokenType::LParen, "Expect '(' after attribute name.");

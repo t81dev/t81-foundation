@@ -8,7 +8,7 @@ nav:
 - [TISC Specification](tisc-spec.md)
 - [T81 Virtual Machine](t81vm-spec.md)
 - [T81Lang](t81lang-spec.md)
-- [Axion Kernel](axion-kernel.md)
+- [Axion Governance Kernel](axion-kernel.md)
 - [Cognitive Tiers](cognitive-tiers.md)
 
 ______________________________________________________________________
@@ -17,7 +17,7 @@ ______________________________________________________________________
 
 # TISC — Ternary Instruction Set Computer
 
-Version 1.1 — Stable
+Version v1.9.0-Stable
 
 Status: Stable\
 Last Revised: 2026-03-01\
@@ -601,6 +601,8 @@ All jumps are **deterministic** and MUST NOT permit self-modifying code.
   `CALL`: push `PC+1`, then `PC := R[RS]`
   `RET`: pop target into `PC`
 - **Faults**: Stack underflow / invalid return address.
+- **See also**: `AGENT_INVOKE` (§5.16) — Axion-audited variant of `CALL` for
+  T81Lang `agent` behavior invocations.
 
 ______________________________________________________________________
 
@@ -916,6 +918,186 @@ by ATTN, QMATMUL, GATHER, and SCATTER.
 
 ______________________________________________________________________
 
+### 5.16 Agentic Constructs (RFC-0015)
+
+These instructions support T81Lang's first-class `agent` declarations.
+Every `AgentInvoke` emission MUST cause the Axion Policy Kernel to record an
+audit event **before** the callee begins executing.
+
+> *Freeze Exception addition — 2026-03-16 (RFC-0015). Opcode assigned
+> immediately after `GcSafepoint` in the enumeration.
+> Implemented in `lang/frontend/` (IRGen), `core/vm/vm.cpp`, and
+> `runtime/jit/jit_compiler.cpp` (Axion-boundary exit group).*
+
+#### AGENT_INVOKE
+
+- **Form**: `AGENT_INVOKE RD, R_ADDR`
+- **Semantics**:
+  1. The Axion kernel records an `agent_invoke` AxionEvent carrying the
+     call-site PC and the target address `R[R_ADDR]`.
+  2. The current tier ceiling is checked; if exceeded, a `TierFault` is raised
+     before any jump occurs.
+  3. `PC+1` is pushed onto the call stack (identical to `CALL`).
+  4. `PC := R[R_ADDR]`
+  5. `RD` is reserved for future metadata; MUST be 0 in conforming programs.
+- **Vs. CALL**: `AGENT_INVOKE` is semantically identical to `CALL` except for
+  the mandatory pre-dispatch Axion audit event.  Optimizers MUST NOT silently
+  lower `AGENT_INVOKE` to `CALL`.
+- **JIT boundary**: The JIT compiler MUST exit to the interpreter on
+  `AGENT_INVOKE` (Axion-boundary exit group) so the full audit sequence is
+  guaranteed.
+- **Faults**:
+  - `TierFault`: Active tier ceiling exceeded.
+  - `StackFault`: Call-stack overflow.
+  - `DecodeFault`: `R[R_ADDR]` out of program bounds.
+
+> **Tests:** `tests/cpp/agent_constructs_test.cpp` — [RFC-0015-04], [RFC-0015-05], [RFC-0015-06]
+
+______________________________________________________________________
+
+### 5.17 Ternary-Native Inference Operations (RFC-0034)
+
+*Status: **accepted** — 2026-03-16. Full normative text below. Opcode bytes
+assigned in `spec/tisc/opcode-registry.md §2.19`. Implementation in
+`core/vm/vm.cpp`; math layer in `include/t81/tensor/ternary_native.hpp`.*
+
+All opcodes in this class operate on `T729DynamicTensor` handles. All require
+Tier 2+. All are subject to Axion pre-instruction shape and domain verification.
+Weights must be in `{−1.0, 0.0, +1.0}` (T81Qutrit domain). Accumulators are
+`T81BigInt`-exact — no floating-point multiply is performed.
+
+| Mnemonic | Opcode Byte | Operands | Description |
+| :--- | :--- | :--- | :--- |
+| `TWMATMUL` | 0xC2 (194) | `RD, R_ACT, R_WT` | Ternary-weight matrix multiply: `RD = ACT · WT` using T81BigInt row accumulators; result cast to float. Weights must be T81Qutrit-domain. |
+| `TQUANT` | 0xC3 (195) | `RD, R_SRC, R_THR` | Quantize tensor to ternary: abs(x) ≤ R\[THR\] → 0; x > THR → +1; x < -THR → -1. Result is T81Qutrit-domain. |
+| `TATTN` | 0xC4 (196) | `RD, R_Q, PACK(R_K, R_V)` | Ternary Q/K attention: `scores = TWMATMUL(Q, Kᵀ)`; row-wise softmax; `out = softmax(scores) · V`. Q and K must be T81Qutrit-domain; V is float. |
+| `TWEMBED` | 0xC5 (197) | `RD, R_TABLE, R_IDX` | Row-gather from T81Qutrit embedding table at integer index `R[IDX]`. Table must be 2-D; result is 1×cols T81Qutrit row. |
+| `TERNACCUM` | 0xC6 (198) | `RD, R_WT, R_ACT` | Scalar 1-D ternary dot product of two flat tensors; T81BigInt-exact accumulator; result stored as T81Float handle. |
+| `TACT` | 0xC7 (199) | `RD, R_SRC, R_MODE` | Ternary activation function selected by mode byte `R[MODE]` (see TACT Modes below); followed by Axion activation-ceiling gate. |
+
+`TATTN` packs K and V register indices as `PACK(R_K, R_V) = (R_K & 0xFF) | ((R_V & 0xFF) << 8)` in the `C` operand.
+
+#### TACT Modes
+
+`R_MODE` selects the activation function. Undefined mode bytes raise `CanonFault`.
+
+| Mode Byte | Name | Semantics |
+| :--- | :--- | :--- |
+| `0x01` | `TernaryStep` | `x > 0.5 → +1; x < −0.5 → −1; else 0` |
+| `0x02` | `TanhQuantized` | `tanh(x) > 0.5 → +1; tanh(x) < −0.5 → −1; else 0` |
+
+#### TACT Axion Activation-Ceiling Gate
+
+After the mathematical transform, TACT submits the result to an Axion
+post-execute `activation-ceiling` policy check. The verdict controls commit:
+
+| Verdict | Effect |
+| :--- | :--- |
+| Allow | `RD` committed; PC advances normally |
+| Quarantine | `RD` not committed; PC stalls; `SecurityFault` raised |
+| Deny | `RD` not committed; `ActivationFault` raised |
+
+Faults introduced by this class: `ActivationFault` (TACT Deny verdict),
+`ShapeFault` (shape mismatch in TWMATMUL/TATTN), `BoundsFault` (TWEMBED
+index out of range), `TierFault` (Tier < 2). All other faults follow §6.
+
+### 5.17A SWAR Tensor Operations (RFC-0040)
+
+*Status: **draft implementation** — 2026-03-18. Opcode bytes assigned in
+`spec/tisc/opcode-registry.md §2.23`. Implementation in `core/vm/vm.cpp`;
+stable SWAR API in `include/t81/swar/swar.hpp`.*
+
+These opcodes expose RFC-0040 SWAR kernels as explicit VM instructions over
+`T729DynamicTensor` handles whose numeric class is `ExactTrit`. They are not
+scalar-trit aliases for `TNot`, `TAnd`, or `TOr`; they are explicit packed
+tensor operations intended for deterministic small/medium exact-trit workloads.
+
+| Mnemonic | Opcode Byte | Operands | Description |
+| :--- | :--- | :--- | :--- |
+| `TNOT_SWAR` | 0xD5 (213) | `RD, R_SRC, 0` | Unary negation of an `ExactTrit` tensor via stable SWAR kernels. Output shape matches input shape. |
+| `TAND_SWAR` | 0xD6 (214) | `RD, R_LHS, R_RHS` | Elementwise ternary conjunction (`min`) of two same-shape `ExactTrit` tensors via SWAR. |
+| `TOR_SWAR` | 0xD7 (215) | `RD, R_LHS, R_RHS` | Elementwise ternary disjunction (`max`) of two same-shape `ExactTrit` tensors via SWAR. |
+
+Operational constraints:
+
+- Inputs MUST be tensor handles.
+- Inputs MUST have numeric class `ExactTrit`.
+- Binary forms MUST have shape-compatible operands.
+- Results preserve the input tensor shape and remain `ExactTrit`.
+
+Fault behavior:
+
+- `TypeFault`: operand tensor is not `ExactTrit`.
+- `ShapeFault`: binary operand shapes differ.
+- `DecodeFault`: operand is not a valid tensor handle or SWAR decode/encode fails.
+
+### 5.18 Governed Foreign Function Interface (RFC-0036 + RFC-00B8)
+
+*Status: **accepted** — 2026-03-18 alignment refresh. Implementation exists in
+`core/vm/vm.cpp` (FFICall, FFIRegister, FFIPolicySet), `core/vm/ffi_dispatcher.cpp`,
+and the RFC-0036 frontend path, with VM evidence covering success, failure, audit-trail,
+quarantine, and real system-library calls. The runtime remains beta for promotion
+purposes while broader schemas, ecosystem bindings, and the sandbox-boundary decision
+remain open. Opcode bytes: §2.20.*
+
+`FFI_CALL` enables T81Lang `foreign {}` blocks to invoke external functions
+through the governed `FFIDispatcher`. Policy enforcement, resource quotas, and
+audit trails are applied before and after every foreign call.
+
+| Mnemonic | Opcode Byte | Operands | Description |
+| :--- | :--- | :--- | :--- |
+| `FFICall` | 0xC8 (200) | `R_DEST, ARG_COUNT, FUNC_SYMBOL` | Invoke foreign function; `text_literal` / encoded symbol pool entry carries the resolved name. Policy check before dispatch; audit event on completion. |
+| `FFIRegister` | 0xC9 (201) | `R_LIB_NAME, R_VERSION_HASH` | Register foreign library by name and version hash in `FFILibraryRegistry`. |
+| `FFIPolicySet` | 0xCA (202) | `R_POLICY_TYPE, R_POLICY_VALUE` | Set per-call FFI policy (determinism, quota, isolation). |
+
+**FFI_CALL IR encoding:** at the IR level, `FFI_CALL` carries the function name
+in the `text_literal` field of the instruction; operands are `{dest_reg, Immediate{arg_count}}`.
+Binary emission preserves `arg_count` in operand `B` and stores the resolved symbol-pool
+index in operand `C`. The VM dispatcher resolves that encoded symbol to a function via
+`FFILibraryRegistry` at runtime.
+
+**Policy qualifiers** map to Axion policy modes enforced at dispatch time:
+
+- `deterministic` — Axion verifies output is identical for identical inputs.
+- `governed` — Full pre/post Axion policy gate, same as effectful builtins.
+- `quarantined` — Side-effects captured in audit trail before commit.
+
+Faults: `FFINotInitialized`, `FFIPolicyDenied`, `FFITimeout`, `FFIMemoryExhausted`.
+
+### 5.19 Ternary Lattice Cryptography (RFC-0038)
+
+*Status: **proposed** — 2026-03-16. Full normative text in
+`spec/rfcs/RFC-0038-lattice-crypto.md`. Math layer: `include/t81/tensor/lattice_crypto.hpp`.
+Implementation: `core/vm/vm.cpp`.*
+
+Negacyclic polynomial arithmetic over `{−1, 0, +1}` coefficients in `Z[x]/(x^n + 1)`.
+No integer multiplications required — only add/sub/trit-flip. T81BigInt-exact accumulators.
+
+| Mnemonic | Opcode Byte | Operands | Description |
+| :--- | :--- | :--- | :--- |
+| `POLYMUL` | 0xCB (203) | `RD, R_A, R_B` | Negacyclic polynomial multiply: `RD = A · B` in `Z[x]/(x^n+1)`. Both operands must be 1-D tensors of equal length `n`. T81BigInt accumulators; result cast to float. |
+| `POLYMOD` | 0xCC (204) | `RD, R_A, R_Q` | Centered coefficient reduction: every coefficient `c` of `A` is mapped to `((c % q) + q) % q`, then shifted to `(−q/2, q/2]`. `R_Q` holds the modulus `q` (must be > 0). |
+
+**Negacyclic wrap rule (normative):**
+
+```text
+C[k] = Σ_{i=0}^{n-1}  A[i] · B[(k−i+n) mod n] · neg(i, j)
+  where  j = (k−i+n) mod n
+         neg(i, j) = −1  if  i + j ≥ n  (wrap past x^n ≡ −1)
+                      +1  otherwise
+```
+
+Ternary product `A[i] · B[j]` is computed as a trit-flip:
+
+- 0 if either factor is 0
+- +1 if both factors have the same sign
+- −1 if factors have opposite signs
+
+Faults: `ShapeFault` (non-1-D tensors, length mismatch), `DecodeFault` (q ≤ 0).
+All Tier 2+.
+
+______________________________________________________________________
+
 ## 6. Fault Semantics
 
 All faults are **deterministic** and **Axion-visible**.
@@ -986,7 +1168,7 @@ ______________________________________________________________________
 
 ## T81Lang
 
-Current spec version: **v1.2** (updated 2026-03-01).
+Current spec version: **v1.9.0**
 
 - **Code Generation Targets for TISC** → [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline)
 - **Type System Mapping to Operands** → [`t81lang-spec.md`](t81lang-spec.md#2-type-system)

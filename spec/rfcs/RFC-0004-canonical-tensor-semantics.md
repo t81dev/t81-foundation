@@ -2,8 +2,9 @@ ______________________________________________________________________
 
 # RFC-0004 — Canonical Tensor Semantics
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.1 — Standards Track\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: T81 Foundation Tensor Working Group\
 Applies to: Data Types, TISC, T81VM, T81Lang, Axion
 
@@ -118,3 +119,32 @@ ______________________________________________________________________
 3. Do we reserve opcodes for stride-aware loads/stores now or defer to RFC-0005?
 
 ______________________________________________________________________
+
+# 7. Acceptance Criteria
+
+| ID | Criterion | Evidence |
+| :--- | :--- | :--- |
+| [A-0004-01] | Canonical shape model: shape tuples are immutable, deterministic, and fault on mismatch | `tests/cpp/tensor_shape_test.cpp`, `tests/cpp/vm_tensor_shape_faults_test.cpp` |
+| [A-0004-02] | Tensor pools: VM maintains 1-based handles; `add_tensor()` returns deterministic handles | `include/t81/vm/state.hpp` (`tensors` vector); `tests/cpp/vm_tensor_test.cpp`, `tests/cpp/vm_tensor_get_set_conformance_test.cpp` |
+| [A-0004-03] | Canonical ops (`TVECADD`, `TMATMUL`): shape validation enforced; mismatch triggers deterministic fault | `tests/cpp/tensor_matmul_test.cpp`, `tests/cpp/tensor_elementwise_test.cpp`, `tests/cpp/vm_tensor_shape_faults_test.cpp` |
+| [A-0004-04] | Axion hooks: shape metadata recorded in execution trace for every tensor opcode | `tests/cpp/vm_tensor_provenance_trace_test.cpp`, `tests/cpp/canonfs_axion_trace_test` |
+| [A-0004-05] | T81Lang integration: tensor literals with rank annotations type-checked; lowering emits canonical handles + opcodes | `tests/cpp/frontend_ir_generator_test.cpp`, `tests/cpp/tensor_broadcast_test.cpp` |
+| [A-0004-06] | Deterministic serialization: tensor contents serialize canonically; identical tensors hash identically | `tests/cpp/tensor_serialization_canonical_fixed_test.cpp`, `tests/cpp/tensor_native_decode_test.cpp` |
+
+______________________________________________________________________
+
+## Acceptance Note (2026-03-15)
+
+All six criteria above are met as of this date.
+
+Key implementation mapping:
+
+- **§2.1 Canonical Shape Model** — `T729DynamicTensor` shape tuples in `include/t81/tensor.hpp` are immutable after construction; `vm_tensor_shape_faults_test.cpp` verifies deterministic faults on dimension mismatches across all tensor ops.
+- **§2.2 Tensor Pools** — `State::tensors` (`std::vector<std::optional<T729DynamicTensor>>`) provides 1-based handle allocation; `free_tensor_indices` enables deterministic recycling; `vm_tensor_get_set_conformance_test.cpp` confirms handle semantics.
+- **§2.3 Canonical Operations** — `TVECADD`, `TMATMUL`, and elementwise ops are implemented in `core/vm/vm.cpp` with shape-validation guards; `tensor_matmul_test.cpp` and `tensor_elementwise_test.cpp` cover correct and fault paths.
+- **§2.4 Language Integration** — The IR generator lowers T81Lang tensor literals to handle-allocation + opcode sequences; `tensor_broadcast_test.cpp` confirms numpy-style trailing-dimension alignment with deterministic fault on mismatch.
+- **§2.5 Axion Hooks** — `vm_tensor_provenance_trace_test.cpp` verifies that tensor opcodes record shape metadata into the Axion trace. Policies using `(deny-shape ...)` are enforced by `policy_engine.cpp`.
+
+Open questions 1–3 (§6) are deferred: deduplication strategy, distributed tensor layout, and stride-aware load/store opcodes will be addressed in follow-on work (stride-aware ops are a candidate for RFC-0005 v0.4 or a dedicated RFC).
+
+Suite status at acceptance: **30+ tensor-specific tests passing; 329/332 total**.

@@ -71,9 +71,9 @@ static void BM_NegationSpeed_T81Cell(benchmark::State& state) {
         benchmark::DoNotOptimize(t81_dest_data.data());
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("Classic Cell negation; work: ops/iter=100000");
+    state.SetLabel("comparison=apples-to-apples; work: ops/iter=100000");
 }
-BENCHMARK(BM_NegationSpeed_T81Cell);
+BENCHMARK(BM_NegationSpeed_T81Cell)->Repetitions(3);
 
 // PackedCell with AVX2 fast path
 static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
@@ -97,7 +97,7 @@ static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
         }
         benchmark::DoNotOptimize(packed_dest_data.data());
     }
-    state.SetLabel("PackedCell AVX2 negation; work: ops/iter=100000");
+    state.SetLabel("comparison=structural-advantage; work: ops/iter=100000");
 #else
     for (auto _ : state) {
         for (size_t i = 0; i < DATA_SIZE; ++i) {
@@ -105,11 +105,11 @@ static void BM_NegationSpeed_PackedCell(benchmark::State& state) {
         }
         benchmark::DoNotOptimize(packed_dest_data.data());
     }
-    state.SetLabel("PackedCell scalar negation; work: ops/iter=100000");
+    state.SetLabel("comparison=structural-advantage; work: ops/iter=100000");
 #endif
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
 }
-BENCHMARK(BM_NegationSpeed_PackedCell);
+BENCHMARK(BM_NegationSpeed_PackedCell)->Repetitions(3);
 
 // Baseline: int64_t negation
 static void BM_NegationSpeed_Int64(benchmark::State& state) {
@@ -122,9 +122,9 @@ static void BM_NegationSpeed_Int64(benchmark::State& state) {
         benchmark::DoNotOptimize(int64_dest_data.data());
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
-    state.SetLabel("int64_t negation; work: ops/iter=100000");
+    state.SetLabel("comparison=apples-to-apples; work: ops/iter=100000");
 }
-BENCHMARK(BM_NegationSpeed_Int64);
+BENCHMARK(BM_NegationSpeed_Int64)->Repetitions(3);
 
 // THE WINNER: T81 native (one vpshufb)
 static void BM_NegationSpeed_T81Native(benchmark::State& state) {
@@ -137,10 +137,15 @@ static void BM_NegationSpeed_T81Native(benchmark::State& state) {
 #else
     t81::T81 a{};
     std::array<uint8_t, 32> bytes{};
-    std::fill(bytes.begin(), bytes.end(), 0x55);
+    std::fill(bytes.begin(), bytes.end(), 0x55u);
     a = t81::T81(bytes);
+#  if defined(__ARM_NEON) || defined(__ARM_NEON__)
+    state.counters["native_simd_enabled"] = 1.0;
+    state.counters["native_simd_width_bits"] = 128.0;  // two vsubq_u8 on 128-bit lanes
+#  else
     state.counters["native_simd_enabled"] = 0.0;
     state.counters["native_simd_width_bits"] = 0.0;
+#  endif
 #endif
 
     state.counters["work_per_iter"] = static_cast<double>(DATA_SIZE);
@@ -152,11 +157,11 @@ static void BM_NegationSpeed_T81Native(benchmark::State& state) {
     }
     state.SetItemsProcessed(state.iterations() * DATA_SIZE);
 #if defined(__AVX2__)
-    state.SetLabel("Native T81 negation (AVX2 path); work: ops/iter=100000");
+    state.SetLabel("comparison=structural-advantage; work: ops/iter=100000");
 #elif defined(__ARM_NEON) || defined(__ARM_NEON__)
-    state.SetLabel("Native T81 negation (scalar fallback: NEON available, native NEON path not implemented); work: ops/iter=100000");
+    state.SetLabel("comparison=structural-advantage; neon=arm64-vsubq_u8; work: ops/iter=100000");
 #else
-    state.SetLabel("Native T81 negation (scalar fallback: SIMD unavailable); work: ops/iter=100000");
+    state.SetLabel("comparison=structural-advantage; fallback=scalar; work: ops/iter=100000");
 #endif
 }
-BENCHMARK(BM_NegationSpeed_T81Native);
+BENCHMARK(BM_NegationSpeed_T81Native)->Repetitions(3);

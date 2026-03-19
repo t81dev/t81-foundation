@@ -1,0 +1,1 @@
+Packaged-bundle negative smoke fixture for the x86_64 handoff helper.

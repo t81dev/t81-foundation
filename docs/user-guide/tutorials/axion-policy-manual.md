@@ -58,7 +58,7 @@ Some policies need to assert the presence of specific Axion events beyond guards
     (reason "interval stack_frames=")))
 ```
 
-After the GC trace strings landed (see `docs/guides/axion-trace.md` §2), you can also assert the heap compaction and relocation entries before allowing subsequent heap/loop actions:
+After the GC trace strings landed (see `docs/developer-guide/internals/axion-trace.md` §2), you can also assert the heap compaction and relocation entries before allowing subsequent heap/loop actions:
 
 ```
 (policy
@@ -116,7 +116,7 @@ Always run the regression suite (`ctest --test-dir build -R axion_policy_* --out
 
 ## 5. Policy integration tips
 
-1. **Document the required strings** in release notes (see `docs/guides/axion-trace.md` §5 and `docs/guides/cli-user-manual.md` §7). Include the `t81 --verbose code build` transcript plus the `t81 code run --policy ...` output showing exactly the `verdict.reason` strings demanded by your policy.
+1. **Document the required strings** in release notes (see `docs/developer-guide/internals/axion-trace.md` §5 and `docs/user-guide/reference/cli-user-manual.md` §7). Include the `t81 --verbose code build` transcript plus the `t81 code run --policy ...` output showing exactly the `verdict.reason` strings demanded by your policy.
 2. **Archive Axion logs** (`scripts/capture-axion-trace.sh` produces `build/artifacts/axion_policy_runner.log`) so auditors can replay what the policy engine saw.
 3. **Use Axion regressions** as examples—the tests named `axion_policy_match_guard_test` and `axion_policy_segment_event_test` show how to embed policies, run them, and expect `Trap::SecurityFault` when requirements are unmet.
 
@@ -125,5 +125,5 @@ Always run the regression suite (`ctest --test-dir build -R axion_policy_* --out
 - `[RFC-0009](../../../spec/rfcs/RFC-0009-axion-policy-language.md)` – Syntax, predicates, and security semantics for APL.
 - `[RFC-0020](../../../spec/rfcs/RFC-0020-axion-segment-trace.md)` – Canonical segment trace strings that `require-segment-event` clauses check.
 - `[RFC-0019](../../../spec/rfcs/RFC-0019-axion-match-logging.md)` – Enum/match metadata that powers `require-match-guard`.
-- `docs/guides/axion-trace.md` / `docs/guides/axion-tracing-manual.md` – CLI samples showing the required strings in action.  
+- `docs/developer-guide/internals/axion-trace.md` / `docs/developer-guide/internals/axion-tracing-manual.md` – CLI samples showing the required strings in action.  
 - `include/t81/axion/policy.hpp` and `kernel/axion/policy_engine.cpp` – Implementation reference for how S-expressions are parsed and enforced.  

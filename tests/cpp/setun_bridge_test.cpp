@@ -10,7 +10,7 @@ using t81::setun::translate_program_diagnostic;
 using t81::tisc::Opcode;
 
 static void test_translate_add_two_address() {
-  auto insn = translate_line("ADD R7, R9");
+  [[maybe_unused]] auto insn = translate_line("ADD R7, R9");
   assert(insn.has_value());
   assert(insn->opcode == Opcode::Add);
   assert(insn->a == 7);
@@ -58,9 +58,32 @@ HALT
 }
 
 static void test_unsupported_mnemonic_fails_deterministically() {
-  auto insn = translate_line("MUL R1, R2");
+  [[maybe_unused]] auto insn = translate_line("MUL R1, R2");
   assert(!insn.has_value());
   assert(insn.error() == BridgeError::UnsupportedMnemonic);
+}
+
+static void test_translate_swar_mnemonics() {
+  [[maybe_unused]] auto tnot = translate_line("TNOT_SWAR R2, R7");
+  assert(tnot.has_value());
+  assert(tnot->opcode == Opcode::TNOT_SWAR);
+  assert(tnot->a == 2);
+  assert(tnot->b == 7);
+  assert(tnot->c == 0);
+
+  [[maybe_unused]] auto tand = translate_line("TAND_SWAR R3, R4, R5");
+  assert(tand.has_value());
+  assert(tand->opcode == Opcode::TAND_SWAR);
+  assert(tand->a == 3);
+  assert(tand->b == 4);
+  assert(tand->c == 5);
+
+  [[maybe_unused]] auto tor = translate_line("TOR_SWAR R9, R10, R11");
+  assert(tor.has_value());
+  assert(tor->opcode == Opcode::TOR_SWAR);
+  assert(tor->a == 9);
+  assert(tor->b == 10);
+  assert(tor->c == 11);
 }
 
 static void test_diagnostic_reports_line_and_column() {
@@ -82,6 +105,7 @@ int main() {
   test_translate_program_with_comments();
   test_translate_program_with_labels_and_branches();
   test_unsupported_mnemonic_fails_deterministically();
+  test_translate_swar_mnemonics();
   test_diagnostic_reports_line_and_column();
   std::cout << "setun bridge tests passed!\n";
   return 0;

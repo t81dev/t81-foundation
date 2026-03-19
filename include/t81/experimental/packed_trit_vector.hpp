@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -20,6 +21,12 @@
 #include "t81/tritwise/profiling.hpp"
 #include "t81/types/Result.hpp"
 #include "t81/types/T81Int.hpp"
+
+namespace t81::swar::kernel {
+void t_not(const uint8_t* src, uint8_t* dst, size_t n);
+void t_and(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n);
+void t_or(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n);
+}  // namespace t81::swar::kernel
 
 namespace t81::experimental {
 
@@ -219,6 +226,39 @@ public:
     return from_phase1(other);
   }
 
+  static Result<ComputeTritVector> from_packed(const std::vector<uint8_t>& packed,
+                                               size_t trit_count) {
+    if (packed.size() != bytes_for_trits(trit_count)) {
+      return Result<ComputeTritVector>::failure(
+          T81Symbol::intern("INVALID_PACKED_LENGTH"),
+          T81String("Packed byte length does not match trit count"),
+          T81Symbol::intern("ComputeTritVector"));
+    }
+
+    for (size_t i = 0; i < trit_count; ++i) {
+      size_t byte_idx = i / 4;
+      size_t bit_idx = (i % 4) * 2;
+      uint8_t val = (packed[byte_idx] >> bit_idx) & 0x03;
+      if (val == 2) {
+        return Result<ComputeTritVector>::failure(T81Symbol::intern("INVALID_PACKED_DATA"),
+                                                  T81String("Encountered invalid 2-bit pattern"),
+                                                  T81Symbol::intern("ComputeTritVector"));
+      }
+    }
+
+    if (trit_count % 4 != 0 && !packed.empty()) {
+      const uint8_t valid_mask = static_cast<uint8_t>((1u << ((trit_count % 4) * 2)) - 1u);
+      if ((packed.back() & static_cast<uint8_t>(~valid_mask)) != 0) {
+        return Result<ComputeTritVector>::failure(
+            T81Symbol::intern("INVALID_TAIL_PADDING"),
+            T81String("Unused trailing packed bits must be zero"),
+            T81Symbol::intern("ComputeTritVector"));
+      }
+    }
+
+    return Result<ComputeTritVector>::success(ComputeTritVector(packed, trit_count));
+  }
+
   size_t size() const { return count_; }
   const std::vector<uint8_t>& data() const { return data_; }
   // Non-const data access for in-place benchmarks/tests that need raw pointers,
@@ -411,7 +451,7 @@ public:
   }
 
   // Phase 2C: SWAR Implementations (Exposed for verification/benchmarking)
-  Result<ComputeTritVector> t_not_swar() const {
+  [[deprecated("Use t81::swar::t_not_swar instead")]] Result<ComputeTritVector> t_not_swar() const {
     ComputeTritVector res = *this;
     kernel_not_swar(data_.data(), res.data_.data(), data_.size());
     if (count_ % 4 != 0 && !res.data_.empty()) {
@@ -420,7 +460,8 @@ public:
     return Result<ComputeTritVector>::success(std::move(res));
   }
 
-  Result<ComputeTritVector> t_and_swar(const ComputeTritVector& other) const {
+  [[deprecated("Use t81::swar::t_and_swar instead")]] Result<ComputeTritVector> t_and_swar(
+      const ComputeTritVector& other) const {
     if (count_ != other.count_) {
       return Result<ComputeTritVector>::failure(
           T81Symbol::intern("LENGTH_MISMATCH"),
@@ -435,7 +476,8 @@ public:
     return Result<ComputeTritVector>::success(std::move(res));
   }
 
-  Result<ComputeTritVector> t_or_swar(const ComputeTritVector& other) const {
+  [[deprecated("Use t81::swar::t_or_swar instead")]] Result<ComputeTritVector> t_or_swar(
+      const ComputeTritVector& other) const {
     if (count_ != other.count_) {
       return Result<ComputeTritVector>::failure(
           T81Symbol::intern("LENGTH_MISMATCH"),
@@ -558,7 +600,13 @@ public:
   // outweighs the throughput benefit, so we fall back to SWAR.
   // Determined via benchmarks/BM_PackedTritVector.cpp.
   static constexpr size_t AVX2_THRESHOLD_BYTES = 64;  // ~256 trits (Verified on x86_64)
-  static constexpr size_t NEON_THRESHOLD_BYTES = 64;  // Estimated, to be tuned on ARM
+  static constexpr size_t NEON_THRESHOLD_BYTES = 64;  // Baseline threshold for OR on ARM64
+  static constexpr size_t AVX2_TNOT_THRESHOLD_BYTES = AVX2_THRESHOLD_BYTES;
+  static constexpr size_t AVX2_TAND_THRESHOLD_BYTES = AVX2_THRESHOLD_BYTES;
+  static constexpr size_t AVX2_TOR_THRESHOLD_BYTES = AVX2_THRESHOLD_BYTES;
+  static constexpr size_t NEON_TNOT_THRESHOLD_BYTES = std::numeric_limits<size_t>::max();
+  static constexpr size_t NEON_TAND_THRESHOLD_BYTES = std::numeric_limits<size_t>::max();
+  static constexpr size_t NEON_TOR_THRESHOLD_BYTES = NEON_THRESHOLD_BYTES;
 
   // Inline helpers for fastpaths
   static inline void op_not_64(const uint8_t* src, uint8_t* dst) {
@@ -680,12 +728,12 @@ public:
     }
     T81_PROFILE_RECORD("TNot", len);
 #if defined(__x86_64__) && defined(__AVX2__)
-    if (len >= AVX2_THRESHOLD_BYTES) {
+    if (len >= AVX2_TNOT_THRESHOLD_BYTES) {
       kernel_not_avx2(in, out, len);
       return;
     }
 #elif defined(__aarch64__) && defined(__ARM_NEON)
-    if (len >= NEON_THRESHOLD_BYTES) {
+    if (len >= NEON_TNOT_THRESHOLD_BYTES) {
       kernel_not_neon(in, out, len);
       return;
     }
@@ -704,12 +752,12 @@ public:
     }
     T81_PROFILE_RECORD("TAnd", len);
 #if defined(__x86_64__) && defined(__AVX2__)
-    if (len >= AVX2_THRESHOLD_BYTES) {
+    if (len >= AVX2_TAND_THRESHOLD_BYTES) {
       kernel_and_avx2(a, b, out, len);
       return;
     }
 #elif defined(__aarch64__) && defined(__ARM_NEON)
-    if (len >= NEON_THRESHOLD_BYTES) {
+    if (len >= NEON_TAND_THRESHOLD_BYTES) {
       kernel_and_neon(a, b, out, len);
       return;
     }
@@ -728,12 +776,12 @@ public:
     }
     T81_PROFILE_RECORD("TOr", len);
 #if defined(__x86_64__) && defined(__AVX2__)
-    if (len >= AVX2_THRESHOLD_BYTES) {
+    if (len >= AVX2_TOR_THRESHOLD_BYTES) {
       kernel_or_avx2(a, b, out, len);
       return;
     }
 #elif defined(__aarch64__) && defined(__ARM_NEON)
-    if (len >= NEON_THRESHOLD_BYTES) {
+    if (len >= NEON_TOR_THRESHOLD_BYTES) {
       kernel_or_neon(a, b, out, len);
       return;
     }
@@ -743,77 +791,15 @@ public:
 
   // SWAR Kernels
   static void kernel_not_swar(const uint8_t* src, uint8_t* dst, size_t n) {
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-      uint64_t x;
-      std::memcpy(&x, src + i, 8);
-      uint64_t low = x & 0x5555555555555555ULL;
-      uint64_t res = x ^ (low << 1);
-      std::memcpy(dst + i, &res, 8);
-    }
-    for (; i < n; ++i) {
-      uint8_t x = src[i];
-      uint8_t low = x & 0x55;
-      dst[i] = x ^ (low << 1);
-    }
+    t81::swar::kernel::t_not(src, dst, n);
   }
 
   static void kernel_and_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n) {
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-      uint64_t a, b;
-      std::memcpy(&a, src_a + i, 8);
-      std::memcpy(&b, src_b + i, 8);
-
-      uint64_t H = (a | b) & 0xAAAAAAAAAAAAAAAAULL;
-      uint64_t L_content = (a & b) & 0x5555555555555555ULL;
-      uint64_t res = H | (H >> 1) | L_content;
-
-      std::memcpy(dst + i, &res, 8);
-    }
-    for (; i < n; ++i) {
-      uint8_t a = src_a[i];
-      uint8_t b = src_b[i];
-
-      uint8_t H = (a | b) & 0xAA;
-      uint8_t L_content = (a & b) & 0x55;
-      dst[i] = H | (H >> 1) | L_content;
-    }
+    t81::swar::kernel::t_and(src_a, src_b, dst, n);
   }
 
   static void kernel_or_swar(const uint8_t* src_a, const uint8_t* src_b, uint8_t* dst, size_t n) {
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-      uint64_t a, b;
-      std::memcpy(&a, src_a + i, 8);
-      std::memcpy(&b, src_b + i, 8);
-
-      uint64_t h_a = a & 0xAAAAAAAAAAAAAAAAULL;
-      uint64_t h_b = b & 0xAAAAAAAAAAAAAAAAULL;
-      uint64_t l_a = a & 0x5555555555555555ULL;
-      uint64_t l_b = b & 0x5555555555555555ULL;
-
-      uint64_t H = h_a & h_b;
-      uint64_t mask = (h_a | h_b) >> 1;
-      uint64_t L = (l_a & l_b) | ((l_a | l_b) & ~mask);
-      uint64_t res = H | (H >> 1) | L;
-
-      std::memcpy(dst + i, &res, 8);
-    }
-    for (; i < n; ++i) {
-      uint8_t a = src_a[i];
-      uint8_t b = src_b[i];
-
-      uint8_t h_a = a & 0xAA;
-      uint8_t h_b = b & 0xAA;
-      uint8_t l_a = a & 0x55;
-      uint8_t l_b = b & 0x55;
-
-      uint8_t H = h_a & h_b;
-      uint8_t mask = (h_a | h_b) >> 1;
-      uint8_t L = (l_a & l_b) | ((l_a | l_b) & ~mask);
-      dst[i] = H | (H >> 1) | L;
-    }
+    t81::swar::kernel::t_or(src_a, src_b, dst, n);
   }
 
 #if defined(__aarch64__) && defined(__ARM_NEON)
@@ -1051,3 +1037,19 @@ inline Result<PackedTritVector> PackedTritVector::from_compute(const ComputeTrit
 }
 
 }  // namespace t81::experimental
+
+namespace t81 {
+
+using PackedTritVector = experimental::PackedTritVector;
+using ComputeTritVector = experimental::ComputeTritVector;
+
+namespace packed {
+
+using PackedTritVector = t81::PackedTritVector;
+using ComputeTritVector = t81::ComputeTritVector;
+
+}  // namespace packed
+
+}  // namespace t81
+
+#include "t81/swar/swar.hpp"

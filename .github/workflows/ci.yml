@@ -95,14 +95,17 @@ jobs:
           python3 scripts/governance/check_translation_staleness.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_translation_semantic_alignment.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_docs_structure.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/governance/check_active_docs_link_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_license_policy.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_repo_artifact_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_public_api_semver.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_spec_code_alignment_baseline.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_stdlib_surface_baseline.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_stdlib_promotion_snapshot.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/governance/check_status_label_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_cognitive_tier_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/governance/check_overclaim_guardrails.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/governance/check_rfc_lifecycle_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Run governance audit wrapper
         run: |
@@ -217,6 +220,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Enforce determinism registry claims
+        run: python3 scripts/governance/check_determinism_claims.py
       - name: Run governance metrics
         run: python3 scripts/ci/governance_metrics.py
       - name: Upload report
@@ -263,11 +268,50 @@ jobs:
           python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
 
   ############################################################################
+  # JOB: warn-strict
+  # Fast clang warning scan that mirrors the Windows CI (/WX) warning classes
+  # that have historically caused failures: -Wswitch (unhandled enum values),
+  # -Wunused-variable, and -Wunused-function. Failures here save ~10 min per
+  # fix cycle vs waiting for the full Windows matrix.
+  # To reproduce locally: cmake --preset warn-strict && cmake --build build-warn-strict
+  ############################################################################
+  warn-strict:
+    name: " warn-strict / clang / linux "
+    needs: spec-and-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install clang-18
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y clang-18
+
+      - name: Configure (warn-strict preset)
+        run: |
+          cmake --preset warn-strict \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18
+
+      - name: Build (warnings-as-errors)
+        run: cmake --build build-warn-strict --parallel $(nproc) 2>&1 | tee warn-strict.log
+
+      - name: Upload warning log on failure
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: warn-strict-log
+          path: warn-strict.log
+
+  ############################################################################
   # JOB: build-and-test
   ############################################################################
   build-and-test:
     name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
-    needs: spec-and-docs
+    needs: [spec-and-docs, warn-strict]
     runs-on: ${{ matrix.runs_on }}
     timeout-minutes: 40
     strategy:
@@ -438,6 +482,7 @@ jobs:
         shell: bash
         run: |
           set -eo pipefail
+          mkdir -p .t81_canonfs/objects .t81_canonfs/snapshots
           python3 scripts/ci/check_cli_docs_smoke.py \
             --manual docs/user-guide/reference/cli-user-manual.md \
             --cwd . \
@@ -777,6 +822,52 @@ jobs:
         run: |
           set -eo pipefail
           scripts/ci/run_determinism_slice.sh build
+
+  ############################################################################
+  # JOB: axion-epoch-determinism
+  ############################################################################
+  axion-epoch-determinism:
+    name: " gate / axion epoch determinism / linux-x86_64 / clang "
+    needs: spec-and-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build clang-18
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DT81_ENABLE_TERNARYOS=ON \
+            -DT81_ENABLE_DPE=ON
+
+      - name: Build epoch determinism targets
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake --build build --parallel --target \
+            t81_ternaryos_epoch_submission_test \
+            t81_ternaryos_epoch_audit_test
+
+      - name: Run epoch determinism proofs
+        shell: bash
+        run: |
+          set -eo pipefail
+          ctest --test-dir build --output-on-failure \
+            -R 't81_ternaryos_epoch_(submission|audit)_test'
 
   ############################################################################
   # JOB: determinism-repeatability

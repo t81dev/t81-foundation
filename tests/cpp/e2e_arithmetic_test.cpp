@@ -22,7 +22,7 @@ void test_addition() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 42 &&
                  "VM register R1 has incorrect value after addition");
@@ -46,7 +46,7 @@ void test_subtraction() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 42 &&
                  "VM register R1 has incorrect value after subtraction");
@@ -70,7 +70,7 @@ void test_multiplication() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 42 &&
                  "VM register R1 has incorrect value after multiplication");
@@ -94,7 +94,7 @@ void test_division() {
 
   [[maybe_unused]] auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   T81_TEST_CHECK(vm->state().contexts[0].registers[1] == 42 &&
                  "VM register R1 has incorrect value after division");

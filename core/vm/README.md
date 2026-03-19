@@ -21,5 +21,5 @@ Implementation of the T81VM runtime.
 
 ## Notes
 - VM behavior must remain deterministic for identical program + inputs.
-- **Exception:** Floating-point division and transcendental operations (`FSIN`, `FDIV`, etc.) rely on host `double` precision and may not be bit-exact across platforms.
+- Floating-point division (`FDIV`) uses IEEE 754 correctly-rounded division (bit-exact on conformant platforms). Transcendental opcodes (`FSIN`, `FCOS`, `FEXP`, etc.) route through `t81_soft_math` (RFC-0030) — no host libm dependency.
 - Any opcode semantic change should be mirrored in tests under `tests/cpp`.

@@ -6,7 +6,7 @@ import os
 def run_test(t81_bin, test_file):
     print(f"Running {test_file}...")
     try:
-        result = subprocess.run([t81_bin, "run", test_file], capture_output=True, text=True)
+        result = subprocess.run([t81_bin, "code", "run", test_file], capture_output=True, text=True)
         if result.returncode == 0:
             print(f"SUCCESS: {os.path.basename(test_file)} verified.")
             return True

@@ -373,6 +373,17 @@ Opcode map_opcode(const ir::Instruction& instr) {
       return Opcode::GATHER;
     case O::SCATTER:
       return Opcode::SCATTER;
+    // RFC-0005 v0.4 vector helpers
+    case O::VLOAD:
+      return Opcode::VLoad;
+    case O::VSTORE:
+      return Opcode::VStore;
+    case O::VADD:
+      return Opcode::VAdd;
+    case O::VFMA:
+      return Opcode::VFma;
+    case O::READ_ISA_VERSION:
+      return Opcode::ReadIsaVersion;
     case O::AXVERIFY:
       return Opcode::AxVerify;
     case O::TAND:
@@ -402,6 +413,33 @@ Opcode map_opcode(const ir::Instruction& instr) {
           return Opcode::SymCanon;
         case O::SYMCONFLUENCE:
           return Opcode::SymConfluence;
+        // RFC-0015 §3.2 — Agent invocation
+        case O::AGENT_INVOKE:
+          return Opcode::AgentInvoke;
+        // RFC-0034 §5.17 — Ternary-Native Inference
+        case O::TWMATMUL:
+          return Opcode::TWMATMUL;
+        case O::TQUANT:
+          return Opcode::TQUANT;
+        case O::TATTN:
+          return Opcode::TATTN;
+        case O::TWEMBED:
+          return Opcode::TWEMBED;
+        case O::TERNACCUM:
+          return Opcode::TERNACCUM;
+        case O::TACT:
+          return Opcode::TACT;
+        // RFC-0036 — Governed FFI
+        case O::FFI_CALL:
+          return Opcode::FFICall;
+        // RFC-0038 — Ternary Lattice Cryptography
+        case O::POLYMUL:
+          return Opcode::POLYMUL;
+        case O::POLYMOD:
+          return Opcode::POLYMOD;
+        // RFC-0039 — NTRU-KEM polynomial ring arithmetic
+        case O::TVECSUB:
+          return Opcode::TVecSub;
         default:
           throw std::runtime_error("Unsupported IR opcode in binary emitter.");
       }
@@ -478,7 +516,11 @@ Program BinaryEmitter::emit(const ir::IntermediateProgram& ir_program) {
           }
           case LiteralKind::SymbolHandle: {
             int symbol_index = ensure_symbol(*instr.text_literal);
-            vm_insn.b = symbol_index;
+            if (instr.opcode == ir::Opcode::FFI_CALL) {
+              vm_insn.c = symbol_index;
+            } else {
+              vm_insn.b = symbol_index;
+            }
             break;
           }
           case LiteralKind::BigIntHandle: {

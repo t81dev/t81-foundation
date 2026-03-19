@@ -1,14 +1,72 @@
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/swar/swar.hpp"
 #include "t81/jit/jit.hpp"
+#include "t81/tracing/canonhash.hpp"
+
+#include <cstring>
+#include <span>
 
 namespace t81::vm {
+
+namespace {
+
+std::optional<t81::experimental::ComputeTritVector> encode_exact_trit_tensor_for_jit(
+    const t81::T729DynamicTensor& tensor) {
+  if (tensor.numeric_class() != t81::TensorNumericClass::ExactTrit) {
+    return std::nullopt;
+  }
+
+  const auto values = tensor.snapshot_values();
+  std::vector<int8_t> trits;
+  trits.reserve(values.size());
+  for (float value : values) {
+    if (value == -1.0f) {
+      trits.push_back(-1);
+    } else if (value == 0.0f) {
+      trits.push_back(0);
+    } else if (value == 1.0f) {
+      trits.push_back(1);
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  auto encoded = t81::experimental::ComputeTritVector::from_trits(trits);
+  if (encoded.is_err()) {
+    return std::nullopt;
+  }
+  return encoded.value();
+}
+
+std::optional<t81::T729DynamicTensor> decode_exact_trit_tensor_for_jit(
+    const t81::experimental::ComputeTritVector& vector, const std::vector<int>& shape) {
+  auto trits = vector.to_trits();
+  if (trits.is_err()) {
+    return std::nullopt;
+  }
+
+  std::vector<float> values;
+  values.reserve(trits.value().size());
+  for (int8_t trit : trits.value()) {
+    values.push_back(static_cast<float>(trit));
+  }
+
+  t81::T729DynamicTensor tensor(shape, std::move(values));
+  tensor.set_numeric_class(t81::TensorNumericClass::ExactTrit);
+  return tensor;
+}
+
+}  // namespace
 
 class ThreadedJitTrace : public JitTrace {
 public:
   explicit ThreadedJitTrace(std::vector<t81::tisc::Insn> insns) : insns_(std::move(insns)) {}
 
   std::size_t size() const override { return insns_.size(); }
+
+  /// RFC-0028 §4: Expose the instruction buffer for CanonFS serialisation.
+  std::span<const t81::tisc::Insn> instructions() const override { return insns_; }
 
   ExecResult execute(State& state, const PolicyHook& policy_hook = {}) override {
     if (state.contexts.empty()) return {};
@@ -229,6 +287,79 @@ public:
           ctx.register_tags[insn.a] = ValueTag::Int;
           break;
         }
+        case t81::tisc::Opcode::TNOT_SWAR: {
+          if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto* src = tensor_ptr(ctx.registers[insn.b]);
+          if (src == nullptr) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto encoded = encode_exact_trit_tensor_for_jit(*src);
+          if (!encoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto result_tensor = t81::swar::t_not_swar(*encoded);
+          if (result_tensor.is_err()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto decoded = decode_exact_trit_tensor_for_jit(result_tensor.value(), src->shape());
+          if (!decoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          ctx.registers[insn.a] = alloc_tensor(std::move(*decoded));
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+          break;
+        }
+        case t81::tisc::Opcode::TAND_SWAR:
+        case t81::tisc::Opcode::TOR_SWAR: {
+          if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto* lhs = tensor_ptr(ctx.registers[insn.b]);
+          auto* rhs = tensor_ptr(ctx.registers[insn.c]);
+          if (lhs == nullptr || rhs == nullptr || lhs->shape() != rhs->shape()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto lhs_encoded = encode_exact_trit_tensor_for_jit(*lhs);
+          auto rhs_encoded = encode_exact_trit_tensor_for_jit(*rhs);
+          if (!lhs_encoded.has_value() || !rhs_encoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto result_tensor = insn.opcode == t81::tisc::Opcode::TAND_SWAR
+                                   ? t81::swar::t_and_swar(*lhs_encoded, *rhs_encoded)
+                                   : t81::swar::t_or_swar(*lhs_encoded, *rhs_encoded);
+          if (result_tensor.is_err()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          auto decoded = decode_exact_trit_tensor_for_jit(result_tensor.value(), lhs->shape());
+          if (!decoded.has_value()) {
+            stop_trace = true;
+            guard_deopt = true;
+            break;
+          }
+          ctx.registers[insn.a] = alloc_tensor(std::move(*decoded));
+          ctx.register_tags[insn.a] = ValueTag::TensorHandle;
+          break;
+        }
         case t81::tisc::Opcode::LoadImm:
           if (!reg_ok(insn.a)) {
             stop_trace = true;
@@ -277,6 +408,11 @@ public:
             case t81::tisc::LiteralKind::ShapeHandle:
               ctx.register_tags[insn.a] = ValueTag::ShapeHandle;
               break;
+            case t81::tisc::LiteralKind::ComplexHandle:
+              // Complex literal: defer to interpreter path for now.
+              stop_trace = true;
+              guard_deopt = true;
+              break;
             case t81::tisc::LiteralKind::BigIntHandle:
               // Keep >64-bit literal semantics in interpreter path for now.
               stop_trace = true;
@@ -312,10 +448,7 @@ public:
             guard_deopt = true;
             break;
           }
-          const auto& stack = state.layout.stack;
-          // Note: using global stack layout limits in JIT for simplicity, or should access ctx
-          // limits? For now, assuming stack structure fits. Wait, JIT needs to use ctx.sp and
-          // stack_limit.
+          // Note: using ctx.sp and stack_limit for bounds check below.
           if (ctx.sp <=
               ctx.stack_limit) {  // Check underflow of free space (overflow of stack usage)
             stop_trace = true;
@@ -832,6 +965,22 @@ public:
           result.exit_kind = ExitKind::Branch;
           break;
         }
+        // ── RFC-0028 §5: Axion boundary opcodes ──────────────────────────────
+        // These are trace-terminating side-exits (OSR bailout). The interpreter
+        // resumes and evaluates the Axion policy natively via policy_engine.cpp.
+        // Exit kind is AxionBoundary, not GuardDeopt, so callers can distinguish
+        // policy-gated exits from guard failures on regular instructions.
+        case t81::tisc::Opcode::AxRead:
+        case t81::tisc::Opcode::AxSet:
+        case t81::tisc::Opcode::AxVerify:
+        case t81::tisc::Opcode::AxReport:
+        case t81::tisc::Opcode::AgentInvoke:  // RFC-0015: Axion observes every agent invocation
+          if (result.instructions_executed > 0) {
+            ctx.pc += (result.instructions_executed - 1);
+          }
+          result.exit_kind = ExitKind::AxionBoundary;
+          return result;
+
         default:
           stop_trace = true;
           guard_deopt = true;
@@ -844,7 +993,10 @@ public:
           insn.opcode != t81::tisc::Opcode::Call && insn.opcode != t81::tisc::Opcode::Ret &&
           insn.opcode != t81::tisc::Opcode::Store && insn.opcode != t81::tisc::Opcode::Push &&
           insn.opcode != t81::tisc::Opcode::Cmp && insn.opcode != t81::tisc::Opcode::TMatMul &&
-          insn.opcode != t81::tisc::Opcode::TRMSNorm) {
+          insn.opcode != t81::tisc::Opcode::TRMSNorm &&
+          insn.opcode != t81::tisc::Opcode::TNOT_SWAR &&
+          insn.opcode != t81::tisc::Opcode::TAND_SWAR &&
+          insn.opcode != t81::tisc::Opcode::TOR_SWAR) {
         ctx.flags.zero = (ctx.registers[insn.a] == 0);
         ctx.flags.negative = (ctx.registers[insn.a] < 0);
         ctx.flags.positive = (ctx.registers[insn.a] > 0);
@@ -864,6 +1016,8 @@ public:
     result.exit_kind = ExitKind::Completed;
     return result;
   }
+
+  void set_trace_hash(t81::hash::CanonHash81 h) noexcept { trace_hash_ = h; }
 
 private:
   std::vector<t81::tisc::Insn> insns_;
@@ -893,6 +1047,9 @@ void JitCompiler::record_instruction(const t81::tisc::Insn& insn) {
     case t81::tisc::Opcode::TAnd:
     case t81::tisc::Opcode::TOr:
     case t81::tisc::Opcode::TXor:
+    case t81::tisc::Opcode::TNOT_SWAR:
+    case t81::tisc::Opcode::TAND_SWAR:
+    case t81::tisc::Opcode::TOR_SWAR:
     case t81::tisc::Opcode::LoadImm:
     case t81::tisc::Opcode::Load:
     case t81::tisc::Opcode::Store:
@@ -955,7 +1112,35 @@ void JitCompiler::record_instruction(const t81::tisc::Insn& insn) {
 std::unique_ptr<JitTrace> JitCompiler::compile() {
   tracing_ = false;
   if (trace_buffer_.empty()) return nullptr;
-  return std::make_unique<ThreadedJitTrace>(std::move(trace_buffer_));
+
+  // ── RFC-0028 §2: Canonical Trace Identity ────────────────────────────────
+  // Serialise the instruction sequence to a byte vector using a canonical
+  // little-endian layout: for each Insn, write opcode (2 bytes), a (4 bytes),
+  // b (8 bytes), c (4 bytes) — 18 bytes per instruction, no padding.
+  // Hash with CanonHash81 (SHA3-512 truncated to 256 bits).
+  {
+    constexpr std::size_t kInsnBytes = 2 + 4 + 8 + 4;  // opcode+a+b+c
+    std::vector<std::uint8_t> serial;
+    serial.reserve(trace_buffer_.size() * kInsnBytes);
+
+    for (const auto& insn : trace_buffer_) {
+      const auto op = static_cast<std::uint16_t>(insn.opcode);
+      const auto a  = static_cast<std::int32_t>(insn.a);
+      const auto b  = static_cast<std::int64_t>(insn.b);
+      const auto c  = static_cast<std::int32_t>(insn.c);
+
+      std::uint8_t buf[kInsnBytes];
+      std::memcpy(buf + 0, &op, 2);
+      std::memcpy(buf + 2, &a,  4);
+      std::memcpy(buf + 6, &b,  8);
+      std::memcpy(buf + 14, &c, 4);
+      serial.insert(serial.end(), buf, buf + kInsnBytes);
+    }
+
+    auto trace = std::make_unique<ThreadedJitTrace>(std::move(trace_buffer_));
+    trace->set_trace_hash(t81::hash::hash_bytes(serial));
+    return trace;
+  }
 }
 
 }  // namespace t81::vm

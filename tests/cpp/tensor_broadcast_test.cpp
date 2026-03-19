@@ -13,7 +13,7 @@ int main() {
   [[maybe_unused]] auto M = t81::ops::broadcast_to(v, {2, 3});
   assert(M.rank() == 2);
   assert(M.shape()[0] == 2 && M.shape()[1] == 3);
-  const auto& md = M.data();
+  [[maybe_unused]] const auto& md = M.data();
   assert(md.size() == 6);
   // Two identical rows
   assert(md[0] == 1 && md[1] == 2 && md[2] == 3);
@@ -25,7 +25,7 @@ int main() {
   [[maybe_unused]] auto R = t81::ops::broadcast_to(row, {4, 3});
   assert(R.rank() == 2);
   assert(R.shape()[0] == 4 && R.shape()[1] == 3);
-  const auto& rd = R.data();
+  [[maybe_unused]] const auto& rd = R.data();
   for (int i = 0; i < 4; ++i) {
     [[maybe_unused]] size_t base = static_cast<size_t>(i) * 3;
     assert(rd[base + 0] == 10);

@@ -18,6 +18,10 @@ static bool expect(bool cond, const char* msg) {
   return true;
 }
 
+static void print_vector(const char* name, const std::string& b81) {
+  std::cout << "- **" << name << "**:\n  - `" << b81 << "`\n";
+}
+
 int main() {
   bool ok = true;
 
@@ -27,6 +31,7 @@ int main() {
     auto h2 = t81::hash::hash_string("");
     ok &= expect(h1 == h2,     "empty-string hash is non-deterministic");
     ok &= expect(h1.to_string().size() > 0, "empty-string hash produces empty Base-81 string");
+    print_vector("Empty String", h1.to_string());
   }
 
   // ── Vector 2: single-byte inputs ──────────────────────────────────────────
@@ -38,6 +43,8 @@ int main() {
     ok &= expect(hz == t81::hash::hash_bytes(zero_byte), "0x00 hash non-deterministic");
     ok &= expect(ho == t81::hash::hash_bytes(one_byte),  "0x01 hash non-deterministic");
     ok &= expect(hz != ho, "0x00 and 0x01 should hash to different values");
+    print_vector("Single Null Byte (0x00)", hz.to_string());
+    print_vector("Single Byte (0x01)", ho.to_string());
   }
 
   // ── Vector 3: known-string inputs ─────────────────────────────────────────
@@ -49,6 +56,9 @@ int main() {
     ok &= expect(h_world == t81::hash::hash_string("world"), "\"world\" hash non-deterministic");
     ok &= expect(h_hello != h_world, "\"hello\" and \"world\" must not collide");
     ok &= expect(h_hello != h_t81,   "\"hello\" and \"T81CanonHash\" must not collide");
+    print_vector("String 'hello'", h_hello.to_string());
+    print_vector("String 'world'", h_world.to_string());
+    print_vector("String 'T81CanonHash'", h_t81.to_string());
   }
 
   // ── Vector 4: CanonBlock all-zeros ────────────────────────────────────────
@@ -65,6 +75,7 @@ int main() {
     // Deterministic second call.
     ok &= expect(blk.hash().h.bytes == block_hash.h.bytes,
                  "CanonBlock::hash() is non-deterministic");
+    print_vector("CanonBlock All-Zeros (729 bytes)", block_hash.h.to_string());
   }
 
   // ── Vector 5: CanonBlock all-ones (tryte value 1) ─────────────────────────
@@ -79,6 +90,7 @@ int main() {
     t81::canonfs::CanonBlock zeros{};
     ok &= expect(h1.h.bytes != zeros.hash().h.bytes,
                  "all-ones CanonBlock must not hash equal to all-zeros");
+    print_vector("CanonBlock All-Ones (729 bytes 0x01)", h1.h.to_string());
   }
 
   // ── Vector 6: CanonBlock serialization round-trip ─────────────────────────
@@ -116,6 +128,7 @@ int main() {
     ok &= expect(!b81.empty(), "Base-81 string must not be empty");
     // Determinism of to_string().
     ok &= expect(h.to_string() == b81, "to_string() is non-deterministic");
+    print_vector("String 'RFC-0000-reference-vector'", b81);
   }
 
   if (ok) {

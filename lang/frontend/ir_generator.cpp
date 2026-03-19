@@ -6,19 +6,31 @@
 namespace t81::frontend {
 
 tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::unique_ptr<Stmt>>& statements) {
-  // Pre-pass: Identify functions and assign labels
+  // Pre-pass: Identify functions and agent behaviors; assign labels.
   std::vector<const FunctionStmt*> functions;
+  std::vector<const AgentDecl*> agents;
   for (const auto& stmt : statements) {
     if (auto func = dynamic_cast<const FunctionStmt*>(stmt.get())) {
       std::string fname = std::string(func->name.lexeme);
       _function_labels[fname] = new_label();
       functions.push_back(func);
+    } else if (auto ag = dynamic_cast<const AgentDecl*>(stmt.get())) {
+      // RFC-0015: assign a label for each behavior using the canonical key
+      // "__agent_<AgentName>_<behaviorName>".
+      const std::string aname(ag->name.lexeme);
+      for (const auto& beh : ag->behaviors) {
+        const std::string key = "__agent_" + aname + "_" + std::string(beh.name.lexeme);
+        _function_labels[key] = new_label();
+      }
+      agents.push_back(ag);
     }
   }
 
-  // Pass 1: Emit top-level statements (script body/initialization)
+  // Pass 1: Emit top-level statements (script body/initialization).
+  // Skip FunctionStmt and AgentDecl — those are emitted in Pass 2.
   for (const auto& stmt : statements) {
-    if (!dynamic_cast<const FunctionStmt*>(stmt.get())) {
+    if (!dynamic_cast<const FunctionStmt*>(stmt.get()) &&
+        !dynamic_cast<const AgentDecl*>(stmt.get())) {
       stmt->accept(*this);
     }
   }
@@ -43,11 +55,13 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
     auto addr_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
     load.opcode = tisc::ir::Opcode::LOADI;
     load.operands = {addr_reg.reg, main_it->second};
+    load.primitive = tisc::ir::PrimitiveKind::Integer;
     emit(load);
 
     tisc::ir::Instruction call;
     call.opcode = tisc::ir::Opcode::CALL;
     call.operands = {tisc::ir::Register{0}, addr_reg.reg};
+    call.primitive = tisc::ir::PrimitiveKind::Integer;
     emit(call);
 
     // Pop main result only for non-void main
@@ -56,15 +70,19 @@ tisc::ir::IntermediateProgram IRGenerator::generate(const std::vector<std::uniqu
       tisc::ir::Instruction pop;
       pop.opcode = tisc::ir::Opcode::POP;
       pop.operands = {dest.reg};
+      pop.primitive = tisc::ir::PrimitiveKind::Integer;
       emit(pop);
     }
   }
 
   emit_simple(tisc::ir::Opcode::HALT);
 
-  // Pass 2: Emit functions
+  // Pass 2: Emit functions and agent behavior bodies.
   for (const auto* func : functions) {
     func->accept(*this);
+  }
+  for (const auto* ag : agents) {
+    ag->accept(*this);
   }
 
   return std::move(_program);
@@ -333,6 +351,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
   emit_label(_function_labels[name]);
 
   enter_pattern_scope();
+  _ternary_inference_stack.push_back(stmt.is_ternary_inference);
 
   // Pop return address
   auto ret_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
@@ -340,6 +359,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
   tisc::ir::Instruction pop_ret;
   pop_ret.opcode = tisc::ir::Opcode::POP;
   pop_ret.operands = {ret_reg.reg};
+  pop_ret.primitive = tisc::ir::PrimitiveKind::Integer;
   emit(pop_ret);
 
   // Pop arguments in reverse order
@@ -348,6 +368,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
     tisc::ir::Instruction pop;
     pop.opcode = tisc::ir::Opcode::POP;
     pop.operands = {reg.reg};
+    pop.primitive = tisc::ir::PrimitiveKind::Integer;
     emit(pop);
     bind_variable(std::string(it->name.lexeme), reg);
   }
@@ -411,6 +432,7 @@ std::any IRGenerator::visit(const FunctionStmt& stmt) {
   emit_simple(tisc::ir::Opcode::RET);
 
   exit_pattern_scope();
+  _ternary_inference_stack.pop_back();
   return {};
 }
 
@@ -474,6 +496,87 @@ std::any IRGenerator::visit(const EnumDecl& stmt) {
   _program.add_type_alias(std::move(meta));
   return {};
 }
+
+// RFC-0015 §3.2 — Emit each behavior as a labeled function body.
+// Encoding mirrors visit(FunctionStmt): pop ret_addr + params, emit body,
+// push result (if non-void), push ret_addr, RET.
+std::any IRGenerator::visit(const AgentDecl& stmt) {
+  const std::string agent_name(stmt.name.lexeme);
+  for (const auto& beh : stmt.behaviors) {
+    const std::string key =
+        "__agent_" + agent_name + "_" + std::string(beh.name.lexeme);
+    auto label_it = _function_labels.find(key);
+    if (label_it == _function_labels.end()) continue;
+
+    emit_label(label_it->second);
+    enter_pattern_scope();
+
+    // Pop return address.
+    auto ret_reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+    bind_variable("%ret_addr", ret_reg);
+    tisc::ir::Instruction pop_ret;
+    pop_ret.opcode = tisc::ir::Opcode::POP;
+    pop_ret.operands = {ret_reg.reg};
+    pop_ret.primitive = tisc::ir::PrimitiveKind::Integer;
+    emit(pop_ret);
+
+    // Pop parameters in reverse order.
+    for (auto it = beh.params.rbegin(); it != beh.params.rend(); ++it) {
+      auto reg = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction pop;
+      pop.opcode = tisc::ir::Opcode::POP;
+      pop.operands = {reg.reg};
+      pop.primitive = tisc::ir::PrimitiveKind::Integer;
+      emit(pop);
+      bind_variable(std::string(it->name.lexeme), reg);
+    }
+
+    // Determine void return.
+    bool is_void_return = true;
+    if (beh.return_type) {
+      if (auto* st = dynamic_cast<const SimpleTypeExpr*>(beh.return_type.get())) {
+        is_void_return = (st->name.lexeme == "void");
+      }
+    }
+
+    // Identify implicit tail return.
+    const ExpressionStmt* tail_expr_stmt = nullptr;
+    std::size_t body_limit = beh.body.size();
+    if (!is_void_return && body_limit > 0) {
+      if (auto* es = dynamic_cast<const ExpressionStmt*>(beh.body.back().get())) {
+        tail_expr_stmt = es;
+        --body_limit;
+      }
+    }
+
+    for (std::size_t i = 0; i < body_limit; ++i) {
+      if (beh.body[i]) beh.body[i]->accept(*this);
+    }
+
+    if (tail_expr_stmt) {
+      tail_expr_stmt->expression->accept(*this);
+      auto result = ensure_expr_result(tail_expr_stmt->expression.get());
+      tisc::ir::Instruction push_val;
+      push_val.opcode = tisc::ir::Opcode::PUSH;
+      push_val.operands = {result.reg};
+      emit(push_val);
+    }
+
+    tisc::ir::Instruction push_ret;
+    push_ret.opcode = tisc::ir::Opcode::PUSH;
+    push_ret.operands = {ret_reg.reg};
+    emit(push_ret);
+
+    emit_simple(tisc::ir::Opcode::RET);
+    exit_pattern_scope();
+  }
+  return {};
+}
+
+// RFC-0036 §3 — ForeignDecl emits no code at declaration time; all function
+// signatures were already registered by the semantic analyzer.  IRGen only
+// acts when a `foreign.<name>(...)` call-site is visited.
+std::any IRGenerator::visit(const ForeignDecl& /*stmt*/) { return {}; }
 
 // Expressions
 std::any IRGenerator::visit(const BinaryExpr& expr) {
@@ -968,6 +1071,8 @@ std::any IRGenerator::visit(const CallExpr& expr) {
   if (auto callee_name = qualified_call_name(*expr.callee); callee_name.has_value()) {
     const std::string raw_name = *callee_name;
     std::string func_name = canonical_stdlib_call_name(raw_name);
+    const bool ternary_inference_active =
+        !_ternary_inference_stack.empty() && _ternary_inference_stack.back();
     if (func_name == "Some") {
       if (expr.arguments.empty()) {
         throw std::runtime_error("Some() requires a payload");
@@ -1162,7 +1267,8 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       auto right = ensure_expr_result(expr.arguments[1].get());
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
       tisc::ir::Instruction instr;
-      instr.opcode = tisc::ir::Opcode::TMATMUL;
+      instr.opcode = ternary_inference_active ? tisc::ir::Opcode::TWMATMUL
+                                              : tisc::ir::Opcode::TMATMUL;
       instr.operands = {dest.reg, left.reg, right.reg};
       emit(instr);
       record_result(&expr, dest);
@@ -1182,7 +1288,8 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
       const int32_t packed_kv = (k_reg.reg.index & 0xFF) | ((v_reg.reg.index & 0xFF) << 8);
       tisc::ir::Instruction attn;
-      attn.opcode = tisc::ir::Opcode::ATTN;
+      attn.opcode = ternary_inference_active ? tisc::ir::Opcode::TATTN
+                                             : tisc::ir::Opcode::ATTN;
       attn.operands = {dest.reg, q_reg.reg, tisc::ir::Immediate{packed_kv}};
       emit(attn);
       record_result(&expr, dest);
@@ -1208,6 +1315,239 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       record_result(&expr, dest);
       return {};
     }
+    // RFC-0037 §3 — TNN stdlib: lower tnn_* builtins to RFC-0034 TISC opcodes.
+
+    // tnn.matmul(activations, weights) → TWMATMUL RD, R_ACT, R_WT
+    if (func_name == "tnn_matmul") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.matmul expects 2 arguments (activations, weights).");
+      expr.arguments[0]->accept(*this);
+      auto act = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto wt = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TWMATMUL;
+      instr.operands = {dest.reg, act.reg, wt.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.quant(src, threshold) → TQUANT RD, R_SRC, R_THR
+    if (func_name == "tnn_quant") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.quant expects 2 arguments (src, threshold).");
+      expr.arguments[0]->accept(*this);
+      auto src = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto thr = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TQUANT;
+      instr.operands = {dest.reg, src.reg, thr.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.attn(q, k, v) → TATTN RD, R_Q, PACK(R_K, R_V)
+    if (func_name == "tnn_attn") {
+      if (expr.arguments.size() != 3)
+        throw std::runtime_error("tnn.attn expects 3 arguments (q, k, v).");
+      expr.arguments[0]->accept(*this);
+      auto q = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto k = ensure_expr_result(expr.arguments[1].get());
+      expr.arguments[2]->accept(*this);
+      auto v = ensure_expr_result(expr.arguments[2].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      const int32_t packed_kv = (k.reg.index & 0xFF) | ((v.reg.index & 0xFF) << 8);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TATTN;
+      instr.operands = {dest.reg, q.reg, tisc::ir::Immediate{packed_kv}};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.embed(table, idx) → TWEMBED RD, R_TABLE, R_IDX
+    if (func_name == "tnn_embed") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.embed expects 2 arguments (table, idx).");
+      expr.arguments[0]->accept(*this);
+      auto table = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto idx = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TWEMBED;
+      instr.operands = {dest.reg, table.reg, idx.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.accum(weights, activations) → TERNACCUM RD, R_WT, R_ACT
+    if (func_name == "tnn_accum") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.accum expects 2 arguments (weights, activations).");
+      expr.arguments[0]->accept(*this);
+      auto wt = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto act = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Float);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TERNACCUM;
+      instr.operands = {dest.reg, wt.reg, act.reg};
+      instr.primitive = tisc::ir::PrimitiveKind::Float;
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // tnn.act(src, mode) → TACT RD, R_SRC, R_MODE
+    if (func_name == "tnn_act") {
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("tnn.act expects 2 arguments (src, mode).");
+      expr.arguments[0]->accept(*this);
+      auto src = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto mode = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TACT;
+      instr.operands = {dest.reg, src.reg, mode.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // RFC-0038 — Ternary Lattice Cryptography
+    if (func_name == "crypto_polymul") {
+      // std.crypto.polymul(a: Tensor, b: Tensor) -> Tensor
+      // Lowers to: POLYMUL RD, R_A, R_B
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polymul expects 2 arguments (a, b).");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rb = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::POLYMUL;
+      instr.operands = {dest.reg, ra.reg, rb.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    if (func_name == "crypto_polymod") {
+      // std.crypto.polymod(a: Tensor, q: i32) -> Tensor
+      // Lowers to: POLYMOD RD, R_A, R_Q
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polymod expects 2 arguments (a, q).");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rq = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::POLYMOD;
+      instr.operands = {dest.reg, ra.reg, rq.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // RFC-0039 §3 — polynomial ring arithmetic
+    if (func_name == "crypto_polyadd") {
+      // std.crypto.polyadd(a, b) -> Tensor  →  TVECADD RD, RA, RB
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polyadd expects 2 arguments.");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rb = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TVECADD;
+      instr.operands = {dest.reg, ra.reg, rb.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    if (func_name == "crypto_polysub") {
+      // std.crypto.polysub(a, b) -> Tensor  →  TVECSUB RD, RA, RB
+      if (expr.arguments.size() != 2)
+        throw std::runtime_error("std.crypto.polysub expects 2 arguments.");
+      expr.arguments[0]->accept(*this);
+      auto ra = ensure_expr_result(expr.arguments[0].get());
+      expr.arguments[1]->accept(*this);
+      auto rb = ensure_expr_result(expr.arguments[1].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TVECSUB;
+      instr.operands = {dest.reg, ra.reg, rb.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
+
+    // RFC-0039 §3 — NTRU-KEM builtins
+    if (func_name == "crypto_ntru_encrypt") {
+      // std.crypto.ntru_encrypt(h, msg, r, q) -> Tensor
+      // Expands to: POLYMUL t1, h, r  →  TVECADD t2, t1, msg  →  POLYMOD dest, t2, q
+      if (expr.arguments.size() != 4)
+        throw std::runtime_error("std.crypto.ntru_encrypt expects 4 arguments (h, msg, r, q).");
+      expr.arguments[0]->accept(*this);
+      auto rh = ensure_expr_result(expr.arguments[0].get());  // public key h
+      expr.arguments[1]->accept(*this);
+      auto rmsg = ensure_expr_result(expr.arguments[1].get()); // message
+      expr.arguments[2]->accept(*this);
+      auto rr = ensure_expr_result(expr.arguments[2].get());   // blinding r
+      expr.arguments[3]->accept(*this);
+      auto rq = ensure_expr_result(expr.arguments[3].get());   // modulus q
+      // t1 = h*r
+      auto t1 = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMUL;
+        i.operands = {t1.reg, rh.reg, rr.reg}; emit(i); }
+      // t2 = t1 + msg
+      auto t2 = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::TVECADD;
+        i.operands = {t2.reg, t1.reg, rmsg.reg}; emit(i); }
+      // dest = t2 mod q
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMOD;
+        i.operands = {dest.reg, t2.reg, rq.reg}; emit(i); }
+      record_result(&expr, dest);
+      return {};
+    }
+
+    if (func_name == "crypto_ntru_decrypt") {
+      // std.crypto.ntru_decrypt(f, c, p) -> Tensor
+      // Expands to: POLYMUL t1, f, c  →  POLYMOD dest, t1, p
+      if (expr.arguments.size() != 3)
+        throw std::runtime_error("std.crypto.ntru_decrypt expects 3 arguments (f, c, p).");
+      expr.arguments[0]->accept(*this);
+      auto rf = ensure_expr_result(expr.arguments[0].get());   // secret key f
+      expr.arguments[1]->accept(*this);
+      auto rc = ensure_expr_result(expr.arguments[1].get());   // ciphertext c
+      expr.arguments[2]->accept(*this);
+      auto rp = ensure_expr_result(expr.arguments[2].get());   // modulus p
+      // t1 = f*c
+      auto t1 = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMUL;
+        i.operands = {t1.reg, rf.reg, rc.reg}; emit(i); }
+      // dest = t1 mod p
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      { tisc::ir::Instruction i; i.opcode = tisc::ir::Opcode::POLYMOD;
+        i.operands = {dest.reg, t1.reg, rp.reg}; emit(i); }
+      record_result(&expr, dest);
+      return {};
+    }
+
     if (func_name == "Tensor.vec_add") {
       if (expr.arguments.size() != 2) {
         throw std::runtime_error("Tensor.vec_add expects two arguments.");
@@ -3905,6 +4245,106 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       return {};
     }
 
+    // RFC-0036 §3 — detect foreign function call: "foreign.<name>".
+    // Must be checked before the VariableExpr gate (same reason as RFC-0015 below).
+    if (_semantic) {
+      const auto dot_pos = func_name.find('.');
+      if (dot_pos != std::string::npos) {
+        const std::string ns_part  = func_name.substr(0, dot_pos);
+        const std::string fn_part  = func_name.substr(dot_pos + 1);
+        if (ns_part == "foreign") {
+          const auto& foreign_defs = _semantic->foreign_definitions();
+          if (foreign_defs.count(fn_part)) {
+            const auto& fi = foreign_defs.at(fn_part);
+            // Push arguments onto the stack.
+            for (const auto& arg : expr.arguments) {
+              arg->accept(*this);
+              auto val = ensure_expr_result(arg.get());
+              tisc::ir::Instruction push;
+              push.opcode = tisc::ir::Opcode::PUSH;
+              push.operands = {val.reg};
+              push.primitive = val.primitive;
+              emit(push);
+            }
+            // Emit FFI_CALL RD, arg_count — text_literal carries the function name.
+            auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction ffi;
+            ffi.opcode = tisc::ir::Opcode::FFI_CALL;
+            ffi.operands = {dest.reg,
+                            tisc::ir::Immediate{static_cast<long long>(expr.arguments.size())}};
+            ffi.literal_kind = tisc::LiteralKind::SymbolHandle;
+            ffi.text_literal = fn_part;
+            ffi.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(ffi);
+            bool returns_void = (fi.return_type.kind == Type::Kind::Void);
+            if (!returns_void) {
+              record_result(&expr, dest);
+            }
+            return {};
+          }
+        }
+      }
+    }
+
+    // RFC-0015 §3.2 — detect agent behavior call: "AgentName.behaviorName".
+    // Must be checked before the VariableExpr gate because `Net.run(42)` has a
+    // FieldAccessExpr callee; qualified_call_name() already resolved it to "Net.run".
+    if (_semantic) {
+      const auto dot_pos = func_name.find('.');
+      if (dot_pos != std::string::npos) {
+        const std::string agent_part = func_name.substr(0, dot_pos);
+        const std::string beh_part   = func_name.substr(dot_pos + 1);
+        const auto& agent_defs = _semantic->agent_definitions();
+        const auto ait = agent_defs.find(agent_part);
+        if (ait != agent_defs.end()) {
+          const std::string key = "__agent_" + agent_part + "_" + beh_part;
+          auto beh_label_it = _function_labels.find(key);
+          if (beh_label_it != _function_labels.end()) {
+            // Push arguments.
+            for (const auto& arg : expr.arguments) {
+              arg->accept(*this);
+              auto val = ensure_expr_result(arg.get());
+              tisc::ir::Instruction push;
+              push.opcode = tisc::ir::Opcode::PUSH;
+              push.operands = {val.reg};
+              push.primitive = val.primitive;
+              emit(push);
+            }
+            // Load behavior address.
+            auto addr = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction load;
+            load.opcode = tisc::ir::Opcode::LOADI;
+            load.operands = {addr.reg, beh_label_it->second};
+            load.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(load);
+            // Emit AGENT_INVOKE (tier-tagged specialization of CALL).
+            tisc::ir::Instruction invoke;
+            invoke.opcode = tisc::ir::Opcode::AGENT_INVOKE;
+            invoke.operands = {tisc::ir::Register{0}, addr.reg};
+            invoke.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(invoke);
+            // Pop result if non-void.
+            const auto bit = ait->second.behavior_map.find(beh_part);
+            bool returns_void = true;
+            if (bit != ait->second.behavior_map.end()) {
+              const auto& beh_info = ait->second.behaviors[bit->second];
+              returns_void = (beh_info.return_type.kind == Type::Kind::Void);
+            }
+            if (!returns_void) {
+              auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+              tisc::ir::Instruction pop;
+              pop.opcode = tisc::ir::Opcode::POP;
+              pop.operands = {dest.reg};
+              pop.primitive = tisc::ir::PrimitiveKind::Integer;
+              emit(pop);
+              record_result(&expr, dest);
+            }
+            return {};
+          }
+        }
+      }
+    }
+
     if (dynamic_cast<const VariableExpr*>(expr.callee.get()) ||
         dynamic_cast<const GenericTypeExpr*>(expr.callee.get())) {
       // RFC-0026 AI-M6: @attention / @qmatmul annotated function call sites are lowered
@@ -3968,6 +4408,7 @@ std::any IRGenerator::visit(const CallExpr& expr) {
           tisc::ir::Instruction push;
           push.opcode = tisc::ir::Opcode::PUSH;
           push.operands = {val.reg};
+          push.primitive = val.primitive;
           emit(push);
         }
 
@@ -3976,27 +4417,35 @@ std::any IRGenerator::visit(const CallExpr& expr) {
         tisc::ir::Instruction load;
         load.opcode = tisc::ir::Opcode::LOADI;
         load.operands = {addr.reg, label_it->second};
+        load.primitive = tisc::ir::PrimitiveKind::Integer;
         emit(load);
 
         // CALL
         tisc::ir::Instruction call;
         call.opcode = tisc::ir::Opcode::CALL;
         call.operands = {tisc::ir::Register{0}, addr.reg};
+        call.primitive = tisc::ir::PrimitiveKind::Integer;
         emit(call);
 
         // Pop result if not void
         bool returns_void = false;
+        tisc::ir::PrimitiveKind result_kind = tisc::ir::PrimitiveKind::Integer;
         if (_semantic) {
           const Type* type = _semantic->type_of(&expr);
-          if (type && type->kind == Type::Kind::Void) {
-            returns_void = true;
+          if (type) {
+            if (type->kind == Type::Kind::Void) {
+              returns_void = true;
+            } else {
+              result_kind = categorize_primitive(type);
+            }
           }
         }
         if (!returns_void) {
-          auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+          auto dest = allocate_typed_register(result_kind);
           tisc::ir::Instruction pop;
           pop.opcode = tisc::ir::Opcode::POP;
           pop.operands = {dest.reg};
+          pop.primitive = result_kind;
           emit(pop);
           record_result(&expr, dest);
         }
@@ -4751,10 +5200,67 @@ std::any IRGenerator::visit(const InfiniteLiteralExpr& expr) {
 }
 
 std::any IRGenerator::visit(const InferExpr& expr) {
+  // RFC-0015 §3.2 — `infer AgentName(args)` desugars to `AgentName.infer(args)`.
+  // Detect: expression is CallExpr(VariableExpr("AgentName"), args) where AgentName is a
+  // declared agent.  The SA validated the 'infer' behavior exists and typed the args.
+  if (_semantic) {
+    if (auto* call = dynamic_cast<const CallExpr*>(expr.expression.get())) {
+      if (auto* var = dynamic_cast<const VariableExpr*>(call->callee.get())) {
+        const std::string agent_name(var->name.lexeme);
+        const auto& agent_defs = _semantic->agent_definitions();
+        const auto ait = agent_defs.find(agent_name);
+        if (ait != agent_defs.end()) {
+          const std::string key = "__agent_" + agent_name + "_infer";
+          auto label_it = _function_labels.find(key);
+          if (label_it != _function_labels.end()) {
+            // Push arguments.
+            for (const auto& arg : call->arguments) {
+              arg->accept(*this);
+              auto val = ensure_expr_result(arg.get());
+              tisc::ir::Instruction push;
+              push.opcode = tisc::ir::Opcode::PUSH;
+              push.operands = {val.reg};
+              push.primitive = val.primitive;
+              emit(push);
+            }
+            // Load behavior address.
+            auto addr = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+            tisc::ir::Instruction load;
+            load.opcode = tisc::ir::Opcode::LOADI;
+            load.operands = {addr.reg, label_it->second};
+            load.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(load);
+            // Emit AGENT_INVOKE.
+            tisc::ir::Instruction invoke;
+            invoke.opcode = tisc::ir::Opcode::AGENT_INVOKE;
+            invoke.operands = {tisc::ir::Register{0}, addr.reg};
+            invoke.primitive = tisc::ir::PrimitiveKind::Integer;
+            emit(invoke);
+            // Pop result.
+            auto bit = ait->second.behavior_map.find("infer");
+            bool returns_void = false;
+            if (bit != ait->second.behavior_map.end()) {
+              const auto& beh_info = ait->second.behaviors[bit->second];
+              returns_void = (beh_info.return_type.kind == Type::Kind::Void);
+            }
+            if (!returns_void) {
+              auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+              tisc::ir::Instruction pop;
+              pop.opcode = tisc::ir::Opcode::POP;
+              pop.operands = {dest.reg};
+              pop.primitive = tisc::ir::PrimitiveKind::Integer;
+              emit(pop);
+              record_result(&expr, dest);
+            }
+            return {};
+          }
+        }
+      }
+    }
+  }
+  // Non-agent infer: forward propagation opcode.
   expr.expression->accept(*this);
   auto val = ensure_expr_result(expr.expression.get());
-  // infer <expr> -> TNeuralFwd(dest, val)
-  // Assuming result is a Tensor (Integer handle)
   auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
   tisc::ir::Instruction instr;
   instr.opcode = tisc::ir::Opcode::TNEURAL_FWD;
@@ -4822,15 +5328,18 @@ std::any IRGenerator::visit(const VectorLiteralExpr& expr) {
     return {};
   }
 
-  if (!_semantic) return {};
+  if (!_semantic) {
+    auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Unknown);
+    record_result(&expr, dest);
+    return {};
+  }
   const auto* data = _semantic->vector_literal_data(&expr);
   if (!data) {
     // Dynamic vector construction - FIXED: Check if this is T81Vector[T, N]
     // T81Vector[T, N] should always be treated as a tensor, not string vector
     // regardless of whether elements are constants or variables
     
-    const Type* vector_type = typed_expr(&expr);
-    const bool is_t81_vector = vector_type && 
+    const bool is_t81_vector = vector_type &&
                                  vector_type->kind == Type::Kind::Vector &&
                                  !vector_type->params.empty() &&
                                  vector_type->params[0].kind != Type::Kind::String;
@@ -5136,11 +5645,15 @@ void IRGenerator::emit_jump(tisc::ir::Label target) {
 }
 
 void IRGenerator::emit_jump_if_zero(tisc::ir::Label target, const IRGenerator::TypedRegister& cond) {
-  emit(tisc::ir::Instruction{tisc::ir::Opcode::JZ, {target, cond.reg}});
+  auto instr = tisc::ir::Instruction{tisc::ir::Opcode::JZ, {target, cond.reg}};
+  instr.primitive = cond.primitive;
+  emit(instr);
 }
 
 void IRGenerator::emit_jump_if_not_zero(tisc::ir::Label target, const IRGenerator::TypedRegister& cond) {
-  emit(tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {target, cond.reg}});
+  auto instr = tisc::ir::Instruction{tisc::ir::Opcode::JNZ, {target, cond.reg}};
+  instr.primitive = cond.primitive;
+  emit(instr);
 }
 
 void IRGenerator::emit_option_is_some(const IRGenerator::TypedRegister& dest, const IRGenerator::TypedRegister& source) {
@@ -5549,4 +6062,3 @@ std::optional<int> IRGenerator::resolve_variant_index(std::string_view enum_name
 }
 
 }  // namespace t81::frontend
-

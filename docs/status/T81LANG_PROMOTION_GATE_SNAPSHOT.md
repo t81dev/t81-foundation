@@ -1,13 +1,13 @@
 # T81Lang Promotion Gate Snapshot
 
-Generated (UTC): 2026-03-10 13:06:45Z
+Generated (UTC): 2026-03-15 15:32:32Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ## Gate Criteria Status
 
 | Criterion | Status | Basis |
 | :--- | :--- | :--- |
-| TG-01 | Pass | Governance hygiene check command status |
+| TG-01 | Fail | Governance hygiene check command status |
 | TG-02 | Pass | Repro gate command status |
 | TG-03 | Pass | Conformance/semantic/determinism/Axion ctest slices |
 | TG-04 | Pass | BG-01..BG-05 completion status in backlog |
@@ -16,8 +16,8 @@ Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ## Promotion Readiness
 
-- Snapshot Date: 2026-03-10
-- Result: Ready for Beta-candidate review
+- Snapshot Date: 2026-03-15
+- Result: Not Ready
 
 ## Backlog Statuses
 
@@ -31,16 +31,17 @@ Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 
 ### Docs Governance Hygiene
 
-- Status: Pass
+- Status: Fail
 - Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 scripts/governance/check_docs_governance_hygiene.py`
 
 ```text
-governance hygiene check PASSED
-- required README coverage checked: 35 paths
-- task-queue status consistency checked
-- stale planned markers checked for completed tasks
-- status label coherence checked
-- supplemental governance checks (structure/readme/translation/staleness/semantic/license/artifact/api/spec-boundary/stdlib/snapshot/overclaim/rfc-lifecycle) checked
+governance hygiene check FAILED:
+- translation staleness check failed
+- translation staleness: translation staleness check FAILED
+- translation staleness: - README.zh-CN.md is stale vs README.md: 4.8 days, 12 canonical commits behind (thresholds: >30 days or >10 commits)
+- translation staleness: - README.es.md is stale vs README.md: 4.8 days, 12 canonical commits behind (thresholds: >30 days or >10 commits)
+- translation staleness: - README.pt-BR.md is stale vs README.md: 4.8 days, 12 canonical commits behind (thresholds: >30 days or >10 commits)
+- translation staleness: - README.ru.md is stale vs README.md: 4.8 days, 12 canonical commits behind (thresholds: >30 days or >10 commits)
 ```
 
 ### Conformance + Semantics Slice
@@ -50,24 +51,24 @@ governance hygiene check PASSED
 
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
-    Start   8: t81lang_conformance_edge_semantics_test
-1/7 Test   #8: t81lang_conformance_edge_semantics_test ...........   Passed    0.01 sec
-    Start  93: t81lang_conformance_baseline_test
-2/7 Test  #93: t81lang_conformance_baseline_test .................   Passed    0.01 sec
-    Start 186: t81_semantic_analyzer_match_test
-3/7 Test #186: t81_semantic_analyzer_match_test ..................   Passed    0.01 sec
-    Start 191: t81_semantic_analyzer_loop_test
-4/7 Test #191: t81_semantic_analyzer_loop_test ...................   Passed    0.01 sec
-    Start 193: t81_semantic_analyzer_diagnostic_location_test
-5/7 Test #193: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.00 sec
-    Start 194: t81_semantic_analyzer_cascade_suppression_test
-6/7 Test #194: t81_semantic_analyzer_cascade_suppression_test ....   Passed    0.00 sec
-    Start 195: t81_semantic_analyzer_diagnostic_precision_test
-7/7 Test #195: t81_semantic_analyzer_diagnostic_precision_test ...   Passed    0.00 sec
+    Start   9: t81lang_conformance_edge_semantics_test
+1/7 Test   #9: t81lang_conformance_edge_semantics_test ...........   Passed    0.00 sec
+    Start  97: t81lang_conformance_baseline_test
+2/7 Test  #97: t81lang_conformance_baseline_test .................   Passed    0.01 sec
+    Start 191: t81_semantic_analyzer_match_test
+3/7 Test #191: t81_semantic_analyzer_match_test ..................   Passed    0.01 sec
+    Start 196: t81_semantic_analyzer_loop_test
+4/7 Test #196: t81_semantic_analyzer_loop_test ...................   Passed    0.00 sec
+    Start 198: t81_semantic_analyzer_diagnostic_location_test
+5/7 Test #198: t81_semantic_analyzer_diagnostic_location_test ....   Passed    0.00 sec
+    Start 199: t81_semantic_analyzer_cascade_suppression_test
+6/7 Test #199: t81_semantic_analyzer_cascade_suppression_test ....   Passed    0.00 sec
+    Start 200: t81_semantic_analyzer_diagnostic_precision_test
+7/7 Test #200: t81_semantic_analyzer_diagnostic_precision_test ...   Passed    0.00 sec
 
 100% tests passed, 0 tests failed out of 7
 
-Total Test time (real) =   0.05 sec
+Total Test time (real) =   0.04 sec
 ```
 
 ### Compile Determinism Slice
@@ -77,12 +78,12 @@ Total Test time (real) =   0.05 sec
 
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
-    Start 207: e2e_compile_determinism_test
-1/3 Test #207: e2e_compile_determinism_test ............   Passed    0.02 sec
-    Start 209: e2e_ast_ir_canonical_determinism_test
-2/3 Test #209: e2e_ast_ir_canonical_determinism_test ...   Passed    0.01 sec
-    Start 210: e2e_enum_metadata_determinism_test
-3/3 Test #210: e2e_enum_metadata_determinism_test ......   Passed    0.01 sec
+    Start 212: e2e_compile_determinism_test
+1/3 Test #212: e2e_compile_determinism_test ............   Passed    0.02 sec
+    Start 214: e2e_ast_ir_canonical_determinism_test
+2/3 Test #214: e2e_ast_ir_canonical_determinism_test ...   Passed    0.01 sec
+    Start 215: e2e_enum_metadata_determinism_test
+3/3 Test #215: e2e_enum_metadata_determinism_test ......   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 3
 
@@ -96,16 +97,16 @@ Total Test time (real) =   0.04 sec
 
 ```text
 Test project /Users/t81dev/Code/t81-foundation/build
-    Start 222: axion_policy_match_guard_test
-1/5 Test #222: axion_policy_match_guard_test .....   Passed    0.01 sec
-    Start 223: axion_policy_segment_event_test
-2/5 Test #223: axion_policy_segment_event_test ...   Passed    0.01 sec
-    Start 228: axion_match_metadata_test
-3/5 Test #228: axion_match_metadata_test .........   Passed    0.01 sec
-    Start 229: axion_enum_guard_test
-4/5 Test #229: axion_enum_guard_test .............   Passed    0.01 sec
-    Start 242: e2e_axion_trace_test
-5/5 Test #242: e2e_axion_trace_test ..............   Passed    0.01 sec
+    Start 227: axion_policy_match_guard_test
+1/5 Test #227: axion_policy_match_guard_test .....   Passed    0.01 sec
+    Start 228: axion_policy_segment_event_test
+2/5 Test #228: axion_policy_segment_event_test ...   Passed    0.01 sec
+    Start 233: axion_match_metadata_test
+3/5 Test #233: axion_match_metadata_test .........   Passed    0.01 sec
+    Start 234: axion_enum_guard_test
+4/5 Test #234: axion_enum_guard_test .............   Passed    0.01 sec
+    Start 247: e2e_axion_trace_test
+5/5 Test #247: e2e_axion_trace_test ..............   Passed    0.01 sec
 
 100% tests passed, 0 tests failed out of 5
 

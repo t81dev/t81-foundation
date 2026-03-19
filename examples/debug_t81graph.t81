@@ -1,0 +1,34 @@
+// Simple T81Graph test to reproduce DecodeFault
+fn test_t81graph_basic() -> i32 {
+    print("=== T81Graph DecodeFault Test ===");
+    
+    // Create a graph
+    var g: Vector[T81String] = std.collections.graph();
+    print("Graph created");
+    
+    // Add some edges
+    g = std.collections.graph_add_edge(g, "A", "B");
+    print("Added edge A->B");
+    
+    g = std.collections.graph_add_edge(g, "B", "C");
+    print("Added edge B->C");
+    
+    // Test basic operations
+    let has_ab: bool = std.collections.graph_has_edge(g, "A", "B");
+    print("Has edge A->B: ");
+    print(has_ab);
+    
+    let edge_count: i32 = std.collections.graph_edge_count(g);
+    print("Edge count: ");
+    print(edge_count);
+    
+    let neighbors_b: Vector[T81String] = std.collections.graph_neighbors(g, "B");
+    print("Neighbors of B count: ");
+    print(std.collections.len(neighbors_b));
+    
+    return 0;
+}
+
+fn main() -> i32 {
+    return test_t81graph_basic();
+}

@@ -2,8 +2,9 @@ ______________________________________________________________________
 
 # RFC-0024 — C++23 Default Wording Alignment for Spec and Governance Docs
 
-Version 0.1 — Draft\
-Status: Draft\
+Version 0.2 — Standards Track\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: T81 Foundation\
 Applies to: spec text, governance documentation, tooling language
 
@@ -96,5 +97,24 @@ ______________________________________________________________________
 
 1. Should historical RFCs retain original “C++20” language when describing
    past milestones, or should they append an editor note for current defaults?
+   **Resolved:** Historical RFCs describing past milestones retain their original
+   wording. Only present-tense normative/prescriptive statements are updated.
 2. Should the compatibility lane sunset date be captured in a separate RFC?
+   **Resolved:** No separate RFC needed; the lane remains until explicitly retired.
 
+______________________________________________________________________
+
+# 7. Acceptance Note
+
+**Status advanced `Draft → Accepted` on 2026-03-15.**
+
+All three acceptance criteria from §2.3 are satisfied:
+
+| Criterion | Evidence |
+| :--- | :--- |
+| [A-0024-01] No normative behavior changes | Wording-only update; no `MUST`/`SHOULD` semantics altered |
+| [A-0024-02] Internally consistent wording | `spec/t81lang-spec.md:232` updated (`C++20` → `C++23`); all remaining C++20 references in historical RFCs describe past milestones and are correctly scoped |
+| [A-0024-03] CI/build rituals unchanged | No build or test changes required; 344/344 tests continue passing |
+
+Open questions resolved inline above. C++23 is the confirmed default; C++20
+compatibility lane (`-DT81_USE_CXX23=OFF`) remains supported.

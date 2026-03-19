@@ -80,7 +80,7 @@ struct BridgeDiagnostic {
 
 // Translate a single Setun-compatible source line into one TISC instruction.
 // Supported mnemonics: NOP, HALT, LOADI, MOV, ADD, SUB, LOAD, STORE, JMP,
-// JZ, JNZ, JN, JP.
+// JZ, JNZ, JN, JP, TNOT_SWAR, TAND_SWAR, TOR_SWAR.
 [[nodiscard]] t81::expected<t81::tisc::Insn, BridgeError> translate_line(std::string_view line);
 
 // Translate a multi-line Setun-compatible program.

@@ -20,8 +20,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <optional>
 #include <random>
 #include <regex>
@@ -40,12 +40,14 @@
 #include <io.h>
 #endif
 
-#include "internal/tooling/logging.hpp"
+#include "core/vm/internal/memory_segments.hpp"
+#include "logging.hpp"
+#include "tooling/cli/ai/ai_cli_shared.hpp"
 #include "t81/axion/policy_validator.hpp"
-#include "t81/config.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/cli/driver.hpp"
+#include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/frontend/ir_generator.hpp"
 #include "t81/frontend/lexer.hpp"
@@ -59,20 +61,19 @@
 #include "t81/isa/program.hpp"
 #include "t81/tracing/canonhash.hpp"
 #include "t81/vm/vm.hpp"
-#include "core/vm/internal/memory_segments.hpp"
 #include "t81/weights.hpp"
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
 #endif
 #if defined(T81_HAS_TUI)
-#include "tooling/tui/common.hpp"
-#include "tooling/tui/studio.hpp"
-#include "tooling/tui/agent.hpp"
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
+#include "tooling/tui/agent.hpp"
+#include "tooling/tui/common.hpp"
+#include "tooling/tui/studio.hpp"
 #endif
 
 namespace fs = std::filesystem;
@@ -84,8 +85,7 @@ namespace fs = std::filesystem;
 #define XSTR(x) STR(x)
 
 constexpr const char* T81_VERSION = T81_VERSION_STR;
-constexpr const char* T81_FULL_VERSION =
-    "T81 Foundation " T81_VERSION_STR " (" __DATE__ " " __TIME__ ")";
+constexpr const char* T81_FULL_VERSION = "T81 Foundation " T81_VERSION_STR;
 constexpr const char* T81_FMT_VERSION = "t81-fmt " T81_VERSION_STR;
 struct TempTiscFile {
   fs::path path;
@@ -246,11 +246,12 @@ Subcommands:
   quantize <input> --to-gguf <out>           Quantize SafeTensors -> T3_K GGUF
 
 Options:
-  --format <fmt>       Input format (safetensors, gguf). Default: safetensors
+  --format <fmt>       Input format (safetensors, bitnet, gguf). Default: infer from extension
   -o, --output <file>  Output file path
 
 Examples:
   t81 weights import model.safetensors -o model.t81w
+  t81 weights import bitnet_model.safetensors --format bitnet -o model.t81w
   t81 weights info model.t81w --json
   t81 weights verify model.t81w --json
   t81 weights export model.t81w --to-safetensors model.safetensors
@@ -300,8 +301,8 @@ Subcommands:
   snapshot-diff <lhs> <rhs>
                      Compare two CanonFS snapshots through the Axion lens
   rollback [--to <hash>]  Roll back to a prior CanonFS snapshot
-  log [--json] [--tail <n>]           Show Axion state plus recent snapshot receipts
-  audit [--from <hash>] [--to <hash>] Export Axion/CanonFS receipt metadata
+  log [--json] [--tail <n>]           Show Axion state plus recent snapshot history
+  audit [--from <hash>] [--to <hash>] Export Axion/CanonFS snapshot diff metadata
 
 Options:
   --tier N            Target cognition tier (1..9, default: 1)
@@ -392,12 +393,13 @@ Options:
 Notes:
   - This surface is experimental and non-DCP.
   - --policy is required and must include allowed-tensor-hashes for model authorization.
+  - Bare model names are resolved from the nearest `./model/` or `./models/` directory.
 )";
 }
 
 void print_help_compile() {
   std::cerr << R"(
-Usage: t81 code build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w>]
+Usage: t81 code build <file.t81|file.t81w> [-o <file.tisc>] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles T81Lang source (or T81 weight module source) into TISC bytecode.
 
@@ -408,7 +410,7 @@ Example:
 
 void print_help_run() {
   std::cerr << R"(
-Usage: t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [-o <file>] [--output <file>] [--weights-model <model.t81w>]
+Usage: t81 code run <file.t81|file.tisc> [--policy <policy.apl>] [--trace] [-o <file>] [--output <file>] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles (if needed) and executes a program via the VM.
 `--trace-out` remains accepted for compatibility, but `-o/--output` is canonical.
@@ -420,9 +422,9 @@ Example:
 
 void print_help_profile() {
   std::cerr << R"(
-Usage: t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json] [--weights-model <model.t81w>]
+Usage: t81 code profile <file.t81|file.tisc> [--policy <policy.apl>] [--json] [--weights-model <model.t81w|sha3-256:hash>]
 
-Compiles (if needed) and reports VM runtime and memory metrics.
+Compiles (if needed) and reports deterministic VM execution and memory metrics.
 
 Example:
   t81 code profile program.t81 --json
@@ -442,7 +444,7 @@ Example:
 
 void print_help_debug() {
   std::cerr << R"(
-Usage: t81 debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w>]
+Usage: t81 debug <file.t81|file.tisc> [--policy <policy.apl>] [--weights-model <model.t81w|sha3-256:hash>]
 
 Compiles (if needed) and starts the interactive debugger.
 
@@ -465,7 +467,7 @@ Example:
 
 void print_help_repl() {
   std::cerr << R"(
-Usage: t81 repl [--weights-model <model.t81w>] [--policy <policy.apl>]
+Usage: t81 repl [--weights-model <model.t81w|sha3-256:hash>] [--policy <policy.apl>]
 
 Starts the interactive REPL.
 
@@ -944,7 +946,8 @@ Notes:
   Requires build with -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.
   MLIR output is compatible with: mlir-opt, mlir-cpu-runner, LLVM ORC JIT.
   Use 't81 llvm compile' for direct TISC → LLVM IR (no MLIR intermediate).
-)";}
+)";
+}
 
 void print_help_llvm() {
   std::cerr << R"(
@@ -966,7 +969,8 @@ Notes:
   The generated @t81_main() function uses a flat [243 x i64] integer register
   file and [243 x double] float register file mirroring the T81VM layout.
   Invoke the IR with: lli output.ll  or compile with: llc -o output.s output.ll
-)";}
+)";
+}
 
 void print_help_c() {
   std::cerr << R"(
@@ -998,7 +1002,8 @@ Current subset v0:
 Notes:
   Requires build with -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON.
   Unsupported constructs fail closed with explicit diagnostics.
-)";}
+)";
+}
 
 void print_help_rust() {
   std::cerr << R"(
@@ -1028,7 +1033,8 @@ Status:
     assignment, arithmetic/bitwise/comparison/logical expressions,
     if/else, while, and return
   - unsupported constructs fail closed with explicit diagnostics
-)";}
+)";
+}
 
 void print_help_python() {
   std::cerr << R"(
@@ -1057,7 +1063,8 @@ Status:
     assignment, arithmetic/bitwise/comparison/logical expressions,
     if/else, while, same-file helper calls, and return
   - unsupported constructs fail closed with explicit diagnostics
-)";}
+)";
+}
 
 void print_help_advanced() {
   std::cerr << R"(
@@ -1110,9 +1117,12 @@ These commands are not part of the core beginner workflow.
 
 void print_help_weights_import() {
   std::cerr << R"(
-Usage: t81 weights import <file> [-o <out>] [--format <safetensors|gguf>]
+Usage: t81 weights import <file> [-o <out>] [--format <safetensors|bitnet|gguf>]
 
 Imports model weights into native `.t81w`.
+
+Bare model names are resolved from the nearest `./model/` or `./models/`
+directory when possible.
 )";
 }
 
@@ -1202,7 +1212,7 @@ void print_help_axion_log() {
   std::cerr << R"(
 Usage: t81 axion log [--json] [--tail <n>]
 
-Shows the current Axion state and CanonFS audit trail.
+Shows the current Axion state and persisted CanonFS snapshot history.
 Options:
   --json       Machine-readable output (schema: t81.axion-log.v1)
   --tail <n>   Limit output to the last N snapshot entries (default: 10)
@@ -1350,6 +1360,10 @@ Examples:
 )";
 }
 
+void print_help_ai() {
+  t81::cli::ai::print_usage("t81 ai");
+}
+
 void print_usage(const char* prog) {
   std::cerr << R"(T81 Foundation - Ternary-Native Computing Stack
 Version )" << T81_VERSION
@@ -1373,6 +1387,7 @@ Commands:
   ir <action> [args]                    IR inspection for frontend lowering
   tier   <action> [args]                Cognitive tier inspection and gating
   tensor <action> [args]                Tensor artifact canonicalization and inspection
+  ai     <action> [args]                AI model, inference, quantization, and workflow tools
   weights <action> [args]               Model weights import, inspect, and verify
   policy <action> [args]                Axion policy compile, validate, and test
   axion <action> [args]                 Axion governor and policy-facing operations
@@ -1416,6 +1431,7 @@ More command groups:
   t81 help tisc
   t81 help ir
   t81 help tier
+  t81 help ai
   t81 help weights
   t81 help policy
   t81 help axion
@@ -1431,29 +1447,10 @@ More command groups:
 }
 
 bool print_help_topic(std::string_view topic, const char* prog) {
-  if (topic == "compile") {
-    print_help_compile();
-    return true;
-  }
-  if (topic == "run") {
-    print_help_run();
-    return true;
-  }
-  if (topic == "profile") {
-    print_help_profile();
-    return true;
-  }
-  if (topic == "disasm") {
-    print_help_disasm();
-    return true;
-  }
-  if (topic == "debug") {
-    print_help_debug();
-    return true;
-  }
-  if (topic == "check" || topic == "lint") {
-    print_help_check();
-    return true;
+  // Removed topics: return false so caller can emit recommendation/error.
+  if (topic == "compile" || topic == "run" || topic == "profile" || topic == "disasm" ||
+      topic == "debug" || topic == "check" || topic == "lint") {
+    return false;
   }
   if (topic == "code") {
     print_help_code();
@@ -1481,6 +1478,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "tensor") {
     print_help_tensor();
+    return true;
+  }
+  if (topic == "ai") {
+    print_help_ai();
     return true;
   }
   if (topic == "policy") {
@@ -1755,7 +1756,8 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "until") {
-      std::cerr << "Usage: t81 vm until <file.tisc> --pc <n> [--policy <file>] [--steps N] [--json]\n";
+      std::cerr
+          << "Usage: t81 vm until <file.tisc> --pc <n> [--policy <file>] [--steps N] [--json]\n";
       return true;
     }
     if (sub == "step") {
@@ -1767,11 +1769,13 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "stack") {
-      std::cerr << "Usage: t81 vm stack <file.tisc> [--policy <file>] [--steps N] [--limit N] [--json]\n";
+      std::cerr
+          << "Usage: t81 vm stack <file.tisc> [--policy <file>] [--steps N] [--limit N] [--json]\n";
       return true;
     }
     if (sub == "mem") {
-      std::cerr << "Usage: t81 vm mem <file.tisc> --addr <n> [--policy <file>] [--steps N] [--json]\n";
+      std::cerr
+          << "Usage: t81 vm mem <file.tisc> --addr <n> [--policy <file>] [--steps N] [--json]\n";
       return true;
     }
     if (sub == "state") {
@@ -1859,7 +1863,8 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "multi-run") {
-      std::cerr << "Usage: t81 determinism multi-run <file.tisc> --count <n> [--policy <file>] [--json]\n";
+      std::cerr << "Usage: t81 determinism multi-run <file.tisc> --count <n> [--policy <file>] "
+                   "[--json]\n";
       return true;
     }
   }
@@ -1955,7 +1960,8 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "get") {
-      std::cerr << "Usage: t81 canonfs get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root <path>]\n";
+      std::cerr << "Usage: t81 canonfs get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root "
+                   "<path>]\n";
       return true;
     }
     if (sub == "stat") {
@@ -1971,11 +1977,13 @@ bool print_family_subcommand_help(std::string_view family, std::string_view sub)
       return true;
     }
     if (sub == "snapshot-diff") {
-      std::cerr << "Usage: t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]\n";
+      std::cerr
+          << "Usage: t81 canonfs snapshot-diff <lhs> <rhs> [--json] [--canonfs-root <path>]\n";
       return true;
     }
     if (sub == "rollback") {
-      std::cerr << "Usage: t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root <path>]\n";
+      std::cerr << "Usage: t81 canonfs rollback --to <hash> [--dry-run] [--json] [--canonfs-root "
+                   "<path>]\n";
       return true;
     }
     if (sub == "gc") {
@@ -2019,7 +2027,8 @@ bool handle_help_request(const std::string& command, const std::vector<std::stri
       print_usage(prog);
       return true;
     }
-    if (command_args.size() >= 2 && print_family_subcommand_help(command_args[0], command_args[1])) {
+    if (command_args.size() >= 2 &&
+        print_family_subcommand_help(command_args[0], command_args[1])) {
       return true;
     }
     if (print_help_topic(command_args[0], prog)) {
@@ -2231,8 +2240,10 @@ Args parse_args(int argc, char* argv[]) {
     } else if (arg == "-V" || arg == "--version") {
       if (a.command == "fmt" || a.command == "code" || a.command == "project" ||
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
-          a.command == "man" || a.command == "feedback" || a.command == "c" || a.command == "rust" || a.command == "python" ||
-          a.command == "llvm" || a.command == "mlir") {
+          a.command == "man" || a.command == "feedback" || a.command == "c" ||
+          a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+          a.command == "ai" ||
+          a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         a.need_version = true;
@@ -2248,11 +2259,13 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
+                 a.command == "ai" ||
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
                  a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
-                 a.command == "c" || a.command == "rust" || a.command == "python" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "c" || a.command == "rust" || a.command == "python" ||
+                 a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2267,11 +2280,13 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
+                 a.command == "ai" ||
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" ||
-                 a.command == "c" || a.command == "rust" || a.command == "python" || a.command == "llvm" || a.command == "mlir") {
+                 a.command == "memory-stats" || a.command == "tier" || a.command == "c" ||
+                 a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+                 a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -2288,13 +2303,12 @@ Args parse_args(int argc, char* argv[]) {
 std::shared_ptr<t81::weights::ModelFile> load_weights_model_optional(
     const std::optional<fs::path>& path) {
   if (!path) return nullptr;
-  try {
-    auto mf = t81::weights::load_t81w(*path);
-    return std::make_shared<t81::weights::ModelFile>(std::move(mf));
-  } catch (const std::exception& e) {
-    error(e.what());
-    return nullptr;
+  std::string error_message;
+  auto model = t81::cli::load_weights_model(path->string(), &error_message);
+  if (!model) {
+    error(error_message);
   }
+  return model;
 }
 
 int run_benchmark(const char* command_name, const Args& args) {
@@ -2420,6 +2434,7 @@ struct WeightsImportOptions {
   fs::path input;
   std::optional<fs::path> output;
   std::string format = "safetensors";
+  bool format_explicit = false;
 };
 
 bool has_extension_ci(const fs::path& path, std::string_view expected_ext) {
@@ -2473,6 +2488,7 @@ int run_weights_import(const Args& args) {
         return 1;
       }
       opts.format = args.command_args[idx++];
+      opts.format_explicit = true;
     } else if (token == "-o" || token == "--out" || token == "--output") {
       if (idx >= args.command_args.size()) {
         error("weights import: missing argument for " + token + ". Run 't81 help weights import'.");
@@ -2499,15 +2515,43 @@ int run_weights_import(const Args& args) {
     return 1;
   }
 
+  if (!fs::exists(opts.input)) {
+    std::string resolution_error;
+    auto resolved = t81::cli::resolve_repo_model_path(opts.input.string(),
+                                                      {".gguf", ".safetensors"},
+                                                      &resolution_error);
+    if (!resolved) {
+      error("weights import: " + resolution_error);
+      return 1;
+    }
+    opts.input = *resolved;
+  }
+
+  if (!opts.format_explicit) {
+    if (has_extension_ci(opts.input, ".gguf")) {
+      opts.format = "gguf";
+    } else if (has_extension_ci(opts.input, ".safetensors")) {
+      opts.format = "safetensors";
+    }
+  }
+
   t81::weights::ModelFile mf;
   try {
     if (opts.format == "safetensors") {
       if (!has_extension_ci(opts.input, ".safetensors")) {
-        error("weights import: --format safetensors requires a .safetensors input file. Run 't81 help "
+        error("weights import: --format safetensors requires a .safetensors input file. Run 't81 "
+              "help "
               "weights import'.");
         return 1;
       }
       mf = t81::weights::load_safetensors(opts.input);
+    } else if (opts.format == "bitnet") {
+      if (!has_extension_ci(opts.input, ".safetensors")) {
+        error("weights import: --format bitnet requires a .safetensors input file. Run 't81 help "
+              "weights import'.");
+        return 1;
+      }
+      mf = t81::weights::load_bitnet_safetensors(opts.input);
     } else if (opts.format == "gguf") {
       if (!has_extension_ci(opts.input, ".gguf")) {
         error("weights import: --format gguf requires a .gguf input file. Run 't81 help weights "
@@ -2517,7 +2561,7 @@ int run_weights_import(const Args& args) {
       mf = t81::weights::load_gguf(opts.input);
     } else {
       error("weights import: unsupported format '" + opts.format +
-            "'. Supported: safetensors, gguf. Run 't81 help weights import'.");
+            "'. Supported: safetensors, bitnet, gguf. Run 't81 help weights import'.");
       return 1;
     }
   } catch (const std::exception& e) {
@@ -2725,7 +2769,8 @@ int run_weights_quantize(const Args& args) {
 
 int run_weights_export(const Args& args) {
   if (args.command_args.size() < 4 || args.command_args[2] != "--to-safetensors") {
-    error("weights export requires: export <model.t81w> --to-safetensors <output>. Run 't81 help weights export'.");
+    error("weights export requires: export <model.t81w> --to-safetensors <output>. Run 't81 help "
+          "weights export'.");
     return 1;
   }
   const fs::path input = args.command_args[1];
@@ -2766,7 +2811,8 @@ int run_weights_export(const Args& args) {
   std::vector<ExportTensor> tensors;
   tensors.reserve(mf.native.size());
   for (const auto& [name, tensor] : mf.native) {
-    tensors.push_back(ExportTensor{name, tensor.shape, tensor.num_trits(), unpack_native_trits(tensor)});
+    tensors.push_back(
+        ExportTensor{name, tensor.shape, tensor.num_trits(), unpack_native_trits(tensor)});
   }
 
   std::string header_text;
@@ -2777,11 +2823,9 @@ int run_weights_export(const Args& args) {
     std::uint64_t offset = sizeof(std::uint64_t) + header_len;
     for (std::size_t index = 0; index < tensors.size(); ++index) {
       const auto& tensor = tensors[index];
-      header << "\"" << json_escape(tensor.name) << "\":{"
-             << "\"dtype\":\"I8\","
-             << "\"shape\":[";
-      const uint64_t shape_product =
-          std::accumulate(tensor.shape.begin(), tensor.shape.end(), uint64_t{1}, std::multiplies<uint64_t>());
+      header << "\"" << json_escape(tensor.name) << "\":{" << "\"dtype\":\"I8\"," << "\"shape\":[";
+      const uint64_t shape_product = std::accumulate(tensor.shape.begin(), tensor.shape.end(),
+                                                     uint64_t{1}, std::multiplies<uint64_t>());
       if (!tensor.shape.empty() && shape_product == tensor.trits) {
         for (std::size_t i = 0; i < tensor.shape.size(); ++i) {
           header << tensor.shape[i];
@@ -2792,7 +2836,8 @@ int run_weights_export(const Args& args) {
       } else {
         header << tensor.trits;
       }
-      header << "],\"data_offsets\":[" << offset << "],\"data_lengths\":[" << tensor.raw.size() << "]}";
+      header << "],\"data_offsets\":[" << offset << "],\"data_lengths\":[" << tensor.raw.size()
+             << "]}";
       offset += tensor.raw.size();
       if (index + 1 < tensors.size()) {
         header << ",";
@@ -2941,15 +2986,31 @@ int run_policy_run(const Args& args) {
     error("policy run requires an input .apl or .axionb file. Run 't81 help policy run'.");
     return 1;
   }
+  auto emit_json_error = [&](std::string_view message) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.policy-run.v1\",\n";
+    std::cout << "  \"valid\": false,\n";
+    std::cout << "  \"policy\": \"" << json_escape(input.string()) << "\",\n";
+    std::cout << "  \"error\": \"" << json_escape(message) << "\"\n";
+    std::cout << "}\n";
+  };
   t81::axion::Policy policy;
   if (input.extension() == ".axionb") {
     std::ifstream ifs(input, std::ios::binary);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     auto res = t81::axion::Policy::deserialize(ifs);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy deserialization error: " + res.error());
+        return 1;
+      }
       error("Policy deserialization error: " + res.error());
       return 1;
     }
@@ -2957,12 +3018,20 @@ int run_policy_run(const Args& args) {
   } else {
     std::ifstream ifs(input);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     auto res = t81::axion::parse_policy(content);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy parse error: " + res.error());
+        return 1;
+      }
       error("Policy parse error: " + res.error());
       return 1;
     }
@@ -3004,7 +3073,8 @@ int run_policy_run(const Args& args) {
 
 int run_policy_validate(const Args& args) {
   if (args.command_args.size() < 2) {
-    error("policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
+    error(
+        "policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
     return 1;
   }
   fs::path input;
@@ -3019,23 +3089,41 @@ int run_policy_validate(const Args& args) {
     } else if (input.empty()) {
       input = fs::path(token);
     } else {
-      error("policy validate: unexpected argument '" + token + "'. Run 't81 help policy validate'.");
+      error("policy validate: unexpected argument '" + token +
+            "'. Run 't81 help policy validate'.");
       return 1;
     }
   }
   if (input.empty()) {
-    error("policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
+    error(
+        "policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
     return 1;
   }
+  auto emit_json_error = [&](std::string_view message) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.policy-validate.v1\",\n";
+    std::cout << "  \"valid\": false,\n";
+    std::cout << "  \"policy\": \"" << json_escape(input.string()) << "\",\n";
+    std::cout << "  \"error\": \"" << json_escape(message) << "\"\n";
+    std::cout << "}\n";
+  };
   t81::axion::Policy policy;
   if (input.extension() == ".axionb") {
     std::ifstream ifs(input, std::ios::binary);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     auto res = t81::axion::Policy::deserialize(ifs);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy deserialization error: " + res.error());
+        return 1;
+      }
       error("Policy deserialization error: " + res.error());
       return 1;
     }
@@ -3043,12 +3131,20 @@ int run_policy_validate(const Args& args) {
   } else {
     std::ifstream ifs(input);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     auto res = t81::axion::parse_policy(content);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy parse error: " + res.error());
+        return 1;
+      }
       error("Policy parse error: " + res.error());
       return 1;
     }
@@ -3080,7 +3176,8 @@ int run_policy_validate(const Args& args) {
     std::cout << "Policy valid: " << input.string() << "\n";
     if (g_flags.verbose) {
       std::cout << "Tier: " << policy.tier << "\n";
-      if (policy.max_instructions) std::cout << "Max Instructions: " << *policy.max_instructions << "\n";
+      if (policy.max_instructions)
+        std::cout << "Max Instructions: " << *policy.max_instructions << "\n";
       if (policy.max_stack) std::cout << "Max Stack: " << *policy.max_stack << "\n";
       if (policy.max_recursion) std::cout << "Max Recursion: " << *policy.max_recursion << "\n";
     }
@@ -3175,16 +3272,18 @@ int run_policy(const Args& args) {
       if (std::find(policy.allowed_tensor_hashes.begin(), policy.allowed_tensor_hashes.end(),
                     model_hash) == policy.allowed_tensor_hashes.end()) {
         if (as_json) {
-          std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": false,\n  \"model_hash\": \""
-                    << json_escape(model_hash) << "\",\n  \"rule\": \"hash_not_allowed\"\n}\n";
+          std::cout
+              << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": false,\n  \"model_hash\": \""
+              << json_escape(model_hash) << "\",\n  \"rule\": \"hash_not_allowed\"\n}\n";
         } else {
           error("Policy test failed: model hash is not allowed.");
         }
         return 1;
       }
       if (as_json) {
-        std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": true,\n  \"model_hash\": \""
-                  << json_escape(model_hash) << "\",\n  \"rule\": \"hash_valid\"\n}\n";
+        std::cout
+            << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": true,\n  \"model_hash\": \""
+            << json_escape(model_hash) << "\",\n  \"rule\": \"hash_valid\"\n}\n";
       } else {
         info("Policy test passed.");
       }
@@ -3194,11 +3293,11 @@ int run_policy(const Args& args) {
     auto violation = t81::axion::PolicyValidator::validate_tensor_hash(model_hash, policy_text);
     const bool ok = violation.has_value() && !violation->is_violation;
     if (as_json) {
-      std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": "
-                << (ok ? "true" : "false") << ",\n  \"model_hash\": \"" << json_escape(model_hash)
-                << "\",\n  \"rule\": \"" << json_escape(violation ? violation->rule : "unknown")
-                << "\",\n  \"reason\": \""
-                << json_escape(violation ? violation->reason : "validation unavailable") << "\"\n}\n";
+      std::cout << "{\n  \"schema\": \"t81.policy-test.v1\",\n  \"ok\": " << (ok ? "true" : "false")
+                << ",\n  \"model_hash\": \"" << json_escape(model_hash) << "\",\n  \"rule\": \""
+                << json_escape(violation ? violation->rule : "unknown") << "\",\n  \"reason\": \""
+                << json_escape(violation ? violation->reason : "validation unavailable")
+                << "\"\n}\n";
     } else if (violation) {
       std::cout << t81::axion::PolicyValidator::generate_policy_report(*violation) << "\n";
     }
@@ -3208,8 +3307,9 @@ int run_policy(const Args& args) {
     bool as_json = false;
     fs::path search_dir = discover_repo_root();
     for (std::size_t i = 1; i < args.command_args.size(); ++i) {
-      if (args.command_args[i] == "--json") { as_json = true; }
-      else if (args.command_args[i] == "--dir" && i + 1 < args.command_args.size()) {
+      if (args.command_args[i] == "--json") {
+        as_json = true;
+      } else if (args.command_args[i] == "--dir" && i + 1 < args.command_args.size()) {
         search_dir = fs::path(args.command_args[++i]);
       }
     }
@@ -3313,54 +3413,35 @@ int run_axion(const Args& args) {
     return count;
   };
 
-  auto latest_snapshot_hash = [&](const fs::path& root) -> std::optional<std::string> {
+  auto sorted_snapshot_hashes = [&](const fs::path& root) {
+    std::vector<std::string> hashes;
     std::error_code ec;
     const fs::path snapshots_root = root / "snapshots";
     if (!fs::exists(snapshots_root, ec)) {
-      return std::nullopt;
+      return hashes;
     }
-    fs::file_time_type latest_time;
-    std::optional<std::string> latest_hash;
     for (const auto& entry : fs::directory_iterator(snapshots_root, ec)) {
       if (ec || !entry.is_directory()) {
         continue;
       }
-      const auto ts = entry.last_write_time(ec);
-      if (ec) {
-        continue;
-      }
-      if (!latest_hash || ts > latest_time) {
-        latest_time = ts;
-        latest_hash = entry.path().filename().string();
-      }
+      hashes.push_back(entry.path().filename().string());
     }
-    return latest_hash;
+    std::sort(hashes.begin(), hashes.end(), std::greater<std::string>{});
+    return hashes;
+  };
+
+  auto latest_snapshot_hash = [&](const fs::path& root) -> std::optional<std::string> {
+    const auto hashes = sorted_snapshot_hashes(root);
+    if (hashes.empty()) {
+      return std::nullopt;
+    }
+    return hashes.front();
   };
 
   auto recent_snapshot_hashes = [&](const fs::path& root, std::size_t limit) {
-    std::vector<std::pair<fs::file_time_type, std::string>> snapshots;
-    std::error_code ec;
-    const fs::path snapshots_root = root / "snapshots";
-    if (!fs::exists(snapshots_root, ec)) {
-      return std::vector<std::string>{};
-    }
-    for (const auto& entry : fs::directory_iterator(snapshots_root, ec)) {
-      if (ec || !entry.is_directory()) {
-        continue;
-      }
-      const auto ts = entry.last_write_time(ec);
-      if (ec) {
-        continue;
-      }
-      snapshots.emplace_back(ts, entry.path().filename().string());
-    }
-    std::sort(snapshots.begin(), snapshots.end(),
-              [](const auto& lhs, const auto& rhs) { return lhs.first > rhs.first; });
-    std::vector<std::string> hashes;
-    const std::size_t count = std::min(limit, snapshots.size());
-    hashes.reserve(count);
-    for (std::size_t i = 0; i < count; ++i) {
-      hashes.push_back(std::move(snapshots[i].second));
+    auto hashes = sorted_snapshot_hashes(root);
+    if (hashes.size() > limit) {
+      hashes.resize(limit);
     }
     return hashes;
   };
@@ -3374,7 +3455,6 @@ int run_axion(const Args& args) {
     bool present = false;
     int tier = 1;
     std::optional<std::string> active_snapshot;
-    std::optional<std::time_t> updated;
   };
 
   auto read_axion_state = [&](const fs::path& root) {
@@ -3395,13 +3475,6 @@ int run_axion(const Args& args) {
                           std::regex("\"active_snapshot\"\\s*:\\s*\"([^\"]+)\"")) &&
         match.size() == 2) {
       snapshot.active_snapshot = match[1].str();
-    }
-    if (std::regex_search(state_text, match, std::regex(R"("updated"\s*:\s*([0-9]+))")) &&
-        match.size() == 2) {
-      try {
-        snapshot.updated = static_cast<std::time_t>(std::stoll(match[1].str()));
-      } catch (...) {
-      }
     }
     return snapshot;
   };
@@ -3426,7 +3499,7 @@ int run_axion(const Args& args) {
     return lines;
   };
 
-  auto write_axion_state = [&](int tier, std::string_view active_snapshot) -> bool {
+  auto write_axion_state = [&](int tier) -> bool {
     std::error_code ec;
     fs::create_directories(axion_state_path(canonfs_root).parent_path(), ec);
     if (ec) {
@@ -3440,14 +3513,7 @@ int run_axion(const Args& args) {
     }
     out << "{\n"
         << "  \"schema\": \"t81.axion-state.v1\",\n"
-        << "  \"tier\": " << tier << ",\n"
-        << "  \"active_snapshot\": ";
-    if (active_snapshot.empty()) {
-      out << "null,\n";
-    } else {
-      out << "\"" << json_escape(active_snapshot) << "\",\n";
-    }
-    out << "  \"updated\": " << std::time(nullptr) << "\n"
+        << "  \"tier\": " << tier << "\n"
         << "}\n";
     return static_cast<bool>(out);
   };
@@ -3556,17 +3622,11 @@ int run_axion(const Args& args) {
       } else {
         std::cout << "null,\n";
       }
-      std::cout << "  \"state_snapshot\": "
-                << json_nullable_axion(state.active_snapshot) << ",\n"
+      std::cout << "  \"state_snapshot\": " << json_nullable_axion(state.active_snapshot) << ",\n"
                 << "  \"state_snapshot_present\": " << (state_snapshot_present ? "true" : "false")
                 << ",\n"
-                << "  \"state_updated\": ";
-      if (state.updated) {
-        std::cout << *state.updated << ",\n";
-      } else {
-        std::cout << "null,\n";
-      }
-      std::cout << "  \"tier\": " << state.tier << ",\n"
+                << "  \"state_updated\": null,\n"
+                << "  \"tier\": " << state.tier << ",\n"
                 << "  \"issues\": [\n";
       for (std::size_t i = 0; i < issues.size(); ++i) {
         std::cout << "    \"" << json_escape(issues[i]) << "\"";
@@ -3584,8 +3644,8 @@ int run_axion(const Args& args) {
                 << "Stored objects: " << object_count << "\n"
                 << "Snapshots: " << snapshot_count << "\n"
                 << "Active snapshot: " << (snapshot_hash ? *snapshot_hash : "<none>") << "\n"
-                << "State snapshot: "
-                << (state.active_snapshot ? *state.active_snapshot : "<none>") << "\n"
+                << "State snapshot: " << (state.active_snapshot ? *state.active_snapshot : "<none>")
+                << "\n"
                 << "State snapshot present: " << (state_snapshot_present ? "yes" : "no") << "\n"
                 << "Active tier: " << state.tier << "\n";
       if (!issues.empty()) {
@@ -3600,24 +3660,27 @@ int run_axion(const Args& args) {
 
   if (sub == "optimize") {
     const auto previous_state = read_axion_state(canonfs_root);
+    const auto previous_snapshot = previous_state.active_snapshot ? previous_state.active_snapshot
+                                                                  : latest_snapshot_hash(canonfs_root);
+    if (!write_axion_state(target_tier)) {
+      return 1;
+    }
     std::string snapshot_error;
-    const auto snapshot_hash = t81::cli::canonfs_capture_snapshot_hash(canonfs_root, &snapshot_error);
+    const auto snapshot_hash =
+        t81::cli::canonfs_capture_snapshot_hash(canonfs_root, &snapshot_error);
     if (!snapshot_hash) {
       error("axion optimize: failed to capture current CanonFS snapshot: " + snapshot_error);
       return 1;
     }
     std::vector<std::string> only_previous;
     std::vector<std::string> only_current;
-    if (previous_state.active_snapshot && *previous_state.active_snapshot != *snapshot_hash) {
-      const auto previous_lines = read_manifest_lines(*previous_state.active_snapshot);
+    if (previous_snapshot && *previous_snapshot != *snapshot_hash) {
+      const auto previous_lines = read_manifest_lines(*previous_snapshot);
       const auto current_lines = read_manifest_lines(*snapshot_hash);
       std::set_difference(previous_lines.begin(), previous_lines.end(), current_lines.begin(),
                           current_lines.end(), std::back_inserter(only_previous));
       std::set_difference(current_lines.begin(), current_lines.end(), previous_lines.begin(),
                           previous_lines.end(), std::back_inserter(only_current));
-    }
-    if (!write_axion_state(target_tier, snapshot_hash.value_or(""))) {
-      return 1;
     }
     if (json_out) {
       std::cout << "{\n"
@@ -3627,7 +3690,7 @@ int run_axion(const Args& args) {
                 << "  \"action\": \"optimize\",\n"
                 << "  \"tier\": " << target_tier << ",\n"
                 << "  \"previous_snapshot\": "
-                << json_nullable_axion(previous_state.active_snapshot) << ",\n"
+                << json_nullable_axion(previous_snapshot) << ",\n"
                 << "  \"active_snapshot\": ";
       if (snapshot_hash) {
         std::cout << "\"" << json_escape(*snapshot_hash) << "\",\n";
@@ -3639,11 +3702,12 @@ int run_axion(const Args& args) {
                 << "}\n";
     } else {
       info("Axion optimize: captured CanonFS snapshot, diffed it against the previous state, and "
-           "recorded requested tier " + std::to_string(target_tier) + ".");
+           "recorded requested tier " +
+           std::to_string(target_tier) + ".");
       std::cout << "Optimization receipt recorded.\n";
       std::cout << "Tier: " << target_tier << "\n";
-      std::cout << "Previous snapshot: "
-                << (previous_state.active_snapshot ? *previous_state.active_snapshot : "<none>") << "\n";
+      std::cout << "Previous snapshot: " << (previous_snapshot ? *previous_snapshot : "<none>")
+                << "\n";
       std::cout << "Snapshot: " << (snapshot_hash ? *snapshot_hash : "<none>") << "\n";
       std::cout << "Only previous: " << only_previous.size() << "\n";
       std::cout << "Only current:  " << only_current.size() << "\n";
@@ -3670,12 +3734,10 @@ int run_axion(const Args& args) {
     auto result = vm->run_to_halt();
     const bool ok = static_cast<bool>(result);
     if (json_out) {
-      std::cout << "{"
-                << "\"schema\":\"t81.axion-simulate.v1\","
-                << "\"ok\":" << (ok ? "true" : "false") << ","
-                << "\"status\":\"" << (ok ? "ok" : "trap") << "\","
-                << "\"action\":\"simulate\","
-                << "\"program\":\"" << json_escape(simulate_file) << "\","
+      std::cout << "{" << "\"schema\":\"t81.axion-simulate.v1\","
+                << "\"ok\":" << (ok ? "true" : "false") << "," << "\"status\":\""
+                << (ok ? "ok" : "trap") << "\"," << "\"action\":\"simulate\"," << "\"program\":\""
+                << json_escape(simulate_file) << "\","
                 << "\"trace_entries\":" << vm->state().trace.size() << ","
                 << "\"axion_events\":" << vm->state().axion_log.size();
       if (ok) {
@@ -3700,8 +3762,9 @@ int run_axion(const Args& args) {
       error("axion explain requires a policy file argument.");
       return 1;
     }
-    std::ifstream ifs(explain_file, fs::path(explain_file).extension() == ".axionb" ? std::ios::binary
-                                                                                     : std::ios::in);
+    std::ifstream ifs(explain_file, fs::path(explain_file).extension() == ".axionb"
+                                        ? std::ios::binary
+                                        : std::ios::in);
     if (!ifs) {
       error("axion explain: could not open file: " + explain_file);
       return 1;
@@ -3716,7 +3779,8 @@ int run_axion(const Args& args) {
       }
       policy = std::move(res.value());
     } else {
-      std::string policy_text((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+      std::string policy_text((std::istreambuf_iterator<char>(ifs)),
+                              std::istreambuf_iterator<char>());
       auto parsed = t81::axion::parse_policy(policy_text);
       if (!parsed) {
         error("axion explain: policy parse error: " + parsed.error());
@@ -3727,17 +3791,15 @@ int run_axion(const Args& args) {
     }
     const bool ok = !violation || !violation->is_violation;
     if (json_out) {
-      std::cout << "{"
-                << "\"schema\":\"t81.axion-explain.v1\","
-                << "\"ok\":" << (ok ? "true" : "false") << ","
-                << "\"policy\":\"" << json_escape(explain_file) << "\","
-                << "\"tier\":" << policy.tier << ","
+      std::cout << "{" << "\"schema\":\"t81.axion-explain.v1\","
+                << "\"ok\":" << (ok ? "true" : "false") << "," << "\"policy\":\""
+                << json_escape(explain_file) << "\"," << "\"tier\":" << policy.tier << ","
                 << "\"allowed_tensor_hashes\":" << policy.allowed_tensor_hashes.size() << ","
                 << "\"loop_hints\":" << policy.loops.size() << ","
                 << "\"match_guards\":" << policy.match_guards.size();
       if (violation) {
-        std::cout << ",\"rule\":\"" << json_escape(violation->rule) << "\","
-                  << "\"reason\":\"" << json_escape(violation->reason) << "\"";
+        std::cout << ",\"rule\":\"" << json_escape(violation->rule) << "\"," << "\"reason\":\""
+                  << json_escape(violation->reason) << "\"";
       }
       std::cout << "}\n";
     } else {
@@ -3793,6 +3855,7 @@ int run_axion(const Args& args) {
                 << "  \"snapshots\": " << snap_count << ",\n"
                 << "  \"objects\": " << obj_count << ",\n"
                 << "  \"tail\": " << log_tail_n << ",\n"
+                << "  \"receipt_persistence\": \"not_persisted\",\n"
                 << "  \"recent_snapshots\": [\n";
       for (std::size_t i = 0; i < recent.size(); ++i) {
         std::cout << "    \"" << json_escape(recent[i]) << "\"";
@@ -3807,10 +3870,11 @@ int run_axion(const Args& args) {
       std::cout << "CanonFS root:  " << canonfs_root.string() << "\n";
       std::cout << "State file:    " << (state.present ? "present" : "missing") << "\n";
       std::cout << "Tier:          " << state.tier << "\n";
-      std::cout << "State snap:    "
-                << (state.active_snapshot ? *state.active_snapshot : "<none>") << "\n";
+      std::cout << "State snap:    " << (state.active_snapshot ? *state.active_snapshot : "<none>")
+                << "\n";
       std::cout << "Snapshots:     " << snap_count << "\n";
       std::cout << "Objects:       " << obj_count << "\n";
+      std::cout << "Receipts:      not persisted in current release\n";
       std::cout << "Recent snaps:  " << recent.size() << " (tail=" << log_tail_n << ")\n";
       for (const auto& hash : recent) {
         std::cout << "  " << hash << "\n";
@@ -3856,8 +3920,11 @@ int run_axion(const Args& args) {
                 << "  \"snapshots\": " << snap_count << ",\n"
                 << "  \"objects\": " << obj_count << ",\n"
                 << "  \"tier\": " << state.tier << ",\n"
-                << "  \"from\": " << (from_hash.empty() ? "null" : "\"" + json_escape(from_hash) + "\"") << ",\n"
-                << "  \"to\": " << (to_hash.empty() ? "null" : "\"" + json_escape(to_hash) + "\"") << ",\n"
+                << "  \"receipt_persistence\": \"not_persisted\",\n"
+                << "  \"from\": "
+                << (from_hash.empty() ? "null" : "\"" + json_escape(from_hash) + "\"") << ",\n"
+                << "  \"to\": " << (to_hash.empty() ? "null" : "\"" + json_escape(to_hash) + "\"")
+                << ",\n"
                 << "  \"only_from_count\": " << only_from.size() << ",\n"
                 << "  \"only_to_count\": " << only_to.size() << "\n"
                 << "}\n";
@@ -3868,6 +3935,7 @@ int run_axion(const Args& args) {
     std::cout << "Tier:          " << state.tier << "\n";
     std::cout << "Snapshots:     " << snap_count << "\n";
     std::cout << "Objects:       " << obj_count << "\n";
+    std::cout << "Receipts:      not persisted in current release\n";
     std::cout << "From snapshot: " << (from_hash.empty() ? "<none>" : from_hash) << "\n";
     std::cout << "To snapshot:   " << (to_hash.empty() ? "<none>" : to_hash) << "\n";
     std::cout << "Only from:     " << only_from.size() << "\n";
@@ -3875,13 +3943,13 @@ int run_axion(const Args& args) {
     return 0;
   }
 
-  error("axion: unknown subcommand '" + sub +
-        "'. Run 't81 axion --help' for usage.");
+  error("axion: unknown subcommand '" + sub + "'. Run 't81 axion --help' for usage.");
   return 1;
 }
 
 int run_canonfs_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_canonfs(); });
   }
 
@@ -4067,13 +4135,11 @@ int run_canonfs_command(const Args& args) {
       } else {
         std::cout << "\n";
       }
-      std::cout
-                << "}\n";
+      std::cout << "}\n";
     } else {
       std::cout << "GC" << (dry_run ? " dry-run" : "") << ": "
-                << (dry_run ? "would remove " : "removed ") << removed
-                << " object(s), " << (dry_run ? "would free " : "freed ") << bytes_freed
-                << " byte(s)\n";
+                << (dry_run ? "would remove " : "removed ") << removed << " object(s), "
+                << (dry_run ? "would free " : "freed ") << bytes_freed << " byte(s)\n";
     }
     return 0;
   }
@@ -4093,7 +4159,8 @@ int run_canonfs_command(const Args& args) {
           break;
         }
         if (fs::is_symlink(obj.symlink_status())) {
-          errors.push_back(obj.path().filename().string() + ": symlinked objects are not permitted");
+          errors.push_back(obj.path().filename().string() +
+                           ": symlinked objects are not permitted");
           continue;
         }
         if (!obj.is_regular_file() || obj.path().extension() != ".blk") {
@@ -4129,7 +4196,8 @@ int run_canonfs_command(const Args& args) {
         ++checked_snapshots;
         const fs::path manifest = snap.path() / "MANIFEST.txt";
         if (!fs::exists(manifest)) {
-          errors.push_back("snapshot " + snap.path().filename().string() + ": missing MANIFEST.txt");
+          errors.push_back("snapshot " + snap.path().filename().string() +
+                           ": missing MANIFEST.txt");
           continue;
         }
         for (auto it = fs::recursive_directory_iterator(snap.path(), ec);
@@ -4277,10 +4345,11 @@ struct DeterminismBaselineEntry {
   DeterminismRunRecord record;
 };
 
-bool capture_determinism_run_record(const fs::path& input, const std::optional<fs::path>& policy_path,
+bool capture_determinism_run_record(const fs::path& input,
+                                    const std::optional<fs::path>& policy_path,
                                     DeterminismRunRecord& record, std::string& error_message) {
   try {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -4314,7 +4383,8 @@ bool capture_determinism_run_record(const fs::path& input, const std::optional<f
 }
 
 std::vector<DeterminismBaselineEntry> collect_determinism_baseline_entries(
-    const fs::path& source_dir, const std::optional<fs::path>& policy_path, std::string& error_message) {
+    const fs::path& source_dir, const std::optional<fs::path>& policy_path,
+    std::string& error_message) {
   std::vector<DeterminismBaselineEntry> entries;
   std::error_code ec;
   for (const auto& entry : fs::recursive_directory_iterator(source_dir, ec)) {
@@ -4373,20 +4443,34 @@ bool parse_determinism_baseline_file(const fs::path& baseline_file, fs::path& so
     entry.record.ok = (match[2].str() == "true");
     if (match[4].matched && !match[4].str().empty()) {
       const std::string trap_name = match[4].str();
-      if (trap_name == "DecodeFault") entry.record.trap = t81::vm::Trap::DecodeFault;
-      else if (trap_name == "TypeFault") entry.record.trap = t81::vm::Trap::TypeFault;
-      else if (trap_name == "BoundsFault") entry.record.trap = t81::vm::Trap::BoundsFault;
-      else if (trap_name == "StackFault") entry.record.trap = t81::vm::Trap::StackFault;
-      else if (trap_name == "DivisionFault") entry.record.trap = t81::vm::Trap::DivisionFault;
-      else if (trap_name == "SecurityFault") entry.record.trap = t81::vm::Trap::SecurityFault;
-      else if (trap_name == "TierFault") entry.record.trap = t81::vm::Trap::TierFault;
-      else if (trap_name == "ShapeFault") entry.record.trap = t81::vm::Trap::ShapeFault;
-      else if (trap_name == "TrapInstruction") entry.record.trap = t81::vm::Trap::TrapInstruction;
-      else if (trap_name == "Unimplemented") entry.record.trap = t81::vm::Trap::Unimplemented;
-      else if (trap_name == "AssertionFailed") entry.record.trap = t81::vm::Trap::AssertionFailed;
-      else if (trap_name == "EthicsViolation") entry.record.trap = t81::vm::Trap::EthicsViolation;
-      else if (trap_name == "CapabilityDenied") entry.record.trap = t81::vm::Trap::CapabilityDenied;
-      else if (trap_name == "None") entry.record.trap = t81::vm::Trap::None;
+      if (trap_name == "DecodeFault")
+        entry.record.trap = t81::vm::Trap::DecodeFault;
+      else if (trap_name == "TypeFault")
+        entry.record.trap = t81::vm::Trap::TypeFault;
+      else if (trap_name == "BoundsFault")
+        entry.record.trap = t81::vm::Trap::BoundsFault;
+      else if (trap_name == "StackFault")
+        entry.record.trap = t81::vm::Trap::StackFault;
+      else if (trap_name == "DivisionFault")
+        entry.record.trap = t81::vm::Trap::DivisionFault;
+      else if (trap_name == "SecurityFault")
+        entry.record.trap = t81::vm::Trap::SecurityFault;
+      else if (trap_name == "TierFault")
+        entry.record.trap = t81::vm::Trap::TierFault;
+      else if (trap_name == "ShapeFault")
+        entry.record.trap = t81::vm::Trap::ShapeFault;
+      else if (trap_name == "TrapInstruction")
+        entry.record.trap = t81::vm::Trap::TrapInstruction;
+      else if (trap_name == "Unimplemented")
+        entry.record.trap = t81::vm::Trap::Unimplemented;
+      else if (trap_name == "AssertionFailed")
+        entry.record.trap = t81::vm::Trap::AssertionFailed;
+      else if (trap_name == "EthicsViolation")
+        entry.record.trap = t81::vm::Trap::EthicsViolation;
+      else if (trap_name == "CapabilityDenied")
+        entry.record.trap = t81::vm::Trap::CapabilityDenied;
+      else if (trap_name == "None")
+        entry.record.trap = t81::vm::Trap::None;
       else {
         error_message = "determinism baseline: unknown trap value '" + trap_name + "'";
         return false;
@@ -4406,7 +4490,8 @@ bool parse_determinism_baseline_file(const fs::path& baseline_file, fs::path& so
 }
 
 int run_determinism_command(const char* command_name, const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_determinism(); });
   }
 
@@ -4459,7 +4544,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
         fs::path source_dir;
         std::vector<DeterminismBaselineEntry> baseline_entries;
         std::string parse_error;
-        if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries, parse_error)) {
+        if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries,
+                                             parse_error)) {
           error(parse_error);
           return 1;
         }
@@ -4523,7 +4609,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
     repro_args.command_args = positional;
     return run_repro_hash(command_name, repro_args);
   }
-  if (action == "verify-run" || action == "compare-run" || action == "certify" || action == "explain") {
+  if (action == "verify-run" || action == "compare-run" || action == "certify" ||
+      action == "explain") {
     if (positional.size() != 1) {
       error("determinism " + action + " requires exactly one .tisc input file.");
       return 1;
@@ -4550,7 +4637,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
         if (!ifs) {
           throw std::runtime_error("Could not open policy file: " + policy_path->string());
         }
-        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(ifs)),
+                            std::istreambuf_iterator<char>());
         program.axion_policy_text = content;
       }
       auto vm = t81::vm::make_interpreter_vm();
@@ -4695,11 +4783,15 @@ int run_determinism_command(const char* command_name, const Args& args) {
                   << "  \"run2_trace_sha3_512\": \"" << run2.trace_hash << "\"";
         if (run1.trap || run2.trap) {
           std::cout << ",\n  \"run1_trap\": ";
-          if (run1.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\"";
-          else std::cout << "null";
+          if (run1.trap)
+            std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\"";
+          else
+            std::cout << "null";
           std::cout << ",\n  \"run2_trap\": ";
-          if (run2.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"";
-          else std::cout << "null";
+          if (run2.trap)
+            std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"";
+          else
+            std::cout << "null";
         }
         std::cout << "\n}\n";
       } else if (identical) {
@@ -4721,20 +4813,30 @@ int run_determinism_command(const char* command_name, const Args& args) {
                   << "  \"run1_trace_sha3_512\": \"" << run1.trace_hash << "\",\n"
                   << "  \"run2_trace_sha3_512\": \"" << run2.trace_hash << "\",\n"
                   << "  \"mismatch_index\": ";
-        if (mismatch_index) std::cout << *mismatch_index << ",\n";
-        else std::cout << "null,\n";
+        if (mismatch_index)
+          std::cout << *mismatch_index << ",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"lhs_detail\": ";
-        if (lhs_detail) std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
-        else std::cout << "null,\n";
+        if (lhs_detail)
+          std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"rhs_detail\": ";
-        if (rhs_detail) std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
-        else std::cout << "null,\n";
+        if (rhs_detail)
+          std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"run1_trap\": ";
-        if (run1.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
-        else std::cout << "null,\n";
+        if (run1.trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
+        else
+          std::cout << "null,\n";
         std::cout << "  \"run2_trap\": ";
-        if (run2.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (run2.trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Program:   " << input.string() << "\n";
@@ -4756,20 +4858,30 @@ int run_determinism_command(const char* command_name, const Args& args) {
                 << "  \"run1_trace_sha3_512\": \"" << run1.trace_hash << "\",\n"
                 << "  \"run2_trace_sha3_512\": \"" << run2.trace_hash << "\",\n"
                 << "  \"mismatch_index\": ";
-      if (mismatch_index) std::cout << *mismatch_index << ",\n";
-      else std::cout << "null,\n";
+      if (mismatch_index)
+        std::cout << *mismatch_index << ",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"lhs_detail\": ";
-      if (lhs_detail) std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
-      else std::cout << "null,\n";
+      if (lhs_detail)
+        std::cout << "\"" << json_escape(*lhs_detail) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"rhs_detail\": ";
-      if (rhs_detail) std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
-      else std::cout << "null,\n";
+      if (rhs_detail)
+        std::cout << "\"" << json_escape(*rhs_detail) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"run1_trap\": ";
-      if (run1.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
-      else std::cout << "null,\n";
+      if (run1.trap)
+        std::cout << "\"" << json_escape(t81::vm::to_string(*run1.trap)) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"run2_trap\": ";
-      if (run2.trap) std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
-      else std::cout << "null\n";
+      if (run2.trap)
+        std::cout << "\"" << json_escape(t81::vm::to_string(*run2.trap)) << "\"\n";
+      else
+        std::cout << "null\n";
       std::cout << "}\n";
     } else if (identical) {
       std::cout << "determinism-explain: runs are identical\n";
@@ -4807,14 +4919,15 @@ int run_determinism_command(const char* command_name, const Args& args) {
     bool ok = true;
     std::size_t mismatch_run = 0;
     for (std::size_t run = 0; run < multi_run_count; ++run) {
-      auto program = t81::tisc::load_program(input);
+      auto program = t81::tisc::load_program(input.string());
       if (policy_path) {
         std::ifstream ifs(*policy_path);
         if (!ifs) {
           error("Could not open policy file: " + policy_path->string());
           return 1;
         }
-        std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+        std::string content((std::istreambuf_iterator<char>(ifs)),
+                            std::istreambuf_iterator<char>());
         program.axion_policy_text = content;
       }
       auto vm = t81::vm::make_interpreter_vm();
@@ -4825,7 +4938,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
         printed += line;
         printed.push_back('\n');
       }
-      const auto signature = sha3_512_text(render_trace_for_determinism(vm->state()) + "\n--\n" + printed);
+      const auto signature =
+          sha3_512_text(render_trace_for_determinism(vm->state()) + "\n--\n" + printed);
       signatures.push_back(signature);
       if (!result) {
         ok = false;
@@ -4900,7 +5014,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
 
   if (action == "baseline") {
     if (positional.empty()) {
-      error("determinism baseline requires an output directory. Run 't81 help determinism baseline'.");
+      error("determinism baseline requires an output directory. Run 't81 help determinism "
+            "baseline'.");
       return 1;
     }
     const fs::path out_dir = fs::path(positional[0]);
@@ -4908,7 +5023,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
     std::error_code ec;
     fs::create_directories(out_dir, ec);
     std::string collect_error;
-    const auto entries = collect_determinism_baseline_entries(source_dir, policy_path, collect_error);
+    const auto entries =
+        collect_determinism_baseline_entries(source_dir, policy_path, collect_error);
     if (!collect_error.empty()) {
       error(collect_error);
       return 1;
@@ -4925,11 +5041,11 @@ int run_determinism_command(const char* command_name, const Args& args) {
         << "  \"entries\": [\n";
     for (std::size_t i = 0; i < entries.size(); ++i) {
       ofs << "    {\"relative_path\": \"" << json_escape(entries[i].relative_path)
-          << "\", \"ok\": " << (entries[i].record.ok ? "true" : "false")
-          << ", \"trap\": "
-          << json_nullable_string(entries[i].record.trap
-                                      ? std::optional<std::string>{t81::vm::to_string(*entries[i].record.trap)}
-                                      : std::nullopt)
+          << "\", \"ok\": " << (entries[i].record.ok ? "true" : "false") << ", \"trap\": "
+          << json_nullable_string(
+                 entries[i].record.trap
+                     ? std::optional<std::string>{t81::vm::to_string(*entries[i].record.trap)}
+                     : std::nullopt)
           << ", \"artifact_sha3_512\": \"" << entries[i].record.artifact_sha3_512
           << "\", \"output_sha3_512\": \"" << entries[i].record.output_sha3_512
           << "\", \"trace_sha3_512\": \"" << entries[i].record.trace_sha3_512 << "\"}";
@@ -4950,7 +5066,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
                 << "  \"count\": " << entries.size() << "\n"
                 << "}\n";
     } else {
-      std::cout << "Baseline written: " << baseline_file.string() << " (" << entries.size() << " entries)\n";
+      std::cout << "Baseline written: " << baseline_file.string() << " (" << entries.size()
+                << " entries)\n";
     }
     return 0;
   }
@@ -4969,7 +5086,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
     fs::path source_dir;
     std::vector<DeterminismBaselineEntry> baseline_entries;
     std::string parse_error;
-    if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries, parse_error)) {
+    if (!parse_determinism_baseline_file(baseline_file, source_dir, baseline_entries,
+                                         parse_error)) {
       error(parse_error);
       return 1;
     }
@@ -4989,7 +5107,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
       }
       DeterminismRunRecord current_record;
       std::string capture_error;
-      if (!capture_determinism_run_record(current_file, policy_path, current_record, capture_error)) {
+      if (!capture_determinism_run_record(current_file, policy_path, current_record,
+                                          capture_error)) {
         ok = false;
         first_path = entry.relative_path;
         reason = "execution_error";
@@ -5043,16 +5162,23 @@ int run_determinism_command(const char* command_name, const Args& args) {
                 << "  \"ok\": " << (ok ? "true" : "false") << ",\n"
                 << "  \"baseline\": \"" << json_escape(baseline_file.string()) << "\",\n"
                 << "  \"first_mismatch\": ";
-      if (first_path) std::cout << "\"" << json_escape(*first_path) << "\",\n";
-      else std::cout << "null,\n";
+      if (first_path)
+        std::cout << "\"" << json_escape(*first_path) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"reason\": ";
-      if (reason) std::cout << "\"" << json_escape(*reason) << "\",\n";
-      else std::cout << "null,\n";
+      if (reason)
+        std::cout << "\"" << json_escape(*reason) << "\",\n";
+      else
+        std::cout << "null,\n";
       std::cout << "  \"expected_trace_sha3_512\": "
-                << json_nullable_string(expected ? std::optional<std::string>{expected->trace_sha3_512} : std::nullopt)
+                << json_nullable_string(expected
+                                            ? std::optional<std::string>{expected->trace_sha3_512}
+                                            : std::nullopt)
                 << ",\n";
       std::cout << "  \"current_trace_sha3_512\": "
-                << json_nullable_string(current ? std::optional<std::string>{current->trace_sha3_512} : std::nullopt)
+                << json_nullable_string(
+                       current ? std::optional<std::string>{current->trace_sha3_512} : std::nullopt)
                 << "\n}\n";
     } else if (ok) {
       std::cout << "No baseline mismatch found.\n";
@@ -5069,7 +5195,8 @@ int run_determinism_command(const char* command_name, const Args& args) {
 
 int run_tensor_command(const char* command_name, const Args& args) {
   (void)command_name;
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     print_help_tensor();
     return 0;
   }
@@ -5100,7 +5227,8 @@ int run_tensor_command(const char* command_name, const Args& args) {
       } else if (path.empty()) {
         path = fs::path(token);
       } else {
-        error("tensor inspect: unexpected argument '" + token + "'. Run 't81 help tensor inspect'.");
+        error("tensor inspect: unexpected argument '" + token +
+              "'. Run 't81 help tensor inspect'.");
         return 1;
       }
     }
@@ -5109,16 +5237,54 @@ int run_tensor_command(const char* command_name, const Args& args) {
       return 1;
     }
     if (!has_extension_ci(path, ".t81w")) {
-      error("tensor inspect currently supports .t81w artifacts. Use 't81 tensor hash' for raw files.");
+      error("tensor inspect currently supports .t81w artifacts. Use 't81 tensor hash' for raw "
+            "files.");
       return 1;
     }
-    Args info_args = args;
-    info_args.command = "weights";
-    info_args.command_args = {"info", path.string()};
-    if (as_json) {
-      info_args.command_args.emplace_back("--json");
+    try {
+      auto mf = t81::weights::load_t81w(path);
+      if (as_json) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.tensor-inspect.v1\",\n"
+                  << "  \"ok\": true,\n"
+                  << "  \"model\": \"" << json_escape(path.string()) << "\",\n"
+                  << "  \"parameters\": " << mf.total_parameters << ",\n"
+                  << "  \"trits\": " << mf.total_trits << ",\n"
+                  << "  \"file_size_bytes\": " << mf.file_size << ",\n"
+                  << "  \"bits_per_trit\": " << std::fixed << std::setprecision(6)
+                  << mf.bits_per_trit << ",\n"
+                  << "  \"sparsity\": " << std::fixed << std::setprecision(6) << mf.sparsity
+                  << ",\n"
+                  << "  \"format\": \"" << json_escape(mf.format) << "\",\n"
+                  << "  \"checksum_sha3_512\": \"" << json_escape(mf.checksum) << "\"\n"
+                  << "}\n";
+        std::cout << std::defaultfloat;
+        return 0;
+      }
+      std::cout << "Tensor artifact: " << path << "\n";
+      std::cout << "Parameters:      " << t81::weights::format_count(mf.total_parameters) << "\n";
+      std::cout << "Trits:           " << t81::weights::format_count(mf.total_trits) << "\n";
+      std::cout << "File size:       " << mf.file_size << " bytes\n";
+      std::cout << "Bits per trit:   " << std::fixed << std::setprecision(6) << mf.bits_per_trit
+                << "\n";
+      std::cout << "Sparsity:        " << mf.sparsity << "\n";
+      std::cout << "Format:          " << mf.format << "\n";
+      std::cout << "Checksum:        " << mf.checksum << "\n";
+      std::cout << std::defaultfloat;
+      return 0;
+    } catch (const std::exception& ex) {
+      if (as_json) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.tensor-inspect.v1\",\n"
+                  << "  \"ok\": false,\n"
+                  << "  \"model\": \"" << json_escape(path.string()) << "\",\n"
+                  << "  \"error\": \"" << json_escape(ex.what()) << "\"\n"
+                  << "}\n";
+        return 1;
+      }
+      error(std::string("tensor inspect: ") + ex.what());
+      return 1;
     }
-    return run_weights_info(info_args);
   }
 
   error("tensor: unknown subcommand '" + action + "'. Run 't81 help tensor'.");
@@ -5126,7 +5292,8 @@ int run_tensor_command(const char* command_name, const Args& args) {
 }
 
 int run_vm_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_vm(); });
   }
 
@@ -5134,12 +5301,11 @@ int run_vm_command(const Args& args) {
 
   // Validate action before parsing further to give a clear "unknown action" error
   // rather than a misleading "requires a .tisc input file" message.
-  static constexpr std::string_view kVmActions[] = {
-      "run", "debug", "trace", "until", "step", "regs", "stack", "mem",
-      "state", "profile", "explain-trap"};
-  const bool known_action =
-      std::any_of(std::begin(kVmActions), std::end(kVmActions),
-                  [&](std::string_view a) { return a == action; });
+  static constexpr std::string_view kVmActions[] = {"run",   "debug",   "trace",       "until",
+                                                    "step",  "regs",    "stack",       "mem",
+                                                    "state", "profile", "explain-trap"};
+  const bool known_action = std::any_of(std::begin(kVmActions), std::end(kVmActions),
+                                        [&](std::string_view a) { return a == action; });
   if (!known_action) {
     error("vm: unknown action '" + action + "'. Run 't81 help vm'.");
     return 1;
@@ -5147,6 +5313,7 @@ int run_vm_command(const Args& args) {
 
   std::optional<fs::path> policy_path;
   std::optional<fs::path> trace_path = args.output;
+  std::optional<std::string> display_program;
   bool as_json = false;
   std::size_t step_count = 1;
   std::size_t stack_limit = 10;
@@ -5162,6 +5329,12 @@ int run_vm_command(const Args& args) {
         return 1;
       }
       policy_path = fs::path(args.command_args[i]);
+    } else if (token == "--display-program") {
+      if (++i >= args.command_args.size()) {
+        error("vm: missing value for --display-program.");
+        return 1;
+      }
+      display_program = args.command_args[i];
     } else if (token == "--json") {
       as_json = true;
     } else if ((token == "--count" || token == "--steps" || token == "--limit" ||
@@ -5208,6 +5381,7 @@ int run_vm_command(const Args& args) {
     error("vm " + action + " expects a .tisc input file.");
     return 1;
   }
+  const std::string rendered_program = display_program.value_or(input.string());
 
   if (action == "run") {
     if (trace_path) {
@@ -5225,8 +5399,9 @@ int run_vm_command(const Args& args) {
     }
     return t81::cli::run_tisc(input, policy_path, true, trace_path);
   }
-  if (action == "until" || action == "step" || action == "regs" || action == "stack" || action == "mem") {
-    auto program = t81::tisc::load_program(input);
+  if (action == "until" || action == "step" || action == "regs" || action == "stack" ||
+      action == "mem") {
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -5244,7 +5419,8 @@ int run_vm_command(const Args& args) {
     if (action == "until" && target_pc && vm->state().contexts[0].pc == *target_pc) {
       reached_target_pc = true;
     }
-    for (; executed_steps < step_count && !vm->state().halted && !reached_target_pc; ++executed_steps) {
+    for (; executed_steps < step_count && !vm->state().halted && !reached_target_pc;
+         ++executed_steps) {
       auto result = vm->step();
       if (!result) {
         trap = result.error();
@@ -5274,8 +5450,10 @@ int run_vm_command(const Args& args) {
                   << "  \"reached_target_pc\": " << (reached_target_pc ? "true" : "false") << ",\n"
                   << "  \"halted\": " << (state.halted ? "true" : "false") << ",\n"
                   << "  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Target PC:      " << *target_pc << "\n";
@@ -5300,8 +5478,10 @@ int run_vm_command(const Args& args) {
                   << "  \"pc\": " << ctx.pc << ",\n"
                   << "  \"halted\": " << (state.halted ? "true" : "false") << ",\n"
                   << "  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Steps executed: " << executed_steps << "\n";
@@ -5328,14 +5508,16 @@ int run_vm_command(const Args& args) {
           std::cout << "\n";
         }
         std::cout << "  ],\n  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         for (std::size_t reg = 0; reg < ctx.registers.size(); ++reg) {
           if (reg < 9 || ctx.registers[reg] != 0) {
-            std::cout << "R" << reg << ": " << ctx.registers[reg] << " [tag="
-                      << static_cast<int>(ctx.register_tags[reg]) << "]\n";
+            std::cout << "R" << reg << ": " << ctx.registers[reg]
+                      << " [tag=" << static_cast<int>(ctx.register_tags[reg]) << "]\n";
           }
         }
         std::cout << "PC: " << ctx.pc << "\n";
@@ -5353,19 +5535,23 @@ int run_vm_command(const Args& args) {
                   << "  \"stack_used\": " << used << ",\n"
                   << "  \"entries\": [\n";
         std::size_t emitted = 0;
-        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit; ++addr, ++emitted) {
+        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit;
+             ++addr, ++emitted) {
           std::cout << "    {\"addr\": " << addr << ", \"value\": " << state.memory[addr] << "}";
           if (addr + 1 < ctx.stack_base && emitted + 1 < stack_limit) std::cout << ",";
           std::cout << "\n";
         }
         std::cout << "  ],\n  \"trap\": ";
-        if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-        else std::cout << "null\n";
+        if (trap)
+          std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+        else
+          std::cout << "null\n";
         std::cout << "}\n";
       } else {
         std::cout << "Stack used: " << used << "\n";
         std::size_t emitted = 0;
-        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit; ++addr, ++emitted) {
+        for (std::size_t addr = ctx.sp; addr < ctx.stack_base && emitted < stack_limit;
+             ++addr, ++emitted) {
           std::cout << "[" << addr << "] " << state.memory[addr] << "\n";
         }
       }
@@ -5389,8 +5575,10 @@ int run_vm_command(const Args& args) {
                 << "  \"value\": " << state.memory[*memory_addr] << ",\n"
                 << "  \"tag\": " << static_cast<int>(state.memory_tags[*memory_addr]) << ",\n"
                 << "  \"trap\": ";
-      if (trap) std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
-      else std::cout << "null\n";
+      if (trap)
+        std::cout << "\"" << json_escape(t81::vm::to_string(*trap)) << "\"\n";
+      else
+        std::cout << "null\n";
       std::cout << "}\n";
     } else {
       std::cout << "Memory[" << *memory_addr << "]: " << state.memory[*memory_addr]
@@ -5399,7 +5587,7 @@ int run_vm_command(const Args& args) {
     return ok ? 0 : 1;
   }
   if (action == "state") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -5419,7 +5607,7 @@ int run_vm_command(const Args& args) {
       std::cout << "{\n";
       std::cout << "  \"schema\": \"t81.vm-state.v1\",\n";
       std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
-      std::cout << "  \"program\": \"" << json_escape(input.string()) << "\",\n";
+      std::cout << "  \"program\": \"" << json_escape(rendered_program) << "\",\n";
       std::cout << "  \"halted\": " << (state.halted ? "true" : "false") << ",\n";
       std::cout << "  \"pc\": " << ctx.pc << ",\n";
       std::cout << "  \"sp\": " << ctx.sp << ",\n";
@@ -5435,7 +5623,7 @@ int run_vm_command(const Args& args) {
       std::cout << "}\n";
       return ok ? 0 : 1;
     }
-    std::cout << "Program:       " << input.string() << "\n";
+    std::cout << "Program:       " << rendered_program << "\n";
     std::cout << "Status:        " << (ok ? "ok" : "trap") << "\n";
     std::cout << "Halted:        " << (state.halted ? "yes" : "no") << "\n";
     std::cout << "PC:            " << ctx.pc << "\n";
@@ -5451,7 +5639,7 @@ int run_vm_command(const Args& args) {
     return 0;
   }
   if (action == "profile" || action == "explain-trap") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (policy_path) {
       std::ifstream ifs(*policy_path);
       if (!ifs) {
@@ -5463,11 +5651,7 @@ int run_vm_command(const Args& args) {
     }
     auto vm = t81::vm::make_interpreter_vm();
     vm->load_program(program);
-    const auto started = std::chrono::steady_clock::now();
     auto result = vm->run_to_halt();
-    const auto elapsed =
-        std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() -
-                                                              started);
     const auto& state = vm->state();
     const auto& ctx = state.contexts.empty() ? t81::vm::ThreadContext{} : state.contexts.front();
     const bool ok = static_cast<bool>(result);
@@ -5477,8 +5661,9 @@ int run_vm_command(const Args& args) {
         std::cout << "{\n";
         std::cout << "  \"schema\": \"t81.vm-profile.v1\",\n";
         std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
-        std::cout << "  \"program\": \"" << json_escape(input.string()) << "\",\n";
-        std::cout << "  \"elapsed_us\": " << elapsed.count() << ",\n";
+        std::cout << "  \"program\": \"" << json_escape(rendered_program) << "\",\n";
+        std::cout << "  \"elapsed_us\": null,\n";
+        std::cout << "  \"timing_mode\": \"suppressed_for_determinism\",\n";
         std::cout << "  \"trace_entries\": " << state.trace.size() << ",\n";
         std::cout << "  \"axion_events\": " << state.axion_log.size() << ",\n";
         std::cout << "  \"memory_words\": " << state.memory.size() << ",\n";
@@ -5491,13 +5676,14 @@ int run_vm_command(const Args& args) {
         if (ok) {
           std::cout << "  \"trap\": null\n";
         } else {
-          std::cout << "  \"trap\": \"" << json_escape(t81::vm::to_string(result.error())) << "\"\n";
+          std::cout << "  \"trap\": \"" << json_escape(t81::vm::to_string(result.error()))
+                    << "\"\n";
         }
         std::cout << "}\n";
         return ok ? 0 : 1;
       }
-      std::cout << "Program:          " << input.string() << "\n";
-      std::cout << "Elapsed:          " << elapsed.count() << " us\n";
+      std::cout << "Program:          " << rendered_program << "\n";
+      std::cout << "Elapsed:          suppressed for deterministic output\n";
       std::cout << "Trace entries:    " << state.trace.size() << "\n";
       std::cout << "Axion events:     " << state.axion_log.size() << "\n";
       std::cout << "Memory words:     " << state.memory.size() << "\n";
@@ -5517,7 +5703,7 @@ int run_vm_command(const Args& args) {
     if (as_json) {
       std::cout << "{\n";
       std::cout << "  \"schema\": \"t81.vm-trap-explain.v1\",\n";
-      std::cout << "  \"program\": \"" << json_escape(input.string()) << "\",\n";
+      std::cout << "  \"program\": \"" << json_escape(rendered_program) << "\",\n";
       std::cout << "  \"ok\": " << (ok ? "true" : "false") << ",\n";
       if (ok) {
         std::cout << "  \"trap\": null,\n";
@@ -5546,24 +5732,40 @@ int run_profile_command(const Args& args) {
     error("profile requires a .t81 or .tisc input file.");
     return 1;
   }
+  const bool as_json = std::find(args.command_args.begin(), args.command_args.end(), "--json") !=
+                       args.command_args.end();
   if (args.input.extension() == ".t81") {
     auto weights_model_ptr = load_weights_model_optional(args.weights_model);
     if (args.weights_model && !weights_model_ptr) {
       return 1;
     }
-    TempTiscFile temp(args.input.stem().string());
-    int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
+    const std::string stable_name =
+        "t81-profile-" + sha3_512_text(fs::absolute(args.input).string()).substr(0, 24) + ".tisc";
+    const fs::path temp_path = fs::temp_directory_path() / stable_name;
+    struct TempCleanup {
+      fs::path path;
+      ~TempCleanup() {
+        std::error_code ec;
+        fs::remove(path, ec);
+      }
+    } cleanup{temp_path};
+    const bool old_quiet = g_flags.quiet;
+    if (as_json) {
+      g_flags.quiet = true;
+    }
+    int rc = t81::cli::compile(args.input, temp_path, {}, {}, weights_model_ptr);
+    g_flags.quiet = old_quiet;
     if (rc != 0) {
       return rc;
     }
     Args vm_args = args;
     vm_args.command = "vm";
-    vm_args.command_args = {"profile", temp.path.string()};
+    vm_args.command_args = {"profile", temp_path.string(), "--display-program", args.input.string()};
     if (args.policy) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
     }
-    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") != args.command_args.end()) {
+    if (as_json) {
       vm_args.command_args.push_back("--json");
     }
     return run_vm_command(vm_args);
@@ -5576,7 +5778,7 @@ int run_profile_command(const Args& args) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
     }
-    if (std::find(args.command_args.begin(), args.command_args.end(), "--json") != args.command_args.end()) {
+    if (as_json) {
       vm_args.command_args.push_back("--json");
     }
     return run_vm_command(vm_args);
@@ -5595,7 +5797,8 @@ int required_tier_for_program(const t81::tisc::Program& program) {
 }
 
 int run_tier_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_tier(); });
   }
 
@@ -5659,7 +5862,7 @@ int run_tier_command(const Args& args) {
     error("tier " + action + " expects a .tisc input file.");
     return 1;
   }
-  auto program = t81::tisc::load_program(input);
+  auto program = t81::tisc::load_program(input.string());
   const int required_tier = required_tier_for_program(program);
 
   if (action == "check") {
@@ -5704,7 +5907,8 @@ int run_tier_command(const Args& args) {
 }
 
 int run_tisc_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_tisc(); });
   }
 
@@ -5715,11 +5919,19 @@ int run_tisc_command(const Args& args) {
     fs::path input1, input2;
     for (std::size_t i = 1; i < args.command_args.size(); ++i) {
       const auto& tok = args.command_args[i];
-      if (tok == "--json") as_json = true;
-      else if (tok == "-h" || tok == "--help") { print_help_tisc_diff(); return 0; }
-      else if (input1.empty()) input1 = fs::path(tok);
-      else if (input2.empty()) input2 = fs::path(tok);
-      else { error("tisc diff: unexpected argument '" + tok + "'."); return 1; }
+      if (tok == "--json")
+        as_json = true;
+      else if (tok == "-h" || tok == "--help") {
+        print_help_tisc_diff();
+        return 0;
+      } else if (input1.empty())
+        input1 = fs::path(tok);
+      else if (input2.empty())
+        input2 = fs::path(tok);
+      else {
+        error("tisc diff: unexpected argument '" + tok + "'.");
+        return 1;
+      }
     }
     if (input1.empty() || input2.empty()) {
       error("tisc diff requires two .tisc input files. Run 't81 help tisc diff'.");
@@ -5728,8 +5940,8 @@ int run_tisc_command(const Args& args) {
     const auto prog1 = t81::tisc::load_program(input1.string());
     const auto prog2 = t81::tisc::load_program(input2.string());
     auto insn_eq = [](const t81::tisc::Insn& x, const t81::tisc::Insn& y) {
-      return x.opcode == y.opcode && x.a == y.a && x.b == y.b &&
-             x.c == y.c && x.literal_kind == y.literal_kind;
+      return x.opcode == y.opcode && x.a == y.a && x.b == y.b && x.c == y.c &&
+             x.literal_kind == y.literal_kind;
     };
     const std::size_t max_i = std::max(prog1.insns.size(), prog2.insns.size());
     std::size_t diffs = 0;
@@ -5755,9 +5967,11 @@ int run_tisc_command(const Args& args) {
         std::cout << "identical\n";
       } else {
         for (std::size_t idx = 0; idx < max_i; ++idx) {
-          if (idx >= prog1.insns.size()) { std::cout << "+ [" << idx << "] <rhs extra>\n"; }
-          else if (idx >= prog2.insns.size()) { std::cout << "- [" << idx << "] <lhs extra>\n"; }
-          else if (!insn_eq(prog1.insns[idx], prog2.insns[idx])) {
+          if (idx >= prog1.insns.size()) {
+            std::cout << "+ [" << idx << "] <rhs extra>\n";
+          } else if (idx >= prog2.insns.size()) {
+            std::cout << "- [" << idx << "] <lhs extra>\n";
+          } else if (!insn_eq(prog1.insns[idx], prog2.insns[idx])) {
             std::cout << "! [" << idx << "] differs\n";
           }
         }
@@ -5804,7 +6018,7 @@ int run_tisc_command(const Args& args) {
     return t81::cli::disasm_tisc(input);
   }
   if (action == "validate") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     if (as_json) {
       std::cout << "{\n";
       std::cout << "  \"schema\": \"t81.tisc-validate.v1\",\n";
@@ -5823,7 +6037,7 @@ int run_tisc_command(const Args& args) {
     return 0;
   }
   if (action == "stats") {
-    auto program = t81::tisc::load_program(input);
+    auto program = t81::tisc::load_program(input.string());
     std::map<std::string, std::size_t> opcode_counts;
     for (const auto& insn : program.insns) {
       ++opcode_counts[std::string(t81::tisc::opcode_name(insn.opcode))];
@@ -5922,7 +6136,8 @@ int run_tisc_command(const Args& args) {
 }
 
 int run_ir_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     return emit_help([&] { print_help_ir(); });
   }
 
@@ -6018,9 +6233,9 @@ int run_ir_command(const Args& args) {
     for (std::size_t i = 0; i < instructions.size(); ++i) {
       const auto& inst = instructions[i];
       rendered << "    {\"index\":" << i << ",\"opcode\":\"" << ir_opcode_name(inst.opcode)
-               << "\",\"primitive\":\"" << ir_primitive_name(inst.primitive) << "\",\"boolean_result\":"
-               << (inst.boolean_result ? "true" : "false") << ",\"relation\":\""
-               << ir_relation_name(inst.relation) << "\",\"operands\":[";
+               << "\",\"primitive\":\"" << ir_primitive_name(inst.primitive)
+               << "\",\"boolean_result\":" << (inst.boolean_result ? "true" : "false")
+               << ",\"relation\":\"" << ir_relation_name(inst.relation) << "\",\"operands\":[";
       for (std::size_t j = 0; j < inst.operands.size(); ++j) {
         rendered << "\"" << json_escape(format_ir_operand(inst.operands[j])) << "\"";
         if (j + 1 != inst.operands.size()) {
@@ -6057,8 +6272,7 @@ int run_ir_command(const Args& args) {
     std::cout << std::setw(20) << std::left << ir_opcode_name(inst.opcode);
     std::cout << " [" << ir_primitive_name(inst.primitive) << (inst.boolean_result ? " Bool" : "")
               << "]";
-    if (inst.boolean_result &&
-        inst.relation != t81::tisc::ir::ComparisonRelation::None) {
+    if (inst.boolean_result && inst.relation != t81::tisc::ir::ComparisonRelation::None) {
       std::cout << " <" << ir_relation_name(inst.relation) << ">";
     }
     if (!inst.operands.empty()) {
@@ -6111,18 +6325,10 @@ int run_repro_hash(const char* command_name, const Args& args) {
   fs::path workdir = fs::temp_directory_path() / ("t81-repro-hash-" + std::to_string(dist(gen)));
   fs::path hash_out = workdir / "hash.txt";
 
-  std::vector<std::string> argv = {"python3",
-                                   script_path->string(),
-                                   "--t81-bin",
-                                   exe_path.string(),
-                                   "--fixtures-dir",
-                                   fixtures_arg,
-                                   "--workdir",
-                                   workdir.string(),
-                                   "--hash-out",
-                                   hash_out.string(),
-                                   "--expected-hash-file",
-                                   expected_arg};
+  std::vector<std::string> argv = {"python3",         script_path->string(),  "--t81-bin",
+                                   exe_path.string(), "--fixtures-dir",       fixtures_arg,
+                                   "--workdir",       workdir.string(),       "--hash-out",
+                                   hash_out.string(), "--expected-hash-file", expected_arg};
 
   const auto capture = run_process_capture(argv, repo_root);
   if (!capture.stdout_text.empty()) {
@@ -6327,108 +6533,198 @@ std::string json_escape(std::string_view text) {
 const char* ir_opcode_name(t81::tisc::ir::Opcode op) {
   using Opcode = t81::tisc::ir::Opcode;
   switch (op) {
-    case Opcode::ADD: return "ADD";
-    case Opcode::SUB: return "SUB";
-    case Opcode::MUL: return "MUL";
-    case Opcode::DIV: return "DIV";
-    case Opcode::MOD: return "MOD";
-    case Opcode::FADD: return "FADD";
-    case Opcode::FSUB: return "FSUB";
-    case Opcode::FMUL: return "FMUL";
-    case Opcode::FDIV: return "FDIV";
-    case Opcode::FRACADD: return "FRACADD";
-    case Opcode::FRACSUB: return "FRACSUB";
-    case Opcode::FRACMUL: return "FRACMUL";
-    case Opcode::FRACDIV: return "FRACDIV";
-    case Opcode::NEG: return "NEG";
-    case Opcode::CMP: return "CMP";
-    case Opcode::MOV: return "MOV";
-    case Opcode::LOADI: return "LOADI";
-    case Opcode::LOAD: return "LOAD";
-    case Opcode::STORE: return "STORE";
-    case Opcode::PUSH: return "PUSH";
-    case Opcode::POP: return "POP";
-    case Opcode::JMP: return "JMP";
-    case Opcode::JZ: return "JZ";
-    case Opcode::JNZ: return "JNZ";
-    case Opcode::JN: return "JN";
-    case Opcode::JP: return "JP";
-    case Opcode::CALL: return "CALL";
-    case Opcode::RET: return "RET";
-    case Opcode::I2F: return "I2F";
-    case Opcode::F2I: return "F2I";
-    case Opcode::I2FRAC: return "I2FRAC";
-    case Opcode::FRAC2I: return "FRAC2I";
-    case Opcode::MAKE_OPTION_SOME: return "MAKE_OPTION_SOME";
-    case Opcode::MAKE_OPTION_NONE: return "MAKE_OPTION_NONE";
-    case Opcode::MAKE_RESULT_OK: return "MAKE_RESULT_OK";
-    case Opcode::MAKE_RESULT_ERR: return "MAKE_RESULT_ERR";
-    case Opcode::OPTION_IS_SOME: return "OPTION_IS_SOME";
-    case Opcode::OPTION_UNWRAP: return "OPTION_UNWRAP";
-    case Opcode::RESULT_IS_OK: return "RESULT_IS_OK";
-    case Opcode::RESULT_UNWRAP_OK: return "RESULT_UNWRAP_OK";
-    case Opcode::RESULT_UNWRAP_ERR: return "RESULT_UNWRAP_ERR";
-    case Opcode::PRINT: return "PRINT";
-    case Opcode::STRLEN: return "STRLEN";
-    case Opcode::STREMPTY: return "STREMPTY";
-    case Opcode::VECLEN: return "VECLEN";
-    case Opcode::VECEMPTY: return "VECEMPTY";
-    case Opcode::VECFIRST: return "VECFIRST";
-    case Opcode::VECLAST: return "VECLAST";
-    case Opcode::VECPUSH: return "VECPUSH";
-    case Opcode::VECPOP: return "VECPOP";
-    case Opcode::STRCONCAT: return "STRCONCAT";
-    case Opcode::STRSTARTSWITH: return "STRSTARTSWITH";
-    case Opcode::STRENDSWITH: return "STRENDSWITH";
-    case Opcode::STRCONTAINS: return "STRCONTAINS";
-    case Opcode::STRINDEXOF: return "STRINDEXOF";
-    case Opcode::STRREPLACE: return "STRREPLACE";
-    case Opcode::STRVECNEW: return "STRVECNEW";
-    case Opcode::STRVECPUSH: return "STRVECPUSH";
-    case Opcode::STRSPLIT: return "STRSPLIT";
-    case Opcode::STRJOIN: return "STRJOIN";
-    case Opcode::WEIGHTS_LOAD: return "WEIGHTS_LOAD";
-    case Opcode::TGET: return "TGET";
-    case Opcode::TNEW: return "TNEW";
-    case Opcode::TSET: return "TSET";
-    case Opcode::TSHAPE: return "TSHAPE";
-    case Opcode::BITAND: return "BITAND";
-    case Opcode::BITOR: return "BITOR";
-    case Opcode::BITXOR: return "BITXOR";
-    case Opcode::BITNOT: return "BITNOT";
-    case Opcode::BITSHL: return "BITSHL";
-    case Opcode::BITSHR: return "BITSHR";
-    case Opcode::BITUSHR: return "BITUSHR";
-    case Opcode::MAKE_COMPLEX: return "MAKE_COMPLEX";
-    case Opcode::NOP: return "NOP";
-    case Opcode::HALT: return "HALT";
-    case Opcode::TRAP: return "TRAP";
-    case Opcode::LABEL: return "LABEL";
-    default: return "UNKNOWN";
+    case Opcode::ADD:
+      return "ADD";
+    case Opcode::SUB:
+      return "SUB";
+    case Opcode::MUL:
+      return "MUL";
+    case Opcode::DIV:
+      return "DIV";
+    case Opcode::MOD:
+      return "MOD";
+    case Opcode::FADD:
+      return "FADD";
+    case Opcode::FSUB:
+      return "FSUB";
+    case Opcode::FMUL:
+      return "FMUL";
+    case Opcode::FDIV:
+      return "FDIV";
+    case Opcode::FRACADD:
+      return "FRACADD";
+    case Opcode::FRACSUB:
+      return "FRACSUB";
+    case Opcode::FRACMUL:
+      return "FRACMUL";
+    case Opcode::FRACDIV:
+      return "FRACDIV";
+    case Opcode::NEG:
+      return "NEG";
+    case Opcode::CMP:
+      return "CMP";
+    case Opcode::MOV:
+      return "MOV";
+    case Opcode::LOADI:
+      return "LOADI";
+    case Opcode::LOAD:
+      return "LOAD";
+    case Opcode::STORE:
+      return "STORE";
+    case Opcode::PUSH:
+      return "PUSH";
+    case Opcode::POP:
+      return "POP";
+    case Opcode::JMP:
+      return "JMP";
+    case Opcode::JZ:
+      return "JZ";
+    case Opcode::JNZ:
+      return "JNZ";
+    case Opcode::JN:
+      return "JN";
+    case Opcode::JP:
+      return "JP";
+    case Opcode::CALL:
+      return "CALL";
+    case Opcode::RET:
+      return "RET";
+    case Opcode::I2F:
+      return "I2F";
+    case Opcode::F2I:
+      return "F2I";
+    case Opcode::I2FRAC:
+      return "I2FRAC";
+    case Opcode::FRAC2I:
+      return "FRAC2I";
+    case Opcode::MAKE_OPTION_SOME:
+      return "MAKE_OPTION_SOME";
+    case Opcode::MAKE_OPTION_NONE:
+      return "MAKE_OPTION_NONE";
+    case Opcode::MAKE_RESULT_OK:
+      return "MAKE_RESULT_OK";
+    case Opcode::MAKE_RESULT_ERR:
+      return "MAKE_RESULT_ERR";
+    case Opcode::OPTION_IS_SOME:
+      return "OPTION_IS_SOME";
+    case Opcode::OPTION_UNWRAP:
+      return "OPTION_UNWRAP";
+    case Opcode::RESULT_IS_OK:
+      return "RESULT_IS_OK";
+    case Opcode::RESULT_UNWRAP_OK:
+      return "RESULT_UNWRAP_OK";
+    case Opcode::RESULT_UNWRAP_ERR:
+      return "RESULT_UNWRAP_ERR";
+    case Opcode::PRINT:
+      return "PRINT";
+    case Opcode::STRLEN:
+      return "STRLEN";
+    case Opcode::STREMPTY:
+      return "STREMPTY";
+    case Opcode::VECLEN:
+      return "VECLEN";
+    case Opcode::VECEMPTY:
+      return "VECEMPTY";
+    case Opcode::VECFIRST:
+      return "VECFIRST";
+    case Opcode::VECLAST:
+      return "VECLAST";
+    case Opcode::VECPUSH:
+      return "VECPUSH";
+    case Opcode::VECPOP:
+      return "VECPOP";
+    case Opcode::STRCONCAT:
+      return "STRCONCAT";
+    case Opcode::STRSTARTSWITH:
+      return "STRSTARTSWITH";
+    case Opcode::STRENDSWITH:
+      return "STRENDSWITH";
+    case Opcode::STRCONTAINS:
+      return "STRCONTAINS";
+    case Opcode::STRINDEXOF:
+      return "STRINDEXOF";
+    case Opcode::STRREPLACE:
+      return "STRREPLACE";
+    case Opcode::STRVECNEW:
+      return "STRVECNEW";
+    case Opcode::STRVECPUSH:
+      return "STRVECPUSH";
+    case Opcode::STRSPLIT:
+      return "STRSPLIT";
+    case Opcode::STRJOIN:
+      return "STRJOIN";
+    case Opcode::WEIGHTS_LOAD:
+      return "WEIGHTS_LOAD";
+    case Opcode::TGET:
+      return "TGET";
+    case Opcode::TNEW:
+      return "TNEW";
+    case Opcode::TSET:
+      return "TSET";
+    case Opcode::TSHAPE:
+      return "TSHAPE";
+    case Opcode::BITAND:
+      return "BITAND";
+    case Opcode::BITOR:
+      return "BITOR";
+    case Opcode::BITXOR:
+      return "BITXOR";
+    case Opcode::BITNOT:
+      return "BITNOT";
+    case Opcode::BITSHL:
+      return "BITSHL";
+    case Opcode::BITSHR:
+      return "BITSHR";
+    case Opcode::BITUSHR:
+      return "BITUSHR";
+    case Opcode::MAKE_COMPLEX:
+      return "MAKE_COMPLEX";
+    case Opcode::NOP:
+      return "NOP";
+    case Opcode::HALT:
+      return "HALT";
+    case Opcode::TRAP:
+      return "TRAP";
+    case Opcode::LABEL:
+      return "LABEL";
+    default:
+      return "UNKNOWN";
   }
 }
 
 const char* ir_primitive_name(t81::tisc::ir::PrimitiveKind kind) {
   using PrimitiveKind = t81::tisc::ir::PrimitiveKind;
   switch (kind) {
-    case PrimitiveKind::Integer: return "Int";
-    case PrimitiveKind::Float: return "Float";
-    case PrimitiveKind::Fraction: return "Frac";
-    case PrimitiveKind::Boolean: return "Bool";
-    default: return "Unknown";
+    case PrimitiveKind::Integer:
+      return "Int";
+    case PrimitiveKind::Float:
+      return "Float";
+    case PrimitiveKind::Fraction:
+      return "Frac";
+    case PrimitiveKind::Boolean:
+      return "Bool";
+    default:
+      return "Unknown";
   }
 }
 
 const char* ir_relation_name(t81::tisc::ir::ComparisonRelation relation) {
   using Relation = t81::tisc::ir::ComparisonRelation;
   switch (relation) {
-    case Relation::Less: return "Less";
-    case Relation::LessEqual: return "LessEqual";
-    case Relation::Greater: return "Greater";
-    case Relation::GreaterEqual: return "GreaterEqual";
-    case Relation::Equal: return "Equal";
-    case Relation::NotEqual: return "NotEqual";
-    default: return "None";
+    case Relation::Less:
+      return "Less";
+    case Relation::LessEqual:
+      return "LessEqual";
+    case Relation::Greater:
+      return "Greater";
+    case Relation::GreaterEqual:
+      return "GreaterEqual";
+    case Relation::Equal:
+      return "Equal";
+    case Relation::NotEqual:
+      return "NotEqual";
+    default:
+      return "None";
   }
 }
 
@@ -6450,8 +6746,23 @@ std::string format_ir_operand(const t81::tisc::ir::Operand& operand) {
 std::string trap_explanation_text(t81::vm::Trap trap) {
   using Trap = t81::vm::Trap;
   switch (trap) {
+    case Trap::ActivationFault:
+      return "The VM could not activate a required component. Ensure dependencies are satisfied.";
+    case Trap::FFINotInitialized:
+      return "The VM FFI dispatcher was not initialized.";
+    case Trap::FFIRegistrationError:
+      return "An error occurred registering an FFI library or function.";
+    case Trap::FFILoadError:
+      return "An error occurred loading an FFI library.";
+    case Trap::FFIPolicyDenied:
+      return "An FFI action was denied by policy.";
+    case Trap::FFITimeout:
+      return "An FFI action timed out.";
+    case Trap::FFIMemoryExhausted:
+      return "An FFI action exhausted available memory.";
     case Trap::DecodeFault:
-      return "The VM could not decode the TISC artifact. Rebuild the program and validate it with 't81 tisc validate'.";
+      return "The VM could not decode the TISC artifact. Rebuild the program and validate it with "
+             "'t81 tisc validate'.";
     case Trap::TypeFault:
       return "A runtime value had the wrong type tag for the executed instruction.";
     case Trap::BoundsFault:
@@ -6469,7 +6780,8 @@ std::string trap_explanation_text(t81::vm::Trap trap) {
     case Trap::TrapInstruction:
       return "The program executed an explicit TRAP instruction.";
     case Trap::Unimplemented:
-      return "The program hit an opcode or runtime feature that is not implemented in this VM build.";
+      return "The program hit an opcode or runtime feature that is not implemented in this VM "
+             "build.";
     case Trap::AssertionFailed:
       return "A program assertion failed.";
     case Trap::EthicsViolation:
@@ -6508,7 +6820,8 @@ std::string sha3_512_file(const fs::path& path) {
   if (!in) {
     throw std::runtime_error("Could not open input file: " + path.string());
   }
-  std::vector<std::uint8_t> raw((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  std::vector<std::uint8_t> raw((std::istreambuf_iterator<char>(in)),
+                                std::istreambuf_iterator<char>());
   return t81::crypto::sha3_512_hex(raw);
 }
 
@@ -6546,14 +6859,16 @@ fs::path discover_repo_root() {
 fs::path discover_build_dir() {
   std::error_code ec;
   const fs::path cwd = fs::current_path();
+  const fs::path repo_root = discover_repo_root();
+  const fs::path repo_build_dir = repo_root / "build";
+  if (fs::exists(repo_build_dir / "CTestTestfile.cmake", ec)) {
+    return repo_build_dir;
+  }
+  ec.clear();
   if (fs::exists(cwd / "CTestTestfile.cmake", ec)) {
     return cwd;
   }
-  const fs::path repo_root = discover_repo_root();
-  if (fs::exists(repo_root / "build" / "CTestTestfile.cmake", ec)) {
-    return repo_root / "build";
-  }
-  return repo_root / "build";
+  return repo_build_dir;
 }
 
 fs::path discover_canonfs_root() {
@@ -6604,6 +6919,8 @@ ProcessCaptureResult run_process_capture(
     return result;
   }
 #if defined(_WIN32)
+  (void)cwd;
+  (void)env_overrides;
   std::string cmd;
   for (std::size_t i = 0; i < argv.size(); ++i) {
     if (i != 0) {
@@ -6613,7 +6930,8 @@ ProcessCaptureResult run_process_capture(
   }
   TempCaptureFile out_file("capture", ".out");
   TempCaptureFile err_file("capture", ".err");
-  cmd += " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
+  cmd +=
+      " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
   const int status = std::system(cmd.c_str());
   if (status == -1) {
     return result;
@@ -6621,8 +6939,10 @@ ProcessCaptureResult run_process_capture(
   result.exit_code = decode_system_status(status);
   std::ifstream out_stream(out_file.path, std::ios::binary);
   std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)), std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)), std::istreambuf_iterator<char>());
+  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
+                            std::istreambuf_iterator<char>());
+  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
+                            std::istreambuf_iterator<char>());
   return result;
 #else
   TempCaptureFile out_file("capture", ".out");
@@ -6668,8 +6988,10 @@ ProcessCaptureResult run_process_capture(
   result.exit_code = decode_system_status(status);
   std::ifstream out_stream(out_file.path, std::ios::binary);
   std::ifstream err_stream(err_file.path, std::ios::binary);
-  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)), std::istreambuf_iterator<char>());
-  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)), std::istreambuf_iterator<char>());
+  result.stdout_text.assign((std::istreambuf_iterator<char>(out_stream)),
+                            std::istreambuf_iterator<char>());
+  result.stderr_text.assign((std::istreambuf_iterator<char>(err_stream)),
+                            std::istreambuf_iterator<char>());
   return result;
 #endif
 }
@@ -6763,10 +7085,8 @@ int run_env_toolchain(const Args& args) {
   };
 
   std::vector<ToolProbe> probes = {
-      {"cmake", "cmake", false, std::nullopt},
-      {"ctest", "ctest", false, std::nullopt},
-      {"python3", "python3", false, std::nullopt},
-      {"clang++", "clang++", false, std::nullopt},
+      {"cmake", "cmake", false, std::nullopt},     {"ctest", "ctest", false, std::nullopt},
+      {"python3", "python3", false, std::nullopt}, {"clang++", "clang++", false, std::nullopt},
       {"g++", "g++", false, std::nullopt},
   };
 
@@ -6787,16 +7107,17 @@ int run_env_toolchain(const Args& args) {
   if (as_json) {
     std::cout << "{\n"
               << "  \"schema\": \"t81.env-toolchain.v1\",\n"
-              << "  \"ok\": " << ((probes[0].available && probes[1].available &&
-                                      probes[2].available && any_compiler)
-                                         ? "true"
-                                         : "false")
+              << "  \"ok\": "
+              << ((probes[0].available && probes[1].available && probes[2].available &&
+                   any_compiler)
+                      ? "true"
+                      : "false")
               << ",\n"
               << "  \"tools\": [\n";
     for (std::size_t i = 0; i < probes.size(); ++i) {
       const auto& probe = probes[i];
-      std::cout << "    {\"name\":\"" << json_escape(probe.name) << "\",\"available\":"
-                << (probe.available ? "true" : "false") << ",\"version\":";
+      std::cout << "    {\"name\":\"" << json_escape(probe.name)
+                << "\",\"available\":" << (probe.available ? "true" : "false") << ",\"version\":";
       if (probe.version) {
         std::cout << "\"" << json_escape(*probe.version) << "\"}";
       } else {
@@ -6902,7 +7223,8 @@ int run_env_diag(const Args& args) {
 
   std::cout << "repo_root:             " << repo_root.string() << "\n";
   std::cout << "build_dir:             " << build_dir.string() << "\n";
-  std::cout << "build metadata:        " << (build_metadata_present ? "present" : "missing") << "\n";
+  std::cout << "build metadata:        " << (build_metadata_present ? "present" : "missing")
+            << "\n";
   std::cout << "toolchain:             " << (toolchain_ok ? "ok" : "incomplete") << "\n";
   std::cout << "canonfs_root:          " << canonfs_root.string() << "\n";
   std::cout << "canonfs_ready:         " << (canonfs_ready ? "yes" : "no") << "\n";
@@ -6962,8 +7284,9 @@ int run_env_clean(const Args& args) {
 
   std::vector<fs::path> removed_paths;
   const std::vector<fs::path> targets = {
-      abs_build_dir / "CMakeCache.txt", abs_build_dir / "CMakeFiles", abs_build_dir / "CTestTestfile.cmake",
-      abs_build_dir / "Testing",        abs_build_dir / "build.ninja", abs_build_dir / ".ninja_deps",
+      abs_build_dir / "CMakeCache.txt",      abs_build_dir / "CMakeFiles",
+      abs_build_dir / "CTestTestfile.cmake", abs_build_dir / "Testing",
+      abs_build_dir / "build.ninja",         abs_build_dir / ".ninja_deps",
       abs_build_dir / ".ninja_log"};
 
   for (const auto& target : targets) {
@@ -7066,7 +7389,8 @@ int run_doctor(const Args& args) {
                            : ("CanonFS root missing at " + canonfs_root.string()),
                "Run a CanonFS command such as `t81 canonfs snapshot` or set T81_CANONFS_ROOT.");
     const fs::path objects_dir = canonfs_root / "objects";
-    const bool objects_ok = !root_exists || !fs::exists(objects_dir) || fs::is_directory(objects_dir);
+    const bool objects_ok =
+        !root_exists || !fs::exists(objects_dir) || fs::is_directory(objects_dir);
     push_check("canonfs_objects_dir", objects_ok,
                fs::exists(objects_dir) ? (objects_ok ? "objects directory readable"
                                                      : "objects path exists but is not a directory")
@@ -7076,17 +7400,19 @@ int run_doctor(const Args& args) {
     const bool snapshots_ok =
         !root_exists || !fs::exists(snapshots_dir) || fs::is_directory(snapshots_dir);
     push_check("canonfs_snapshots_dir", snapshots_ok,
-               fs::exists(snapshots_dir) ? (snapshots_ok ? "snapshots directory readable"
-                                                         : "snapshots path exists but is not a directory")
-                                         : "snapshots directory not present yet",
+               fs::exists(snapshots_dir)
+                   ? (snapshots_ok ? "snapshots directory readable"
+                                   : "snapshots path exists but is not a directory")
+                   : "snapshots directory not present yet",
                "Ensure CanonFS snapshot storage is intact under <root>/snapshots.");
   };
 
   auto run_vm_checks = [&]() {
     const bool build_metadata_present = fs::exists(build_dir / "CTestTestfile.cmake");
     push_check("build_dir_present", build_metadata_present,
-               build_metadata_present ? ("CTest metadata found in " + build_dir.string())
-                                      : ("build dir is missing CTest metadata at " + build_dir.string()),
+               build_metadata_present
+                   ? ("CTest metadata found in " + build_dir.string())
+                   : ("build dir is missing CTest metadata at " + build_dir.string()),
                "Run: cmake -S . -B build && cmake --build build");
     const fs::path vm_binary = build_dir / "t81";
     const bool vm_binary_present = fs::exists(vm_binary);
@@ -7144,9 +7470,10 @@ int run_doctor(const Args& args) {
     std::cout << "  \"checks\": [\n";
     for (size_t i = 0; i < checks.size(); ++i) {
       const auto& check = checks[i];
-      std::cout << "    {\"id\":\"" << json_escape(check.id) << "\",\"ok\":"
-                << (check.ok ? "true" : "false") << ",\"detail\":\"" << json_escape(check.detail)
-                << "\",\"remediation\":\"" << json_escape(check.remediation) << "\"}";
+      std::cout << "    {\"id\":\"" << json_escape(check.id)
+                << "\",\"ok\":" << (check.ok ? "true" : "false") << ",\"detail\":\""
+                << json_escape(check.detail) << "\",\"remediation\":\""
+                << json_escape(check.remediation) << "\"}";
       if (i + 1 != checks.size()) {
         std::cout << ",";
       }
@@ -7170,7 +7497,7 @@ int run_doctor(const Args& args) {
 }
 
 int run_test_command(const Args& args) {
-  fs::path build_dir = "build";
+  fs::path build_dir = discover_build_dir();
   std::optional<std::string> filter;
   bool as_json = false;
   bool list_only = false;
@@ -7253,7 +7580,8 @@ int run_test_command(const Args& args) {
     std::string lowered = stderr_text;
     for (char& c : lowered) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     if (lowered.find("output-junit") != std::string::npos &&
-        (lowered.find("unknown") != std::string::npos || lowered.find("unrecognized") != std::string::npos ||
+        (lowered.find("unknown") != std::string::npos ||
+         lowered.find("unrecognized") != std::string::npos ||
          lowered.find("invalid") != std::string::npos)) {
       used_junit = false;
       ctest_argv.erase(std::remove(ctest_argv.begin(), ctest_argv.end(), "--output-junit"),
@@ -7280,7 +7608,7 @@ int run_test_command(const Args& args) {
     int skipped = -1;
     double duration_sec = -1.0;
   };
-  auto parse_summary = [](const std::string& text) -> TestSummary {
+  auto parse_summary = [list_only](const std::string& text) -> TestSummary {
     TestSummary summary;
     std::smatch match;
     std::regex pass_fail_re(R"((\d+)% tests passed,\s*(\d+)\s*tests failed out of\s*(\d+))");
@@ -7293,7 +7621,7 @@ int run_test_command(const Args& args) {
     std::regex total_only_re(R"(Total Tests:\s*(\d+))");
     if (summary.total < 0 && std::regex_search(text, match, total_only_re) && match.size() == 2) {
       summary.total = std::stoi(match[1].str());
-      summary.passed = summary.total;
+      summary.passed = list_only ? 0 : summary.total;
       summary.failed = 0;
       summary.skipped = 0;
     }
@@ -7304,9 +7632,11 @@ int run_test_command(const Args& args) {
     return summary;
   };
   TestSummary summary = parse_summary(stdout_text + "\n" + stderr_text);
+  int not_run = 0;
   if (used_junit && fs::exists(junit_file.path)) {
     std::ifstream junit_in(junit_file.path, std::ios::binary);
-    const std::string xml((std::istreambuf_iterator<char>(junit_in)), std::istreambuf_iterator<char>());
+    const std::string xml((std::istreambuf_iterator<char>(junit_in)),
+                          std::istreambuf_iterator<char>());
     std::smatch m;
     if (std::regex_search(xml, m, std::regex("tests=\"([0-9]+)\"")) && m.size() == 2) {
       summary.total = std::atoi(m[1].str().c_str());
@@ -7317,13 +7647,34 @@ int run_test_command(const Args& args) {
     if (std::regex_search(xml, m, std::regex("disabled=\"([0-9]+)\"")) && m.size() == 2) {
       summary.skipped = std::atoi(m[1].str().c_str());
     }
-    if (summary.total >= 0 && summary.failed >= 0) {
-      summary.passed = summary.total - summary.failed - std::max(0, summary.skipped);
+    int junit_errors = 0;
+    if (std::regex_search(xml, m, std::regex("errors=\"([0-9]+)\"")) && m.size() == 2) {
+      junit_errors = std::atoi(m[1].str().c_str());
     }
-    if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) &&
-        m.size() == 2) {
+    if (summary.total >= 0 && summary.failed >= 0) {
+      summary.failed += junit_errors;
+      summary.passed =
+          std::max(0, summary.total - summary.failed - std::max(0, summary.skipped));
+    }
+    if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) && m.size() == 2) {
       summary.duration_sec = std::atof(m[1].str().c_str());
     }
+  }
+  if (list_only && summary.total >= 0) {
+    not_run = summary.total;
+  }
+  const bool infrastructure_failure =
+      rc != 0 &&
+      (summary.total < 0 ||
+       ((summary.failed <= 0) && (summary.passed >= summary.total || summary.passed > 0)));
+  if (infrastructure_failure) {
+    if (summary.total < 0) {
+      summary.total = 0;
+    }
+    not_run = std::max(not_run, summary.total);
+    summary.passed = 0;
+    summary.failed = std::max(summary.failed, 0);
+    summary.skipped = std::max(summary.skipped, 0);
   }
 
   if (as_json) {
@@ -7343,13 +7694,17 @@ int run_test_command(const Args& args) {
     std::cout << "    \"passed\": " << summary.passed << ",\n";
     std::cout << "    \"failed\": " << summary.failed << ",\n";
     std::cout << "    \"skipped\": " << summary.skipped << ",\n";
+    std::cout << "    \"not_run\": " << not_run << ",\n";
     std::cout << "    \"duration_sec\": " << std::fixed << std::setprecision(3)
               << summary.duration_sec << "\n";
     std::cout << std::defaultfloat;
     std::cout << "  },\n";
     std::cout << "  \"stdout_bytes\": " << stdout_bytes << ",\n";
     std::cout << "  \"stderr_bytes\": " << stderr_bytes << ",\n";
-    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text") << "\"\n";
+    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text")
+              << "\",\n";
+    std::cout << "  \"infrastructure_failure\": " << (infrastructure_failure ? "true" : "false")
+              << "\n";
     std::cout << "}\n";
     return rc == 0 ? 0 : 2;
   }
@@ -7359,7 +7714,8 @@ int run_test_command(const Args& args) {
   if (!g_flags.quiet) {
     std::ostringstream oss;
     oss << "test summary: total=" << summary.total << " passed=" << summary.passed
-        << " failed=" << summary.failed << " skipped=" << summary.skipped;
+        << " failed=" << summary.failed << " skipped=" << summary.skipped
+        << " not_run=" << not_run;
     if (summary.duration_sec >= 0.0) {
       oss << " duration_sec=" << std::fixed << std::setprecision(3) << summary.duration_sec;
     }
@@ -7606,7 +7962,8 @@ int run_fmt_command(const Args& args) {
   return 0;
 }
 
-bool parse_package_field(const std::string& text, const std::string& field, std::string& value_out) {
+bool parse_package_field(const std::string& text, const std::string& field,
+                         std::string& value_out) {
   const std::regex re("\\(" + field + "\\s+\"([^\"]+)\"\\)");
   std::smatch match;
   if (!std::regex_search(text, match, re) || match.size() < 2) {
@@ -7712,7 +8069,7 @@ std::string build_bash_completion() {
   return R"(_t81_complete() {
   local cur prev words cword
   _init_completion || return
-  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl completion man feedback version help"
+  local commands="code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help"
   if [[ ${cword} -eq 1 ]]; then
     COMPREPLY=( $(compgen -W "${commands}" -- "${cur}") )
     return
@@ -7753,6 +8110,9 @@ std::string build_bash_completion() {
     ;;
     tensor)
       COMPREPLY=( $(compgen -W "canonize hash inspect" -- "${cur}") )
+      ;;
+    ai)
+      COMPREPLY=( $(compgen -W "backend model verify inference quantization benchmark policy workflow observability run quantize" -- "${cur}") )
       ;;
     weights)
       COMPREPLY=( $(compgen -W "import info verify export quantize" -- "${cur}") )
@@ -7812,6 +8172,7 @@ commands=(
   'ir:IR inspection for frontend lowering'
   'tier:cognitive tier inspection and gating'
   'tensor:tensor artifact tools'
+  'ai:AI model, inference, quantization, and workflow tools'
   'weights:model weight tools'
   'policy:Axion policy tools'
   'axion:Axion governor tools'
@@ -7821,6 +8182,9 @@ commands=(
   'python:Experimental Python-subset frontend to MLIR'
   'llvm:LLVM IR backend — translate TISC to LLVM IR/bitcode'
   'mlir:MLIR frontend — translate TISC to MLIR or LLVM IR'
+  'studio:human operator TUI'
+  'agent:AI-native TUI'
+  'ui:interactive TUI launcher'
   'completion:print completion script'
   'man:show or install man page'
   'feedback:local CLI feedback loop'
@@ -7874,6 +8238,9 @@ case $state in
       tensor)
         _values 'tensor action' canonize hash inspect
         ;;
+      ai)
+        _values 'ai action' backend model verify inference quantization benchmark policy workflow observability run quantize
+        ;;
       weights)
         _values 'weights action' import info verify export quantize
         ;;
@@ -7914,7 +8281,7 @@ esac
 }
 
 std::string build_fish_completion() {
-  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor weights policy axion trace c rust python llvm mlir repl completion man feedback version help'
+  return R"(complete -c t81 -f -n '__fish_use_subcommand' -a 'code lang project env internal canonfs determinism vm tisc ir tier tensor ai weights policy axion trace c rust python llvm mlir repl studio agent ui completion man feedback version help'
 complete -c t81 -f -n '__fish_seen_subcommand_from completion' -a 'bash zsh fish'
 complete -c t81 -f -n '__fish_seen_subcommand_from lang' -a 'check lint fmt build run test disasm debug repl show dump export validate profile'
 complete -c t81 -f -n '__fish_seen_subcommand_from code' -a 'check lint fmt build run test disasm debug repl profile'
@@ -7928,6 +8295,7 @@ complete -c t81 -f -n '__fish_seen_subcommand_from tisc' -a 'disasm validate sta
 complete -c t81 -f -n '__fish_seen_subcommand_from ir' -a 'show dump export validate'
 complete -c t81 -f -n '__fish_seen_subcommand_from tier' -a 'info check gate'
 complete -c t81 -f -n '__fish_seen_subcommand_from tensor' -a 'canonize hash inspect'
+complete -c t81 -f -n '__fish_seen_subcommand_from ai' -a 'backend model verify inference quantization benchmark policy workflow observability run quantize'
 complete -c t81 -f -n '__fish_seen_subcommand_from weights' -a 'import info verify export quantize'
 complete -c t81 -f -n '__fish_seen_subcommand_from policy' -a 'compile validate run test list'
 complete -c t81 -f -n '__fish_seen_subcommand_from axion' -a 'status optimize simulate explain snapshot snapshot-diff rollback log audit'
@@ -7942,7 +8310,8 @@ complete -c t81 -f -n '__fish_seen_subcommand_from feedback' -a 'submit report'
 }
 
 int run_completion_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     print_help_completion();
     return args.command_args.empty() ? 1 : 0;
   }
@@ -8073,7 +8442,8 @@ int run_man_command(const Args& args) {
 }
 
 int run_feedback_command(const Args& args) {
-  if (args.command_args.empty() || args.command_args[0] == "-h" || args.command_args[0] == "--help") {
+  if (args.command_args.empty() || args.command_args[0] == "-h" ||
+      args.command_args[0] == "--help") {
     print_help_feedback();
     return args.command_args.empty() ? 1 : 0;
   }
@@ -8191,7 +8561,7 @@ int run_llama_run(const Args& args) {
   float top_p = 1.0f;
   float temperature = 0.0f;
   std::string expected_model_hash;
-  fs::path canonfs_root = fs::current_path() / ".t81_canonfs";
+  fs::path canonfs_root = discover_canonfs_root();
 
   for (size_t i = 0; i < args.command_args.size(); ++i) {
     const std::string& token = args.command_args[i];
@@ -8298,6 +8668,14 @@ int run_llama_run(const Args& args) {
       return 1;
     }
     model_path = temp_model_file->path;
+  } else if (!fs::exists(model_path)) {
+    std::string resolution_error;
+    auto resolved = t81::cli::resolve_repo_model_path(positional[0], {".gguf"}, &resolution_error);
+    if (!resolved) {
+      error("llama-run: " + resolution_error);
+      return 1;
+    }
+    model_path = *resolved;
   }
 
   auto adapter = t81::experimental::LlamaCppAdapter::create(model_path, policy_text);
@@ -8598,8 +8976,11 @@ int main(int argc, char* argv[]) {
     }
   }
   try {
+    std::string entered_command;
+    if (argc > 1) {
+      entered_command = argv[1];
+    }
     auto args = parse_args(argc, argv);
-    const std::string entered_command = args.command;
 
     if (entered_command != "help" && entered_command != "version") {
       auto removed = removed_alias_recommendation(entered_command);
@@ -8618,7 +8999,8 @@ int main(int argc, char* argv[]) {
       if (!args.command_args.empty()) {
         auto removed = removed_help_topic_recommendation(args.command_args[0]);
         if (removed) {
-          error("Help topic '" + args.command_args[0] + "' has been removed. Use '" + *removed + "'.");
+          error("Help topic '" + args.command_args[0] + "' has been removed. Use '" + *removed +
+                "'.");
           return 1;
         }
       }
@@ -8687,8 +9069,7 @@ int main(int argc, char* argv[]) {
     const auto ext = args.input.extension();
     auto weights_model_ptr = std::shared_ptr<t81::weights::ModelFile>{};
     if (args.weights_model &&
-        (args.command == "compile" ||
-         ((args.command == "run" || args.command == "debug") && ext == ".t81") ||
+        (args.command == "compile" || args.command == "run" || args.command == "debug" ||
          args.command == "repl")) {
       weights_model_ptr = load_weights_model_optional(args.weights_model);
       if (!weights_model_ptr) return 1;
@@ -8696,7 +9077,8 @@ int main(int argc, char* argv[]) {
 
     if (args.command == "compile") {
       if (args.policy) {
-        error("compile does not support --policy yet; pass policy at runtime with 't81 run --policy'.");
+        error("compile does not support --policy yet; pass policy at runtime with 't81 code run "
+              "--policy'.");
         return 1;
       }
       fs::path out = args.output.value_or(args.input.stem().string() + ".tisc");
@@ -8722,12 +9104,36 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "run") {
       if (ext == ".t81") {
-        TempTiscFile temp(args.input.stem().string());
-        int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
-        if (rc != 0) return rc;
-        return t81::cli::run_tisc(temp.path, args.policy, args.trace, args.trace_output);
+        fs::path tisc_path;
+        std::optional<TempTiscFile> temp;
+
+        bool project_mode = (entered_command == "project");
+        bool skip_compile = false;
+
+        if (project_mode && args.input == "main.t81") {
+          fs::path local_tisc = "main.tisc";
+          if (fs::exists(local_tisc)) {
+            auto t81_time = fs::last_write_time(args.input);
+            auto tisc_time = fs::last_write_time(local_tisc);
+            if (tisc_time >= t81_time) {
+              tisc_path = local_tisc;
+              skip_compile = true;
+            }
+          }
+        }
+
+        if (!skip_compile) {
+          temp.emplace(args.input.stem().string());
+          int rc = t81::cli::compile(args.input, temp->path, {}, {}, weights_model_ptr);
+          if (rc != 0) return rc;
+          tisc_path = temp->path;
+        }
+
+        return t81::cli::run_tisc(tisc_path, args.policy, args.trace, args.trace_output,
+                                  weights_model_ptr);
       } else if (ext == ".tisc") {
-        return t81::cli::run_tisc(args.input, args.policy, args.trace, args.trace_output);
+        return t81::cli::run_tisc(args.input, args.policy, args.trace, args.trace_output,
+                                  weights_model_ptr);
       } else {
         error("run expects .t81 or .tisc file");
         return 1;
@@ -8745,9 +9151,9 @@ int main(int argc, char* argv[]) {
         TempTiscFile temp(args.input.stem().string());
         int rc = t81::cli::compile(args.input, temp.path, {}, {}, weights_model_ptr);
         if (rc != 0) return rc;
-        return t81::cli::debug_tisc(temp.path, args.policy);
+        return t81::cli::debug_tisc(temp.path, args.policy, weights_model_ptr);
       } else if (ext == ".tisc") {
-        return t81::cli::debug_tisc(args.input, args.policy);
+        return t81::cli::debug_tisc(args.input, args.policy, weights_model_ptr);
       } else {
         error("debug expects .t81 or .tisc file");
         return 1;
@@ -8803,6 +9209,23 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "tensor") {
       return run_tensor_command(argv[0], args);
 
+    } else if (args.command == "ai") {
+      std::vector<std::string_view> ai_args;
+      ai_args.reserve(args.command_args.size() + (args.output ? 2U : 0U));
+      for (const auto& token : args.command_args) {
+        ai_args.emplace_back(token);
+      }
+      std::string ai_output_flag;
+      std::string ai_output_value;
+      if (args.output) {
+        const std::string subcommand = args.command_args.empty() ? "" : args.command_args.front();
+        ai_output_flag = (subcommand == "quantize") ? "--output" : "--out";
+        ai_output_value = args.output->string();
+        ai_args.emplace_back(ai_output_flag);
+        ai_args.emplace_back(ai_output_value);
+      }
+      return t81::cli::ai::run("t81 ai", ai_args);
+
     } else if (args.command == "vm") {
       return run_vm_command(args);
 
@@ -8851,8 +9274,8 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "init") {
       if (!args.command_args.empty() &&
           (args.command_args[0] == "-h" || args.command_args[0] == "--help")) {
-          return emit_help([&] { print_help_init(); });
-        }
+        return emit_help([&] { print_help_init(); });
+      }
       if (args.command_args.empty()) {
         error("init requires a project name. Run 't81 help init'.");
         return 1;
@@ -8974,8 +9397,10 @@ int main(int argc, char* argv[]) {
         } else if ((tok == "--help" || tok == "-h")) {
           return emit_help([&] { print_help_llvm(); });
         } else if (tok[0] != '-') {
-          if (la.input.empty()) la.input = tok;
-          else la.output = tok;
+          if (la.input.empty())
+            la.input = tok;
+          else
+            la.output = tok;
         } else {
           error("llvm: unknown option '" + tok + "'. Run 't81 help llvm'.");
           return 1;
@@ -9012,8 +9437,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_c(); });
         } else if (tok[0] != '-') {
-          if (ca.input.empty()) ca.input = tok;
-          else ca.output = tok;
+          if (ca.input.empty())
+            ca.input = tok;
+          else
+            ca.output = tok;
         } else {
           error("c: unknown option '" + tok + "'. Run 't81 help c'.");
           return 1;
@@ -9050,8 +9477,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_rust(); });
         } else if (tok[0] != '-') {
-          if (ra.input.empty()) ra.input = tok;
-          else ra.output = tok;
+          if (ra.input.empty())
+            ra.input = tok;
+          else
+            ra.output = tok;
         } else {
           error("rust: unknown option '" + tok + "'. Run 't81 help rust'.");
           return 1;
@@ -9088,8 +9517,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_python(); });
         } else if (tok[0] != '-') {
-          if (pa.input.empty()) pa.input = tok;
-          else pa.output = tok;
+          if (pa.input.empty())
+            pa.input = tok;
+          else
+            pa.output = tok;
         } else {
           error("python: unknown option '" + tok + "'. Run 't81 help python'.");
           return 1;
@@ -9122,8 +9553,10 @@ int main(int argc, char* argv[]) {
         } else if (tok == "--help" || tok == "-h") {
           return emit_help([&] { print_help_mlir(); });
         } else if (tok[0] != '-') {
-          if (ma.input.empty()) ma.input = tok;
-          else ma.output = tok;
+          if (ma.input.empty())
+            ma.input = tok;
+          else
+            ma.output = tok;
         } else {
           error("mlir: unknown option '" + tok + "'. Run 't81 help mlir'.");
           return 1;
@@ -9131,9 +9564,8 @@ int main(int argc, char* argv[]) {
       }
       return t81::cli::run_mlir(ma);
 
-    // ── TUI frontends ─────────────────────────────────────────────────────
-    } else if (args.command == "studio" || args.command == "agent" ||
-               args.command == "ui") {
+      // ── TUI frontends ─────────────────────────────────────────────────────
+    } else if (args.command == "studio" || args.command == "agent" || args.command == "ui") {
 #if defined(T81_HAS_TUI)
       {
         std::error_code ec;
@@ -9154,24 +9586,24 @@ int main(int argc, char* argv[]) {
       {
         using namespace ftxui;
         std::vector<std::string> choices = {
-          "Studio  —  Human Operator Interface",
-          "Agent   —  AI-Native / Agentic Interface",
-          "Cancel",
+            "Studio  —  Human Operator Interface",
+            "Agent   —  AI-Native / Agentic Interface",
+            "Cancel",
         };
         int selected = 0;
         bool cancelled = false;
-        auto screen  = ScreenInteractive::Fullscreen();
-        auto menu_c  = Menu(&choices, &selected);
-        auto root    = Renderer(menu_c, [&]() -> Element {
+        auto screen = ScreenInteractive::Fullscreen();
+        auto menu_c = Menu(&choices, &selected);
+        auto root = Renderer(menu_c, [&]() -> Element {
           return vbox({
-            text("  T81 Foundation  —  Choose Interface") | bold
-              | color(Color::Cyan),
-            separator(),
-            menu_c->Render(),
-            separator(),
-            text("  Arrow keys, Enter to select, Escape to cancel.")
-              | color(Color::GrayDark),
-          }) | border | size(WIDTH, EQUAL, 52) | center;
+                     text("  T81 Foundation  —  Choose Interface") | bold | color(Color::Cyan),
+                     separator(),
+                     menu_c->Render(),
+                     separator(),
+                     text("  Arrow keys, Enter to select, Escape to cancel.") |
+                         color(Color::GrayDark),
+                 }) |
+                 border | size(WIDTH, EQUAL, 52) | center;
         });
         root = CatchEvent(root, [&](Event e) -> bool {
           if (e == Event::Escape) {
@@ -9179,7 +9611,10 @@ int main(int argc, char* argv[]) {
             screen.ExitLoopClosure()();
             return true;
           }
-          if (e == Event::Return) { screen.ExitLoopClosure()(); return true; }
+          if (e == Event::Return) {
+            screen.ExitLoopClosure()();
+            return true;
+          }
           return false;
         });
         screen.Loop(root);

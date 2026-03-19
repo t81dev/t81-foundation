@@ -7,7 +7,7 @@ Target Completion: 2026-03-19 (A2 planning milestone)
 
 ## Purpose
 
-Define a bounded alignment plan for Axion Kernel partial coverage against draft
+Define a bounded alignment plan for Axion Governance Kernel partial coverage against draft
 spec scope, with dated milestones and evidence paths.
 
 ## Scope
@@ -23,9 +23,9 @@ scope, or DCP guarantees.
 
 ## Baseline Gap Statement
 
-- `docs/status/IMPLEMENTATION_MATRIX.md` marks Axion Kernel as Partial / Medium
+- `docs/status/IMPLEMENTATION_MATRIX.md` marks Axion Governance Kernel as Partial / Medium
   drift.
-- `docs/status/SYSTEM_STATUS.md` marks Axion Kernel as Alpha with partial
+- `docs/status/SYSTEM_STATUS.md` marks Axion Governance Kernel as Alpha with partial
   implementation against draft surfaces.
 - Current status notes describe gap posture but not milestone-bounded closure
   actions.

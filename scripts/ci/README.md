@@ -17,6 +17,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - AI status document freshness guard: `check_ai_status_doc_freshness.py`
 - AI status document freshness expectation contract (global default max/warn age with per-doc overrides): `ai_status_doc_freshness_expectations.json`
 - AI evidence bundle collector: `collect_ai_evidence_bundle.py`
+- Core CLI replay bundle collector: `collect_cli_replay_bundle.py`
 - AI model provenance hash gate: `check_ai_model_provenance_gate.py`
 - AI model provenance signing keyring: `ai_model_provenance_keyring.json`
 - AI policy event contract gate: `check_ai_policy_event_contract.py`
@@ -67,12 +68,13 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 ```bash
 python3 scripts/ci/check_architecture_targets.py
 python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
-python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/guides/cli-user-manual.md
-python3 scripts/ci/check_cli_docs_smoke.py --manual docs/guides/cli-user-manual.md --cwd . --timeout-sec 20
+python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/user-guide/reference/cli-user-manual.md
+python3 scripts/ci/check_cli_docs_smoke.py --manual docs/user-guide/reference/cli-user-manual.md --cwd . --timeout-sec 20
 python3 scripts/ci/check_cli_json_contracts.py --t81-bin build/t81 --repo-root .
 python3 scripts/ci/check_ai_experiment_boundary.py
 python3 scripts/ci/check_ai_status_doc_freshness.py --expectations-file scripts/ci/ai_status_doc_freshness_expectations.json --out-json build/ai-status/ai_status_doc_freshness_report.json  # also writes .md summary
 python3 scripts/ci/collect_ai_evidence_bundle.py --ai-bin build/experiments/ai/ux_tools/t81_ai --out-dir build/ai-evidence --runs 3 --model-fixture tests/fixtures/llama_cpp_repro/model.gguf
+python3 scripts/ci/collect_cli_replay_bundle.py --t81-bin build/t81 --out-dir build/cli-replay --runs 2 --program examples/hello_world.t81 --model-fixture tests/fixtures/llama_cpp_repro/model.gguf
 python3 scripts/ci/check_ai_model_provenance_gate.py --model build/ai-provenance/test_model.gguf --manifest build/ai-provenance/test_model.manifest.json --signing-keyring scripts/ci/ai_model_provenance_keyring.json --min-lineage-entries 2 --required-lineage-events artifact_ingest,artifact_promotion_candidate --self-test-deny
 python3 scripts/ci/check_ai_policy_event_contract.py --out-dir build/ai-policy --expectations-file scripts/ci/ai_policy_event_expectations.json --runtime-trace build/ai-policy/ai_runtime_trace.json --ai-bin build/experiments/ai/ux_tools/t81_ai --ledger-keyring scripts/ci/ai_policy_ledger_keyring.json
 python3 scripts/ci/check_ai_wload_policy_evidence.py --policy-contract build/ai-policy/ai_policy_event_contract.json --runtime-trace build/ai-policy/ai_runtime_trace.json --expectations-file scripts/ci/ai_wload_policy_evidence_expectations.json --out-json build/ai-policy/ai_wload_policy_evidence.json

@@ -134,6 +134,7 @@ def main() -> int:
         ("translation staleness", "scripts/governance/check_translation_staleness.py"),
         ("translation semantic alignment", "scripts/governance/check_translation_semantic_alignment.py"),
         ("docs structure", "scripts/governance/check_docs_structure.py"),
+        ("active docs link hygiene", "scripts/governance/check_active_docs_link_hygiene.py"),
         ("license policy", "scripts/governance/check_license_policy.py"),
         ("artifact hygiene", "scripts/governance/check_repo_artifact_hygiene.py"),
         ("public api semver lock", "scripts/governance/check_public_api_semver.py"),

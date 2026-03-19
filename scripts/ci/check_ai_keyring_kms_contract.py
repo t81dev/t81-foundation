@@ -67,7 +67,7 @@ def validate_keyring(path: Path, max_active_days_limit: int) -> tuple[list[str],
             errors.append(f"{path}: key {key_id} kms_key_ref must start with kms://")
 
         if "material_b64" in entry:
-            warnings.append(f"{path}: key {key_id} still contains material_b64 fallback")
+            errors.append(f"{path}: key {key_id} must not contain material_b64 plaintext fallback")
 
     if not has_active:
         errors.append(f"{path}: no active key present")

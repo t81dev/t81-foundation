@@ -1,7 +1,8 @@
 # RFC-0030: Deterministic Math Subsystem
 
 Version 0.1 — Standards Track
-Status: Draft
+Status: Accepted
+Updated: 2026-03-15
 Author: T81 Foundation Architecture Team
 Applies to: T81 Data Types, T81Float, TISC
 
@@ -58,3 +59,20 @@ Provides mathematically provable, reproducible paths for cryptographic and high-
 *   RFC-0001: Architecture Principles
 *   RFC-0002: Deterministic Execution Contract
 *   T81 Data Types Specification (`t81-data-types.md`)
+
+______________________________________________________________________
+
+## Acceptance Note (2026-03-15)
+
+All four acceptance criteria in §4 (Verification and CI Gating) are met:
+
+| Criterion | Evidence |
+| :--- | :--- |
+| Integer-backed implementation — no host `cmath` | `DFixed = Fixed<192,80>` over `T81Int<N>`; grep confirms zero `cmath` includes in `dmath_*.hpp` |
+| Full transcendental coverage | `sin`, `cos`, `exp`, `log`, `sqrt`, `pow`, `div` all implemented in `dmath_trig.hpp`, `dmath_logexp.hpp`, `dmath_hyper.hpp`; wired through `t81_soft_math.cpp` |
+| Numerical accuracy verified against known-good literals | `tests/cpp/test_t81float_soft_math.cpp` — 126 assertions; accuracy tolerance ≤ 1e-5; all pass |
+| Canonical repro fingerprint | `test_repro_fingerprint()` in above file: `sin(1)+cos(1)+exp(1)+log(2)+sqrt(2) ≈ 6.2074` hardcoded; any architecture drift breaks the test |
+
+The `T81Float` methods `sin()`, `cos()`, `tan()`, `exp()`, `log()`, `sqrt()`, `pow()`, `sinh()`, `cosh()`, `tanh()`, `asin()`, `acos()`, `atan()` all route through `t81_soft_math` → `dmath` → `DFixed` arithmetic. No `std::domain_error` is thrown in deterministic builds.
+
+Test suite: `test_t81float_soft_math` — **126 passed, 0 failed**.

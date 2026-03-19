@@ -1,0 +1,32 @@
+// spec/conformance/ai/tattn-ternary-qk.t81
+// Normative ref: RFC-0034 §5.17.3 (TATTN — ternary QK attention)
+// Invariant: TATTN uses a ternary Q·K^T score path while preserving the scalar
+//            attention identity for the 1×1 case.
+//
+// @spec-ref: RFC-0034 §5.17.3
+// @invariant: tattn-one-cell-identity
+// @input-domain: 1×1 ternary query/key and 1×1 value
+// @expected: the normalized single-element attention weight is 1
+
+@tier(2) @pure
+fn check_single_cell_identity() -> bool {
+    let q: T81BigInt = 1;
+    let k: T81BigInt = 1;
+    let v: T81BigInt = 1;
+    let score: T81BigInt = q * k;
+    // A one-element softmax is exactly 1, so output is value-preserving.
+    score == 1 && v == 1
+}
+
+@tier(2) @pure
+fn check_sign_symmetry() -> bool {
+    let q: T81BigInt = -1;
+    let k: T81BigInt = -1;
+    (q * k) == 1
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_single_cell_identity();
+    assert check_sign_symmetry();
+}

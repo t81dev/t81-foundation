@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: `Stable` (bounded policy-governance surface)
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "Axion Engine" -> `kernel/axion/*.cpp`; "Policy model" -> `include/t81/axion/policy.hpp`; "Policy evaluation" -> `include/t81/axion/policy_engine.hpp`.
+> - Terminology mapping: "Axion Governance Engine" -> `kernel/axion/*.cpp`; "Policy model" -> `include/t81/axion/policy.hpp`; "Policy evaluation" -> `include/t81/axion/policy_engine.hpp`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.

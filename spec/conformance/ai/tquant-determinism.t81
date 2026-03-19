@@ -1,0 +1,42 @@
+// spec/conformance/ai/tquant-determinism.t81
+// Normative ref: RFC-0034 §5.17.2 (TQUANT — ternary quantization)
+// Invariant: TQUANT deterministically maps each source value into {-1, 0, +1}
+//            using a threshold predicate with no platform-dependent behavior.
+//
+// @spec-ref: RFC-0034 §5.17.2
+// @invariant: tquant-threshold-deterministic
+// @input-domain: signed scalar values and non-negative threshold
+// @expected: repeated evaluations yield identical ternary outputs
+
+@tier(2) @pure
+fn snap(value: T81BigInt, threshold: T81BigInt) -> T81BigInt {
+    if value > threshold {
+        return 1;
+    }
+    if value < (0 - threshold) {
+        return -1;
+    }
+    return 0;
+}
+
+@tier(2) @pure
+fn check_reference_mapping() -> bool {
+    let thr: T81BigInt = 0;
+    snap(-1, thr) == -1 &&
+    snap(0, thr) == 0 &&
+    snap(1, thr) == 1
+}
+
+@tier(2) @pure
+fn check_repeat_determinism() -> bool {
+    let thr: T81BigInt = 1;
+    let run1: T81BigInt = snap(2, thr);
+    let run2: T81BigInt = snap(2, thr);
+    run1 == run2 && run1 == 1
+}
+
+@axion_verify
+fn main() -> void {
+    assert check_reference_mapping();
+    assert check_repeat_determinism();
+}

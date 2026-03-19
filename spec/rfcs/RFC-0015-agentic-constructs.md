@@ -1,141 +1,114 @@
-______________________________________________________________________
-
-title: "RFC-0015 — First-Class Agents and Tiered Recursive Cognition"
-version: Draft
+---
+title: "RFC-0015 — First-Class Agents and Agentic Constructs"
+status: accepted
+version: "0.5"
+updated: 2026-03-15
 applies_to:
+  - T81Lang Specification (§1, §3.5)
+  - TISC Specification (AgentInvoke opcode)
+  - Axion Governance Kernel Specification (AGENT_INVOKE audit event)
+---
 
-- T81Lang Specification
-- TISC Specification
-- Axion Kernel Specification
+## Summary
 
-______________________________________________________________________
+This RFC introduces `agent` as a first-class top-level declaration in T81Lang,
+providing a named collection of stateless `behavior` functions that compile to
+`AGENT_INVOKE` rather than ordinary `CALL`.  Every `AGENT_INVOKE` emission causes
+the Axion Policy Kernel to record an audit event before dispatch, making agent
+invocations fully observable and policy-enforceable.
 
-# Summary
+## Motivation
 
-This RFC proposes the introduction of a new top-level declaration, `agent`, to T81Lang. An `agent` is a construct for encapsulating state (e.g., neural network weights) and behaviors (e.g., `infer` or `train` methods) into a single, cohesive unit. This provides the language with a powerful abstraction for building complex, stateful, and recursive AI systems, with deep integration into Axion's cognitive-tier safety model.
+Prior RFCs introduced tensor primitives and the `infer` expression but provided no
+language-level construct for organizing model behaviors into a cohesive, named entity.
+`agent` addresses three concrete needs:
 
-# Motivation
+1. **Namespace for behaviors** — `SimpleNet.infer(x)` is unambiguous and survives
+   rename-refactoring; bare function names do not scale to multi-model programs.
+2. **Axion observability** — every behavior invocation must carry enough metadata for
+   the Axion kernel to apply tier-based policies.  `AGENT_INVOKE` vs. `CALL` provides
+   the necessary discrimination at the TISC level.
+3. **`infer` sugar** — `infer Agent(args)` is the idiomatic call form for the most
+   common operation; it MUST desugar to a validated `Agent.infer(args)` → `AGENT_INVOKE`.
 
-The previous RFCs (`0012`-`0014`) introduced the *primitives* for AI operations. However, there is no language-level construct to organize these primitives into a coherent entity. A neural network is more than just weights and functions; it's a model of behavior. The `agent` construct is needed to:
+## Acceptance Criteria
 
-1.  **Encapsulate State and Behavior:** An `agent` binds data (like `TernaryTensor` weights) to the functions that operate on that data. This is a fundamental principle of structured design and is crucial for managing the complexity of large AI models.
-2.  **Enable Tiered Cognition:** Agents are the primary unit of cognitive identity that Axion reasons about. Declaring an `agent` allows developers to assign it a cognitive tier, enabling Axion to enforce policies on its recursion depth, resource usage, and interaction with other agents.
-3.  **Provide a Namespace for Behaviors:** An `agent` provides a natural namespace for its behaviors (e.g., `SimpleNet.infer(...)`), improving code organization and readability.
-4.  **Formalize Recursive Self-Calls:** The `agent` model provides a formal basis for recursive cognition. An agent's behavior can call another agent, or even itself, with Axion acting as a supervisor to prevent uncontrolled recursion.
+| ID | Criterion | Status |
+| -- | --------- | ------ |
+| [RFC-0015-01] | `agent` and `behavior` are lexed as distinct keyword tokens | met |
+| [RFC-0015-02] | `agent Foo { behavior bar(…) -> T { } }` parses to `AgentDecl` with one `BehaviorDecl` | met |
+| [RFC-0015-03] | Semantic analyzer registers the agent; `Foo.bar(…)` call site type-checks against the declared signature | met |
+| [RFC-0015-04] | IR generator emits `AGENT_INVOKE` (not `CALL`) for behavior calls | met |
+| [RFC-0015-05] | `infer Foo(x)` desugars to `Foo.infer(x)` → `AGENT_INVOKE` | met |
+| [RFC-0015-06] | VM dispatches `AGENT_INVOKE` and Axion emits an audit event | met |
+| [RFC-0015-07] | Duplicate agent name is a semantic error | met |
+| [RFC-0015-08] | Calling an undeclared behavior is handled without crash | met |
+| [RFC-0015-09] | `infer` on an agent without an `infer` behavior is a semantic error | met |
 
-# Guide-level explanation
+All 9/9 criteria verified by `tests/cpp/agent_constructs_test.cpp` (16 checks, 0 failures).
 
-This RFC introduces a new way to organize your AI code: the `agent`. You can think of an `agent` as a container for a neural network's data and its abilities.
+## Specification Changes
 
-Instead of having loose functions and variables, you can group them together. An agent has a name and a set of named `behaviors`, which are like methods.
+### §1 Core Grammar
 
-Here is a corrected example, using only syntax defined in the preceding RFCs:
-
-```t81
-agent SimpleNet {
-  // This is a behavior named "infer"
-  behavior infer(input: TernaryTensor[Trit, 784]) -> TernaryTensor[Trit, 10] {
-    let weights = quantize([0.5t81, -0.3t81, ...] as TernaryTensor[Trit, 784, 10]);
-    return input ** weights;  // Ternary matmul
-  }
-}
-
-fn main() {
-  // Create a valid TernaryTensor using the 'quantize' expression
-  let img = quantize([1t81, 0t81, ...] as TernaryTensor[Trit, 784]);
-
-  // You can call an agent's behavior directly:
-  let output = SimpleNet.infer(img);
-
-  // Or use the 'infer' keyword as syntactic sugar:
-  let output_sugar = infer SimpleNet(img) -> TernaryTensor[Trit, 10];
-
-  print(quantize(output));
-}
-```
-
-This makes the code much more organized and allows the `Axion` kernel to apply safety rules at the agent level.
-
-# Reference-level implementation
-
-## 1. Specification Changes
-
-The following changes would be made to the `t81lang-spec.md` upon acceptance of this RFC.
-
-### A. Grammar (`§1 Core Grammar`)
-
-The `program` and `primary` productions will be updated, and new `agent` and `behavior` productions will be added. To make this RFC self-contained, the definition for `parameters` is also included.
+Added to the `declaration` production and new `agent_decl` / `behavior_decl` rules:
 
 ```ebnf
-program       ::= { function | agent | declaration }*  // New: agent
+declaration   ::= fn_decl | agent_decl | type_decl | record_decl | enum_decl
+                | var_decl | let_decl | statement
 
-agent         ::= "agent" identifier "{" behavior* "}"
-behavior      ::= "behavior" identifier "(" parameters ")" "->" type block
-parameters    ::= [ parameter { "," parameter } ]
-parameter     ::= identifier ":" type
-
-primary       ::= literal
-                | identifier
-                | fn_call
-                | paren_expr
-                | quantize_expr
-                | infer_expr
-                | agent_call     // New
-
-agent_call    ::= identifier "." identifier "(" [ expr { "," expr } ] ")"
+agent_decl    ::= "agent" identifier "{" behavior_decl* "}"
+behavior_decl ::= "behavior" identifier "(" parameters ")" "->" type block
 ```
-This grammar is consistent with the hierarchy from `RFC-0014`.
 
-### B. Relationship Between `infer` and `agent_call`
+### §3.5 Agent Declarations
 
-The `infer` expression from `RFC-0014` and the `agent_call` expression are explicitly linked to provide ergonomic syntax for the most common agent operation.
+See `spec/t81lang-spec.md §3.5` (added 2026-03-15) for the normative semantics,
+`infer` sugar desugaring rules, and error conditions table.
 
-The `infer` expression:
-`infer AgentName(input) -> ReturnType`
+### TISC ISA — `AgentInvoke` opcode
 
-is defined as **syntactic sugar** for the canonical `agent_call`:
-`AgentName.infer(input)`
+A new opcode `AgentInvoke` (value immediately after `GcSafepoint`) is added to
+`include/t81/isa/opcodes.hpp`.  Encoding identical to `Call`:
 
-The compiler MUST treat these two forms as semantically identical. The `infer` keyword is only permitted with an agent that has a behavior explicitly named `infer`. Any other use is a compile-time error. This provides a clean, high-level syntax for the primary purpose of an agent (inference) while preserving the general-purpose `agent_call` for other behaviors (e.g., `MyAgent.train(...)` or `MyAgent.reset(...)`).
+```text
+AgentInvoke  RD, R_ADDR   ; push (PC+1), jump to R_ADDR; Axion event emitted
+```
 
-### C. Compilation Pipeline (`§5 Compilation Pipeline`)
+The JIT treats `AgentInvoke` as an Axion-boundary exit point (same group as `Call`
+with policy check), causing the trace to OSR back to the interpreter which handles
+the full tier-check + audit sequence.
 
-#### Name Resolution (`§4`)
+### Axion audit event
 
--   Agents introduce a new top-level scope. Agent names are resolved at the module level.
--   Behavior names are resolved within the scope of their agent (e.g., the `infer` in `SimpleNet.infer`).
+`vm.cpp` emits `record_axion_event(...)` before dispatching `AgentInvoke`.  The event
+is appended to `State::axion_log`, observable via `IVirtualMachine::state().axion_log`.
 
-#### TISC Lowering (`§5.7 TISC Lowering`)
+## Implementation Notes
 
-A new row will be added to the lowering table:
+- **Behavior names as contextual keywords**: `infer` (and other reserved keywords) are
+  valid behavior names.  The parser accepts `TokenType::Infer` in the behavior-name
+  position as a contextual identifier.
+- **Agent call callee type**: `Net.run(42)` produces a `FieldAccessExpr` callee, not a
+  `VariableExpr`.  The IRGen agent-dispatch check runs *before* the `VariableExpr` gate.
+- **SA agent call dispatch**: Added inside the dotted-method block of `visit(CallExpr)`,
+  keyed on `_agent_definitions`.  Returns the behavior's declared return type.
 
-| IR Construct | TISC Output |
-| --- | --- |
-| Agent behavior call | `AGENT_INVOKE`, tier-checked recursion |
+## Acceptance Note (2026-03-15)
 
-The `AGENT_INVOKE` opcode is a new TISC instruction that is a specialized version of `CALL`. It includes metadata about the agent and behavior being invoked, which is visible to Axion for tier-checking and policy enforcement. The `infer` syntactic sugar will be desugared into a standard `agent_call` in the AST and will also lower to `AGENT_INVOKE`.
+All 9 acceptance criteria are met.  Implementation spans:
 
-### D. Axion Integration (`§7 Axion Integration`)
-
--   Agents become a primary subject for Axion policies. Axion can observe `AGENT_INVOKE` calls to:
-    -   Veto calls that would exceed the maximum recursion depth for a given cognitive tier.
-    -   Monitor resource usage on a per-agent basis.
-    -   Enforce information flow policies between agents.
-
-# Drawbacks
-
--   The introduction of `agent` moves T81Lang slightly towards an object-oriented paradigm. This adds complexity compared to a purely procedural language. However, this is a justified trade-off for the massive benefits in organization and safety for AI applications.
-
-# Rationale and alternatives
-
--   **Why not use modules or records?** While modules provide namespacing and records group data, neither provides the combination of bundled state, behavior, and first-class cognitive identity that is required for Axion integration. An `agent` is a unique construct specifically for this purpose.
-
-# Future Possibilities
-
--   This RFC completes the core set of AI-native language features from the original "Version 0.3" proposal.
--   Future RFCs could explore dynamic agent creation, inter-agent communication protocols, and more advanced Axion policies for governing agent societies.
-
-# Open Questions
-
-1.  Will agents have internal state (i.e., `let` bindings at the agent level) in this initial version, or are they purely stateless collections of behaviors? (This RFC assumes the latter for simplicity, with state being captured in closures or passed as arguments).
-2.  What is the precise format of the metadata passed with the `AGENT_INVOKE` opcode? This will need to be defined in `tisc-spec.md`.
+- `include/t81/frontend/lexer.hpp` — `Agent`, `Behavior` token types
+- `lang/frontend/lexer.cpp` — keyword entries
+- `include/t81/frontend/ast.hpp` — `BehaviorDecl`, `AgentDecl` structs
+- `include/t81/frontend/parser.hpp` / `lang/frontend/parser.cpp` — `agent_declaration()`
+- `include/t81/frontend/semantic_analyzer.hpp` / `lang/frontend/semantic_analyzer.cpp` —
+  `AgentInfo`, `visit(AgentDecl)`, agent call dispatch in `visit(CallExpr)`, `infer` sugar
+- `include/t81/isa/opcodes.hpp` — `AgentInvoke` opcode + `opcode_name()`
+- `include/t81/isa/ir.hpp` — `tisc::ir::Opcode::AGENT_INVOKE`
+- `lang/frontend/ir_generator.cpp` — agent pre-pass labeling, `visit(AgentDecl)`, agent
+  call dispatch (before `VariableExpr` gate), `infer` sugar lowering
+- `core/vm/vm.cpp` — `AgentInvoke` dispatch with Axion event
+- `runtime/jit/jit_compiler.cpp` — `AgentInvoke` in Axion-boundary exit group
+- `tests/cpp/agent_constructs_test.cpp` — 9 test functions, 16/16 assertions passing
+- `spec/t81lang-spec.md` — §1 grammar additions, §3.5 new section

@@ -1,6 +1,6 @@
 # Performance Architecture Strategy
 
-**Last Updated:** February 10, 2026
+**Last Updated:** March 18, 2026
 
 This document outlines the performance strategy for the T81 Foundation stack, focusing on balanced ternary arithmetic optimization and tensor backend architecture.
 
@@ -26,6 +26,24 @@ Our tensor strategy aims to balance performance with bounded determinism on veri
 -   **Portable Scalar Parity**: We maintain a portable scalar backend that serves as the "golden reference" for deterministic verification lanes and backend parity checks.
 -   **Optimized Backends**: We are developing optimized backends (e.g., AVX-512, NEON, potential GPU/TPU paths) that *must* produce results mathematically identical to the scalar reference.
 -   **T729Tensor**: The current implementation (`../../include/t81/tensor`) provides a comprehensive API for dense tensors, supporting broadcasting, slicing, and reduction operations. Future work involves further optimizing these operations for specific hardware targets without compromising determinism.
+
+## 2A. SWAR Dispatch Guidance
+
+### Status: Implemented
+
+RFC 0040 formalizes the middle tier of the ternary compute hierarchy:
+
+-   **Scalar**: correctness baseline and fallback path
+-   **SWAR**: preferred packed-trit path for small and medium exact-trit vectors
+-   **SIMD**: highest-throughput tier once data size clears the platform threshold
+
+Current guidance:
+
+-   Use `t81::swar::{t_not,t_and,t_or}` for stable API entry points.
+-   Use the explicit `*_swar` variants only when tests or benchmarks need to pin the SWAR path.
+-   Expect SWAR to be the most efficient deterministic path below the SIMD threshold and for SIMD tail handling.
+-   Avoid converting non-`ExactTrit` tensor classes into the SWAR VM opcodes; the VM intentionally traps rather than widening semantics.
+-   Treat the experimental `PackedTritVector` methods as compatibility-only entry points during the deprecation window.
 
 ## 3. CanonFS Scalability
 

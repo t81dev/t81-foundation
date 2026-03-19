@@ -11,7 +11,7 @@ supersedes: RFC-0009
 This RFC proposes the Axion Policy Language (APL), a formal S-expression based Domain Specific Language (DSL) for defining security, resource, and alignment policies for the HanoiVM.
 
 ## 2. Motivation
-Currently, Axion policies are verified by a simple Python script or hardcoded in C++. To fulfill the "Axion Policy Language" TODO, we need a formal language that can be compiled into a deterministic binary format for the Axion Kernel to execute efficiently.
+Currently, Axion policies are verified by a simple Python script or hardcoded in C++. To fulfill the "Axion Policy Language" TODO, we need a formal language that can be compiled into a deterministic binary format for the Axion Governance Kernel to execute efficiently.
 
 ## 3. Proposal
 
@@ -35,7 +35,7 @@ The Axion `PolicyEngine` will be updated to load and execute `.axionb` files. Po
 
 ## 4. Impact
 -   **Tooling**: New `t81 policy compile` and `t81 policy run` commands.
--   **Kernel**: Axion Kernel changes to support binary policy loading.
+-   **Kernel**: Axion Governance Kernel changes to support binary policy loading.
 -   **Auditability**: Policies become first-class, hashable artifacts.
 
 ## 5. Alternatives

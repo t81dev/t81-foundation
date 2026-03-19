@@ -1,6 +1,6 @@
 # Determinism Audit Log
 
-Last Updated: 2026-03-05
+Last Updated: 2026-03-19
 Owner: @t81dev
 
 Chronological record of determinism audits: what was audited, what failed,
@@ -11,6 +11,40 @@ Entries are append-only. Do not edit past entries.
 ---
 
 ## Log
+
+### 2026-03-19 — Axion Epoch Scheduler / Audit Parity Promotion
+
+**Scope:** Operationalize RFC-0043 / RFC-0046 proof obligations for the
+experimental TernaryOS + DPE kernel lane.
+
+**Audited:**
+- `experimental/ternaryos/tests/epoch_submission_test.cpp`
+- `experimental/ternaryos/tests/epoch_audit_test.cpp`
+- `.github/workflows/ci.yml` (`axion-epoch-determinism`)
+- status / governance surfaces that describe the Axion/TernaryOS boundary
+
+**Findings:**
+
+| Surface | Finding | State |
+| :--- | :--- | :--- |
+| Kernel epoch execution | Bounded thread-pool and unbounded kernel submit paths now produce identical commit-state results across flat, fan-out, overlap, and diamond epoch shapes | Closed |
+| Kernel epoch audit | Success, timeout, policy-fault, and task-fault audit outcomes now match across pooled and unbounded scheduler paths | Closed |
+| CI enforcement | Dedicated `axion-epoch-determinism` gate now hard-fails divergence in the experimental kernel lane | Closed |
+| Operator-facing status docs | Boundary and status artifacts were lagging the new proof lane and needed refresh | Closed |
+
+**Patches Applied:**
+- Added scheduler-parity proofs in `epoch_submission_test.cpp`
+- Added audit-parity proofs in `epoch_audit_test.cpp`
+- Added `axion-epoch-determinism` job to `.github/workflows/ci.yml`
+- Refreshed governance and status docs so the new proof lane is visible in the
+  registry, enforcement matrix, control center, CI status, extension profile,
+  implementation matrix, and drift records
+
+**Remaining Open:**
+- Axion/TernaryOS remains governed non-DCP and experimental at the broader
+  runtime boundary.
+- Kernel fault-path integration and persistent runtime-state convergence remain
+  open in `DRIFT_DECOMPOSITION.md`.
 
 ### 2026-03-05 — Status Reconciliation Follow-Up
 

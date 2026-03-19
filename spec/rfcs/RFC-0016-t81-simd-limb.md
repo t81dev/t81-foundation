@@ -2,12 +2,13 @@ vote: +1
 
 # RFC-0016: Register-native SIMD T81 Limb
 
-**Status:** Proposed  
-**Type:** Standards Track  
+**Status:** Superseded
+**Type:** Standards Track
 **Created:** 2025-12-xx  
 **Updated:** 2025-12-xx  
 **Requires:** —  
 **Supersedes:** —  
+**Superseded-By:** RFC-0017
 **Discussion:** https://github.com/t81dev/t81-foundation/discussions (TBD thread)
 
 ______________________________________________________________________
@@ -79,3 +80,11 @@ This RFC introduces a new type and does not alter existing types. Legacy code co
 - Extend the SIMD limb to `T81x2` for AVX-512, enabling 256-trit operations.
 - Provide JIT hooks in Axion/governor to detect when `T81` operations are available and prefer them in hot paths.
 - Explore formal verification of the new addition/negation micro-ops for Axion audit.
+
+## Supersession Note (2026-03-15)
+
+RFC-0016 is superseded by RFC-0017. The public register-native type is `t81::T81` (top-level
+namespace) per RFC-0017, not `t81::simd::T81`. The `t81::simd` namespace is retained for
+internal helpers (`ByteCarryMap`, `AddEntry`, `PrefixScan`, etc.) exposed in
+`include/t81/simd/add_helpers.hpp` and `include/t81/simd/prefix_scan.hpp`. No new
+development should target `t81::simd::T81` as a public type.

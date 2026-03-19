@@ -4,6 +4,7 @@
 #include <random>
 #include <vector>
 #include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/swar/swar.hpp"
 
 using namespace t81::experimental;
 
@@ -219,7 +220,7 @@ static void BM_ComputeTAnd_Phase2C_SWAR(benchmark::State& state) {
   auto p2 = ComputeTritVector::from_trits(t2).value();
 
   for (auto _ : state) {
-    auto res = p1.t_and_swar(p2).value();
+    auto res = t81::swar::t_and_swar(p1, p2).value();
     benchmark::DoNotOptimize(res.data().data());
   }
 }
@@ -278,7 +279,7 @@ static void BM_ComputeTOr_Phase2C_SWAR(benchmark::State& state) {
   auto p2 = ComputeTritVector::from_trits(t2).value();
 
   for (auto _ : state) {
-    auto res = p1.t_or_swar(p2).value();
+    auto res = t81::swar::t_or_swar(p1, p2).value();
     benchmark::DoNotOptimize(res.data().data());
   }
 }
@@ -353,7 +354,7 @@ static void BM_ComputeTNot_Phase2C_SWAR(benchmark::State& state) {
   auto p1 = ComputeTritVector::from_trits(t1).value();
 
   for (auto _ : state) {
-    auto res = p1.t_not_swar().value();
+    auto res = t81::swar::t_not_swar(p1).value();
     benchmark::DoNotOptimize(res.data().data());
   }
 }

@@ -9,6 +9,10 @@ part of the frozen, verified core. These areas are subject to change without
 notice, are out of DCP scope, and are non-verified unless promoted through
 governance and registry status upgrade.
 
+Note: `DPE (Parallel Execution)` was relocated to `include/t81/dpe/` and
+`src/dpe/` on 2026-03-19 for boundary clarity. It remains governed non-DCP and
+is intentionally no longer listed as an experimental directory surface.
+
 ## Experimental Inventory
 
 | Component | Location | Freeze Scope | Determinism Scope | Stability |

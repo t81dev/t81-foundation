@@ -1,7 +1,7 @@
 # Decision Log
 
 Status: Active
-Last Updated: 2026-03-08
+Last Updated: 2026-03-19
 Owner: Project Management / Governance
 Version: 1.0.0
 
@@ -135,8 +135,8 @@ green. Separating implementation maturity from spec authority allows engineering
 velocity while spec review continues.
 
 **References:**
-- `docs/status/T81LANG_PROMOTION_GATE.md` (full gate evidence)
-- `docs/status/T81LANG_PROMOTION_GATE_SNAPSHOT.md`
+- `docs/records/status-history/T81LANG_PROMOTION_GATE.md` (full gate evidence)
+- `docs/records/status-history/T81LANG_PROMOTION_GATE_SNAPSHOT.md`
 - `docs/status/IMPLEMENTATION_MATRIX.md`
 
 ---
@@ -165,8 +165,9 @@ promotion pipeline.
 
 **References:**
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md` (§ AGI-Facing Boundary Classification)
-- `docs/status/GOVERNED_AGI_PROMOTION_PIPELINE.md`
+- `docs/status/EXTENSION_PROFILE.md`
 - `docs/status/IMPLEMENTATION_MATRIX.md`
+- `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
 - `CMakeLists.txt` (`T81_EXPORT_LLAMA_ADAPTER` guard)
 
 ---

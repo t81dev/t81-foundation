@@ -1,21 +1,33 @@
-# STDLIB Promotion Snapshot (2026-03)
+# T81Lang Standard Library Promotion Snapshot
 
-Generated (UTC): 2026-03-10
-Date: 2026-03-10
-Baseline: 1.3.2
+Date: 2026-02-26  
+Status: Active Snapshot  
+Baseline: `c5c4aa59`
 
-## Module Statuses
+## 1. Module Status Matrix
 
-| ID | Module | Status | Promoted Date | Evidence Link |
-| :--- | :--- | :--- | :--- | :--- |
-| STDM-01 | `std.core` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdcore) |
-| STDM-02 | `std.math` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdmath) |
-| STDM-03 | `std.io` | stable | 2026-03-01 | [Docs](../standards/standard-library.md#stdio) |
-| STDM-04 | `std.collections` | stable | 2026-03-04 | [Docs](../standards/standard-library.md#stdcollections) |
-| STDM-05 | `std.text` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdtext) |
-| STDM-06 | `std.bytes` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdbytes) |
-| STDM-07 | `std.symbol` | stable | 2026-02-28 | [Docs](../standards/standard-library.md#stdsymbol) |
-| STDM-08 | `std.sys` | stable | 2026-03-01 | [Docs](../standards/standard-library.md#stdsys) |
-| STDM-09 | `std.async` | bounded | 2026-03-01 | [Docs](../standards/standard-library.md#stdasync) |
-| STDM-10 | `std.tensor` | bounded | 2026-02-28 | [Docs](../standards/standard-library.md#stdtensor) |
-| STDM-11 | `std.agent` | experimental | 2026-03-01 | [Docs](../standards/standard-library.md#stdagent) |
+| Module | Status | Determinism Posture | Evidence |
+| :--- | :--- | :--- | :--- |
+| `std.core` | bounded | deterministic aliases; behavior locked by fixtures | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: core) |
+| `std.math` | bounded | host-math dependency documented; bounded deterministic profile only | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: math), `spec/tisc-spec.md` |
+| `std.io` | bounded | deterministic handle aliases and print paths | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.collections` | stable | deterministic staged semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: collections) |
+| `std.text` | stable | deterministic text semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: text) |
+| `std.bytes` | stable | deterministic byte semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: bytes) |
+| `std.symbol` | stable | deterministic alias semantics and fixture coverage | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: symbol) |
+| `std.sys` | bounded | deterministic placeholder aliases (`time=0`, `entropy=0`) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.async` | bounded | deterministic placeholder aliases (`yield/sleep` no-op) | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+| `std.tensor` | bounded | deterministic alias behavior within current runtime profile | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: tensor) |
+| `std.agent` | experimental | deterministic opcode alias exists; capability semantics remain bounded | `tests/cpp/cli_stdlib_fixtures_test.cpp` (module: runtime) |
+
+## 2. Governance Notes
+
+1. This snapshot is descriptive, not a global determinism claim expansion.
+2. Any status promotion/demotion requires:
+   - snapshot update,
+   - evidence update,
+   - release/status synchronization.
+3. `std.math` remains bounded until host-dependent transcendental surfaces are
+   fully contract-resolved for cross-platform bit-identity claims.
+4. Usage reference:
+   - `docs/reference/T81LANG_STDLIB_REFERENCE.md`

@@ -31,7 +31,7 @@ int64_t execute_e2e_option_result_function_test(const std::string& source) {
 
   [[maybe_unused]] auto vm = vm::make_interpreter_vm();
   vm->load_program(program);
-  vm->run_to_halt();
+  (void)vm->run_to_halt();
 
   return vm->state().contexts[0].registers[2];
 }

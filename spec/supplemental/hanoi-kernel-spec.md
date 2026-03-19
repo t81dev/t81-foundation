@@ -1,23 +1,21 @@
 ---
-title: Hanoi Kernel — Reference Specification (Unified)
-version: 0.1.1 (Historical / Experimental)
-status: archived
+title: Hanoi Kernel — Reference Specification (Alpha)
+version: 0.2.0 (Alpha)
+status: alpha
 category: kernel
 created: 2025-11-22
-updated: 2025-11-22
+updated: 2026-03-16
 ---
 
-> **Archive Note:** This document is historical and experimental. It is **not normative** for current T81 behavior. For authoritative definitions of ISA/VM behavior, refer to [`../tisc-spec.md`](../tisc-spec.md) and [`../t81vm-spec.md`](../t81vm-spec.md).
-
-# Hanoi Kernel v0.1.1
+# Hanoi Kernel v0.2.0 (Alpha)
 
 **A Deterministic, Capability-Native, Axion-Governed Microkernel for T81-Class Machines**
 
-This archived reference captures the intended behavior of the Hanoi kernel proposal:
+This Alpha specification defines the implemented behavior of the Hanoi kernel:
 architecture, boot flow, syscall interface, ABI, deterministic entropy model,
-CanonSeal key derivation, diagrams, and implementation scaffold.
+CanonSeal key derivation, diagrams, and command surface implementation.
 
-This is the archived v0.1.1 snapshot.
+This is the Alpha v0.2.0 release with full RFC-0000 §7 command surface support.
 
 ______________________________________________________________________
 
@@ -103,7 +101,7 @@ AXHALT(reason):
 sequenceDiagram
     participant ROM as ROM Stub
     participant Verify as CanonVerify
-    participant Axion as Axion Kernel
+    participant Axion as Axion Governance Kernel
     participant FS as CanonFS
     participant VM as T81VM
 

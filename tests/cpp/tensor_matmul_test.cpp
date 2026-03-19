@@ -24,7 +24,7 @@ int main() {
   // C = A·B -> 2x2
   [[maybe_unused]] auto C = t81::ops::matmul(A, B);
   assert(C.rank() == 2 && C.shape()[0] == 2 && C.shape()[1] == 2);
-  const auto& cd = C.data();
+  [[maybe_unused]] const auto& cd = C.data();
   // Expected:
   // [ 58  64
   //  139 154]
@@ -35,7 +35,7 @@ int main() {
   // Sanity: A·A^T -> 2x2
   [[maybe_unused]] auto AT = t81::ops::transpose(A);
   [[maybe_unused]] auto G = t81::ops::matmul(A, AT);
-  const auto& gd = G.data();
+  [[maybe_unused]] const auto& gd = G.data();
   // [1 2 3]·[1 2 3] = 14 ; [4 5 6]·[4 5 6] = 77 ; off-diag = 32
   assert((gd == std::vector<float>{14, 32, 32, 77}));
   assert(G.canonical_fixed_authoritative());

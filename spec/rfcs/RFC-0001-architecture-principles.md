@@ -1,7 +1,8 @@
 # RFC-0001: T81 Architecture Principles
 
 Version 0.2 — Standards Track\
-Status: Draft\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: T81 Foundation\
 Applies to: All layers (Data Types, TISC, T81VM, T81Lang, Axion, Cognitive Tiers)
 
@@ -336,3 +337,36 @@ It provides:
 - the architectural worldview
 
 upon which all further standards and extensions will be built.
+
+______________________________________________________________________
+
+# 9. Acceptance Criteria
+
+RFC-0001 is a **principles RFC** — its acceptance criteria verify that every stated architectural principle is demonstrably upheld in the implemented system, not by a single test but by the full cross-layer evidence record.
+
+| ID | Principle | Evidence |
+| :--- | :--- | :--- |
+| [A-0001-01] | Root invariant (determinism): same input → bit-identical output and audit trace on all platforms | `t81_axion_log_determinism_test`, `axion_policy_allow_deny_determinism_test`, reproducibility gate `t81lang_repro_gate.py` |
+| [A-0001-02] | No undefined behavior: every ambiguous or invalid operation yields a canonical result or a deterministic fault | `t81_ethics_test`, `t81_vm_policy_parse_fail_closed_test`, `t81_vm_axreport_policy_deny_fail_closed_test` |
+| [A-0001-03] | Canonical data semantics enforced across all layers | `spec_conformance_axion-kernel_segment-trace-strings`, tensor shape fault tests, `t81_ethics_invariants_test` |
+| [A-0001-04] | Safe symbolic recursion: recursion is bounded and supervised per tier | `axion_recursion_guardrails_test`, `spec_conformance_axion-kernel_tier-supervision-invariant` |
+| [A-0001-05] | Privileged boundaries enforced: AX* instructions supervised, logged, deterministic | `t81_test_axion_opcodes`, `canonfs_axion_trace_test` |
+| [A-0001-06] | All downstream layer-specific standards accepted: RFC-0002 (DEC), RFC-0003 (Safety Model), RFC-0009 (APL) | Accepted status of RFC-0002, RFC-0003, RFC-0009 as of 2026-03-15 |
+
+______________________________________________________________________
+
+## Acceptance Note (2026-03-15)
+
+All six criteria above are met as of this date.
+
+RFC-0001 is non-normative with respect to operational semantics (§6), but normative with respect to architectural philosophy, design constraints, and cross-layer intentions. Acceptance is therefore confirmed by verifying that every principle it asserts is upheld by the operational evidence of the full system:
+
+- **§1.1 Deterministic Execution** — satisfied: the reproducibility gate and determinism test suite confirm bit-identical output across platforms (RFC-0002 Accepted; `t81_axion_log_determinism_test` passes).
+- **§1.2 Canonical Data Semantics** — satisfied: tensor shape faults, fraction/float canonicalization, and segment trace strings confirm no layer admits non-canonical data silently.
+- **§1.3 Ternary-Native Foundations** — satisfied: the entire ISA, VM, and type system operate on balanced-ternary integers and base-81 encodings with no binary-observable side effects.
+- **§1.4 Safe Symbolic Recursion** — satisfied: per-tier recursion depth limits enforced by Axion RCS subsystem (`axion_recursion_guardrails_test`; RFC-0003 §6 Accepted).
+- **§2.1 No Undefined Behavior** — satisfied: fail-closed policy parse, opcode deny, and ethics gate all convert ambiguity to deterministic faults.
+- **§3.4 Privileged Boundaries** — satisfied: AXREAD/AXSET/AXVERIFY mediation verified (RFC-0003 [A-0003-03]).
+
+Downstream RFC acceptance record (2026-03-15): RFC-0002 Accepted, RFC-0003 Accepted, RFC-0009 Accepted.
+Suite status at acceptance: **49/49 axion + ethics + tier + policy tests passing; 329/332 total (3 pre-existing TLOADHASH excluded)**.

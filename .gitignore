@@ -1,5 +1,7 @@
 # ── Build artifacts ─────────────────────────────────────────
 build/
+build-llama/
+build-warn-strict/
 cmake-build/
 out/
 bin/
@@ -111,6 +113,10 @@ bazel-*
 build_test/
 build_fuzz/
 build_temp/
+build_ternos/
+build_ternos_dpe/
+build_dpe/
+.deps/
 .cache/
 .t81_canonfs/
 logs/
@@ -122,3 +128,4 @@ generate_dummy_safetensors
 
 # ── Model Files (too large for GitHub) ───────────────────────
 models/
+build-win/

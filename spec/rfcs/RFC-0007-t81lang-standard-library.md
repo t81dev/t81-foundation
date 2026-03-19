@@ -2,8 +2,9 @@ ______________________________________________________________________
 
 # RFC-0007 — T81Lang Standard Library
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.2 — Standards Track\
+Status: Accepted\
+Updated: 2026-03-15\
 Author: T81Lang Working Group\
 Applies to: T81Lang, TISC, Axion, Spec Tooling
 
@@ -97,8 +98,54 @@ ______________________________________________________________________
 # 6. Open Questions
 
 1. Should tensor helpers include in-place variants, or remain purely functional?
+   **Resolved:** Purely functional for v1.0. In-place variants, if introduced,
+   require a new `@mutates` annotation and a separate RFC.
 2. How do we distribute precompiled hashes so air‑gapped systems can verify the
    standard library?
+   **Resolved:** The standard library is compiled into the binary as TISC
+   intrinsics, not as distributable source files. Hash verification is covered
+   by the existing CanonHash81 determinism registry on the `t81` binary itself.
 3. Should Axion enforce maximum module version skew across a deployment?
+   **Resolved:** N/A under the builtin-registry model — all builtins are
+   frozen with the ISA version and cannot skew independently.
+
+______________________________________________________________________
+
+# 7. Implementation Note
+
+**The standard library is implemented as compiler intrinsics, not as `.t81`
+source files.**
+
+The original design proposed `std/arith.t81`, `std/tensor.t81`, etc. compiled
+alongside user code. The actual implementation instead embeds all standard
+functions directly into the compiler as entries in `kBuiltinTable`
+(`include/t81/frontend/builtin_registry.hpp`). This achieves the same goals:
+
+- canonical, deterministic implementations vetted by spec maintainers
+- Axion tier gates (`min_tier`) and effect-surface flags on every call
+- single source of truth — adding a builtin requires one row in `kBuiltinTable`
+- module stability guaranteed by ISA version freeze, not per-module `@version`
+
+The version-locked import syntax (`use std::tensor@1.0 as tensor`) is
+superseded by the ISA freeze guarantee: all builtins are frozen at the ISA
+major version boundary and cannot change without a major version bump.
+
+The full feature matrix is documented in `spec/t81lang_features.md`.
+
+______________________________________________________________________
+
+# 8. Acceptance Note
+
+**Status advanced `Draft → Accepted` on 2026-03-15.**
+
+| Criterion | Evidence |
+| :--- | :--- |
+| [A-0007-01] Core module: `arith` | Arithmetic ops (`+`, `-`, `*`, `/`, `%`, `neg`) are compiler-native; `std.core.assert` in `kBuiltinTable` |
+| [A-0007-02] Core module: `tensor` | `std.tensor.load`, `std.tensor.matmul`, `std.tensor.dot_product` in `kBuiltinTable`; `ChkShape` opcode in TISC |
+| [A-0007-03] Core module: `option` | `std.option.is_some/is_none/unwrap` + `std.core.unwrap_or` in `kBuiltinTable`; `MakeOptionSome/None` opcodes in TISC |
+| [A-0007-04] Core module: `result` | `std.result.is_ok/is_err/unwrap/unwrap_err` in `kBuiltinTable`; `MakeResultOk/Err` opcodes in TISC |
+| [A-0007-05] Core module: `axsafe_io` | `std.io.println` / `std.core.debug` (`PRINT` opcode); Axion audit via policy hooks |
+| [A-0007-06] Determinism rules | All builtins are pure unless `is_effect_surface = true`; no global mutable state; Axion tier requirements enforced by SA |
+| [A-0007-07] Versioning / stability | ISA major-version freeze replaces per-module `@version`; builtin assignments are frozen in `opcodes.hpp` |
 
 ______________________________________________________________________

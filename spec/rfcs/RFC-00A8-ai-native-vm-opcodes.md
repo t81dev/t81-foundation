@@ -1,9 +1,18 @@
 # RFC-00A8: AI-Native VM Opcode Exploration (QMATMUL/ATTN/EMBED…)
 
 Version 0.1 — Standards Track
-Status: Draft
+Status: Superseded
+Superseded-By: RFC-0026
 Author: T81 Foundation Architecture Team
 Applies to: T81VM, TISC Instruction Set, Hardware Acceleration
+Updated: 2026-03-15
+
+> **Supersession note (2026-03-15):** The AI-native opcode surface explored
+> here (QMATMUL, ATTN, EMBED, and related ops) was formally specified and
+> implemented under RFC-0026 (accepted).  ATTN, QMATMUL, EMBED, and WLOAD are
+> live in the TISC ISA (`include/t81/isa/ai_native_opcodes.hpp`) and dispatched
+> through the T81 VM (`core/vm/vm.cpp`).  Phase-1 conformance evidence is in
+> `docs/architecture/ai-opcode-phase1-conformance.md` (status: spec_conformant).
 
 ______________________________________________________________________
 

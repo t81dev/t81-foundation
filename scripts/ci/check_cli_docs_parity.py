@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce parity between CLI help output and docs/guides/cli-user-manual.md."""
+"""Enforce parity between CLI help output and the current CLI user manual."""
 
 from __future__ import annotations
 
@@ -15,29 +15,26 @@ HELP_TOPICS = [
     "project",
     "env",
     "internal",
-    "compile",
-    "run",
-    "disasm",
-    "debug",
-    "check",
-    "lint",
     "repl",
-    "test",
-    "doctor",
-    "fmt",
     "completion",
     "man",
     "feedback",
-    "repro-hash",
-    "canonize-tensor",
-    "canonize-file",
-    "init",
-    "pkg",
     "benchmark",
     "weights",
     "policy",
     "trace",
-    "llama-run",
+    "canonfs",
+    "determinism",
+    "vm",
+    "tisc",
+    "ir",
+    "tier",
+    "tensor",
+    "c",
+    "rust",
+    "python",
+    "llvm",
+    "mlir"
 ]
 
 # Flags/features we intentionally do not support in the current shipped CLI.
@@ -115,7 +112,7 @@ def main() -> int:
     parser.add_argument(
         "--manual",
         type=Path,
-        default=Path("docs/guides/cli-user-manual.md"),
+        default=Path("docs/user-guide/reference/cli-user-manual.md"),
         help="Path to CLI manual markdown file.",
     )
     args = parser.parse_args()

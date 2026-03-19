@@ -1,0 +1,4 @@
+AXION_STARTUP_REF
+command=show ref fixture-durable-ref
+result=show ref fixture-durable-ref
+phase5 durable transcript

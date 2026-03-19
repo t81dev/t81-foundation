@@ -2,8 +2,8 @@ ______________________________________________________________________
 
 # RFC-0006 — Deterministic GC & Memory Reclamation
 
-Version 0.1 — Draft (Standards Track)\
-Status: Draft\
+Version 0.2 — Standards Track\
+Status: Accepted\
 Author: T81VM Working Group\
 Applies to: T81VM, TISC, Axion
 
@@ -100,3 +100,41 @@ ______________________________________________________________________
 3. How do we expose GC metrics to T81Lang without leaking physical timing info?
 
 ______________________________________________________________________
+
+## Acceptance Criteria
+
+| ID | Criterion | Status |
+| :--- | :--- | :--- |
+| [A-0006-01] | §2.1 Deterministic marking: `mark_and_sweep()` scans roots in sorted registration order; tensor and infinite_form pools reclaimed by sorted index | met — `core/vm/gc_helpers.cpp`; root scan order is deterministic over the fixed register file |
+| [A-0006-02] | §2.2 Deterministic heap sweep: `compact_heap()` resets heap_frames and heap_ptr deterministically | met — `core/vm/gc_helpers.cpp` called from `run_gc_cycle_()` in `core/vm/vm.cpp` |
+| [A-0006-03] | §2.3 `GcSafepoint` opcode: assigned in ISA, dispatched in VM, triggers `run_gc_cycle_()` | met — `Opcode::GcSafepoint` in `include/t81/isa/opcodes.hpp`; handler in `core/vm/vm.cpp`; proved by `vm_gc_safepoint_test` [RFC-0006-§2.3-a,b] |
+| [A-0006-04] | §2.3 Byte-threshold trigger: `kGcThreshold = 531441` (`3^12` bytes) alongside instruction-count trigger | met — `heap_bytes_since_gc_` accounting at Alloc site; `kGcThreshold` constant; dual condition in `core/vm/vm.cpp`; proved by `vm_gc_safepoint_test` [RFC-0006-§2.3-c] |
+| [A-0006-05] | §2.4 Axion events: `run_gc_cycle_()` emits GC events with reason strings `kGcCycle`, `kHeapCompaction`, `kHeapRelocation` and reclaimed object counts | met — `include/t81/axion/reasons.hpp`; `record_axion_event()` calls in `run_gc_cycle_()` |
+| [A-0006-06] | §2.4 Policy veto: Axion `Deny` on `kGcCycle` causes `run_gc_cycle_()` to return `Trap::SecurityFault` without running the cycle | met — `eval_axion_call(kGcCycle, ...)` gate in `run_gc_cycle_()`; proved by `vm_gc_safepoint_test` [RFC-0006-§2.4-a] |
+
+**Deferred (non-blocking):**
+
+- §2.2 Compaction remap table: compaction is optional for tier < 3; relocation table deferred (open question 1 resolved)
+- §2.4 Reclaimed bytes per arena: object-count reporting is sufficient; byte-level arena accounting deferred
+- §2.4 Logical ticks: physical timing excluded from deterministic events; tick model deferred
+- §2.4 Relocated handle list: no pointer-updating compaction yet; deferred with remap table
+
+## Acceptance Note (2026-03-15)
+
+All 6 blocking criteria met in this revision.
+
+**§2.3 GcSafepoint opcode** — `Opcode::GcSafepoint` assigned as the last opcode in
+`include/t81/isa/opcodes.hpp`; `opcode_name()` and `kAllOpcodes` updated. VM dispatch in
+`core/vm/vm.cpp` calls `run_gc_cycle_("safepoint")` on opcode hit.
+
+**§2.3 Byte-threshold** — `heap_bytes_since_gc_` counter incremented at every `Alloc` site;
+`kGcThreshold = 531441` (`3^12`) constant added; GC trigger now fires on
+`instructions_since_gc_ >= kGcInterval || heap_bytes_since_gc_ >= kGcThreshold`.
+
+**§2.4 Policy veto** — `run_gc_cycle_(reason)` snapshots the byte counter, resets accounting
+counters, then calls `eval_axion_call(kGcCycle, gc_cycle_ordinal, GcSafepoint, payload)`
+before executing the cycle. A `Deny` verdict returns `Trap::SecurityFault` immediately.
+
+**Test suite: `vm_gc_safepoint_test` — 8/8 assertions passing.**
+
+Open question 1 resolved: compaction is optional for tier < 3.

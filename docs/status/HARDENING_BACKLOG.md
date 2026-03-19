@@ -1,6 +1,6 @@
 # Hardening Backlog
 
-Last Updated: 2026-03-06
+Last Updated: 2026-03-14
 Owner: @t81dev
 
 **This is not a feature backlog.**
@@ -30,6 +30,9 @@ Feature work, new capabilities, and API additions live elsewhere.
 | FW-01 | Structural hardening | `core/vm/vm.cpp` | Experimental promotion include reached through controlled waiver | **✅ COMPLETED** — VM tier-promotion path now uses an in-module helper; dependency firewall waiver retired and waiver table is empty (2026-03-05). | @t81dev | 2026-03-05 | **Closed** |
 | FW-02 | Structural hardening | VM policy-trace bridge | Opcode dispatch concentration in policy-trace bridge not fully extracted | **✅ COMPLETED** — Axion opcodes now pre-dispatch outside the main VM opcode switch via `dispatch_axion_opcode_from_step`; `AxCheck`/`AxReport`/`AxRead`/`AxSet`/`AxVerify`/`AxHalt` helper paths are fully extracted and routed through centralized `handle_axion_opcode`; dispatch concentration reduced below threshold (2026-03-05). | @t81dev | 2026-04-15 | **Closed** |
 | DOC-01 | Structural hardening | `docs/` directory | Documentation organized by legacy directory names rather than content | **✅ COMPLETED** — Content-based reorganization implemented with user-guide/, developer-guide/, and process/ separation; 47 files reorganized; README.md links updated; status files audited and fixed | @t81dev | 2026-03-06 | **Closed** |
+| SEC-01 | Structural hardening | `core/vm/vm.cpp` + fuzz infra | Fuzz harnesses absent; 3 VM opcodes (SymLoad, ReflCap, ReflJustify) accessed `register_tags[insn.b]` without `reg_ok()` guard — triggered SEGFAULT under fuzz | **✅ COMPLETED** — `fuzz_parser` and `fuzz_vm` harnesses added; `reg_ok(insn.b)` guard applied to all 3 dispatch cases; TLoadHash conformance tests (3/3) now pass; fuzz workaround removed; `85a0b438` | @t81dev | 2026-03-10 | **Closed** |
+| SEC-02 | Structural hardening | `core/isa/binary_io.cpp` | Length-prefix deserialization had no sanity cap — corrupt/empty `.tisc` caused `vec.resize()` with attacker-controlled count up to 2⁶⁴ elements → OOM-kill (exit 137) | **✅ COMPLETED** — `read_checked_size()` helper added; throws on stream EOF or count > 16M (kMaxDeserialiseCount); applied at all 9 deserialization sites; `85a0b438` | @t81dev | 2026-03-10 | **Closed** |
+| QA-01 | Structural hardening | `tests/cpp/cli_stress_test.cpp` + CMakeLists | CLI stress test absent from CTest; interactive commands (`vm debug`, `lang debug`) hung on stdin; corrupt-file OOM masked as exit 137 | **✅ COMPLETED** — `cli_stress_test` wired into CMake (300s timeout); `/dev/null` stdin redirect for interactive commands; all 6 test failures fixed; suite now covers 338 tests; `85a0b438` | @t81dev | 2026-03-10 | **Closed** |
 
 ---
 
@@ -44,6 +47,9 @@ Feature work, new capabilities, and API additions live elsewhere.
 | **BG-10** | **Performance Enhancement** | **Memory Pool Optimization completed** - Complete 10-phase memory management transformation with 30-50% efficiency gains and production hardening | **2026-03-04** |
 | **PR-426** | **Determinism Hardening Phase 1** | **Comprehensive determinism hardening completed** - T81Float/T81Complex transcendental math gated behind T81_DETERMINISTIC; T81Map/T81Set canonical sorted vector storage; T81Entropy/T81Time seeded state requirements; explicit container iteration order guarantees; cross-platform determinism tests implemented | **2026-03-04** |
 | **DOC-01** | **Structural hardening** | **Documentation reorganization completed** - Content-based structure implemented with user-guide/, developer-guide/, and process/ separation; 47 files reorganized; README.md links updated; status files audited and fixed | **2026-03-06** |
+| **SEC-01** | **Structural hardening** | **Fuzz infra + 3 OOB VM register-index bugs fixed** — `fuzz_parser`/`fuzz_vm` harnesses added; `reg_ok(insn.b)` guard applied to SymLoad, ReflCap, ReflJustify; TLoadHash conformance clean; fuzz workaround removed | **2026-03-10** |
+| **SEC-02** | **Structural hardening** | **binary_io OOM-on-corrupt-input hardened** — `read_checked_size()` throws on EOF or count > 16M at all 9 deserialization sites; exit-137 crash eliminated | **2026-03-10** |
+| **QA-01** | **Structural hardening** | **CLI stress test wired into CTest (338 tests)** — full command surface covered; `/dev/null` stdin fix; 6 test failures resolved; 338/338 passing | **2026-03-10** |
 | **GOV-01** | **Scope reduction** | **Deputy approval delegation policy published** - governance criteria and delegated GO/HOLD controls documented in `docs/governance/APPROVAL_DELEGATION.md` | **2026-03-05** |
 | **FW-02 (Slice 1)** | **Structural hardening** | **VM policy bridge extraction started** - `AxCheck`/`AxReport` handling moved to dedicated helpers in `core/vm/vm.cpp`; full dispatch concentration reduction still open | **2026-03-05** |
 | **FW-02 (Slice 2)** | **Structural hardening** | **VM policy bridge extraction advanced** - `AxRead`/`AxSet`/`AxVerify`/`AxHalt` handling moved to dedicated helpers in `core/vm/vm.cpp`; full dispatch concentration reduction still open | **2026-03-05** |

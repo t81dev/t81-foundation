@@ -1,0 +1,3 @@
+AXION_BOOT_REPORT_PLACEHOLDER
+Replace this file with the real guest-produced boot-report.txt recovered from
+the external x86_64 VirtualBox validation host.

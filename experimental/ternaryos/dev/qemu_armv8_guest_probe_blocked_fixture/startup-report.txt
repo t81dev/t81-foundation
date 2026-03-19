@@ -1,0 +1,35 @@
+AXION_STARTUP_REPORT
+[session]
+AXION_STARTUP_SESSION
+profile=VBoxEFI/AHCI/E1000/VMSVGA/HPET+IOAPIC
+storage=virtualbox-ahci
+display=virtualbox-vmsvga
+recovered_entries=1
+rendered_glyphs=114
+session_command_count=6
+durable_ref_count=1
+durable_anchor=present
+[shell]
+AXION_STARTUP_SHELL
+prompt=axion> 
+mode=typed-builtins
+commands=help,profile,name set <label> <ref>,name ls,object pin <kind> <name> <ref>,object ls,object show <name>,session status,session checkpoint,session export,session import <ref>,session diff <ref>,session run <ref>,session show durable,session refs,show profile,show session,show ref <canonref>,store put <text>,store put script <line>|<line>|...>,store put ref <ref>,store cp <ref>,store ls,store get <ref>,store rm <ref>,history,history show session,history show object <ref>,history use <ref>,history show durable,clear
+history_anchor=durable
+session_view=local+durable
+durable_ref_count=1
+session_command_count=6
+[history]
+AXION_STARTUP_HISTORY
+command=history show durable
+result=history durable fixture-durable-ref
+phase5 durable transcript
+[store]
+AXION_STARTUP_STORE
+command=store ls
+result=store refs 1
+fixture-durable-ref
+[ref]
+AXION_STARTUP_REF
+command=show ref fixture-durable-ref
+result=show ref fixture-durable-ref
+phase5 durable transcript
