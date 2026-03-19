@@ -189,6 +189,76 @@ static std::vector<t81::tisc::Program> make_overlapping_write_programs() {
   return programs;
 }
 
+static constexpr uint64_t kDiamondPageP = 512;
+static constexpr uint64_t kDiamondPageQ = 768;
+static constexpr uint64_t kDiamondPageR = 1024;
+static constexpr uint64_t kDiamondPageS = 1280;
+
+static EpochGraph make_diamond_epoch(uint64_t epoch_id) {
+  TaskDescriptor t0;
+  t0.epoch_id = epoch_id;
+  t0.task_seq = 0;
+  t0.output_regions.push_back(OutputRegion{kDiamondPageP, 1, false});
+  const TaskId t0_pid = program_identity(t0);
+
+  TaskDescriptor t1;
+  t1.epoch_id = epoch_id;
+  t1.task_seq = 1;
+  t1.output_regions.push_back(OutputRegion{kDiamondPageQ, 1, false});
+  t1.dep_task_ids.push_back(t0_pid);
+  const TaskId t1_pid = program_identity(t1);
+
+  TaskDescriptor t2;
+  t2.epoch_id = epoch_id;
+  t2.task_seq = 2;
+  t2.output_regions.push_back(OutputRegion{kDiamondPageR, 1, false});
+  t2.dep_task_ids.push_back(t0_pid);
+  const TaskId t2_pid = program_identity(t2);
+
+  TaskDescriptor t3;
+  t3.epoch_id = epoch_id;
+  t3.task_seq = 3;
+  t3.output_regions.push_back(OutputRegion{kDiamondPageS, 1, false});
+  t3.dep_task_ids.push_back(t1_pid);
+  t3.dep_task_ids.push_back(t2_pid);
+
+  EpochGraph eg;
+  eg.epoch_id = epoch_id;
+  eg.tasks = {t0, t1, t2, t3};
+  return eg;
+}
+
+static std::vector<t81::tisc::Program> make_diamond_programs() {
+  std::vector<t81::tisc::Program> programs(4);
+  programs[0].insns = {
+      {t81::tisc::Opcode::LoadImm, 1, 100},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kDiamondPageP), 1},
+      {t81::tisc::Opcode::Halt},
+  };
+  programs[1].insns = {
+      {t81::tisc::Opcode::Load, 2, static_cast<std::int32_t>(kDiamondPageP)},
+      {t81::tisc::Opcode::LoadImm, 3, 1},
+      {t81::tisc::Opcode::Add, 4, 2, 3},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kDiamondPageQ), 4},
+      {t81::tisc::Opcode::Halt},
+  };
+  programs[2].insns = {
+      {t81::tisc::Opcode::Load, 5, static_cast<std::int32_t>(kDiamondPageP)},
+      {t81::tisc::Opcode::LoadImm, 6, 2},
+      {t81::tisc::Opcode::Add, 7, 5, 6},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kDiamondPageR), 7},
+      {t81::tisc::Opcode::Halt},
+  };
+  programs[3].insns = {
+      {t81::tisc::Opcode::Load, 8, static_cast<std::int32_t>(kDiamondPageQ)},
+      {t81::tisc::Opcode::Load, 9, static_cast<std::int32_t>(kDiamondPageR)},
+      {t81::tisc::Opcode::Add, 10, 8, 9},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kDiamondPageS), 10},
+      {t81::tisc::Opcode::Halt},
+  };
+  return programs;
+}
+
 // ── [AC-22s-01/02] Single-task epoch increments counters ─────────────────────
 
 static void test_successful_epoch_increments_counters(KernelRuntimeState& state) {
@@ -433,6 +503,51 @@ static void test_pool_dispatch_matches_unbounded_on_overlapping_writes() {
         "[RFC-0046-32] overlapping-write commit counters identical");
 }
 
+static void test_pool_dispatch_matches_unbounded_on_diamond_epoch() {
+  std::printf("\n[RFC-0046/DPE-05] Kernel submit: diamond dependency epoch matches across schedulers\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-33] bootstrap unbounded diamond state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-34] bootstrap pooled diamond state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  const auto epoch = make_diamond_epoch(403);
+  const auto levels = topological_levels_epoch(epoch);
+  check(levels.size() == 3, "[RFC-0046-35] diamond epoch has three dependency levels");
+  check(levels.size() >= 3 && levels[0].size() == 1 && levels[1].size() == 2 && levels[2].size() == 1,
+        "[RFC-0046-36] diamond levels are {1,2,1}");
+
+  const auto programs = make_diamond_programs();
+  const auto unbounded_result = axion_kernel_submit_epoch(unbounded_state, epoch, programs);
+
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_result = axion_kernel_submit_epoch(
+      pooled_state, epoch, programs, /*gate=*/{}, &pool, /*timeout_ms=*/std::nullopt);
+
+  check(unbounded_result.ok(), "[RFC-0046-37] unbounded diamond dispatch ok");
+  check(pooled_result.ok(), "[RFC-0046-38] bounded diamond dispatch ok");
+  if (!unbounded_result.ok() || !pooled_result.ok()) {
+    return;
+  }
+
+  check(unbounded_result.epoch_hash == pooled_result.epoch_hash,
+        "[RFC-0046-39] diamond epoch hash identical across schedulers");
+  check(unbounded_state.epoch.last_committed_epoch_hash ==
+            pooled_state.epoch.last_committed_epoch_hash,
+        "[RFC-0046-40] retained diamond committed hash identical");
+  check(unbounded_state.epoch.epoch_task_executions == pooled_state.epoch.epoch_task_executions,
+        "[RFC-0046-41] diamond task execution counts identical");
+  check(unbounded_state.epoch.epochs_committed == pooled_state.epoch.epochs_committed,
+        "[RFC-0046-42] diamond commit counters identical");
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -453,6 +568,7 @@ int main() {
   test_pool_dispatch_matches_unbounded_epoch_hash();
   test_pool_dispatch_matches_unbounded_on_fan_out_epoch();
   test_pool_dispatch_matches_unbounded_on_overlapping_writes();
+  test_pool_dispatch_matches_unbounded_on_diamond_epoch();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
