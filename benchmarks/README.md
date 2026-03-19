@@ -58,6 +58,40 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
   --benchmark_min_time=0.005s
 ```
 
+## Governed workflow benchmarks
+The benchmark runner also includes the `BM_Governed_*` family for operational
+comparisons across governed VM and tensor-loading workflows.
+
+Current coverage:
+
+- `BM_GovernedVMRun_Arith_NoPolicy`
+- `BM_GovernedVMRun_Arith_AllowPolicy`
+- `BM_GovernedTensorLoad_LocalWeights`
+- `BM_GovernedTensorLoad_CanonFSHash`
+
+Focused local command:
+```bash
+./build/benchmarks/benchmark_runner \
+  --benchmark_filter='^BM_Governed' \
+  --benchmark_min_time=0.001s \
+  --benchmark_format=json
+```
+
+Verbose console output:
+```bash
+T81_BENCHMARK_VERBOSE_CONSOLE=1 \
+./build/benchmarks/benchmark_runner \
+  --benchmark_filter='^BM_Governed' \
+  --benchmark_min_time=0.001s
+```
+
+Interpretation note:
+
+- `BM_GovernedVMRun_*` is a matched-workload policy-on vs policy-off comparison.
+- `BM_GovernedTensorLoad_*` is a workflow-level local-vs-CanonFS comparison and
+  should not be presented as an isolated storage-layer overhead claim because it
+  exercises different load paths and governance conditions.
+
 ## Reporting
 - Benchmark outputs feed `docs/reference/benchmarks.md` in the current workflow.
 - Keep benchmark names stable when possible to preserve historical comparability.
