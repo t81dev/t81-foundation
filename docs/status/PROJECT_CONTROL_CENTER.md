@@ -29,7 +29,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 | :--- | :--- |
 | Overall | Green — release branch remains healthy; determinism and structural-integrity gates remain the controlling signals |
 | Release Readiness | **GO** for the current shipped core profile; broader verticals remain classified per DCP / governed non-DCP / experimental boundaries |
-| Current Main | `644bda94` — governance RFC chain now extends through RFC-0053, covering arithmetic, vector, acceleration, dataflow, and distributed execution in draft form |
+| Current Main | `b2def94d` — governance RFC chain now extends through RFC-0053, and Axion epoch scheduler/audit parity is now CI-enforced through the dedicated `axion-epoch-determinism` lane |
 | Open Blockers | None |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
 | Determinism Registry | Verified surfaces remain the only source of DCP-strength deterministic claims |
@@ -41,7 +41,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Gate | Date | State |
 | :--- | :--- | :--- |
-| Deterministic-surface governance chain (RFC-0042..RFC-0053) | 2026-03-19 | **Open** — full horizontal and expansion draft layer added; promotion into active governance docs underway |
+| Deterministic-surface governance chain (RFC-0042..RFC-0053) | 2026-03-19 | **Open** — full horizontal and expansion draft layer added; backend/tritwise/epoch proof slices are now entering active CI and governance enforcement |
 | C2 Month-Close execution | 2026-03-31 | **Closed** — executed 2026-03-14; post-close addendum 2026-03-16; all 6 checklist items PASS; March 2026 governance window closed clean |
 | T81Lang Stable promotion | 2026-03-16 | **Closed** — language-spec stability review completed; this does not by itself promote the entire language toolchain into DCP / verified deterministic status |
 | RFC-0015 agentic constructs closure | 2026-03-16 | **Closed** — agent/behavior/AGENT_INVOKE; 9/9 AC met; 16/16 assertions; tisc-spec §5.16 added |
@@ -101,6 +101,7 @@ Full register: `ACTIVE_RISKS.md`
 | SEC-01 — Fuzz infrastructure (fuzz_parser, fuzz_vm) + 3 OOB VM fixes | @t81dev | **Closed 2026-03-10** |
 | SEC-02 — binary_io OOM-on-corrupt-input (read_checked_size guard) | @t81dev | **Closed 2026-03-10** |
 | QA-01 — CLI stress test covering full command surface (338th test) | @t81dev | **Closed 2026-03-10** |
+| RFC-0046 proof enforcement — Axion epoch scheduler/audit parity lane | @t81dev | **Closed 2026-03-19** |
 
 Full backlog: `HARDENING_BACKLOG.md`
 
@@ -124,7 +125,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 4. **Closed** — TernaryOS QEMU x86_64 EFI boot lane: BOOTX64.EFI validated, all 5 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete` (evidence: `TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`)
 5. **TBD** — TernaryOS bare-metal boot: actual x86_64 VirtualBox host execution + evidence return (next external milestone; see `experimental/ternaryos/docs/kernel_execution_plan.md`)
 6. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
-7. **Active now** — Governance closure path: connect RFC-0042..RFC-0053 to registry, threat model, and promotion evidence so public status claims remain classification-correct
+7. **Active now** — Governance closure path: connect RFC-0042..RFC-0053 to registry, threat model, promotion evidence, and CI gate inventory so public status claims remain classification-correct
 
 ---
 

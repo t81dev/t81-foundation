@@ -10,7 +10,7 @@ No prose. If a risk needs an essay, escalate it.
 
 | ID | Risk | Severity | Owner | Mitigation | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| R-05 | Governed non-DCP surface growth outpacing boundary and evidence updates | Medium | @t81dev | Refresh status/registry/boundary docs each monthly governance cadence and require RFC-0048-consistent public claims | Monitoring |
+| R-05 | Governed non-DCP surface growth outpacing boundary and evidence updates | Medium | @t81dev | Refresh status/registry/boundary docs each monthly governance cadence, require RFC-0048-consistent public claims, and keep new proof lanes such as `axion-epoch-determinism` reflected in operator-facing status docs | Monitoring |
 | R-06 | Documentation maintenance burden after reorganization | Low | @t81dev | Content-based structure reduces maintenance overhead; automated link checking in CI | Monitoring |
 | R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low | @t81dev | Alert threshold >5% regression; review guardrail if consecutive divergence detected | Monitoring |
 | R-09 | Test failures impacting release readiness — 5 tests failing (98.5% success rate) | Medium | @t81dev | **✅ RESOLVED** - Primary failures fixed; 344/344 passing. R-18 (TLOADHASH) also closed — stale CMake generator mismatch was root cause. | **Closed** |

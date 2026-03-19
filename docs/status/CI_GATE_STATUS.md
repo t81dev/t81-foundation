@@ -1,10 +1,10 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-15
+Last Updated: 2026-03-19
 Owner: @t81dev
-Reference Candidate: `b566bff8` (origin/main, 2026-03-14)
-Current Main Head: `50fff89c` (origin/main ahead by 5 commits, 2026-03-15; RFC-0031/0032 accepted + AI A-series RFC final status + axion-event-registry + 3 AI conformance programs; 344/344 tests passing after build system fix)
+Reference Candidate: `b2def94d` (origin/main, 2026-03-19)
+Current Main Head: `b2def94d` (origin/main, 2026-03-19; Axion epoch scheduler/audit parity lane wired into CI and governance docs)
 
 ## Purpose
 
@@ -48,6 +48,7 @@ tracked here and must be addressed unless explicitly deferred.
 | `gate / tritwise-determinism / avx2-asan` | `ci.yml` | success ✅ | Tritwise ops deterministic with AVX2 + ASAN |
 | `gate / determinism repeatability / linux-x86_64 / clang` | `ci.yml` | unknown ⏳ | Same-machine bit-identity for VM workload signatures; new gate added in PR #448 |
 | `gate / determinism slice / linux-x86_64 / clang` | `ci.yml` | success ✅ | Full determinism slice on Linux/x86_64/clang |
+| `gate / axion epoch determinism / linux-x86_64 / clang` | `ci.yml` | success ✅ | Experimental TernaryOS + DPE lane proving pooled-vs-unbounded kernel scheduler/audit parity |
 | `cross-compile / linux-armv9 / gcc (informational)` | `ci.yml` | unknown ⏳ | ARMv9 cross-compile build; new gate added in PR #448; `continue-on-error: true` |
 | `experimental architectures / group anchor` | `ci.yml` | skipped (nightly only) | Schedule-only anchor job for nightly experimental gates |
 | `experimental / oneapi sycl sanity` | `ci.yml` | skipped (nightly only) | Intel oneAPI SYCL hello-world compile check; `continue-on-error: true` |
@@ -74,6 +75,17 @@ tracked here and must be addressed unless explicitly deferred.
 | `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
+
+## Operational Notes (2026-03-19)
+
+- **Axion epoch scheduler/audit parity promoted into CI** — new
+  `gate / axion epoch determinism / linux-x86_64 / clang` lane builds the
+  TernaryOS + DPE epoch tests and hard-fails on pooled-vs-unbounded divergence
+  for execution and audit outcomes.
+- **Governance alignment refreshed** — the determinism registry, enforcement
+  matrix, project control center, and system-status pages now reference the new
+  epoch proof lane as part of the governed non-DCP enforcement story for the
+  experimental Axion/TernaryOS boundary.
 
 ## Operational Notes (2026-03-15)
 

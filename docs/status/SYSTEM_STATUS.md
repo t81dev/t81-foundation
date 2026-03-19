@@ -68,6 +68,10 @@ status boundaries.
   semantics, heterogeneous acceleration, dataflow, and distributed execution.
 - Public status documents are being aligned so they distinguish verified DCP
   surfaces from governed non-DCP and experimental surfaces.
+- Axion epoch scheduler/audit parity is now CI-enforced via the dedicated
+  `axion-epoch-determinism` lane, covering pooled-vs-unbounded kernel submit
+  equivalence for execution and audit outcomes in the experimental TernaryOS +
+  DPE boundary.
 
 ## Control References
 
