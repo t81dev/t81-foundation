@@ -88,8 +88,8 @@ The following are **outside the Frozen Core** and carry **no DCP guarantees**:
 | Cognitive Tiers | `experimental/tiers/` | Non-DCP | Experimental; consensus determinism not verified |
 | Hanoi VM | `experimental/hanoi/` | Non-DCP | Experimental kernel surface |
 | Distributed Compute | `experimental/distributed/` | Non-DCP | Network-layer; non-deterministic by design |
-| Axion Governance Kernel | `kernel/axion/` | Governed non-DCP | Scope-bounded evidence exists, but broader kernel/governance behavior is outside the current DCP boundary |
-| Axion OS | `experimental/ternaryos/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates |
+| Axion Governance Kernel | `kernel/axion/` | Governed non-DCP | Scope-bounded evidence exists, including CI-enforced experimental epoch scheduler/audit parity, but broader kernel/governance behavior is outside the current DCP boundary |
+| Axion OS | `experimental/ternaryos/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates; `axion-epoch-determinism` proves bounded pooled-vs-unbounded epoch parity only |
 | T81Lang Frontend | `lang/frontend/` | Governed non-DCP | Compiler/toolchain determinism remains partial and fixture-bounded; language-spec stability does not imply DCP promotion |
 | T81Graph | `lang/frontend/` (graph surface) | Governed non-DCP | Useful implemented surface, but not a verified deterministic surface as a whole |
 | llama.cpp adapter | `third_party/llama.cpp`, `tooling/model/` | Governed non-DCP | AGI inference; practical reproducibility only |
