@@ -155,6 +155,40 @@ static std::vector<t81::tisc::Program> make_fan_out_programs() {
   return programs;
 }
 
+static constexpr uint64_t kOverlapPage = 512;
+
+static EpochGraph make_overlapping_write_epoch(uint64_t epoch_id) {
+  TaskDescriptor t0;
+  t0.epoch_id = epoch_id;
+  t0.task_seq = 0;
+  t0.output_regions.push_back(OutputRegion{kOverlapPage, 1, false});
+
+  TaskDescriptor t1;
+  t1.epoch_id = epoch_id;
+  t1.task_seq = 1;
+  t1.output_regions.push_back(OutputRegion{kOverlapPage, 1, false});
+
+  EpochGraph eg;
+  eg.epoch_id = epoch_id;
+  eg.tasks = {t0, t1};
+  return eg;
+}
+
+static std::vector<t81::tisc::Program> make_overlapping_write_programs() {
+  std::vector<t81::tisc::Program> programs(2);
+  programs[0].insns = {
+      {t81::tisc::Opcode::LoadImm, 1, 17},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kOverlapPage), 1},
+      {t81::tisc::Opcode::Halt},
+  };
+  programs[1].insns = {
+      {t81::tisc::Opcode::LoadImm, 2, 99},
+      {t81::tisc::Opcode::Store, static_cast<std::int32_t>(kOverlapPage), 2},
+      {t81::tisc::Opcode::Halt},
+  };
+  return programs;
+}
+
 // ── [AC-22s-01/02] Single-task epoch increments counters ─────────────────────
 
 static void test_successful_epoch_increments_counters(KernelRuntimeState& state) {
@@ -355,6 +389,50 @@ static void test_pool_dispatch_matches_unbounded_on_fan_out_epoch() {
         "[RFC-0046-23] fan-out commit counters identical");
 }
 
+static void test_pool_dispatch_matches_unbounded_on_overlapping_writes() {
+  std::printf("\n[RFC-0046/DPE-03] Kernel submit: overlapping non-exclusive writes match across schedulers\n");
+
+  const auto ctx = make_test_boot_ctx();
+  auto unbounded_state_opt = axion_kernel_bootstrap(ctx);
+  auto pooled_state_opt = axion_kernel_bootstrap(ctx);
+  check(unbounded_state_opt.has_value(), "[RFC-0046-24] bootstrap unbounded overlap state");
+  check(pooled_state_opt.has_value(), "[RFC-0046-25] bootstrap pooled overlap state");
+  if (!unbounded_state_opt.has_value() || !pooled_state_opt.has_value()) {
+    return;
+  }
+
+  auto& unbounded_state = *unbounded_state_opt;
+  auto& pooled_state = *pooled_state_opt;
+
+  const auto epoch = make_overlapping_write_epoch(402);
+  const auto levels = topological_levels_epoch(epoch);
+  check(levels.size() == 1 && levels[0].size() == 2,
+        "[RFC-0046-26] overlapping-write epoch stays in one parallel level");
+
+  const auto programs = make_overlapping_write_programs();
+  const auto unbounded_result = axion_kernel_submit_epoch(unbounded_state, epoch, programs);
+
+  t81::dpe::DpeThreadPool pool(2);
+  const auto pooled_result = axion_kernel_submit_epoch(
+      pooled_state, epoch, programs, /*gate=*/{}, &pool, /*timeout_ms=*/std::nullopt);
+
+  check(unbounded_result.ok(), "[RFC-0046-27] unbounded overlapping-write dispatch ok");
+  check(pooled_result.ok(), "[RFC-0046-28] bounded overlapping-write dispatch ok");
+  if (!unbounded_result.ok() || !pooled_result.ok()) {
+    return;
+  }
+
+  check(unbounded_result.epoch_hash == pooled_result.epoch_hash,
+        "[RFC-0046-29] overlapping-write epoch hash identical across schedulers");
+  check(unbounded_state.epoch.last_committed_epoch_hash ==
+            pooled_state.epoch.last_committed_epoch_hash,
+        "[RFC-0046-30] retained overlapping-write committed hash identical");
+  check(unbounded_state.epoch.epoch_task_executions == pooled_state.epoch.epoch_task_executions,
+        "[RFC-0046-31] overlapping-write task execution counts identical");
+  check(unbounded_state.epoch.epochs_committed == pooled_state.epoch.epochs_committed,
+        "[RFC-0046-32] overlapping-write commit counters identical");
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 
 int main() {
@@ -374,6 +452,7 @@ int main() {
   test_consecutive_epochs_accumulate_counters(state);
   test_pool_dispatch_matches_unbounded_epoch_hash();
   test_pool_dispatch_matches_unbounded_on_fan_out_epoch();
+  test_pool_dispatch_matches_unbounded_on_overlapping_writes();
 
   std::printf("\n%d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
