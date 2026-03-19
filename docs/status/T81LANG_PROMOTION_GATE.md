@@ -1,19 +1,20 @@
-# T81Lang Promotion Gate (Draft -> Beta)
+# T81Lang Promotion Gate History (Draft -> Stable)
 
 Status: Active
 Owner: @t81dev
-Last Updated: 2026-02-26
-Current Classification: Draft Spec / Beta Implementation
-Target Transition: Draft -> Beta (decisioned for implementation maturity)
+Last Updated: 2026-03-19
+Current Classification: Stable Spec / Stable Implementation
+Target Transition: N/A (maintain current stable posture)
 
 ## Purpose
 
-Define an explicit, auditable promotion gate for moving T81Lang from Draft /
-Experimental posture toward Beta implementation maturity.
+Record the auditable promotion path that moved T81Lang from Draft/Beta posture
+to its current stable-spec and stable-implementation status.
 
 ## Scope
 
-This gate applies to T81Lang specification/implementation alignment evidence in:
+This gate captures the historical evidence chain for T81Lang
+specification/implementation alignment across:
 
 - `spec/t81lang-spec.md`
 - `docs/status/T81LANG_DRIFT_DECOMPOSITION_2026-03.md`
@@ -88,6 +89,20 @@ Boundary note:
 - This decision updates implementation maturity posture only.
 - It does not change normative authority, freeze policy, or determinism
   registry boundaries.
+
+## Stable Closure Note (2026-03-19)
+
+T81Lang has since advanced beyond the Draft/Beta state tracked by the original
+gate:
+
+- `spec/t81lang-spec.md` now declares `Version 1.9.0 — Stable`.
+- `docs/status/IMPLEMENTATION_MATRIX.md` records `T81Lang` as Stable
+  implementation maturity with governed non-DCP promotion state.
+- `docs/status/SYSTEM_STATUS.md` reflects the same stable posture.
+
+This artifact remains useful as the historical audit trail for the earlier
+promotion steps, but it should now be read as a historical gate record rather
+than the source of current maturity classification.
 
 ## Blocking Items (Post-Decision Maintenance)
 

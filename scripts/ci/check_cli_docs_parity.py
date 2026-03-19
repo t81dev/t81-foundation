@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enforce parity between CLI help output and docs/guides/cli-user-manual.md."""
+"""Enforce parity between CLI help output and the current CLI user manual."""
 
 from __future__ import annotations
 
@@ -112,7 +112,7 @@ def main() -> int:
     parser.add_argument(
         "--manual",
         type=Path,
-        default=Path("docs/guides/cli-user-manual.md"),
+        default=Path("docs/user-guide/reference/cli-user-manual.md"),
         help="Path to CLI manual markdown file.",
     )
     args = parser.parse_args()

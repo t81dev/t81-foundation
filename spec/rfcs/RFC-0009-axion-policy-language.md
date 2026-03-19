@@ -3,11 +3,12 @@ ______________________________________________________________________
 # RFC-0009 — Axion Policy Language (APL)
 
 Version 0.1 — Standards Track\
-Status: Accepted\
+Status: Superseded\
 Updated: 2026-03-15\
 Author: Axion Governance Council\
 Applies to: Axion, T81VM, T81Lang, Cognitive Tiers
-Supersession note: RFC-0022 is the preferred forward evolution path and is expected to supersede this RFC upon acceptance.
+Superseded-By: RFC-0022
+Supersession note: RFC-0022 is the preferred forward evolution path and supersedes this RFC.
 
 ______________________________________________________________________
 

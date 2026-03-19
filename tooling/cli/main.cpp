@@ -6775,14 +6775,16 @@ fs::path discover_repo_root() {
 fs::path discover_build_dir() {
   std::error_code ec;
   const fs::path cwd = fs::current_path();
+  const fs::path repo_root = discover_repo_root();
+  const fs::path repo_build_dir = repo_root / "build";
+  if (fs::exists(repo_build_dir / "CTestTestfile.cmake", ec)) {
+    return repo_build_dir;
+  }
+  ec.clear();
   if (fs::exists(cwd / "CTestTestfile.cmake", ec)) {
     return cwd;
   }
-  const fs::path repo_root = discover_repo_root();
-  if (fs::exists(repo_root / "build" / "CTestTestfile.cmake", ec)) {
-    return repo_root / "build";
-  }
-  return repo_root / "build";
+  return repo_build_dir;
 }
 
 fs::path discover_canonfs_root() {
@@ -7411,7 +7413,7 @@ int run_doctor(const Args& args) {
 }
 
 int run_test_command(const Args& args) {
-  fs::path build_dir = "build";
+  fs::path build_dir = discover_build_dir();
   std::optional<std::string> filter;
   bool as_json = false;
   bool list_only = false;
@@ -8436,7 +8438,7 @@ int run_llama_run(const Args& args) {
   float top_p = 1.0f;
   float temperature = 0.0f;
   std::string expected_model_hash;
-  fs::path canonfs_root = fs::current_path() / ".t81_canonfs";
+  fs::path canonfs_root = discover_canonfs_root();
 
   for (size_t i = 0; i < args.command_args.size(); ++i) {
     const std::string& token = args.command_args[i];

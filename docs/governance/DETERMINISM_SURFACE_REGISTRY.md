@@ -14,7 +14,7 @@ Reference:
 * `docs/governance/FREEZE_ENFORCEMENT.md` (Break Protocols)
 * `docs/governance/SPEC_AUTHORITY_MODEL.md` (Hierarchy)
 * `docs/status/VERIFIED_SURFACE_AUDIT.md` (Traceability Audit)
-* `docs/guides/jit-equivalence-plan.md` (Future Roadmap)
+* `docs/developer-guide/internals/jit-equivalence-plan.md` (Future Roadmap)
 * `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md` (backend substitution constitution)
 * `spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md` (proof and CI model)
 * `spec/rfcs/RFC-0044-stable-packed-trit-vector-interface.md` (packed-trit substrate)

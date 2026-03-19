@@ -273,7 +273,7 @@ t81 project init <project_name>
 t81 project build [file.t81]
 t81 project run [file.t81] [--policy <p>]
 t81 project test [options]
-t81 repl
+t81 repl [--weights-model <model.t81w|sha3-256:hash>] [--policy <policy.apl>]
 t81 env check [--json]
 t81 env doctor [toolchain|canonfs|vm] [--json]
 t81 env paths [--json]

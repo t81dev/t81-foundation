@@ -1,6 +1,6 @@
 # Axion Tracing Manual
 
-This manual dives deep into the Axion trace surface: the runtime events, their canonical `verdict.reason` strings, the CLI/testing hooks that emit them, and the policy obligations they satisfy. It expands on `docs/guides/axion-trace.md` by grouping the instrumentation into an ordered workflow so auditors and Axion stewards can reproduce the deterministic trace without referring directly to source code.
+This manual dives deep into the Axion trace surface: the runtime events, their canonical `verdict.reason` strings, the CLI/testing hooks that emit them, and the policy obligations they satisfy. It expands on `docs/developer-guide/internals/axion-trace.md` by grouping the instrumentation into an ordered workflow so auditors and Axion stewards can reproduce the deterministic trace without referring directly to source code.
 
 ## 1. Trace architecture at a glance
 
@@ -91,7 +91,7 @@ If the policy fails because a string is missing, inspect `State::axion_log` or r
 
 ## 6. Related references
 
-- `docs/guides/axion-trace.md` for quick reference and CLI/REPL samples.
-- `docs/guides/cli-user-manual.md` for the CLI commands we just covered.
+- `docs/developer-guide/internals/axion-trace.md` for quick reference and CLI/REPL samples.
+- `docs/user-guide/reference/cli-user-manual.md` for the CLI commands we just covered.
 - `spec/axion-kernel.md` §1.5‑1.10 for Axion responsibilities tied to these trace inputs.
 - RFC-0009, RFC-0020, RFC-0019 for the linguistic contract between policies and the runtime logs.

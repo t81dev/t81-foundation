@@ -1,7 +1,7 @@
 # RFC-0028: Deterministic Trace-JIT
 
 Version 0.1 — Standards Track
-Status: Draft
+Status: Accepted
 Author: T81 Foundation Architecture Team
 Applies to: T81VM, TISC, Axion
 

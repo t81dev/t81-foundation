@@ -67,8 +67,8 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 ```bash
 python3 scripts/ci/check_architecture_targets.py
 python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
-python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/guides/cli-user-manual.md
-python3 scripts/ci/check_cli_docs_smoke.py --manual docs/guides/cli-user-manual.md --cwd . --timeout-sec 20
+python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/user-guide/reference/cli-user-manual.md
+python3 scripts/ci/check_cli_docs_smoke.py --manual docs/user-guide/reference/cli-user-manual.md --cwd . --timeout-sec 20
 python3 scripts/ci/check_cli_json_contracts.py --t81-bin build/t81 --repo-root .
 python3 scripts/ci/check_ai_experiment_boundary.py
 python3 scripts/ci/check_ai_status_doc_freshness.py --expectations-file scripts/ci/ai_status_doc_freshness_expectations.json --out-json build/ai-status/ai_status_doc_freshness_report.json  # also writes .md summary

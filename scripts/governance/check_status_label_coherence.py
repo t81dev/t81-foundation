@@ -54,11 +54,14 @@ def _parse_markdown_table(path: Path) -> list[list[str]]:
 def _component_labels_from_readme(path: Path) -> dict[str, str]:
     labels: dict[str, str] = {}
     for row in _parse_markdown_table(path):
-        if len(row) < 3:
+        if len(row) < 2:
             continue
         comp = re.sub(r"[*`]", "", row[0]).strip().lower()
-        if comp in {"t81vm", "axion", "t81lang"}:
-            labels[comp] = _normalize(row[2])
+        maturity = row[1]
+        if comp in {"t81vm", "t81lang"}:
+            labels[comp] = _normalize(maturity)
+        elif comp in {"axion", "axion governance kernel", "axion kernel"}:
+            labels["axion"] = _normalize(maturity)
     return labels
 
 
@@ -68,8 +71,8 @@ def _component_labels_from_system_status(path: Path) -> dict[str, str]:
         if len(row) < 2:
             continue
         comp = re.sub(r"[*`]", "", row[0]).strip().lower()
-        if comp in {"t81vm", "axion kernel", "t81lang"}:
-            key = "axion" if comp == "axion kernel" else comp
+        if comp in {"t81vm", "t81lang", "axion kernel", "axion governance kernel"}:
+            key = "axion" if comp in {"axion kernel", "axion governance kernel"} else comp
             labels[key] = _normalize(row[1])
     return labels
 
@@ -91,8 +94,8 @@ def _component_labels_from_matrix(path: Path) -> dict[str, str]:
             continue
         comp = re.sub(r"[*`]", "", row[component_idx]).strip().lower()
         maturity = row[maturity_idx]
-        if comp in {"t81vm", "axion kernel", "t81lang"}:
-            key = "axion" if comp == "axion kernel" else comp
+        if comp in {"t81vm", "t81lang", "axion kernel", "axion governance kernel"}:
+            key = "axion" if comp in {"axion kernel", "axion governance kernel"} else comp
             labels[key] = _normalize(maturity)
     return labels
 
@@ -195,7 +198,7 @@ def main() -> int:
         if len(row) <= max(subsystem_idx, spec_authority_idx):
             continue
         comp = re.sub(r"[*`]", "", row[subsystem_idx]).strip().lower()
-        if comp == "axion kernel":
+        if comp in {"axion kernel", "axion governance kernel"}:
             comp = "axion"
         if comp in canonical:
             matrix_spec_surface[comp] = row[spec_authority_idx]

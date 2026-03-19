@@ -31,7 +31,7 @@
 - **Scope:** Ambitious but managed through modular architecture.
 
 ## 6. DOCUMENTATION AUDIT
-- **Completeness:** Exceptional. `docs/` contains normative specs (`../../spec/`), user guides (`../guides/`), architecture notes (`../explanation/ARCHITECTURE.md`), and policies (`../policies/GOVERNANCE.md`).
+- **Completeness:** Exceptional. `docs/` contains normative specs (`../../spec/`), user guides (`../user-guide/`), architecture notes (`../explanation/ARCHITECTURE.md`), and policies (`../policies/GOVERNANCE.md`).
 - **Sync:** Documentation appears to be kept in sync with code (CI checks structure and links).
 - **Gaps:** `T81Symbolic` documentation is sparse compared to other modules.
 

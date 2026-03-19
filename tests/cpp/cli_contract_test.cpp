@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <signal.h>
 #include <random>
 #include <sstream>
@@ -87,7 +88,15 @@ fs::path make_temp_path(const std::string& prefix, const std::string& extension)
   return fs::temp_directory_path() / (prefix + "-" + std::to_string(dist(rng)) + extension);
 }
 
+CommandResult run_cli_in_dir(const fs::path& bin_path, const std::vector<std::string>& args,
+                             const std::optional<fs::path>& workdir);
+
 CommandResult run_cli(const fs::path& bin_path, const std::vector<std::string>& args) {
+  return run_cli_in_dir(bin_path, args, std::nullopt);
+}
+
+CommandResult run_cli_in_dir(const fs::path& bin_path, const std::vector<std::string>& args,
+                             const std::optional<fs::path>& workdir) {
   const fs::path out_path = make_temp_path("t81-cli-contract", ".out");
   const fs::path err_path = make_temp_path("t81-cli-contract", ".err");
   std::vector<std::string> argv_storage;
@@ -113,6 +122,9 @@ CommandResult run_cli(const fs::path& bin_path, const std::vector<std::string>& 
   pid_t pid = fork();
   T81_TEST_CHECK(pid >= 0);
   if (pid == 0) {
+    if (workdir && chdir(workdir->c_str()) != 0) {
+      _exit(127);
+    }
     FILE* out = std::fopen(out_path.c_str(), "wb");
     FILE* err = std::fopen(err_path.c_str(), "wb");
     if (!out || !err) {
@@ -167,6 +179,7 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(argc >= 2);
   const fs::path t81_bin = fs::path(argv[1]);
   T81_TEST_CHECK(fs::exists(t81_bin));
+  const fs::path repo_root = fs::absolute(t81_bin).parent_path().parent_path();
 
   // Test basic CLI functionality - minimal set to avoid hanging
   {
@@ -336,6 +349,37 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(result.exit_code == 0 || result.exit_code == 2);
     T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.doctor.v1\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"scope\": \"toolchain\""));
+  }
+
+  {
+    const auto paths_result = run_cli_in_dir(t81_bin, {"env", "paths", "--json"}, repo_root);
+    T81_TEST_CHECK(paths_result.exit_code == 0);
+    T81_TEST_CHECK(contains(paths_result.stdout_text, "\"schema\": \"t81.env-paths.v1\""));
+    T81_TEST_CHECK(contains(paths_result.stdout_text,
+                            "\"build_dir\": \"" + (repo_root / "build").string() + "\""));
+
+    const auto doctor_result = run_cli_in_dir(t81_bin, {"env", "doctor", "--json"}, repo_root);
+    T81_TEST_CHECK(doctor_result.exit_code == 0 || doctor_result.exit_code == 2);
+    T81_TEST_CHECK(contains(doctor_result.stdout_text,
+                            "\"detail\":\"CLI binary present at " +
+                                (repo_root / "build" / "t81").string() + "\""));
+  }
+
+  {
+    const auto test_result = run_cli_in_dir(t81_bin, {"code", "test", "--json", "--list"}, repo_root / "build");
+    T81_TEST_CHECK(test_result.exit_code == 0);
+    T81_TEST_CHECK(contains(test_result.stdout_text, "\"schema\": \"t81.test.v1\""));
+    T81_TEST_CHECK(contains(test_result.stdout_text,
+                            "\"build_dir\": \"" + (repo_root / "build").string() + "\""));
+  }
+
+  {
+    const auto canonfs_result =
+        run_cli_in_dir(t81_bin, {"canonfs", "snapshot", "--json"}, repo_root / "build");
+    T81_TEST_CHECK(canonfs_result.exit_code == 0);
+    T81_TEST_CHECK(contains(canonfs_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot.v1\""));
+    T81_TEST_CHECK(contains(canonfs_result.stdout_text,
+                            "\"canonfs_root\": \"" + (repo_root / ".t81_canonfs").string() + "\""));
   }
 
   {

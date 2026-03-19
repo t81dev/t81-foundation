@@ -71,5 +71,5 @@ ______________________________________________________________________
 ## 7. Targeted Coverage Notes
 
 - Annotate each header with a brief Doxygen summary (existing files already have `namespace t81 { ... }` and `///` comments; keep them updated when adding APIs).  
-- When exposing new APIs, add tests under `tests/cpp/` and a short entry in `docs/guides/public-api-overview.md`.  
+- When exposing new APIs, add tests under `tests/cpp/` and a short entry in `docs/user-guide/reference/public-api-overview.md`.  
 - Nothing in `include/t81/` should introduce raw `new`/`delete`, global mutable state, or hidden nondeterminism; refer to `../../AGENTS.md`/`../explanation/DESIGN.md` when in doubt.

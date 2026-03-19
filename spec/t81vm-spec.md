@@ -357,7 +357,7 @@ Axion policies require precise visibility into every segment transition. The VM 
 6. **Relocation logging** — if GC compacts or moves heap objects, Axion MUST record the deterministic string `heap relocation from=<old> to=<new> size=<n>` before updating the segments so policy runners, trace auditors, and CanonFS can replay the reallocation without ambiguity.
 7. **Deterministic compaction semantics** — heap compaction happens in a canonical way: the allocator resets `heap_ptr` to `layout.heap.start`, clears `heap_frames`, and logs the relocation event before returning control. This ensures repeated compactions produce the same pointer trace and avoids nondeterminism from fragmented free lists.
 
-Maintaining these invariants ensures the deterministic segment trace described in `docs/guides/axion-trace.md` and RFC-0020, letting auditors replay the exact `verdict.reason` strings without inspecting the VM implementation.
+Maintaining these invariants ensures the deterministic segment trace described in `docs/developer-guide/internals/axion-trace.md` and RFC-0020, letting auditors replay the exact `verdict.reason` strings without inspecting the VM implementation.
 
 ______________________________________________________________________
 

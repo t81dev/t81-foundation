@@ -2,12 +2,13 @@ vote: +1
 
 # RFC-0016: Register-native SIMD T81 Limb
 
-**Status:** Superseded by RFC-0017
+**Status:** Superseded
 **Type:** Standards Track
 **Created:** 2025-12-xx  
 **Updated:** 2025-12-xx  
 **Requires:** —  
 **Supersedes:** —  
+**Superseded-By:** RFC-0017
 **Discussion:** https://github.com/t81dev/t81-foundation/discussions (TBD thread)
 
 ______________________________________________________________________

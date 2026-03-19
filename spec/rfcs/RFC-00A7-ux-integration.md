@@ -2,6 +2,7 @@
 
 Version 0.1 — Standards Track\
 Status: Superseded\
+Superseded-By: RFC-0033\
 Author: T81 Foundation Architecture Team\
 Applies to: CLI Tools, Developer Experience, Observability Systems
 

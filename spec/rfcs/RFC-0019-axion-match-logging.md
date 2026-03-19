@@ -62,7 +62,7 @@ ______________________________________________________________________
 
 # 4. Deployment & Backward Compatibility
 
-Legacy binaries that lack match metadata continue to run; Axion treats the metadata as optional but logs warnings (DTS) and denies guard-specific policies. The compiler should emit warnings when metadata is missing. Tools like CLI/ir-inspector (see `docs/guides/cli-toolkit.md`) should expose metadata fulfillment.
+Legacy binaries that lack match metadata continue to run; Axion treats the metadata as optional but logs warnings (DTS) and denies guard-specific policies. The compiler should emit warnings when metadata is missing. Tools like the CLI and IR inspection flows (see `docs/user-guide/reference/cli-user-manual.md`) should expose metadata fulfillment.
 
 ______________________________________________________________________
 
