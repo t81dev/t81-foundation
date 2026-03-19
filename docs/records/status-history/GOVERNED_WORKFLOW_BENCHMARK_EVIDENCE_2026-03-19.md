@@ -43,6 +43,8 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 - `BM_GovernedObservability_Arith_AllowPolicy`
 - `BM_GovernedRender_Arith_NoPolicy`
 - `BM_GovernedRender_Arith_AllowPolicy`
+- `BM_GovernedEmit_Arith_NoPolicy`
+- `BM_GovernedEmit_Arith_AllowPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
 - `BM_GovernedTensorLoad_HashFixture_NoPolicy`
@@ -62,6 +64,8 @@ Current local run:
 | `BM_GovernedObservability_Arith_AllowPolicy` | `658.55 ns` | same observability materialization path with simple allow policy |
 | `BM_GovernedRender_Arith_NoPolicy` | `17.35 µs` | render `975` trace bytes plus `1411` audit JSON bytes from the same `82`-trace / `6`-event snapshot |
 | `BM_GovernedRender_Arith_AllowPolicy` | `17.24 µs` | same render path with simple allow policy |
+| `BM_GovernedEmit_Arith_NoPolicy` | `506.80 µs` | write the rendered `975` trace bytes and `1411` audit JSON bytes to temp files and flush |
+| `BM_GovernedEmit_Arith_AllowPolicy` | `459.18 µs` | same emit path with simple allow policy |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
 | `BM_GovernedTensorLoad_HashFixture_NoPolicy/4096` | `41.01 µs` | in-memory preloaded hash fixture via `TLoadHash` |
@@ -131,6 +135,26 @@ The useful reading is:
   than the hash-only lane
 - this still excludes filesystem write cost
 
+### File-emission cost
+
+The `BM_GovernedEmit_*` pair writes those already-rendered payloads to temp
+files and flushes the output.
+
+For the exercised arithmetic-chain snapshot:
+
+- both runs emit the same `975` trace bytes and `1411` audit JSON bytes
+- write+flush cost is about `459-507 µs`
+
+The useful reading is:
+
+- file emission dominates render-only cost for this small snapshot
+- write-path overhead is roughly an order of magnitude above string formatting
+  and several orders above the in-memory signature-only lane
+- this gives the benchmark stack a clean separation between:
+  - signature materialization
+  - render formatting
+  - write emission
+
 ### Tensor-path policy cost
 
 For the `4096`-element tensor case:
@@ -183,6 +207,8 @@ difference.
   measured directly in-repo
 - export-style trace/audit rendering can be measured directly in-repo without
   involving CLI file I/O
+- temp-file trace/audit emission can be measured directly in-repo as a separate
+  write-cost layer
 - policy-on vs policy-off tensor loading can be measured directly within a
   fixed path
 - `TLoadHash` can now be benchmarked against a non-persistent in-memory fixture
@@ -194,7 +220,8 @@ difference.
 - it does not isolate every internal persistence cost from the broader
   persistent-driver path
 - it does not establish a policy-overhead bound for all workloads
-- it does not measure filesystem write cost for trace/audit export
+- it does not measure broader CLI orchestration around argument parsing,
+  terminal I/O, or user-facing reporting
 - it does not extend DCP / Verified determinism claims
 
 ## Known Caveats
@@ -210,7 +237,7 @@ difference.
 
 1. Record the `4` and `256` tensor rows in a dedicated evidence table instead
    of only carrying the `4096` representative row here.
-2. Add file-emission benchmarks for trace/audit export so formatting and write
-   cost are separated.
+2. Add CLI end-to-end trace/audit export benchmarks if shell/process overhead
+   needs to be measured in addition to in-process write cost.
 3. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
    and cold-cache splits instead of one blended persistent path.

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
+#include <fstream>
 #include <memory>
 #include <sstream>
 #include <span>
@@ -127,6 +128,17 @@ std::filesystem::path governed_benchmark_root(uint64_t elements) {
          ("t81-governed-bench-" + std::to_string(pid) + "-" + std::to_string(elements));
 }
 
+std::filesystem::path governed_emit_root(std::string_view name) {
+  const auto pid =
+#ifdef _WIN32
+      static_cast<unsigned long>(_getpid());
+#else
+      static_cast<unsigned long>(::getpid());
+#endif
+  return std::filesystem::temp_directory_path() /
+         ("t81-governed-emit-" + std::to_string(pid) + "-" + std::string(name));
+}
+
 std::string ensure_canonfs_tensor(uint64_t elements, const std::filesystem::path& root) {
   std::error_code ec;
   std::filesystem::remove_all(root, ec);
@@ -239,6 +251,14 @@ std::string render_axion_audit_json(const t81::vm::State& state) {
   }
   out << "]}";
   return out.str();
+}
+
+bool write_text_file(const std::filesystem::path& path, std::string_view text) {
+  std::ofstream out(path, std::ios::binary | std::ios::trunc);
+  if (!out) return false;
+  out.write(text.data(), static_cast<std::streamsize>(text.size()));
+  out.flush();
+  return static_cast<bool>(out);
 }
 
 static void BM_GovernedVMRun_Arith_NoPolicy(benchmark::State& state) {
@@ -359,6 +379,78 @@ static void BM_GovernedRender_Arith_AllowPolicy(benchmark::State& state) {
   }
 }
 BENCHMARK(BM_GovernedRender_Arith_AllowPolicy);
+
+static void BM_GovernedEmit_Arith_NoPolicy(benchmark::State& state) {
+  const Program prog = make_arith_chain_program(false);
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto run = vm->run_to_halt(10000);
+  if (!run.has_value()) {
+    state.SkipWithError("failed to build no-policy emit snapshot");
+    return;
+  }
+  const auto& snapshot = vm->state();
+  const auto trace_text = render_trace_text(snapshot);
+  const auto audit_json = render_axion_audit_json(snapshot);
+  const auto root = governed_emit_root("no-policy");
+  std::error_code ec;
+  std::filesystem::create_directories(root, ec);
+  const auto trace_path = root / "run.trace";
+  const auto audit_path = root / "audit.json";
+  state.SetLabel("workflow=emit, source=vm-state, governance=none, workload=arith-chain");
+  state.counters["trace_entries"] = static_cast<double>(snapshot.trace.size());
+  state.counters["axion_events"] = static_cast<double>(snapshot.axion_log.size());
+  state.counters["trace_bytes"] = static_cast<double>(trace_text.size());
+  state.counters["audit_bytes"] = static_cast<double>(audit_json.size());
+  for (auto _ : state) {
+    const bool trace_ok = write_text_file(trace_path, trace_text);
+    const bool audit_ok = write_text_file(audit_path, audit_json);
+    benchmark::DoNotOptimize(trace_ok ? 1 : 0);
+    benchmark::DoNotOptimize(audit_ok ? 1 : 0);
+    if (!trace_ok || !audit_ok) {
+      state.SkipWithError("failed to emit no-policy trace/audit files");
+      break;
+    }
+  }
+  std::filesystem::remove_all(root, ec);
+}
+BENCHMARK(BM_GovernedEmit_Arith_NoPolicy);
+
+static void BM_GovernedEmit_Arith_AllowPolicy(benchmark::State& state) {
+  const Program prog = make_arith_chain_program(true);
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto run = vm->run_to_halt(10000);
+  if (!run.has_value()) {
+    state.SkipWithError("failed to build allow-policy emit snapshot");
+    return;
+  }
+  const auto& snapshot = vm->state();
+  const auto trace_text = render_trace_text(snapshot);
+  const auto audit_json = render_axion_audit_json(snapshot);
+  const auto root = governed_emit_root("allow-policy");
+  std::error_code ec;
+  std::filesystem::create_directories(root, ec);
+  const auto trace_path = root / "run.trace";
+  const auto audit_path = root / "audit.json";
+  state.SetLabel("workflow=emit, source=vm-state, governance=allow-policy, workload=arith-chain");
+  state.counters["trace_entries"] = static_cast<double>(snapshot.trace.size());
+  state.counters["axion_events"] = static_cast<double>(snapshot.axion_log.size());
+  state.counters["trace_bytes"] = static_cast<double>(trace_text.size());
+  state.counters["audit_bytes"] = static_cast<double>(audit_json.size());
+  for (auto _ : state) {
+    const bool trace_ok = write_text_file(trace_path, trace_text);
+    const bool audit_ok = write_text_file(audit_path, audit_json);
+    benchmark::DoNotOptimize(trace_ok ? 1 : 0);
+    benchmark::DoNotOptimize(audit_ok ? 1 : 0);
+    if (!trace_ok || !audit_ok) {
+      state.SkipWithError("failed to emit allow-policy trace/audit files");
+      break;
+    }
+  }
+  std::filesystem::remove_all(root, ec);
+}
+BENCHMARK(BM_GovernedEmit_Arith_AllowPolicy);
 
 static void BM_GovernedTensorLoad_LocalWeights_NoPolicy(benchmark::State& state) {
   const uint64_t elements = static_cast<uint64_t>(state.range(0));
