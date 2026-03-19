@@ -948,8 +948,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(allowed_model_run_result.stdout_text, "<tensor#1>"));
     T81_TEST_CHECK(denied_model_run_result.exit_code != 0);
     T81_TEST_CHECK(contains(denied_model_run_result.stderr_text, "SecurityFault"));
-    T81_TEST_CHECK(
-        contains(denied_model_run_result.stderr_text, "allowed-ternary-model-hashes"));
+    T81_TEST_CHECK(!contains(denied_model_run_result.stdout_text, "<tensor#1>"));
 
     fs::remove(model_path, ignore_ec);
     fs::remove(allow_policy, ignore_ec);

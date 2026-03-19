@@ -365,6 +365,44 @@ int test_promote_to_tensor_denies_non_whitelisted_ternary_model_hash() {
 }
 
 // ---------------------------------------------------------------------------
+// [TN-C8c] direct ternary-native fast paths enforce allowed-ternary-model-hashes
+// ---------------------------------------------------------------------------
+int test_twmatmul_denies_non_whitelisted_ternary_model_hash() {
+  t81::weights::NativeTensor native;
+  native.shape = {2, 2};
+  native.trits = 4;
+  native.format = t81::weights::NativeFormat::BalancedTernary;
+  native.data = {40};
+
+  t81::tisc::Program p;
+  p.weights_model = make_ternary_weights_model(native, "deadbeef");
+  p.symbol_pool.push_back("ternary.w");
+  p.tensor_pool.push_back(t81::T729DynamicTensor({2, 2}, {1.0f, 0.0f, -1.0f, 1.0f}));
+  p.axion_policy_text =
+      "(policy (tier 2)"
+      "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))";
+
+  p.insns.push_back(load_tensor(1, 1));
+  p.insns.push_back({t81::tisc::Opcode::WeightsLoad, 2, 1, 0});
+  p.insns.push_back({t81::tisc::Opcode::TWMATMUL, 3, 1, 2});
+  p.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(p);
+  auto res = vm->run_to_halt();
+  T81_TEST_CHECK(!res.has_value());
+  T81_TEST_CHECK(res.error() == t81::vm::Trap::SecurityFault);
+  T81_TEST_CHECK(std::any_of(vm->state().axion_log.begin(), vm->state().axion_log.end(),
+                             [](const auto& ev) {
+                               return ev.opcode == t81::tisc::Opcode::TWMATMUL &&
+                                      ev.verdict.kind == t81::axion::VerdictKind::Deny &&
+                                      ev.verdict.reason.find("allowed-ternary-model-hashes") !=
+                                          std::string::npos;
+                             }));
+  return 0;
+}
+
+// ---------------------------------------------------------------------------
 // [TN-C9] WLOAD ternary-weight-domain-check rejects scaled/non-exact payloads
 // ---------------------------------------------------------------------------
 int test_wload_ternary_weight_domain_check() {
@@ -445,6 +483,7 @@ int main() {
   failures += test_wload_allowed_ternary_model_hashes();
   failures += test_wload_denies_non_whitelisted_ternary_model_hash();
   failures += test_promote_to_tensor_denies_non_whitelisted_ternary_model_hash();
+  failures += test_twmatmul_denies_non_whitelisted_ternary_model_hash();
   failures += test_wload_ternary_weight_domain_check();
   failures += test_wload_ternary_weight_domain_check_disabled();
   return failures;

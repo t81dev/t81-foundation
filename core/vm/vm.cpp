@@ -709,52 +709,65 @@ public:
       }
       return static_cast<std::int64_t>(idx_handle);
     };
+    auto authorize_weights_tensor = [&](int source_reg, std::int64_t source_handle)
+        -> std::expected<const t81::weights::NativeTensor*, Trap> {
+      const auto* source_native = weights_tensor(source_handle);
+      if (!source_native) {
+        return std::expected<const t81::weights::NativeTensor*, Trap>(t81::unexpect,
+                                                                      Trap::DecodeFault);
+      }
+      if (state_.policy.has_value()) {
+        if (!state_.policy->allowed_ternary_model_hashes.empty()) {
+          const bool hash_allowed =
+              state_.weights_model != nullptr && !state_.weights_model->checksum.empty() &&
+              std::any_of(state_.policy->allowed_ternary_model_hashes.begin(),
+                          state_.policy->allowed_ternary_model_hashes.end(),
+                          [&](const std::string& allowed) {
+                            return hash_matches_policy_entry(allowed, state_.weights_model->checksum);
+                          });
+          if (!hash_allowed) {
+            const std::string checksum =
+                state_.weights_model != nullptr ? state_.weights_model->checksum : "";
+            t81::axion::Verdict verdict{
+                t81::axion::VerdictKind::Deny,
+                checksum.empty()
+                    ? "WLOAD denied (allowed-ternary-model-hashes: missing model checksum)"
+                    : "WLOAD denied (allowed-ternary-model-hashes mismatch checksum=sha3-512:" +
+                          checksum + ")"};
+            record_axion_event(program_.insns[current_pc].opcode, static_cast<int32_t>(source_reg),
+                               source_handle, verdict);
+            return std::expected<const t81::weights::NativeTensor*, Trap>(t81::unexpect,
+                                                                          Trap::SecurityFault);
+          }
+        }
+        if (state_.policy->ternary_weight_domain_check) {
+          auto decoded = t81::vm::internal::decode_native_tensor(
+              *source_native, t81::vm::internal::TensorDecodeMode::StrictCanonical);
+          if (!decoded.has_value() || !is_exact_ternary_tensor(*decoded)) {
+            t81::axion::Verdict verdict{
+                t81::axion::VerdictKind::Deny,
+                "WLOAD denied (ternary-weight-domain-check failed)"};
+            record_axion_event(program_.insns[current_pc].opcode, static_cast<int32_t>(source_reg),
+                               source_handle, verdict);
+            return std::expected<const t81::weights::NativeTensor*, Trap>(t81::unexpect,
+                                                                          Trap::SecurityFault);
+          }
+        }
+      }
+      return source_native;
+    };
     auto promote_to_tensor = [&](int reg) -> std::expected<void, Trap> {
       if (reg < 0 || static_cast<std::size_t>(reg) >= ctx.registers.size()) {
         return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
       }
       if (ctx.register_tags[reg] == ValueTag::WeightsTensorHandle) {
         auto handle = ctx.registers[reg];
-        const auto* native = weights_tensor(handle);
-        if (!native) return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
-        if (state_.policy.has_value()) {
-          if (!state_.policy->allowed_ternary_model_hashes.empty()) {
-            const bool hash_allowed =
-                state_.weights_model != nullptr && !state_.weights_model->checksum.empty() &&
-                std::any_of(state_.policy->allowed_ternary_model_hashes.begin(),
-                            state_.policy->allowed_ternary_model_hashes.end(),
-                            [&](const std::string& allowed) {
-                              return hash_matches_policy_entry(allowed, state_.weights_model->checksum);
-                            });
-            if (!hash_allowed) {
-              const std::string checksum =
-                  state_.weights_model != nullptr ? state_.weights_model->checksum : "";
-              t81::axion::Verdict verdict{
-                  t81::axion::VerdictKind::Deny,
-                  checksum.empty()
-                      ? "WLOAD denied (allowed-ternary-model-hashes: missing model checksum)"
-                      : "WLOAD denied (allowed-ternary-model-hashes mismatch checksum=sha3-512:" +
-                            checksum + ")"};
-              record_axion_event(program_.insns[current_pc].opcode, static_cast<int32_t>(reg), handle,
-                                 verdict);
-              return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
-            }
-          }
-          if (state_.policy->ternary_weight_domain_check) {
-            auto decoded = t81::vm::internal::decode_native_tensor(
-                *native, t81::vm::internal::TensorDecodeMode::StrictCanonical);
-            if (!decoded.has_value() || !is_exact_ternary_tensor(*decoded)) {
-              t81::axion::Verdict verdict{
-                  t81::axion::VerdictKind::Deny,
-                  "WLOAD denied (ternary-weight-domain-check failed)"};
-              record_axion_event(program_.insns[current_pc].opcode, static_cast<int32_t>(reg), handle,
-                                 verdict);
-              return std::expected<void, Trap>(t81::unexpect, Trap::SecurityFault);
-            }
-          }
+        auto authorized = authorize_weights_tensor(reg, handle);
+        if (!authorized.has_value()) {
+          return std::expected<void, Trap>(t81::unexpect, authorized.error());
         }
         auto promoted = t81::vm::internal::decode_native_tensor(
-            *native, t81::vm::internal::TensorDecodeMode::StrictCanonical);
+            **authorized, t81::vm::internal::TensorDecodeMode::StrictCanonical);
         if (!promoted.has_value()) {
           return std::expected<void, Trap>(t81::unexpect, Trap::DecodeFault);
         }
@@ -6302,13 +6315,14 @@ public:
         if (!act_t) { trap = Trap::DecodeFault; break; }
         if (ctx.register_tags[insn.c] == ValueTag::WeightsTensorHandle) {
           const auto handle = ctx.registers[insn.c];
-          const auto* native = weights_tensor(handle);
-          if (native != nullptr) {
+          auto authorized = authorize_weights_tensor(insn.c, handle);
+          if (!authorized.has_value()) { trap = authorized.error(); break; }
+          if (*authorized != nullptr) {
             const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
             if (cache_idx < state_.weights_tensor_trits.size() &&
                 state_.weights_tensor_trits[cache_idx].has_value()) {
               if (auto direct = t81::vm::internal::native_tensor_twmatmul_direct(
-                      *act_t, *native, *state_.weights_tensor_trits[cache_idx]);
+                      *act_t, **authorized, *state_.weights_tensor_trits[cache_idx]);
                   direct.has_value()) {
                 t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                             "TWMATMUL ternary-weight matmul (RFC-0034)"};
@@ -6358,13 +6372,14 @@ public:
         }
         if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
           const auto handle = ctx.registers[insn.b];
-          const auto* native = weights_tensor(handle);
-          if (native != nullptr) {
+          auto authorized = authorize_weights_tensor(insn.b, handle);
+          if (!authorized.has_value()) { trap = authorized.error(); break; }
+          if (*authorized != nullptr) {
             const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
             if (cache_idx < state_.weights_tensor_trits.size() &&
                 state_.weights_tensor_trits[cache_idx].has_value()) {
               if (auto direct = t81::vm::internal::native_tensor_quant_direct(
-                      *native, *state_.weights_tensor_trits[cache_idx], threshold);
+                      **authorized, *state_.weights_tensor_trits[cache_idx], threshold);
                   direct.has_value()) {
                 t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                             "TQUANT ternary quantization (RFC-0034)"};
@@ -6415,13 +6430,14 @@ public:
         if (!q_t || !v_t) { trap = Trap::DecodeFault; break; }
         if (ctx.register_tags[k_reg] == ValueTag::WeightsTensorHandle) {
           const auto handle = ctx.registers[k_reg];
-          const auto* native = weights_tensor(handle);
-          if (native != nullptr) {
+          auto authorized = authorize_weights_tensor(k_reg, handle);
+          if (!authorized.has_value()) { trap = authorized.error(); break; }
+          if (*authorized != nullptr) {
             const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
             if (cache_idx < state_.weights_tensor_trits.size() &&
                 state_.weights_tensor_trits[cache_idx].has_value()) {
               if (auto direct = t81::vm::internal::native_tensor_tattn_direct(
-                      *q_t, *native, *state_.weights_tensor_trits[cache_idx], *v_t);
+                      *q_t, **authorized, *state_.weights_tensor_trits[cache_idx], *v_t);
                   direct.has_value()) {
                 t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                             "TATTN ternary QK attention (RFC-0034)"};
@@ -6466,9 +6482,10 @@ public:
         }
         const std::int64_t idx = ctx.registers[insn.c];
         if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
-          const auto* native = weights_tensor(ctx.registers[insn.b]);
-          if (native != nullptr) {
-            if (auto direct = t81::vm::internal::native_tensor_twembed_direct(*native, idx);
+          auto authorized = authorize_weights_tensor(insn.b, ctx.registers[insn.b]);
+          if (!authorized.has_value()) { trap = authorized.error(); break; }
+          if (*authorized != nullptr) {
+            if (auto direct = t81::vm::internal::native_tensor_twembed_direct(**authorized, idx);
                 direct.has_value()) {
               t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                           "TWEMBED ternary embed gather (RFC-0034)"};
@@ -6513,13 +6530,14 @@ public:
         if (!act_t) { trap = Trap::DecodeFault; break; }
         if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
           const auto handle = ctx.registers[insn.b];
-          const auto* native = weights_tensor(handle);
-          if (native != nullptr) {
+          auto authorized = authorize_weights_tensor(insn.b, handle);
+          if (!authorized.has_value()) { trap = authorized.error(); break; }
+          if (*authorized != nullptr) {
             const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
             if (cache_idx < state_.weights_tensor_trits.size() &&
                 state_.weights_tensor_trits[cache_idx].has_value()) {
               if (auto direct = t81::vm::internal::native_tensor_ternaccum_direct(
-                      *native, *state_.weights_tensor_trits[cache_idx], *act_t);
+                      **authorized, *state_.weights_tensor_trits[cache_idx], *act_t);
                   direct.has_value()) {
                 t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                             "TERNACCUM ternary dot product (RFC-0034)"};
@@ -6574,13 +6592,14 @@ public:
         bool have_tact_result = false;
         if (ctx.register_tags[insn.b] == ValueTag::WeightsTensorHandle) {
           const auto handle = ctx.registers[insn.b];
-          const auto* native = weights_tensor(handle);
-          if (native != nullptr) {
+          auto authorized = authorize_weights_tensor(insn.b, handle);
+          if (!authorized.has_value()) { trap = authorized.error(); break; }
+          if (*authorized != nullptr) {
             const std::size_t cache_idx = static_cast<std::size_t>(handle - 1);
             if (cache_idx < state_.weights_tensor_trits.size() &&
                 state_.weights_tensor_trits[cache_idx].has_value()) {
               if (auto direct = t81::vm::internal::native_tensor_tact_direct(
-                      *native, *state_.weights_tensor_trits[cache_idx], mode);
+                      **authorized, *state_.weights_tensor_trits[cache_idx], mode);
                   direct.has_value()) {
                 tact_result = std::move(*direct);
                 have_tact_result = true;
