@@ -100,6 +100,7 @@ Explicitly list areas that are:
 
 * **Distributed Cognitive Tiers** (`experimental/tiers/`, `experimental/distributed/`): Consensus determinism is planned but not verified.
 * **JIT Optimizations**: Trace-JIT equivalence remains constrained by RFC-0042, RFC-0043, and RFC-0047 direction, but is not yet a fully verified surface.
+* **Axion Epoch Runtime (TernaryOS + DPE)**: governed non-DCP proof surface with CI-enforced scheduler/audit parity in the experimental kernel lane; not part of the interpreter DCP boundary.
 * **Backend Acceleration Beyond Current Verified CPU Paths**: Any future backend must satisfy RFC-0042 equivalence, RFC-0043 validation, RFC-0049 arithmetic, and RFC-0051 accelerator-boundary requirements before deterministic claims are expanded.
 * **Dataflow/Reactive Execution Beyond Current DPE Scope**: Any future state-driven execution surface must satisfy RFC-0052 before deterministic claims are expanded.
 * **Distributed Execution**: Any future cross-node execution surface must satisfy RFC-0053 before deterministic claims are expanded.
@@ -113,6 +114,7 @@ Explicitly list areas that are:
 | ------- | --------- | ------ | ------------ |
 | **TISC Execution** | `tests/cpp/vm_determinism_property_test.cpp` | `ci.yml` | N/A |
 | **Tritwise Ops** | `tests/cpp/test_tritwise_backend_equivalence.cpp` | `ci.yml` | N/A |
+| **Axion Epoch Runtime (scheduler + audit parity)** | `experimental/ternaryos/tests/epoch_submission_test.cpp`<br>`experimental/ternaryos/tests/epoch_audit_test.cpp` | `ci.yml` (`axion-epoch-determinism`) | N/A |
 | **Compiler Repro** | `tests/fixtures/t81lang_determinism/*.t81` | `repro-ledger.yml` | `scripts/ci/t81lang_repro_gate.py` |
 | **Quantization** | N/A | `repro-ledger.yml` | `scripts/ci/t3k_repro_gate.py` |
 

@@ -11,8 +11,9 @@ This document translates high-level governance policies into machine-verifiable 
 
 | Rule | Machine-Verifiable | Required CI Job | Enforcement Severity | Required Scripts / Metadata |
 | :--- | :---: | :--- | :--- | :--- |
-| **Bit-Exact Determinism** | Yes | `build-and-test`, `determinism-slice`, `t81lang-cross-arch-bit-identity`, `t3k-cross-arch-bit-identity`, `quality-gate` | **Hard-Fail** | `scripts/ci/t81lang_repro_gate.py`, `scripts/ci/t3k_repro_gate.py`, `scripts/ci/run_determinism_slice.sh` |
+| **Bit-Exact Determinism** | Yes | `build-and-test`, `determinism-slice`, `axion-epoch-determinism`, `t81lang-cross-arch-bit-identity`, `t3k-cross-arch-bit-identity`, `quality-gate` | **Hard-Fail** | `scripts/ci/t81lang_repro_gate.py`, `scripts/ci/t3k_repro_gate.py`, `scripts/ci/run_determinism_slice.sh` |
 | **Backend Equivalence (scalar ↔ SWAR ↔ SIMD)** | Yes (current tritwise surface) | `build-and-test`, `determinism-slice`, `quality-gate` | **Hard-Fail** | `tests/cpp/test_tritwise_backend_equivalence.cpp`; governance direction tracked by RFC-0042 / RFC-0043 / RFC-0049 |
+| **Epoch Scheduling / Audit Determinism (Axion kernel DPE lane)** | Yes (governed non-DCP, experimental TernaryOS boundary) | `axion-epoch-determinism` | **Hard-Fail** | `experimental/ternaryos/tests/epoch_submission_test.cpp`, `experimental/ternaryos/tests/epoch_audit_test.cpp`; governance direction tracked by RFC-0045 / RFC-0046 |
 | **ISA Stability (Frozen)** | Yes | `spec-and-docs`, `quality-gate` | **Hard-Fail** | `scripts/ci/check_tisc_freeze_integrity.py` |
 | **Unimplemented Privileged Opcode Fail-Closed** | Yes | `build-and-test` | **Hard-Fail** | `tests/cpp/vm_stubbed_privileged_opcode_fail_closed_test.cpp` |
 | **Unimplemented Async/Network Opcode Fail-Closed** | Yes | `build-and-test` | **Hard-Fail** | `tests/cpp/vm_stubbed_async_network_opcode_fail_closed_test.cpp` |

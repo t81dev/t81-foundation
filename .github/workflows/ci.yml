@@ -821,6 +821,52 @@ jobs:
           scripts/ci/run_determinism_slice.sh build
 
   ############################################################################
+  # JOB: axion-epoch-determinism
+  ############################################################################
+  axion-epoch-determinism:
+    name: " gate / axion epoch determinism / linux-x86_64 / clang "
+    needs: spec-and-docs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Install Dependencies
+        run: |
+          set -eo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build clang-18
+
+      - name: Configure CMake
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DT81_ENABLE_TERNARYOS=ON \
+            -DT81_ENABLE_DPE=ON
+
+      - name: Build epoch determinism targets
+        shell: bash
+        run: |
+          set -eo pipefail
+          cmake --build build --parallel --target \
+            t81_ternaryos_epoch_submission_test \
+            t81_ternaryos_epoch_audit_test
+
+      - name: Run epoch determinism proofs
+        shell: bash
+        run: |
+          set -eo pipefail
+          ctest --test-dir build --output-on-failure \
+            -R 't81_ternaryos_epoch_(submission|audit)_test'
+
+  ############################################################################
   # JOB: determinism-repeatability
   ############################################################################
   determinism-repeatability:
