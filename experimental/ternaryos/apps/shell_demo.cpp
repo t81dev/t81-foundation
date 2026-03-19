@@ -1,6 +1,6 @@
 // experimental/ternaryos/apps/shell_demo.cpp
 
-#include "shell/shell_session.hpp"
+#include "t81/axion/shell/shell_session.hpp"
 
 #include <cstdio>
 
