@@ -46,6 +46,7 @@ T81_BENCHMARK_VERBOSE_CONSOLE=1 \
 - `BM_GovernedEmit_Arith_NoPolicy`
 - `BM_GovernedEmit_Arith_AllowPolicy`
 - `BM_GovernedCLI_VMTrace_Export`
+- `BM_GovernedCLI_VMTrace_Export_Accumulator`
 - `BM_GovernedCLI_AxionLog_JSON`
 - `BM_GovernedTensorLoad_LocalWeights_NoPolicy`
 - `BM_GovernedTensorLoad_LocalWeights_AllowPolicy`
@@ -68,7 +69,8 @@ Current local run:
 | `BM_GovernedRender_Arith_AllowPolicy` | `17.24 µs` | same render path with simple allow policy |
 | `BM_GovernedEmit_Arith_NoPolicy` | `506.80 µs` | write the rendered `975` trace bytes and `1411` audit JSON bytes to temp files and flush |
 | `BM_GovernedEmit_Arith_AllowPolicy` | `459.18 µs` | same emit path with simple allow policy |
-| `BM_GovernedCLI_VMTrace_Export` | `10.39 ms` | end-to-end `t81 vm trace <artifact> -o <trace>` subprocess path, writing a `118`-byte trace file |
+| `BM_GovernedCLI_VMTrace_Export` | `15.16 ms` | end-to-end `t81 vm trace <artifact> -o <trace>` subprocess path on the tiny hello-world artifact, writing a `118`-byte trace file |
+| `BM_GovernedCLI_VMTrace_Export_Accumulator` | `16.79 ms` | same subprocess path on the loop-oriented accumulator artifact, writing a `47`-byte trace file |
 | `BM_GovernedCLI_AxionLog_JSON` | `12.82 ms` | end-to-end `t81 axion log --json` subprocess path, writing an `893`-byte JSON payload |
 | `BM_GovernedTensorLoad_LocalWeights_NoPolicy/4096` | `5.83 µs` | local weights-backed tensor materialization |
 | `BM_GovernedTensorLoad_LocalWeights_AllowPolicy/4096` | `6.51 µs` | same local weights path with simple allow policy |
@@ -166,7 +168,8 @@ operator-style export paths instead of only in-process helpers.
 
 Current local result:
 
-- `t81 vm trace <artifact> -o <trace>`: about `10.39 ms`
+- `t81 vm trace <artifact> -o <trace>` on hello-world: about `15.16 ms`
+- `t81 vm trace <artifact> -o <trace>` on accumulator: about `16.79 ms`
 - `t81 axion log --json`: about `12.82 ms`
 
 The useful reading is:
@@ -174,6 +177,9 @@ The useful reading is:
 - CLI/process overhead is substantially larger than the in-process emit lane
 - the in-process emit lane is still useful because it isolates formatting and
   write cost from process startup, argument parsing, and broader CLI setup
+- end-to-end `vm trace` cost is not explained by final trace-file byte count
+  alone; the accumulator artifact produced a smaller trace file than hello-world
+  but still took longer end to end
 - the five-layer stack now gives an honest decomposition from in-memory
   signature work up through end-to-end CLI export
 
@@ -264,5 +270,6 @@ difference.
    of only carrying the `4096` representative row here.
 2. If stricter isolation is needed, benchmark persistent CanonFS with warm-cache
    and cold-cache splits instead of one blended persistent path.
-3. Add larger trace/audit snapshots so export scaling is characterized beyond
-   the current small arithmetic-chain workload.
+3. Add larger trace/audit snapshots so export scaling is characterized across
+   multiple artifact shapes, not just hello-world and the current accumulator
+   loop.
