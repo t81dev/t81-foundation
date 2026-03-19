@@ -14,7 +14,7 @@
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 Используя теоретическую эффективность вычислений по основанию e, **T81** представляет собой детерминированную вычислительную архитектуру, построенную на **сбалансированной троичной арифметике** ({-1, 0, +1}) с полной моделью управления цепочкой, охватывающей набор инструкций, виртуальную машину, языковой компилятор и среду вывода ИИ.
 
@@ -244,4 +244,4 @@ ctest --test-dir build --output-on-failure
 
 ## Лицензия
 
-Лицензия MIT.
+Лицензия Apache 2.0.

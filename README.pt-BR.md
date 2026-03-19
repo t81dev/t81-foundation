@@ -14,7 +14,7 @@
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 Aproveitando a eficiência teórica da computação em base-e, **T81** é uma arquitetura de computação determinística construída sobre **aritmética ternária balanceada** ({-1, 0, +1}) com um modelo de governança de cadeia completa cobrindo o conjunto de instruções, a máquina virtual, o compilador da linguagem e o ambiente de inferência de IA.
 
@@ -244,4 +244,4 @@ Essas vantagens se combinam em domínios em que **reprodutibilidade**, **inferê
 
 ## Licença
 
-Licença MIT.
+Licença Apache 2.0.

@@ -14,7 +14,7 @@
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 利用基于 e 的计算的理论效率，**T81** 是一种基于 **平衡三元算术** ({-1, 0, +1}) 构建的确定性计算架构，拥有涵盖指令集、虚拟机、语言编译器和 AI 推理环境的全链条治理模型。
 
@@ -244,4 +244,4 @@ IEEE 754 浮点数存在破坏可重复性的平台特定舍入模式、结合�
 
 ## 许可证
 
-MIT 许可证。
+Apache 许可证 2.0。
