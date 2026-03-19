@@ -301,8 +301,8 @@ Subcommands:
   snapshot-diff <lhs> <rhs>
                      Compare two CanonFS snapshots through the Axion lens
   rollback [--to <hash>]  Roll back to a prior CanonFS snapshot
-  log [--json] [--tail <n>]           Show Axion state plus recent snapshot receipts
-  audit [--from <hash>] [--to <hash>] Export Axion/CanonFS receipt metadata
+  log [--json] [--tail <n>]           Show Axion state plus recent snapshot history
+  audit [--from <hash>] [--to <hash>] Export Axion/CanonFS snapshot diff metadata
 
 Options:
   --tier N            Target cognition tier (1..9, default: 1)
@@ -1212,7 +1212,7 @@ void print_help_axion_log() {
   std::cerr << R"(
 Usage: t81 axion log [--json] [--tail <n>]
 
-Shows the current Axion state and CanonFS audit trail.
+Shows the current Axion state and persisted CanonFS snapshot history.
 Options:
   --json       Machine-readable output (schema: t81.axion-log.v1)
   --tail <n>   Limit output to the last N snapshot entries (default: 10)
@@ -2986,15 +2986,31 @@ int run_policy_run(const Args& args) {
     error("policy run requires an input .apl or .axionb file. Run 't81 help policy run'.");
     return 1;
   }
+  auto emit_json_error = [&](std::string_view message) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.policy-run.v1\",\n";
+    std::cout << "  \"valid\": false,\n";
+    std::cout << "  \"policy\": \"" << json_escape(input.string()) << "\",\n";
+    std::cout << "  \"error\": \"" << json_escape(message) << "\"\n";
+    std::cout << "}\n";
+  };
   t81::axion::Policy policy;
   if (input.extension() == ".axionb") {
     std::ifstream ifs(input, std::ios::binary);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     auto res = t81::axion::Policy::deserialize(ifs);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy deserialization error: " + res.error());
+        return 1;
+      }
       error("Policy deserialization error: " + res.error());
       return 1;
     }
@@ -3002,12 +3018,20 @@ int run_policy_run(const Args& args) {
   } else {
     std::ifstream ifs(input);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     auto res = t81::axion::parse_policy(content);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy parse error: " + res.error());
+        return 1;
+      }
       error("Policy parse error: " + res.error());
       return 1;
     }
@@ -3075,15 +3099,31 @@ int run_policy_validate(const Args& args) {
         "policy validate requires an input .apl or .axionb file. Run 't81 help policy validate'.");
     return 1;
   }
+  auto emit_json_error = [&](std::string_view message) {
+    std::cout << "{\n";
+    std::cout << "  \"schema\": \"t81.policy-validate.v1\",\n";
+    std::cout << "  \"valid\": false,\n";
+    std::cout << "  \"policy\": \"" << json_escape(input.string()) << "\",\n";
+    std::cout << "  \"error\": \"" << json_escape(message) << "\"\n";
+    std::cout << "}\n";
+  };
   t81::axion::Policy policy;
   if (input.extension() == ".axionb") {
     std::ifstream ifs(input, std::ios::binary);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     auto res = t81::axion::Policy::deserialize(ifs);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy deserialization error: " + res.error());
+        return 1;
+      }
       error("Policy deserialization error: " + res.error());
       return 1;
     }
@@ -3091,12 +3131,20 @@ int run_policy_validate(const Args& args) {
   } else {
     std::ifstream ifs(input);
     if (!ifs) {
+      if (as_json) {
+        emit_json_error("Could not open policy file: " + input.string());
+        return 1;
+      }
       error("Could not open policy file: " + input.string());
       return 1;
     }
     std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
     auto res = t81::axion::parse_policy(content);
     if (!res) {
+      if (as_json) {
+        emit_json_error("Policy parse error: " + res.error());
+        return 1;
+      }
       error("Policy parse error: " + res.error());
       return 1;
     }
@@ -3807,6 +3855,7 @@ int run_axion(const Args& args) {
                 << "  \"snapshots\": " << snap_count << ",\n"
                 << "  \"objects\": " << obj_count << ",\n"
                 << "  \"tail\": " << log_tail_n << ",\n"
+                << "  \"receipt_persistence\": \"not_persisted\",\n"
                 << "  \"recent_snapshots\": [\n";
       for (std::size_t i = 0; i < recent.size(); ++i) {
         std::cout << "    \"" << json_escape(recent[i]) << "\"";
@@ -3825,6 +3874,7 @@ int run_axion(const Args& args) {
                 << "\n";
       std::cout << "Snapshots:     " << snap_count << "\n";
       std::cout << "Objects:       " << obj_count << "\n";
+      std::cout << "Receipts:      not persisted in current release\n";
       std::cout << "Recent snaps:  " << recent.size() << " (tail=" << log_tail_n << ")\n";
       for (const auto& hash : recent) {
         std::cout << "  " << hash << "\n";
@@ -3870,6 +3920,7 @@ int run_axion(const Args& args) {
                 << "  \"snapshots\": " << snap_count << ",\n"
                 << "  \"objects\": " << obj_count << ",\n"
                 << "  \"tier\": " << state.tier << ",\n"
+                << "  \"receipt_persistence\": \"not_persisted\",\n"
                 << "  \"from\": "
                 << (from_hash.empty() ? "null" : "\"" + json_escape(from_hash) + "\"") << ",\n"
                 << "  \"to\": " << (to_hash.empty() ? "null" : "\"" + json_escape(to_hash) + "\"")
@@ -3884,6 +3935,7 @@ int run_axion(const Args& args) {
     std::cout << "Tier:          " << state.tier << "\n";
     std::cout << "Snapshots:     " << snap_count << "\n";
     std::cout << "Objects:       " << obj_count << "\n";
+    std::cout << "Receipts:      not persisted in current release\n";
     std::cout << "From snapshot: " << (from_hash.empty() ? "<none>" : from_hash) << "\n";
     std::cout << "To snapshot:   " << (to_hash.empty() ? "<none>" : to_hash) << "\n";
     std::cout << "Only from:     " << only_from.size() << "\n";

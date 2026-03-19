@@ -32,7 +32,8 @@ constexpr const char* kDefaultSmokeFilter =
 constexpr const char* kDefaultFullFilter =
     "BM_(ArithThroughput|NegationSpeed|RoundtripAccuracy|overflow|PackingDensity|"
     "MemoryBandwidth|Add_.*|T81LangCompile|LimbArithThroughput|LimbAdd_.*|vs_.*|"
-    "VMSimulation_.*|NativeCall_.*|TensorPromotion.*|Lexer_.*|Base81_.*|Overhead_.*|DPE_.*)";
+    "VMSimulation_.*|NativeCall_.*|TensorPromotion.*|Lexer_.*|Base81_.*|Overhead_.*|"
+    "DPE_.*|Governed.*)";
 constexpr const char* kDefaultSmokeMinTime = "0.02s";
 constexpr const char* kDefaultFullMinTime = "0.01s";
 
