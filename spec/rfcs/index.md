@@ -57,6 +57,7 @@ This index tracks RFC status and intended disposition.
 | RFC-0044 | Stable Packed Trit Vector Interface | draft | Stabilizes the shared packed-trit substrate under SWAR and SIMD so backend governance no longer depends on `experimental` representation assumptions |
 | RFC-0045 | Deterministic Memory Model | draft | Defines canonical memory visibility, segment semantics, handle identity, aliasing constraints, and the relationship between immediate VM mutation and deferred epoch commit |
 | RFC-0046 | Deterministic Scheduling and Execution Ordering | draft | Defines the constitutional scheduling rule across program order, dependency order, canonical commit order, and future multi-core/distributed execution |
+| RFC-0047 | Deterministic JIT and Lowering Rules | draft | Constrains Trace-JIT and future lowering-based acceleration so optimization remains interpreter-equivalent, policy-boundary-safe, and subordinate to backend/memory/scheduling governance |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |
