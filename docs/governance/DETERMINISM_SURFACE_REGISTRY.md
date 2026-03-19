@@ -15,6 +15,10 @@ Reference:
 * `docs/governance/SPEC_AUTHORITY_MODEL.md` (Hierarchy)
 * `docs/status/VERIFIED_SURFACE_AUDIT.md` (Traceability Audit)
 * `docs/guides/jit-equivalence-plan.md` (Future Roadmap)
+* `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md` (backend substitution constitution)
+* `spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md` (proof and CI model)
+* `spec/rfcs/RFC-0045-deterministic-memory-model.md` (state visibility and aliasing)
+* `spec/rfcs/RFC-0046-deterministic-scheduling-and-execution-ordering.md` (ordering constitution)
 
 ---
 
@@ -28,6 +32,8 @@ Clarify:
 
 * Surfaces must have explicit verification.
 * Surfaces without verification are not guaranteed.
+* Backend acceleration does not expand semantics; it must inherit scalar-oracle equivalence per RFC-0042.
+* Verification claims must be justified by executable conformance and replay artifacts per RFC-0043.
 
 ---
 
@@ -41,6 +47,22 @@ Clarify:
 | **Soft-Float Deterministic Math** | `T81Float` Operations | Strict Rounding | `tests/cpp/test_T81Float_arithmetic.cpp`<br>`tests/cpp/test_T81Float_rounding.cpp` | Yes (`ci.yml`) | **Verified** |
 | **Compiler Bytecode Emission** | T81Lang to TISC | Bit-Exact (Fixtures) | `scripts/ci/t81lang_repro_gate.py` | Yes (`repro-ledger.yml`) | **Partial** |
 | **T3K Quantization** | GGUF Encoding | Bit-Exact | `scripts/ci/t3k_repro_gate.py` | Yes (`repro-ledger.yml`) | **Verified** |
+
+---
+
+## 3.1 Governing Draft RFCs For Verified Surfaces
+
+The following draft RFCs define the constitutional model that verified deterministic surfaces are expected to converge toward:
+
+| RFC | Role |
+| ------- | ----- |
+| **RFC-0042** | Scalar-oracle backend equivalence for scalar ↔ SWAR ↔ SIMD ↔ future backends |
+| **RFC-0043** | Common conformance, replay, breach-classification, and CI proof model |
+| **RFC-0044** | Stable packed-trit substrate beneath SWAR and SIMD surfaces |
+| **RFC-0045** | Canonical memory visibility, handle identity, and aliasing model |
+| **RFC-0046** | Program-order / dependency-order / canonical-commit scheduling constitution |
+
+Until these RFCs are accepted and fully integrated, they should be treated as draft governance direction rather than an expansion of currently verified guarantees.
 
 ---
 
@@ -62,7 +84,8 @@ Explicitly list areas that are:
 **Experimental / Planned:**
 
 * **Distributed Cognitive Tiers** (`experimental/tiers/`, `experimental/distributed/`): Consensus determinism is planned but not verified.
-* **JIT Optimizations**: Trace-JIT equivalence is planned but currently stubbed.
+* **JIT Optimizations**: Trace-JIT equivalence remains constrained by RFC-0042 and RFC-0043 direction, but is not yet a fully verified surface.
+* **Backend Acceleration Beyond Current Verified CPU Paths**: Any future backend must satisfy RFC-0042 equivalence and RFC-0043 validation requirements before deterministic claims are expanded.
 * **External Hardware Accelerators**: Behavior on non-CPU devices is currently undefined.
 
 ---
@@ -75,6 +98,10 @@ Explicitly list areas that are:
 | **Tritwise Ops** | `tests/cpp/test_tritwise_backend_equivalence.cpp` | `ci.yml` | N/A |
 | **Compiler Repro** | `tests/fixtures/t81lang_determinism/*.t81` | `repro-ledger.yml` | `scripts/ci/t81lang_repro_gate.py` |
 | **Quantization** | N/A | `repro-ledger.yml` | `scripts/ci/t3k_repro_gate.py` |
+
+Proof model note:
+
+> Verified-surface claims should be interpreted through RFC-0043 once that framework is accepted; until then, the table above remains authoritative for what is actually CI-enforced today.
 
 ---
 
@@ -100,5 +127,11 @@ Determinism does NOT mean:
 * Network determinism
 * Performance determinism
 * Hardware FPU determinism (outside soft-float)
+
+Determinism governance DOES mean:
+
+* backend substitution must preserve scalar-oracle semantics
+* memory visibility must be canonical at the governed boundary
+* scheduling may use internal parallelism, but observable ordering must remain deterministic
 
 This prevents overclaim drift.
