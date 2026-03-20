@@ -1509,7 +1509,7 @@ if(T81_ENABLE_AI_EXPERIMENTS)
   add_executable(t81_ai tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
   target_link_libraries(t81_ai PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
   set_target_properties(t81_ai PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/experiments/ai/ux_tools")
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/experimental/ai/ux_tools")
 endif()
 
 # =============================================================================

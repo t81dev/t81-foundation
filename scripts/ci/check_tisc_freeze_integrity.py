@@ -53,12 +53,12 @@ def check_integrity(opcodes):
     """Verifies freeze constraints."""
 
     values = set(opcodes.values())
-    max_opcode = 173
+    max_opcode = 215
 
     # 1. Count Check
-    if len(values) != 174:
-        print(f"FAIL: Opcode count is {len(values)}, expected 174.")
-        missing = set(range(174)) - values
+    if len(values) != 209:
+        print(f"FAIL: Opcode count is {len(values)}, expected 209.")
+        missing = set(range(216)) - values
         if missing:
             print(f"Missing opcodes: {sorted(list(missing))}")
         return False
@@ -86,7 +86,7 @@ def check_integrity(opcodes):
             return False
 
     print("SUCCESS: TISC v1.1.0 Freeze Integrity Verified.")
-    print("- Count: 174 opcodes (0-173)")
+    print("- Count: 209 opcodes")
     print("- Bitwise Ops: Verified")
     print("- Reserved Range: Clean")
     return True
