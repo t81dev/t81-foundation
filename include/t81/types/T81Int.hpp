@@ -240,7 +240,7 @@ public:
   // Universal C++20 to_int64(): works on MSVC (no throw), GCC/Clang (full safety)
   [[nodiscard]] constexpr std::int64_t to_int64() const {
     // 1. Check forbidden trits (index > 40 must be Zero)
-    if (kNumTrits > kSpecialIndex + 1) {
+    if constexpr (kNumTrits > kSpecialIndex + 1) {
       for (size_type i = kSpecialIndex + 1; i < kNumTrits; ++i) {
         if (get_trit(i) != Trit::Z)
           throw std::overflow_error("T81Int::to_int64(): value out of range (trits > 40)");
@@ -257,7 +257,7 @@ public:
     }
 
     // 3. Handle trit 40 if present
-    if (kNumTrits > kSpecialIndex) {
+    if constexpr (kNumTrits > kSpecialIndex) {
       Trit t40 = get_trit(kSpecialIndex);
       if (t40 != Trit::Z) {
         // 3^40 = 12157665459056928801

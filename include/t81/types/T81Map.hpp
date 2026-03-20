@@ -388,7 +388,9 @@ public:
     }
     // Sort to ensure deterministic order
     std::sort(items.begin(), items.end(),
-              [](const auto& a, const auto& b) { return a.first < b.first; });
+              [](const std::pair<K, V>& a, const std::pair<K, V>& b) {
+                return a.first < b.first;
+              });
     return items;
   }
 

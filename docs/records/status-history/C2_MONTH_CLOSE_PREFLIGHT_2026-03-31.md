@@ -34,7 +34,7 @@ Markdown link-target sweep: PASS
 - Command: `ctest --test-dir build --output-on-failure`
 
 ```text
-Test project /Users/t81dev/Code/t81-foundation/build
+Test project /build
         Start   1: t81_test_axion_opcodes
   1/297 Test   #1: t81_test_axion_opcodes .................................   Passed    0.01 sec
         Start   2: t81_vm_neural_opcodes_test
@@ -163,7 +163,7 @@ Test project /Users/t81dev/Code/t81-foundation/build
 - Command: `scripts/ci/run_determinism_slice.sh build`
 
 ```text
-Test project /Users/t81dev/Code/t81-foundation/build
+Test project /build
       Start   2: t81_vm_neural_opcodes_test
  1/81 Test   #2: t81_vm_neural_opcodes_test .............................   Passed    0.00 sec
       Start   4: t81_vm_resource_monitoring_test

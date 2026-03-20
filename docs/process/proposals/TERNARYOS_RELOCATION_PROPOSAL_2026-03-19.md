@@ -33,22 +33,22 @@ applies to the broader kernel/guest lane.
 
 ### Code / Build Wiring
 
-- [CMakeLists.txt](/Users/t81dev/Code/t81-foundation/CMakeLists.txt)
-- [experimental/ternaryos](/Users/t81dev/Code/t81-foundation/experimental/ternaryos)
+- [CMakeLists.txt](/CMakeLists.txt)
+- [experimental/ternaryos](/experimental/ternaryos)
 
 ### Normative / Governance Sources
 
-- [RFC-00B9-ternary-os-user-environment.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00B9-ternary-os-user-environment.md)
-- [IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/IMPLEMENTATION_MATRIX.md)
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
-- [DETERMINISM_SURFACE_REGISTRY.md](/Users/t81dev/Code/t81-foundation/docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
+- [RFC-00B9-ternary-os-user-environment.md](/spec/rfcs/RFC-00B9-ternary-os-user-environment.md)
+- [IMPLEMENTATION_MATRIX.md](/docs/status/IMPLEMENTATION_MATRIX.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
+- [DETERMINISM_SURFACE_REGISTRY.md](/docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
 
 ### Current Evidence / Runbooks
 
-- [RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md](/Users/t81dev/Code/t81-foundation/docs/records/status-history/RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md)
-- [TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md](/Users/t81dev/Code/t81-foundation/docs/records/audits/TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md)
-- [kernel_execution_plan.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/kernel_execution_plan.md)
-- [virtualbox_x86_64_handoff.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md)
+- [RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md](/docs/records/status-history/RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md)
+- [TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md](/docs/records/audits/TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md)
+- [kernel_execution_plan.md](/experimental/ternaryos/docs/kernel_execution_plan.md)
+- [virtualbox_x86_64_handoff.md](/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md)
 
 ### Local Verification Performed
 
@@ -79,12 +79,12 @@ Observed result: `10/10` tests passed after the required targets were built.
 
 Evidence:
 
-- [RFC-00B9-ternary-os-user-environment.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00B9-ternary-os-user-environment.md)
+- [RFC-00B9-ternary-os-user-environment.md](/spec/rfcs/RFC-00B9-ternary-os-user-environment.md)
   is accepted.
-- [IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/IMPLEMENTATION_MATRIX.md)
+- [IMPLEMENTATION_MATRIX.md](/docs/status/IMPLEMENTATION_MATRIX.md)
   classifies `TernaryOS User Environment` as `Accepted`, `Beta`,
   `Governed non-DCP`.
-- [RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md](/Users/t81dev/Code/t81-foundation/docs/records/status-history/RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md)
+- [RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md](/docs/records/status-history/RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md)
   records passing acceptance coverage.
 - Local verification reproduced the main userenv/shell tests successfully.
 
@@ -103,13 +103,13 @@ extraction is now complete.
 
 Evidence:
 
-- [kernel_execution_plan.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/kernel_execution_plan.md)
+- [kernel_execution_plan.md](/experimental/ternaryos/docs/kernel_execution_plan.md)
   still frames the next major milestone as external `x86_64` VirtualBox host
   execution and evidence return.
-- [virtualbox_x86_64_handoff.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md)
+- [virtualbox_x86_64_handoff.md](/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md)
   is explicitly an external-host handoff runbook, not a closed in-repo
   implementation lane.
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
   still classifies `Axion OS` as a governed experimental kernel track.
 - The tree contains substantial host-specific packaging/probe infrastructure and
   fixture bundles that do not belong in a stable public API boundary yet.
@@ -139,7 +139,7 @@ Any relocation should be a narrow extraction, not a folder rename.
 
 ### 4. Local Documentation Still Has Status Drift
 
-[experimental/ternaryos/docs/README.md](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/docs/README.md)
+[experimental/ternaryos/docs/README.md](/experimental/ternaryos/docs/README.md)
 currently says:
 
 - `Status: Experimental — non-DCP, not governance-gated.`
@@ -157,7 +157,7 @@ That wording should be corrected immediately even if no code moves yet.
 
 The passing test slice is substantial and materially better than a prototype.
 However, the scheduler suite still contains tautological checks in
-[scheduler_test.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/tests/scheduler_test.cpp)
+[scheduler_test.cpp](/experimental/ternaryos/tests/scheduler_test.cpp)
 that prove execution without strongly proving behavior:
 
 - `check(switched || !switched, ...)`

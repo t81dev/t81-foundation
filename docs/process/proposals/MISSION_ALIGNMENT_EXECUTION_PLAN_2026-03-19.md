@@ -72,9 +72,9 @@ future-versioned.
 **Required work**
 
 1. Review and refine
-   [RFC-0054-canonfs-object-identity-and-persistence-contract.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0054-canonfs-object-identity-and-persistence-contract.md).
+   [RFC-0054-canonfs-object-identity-and-persistence-contract.md](/spec/rfcs/RFC-0054-canonfs-object-identity-and-persistence-contract.md).
 2. Finalize the current-release CanonFS contract in
-   [canonfs-spec.md](/Users/t81dev/Code/t81-foundation/spec/supplemental/canonfs-spec.md).
+   [canonfs-spec.md](/spec/supplemental/canonfs-spec.md).
 3. Expand CanonFS contract testing beyond the new identity rule:
    - capability enforcement
    - corruption handling
@@ -86,11 +86,11 @@ future-versioned.
 
 **Primary files**
 
-- [RFC-0054-canonfs-object-identity-and-persistence-contract.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0054-canonfs-object-identity-and-persistence-contract.md)
-- [canonfs-spec.md](/Users/t81dev/Code/t81-foundation/spec/supplemental/canonfs-spec.md)
-- [canonfs_identity_contract_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/canonfs_identity_contract_test.cpp)
-- [canonfs_persistent_driver_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/canonfs_persistent_driver_test.cpp)
-- [canonfs_integrity_matrix_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/canonfs_integrity_matrix_test.cpp)
+- [RFC-0054-canonfs-object-identity-and-persistence-contract.md](/spec/rfcs/RFC-0054-canonfs-object-identity-and-persistence-contract.md)
+- [canonfs-spec.md](/spec/supplemental/canonfs-spec.md)
+- [canonfs_identity_contract_test.cpp](/tests/cpp/canonfs_identity_contract_test.cpp)
+- [canonfs_persistent_driver_test.cpp](/tests/cpp/canonfs_persistent_driver_test.cpp)
+- [canonfs_integrity_matrix_test.cpp](/tests/cpp/canonfs_integrity_matrix_test.cpp)
 
 **Success condition**
 
@@ -102,7 +102,7 @@ CLI usage, and test expectations for the current release line.
 **Intent**
 
 Evaluate whether any subset of
-[experimental/ternaryos](/Users/t81dev/Code/t81-foundation/experimental/ternaryos)
+[experimental/ternaryos](/experimental/ternaryos)
 is ready to leave `experimental/` under the same standard recently applied to
 DPE and narrow T81Graph.
 
@@ -118,9 +118,9 @@ DPE and narrow T81Graph.
 
 **Primary files**
 
-- [experimental/ternaryos](/Users/t81dev/Code/t81-foundation/experimental/ternaryos)
-- [IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/IMPLEMENTATION_MATRIX.md)
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+- [experimental/ternaryos](/experimental/ternaryos)
+- [IMPLEMENTATION_MATRIX.md](/docs/status/IMPLEMENTATION_MATRIX.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
 
 **Success condition**
 
@@ -141,7 +141,7 @@ Create one authoritative operational register for:
 **Required work**
 
 1. Align the register to
-   [RFC-0048-deterministic-surface-definition-and-governance-boundaries.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md).
+   [RFC-0048-deterministic-surface-definition-and-governance-boundaries.md](/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md).
 2. Reconcile status pages and README claims against it.
 3. Identify and remove any maturity overclaim.
 
@@ -179,10 +179,10 @@ first-class evidence bundles rather than scattered test outputs.
 
 **Primary surfaces**
 
-- [main.cpp](/Users/t81dev/Code/t81-foundation/tooling/cli/main.cpp)
-- [driver.cpp](/Users/t81dev/Code/t81-foundation/tooling/cli/driver.cpp)
-- [cli_contract_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/cli_contract_test.cpp)
-- [cli_stress_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/cli_stress_test.cpp)
+- [main.cpp](/tooling/cli/main.cpp)
+- [driver.cpp](/tooling/cli/driver.cpp)
+- [cli_contract_test.cpp](/tests/cpp/cli_contract_test.cpp)
+- [cli_stress_test.cpp](/tests/cpp/cli_stress_test.cpp)
 
 **Success condition**
 
@@ -209,9 +209,9 @@ negative-path determinism, audit completeness, and fail-closed behavior.
 
 **Primary surfaces**
 
-- [spec/rfcs/RFC-0003-axion-safety-model.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0003-axion-safety-model.md)
-- [spec/rfcs/RFC-0022-axion-policy-language.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0022-axion-policy-language.md)
-- [spec/axion-kernel.md](/Users/t81dev/Code/t81-foundation/spec/axion-kernel.md)
+- [spec/rfcs/RFC-0003-axion-safety-model.md](/spec/rfcs/RFC-0003-axion-safety-model.md)
+- [spec/rfcs/RFC-0022-axion-policy-language.md](/spec/rfcs/RFC-0022-axion-policy-language.md)
+- [spec/axion-kernel.md](/spec/axion-kernel.md)
 
 **Success condition**
 
@@ -239,9 +239,9 @@ Make benchmark output decision-useful rather than merely impressive.
 
 **Primary surfaces**
 
-- [BM_DPE.cpp](/Users/t81dev/Code/t81-foundation/benchmarks/BM_DPE.cpp)
-- [benchmark_runner.cpp](/Users/t81dev/Code/t81-foundation/benchmarks/runner/benchmark_runner.cpp)
-- [benchmarks/README.md](/Users/t81dev/Code/t81-foundation/benchmarks/README.md)
+- [BM_DPE.cpp](/benchmarks/BM_DPE.cpp)
+- [benchmark_runner.cpp](/benchmarks/runner/benchmark_runner.cpp)
+- [benchmarks/README.md](/benchmarks/README.md)
 
 **Success condition**
 
@@ -267,9 +267,9 @@ willing to defend as stable or meaningfully usable.
 
 **Primary surfaces**
 
-- [main.cpp](/Users/t81dev/Code/t81-foundation/tooling/cli/main.cpp)
-- [ai_cli_shared.cpp](/Users/t81dev/Code/t81-foundation/tooling/cli/ai/ai_cli_shared.cpp)
-- [cli-user-manual.md](/Users/t81dev/Code/t81-foundation/docs/user-guide/reference/cli-user-manual.md)
+- [main.cpp](/tooling/cli/main.cpp)
+- [ai_cli_shared.cpp](/tooling/cli/ai/ai_cli_shared.cpp)
+- [cli-user-manual.md](/docs/user-guide/reference/cli-user-manual.md)
 
 **Success condition**
 

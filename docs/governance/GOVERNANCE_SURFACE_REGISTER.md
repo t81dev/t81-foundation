@@ -7,7 +7,7 @@ Owner: @t81dev
 
 This register classifies major T81 surfaces into exactly one of the classes
 defined by
-[RFC-0048-deterministic-surface-definition-and-governance-boundaries.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md):
+[RFC-0048-deterministic-surface-definition-and-governance-boundaries.md](/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md):
 
 1. Deterministic Core Profile (DCP)
 2. Governed non-DCP
@@ -19,7 +19,7 @@ defined by
 Classification precedence:
 
 1. `/spec/**`
-2. this register plus [DETERMINISM_SURFACE_REGISTRY.md](/Users/t81dev/Code/t81-foundation/docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
+2. this register plus [DETERMINISM_SURFACE_REGISTRY.md](/docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
 3. governance/status documents
 4. descriptive README text
 
@@ -132,9 +132,9 @@ Requires at minimum:
 
 ## Cross-References
 
-- [DETERMINISM_SURFACE_REGISTRY.md](/Users/t81dev/Code/t81-foundation/docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
-- [FROZEN_CORE_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/FROZEN_CORE_PROFILE.md)
-- [IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/IMPLEMENTATION_MATRIX.md)
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
-- [SPEC_AUTHORITY_MODEL.md](/Users/t81dev/Code/t81-foundation/docs/governance/SPEC_AUTHORITY_MODEL.md)
-- [RFC-0048-deterministic-surface-definition-and-governance-boundaries.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md)
+- [DETERMINISM_SURFACE_REGISTRY.md](/docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
+- [FROZEN_CORE_PROFILE.md](/docs/status/FROZEN_CORE_PROFILE.md)
+- [IMPLEMENTATION_MATRIX.md](/docs/status/IMPLEMENTATION_MATRIX.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
+- [SPEC_AUTHORITY_MODEL.md](/docs/governance/SPEC_AUTHORITY_MODEL.md)
+- [RFC-0048-deterministic-surface-definition-and-governance-boundaries.md](/spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md)
