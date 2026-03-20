@@ -356,26 +356,26 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(paths_result.exit_code == 0);
     T81_TEST_CHECK(contains(paths_result.stdout_text, "\"schema\": \"t81.env-paths.v1\""));
     T81_TEST_CHECK(contains(paths_result.stdout_text,
-                            "\"build_dir\": \"" + (repo_root / "build").string() + "\""));
+                            "\"build_dir\": \"" + fs::absolute(t81_bin).parent_path().string() + "\""));
 
     const auto doctor_result = run_cli_in_dir(t81_bin, {"env", "doctor", "--json"}, repo_root);
     T81_TEST_CHECK(doctor_result.exit_code == 0 || doctor_result.exit_code == 2);
     T81_TEST_CHECK(contains(doctor_result.stdout_text,
                             "\"detail\":\"CLI binary present at " +
-                                (repo_root / "build" / "t81").string() + "\""));
+                                fs::absolute(t81_bin).string() + "\""));
   }
 
   {
-    const auto test_result = run_cli_in_dir(t81_bin, {"code", "test", "--json", "--list"}, repo_root / "build");
+    const auto test_result = run_cli_in_dir(t81_bin, {"code", "test", "--json", "--list"}, fs::absolute(t81_bin).parent_path());
     T81_TEST_CHECK(test_result.exit_code == 0);
     T81_TEST_CHECK(contains(test_result.stdout_text, "\"schema\": \"t81.test.v1\""));
     T81_TEST_CHECK(contains(test_result.stdout_text,
-                            "\"build_dir\": \"" + (repo_root / "build").string() + "\""));
+                            "\"build_dir\": \"" + fs::absolute(t81_bin).parent_path().string() + "\""));
   }
 
   {
     const auto canonfs_result =
-        run_cli_in_dir(t81_bin, {"canonfs", "snapshot", "--json"}, repo_root / "build");
+        run_cli_in_dir(t81_bin, {"canonfs", "snapshot", "--json"}, fs::absolute(t81_bin).parent_path());
     T81_TEST_CHECK(canonfs_result.exit_code == 0);
     T81_TEST_CHECK(contains(canonfs_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot.v1\""));
     T81_TEST_CHECK(contains(canonfs_result.stdout_text,

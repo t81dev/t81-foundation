@@ -34,17 +34,7 @@
 
 namespace t81::v1 {
 
-#if defined(_MSC_VER) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
-#include <cstdint>
-#include "t81/config.hpp"  // Ensure basic standard headers are available
-// Windows builds (MSVC, clang-cl, etc.) often lack full __int128 runtime support (like __divti3).
-// For now, alias to int64_t to make it compile.
-// NOTE: This severely breaks arbitrary precision logic and correctness on Windows
-// but follows project memory/directives. A real soft-128 is required for production.
-typedef std::int64_t int128_t;
-#else
-__extension__ typedef __int128 int128_t;
-#endif
+#include "t81/types/T81Int128.hpp"
 
 namespace detail {
 inline const std::array<int16_t, 256>& get_byte_to_ternary() {
