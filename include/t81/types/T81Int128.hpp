@@ -6,108 +6,110 @@
 
 namespace t81::v1::detail {
 struct int128_t {
-    uint64_t lo;
-    int64_t hi;
+  uint64_t lo;
+  int64_t hi;
 
-    int128_t() : lo(0), hi(0) {}
-    int128_t(int64_t v) : lo(static_cast<uint64_t>(v)), hi(v < 0 ? -1 : 0) {}
-    int128_t(uint64_t l, int64_t h) : lo(l), hi(h) {}
+  int128_t() : lo(0), hi(0) {}
+  int128_t(int64_t v) : lo(static_cast<uint64_t>(v)), hi(v < 0 ? -1 : 0) {}
+  int128_t(uint64_t l, int64_t h) : lo(l), hi(h) {}
 
-    bool is_neg() const { return hi < 0; }
+  bool is_neg() const { return hi < 0; }
 
-    int128_t operator-() const {
-        uint64_t l = ~lo + 1;
-        int64_t h = ~hi + (lo == 0 ? 1 : 0);
-        return {l, h};
+  int128_t operator-() const {
+    uint64_t l = ~lo + 1;
+    int64_t h = ~hi + (lo == 0 ? 1 : 0);
+    return {l, h};
+  }
+
+  int128_t operator+(const int128_t& o) const {
+    uint64_t l = lo + o.lo;
+    int64_t h = hi + o.hi + (l < lo ? 1 : 0);
+    return {l, h};
+  }
+
+  int128_t operator-(const int128_t& o) const {
+    uint64_t l = lo - o.lo;
+    int64_t h = hi - o.hi - (lo < o.lo ? 1 : 0);
+    return {l, h};
+  }
+
+  int128_t operator*(const int64_t& o) const {
+    uint64_t h1;
+    uint64_t o_abs = o < 0 ? -o : o;
+    int128_t lhs = is_neg() ? -(*this) : *this;
+    uint64_t l1 = _umul128(lhs.lo, o_abs, &h1);
+    int64_t h2 = h1 + (lhs.hi * o_abs);
+    int128_t res = {l1, h2};
+    return ((is_neg() && o > 0) || (!is_neg() && o < 0)) ? -res : res;
+  }
+
+  int128_t operator*(const int128_t& o) const {
+    uint64_t h1;
+    int128_t lhs = is_neg() ? -(*this) : *this;
+    int128_t rhs = o.is_neg() ? -o : o;
+    uint64_t l1 = _umul128(lhs.lo, rhs.lo, &h1);
+    int64_t h2 = h1 + (lhs.hi * rhs.lo) + (lhs.lo * rhs.hi);
+    int128_t res = {l1, h2};
+    return (is_neg() != o.is_neg()) ? -res : res;
+  }
+
+  int128_t operator/(const int128_t& o) const {
+    int64_t d = (int64_t)o.lo;
+    if (o.hi < 0) d = -d;
+    bool neg = (is_neg() != o.is_neg());
+    int128_t num = is_neg() ? -(*this) : *this;
+    uint64_t rem;
+    if (num.hi >= (uint64_t)d) {
+      // Unsafe hardware divide. This struct is only a stub for specific constants.
+      return {0, 0};
     }
+    uint64_t q = _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
+    int128_t res = {q, 0};
+    return neg ? -res : res;
+  }
 
-    int128_t operator+(const int128_t& o) const {
-        uint64_t l = lo + o.lo;
-        int64_t h = hi + o.hi + (l < lo ? 1 : 0);
-        return {l, h};
+  int128_t operator%(const int128_t& o) const {
+    int64_t d = (int64_t)o.lo;
+    if (o.hi < 0) d = -d;
+    bool neg = is_neg();
+    int128_t num = is_neg() ? -(*this) : *this;
+    uint64_t rem;
+    if (num.hi >= (uint64_t)d) {
+      // Unsafe hardware divide. This struct is only a stub for specific constants.
+      return {0, 0};
     }
+    _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
+    int128_t res = {rem, 0};
+    return neg ? -res : res;
+  }
 
-    int128_t operator-(const int128_t& o) const {
-        uint64_t l = lo - o.lo;
-        int64_t h = hi - o.hi - (lo < o.lo ? 1 : 0);
-        return {l, h};
-    }
+  int128_t& operator+=(const int128_t& o) {
+    *this = *this + o;
+    return *this;
+  }
+  int128_t& operator-=(const int128_t& o) {
+    *this = *this - o;
+    return *this;
+  }
 
-    int128_t operator*(const int64_t& o) const {
-        uint64_t h1;
-        uint64_t o_abs = o < 0 ? -o : o;
-        int128_t lhs = is_neg() ? -(*this) : *this;
-        uint64_t l1 = _umul128(lhs.lo, o_abs, &h1);
-        int64_t h2 = h1 + (lhs.hi * o_abs);
-        int128_t res = {l1, h2};
-        return ((is_neg() && o > 0) || (!is_neg() && o < 0)) ? -res : res;
-    }
+  bool operator>=(int64_t v) const {
+    int128_t o(v);
+    if (hi != o.hi) return hi > o.hi;
+    return lo >= o.lo;
+  }
 
-    int128_t operator*(const int128_t& o) const {
-        uint64_t h1;
-        int128_t lhs = is_neg() ? -(*this) : *this;
-        int128_t rhs = o.is_neg() ? -o : o;
-        uint64_t l1 = _umul128(lhs.lo, rhs.lo, &h1);
-        int64_t h2 = h1 + (lhs.hi * rhs.lo) + (lhs.lo * rhs.hi);
-        int128_t res = {l1, h2};
-        return (is_neg() != o.is_neg()) ? -res : res;
-    }
+  bool operator>(const int128_t& o) const {
+    if (hi != o.hi) return hi > o.hi;
+    return lo > o.lo;
+  }
 
-    int128_t operator/(const int128_t& o) const {
-        int64_t d = (int64_t)o.lo;
-        if (o.hi < 0) d = -d;
-        bool neg = (is_neg() != o.is_neg());
-        int128_t num = is_neg() ? -(*this) : *this;
-        uint64_t rem;
-        if (num.hi >= (uint64_t)d) {
-            // Unsafe hardware divide. This struct is only a stub for specific constants.
-            return {0, 0};
-        }
-        uint64_t q = _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
-        int128_t res = {q, 0};
-        return neg ? -res : res;
-    }
+  bool operator==(const int128_t& o) const { return hi == o.hi && lo == o.lo; }
 
-    int128_t operator%(const int128_t& o) const {
-        int64_t d = (int64_t)o.lo;
-        if (o.hi < 0) d = -d;
-        bool neg = is_neg();
-        int128_t num = is_neg() ? -(*this) : *this;
-        uint64_t rem;
-        if (num.hi >= (uint64_t)d) {
-            // Unsafe hardware divide. This struct is only a stub for specific constants.
-            return {0, 0};
-        }
-        _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
-        int128_t res = {rem, 0};
-        return neg ? -res : res;
-    }
+  bool operator!=(const int128_t& o) const { return !(*this == o); }
 
-    int128_t& operator+=(const int128_t& o) { *this = *this + o; return *this; }
-    int128_t& operator-=(const int128_t& o) { *this = *this - o; return *this; }
-
-    bool operator>=(int64_t v) const {
-        int128_t o(v);
-        if (hi != o.hi) return hi > o.hi;
-        return lo >= o.lo;
-    }
-
-    bool operator>(const int128_t& o) const {
-        if (hi != o.hi) return hi > o.hi;
-        return lo > o.lo;
-    }
-
-    bool operator==(const int128_t& o) const {
-        return hi == o.hi && lo == o.lo;
-    }
-
-    bool operator!=(const int128_t& o) const {
-        return !(*this == o);
-    }
-
-    explicit operator int64_t() const { return (int64_t)lo; }
+  explicit operator int64_t() const { return (int64_t)lo; }
 };
-}
+}  // namespace t81::v1::detail
 using int128_t = t81::v1::detail::int128_t;
 
 #elif defined(_MSC_VER) && !defined(__clang__)

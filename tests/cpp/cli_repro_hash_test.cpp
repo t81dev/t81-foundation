@@ -36,9 +36,9 @@ int main(int argc, char* argv[]) {
   }
 
   const fs::path out_path = fs::temp_directory_path() / "t81-cli-repro-hash.out";
-  std::string cmd =
-      "\"" + t81_bin.string() + "\" internal repro-hash tests/fixtures/t81lang_determinism > \"" +
-      out_path.string() + "\"";
+  std::string cmd = "\"" + t81_bin.string() +
+                    "\" internal repro-hash tests/fixtures/t81lang_determinism > \"" +
+                    out_path.string() + "\"";
 #if defined(_WIN32)
   cmd = "\"" + cmd + "\"";
 #endif

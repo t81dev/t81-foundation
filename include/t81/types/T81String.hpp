@@ -151,12 +151,20 @@ public:
   //===================================================================
 
   // Apple Clang libc++ lacks std::string::operator<=> in C++20
-  [[nodiscard]] bool operator==(const T81String& o) const noexcept { return storage_ == o.storage_; }
-  [[nodiscard]] bool operator!=(const T81String& o) const noexcept { return storage_ != o.storage_; }
+  [[nodiscard]] bool operator==(const T81String& o) const noexcept {
+    return storage_ == o.storage_;
+  }
+  [[nodiscard]] bool operator!=(const T81String& o) const noexcept {
+    return storage_ != o.storage_;
+  }
   [[nodiscard]] bool operator<(const T81String& o) const noexcept { return storage_ < o.storage_; }
-  [[nodiscard]] bool operator<=(const T81String& o) const noexcept { return storage_ <= o.storage_; }
+  [[nodiscard]] bool operator<=(const T81String& o) const noexcept {
+    return storage_ <= o.storage_;
+  }
   [[nodiscard]] bool operator>(const T81String& o) const noexcept { return storage_ > o.storage_; }
-  [[nodiscard]] bool operator>=(const T81String& o) const noexcept { return storage_ >= o.storage_; }
+  [[nodiscard]] bool operator>=(const T81String& o) const noexcept {
+    return storage_ >= o.storage_;
+  }
 
   //===================================================================
   // Hash – FNV-like mixing over normalized bytes
