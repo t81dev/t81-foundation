@@ -33,6 +33,21 @@
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#else
+#include <unistd.h>
+#endif
+
 #if !defined(_WIN32)
 #include <sys/wait.h>
 #include <unistd.h>
@@ -6856,18 +6871,62 @@ fs::path discover_repo_root() {
   return cwd;
 }
 
+
+std::optional<fs::path> discover_exe_path_internal() {
+  std::error_code ec;
+#ifdef _WIN32
+  char buf[MAX_PATH];
+  if (GetModuleFileNameA(NULL, buf, MAX_PATH)) {
+    return fs::path(buf);
+  }
+#elif defined(__APPLE__)
+  char buf[1024];
+  uint32_t size = sizeof(buf);
+  if (_NSGetExecutablePath(buf, &size) == 0) {
+    return fs::canonical(fs::path(buf), ec);
+  }
+#else
+  char buf[1024];
+  ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+  if (len != -1) {
+    buf[len] = '\0';
+    return fs::path(buf);
+  }
+#endif
+  return std::nullopt;
+}
+
 fs::path discover_build_dir() {
   std::error_code ec;
   const fs::path cwd = fs::current_path();
   const fs::path repo_root = discover_repo_root();
+
+  // 1. Check if CWD is a build directory
+  if (fs::exists(cwd / "CTestTestfile.cmake", ec)) {
+    return cwd;
+  }
+  ec.clear();
+
+  // 2. Check executable's directory or its parent
+  if (auto exe_path = discover_exe_path_internal()) {
+    fs::path exe_dir = exe_path->parent_path();
+    if (fs::exists(exe_dir / "CTestTestfile.cmake", ec)) {
+      return exe_dir;
+    }
+    ec.clear();
+    if (fs::exists(exe_dir.parent_path() / "CTestTestfile.cmake", ec)) {
+      return exe_dir.parent_path();
+    }
+    ec.clear();
+  }
+
+  // 3. Fallback to repo root / build
   const fs::path repo_build_dir = repo_root / "build";
   if (fs::exists(repo_build_dir / "CTestTestfile.cmake", ec)) {
     return repo_build_dir;
   }
   ec.clear();
-  if (fs::exists(cwd / "CTestTestfile.cmake", ec)) {
-    return cwd;
-  }
+
   return repo_build_dir;
 }
 

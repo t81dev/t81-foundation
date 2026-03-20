@@ -33,6 +33,7 @@ EXPECTED_TOP_LEVEL = {
     "README.zh-CN.md",
     "SECURITY.md",
     "SUPPORT_TAXONOMY.md",
+    "T81_CAPABILITIES_REPORT.md",
     "artifacts",
     "assets",
     "benchmarks",

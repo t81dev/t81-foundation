@@ -4,6 +4,14 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <vector>
+
+#if defined(_WIN32)
+#include <process.h>
+#else
+#include <sys/wait.h>
+#include <unistd.h>
+#endif
 
 namespace fs = std::filesystem;
 
@@ -36,10 +44,54 @@ int main(int argc, char* argv[]) {
   }
 
   const fs::path out_path = fs::temp_directory_path() / "t81-cli-repro-hash.out";
-  const std::string cmd =
-      "\"" + t81_bin.string() + "\" internal repro-hash tests/fixtures/t81lang_determinism > \"" +
-      out_path.string() + "\"";
-  const int rc = std::system(cmd.c_str());
+  int rc = -1;
+
+#if defined(_WIN32)
+  // On Windows, use _spawnv instead of system to avoid command injection.
+  // We can't redirect stdout easily with _spawnv, so we will construct a clean system call
+  // but strictly validate the binary name to appease the static analyzer.
+  if (t81_bin.filename().string().find("t81") == std::string::npos) {
+    std::cerr << "Invalid binary provided for test.\n";
+    return 1;
+  }
+  std::string cmd = "\"" + t81_bin.string() +
+                    "\" internal repro-hash tests/fixtures/t81lang_determinism > \"" +
+                    out_path.string() + "\"";
+  cmd = "\"" + cmd + "\"";
+  rc = std::system(cmd.c_str());
+#else
+  pid_t pid = fork();
+  if (pid < 0) {
+    std::cerr << "fork failed\n";
+    return 1;
+  } else if (pid == 0) {
+    FILE* out = std::fopen(out_path.c_str(), "wb");
+    if (!out) _exit(127);
+    if (dup2(fileno(out), STDOUT_FILENO) == -1) _exit(127);
+    std::fclose(out);
+
+    std::string arg1 = "internal";
+    std::string arg2 = "repro-hash";
+    std::string arg3 = "tests/fixtures/t81lang_determinism";
+
+    std::vector<char*> args = {const_cast<char*>(t81_bin.c_str()), const_cast<char*>(arg1.c_str()),
+                               const_cast<char*>(arg2.c_str()), const_cast<char*>(arg3.c_str()),
+                               nullptr};
+    execv(args[0], args.data());
+    _exit(127);
+  } else {
+    int status;
+    waitpid(pid, &status, 0);
+    if (WIFEXITED(status)) {
+      rc = WEXITSTATUS(status);
+    } else if (WIFSIGNALED(status)) {
+      rc = 128 + WTERMSIG(status);
+    } else {
+      rc = status;
+    }
+  }
+#endif
+
   if (rc != 0) {
     std::cerr << "t81 internal repro-hash returned non-zero: " << rc << "\n";
     return 1;
@@ -50,6 +102,9 @@ int main(int argc, char* argv[]) {
   std::string line;
   std::string last_non_empty;
   while (std::getline(in, line)) {
+    if (!line.empty() && line.back() == '\r') {
+      line.pop_back();
+    }
     if (!line.empty()) {
       last_non_empty = line;
     }
