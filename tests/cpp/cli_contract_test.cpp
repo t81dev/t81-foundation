@@ -1,20 +1,20 @@
-#include "test_runtime_check.hpp"
 #include "t81/weights.hpp"
+#include "test_runtime_check.hpp"
 
-#include <chrono>
+#include <signal.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <cctype>
+#include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <optional>
-#include <signal.h>
 #include <random>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <sys/wait.h>
 #include <thread>
-#include <unistd.h>
 #include <vector>
 
 namespace fs = std::filesystem;
@@ -224,7 +224,8 @@ int main(int argc, char* argv[]) {
     const auto result = run_cli(t81_bin, {"help", "advanced"});
     T81_TEST_CHECK(result.exit_code == 0);
     T81_TEST_CHECK(contains(result.stdout_text, "verify/quantize"));
-    T81_TEST_CHECK(contains(result.stdout_text, "simulate/explain/snapshot/snapshot-diff/rollback"));
+    T81_TEST_CHECK(
+        contains(result.stdout_text, "simulate/explain/snapshot/snapshot-diff/rollback"));
     T81_TEST_CHECK(contains(result.stdout_text, "encode/decode"));
   }
 
@@ -260,7 +261,8 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    const auto result = run_cli(t81_bin, {"canonfs", "snapshot-diff", "../bad", "../bad", "--json"});
+    const auto result =
+        run_cli(t81_bin, {"canonfs", "snapshot-diff", "../bad", "../bad", "--json"});
     T81_TEST_CHECK(result.exit_code != 0);
     T81_TEST_CHECK(contains(result.stdout_text, "invalid snapshot hash"));
   }
@@ -341,8 +343,9 @@ int main(int argc, char* argv[]) {
   {
     const auto result = run_cli(t81_bin, {"help", "code", "profile"});
     T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 code profile") ||
-                   contains(result.stdout_text, "Compile if needed and report VM runtime/memory metrics"));
+    T81_TEST_CHECK(
+        contains(result.stdout_text, "Usage: t81 code profile") ||
+        contains(result.stdout_text, "Compile if needed and report VM runtime/memory metrics"));
   }
 
   {
@@ -356,22 +359,22 @@ int main(int argc, char* argv[]) {
     const auto paths_result = run_cli_in_dir(t81_bin, {"env", "paths", "--json"}, build_dir);
     T81_TEST_CHECK(paths_result.exit_code == 0);
     T81_TEST_CHECK(contains(paths_result.stdout_text, "\"schema\": \"t81.env-paths.v1\""));
-    T81_TEST_CHECK(contains(paths_result.stdout_text,
-                            "\"build_dir\": \"" + build_dir.string() + "\""));
+    T81_TEST_CHECK(
+        contains(paths_result.stdout_text, "\"build_dir\": \"" + build_dir.string() + "\""));
 
     const auto doctor_result = run_cli_in_dir(t81_bin, {"env", "doctor", "--json"}, build_dir);
     T81_TEST_CHECK(doctor_result.exit_code == 0 || doctor_result.exit_code == 2);
     T81_TEST_CHECK(contains(doctor_result.stdout_text,
-                            "\"detail\":\"CLI binary present at " +
-                                t81_bin.string() + "\""));
+                            "\"detail\":\"CLI binary present at " + t81_bin.string() + "\""));
   }
 
   {
-    const auto test_result = run_cli_in_dir(t81_bin, {"code", "test", "--json", "--list"}, build_dir);
+    const auto test_result =
+        run_cli_in_dir(t81_bin, {"code", "test", "--json", "--list"}, build_dir);
     T81_TEST_CHECK(test_result.exit_code == 0);
     T81_TEST_CHECK(contains(test_result.stdout_text, "\"schema\": \"t81.test.v1\""));
-    T81_TEST_CHECK(contains(test_result.stdout_text,
-                            "\"build_dir\": \"" + build_dir.string() + "\""));
+    T81_TEST_CHECK(
+        contains(test_result.stdout_text, "\"build_dir\": \"" + build_dir.string() + "\""));
   }
 
   {
@@ -388,12 +391,13 @@ int main(int argc, char* argv[]) {
     std::error_code ignore_ec;
     fs::create_directories(outside_dir, ignore_ec);
     T81_TEST_CHECK(!ignore_ec);
-    const auto result = run_cli(t81_bin, {"env", "clean", "--build-dir", outside_dir.string(), "--json"});
+    const auto result =
+        run_cli(t81_bin, {"env", "clean", "--build-dir", outside_dir.string(), "--json"});
     T81_TEST_CHECK(result.exit_code != 0);
     T81_TEST_CHECK(contains(result.stdout_text, "outside the repository root"));
 
-    const auto force_result =
-        run_cli(t81_bin, {"env", "clean", "--build-dir", outside_dir.string(), "--force", "--json"});
+    const auto force_result = run_cli(
+        t81_bin, {"env", "clean", "--build-dir", outside_dir.string(), "--force", "--json"});
     T81_TEST_CHECK(force_result.exit_code == 0);
     T81_TEST_CHECK(contains(force_result.stdout_text, "\"schema\": \"t81.env-clean.v1\""));
     T81_TEST_CHECK(contains(force_result.stdout_text, "\"forced\": true"));
@@ -434,7 +438,8 @@ int main(int argc, char* argv[]) {
       out << "(policy (tier 1) (allowed-tensor-hashes [\"sha3-256:test-hash\"]))\n";
     }
 
-    const auto run_result = run_cli(t81_bin, {"code", "run", tisc_file.string(), "-o", trace_file.string()});
+    const auto run_result =
+        run_cli(t81_bin, {"code", "run", tisc_file.string(), "-o", trace_file.string()});
     T81_TEST_CHECK(run_result.exit_code == 0);
     T81_TEST_CHECK(contains(run_result.stdout_text, "Hello, Trace!"));
     T81_TEST_CHECK(!contains(run_result.stdout_text, "PC="));
@@ -458,15 +463,16 @@ int main(int argc, char* argv[]) {
       std::ofstream out(trace_extra);
       out << trace_text << "PC=999 Halt\n";
     }
-    const auto diff_result =
-        run_cli(t81_bin, {"trace", "diff", trace_file.string(), trace_extra.string(), "--no-color"});
+    const auto diff_result = run_cli(
+        t81_bin, {"trace", "diff", trace_file.string(), trace_extra.string(), "--no-color"});
     T81_TEST_CHECK(diff_result.exit_code != 0);
     T81_TEST_CHECK(contains(diff_result.stdout_text, "Difference at line"));
 
     const auto trace_hash_result =
         run_cli(t81_bin, {"determinism", "trace-hash", trace_file.string(), "--json"});
     T81_TEST_CHECK(trace_hash_result.exit_code == 0);
-    T81_TEST_CHECK(contains(trace_hash_result.stdout_text, "\"schema\": \"t81.determinism-trace-hash.v1\""));
+    T81_TEST_CHECK(
+        contains(trace_hash_result.stdout_text, "\"schema\": \"t81.determinism-trace-hash.v1\""));
 
     const auto trace_show_result =
         run_cli(t81_bin, {"trace", "show", trace_file.string(), "--no-color"});
@@ -476,38 +482,39 @@ int main(int argc, char* argv[]) {
     const auto trace_summary_result =
         run_cli(t81_bin, {"trace", "summary", trace_file.string(), "--json"});
     T81_TEST_CHECK(trace_summary_result.exit_code == 0);
-    T81_TEST_CHECK(contains(trace_summary_result.stdout_text, "\"schema\": \"t81.trace-summary.v1\""));
+    T81_TEST_CHECK(
+        contains(trace_summary_result.stdout_text, "\"schema\": \"t81.trace-summary.v1\""));
 
-    const auto canonicalize_result =
-        run_cli(t81_bin, {"trace", "canonicalize", trace_file.string(), "-o", trace_extra.string()});
+    const auto canonicalize_result = run_cli(
+        t81_bin, {"trace", "canonicalize", trace_file.string(), "-o", trace_extra.string()});
     T81_TEST_CHECK(canonicalize_result.exit_code == 0);
     T81_TEST_CHECK(!read_file(trace_extra).empty());
     T81_TEST_CHECK(contains(read_file(trace_extra), "PC="));
 
     const auto diff_trace_result = run_cli(
-        t81_bin,
-        {"determinism", "diff-trace", trace_file.string(), trace_file.string(), "--json"});
+        t81_bin, {"determinism", "diff-trace", trace_file.string(), trace_file.string(), "--json"});
     T81_TEST_CHECK(diff_trace_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(diff_trace_result.stdout_text, "\"schema\": \"t81.determinism-trace-diff.v1\""));
 
-    const auto verify_run_result = run_cli(
-        t81_bin, {"determinism", "verify-run", tisc_file.string(), "--json"});
+    const auto verify_run_result =
+        run_cli(t81_bin, {"determinism", "verify-run", tisc_file.string(), "--json"});
     T81_TEST_CHECK(verify_run_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(verify_run_result.stdout_text, "\"schema\": \"t81.determinism-verify-run.v1\""));
 
-    const auto certify_result = run_cli(
-        t81_bin, {"determinism", "certify", tisc_file.string(), "--json"});
+    const auto certify_result =
+        run_cli(t81_bin, {"determinism", "certify", tisc_file.string(), "--json"});
     T81_TEST_CHECK(certify_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(certify_result.stdout_text, "\"schema\": \"t81.determinism-certificate.v1\""));
     T81_TEST_CHECK(contains(certify_result.stdout_text, "\"deterministic\": true"));
 
-    const auto explain_result = run_cli(
-        t81_bin, {"determinism", "explain", tisc_file.string(), "--json"});
+    const auto explain_result =
+        run_cli(t81_bin, {"determinism", "explain", tisc_file.string(), "--json"});
     T81_TEST_CHECK(explain_result.exit_code == 0);
-    T81_TEST_CHECK(contains(explain_result.stdout_text, "\"schema\": \"t81.determinism-explain.v1\""));
+    T81_TEST_CHECK(
+        contains(explain_result.stdout_text, "\"schema\": \"t81.determinism-explain.v1\""));
 
     const auto vm_trace_result =
         run_cli(t81_bin, {"vm", "trace", tisc_file.string(), "--out", trace_extra.string()});
@@ -526,8 +533,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(vm_step_result.exit_code == 0);
     T81_TEST_CHECK(contains(vm_step_result.stdout_text, "\"schema\": \"t81.vm-step.v1\""));
 
-    const auto vm_until_result =
-        run_cli(t81_bin, {"vm", "until", tisc_file.string(), "--pc", "0", "--steps", "1", "--json"});
+    const auto vm_until_result = run_cli(
+        t81_bin, {"vm", "until", tisc_file.string(), "--pc", "0", "--steps", "1", "--json"});
     T81_TEST_CHECK(vm_until_result.exit_code == 0 || vm_until_result.exit_code == 1);
     T81_TEST_CHECK(contains(vm_until_result.stdout_text, "\"schema\": \"t81.vm-until.v1\""));
 
@@ -541,13 +548,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(vm_stack_result.exit_code == 0);
     T81_TEST_CHECK(contains(vm_stack_result.stdout_text, "\"schema\": \"t81.vm-stack.v1\""));
 
-    const auto vm_mem_result =
-        run_cli(t81_bin, {"vm", "mem", tisc_file.string(), "--addr", "0", "--steps", "2", "--json"});
+    const auto vm_mem_result = run_cli(
+        t81_bin, {"vm", "mem", tisc_file.string(), "--addr", "0", "--steps", "2", "--json"});
     T81_TEST_CHECK(vm_mem_result.exit_code == 0);
     T81_TEST_CHECK(contains(vm_mem_result.stdout_text, "\"schema\": \"t81.vm-mem.v1\""));
 
-    const auto vm_state_result =
-        run_cli(t81_bin, {"vm", "state", tisc_file.string(), "--json"});
+    const auto vm_state_result = run_cli(t81_bin, {"vm", "state", tisc_file.string(), "--json"});
     T81_TEST_CHECK(vm_state_result.exit_code == 0);
     T81_TEST_CHECK(contains(vm_state_result.stdout_text, "\"schema\": \"t81.vm-state.v1\""));
 
@@ -559,10 +565,11 @@ int main(int argc, char* argv[]) {
     const auto tisc_validate_result =
         run_cli(t81_bin, {"tisc", "validate", tisc_file.string(), "--json"});
     T81_TEST_CHECK(tisc_validate_result.exit_code == 0);
-    T81_TEST_CHECK(contains(tisc_validate_result.stdout_text, "\"schema\": \"t81.tisc-validate.v1\""));
+    T81_TEST_CHECK(
+        contains(tisc_validate_result.stdout_text, "\"schema\": \"t81.tisc-validate.v1\""));
 
-    const auto tisc_decode_result =
-        run_cli(t81_bin, {"tisc", "decode", tisc_file.string(), "-o", base81_out.string(), "--json"});
+    const auto tisc_decode_result = run_cli(
+        t81_bin, {"tisc", "decode", tisc_file.string(), "-o", base81_out.string(), "--json"});
     T81_TEST_CHECK(tisc_decode_result.exit_code == 0);
     T81_TEST_CHECK(contains(tisc_decode_result.stdout_text, "\"schema\": \"t81.tisc-decode.v1\""));
     T81_TEST_CHECK(!read_file(base81_out).empty());
@@ -576,12 +583,15 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(ir_export_result.exit_code == 0);
     T81_TEST_CHECK(contains(ir_export_result.stdout_text, "\"schema\": \"t81.ir-export.v1\""));
 
-    const auto lang_validate_result = run_cli(t81_bin, {"lang", "validate", t81_file.string(), "--json"});
+    const auto lang_validate_result =
+        run_cli(t81_bin, {"lang", "validate", t81_file.string(), "--json"});
     T81_TEST_CHECK(lang_validate_result.exit_code == 0);
-    T81_TEST_CHECK(contains(lang_validate_result.stdout_text, "\"schema\": \"t81.ir-validate.v1\""));
+    T81_TEST_CHECK(
+        contains(lang_validate_result.stdout_text, "\"schema\": \"t81.ir-validate.v1\""));
 
     const auto policy_test_result = run_cli(
-        t81_bin, {"policy", "test", policy_file.string(), "--model-hash", "sha3-256:test-hash", "--json"});
+        t81_bin,
+        {"policy", "test", policy_file.string(), "--model-hash", "sha3-256:test-hash", "--json"});
     T81_TEST_CHECK(policy_test_result.exit_code == 0);
     T81_TEST_CHECK(contains(policy_test_result.stdout_text, "\"schema\": \"t81.policy-test.v1\""));
 
@@ -603,22 +613,27 @@ int main(int argc, char* argv[]) {
     const auto axion_explain_result =
         run_cli(t81_bin, {"axion", "explain", policy_file.string(), "--json"});
     T81_TEST_CHECK(axion_explain_result.exit_code == 0);
-    T81_TEST_CHECK(contains(axion_explain_result.stdout_text, "\"schema\":\"t81.axion-explain.v1\""));
+    T81_TEST_CHECK(
+        contains(axion_explain_result.stdout_text, "\"schema\":\"t81.axion-explain.v1\""));
 
     const auto axion_status_result = run_cli(t81_bin, {"axion", "status", "--json"});
     T81_TEST_CHECK(axion_status_result.exit_code == 0);
-    T81_TEST_CHECK(contains(axion_status_result.stdout_text, "\"schema\": \"t81.axion-status.v1\""));
+    T81_TEST_CHECK(
+        contains(axion_status_result.stdout_text, "\"schema\": \"t81.axion-status.v1\""));
     T81_TEST_CHECK(contains(axion_status_result.stdout_text, "\"issues\": ["));
 
     const auto axion_log_result = run_cli(t81_bin, {"axion", "log", "--tail", "1", "--json"});
     T81_TEST_CHECK(axion_log_result.exit_code == 0);
     T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"schema\": \"t81.axion-log.v1\""));
     T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"tail\": 1"));
-    T81_TEST_CHECK(contains(axion_log_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
+    T81_TEST_CHECK(
+        contains(axion_log_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
 
-    const auto axion_optimize_result = run_cli(t81_bin, {"axion", "optimize", "--tier", "2", "--json"});
+    const auto axion_optimize_result =
+        run_cli(t81_bin, {"axion", "optimize", "--tier", "2", "--json"});
     T81_TEST_CHECK(axion_optimize_result.exit_code == 0);
-    T81_TEST_CHECK(contains(axion_optimize_result.stdout_text, "\"schema\": \"t81.axion-optimize.v1\""));
+    T81_TEST_CHECK(
+        contains(axion_optimize_result.stdout_text, "\"schema\": \"t81.axion-optimize.v1\""));
     T81_TEST_CHECK(contains(axion_optimize_result.stdout_text, "\"only_current_count\":"));
 
     const auto axion_snapshot_result = run_cli(t81_bin, {"axion", "snapshot", "--json"});
@@ -628,19 +643,20 @@ int main(int argc, char* argv[]) {
     const auto axion_hash_start = axion_hash_pos + std::string("\"hash\": \"").size();
     const auto axion_hash_end = axion_snapshot_result.stdout_text.find('"', axion_hash_start);
     T81_TEST_CHECK(axion_hash_end != std::string::npos);
-    const std::string axion_snapshot_hash =
-        axion_snapshot_result.stdout_text.substr(axion_hash_start, axion_hash_end - axion_hash_start);
+    const std::string axion_snapshot_hash = axion_snapshot_result.stdout_text.substr(
+        axion_hash_start, axion_hash_end - axion_hash_start);
 
-    const auto axion_snapshot_diff_result =
-        run_cli(t81_bin, {"axion", "snapshot-diff", axion_snapshot_hash, axion_snapshot_hash, "--json"});
+    const auto axion_snapshot_diff_result = run_cli(
+        t81_bin, {"axion", "snapshot-diff", axion_snapshot_hash, axion_snapshot_hash, "--json"});
     T81_TEST_CHECK(axion_snapshot_diff_result.exit_code == 0);
-    T81_TEST_CHECK(
-        contains(axion_snapshot_diff_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot-diff.v1\""));
+    T81_TEST_CHECK(contains(axion_snapshot_diff_result.stdout_text,
+                            "\"schema\": \"t81.canonfs-snapshot-diff.v1\""));
 
     const auto axion_audit_result = run_cli(t81_bin, {"axion", "audit", "--json"});
     T81_TEST_CHECK(axion_audit_result.exit_code == 0);
     T81_TEST_CHECK(contains(axion_audit_result.stdout_text, "\"schema\": \"t81.axion-audit.v1\""));
-    T81_TEST_CHECK(contains(axion_audit_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
+    T81_TEST_CHECK(
+        contains(axion_audit_result.stdout_text, "\"receipt_persistence\": \"not_persisted\""));
 
     const auto weights_verify_help = run_cli(t81_bin, {"help", "weights", "verify"});
     T81_TEST_CHECK(weights_verify_help.exit_code == 0);
@@ -650,7 +666,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(lang_help.exit_code == 0);
     T81_TEST_CHECK(contains(lang_help.stdout_text, "Usage: t81 lang <action>"));
 
-    const auto lang_export_result = run_cli(t81_bin, {"lang", "export", t81_file.string(), "--json"});
+    const auto lang_export_result =
+        run_cli(t81_bin, {"lang", "export", t81_file.string(), "--json"});
     T81_TEST_CHECK(lang_export_result.exit_code == 0);
     T81_TEST_CHECK(contains(lang_export_result.stdout_text, "\"schema\": \"t81.ir-export.v1\""));
 
@@ -662,9 +679,11 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(tensor_help.exit_code == 0);
     T81_TEST_CHECK(contains(tensor_help.stdout_text, "Usage: t81 tensor hash"));
 
-    const auto policy_validate_result = run_cli(t81_bin, {"policy", "validate", policy_file.string(), "--json"});
+    const auto policy_validate_result =
+        run_cli(t81_bin, {"policy", "validate", policy_file.string(), "--json"});
     T81_TEST_CHECK(policy_validate_result.exit_code == 0);
-    T81_TEST_CHECK(contains(policy_validate_result.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(
+        contains(policy_validate_result.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
 
     const fs::path invalid_policy_file = make_temp_path("t81-cli-policy-invalid", ".apl");
     {
@@ -674,17 +693,20 @@ int main(int argc, char* argv[]) {
     const auto invalid_policy_validate_result =
         run_cli(t81_bin, {"policy", "validate", invalid_policy_file.string(), "--json"});
     T81_TEST_CHECK(invalid_policy_validate_result.exit_code == 1);
-    T81_TEST_CHECK(
-        contains(invalid_policy_validate_result.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(contains(invalid_policy_validate_result.stdout_text,
+                            "\"schema\": \"t81.policy-validate.v1\""));
     T81_TEST_CHECK(contains(invalid_policy_validate_result.stdout_text, "\"valid\": false"));
-    T81_TEST_CHECK(contains(invalid_policy_validate_result.stdout_text, "\"error\": \"Policy parse error:"));
+    T81_TEST_CHECK(
+        contains(invalid_policy_validate_result.stdout_text, "\"error\": \"Policy parse error:"));
 
     const auto invalid_policy_run_result =
         run_cli(t81_bin, {"policy", "run", invalid_policy_file.string(), "--json"});
     T81_TEST_CHECK(invalid_policy_run_result.exit_code == 1);
-    T81_TEST_CHECK(contains(invalid_policy_run_result.stdout_text, "\"schema\": \"t81.policy-run.v1\""));
+    T81_TEST_CHECK(
+        contains(invalid_policy_run_result.stdout_text, "\"schema\": \"t81.policy-run.v1\""));
     T81_TEST_CHECK(contains(invalid_policy_run_result.stdout_text, "\"valid\": false"));
-    T81_TEST_CHECK(contains(invalid_policy_run_result.stdout_text, "\"error\": \"Policy parse error:"));
+    T81_TEST_CHECK(
+        contains(invalid_policy_run_result.stdout_text, "\"error\": \"Policy parse error:"));
 
     std::error_code baseline_ec;
     fs::create_directories(baseline_dir, baseline_ec);
@@ -698,21 +720,25 @@ int main(int argc, char* argv[]) {
         run_cli(t81_bin, {"determinism", "baseline", baseline_dir.string(), "--source-dir",
                           baseline_source_dir.string(), "--json"});
     T81_TEST_CHECK(baseline_result.exit_code == 0);
-    T81_TEST_CHECK(contains(baseline_result.stdout_text, "\"schema\": \"t81.determinism-baseline.v1\""));
+    T81_TEST_CHECK(
+        contains(baseline_result.stdout_text, "\"schema\": \"t81.determinism-baseline.v1\""));
     const auto baseline_verify_result =
         run_cli(t81_bin, {"determinism", "verify", baseline_dir.string(), "--json"});
     T81_TEST_CHECK(baseline_verify_result.exit_code == 0);
-    T81_TEST_CHECK(contains(baseline_verify_result.stdout_text, "\"schema\": \"t81.determinism-verify.v1\""));
+    T81_TEST_CHECK(
+        contains(baseline_verify_result.stdout_text, "\"schema\": \"t81.determinism-verify.v1\""));
 
     const auto compare_run_result =
         run_cli(t81_bin, {"determinism", "compare-run", tisc_file.string(), "--json"});
     T81_TEST_CHECK(compare_run_result.exit_code == 0);
-    T81_TEST_CHECK(contains(compare_run_result.stdout_text, "\"schema\": \"t81.determinism-compare-run.v1\""));
+    T81_TEST_CHECK(
+        contains(compare_run_result.stdout_text, "\"schema\": \"t81.determinism-compare-run.v1\""));
 
     const auto bisect_result =
         run_cli(t81_bin, {"determinism", "bisect", baseline_dir.string(), "--json"});
     T81_TEST_CHECK(bisect_result.exit_code == 0);
-    T81_TEST_CHECK(contains(bisect_result.stdout_text, "\"schema\": \"t81.determinism-bisect.v1\""));
+    T81_TEST_CHECK(
+        contains(bisect_result.stdout_text, "\"schema\": \"t81.determinism-bisect.v1\""));
 
     std::error_code ignore_ec;
     fs::remove(t81_file, ignore_ec);
@@ -788,8 +814,8 @@ int main(int argc, char* argv[]) {
     const std::string snapshot_hash_b =
         snapshot_b.stdout_text.substr(second_hash_start, second_hash_end - second_hash_start);
 
-    const auto snapshot_diff_result = run_cli(
-        t81_bin, {"canonfs", "snapshot-diff", snapshot_hash_a, snapshot_hash_b, "--json"});
+    const auto snapshot_diff_result =
+        run_cli(t81_bin, {"canonfs", "snapshot-diff", snapshot_hash_a, snapshot_hash_b, "--json"});
     T81_TEST_CHECK(snapshot_diff_result.exit_code != 0);
     T81_TEST_CHECK(
         contains(snapshot_diff_result.stdout_text, "\"schema\": \"t81.canonfs-snapshot-diff.v1\""));
@@ -810,8 +836,8 @@ int main(int argc, char* argv[]) {
 #if !defined(_WIN32)
     fs::create_symlink(outside_payload, symlink_root / "leak.txt", ignore_ec);
     if (!ignore_ec) {
-      const auto symlink_snapshot_result =
-          run_cli(t81_bin, {"canonfs", "snapshot", "--canonfs-root", symlink_root.string(), "--json"});
+      const auto symlink_snapshot_result = run_cli(
+          t81_bin, {"canonfs", "snapshot", "--canonfs-root", symlink_root.string(), "--json"});
       T81_TEST_CHECK(symlink_snapshot_result.exit_code != 0);
       T81_TEST_CHECK(contains(symlink_snapshot_result.stdout_text, "symlinks are not permitted"));
     }
@@ -826,10 +852,12 @@ int main(int argc, char* argv[]) {
       out << "legacy-object-copy";
     }
 
-    const auto repair_dry_run_result =
-        run_cli(t81_bin, {"canonfs", "repair", "--canonfs-root", repair_root.string(), "--dry-run", "--json"});
+    const auto repair_dry_run_result = run_cli(
+        t81_bin,
+        {"canonfs", "repair", "--canonfs-root", repair_root.string(), "--dry-run", "--json"});
     T81_TEST_CHECK(repair_dry_run_result.exit_code == 0);
-    T81_TEST_CHECK(contains(repair_dry_run_result.stdout_text, "\"schema\": \"t81.canonfs-repair.v1\""));
+    T81_TEST_CHECK(
+        contains(repair_dry_run_result.stdout_text, "\"schema\": \"t81.canonfs-repair.v1\""));
     T81_TEST_CHECK(contains(repair_dry_run_result.stdout_text, "\"dry_run\": true"));
     T81_TEST_CHECK(fs::exists(legacy_objects_dir));
 
@@ -846,21 +874,24 @@ int main(int argc, char* argv[]) {
       std::ofstream out(rollback_root / "payload.txt");
       out << "rollback";
     }
-    const auto rollback_snapshot_result =
-        run_cli(t81_bin, {"canonfs", "snapshot", "--canonfs-root", rollback_root.string(), "--json"});
+    const auto rollback_snapshot_result = run_cli(
+        t81_bin, {"canonfs", "snapshot", "--canonfs-root", rollback_root.string(), "--json"});
     T81_TEST_CHECK(rollback_snapshot_result.exit_code == 0);
 #if !defined(_WIN32)
     const auto rollback_hash_pos = rollback_snapshot_result.stdout_text.find("\"hash\": \"");
     T81_TEST_CHECK(rollback_hash_pos != std::string::npos);
     const auto rollback_hash_start = rollback_hash_pos + std::string("\"hash\": \"").size();
-    const auto rollback_hash_end = rollback_snapshot_result.stdout_text.find('"', rollback_hash_start);
+    const auto rollback_hash_end =
+        rollback_snapshot_result.stdout_text.find('"', rollback_hash_start);
     T81_TEST_CHECK(rollback_hash_end != std::string::npos);
     const std::string rollback_hash = rollback_snapshot_result.stdout_text.substr(
         rollback_hash_start, rollback_hash_end - rollback_hash_start);
-    fs::create_symlink(outside_payload, rollback_root / "snapshots" / rollback_hash / "leak.txt", ignore_ec);
+    fs::create_symlink(outside_payload, rollback_root / "snapshots" / rollback_hash / "leak.txt",
+                       ignore_ec);
     if (!ignore_ec) {
-      const auto rollback_result = run_cli(
-          t81_bin, {"canonfs", "rollback", "--canonfs-root", rollback_root.string(), "--to", rollback_hash, "--json"});
+      const auto rollback_result =
+          run_cli(t81_bin, {"canonfs", "rollback", "--canonfs-root", rollback_root.string(), "--to",
+                            rollback_hash, "--json"});
       T81_TEST_CHECK(rollback_result.exit_code != 0);
       T81_TEST_CHECK(contains(rollback_result.stdout_text, "symlinks are not permitted"));
     }
@@ -900,8 +931,8 @@ int main(int argc, char* argv[]) {
     const auto loaded_model = t81::weights::load_t81w(model_path);
     T81_TEST_CHECK(!loaded_model.checksum.empty());
 
-    const auto put_model_result =
-        run_cli(t81_bin, {"canonfs", "put-file", model_path.string(), "--canonfs-root", canonfs_root.string()});
+    const auto put_model_result = run_cli(t81_bin, {"canonfs", "put-file", model_path.string(),
+                                                    "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(put_model_result.exit_code == 0);
     T81_TEST_CHECK(contains(put_model_result.stdout_text, "sha3-256:"));
     std::string model_hash = put_model_result.stdout_text;
@@ -921,8 +952,7 @@ int main(int argc, char* argv[]) {
       out << "(policy\n"
              "  (tier 1)\n"
              "  (allowed-ternary-model-hashes [\"sha3-512:"
-          << loaded_model.checksum
-          << "\"]))\n";
+          << loaded_model.checksum << "\"]))\n";
     }
     {
       std::ofstream out(deny_policy);
@@ -935,12 +965,12 @@ int main(int argc, char* argv[]) {
     set_env("T81_CANONFS_ROOT", canonfs_root.string());
     const auto model_run_result =
         run_cli(t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash});
-    const auto allowed_model_run_result = run_cli(
-        t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash, "--policy",
-                  allow_policy.string()});
-    const auto denied_model_run_result = run_cli(
-        t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash, "--policy",
-                  deny_policy.string()});
+    const auto allowed_model_run_result =
+        run_cli(t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash,
+                          "--policy", allow_policy.string()});
+    const auto denied_model_run_result =
+        run_cli(t81_bin, {"code", "run", tensor_fixture.string(), "--weights-model", model_hash,
+                          "--policy", deny_policy.string()});
     unset_env("T81_CANONFS_ROOT");
 
     T81_TEST_CHECK(model_run_result.exit_code == 0);
@@ -958,8 +988,10 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
-    const auto memory_stats_result = run_cli(t81_bin, {"internal", "memory-stats", hello_world.string()});
+    const fs::path hello_world =
+        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
+    const auto memory_stats_result =
+        run_cli(t81_bin, {"internal", "memory-stats", hello_world.string()});
     T81_TEST_CHECK(memory_stats_result.exit_code == 0);
     T81_TEST_CHECK(contains(memory_stats_result.stdout_text, "Memory Pool Analysis"));
     T81_TEST_CHECK(contains(memory_stats_result.stdout_text, "Stack peak usage"));
@@ -991,7 +1023,8 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
+    const fs::path hello_world =
+        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
 
     const auto llvm_result = run_cli(t81_bin, {"llvm", "compile", hello_world.string()});
     T81_TEST_CHECK(!contains(llvm_result.stderr_text, "Multiple input files not supported"));
@@ -1005,11 +1038,11 @@ int main(int argc, char* argv[]) {
 
     const auto mlir_t81_dialect_result =
         run_cli(t81_bin, {"mlir", "compile", hello_world.string(), "--dialect=t81"});
-    T81_TEST_CHECK(!contains(mlir_t81_dialect_result.stderr_text,
-                             "Multiple input files not supported"));
-    T81_TEST_CHECK(mlir_t81_dialect_result.exit_code == 0 ||
-                   contains(mlir_t81_dialect_result.stderr_text,
-                            "built without the MLIR frontend."));
+    T81_TEST_CHECK(
+        !contains(mlir_t81_dialect_result.stderr_text, "Multiple input files not supported"));
+    T81_TEST_CHECK(
+        mlir_t81_dialect_result.exit_code == 0 ||
+        contains(mlir_t81_dialect_result.stderr_text, "built without the MLIR frontend."));
 
     const auto c_help_result = run_cli(t81_bin, {"help", "c"});
     T81_TEST_CHECK(c_help_result.exit_code == 0);
@@ -1033,8 +1066,8 @@ int main(int argc, char* argv[]) {
              "  return x + y;\n"
              "}\n";
     }
-    const auto c_result =
-        run_cli(t81_bin, {"c", "compile", c_input.string(), "-o", c_output.string(), "--dialect=t81"});
+    const auto c_result = run_cli(
+        t81_bin, {"c", "compile", c_input.string(), "-o", c_output.string(), "--dialect=t81"});
     T81_TEST_CHECK(!contains(c_result.stderr_text, "Multiple input files not supported"));
     T81_TEST_CHECK(c_result.exit_code == 0 ||
                    contains(c_result.stderr_text, "built without the experimental C frontend."));
@@ -1053,7 +1086,8 @@ int main(int argc, char* argv[]) {
     }
     const auto rust_result =
         run_cli(t81_bin, {"rust", "compile", rust_input.string(), "-o", rust_output.string()});
-    T81_TEST_CHECK(rust_result.exit_code != 0 || contains(rust_result.stdout_text, "MLIR written to:"));
+    T81_TEST_CHECK(rust_result.exit_code != 0 ||
+                   contains(rust_result.stdout_text, "MLIR written to:"));
     T81_TEST_CHECK(
         contains(rust_result.stderr_text, "built without the experimental Rust frontend.") ||
         rust_result.exit_code == 0);
@@ -1068,9 +1102,10 @@ int main(int argc, char* argv[]) {
              "        return x + 3\n"
              "    return 0\n";
     }
-    const auto python_result =
-        run_cli(t81_bin, {"python", "compile", python_input.string(), "-o", python_output.string()});
-    T81_TEST_CHECK(python_result.exit_code != 0 || contains(python_result.stdout_text, "MLIR written to:"));
+    const auto python_result = run_cli(
+        t81_bin, {"python", "compile", python_input.string(), "-o", python_output.string()});
+    T81_TEST_CHECK(python_result.exit_code != 0 ||
+                   contains(python_result.stdout_text, "MLIR written to:"));
     T81_TEST_CHECK(
         contains(python_result.stderr_text, "built without the experimental Python frontend.") ||
         python_result.exit_code == 0);
@@ -1100,7 +1135,7 @@ int main(int argc, char* argv[]) {
   {
     const fs::path package_file = "package.t81";
     const fs::path bad_file = "bad.t81";
-    
+
     // Clean up any existing files
     std::error_code ignore_ec;
     fs::remove(package_file, ignore_ec);
@@ -1113,7 +1148,8 @@ int main(int argc, char* argv[]) {
              "  (version \"1.2.3\")\n"
              ")\n";
     }
-    const auto ok_result = run_cli(t81_bin, {"internal", "pkg", "check", package_file.string(), "--json"});
+    const auto ok_result =
+        run_cli(t81_bin, {"internal", "pkg", "check", package_file.string(), "--json"});
     T81_TEST_CHECK(ok_result.exit_code == 0);
     T81_TEST_CHECK(contains(ok_result.stdout_text, "\"schema\": \"t81.pkg-check.v1\""));
     T81_TEST_CHECK(contains(ok_result.stdout_text, "\"valid\": true"));
@@ -1125,7 +1161,8 @@ int main(int argc, char* argv[]) {
              "  (version \"x.y.z\")\n"
              ")\n";
     }
-    const auto bad_result = run_cli(t81_bin, {"internal", "pkg", "check", bad_file.string(), "--json"});
+    const auto bad_result =
+        run_cli(t81_bin, {"internal", "pkg", "check", bad_file.string(), "--json"});
     T81_TEST_CHECK(bad_result.exit_code == 2);
     T81_TEST_CHECK(contains(bad_result.stdout_text, "\"valid\": false"));
 
