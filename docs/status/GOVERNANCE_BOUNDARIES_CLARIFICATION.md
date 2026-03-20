@@ -5,7 +5,7 @@ This document clarifies the governance boundaries and deterministic profile enfo
 
 Primary operational classification source:
 
-- [GOVERNANCE_SURFACE_REGISTER.md](/Users/t81dev/Code/t81-foundation/docs/governance/GOVERNANCE_SURFACE_REGISTER.md)
+- [GOVERNANCE_SURFACE_REGISTER.md](/docs/governance/GOVERNANCE_SURFACE_REGISTER.md)
 
 ## Boundaries
 

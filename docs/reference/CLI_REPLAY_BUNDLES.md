@@ -83,7 +83,7 @@ Fail criteria:
 
 ## Relationship to Other Evidence
 
-- [REPRODUCIBILITY.md](/Users/t81dev/Code/t81-foundation/docs/reference/REPRODUCIBILITY.md)
+- [REPRODUCIBILITY.md](/docs/reference/REPRODUCIBILITY.md)
   remains the authoritative T81Lang fixture reproducibility guide.
 - AI-specific multi-lane evidence remains under the AI evidence collectors in
   `scripts/ci/`.

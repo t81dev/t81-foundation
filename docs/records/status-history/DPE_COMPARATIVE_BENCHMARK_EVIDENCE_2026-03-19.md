@@ -31,7 +31,7 @@ T81_BENCHMARK_WRITE_REPORTS=1 \
 
 Captured console log:
 
-- [console.txt](/Users/t81dev/Code/t81-foundation/build/dpe-bench/console.txt)
+- [console.txt](/build/dpe-bench/console.txt)
 
 ## Benchmarks Exercised
 

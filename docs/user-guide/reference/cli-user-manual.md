@@ -149,6 +149,7 @@ t81 weights <action> [args]
 t81 policy <action> [args]
 t81 axion <action> [args]
 t81 trace <action> [args]
+t81 ai <action> [args]
 t81 completion <bash|zsh|fish>
 t81 man [--install-dir <dir>]
 t81 feedback <submit|report> [options]

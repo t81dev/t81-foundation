@@ -48,23 +48,23 @@ for layout and boundary clarity, and which surfaces must remain there.
 
 **Current evidence**
 
-- [IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/IMPLEMENTATION_MATRIX.md)
+- [IMPLEMENTATION_MATRIX.md](/docs/status/IMPLEMENTATION_MATRIX.md)
   classifies `DPE (Parallel Execution)` as `Accepted`, implementation maturity
   `Stable`, promotion state `Governed non-DCP`.
 - DPE headers and implementations already use the non-experimental namespace
   `t81::dpe`:
-  - [task_graph.hpp](/Users/t81dev/Code/t81-foundation/include/t81/dpe/task_graph.hpp)
-  - [task_runner.hpp](/Users/t81dev/Code/t81-foundation/include/t81/dpe/task_runner.hpp)
-  - [epoch_commit.hpp](/Users/t81dev/Code/t81-foundation/include/t81/dpe/epoch_commit.hpp)
-  - [thread_pool.hpp](/Users/t81dev/Code/t81-foundation/include/t81/dpe/thread_pool.hpp)
+  - [task_graph.hpp](/include/t81/dpe/task_graph.hpp)
+  - [task_runner.hpp](/include/t81/dpe/task_runner.hpp)
+  - [epoch_commit.hpp](/include/t81/dpe/epoch_commit.hpp)
+  - [thread_pool.hpp](/include/t81/dpe/thread_pool.hpp)
 - RFC-linked conformance and determinism tests exist:
-  - [task_graph_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/task_graph_test.cpp)
-  - [task_runner_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/task_runner_test.cpp)
-  - [epoch_commit_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/epoch_commit_test.cpp)
-  - [epoch_dag_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/epoch_dag_test.cpp)
-  - [epoch_parallel_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/epoch_parallel_test.cpp)
-  - [thread_pool_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/thread_pool_test.cpp)
-  - [dpe_float_reduction_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/dpe/dpe_float_reduction_test.cpp)
+  - [task_graph_test.cpp](/tests/cpp/dpe/task_graph_test.cpp)
+  - [task_runner_test.cpp](/tests/cpp/dpe/task_runner_test.cpp)
+  - [epoch_commit_test.cpp](/tests/cpp/dpe/epoch_commit_test.cpp)
+  - [epoch_dag_test.cpp](/tests/cpp/dpe/epoch_dag_test.cpp)
+  - [epoch_parallel_test.cpp](/tests/cpp/dpe/epoch_parallel_test.cpp)
+  - [thread_pool_test.cpp](/tests/cpp/dpe/thread_pool_test.cpp)
+  - [dpe_float_reduction_test.cpp](/tests/cpp/dpe/dpe_float_reduction_test.cpp)
 
 **Judgment**
 
@@ -96,19 +96,19 @@ implementation immaturity.
 
 **Current evidence**
 
-- [IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/IMPLEMENTATION_MATRIX.md)
+- [IMPLEMENTATION_MATRIX.md](/docs/status/IMPLEMENTATION_MATRIX.md)
   classifies `T81Graph` as implementation maturity `Beta`, promotion state
   `Governed non-DCP`.
-- [SYSTEM_STATUS.md](/Users/t81dev/Code/t81-foundation/docs/status/SYSTEM_STATUS.md)
+- [SYSTEM_STATUS.md](/docs/status/SYSTEM_STATUS.md)
   describes `T81Graph` as useful and implemented, but not yet a verified
   deterministic surface as a whole.
 - Stable graph type already exists in
-  [T81Graph.hpp](/Users/t81dev/Code/t81-foundation/include/t81/types/T81Graph.hpp).
+  [T81Graph.hpp](/include/t81/types/T81Graph.hpp).
 - The language/runtime symbolic graph path is now implemented under
-  [symbolic_graph.hpp](/Users/t81dev/Code/t81-foundation/include/t81/cog/v1/symbolic_graph.hpp)
-  and used in [vm.cpp](/Users/t81dev/Code/t81-foundation/core/vm/vm.cpp).
+  [symbolic_graph.hpp](/include/t81/cog/v1/symbolic_graph.hpp)
+  and used in [vm.cpp](/core/vm/vm.cpp).
 - BG-09 evidence indicates the symbolic graph serialization gap was closed in
-  [BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md](/Users/t81dev/Code/t81-foundation/docs/records/audits/BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md).
+  [BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md](/docs/records/audits/BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md).
 
 **Judgment**
 
@@ -159,10 +159,10 @@ Do not move.
 
 Evidence:
 
-- [ALPHA_PROMOTION_PLAN.md](/Users/t81dev/Code/t81-foundation/experimental/hanoi/ALPHA_PROMOTION_PLAN.md)
+- [ALPHA_PROMOTION_PLAN.md](/experimental/hanoi/ALPHA_PROMOTION_PLAN.md)
   still identifies command-surface, test, and documentation work as promotion
   blockers.
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
   still classifies `experimental/hanoi/` as experimental.
 
 ### Cognitive Tiers Broadly
@@ -171,9 +171,9 @@ Do not move.
 
 Evidence:
 
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
   still classifies cognitive tiers as experimental.
-- [experimental-tiers.md](/Users/t81dev/Code/t81-foundation/docs/architecture/layers/experimental-tiers.md)
+- [experimental-tiers.md](/docs/architecture/layers/experimental-tiers.md)
   continues to describe these tiers as experimental/stubbed.
 
 Only the narrow symbolic graph subset is a credible extraction candidate.
@@ -184,10 +184,10 @@ Do not move.
 
 Evidence:
 
-- [EXPERIMENTAL_SURFACE_INVENTORY.md](/Users/t81dev/Code/t81-foundation/docs/records/status-history/EXPERIMENTAL_SURFACE_INVENTORY.md)
+- [EXPERIMENTAL_SURFACE_INVENTORY.md](/docs/records/status-history/EXPERIMENTAL_SURFACE_INVENTORY.md)
   still describes the distributed surface as stubbed and non-deterministic by
   design.
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
   still classifies `experimental/distributed/` as experimental.
 
 ### Trace-JIT
@@ -196,9 +196,9 @@ Do not move.
 
 Evidence:
 
-- [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+- [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
   still classifies `runtime/jit/jit_compiler.cpp` as experimental / stub.
-- [JIT_EQUIVALENCE_GAP.md](/Users/t81dev/Code/t81-foundation/docs/records/JIT_EQUIVALENCE_GAP.md)
+- [JIT_EQUIVALENCE_GAP.md](/docs/records/JIT_EQUIVALENCE_GAP.md)
   explicitly says no DCP promotion is intended without full equivalence proofs.
 
 ## Rollout Plan
@@ -225,11 +225,11 @@ Evidence:
 
 ### Phase 3: Governance and Boundary Cleanup
 
-1. Update [EXTENSION_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/EXTENSION_PROFILE.md)
+1. Update [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
    so `Experimental Headers` no longer overstate the promoted paths.
-2. Update [EXPERIMENTAL_SURFACE_INVENTORY.md](/Users/t81dev/Code/t81-foundation/docs/records/status-history/EXPERIMENTAL_SURFACE_INVENTORY.md)
+2. Update [EXPERIMENTAL_SURFACE_INVENTORY.md](/docs/records/status-history/EXPERIMENTAL_SURFACE_INVENTORY.md)
    to remove relocated surfaces.
-3. Update [FROZEN_CORE_PROFILE.md](/Users/t81dev/Code/t81-foundation/docs/status/FROZEN_CORE_PROFILE.md)
+3. Update [FROZEN_CORE_PROFILE.md](/docs/status/FROZEN_CORE_PROFILE.md)
    only to clarify exclusions and governed non-DCP placement, not to claim DCP
    promotion.
 4. Add a decision-log entry recording that relocation was structural and did not
@@ -247,9 +247,9 @@ Evidence:
 ### T81Graph
 
 - Re-run:
-  - [symbolic_vm_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/symbolic_vm_test.cpp)
-  - [tier1_rewrite_confluence_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/tier1_rewrite_confluence_test.cpp)
-  - [tiers_structure_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/tiers_structure_test.cpp)
+  - [symbolic_vm_test.cpp](/tests/cpp/symbolic_vm_test.cpp)
+  - [tier1_rewrite_confluence_test.cpp](/tests/cpp/tier1_rewrite_confluence_test.cpp)
+  - [tiers_structure_test.cpp](/tests/cpp/tiers_structure_test.cpp)
   - graph/language determinism fixtures tied to `graph_canonical`
 - Add an include-boundary test proving the symbolic graph runtime resolves via
   `include/t81/cog/v1/` for the moved subset.

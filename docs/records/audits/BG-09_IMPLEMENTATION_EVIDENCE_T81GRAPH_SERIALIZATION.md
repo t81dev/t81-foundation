@@ -23,7 +23,7 @@ Added `serialize_canonical()` method to `SymbolicGraph` and updated VM's `format
 ## 🔧 **Implementation Details**
 
 ### **Phase 1: SymbolicGraph Serialization Method**
-**File:** `/Users/t81dev/Code/t81-foundation/include/t81/experimental/cog/tier1/symbolic.hpp`
+**File:** `/include/t81/experimental/cog/tier1/symbolic.hpp`
 
 ```cpp
 // P2: Canonical serialization
@@ -64,7 +64,7 @@ Added `serialize_canonical()` method to `SymbolicGraph` and updated VM's `format
 ```
 
 ### **Phase 2: VM Format Value Integration**
-**File:** `/Users/t81dev/Code/t81-foundation/core/vm/vm.cpp`
+**File:** `/core/vm/vm.cpp`
 
 ```cpp
 case ValueTag::SymbolicGraphHandle: {

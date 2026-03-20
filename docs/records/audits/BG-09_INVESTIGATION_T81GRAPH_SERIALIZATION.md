@@ -24,19 +24,19 @@ The current `std.collections.graph_canonical` function works with a `Vector[T81S
 ## 🔍 **Investigation Findings**
 
 ### **Phase 1: T81Graph Implementation ✅**
-- **Location**: `/Users/t81dev/Code/t81-foundation/include/t81/types/T81Graph.hpp`
+- **Location**: `/include/t81/types/T81Graph.hpp`
 - **Method**: `serialize_canonical()` exists and is properly implemented
 - **Format**: Returns structured JSON-like format with sorted edges
 - **Template Support**: Supports different weight types with proper serialization
 
 ### **Phase 2: Language Runtime Analysis ✅**
-- **Location**: `/Users/t81dev/Code/t81-foundation/include/t81/frontend/ir_generator.hpp`
+- **Location**: `/include/t81/frontend/ir_generator.hpp`
 - **Function**: `collections_graph_canonical` implemented
 - **Issue**: Works with `Vector[T81String]` representation, not T81Graph objects
 - **Problem**: Manual string construction bypasses T81Graph.serialize_canonical()
 
 ### **Phase 3: VM Format Value Analysis ✅**
-- **Location**: `/Users/t81dev/Code/t81-foundation/core/vm/vm.cpp`
+- **Location**: `/core/vm/vm.cpp`
 - **Function**: `format_value()` handles `ValueTag::SymbolicGraphHandle`
 - **Issue**: Returns placeholder `"<graph#" + std::to_string(val_data) + ">"`
 - **Missing**: No call to serialize_canonical() for graph objects
