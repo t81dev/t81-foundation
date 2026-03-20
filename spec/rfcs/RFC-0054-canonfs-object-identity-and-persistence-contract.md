@@ -66,10 +66,10 @@ No CanonFS surface may describe object identity using one rule while implementin
 
 Until a migration is explicitly implemented, the current CanonFS baseline MUST reflect the behavior of the shipping drivers in:
 
-- [canon_driver.hpp](/Users/t81dev/Code/t81-foundation/include/t81/canonfs/canon_driver.hpp)
-- [canon_types.hpp](/Users/t81dev/Code/t81-foundation/include/t81/canonfs/canon_types.hpp)
-- [persistent_driver.cpp](/Users/t81dev/Code/t81-foundation/src/canonfs/persistent_driver.cpp)
-- [in_memory_driver.cpp](/Users/t81dev/Code/t81-foundation/src/canonfs/in_memory_driver.cpp)
+- [canon_driver.hpp](/include/t81/canonfs/canon_driver.hpp)
+- [canon_types.hpp](/include/t81/canonfs/canon_types.hpp)
+- [persistent_driver.cpp](/src/canonfs/persistent_driver.cpp)
+- [in_memory_driver.cpp](/src/canonfs/in_memory_driver.cpp)
 
 That means the release baseline must explicitly choose one of these paths:
 

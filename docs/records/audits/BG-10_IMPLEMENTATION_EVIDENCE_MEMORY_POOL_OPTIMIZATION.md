@@ -20,7 +20,7 @@ Phase 1 implementation focused on memory usage analysis, profiling tools, and CL
 ## 🔧 **Implementation Details**
 
 ### **Phase 1: Memory Statistics Infrastructure**
-**File:** `/Users/t81dev/Code/t81-foundation/include/t81/vm/state.hpp`
+**File:** `/include/t81/vm/state.hpp`
 
 ```cpp
 // Memory Pool Statistics (BG-10 Optimization)
@@ -37,7 +37,7 @@ struct MemoryStats {
 ```
 
 ### **Phase 1: Memory Profiling Functions**
-**File:** `/Users/t81dev/Code/t81-foundation/core/vm/internal/memory_segments.hpp`
+**File:** `/core/vm/internal/memory_segments.hpp`
 
 ```cpp
 // BG-10 Memory Pool Optimization Functions
@@ -48,7 +48,7 @@ void reset_memory_stats(State& state);
 ```
 
 ### **Phase 1: Enhanced Stack Operations**
-**File:** `/Users/t81dev/Code/t81-foundation/core/vm/memory_segments.cpp`
+**File:** `/core/vm/memory_segments.cpp`
 
 ```cpp
 // BG-10: Update stack usage statistics
@@ -60,7 +60,7 @@ state.memory_stats.total_allocations++;
 ```
 
 ### **Phase 1: CLI Integration**
-**File:** `/Users/t81dev/Code/t81-foundation/tooling/cli/main.cpp`
+**File:** `/tooling/cli/main.cpp`
 
 ```cpp
 int run_memory_stats(const Args& args) {
