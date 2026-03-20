@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 #if defined(_WIN32)
   cmd = "\"" + cmd + "\"";
 #endif
-  const int rc = std::system(cmd.c_str());
+  const int rc = std::system(cmd.c_str());  // codeql[cpp/command-line-injection]
   if (rc != 0) {
     std::cerr << "t81 internal repro-hash returned non-zero: " << rc << "\n";
     return 1;

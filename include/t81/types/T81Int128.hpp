@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#if defined(_MSC_VER) && !defined(__clang__) && defined(_WIN64)
+#if defined(_MSC_VER) && defined(_WIN64)
 #include <intrin.h>
 
 namespace t81::v1::detail {
@@ -53,6 +53,8 @@ struct int128_t {
     return (is_neg() != o.is_neg()) ? -res : res;
   }
 
+  // WARNING: This is a partial implementation. Divisors are truncated to 64-bit.
+  // This is safe ONLY because T81BigInt currently only divides by 64-bit Radix bounds.
   int128_t operator/(const int128_t& o) const {
     int64_t d = (int64_t)o.lo;
     if (o.hi < 0) d = -d;
@@ -60,7 +62,6 @@ struct int128_t {
     int128_t num = is_neg() ? -(*this) : *this;
     uint64_t rem;
     if (num.hi >= (uint64_t)d) {
-      // Unsafe hardware divide. This struct is only a stub for specific constants.
       return {0, 0};
     }
     uint64_t q = _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
@@ -68,6 +69,8 @@ struct int128_t {
     return neg ? -res : res;
   }
 
+  // WARNING: This is a partial implementation. Divisors are truncated to 64-bit.
+  // This is safe ONLY because T81BigInt currently only divides by 64-bit Radix bounds.
   int128_t operator%(const int128_t& o) const {
     int64_t d = (int64_t)o.lo;
     if (o.hi < 0) d = -d;
@@ -75,7 +78,6 @@ struct int128_t {
     int128_t num = is_neg() ? -(*this) : *this;
     uint64_t rem;
     if (num.hi >= (uint64_t)d) {
-      // Unsafe hardware divide. This struct is only a stub for specific constants.
       return {0, 0};
     }
     _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
@@ -110,16 +112,20 @@ struct int128_t {
   explicit operator int64_t() const { return (int64_t)lo; }
 };
 }  // namespace t81::v1::detail
-using int128_t = t81::v1::detail::int128_t;
 
-#elif defined(_MSC_VER) && !defined(__clang__)
+#elif defined(_MSC_VER)
+
+namespace t81::v1::detail {
 // For 32-bit Windows MSVC, just use int64_t.
 // NOTE: This breaks big int operations requiring 128-bit results.
 typedef std::int64_t int128_t;
+}  // namespace t81::v1::detail
 
 #else
 
+namespace t81::v1::detail {
 // GCC, Clang on Linux/macOS/Windows, or MinGW which has __int128
 __extension__ typedef __int128 int128_t;
+}  // namespace t81::v1::detail
 
 #endif

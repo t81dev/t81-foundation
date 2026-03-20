@@ -32,9 +32,11 @@
 #include <immintrin.h>
 #endif
 
+#include "t81/types/T81Int128.hpp"
+
 namespace t81::v1 {
 
-#include "t81/types/T81Int128.hpp"
+using int128_t = detail::int128_t;
 
 namespace detail {
 inline const std::array<int16_t, 256>& get_byte_to_ternary() {
