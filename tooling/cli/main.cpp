@@ -33,6 +33,21 @@
 #include <type_traits>
 #include <unordered_set>
 #include <vector>
+
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#else
+#include <unistd.h>
+#endif
+
 #if !defined(_WIN32)
 #include <sys/wait.h>
 #include <unistd.h>
@@ -6856,14 +6871,6 @@ fs::path discover_repo_root() {
   return cwd;
 }
 
-
-#ifdef _WIN32
-#include <windows.h>
-#elif defined(__APPLE__)
-#include <mach-o/dyld.h>
-#else
-#include <unistd.h>
-#endif
 
 std::optional<fs::path> discover_exe_path_internal() {
   std::error_code ec;
