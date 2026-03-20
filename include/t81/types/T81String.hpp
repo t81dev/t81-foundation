@@ -150,8 +150,12 @@ public:
   // Comparison – lexicographic on normalized storage
   //===================================================================
 
-  [[nodiscard]] auto operator<=>(const T81String& o) const noexcept = default;
-  [[nodiscard]] bool operator==(const T81String& o) const noexcept = default;
+  [[nodiscard]] auto operator<=>(const T81String& o) const noexcept {
+    return storage_.compare(o.storage_) <=> 0;
+  }
+  [[nodiscard]] bool operator==(const T81String& o) const noexcept {
+    return storage_ == o.storage_;
+  }
 
   //===================================================================
   // Hash – FNV-like mixing over normalized bytes
