@@ -373,12 +373,19 @@ Surface classifications follow RFC-0048. Governed non-DCP and experimental surfa
 
 ## Boot progress
 
+Live recording of the current QEMU AArch64 boot sequence (serial output):
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/assets/boot.gif" 
        alt="T81 QEMU AArch64 boot sequence — live t81> shell demo" 
-       width="85%">
+       width="95%">
   <br><small>Current boot progress: EFI → bare-metal EL1 → policy engine → CanonFS mount → interactive t81> prompt</small>
 </p>
+
+<br><small>
+  <br>
+  Also playable interactively: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">asciinema recording (.cast)</a>
+</small>
 
 T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward a clean boot with a shell prompt visible on serial output — the prerequisite for a recorded boot demo in this README.
 
