@@ -122,6 +122,26 @@ Deterministic-surface classification follows the governance model introduced by 
 
 ## Quick Start
 
+### Try it in Docker (60 seconds, nothing to install)
+
+```sh
+docker run --rm -it ghcr.io/t81dev/t81-foundation demo
+```
+
+This pulls a ~100 MB image, runs three short programs showing ternary types and
+determinism guarantees, then drops you into an interactive T81Lang REPL — all
+without touching your local toolchain. Exit with `:quit` or `Ctrl-D`.
+
+```sh
+# Interactive REPL only
+docker run --rm -it ghcr.io/t81dev/t81-foundation
+
+# Run any t81 subcommand
+docker run --rm -it ghcr.io/t81dev/t81-foundation vm run /t81/examples/tisc/hello_world.tisc
+```
+
+---
+
 ### Download a prebuilt binary
 
 Prebuilt binaries are published for every release — no compiler required.
