@@ -76,11 +76,14 @@ bool normalize_python_to_c(const std::string& source,
     }
   }
 
-  const std::string command =
+  std::string command =
       shell_quote(T81_PYTHON3_EXECUTABLE) + " " +
       shell_quote(T81_PYTHON_FRONTEND_SCRIPT_PATH) + " --input " +
       shell_quote(input_path.string()) + " --output " + shell_quote(output_path.string()) +
       " --diag-name " + shell_quote(diag_name) + " 2> " + shell_quote(error_path.string());
+#if defined(_WIN32)
+  command = "\"" + command + "\"";
+#endif
   const int rc = std::system(command.c_str());
   if (rc != 0) {
     std::ifstream err(error_path, std::ios::binary);

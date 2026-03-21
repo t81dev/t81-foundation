@@ -309,7 +309,12 @@ std::string shell_quote_text(std::string_view text) {
 }
 
 int run_shell_command(const std::string& command) {
+#if defined(_WIN32)
+  std::string cmd = "\"" + command + "\"";
+  return std::system(cmd.c_str());
+#else
   return std::system(command.c_str());
+#endif
 }
 
 void write_small_weights_model(const std::filesystem::path& model_path, bool alternate = false) {
