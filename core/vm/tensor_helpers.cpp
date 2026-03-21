@@ -326,12 +326,30 @@ std::optional<t81::T729DynamicTensor> native_tensor_tact_direct(
     shape.push_back(static_cast<int>(dim));
   }
 
-  // Apply activation function explicitly. For ExactTrit inputs {-1,0,+1},
-  // snap_trit(tanh(±1)) = ±1 and snap_trit(tanh(0)) = 0, so both modes are
-  // identity on pre-ternary values. Applied here for correctness in case the
-  // native trit buffer ever contains out-of-range values.
+  // BalancedTernary inputs: trits ∈ {-1, 0, +1}.
+  //   Step:        snap_trit(±1) = ±1, snap_trit(0) = 0               → identity
+  //   TanhQuantized: snap_trit(tanh(±1)) = snap_trit(±0.762) = ±1     → identity
+  // Both modes reduce to int8→float for pre-ternary values. SIMD main path;
+  // scalar tail applies the full activation for correctness on any edge values.
   std::vector<float> out(total, 0.0f);
-  for (std::size_t i = 0; i < total; ++i) {
+  std::size_t i = 0;
+#if defined(__ARM_NEON) || defined(__AVX2__)
+  const std::size_t total8 = (total / 8) * 8;
+#endif
+#ifdef __ARM_NEON
+  for (; i < total8; i += 8) {
+    const int8x8_t  sv   = vld1_s8(trits.data() + i);
+    const int16x8_t sv16 = vmovl_s8(sv);
+    vst1q_f32(out.data() + i,     vcvtq_f32_s32(vmovl_s16(vget_low_s16(sv16))));
+    vst1q_f32(out.data() + i + 4, vcvtq_f32_s32(vmovl_s16(vget_high_s16(sv16))));
+  }
+#elif defined(__AVX2__)
+  for (; i < total8; i += 8) {
+    const __m128i sv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(trits.data() + i));
+    _mm256_storeu_ps(out.data() + i, _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(sv)));
+  }
+#endif
+  for (; i < total; ++i) {
     float x = static_cast<float>(trits[i]);
     if (mode == t81::ops::kTActModeTanh) {
       x = std::tanh(x);
@@ -779,14 +797,34 @@ std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
         static_cast<float>(t81::core::detail::sin(angle).to_double());
   }
 
+  // RoPE rotation: (v0, v1) → (v0·cos − v1·sin,  v0·sin + v1·cos) per pair.
+  // NEON: vld2q_f32 deinterleaves 4 pairs into even/odd float32x4_t in one
+  //       instruction; vmlsq/vmlaq compute both outputs without a temporary;
+  //       vst2q_f32 re-interleaves. Covers head_dim in head_dim/8 iterations.
+#ifdef __ARM_NEON
+  const int hdim8 = (head_dim / 8) * 8;  // 4 pairs per NEON iteration
+#endif
   for (std::size_t base = 0; base < data.size(); base += static_cast<std::size_t>(head_dim)) {
-    for (int j = 0; j < head_dim; j += 2) {
+    float* const drow = data.data() + base;
+    int j = 0;
+#ifdef __ARM_NEON
+    for (; j < hdim8; j += 8) {
+      float32x4x2_t vc   = vld2q_f32(drow + j);        // val[0]=v0s, val[1]=v1s
+      const float32x4_t cos4 = vld1q_f32(cos_terms.data() + j / 2);
+      const float32x4_t sin4 = vld1q_f32(sin_terms.data() + j / 2);
+      float32x4x2_t vout;
+      vout.val[0] = vmlsq_f32(vmulq_f32(vc.val[0], cos4), vc.val[1], sin4);  // v0·cos − v1·sin
+      vout.val[1] = vmlaq_f32(vmulq_f32(vc.val[0], sin4), vc.val[1], cos4);  // v0·sin + v1·cos
+      vst2q_f32(drow + j, vout);
+    }
+#endif
+    for (; j < head_dim; j += 2) {
       const float f_cos = cos_terms[static_cast<std::size_t>(j / 2)];
       const float f_sin = sin_terms[static_cast<std::size_t>(j / 2)];
-      float v0 = data[base + static_cast<std::size_t>(j)];
-      float v1 = data[base + static_cast<std::size_t>(j + 1)];
-      data[base + static_cast<std::size_t>(j)] = v0 * f_cos - v1 * f_sin;
-      data[base + static_cast<std::size_t>(j + 1)] = v0 * f_sin + v1 * f_cos;
+      const float v0 = drow[j];
+      const float v1 = drow[j + 1];
+      drow[j]     = v0 * f_cos - v1 * f_sin;
+      drow[j + 1] = v0 * f_sin + v1 * f_cos;
     }
   }
 
