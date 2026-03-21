@@ -6901,8 +6901,9 @@ fs::path discover_build_dir() {
   const fs::path cwd = fs::current_path();
   const fs::path repo_root = discover_repo_root();
 
-  // 1. Check if CWD is a build directory
-  if (fs::exists(cwd / "CTestTestfile.cmake", ec)) {
+  // 1. Check if CWD is a build directory (but not the repo root — guards against
+  //    stale in-source CMake artifacts left behind by accidental root-level configure).
+  if (cwd != repo_root && fs::exists(cwd / "CTestTestfile.cmake", ec)) {
     return cwd;
   }
   ec.clear();
