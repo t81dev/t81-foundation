@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>T81Lang Playground</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <!--
+    CodeMirror 6 — bundled via skypack CDN for zero-build-step development.
+    For production, bundle locally via npm and replace these with the local paths.
+    Required modules: @codemirror/state, @codemirror/view, @codemirror/commands,
+    @codemirror/language, @codemirror/search, @codemirror/autocomplete,
+    @codemirror/lint, @codemirror/theme-one-dark
+    All bundled under the `CM` global by the shim below.
+  -->
+  <script type="importmap">
+  {
+    "imports": {
+      "@codemirror/state":        "https://esm.sh/@codemirror/state@6",
+      "@codemirror/view":         "https://esm.sh/@codemirror/view@6",
+      "@codemirror/commands":     "https://esm.sh/@codemirror/commands@6",
+      "@codemirror/language":     "https://esm.sh/@codemirror/language@6",
+      "@codemirror/search":       "https://esm.sh/@codemirror/search@6",
+      "@codemirror/autocomplete": "https://esm.sh/@codemirror/autocomplete@6",
+      "@codemirror/lint":         "https://esm.sh/@codemirror/lint@6",
+      "@codemirror/theme-one-dark": "https://esm.sh/@codemirror/theme-one-dark@6",
+      "codemirror":               "https://esm.sh/codemirror@6"
+    }
+  }
+  </script>
+
+  <!-- Shim: expose CodeMirror 6 APIs on a global `CM` object for playground.js -->
+  <script type="module">
+    import { EditorView, basicSetup } from "codemirror";
+    import { EditorState } from "@codemirror/state";
+    import { oneDark } from "@codemirror/theme-one-dark";
+    window.CM = { EditorView, basicSetup, EditorState, oneDark };
+  </script>
+</head>
+
+<body>
+
+<!-- ── Loading overlay ─────────────────────────────────────────────────── -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-msg">Loading T81VM…</div>
+  <div style="font-size:12px;color:#444;margin-top:4px">
+    Initialising WebAssembly module
+  </div>
+</div>
+
+<!-- ── Header ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">T81</div>
+    <div>
+      <div class="logo-text">T81Lang Playground</div>
+      <div class="logo-sub">Balanced ternary · deterministic · governed</div>
+    </div>
+  </div>
+
+  <div class="spacer"></div>
+
+  <nav class="header-links">
+    <a href="https://github.com/t81dev/t81-foundation" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/t81dev/t81-foundation/tree/main/spec" target="_blank" rel="noopener">Spec</a>
+    <a href="https://github.com/t81dev/t81-foundation/tree/main/docs" target="_blank" rel="noopener">Docs</a>
+  </nav>
+</header>
+
+<!-- ── Toolbar ─────────────────────────────────────────────────────────── -->
+<div class="toolbar">
+  <label for="sample-select">Example:</label>
+  <select id="sample-select">
+    <option value="" disabled selected>— choose a sample —</option>
+  </select>
+
+  <div class="spacer"></div>
+
+  <div class="toolbar-right">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Loading…</span>
+
+    <button class="btn btn-secondary" id="clear-btn">Clear</button>
+    <button class="btn btn-primary"   id="run-btn"   disabled>
+      ▶ Run
+      <span style="font-size:11px;opacity:0.65;font-weight:400">⌘↵</span>
+    </button>
+  </div>
+</div>
+
+<!-- ── Workspace ───────────────────────────────────────────────────────── -->
+<div class="workspace">
+
+  <!-- Editor pane -->
+  <div class="editor-pane">
+    <div class="pane-header">
+      <svg class="pane-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4 4l4 4-4 4M9 12h4"/>
+      </svg>
+      editor — <em style="opacity:.5;font-style:normal">*.t81</em>
+    </div>
+    <div id="editor-container"></div>
+  </div>
+
+  <!-- Drag handle -->
+  <div class="resize-handle" id="resize-handle" title="Drag to resize"></div>
+
+  <!-- Output pane -->
+  <div class="output-pane">
+    <div class="output-tabs">
+      <button class="tab-btn active" data-tab="output">Output</button>
+      <button class="tab-btn"        data-tab="errors">Diagnostics</button>
+    </div>
+
+    <div id="output-content" class="tab-content active output-none">
+      (run a program to see output)
+    </div>
+    <div id="errors-content" class="tab-content output-none">
+      (no diagnostics)
+    </div>
+  </div>
+
+</div>
+
+<!--
+  T81VM WebAssembly module.
+  Build with Emscripten and place t81vm.js + t81vm.wasm next to this file.
+  See tools/playground/CMakeLists.txt for build instructions.
+-->
+<script src="t81vm.js"></script>
+<script src="playground.js"></script>
+
+</body>
+</html>

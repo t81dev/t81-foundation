@@ -35,6 +35,7 @@ option(T81_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer for supported compile
 # Axion policy must explicitly permit FP32 dispatch on gate/up/down tensors.
 # Not suitable for RFC-0034-certified deployments without policy approval.
 option(T81_HYBRID_MLP "FP32 MLP projections + ternary attention (throughput; requires Axion policy)" OFF)
+option(T81_BUILD_PLAYGROUND "Build in-browser Wasm playground (requires Emscripten)" OFF)
 option(T81_USE_CXX23 "Build with C++23 language mode (fallback: C++20)" ON)
 option(T81_TRITWISE_PROFILE "Enable profiling for tritwise operations" OFF)
 option(T81_STRICT_DETERMINISTIC_FLOAT "Use deterministic float math paths where available" ON)
@@ -3356,4 +3357,16 @@ if(T81_BUILD_TESTS)
   add_executable(test_swar tests/cpp/test_swar.cpp)
   target_link_libraries(test_swar PRIVATE t81_core t81_experimental)
   add_test(NAME test_swar COMMAND test_swar)
+endif()
+
+# =============================================================================
+# In-browser Playground (Emscripten / Wasm)
+# =============================================================================
+if(T81_BUILD_PLAYGROUND)
+  if(NOT EMSCRIPTEN)
+    message(WARNING "T81_BUILD_PLAYGROUND requires Emscripten. "
+                    "Re-configure with the Emscripten CMake toolchain file.")
+  else()
+    add_subdirectory(tools/playground)
+  endif()
 endif()
