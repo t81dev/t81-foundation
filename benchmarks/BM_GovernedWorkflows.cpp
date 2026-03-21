@@ -305,7 +305,14 @@ std::string shell_quote_text(std::string_view text) {
 
 int run_shell_command(const std::string& command) {
 #if defined(_WIN32)
-  std::string cmd = "\"" + command + "\"";
+  std::string cmd = command;
+  int quotes = 0;
+  for (char c : cmd) {
+    if (c == '"') quotes++;
+  }
+  if (quotes >= 2) {
+    cmd = "\"" + cmd + "\"";
+  }
   return std::system(cmd.c_str());
 #else
   return std::system(command.c_str());

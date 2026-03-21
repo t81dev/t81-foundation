@@ -4,9 +4,11 @@
 #if defined(_MSC_VER) && defined(_WIN64)
 #include <intrin.h>
 
+namespace t81::v1::detail {
+
 #if defined(__clang__)
 // clang-cl does not always provide _udiv128. Provide a simple shift-subtract software fallback.
-static inline uint64_t _udiv128(uint64_t hi, uint64_t lo, uint64_t d, uint64_t* r) {
+static inline uint64_t t81_udiv128(uint64_t hi, uint64_t lo, uint64_t d, uint64_t* r) {
   uint64_t q = 0;
   uint64_t rem = hi;
   for (int i = 0; i < 64; ++i) {
@@ -21,9 +23,10 @@ static inline uint64_t _udiv128(uint64_t hi, uint64_t lo, uint64_t d, uint64_t* 
   if (r) *r = rem;
   return q;
 }
+#else
+#define t81_udiv128 _udiv128
 #endif
 
-namespace t81::v1::detail {
 struct int128_t {
   uint64_t lo;
   int64_t hi;
@@ -83,7 +86,7 @@ struct int128_t {
     if (num.hi >= (uint64_t)d) {
       return {0, 0};
     }
-    uint64_t q = _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
+    uint64_t q = t81_udiv128(num.hi, num.lo, (uint64_t)d, &rem);
     int128_t res = {q, 0};
     return neg ? -res : res;
   }
@@ -99,7 +102,7 @@ struct int128_t {
     if (num.hi >= (uint64_t)d) {
       return {0, 0};
     }
-    _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
+    t81_udiv128(num.hi, num.lo, (uint64_t)d, &rem);
     int128_t res = {rem, 0};
     return neg ? -res : res;
   }
