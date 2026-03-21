@@ -2923,18 +2923,30 @@ endif()
 # =============================================================================
 # Python Bindings
 # =============================================================================
-execute_process(
-    COMMAND python3 -c "import pybind11; print(pybind11.get_cmake_dir())"
-    OUTPUT_VARIABLE pybind11_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-)
-if(pybind11_DIR)
+option(T81_BUILD_PYTHON_BINDINGS "Build the _t81 pybind11 extension module" OFF)
+
+if(NOT T81_BUILD_PYTHON_BINDINGS)
+  # Auto-detect when pybind11 is already installed in the active interpreter
+  execute_process(
+      COMMAND python3 -c "import pybind11; print(pybind11.get_cmake_dir())"
+      OUTPUT_VARIABLE pybind11_DIR
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET
+  )
+  if(pybind11_DIR)
+    set(T81_BUILD_PYTHON_BINDINGS ON)
+  endif()
+endif()
+
+if(T81_BUILD_PYTHON_BINDINGS)
   set(PYBIND11_FINDPYTHON ON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
   find_package(pybind11 REQUIRED)
-  pybind11_add_module(t81_python src/python/t81_python.cpp)
-  target_link_libraries(t81_python PRIVATE t81_core t81_lang_frontend t81_isa t81_vm)
+  pybind11_add_module(_t81 src/python/t81_python.cpp)
+  target_link_libraries(_t81 PRIVATE t81_core t81_lang_frontend t81_isa t81_vm)
+  # Install the extension into the t81 package directory so scikit-build-core
+  # picks it up alongside python/t81/__init__.py.
+  install(TARGETS _t81 LIBRARY DESTINATION t81)
 endif()
 
 # =============================================================================
