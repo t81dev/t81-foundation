@@ -278,7 +278,25 @@ std::optional<t81::T729DynamicTensor> native_tensor_quant_direct(
 
   std::vector<float> out(total, 0.0f);
   if (threshold < 1.0f) {
-    for (std::size_t i = 0; i < total; ++i) {
+    // int8 {-1,0,+1} → float: NEON 8-wide or AVX2 8-wide, scalar tail.
+    std::size_t i = 0;
+#if defined(__ARM_NEON) || defined(__AVX2__)
+    const std::size_t total8 = (total / 8) * 8;
+#endif
+#ifdef __ARM_NEON
+    for (; i < total8; i += 8) {
+      const int8x8_t  sv   = vld1_s8(trits.data() + i);
+      const int16x8_t sv16 = vmovl_s8(sv);
+      vst1q_f32(out.data() + i,     vcvtq_f32_s32(vmovl_s16(vget_low_s16(sv16))));
+      vst1q_f32(out.data() + i + 4, vcvtq_f32_s32(vmovl_s16(vget_high_s16(sv16))));
+    }
+#elif defined(__AVX2__)
+    for (; i < total8; i += 8) {
+      const __m128i sv   = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(trits.data() + i));
+      _mm256_storeu_ps(out.data() + i, _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(sv)));
+    }
+#endif
+    for (; i < total; ++i) {
       out[i] = static_cast<float>(trits[i]);
     }
   }
@@ -814,26 +832,20 @@ std::optional<t81::T729DynamicTensor> native_tensor_twembed_direct(
       continue;
     }
 
+    // Decode base-3 limb: digit {0,1,2} → {-1,0,+1} via branchless lookup.
+    // The decode is inherently serial (each quotient feeds the next division),
+    // but the lookup eliminates the branch per trit.
+    static constexpr float kDigitToTrit[3] = {-1.0f, 0.0f, 1.0f};
     std::vector<float> block(count, 0.0f);
     uint64_t val = limb;
     for (int i = 47; i >= 0; --i) {
       const uint64_t digit = val % 3;
       val /= 3;
-      if (static_cast<std::size_t>(i) >= count) {
-        continue;
+      if (digit > 2) {
+        return std::nullopt;
       }
-      switch (digit) {
-        case 0:
-          block[static_cast<std::size_t>(i)] = -1.0f;
-          break;
-        case 1:
-          block[static_cast<std::size_t>(i)] = 0.0f;
-          break;
-        case 2:
-          block[static_cast<std::size_t>(i)] = 1.0f;
-          break;
-        default:
-          return std::nullopt;
+      if (static_cast<std::size_t>(i) < count) {
+        block[static_cast<std::size_t>(i)] = kDigitToTrit[digit];
       }
     }
 
