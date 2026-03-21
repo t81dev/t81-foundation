@@ -121,7 +121,11 @@ build_dpe/
 .t81_canonfs/
 logs/
 artifacts/
-benchmarks/results/
+benchmarks/results/*
+!benchmarks/results/*.md
+!benchmarks/results/archive/
+benchmarks/results/archive/*
+!benchmarks/results/archive/*.md
 benchmark*.txt
 dummy.*
 generate_dummy_safetensors

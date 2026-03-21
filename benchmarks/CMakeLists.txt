@@ -41,6 +41,7 @@ set(BENCHMARK_SUITE_SOURCES
     BM_VMSimulation.cpp
     BM_DeterminismValidation.cpp  # RFC-00A2: determinism validation
     BM_GovernedWorkflows.cpp
+    BM_InferenceComparison.cpp    # ternary vs FP32/FP16 inference comparison
 )
 if(T81_ENABLE_DPE)
     list(APPEND BENCHMARK_SUITE_SOURCES BM_DPE.cpp)
