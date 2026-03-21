@@ -65,6 +65,17 @@ before-build = "pip install cmake ninja"
 
 test-command = "python -c \"import t81; assert t81.compile_and_run('fn main() -> i32 { return 1; }') == 1\""
 
+# ── Linux: manylinux_2_28 + GCC 13 ───────────────────────────────────────────
+# manylinux2014 ships GCC 10 which does not support cxx_std_23.
+# manylinux_2_28 (AlmaLinux 8) ships GCC 12; gcc-toolset-13 adds GCC 13
+# which fully supports C++23 as required by T81.
+# CC/CXX must be set explicitly so CMake picks up the toolset compiler.
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image  = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+before-all = "dnf install -y gcc-toolset-13 gcc-toolset-13-gcc-c++ gcc-toolset-13-libstdc++-devel"
+environment = {CC = "/opt/rh/gcc-toolset-13/root/usr/bin/gcc", CXX = "/opt/rh/gcc-toolset-13/root/usr/bin/g++"}
+
 # Per-platform arch is controlled by CIBW_ARCHS in the workflow matrix,
 # one runner per architecture, to avoid cross-compilation failures.
 
