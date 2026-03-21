@@ -140,6 +140,42 @@ Interpretation note:
   should not be presented as an isolated storage-layer overhead claim because
   the opcode path still differs.
 
+## Inference comparison benchmarks
+
+`BM_InferenceComparison.cpp` compares T81 ternary inference ops against FP32
+and simulated FP16 baselines across four operation classes:
+
+| Benchmark family                             | What it measures                             |
+| -------------------------------------------- | -------------------------------------------- |
+| `BM_DotProduct_{FP32,FP16Sim,T81Ternary}`    | Dot product throughput vs N                  |
+| `BM_MatMul_{FP32,FP16Sim,T81Ternary}`        | N×N matrix multiply throughput vs N          |
+| `BM_Attention_{FP32,T81Ternary}`             | Scaled dot-product attention vs seq length   |
+| `BM_WeightLoad_{FP32,FP16Sim,TernaryPacked}` | Memory bytes per weight element              |
+
+The ternary path uses the ops-layer reference implementation (`t81::ops::ternaccum`,
+`t81::ops::twmatmul`, `t81::ops::tattn`) — weights are constrained to {-1, 0, +1}
+and every multiply is replaced by a conditional ADD/SUB.  Memory efficiency:
+
+| Format           | Bytes/weight   |
+| ---------------- | -------------- |
+| FP32             | 4              |
+| FP16             | 2              |
+| Ternary (packed) | ~0.25 (2 bits) |
+
+Results are committed automatically by the `inference-bench` workflow to
+[`benchmarks/results/inference_comparison.md`](results/inference_comparison.md).
+
+Run locally:
+
+```bash
+cmake --build build --target benchmark_runner --parallel
+./build/benchmarks/benchmark_runner \
+  --benchmark_filter='^BM_(DotProduct|MatMul|Attention|WeightLoad)_' \
+  --benchmark_format=json \
+  --benchmark_out=inference-bench.json
+```
+
 ## Reporting
 - Benchmark outputs feed `docs/reference/benchmarks.md` in the current workflow.
 - Keep benchmark names stable when possible to preserve historical comparability.
+- Inference comparison results: [`benchmarks/results/inference_comparison.md`](results/inference_comparison.md)

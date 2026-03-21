@@ -1,0 +1,260 @@
+# .github/workflows/inference-bench.yml
+#
+# Reproducible Inference Benchmark — T81 ternary vs FP32/FP16 baselines
+#
+# Runs BM_InferenceComparison on every push to main, on release tags, and on
+# demand.  Parses the JSON output and commits a human-readable markdown table
+# to benchmarks/results/inference_comparison.md so results are always in sync
+# with the code that produced them.
+#
+# Trigger:
+#   - push to main (filter: benchmarks/** or include/t81/tensor/**)
+#   - any v*.*.* release tag
+#   - workflow_dispatch
+
+name: Inference Benchmark
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'benchmarks/BM_InferenceComparison.cpp'
+      - 'include/t81/tensor/ternary_native.hpp'
+      - 'include/t81/tensor.hpp'
+      - 'src/tensor/**'
+  tags:
+    - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: inference-bench
+  cancel-in-progress: true
+
+jobs:
+  inference-bench:
+    name: Inference comparison · ubuntu-24.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ninja-build
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DT81_BUILD_BENCHMARKS=ON
+          -DT81_BUILD_TESTS=OFF
+          -DT81_BUILD_EXAMPLES=OFF
+          -DT81_BUILD_FUZZ_TESTS=OFF
+          -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG"
+
+      - name: Build benchmark runner
+        run: cmake --build build --target benchmark_runner --parallel
+
+      - name: Run inference comparison benchmarks
+        run: |
+          ./build/benchmarks/benchmark_runner \
+            --benchmark_filter='^BM_(DotProduct|MatMul|Attention|WeightLoad)_' \
+            --benchmark_min_time=0.1s \
+            --benchmark_format=json \
+            --benchmark_out=inference-bench.json
+
+      - name: Generate markdown results table
+        run: |
+          python3 - <<'PY'
+          import json
+          import math
+          import datetime
+          from pathlib import Path
+
+          data = json.loads(Path("inference-bench.json").read_text(encoding="utf-8"))
+          ctx  = data.get("context", {})
+
+          runner_cpu = ctx.get("cpu_scaling_enabled", "N/A")
+          host_name  = ctx.get("host_name", "ubuntu-24.04")
+          num_cpus   = ctx.get("num_cpus", "?")
+          mhz        = ctx.get("mhz_per_cpu", "?")
+          date_str   = datetime.date.today().isoformat()
+          git_hash   = ""
+          try:
+              import subprocess
+              git_hash = subprocess.check_output(
+                  ["git", "rev-parse", "--short", "HEAD"], text=True
+              ).strip()
+          except Exception:
+              pass
+
+          benches = {b["name"]: b for b in data.get("benchmarks", [])}
+
+          def items_per_sec(name):
+              b = benches.get(name, {})
+              v = b.get("items_per_second", 0.0)
+              return float(v) if v and math.isfinite(float(v)) else None
+
+          def ns(name):
+              b = benches.get(name, {})
+              v = b.get("real_time", 0.0)
+              return float(v) if v else None
+
+          def fmt_ops(v):
+              if v is None: return "N/A"
+              if v >= 1e9: return f"{v/1e9:.2f} Gops/s"
+              if v >= 1e6: return f"{v/1e6:.2f} Mops/s"
+              if v >= 1e3: return f"{v/1e3:.2f} Kops/s"
+              return f"{v:.0f} ops/s"
+
+          def speedup(t81_val, base_val):
+              if t81_val is None or base_val is None or t81_val == 0: return "N/A"
+              r = t81_val / base_val
+              return f"{r:.2f}x"
+
+          lines = []
+          lines.append(f"# Inference Comparison Benchmark Results")
+          lines.append(f"")
+          lines.append(f"**Generated:** {date_str}  ")
+          if git_hash:
+              lines.append(f"**Commit:** `{git_hash}`  ")
+          lines.append(f"**Runner:** {host_name} · {num_cpus} CPUs @ {mhz} MHz  ")
+          lines.append(f"**Build:** Release · `-O3 -march=native`")
+          lines.append(f"")
+          lines.append(
+              "> Throughput in weight-elements/second (higher is better).  "
+          )
+          lines.append(
+              "> T81 ternary uses the ops-layer reference path (no multiply, conditional ADD/SUB only)."
+          )
+          lines.append(f"")
+
+          # ── Dot product ──────────────────────────────────────────────────────
+          lines.append(f"## Dot Product")
+          lines.append(f"")
+          lines.append(f"| Size (N) | FP32 | FP16-sim | T81 Ternary | T81 vs FP32 | T81 vs FP16 |")
+          lines.append(f"|----------|------|----------|-------------|-------------|-------------|")
+          for n in [64, 256, 1024, 4096, 16384]:
+              fp32 = items_per_sec(f"BM_DotProduct_FP32/{n}")
+              fp16 = items_per_sec(f"BM_DotProduct_FP16Sim/{n}")
+              t81  = items_per_sec(f"BM_DotProduct_T81Ternary/{n}")
+              lines.append(
+                  f"| {n:,} | {fmt_ops(fp32)} | {fmt_ops(fp16)} | {fmt_ops(t81)} "
+                  f"| {speedup(t81, fp32)} | {speedup(t81, fp16)} |"
+              )
+          lines.append(f"")
+
+          # ── Matrix multiply ──────────────────────────────────────────────────
+          lines.append(f"## Matrix Multiply (N×N)")
+          lines.append(f"")
+          lines.append(f"| N | FP32 | FP16-sim | T81 Ternary | T81 vs FP32 | T81 vs FP16 |")
+          lines.append(f"|---|------|----------|-------------|-------------|-------------|")
+          for n in [64, 128, 256, 512]:
+              fp32 = items_per_sec(f"BM_MatMul_FP32/{n}")
+              fp16 = items_per_sec(f"BM_MatMul_FP16Sim/{n}")
+              t81  = items_per_sec(f"BM_MatMul_T81Ternary/{n}")
+              lines.append(
+                  f"| {n} | {fmt_ops(fp32)} | {fmt_ops(fp16)} | {fmt_ops(t81)} "
+                  f"| {speedup(t81, fp32)} | {speedup(t81, fp16)} |"
+              )
+          lines.append(f"")
+
+          # ── Attention ────────────────────────────────────────────────────────
+          lines.append(f"## Scaled Dot-Product Attention (head_dim=64)")
+          lines.append(f"")
+          lines.append(f"| Seq len | FP32 | T81 Ternary | T81 vs FP32 |")
+          lines.append(f"|---------|------|-------------|-------------|")
+          for seq in [32, 64, 128]:
+              fp32 = items_per_sec(f"BM_Attention_FP32/{seq}")
+              t81  = items_per_sec(f"BM_Attention_T81Ternary/{seq}")
+              lines.append(
+                  f"| {seq} | {fmt_ops(fp32)} | {fmt_ops(t81)} | {speedup(t81, fp32)} |"
+              )
+          lines.append(f"")
+
+          # ── Weight loading ───────────────────────────────────────────────────
+          lines.append(f"## Weight Loading Memory Efficiency")
+          lines.append(f"")
+          lines.append(
+              f"| Weights (N) | FP32 bytes | FP16 bytes | Ternary bytes | "
+              f"FP16/FP32 ratio | Ternary/FP32 ratio |"
+          )
+          lines.append(
+              f"|-------------|------------|------------|---------------|"
+              f"-----------------|-------------------|"
+          )
+          for n in [1024, 65536, 1048576]:
+              b = benches.get(f"BM_WeightLoad_FP32/{n}", {})
+              fp32_bytes = b.get("weight_bytes_fp32", None)
+              fp16_bytes = benches.get(f"BM_WeightLoad_FP16Sim/{n}", {}).get("weight_bytes_fp16", None)
+              tern_bytes = benches.get(f"BM_WeightLoad_TernaryPacked/{n}", {}).get("weight_bytes_ternary", None)
+
+              def ratio(num, denom):
+                  if num and denom and float(denom) > 0:
+                      return f"{float(num)/float(denom):.2f}x"
+                  return "N/A"
+
+              lines.append(
+                  f"| {n:,} | {fp32_bytes or 'N/A'} | {fp16_bytes or 'N/A'} | {tern_bytes or 'N/A'} "
+                  f"| {ratio(fp16_bytes, fp32_bytes)} | {ratio(tern_bytes, fp32_bytes)} |"
+              )
+          lines.append(f"")
+
+          # ── Methodology note ─────────────────────────────────────────────────
+          lines.append(f"## Methodology")
+          lines.append(f"")
+          lines.append(f"- **FP32:** Standard `float` multiply-accumulate via `std::inner_product`.")
+          lines.append(
+              f"- **FP16-sim:** Weights stored as `uint16_t` (IEEE 754 half), promoted to `float` "
+              f"before each multiply.  Represents realistic CPU FP16 inference without AVX-512 FP16 MACs."
+          )
+          lines.append(
+              f"- **T81 Ternary:** Ops-layer reference path — weights constrained to {{-1, 0, +1}}, "
+              f"multiply replaced by conditional ADD/SUB (`t81::ops::ternaccum`, `t81::ops::twmatmul`, "
+              f"`t81::ops::tattn`).  No floating-point multiplication is performed."
+          )
+          lines.append(f"- All benchmarks compiled with `-O3 -march=native`.")
+          lines.append(
+              f"- Results committed automatically by the `inference-bench` workflow on every "
+              f"qualifying push to `main` or release tag."
+          )
+          lines.append(f"")
+          lines.append(
+              f"For the VM-dispatch path (packed trit storage, TISC opcodes) see "
+              f"`BM_NativeWeightsExecution.cpp`."
+          )
+
+          out = "\n".join(lines) + "\n"
+          Path("benchmarks/results/inference_comparison.md").write_text(out, encoding="utf-8")
+          print("wrote benchmarks/results/inference_comparison.md")
+          PY
+
+      - name: Upload raw JSON artifact
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: inference-bench-json
+          path: inference-bench.json
+          retention-days: 30
+
+      - name: Commit results
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add benchmarks/results/inference_comparison.md
+          if git diff --cached --quiet; then
+            echo "no_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore(bench): refresh inference comparison results [ci skip]"
+            git push
+            echo "no_changes=false" >> "$GITHUB_OUTPUT"
+          fi
