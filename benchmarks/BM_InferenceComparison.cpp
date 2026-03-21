@@ -924,3 +924,93 @@ static void BM_TransformerLayer_Ternary(benchmark::State& state) {
   state.counters["seq_len"] = static_cast<double>(seq);
 }
 BENCHMARK(BM_TransformerLayer_Ternary)->Arg(32)->Arg(64)->Arg(128)->Repetitions(2);
+
+// ── Hybrid MLP transformer layer ──────────────────────────────────────────────
+// Attention projections (Q,K,V,O) use ternary weights (no multiply).
+// MLP projections (gate, up, down) use FP32 (compiler autovectorises to FMADD).
+//
+// Governance note: the hybrid path bypasses the ternary weight invariant for
+// MLP layers. In a production deployment, Axion policy must explicitly permit
+// Int8/FP32 dispatch on gate/up/down weight tensors. This benchmark quantifies
+// the throughput uplift; policy approval is required before enabling in
+// certified inference paths (RFC-0034 §4.2 activation-ceiling gate applies).
+
+static void BM_TransformerLayer_HybridMLP(benchmark::State& state) {
+  const int seq = static_cast<int>(state.range(0));
+
+  // Attention weights: ternary {-1,0,+1}
+  const auto wq    = make_ternary_weights(kDim * kKVDim);
+  const auto wk    = make_ternary_weights(kDim * kKVDim);
+  const auto wv    = make_ternary_weights(kDim * kKVDim);
+  const auto wo    = make_ternary_weights(kKVDim * kDim);
+  // MLP weights: float ternary values (FP32 path — same {-1,0,+1} distribution)
+  const auto wgate = make_ternary_weights(kDim * kMLPHid);
+  const auto wup   = make_ternary_weights(kDim * kMLPHid);
+  const auto wdown = make_ternary_weights(kMLPHid * kDim);
+
+  std::vector<float> x(static_cast<std::size_t>(seq * kDim), 0.5f);
+  std::vector<float> xn(static_cast<std::size_t>(seq * kDim));
+  std::vector<float> q(static_cast<std::size_t>(seq * kKVDim));
+  std::vector<float> k(static_cast<std::size_t>(seq * kKVDim));
+  std::vector<float> v(static_cast<std::size_t>(seq * kKVDim));
+  std::vector<float> scores(static_cast<std::size_t>(seq * seq));
+  std::vector<float> attn_out(static_cast<std::size_t>(seq * kKVDim));
+  std::vector<float> attn_proj(static_cast<std::size_t>(seq * kDim));
+  std::vector<float> gate_buf(static_cast<std::size_t>(seq * kMLPHid));
+  std::vector<float> up_buf(static_cast<std::size_t>(seq * kMLPHid));
+  std::vector<float> mlp_out(static_cast<std::size_t>(seq * kDim));
+
+  for (auto _ : state) {
+    // Attention: ternary Q/K/V/O projections
+    layer_norm(x, xn, seq, kDim);
+    matmul_ternary(xn, wq, q, seq, kDim, kKVDim);
+    matmul_ternary(xn, wk, k, seq, kDim, kKVDim);
+    matmul_ternary(xn, wv, v, seq, kDim, kKVDim);
+
+    const float scale = 1.0f / std::sqrt(static_cast<float>(kKVDim / kHeads));
+    std::fill(scores.begin(), scores.end(), 0.0f);
+    for (int i = 0; i < seq; ++i)
+      for (int j = 0; j < seq; ++j) {
+        float dot = 0.0f;
+        for (int d = 0; d < kKVDim; ++d) {
+          const int qi = static_cast<int>(q[static_cast<std::size_t>(i * kKVDim + d)]);
+          const int ki = static_cast<int>(k[static_cast<std::size_t>(j * kKVDim + d)]);
+          const int s  = qi * ki;
+          if (s > 0) dot += 1.0f;
+          else if (s < 0) dot -= 1.0f;
+        }
+        scores[static_cast<std::size_t>(i * seq + j)] = dot * scale;
+      }
+    softmax_rows(scores, seq, seq);
+
+    std::fill(attn_out.begin(), attn_out.end(), 0.0f);
+    for (int i = 0; i < seq; ++i)
+      for (int p = 0; p < seq; ++p) {
+        const float alpha = scores[static_cast<std::size_t>(i * seq + p)];
+        for (int d = 0; d < kKVDim; ++d)
+          attn_out[static_cast<std::size_t>(i * kKVDim + d)] +=
+              alpha * v[static_cast<std::size_t>(p * kKVDim + d)];
+      }
+
+    matmul_ternary(attn_out, wo, attn_proj, seq, kKVDim, kDim);
+    for (std::size_t i = 0; i < x.size(); ++i)
+      x[i] += attn_proj[i];
+
+    // MLP: FP32 gate/up/down (compiler autovectorises to FMADD)
+    layer_norm(x, xn, seq, kDim);
+    matmul_fp32(xn, wgate, gate_buf, seq, kDim, kMLPHid);
+    matmul_fp32(xn, wup,   up_buf,   seq, kDim, kMLPHid);
+    for (std::size_t i = 0; i < gate_buf.size(); ++i)
+      gate_buf[i] = silu(gate_buf[i]) * up_buf[i];
+    matmul_fp32(gate_buf, wdown, mlp_out, seq, kMLPHid, kDim);
+    for (std::size_t i = 0; i < x.size(); ++i)
+      x[i] += mlp_out[i];
+
+    benchmark::DoNotOptimize(x.data());
+    benchmark::ClobberMemory();
+  }
+  state.SetItemsProcessed(state.iterations() * seq);
+  state.SetLabel("path=hybrid-mlp; attn=ternary mlp=fp32; dim=256 mlp=512 heads=4");
+  state.counters["seq_len"] = static_cast<double>(seq);
+}
+BENCHMARK(BM_TransformerLayer_HybridMLP)->Arg(32)->Arg(64)->Arg(128)->Repetitions(2);

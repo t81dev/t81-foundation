@@ -28,6 +28,13 @@ option(T81_RUN_FRONTEND_FUZZ_IN_CTEST "Run frontend fuzz target via ctest matrix
 option(T81_ENABLE_LIBFUZZER "Link fuzz_parser/fuzz_vm with libFuzzer driver (-fsanitize=fuzzer); requires Clang with libFuzzer support" OFF)
 option(T81_ENABLE_ASAN "Enable AddressSanitizer for supported compilers" OFF)
 option(T81_ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer for supported compilers" OFF)
+# T81_HYBRID_MLP: route MLP projections (gate/up/down) through FP32 FMADD
+# instead of ternary cmp+sel, keeping attention projections (Q/K/V/O) ternary.
+# Throughput uplift: ~3× on MLP layers; compiler autovectorises to FMADD.
+# GOVERNANCE: bypasses the ternary weight invariant for MLP layers.
+# Axion policy must explicitly permit FP32 dispatch on gate/up/down tensors.
+# Not suitable for RFC-0034-certified deployments without policy approval.
+option(T81_HYBRID_MLP "FP32 MLP projections + ternary attention (throughput; requires Axion policy)" OFF)
 option(T81_USE_CXX23 "Build with C++23 language mode (fallback: C++20)" ON)
 option(T81_TRITWISE_PROFILE "Enable profiling for tritwise operations" OFF)
 option(T81_STRICT_DETERMINISTIC_FLOAT "Use deterministic float math paths where available" ON)

@@ -934,78 +934,120 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
     return std::nullopt;
   }
 
-  // Loop order: i → p → j
-  //   - Sequential activation access: act_vals[i*k + 0], [i*k + 1], ...
-  //   - Sequential weight row access: weight_trits[p*n + 0], [p*n + 1], ...
-  //   - Output row out[i*n..] stays warm in L1 across the full p reduction
-  // Previously p→i→j: strided activation access + output reloaded each p step.
+  // Two-level tiling: L2 P-block → output-row (L1) → j SIMD.
+  //
+  // Without P-blocking: for large K, each i-row reloads weight rows from L3.
+  // With PB=256: the block weight_trits[p0..p0+PB][*] (PB×N bytes) is shared
+  // across all M rows within the block, amortising the L3 load cost by M.
+  //
+  // Inner j loop: 16-wide unroll (NEON: 4 × float32x4_t; AVX2: 2 × __m256).
+  // Four independent accumulator chains improve ILP on dual-issue SIMD FUs.
+  // Prefetch hint pulls the next weight row into L2 one step ahead.
   std::vector<float> out(static_cast<std::size_t>(m) * static_cast<std::size_t>(n), 0.0f);
+  const int PB = std::min(k, 256);  // L2 block size over reduction axis
 #if defined(__ARM_NEON)
-  const int n4 = (n / 4) * 4;  // 4-wide NEON lane count
+  const int n16 = (n / 16) * 16;   // 16-wide NEON (4 × float32x4_t)
+  const int n4  = (n /  4) *  4;   // 4-wide tail
 #elif defined(__AVX2__)
-  const int n8 = (n / 8) * 8;  // 8-wide AVX2 lane count
+  const int n16 = (n / 16) * 16;   // 16-wide AVX2 (2 × __m256)
+  const int n8  = (n /  8) *  8;   // 8-wide tail
 #endif
-  for (int i = 0; i < m; ++i) {
-    float* const orow = out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(n);
-    for (int p = 0; p < k; ++p) {
-      const float act_value =
-          act_vals[static_cast<std::size_t>(i) * static_cast<std::size_t>(k) +
-                   static_cast<std::size_t>(p)];
-      int av = 0;
-      if (exact_trit_activations) {
-        if (act_value == -1.0f) av = -1;
-        else if (act_value == 1.0f) av = 1;
-      } else {
-        av = t81::ops::ternary_detail::snap_trit(act_value);
-      }
-      if (av == 0) continue;
+  for (int p0 = 0; p0 < k; p0 += PB) {
+    const int pend = std::min(p0 + PB, k);
+    for (int i = 0; i < m; ++i) {
+      float* const orow =
+          out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(n);
+      for (int p = p0; p < pend; ++p) {
+        const float act_value =
+            act_vals[static_cast<std::size_t>(i) * static_cast<std::size_t>(k) +
+                     static_cast<std::size_t>(p)];
+        int av = 0;
+        if (exact_trit_activations) {
+          if (act_value == -1.0f) av = -1;
+          else if (act_value == 1.0f) av = 1;
+        } else {
+          av = t81::ops::ternary_detail::snap_trit(act_value);
+        }
+        if (av == 0) continue;
 
-      const std::int8_t* const wrow = weight_trits.data() +
-                                      static_cast<std::size_t>(p) *
-                                      static_cast<std::size_t>(n);
-      int j = 0;
+        const std::int8_t* const wrow =
+            weight_trits.data() + static_cast<std::size_t>(p) * static_cast<std::size_t>(n);
+        // Prefetch next weight row into L2 (read, L2 locality).
+        if (p + 1 < pend) {
+          __builtin_prefetch(wrow + n, 0, 2);
+        }
+        int j = 0;
 #ifdef __ARM_NEON
-      // 4-wide NEON: convert int8 trits to float, select ±av or 0.
-      // No vmulq_f32 — ternary constraint eliminates all multiplies.
-      const float32x4_t fav4  = vdupq_n_f32(static_cast<float>(av));
-      const float32x4_t fav4n = vnegq_f32(fav4);
-      const float32x4_t zero4 = vdupq_n_f32(0.0f);
-      for (; j < n4; j += 4) {
-        // int8x8 → int16x8 → int32x4 → float32x4
-        const int8x8_t  wv8  = vld1_s8(wrow + j);
-        const int32x4_t wv32 = vmovl_s16(vget_low_s16(vmovl_s8(wv8)));
-        const float32x4_t wf = vcvtq_f32_s32(wv32);
-        const uint32x4_t pos = vcgtq_f32(wf, zero4);
-        const uint32x4_t neg = vcltq_f32(wf, zero4);
-        float32x4_t ov = vld1q_f32(orow + j);
-        ov = vaddq_f32(ov, vbslq_f32(pos, fav4, vbslq_f32(neg, fav4n, zero4)));
-        vst1q_f32(orow + j, ov);
-      }
+        // No vmulq_f32 — ternary constraint eliminates all multiplies.
+        const float32x4_t fav4  = vdupq_n_f32(static_cast<float>(av));
+        const float32x4_t fav4n = vnegq_f32(fav4);
+        const float32x4_t zero4 = vdupq_n_f32(0.0f);
+// Select ±av or 0 from a float32x4_t trit vector.
+#define T81_TERN_SEL(wf_) \
+        vbslq_f32(vcgtq_f32((wf_), zero4), fav4, \
+                  vbslq_f32(vcltq_f32((wf_), zero4), fav4n, zero4))
+        // 16-wide: 2 int8x8 loads → 4 float32x4 groups, 4 independent chains.
+        for (; j < n16; j += 16) {
+          const int16x8_t wv16_lo = vmovl_s8(vld1_s8(wrow + j));
+          const int16x8_t wv16_hi = vmovl_s8(vld1_s8(wrow + j + 8));
+          const float32x4_t wf0 = vcvtq_f32_s32(vmovl_s16(vget_low_s16 (wv16_lo)));
+          const float32x4_t wf1 = vcvtq_f32_s32(vmovl_s16(vget_high_s16(wv16_lo)));
+          const float32x4_t wf2 = vcvtq_f32_s32(vmovl_s16(vget_low_s16 (wv16_hi)));
+          const float32x4_t wf3 = vcvtq_f32_s32(vmovl_s16(vget_high_s16(wv16_hi)));
+          float32x4_t ov0 = vld1q_f32(orow + j);
+          float32x4_t ov1 = vld1q_f32(orow + j +  4);
+          float32x4_t ov2 = vld1q_f32(orow + j +  8);
+          float32x4_t ov3 = vld1q_f32(orow + j + 12);
+          ov0 = vaddq_f32(ov0, T81_TERN_SEL(wf0));
+          ov1 = vaddq_f32(ov1, T81_TERN_SEL(wf1));
+          ov2 = vaddq_f32(ov2, T81_TERN_SEL(wf2));
+          ov3 = vaddq_f32(ov3, T81_TERN_SEL(wf3));
+          vst1q_f32(orow + j,      ov0);
+          vst1q_f32(orow + j +  4, ov1);
+          vst1q_f32(orow + j +  8, ov2);
+          vst1q_f32(orow + j + 12, ov3);
+        }
+        // 4-wide tail
+        for (; j < n4; j += 4) {
+          const float32x4_t wf = vcvtq_f32_s32(vmovl_s16(
+              vget_low_s16(vmovl_s8(vld1_s8(wrow + j)))));
+          float32x4_t ov = vld1q_f32(orow + j);
+          vst1q_f32(orow + j, vaddq_f32(ov, T81_TERN_SEL(wf)));
+        }
+#undef T81_TERN_SEL
 #elif defined(__AVX2__)
-      // 8-wide AVX2: int8 trits → float, blendv select ±av or 0.
-      // No _mm256_mul_ps — ternary constraint eliminates all multiplies.
-      const __m256 fav8  = _mm256_set1_ps(static_cast<float>(av));
-      const __m256 fav8n = _mm256_sub_ps(_mm256_setzero_ps(), fav8);
-      const __m256 zero8 = _mm256_setzero_ps();
-      for (; j < n8; j += 8) {
-        // Load 8 int8 trits, sign-extend to int32, convert to float
-        const __m128i wv8i = _mm_loadl_epi64(
-            reinterpret_cast<const __m128i*>(wrow + j));
-        const __m256i wv32 = _mm256_cvtepi8_epi32(wv8i);
-        const __m256  wf   = _mm256_cvtepi32_ps(wv32);
-        const __m256  pos  = _mm256_cmp_ps(wf, zero8, _CMP_GT_OQ);
-        const __m256  neg  = _mm256_cmp_ps(wf, zero8, _CMP_LT_OQ);
-        // contrib = pos ? +av : (neg ? -av : 0)
-        const __m256 contrib = _mm256_blendv_ps(
-            _mm256_blendv_ps(zero8, fav8n, neg), fav8, pos);
-        __m256 ov = _mm256_loadu_ps(orow + j);
-        ov = _mm256_add_ps(ov, contrib);
-        _mm256_storeu_ps(orow + j, ov);
-      }
+        // No _mm256_mul_ps — ternary constraint eliminates all multiplies.
+        const __m256 fav8  = _mm256_set1_ps(static_cast<float>(av));
+        const __m256 fav8n = _mm256_sub_ps(_mm256_setzero_ps(), fav8);
+        const __m256 zero8 = _mm256_setzero_ps();
+#define T81_AVX_SEL(wf_) \
+        _mm256_blendv_ps( \
+          _mm256_blendv_ps(zero8, fav8n, _mm256_cmp_ps((wf_), zero8, _CMP_LT_OQ)), \
+          fav8, _mm256_cmp_ps((wf_), zero8, _CMP_GT_OQ))
+        // 16-wide: 2 × 8-wide AVX2 groups, 2 independent accumulator chains.
+        for (; j < n16; j += 16) {
+          const __m256 wf0 = _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(
+              _mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j))));
+          const __m256 wf1 = _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(
+              _mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j + 8))));
+          __m256 ov0 = _mm256_loadu_ps(orow + j);
+          __m256 ov1 = _mm256_loadu_ps(orow + j + 8);
+          _mm256_storeu_ps(orow + j,     _mm256_add_ps(ov0, T81_AVX_SEL(wf0)));
+          _mm256_storeu_ps(orow + j + 8, _mm256_add_ps(ov1, T81_AVX_SEL(wf1)));
+        }
+        // 8-wide tail
+        for (; j < n8; j += 8) {
+          const __m256 wf = _mm256_cvtepi32_ps(_mm256_cvtepi8_epi32(
+              _mm_loadl_epi64(reinterpret_cast<const __m128i*>(wrow + j))));
+          __m256 ov = _mm256_loadu_ps(orow + j);
+          _mm256_storeu_ps(orow + j, _mm256_add_ps(ov, T81_AVX_SEL(wf)));
+        }
+#undef T81_AVX_SEL
 #endif
-      for (; j < n; ++j) {
-        const int wt = static_cast<int>(wrow[static_cast<std::size_t>(j)]);
-        if (wt != 0) orow[static_cast<std::size_t>(j)] += static_cast<float>(wt * av);
+        for (; j < n; ++j) {
+          const int wt = static_cast<int>(wrow[static_cast<std::size_t>(j)]);
+          if (wt != 0) orow[static_cast<std::size_t>(j)] += static_cast<float>(wt * av);
+        }
       }
     }
   }
