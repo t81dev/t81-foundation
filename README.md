@@ -16,9 +16,9 @@
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
-**AI inference you can govern and audit. Bit-exact reproducibility you can prove. Matrix multiply replaced by addition.**
+**T81 is a ternary operating system for AI.**
 
-T81 is a virtual machine, instruction set, and compiler stack built on balanced ternary arithmetic {−1, 0, +1}. It intercepts every AI operation before side effects, produces canonical trace hashes that are bit-identical across platforms, and replaces floating-point matmul with addition-only ternary ops — 15–60× lower power than FP16 baselines.
+Every model you load runs inside a governed, deterministic runtime. The kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matmul with addition — no multiply unit required. Any AI expressible in ternary weights runs here: verifiably, reproducibly, and under explicit policy control.
 
 ```sh
 curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
@@ -28,7 +28,7 @@ curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/ins
 
 ## Table of Contents
 
-- [Three problems, one stack](#three-problems-one-stack)
+- [The OS that AI was missing](#the-os-that-ai-was-missing)
 - [Get T81](#get-t81)
 - [What T81Lang looks like](#what-t81lang-looks-like)
 - [Status](#status)
@@ -42,9 +42,11 @@ curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/ins
 
 ---
 
-## Three problems, one stack
+## The OS that AI was missing
 
-### 1. AI operations need governance, not hope
+Binary operating systems give AI agents a process slot and a filesystem. That's it. They cannot tell you whether an inference was bit-exact, which policy authorized a model load, or whether the weights on disk are the weights that ran. T81 closes that gap — not by layering tooling on top of an existing OS, but by building the kernel, ISA, filesystem, and process model that AI-native computing requires.
+
+### 1. A kernel that governs every AI operation before side effects
 
 When an AI agent takes an action today, there is typically no mechanism to verify *after the fact* what it computed, which policy it applied, or whether the result was altered. T81 fixes this at the instruction level.
 
@@ -62,11 +64,11 @@ t81 code run inference.t81 --policy secure_model.apl
 # Axion: DENY   infer  model=sha3:deadbeef…  reason=unapproved-model
 ```
 
-### 2. "Same model, same data" should mean identical output, always
+### 2. Reproducibility as a kernel invariant, not tooling discipline
 
 IEEE 754 floating-point is inherently platform-sensitive: rounding modes differ, denormal handling varies, FMA availability changes results. AI workloads built on it cannot be reproduced or audited with certainty.
 
-Balanced ternary arithmetic is symmetric around zero. Rounding is truncation — no directional bias, no platform-specific drift. T81's deterministic surfaces produce **CanonHash81 trace hashes that are bit-identical** across every supported platform, verified on every CI run.
+Balanced ternary arithmetic is symmetric around zero. Rounding is truncation — no directional bias, no platform-specific drift. T81's deterministic surfaces produce **CanonHash81 trace hashes that are bit-identical** across every supported platform, verified on every CI run. This is not a property that can be bolted on; it is a consequence of the ISA design.
 
 ```sh
 t81 determinism verify-run program.tisc
@@ -77,7 +79,7 @@ t81 determinism verify-run program.tisc
 
 Verified platforms: **Linux x86\_64**, **macOS ARM64**. Any divergence on a governed deterministic surface is treated as a critical defect.
 
-### 3. Neural inference should not require a multiply unit
+### 3. An ISA native to ternary weights — no multiply unit required
 
 Ternary weights {−1, 0, +1} have no fractional component. A dot product over them is a series of conditional add/subtract operations — no multiply required. T81 ships six TISC opcodes that exploit this directly:
 
@@ -223,43 +225,55 @@ Surface classifications follow RFC-0048. Governed non-DCP and experimental surfa
 
 ## Architecture
 
+T81 is an OS. Every component has an analogue in traditional OS design — built from scratch for ternary semantics and AI-native workloads.
+
+| T81 component | OS analogue | Role |
+| :--- | :--- | :--- |
+| **TISC ISA** | Instruction set (RISC-V, ARM) | Frozen execution contract; all software compiles to it |
+| **T81VM** | Kernel execution engine | Deterministic TISC interpreter; Axion fires on every opcode |
+| **Axion Governance Kernel** | Security kernel (built-in, not bolted-on) | Fail-closed policy before every side effect; audit-anchored |
+| **CanonFS** | Filesystem | Content-addressed, immutable; model weights verified by hash |
+| **T81Lang** | System programming language | Compiles to TISC; `agent`/`behavior` are the process model |
+| **Agent / Behavior** | Process model | An agent is a process; a behavior is its `main()` |
+| **Cognitive Tiers** | Privilege ring hierarchy | Tier 1 (symbolic) → Tier 5 (distributed); governance-bounded |
+| **DPE** | Scheduler | Deterministic task graph; epoch-commit atomicity |
+
 ```text
 ┌─────────────────────────────────────────────────────────────┐
 │  Interfaces                                                 │
 │  t81 studio (Human TUI)   t81 agent (AI-Native TUI)  CLI    │
 ├─────────────────────────────────────────────────────────────┤
-│  T81Lang Compiler                                           │
+│  T81Lang  — system language                                 │
 │  Lexer → Parser → Typed AST → Semantic Analyzer → IRGen     │
 │  agent/behavior (RFC-0015)  ·  foreign {} (RFC-0036)        │
 ├─────────────────────────────────────────────────────────────┤
-│  Axion Governance Kernel                                    │
+│  Axion Governance Kernel  — security kernel                 │
 │  PolicyEngine · CanonFS · Audit Trail · Ethics Gate         │
 ├──────────────────────────────┬──────────────────────────────┤
-│  T81 Virtual Machine         │  DPE Task Graph Runtime      │
+│  T81VM  — execution engine   │  DPE  — scheduler            │
 │  TISC interpreter            │  EpochGraph · DeltaBuffer    │
 │  (deterministic)             │  (RFC-DPE-0002)              │
 ├──────────────────────────────┴──────────────────────────────┤
 │  TISC ISA v1.9.0  ❄️ Frozen  +  Data Types  ❄️ Frozen       │
-│  Deterministic substrate — CanonHash81 bit-exact traces     │
+│  CanonHash81 bit-exact traces across all platforms          │
 ├─────────────────────────────────────────────────────────────┤
 │  Governed FFI (RFC-00B8)  ·  Ternary-Native Inference       │
-│  FFIDispatcher · FFILibraryRegistry                         │
 │  TWMATMUL · TQUANT · TATTN · TWEMBED · TERNACCUM · TACT     │
 └─────────────────────────────────────────────────────────────┘
   Experimental: TernaryOS · Cognitive Tiers
 ```
 
-**TISC ISA** — Frozen ternary instruction set. The immutable execution contract for the entire stack; all components above compile down to it.
+**TISC ISA** — The frozen instruction set. Every piece of software compiles to it. Opcode semantics and wire formats are immutable under v1.x; divergence is a critical defect.
 
-**T81VM** — Deterministic TISC interpreter. Axion pre-dispatch isolation keeps governance hooks outside the hot execution path; bit-identical output is guaranteed on verified surfaces.
+**T81VM** — The execution engine. Axion intercepts fire at the opcode dispatch boundary — before any side effect — keeping the governance path outside the hot interpreter loop.
 
-**Axion Governance Kernel** — Intercepts `AXREAD`, `AXSET`, `AXVERIFY`, AI opcodes, and FFI calls before any side effect. Fail-closed on policy parse failure; every event anchored to CanonFS.
+**Axion Governance Kernel** — The security kernel. Intercepts `AgentInvoke`, `AXREAD`, `AXSET`, `AXVERIFY`, inference opcodes, and FFI calls before any side effect. Fail-closed on policy parse failure; every event committed to CanonFS. An agent possesses no capabilities by default — every action requires explicit policy authorization.
 
-**CanonFS** — Content-addressed filesystem. Code objects, model weights, and runtime artifacts are stored as immutable, hash-identified blobs, providing provenance for determinism audits.
+**CanonFS** — The filesystem. Model weights, code objects, and runtime artifacts are stored as immutable, hash-identified blobs. The Axion kernel verifies that the weights a model loads match the hash in the governing policy, eliminating model-swap attacks at the OS level.
 
-**T81Lang** — High-level language targeting TISC bytecode. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`, `Option`, `Result`. `agent`/`behavior` declarations lower to `AgentInvoke`; `foreign {}` blocks lower to `FFICall`.
+**T81Lang** — The system programming language. Native types: `BigInt`, `Fraction`, `Float`, `Complex`, `Tensor`, `Map`, `Set`, `Option`, `Result`. `agent`/`behavior` declarations are the process model — an agent is a first-class process; a behavior is its entry point. They lower to `AgentInvoke` in TISC. `foreign {}` blocks lower to `FFICall` (RFC-00B8).
 
-**DPE** — Task graph parallelism over the frozen ISA. Tasks declare immutable inputs; the VM commits all writes atomically at epoch end. No new opcodes required.
+**DPE** — The scheduler. Tasks declare immutable inputs; the VM commits all writes atomically at epoch end. Deterministic parallelism over the frozen ISA — no new opcodes required.
 
 ---
 

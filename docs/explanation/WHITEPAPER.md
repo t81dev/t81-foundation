@@ -1,6 +1,16 @@
-# **The T81 Foundation White Paper: A Deterministic Ternary Architecture for Verifiable Cognitive Systems**
+# **The T81 Foundation White Paper: A Ternary Operating System for AI**
 
-The rapid expansion of decentralized autonomous agents and the pervasive integration of large-scale artificial intelligence models into critical infrastructure have exposed a fundamental fragility in the prevailing binary computational paradigm. As of early 2026, the industry faces a convergence of three systemic risks: the non-deterministic nature of floating-point arithmetic across heterogeneous hardware, the unsustainable energy trajectory of dense matrix operations, and the vulnerability of classical security models to both quantum adversaries and self-modifying autonomous code.1 The T81 Foundation addresses these challenges through a comprehensive re-architecting of the computational stack, moving away from the binary bit in favor of the balanced ternary trit and replacing statistical execution with a root invariant of bit-exact reproducibility.1
+## **What T81 Is**
+
+T81 is a ternary operating system designed to host AI agents alongside their users. Its kernel intercepts every AI operation before any side effect. Its filesystem stores models and artifacts as immutable, content-addressed blobs whose integrity is verified at load time. Its instruction set replaces floating-point matrix multiply with addition, and its process model — the `agent`/`behavior` construct — makes an AI agent a first-class citizen of the execution environment, not a library call inside a binary process.
+
+The vision is simple: any model expressible in ternary weights should be loadable into T81, policy-gated by the Axion Governance Kernel, and run with bit-exact reproducibility across every supported platform. The user and the AI share the same governed environment. Every action the AI takes is auditable after the fact because it was intercepted before the fact.
+
+Binary operating systems — Linux, macOS, Windows — were not designed for this. They provide a process slot and a filesystem. They cannot tell you whether an inference was bit-exact, whether the policy authorizing a model load was cryptographically verified, or whether the weights that ran are the weights that were approved. T81 builds the layer that binary OSes omit.
+
+This paper describes the technical foundations of that layer: why balanced ternary is the right arithmetic substrate, how the TISC ISA encodes AI operations natively, how the Axion Governance Kernel enforces policy at the instruction boundary, and how CanonFS anchors the entire audit trail in an immutable, content-addressed store.
+
+---
 
 ## **The Mathematical Imperative for Balanced Ternary Logic**
 

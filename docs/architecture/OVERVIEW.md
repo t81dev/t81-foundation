@@ -13,7 +13,7 @@ Maturity: Mixed (`Frozen` core, `Experimental` periphery)
 
 ## Purpose
 
-Canonical architecture snapshot of implemented T81 boundaries and bounded determinism claim scope.
+T81 is a ternary operating system for AI. This document is the canonical architecture snapshot of its implemented components, layer boundaries, and bounded determinism claim scope.
 
 ## Layer Cake
 
@@ -30,6 +30,7 @@ flowchart TD
     X -. optional / non-DCP .-> V
     X -. optional / non-DCP .-> A
 ```
+
 Diagram source: [`diagrams/overview-layer-cake.mmd`](./diagrams/overview-layer-cake.mmd)
 
 ## Current State by Layer
@@ -45,10 +46,10 @@ Diagram source: [`diagrams/overview-layer-cake.mmd`](./diagrams/overview-layer-c
 
 ## Binary Host Execution Boundary
 
-T81 is a **ternary semantic architecture executed on binary hardware**. This is an intentional design choice, not a compromise.
-The platform implements native ternary semantics through a binary substrate compatibility layer:
-* **2-Bit Packed Trits**: Trits are packed using 2 bits per trit (0=N, 1=Z, 2=P), allowing 4 trits per byte, naturally aligning with binary storage.
-* **SWAR Vectorization**: Operations on these packed trits use SIMD Within A Register (SWAR) techniques, delivering extreme performance on modern x86 and ARM processors without sacrificing ternary correctness.
+T81 is a **ternary semantic architecture executed on binary hardware**. This is an intentional design choice, not a compromise. The platform implements native ternary semantics through a binary substrate compatibility layer:
+
+- **2-Bit Packed Trits**: Trits are packed using 2 bits per trit (0=N, 1=Z, 2=P), allowing 4 trits per byte, naturally aligning with binary storage.
+- **SWAR Vectorization**: Operations on these packed trits use SIMD Within A Register (SWAR) techniques, delivering extreme performance on modern x86 and ARM processors without sacrificing ternary correctness.
 
 ## Key Invariants
 
@@ -74,6 +75,7 @@ sequenceDiagram
     VM->>FS: guarded persistence/read paths (when invoked)
     VM-->>VM: trap or continue deterministically
 ```
+
 Diagram source: [`diagrams/governance-axion-sequence.mmd`](./diagrams/governance-axion-sequence.mmd)
 
 ## Indeterminate
