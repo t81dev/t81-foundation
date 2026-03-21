@@ -10,7 +10,7 @@
 # T81 Foundation
 
 ![Release](https://img.shields.io/badge/release-v1.9.2--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-404%2F404_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
@@ -277,14 +277,14 @@ git clone https://github.com/t81dev/t81-foundation.git
 cd t81-foundation
 cmake --preset default -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-ctest --test-dir build --output-on-failure   # 369 tests
+ctest --test-dir build --output-on-failure   # 404 tests
 ```
 
 ---
 
 ## Status
 
-v1.9.2 · 369/369 tests passing · Apache 2.0
+v1.9.2 · 404/404 tests passing · Apache 2.0
 
 The TISC ISA and core data types are **frozen** under v1.x — opcode semantics and wire formats will not change without a major version bump.
 
@@ -319,13 +319,30 @@ T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward 
 | **2. Kernel entry + HAL init** | PL011 UART, GICv3, ARM generic timer, VBAR_EL1 exception vectors installed | 95% |
 | **3. Memory / scheduler / interrupts** | Ternary page allocator, round-robin scheduler, interrupt dispatch, timer preemption | 90% |
 | **4. CanonFS mount** | Filesystem available to kernel; user-process syscall exposure and mount points | 40% |
-| **5. Shell / interactive prompt** | `ShellSession` class complete; missing: kernel-spawned shell process, interactive REPL | 15% |
+| **5. Shell / interactive prompt** | Boot banner + `t81>` prompt print on serial; missing: interactive read loop | 40% |
 | **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI idle | 100% |
-| | **Overall** | **~55%** |
+| | **Overall** | **~65%** |
 
-**Current state:** The kernel boots to a running event loop with hardware drivers initialized and a kernel thread (tid=1) spinning on WFI. Serial output is confirmed in prior Linux runs (`[axion] bare-metal EL1 kernel entry` / `ExitBootServices complete`). Apple Silicon QEMU has host-level serial capture constraints that mask output locally.
+**Current state:** The kernel boots, initializes hardware, prints a governance status banner, and lands at a `t81>` prompt on serial — all confirmed by PL011 output in the event loop. The expected serial sequence on a Linux QEMU run:
 
-**Critical path to clean boot:** kernel-spawned shell process → shell SVC dispatch → route stdout to PL011 → interactive read loop. All plumbing exists in `kernel_lifecycle.cpp`, `qemu_kernel_entry.cpp`, and `shell_session.cpp`; the pieces need wiring.
+```text
+[axion] QEMU virt AArch64 hardware init
+[axion] GICv3 online
+[axion] ARM timer armed
+
+  T81  --  Ternary OS for AI
+  ===========================
+
+[axion] policy engine: ready
+[axion] canonfs: offline (T81_CANONFS_ROOT unset)
+[axion] kernel thread tid=1: running
+
+t81>
+```
+
+Apple Silicon QEMU has host-level HVF serial capture constraints; the sequence above is from the code path and confirmed on Linux hosts.
+
+**Remaining to clean boot:** PL011 RX read loop wired to the kernel step function, so the prompt accepts and echoes input. `pl011_rx_ready()` and `pl011_getchar()` are implemented; the missing piece is the dispatch loop in `axion_kernel_step()`.
 
 **When Stage 5 reaches ~80%**, a CI job on `ubuntu-latest` will capture serial output on every push and embed the recording here.
 
