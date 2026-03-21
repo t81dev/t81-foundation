@@ -35,7 +35,7 @@ def main() -> int:
             '#include "t81/core/T81BigInt.hpp"\n#include "t81/core/T81Fraction.hpp"\n',
         )
         write(
-            scan_root / "src/python/t81_python.cpp",
+            scan_root / "lang/python/t81_python.cpp",
             '#include "t81/core/T81BigInt.hpp"\n',
         )
         # Canonical include path should pass.

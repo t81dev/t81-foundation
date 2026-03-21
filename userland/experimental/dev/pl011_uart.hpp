@@ -39,6 +39,8 @@ inline constexpr uint64_t kPl011RegLCRH  = 0x02C;  ///< Line control register
 inline constexpr uint64_t kPl011RegCR    = 0x030;  ///< Control register
 inline constexpr uint64_t kPl011RegIMSC  = 0x038;  ///< Interrupt mask set/clear
 
+/// UARTFR bit 4: RX FIFO empty.
+inline constexpr uint32_t kPl011FrRXFE = (1u << 4);
 /// UARTFR bit 5: TX FIFO full.
 inline constexpr uint32_t kPl011FrTXFF = (1u << 5);
 /// UARTFR bit 7: TX FIFO empty (all bytes shifted out).
@@ -86,5 +88,14 @@ void pl011_puts(uint64_t base, const char* s) noexcept;
 /// Wait until the TX FIFO is completely drained (TXFE set).
 /// Use before powering off or before ExitBootServices handoff.
 void pl011_flush(uint64_t base) noexcept;
+
+/// Return true if at least one byte is waiting in the RX FIFO.
+/// On hosted (non-AArch64) builds always returns false.
+bool pl011_rx_ready(uint64_t base) noexcept;
+
+/// Read one byte from the RX FIFO without blocking.
+/// Returns the byte value [0, 255] if data is available, or -1 if the RX
+/// FIFO is empty.  On hosted builds always returns -1.
+int pl011_getchar(uint64_t base) noexcept;
 
 }  // namespace t81::ternaryos::dev

@@ -111,4 +111,23 @@ void pl011_flush(uint64_t base) noexcept {
 #endif
 }
 
+bool pl011_rx_ready(uint64_t base) noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  return (mmio_read32(base + kPl011RegFR) & kPl011FrRXFE) == 0;
+#else
+  (void)base;
+  return false;
+#endif
+}
+
+int pl011_getchar(uint64_t base) noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  if (!pl011_rx_ready(base)) return -1;
+  return static_cast<int>(mmio_read32(base + kPl011RegDR) & 0xFFu);
+#else
+  (void)base;
+  return -1;
+#endif
+}
+
 }  // namespace t81::ternaryos::dev

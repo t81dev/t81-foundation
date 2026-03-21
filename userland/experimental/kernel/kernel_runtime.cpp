@@ -1,6 +1,7 @@
 #include "kernel_main.hpp"
 #include "../hal/aarch64_trap_entry.hpp"
 #include "../hal/qemu_kernel_entry.hpp"
+#include "../dev/pl011_uart.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -245,6 +246,10 @@ std::optional<ipc::CanonMessage> axion_kernel_ipc_recv(
 }
 
 int axion_kernel_main(const hal::BootContext& ctx) noexcept {
+  // On hosted (non-AArch64) builds route PL011 output to stdout so the boot
+  // sequence is visible when testing outside QEMU.
+  dev::pl011_set_host_sink(stdout);
+
   auto maybe_state = axion_kernel_bootstrap(ctx);
   if (!maybe_state.has_value()) return 1;
 
@@ -257,6 +262,26 @@ int axion_kernel_main(const hal::BootContext& ctx) noexcept {
   if (ctx.platform_id.rfind("qemu-aarch64:", 0) == 0) {
     hal::axion_kernel_set_kernel_state_for_trap_dispatch(&*maybe_state);
     hal::qemu_hardware_init();
+
+    // ── Boot banner ──────────────────────────────────────────────────────
+    // Printed after hardware init so PL011 FIFO is ready.  Uses \r\n for
+    // serial terminals that require explicit carriage return.
+    using namespace dev;
+    pl011_puts(kQemuVirtPl011Base, "\r\n");
+    pl011_puts(kQemuVirtPl011Base, "  T81  --  Ternary OS for AI\r\n");
+    pl011_puts(kQemuVirtPl011Base, "  ===========================\r\n");
+    pl011_puts(kQemuVirtPl011Base, "\r\n");
+    pl011_puts(kQemuVirtPl011Base, "[axion] policy engine: ready\r\n");
+    if (maybe_state->published_executable_canonfs) {
+      pl011_puts(kQemuVirtPl011Base, "[axion] canonfs: mounted\r\n");
+    } else {
+      pl011_puts(kQemuVirtPl011Base, "[axion] canonfs: offline (T81_CANONFS_ROOT unset)\r\n");
+    }
+    pl011_puts(kQemuVirtPl011Base, "[axion] kernel thread tid=1: running\r\n");
+    pl011_puts(kQemuVirtPl011Base, "\r\n");
+    pl011_puts(kQemuVirtPl011Base, "t81> ");
+    pl011_flush(kQemuVirtPl011Base);
+
     hal::qemu_kernel_run_loop(*maybe_state);
   }
 
