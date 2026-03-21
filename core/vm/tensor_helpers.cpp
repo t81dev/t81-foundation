@@ -9,6 +9,8 @@
 
 #ifdef __ARM_NEON
 #  include <arm_neon.h>
+#elif defined(__AVX2__)
+#  include <immintrin.h>
 #endif
 
 #include "t81/tensor/llama.hpp"
@@ -847,7 +849,11 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
   //   - Output row out[i*n..] stays warm in L1 across the full p reduction
   // Previously p→i→j: strided activation access + output reloaded each p step.
   std::vector<float> out(static_cast<std::size_t>(m) * static_cast<std::size_t>(n), 0.0f);
-  const int n4 = (n / 4) * 4;
+#if defined(__ARM_NEON)
+  const int n4 = (n / 4) * 4;  // 4-wide NEON lane count
+#elif defined(__AVX2__)
+  const int n8 = (n / 8) * 8;  // 8-wide AVX2 lane count
+#endif
   for (int i = 0; i < m; ++i) {
     float* const orow = out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(n);
     for (int p = 0; p < k; ++p) {
@@ -883,6 +889,27 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
         float32x4_t ov = vld1q_f32(orow + j);
         ov = vaddq_f32(ov, vbslq_f32(pos, fav4, vbslq_f32(neg, fav4n, zero4)));
         vst1q_f32(orow + j, ov);
+      }
+#elif defined(__AVX2__)
+      // 8-wide AVX2: int8 trits → float, blendv select ±av or 0.
+      // No _mm256_mul_ps — ternary constraint eliminates all multiplies.
+      const __m256 fav8  = _mm256_set1_ps(static_cast<float>(av));
+      const __m256 fav8n = _mm256_sub_ps(_mm256_setzero_ps(), fav8);
+      const __m256 zero8 = _mm256_setzero_ps();
+      for (; j < n8; j += 8) {
+        // Load 8 int8 trits, sign-extend to int32, convert to float
+        const __m128i wv8i = _mm_loadl_epi64(
+            reinterpret_cast<const __m128i*>(wrow + j));
+        const __m256i wv32 = _mm256_cvtepi8_epi32(wv8i);
+        const __m256  wf   = _mm256_cvtepi32_ps(wv32);
+        const __m256  pos  = _mm256_cmp_ps(wf, zero8, _CMP_GT_OQ);
+        const __m256  neg  = _mm256_cmp_ps(wf, zero8, _CMP_LT_OQ);
+        // contrib = pos ? +av : (neg ? -av : 0)
+        const __m256 contrib = _mm256_blendv_ps(
+            _mm256_blendv_ps(zero8, fav8n, neg), fav8, pos);
+        __m256 ov = _mm256_loadu_ps(orow + j);
+        ov = _mm256_add_ps(ov, contrib);
+        _mm256_storeu_ps(orow + j, ov);
       }
 #endif
       for (; j < n; ++j) {
