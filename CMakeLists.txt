@@ -161,22 +161,22 @@ endif()
 # Core library
 # =============================================================================
 add_library(t81_core STATIC
-  core/types/bigint.cpp
-  core/types/fraction.cpp
-  core/isa/encoding.cpp
-  src/canonfs/in_memory_driver.cpp
-  src/canonfs/persistent_driver.cpp
-  core/determinism/canon_hash81.cpp
-  core/math/t81_soft_math/t81_soft_math.cpp
-  src/codec/base243.cpp
-  src/codec/base81.cpp
-  src/codec/base81_balanced.cpp
-  src/codec/base81_packed.cpp
-  src/codec/metadata.cpp
-  src/codec/trit_packing.cpp
-  src/cog/v1/symbolic_graph.cpp
-  src/crypto/sha3.cpp
-  src/setun/bridge.cpp
+  isa/types/bigint.cpp
+  isa/types/fraction.cpp
+  isa/encoding.cpp
+  fs/in_memory_driver.cpp
+  fs/persistent_driver.cpp
+  vm/determinism/canon_hash81.cpp
+  isa/math/t81_soft_math/t81_soft_math.cpp
+  codec/base243.cpp
+  codec/base81.cpp
+  codec/base81_balanced.cpp
+  codec/base81_packed.cpp
+  codec/metadata.cpp
+  codec/trit_packing.cpp
+  experimental/cog/v1/symbolic_graph.cpp
+  crypto/sha3.cpp
+  experimental/setun/bridge.cpp
 )
 add_library(t81_types ALIAS t81_core)
 target_compile_features(t81_core PUBLIC ${T81_CXX_STD_FEATURE})
@@ -186,7 +186,7 @@ target_include_directories(t81_core PUBLIC
 )
 
 add_library(t81_tracing OBJECT
-  runtime/tracing/canonhash81.cpp
+  vm/tracing/canonhash81.cpp
 )
 target_compile_features(t81_tracing PUBLIC ${T81_CXX_STD_FEATURE})
 target_include_directories(t81_tracing PRIVATE
@@ -212,7 +212,7 @@ target_include_directories(t81_experimental PUBLIC
 )
 
 if(T81_IS_X86_64)
-  set(T81_AVX2_SOURCE src/simd/base81_digits_avx2.cpp)
+  set(T81_AVX2_SOURCE inference/simd/base81_digits_avx2.cpp)
   target_sources(t81_core PRIVATE ${T81_AVX2_SOURCE})
   if(NOT MSVC)
     set_source_files_properties(${T81_AVX2_SOURCE} PROPERTIES COMPILE_OPTIONS "-mavx2;-mfma")
@@ -226,7 +226,7 @@ endif()
 # t81_math_quantization — deterministic ternary codec (RFC-0032 Phase 1, C-01).
 # Integer-only; no float, no timing, no external deps. Safe for deterministic core.
 add_library(t81_math_quantization STATIC
-  core/math/quantization/ternary_codec.cpp
+  isa/math/quantization/ternary_codec.cpp
 )
 target_compile_features(t81_math_quantization PUBLIC ${T81_CXX_STD_FEATURE})
 target_include_directories(t81_math_quantization PUBLIC
@@ -249,7 +249,7 @@ add_library(t81_axion STATIC
   # RFC-0032 Phase 3 — promoted AI governance components
   kernel/axion/ai_hooks.cpp
   kernel/axion/ai_model_loader.cpp
-  src/axion/policy_validator.cpp
+  kernel/axion/policy_validator.cpp
 )
 target_link_libraries(t81_axion PUBLIC t81_core)
 
@@ -257,7 +257,7 @@ target_link_libraries(t81_axion PUBLIC t81_core)
 # FFI Library - RFC-00B8 Governed Foreign Function Interface
 # =============================================================================
 add_library(t81_ffi STATIC
-  core/ffi/ffi_dispatcher.cpp
+  ffi/ffi_dispatcher.cpp
 )
 target_include_directories(t81_ffi PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -265,14 +265,14 @@ target_include_directories(t81_ffi PUBLIC
 )
 target_link_libraries(t81_ffi PUBLIC t81_core)
 
-add_library(t81_io STATIC src/io/tensor_loader.cpp)
+add_library(t81_io STATIC vm/io/tensor_loader.cpp)
 target_link_libraries(t81_io PUBLIC t81_core)
 target_include_directories(t81_io PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-add_library(t81_c_api STATIC src/c_api/t81_c_api.cpp)
+add_library(t81_c_api STATIC ffi/c_api/t81_c_api.cpp)
 target_link_libraries(t81_c_api PUBLIC t81_core)
 target_include_directories(t81_c_api
   PUBLIC
@@ -282,9 +282,9 @@ target_include_directories(t81_c_api
 )
 
 add_library(t81_tool_model STATIC
-  tooling/model/gguf_import_bridge.cpp
-  tooling/model/weights.cpp
-  tooling/model/weights_t81w_emitter.cpp
+  tools/model/gguf_import_bridge.cpp
+  tools/model/weights.cpp
+  tools/model/weights_t81w_emitter.cpp
 )
 target_link_libraries(t81_tool_model PUBLIC t81_core)
 target_include_directories(t81_tool_model PUBLIC
@@ -298,7 +298,7 @@ endif()
 
 if(T81_ENABLE_LLAMA_CPP)
   add_library(t81_llama_adapter STATIC
-    tooling/model/llama_cpp_adapter.cpp
+    tools/model/llama_cpp_adapter.cpp
   )
   target_compile_features(t81_llama_adapter PUBLIC ${T81_CXX_STD_FEATURE})
   target_include_directories(t81_llama_adapter PUBLIC
@@ -324,10 +324,10 @@ target_include_directories(t81_lang_frontend PUBLIC
 )
 
 add_library(t81_isa STATIC
-  core/isa/pretty_printer.cpp
-  core/isa/binary_emitter.cpp
-  core/isa/binary_io.cpp
-  core/isa/base81_view.cpp
+  isa/pretty_printer.cpp
+  isa/binary_emitter.cpp
+  isa/binary_io.cpp
+  isa/base81_view.cpp
 )
 target_link_libraries(t81_isa PUBLIC t81_core)
 target_include_directories(t81_isa PUBLIC
@@ -336,26 +336,26 @@ target_include_directories(t81_isa PUBLIC
 )
 
 add_library(t81_vm STATIC
-  core/vm/vm.cpp
-  core/vm/tier_limits.cpp
-  core/vm/value_ops.cpp
-  core/vm/memory_segments.cpp
-  core/vm/policy_trace_bridge.cpp
-  core/vm/runtime_state_helpers.cpp
-  core/vm/gc_helpers.cpp
-  core/vm/tensor_helpers.cpp
-  core/vm/ffi_dispatcher.cpp
+  vm/vm.cpp
+  vm/tier_limits.cpp
+  vm/value_ops.cpp
+  vm/memory_segments.cpp
+  vm/policy_trace_bridge.cpp
+  vm/runtime_state_helpers.cpp
+  vm/gc_helpers.cpp
+  vm/tensor_helpers.cpp
+  vm/ffi_dispatcher.cpp
   # RFC-0032 Phase 4 — promoted AI VM backend adapter (C-02)
-  core/vm/ai_backend/backend_adapter.cpp
-  core/ffi/ffi_dispatcher.cpp
+  vm/ai_backend/backend_adapter.cpp
+  ffi/ffi_dispatcher.cpp
 )
 target_include_directories(t81_vm PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 add_library(t81_jit OBJECT
-  runtime/jit/jit_compiler.cpp
-  runtime/jit/jit_trace_cache.cpp   # RFC-0028 §4: CanonFS-backed trace cache
+  vm/jit/jit_compiler.cpp
+  vm/jit/jit_trace_cache.cpp   # RFC-0028 §4: CanonFS-backed trace cache
 )
 target_compile_features(t81_jit PUBLIC ${T81_CXX_STD_FEATURE})
 target_include_directories(t81_jit PRIVATE
@@ -384,7 +384,7 @@ if(T81_ENABLE_LLVM)
     llvm_map_components_to_libnames(t81_llvm_libs
       core support irreader bitwriter analysis passes)
     add_library(t81_llvm STATIC
-      src/llvm/tisc_to_llvm.cpp)
+      lang/llvm/tisc_to_llvm.cpp)
     target_include_directories(t81_llvm PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -429,16 +429,16 @@ if(T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND)
     include_directories(SYSTEM ${MLIR_INCLUDE_DIRS})
     add_definitions(${MLIR_DEFINITIONS})
     add_library(t81_dmath_runtime STATIC
-      src/mlir/dmath_c_wrappers.cpp)
+      lang/mlir/dmath_c_wrappers.cpp)
     target_include_directories(t81_dmath_runtime PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
     target_link_libraries(t81_dmath_runtime PUBLIC t81_core)
     target_compile_features(t81_dmath_runtime PUBLIC ${T81_CXX_STD_FEATURE})
     add_library(t81_mlir STATIC
-      src/mlir/t81_dialect.cpp
-      src/mlir/tisc_to_mlir.cpp
-      src/mlir/mlir_to_llvm.cpp)
+      lang/mlir/t81_dialect.cpp
+      lang/mlir/tisc_to_mlir.cpp
+      lang/mlir/mlir_to_llvm.cpp)
     target_include_directories(t81_mlir PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -506,7 +506,7 @@ if(T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T81_ENABLE_LLVM AND LLVM_FOUND 
   if(T81_CLANG_C_INCLUDE_DIR AND T81_CLANG_C_LIBRARY)
     message(STATUS "[t81] libclang — building experimental C frontend")
     add_library(t81_c_frontend STATIC
-      src/c_frontend/compile.cpp)
+      lang/c_frontend/compile.cpp)
     target_include_directories(t81_c_frontend PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
@@ -545,7 +545,7 @@ if(T81_ENABLE_RUST_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND T8
   if(T81_RUSTC_EXECUTABLE)
     message(STATUS "[t81] rustc — building experimental Rust frontend subset")
     add_library(t81_rust_frontend STATIC
-      src/rust_frontend/compile.cpp)
+      lang/rust_frontend/compile.cpp)
     target_include_directories(t81_rust_frontend PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
@@ -583,7 +583,7 @@ if(T81_ENABLE_PYTHON_FRONTEND AND T81_ENABLE_C_FRONTEND AND T81_ENABLE_MLIR AND 
   if(Python3_EXECUTABLE)
     message(STATUS "[t81] python3 — building experimental Python frontend subset")
     add_library(t81_python_frontend STATIC
-      src/python_frontend/compile.cpp)
+      lang/python_frontend/compile.cpp)
     target_include_directories(t81_python_frontend PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
       $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
@@ -684,7 +684,7 @@ if(T81_ENABLE_TERNARYOS)
   endif()
 
   add_library(t81_ternaryos_shell STATIC
-    src/axion/shell/shell_session.cpp)
+    kernel/axion/shell/shell_session.cpp)
   target_include_directories(t81_ternaryos_shell PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -693,7 +693,7 @@ if(T81_ENABLE_TERNARYOS)
 
   # RFC-00B9 — TernaryOS User Environment (t81-init, session manager, t81sh)
   add_library(t81_ternaryos_userenv STATIC
-    src/axion/userenv/user_env.cpp)
+    kernel/axion/userenv/user_env.cpp)
   target_include_directories(t81_ternaryos_userenv PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/experimental/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
@@ -1352,10 +1352,10 @@ if(T81_ENABLE_DPE)
   message(STATUS "[t81] T81_ENABLE_DPE=ON — building DPE task graph")
 
   add_library(t81_dpe STATIC
-    src/dpe/task_graph.cpp
-    src/dpe/task_runner.cpp
-    src/dpe/epoch_commit.cpp
-    src/dpe/thread_pool.cpp
+    vm/dpe/task_graph.cpp
+    vm/dpe/task_runner.cpp
+    vm/dpe/epoch_commit.cpp
+    vm/dpe/thread_pool.cpp
   )
   target_include_directories(t81_dpe PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -1411,9 +1411,9 @@ endif()
 # CLI & Examples
 # =============================================================================
 add_library(t81_tool_cli STATIC
-  tooling/cli/driver.cpp
-  tooling/cli/debugger.cpp
-  tooling/cli/canonize_tensor.cpp
+  tools/cli/driver.cpp
+  tools/cli/debugger.cpp
+  tools/cli/canonize_tensor.cpp
 )
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
 target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend t81_python_frontend)
@@ -1428,9 +1428,9 @@ target_include_directories(t81_tool_cli PRIVATE
 # TUI library — built only when T81_BUILD_TUI=ON
 if(T81_BUILD_TUI)
   add_library(t81_tui STATIC
-    tooling/tui/common.cpp
-    tooling/tui/studio.cpp
-    tooling/tui/agent.cpp
+    tools/tui/common.cpp
+    tools/tui/studio.cpp
+    tools/tui/agent.cpp
   )
   target_link_libraries(t81_tui PUBLIC t81_tool_cli ftxui::screen ftxui::dom ftxui::component)
   target_include_directories(t81_tui PUBLIC
@@ -1452,7 +1452,7 @@ if(T81_BUILD_TUI)
   endif()
 endif()
 
-add_executable(t81 tooling/cli/main.cpp tooling/cli/ai/ai_cli_shared.cpp)
+add_executable(t81 tools/cli/main.cpp tools/cli/ai/ai_cli_shared.cpp)
 target_link_libraries(t81 PRIVATE t81_lang_frontend t81_isa t81_vm t81_tool_cli t81_axion t81_math_quantization t81_core)
 target_include_directories(t81 PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -1510,11 +1510,11 @@ endif()
 option(T81_ENABLE_AI_EXPERIMENTS "Build the experimental AI CLI compatibility surface" OFF)
 
 # RFC-0032 Phase 5 (C-07) — promoted AI CLI tool (no sleep_for / no llama.cpp)
-add_executable(t81_ai_cli tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
+add_executable(t81_ai_cli tools/cli/ai/t81_ai_cli.cpp tools/cli/ai/ai_cli_shared.cpp)
 target_link_libraries(t81_ai_cli PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
 
 if(T81_ENABLE_AI_EXPERIMENTS)
-  add_executable(t81_ai tooling/cli/ai/t81_ai_cli.cpp tooling/cli/ai/ai_cli_shared.cpp)
+  add_executable(t81_ai tools/cli/ai/t81_ai_cli.cpp tools/cli/ai/ai_cli_shared.cpp)
   target_link_libraries(t81_ai PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
   set(AI_EXP_DIR "${CMAKE_BINARY_DIR}/experiments")
   set_target_properties(t81_ai PROPERTIES
@@ -2954,7 +2954,7 @@ if(T81_BUILD_PYTHON_BINDINGS)
   set(PYBIND11_FINDPYTHON ON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
   find_package(pybind11 REQUIRED)
-  pybind11_add_module(_t81 src/python/t81_python.cpp)
+  pybind11_add_module(_t81 lang/python/t81_python.cpp)
   target_link_libraries(_t81 PRIVATE t81_core t81_lang_frontend t81_isa t81_vm)
   # Install the extension into the t81 package directory so scikit-build-core
   # picks it up alongside python/t81/__init__.py.
