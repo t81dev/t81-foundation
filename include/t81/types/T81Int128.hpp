@@ -82,12 +82,14 @@ struct int128_t {
     if (o.hi < 0) d = -d;
     bool neg = (is_neg() != o.is_neg());
     int128_t num = is_neg() ? -(*this) : *this;
-    uint64_t rem;
-    if (num.hi >= (uint64_t)d) {
-      return {0, 0};
-    }
-    uint64_t q = t81_udiv128(num.hi, num.lo, (uint64_t)d, &rem);
-    int128_t res = {q, 0};
+    uint64_t ud = (uint64_t)d;
+
+    uint64_t q_hi = num.hi / ud;
+    uint64_t rem_hi = num.hi % ud;
+    uint64_t rem_lo;
+    uint64_t q_lo = t81_udiv128(rem_hi, num.lo, ud, &rem_lo);
+
+    int128_t res = {q_lo, (int64_t)q_hi};
     return neg ? -res : res;
   }
 
@@ -98,12 +100,13 @@ struct int128_t {
     if (o.hi < 0) d = -d;
     bool neg = is_neg();
     int128_t num = is_neg() ? -(*this) : *this;
-    uint64_t rem;
-    if (num.hi >= (uint64_t)d) {
-      return {0, 0};
-    }
-    t81_udiv128(num.hi, num.lo, (uint64_t)d, &rem);
-    int128_t res = {rem, 0};
+    uint64_t ud = (uint64_t)d;
+
+    uint64_t rem_hi = num.hi % ud;
+    uint64_t rem_lo;
+    t81_udiv128(rem_hi, num.lo, ud, &rem_lo);
+
+    int128_t res = {rem_lo, 0};
     return neg ? -res : res;
   }
 

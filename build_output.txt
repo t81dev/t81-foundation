@@ -1,0 +1,49 @@
+ninja: Entering directory `build'
+[1/48] Building CXX object CMakeFiles/t81_core.dir/core/isa/encoding.cpp.o
+[2/48] Building CXX object CMakeFiles/t81_core.dir/core/types/fraction.cpp.o
+[3/48] Building CXX object CMakeFiles/t81_core.dir/src/codec/base243.cpp.o
+[4/48] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/promotion.cpp.o
+[5/48] Building CXX object CMakeFiles/t81_core.dir/core/types/bigint.cpp.o
+[6/48] Building CXX object CMakeFiles/t81_core.dir/src/setun/bridge.cpp.o
+[7/48] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/builtin_registry.cpp.o
+[8/48] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/tier4/tier4_loop.cpp.o
+[9/48] Linking CXX static library libt81_core.a
+[10/48] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/nondeterminism_detector.cpp.o
+[11/48] Linking CXX static library libt81_axion.a
+[12/48] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/tier5/infinite.cpp.o
+[13/48] Linking CXX static library libt81_experimental.a
+[14/48] Building CXX object CMakeFiles/t81_isa.dir/core/isa/pretty_printer.cpp.o
+[15/48] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/symbol_table.cpp.o
+[16/48] Building CXX object CMakeFiles/t81_isa.dir/core/isa/binary_emitter.cpp.o
+[17/48] Building CXX object CMakeFiles/t81_isa.dir/core/isa/binary_io.cpp.o
+[18/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/tier_limits.cpp.o
+[19/48] Building CXX object CMakeFiles/t81_isa.dir/core/isa/base81_view.cpp.o
+[20/48] Linking CXX static library libt81_isa.a
+[21/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/policy_trace_bridge.cpp.o
+[22/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/memory_segments.cpp.o
+[23/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/runtime_state_helpers.cpp.o
+[24/48] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/ir_generator.cpp.o
+[25/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/gc_helpers.cpp.o
+[26/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/ai_backend/backend_adapter.cpp.o
+[27/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/ffi_dispatcher.cpp.o
+[28/48] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/semantic_analyzer.cpp.o
+[29/48] Linking CXX static library libt81_lang_frontend.a
+[30/48] Building CXX object CMakeFiles/t81_jit.dir/runtime/jit/jit_trace_cache.cpp.o
+[31/48] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/debugger.cpp.o
+[32/48] Building CXX object CMakeFiles/t81_jit.dir/runtime/jit/jit_compiler.cpp.o
+[33/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/tensor_helpers.cpp.o
+[34/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/runner/negation_speed.cpp.o
+[35/48] Building CXX object CMakeFiles/t81_tool_cli.dir/tooling/cli/driver.cpp.o
+[36/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/runner/t81lang_compile.cpp.o
+[37/48] Building CXX object CMakeFiles/t81_vm.dir/core/vm/vm.cpp.o
+[38/48] Linking CXX static library libt81_vm.a
+[39/48] Linking CXX static library libt81_tool_cli.a
+[40/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/runner/limb_arith_throughput.cpp.o
+[41/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/BM_DeterminismValidation.cpp.o
+[42/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/BM_LimbMul.cpp.o
+[43/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/BM_TensorPromotion.cpp.o
+[44/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/BM_GovernedWorkflows.cpp.o
+[45/48] Building CXX object benchmarks/CMakeFiles/benchmark_runner.dir/BM_NativeWeightsExecution.cpp.o
+[46/48] Linking CXX executable benchmarks/benchmark_runner
+[47/48] Building CXX object CMakeFiles/t81.dir/tooling/cli/main.cpp.o
+[48/48] Linking CXX executable t81
