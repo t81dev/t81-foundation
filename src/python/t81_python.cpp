@@ -243,7 +243,9 @@ PYBIND11_MODULE(_t81, m) {
 
     auto& state = vm->state();
     if (state.contexts.empty()) throw std::runtime_error("VM state invalid");
-    return state.contexts[state.current_context].registers[0];
+    // R0 is unused; the TISC calling convention places main()'s return
+    // value in R2 of the root context after the call stack unwinds.
+    return state.contexts[state.current_context].registers[2];
   });
 
   // Bind CanonFS
