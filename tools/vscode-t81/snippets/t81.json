@@ -1,0 +1,163 @@
+{
+    "Function": {
+        "prefix": "fn",
+        "body": [
+            "@tier(${1:1})",
+            "fn ${2:name}(${3:arg}: ${4:T81Float}) -> ${5:void} {",
+            "\t$0",
+            "}"
+        ],
+        "description": "T81Lang function declaration"
+    },
+    "Pure Function": {
+        "prefix": "fnpure",
+        "body": [
+            "@pure",
+            "@tier(${1:1})",
+            "fn ${2:name}(${3:arg}: ${4:T81Float}) -> ${5:T81Float} {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Pure (no-effect) T81Lang function"
+    },
+    "Agent": {
+        "prefix": "agent",
+        "body": [
+            "agent ${1:Name} {",
+            "\t@tier(${2:2})",
+            "\tbehavior ${3:act}(${4:input}: ${5:Tensor}) -> ${6:Tensor} {",
+            "\t\t$0",
+            "\t}",
+            "}"
+        ],
+        "description": "RFC-0015 agent with behavior"
+    },
+    "Behavior": {
+        "prefix": "behavior",
+        "body": [
+            "@tier(${1:2})",
+            "behavior ${2:name}(${3:input}: ${4:Tensor}) -> ${5:Tensor} {",
+            "\t$0",
+            "}"
+        ],
+        "description": "RFC-0015 behavior declaration"
+    },
+    "Record": {
+        "prefix": "record",
+        "body": [
+            "record ${1:Name} {",
+            "\t${2:field}: ${3:T81Float},",
+            "\t$0",
+            "}"
+        ],
+        "description": "Record type declaration"
+    },
+    "Enum": {
+        "prefix": "enum",
+        "body": [
+            "enum ${1:Name} {",
+            "\t${2:Variant},",
+            "\t$0",
+            "}"
+        ],
+        "description": "Enum type declaration"
+    },
+    "Bounded Loop": {
+        "prefix": "loop",
+        "body": [
+            "@bounded(${1:100})",
+            "loop {",
+            "\t$0",
+            "\tif ${2:condition} { break; }",
+            "}"
+        ],
+        "description": "Bounded loop (required by T81Lang semantics)"
+    },
+    "For In": {
+        "prefix": "for",
+        "body": [
+            "for ${1:item} in ${2:collection} {",
+            "\t$0",
+            "}"
+        ],
+        "description": "For-in loop"
+    },
+    "Match": {
+        "prefix": "match",
+        "body": [
+            "match ${1:value} {",
+            "\t${2:Pattern} => { $0 },",
+            "\t_ => { },",
+            "}"
+        ],
+        "description": "Match expression"
+    },
+    "Let": {
+        "prefix": "let",
+        "body": "let ${1:name}: ${2:T81Float} = ${3:0.0};",
+        "description": "Immutable binding"
+    },
+    "Let Mut": {
+        "prefix": "letmut",
+        "body": "let mut ${1:name}: ${2:T81Float} = ${3:0.0};",
+        "description": "Mutable binding"
+    },
+    "Tensor Matmul": {
+        "prefix": "tmatmul",
+        "body": "let ${1:result}: Tensor = std.tensor.matmul(${2:a}, ${3:b});",
+        "description": "Tensor matrix multiply"
+    },
+    "TNN Matmul (RFC-0034)": {
+        "prefix": "tnnmatmul",
+        "body": [
+            "@tier(2)",
+            "@ternary_inference",
+            "let ${1:result}: Tensor = std.tnn.matmul(${2:weights}, ${3:input});"
+        ],
+        "description": "RFC-0034 ternary neural network matmul"
+    },
+    "TNN Attention (RFC-0034)": {
+        "prefix": "tnnattn",
+        "body": [
+            "@tier(2)",
+            "@ternary_inference",
+            "let ${1:result}: Tensor = std.tnn.attn(${2:q}, ${3:k}, ${4:v});"
+        ],
+        "description": "RFC-0034 ternary scaled dot-product attention"
+    },
+    "Infer Block": {
+        "prefix": "infer",
+        "body": [
+            "@tier(2)",
+            "@ternary_inference",
+            "fn ${1:infer}(${2:input}: Tensor) -> Tensor {",
+            "\tlet ${3:weights}: Tensor = std.tensor.load(\"${4:model.t81w}\");",
+            "\tlet ${5:out}: Tensor = std.tnn.matmul(${3:weights}, ${2:input});",
+            "\treturn std.tnn.act(${5:out}, 0);",
+            "}"
+        ],
+        "description": "RFC-0034 ternary inference function scaffold"
+    },
+    "Module": {
+        "prefix": "module",
+        "body": [
+            "module ${1:name};",
+            "",
+            "export fn ${2:main}() -> void {",
+            "\t$0",
+            "}"
+        ],
+        "description": "Module declaration with exported main"
+    },
+    "Distributed Gossip (Tier 4)": {
+        "prefix": "gossip",
+        "body": [
+            "@tier(4)",
+            "fn ${1:propagate}(${2:data}: Tensor) -> void {",
+            "\tstd.distributed.gossip(${2:data});",
+            "\tstd.distributed.sync(${2:data});",
+            "}"
+        ],
+        "description": "Tier-4 distributed gossip propagation"
+    }
+}

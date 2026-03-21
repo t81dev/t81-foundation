@@ -2,24 +2,19 @@
     "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
     "name": "T81Lang",
     "patterns": [
-        {
-            "include": "#comments"
-        },
-        {
-            "include": "#keywords"
-        },
-        {
-            "include": "#strings"
-        },
-        {
-            "include": "#numbers"
-        },
-        {
-            "include": "#types"
-        },
-        {
-            "include": "#functions"
-        }
+        { "include": "#comments" },
+        { "include": "#annotations" },
+        { "include": "#keywords-control" },
+        { "include": "#keywords-declaration" },
+        { "include": "#keywords-modifier" },
+        { "include": "#keywords-cognitive" },
+        { "include": "#literals-special" },
+        { "include": "#literals-numeric" },
+        { "include": "#literals-string" },
+        { "include": "#types-builtin" },
+        { "include": "#stdlib-namespaces" },
+        { "include": "#functions" },
+        { "include": "#operators" }
     ],
     "repository": {
         "comments": {
@@ -27,7 +22,10 @@
                 {
                     "name": "comment.line.double-slash.t81",
                     "begin": "//",
-                    "end": "$"
+                    "end": "$",
+                    "patterns": [
+                        { "name": "keyword.other.t81", "match": "\\bTODO\\b|\\bFIXME\\b|\\bNOTE\\b|\\bHACK\\b" }
+                    ]
                 },
                 {
                     "name": "comment.block.t81",
@@ -36,46 +34,222 @@
                 }
             ]
         },
-        "keywords": {
-            "patterns": [{
-                "name": "keyword.control.t81",
-                "match": "\\b(if|else|loop|match|return|let|var|fn|record|enum|try|catch|match)\\b"
-            }, {
-                "name": "keyword.other.t81",
-                "match": "@\\b(tier|effect|bounded|contract)\\b"
-            }]
-        },
-        "strings": {
-            "name": "string.quoted.double.t81",
-            "begin": "\"",
-            "end": "\"",
+
+        "annotations": {
             "patterns": [
                 {
-                    "name": "constant.character.escape.t81",
-                    "match": "\\\\."
+                    "comment": "Function-level annotations: @tier(N), @pure, @axion_verify, @bounded, @attention, @qmatmul, @ternary_inference",
+                    "name": "meta.annotation.t81",
+                    "begin": "@",
+                    "end": "(?=[^a-zA-Z0-9_(])|$",
+                    "beginCaptures": {
+                        "0": { "name": "punctuation.definition.annotation.t81" }
+                    },
+                    "patterns": [
+                        {
+                            "name": "storage.modifier.annotation.t81",
+                            "match": "\\b(tier|pure|axion_verify|bounded|attention|qmatmul|ternary_inference|effect|contract|schema|module)\\b"
+                        },
+                        {
+                            "name": "constant.numeric.integer.t81",
+                            "match": "\\b[0-9]+\\b"
+                        }
+                    ]
                 }
             ]
         },
-        "numbers": {
+
+        "keywords-control": {
             "patterns": [{
-                "name": "constant.numeric.ternary.t81",
-                "match": "\\b[012t]+\\b"
-            }, {
-                "name": "constant.numeric.decimal.t81",
-                "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+                "name": "keyword.control.t81",
+                "match": "\\b(if|else|for|in|while|loop|match|return|break|continue|try|catch)\\b"
             }]
         },
-        "types": {
+
+        "keywords-declaration": {
             "patterns": [{
-                "name": "entity.name.type.t81",
-                "match": "\\b(T81Int|T81Float|T81Fraction|Symbol|Vector|Matrix|Tensor|Option|Result)\\b"
+                "name": "keyword.declaration.t81",
+                "match": "\\b(fn|let|var|const|record|enum|type|module|export|agent|behavior|foreign)\\b"
             }]
         },
+
+        "keywords-modifier": {
+            "patterns": [{
+                "name": "storage.modifier.t81",
+                "match": "\\b(mut|as|assert)\\b"
+            }]
+        },
+
+        "keywords-cognitive": {
+            "comment": "Cognitive-tier and AI-specific keywords",
+            "patterns": [{
+                "name": "keyword.other.cognitive.t81",
+                "match": "\\b(reflect|recurse|distributed|infinite|infer|train)\\b"
+            }]
+        },
+
+        "literals-special": {
+            "patterns": [
+                {
+                    "name": "constant.language.boolean.t81",
+                    "match": "\\b(true|false)\\b"
+                },
+                {
+                    "name": "constant.language.null.t81",
+                    "match": "\\b(void|none|null)\\b"
+                },
+                {
+                    "comment": "Infinite literal ∞ or keyword form",
+                    "name": "constant.language.infinite.t81",
+                    "match": "∞|\\b(Infinite)\\b"
+                },
+                {
+                    "comment": "Base-81 integer literals: 0b81_...",
+                    "name": "constant.numeric.base81.t81",
+                    "match": "\\b0b81_[0-9A-Za-z_]+"
+                },
+                {
+                    "comment": "Byte string literals b\"...\"",
+                    "name": "string.quoted.byte.t81",
+                    "begin": "b\"",
+                    "end": "\"",
+                    "patterns": [
+                        { "name": "constant.character.escape.t81", "match": "\\\\." }
+                    ]
+                }
+            ]
+        },
+
+        "literals-numeric": {
+            "patterns": [
+                {
+                    "comment": "Ternary literals: digits 0,1,2 or t-prefix",
+                    "name": "constant.numeric.ternary.t81",
+                    "match": "\\bt[012]+\\b"
+                },
+                {
+                    "comment": "Probability literals: 0.N or 1.0 in T81Prob context",
+                    "name": "constant.numeric.float.t81",
+                    "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?\\b"
+                },
+                {
+                    "name": "constant.numeric.integer.t81",
+                    "match": "\\b[0-9]+\\b"
+                }
+            ]
+        },
+
+        "literals-string": {
+            "patterns": [{
+                "name": "string.quoted.double.t81",
+                "begin": "\"",
+                "end": "\"",
+                "patterns": [
+                    { "name": "constant.character.escape.t81", "match": "\\\\[nrt0\\\\\"']" },
+                    { "name": "constant.character.escape.unicode.t81", "match": "\\\\u\\{[0-9A-Fa-f]+\\}" }
+                ]
+            }]
+        },
+
+        "types-builtin": {
+            "patterns": [
+                {
+                    "comment": "Primitive integer / boolean types",
+                    "name": "support.type.primitive.t81",
+                    "match": "\\b(void|bool|i2|i8|i16|i32)\\b"
+                },
+                {
+                    "comment": "T81 numeric tower",
+                    "name": "support.type.numeric.t81",
+                    "match": "\\b(T81BigInt|T81Float|T81Fraction|T81Fixed|T81Complex|T81Quaternion|T81Uint|T81Prob)\\b"
+                },
+                {
+                    "comment": "T81 structural / domain types",
+                    "name": "support.type.structural.t81",
+                    "match": "\\b(Cell|T81Qutrit|T81String|T81Vector|Symbol)\\b"
+                },
+                {
+                    "comment": "Collection types",
+                    "name": "support.type.collection.t81",
+                    "match": "\\b(List|Map|Set|Tree|Vector|Matrix|Tensor|Graph)\\b"
+                },
+                {
+                    "comment": "AI / inference types (RFC-0034)",
+                    "name": "support.type.ai.t81",
+                    "match": "\\b(NativeTensor|T81WTN|T81Symbolic|T81Polynomial)\\b"
+                },
+                {
+                    "comment": "Algebraic wrapper types",
+                    "name": "support.type.wrapper.t81",
+                    "match": "\\b(Option|Result|Bytes)\\b"
+                }
+            ]
+        },
+
+        "stdlib-namespaces": {
+            "comment": "std.* dotted namespace paths — highlight as support.function",
+            "patterns": [{
+                "name": "support.function.stdlib.t81",
+                "match": "\\bstd\\.(core|option|result|io|math|text|bytes|collections|tensor|tnn|symbolic|polynomial|sys|async|agent|distributed|crypto|symbol)\\.[a-zA-Z_][a-zA-Z0-9_.]*\\b"
+            }]
+        },
+
         "functions": {
-            "patterns": [{
-                "name": "entity.name.function.t81",
-                "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
-            }]
+            "patterns": [
+                {
+                    "comment": "Function / behavior / agent declarations",
+                    "name": "entity.name.function.t81",
+                    "match": "(?<=\\bfn\\s{1,32}|\\bbehavior\\s{1,32})[a-zA-Z_][a-zA-Z0-9_]*"
+                },
+                {
+                    "comment": "Agent name after 'agent' keyword",
+                    "name": "entity.name.class.t81",
+                    "match": "(?<=\\bagent\\s{1,32})[a-zA-Z_][a-zA-Z0-9_]*"
+                },
+                {
+                    "comment": "Record / enum / type name",
+                    "name": "entity.name.type.t81",
+                    "match": "(?<=\\brecord\\s{1,32}|\\benum\\s{1,32}|\\btype\\s{1,32})[a-zA-Z_][a-zA-Z0-9_]*"
+                },
+                {
+                    "comment": "General function call",
+                    "name": "entity.name.function.call.t81",
+                    "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                }
+            ]
+        },
+
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.arrow.t81",
+                    "match": "->|=>"
+                },
+                {
+                    "name": "keyword.operator.range.t81",
+                    "match": "\\.\\.|\\.\\.="
+                },
+                {
+                    "name": "keyword.operator.comparison.t81",
+                    "match": "==|!=|<=|>=|<|>"
+                },
+                {
+                    "name": "keyword.operator.logical.t81",
+                    "match": "&&|\\|\\||!"
+                },
+                {
+                    "name": "keyword.operator.bitwise.t81",
+                    "match": "&|\\||\\^|~|<<|>>|>>>"
+                },
+                {
+                    "name": "keyword.operator.arithmetic.t81",
+                    "match": "\\*\\*|\\+|-|\\*|/|%"
+                },
+                {
+                    "name": "keyword.operator.assignment.t81",
+                    "match": "="
+                }
+            ]
         }
     },
     "scopeName": "source.t81"
