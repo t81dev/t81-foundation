@@ -44,9 +44,9 @@ COPY examples/ /t81/examples/
 
 # Entrypoint and demo scripts
 COPY docker/ /t81/docker/
-RUN chmod +x /t81/docker/entrypoint.sh /t81/docker/demo.sh
+RUN chmod +x /t81/tools/docker/entrypoint.sh /t81/tools/docker/demo.sh
 
 # Default working directory for user files mounted via -v
 WORKDIR /workspace
 
-ENTRYPOINT ["/t81/docker/entrypoint.sh"]
+ENTRYPOINT ["/t81/tools/docker/entrypoint.sh"]

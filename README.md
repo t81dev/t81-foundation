@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="T81 — A Ternary Operating System for AI" width="100%">
+  <img src="docs/assets/banner.png" alt="T81 — A Ternary Operating System for AI" width="100%">
 </p>
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
