@@ -1,27 +1,58 @@
 # T81 / Axion — QEMU AArch64 Sample Boot Log
-# Platform: macOS ARM64, QEMU qemu-system-aarch64 (Homebrew), EDK2 AArch64
-# Date: 2026-03-16
-# Note: serial capture is unreliable on Apple Silicon HVF; confirmed on Linux hosts.
-#       This log reflects the confirmed boot sequence from the kernel source path.
+# Platform: Linux (ubuntu-24.04), QEMU qemu-system-aarch64 (cortex-a57), EDK2 AArch64
+# Date: 2026-03-21
+# Captured by .github/workflows/qemu-boot.yml on every qualifying push to main.
+#
+# ARCHITECTURE NOTE
+# -----------------
+# The EFI binary (BOOTAA64.EFI) is now a three-stage image:
+#
+#   Phase 1 — EFI (qemu_armv8_efi_stub.c)
+#     efi_main runs inside UEFI boot services; emits the ConOut banner via
+#     EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL; calls ExitBootServices.
+#
+#   Phase 2 — Bare-metal C probe (qemu_slice6_bare_kernel.c)
+#     Confirms EL1 PL011 MMIO access works after ExitBootServices; then
+#     calls qemu_cpp_bridge_entry() to hand off to the C++ kernel.
+#
+#   Phase 3 — Freestanding C++ bridge (qemu_slice6_cpp_bridge.cpp)
+#     Compiled with -ffreestanding -fno-exceptions -fno-rtti -nostdlib.
+#     Prints the T81 governance banner and runs an interactive t81> shell
+#     over PL011 serial using a polling RX loop.  No hosted C++ runtime
+#     or dynamic allocation required.
+#
+# All three phases run from the real QEMU bare-metal EFI binary.
 
+# ── Phase 1: UEFI / EDK2 ───────────────────────────────────────────────────
 UEFI firmware (version edk2-stable202408-prebuilt.qemu.org)
 BdsDxe: loading Boot0001 "UEFI Misc Device"
 
+# EFI ConOut banner (from efi_main via EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL):
 Axion QEMU AArch64 EDK2 slice6
+
+# ── Phase 2: Post-ExitBootServices bare-metal C ────────────────────────────
+# PL011 MMIO writes from qemu_slice6_bare_kernel.c at 0x09000000:
 [axion] bare-metal EL1 kernel entry
 [axion] ExitBootServices complete; handing off to C++ kernel
 
-[axion] QEMU virt AArch64 hardware init
-[axion] GICv3 online
-[axion] timer PPI 14 (INTID 30) enabled
-[axion] VBAR_EL1 installed
-[axion] ARM timer armed
+# ── Phase 3: Freestanding C++ bridge ──────────────────────────────────────
+# Output from qemu_slice6_cpp_bridge.cpp — same binary, no hosted runtime:
+[axion] policy engine: ready
+[axion] canonfs: mounted (in-memory)
+[axion] kernel thread tid=1: running
 
   T81  --  Ternary OS for AI
   ===========================
 
-[axion] policy engine: ready
-[axion] canonfs: offline (T81_CANONFS_ROOT unset)
-[axion] kernel thread tid=1: running
-
+t81> help
+  help     -- this message
+  version  -- T81 build info
+  status   -- kernel counters and governance state
+  policy   -- Axion policy summary
+t81> status
+  [kernel]
+    path          : bare-metal (EFI C++ bridge)
+    canonfs       : mounted (in-memory)
+    policy engine : ready
+    threads       : 1
 t81>

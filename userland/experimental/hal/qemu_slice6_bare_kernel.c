@@ -73,45 +73,37 @@ static void bare_pl011_puts(const char* s) {
   }
 }
 
+// ── Forward declaration of C++ bridge entry ───────────────────────────────────
+//
+// qemu_cpp_bridge_entry() is defined in qemu_slice6_cpp_bridge.cpp and linked
+// into the same BOOTAA64.EFI image.  It provides the T81 governance banner and
+// the interactive t81> shell using only language-level C++ (freestanding).
+//
+// On bare-metal AArch64 qemu_cpp_bridge_entry() never returns.
+// On hosted (macOS / x86-64) builds it returns immediately.
+
+extern void qemu_cpp_bridge_entry(void);
+
 // ── Bare-metal kernel entry point ─────────────────────────────────────────────
+//
+// Purpose: confirm that ExitBootServices succeeded and that EL1 PL011 MMIO
+// access works, then hand off to the C++ kernel bridge for the banner + shell.
 //
 // System-register access notes for QEMU HVF (Apple Hypervisor.framework):
 //
 //   ICC_SRE_EL1  — trapped: EDK2 does not set ICC_SRE_EL2.SRE before hand-off.
 //   CNTP_TVAL_EL0— trapped: EDK2 does not set CNTHCTL_EL2.EL1PCTEN.
 //
-// Both GIC CPU-interface init and timer arming are therefore deferred to the
-// C++ kernel (qemu_kernel_entry.cpp / gicv3.cpp) which installs its own
-// VBAR_EL1 exception vectors first and relies on the EL2 setup performed by
-// qemu_hardware_init() when running on real bare-metal (not HVF-hosted).
-//
-// The sole purpose of this freestanding probe is to confirm that
-// ExitBootServices succeeded and that EL1 PL011 MMIO access works.
+// On Linux QEMU (TCG / KVM) EDK2 performs the correct EL2 setup and both
+// registers are accessible.  GIC and timer init are handled inside the C++
+// bridge (qemu_slice6_cpp_bridge.cpp) on that path.
 
 void qemu_bare_kernel_entry(void) {
-  // Prove bare-metal serial access: write directly to PL011 MMIO at
-  // 0x09000000 — no EFI services, no C runtime, no stack protector.
+  // Phase 2 probe: confirm EL1 PL011 MMIO access after ExitBootServices.
   bare_pl011_puts("[axion] bare-metal EL1 kernel entry\r\n");
   bare_pl011_puts("[axion] ExitBootServices complete; handing off to C++ kernel\r\n");
-  
-  // Enhanced debugging output
-  bare_pl011_puts("[axion] DEBUG: About to call qemu_hardware_init\r\n");
-  
-  // Attempt to initialize hardware (this will call into C++ code)
-  // Note: This is a simplified call - in reality, this would be more complex
-  bare_pl011_puts("[axion] DEBUG: Hardware init would be called here\r\n");
-  bare_pl011_puts("[axion] DEBUG: GICv3, UART, timer initialization expected\r\n");
-  bare_pl011_puts("[axion] DEBUG: Exception vectors would be installed\r\n");
-  bare_pl011_puts("[axion] DEBUG: Kernel run loop would start\r\n");
-  
-  bare_pl011_puts("[axion] DEBUG: Entering spin loop - kernel handoff complete\r\n");
 
-  // Spin.  On bare-metal this never returns.  On hosted (macOS/x86) builds
-  // the AArch64 guards above compile away and the function returns immediately.
-#if defined(__aarch64__) && !defined(__APPLE__)
-  while (1) {
-    bare_pl011_puts("[axion] DEBUG: WFI loop iteration\r\n");
-    __asm__ volatile("wfi" ::: "memory");
-  }
-#endif
+  // Hand off to the freestanding C++ bridge for the T81 banner and shell.
+  // On bare-metal AArch64 this call never returns.
+  qemu_cpp_bridge_entry();
 }

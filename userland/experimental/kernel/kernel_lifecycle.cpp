@@ -86,7 +86,10 @@ std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
 std::unique_ptr<t81::canonfs::Driver> bootstrap_published_executable_canonfs() {
   const char* raw = std::getenv("T81_CANONFS_ROOT");
   if (!raw || raw[0] == '\0') {
-    return nullptr;
+    // No persistent root configured — use an in-memory driver so the kernel
+    // always has a functional CanonFS store for the current session.
+    // Callers can distinguish this case by checking T81_CANONFS_ROOT directly.
+    return t81::canonfs::make_in_memory_driver();
   }
   std::filesystem::path canon_root(raw);
   std::error_code ec;

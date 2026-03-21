@@ -1,0 +1,178 @@
+# .github/workflows/qemu-boot.yml
+#
+# QEMU AArch64 Boot Capture — T81 / Axion
+#
+# Builds the slice6 EFI binary, assembles a FAT32 GPT disk image, boots it
+# under QEMU (TCG cortex-a57 + EDK2 AArch64), captures serial output, and
+# validates the expected boot sequence.  On success the sample boot log is
+# committed back to main so drivers/qemu/sample-boot-log.txt stays current.
+#
+# Triggers:
+#   - push to main (kernel, HAL, or driver changes)
+#   - workflow_dispatch (manual)
+
+name: QEMU Boot Capture
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'userland/experimental/**'
+      - 'drivers/qemu/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: qemu-boot
+  cancel-in-progress: true
+
+jobs:
+  qemu-boot:
+    name: Boot T81 on QEMU AArch64
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+
+      # ── Toolchain + QEMU ──────────────────────────────────────────────────
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            clang-18 lld-18 \
+            qemu-system-arm qemu-efi-aarch64 \
+            mtools \
+            ninja-build cmake \
+            python3
+
+      # ── Build ─────────────────────────────────────────────────────────────
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DT81_ENABLE_TERNARYOS=ON \
+            -DT81_BUILD_TESTS=OFF \
+            -DT81_BUILD_EXAMPLES=OFF \
+            -DT81_BUILD_BENCHMARKS=OFF \
+            -DT81_BUILD_FUZZ_TESTS=OFF \
+            -DT81_LLVM_CLANG=$(which clang-18) \
+            -DT81_LLD_LINK=$(which lld-link-18)
+
+      - name: Build EFI binary
+        run: |
+          cmake --build build --target t81_ternaryos_qemu_slice6_efi -j$(nproc)
+
+      # ── Disk image ────────────────────────────────────────────────────────
+      - name: Create FAT32 GPT disk image
+        run: |
+          EFI=build/ternaryos/qemu_slice6/BOOTAA64.EFI
+          IMG=boot.img
+
+          # 64 MiB raw image; partition table at sector 0, FAT32 at 1 MiB.
+          dd if=/dev/zero of=$IMG bs=1M count=64 status=none
+          parted -s $IMG mklabel gpt
+          parted -s $IMG mkpart EFI fat32 1MiB 63MiB
+          parted -s $IMG set 1 esp on
+
+          # Populate FAT32 partition using mtools (no loop device / no root).
+          # The @@offset syntax selects the byte offset of the partition.
+          OFFSET=1048576
+          mformat -i "${IMG}@@${OFFSET}" -F -v SLICE6GUEST ::
+          mmd    -i "${IMG}@@${OFFSET}" ::/EFI ::/EFI/BOOT ::/TERNOS
+          mcopy  -i "${IMG}@@${OFFSET}" "$EFI" ::/EFI/BOOT/BOOTAA64.EFI
+          mcopy  -i "${IMG}@@${OFFSET}" "$EFI" ::/EFI/BOOT/bootaa64.efi
+
+          COMMIT=$(git rev-parse --short HEAD)
+          printf 'profile=qemu-armv8:AArch64/EDK2/slice6-boot-probe\ngit_commit=%s\n' "$COMMIT" > profile.txt
+          mcopy  -i "${IMG}@@${OFFSET}" profile.txt ::/TERNOS/profile.txt
+
+          echo "disk image: $(du -sh $IMG | cut -f1)"
+
+      # ── Boot ──────────────────────────────────────────────────────────────
+      - name: Boot QEMU and capture serial
+        run: |
+          cp /usr/share/AAVMF/AAVMF_VARS.fd /tmp/edk2-vars.fd
+
+          # Run for up to 40 seconds; exit code 124 (timeout) is expected and
+          # treated as success — the kernel event loop runs indefinitely.
+          timeout 40 qemu-system-aarch64 \
+            -machine virt \
+            -cpu cortex-a57 \
+            -m 512M \
+            -nographic \
+            -serial file:serial.log \
+            -drive if=pflash,format=raw,readonly=on,file=/usr/share/AAVMF/AAVMF_CODE.fd \
+            -drive if=pflash,format=raw,file=/tmp/edk2-vars.fd \
+            -drive if=virtio,format=raw,file=boot.img \
+            2>/dev/null || true
+
+          echo "=== Captured serial output ==="
+          cat serial.log || echo "(empty)"
+
+      # ── Validate ──────────────────────────────────────────────────────────
+      - name: Validate boot sequence
+        run: |
+          pass=0; fail=0
+          check() {
+            if grep -qF "$1" serial.log 2>/dev/null; then
+              echo "PASS: $1"; pass=$((pass+1))
+            else
+              echo "FAIL: $1"; fail=$((fail+1))
+            fi
+          }
+          # Phase 1 (EFI): ConOut banner from efi_main before ExitBootServices.
+          check "Axion QEMU AArch64 EDK2 slice6"
+          # Phase 2 (bare-metal C): PL011 writes from qemu_slice6_bare_kernel.c
+          # after ExitBootServices — proves EL1 MMIO access works.
+          check "[axion] bare-metal EL1 kernel entry"
+          check "[axion] ExitBootServices complete"
+          # Phase 3 (C++ bridge): T81 banner + shell from qemu_slice6_cpp_bridge.cpp
+          # — proves freestanding C++ executes after the bare-metal handoff.
+          check "T81  --  Ternary OS for AI"
+          check "[axion] policy engine: ready"
+          check "[axion] canonfs: mounted (in-memory)"
+          check "[axion] kernel thread tid=1: running"
+          echo "$pass passed, $fail failed"
+          [ "$fail" -eq 0 ]
+
+      # ── Update sample boot log ────────────────────────────────────────────
+      - name: Update sample-boot-log.txt
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          COMMIT=$(git rev-parse --short HEAD)
+          {
+            echo "# T81 / Axion — QEMU AArch64 Sample Boot Log"
+            echo "# Platform: ubuntu-24.04, QEMU qemu-system-aarch64 (cortex-a57), EDK2 AArch64"
+            echo "# Date: $DATE"
+            echo "# Commit: $COMMIT"
+            echo "# Generated automatically by .github/workflows/qemu-boot.yml"
+            echo "#"
+            cat serial.log
+          } > drivers/qemu/sample-boot-log.txt
+
+      - name: Commit updated boot log
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add drivers/qemu/sample-boot-log.txt
+          if git diff --cached --quiet; then
+            echo "boot log unchanged — no commit needed"
+          else
+            COMMIT=$(git rev-parse --short HEAD)
+            git commit -m "ci(qemu): update serial boot log @ ${COMMIT} [ci skip]"
+            git push
+          fi
+
+      # ── Artifact ──────────────────────────────────────────────────────────
+      - name: Upload serial log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qemu-serial-log
+          path: serial.log
+          retention-days: 30

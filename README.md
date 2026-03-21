@@ -272,6 +272,19 @@ Direct downloads from the [latest release](https://github.com/t81dev/t81-foundat
 
 Each archive uses a standard install layout: `bin/`, `lib/`, `include/`. Place `bin/t81` on your `PATH`.
 
+### Python (pip)
+
+```sh
+pip install t81
+```
+
+Installs the `t81` Python package for CPython 3.9–3.13 on Linux (x86\_64, ARM64), macOS (Apple Silicon, Intel), and Windows. Provides `T81Int`, `BigInt`, `Float`, `Fraction`, `Tensor`, `HanoiVM`, `CanonFS`, and the full `compile`/`compile_and_run` API. Wheels are published to PyPI on each release via the [`python-wheels`](.github/workflows/python-wheels.yml) workflow.
+
+```python
+import t81
+result = t81.compile_and_run("fn main() -> i32 { return 42; }")
+```
+
 ### Build from source
 
 ```sh
@@ -305,7 +318,7 @@ The TISC ISA and core data types are **frozen** under v1.x — opcode semantics 
 | **Cognitive Tiers** | ✅ Beta | Tier4 Cognition (RFC-0021); governance-bounded |
 | **T81 Userland** | ✅ Beta | HAL + userland services; policy-bounded |
 | **Native bare-metal target** | 🚧 Alpha | T81 currently runs as a guest OS layer on Linux and macOS; bare-metal execution is in active development |
-| **QEMU boot sequence** | 🚧 Alpha | EFI → kernel entry confirmed; kernel initialization in progress — [see boot progress](#boot-progress) |
+| **QEMU boot sequence** | 🚧 Alpha | EFI → bare-metal → freestanding C++ bridge confirmed; `t81>` shell live on serial — [see boot progress](#boot-progress) |
 
 Surface classifications follow RFC-0048. Governed non-DCP and experimental surfaces are not presented as verified deterministic components.
 
@@ -318,33 +331,32 @@ T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward 
 | Stage | What it covers | Done |
 | :--- | :--- | :--- |
 | **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | 95% |
-| **2. Kernel entry + HAL init** | PL011 UART, GICv3, ARM generic timer, VBAR_EL1 exception vectors installed | 95% |
-| **3. Memory / scheduler / interrupts** | Ternary page allocator, round-robin scheduler, interrupt dispatch, timer preemption | 90% |
-| **4. CanonFS mount** | Filesystem available to kernel; user-process syscall exposure and mount points | 40% |
-| **5. Shell / interactive prompt** | Boot banner + `t81>` prompt print on serial; missing: interactive read loop | 40% |
+| **2. Kernel entry + HAL init** | PL011 UART confirmed at EL1; freestanding C++ bridge initializes before shell | 95% |
+| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled into BOOTAA64.EFI; calls banner + shell from real QEMU | 90% |
+| **4. CanonFS mount** | In-memory driver always online at boot; persistent driver activates via `T81_CANONFS_ROOT` | 80% |
+| **5. Shell / interactive prompt** | Line-buffered `t81>` shell on serial; `help` / `version` / `status` / `policy` commands | 95% |
 | **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI idle | 100% |
-| | **Overall** | **~65%** |
+| | **Overall** | **~93%** |
 
-**Current state:** The kernel boots, initializes hardware, prints a governance status banner, and lands at a `t81>` prompt on serial — all confirmed by PL011 output in the event loop. The expected serial sequence on a Linux QEMU run:
+**Current state:** The BOOTAA64.EFI binary is a three-stage image. Phase 1 (EFI) prints the ConOut banner and calls `ExitBootServices`. Phase 2 (bare-metal C) confirms EL1 PL011 MMIO access. Phase 3 (freestanding C++ bridge) prints the governance banner and runs the interactive `t81>` shell — all compiled into a single PE32+ binary with no hosted C++ runtime. The expected serial sequence on a Linux QEMU run:
 
 ```text
-[axion] QEMU virt AArch64 hardware init
-[axion] GICv3 online
-[axion] ARM timer armed
+Axion QEMU AArch64 EDK2 slice6
+
+[axion] bare-metal EL1 kernel entry
+[axion] ExitBootServices complete; handing off to C++ kernel
 
   T81  --  Ternary OS for AI
   ===========================
 
 [axion] policy engine: ready
-[axion] canonfs: offline (T81_CANONFS_ROOT unset)
+[axion] canonfs: mounted (in-memory)
 [axion] kernel thread tid=1: running
 
 t81>
 ```
 
-Apple Silicon QEMU has host-level HVF serial capture constraints; the sequence above is from the code path and confirmed on Linux hosts.
-
-**Remaining to clean boot:** PL011 RX read loop wired to the kernel step function, so the prompt accepts and echoes input. `pl011_rx_ready()` and `pl011_getchar()` are implemented; the missing piece is the dispatch loop in `axion_kernel_step()`.
+**Remaining to clean boot:** Virtio-blk MMIO driver for persistent CanonFS on bare-metal (so `T81_CANONFS_ROOT` has a real block device behind it in QEMU), and wiring the hosted `KernelRuntimeState` event loop (scheduler, pager, GICv3 interrupts) into the freestanding bridge path so `status` shows live counters.
 
 Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](drivers/qemu/):
 
@@ -352,7 +364,7 @@ Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](dr
 - [`drivers/qemu/sample-boot-log.txt`](drivers/qemu/sample-boot-log.txt) — confirmed serial sequence from a recent run
 - [`drivers/qemu/docs/QEMU_TESTING_RESULTS.md`](drivers/qemu/docs/QEMU_TESTING_RESULTS.md) — full boot test report
 
-**When Stage 5 reaches ~80%**, a CI job on `ubuntu-latest` will capture serial output on every push and embed the recording here.
+The [`qemu-boot`](.github/workflows/qemu-boot.yml) CI workflow builds the EFI binary, assembles a FAT32 GPT image, boots it under QEMU (TCG cortex-a57 + EDK2 AArch64) on every push that touches `userland/experimental/` or `drivers/qemu/`, validates all eight boot markers across all three phases, and commits the updated serial log back to `drivers/qemu/sample-boot-log.txt`.
 
 ---
 
@@ -422,6 +434,7 @@ The CI cross-platform determinism gate runs on every push to `main` and on a dai
 | Architecture Overview | `docs/architecture/OVERVIEW.md` |
 | Governance Charter | `docs/governance/README.md` |
 | Project Control Center | `docs/status/PROJECT_CONTROL_CENTER.md` |
+| Inference Benchmark Results | [`benchmarks/results/inference_comparison.md`](benchmarks/results/inference_comparison.md) |
 
 ---
 

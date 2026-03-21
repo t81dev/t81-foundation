@@ -105,3 +105,29 @@ ______________________________________________________________________
 ## 8. License
 
 By contributing, you agree your changes are licensed under the repository license terms.
+
+______________________________________________________________________
+
+## 9. Publishing Python Wheels to PyPI
+
+The [`python-wheels`](.github/workflows/python-wheels.yml) workflow publishes binary wheels for CPython 3.9–3.13 on Linux (x86\_64, ARM64), macOS (arm64, x86\_64), and Windows on every `v*.*.*` release tag.
+
+**Authentication** uses [OIDC Trusted Publishing](https://docs.pypi.org/trusted-publishers/) — no stored API tokens are needed. Before the first release, a maintainer must register the trusted publisher once on PyPI:
+
+1. Log in to [pypi.org](https://pypi.org) as an owner of the `t81` project.
+2. Navigate to **Your projects → t81 → Publishing**.
+3. Click **Add a new pending publisher** and fill in:
+   - **Owner:** `t81dev`
+   - **Repository:** `t81-foundation`
+   - **Workflow filename:** `python-wheels.yml`
+   - **Environment name:** `pypi` (matches the `environment:` key in the workflow)
+4. Save. No further configuration is needed — GitHub Actions will authenticate automatically on the next tagged release.
+
+To trigger a release:
+
+```sh
+git tag v1.9.3
+git push origin v1.9.3
+```
+
+The workflow runs cibuildwheel across all platforms, then uploads via `pypa/gh-action-pypi-publish`.

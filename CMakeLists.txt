@@ -947,6 +947,8 @@ if(T81_ENABLE_TERNARYOS)
         ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.obj)
     set(T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ
         ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_bare.obj)
+    set(T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_cpp.obj)
     set(T81_TERNARYOS_QEMU_SLICE6_EFI
         ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.EFI)
     set(T81_TERNARYOS_QEMU_SLICE6_STARTUP_TXT
@@ -1010,6 +1012,31 @@ if(T81_ENABLE_TERNARYOS)
     add_custom_target(t81_ternaryos_qemu_slice6_bare_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ})
 
+    # C++ kernel bridge — T81 banner + interactive t81> shell (freestanding).
+    # Compiled with -ffreestanding -fno-exceptions -fno-rtti so it links into
+    # the PE32+ EFI binary without a hosted C++ runtime.
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -fno-exceptions
+              -fno-rtti
+              -fno-use-cxa-atexit
+              -std=c++17
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_cpp_bridge.cpp
+              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              -o ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_cpp_bridge.cpp)
+    add_custom_target(t81_ternaryos_qemu_slice6_cpp_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ})
+
     if(T81_LLD_LINK)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_X86_64_EFI}
@@ -1061,7 +1088,10 @@ if(T81_ENABLE_TERNARYOS)
       list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control)
 
       # Slice 6: link QEMU slice6 BOOTAA64.EFI
-      #   stub (EFI entry + ExitBootServices) + bare kernel (PL011/GIC/timer) + shim
+      #   stub (EFI entry + ExitBootServices)
+      #   + bare kernel (Phase 2 probe, calls C++ bridge)
+      #   + cpp bridge (T81 banner + t81> shell, freestanding C++)
+      #   + shim (ternaryos_hal_main_c stub)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_EFI}
         COMMAND ${CMAKE_COMMAND} -E make_directory
@@ -1074,9 +1104,11 @@ if(T81_ENABLE_TERNARYOS)
                 /out:${T81_TERNARYOS_QEMU_SLICE6_EFI}
                 ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_slice6_efi
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})

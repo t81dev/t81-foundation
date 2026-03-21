@@ -259,7 +259,11 @@ int axion_kernel_main(const hal::BootContext& ctx) noexcept {
   //
   // On hosted / non-QEMU builds axion_kernel_bootstrap has already exercised
   // the kernel internals; we return 0 immediately for testability.
-  if (ctx.platform_id.rfind("qemu-aarch64:", 0) == 0) {
+  // Match both the hosted simulation prefix ("qemu-aarch64:") and the EFI
+  // stub prefix ("qemu-armv8:") so the C++ kernel banner fires on either path.
+  const bool is_qemu = ctx.platform_id.rfind("qemu-aarch64:", 0) == 0 ||
+                       ctx.platform_id.rfind("qemu-armv8:", 0) == 0;
+  if (is_qemu) {
     hal::axion_kernel_set_kernel_state_for_trap_dispatch(&*maybe_state);
     hal::qemu_hardware_init();
 
@@ -272,10 +276,13 @@ int axion_kernel_main(const hal::BootContext& ctx) noexcept {
     pl011_puts(kQemuVirtPl011Base, "  ===========================\r\n");
     pl011_puts(kQemuVirtPl011Base, "\r\n");
     pl011_puts(kQemuVirtPl011Base, "[axion] policy engine: ready\r\n");
-    if (maybe_state->published_executable_canonfs) {
-      pl011_puts(kQemuVirtPl011Base, "[axion] canonfs: mounted\r\n");
-    } else {
-      pl011_puts(kQemuVirtPl011Base, "[axion] canonfs: offline (T81_CANONFS_ROOT unset)\r\n");
+    {
+      const char* canon_root = std::getenv("T81_CANONFS_ROOT");
+      if (canon_root && canon_root[0] != '\0') {
+        pl011_puts(kQemuVirtPl011Base, "[axion] canonfs: mounted (persistent)\r\n");
+      } else {
+        pl011_puts(kQemuVirtPl011Base, "[axion] canonfs: mounted (in-memory)\r\n");
+      }
     }
     pl011_puts(kQemuVirtPl011Base, "[axion] kernel thread tid=1: running\r\n");
     pl011_puts(kQemuVirtPl011Base, "\r\n");
