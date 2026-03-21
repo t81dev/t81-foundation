@@ -2,6 +2,8 @@
   <img src="docs/assets/banner.png" alt="T81 — A Ternary Operating System for AI" width="100%">
 </p>
 
+Bootable preview in QEMU · Governed ternary inference · Bit-exact across platforms
+
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
 <!-- T81-SPEED-START -->
@@ -93,7 +95,7 @@ Ternary weights {−1, 0, +1} have no fractional component. A dot product over t
 | `TERNACCUM` | Scalar trit dot product accumulation |
 | `TACT` | Activation with Axion ceiling gate |
 
-This aligns with BitNet b1.58 / xTern class models: **15–60× energy reduction**, **4–90× throughput gain** versus FP16/FP32 baselines at comparable accuracy. T81WTN weight format stores quantized models; `t81 weights import` converts from SafeTensors or GGUF.
+This aligns with BitNet b1.58 / xTern class models: **15–60× energy reduction**, **4–90× throughput gain** versus FP16/FP32 baselines at comparable accuracy. T81 Ternary Weight (T81WTN) format stores quantized models; `t81 weights import` converts from SafeTensors or GGUF.
 
 ```sh
 t81 weights import model.safetensors -o model.t81w
@@ -344,6 +346,12 @@ Apple Silicon QEMU has host-level HVF serial capture constraints; the sequence a
 
 **Remaining to clean boot:** PL011 RX read loop wired to the kernel step function, so the prompt accepts and echoes input. `pl011_rx_ready()` and `pl011_getchar()` are implemented; the missing piece is the dispatch loop in `axion_kernel_step()`.
 
+Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](drivers/qemu/):
+
+- [`drivers/qemu/scripts/launch_production.sh`](drivers/qemu/scripts/launch_production.sh) — boot the image in QEMU
+- [`drivers/qemu/sample-boot-log.txt`](drivers/qemu/sample-boot-log.txt) — confirmed serial sequence from a recent run
+- [`drivers/qemu/docs/QEMU_TESTING_RESULTS.md`](drivers/qemu/docs/QEMU_TESTING_RESULTS.md) — full boot test report
+
 **When Stage 5 reaches ~80%**, a CI job on `ubuntu-latest` will capture serial output on every push and embed the recording here.
 
 ---
@@ -455,7 +463,7 @@ Ternary weights {−1, 0, +1} reduce dot products to conditional add/subtract �
 - 4–90× throughput gain at comparable accuracy
 - Aligns with BitNet b1.58, xTern, and 2024–2026 ternary transformer research
 
-T81WTN weight format and `t81 weights import` make this production-ready in the stack today.
+T81 Ternary Weight (T81WTN) format and `t81 weights import` make this production-ready in the stack today.
 
 ### 5. Trit-level governance hooks
 
@@ -466,3 +474,16 @@ Because the TISC ISA is ternary-native, the Axion kernel can intercept and audit
 ## License
 
 Apache License 2.0.
+
+---
+
+<details>
+<summary>Honest bootstrap note (March 2026)</summary>
+
+T81 is designed as a standalone OS with its own ISA and kernel — but no native ternary hardware exists yet. The current preview runs as a guest layer on Linux/macOS/Windows via binaries, Docker, or QEMU.
+
+This is temporary scaffolding — the same way early Linux ran on simulators before real hardware. Bare-metal boot is in Alpha; the goal is to eventually escape the host OS dependency entirely.
+
+Thanks for reading this far.
+
+</details>

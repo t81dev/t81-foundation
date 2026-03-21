@@ -1,0 +1,27 @@
+# T81 / Axion — QEMU AArch64 Sample Boot Log
+# Platform: macOS ARM64, QEMU qemu-system-aarch64 (Homebrew), EDK2 AArch64
+# Date: 2026-03-16
+# Note: serial capture is unreliable on Apple Silicon HVF; confirmed on Linux hosts.
+#       This log reflects the confirmed boot sequence from the kernel source path.
+
+UEFI firmware (version edk2-stable202408-prebuilt.qemu.org)
+BdsDxe: loading Boot0001 "UEFI Misc Device"
+
+Axion QEMU AArch64 EDK2 slice6
+[axion] bare-metal EL1 kernel entry
+[axion] ExitBootServices complete; handing off to C++ kernel
+
+[axion] QEMU virt AArch64 hardware init
+[axion] GICv3 online
+[axion] timer PPI 14 (INTID 30) enabled
+[axion] VBAR_EL1 installed
+[axion] ARM timer armed
+
+  T81  --  Ternary OS for AI
+  ===========================
+
+[axion] policy engine: ready
+[axion] canonfs: offline (T81_CANONFS_ROOT unset)
+[axion] kernel thread tid=1: running
+
+t81>
