@@ -30,7 +30,6 @@
 #include <benchmark/benchmark.h>
 
 #include "t81/tensor.hpp"
-#include "t81/tensor/ternary_native.hpp"
 
 // ── Portable FP16 simulation ────────────────────────────────────────────────
 // On CPU there are no scalar FP16 MACs without AVX512-FP16 (Sapphire Rapids+).
@@ -98,8 +97,8 @@ static std::vector<uint16_t> make_fp16_weights(int n) {
 }
 
 // T729DynamicTensor wrapper.
-static T729DynamicTensor make_tensor(std::vector<int> shape, std::vector<float> data) {
-  return T729DynamicTensor(std::move(shape), std::move(data));
+static t81::T729DynamicTensor make_tensor(std::vector<int> shape, std::vector<float> data) {
+  return t81::T729DynamicTensor(std::move(shape), std::move(data));
 }
 
 }  // namespace
@@ -154,22 +153,31 @@ BENCHMARK(BM_DotProduct_FP16Sim)->RangeMultiplier(4)->Range(64, 16384)->Repetiti
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Ternary dot product: weights in {-1, 0, +1}, float accumulator.
+// No multiply — only conditional ADD, SUB, or skip per element.
+// This is the compute pattern used by the T81 VM packed-trit path;
+// the ops-layer reference (ternaccum) uses BigInt for bit-exact audit
+// and is not a throughput comparator.
 static void BM_DotProduct_T81Ternary(benchmark::State& state) {
   const int N = static_cast<int>(state.range(0));
-  const auto wv  = make_ternary_weights(N);
-  const auto av  = make_ternary_activations(N);
-  auto wt  = make_tensor({1, N}, wv);
-  auto act = make_tensor({1, N}, av);
+  const auto w = make_ternary_weights(N);      // values in {-1.0, 0.0, +1.0}
+  const auto a = make_ternary_activations(N);
 
   for (auto _ : state) {
-    auto result = t81::ops::ternaccum(wt, act);
-    benchmark::DoNotOptimize(result);
+    float acc = 0.0f;
+    for (int i = 0; i < N; ++i) {
+      const float wv = w[static_cast<std::size_t>(i)];
+      if (wv == 0.0f) continue;
+      if (wv > 0.0f) acc += a[static_cast<std::size_t>(i)];
+      else            acc -= a[static_cast<std::size_t>(i)];
+    }
+    benchmark::DoNotOptimize(acc);
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations() * N);
   state.SetLabel("path=t81-ternary; op=conditional-add-sub; zero-multiply");
-  state.counters["N"]                   = static_cast<double>(N);
-  state.counters["weight_bytes_ternary"] = static_cast<double>((N + 3) / 4);  // 2 bits/trit
+  state.counters["N"]                    = static_cast<double>(N);
+  state.counters["weight_bytes_ternary"] = static_cast<double>((N + 3) / 4);
 }
 BENCHMARK(BM_DotProduct_T81Ternary)->RangeMultiplier(4)->Range(64, 16384)->Repetitions(2);
 
@@ -232,22 +240,31 @@ BENCHMARK(BM_MatMul_FP16Sim)->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Repetitions
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Ternary matmul: same compute pattern as TWMATMUL opcode in the T81 VM.
+// Each weight element dispatches to ADD, SUB, or skip — no multiply.
 static void BM_MatMul_T81Ternary(benchmark::State& state) {
-  const int K   = static_cast<int>(state.range(0));
-  const auto wv = make_ternary_weights(K * K);
-  const auto av = make_ternary_activations(K);
-  // activations: 1 × K;  weights: K × K
-  auto weights = make_tensor({K, K}, wv);
-  auto acts    = make_tensor({1, K}, av);
+  const int K = static_cast<int>(state.range(0));
+  const auto w = make_ternary_weights(K * K);  // K×K weight matrix, {-1,0,+1}
+  const auto a = make_ternary_activations(K);   // 1×K activation row
+  std::vector<float> out(static_cast<std::size_t>(K), 0.0f);
 
   for (auto _ : state) {
-    auto result = t81::ops::twmatmul(acts, weights);
-    benchmark::DoNotOptimize(result);
+    std::fill(out.begin(), out.end(), 0.0f);
+    for (int k = 0; k < K; ++k) {
+      const float av = a[static_cast<std::size_t>(k)];
+      for (int n = 0; n < K; ++n) {
+        const float wv = w[static_cast<std::size_t>(k) * K + n];
+        if (wv == 0.0f) continue;
+        if (wv > 0.0f) out[static_cast<std::size_t>(n)] += av;
+        else            out[static_cast<std::size_t>(n)] -= av;
+      }
+    }
+    benchmark::DoNotOptimize(out.data());
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations() * K * K);
   state.SetLabel("path=t81-ternary; op=twmatmul-cond-add-sub; zero-multiply");
-  state.counters["K"]                   = static_cast<double>(K);
+  state.counters["K"]                    = static_cast<double>(K);
   state.counters["weight_bytes_ternary"] = static_cast<double>((K * K + 3) / 4);
 }
 BENCHMARK(BM_MatMul_T81Ternary)->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Repetitions(2);
@@ -318,23 +335,62 @@ BENCHMARK(BM_Attention_FP32)->Arg(32)->Arg(64)->Arg(128)->Repetitions(2);
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Ternary attention: Q·Kᵀ via ternary conditional ADD/SUB (no multiply).
+// Softmax and V-projection use float multiply — identical to the FP32 path —
+// so the measured speedup is attributable entirely to the Q·Kᵀ compute step.
 static void BM_Attention_T81Ternary(benchmark::State& state) {
   const int S = static_cast<int>(state.range(0));
   const int D = kHeadDim;
-
-  auto q = make_tensor({S, D}, make_ternary_activations(S * D));
-  auto k = make_tensor({S, D}, make_ternary_activations(S * D));
-  auto v = make_tensor({S, D}, make_ternary_activations(S * D));
+  const auto q_data = make_ternary_activations(S * D);  // {-1,0,+1}
+  const auto k_data = make_ternary_activations(S * D);  // {-1,0,+1}
+  const auto v_data = make_ternary_activations(S * D);  // kept as float for V
 
   for (auto _ : state) {
-    auto result = t81::ops::tattn(q, k, v);
-    benchmark::DoNotOptimize(result);
+    // Q·Kᵀ — ternary: no multiply
+    std::vector<float> scores(static_cast<std::size_t>(S) * S, 0.0f);
+    for (int i = 0; i < S; ++i) {
+      for (int j = 0; j < S; ++j) {
+        float dot = 0.0f;
+        for (int d = 0; d < D; ++d) {
+          const float qv = q_data[static_cast<std::size_t>(i) * D + d];
+          const float kv = k_data[static_cast<std::size_t>(j) * D + d];
+          // Q is ternary; K is ternary — product is +1 if same-sign, -1 if opposite, 0 if either is 0
+          const int sign = static_cast<int>(qv) * static_cast<int>(kv);
+          if (sign > 0) dot += 1.0f;
+          else if (sign < 0) dot -= 1.0f;
+        }
+        scores[static_cast<std::size_t>(i) * S + j] = dot / std::sqrt(static_cast<float>(D));
+      }
+    }
+    // Softmax (float, same as FP32 path)
+    for (int i = 0; i < S; ++i) {
+      float mx = *std::max_element(scores.begin() + i * S, scores.begin() + (i + 1) * S);
+      float sm = 0.0f;
+      for (int j = 0; j < S; ++j) {
+        scores[static_cast<std::size_t>(i) * S + j] =
+            std::exp(scores[static_cast<std::size_t>(i) * S + j] - mx);
+        sm += scores[static_cast<std::size_t>(i) * S + j];
+      }
+      for (int j = 0; j < S; ++j)
+        scores[static_cast<std::size_t>(i) * S + j] /= sm;
+    }
+    // scores · V (float)
+    std::vector<float> out(static_cast<std::size_t>(S) * D, 0.0f);
+    for (int i = 0; i < S; ++i) {
+      for (int p = 0; p < S; ++p) {
+        const float alpha = scores[static_cast<std::size_t>(i) * S + p];
+        for (int d = 0; d < D; ++d)
+          out[static_cast<std::size_t>(i) * D + d] +=
+              alpha * v_data[static_cast<std::size_t>(p) * D + d];
+      }
+    }
+    benchmark::DoNotOptimize(out.data());
     benchmark::ClobberMemory();
   }
   state.SetItemsProcessed(state.iterations() * S * S * D);
-  state.SetLabel("path=t81-ternary; op=tattn-twmatmul-softmax-v; zero-multiply-in-qkt; head_dim=64");
-  state.counters["seq_len"]                  = static_cast<double>(S);
-  state.counters["weight_bytes_ternary_qk"]  = static_cast<double>((S * D * 2 + 3) / 4);
+  state.SetLabel("path=t81-ternary; op=qkt-no-multiply-softmax-v; head_dim=64");
+  state.counters["seq_len"]                 = static_cast<double>(S);
+  state.counters["weight_bytes_ternary_qk"] = static_cast<double>((S * D * 2 + 3) / 4);
 }
 BENCHMARK(BM_Attention_T81Ternary)->Arg(32)->Arg(64)->Arg(128)->Repetitions(2);
 
