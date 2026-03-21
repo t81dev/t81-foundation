@@ -1,7 +1,7 @@
 # Inference Comparison Benchmark Results
 
 **Generated:** 2026-03-21  
-**Commit:** `5ef417f0`  
+**Commit:** `14d71b3f`  
 **Runner:** t81devs-MacBook-Air.local · 8 CPUs  
 **Build:** Release · `-O3 -march=native`
 
