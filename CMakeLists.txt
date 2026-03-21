@@ -2957,7 +2957,7 @@ if(T81_BUILD_PYTHON_BINDINGS)
   pybind11_add_module(_t81 lang/python/t81_python.cpp)
   target_link_libraries(_t81 PRIVATE t81_core t81_lang_frontend t81_isa t81_vm)
   # Install the extension into the t81 package directory so scikit-build-core
-  # picks it up alongside python/t81/__init__.py.
+  # picks it up alongside ffi/python/__init__.py.
   install(TARGETS _t81 LIBRARY DESTINATION t81)
 endif()
 
