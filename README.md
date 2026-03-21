@@ -9,7 +9,7 @@
 
 # T81 — A Ternary Computing Architecture
 
-![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
+![Release](https://img.shields.io/badge/release-v1.9.1--Stable-blue)
 ![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
@@ -122,6 +122,34 @@ Deterministic-surface classification follows the governance model introduced by 
 
 ## Quick Start
 
+### Download a prebuilt binary
+
+Prebuilt binaries are published for every release — no compiler required.
+
+**macOS / Linux** (one-liner):
+
+```sh
+curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
+```
+
+**Windows** (PowerShell):
+
+```powershell
+irm https://github.com/t81dev/t81-foundation/releases/latest/download/install.ps1 | iex
+```
+
+Or download an archive directly from the [latest release](https://github.com/t81dev/t81-foundation/releases/latest):
+
+| Platform | Archive |
+| :--- | :--- |
+| Linux x86\_64 | `t81-<version>-linux-x86_64.tar.gz` |
+| Linux ARM64 | `t81-<version>-linux-arm64.tar.gz` |
+| macOS Apple Silicon | `t81-<version>-macos-arm64.tar.gz` |
+| macOS Intel | `t81-<version>-macos-x86_64.tar.gz` |
+| Windows x86\_64 | `t81-<version>-windows-x86_64.zip` |
+
+Each archive follows the standard install layout (`bin/`, `lib/`, `include/`). Extract and place `bin/t81` (or `bin\t81.exe`) anywhere on your `PATH`.
+
 ### Build from source
 
 ```bash
@@ -141,16 +169,16 @@ ctest --test-dir build --output-on-failure
 
 ```bash
 # Compile a T81Lang program
-./build/t81 code build examples/hello.t81 -o hello.tisc
+t81 code build examples/hello.t81 -o hello.tisc
 
 # Execute with Axion governance
-./build/t81 vm run hello.tisc
+t81 vm run hello.tisc
 
 # Launch the human operator TUI
-./build/t81 studio
+t81 studio
 
 # Launch the AI-native TUI
-./build/t81 agent
+t81 agent
 ```
 
 ---
