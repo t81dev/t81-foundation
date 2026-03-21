@@ -28,8 +28,55 @@ curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/ins
 
 ---
 
+## Demo
+
+Boot T81 on QEMU AArch64 (EDK2 slice6) on any Linux host:
+
+```sh
+# Install deps (Ubuntu 24.04)
+sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools cmake ninja-build clang-18 lld-18
+
+# Clone and run
+git clone https://github.com/t81dev/t81-foundation.git && cd t81-foundation
+./drivers/qemu/scripts/boot_demo.sh
+```
+
+Expected terminal output:
+
+```text
+Axion QEMU AArch64 EDK2 slice6
+
+[axion] bare-metal EL1 kernel entry
+[axion] ExitBootServices complete; handing off to C++ kernel
+
+  T81  --  Ternary OS for AI
+  ===========================
+
+[axion] policy engine: ready
+[axion] canonfs: mounted (in-memory)
+[axion] kernel thread tid=1: running
+
+t81> help
+  help     -- this message
+  version  -- T81 build info
+  status   -- kernel counters and governance state
+  policy   -- Axion policy summary
+t81>
+```
+
+Play the pre-recorded session locally with [asciinema](https://asciinema.org):
+
+```sh
+asciinema play drivers/qemu/t81-boot.cast
+```
+
+The full three-phase boot log is at [`drivers/qemu/sample-boot-log.txt`](drivers/qemu/sample-boot-log.txt). The [`qemu-boot`](.github/workflows/qemu-boot.yml) CI workflow validates this sequence on every push.
+
+---
+
 ## Table of Contents
 
+- [Demo](#demo)
 - [The OS that AI was missing](#the-os-that-ai-was-missing)
 - [Architecture](#architecture)
 - [What T81Lang looks like](#what-t81lang-looks-like)
