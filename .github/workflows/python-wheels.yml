@@ -1,0 +1,108 @@
+# T81 Foundation — Python wheel build and PyPI publish
+#
+# Builds manylinux (x86_64 + aarch64), macOS (arm64 + x86_64), and Windows
+# (AMD64) wheels for CPython 3.9–3.13, then publishes to PyPI.
+#
+# Trigger: every release tag  (v*.*.*)  or manual workflow_dispatch.
+#
+# PyPI publishing uses OIDC Trusted Publishing — no stored API token needed.
+# Configure the trusted publisher at https://pypi.org/manage/account/publishing/
+# with:
+#   Owner:      t81dev
+#   Repository: t81-foundation
+#   Workflow:   python-wheels.yml
+
+name: Python Wheels
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write   # required for OIDC trusted publishing
+
+jobs:
+  # ── Build wheels on all platforms ─────────────────────────────────────────
+  build-wheels:
+    name: Wheels · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Set up QEMU (Linux aarch64 emulation)
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: aarch64
+
+      - name: Install cibuildwheel
+        run: pip install cibuildwheel==2.23.3
+
+      - name: Build wheels
+        run: python -m cibuildwheel --output-dir dist
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: wheels-${{ matrix.os }}
+          path: dist/*.whl
+          retention-days: 7
+
+  # ── Build the source distribution ─────────────────────────────────────────
+  build-sdist:
+    name: Source distribution
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: '3.12'
+
+      - name: Build sdist
+        run: |
+          pip install build
+          python -m build --sdist --outdir dist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: sdist
+          path: dist/*.tar.gz
+          retention-days: 7
+
+  # ── Publish to PyPI ────────────────────────────────────────────────────────
+  publish:
+    name: Publish to PyPI
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-24.04
+    environment: pypi   # maps to the PyPI trusted-publisher environment
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # OIDC trusted publishing — no PYPI_API_TOKEN secret required.
+        # The 'environment: pypi' setting above gates the OIDC token issuance.

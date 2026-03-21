@@ -23,7 +23,7 @@
 namespace py = pybind11;
 using namespace t81;
 
-PYBIND11_MODULE(t81_python, m) {
+PYBIND11_MODULE(_t81, m) {
   m.doc() = "T81 Foundation Python Bindings";
 
   // Bind T81Int<81>
