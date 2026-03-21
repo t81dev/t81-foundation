@@ -378,14 +378,11 @@ Live recording of the current QEMU AArch64 boot sequence (serial output):
 <p align="center">
   <img src="https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/assets/boot.gif" 
        alt="T81 QEMU AArch64 boot sequence — live t81> shell demo" 
-       width="95%">
+       width="95%" style="border:1px solid #ddd; border-radius:8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
   <br><small>Current boot progress: EFI → bare-metal EL1 → policy engine → CanonFS mount → interactive t81> prompt</small>
 </p>
 
-<br><small>
-  <br>
-  Also playable interactively: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">asciinema recording (.cast)</a>
-</small>
+<br><small>Interactive replay: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">t81-boot.cast (asciinema)</a></small>
 
 T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward a clean boot with a shell prompt visible on serial output — the prerequisite for a recorded boot demo in this README.
 
