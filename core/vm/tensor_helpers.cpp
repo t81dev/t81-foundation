@@ -308,9 +308,17 @@ std::optional<t81::T729DynamicTensor> native_tensor_tact_direct(
     shape.push_back(static_cast<int>(dim));
   }
 
+  // Apply activation function explicitly. For ExactTrit inputs {-1,0,+1},
+  // snap_trit(tanh(±1)) = ±1 and snap_trit(tanh(0)) = 0, so both modes are
+  // identity on pre-ternary values. Applied here for correctness in case the
+  // native trit buffer ever contains out-of-range values.
   std::vector<float> out(total, 0.0f);
   for (std::size_t i = 0; i < total; ++i) {
-    out[i] = static_cast<float>(trits[i]);
+    float x = static_cast<float>(trits[i]);
+    if (mode == t81::ops::kTActModeTanh) {
+      x = std::tanh(x);
+    }
+    out[i] = static_cast<float>(t81::ops::ternary_detail::snap_trit(x));
   }
 
   auto tensor = t81::T729DynamicTensor::from_host_float_data(
@@ -332,28 +340,66 @@ std::optional<t81::v1::T81BigInt> native_tensor_ternaccum_direct(
     return std::nullopt;
   }
 
-  t81::v1::T81BigInt acc(static_cast<std::int64_t>(0));
   const bool exact_trit_activations =
       activations.numeric_class() == t81::TensorNumericClass::ExactTrit;
+
+  // Fast path: ExactTrit activations — pre-snap to int8, then SIMD int8×int8
+  // dot product into int32. Sum of N ternary products fits int32 for any N ≤ 2^30.
+  // One T81BigInt is constructed at the end to preserve the audit-trail type.
+  if (exact_trit_activations) {
+    // Pre-snap float activations to int8 {-1, 0, +1}
+    std::vector<std::int8_t> av_trits(total, 0);
+    for (std::size_t i = 0; i < total; ++i) {
+      const float v = act_vals[i];
+      if (v == 1.0f)       av_trits[i] =  1;
+      else if (v == -1.0f) av_trits[i] = -1;
+    }
+
+    int32_t dot = 0;
+    std::size_t i = 0;
+#if defined(__ARM_NEON) || defined(__AVX2__)
+    const std::size_t total8 = (total / 8) * 8;
+#endif
+#ifdef __ARM_NEON
+    // 8-wide: vmull_s8 → int16x8, vpaddlq_s16 → int32x4, vaddvq_s32 at end.
+    int32x4_t acc4 = vdupq_n_s32(0);
+    for (; i < total8; i += 8) {
+      const int8x8_t wv = vld1_s8(trits.data() + i);
+      const int8x8_t av = vld1_s8(av_trits.data() + i);
+      acc4 = vaddq_s32(acc4, vpaddlq_s16(vmull_s8(wv, av)));
+    }
+    dot = vaddvq_s32(acc4);
+#elif defined(__AVX2__)
+    // 8-wide: cvtepi8_epi32 + mullo_epi32, horizontal sum at end.
+    __m256i acc8 = _mm256_setzero_si256();
+    for (; i < total8; i += 8) {
+      const __m128i wv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(trits.data() + i));
+      const __m128i av = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(av_trits.data() + i));
+      acc8 = _mm256_add_epi32(acc8,
+          _mm256_mullo_epi32(_mm256_cvtepi8_epi32(wv), _mm256_cvtepi8_epi32(av)));
+    }
+    {
+      const __m128i lo = _mm256_extracti128_si256(acc8, 0);
+      const __m128i hi = _mm256_extracti128_si256(acc8, 1);
+      const __m128i s  = _mm_add_epi32(lo, hi);
+      const __m128i s2 = _mm_hadd_epi32(s, s);
+      dot = _mm_extract_epi32(_mm_hadd_epi32(s2, s2), 0);
+    }
+#endif
+    // Scalar tail (also full loop on non-SIMD platforms)
+    for (; i < total; ++i) {
+      dot += static_cast<int32_t>(trits[i]) * static_cast<int32_t>(av_trits[i]);
+    }
+    return t81::v1::T81BigInt(static_cast<std::int64_t>(dot));
+  }
+
+  // General path: float activations with snap_trit — T81BigInt per element.
+  t81::v1::T81BigInt acc(static_cast<std::int64_t>(0));
   for (std::size_t i = 0; i < total; ++i) {
     const int wt = trits[i];
-    if (wt == 0) {
-      continue;
-    }
-    int av = 0;
-    if (exact_trit_activations) {
-      const float value = act_vals[i];
-      if (value == -1.0f) {
-        av = -1;
-      } else if (value == 1.0f) {
-        av = 1;
-      }
-    } else {
-      av = t81::ops::ternary_detail::snap_trit(act_vals[i]);
-    }
-    if (av == 0) {
-      continue;
-    }
+    if (wt == 0) continue;
+    const int av = t81::ops::ternary_detail::snap_trit(act_vals[i]);
+    if (av == 0) continue;
     if (wt > 0) {
       acc = acc + t81::v1::T81BigInt(static_cast<std::int64_t>(av));
     } else {
@@ -969,66 +1015,129 @@ std::optional<t81::T729DynamicTensor> native_tensor_tattn_direct(
     }
   }
 
+  // Score computation: reordered to i→j→p for cache efficiency.
+  //   Old p→i→j: Q and K both accessed column-strided (head_q/head_k stride).
+  //   New i→j→p: Q row q_row[p] and K row k_row[p] both sequential; output
+  //   scores[i][j] accumulated as a scalar — stays in register across full p.
+  // Inner p loop vectorized: ternary×ternary = int8×int8 → int32 sum.
   std::vector<float> scores(static_cast<std::size_t>(seq_q) * static_cast<std::size_t>(seq_k), 0.0f);
-  for (int p = 0; p < head_q; ++p) {
-    for (int i = 0; i < seq_q; ++i) {
-      const int av = q_trits[static_cast<std::size_t>(i) * static_cast<std::size_t>(head_q) +
-                             static_cast<std::size_t>(p)];
-      if (av == 0) {
-        continue;
+#if defined(__ARM_NEON) || defined(__AVX2__)
+  const int head8s = (head_q / 8) * 8;  // SIMD width for int8 score reduction
+#endif
+#if defined(__ARM_NEON)
+  const int headv_s = (head_v / 4) * 4;  // NEON 4-wide for float V output
+#elif defined(__AVX2__)
+  const int headv_s = (head_v / 8) * 8;  // AVX2 8-wide for float V output
+#endif
+  for (int i = 0; i < seq_q; ++i) {
+    const std::int8_t* const q_row =
+        q_trits.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(head_q);
+    float* const srow =
+        scores.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k);
+    for (int j = 0; j < seq_k; ++j) {
+      const std::int8_t* const k_row =
+          k_trits.data() + static_cast<std::size_t>(j) * static_cast<std::size_t>(head_k);
+      int32_t dot = 0;
+      int p = 0;
+#ifdef __ARM_NEON
+      // 8 int8 trits at once: vmull_s8 → int16x8, vpaddlq_s16 → int32x4 sum.
+      int32x4_t acc4 = vdupq_n_s32(0);
+      for (; p < head8s; p += 8) {
+        const int8x8_t qv = vld1_s8(q_row + p);
+        const int8x8_t kv = vld1_s8(k_row + p);
+        acc4 = vaddq_s32(acc4, vpaddlq_s16(vmull_s8(qv, kv)));
       }
-      for (int j = 0; j < seq_k; ++j) {
-        const int wt = k_trits[static_cast<std::size_t>(j) * static_cast<std::size_t>(head_k) +
-                               static_cast<std::size_t>(p)];
-        if (wt == 0) {
-          continue;
-        }
-        scores[static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k) +
-               static_cast<std::size_t>(j)] += static_cast<float>(wt * av);
+      dot = vaddvq_s32(acc4);
+#elif defined(__AVX2__)
+      // 8 int8 trits: sign-extend to int32, mullo, accumulate.
+      __m256i acc8 = _mm256_setzero_si256();
+      for (; p < head8s; p += 8) {
+        const __m128i qv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(q_row + p));
+        const __m128i kv = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(k_row + p));
+        acc8 = _mm256_add_epi32(acc8,
+            _mm256_mullo_epi32(_mm256_cvtepi8_epi32(qv), _mm256_cvtepi8_epi32(kv)));
       }
+      {
+        const __m128i lo  = _mm256_extracti128_si256(acc8, 0);
+        const __m128i hi  = _mm256_extracti128_si256(acc8, 1);
+        const __m128i s   = _mm_add_epi32(lo, hi);
+        const __m128i s2  = _mm_hadd_epi32(s, s);
+        dot = _mm_extract_epi32(_mm_hadd_epi32(s2, s2), 0);
+      }
+#endif
+      for (; p < head_q; ++p) {
+        dot += static_cast<int32_t>(q_row[p]) * static_cast<int32_t>(k_row[p]);
+      }
+      srow[j] = static_cast<float>(dot);
     }
   }
 
+  // Softmax per query row: scale → stable exp → normalize.
+  // exp() stays scalar (correctness); scale and normalize passes are SIMD.
   const float scale = 1.0f / std::sqrt(static_cast<float>(head_q));
   for (int i = 0; i < seq_q; ++i) {
+    float* const srow = scores.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k);
     float row_max = -1.0e38f;
     for (int j = 0; j < seq_k; ++j) {
-      float& sv = scores[static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k) +
-                         static_cast<std::size_t>(j)];
-      sv *= scale;
-      row_max = std::max(row_max, sv);
+      srow[j] *= scale;
+      row_max = std::max(row_max, srow[j]);
     }
     float row_sum = 0.0f;
     for (int j = 0; j < seq_k; ++j) {
-      float& sv = scores[static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k) +
-                         static_cast<std::size_t>(j)];
-      sv = std::exp(sv - row_max);
-      row_sum += sv;
+      srow[j] = std::exp(srow[j] - row_max);
+      row_sum += srow[j];
     }
     if (row_sum == 0.0f) {
       return std::nullopt;
     }
-    const float inv_row_sum = 1.0f / row_sum;
-    for (int j = 0; j < seq_k; ++j) {
-      scores[static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k) +
-             static_cast<std::size_t>(j)] *= inv_row_sum;
+    const float inv_sum = 1.0f / row_sum;
+    int j = 0;
+#ifdef __ARM_NEON
+    const float32x4_t inv4 = vdupq_n_f32(inv_sum);
+    for (; j < (seq_k / 4) * 4; j += 4) {
+      vst1q_f32(srow + j, vmulq_f32(vld1q_f32(srow + j), inv4));
+    }
+#elif defined(__AVX2__)
+    const __m256 inv8 = _mm256_set1_ps(inv_sum);
+    for (; j < (seq_k / 8) * 8; j += 8) {
+      _mm256_storeu_ps(srow + j, _mm256_mul_ps(_mm256_loadu_ps(srow + j), inv8));
+    }
+#endif
+    for (; j < seq_k; ++j) {
+      srow[j] *= inv_sum;
     }
   }
 
+  // Output: O[i][j] = sum_p(softmax[i][p] * V[p][j])
+  // SIMD over head_v dimension with FMA (NEON vmlaq_f32, AVX2 _mm256_fmadd_ps).
   std::vector<float> out(static_cast<std::size_t>(seq_q) * static_cast<std::size_t>(head_v), 0.0f);
   for (int i = 0; i < seq_q; ++i) {
+    const float* const srow =
+        scores.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k);
+    float* const orow =
+        out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(head_v);
     for (int p = 0; p < seq_k; ++p) {
-      const float alpha =
-          scores[static_cast<std::size_t>(i) * static_cast<std::size_t>(seq_k) +
-                 static_cast<std::size_t>(p)];
+      const float alpha = srow[p];
       if (alpha == 0.0f) {
         continue;
       }
-      for (int j = 0; j < head_v; ++j) {
-        out[static_cast<std::size_t>(i) * static_cast<std::size_t>(head_v) +
-            static_cast<std::size_t>(j)] +=
-            alpha * v_vals[static_cast<std::size_t>(p) * static_cast<std::size_t>(head_v) +
-                           static_cast<std::size_t>(j)];
+      const float* const vrow =
+          v_vals.data() + static_cast<std::size_t>(p) * static_cast<std::size_t>(head_v);
+      int j = 0;
+#ifdef __ARM_NEON
+      const float32x4_t alpha4 = vdupq_n_f32(alpha);
+      for (; j < headv_s; j += 4) {
+        vst1q_f32(orow + j, vmlaq_f32(vld1q_f32(orow + j), alpha4, vld1q_f32(vrow + j)));
+      }
+#elif defined(__AVX2__)
+      const __m256 alpha8 = _mm256_set1_ps(alpha);
+      for (; j < headv_s; j += 8) {
+        _mm256_storeu_ps(orow + j,
+            _mm256_fmadd_ps(alpha8, _mm256_loadu_ps(vrow + j), _mm256_loadu_ps(orow + j)));
+      }
+#endif
+      for (; j < head_v; ++j) {
+        orow[j] += alpha * vrow[j];
       }
     }
   }
