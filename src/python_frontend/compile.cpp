@@ -48,10 +48,8 @@ std::filesystem::path make_temp_path(std::string_view stem, std::string_view ext
          (std::string(stem) + "-" + std::to_string(now) + std::string(ext));
 }
 
-bool normalize_python_to_c(const std::string& source,
-                           const std::string& diag_name,
-                           std::string& c_source,
-                           std::string* error_message) {
+bool normalize_python_to_c(const std::string& source, const std::string& diag_name,
+                           std::string& c_source, std::string* error_message) {
   const std::filesystem::path input_path = make_temp_path("t81-python-front", ".py");
   const std::filesystem::path output_path = make_temp_path("t81-python-front", ".c");
   const std::filesystem::path error_path = make_temp_path("t81-python-front", ".err");
@@ -67,20 +65,22 @@ bool normalize_python_to_c(const std::string& source,
     std::ofstream in(input_path, std::ios::binary | std::ios::trunc);
     if (!in) {
       cleanup();
-      return fail(error_message, "failed to create temporary Python input for frontend normalization");
+      return fail(error_message,
+                  "failed to create temporary Python input for frontend normalization");
     }
     in << source;
     if (!in.good()) {
       cleanup();
-      return fail(error_message, "failed writing temporary Python input for frontend normalization");
+      return fail(error_message,
+                  "failed writing temporary Python input for frontend normalization");
     }
   }
 
-  std::string command =
-      shell_quote(T81_PYTHON3_EXECUTABLE) + " " +
-      shell_quote(T81_PYTHON_FRONTEND_SCRIPT_PATH) + " --input " +
-      shell_quote(input_path.string()) + " --output " + shell_quote(output_path.string()) +
-      " --diag-name " + shell_quote(diag_name) + " 2> " + shell_quote(error_path.string());
+  std::string command = shell_quote(T81_PYTHON3_EXECUTABLE) + " " +
+                        shell_quote(T81_PYTHON_FRONTEND_SCRIPT_PATH) + " --input " +
+                        shell_quote(input_path.string()) + " --output " +
+                        shell_quote(output_path.string()) + " --diag-name " +
+                        shell_quote(diag_name) + " 2> " + shell_quote(error_path.string());
 #if defined(_WIN32)
   command = "\"" + command + "\"";
 #endif
@@ -91,15 +91,15 @@ bool normalize_python_to_c(const std::string& source,
     buffer << err.rdbuf();
     const std::string message = buffer.str();
     cleanup();
-    return fail(error_message, message.empty()
-                                   ? diag_name + ":1:1: Python subset normalization failed"
-                                   : message);
+    return fail(error_message,
+                message.empty() ? diag_name + ":1:1: Python subset normalization failed" : message);
   }
 
   std::ifstream out(output_path, std::ios::binary);
   if (!out) {
     cleanup();
-    return fail(error_message, diag_name + ":1:1: Python subset normalization did not produce C output");
+    return fail(error_message,
+                diag_name + ":1:1: Python subset normalization did not produce C output");
   }
   std::ostringstream buffer;
   buffer << out.rdbuf();
@@ -110,10 +110,8 @@ bool normalize_python_to_c(const std::string& source,
 
 }  // namespace
 
-bool compile_source_to_mlir_text(const std::string& source,
-                                 const std::string& diag_name,
-                                 std::string& output,
-                                 const CompileOptions& options,
+bool compile_source_to_mlir_text(const std::string& source, const std::string& diag_name,
+                                 std::string& output, const CompileOptions& options,
                                  std::string* error_message) {
   std::string c_source;
   if (!normalize_python_to_c(source, diag_name, c_source, error_message)) {
@@ -124,13 +122,12 @@ bool compile_source_to_mlir_text(const std::string& source,
   bridge_options.dcp_floats = options.dcp_floats;
   bridge_options.use_t81_dialect = options.use_t81_dialect;
   bridge_options.emit_comments = options.emit_comments;
-  return t81::frontend_adapter::compile_normalized_c_to_mlir_text(
-      c_source, diag_name, output, bridge_options, error_message);
+  return t81::frontend_adapter::compile_normalized_c_to_mlir_text(c_source, diag_name, output,
+                                                                  bridge_options, error_message);
 }
 
 bool compile_file_to_mlir(const std::filesystem::path& input,
-                          const std::filesystem::path& output_path,
-                          const CompileOptions& options,
+                          const std::filesystem::path& output_path, const CompileOptions& options,
                           std::string* error_message) {
   std::string source;
   if (!t81::frontend_adapter::read_text_file(input, source, error_message)) {
@@ -149,21 +146,16 @@ bool compile_file_to_mlir(const std::filesystem::path& input,
 
 namespace t81::python_frontend {
 
-bool compile_source_to_mlir_text(const std::string&,
-                                 const std::string&,
-                                 std::string&,
-                                 const CompileOptions&,
-                                 std::string* error_message) {
+bool compile_source_to_mlir_text(const std::string&, const std::string&, std::string&,
+                                 const CompileOptions&, std::string* error_message) {
   if (error_message) {
     *error_message = "t81 was built without the experimental Python frontend";
   }
   return false;
 }
 
-bool compile_file_to_mlir(const std::filesystem::path&,
-                          const std::filesystem::path&,
-                          const CompileOptions&,
-                          std::string* error_message) {
+bool compile_file_to_mlir(const std::filesystem::path&, const std::filesystem::path&,
+                          const CompileOptions&, std::string* error_message) {
   if (error_message) {
     *error_message = "t81 was built without the experimental Python frontend";
   }

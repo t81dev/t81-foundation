@@ -57,7 +57,6 @@
 
 #include "core/vm/internal/memory_segments.hpp"
 #include "logging.hpp"
-#include "tooling/cli/ai/ai_cli_shared.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
@@ -77,6 +76,7 @@
 #include "t81/tracing/canonhash.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
+#include "tooling/cli/ai/ai_cli_shared.hpp"
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
 #endif
@@ -1375,9 +1375,7 @@ Examples:
 )";
 }
 
-void print_help_ai() {
-  t81::cli::ai::print_usage("t81 ai");
-}
+void print_help_ai() { t81::cli::ai::print_usage("t81 ai"); }
 
 void print_usage(const char* prog) {
   std::cerr << R"(T81 Foundation - Ternary-Native Computing Stack
@@ -2257,8 +2255,7 @@ Args parse_args(int argc, char* argv[]) {
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
           a.command == "man" || a.command == "feedback" || a.command == "c" ||
           a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-          a.command == "ai" ||
-          a.command == "mlir") {
+          a.command == "ai" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         a.need_version = true;
@@ -2274,13 +2271,13 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
-                 a.command == "ai" ||
-                 a.command == "project" || a.command == "env" || a.command == "internal" ||
-                 a.command == "completion" || a.command == "man" || a.command == "feedback" ||
-                 a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
-                 a.command == "c" || a.command == "rust" || a.command == "python" ||
-                 a.command == "llvm" || a.command == "mlir") {
+                 a.command == "ai" || a.command == "project" || a.command == "env" ||
+                 a.command == "internal" || a.command == "completion" || a.command == "man" ||
+                 a.command == "feedback" || a.command == "canonize-tensor" ||
+                 a.command == "canonize-file" || a.command == "memory-stats" ||
+                 a.command == "tier" || a.command == "profile" || a.command == "c" ||
+                 a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+                 a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2295,13 +2292,12 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
-                 a.command == "ai" ||
-                 a.command == "project" || a.command == "env" || a.command == "internal" ||
-                 a.command == "completion" || a.command == "man" || a.command == "feedback" ||
-                 a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" || a.command == "c" ||
-                 a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-                 a.command == "mlir") {
+                 a.command == "ai" || a.command == "project" || a.command == "env" ||
+                 a.command == "internal" || a.command == "completion" || a.command == "man" ||
+                 a.command == "feedback" || a.command == "canonize-tensor" ||
+                 a.command == "canonize-file" || a.command == "memory-stats" ||
+                 a.command == "tier" || a.command == "c" || a.command == "rust" ||
+                 a.command == "python" || a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -2536,8 +2532,7 @@ int run_weights_import(const Args& args) {
   if (!fs::exists(opts.input)) {
     std::string resolution_error;
     auto resolved = t81::cli::resolve_repo_model_path(opts.input.string(),
-                                                      {".gguf", ".safetensors"},
-                                                      &resolution_error);
+                                                      {".gguf", ".safetensors"}, &resolution_error);
     if (!resolved) {
       error("weights import: " + resolution_error);
       return 1;
@@ -3678,8 +3673,9 @@ int run_axion(const Args& args) {
 
   if (sub == "optimize") {
     const auto previous_state = read_axion_state(canonfs_root);
-    const auto previous_snapshot = previous_state.active_snapshot ? previous_state.active_snapshot
-                                                                  : latest_snapshot_hash(canonfs_root);
+    const auto previous_snapshot = previous_state.active_snapshot
+                                       ? previous_state.active_snapshot
+                                       : latest_snapshot_hash(canonfs_root);
     if (!write_axion_state(target_tier)) {
       return 1;
     }
@@ -3707,8 +3703,7 @@ int run_axion(const Args& args) {
                 << "  \"status\": \"ok\",\n"
                 << "  \"action\": \"optimize\",\n"
                 << "  \"tier\": " << target_tier << ",\n"
-                << "  \"previous_snapshot\": "
-                << json_nullable_axion(previous_snapshot) << ",\n"
+                << "  \"previous_snapshot\": " << json_nullable_axion(previous_snapshot) << ",\n"
                 << "  \"active_snapshot\": ";
       if (snapshot_hash) {
         std::cout << "\"" << json_escape(*snapshot_hash) << "\",\n";
@@ -5778,7 +5773,8 @@ int run_profile_command(const Args& args) {
     }
     Args vm_args = args;
     vm_args.command = "vm";
-    vm_args.command_args = {"profile", temp_path.string(), "--display-program", args.input.string()};
+    vm_args.command_args = {"profile", temp_path.string(), "--display-program",
+                            args.input.string()};
     if (args.policy) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
@@ -6874,7 +6870,6 @@ fs::path discover_repo_root() {
   return cwd;
 }
 
-
 std::optional<fs::path> discover_exe_path_internal() {
   std::error_code ec;
 #ifdef _WIN32
@@ -7719,8 +7714,7 @@ int run_test_command(const Args& args) {
     }
     if (summary.total >= 0 && summary.failed >= 0) {
       summary.failed += junit_errors;
-      summary.passed =
-          std::max(0, summary.total - summary.failed - std::max(0, summary.skipped));
+      summary.passed = std::max(0, summary.total - summary.failed - std::max(0, summary.skipped));
     }
     if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) && m.size() == 2) {
       summary.duration_sec = std::atof(m[1].str().c_str());
@@ -7730,9 +7724,8 @@ int run_test_command(const Args& args) {
     not_run = summary.total;
   }
   const bool infrastructure_failure =
-      rc != 0 &&
-      (summary.total < 0 ||
-       ((summary.failed <= 0) && (summary.passed >= summary.total || summary.passed > 0)));
+      rc != 0 && (summary.total < 0 || ((summary.failed <= 0) &&
+                                        (summary.passed >= summary.total || summary.passed > 0)));
   if (infrastructure_failure) {
     if (summary.total < 0) {
       summary.total = 0;
@@ -7767,8 +7760,7 @@ int run_test_command(const Args& args) {
     std::cout << "  },\n";
     std::cout << "  \"stdout_bytes\": " << stdout_bytes << ",\n";
     std::cout << "  \"stderr_bytes\": " << stderr_bytes << ",\n";
-    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text")
-              << "\",\n";
+    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text") << "\",\n";
     std::cout << "  \"infrastructure_failure\": " << (infrastructure_failure ? "true" : "false")
               << "\n";
     std::cout << "}\n";
@@ -7780,8 +7772,7 @@ int run_test_command(const Args& args) {
   if (!g_flags.quiet) {
     std::ostringstream oss;
     oss << "test summary: total=" << summary.total << " passed=" << summary.passed
-        << " failed=" << summary.failed << " skipped=" << summary.skipped
-        << " not_run=" << not_run;
+        << " failed=" << summary.failed << " skipped=" << summary.skipped << " not_run=" << not_run;
     if (summary.duration_sec >= 0.0) {
       oss << " duration_sec=" << std::fixed << std::setprecision(3) << summary.duration_sec;
     }
@@ -9134,9 +9125,8 @@ int main(int argc, char* argv[]) {
 
     const auto ext = args.input.extension();
     auto weights_model_ptr = std::shared_ptr<t81::weights::ModelFile>{};
-    if (args.weights_model &&
-        (args.command == "compile" || args.command == "run" || args.command == "debug" ||
-         args.command == "repl")) {
+    if (args.weights_model && (args.command == "compile" || args.command == "run" ||
+                               args.command == "debug" || args.command == "repl")) {
       weights_model_ptr = load_weights_model_optional(args.weights_model);
       if (!weights_model_ptr) return 1;
     }

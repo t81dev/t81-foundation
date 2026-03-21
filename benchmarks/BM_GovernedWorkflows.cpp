@@ -4,14 +4,14 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <memory>
-#include <sstream>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
-#include <cstdlib>
 #include <vector>
 
 #ifdef _WIN32
@@ -50,7 +50,8 @@ Program make_arith_chain_program(bool with_allow_policy) {
 
 t81::weights::NativeTensor make_balanced_tensor(uint64_t elements) {
   t81::weights::NativeTensor tensor;
-  const uint64_t side = std::max<uint64_t>(1, static_cast<uint64_t>(std::sqrt(static_cast<double>(elements))));
+  const uint64_t side =
+      std::max<uint64_t>(1, static_cast<uint64_t>(std::sqrt(static_cast<double>(elements))));
   tensor.format = t81::weights::NativeFormat::BalancedTernary;
   tensor.shape = {side, side};
   tensor.trits = side * side;
@@ -146,9 +147,8 @@ std::string ensure_canonfs_tensor(uint64_t elements, const std::filesystem::path
   std::filesystem::remove_all(root, ec);
   auto driver = t81::canonfs::make_persistent_driver(root);
   auto bytes = serialize_tensor(make_balanced_tensor(elements));
-  auto write = driver->write_object(
-      t81::canonfs::ObjectType::CanonTensor,
-      std::span<const std::byte>(bytes.data(), bytes.size()));
+  auto write = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
+                                    std::span<const std::byte>(bytes.data(), bytes.size()));
   if (!write.has_value()) {
     return {};
   }
@@ -157,11 +157,11 @@ std::string ensure_canonfs_tensor(uint64_t elements, const std::filesystem::path
 
 std::pair<std::shared_ptr<t81::canonfs::Driver>, std::string> make_in_memory_hash_fixture(
     uint64_t elements) {
-  auto driver = std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
+  auto driver =
+      std::shared_ptr<t81::canonfs::Driver>(t81::canonfs::make_in_memory_driver().release());
   auto bytes = serialize_tensor(make_balanced_tensor(elements));
-  auto write = driver->write_object(
-      t81::canonfs::ObjectType::CanonTensor,
-      std::span<const std::byte>(bytes.data(), bytes.size()));
+  auto write = driver->write_object(t81::canonfs::ObjectType::CanonTensor,
+                                    std::span<const std::byte>(bytes.data(), bytes.size()));
   if (!write.has_value()) {
     return {nullptr, {}};
   }
@@ -173,9 +173,7 @@ std::size_t mix_hash(std::size_t seed, std::size_t value) {
   return seed;
 }
 
-std::size_t hash_text(std::string_view text) {
-  return std::hash<std::string_view>{}(text);
-}
+std::size_t hash_text(std::string_view text) { return std::hash<std::string_view>{}(text); }
 
 std::string_view verdict_kind_name(t81::axion::VerdictKind kind) {
   switch (kind) {
@@ -239,17 +237,14 @@ std::string render_axion_audit_json(const t81::vm::State& state) {
   for (std::size_t i = 0; i < state.axion_log.size(); ++i) {
     const auto& event = state.axion_log[i];
     if (i != 0) out << ',';
-    out << "{\"opcode\":\"" << t81::tisc::opcode_name(event.opcode) << "\""
-        << ",\"decision\":\"" << event.structured.decision << "\""
-        << ",\"verdict\":\"" << verdict_kind_name(event.verdict.kind) << "\""
-        << ",\"reason\":\"" << event.verdict.reason << "\""
-        << ",\"canonical_reason\":\"" << event.structured.to_canonical_reason_string() << "\""
-        << ",\"event_type\":\"" << event.structured.event_type << "\""
+    out << "{\"opcode\":\"" << t81::tisc::opcode_name(event.opcode) << "\"" << ",\"decision\":\""
+        << event.structured.decision << "\"" << ",\"verdict\":\""
+        << verdict_kind_name(event.verdict.kind) << "\"" << ",\"reason\":\"" << event.verdict.reason
+        << "\"" << ",\"canonical_reason\":\"" << event.structured.to_canonical_reason_string()
+        << "\"" << ",\"event_type\":\"" << event.structured.event_type << "\""
         << ",\"reason_code\":\"" << event.structured.reason_code << "\""
-        << ",\"pc\":" << event.structured.pc
-        << ",\"policy_id\":" << event.structured.policy_id
-        << ",\"handle_id\":" << event.structured.handle_id
-        << "}";
+        << ",\"pc\":" << event.structured.pc << ",\"policy_id\":" << event.structured.policy_id
+        << ",\"handle_id\":" << event.structured.handle_id << "}";
   }
   out << "]}";
   return out.str();
@@ -341,9 +336,9 @@ std::string prepare_cli_weights_model_hash(const std::filesystem::path& t81_bin,
                                            const std::filesystem::path& hash_out_path,
                                            bool alternate = false) {
   write_small_weights_model(model_path, alternate);
-  const std::string put_cmd = shell_quote(t81_bin) + " canonfs put-file " + shell_quote(model_path) +
-                              " --canonfs-root " + shell_quote(canonfs_root) + " >" +
-                              shell_quote(hash_out_path) + " 2>/dev/null";
+  const std::string put_cmd =
+      shell_quote(t81_bin) + " canonfs put-file " + shell_quote(model_path) + " --canonfs-root " +
+      shell_quote(canonfs_root) + " >" + shell_quote(hash_out_path) + " 2>/dev/null";
   if (run_shell_command(put_cmd) != 0) {
     return {};
   }
@@ -354,7 +349,8 @@ std::string prepare_cli_weights_model_hash(const std::filesystem::path& t81_bin,
   return model_hash;
 }
 
-bool write_cli_weights_policy(const std::filesystem::path& policy_path, std::string_view model_checksum) {
+bool write_cli_weights_policy(const std::filesystem::path& policy_path,
+                              std::string_view model_checksum) {
   std::ostringstream policy;
   policy << "(policy\n"
          << "  (tier 1)\n"
@@ -562,9 +558,9 @@ static void BM_GovernedCLI_VMTrace_Export(benchmark::State& state) {
   const auto trace_out = workdir / "hello.trace";
   std::error_code ec;
   std::filesystem::create_directories(workdir, ec);
-  const std::string build_cmd =
-      shell_quote(t81_bin) + " code build " + shell_quote(repo_root / "examples" / "hello_world.t81") +
-      " -o " + shell_quote(artifact) + " >/dev/null";
+  const std::string build_cmd = shell_quote(t81_bin) + " code build " +
+                                shell_quote(repo_root / "examples" / "hello_world.t81") + " -o " +
+                                shell_quote(artifact) + " >/dev/null";
   if (run_shell_command(build_cmd) != 0) {
     state.SkipWithError("failed to prepare CLI trace artifact");
     std::filesystem::remove_all(workdir, ec);
@@ -572,9 +568,8 @@ static void BM_GovernedCLI_VMTrace_Export(benchmark::State& state) {
   }
   state.SetLabel("workflow=cli-export, command=vm-trace, governance=artifact-run");
   for (auto _ : state) {
-    const std::string cmd =
-        shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " + shell_quote(trace_out) +
-        " >/dev/null 2>/dev/null";
+    const std::string cmd = shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " +
+                            shell_quote(trace_out) + " >/dev/null 2>/dev/null";
     const int rc = run_shell_command(cmd);
     benchmark::DoNotOptimize(static_cast<long long>(rc));
     if (rc != 0) {
@@ -599,18 +594,18 @@ static void BM_GovernedCLI_VMTrace_Export_Accumulator(benchmark::State& state) {
   std::filesystem::create_directories(workdir, ec);
   const std::string build_cmd =
       shell_quote(t81_bin) + " code build " +
-      shell_quote(repo_root / "examples" / "system-integration" / "accumulator.t81") +
-      " -o " + shell_quote(artifact) + " >/dev/null";
+      shell_quote(repo_root / "examples" / "system-integration" / "accumulator.t81") + " -o " +
+      shell_quote(artifact) + " >/dev/null";
   if (run_shell_command(build_cmd) != 0) {
     state.SkipWithError("failed to prepare accumulator CLI trace artifact");
     std::filesystem::remove_all(workdir, ec);
     return;
   }
-  state.SetLabel("workflow=cli-export, command=vm-trace, governance=artifact-run, workload=accumulator");
+  state.SetLabel(
+      "workflow=cli-export, command=vm-trace, governance=artifact-run, workload=accumulator");
   for (auto _ : state) {
-    const std::string cmd =
-        shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " + shell_quote(trace_out) +
-        " >/dev/null 2>/dev/null";
+    const std::string cmd = shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " +
+                            shell_quote(trace_out) + " >/dev/null 2>/dev/null";
     const int rc = run_shell_command(cmd);
     benchmark::DoNotOptimize(static_cast<long long>(rc));
     if (rc != 0) {
@@ -633,21 +628,19 @@ static void BM_GovernedCLI_VMTrace_Export_SystemIntegration(benchmark::State& st
   const auto trace_out = workdir / "system-integration.trace";
   std::error_code ec;
   std::filesystem::create_directories(workdir, ec);
-  const std::string build_cmd =
-      shell_quote(t81_bin) + " code build " +
-      shell_quote(repo_root / "examples" / "system_integration.t81") +
-      " -o " + shell_quote(artifact) + " >/dev/null";
+  const std::string build_cmd = shell_quote(t81_bin) + " code build " +
+                                shell_quote(repo_root / "examples" / "system_integration.t81") +
+                                " -o " + shell_quote(artifact) + " >/dev/null";
   if (run_shell_command(build_cmd) != 0) {
     state.SkipWithError("failed to prepare system-integration CLI trace artifact");
     std::filesystem::remove_all(workdir, ec);
     return;
   }
-  state.SetLabel(
-      "workflow=cli-export, command=vm-trace, governance=artifact-run, workload=system-integration");
+  state.SetLabel("workflow=cli-export, command=vm-trace, governance=artifact-run, "
+                 "workload=system-integration");
   for (auto _ : state) {
-    const std::string cmd =
-        shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " + shell_quote(trace_out) +
-        " >/dev/null 2>/dev/null";
+    const std::string cmd = shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " +
+                            shell_quote(trace_out) + " >/dev/null 2>/dev/null";
     const int rc = run_shell_command(cmd);
     benchmark::DoNotOptimize(static_cast<long long>(rc));
     if (rc != 0) {
@@ -671,9 +664,9 @@ static void BM_GovernedCLI_VMTrace_Export_WithPolicy(benchmark::State& state) {
   const auto policy = repo_root / "examples" / "system_integration.apl";
   std::error_code ec;
   std::filesystem::create_directories(workdir, ec);
-  const std::string build_cmd =
-      shell_quote(t81_bin) + " code build " + shell_quote(repo_root / "examples" / "hello_world.t81") +
-      " -o " + shell_quote(artifact) + " >/dev/null";
+  const std::string build_cmd = shell_quote(t81_bin) + " code build " +
+                                shell_quote(repo_root / "examples" / "hello_world.t81") + " -o " +
+                                shell_quote(artifact) + " >/dev/null";
   if (run_shell_command(build_cmd) != 0) {
     state.SkipWithError("failed to prepare policy CLI trace artifact");
     std::filesystem::remove_all(workdir, ec);
@@ -706,9 +699,9 @@ static void BM_GovernedCLI_VMTrace_Export_NeuralNet(benchmark::State& state) {
   const auto trace_out = workdir / "neural-net.trace";
   std::error_code ec;
   std::filesystem::create_directories(workdir, ec);
-  const std::string build_cmd =
-      shell_quote(t81_bin) + " code build " + shell_quote(repo_root / "examples" / "neural_net.t81") +
-      " -o " + shell_quote(artifact) + " >/dev/null";
+  const std::string build_cmd = shell_quote(t81_bin) + " code build " +
+                                shell_quote(repo_root / "examples" / "neural_net.t81") + " -o " +
+                                shell_quote(artifact) + " >/dev/null";
   if (run_shell_command(build_cmd) != 0) {
     state.SkipWithError("failed to prepare neural-net CLI trace artifact");
     std::filesystem::remove_all(workdir, ec);
@@ -717,9 +710,8 @@ static void BM_GovernedCLI_VMTrace_Export_NeuralNet(benchmark::State& state) {
   state.SetLabel(
       "workflow=cli-export, command=vm-trace, governance=artifact-run, workload=neural-net");
   for (auto _ : state) {
-    const std::string cmd =
-        shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " + shell_quote(trace_out) +
-        " >/dev/null 2>/dev/null";
+    const std::string cmd = shell_quote(t81_bin) + " vm trace " + shell_quote(artifact) + " -o " +
+                            shell_quote(trace_out) + " >/dev/null 2>/dev/null";
     const int rc = run_shell_command(cmd);
     benchmark::DoNotOptimize(static_cast<long long>(rc));
     if (rc != 0) {
@@ -766,10 +758,12 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash(benchmark::State& state) {
   const auto canonfs_root = workdir / "canonfs";
   const auto model_path = workdir / "small_model.t81w";
   const auto hash_out = workdir / "model_hash.txt";
-  const auto program = repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
+  const auto program =
+      repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
   std::error_code ec;
   std::filesystem::create_directories(canonfs_root, ec);
-  const std::string model_hash = prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out);
+  const std::string model_hash =
+      prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out);
   if (model_hash.empty()) {
     state.SkipWithError("failed to prepare CanonFS-backed weights model fixture");
     std::filesystem::remove_all(workdir, ec);
@@ -806,10 +800,12 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy(benchmark::State&
   const auto model_path = workdir / "small_model.t81w";
   const auto hash_out = workdir / "model_hash.txt";
   const auto policy_path = workdir / "allow-model.apl";
-  const auto program = repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
+  const auto program =
+      repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
   std::error_code ec;
   std::filesystem::create_directories(canonfs_root, ec);
-  const std::string model_hash = prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out);
+  const std::string model_hash =
+      prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out);
   std::string model_checksum;
   if (model_hash.empty()) {
     state.SkipWithError("failed to prepare CanonFS-backed weights model fixture");
@@ -829,14 +825,13 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_WithPolicy(benchmark::State&
     return;
   }
 
-  state.SetLabel(
-      "workflow=cli-run, command=code-run, source=canonfs-weights-model, governance=allow-policy, workload=matmul-weights");
+  state.SetLabel("workflow=cli-run, command=code-run, source=canonfs-weights-model, "
+                 "governance=allow-policy, workload=matmul-weights");
   for (auto _ : state) {
     const std::string cmd = "env T81_CANONFS_ROOT=" + shell_quote(canonfs_root) + " " +
                             shell_quote(t81_bin) + " code run " + shell_quote(program) +
-                            " --weights-model " + shell_quote_text(model_hash) +
-                            " --policy " + shell_quote(policy_path) +
-                            " >/dev/null 2>/dev/null";
+                            " --weights-model " + shell_quote_text(model_hash) + " --policy " +
+                            shell_quote(policy_path) + " >/dev/null 2>/dev/null";
     const int rc = run_shell_command(cmd);
     benchmark::DoNotOptimize(static_cast<long long>(rc));
     if (rc != 0) {
@@ -863,13 +858,14 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_DenyPolicy(benchmark::State&
   const auto denied_hash_out = workdir / "other_model_hash.txt";
   const auto policy_path = workdir / "deny-model.apl";
   const auto stderr_path = workdir / "deny.stderr";
-  const auto program = repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
+  const auto program =
+      repo_root / "tests" / "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
   std::error_code ec;
   std::filesystem::create_directories(canonfs_root, ec);
   const std::string model_hash =
       prepare_cli_weights_model_hash(t81_bin, canonfs_root, model_path, hash_out, false);
-  const std::string denied_hash =
-      prepare_cli_weights_model_hash(t81_bin, canonfs_root, denied_model_path, denied_hash_out, true);
+  const std::string denied_hash = prepare_cli_weights_model_hash(
+      t81_bin, canonfs_root, denied_model_path, denied_hash_out, true);
   std::string model_checksum;
   std::string denied_model_checksum;
   if (model_hash.empty() || denied_hash.empty() || model_hash == denied_hash) {
@@ -885,21 +881,21 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_DenyPolicy(benchmark::State&
     std::filesystem::remove_all(workdir, ec);
     return;
   }
-  if (model_checksum.empty() || denied_model_checksum.empty() || model_checksum == denied_model_checksum ||
+  if (model_checksum.empty() || denied_model_checksum.empty() ||
+      model_checksum == denied_model_checksum ||
       !write_cli_weights_policy(policy_path, denied_model_checksum)) {
     state.SkipWithError("failed to write CLI deny-policy fixture");
     std::filesystem::remove_all(workdir, ec);
     return;
   }
 
-  state.SetLabel(
-      "workflow=cli-run, command=code-run, source=canonfs-weights-model, governance=deny-policy, workload=matmul-weights");
+  state.SetLabel("workflow=cli-run, command=code-run, source=canonfs-weights-model, "
+                 "governance=deny-policy, workload=matmul-weights");
   for (auto _ : state) {
     const std::string cmd = "env T81_CANONFS_ROOT=" + shell_quote(canonfs_root) + " " +
                             shell_quote(t81_bin) + " code run " + shell_quote(program) +
-                            " --weights-model " + shell_quote_text(model_hash) +
-                            " --policy " + shell_quote(policy_path) + " >/dev/null 2>" +
-                            shell_quote(stderr_path);
+                            " --weights-model " + shell_quote_text(model_hash) + " --policy " +
+                            shell_quote(policy_path) + " >/dev/null 2>" + shell_quote(stderr_path);
     const int rc = run_shell_command(cmd);
     benchmark::DoNotOptimize(static_cast<long long>(rc));
     if (rc == 0) {
@@ -908,7 +904,8 @@ static void BM_GovernedCLI_CodeRun_WeightsModelHash_DenyPolicy(benchmark::State&
     }
   }
   if (std::filesystem::exists(stderr_path, ec)) {
-    state.counters["stderr_bytes"] = static_cast<double>(std::filesystem::file_size(stderr_path, ec));
+    state.counters["stderr_bytes"] =
+        static_cast<double>(std::filesystem::file_size(stderr_path, ec));
   }
   if (std::filesystem::exists(model_path, ec)) {
     state.counters["model_bytes"] = static_cast<double>(std::filesystem::file_size(model_path, ec));
