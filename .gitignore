@@ -127,6 +127,7 @@ benchmarks/results/*
 benchmarks/results/archive/*
 !benchmarks/results/archive/*.md
 benchmark*.txt
+bench-*.json
 dummy.*
 generate_dummy_safetensors
 
