@@ -33,6 +33,7 @@ curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/ins
 - [What T81Lang looks like](#what-t81lang-looks-like)
 - [Get T81](#get-t81)
 - [Status](#status)
+- [Boot progress](#boot-progress)
 - [CLI reference](#cli-reference)
 - [Determinism verification](#determinism-verification)
 - [Documentation](#documentation)
@@ -208,7 +209,13 @@ t81 code run inference.t81 \
   --trace
 ```
 
-**Interactive exploration:**
+**Try it in your browser — no install required:**
+
+> **[Launch the T81Lang Playground →](https://t81dev.github.io/t81-foundation/playground)**
+>
+> Write and run T81Lang programs directly in the browser. The full compiler + T81VM interpreter runs as WebAssembly. Eight built-in examples: Hello World, BigInt arithmetic, tensors, agent/behavior, and more.
+
+**Interactive exploration (local):**
 
 ```sh
 t81 repl       # line-buffered REPL; empty line executes
@@ -296,8 +303,31 @@ The TISC ISA and core data types are **frozen** under v1.x — opcode semantics 
 | **Cognitive Tiers** | ✅ Beta | Tier4 Cognition (RFC-0021); governance-bounded |
 | **T81 Userland** | ✅ Beta | HAL + userland services; policy-bounded |
 | **Native bare-metal target** | 🚧 Alpha | T81 currently runs as a guest OS layer on Linux and macOS; bare-metal execution is in active development |
+| **QEMU boot sequence** | 🚧 Alpha | EFI → kernel entry confirmed; kernel initialization in progress — [see boot progress](#boot-progress) |
 
 Surface classifications follow RFC-0048. Governed non-DCP and experimental surfaces are not presented as verified deterministic components.
+
+---
+
+## Boot progress
+
+T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward a clean boot with a shell prompt visible on serial output — the prerequisite for a recorded boot demo in this README.
+
+| Stage | What it covers | Done |
+| :--- | :--- | :--- |
+| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | 95% |
+| **2. Kernel entry + HAL init** | PL011 UART, GICv3, ARM generic timer, VBAR_EL1 exception vectors installed | 95% |
+| **3. Memory / scheduler / interrupts** | Ternary page allocator, round-robin scheduler, interrupt dispatch, timer preemption | 90% |
+| **4. CanonFS mount** | Filesystem available to kernel; user-process syscall exposure and mount points | 40% |
+| **5. Shell / interactive prompt** | `ShellSession` class complete; missing: kernel-spawned shell process, interactive REPL | 15% |
+| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI idle | 100% |
+| | **Overall** | **~55%** |
+
+**Current state:** The kernel boots to a running event loop with hardware drivers initialized and a kernel thread (tid=1) spinning on WFI. Serial output is confirmed in prior Linux runs (`[axion] bare-metal EL1 kernel entry` / `ExitBootServices complete`). Apple Silicon QEMU has host-level serial capture constraints that mask output locally.
+
+**Critical path to clean boot:** kernel-spawned shell process → shell SVC dispatch → route stdout to PL011 → interactive read loop. All plumbing exists in `kernel_lifecycle.cpp`, `qemu_kernel_entry.cpp`, and `shell_session.cpp`; the pieces need wiring.
+
+**When Stage 5 reaches ~80%**, a CI job on `ubuntu-latest` will capture serial output on every push and embed the recording here.
 
 ---
 
