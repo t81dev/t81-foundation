@@ -2337,6 +2337,9 @@ target_link_libraries(axion_policy_gc_trace_test PRIVATE t81_tool_cli t81_isa t8
   add_executable(axion_policy_bytecode_test tests/cpp/axion_policy_bytecode_test.cpp)
   target_link_libraries(axion_policy_bytecode_test PRIVATE t81_core t81_axion)
 
+  add_executable(axion_hybrid_mlp_policy_test tests/cpp/axion_hybrid_mlp_policy_test.cpp)
+  target_link_libraries(axion_hybrid_mlp_policy_test PRIVATE t81_core t81_axion)
+
 add_executable(axion_policy_segment_event_test tests/cpp/axion_policy_segment_event_test.cpp)
 target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
 
@@ -2840,6 +2843,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     vm_jit_per_instruction_policy_test
     e2e_axion_trace_test
     axion_policy_bytecode_test
+    axion_hybrid_mlp_policy_test
     test_bigint_multilimb_ext
     test_bigint_robust_features
     t81_bigint_v1_perf

@@ -1,0 +1,53 @@
+; Axion Policy — HybridMLP Dispatch (RFC-0034 §4.2 extension)
+;
+; Applies when T81_HYBRID_MLP=ON: attention projections (Q/K/V/O) use
+; ternary weights; MLP gate/up/down projections use FP32 weights.
+;
+; Governance position:
+;   - ternary-weight-domain-check is relaxed (false) for this session so that
+;     FP32 MLP weights are not rejected by the {-1,0,+1} domain assertion.
+;   - The caller is responsible for ensuring that only the MLP projection set
+;     (gate/up/down) carries FP32 weights; attention projections MUST remain
+;     ternary or the activation-ceiling gate will fire.
+;   - Tier 3 (Generative Inference) is required; lower-tier callers are denied.
+;   - An Axion audit event is required to confirm dispatch is intentional.
+;
+; Parse with: t81::axion::parse_policy(text)
+; Load via:   t81 --policy kernel/axion/policies/hybrid_mlp.axp <program>
+;
+; This policy is in the experimental governance envelope.
+; Promoting to DCP requires a formal Axion policy review (RFC-0022 §5).
+
+(policy
+  ; Cognitive tier gate — generative inference requires Tier 3 minimum.
+  (tier 3)
+
+  ; Instruction budget for a single transformer layer forward pass.
+  ; dim=256, heads=4, mlp=512, seq=128 at ~4 TISC ops/element: ~2M ops.
+  ; Budget set to 8M to allow head_dim sweep without spurious denials.
+  (max-instructions 8000000)
+
+  ; Stack ceiling for activation buffers (dim=256 float * 128 seq * 4B = 128KB).
+  ; Set to 512KB to cover multi-head workspace with margin.
+  (max-stack 524288)
+
+  ; Tensor resource limits for a single transformer layer invocation.
+  (max-tensors 32)
+  (max-tensor-elements 2097152)
+
+  ; Relax ternary domain check — FP32 MLP weights are permitted.
+  ; WARNING: the caller must confine FP32 weights to gate/up/down projections.
+  ; Ternary attention weights (Q/K/V/O) remain {-1,0,+1} by contract.
+  (ternary-weight-domain-check false)
+
+  ; Activation ceiling gate (RFC-0034 §3.3).
+  ; TACT output nonzero-trit fraction must not exceed 80% — models with
+  ; pathologically dense activations indicate mis-quantized weights.
+  ; Uses the simple threshold form; scope=thread and mode-mask=all are default.
+  (activation-ceiling 0.8)
+
+  ; Require an audit event confirming intentional HybridMLP dispatch.
+  ; The calling runtime must emit this reason string before invoking
+  ; the first TWMATMUL opcode in the MLP projection sequence.
+  (require-axion-event
+    (reason "hybrid-mlp-dispatch-approved")))
