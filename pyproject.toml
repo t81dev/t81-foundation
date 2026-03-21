@@ -65,14 +65,8 @@ before-build = "pip install cmake ninja"
 
 test-command = "python -c \"import t81; assert t81.compile_and_run('fn main() -> i32 { return 1; }') == 1\""
 
-[tool.cibuildwheel.linux]
-archs = ["x86_64", "aarch64"]
-
-[tool.cibuildwheel.macos]
-archs = ["arm64", "x86_64"]
-
-[tool.cibuildwheel.windows]
-archs = ["AMD64"]
+# Per-platform arch is controlled by CIBW_ARCHS in the workflow matrix,
+# one runner per architecture, to avoid cross-compilation failures.
 
 # ── mdformat (pre-existing) ───────────────────────────────────────────────────
 
