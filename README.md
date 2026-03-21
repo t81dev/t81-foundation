@@ -1,8 +1,8 @@
 <p align="center">
   <img src="docs/assets/banner.png" alt="T81 — A Ternary Operating System for AI" width="100%">
+  Bootable preview in QEMU · Governed ternary inference · Bit-exact across platforms
 </p>
 
-Bootable preview in QEMU · Governed ternary inference · Bit-exact across platforms
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
