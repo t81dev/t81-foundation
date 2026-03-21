@@ -934,11 +934,6 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
     return std::nullopt;
   }
 
-  auto weight_row_ptr = [&](int row_index) -> const std::int8_t* {
-    const std::size_t row_base = static_cast<std::size_t>(row_index) * static_cast<std::size_t>(n);
-    return weight_trits.data() + row_base;
-  };
-
   // Loop order: i → p → j
   //   - Sequential activation access: act_vals[i*k + 0], [i*k + 1], ...
   //   - Sequential weight row access: weight_trits[p*n + 0], [p*n + 1], ...
