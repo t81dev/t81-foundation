@@ -55,9 +55,9 @@
 #include <io.h>
 #endif
 
-#include "core/vm/internal/memory_segments.hpp"
+#include "vm/internal/memory_segments.hpp"
 #include "logging.hpp"
-#include "tooling/cli/ai/ai_cli_shared.hpp"
+#include "tools/cli/ai/ai_cli_shared.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
@@ -86,9 +86,9 @@
 #include <ftxui/component/screen_interactive.hpp>
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/color.hpp>
-#include "tooling/tui/agent.hpp"
-#include "tooling/tui/common.hpp"
-#include "tooling/tui/studio.hpp"
+#include "tools/tui/agent.hpp"
+#include "tools/tui/common.hpp"
+#include "tools/tui/studio.hpp"
 #endif
 
 namespace fs = std::filesystem;

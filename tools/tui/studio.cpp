@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // T81 TUI — Human Operator Interface (t81 studio)
-#include "tooling/tui/studio.hpp"
-#include "tooling/tui/common.hpp"
+#include "tools/tui/studio.hpp"
+#include "tools/tui/common.hpp"
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>

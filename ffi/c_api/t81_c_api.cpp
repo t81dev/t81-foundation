@@ -3,7 +3,7 @@
 #include <exception>
 #include <new>
 
-#include "src/c_api/t81_c_api.h"
+#include "ffi/c_api/t81_c_api.h"
 #include "t81/bigint.hpp"
 #include "t81/config.hpp"
 #include "t81/t81.hpp"

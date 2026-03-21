@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 // T81 TUI — AI-Native / Agentic Interface (t81 agent)
-#include "tooling/tui/agent.hpp"
-#include "tooling/tui/common.hpp"
+#include "tools/tui/agent.hpp"
+#include "tools/tui/common.hpp"
 
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>

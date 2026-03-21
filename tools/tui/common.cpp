@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 // T81 TUI — shared utility implementations
-#include "tooling/tui/common.hpp"
+#include "tools/tui/common.hpp"
 
 #include <algorithm>
 #include <cctype>
