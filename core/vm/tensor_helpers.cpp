@@ -7,6 +7,10 @@
 #include <cstring>
 #include <sstream>
 
+#ifdef __ARM_NEON
+#  include <arm_neon.h>
+#endif
+
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
 #include "t81/tensor/elementwise.hpp"
@@ -837,33 +841,53 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
     return weight_trits.data() + row_base;
   };
 
+  // Loop order: i → p → j
+  //   - Sequential activation access: act_vals[i*k + 0], [i*k + 1], ...
+  //   - Sequential weight row access: weight_trits[p*n + 0], [p*n + 1], ...
+  //   - Output row out[i*n..] stays warm in L1 across the full p reduction
+  // Previously p→i→j: strided activation access + output reloaded each p step.
   std::vector<float> out(static_cast<std::size_t>(m) * static_cast<std::size_t>(n), 0.0f);
-  for (int p = 0; p < k; ++p) {
-    const std::int8_t* weight_row = weight_row_ptr(p);
-    for (int i = 0; i < m; ++i) {
+  const int n4 = (n / 4) * 4;
+  for (int i = 0; i < m; ++i) {
+    float* const orow = out.data() + static_cast<std::size_t>(i) * static_cast<std::size_t>(n);
+    for (int p = 0; p < k; ++p) {
       const float act_value =
           act_vals[static_cast<std::size_t>(i) * static_cast<std::size_t>(k) +
                    static_cast<std::size_t>(p)];
       int av = 0;
       if (exact_trit_activations) {
-        if (act_value == -1.0f) {
-          av = -1;
-        } else if (act_value == 1.0f) {
-          av = 1;
-        }
+        if (act_value == -1.0f) av = -1;
+        else if (act_value == 1.0f) av = 1;
       } else {
         av = t81::ops::ternary_detail::snap_trit(act_value);
       }
-      if (av == 0) {
-        continue;
+      if (av == 0) continue;
+
+      const std::int8_t* const wrow = weight_trits.data() +
+                                      static_cast<std::size_t>(p) *
+                                      static_cast<std::size_t>(n);
+      int j = 0;
+#ifdef __ARM_NEON
+      // 4-wide NEON: convert int8 trits to float, select ±av or 0.
+      // No vmulq_f32 — ternary constraint eliminates all multiplies.
+      const float32x4_t fav4  = vdupq_n_f32(static_cast<float>(av));
+      const float32x4_t fav4n = vnegq_f32(fav4);
+      const float32x4_t zero4 = vdupq_n_f32(0.0f);
+      for (; j < n4; j += 4) {
+        // int8x8 → int16x8 → int32x4 → float32x4
+        const int8x8_t  wv8  = vld1_s8(wrow + j);
+        const int32x4_t wv32 = vmovl_s16(vget_low_s16(vmovl_s8(wv8)));
+        const float32x4_t wf = vcvtq_f32_s32(wv32);
+        const uint32x4_t pos = vcgtq_f32(wf, zero4);
+        const uint32x4_t neg = vcltq_f32(wf, zero4);
+        float32x4_t ov = vld1q_f32(orow + j);
+        ov = vaddq_f32(ov, vbslq_f32(pos, fav4, vbslq_f32(neg, fav4n, zero4)));
+        vst1q_f32(orow + j, ov);
       }
-      for (int j = 0; j < n; ++j) {
-        const int wt = weight_row[static_cast<std::size_t>(j)];
-        if (wt == 0) {
-          continue;
-        }
-        out[static_cast<std::size_t>(i) * static_cast<std::size_t>(n) +
-            static_cast<std::size_t>(j)] += static_cast<float>(wt * av);
+#endif
+      for (; j < n; ++j) {
+        const int wt = static_cast<int>(wrow[static_cast<std::size_t>(j)]);
+        if (wt != 0) orow[static_cast<std::size_t>(j)] += static_cast<float>(wt * av);
       }
     }
   }

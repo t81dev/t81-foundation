@@ -618,6 +618,57 @@ static void BM_MatMul_T81Ternary_NEON(benchmark::State& state) {
 }
 BENCHMARK(BM_MatMul_T81Ternary_NEON)->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Repetitions(2);
 
+// Output-register-tiled NEON matmul:
+//   Outer loop: j tile (4 output columns)
+//   Inner loop: k reduction — acc float32x4_t stays in NEON register, zero stores
+//   Trade-off: single store per 4-element tile, but weight access is column-strided
+//              (w[k*K+jj] with k varying, stride=K floats) — cache-unfriendly at large K.
+// Compare to the row-streaming NEON version above to see which bottleneck dominates.
+static void BM_MatMul_T81Ternary_NEON_Tiled(benchmark::State& state) {
+  const int K = static_cast<int>(state.range(0));
+  const auto w = make_ternary_weights(K * K);
+  const auto a = make_ternary_activations(K);
+  std::vector<float> out(static_cast<std::size_t>(K), 0.0f);
+  const int K4 = (K / 4) * 4;
+  const float32x4_t zero = vdupq_n_f32(0.0f);
+
+  for (auto _ : state) {
+    // Output tile (4 columns) in register across entire K reduction — zero stores per K step
+    for (int jj = 0; jj < K4; jj += 4) {
+      float32x4_t acc = vdupq_n_f32(0.0f);
+      for (int k = 0; k < K; ++k) {
+        const float av_scalar = a[static_cast<std::size_t>(k)];
+        if (av_scalar == 0.0f) continue;
+        const float32x4_t av4  = vdupq_n_f32(av_scalar);
+        const float32x4_t av4n = vnegq_f32(av4);
+        // w[k][jj..jj+3] — column-strided access (stride = K floats)
+        float32x4_t wv = vld1q_f32(&w[static_cast<std::size_t>(k) * K + jj]);
+        const uint32x4_t pos = vcgtq_f32(wv, zero);
+        const uint32x4_t neg = vcltq_f32(wv, zero);
+        acc = vaddq_f32(acc, vbslq_f32(pos, av4, vbslq_f32(neg, av4n, zero)));
+      }
+      vst1q_f32(&out[static_cast<std::size_t>(jj)], acc);  // single store per tile
+    }
+    for (int jj = K4; jj < K; ++jj) {  // scalar tail
+      float s = 0.0f;
+      for (int k = 0; k < K; ++k) {
+        const float wv = w[static_cast<std::size_t>(k) * K + jj];
+        const float av = a[static_cast<std::size_t>(k)];
+        if (wv > 0.0f) s += av;
+        else if (wv < 0.0f) s -= av;
+      }
+      out[static_cast<std::size_t>(jj)] = s;
+    }
+    benchmark::DoNotOptimize(out.data());
+    benchmark::ClobberMemory();
+  }
+  state.SetItemsProcessed(state.iterations() * K * K);
+  state.SetLabel("path=t81-ternary-neon-tiled; op=register-tile-4out; single-store; col-stride-weight");
+  state.counters["K"]                    = static_cast<double>(K);
+  state.counters["weight_bytes_ternary"] = static_cast<double>((K * K + 3) / 4);
+}
+BENCHMARK(BM_MatMul_T81Ternary_NEON_Tiled)->Arg(64)->Arg(128)->Arg(256)->Arg(512)->Repetitions(2);
+
 #endif  // __ARM_NEON
 
 // ============================================================================
