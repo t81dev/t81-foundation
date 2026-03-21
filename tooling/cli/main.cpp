@@ -2379,7 +2379,15 @@ int run_benchmark(const char* command_name, const Args& args) {
     cmd += shell_escape(extra);
   }
 #if defined(_WIN32)
-  cmd = "\"" + cmd + "\"";
+  {
+    int quotes = 0;
+    for (char c : cmd) {
+      if (c == '"') quotes++;
+    }
+    if (quotes >= 2) {
+      cmd = "\"" + cmd + "\"";
+    }
+  }
 #endif
   int status = std::system(cmd.c_str());
   if (status == -1) {
@@ -6941,7 +6949,15 @@ fs::path discover_canonfs_root() {
 bool shell_command_available(const std::string& command) {
 #if defined(_WIN32)
   std::string probe = "where " + command + " >nul 2>nul";
-  probe = "\"" + probe + "\"";
+  {
+    int quotes = 0;
+    for (char c : probe) {
+      if (c == '"') quotes++;
+    }
+    if (quotes >= 2) {
+      probe = "\"" + probe + "\"";
+    }
+  }
   const int status = std::system(probe.c_str());
   if (status == -1) {
     return false;
@@ -6991,7 +7007,15 @@ ProcessCaptureResult run_process_capture(
   cmd +=
       " > " + shell_escape(out_file.path.string()) + " 2> " + shell_escape(err_file.path.string());
 #if defined(_WIN32)
-  cmd = "\"" + cmd + "\"";
+  {
+    int quotes = 0;
+    for (char c : cmd) {
+      if (c == '"') quotes++;
+    }
+    if (quotes >= 2) {
+      cmd = "\"" + cmd + "\"";
+    }
+  }
 #endif
   const int status = std::system(cmd.c_str());
   if (status == -1) {

@@ -2,8 +2,26 @@
 #include <cstdint>
 
 #if defined(_MSC_VER) && defined(_WIN64)
-#include <immintrin.h>
 #include <intrin.h>
+
+#if defined(__clang__)
+// clang-cl does not always provide _udiv128. Provide a simple shift-subtract software fallback.
+static inline uint64_t _udiv128(uint64_t hi, uint64_t lo, uint64_t d, uint64_t* r) {
+  uint64_t q = 0;
+  uint64_t rem = hi;
+  for (int i = 0; i < 64; ++i) {
+    uint64_t top_bit = rem >> 63;
+    rem = (rem << 1) | (lo >> 63);
+    lo <<= 1;
+    if (top_bit || rem >= d) {
+      rem -= d;
+      q |= (1ULL << (63 - i));
+    }
+  }
+  if (r) *r = rem;
+  return q;
+}
+#endif
 
 namespace t81::v1::detail {
 struct int128_t {

@@ -82,7 +82,15 @@ bool normalize_python_to_c(const std::string& source, const std::string& diag_na
                         shell_quote(output_path.string()) + " --diag-name " +
                         shell_quote(diag_name) + " 2> " + shell_quote(error_path.string());
 #if defined(_WIN32)
-  command = "\"" + command + "\"";
+  {
+    int quotes = 0;
+    for (char c : command) {
+      if (c == '"') quotes++;
+    }
+    if (quotes >= 2) {
+      command = "\"" + command + "\"";
+    }
+  }
 #endif
   const int rc = std::system(command.c_str());
   if (rc != 0) {
