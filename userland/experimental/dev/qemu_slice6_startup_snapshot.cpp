@@ -147,11 +147,20 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  // Build a C-compatible header (plain string literal, no C++ raw strings)
+  // so that qemu_armv8_efi_stub.c (compiled as C, not C++) can include it.
+  std::string escaped;
+  escaped.reserve(report->size() * 2);
+  for (char c : *report) {
+    if (c == '\n') { escaped += "\\n"; }
+    else if (c == '"') { escaped += "\\\""; }
+    else if (c == '\\') { escaped += "\\\\"; }
+    else { escaped += c; }
+  }
   const std::string header =
       "#pragma once\n"
-      "static const char kGeneratedQemuSlice6Startup[] =\n"
-      "R\"AXION_SLICE6(\n" +
-      *report + ")AXION_SLICE6\";\n";
+      "static const char kGeneratedQemuSlice6Startup[] = \"" +
+      escaped + "\";\n";
 
   if (!write_file(argv[1], *report)) {
     std::fputs("failed to write slice6 startup report text\n", stderr);
