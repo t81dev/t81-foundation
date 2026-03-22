@@ -300,7 +300,7 @@ following the same model as RFC-0053 and RFC-0055.
 
 - [RFC-0000: T81 Base-81 Ternary Computing Stack](RFC-0000-t81-base-81-ternary-computing-stack.md)
 - [RFC-0042: Deterministic Backend Equivalence Contract](RFC-0042-deterministic-backend-equivalence-contract.md)
-- [RFC-0043: Deterministic Conformance and Validation Framework](RFC-0043-deterministic-conformance-and-validation-framework.md)
+- [RFC-0043: Deterministic Conformance and Validation Framework](RFC-0043-deterministic-conformance-validation-framework.md)
 - [RFC-0045: Deterministic Memory Model](RFC-0045-deterministic-memory-model.md)
 - [RFC-0046: Deterministic Scheduling and Execution Ordering](RFC-0046-deterministic-scheduling-and-execution-ordering.md)
 - [RFC-0047: Deterministic JIT and Lowering Rules](RFC-0047-deterministic-jit-and-lowering-rules.md)
