@@ -70,11 +70,14 @@ jobs:
       # ── Disk image ────────────────────────────────────────────────────────
       - name: Create FAT32 GPT disk image
         run: |
+          set -x
           EFI=build/ternaryos/qemu_slice6/BOOTAA64.EFI
           IMG=boot.img
 
+          ls -lh "$EFI" || echo "WARNING: EFI not found at $EFI"
+
           # 64 MiB raw image; partition table at sector 0, FAT32 at 1 MiB.
-          dd if=/dev/zero of=$IMG bs=1M count=64 status=none
+          dd if=/dev/zero of=$IMG bs=1M count=64 status=progress
           parted -s $IMG mklabel gpt
           parted -s $IMG mkpart EFI fat32 1MiB 63MiB
           parted -s $IMG set 1 esp on
