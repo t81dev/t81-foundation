@@ -1,21 +1,21 @@
 #include "test_runtime_check.hpp"
 
-#include "vm/internal/tensor_helpers.hpp"
 #include "t81/tensor.hpp"
+#include "vm/internal/tensor_helpers.hpp"
 
 int main() {
   using t81::T729DynamicTensor;
   using t81::TensorNumericClass;
-  using t81::vm::internal::tensor_elementwise_compatible;
   using t81::vm::internal::tensor_binary_elementwise;
-  using t81::vm::internal::tensor_embed_checked;
-  using t81::vm::internal::tensor_matmul_compatible;
-  using t81::vm::internal::tensor_matmul_2d;
-  using t81::vm::internal::tensor_rmsnorm_compatible;
-  using t81::vm::internal::tensor_rmsnorm;
-  using t81::vm::internal::tensor_rope_compatible;
-  using t81::vm::internal::tensor_rope;
   using t81::vm::internal::tensor_contract_dot;
+  using t81::vm::internal::tensor_elementwise_compatible;
+  using t81::vm::internal::tensor_embed_checked;
+  using t81::vm::internal::tensor_matmul_2d;
+  using t81::vm::internal::tensor_matmul_compatible;
+  using t81::vm::internal::tensor_rmsnorm;
+  using t81::vm::internal::tensor_rmsnorm_compatible;
+  using t81::vm::internal::tensor_rope;
+  using t81::vm::internal::tensor_rope_compatible;
   using t81::vm::internal::tensor_softmax_compatible;
   using t81::vm::internal::tensor_transpose_2d;
   using t81::vm::internal::tensor_transpose_2d_compatible;
