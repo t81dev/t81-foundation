@@ -130,30 +130,6 @@ static constexpr uint32_t kTimerPeriod = 625'000u;
 
 extern "C" uint8_t axion_exception_vector_base[];
 
-// ── Debug serial output (diagnosis only) ────────────────────────────────────
-// Write a single character directly to PL011 DR at 0x09000000.
-// No FIFO-full check — only used to emit step markers from within
-// bridge_hw_init_aarch64() to locate hang points.
-
-static inline void dbg_char(char c) noexcept {
-#if defined(__aarch64__) && !defined(__APPLE__)
-  // Spin on TX FIFO full (FR bit 5) before writing.
-  const uint64_t pl011 = UINT64_C(0x09000000);
-  while (*reinterpret_cast<const volatile uint32_t*>(
-             static_cast<uintptr_t>(pl011 + 0x018u)) & (1u << 5u)) {
-    __asm__ volatile("yield" ::: "memory");
-  }
-  *reinterpret_cast<volatile uint32_t*>(
-      static_cast<uintptr_t>(pl011)) = static_cast<uint32_t>(c);
-#else
-  (void)c;
-#endif
-}
-
-static inline void dbg_puts(const char* s) noexcept {
-  while (*s) dbg_char(*s++);
-}
-
 // ── GICv3 distributor RWP spin ────────────────────────────────────────────────
 
 static void gicd_wait_rwp() noexcept {
@@ -182,8 +158,6 @@ static void gicr_wait_children() noexcept {
 //   → ARM physical timer (PPI 30, ~100Hz) → DAIF.I clear.
 
 extern "C" void bridge_hw_init_aarch64() noexcept {
-  dbg_puts("[axion] gic-init: enter\r\n");
-
   // ── 1. Install exception vector table ──────────────────────────────────────
 #if defined(__aarch64__) && !defined(__APPLE__)
   __asm__ volatile(
@@ -192,31 +166,23 @@ extern "C" void bridge_hw_init_aarch64() noexcept {
       :: "r"(reinterpret_cast<uintptr_t>(axion_exception_vector_base))
       : "memory");
 #endif
-  dbg_puts("[axion] gic-init: vbar ok\r\n");
 
   // ── 2. Enable GICv3 distributor (ARE_NS, then EnableGrp1NS) ───────────────
   gicd_write32(kGicDistBase, kGicdCtlr, kGicdCtlrAreNs);
-  dbg_puts("[axion] gic-init: gicd-are-ns written\r\n");
   gicd_wait_rwp();
   gicd_write32(kGicDistBase, kGicdCtlr, kGicdCtlrAreNs | kGicdCtlrGrp1Ns);
-  dbg_puts("[axion] gic-init: gicd-grp1ns written\r\n");
   gicd_wait_rwp();
-  dbg_puts("[axion] gic-init: gicd-rwp done\r\n");
 
   // ── 3. Wake CPU0 redistributor ─────────────────────────────────────────────
   const uint32_t waker = gicd_read32(kGicRedistBase, kGicrWaker);
   gicd_write32(kGicRedistBase, kGicrWaker, waker & ~kGicrWakerSleep);
-  dbg_puts("[axion] gic-init: gicr-waker cleared\r\n");
   gicr_wait_children();
-  dbg_puts("[axion] gic-init: gicr-children done\r\n");
 
   // ── 4. Set all SGIs / PPIs to Group 1 NS in the SGI frame ─────────────────
   gicd_write32(kGicRedistBase, kGicrIgroupr0, 0xFFFF'FFFFu);
-  dbg_puts("[axion] gic-init: igroupr0 set\r\n");
 
   // ── 5. Enable PPI 30 (physical timer) in GICR_ISENABLER0 ──────────────────
   gicd_write32(kGicRedistBase, kGicrIsenabler0, 1u << kTimerIntid);
-  dbg_puts("[axion] gic-init: isenabler0 set\r\n");
 
   // ── 6. Set priority for PPI 30 ─────────────────────────────────────────────
   //   GICR_IPRIORITYR: one byte per INTID.  INTID 30 → word [30/4]=7, byte 2.
@@ -229,27 +195,20 @@ extern "C" void bridge_hw_init_aarch64() noexcept {
     cur |=  (0xA0u << (byte_off * 8u));  // priority 0xA0 (below mask 0xFF)
     gicd_write32(kGicRedistBase, off, cur);
   }
-  dbg_puts("[axion] gic-init: ppi-priority set\r\n");
 
   // ── 7. CPU interface: enable SRE, set priority mask, enable Group 1 ────────
   icc_sre_write(1u);       // enable system-register interface
-  dbg_puts("[axion] gic-init: icc-sre ok\r\n");
   icc_pmr_write(0xFFu);    // accept all interrupt priorities
-  dbg_puts("[axion] gic-init: icc-pmr ok\r\n");
   icc_igrpen1_write(1u);   // enable Group 1 interrupts at EL1
-  dbg_puts("[axion] gic-init: icc-igrpen1 ok\r\n");
 
   // ── 8. Arm physical timer at ~100Hz ────────────────────────────────────────
   cntp_tval_write(kTimerPeriod);  // initial countdown
-  dbg_puts("[axion] gic-init: cntp-tval armed\r\n");
   cntp_ctl_write(1u);             // ENABLE=1, IMASK=0
-  dbg_puts("[axion] gic-init: cntp-ctl enabled\r\n");
 
   // ── 9. Clear DAIF.I — enable IRQs ─────────────────────────────────────────
 #if defined(__aarch64__) && !defined(__APPLE__)
   __asm__ volatile("msr daifclr, #2\n\tisb" ::: "memory");
 #endif
-  dbg_puts("[axion] gic-init: irqs enabled\r\n");
 }
 
 // ── SVC trap stub ─────────────────────────────────────────────────────────────

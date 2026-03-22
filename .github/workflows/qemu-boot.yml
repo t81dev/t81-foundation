@@ -227,7 +227,8 @@ jobs:
           else
             COMMIT=$(git rev-parse --short HEAD)
             git commit -m "ci(qemu): update serial boot log @ ${COMMIT} [ci skip]"
-            git push
+            # Push may be blocked by branch-protection required-checks; treat as advisory.
+            git push || echo "Push skipped (branch protection — update log manually if needed)"
           fi
 
       # ── Artifact ──────────────────────────────────────────────────────────
