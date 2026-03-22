@@ -75,6 +75,31 @@ static int pl011_getchar() noexcept {
   return static_cast<int>(mmio_read32(kPl011Base, kPl011DR) & 0xFFu);
 }
 
+// ── ARM generic timer ────────────────────────────────────────────────────────
+// CNTPCT_EL0 (physical counter) and CNTFRQ_EL0 (frequency in Hz) are
+// accessible from EL1 without additional configuration on QEMU virt.
+// Typical QEMU value: 62 500 000 Hz.
+
+static uint64_t read_cntpct() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  uint64_t v;
+  __asm__ volatile("mrs %0, cntpct_el0" : "=r"(v));
+  return v;
+#else
+  return 0;
+#endif
+}
+
+static uint64_t read_cntfrq() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  uint64_t v;
+  __asm__ volatile("mrs %0, cntfrq_el0" : "=r"(v));
+  return v > 0 ? v : 1;
+#else
+  return 1;  // avoid div-by-zero on hosted builds
+#endif
+}
+
 // ── String helpers (no stdlib) ───────────────────────────────────────────────
 
 static bool str_eq(const char* a, const char* b) noexcept {
@@ -82,11 +107,32 @@ static bool str_eq(const char* a, const char* b) noexcept {
   return *a == *b;
 }
 
-// Advance past leading spaces.
 static const char* str_trim(const char* s) noexcept {
   while (*s == ' ') ++s;
   return s;
 }
+
+// Render uint64_t as decimal into caller buffer (bufsz >= 21).
+// Returns pointer into buf at the start of the rendered string.
+static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
+  buf[bufsz - 1] = '\0';
+  int i = bufsz - 2;
+  if (v == 0) {
+    buf[i--] = '0';
+  } else {
+    while (v > 0 && i >= 0) {
+      buf[i--] = static_cast<char>('0' + v % 10);
+      v /= 10;
+    }
+  }
+  return &buf[i + 1];
+}
+
+// ── Live kernel counters ──────────────────────────────────────────────────────
+
+static uint64_t s_boot_cntpct = 0;  // captured at qemu_cpp_bridge_entry()
+static uint64_t s_cmd_count   = 0;  // commands dispatched since boot
+static uint64_t s_poll_count  = 0;  // shell poll iterations since boot
 
 // ── Shell command handlers ────────────────────────────────────────────────────
 
@@ -104,11 +150,29 @@ static void cmd_version() noexcept {
 }
 
 static void cmd_status() noexcept {
+  char buf[24];
+
+  const uint64_t now      = read_cntpct();
+  const uint64_t freq     = read_cntfrq();
+  const uint64_t uptime_s = (now - s_boot_cntpct) / freq;
+
   pl011_puts("  [kernel]\r\n");
   pl011_puts("    path          : bare-metal (EFI C++ bridge)\r\n");
   pl011_puts("    canonfs       : mounted (in-memory)\r\n");
   pl011_puts("    policy engine : ready\r\n");
   pl011_puts("    threads       : 1\r\n");
+
+  pl011_puts("    uptime (s)    : ");
+  pl011_puts(u64_dec(uptime_s, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  pl011_puts("    poll cycles   : ");
+  pl011_puts(u64_dec(s_poll_count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  pl011_puts("    commands      : ");
+  pl011_puts(u64_dec(s_cmd_count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
 }
 
 static void cmd_policy() noexcept {
@@ -121,6 +185,8 @@ static void cmd_policy() noexcept {
 static void shell_dispatch(const char* line) noexcept {
   line = str_trim(line);
   if (*line == '\0') return;
+
+  ++s_cmd_count;
 
   if      (str_eq(line, "help"))    { cmd_help(); }
   else if (str_eq(line, "version")) { cmd_version(); }
@@ -145,6 +211,11 @@ static int  s_line_len;
 // returns immediately on hosted builds.
 
 extern "C" void qemu_cpp_bridge_entry(void) noexcept {
+  // Capture boot timestamp from the ARM physical counter.  All subsequent
+  // uptime readings subtract this value so cmd_status() shows wall seconds
+  // since the C++ bridge was entered, not since the hardware reset.
+  s_boot_cntpct = read_cntpct();
+
   // Governance banner — mirrors the hosted simulation path output so CI
   // validation and sample-boot-log.txt can check a single canonical sequence.
   pl011_puts("\r\n");
@@ -167,6 +238,8 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
     // Hosted (macOS / x86-64): no serial; return so tests can link and call.
     return;
 #endif
+    ++s_poll_count;
+
     if (pl011_rx_ready()) {
       const int c = pl011_getchar();
       if (c < 0) continue;
