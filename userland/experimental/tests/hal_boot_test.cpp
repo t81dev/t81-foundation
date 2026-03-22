@@ -8896,6 +8896,21 @@ static void test_kernel_abi_wire_blocks() {
       .caller_tid = 73,
       .caller_process_group_id = 79,
       .message = request.message,
+      .capabilities = {
+          KernelCapabilityRecord{
+              .record_id = 61,
+              .kind = KernelCapabilityKind::IpcReceive,
+              .kernel_seeded = false,
+              .delegated_by_process_group_id = 67,
+              .delegated_by_supervisor_id = 71,
+          },
+          KernelCapabilityRecord{
+              .record_id = 73,
+              .kind = KernelCapabilityKind::FaultObserve,
+              .process_group_scope = 79,
+              .kernel_seeded = true,
+          },
+      },
       .service_id = 83,
       .service_name = "wire-service-response",
       .service_registered = true,
@@ -8924,21 +8939,6 @@ static void test_kernel_abi_wire_blocks() {
       .supervisor_capability_transitions = 47,
       .supervisor_last_capability_transition_group_id = 53,
       .supervisor_last_capability_transition_record_id = 59,
-      .capabilities = {
-          KernelCapabilityRecord{
-              .record_id = 61,
-              .kind = KernelCapabilityKind::IpcReceive,
-              .kernel_seeded = false,
-              .delegated_by_process_group_id = 67,
-              .delegated_by_supervisor_id = 71,
-          },
-          KernelCapabilityRecord{
-              .record_id = 73,
-              .kind = KernelCapabilityKind::FaultObserve,
-              .process_group_scope = 79,
-              .kernel_seeded = true,
-          },
-      },
       .supervisor_delegation_process_group_count = 2,
       .supervisor_delegation_entry_count = 1,
       .supervisor_delegated_capability_count = 1,
@@ -10610,8 +10610,8 @@ static void test_kernel_call_tva_c_bridge() {
   const auto publish_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::PublishExecutableObjectFromTva,
-          .object_ref = published_executable_ref,
           .object_tva = published_executable_tva,
+          .object_ref = published_executable_ref,
       });
   check(axion_kernel_write_address_space_bytes(
             *state,
@@ -10929,13 +10929,13 @@ static void test_kernel_execution_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::RegisterThreadEntryDescriptor,
-          .service_name = "abi-entry",
           .spawn_descriptor = KernelThreadSpawnDescriptor{
               .pc = 31,
               .sp = 93,
               .register0 = 606,
               .label = "abi-entry-label",
           },
+          .service_name = "abi-entry",
       });
   check(register_entry.status == KernelCallStatus::Ok,
         "execution ABI entry registration returns Ok");
@@ -11121,8 +11121,8 @@ static void test_kernel_execution_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::RegisterExecutableObjectFromTva,
-          .object_ref = executable_ref_from_tva,
           .object_tva = executable_image_tva,
+          .object_ref = executable_ref_from_tva,
       });
   check(register_executable_from_tva.status == KernelCallStatus::Ok,
         "execution ABI executable registration from TVA returns Ok");
@@ -11163,8 +11163,8 @@ static void test_kernel_execution_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::PublishExecutableObjectFromTva,
-          .object_ref = published_executable_ref,
           .object_tva = published_executable_tva,
+          .object_ref = published_executable_ref,
       });
   check(publish_executable.status == KernelCallStatus::Ok,
         "execution ABI executable publish from TVA returns Ok");
@@ -11260,8 +11260,8 @@ static void test_kernel_execution_abi_calls() {
             *publishing_state,
             KernelCallRequest{
                 .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                .object_ref = external_published_ref,
                 .object_tva = external_published_tva,
+                .object_ref = external_published_ref,
             });
         check(external_publish_result.status == KernelCallStatus::Ok,
               "execution ABI publishes executable objects into an external store");
@@ -11385,8 +11385,8 @@ static void test_kernel_execution_abi_calls() {
             *canonfs_publishing_state,
             KernelCallRequest{
                 .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                .object_ref = canonfs_ref,
                 .object_tva = canonfs_tva,
+                .object_ref = canonfs_ref,
             });
         check(canonfs_publish_result.status == KernelCallStatus::Ok,
               "execution ABI publishes executable objects into persistent CanonFS");
@@ -11503,8 +11503,8 @@ static void test_kernel_execution_abi_calls() {
             *canonfs_env_publishing_state,
             KernelCallRequest{
                 .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                .object_ref = canonfs_env_ref,
                 .object_tva = canonfs_env_tva,
+                .object_ref = canonfs_env_ref,
             });
         check(canonfs_env_publish_result.status == KernelCallStatus::Ok,
               "execution ABI publishes executable objects into env-configured CanonFS");
@@ -11625,8 +11625,8 @@ static void test_kernel_execution_abi_calls() {
                 *vbox_state,
                 KernelCallRequest{
                     .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                    .object_ref = vbox_ref,
                     .object_tva = vbox_tva,
+                    .object_ref = vbox_ref,
                 });
             check(vbox_publish_result.status == KernelCallStatus::Ok,
                   "execution ABI publishes executable objects through VirtualBox guest storage");
@@ -11948,8 +11948,8 @@ static void test_kernel_service_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
-          .service_name = std::string{"svc.abi"},
           .object_ref = service_executable_ref,
+          .service_name = std::string{"svc.abi"},
       });
   check(register_service.status == KernelCallStatus::Ok,
         "service ABI register returns Ok");
@@ -12240,9 +12240,9 @@ static void test_kernel_service_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorServiceStatus,
-          .service_id = *register_service.service_id,
           .supervisor_id =
               state->find_process_group_supervisor(owner_runtime->process_group_id),
+          .service_id = *register_service.service_id,
       });
   check(foreign_supervisor_service_query.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor managed-service query is rejected");
@@ -12353,8 +12353,8 @@ static void test_kernel_capability_transition_sequence_revoke_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = sibling_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
       });
   check(history.status == KernelCallStatus::Ok,
         "transition-sequence revoke can query capability transition history");
@@ -12800,8 +12800,8 @@ static void test_kernel_supervisor_recovery_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
-          .supervisor_id = *owner_supervisor,
           .process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *owner_supervisor,
       });
   check(recover_group.status == KernelCallStatus::Ok,
         "supervisor recovery ABI acknowledgement returns Ok");
@@ -12869,8 +12869,8 @@ static void test_kernel_supervisor_recovery_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
-          .supervisor_id = *owner_supervisor,
           .process_group_id = owner_runtime->process_group_id,
+          .supervisor_id = *owner_supervisor,
       });
   check(foreign_recovery.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor recovery ABI call is denied");
@@ -12979,8 +12979,8 @@ static void test_kernel_keyboard_device_wake() {
   // Fire and deliver a Keyboard interrupt.
   HardwareInterrupt kbd_irq{
       .source       = InterruptSource::Keyboard,
-      .payload      = 0x41,  // 'A' scancode
       .timestamp_ns = 5000,
+      .payload      = 0x41,  // 'A' scancode
   };
   check(axion_kernel_record_interrupt(*state, kbd_irq),
         "kbd wake: Keyboard interrupt recorded");
@@ -13026,8 +13026,8 @@ static void test_kernel_keyboard_device_wake() {
   const uint64_t kbd_wakes_before_second = state->counters.keyboard_wakes;
   HardwareInterrupt kbd_irq2{
       .source       = InterruptSource::Keyboard,
-      .payload      = 0x42,  // 'B' scancode
       .timestamp_ns = 6000,
+      .payload      = 0x42,  // 'B' scancode
   };
   check(axion_kernel_record_interrupt(*state, kbd_irq2),
         "kbd wake: second Keyboard interrupt recorded");
@@ -13107,7 +13107,7 @@ static void test_kernel_interrupt_policy() {
 
   // ── 3. First Storage interrupt → Allow ──────────────────────────────────
   HardwareInterrupt stor1{
-      .source = InterruptSource::Storage, .payload = 1, .timestamp_ns = 1000};
+      .source = InterruptSource::Storage, .timestamp_ns = 1000, .payload = 1};
   check(axion_kernel_record_interrupt(*state, stor1), "policy: stor1 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor1 delivered");
   check(state->counters.interrupts_policy_allowed == 1,
@@ -13123,7 +13123,7 @@ static void test_kernel_interrupt_policy() {
 
   // ── Second Storage interrupt → Allow ────────────────────────────────────
   HardwareInterrupt stor2{
-      .source = InterruptSource::Storage, .payload = 2, .timestamp_ns = 2000};
+      .source = InterruptSource::Storage, .timestamp_ns = 2000, .payload = 2};
   check(axion_kernel_record_interrupt(*state, stor2), "policy: stor2 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor2 delivered");
   check(state->counters.interrupts_policy_allowed == 2,
@@ -13132,7 +13132,7 @@ static void test_kernel_interrupt_policy() {
   // ── 4. Third Storage interrupt in same window → Quarantine ───────────────
   const uint64_t device_wakes_before = state->counters.device_wakes;
   HardwareInterrupt stor3{
-      .source = InterruptSource::Storage, .payload = 3, .timestamp_ns = 3000};
+      .source = InterruptSource::Storage, .timestamp_ns = 3000, .payload = 3};
   check(axion_kernel_record_interrupt(*state, stor3), "policy: stor3 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor3 delivered call ok");
   check(state->counters.interrupts_policy_quarantined == 1,
@@ -13152,7 +13152,7 @@ static void test_kernel_interrupt_policy() {
 
   // ── 5. Fourth Storage interrupt → Deny ───────────────────────────────────
   HardwareInterrupt stor4{
-      .source = InterruptSource::Storage, .payload = 4, .timestamp_ns = 4000};
+      .source = InterruptSource::Storage, .timestamp_ns = 4000, .payload = 4};
   check(axion_kernel_record_interrupt(*state, stor4), "policy: stor4 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor4 delivered call ok");
   check(state->counters.interrupts_policy_denied == 1,
@@ -13179,7 +13179,7 @@ static void test_kernel_interrupt_policy() {
 
   // ── 7. Fifth Storage interrupt after clearance → Allow ───────────────────
   HardwareInterrupt stor5{
-      .source = InterruptSource::Storage, .payload = 5, .timestamp_ns = 5000};
+      .source = InterruptSource::Storage, .timestamp_ns = 5000, .payload = 5};
   check(axion_kernel_record_interrupt(*state, stor5), "policy: stor5 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor5 delivered");
   check(state->counters.interrupts_policy_allowed == 3,
@@ -13208,7 +13208,7 @@ static void test_kernel_interrupt_policy() {
   // ── 9. Timer/Network unaffected by Storage policy ────────────────────────
   const uint64_t allowed_before = state->counters.interrupts_policy_allowed;
   HardwareInterrupt tmr{
-      .source = InterruptSource::Timer, .payload = 0, .timestamp_ns = 6000};
+      .source = InterruptSource::Timer, .timestamp_ns = 6000, .payload = 0};
   check(axion_kernel_record_interrupt(*state, tmr), "policy: timer recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: timer delivered");
   check(state->counters.interrupts_policy_allowed == allowed_before + 1,
