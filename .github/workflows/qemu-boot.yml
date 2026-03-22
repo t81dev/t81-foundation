@@ -141,6 +141,7 @@ jobs:
       # ── Boot ──────────────────────────────────────────────────────────────
       - name: Boot QEMU and capture serial
         run: |
+          echo "QEMU version: $(qemu-system-aarch64 --version | head -1)"
           cp /usr/share/AAVMF/AAVMF_VARS.fd /tmp/edk2-vars.fd
 
           # Run for up to 40 seconds; exit code 124 (timeout) is expected and
@@ -149,15 +150,17 @@ jobs:
           #   slot 31 (0x0A003E00): FAT32 boot disk — first device added, highest slot.
           #   slot 30 (0x0A003C00): CanonFS raw block store — second device, next slot.
           # QEMU virt allocates virtio-mmio buses top-down (slot 31 first).
-          # gic-version=3: force GICv3 so the redistributor at 0x080A0000 is
-          # mapped and accessible; the bare-metal bridge uses GICv3 MMIO + system
-          # registers for PPI-30 timer setup.
+          # gic-version=3: force GICv3 (redistributor at 0x080A0000 is mapped).
+          # force-legacy=off: force virtio-mmio modern transport (version 2)
+          #   so the bare-metal bridge's virtio queue setup code works; by
+          #   default ubuntu-24.04's QEMU uses legacy (version 1) transport.
           timeout 40 qemu-system-aarch64 \
             -machine virt,gic-version=3 \
             -cpu cortex-a57 \
             -m 512M \
             -nographic \
             -serial file:serial.log \
+            -global virtio-mmio.force-legacy=off \
             -drive if=pflash,format=raw,readonly=on,file=/usr/share/AAVMF/AAVMF_CODE.fd \
             -drive if=pflash,format=raw,file=/tmp/edk2-vars.fd \
             -drive id=boot0,if=none,format=raw,file=boot.img \
