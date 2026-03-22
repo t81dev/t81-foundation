@@ -678,6 +678,13 @@ if(T81_ENABLE_TERNARYOS)
 
   target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
   target_compile_features(t81_ternaryos_hal PUBLIC ${T81_CXX_STD_FEATURE})
+  # The HAL library is only ever linked into hosted binaries (snapshot tools,
+  # tests, demos). The bare-metal EFI images are compiled separately via
+  # clang-18 custom commands and do NOT link t81_ternaryos_hal.
+  # T81_TERNARYOS_HOSTED_BUILD disables raw MMIO dereferences that would
+  # SIGSEGV when run on a Linux host (physical addresses are not mapped in
+  # user-space).
+  target_compile_definitions(t81_ternaryos_hal PUBLIC T81_TERNARYOS_HOSTED_BUILD=1)
 
   # DPE kernel wiring — compiled into t81_ternaryos_hal only when both flags are ON.
   if(T81_ENABLE_DPE)
@@ -721,14 +728,10 @@ if(T81_ENABLE_TERNARYOS)
   add_executable(t81_ternaryos_phase4_startup_snapshot
     userland/experimental/dev/phase4_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_phase4_startup_snapshot PRIVATE t81_ternaryos_hal)
-  target_compile_definitions(t81_ternaryos_phase4_startup_snapshot PRIVATE
-    T81_TERNARYOS_HOSTED_BUILD=1)
 
   add_executable(t81_ternaryos_qemu_slice6_snapshot
     userland/experimental/dev/qemu_slice6_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_qemu_slice6_snapshot PRIVATE t81_ternaryos_hal)
-  target_compile_definitions(t81_ternaryos_qemu_slice6_snapshot PRIVATE
-    T81_TERNARYOS_HOSTED_BUILD=1)
 
   if(T81_BUILD_TUI)
     add_executable(t81_ternaryos_shell_tui
