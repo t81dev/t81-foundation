@@ -76,15 +76,23 @@ static int pl011_getchar() noexcept {
 }
 
 // ── Virtio-blk MMIO probe ────────────────────────────────────────────────────
-// Probe the second virtio MMIO slot (0x0A000200) for the CanonFS block device.
-// QEMU virt maps virtio-mmio sequentially: slot 0 (0x0A000000) is the FAT32
-// boot disk; slot 1 (0x0A000200) is the dedicated raw CanonFS store.
+// Probe the second virtio MMIO slot for the CanonFS block device.
+//
+// QEMU virt allocates virtio-mmio slots top-down (highest slot first).
+// With 32 slots (0x0A000000 + N*0x200) and two virtio-blk-device instances:
+//   Slot 31 (0x0A003E00): first  device added = FAT32 boot disk
+//   Slot 30 (0x0A003C00): second device added = CanonFS raw block store
+//
+// This is confirmed by the EDK2 BdsDxe boot log:
+//   Boot0001: VenHw(…,003C000A…) → No EFI found  (CanonFS store, slot 30)
+//   Boot0002: VenHw(…,003E000A…) → BOOTAA64.EFI  (boot disk, slot 31)
+//
 // Only checks the magic / version / device-ID registers — does not
 // initialise the queue (the full driver lives in VirtioBlkMmioDevice).
 // Used only to select the banner text; the hosted C++ kernel does the
 // full initialisation through IBlockDevice.
 
-static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000200);
+static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A003C00);
 
 static bool probe_virtio_blk_bare() noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
