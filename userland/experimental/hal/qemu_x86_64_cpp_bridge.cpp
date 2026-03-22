@@ -79,6 +79,29 @@ static int com1_getchar() noexcept {
   return static_cast<int>(inb_x86(kCom1Base + kUartRBR));
 }
 
+// ── Virtio-blk MMIO probe (x86_64) ───────────────────────────────────────────
+// QEMU q35 maps virtio MMIO devices at 0x0A000000 (same as virt for AArch64).
+// Probe-only: read magic/version/device-id without queue init.
+
+static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000000);
+
+static inline uint32_t mmio_rd32_x86(uint64_t base, uint32_t off) noexcept {
+#if defined(__x86_64__) && defined(_WIN32)
+  return *reinterpret_cast<const volatile uint32_t*>(
+      static_cast<uintptr_t>(base + off));
+#else
+  (void)base; (void)off;
+  return 0u;
+#endif
+}
+
+static bool probe_virtio_blk_bare() noexcept {
+  const uint32_t magic = mmio_rd32_x86(kVirtioMmioBase, 0x000u);
+  const uint32_t ver   = mmio_rd32_x86(kVirtioMmioBase, 0x004u);
+  const uint32_t devid = mmio_rd32_x86(kVirtioMmioBase, 0x008u);
+  return magic == 0x74726976u && ver == 2u && devid == 2u;
+}
+
 // ── RDTSC timer ──────────────────────────────────────────────────────────────
 // The TSC frequency (Hz) is measured by the EFI stub via BS->Stall before
 // ExitBootServices and passed in as tsc_freq_hz.  RDTSC is available from
@@ -211,12 +234,18 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   s_tsc_freq_hz = tsc_freq_hz > 0 ? tsc_freq_hz : 1;
   s_boot_tsc    = rdtsc();
 
+  const bool has_blk = probe_virtio_blk_bare();
+
   com1_puts("\r\n");
   com1_puts("  T81  --  Ternary OS for AI\r\n");
   com1_puts("  ===========================\r\n");
   com1_puts("\r\n");
   com1_puts("[axion] policy engine: ready\r\n");
-  com1_puts("[axion] canonfs: mounted (in-memory)\r\n");
+  if (has_blk) {
+    com1_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
+  } else {
+    com1_puts("[axion] canonfs: mounted (in-memory)\r\n");
+  }
   com1_puts("[axion] kernel thread tid=1: running\r\n");
   com1_puts("\r\n");
   com1_puts("t81> ");

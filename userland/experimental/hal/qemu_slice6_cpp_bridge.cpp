@@ -75,6 +75,26 @@ static int pl011_getchar() noexcept {
   return static_cast<int>(mmio_read32(kPl011Base, kPl011DR) & 0xFFu);
 }
 
+// ── Virtio-blk MMIO probe ────────────────────────────────────────────────────
+// Probe the first virtio MMIO slot (0x0A000000) for a block device.
+// Only checks the magic / version / device-ID registers — does not
+// initialise the queue (the full driver lives in VirtioBlkMmioDevice).
+// Used only to select the banner text; the hosted C++ kernel does the
+// full initialisation through IBlockDevice.
+
+static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000000);
+
+static bool probe_virtio_blk_bare() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  const uint32_t magic = mmio_read32(kVirtioMmioBase, 0x000u);
+  const uint32_t ver   = mmio_read32(kVirtioMmioBase, 0x004u);
+  const uint32_t devid = mmio_read32(kVirtioMmioBase, 0x008u);
+  return magic == 0x74726976u && ver == 2u && devid == 2u;
+#else
+  return false;
+#endif
+}
+
 // ── ARM generic timer ────────────────────────────────────────────────────────
 // CNTPCT_EL0 (physical counter) and CNTFRQ_EL0 (frequency in Hz) are
 // accessible from EL1 without additional configuration on QEMU virt.
@@ -216,6 +236,8 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   // since the C++ bridge was entered, not since the hardware reset.
   s_boot_cntpct = read_cntpct();
 
+  const bool has_blk = probe_virtio_blk_bare();
+
   // Governance banner — mirrors the hosted simulation path output so CI
   // validation and sample-boot-log.txt can check a single canonical sequence.
   pl011_puts("\r\n");
@@ -223,7 +245,11 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   pl011_puts("  ===========================\r\n");
   pl011_puts("\r\n");
   pl011_puts("[axion] policy engine: ready\r\n");
-  pl011_puts("[axion] canonfs: mounted (in-memory)\r\n");
+  if (has_blk) {
+    pl011_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
+  } else {
+    pl011_puts("[axion] canonfs: mounted (in-memory)\r\n");
+  }
   pl011_puts("[axion] kernel thread tid=1: running\r\n");
   pl011_puts("\r\n");
   pl011_puts("t81> ");

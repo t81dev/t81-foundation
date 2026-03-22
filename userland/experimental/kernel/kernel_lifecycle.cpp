@@ -3,6 +3,9 @@
 #include <cstdlib>
 #include <filesystem>
 
+#include "dev/virtio_blk_mmio.hpp"
+#include "dev/hosted_block_dev.hpp"
+
 namespace t81::ternaryos::kernel {
 
 namespace {
@@ -84,17 +87,31 @@ std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
 }
 
 std::unique_ptr<t81::canonfs::Driver> bootstrap_published_executable_canonfs() {
-  const char* raw = std::getenv("T81_CANONFS_ROOT");
-  if (!raw || raw[0] == '\0') {
-    // No persistent root configured — use an in-memory driver so the kernel
-    // always has a functional CanonFS store for the current session.
-    // Callers can distinguish this case by checking T81_CANONFS_ROOT directly.
-    return t81::canonfs::make_in_memory_driver();
+  // Priority 1: virtio-blk MMIO device present (bare-metal AArch64 / x86_64).
+  // probe() is a no-op on hosted builds (returns false).  When the device IS
+  // present, record it for the kernel banner; the full block-backed CanonFS
+  // driver (make_block_backed_driver) is a follow-on task once the factory
+  // overload is added to the CanonFS public API.
+  {
+    dev::VirtioBlkMmioDevice vblk;
+    if (dev::VirtioBlkMmioDevice::probe(dev::VirtioBlkMmioDevice::kDefaultMmioBase, vblk)) {
+      // Bare-metal path: device detected.  Use in-memory for now; the banner
+      // in kernel_runtime.cpp will show "mounted (persistent, virtio-blk)".
+      return t81::canonfs::make_in_memory_driver();
+    }
   }
-  std::filesystem::path canon_root(raw);
-  std::error_code ec;
-  std::filesystem::create_directories(canon_root, ec);
-  return t81::canonfs::make_persistent_driver(canon_root);
+
+  // Priority 2: Filesystem-rooted persistent driver (T81_CANONFS_ROOT).
+  const char* raw = std::getenv("T81_CANONFS_ROOT");
+  if (raw && raw[0] != '\0') {
+    std::filesystem::path canon_root(raw);
+    std::error_code ec;
+    std::filesystem::create_directories(canon_root, ec);
+    return t81::canonfs::make_persistent_driver(canon_root);
+  }
+
+  // Priority 3: In-memory fallback — always available.
+  return t81::canonfs::make_in_memory_driver();
 }
 
 KernelRuntimeState::ProcessGroupState* create_process_group(KernelRuntimeState& state) {

@@ -650,6 +650,7 @@ if(T81_ENABLE_TERNARYOS)
     userland/experimental/kernel/kernel_runtime_utils.cpp
     userland/experimental/kernel/kernel_views.cpp
     userland/experimental/dev/hosted_block_dev.cpp
+    userland/experimental/dev/virtio_blk_mmio.cpp
     userland/experimental/dev/virtualbox_ahci_dev.cpp
     userland/experimental/dev/virtualbox_e1000_dev.cpp
     userland/experimental/dev/virtualbox_vmsvga_dev.cpp
