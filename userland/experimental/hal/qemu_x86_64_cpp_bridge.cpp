@@ -217,12 +217,57 @@ static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
   return &buf[i + 1];
 }
 
+// ── Freestanding thread table ─────────────────────────────────────────────────
+
+enum class FsThreadState : uint8_t { Empty = 0, Running = 1, Ready = 2, Blocked = 3 };
+
+struct FsThread {
+  uint32_t      tid        = 0;
+  FsThreadState state      = FsThreadState::Empty;
+  uint64_t      tick_count = 0;
+};
+
+static constexpr int kMaxFsThreads = 8;
+static FsThread  s_threads[kMaxFsThreads];
+static int       s_thread_count   = 0;
+static int       s_current_thread = 0;
+
 // ── Live kernel counters ──────────────────────────────────────────────────────
 
-static uint64_t s_tsc_freq_hz = 1;   // set at bridge entry from EFI measurement
-static uint64_t s_boot_tsc    = 0;   // captured at qemu_x86_64_cpp_bridge_entry()
-static uint64_t s_cmd_count   = 0;
-static uint64_t s_poll_count  = 0;
+static uint64_t s_tsc_freq_hz     = 1;   // set at bridge entry
+static uint64_t s_boot_tsc        = 0;
+static uint64_t s_cmd_count       = 0;
+static uint64_t s_loop_iters      = 0;
+static uint64_t s_tick_count      = 0;
+static uint64_t s_sched_switches  = 0;
+static uint64_t s_interrupt_count = 0;
+static bool     s_has_blk         = false;
+
+// ── Freestanding scheduler tick ───────────────────────────────────────────────
+
+static constexpr uint64_t kSchedTickInterval = 500u;
+
+static void freestanding_sched_tick() noexcept {
+  ++s_tick_count;
+  if (s_thread_count <= 1 || (s_tick_count % kSchedTickInterval) != 0) {
+    ++s_threads[s_current_thread].tick_count;
+    return;
+  }
+  s_threads[s_current_thread].state = FsThreadState::Ready;
+  int next = (s_current_thread + 1) % s_thread_count;
+  while (next != s_current_thread) {
+    if (s_threads[next].state == FsThreadState::Ready) break;
+    next = (next + 1) % s_thread_count;
+  }
+  if (next != s_current_thread) {
+    s_threads[next].state = FsThreadState::Running;
+    s_current_thread = next;
+    ++s_sched_switches;
+  } else {
+    s_threads[s_current_thread].state = FsThreadState::Running;
+  }
+  ++s_threads[s_current_thread].tick_count;
+}
 
 // ── Shell command handlers ────────────────────────────────────────────────────
 
@@ -230,6 +275,8 @@ static void cmd_help() noexcept {
   com1_puts("  help     -- this message\r\n");
   com1_puts("  version  -- T81 build info\r\n");
   com1_puts("  status   -- kernel counters and governance state\r\n");
+  com1_puts("  threads  -- thread table (tid, state, ticks)\r\n");
+  com1_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
   com1_puts("  policy   -- Axion policy summary\r\n");
 }
 
@@ -247,16 +294,35 @@ static void cmd_status() noexcept {
 
   com1_puts("  [kernel]\r\n");
   com1_puts("    path          : bare-metal (EFI C++ bridge, x86_64)\r\n");
-  com1_puts("    canonfs       : mounted (in-memory)\r\n");
+  if (s_has_blk) {
+    com1_puts("    canonfs       : mounted (persistent, virtio-blk)\r\n");
+  } else {
+    com1_puts("    canonfs       : mounted (in-memory)\r\n");
+  }
   com1_puts("    policy engine : ready\r\n");
-  com1_puts("    threads       : 1\r\n");
+
+  com1_puts("    threads       : ");
+  com1_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
 
   com1_puts("    uptime (s)    : ");
   com1_puts(u64_dec(uptime_s, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
 
-  com1_puts("    poll cycles   : ");
-  com1_puts(u64_dec(s_poll_count, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("    loop_iters    : ");
+  com1_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+
+  com1_puts("    tick_count    : ");
+  com1_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+
+  com1_puts("    sched switches: ");
+  com1_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+
+  com1_puts("    interrupts    : ");
+  com1_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
 
   com1_puts("    commands      : ");
@@ -268,10 +334,57 @@ static void cmd_status() noexcept {
   com1_puts("\r\n");
 }
 
+static void cmd_threads() noexcept {
+  char buf[24];
+  com1_puts("  [threads]\r\n");
+  for (int i = 0; i < s_thread_count; ++i) {
+    const FsThread& t = s_threads[i];
+    com1_puts("    tid=");
+    com1_puts(u64_dec(t.tid, buf, static_cast<int>(sizeof(buf))));
+    switch (t.state) {
+      case FsThreadState::Running: com1_puts("  Running"); break;
+      case FsThreadState::Ready:   com1_puts("  Ready  "); break;
+      case FsThreadState::Blocked: com1_puts("  Blocked"); break;
+      default:                     com1_puts("  Empty  "); break;
+    }
+    com1_puts("  ticks=");
+    com1_puts(u64_dec(t.tick_count, buf, static_cast<int>(sizeof(buf))));
+    com1_puts("\r\n");
+  }
+  com1_puts("    count=");
+  com1_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+}
+
+static void cmd_sched() noexcept {
+  char buf[24];
+  com1_puts("  [scheduler]\r\n");
+  com1_puts("    model        : cooperative round-robin (freestanding)\r\n");
+  com1_puts("    loop_iters   : ");
+  com1_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+  com1_puts("    tick_count   : ");
+  com1_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+  com1_puts("    switches     : ");
+  com1_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+  com1_puts("    interrupts   : ");
+  com1_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
+  com1_puts("    tick_interval: ");
+  com1_puts(u64_dec(kSchedTickInterval, buf, static_cast<int>(sizeof(buf))));
+  com1_puts(" loop iters\r\n");
+}
+
 static void cmd_policy() noexcept {
   com1_puts("  [axion policy]\r\n");
   com1_puts("    governance  : active\r\n");
-  com1_puts("    audit trail : canonfs (in-memory)\r\n");
+  if (s_has_blk) {
+    com1_puts("    audit trail : canonfs (persistent, virtio-blk)\r\n");
+  } else {
+    com1_puts("    audit trail : canonfs (in-memory)\r\n");
+  }
   com1_puts("    constraints : RFC-00B0 ethics-first boot\r\n");
 }
 
@@ -284,6 +397,8 @@ static void shell_dispatch(const char* line) noexcept {
   if      (str_eq(line, "help"))    { cmd_help(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
+  else if (str_eq(line, "threads")) { cmd_threads(); }
+  else if (str_eq(line, "sched"))   { cmd_sched(); }
   else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
     com1_puts("  unknown command: '");
@@ -307,51 +422,70 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   s_tsc_freq_hz = tsc_freq_hz > 0 ? tsc_freq_hz : 1;
   s_boot_tsc    = rdtsc();
 
-  const bool has_blk = probe_virtio_blk_bare();
+  // Register kernel thread (tid=1) in the freestanding thread table.
+  s_threads[0] = FsThread{1u, FsThreadState::Running, 0u};
+  s_thread_count   = 1;
+  s_current_thread = 0;
+
+  s_has_blk = probe_virtio_blk_bare();
 
   com1_puts("\r\n");
   com1_puts("  T81  --  Ternary OS for AI\r\n");
   com1_puts("  ===========================\r\n");
   com1_puts("\r\n");
   com1_puts("[axion] policy engine: ready\r\n");
-  if (has_blk) {
+  if (s_has_blk) {
     com1_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
   } else {
     com1_puts("[axion] canonfs: mounted (in-memory)\r\n");
   }
   com1_puts("[axion] kernel thread tid=1: running\r\n");
+  com1_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
   com1_puts("\r\n");
   com1_puts("t81> ");
 
   s_line_len = 0;
 
+  // ── Priority-dispatch event loop ─────────────────────────────────────────────
+  // Mirrors axion_kernel_step() priority order:
+  //   1. Fault queue      (placeholder)
+  //   2. Interrupt source (COM1 RX ≡ hardware interrupt)
+  //   3. Pager events     (placeholder)
+  //   4. Scheduler tick   (cooperative round-robin, every kSchedTickInterval iters)
   for (;;) {
 #if !defined(__x86_64__) || !defined(_WIN32)
-    // Hosted build (no port I/O): return immediately so tests can link.
-    return;
+    return;  // hosted: return immediately for test linkage
 #endif
-    ++s_poll_count;
+    ++s_loop_iters;
 
+    // Priority 2 — serial RX (interrupt source).
     if (com1_rx_ready()) {
       const int c = com1_getchar();
-      if (c < 0) continue;
-
-      if (c == '\r' || c == '\n') {
-        s_line[s_line_len] = '\0';
-        com1_puts("\r\n");
-        shell_dispatch(s_line);
-        s_line_len = 0;
-        com1_puts("t81> ");
-      } else if (c == 127 || c == '\b') {
-        if (s_line_len > 0) {
-          --s_line_len;
-          com1_puts("\b \b");
+      if (c >= 0) {
+        ++s_interrupt_count;
+        if (c == '\r' || c == '\n') {
+          s_line[s_line_len] = '\0';
+          com1_puts("\r\n");
+          shell_dispatch(s_line);
+          s_line_len = 0;
+          com1_puts("t81> ");
+        } else if (c == 127 || c == '\b') {
+          if (s_line_len > 0) { --s_line_len; com1_puts("\b \b"); }
+        } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
+          s_line[s_line_len++] = static_cast<char>(c);
+          com1_putchar(static_cast<char>(c));
         }
-      } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
-        s_line[s_line_len++] = static_cast<char>(c);
-        com1_putchar(static_cast<char>(c));
       }
+#if defined(__x86_64__) && defined(_WIN32)
+      __asm__ volatile("pause" ::: "memory");
+#endif
+      continue;
     }
+
+    // Priority 3 — pager (no-op placeholder).
+    // Priority 4 — scheduler tick.
+    freestanding_sched_tick();
+
 #if defined(__x86_64__) && defined(_WIN32)
     __asm__ volatile("pause" ::: "memory");
 #endif

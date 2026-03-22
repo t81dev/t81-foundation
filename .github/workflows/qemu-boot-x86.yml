@@ -109,6 +109,7 @@ jobs:
           check "[axion] bare-metal x86_64 entry"
           check "[axion] ExitBootServices complete"
           check "[axion] canonfs: mounted (persistent, virtio-blk)"
+          check "[axion] event loop: priority dispatch"
 
       - name: Save boot log
         run: cp serial_x86.log drivers/qemu/sample-boot-log-x86.txt

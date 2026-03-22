@@ -150,11 +150,62 @@ static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
   return &buf[i + 1];
 }
 
-// ── Live kernel counters ──────────────────────────────────────────────────────
+// ── Freestanding thread table ─────────────────────────────────────────────────
+// Mirrors KernelRuntimeState::thread_runtime without heap allocation.
+// Kernel thread (tid=1) is registered at bridge entry.
 
-static uint64_t s_boot_cntpct = 0;  // captured at qemu_cpp_bridge_entry()
-static uint64_t s_cmd_count   = 0;  // commands dispatched since boot
-static uint64_t s_poll_count  = 0;  // shell poll iterations since boot
+enum class FsThreadState : uint8_t { Empty = 0, Running = 1, Ready = 2, Blocked = 3 };
+
+struct FsThread {
+  uint32_t      tid        = 0;
+  FsThreadState state      = FsThreadState::Empty;
+  uint64_t      tick_count = 0;
+};
+
+static constexpr int kMaxFsThreads = 8;
+static FsThread  s_threads[kMaxFsThreads];
+static int       s_thread_count   = 0;
+static int       s_current_thread = 0;
+
+// ── Live kernel counters ──────────────────────────────────────────────────────
+// Mirrors KernelRuntimeState::Counters for the freestanding bridge context.
+
+static uint64_t s_boot_cntpct    = 0;  // captured at bridge entry
+static uint64_t s_cmd_count      = 0;  // commands dispatched
+static uint64_t s_loop_iters     = 0;  // priority-dispatch loop iterations
+static uint64_t s_tick_count     = 0;  // scheduler tick calls
+static uint64_t s_sched_switches = 0;  // thread context switches
+static uint64_t s_interrupt_count = 0; // serial RX events (our interrupt source)
+static bool     s_has_blk        = false;
+
+// ── Freestanding scheduler tick ───────────────────────────────────────────────
+// Called when no higher-priority work is pending.  Mirrors axion_kernel_tick().
+// Round-robin among ready threads every kSchedTickInterval loop iterations.
+
+static constexpr uint64_t kSchedTickInterval = 500u;
+
+static void freestanding_sched_tick() noexcept {
+  ++s_tick_count;
+  if (s_thread_count <= 1 || (s_tick_count % kSchedTickInterval) != 0) {
+    ++s_threads[s_current_thread].tick_count;
+    return;
+  }
+  // Mark current thread Ready; advance to next runnable thread.
+  s_threads[s_current_thread].state = FsThreadState::Ready;
+  int next = (s_current_thread + 1) % s_thread_count;
+  while (next != s_current_thread) {
+    if (s_threads[next].state == FsThreadState::Ready) break;
+    next = (next + 1) % s_thread_count;
+  }
+  if (next != s_current_thread) {
+    s_threads[next].state = FsThreadState::Running;
+    s_current_thread = next;
+    ++s_sched_switches;
+  } else {
+    s_threads[s_current_thread].state = FsThreadState::Running;
+  }
+  ++s_threads[s_current_thread].tick_count;
+}
 
 // ── Shell command handlers ────────────────────────────────────────────────────
 
@@ -162,6 +213,8 @@ static void cmd_help() noexcept {
   pl011_puts("  help     -- this message\r\n");
   pl011_puts("  version  -- T81 build info\r\n");
   pl011_puts("  status   -- kernel counters and governance state\r\n");
+  pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
+  pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
   pl011_puts("  policy   -- Axion policy summary\r\n");
 }
 
@@ -179,22 +232,84 @@ static void cmd_status() noexcept {
   const uint64_t uptime_s = (now - s_boot_cntpct) / freq;
 
   pl011_puts("  [kernel]\r\n");
-  pl011_puts("    path          : bare-metal (EFI C++ bridge)\r\n");
-  pl011_puts("    canonfs       : mounted (in-memory)\r\n");
+  pl011_puts("    path          : bare-metal (EFI C++ bridge, AArch64)\r\n");
+  if (s_has_blk) {
+    pl011_puts("    canonfs       : mounted (persistent, virtio-blk)\r\n");
+  } else {
+    pl011_puts("    canonfs       : mounted (in-memory)\r\n");
+  }
   pl011_puts("    policy engine : ready\r\n");
-  pl011_puts("    threads       : 1\r\n");
+
+  pl011_puts("    threads       : ");
+  pl011_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
 
   pl011_puts("    uptime (s)    : ");
   pl011_puts(u64_dec(uptime_s, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
 
-  pl011_puts("    poll cycles   : ");
-  pl011_puts(u64_dec(s_poll_count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("    loop_iters    : ");
+  pl011_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  pl011_puts("    tick_count    : ");
+  pl011_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  pl011_puts("    sched switches: ");
+  pl011_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  pl011_puts("    interrupts    : ");
+  pl011_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
 
   pl011_puts("    commands      : ");
   pl011_puts(u64_dec(s_cmd_count, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
+}
+
+static void cmd_threads() noexcept {
+  char buf[24];
+  pl011_puts("  [threads]\r\n");
+  for (int i = 0; i < s_thread_count; ++i) {
+    const FsThread& t = s_threads[i];
+    pl011_puts("    tid=");
+    pl011_puts(u64_dec(t.tid, buf, static_cast<int>(sizeof(buf))));
+    switch (t.state) {
+      case FsThreadState::Running: pl011_puts("  Running"); break;
+      case FsThreadState::Ready:   pl011_puts("  Ready  "); break;
+      case FsThreadState::Blocked: pl011_puts("  Blocked"); break;
+      default:                     pl011_puts("  Empty  "); break;
+    }
+    pl011_puts("  ticks=");
+    pl011_puts(u64_dec(t.tick_count, buf, static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
+  }
+  pl011_puts("    count=");
+  pl011_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+}
+
+static void cmd_sched() noexcept {
+  char buf[24];
+  pl011_puts("  [scheduler]\r\n");
+  pl011_puts("    model        : cooperative round-robin (freestanding)\r\n");
+  pl011_puts("    loop_iters   : ");
+  pl011_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    tick_count   : ");
+  pl011_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    switches     : ");
+  pl011_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    interrupts   : ");
+  pl011_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    tick_interval: ");
+  pl011_puts(u64_dec(kSchedTickInterval, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts(" loop iters\r\n");
 }
 
 static void cmd_policy() noexcept {
@@ -213,6 +328,8 @@ static void shell_dispatch(const char* line) noexcept {
   if      (str_eq(line, "help"))    { cmd_help(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
+  else if (str_eq(line, "threads")) { cmd_threads(); }
+  else if (str_eq(line, "sched"))   { cmd_sched(); }
   else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
     pl011_puts("  unknown command: '");
@@ -233,61 +350,79 @@ static int  s_line_len;
 // returns immediately on hosted builds.
 
 extern "C" void qemu_cpp_bridge_entry(void) noexcept {
-  // Capture boot timestamp from the ARM physical counter.  All subsequent
-  // uptime readings subtract this value so cmd_status() shows wall seconds
-  // since the C++ bridge was entered, not since the hardware reset.
+  // Capture boot timestamp.
   s_boot_cntpct = read_cntpct();
 
-  const bool has_blk = probe_virtio_blk_bare();
+  // Register kernel thread (tid=1) in the freestanding thread table.
+  s_threads[0] = FsThread{1u, FsThreadState::Running, 0u};
+  s_thread_count   = 1;
+  s_current_thread = 0;
 
-  // Governance banner — mirrors the hosted simulation path output so CI
-  // validation and sample-boot-log.txt can check a single canonical sequence.
+  s_has_blk = probe_virtio_blk_bare();
+
+  // Governance banner.
   pl011_puts("\r\n");
   pl011_puts("  T81  --  Ternary OS for AI\r\n");
   pl011_puts("  ===========================\r\n");
   pl011_puts("\r\n");
   pl011_puts("[axion] policy engine: ready\r\n");
-  if (has_blk) {
+  if (s_has_blk) {
     pl011_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
   } else {
     pl011_puts("[axion] canonfs: mounted (in-memory)\r\n");
   }
   pl011_puts("[axion] kernel thread tid=1: running\r\n");
+  pl011_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
   pl011_puts("\r\n");
   pl011_puts("t81> ");
 
   s_line_len = 0;
 
-  // Line-buffered polling command shell.  Yields to the CPU between polls so
-  // the QEMU TCG thread scheduler can make progress.  On hosted builds the
-  // AArch64 asm blocks compile away and the loop exits immediately.
+  // ── Priority-dispatch event loop ─────────────────────────────────────────────
+  // Mirrors axion_kernel_step() priority order:
+  //   1. Fault queue      (placeholder — no hardware faults in this context)
+  //   2. Interrupt source (serial RX ≡ our hardware interrupt equivalent)
+  //   3. Pager events     (placeholder — no memory pressure in this context)
+  //   4. Scheduler tick   (cooperative round-robin, every kSchedTickInterval iters)
+  //
+  // On hosted builds all bare-metal asm compiles away and the loop exits
+  // immediately so unit tests can link without MMIO access.
   for (;;) {
 #if !defined(__aarch64__) || defined(__APPLE__)
-    // Hosted (macOS / x86-64): no serial; return so tests can link and call.
-    return;
+    return;  // hosted: return immediately for test linkage
 #endif
-    ++s_poll_count;
+    ++s_loop_iters;
 
+    // Priority 2 — serial RX (interrupt source).
     if (pl011_rx_ready()) {
       const int c = pl011_getchar();
-      if (c < 0) continue;
-
-      if (c == '\r' || c == '\n') {
-        s_line[s_line_len] = '\0';
-        pl011_puts("\r\n");
-        shell_dispatch(s_line);
-        s_line_len = 0;
-        pl011_puts("t81> ");
-      } else if (c == 127 || c == '\b') {
-        if (s_line_len > 0) {
-          --s_line_len;
-          pl011_puts("\b \b");
+      if (c >= 0) {
+        ++s_interrupt_count;
+        if (c == '\r' || c == '\n') {
+          s_line[s_line_len] = '\0';
+          pl011_puts("\r\n");
+          shell_dispatch(s_line);
+          s_line_len = 0;
+          pl011_puts("t81> ");
+        } else if (c == 127 || c == '\b') {
+          if (s_line_len > 0) { --s_line_len; pl011_puts("\b \b"); }
+        } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
+          s_line[s_line_len++] = static_cast<char>(c);
+          pl011_putchar(static_cast<char>(c));
         }
-      } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
-        s_line[s_line_len++] = static_cast<char>(c);
-        pl011_putchar(static_cast<char>(c));
       }
+      // After servicing the interrupt, yield and re-enter the loop.
+#if defined(__aarch64__) && !defined(__APPLE__)
+      __asm__ volatile("yield" ::: "memory");
+#endif
+      continue;
     }
+
+    // Priority 3 — pager (no-op placeholder).
+    // Priority 4 — scheduler tick.
+    freestanding_sched_tick();
+
+    // Idle: yield to QEMU TCG thread scheduler.
 #if defined(__aarch64__) && !defined(__APPLE__)
     __asm__ volatile("yield" ::: "memory");
 #endif
