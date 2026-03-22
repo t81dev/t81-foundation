@@ -31,8 +31,9 @@ namespace t81::ternaryos::dev {
 namespace {
 
 inline void mmio_wr32(uint64_t base, uint32_t off, uint32_t v) noexcept {
-#if (defined(__aarch64__) && !defined(__APPLE__)) || \
-    (defined(__x86_64__)  && !defined(_WIN32) && !defined(__APPLE__))
+#if !defined(T81_TERNARYOS_HOSTED_BUILD) && \
+    ((defined(__aarch64__) && !defined(__APPLE__)) || \
+     (defined(__x86_64__)  && !defined(_WIN32) && !defined(__APPLE__)))
   *reinterpret_cast<volatile uint32_t*>(
       static_cast<uintptr_t>(base + off)) = v;
 #else
@@ -41,8 +42,9 @@ inline void mmio_wr32(uint64_t base, uint32_t off, uint32_t v) noexcept {
 }
 
 inline uint32_t mmio_rd32(uint64_t base, uint32_t off) noexcept {
-#if (defined(__aarch64__) && !defined(__APPLE__)) || \
-    (defined(__x86_64__)  && !defined(_WIN32) && !defined(__APPLE__))
+#if !defined(T81_TERNARYOS_HOSTED_BUILD) && \
+    ((defined(__aarch64__) && !defined(__APPLE__)) || \
+     (defined(__x86_64__)  && !defined(_WIN32) && !defined(__APPLE__)))
   return *reinterpret_cast<const volatile uint32_t*>(
       static_cast<uintptr_t>(base + off));
 #else

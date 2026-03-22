@@ -721,10 +721,14 @@ if(T81_ENABLE_TERNARYOS)
   add_executable(t81_ternaryos_phase4_startup_snapshot
     userland/experimental/dev/phase4_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_phase4_startup_snapshot PRIVATE t81_ternaryos_hal)
+  target_compile_definitions(t81_ternaryos_phase4_startup_snapshot PRIVATE
+    T81_TERNARYOS_HOSTED_BUILD=1)
 
   add_executable(t81_ternaryos_qemu_slice6_snapshot
     userland/experimental/dev/qemu_slice6_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_qemu_slice6_snapshot PRIVATE t81_ternaryos_hal)
+  target_compile_definitions(t81_ternaryos_qemu_slice6_snapshot PRIVATE
+    T81_TERNARYOS_HOSTED_BUILD=1)
 
   if(T81_BUILD_TUI)
     add_executable(t81_ternaryos_shell_tui
