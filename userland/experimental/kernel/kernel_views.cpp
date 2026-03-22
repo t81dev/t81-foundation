@@ -1090,44 +1090,6 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
       .pending_pager_handoffs = count_pending_pager_handoff_address_spaces(state),
       .pending_pager_handoff_high_watermark =
           state.pending_pager_handoff_high_watermark,
-      .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
-      .pager_resolutions = state.counters.pager_resolutions,
-      .pager_faults_coalesced = state.counters.pager_faults_coalesced,
-      .service_lifecycle_transitions =
-          [&state]() {
-            uint64_t total = 0;
-            for (const auto& [_, supervisor_state] : state.supervisors) {
-              total += supervisor_state.service_lifecycle_transitions;
-            }
-            return total;
-          }(),
-      .last_delivered_fault = state.last_delivered_fault,
-      .next_pending_interrupt =
-          !state.pending_interrupts.empty()
-              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
-              : std::nullopt,
-      .last_pending_interrupt =
-          !state.pending_interrupts.empty()
-              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
-              : std::nullopt,
-      .last_recorded_interrupt_audit_sequence =
-          state.last_recorded_interrupt_audit_sequence,
-      .last_delivered_interrupt_audit_sequence =
-          state.last_delivered_interrupt_audit_sequence,
-      .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
-      .last_interrupt_audit_source = state.last_interrupt_audit_source,
-      .last_interrupt_audit_interrupt_sequence =
-          state.last_interrupt_audit_interrupt_sequence,
-      .last_interrupt_audit_payload = state.last_interrupt_audit_payload,
-      .last_interrupt_audit_timestamp_ns =
-          state.last_interrupt_audit_timestamp_ns,
-      .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
-      .last_recorded_interrupt = state.last_recorded_interrupt,
-      .last_delivered_interrupt = state.last_delivered_interrupt,
-      .last_pager_address_space_id = latest_pager_fault.address_space_id,
-      .last_pager_fault = latest_pager_fault.fault,
-      .last_pager_handoff = state.last_pager_handoff,
-      .last_pager_resolution = state.last_pager_resolution,
       .pager_worker_inbox_count = state.pager_worker.inbox.size(),
       .pager_worker_inbox_high_watermark = state.pager_worker.inbox_high_watermark,
       .pager_worker_ready_backlog_count = ready_pager_backlog_count,
@@ -1157,6 +1119,9 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
               ? std::optional<uint64_t>{
                     state.pager_worker.inbox.front().handoff.sequence}
               : std::nullopt,
+      .pager_handoffs_dispatched = state.counters.pager_handoffs_dispatched,
+      .pager_resolutions = state.counters.pager_resolutions,
+      .pager_faults_coalesced = state.counters.pager_faults_coalesced,
       .pager_worker_handoffs_received = state.pager_worker.handoffs_received,
       .pager_worker_last_received_address_space_id =
           state.pager_worker.last_received_address_space_id,
@@ -1269,6 +1234,41 @@ KernelFaultSummaryView make_fault_summary_view(const KernelRuntimeState& state) 
           state.pager_worker.last_boot_critical_handoff_sequence,
       .pager_worker_last_boot_critical_resolution_sequence =
           state.pager_worker.last_boot_critical_resolution_sequence,
+      .service_lifecycle_transitions =
+          [&state]() {
+            uint64_t total = 0;
+            for (const auto& [_, supervisor_state] : state.supervisors) {
+              total += supervisor_state.service_lifecycle_transitions;
+            }
+            return total;
+          }(),
+      .last_delivered_fault = state.last_delivered_fault,
+      .next_pending_interrupt =
+          !state.pending_interrupts.empty()
+              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.front()}
+              : std::nullopt,
+      .last_pending_interrupt =
+          !state.pending_interrupts.empty()
+              ? std::optional<KernelInterruptRecord>{state.pending_interrupts.back()}
+              : std::nullopt,
+      .last_recorded_interrupt_audit_sequence =
+          state.last_recorded_interrupt_audit_sequence,
+      .last_delivered_interrupt_audit_sequence =
+          state.last_delivered_interrupt_audit_sequence,
+      .last_interrupt_audit_kind = state.last_interrupt_audit_kind,
+      .last_interrupt_audit_source = state.last_interrupt_audit_source,
+      .last_interrupt_audit_interrupt_sequence =
+          state.last_interrupt_audit_interrupt_sequence,
+      .last_interrupt_audit_payload = state.last_interrupt_audit_payload,
+      .last_interrupt_audit_timestamp_ns =
+          state.last_interrupt_audit_timestamp_ns,
+      .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
+      .last_recorded_interrupt = state.last_recorded_interrupt,
+      .last_delivered_interrupt = state.last_delivered_interrupt,
+      .last_pager_address_space_id = latest_pager_fault.address_space_id,
+      .last_pager_fault = latest_pager_fault.fault,
+      .last_pager_handoff = state.last_pager_handoff,
+      .last_pager_resolution = state.last_pager_resolution,
       .last_audit_event = state.last_audit_event,
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
@@ -1308,7 +1308,6 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .last_interrupt_audit_payload = state.last_interrupt_audit_payload,
       .last_interrupt_audit_timestamp_ns =
           state.last_interrupt_audit_timestamp_ns,
-      .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .thread_quarantines = state.counters.thread_quarantines,
       .process_group_fault_entries = state.counters.process_group_fault_entries,
       .supervisor_notifications = state.counters.supervisor_fault_notifications,
@@ -1318,6 +1317,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .thread_recoveries = state.counters.thread_fault_recoveries,
       .service_lifecycle_transitions =
           runtime_service_summary(state).service_lifecycle_transitions,
+      .last_interrupt_audit_sequence = state.last_interrupt_audit_sequence,
       .last_recorded_interrupt = state.last_recorded_interrupt,
       .last_delivered_interrupt = state.last_delivered_interrupt,
       .last_service_transition_id = latest_service_transition.service_id,
