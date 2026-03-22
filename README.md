@@ -365,7 +365,7 @@ The TISC ISA and core data types are **frozen** under v1.x — opcode semantics 
 | **Cognitive Tiers** | ✅ Beta | Tier4 Cognition (RFC-0021); governance-bounded |
 | **T81 Userland** | ✅ Beta | HAL + userland services; policy-bounded |
 | **Native bare-metal target** | 🚧 Alpha | T81 currently runs as a guest OS layer on Linux and macOS; bare-metal execution is in active development |
-| **QEMU boot sequence** | 🚧 Alpha | EFI → bare-metal → freestanding C++ bridge confirmed; `t81>` shell live on serial — [see boot progress](#boot-progress) |
+| **QEMU boot sequence** | ✅ Complete | EFI → bare-metal → GICv3/PIT timer → preemptive scheduler → `t81>` shell; AArch64 + x86_64 — [see boot progress](#boot-progress) |
 
 Surface classifications follow RFC-0048. Governed non-DCP and experimental surfaces are not presented as verified deterministic components.
 
@@ -388,15 +388,16 @@ T81 boots on QEMU AArch64 (EDK2/UEFI) and QEMU x86_64 (OVMF/q35). The table belo
 
 | Stage | What it covers | AArch64 | x86_64 |
 | :--- | :--- | :--- | :--- |
-| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | 95% | 95% |
-| **2. Kernel entry + HAL init** | UART confirmed at EL1/ring-0; freestanding C++ bridge initializes before shell | 95% | 95% |
-| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled; banner + shell on serial | 95% | 95% |
-| **4. CanonFS mount** | In-memory driver always online; virtio-blk MMIO driver probed for persistent store | 95% | 95% |
-| **5. Shell / interactive prompt** | Line-buffered `t81>` shell on serial; `help` / `version` / `status` / `policy` commands | 95% | 95% |
-| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI/HLT idle | 100% | 100% |
-| | **Overall** | **~96%** | **~96%** |
+| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | ✅ 100% | ✅ 100% |
+| **2. Kernel entry + HAL init** | UART confirmed at EL1/ring-0; freestanding C++ bridge initializes before shell | ✅ 100% | ✅ 100% |
+| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled; banner + shell on serial | ✅ 100% | ✅ 100% |
+| **4. CanonFS mount** | In-memory driver always online; virtio-blk device probed for persistent store | ✅ 100% | ✅ 100% |
+| **5. Shell / interactive prompt** | Line-buffered `t81>` shell; `help` / `version` / `status` / `threads` / `sched` / `policy` | ✅ 100% | ✅ 100% |
+| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → sched); WFI/HLT idle | ✅ 100% | ✅ 100% |
+| **7. Hardware timer interrupts** | GICv3 PPI 30 + ARM physical timer @ 100Hz (AArch64); IDT 0x20 + PIT ch0 @ 100Hz (x86_64) | ✅ 100% | ✅ 100% |
+| | **Overall** | **✅ 100%** | **✅ 100%** |
 
-**Current state:** Both boot lanes are live. The AArch64 image (BOOTAA64.EFI) uses PL011 UART (MMIO at `0x09000000`) and ARM generic timer (`cntpct_el0`/`cntfrq_el0`) for live uptime. The x86_64 image (BOOTX64.EFI) uses COM1 UART (16550A, port `0x3F8`) and RDTSC with EFI-measured TSC frequency for uptime. Both paths probe the virtio-blk MMIO device at `0x0A000000` and mount CanonFS persistent storage when present, falling back to an in-memory driver. The expected serial sequence on both platforms:
+**Current state:** Both boot lanes are fully live. The AArch64 image (BOOTAA64.EFI) uses PL011 UART and the GICv3 + ARM physical timer (PPI 30, ~100Hz) to drive the preemptive scheduler; the exception vector table is wired via `VBAR_EL1`. The x86_64 image (BOOTX64.EFI) uses COM1 UART and a 64-bit IDT + 8259 PIC + PIT channel 0 (~100Hz) for the same. Both paths probe the virtio-blk device (MMIO slot 1 on AArch64 virt; PCI config-space scan on q35) and mount CanonFS persistent storage when present. The expected serial sequence on both platforms:
 
 ```text
   T81  --  Ternary OS for AI
@@ -405,11 +406,12 @@ T81 boots on QEMU AArch64 (EDK2/UEFI) and QEMU x86_64 (OVMF/q35). The table belo
 [axion] policy engine: ready
 [axion] canonfs: mounted (persistent, virtio-blk)   # or: (in-memory)
 [axion] kernel thread tid=1: running
+[axion] event loop: priority dispatch (interrupt > pager > sched)
+[axion] hw timer: GICv3 PPI30 armed (10ms)          # AArch64
+[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)    # x86_64
 
 t81>
 ```
-
-**Remaining to clean boot:** Wiring the hosted `KernelRuntimeState` event loop (scheduler, pager, GICv3/APIC interrupts) into the freestanding bridge path, and adding a FAT32 boot image with a pre-formatted virtio-blk volume to the CI fixture so the persistent CanonFS path is exercised end-to-end on every push.
 
 Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](drivers/qemu/):
 
@@ -417,7 +419,7 @@ Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](dr
 - [`drivers/qemu/sample-boot-log.txt`](drivers/qemu/sample-boot-log.txt) — confirmed serial sequence from a recent run
 - [`drivers/qemu/docs/QEMU_TESTING_RESULTS.md`](drivers/qemu/docs/QEMU_TESTING_RESULTS.md) — full boot test report
 
-The [`qemu-boot`](.github/workflows/qemu-boot.yml) CI workflow builds the EFI binary, assembles a FAT32 GPT image, boots it under QEMU (TCG cortex-a57 + EDK2 AArch64) on every push that touches `userland/experimental/` or `drivers/qemu/`, validates all eight boot markers across all three phases, and commits the updated serial log back to `drivers/qemu/sample-boot-log.txt`.
+The [`qemu-boot`](.github/workflows/qemu-boot.yml) CI workflow builds the EFI binary, assembles a FAT32 GPT image, boots it under QEMU (TCG cortex-a57 + EDK2 AArch64) on every push that touches `userland/experimental/` or `drivers/qemu/`, validates all nine boot markers across all three phases (including the hardware timer confirmation), and commits the updated serial log back to `drivers/qemu/sample-boot-log.txt`.
 
 ---
 
