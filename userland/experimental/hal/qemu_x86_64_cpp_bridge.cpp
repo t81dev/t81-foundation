@@ -80,10 +80,16 @@ static int com1_getchar() noexcept {
 }
 
 // ── Virtio-blk MMIO probe (x86_64) ───────────────────────────────────────────
-// QEMU q35 maps virtio MMIO devices at 0x0A000000 (same as virt for AArch64).
+// Probe the second virtio MMIO slot (0x0A000200) for the CanonFS block device.
+// Slot 0 (0x0A000000) is the FAT32 boot disk; slot 1 (0x0A000200) is the
+// dedicated raw CanonFS store.
+// Note: QEMU q35 with -drive if=virtio creates virtio-blk-pci (PCI transport),
+// not virtio-mmio — this probe will return false on q35 unless the QEMU launch
+// explicitly creates a virtio-mmio bus.  The banner will show (in-memory) in
+// that case, which is accurate.
 // Probe-only: read magic/version/device-id without queue init.
 
-static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000000);
+static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000200);
 
 static inline uint32_t mmio_rd32_x86(uint64_t base, uint32_t off) noexcept {
 #if defined(__x86_64__) && defined(_WIN32)

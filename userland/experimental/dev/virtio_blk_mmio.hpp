@@ -80,8 +80,10 @@ inline constexpr uint64_t kPhysSectorBytes       = 512u;
 
 class VirtioBlkMmioDevice final : public IBlockDevice {
 public:
-  /// QEMU virt default virtio MMIO base (first device slot).
-  static constexpr uint64_t kDefaultMmioBase = UINT64_C(0x0A000000);
+  /// QEMU virt CanonFS virtio MMIO base (second device slot, 0x200 stride).
+  /// Slot 0 (0x0A000000) is reserved for the FAT32 boot disk; slot 1
+  /// (0x0A000200) is the dedicated raw CanonFS block store.
+  static constexpr uint64_t kDefaultMmioBase = UINT64_C(0x0A000200);
 
   VirtioBlkMmioDevice() = default;
 

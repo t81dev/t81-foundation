@@ -99,6 +99,17 @@ else
 fi
 echo ""
 
+# ── CanonFS block store image ─────────────────────────────────────────────────
+# Note: QEMU q35 uses virtio-blk-pci (PCI transport) for -drive if=virtio,
+# not virtio-mmio.  The freestanding bridge probes MMIO slot 1 (0x0A000200)
+# which will not match a PCI device.  The banner will show (in-memory) on
+# x86_64 q35 until explicit virtio-mmio bus support is added.
+CANON_IMG="$BUILD_DIR/canon_store_x86.img"
+info "Creating CanonFS raw block store (4 MiB — attached but MMIO probe pending on q35)…"
+dd if=/dev/zero of="$CANON_IMG" bs=1M count=4 status=none
+ok "CanonFS store: $(du -sh "$CANON_IMG" | cut -f1)"
+echo ""
+
 # ── Assemble FAT32 GPT disk image ─────────────────────────────────────────────
 info "Assembling boot disk image…"
 OFFSET=1048576
@@ -132,6 +143,7 @@ timeout "$TIMEOUT" qemu-system-x86_64 \
   -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE" \
   -drive if=pflash,format=raw,file="$VARS_TMP" \
   -drive if=virtio,format=raw,file="$IMG" \
+  -drive if=virtio,format=raw,file="$CANON_IMG" \
   2>/dev/null || true
 
 echo "────────────────────────────────────────────────────────────────────────────────"
