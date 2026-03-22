@@ -455,7 +455,8 @@ extern "C" void bridge_timer_irq_tick_x86() noexcept {
 }
 
 // Forward declaration of the hw-init function (defined in bridge_irq.cpp).
-extern "C" void bridge_hw_init_x86_64() noexcept;
+// Returns true → LAPIC timer armed (IDT 0x40); false → PIT fallback (IDT 0x20).
+extern "C" bool bridge_hw_init_x86_64(uint64_t tsc_freq_hz) noexcept;
 
 // ── Freestanding scheduler tick ───────────────────────────────────────────────
 
@@ -658,9 +659,12 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   com1_puts("[axion] kernel thread tid=1: running\r\n");
   com1_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
 
-  // Wire hardware timer interrupts: IDT 0x20 + 8259 PIC + PIT ch0 at 100Hz.
-  bridge_hw_init_x86_64();
-  com1_puts("[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)\r\n");
+  // Wire hardware timer interrupts: LAPIC (preferred) or 8259 PIC + PIT (fallback).
+  if (bridge_hw_init_x86_64(s_tsc_freq_hz)) {
+    com1_puts("[axion] hw timer: LAPIC 100Hz armed (IDT 0x40)\r\n");
+  } else {
+    com1_puts("[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)\r\n");
+  }
 
   com1_puts("\r\n");
   com1_puts("t81> ");
