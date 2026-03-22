@@ -146,12 +146,14 @@ jobs:
           # Run for up to 40 seconds; exit code 124 (timeout) is expected and
           # treated as success — the kernel event loop runs indefinitely.
           # Two virtio-mmio drives:
-          #   slot 0 (0x0A000000): FAT32 boot disk — UEFI finds BOOTAA64.EFI here.
-          #   slot 1 (0x0A000200): CanonFS raw block store — probed by bare-metal bridge.
-          # Use -device virtio-blk-device (MMIO transport), not -drive if=virtio
-          # (which defaults to PCI on the virt machine in QEMU 8.x).
+          #   slot 31 (0x0A003E00): FAT32 boot disk — first device added, highest slot.
+          #   slot 30 (0x0A003C00): CanonFS raw block store — second device, next slot.
+          # QEMU virt allocates virtio-mmio buses top-down (slot 31 first).
+          # gic-version=3: force GICv3 so the redistributor at 0x080A0000 is
+          # mapped and accessible; the bare-metal bridge uses GICv3 MMIO + system
+          # registers for PPI-30 timer setup.
           timeout 40 qemu-system-aarch64 \
-            -machine virt \
+            -machine virt,gic-version=3 \
             -cpu cortex-a57 \
             -m 512M \
             -nographic \

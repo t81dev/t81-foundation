@@ -94,11 +94,31 @@ static int pl011_getchar() noexcept {
 
 static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A003C00);
 
+// Print a uint32 as 8 hex digits to PL011, for probe diagnostics.
+static void pl011_puthex32(uint32_t v) noexcept {
+  static const char kHex[] = "0123456789abcdef";
+  pl011_putchar(kHex[(v >> 28) & 0xFu]);
+  pl011_putchar(kHex[(v >> 24) & 0xFu]);
+  pl011_putchar(kHex[(v >> 20) & 0xFu]);
+  pl011_putchar(kHex[(v >> 16) & 0xFu]);
+  pl011_putchar(kHex[(v >> 12) & 0xFu]);
+  pl011_putchar(kHex[(v >>  8) & 0xFu]);
+  pl011_putchar(kHex[(v >>  4) & 0xFu]);
+  pl011_putchar(kHex[(v >>  0) & 0xFu]);
+}
+
 static bool probe_virtio_blk_bare() noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
   const uint32_t magic = mmio_read32(kVirtioMmioBase, 0x000u);
   const uint32_t ver   = mmio_read32(kVirtioMmioBase, 0x004u);
   const uint32_t devid = mmio_read32(kVirtioMmioBase, 0x008u);
+  pl011_puts("[axion] virtio-probe: magic=0x");
+  pl011_puthex32(magic);
+  pl011_puts(" ver=0x");
+  pl011_puthex32(ver);
+  pl011_puts(" devid=0x");
+  pl011_puthex32(devid);
+  pl011_puts("\r\n");
   return magic == 0x74726976u && ver == 2u && devid == 2u;
 #else
   return false;
