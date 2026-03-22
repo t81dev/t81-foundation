@@ -156,7 +156,7 @@ jobs:
             -drive if=pflash,format=raw,file=/tmp/edk2-vars.fd \
             -drive if=virtio,format=raw,file=boot.img \
             -drive if=virtio,format=raw,file=canon_store.img \
-            2>/dev/null || true
+            || true
 
           echo "=== Captured serial output ==="
           cat serial.log || echo "(empty)"
