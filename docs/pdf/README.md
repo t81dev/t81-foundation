@@ -6,7 +6,7 @@ This directory contains **historical and aspirational** whitepapers and specific
 
 The PDF documents in this directory (e.g., `HEXANARY`, `OCTANARY`) represent **aspirational architectural visions** and historical context. They do not necessarily reflect the current normative implementation of the T81 runtime.
 
-**For authoritative specifications, please refer to the [`spec/`](../spec/) directory.**
+**For authoritative specifications, please refer to the [`spec/`](../../spec/) directory.**
 
 ## Implementation Status
 
