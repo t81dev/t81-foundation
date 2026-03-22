@@ -65,7 +65,7 @@ jobs:
       - name: Verify repository structure
         run: |
           set -euo pipefail
-          required_dirs=("spec" "docs" "include/t81" "src" "tests")
+          required_dirs=("spec" "docs" "include/t81" "vm" "tests")
           for d in "${required_dirs[@]}"; do
             [ -d "$d" ] || { echo "::error::Missing required directory: $d"; exit 1; }
           done
