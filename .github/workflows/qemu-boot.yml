@@ -149,6 +149,7 @@ jobs:
           check "[axion] canonfs: mounted (persistent, virtio-blk)"
           check "[axion] kernel thread tid=1: running"
           check "[axion] event loop: priority dispatch"
+          check "[axion] hw timer: GICv3 PPI30 armed (10ms)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]
 

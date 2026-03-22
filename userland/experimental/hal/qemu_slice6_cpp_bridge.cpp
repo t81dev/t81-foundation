@@ -176,10 +176,45 @@ static uint64_t s_loop_iters     = 0;  // priority-dispatch loop iterations
 static uint64_t s_tick_count     = 0;  // scheduler tick calls
 static uint64_t s_sched_switches = 0;  // thread context switches
 static uint64_t s_interrupt_count = 0; // serial RX events (our interrupt source)
+static uint64_t s_timer_irqs     = 0;  // hardware timer IRQ count (GICv3 PPI30)
 static bool     s_has_blk        = false;
 
+// ── Hardware-timer IRQ callback ───────────────────────────────────────────────
+// Called from axion_irq_handler_aarch64() (qemu_slice6_bridge_irq.cpp) on
+// every GICv3 PPI 30 tick (~100Hz).  Declared extern "C" so the IRQ file can
+// call it without name-mangling.
+
+extern "C" void bridge_timer_irq_tick() noexcept {
+  ++s_timer_irqs;
+  // Drive the cooperative scheduler from the hardware timer tick.
+  // freestanding_sched_tick() is defined below; forward-declare for clarity.
+  // (The linker resolves the call since both are in the same translation unit.)
+  ++s_tick_count;
+  if (s_thread_count > 1 && (s_tick_count % kSchedTickInterval) == 0) {
+    s_threads[s_current_thread].state = FsThreadState::Ready;
+    int next = (s_current_thread + 1) % s_thread_count;
+    while (next != s_current_thread) {
+      if (s_threads[next].state == FsThreadState::Ready) break;
+      next = (next + 1) % s_thread_count;
+    }
+    if (next != s_current_thread) {
+      s_threads[next].state    = FsThreadState::Running;
+      s_current_thread         = next;
+      ++s_sched_switches;
+    } else {
+      s_threads[s_current_thread].state = FsThreadState::Running;
+    }
+  }
+  ++s_threads[s_current_thread].tick_count;
+}
+
+// Forward declaration of the hw-init function (defined in bridge_irq.cpp).
+extern "C" void bridge_hw_init_aarch64() noexcept;
+
 // ── Freestanding scheduler tick ───────────────────────────────────────────────
-// Called when no higher-priority work is pending.  Mirrors axion_kernel_tick().
+// Fallback poll-based tick — used only when IRQs have not fired yet (e.g.
+// the first few loop iterations before GICv3 is live).  After hardware timer
+// IRQs start firing, bridge_timer_irq_tick() drives the scheduler directly.
 // Round-robin among ready threads every kSchedTickInterval loop iterations.
 
 static constexpr uint64_t kSchedTickInterval = 500u;
@@ -294,22 +329,25 @@ static void cmd_threads() noexcept {
 static void cmd_sched() noexcept {
   char buf[24];
   pl011_puts("  [scheduler]\r\n");
-  pl011_puts("    model        : cooperative round-robin (freestanding)\r\n");
+  pl011_puts("    model        : preemptive (GICv3 PPI30, 100Hz)\r\n");
   pl011_puts("    loop_iters   : ");
   pl011_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
   pl011_puts("    tick_count   : ");
   pl011_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
+  pl011_puts("    timer_irqs   : ");
+  pl011_puts(u64_dec(s_timer_irqs, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
   pl011_puts("    switches     : ");
   pl011_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
-  pl011_puts("    interrupts   : ");
+  pl011_puts("    serial_rx    : ");
   pl011_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
   pl011_puts("\r\n");
   pl011_puts("    tick_interval: ");
   pl011_puts(u64_dec(kSchedTickInterval, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts(" loop iters\r\n");
+  pl011_puts(" hw ticks\r\n");
 }
 
 static void cmd_policy() noexcept {
@@ -373,6 +411,11 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   }
   pl011_puts("[axion] kernel thread tid=1: running\r\n");
   pl011_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
+
+  // Wire hardware timer interrupts: GICv3 + ARM physical timer (PPI 30, ~100Hz).
+  bridge_hw_init_aarch64();
+  pl011_puts("[axion] hw timer: GICv3 PPI30 armed (10ms)\r\n");
+
   pl011_puts("\r\n");
   pl011_puts("t81> ");
 
@@ -411,20 +454,19 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
           pl011_putchar(static_cast<char>(c));
         }
       }
-      // After servicing the interrupt, yield and re-enter the loop.
-#if defined(__aarch64__) && !defined(__APPLE__)
-      __asm__ volatile("yield" ::: "memory");
-#endif
       continue;
     }
 
     // Priority 3 — pager (no-op placeholder).
-    // Priority 4 — scheduler tick.
-    freestanding_sched_tick();
+    // Priority 4 — fallback poll tick (active before GICv3 IRQs are live, or
+    //              every 10 000 iterations as a safety net).
+    if (s_timer_irqs == 0 || (s_loop_iters % 10000u) == 0) {
+      freestanding_sched_tick();
+    }
 
-    // Idle: yield to QEMU TCG thread scheduler.
+    // Idle: WFI — wakes on the next timer or serial IRQ.
 #if defined(__aarch64__) && !defined(__APPLE__)
-    __asm__ volatile("yield" ::: "memory");
+    __asm__ volatile("wfi" ::: "memory");
 #endif
   }
 }

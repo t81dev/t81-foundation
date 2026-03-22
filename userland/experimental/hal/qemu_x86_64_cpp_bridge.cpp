@@ -240,12 +240,41 @@ static uint64_t s_cmd_count       = 0;
 static uint64_t s_loop_iters      = 0;
 static uint64_t s_tick_count      = 0;
 static uint64_t s_sched_switches  = 0;
-static uint64_t s_interrupt_count = 0;
+static uint64_t s_interrupt_count = 0;  // serial RX events
+static uint64_t s_timer_irqs      = 0;  // hardware timer IRQ count (PIT ch0)
 static bool     s_has_blk         = false;
 
-// ── Freestanding scheduler tick ───────────────────────────────────────────────
+// ── Hardware-timer IRQ callback ───────────────────────────────────────────────
+// Called from axion_timer_stub_x86_64() (qemu_x86_64_bridge_irq.cpp) on
+// every PIT channel 0 tick (~100Hz).  Must be async-signal-safe.
 
 static constexpr uint64_t kSchedTickInterval = 500u;
+
+extern "C" void bridge_timer_irq_tick_x86() noexcept {
+  ++s_timer_irqs;
+  ++s_tick_count;
+  if (s_thread_count > 1 && (s_tick_count % kSchedTickInterval) == 0) {
+    s_threads[s_current_thread].state = FsThreadState::Ready;
+    int next = (s_current_thread + 1) % s_thread_count;
+    while (next != s_current_thread) {
+      if (s_threads[next].state == FsThreadState::Ready) break;
+      next = (next + 1) % s_thread_count;
+    }
+    if (next != s_current_thread) {
+      s_threads[next].state    = FsThreadState::Running;
+      s_current_thread         = next;
+      ++s_sched_switches;
+    } else {
+      s_threads[s_current_thread].state = FsThreadState::Running;
+    }
+  }
+  ++s_threads[s_current_thread].tick_count;
+}
+
+// Forward declaration of the hw-init function (defined in bridge_irq.cpp).
+extern "C" void bridge_hw_init_x86_64() noexcept;
+
+// ── Freestanding scheduler tick ───────────────────────────────────────────────
 
 static void freestanding_sched_tick() noexcept {
   ++s_tick_count;
@@ -359,22 +388,25 @@ static void cmd_threads() noexcept {
 static void cmd_sched() noexcept {
   char buf[24];
   com1_puts("  [scheduler]\r\n");
-  com1_puts("    model        : cooperative round-robin (freestanding)\r\n");
+  com1_puts("    model        : preemptive (PIT ch0, 100Hz, IDT 0x20)\r\n");
   com1_puts("    loop_iters   : ");
   com1_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
   com1_puts("    tick_count   : ");
   com1_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
+  com1_puts("    timer_irqs   : ");
+  com1_puts(u64_dec(s_timer_irqs, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("\r\n");
   com1_puts("    switches     : ");
   com1_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
-  com1_puts("    interrupts   : ");
+  com1_puts("    serial_rx    : ");
   com1_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
   com1_puts("    tick_interval: ");
   com1_puts(u64_dec(kSchedTickInterval, buf, static_cast<int>(sizeof(buf))));
-  com1_puts(" loop iters\r\n");
+  com1_puts(" hw ticks\r\n");
 }
 
 static void cmd_policy() noexcept {
@@ -441,6 +473,11 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   }
   com1_puts("[axion] kernel thread tid=1: running\r\n");
   com1_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
+
+  // Wire hardware timer interrupts: IDT 0x20 + 8259 PIC + PIT ch0 at 100Hz.
+  bridge_hw_init_x86_64();
+  com1_puts("[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)\r\n");
+
   com1_puts("\r\n");
   com1_puts("t81> ");
 
@@ -476,18 +513,19 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
           com1_putchar(static_cast<char>(c));
         }
       }
-#if defined(__x86_64__) && defined(_WIN32)
-      __asm__ volatile("pause" ::: "memory");
-#endif
       continue;
     }
 
     // Priority 3 — pager (no-op placeholder).
-    // Priority 4 — scheduler tick.
-    freestanding_sched_tick();
+    // Priority 4 — fallback poll tick (active before PIT IRQs fire, or every
+    //              10 000 iterations as a safety net).
+    if (s_timer_irqs == 0 || (s_loop_iters % 10000u) == 0) {
+      freestanding_sched_tick();
+    }
 
+    // Idle: HLT — wakes on the next timer (PIT IRQ 0x20) or COM1 RX event.
 #if defined(__x86_64__) && defined(_WIN32)
-    __asm__ volatile("pause" ::: "memory");
+    __asm__ volatile("hlt" ::: "memory");
 #endif
   }
 }

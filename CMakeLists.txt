@@ -1043,6 +1043,34 @@ if(T81_ENABLE_TERNARYOS)
     add_custom_target(t81_ternaryos_qemu_slice6_cpp_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ})
 
+    # Hardware-interrupt wiring — GICv3 + ARM physical timer (~100Hz, PPI 30).
+    # Provides bridge_hw_init_aarch64() and axion_irq_handler_aarch64() for
+    # the slice6 EFI; the vector table in aarch64_exception_vectors.S calls the
+    # latter after saving caller-saved registers.
+    set(T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_irq.obj)
+    add_custom_command(
+      OUTPUT  ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -fno-exceptions
+              -fno-rtti
+              -fno-use-cxa-atexit
+              -std=c++17
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_bridge_irq.cpp
+              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              -o ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_bridge_irq.cpp)
+    add_custom_target(t81_ternaryos_qemu_slice6_irq_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ})
+
     if(T81_LLD_LINK)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_X86_64_EFI}
@@ -1097,6 +1125,8 @@ if(T81_ENABLE_TERNARYOS)
       #   stub (EFI entry + ExitBootServices)
       #   + bare kernel (Phase 2 probe, calls C++ bridge)
       #   + cpp bridge (T81 banner + t81> shell, freestanding C++)
+      #   + exception vectors (VBAR_EL1 table; axion_irq_entry calls bridge IRQ)
+      #   + bridge irq (GICv3 + ARM timer; defines axion_irq_handler_aarch64)
       #   + shim (ternaryos_hal_main_c stub)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_EFI}
@@ -1111,10 +1141,14 @@ if(T81_ENABLE_TERNARYOS)
                 ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
+                ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
+                ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_slice6_efi
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})
@@ -1179,6 +1213,30 @@ if(T81_ENABLE_TERNARYOS)
                 -o ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp)
 
+      # Hardware-interrupt wiring — IDT + 8259 PIC + PIT ch0 (~100Hz).
+      # Provides bridge_hw_init_x86_64() and axion_timer_stub_x86_64() for the
+      # x86_64 OVMF EFI binary.
+      set(T81_TERNARYOS_QEMU_X86_IRQ_OBJ
+          ${T81_TERNARYOS_QEMU_X86_EFI_DIR}/BOOTX64_irq.obj)
+      add_custom_command(
+        OUTPUT  ${T81_TERNARYOS_QEMU_X86_IRQ_OBJ}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${T81_TERNARYOS_QEMU_X86_EFI_DIR}
+        COMMAND ${T81_LLVM_CLANG}
+                --target=x86_64-pc-windows-msvc
+                -ffreestanding
+                -fno-stack-protector
+                -mno-stack-arg-probe
+                -nostdlib
+                -fno-exceptions
+                -fno-rtti
+                -fno-use-cxa-atexit
+                -std=c++17
+                -c
+                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bridge_irq.cpp
+                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                -o ${T81_TERNARYOS_QEMU_X86_IRQ_OBJ}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bridge_irq.cpp)
+
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_QEMU_X86_EFI}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${T81_TERNARYOS_QEMU_X86_EFI_DIR}
@@ -1191,10 +1249,12 @@ if(T81_ENABLE_TERNARYOS)
                 ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
                 ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
                 ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
+                ${T81_TERNARYOS_QEMU_X86_IRQ_OBJ}
                 ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ}
         DEPENDS ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
                 ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
                 ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
+                ${T81_TERNARYOS_QEMU_X86_IRQ_OBJ}
                 ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_x86_64_efi
         DEPENDS ${T81_TERNARYOS_QEMU_X86_EFI})
