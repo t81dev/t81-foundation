@@ -1,10 +1,10 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-19
+Last Updated: 2026-03-22
 Owner: @t81dev
-Reference Candidate: `61c2edf6` (origin/main, 2026-03-19)
-Current Main Head: `61c2edf6` (origin/main, 2026-03-19; Axion epoch parity and VM memory/state determinism proofs are wired into CI and governance docs)
+Reference Candidate: `ffe867ff` (origin/main, 2026-03-22)
+Current Main Head: working tree, 2026-03-22; axion_agent_invoke_policy_test added; 406/406 tests passing)
 
 ## Purpose
 
@@ -76,6 +76,33 @@ tracked here and must be addressed unless explicitly deferred.
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
 
+## Operational Notes (2026-03-22, axion integration)
+
+- **axion_agent_invoke_policy_test added** — 9 assertions covering the Axion policy
+  enforcement path at the AgentInvoke VM runtime boundary ([AI-01..05]). Closes the
+  runtime-integration evidence gap identified in `DRIFT_DECOMPOSITION.md`. Test count
+  advances from 405 to **406/406 passing**.
+  Evidence: `tests/cpp/axion_agent_invoke_policy_test.cpp`.
+
+## Operational Notes (2026-03-22)
+
+- **Track K — HostFloat result-rep fix** — `vm/tensor_helpers.cpp` native unary fast paths
+  (`native_tensor_unary_exp_direct`, `_silu_direct`, `_softmax_direct`) were incorrectly tagged
+  `ExactInt`; corrected to `HostFloat`. `strict_core_eligible()` guard added before
+  `has_canonical_fixed_data()` in 7 locations across `matmul.hpp`, `reduce.hpp`, `unary.hpp`,
+  `llama.hpp` to prevent O(N) DFixed canonical-fixed cache builds for HostFloat tensors.
+  Chained `WeightsLoad → TExp → TMatMul` benchmark added; end-to-end path verified.
+  Evidence: `docs/records/status-history/TRACK_K_RESULT_REPRESENTATION_EVIDENCE_2026-03-22.md`.
+- **Track L — HostFloat matmul fast path** — `ops::matmul` now uses plain IEEE float multiply
+  (not `deterministic_fma`) when `result_class == HostFloat`, and constructs the output tensor via
+  `from_host_float_data` to skip the eager O(N) DFixed cache build.
+  Chained `WeightsLoad → TExp → TMatMul` drops from ~4 160 ms/iter to **0.0073 ms** at 64 elements
+  (10–873× faster than binary BigInt reference at sizes 64–4096).
+  Evidence: `docs/records/status-history/TRACK_L_HOSTFLOAT_MATMUL_EVIDENCE_2026-03-22.md`.
+- **Test count: 405/405** — 1 new test for native T81Float decimal conversion (Track J), plus
+  3 updated assertions (TExp/TSiLU/TSoftmax HostFloat class); all passing on AArch64.
+- RFC-00BB §6.3 updated with Track K/L execution evidence and benchmark numbers.
+
 ## Operational Notes (2026-03-19)
 
 - **Axion epoch scheduler/audit parity promoted into CI** — new
@@ -94,7 +121,7 @@ tracked here and must be addressed unless explicitly deferred.
 - **AI conformance suite expanded to 27 programs** — Added `spec/conformance/ai/`: `attn-determinism.t81`, `qmatmul-scale-order.t81`, `embed-bounds-check.t81`.
 - **Axion event registry created** — `spec/supplemental/axion-event-registry.md` is now the normative source for `model_load`, `attn_guard`, `qmatmul_guard`, `ai_exec_gate` identifiers.
 - **ai-opcode-phase1-conformance.md**: `phase_status` advanced to `spec_conformant`.
-- **Test count**: 344/344 tests passing after build system fix (stale CMake generator mismatch in asio/googlebenchmark/ftxui subbuilds cleared; Ninja reconfigure). R-18 closed.
+- **Test count**: 344/344 tests passing after build system fix (→ see 2026-03-22 for current count) (stale CMake generator mismatch in asio/googlebenchmark/ftxui subbuilds cleared; Ninja reconfigure). R-18 closed.
 - **RFC-0002 accepted** — DEC §11 (Conformance Tests) fulfilled; stub replaced with concrete program references.
 - **RFC-00A series finalized** — 00A0/A1/A5/A8 superseded; 00A3/A4/A6 accepted.
 

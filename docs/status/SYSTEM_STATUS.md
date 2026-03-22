@@ -1,7 +1,7 @@
 # System Status
 
 Status: Active
-Last Updated: 2026-03-19
+Last Updated: 2026-03-22
 Owner: Status / Governance
 
 ## Purpose
@@ -59,6 +59,25 @@ status boundaries.
   `AGENT_INVOKE` opcode, `infer` sugar; 16/16 assertions pass; tisc-spec §5.16 added.
 - RFC-0011 (Grammar Modernization) and RFC-00A2 (AI Benchmark Spec) accepted.
 - Full suite: 363/363 tests passing (100%).
+
+## Operational Notes (2026-03-22)
+
+- **Ternary-Native Inference: Track K/L execution performance milestone reached** — native
+  unary fast paths (`TExp`, `TSiLU`, `TSoftmax`) now carry the correct `HostFloat` numeric class,
+  and `ops::matmul` has a dedicated IEEE float path for HostFloat inputs that skips both
+  `deterministic_fma` round-trips and eager DFixed canonical-fixed cache builds. The chained
+  `WeightsLoad → TExp → TMatMul` path drops from ~4 160 ms/iter to 0.0073 ms at 64 elements
+  (10–873× vs binary BigInt reference at sizes 64–4096). This removes the primary result-
+  representation gating factor identified in RFC-00BB §6.3 for progression toward
+  `native_supported` for dense decoder families.
+- **Test count updated to 406/406** — all passing on AArch64. +1 from `axion_agent_invoke_policy_test`
+  (9 assertions, [AI-01..05]) closing the Axion runtime-integration evidence gap.
+- **TernaryOS ARMv8 QEMU boot milestone reached** — `BOOTAA64.EFI` executed under
+  QEMU `virt,accel=hvf` (Apple Silicon HVF); all 10 contract files verified including
+  Phase 5 startup, CanonStore recovery (20 entries), display/network round-trips, and
+  durable session state. `hal_main_result=0`, `kernel_boot_ready_slice=complete`,
+  `phase=5`, `shell_mode=typed-builtins`. Evidence:
+  `docs/records/audits/TERNARYOS_ARMV8_QEMU_BOOT_EVIDENCE_2026-03-22.md`.
 
 ## Operational Notes (2026-03-19)
 

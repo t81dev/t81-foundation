@@ -2477,6 +2477,10 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(agent_constructs_test tests/cpp/agent_constructs_test.cpp)
   target_link_libraries(agent_constructs_test PRIVATE t81_vm t81_lang_frontend t81_core)
 
+  # RFC-0015 §3.2 + RFC-0048 §4.2 — Axion policy enforcement at AgentInvoke runtime boundary
+  add_executable(axion_agent_invoke_policy_test tests/cpp/axion_agent_invoke_policy_test.cpp)
+  target_link_libraries(axion_agent_invoke_policy_test PRIVATE t81_vm t81_axion t81_core)
+
   # RFC-0036 — Governed Foreign Function Interface (T81Lang `foreign {}` syntax)
   add_executable(t81lang_foreign_ffi_test tests/cpp/t81lang_foreign_ffi_test.cpp)
   target_link_libraries(t81lang_foreign_ffi_test PRIVATE t81_vm t81_lang_frontend t81_core)
@@ -3019,6 +3023,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     jit_canonfs_cache_test
     vm_gc_safepoint_test
     agent_constructs_test
+    axion_agent_invoke_policy_test
     t81lang_foreign_ffi_test
     vm_ffi_bridge_test
     tnn_stdlib_test
