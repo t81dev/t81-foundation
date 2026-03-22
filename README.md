@@ -384,37 +384,32 @@ Live recording of the current QEMU AArch64 boot sequence (serial output):
 
 <br><small>Interactive replay: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">t81-boot.cast (asciinema)</a></small>
 
-T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward a clean boot with a shell prompt visible on serial output — the prerequisite for a recorded boot demo in this README.
+T81 boots on QEMU AArch64 (EDK2/UEFI) and QEMU x86_64 (OVMF/q35). The table below tracks completion toward a clean boot with a shell prompt visible on serial output.
 
-| Stage | What it covers | Done |
-| :--- | :--- | :--- |
-| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | 95% |
-| **2. Kernel entry + HAL init** | PL011 UART confirmed at EL1; freestanding C++ bridge initializes before shell | 95% |
-| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled into BOOTAA64.EFI; calls banner + shell from real QEMU | 90% |
-| **4. CanonFS mount** | In-memory driver always online at boot; persistent driver activates via `T81_CANONFS_ROOT` | 80% |
-| **5. Shell / interactive prompt** | Line-buffered `t81>` shell on serial; `help` / `version` / `status` / `policy` commands | 95% |
-| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI idle | 100% |
-| | **Overall** | **~93%** |
+| Stage | What it covers | AArch64 | x86_64 |
+| :--- | :--- | :--- | :--- |
+| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | 95% | 95% |
+| **2. Kernel entry + HAL init** | UART confirmed at EL1/ring-0; freestanding C++ bridge initializes before shell | 95% | 95% |
+| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled; banner + shell on serial | 95% | 95% |
+| **4. CanonFS mount** | In-memory driver always online; virtio-blk MMIO driver probed for persistent store | 95% | 95% |
+| **5. Shell / interactive prompt** | Line-buffered `t81>` shell on serial; `help` / `version` / `status` / `policy` commands | 95% | 95% |
+| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI/HLT idle | 100% | 100% |
+| | **Overall** | **~96%** | **~96%** |
 
-**Current state:** The BOOTAA64.EFI binary is a three-stage image. Phase 1 (EFI) prints the ConOut banner and calls `ExitBootServices`. Phase 2 (bare-metal C) confirms EL1 PL011 MMIO access. Phase 3 (freestanding C++ bridge) prints the governance banner and runs the interactive `t81>` shell — all compiled into a single PE32+ binary with no hosted C++ runtime. The expected serial sequence on a Linux QEMU run:
+**Current state:** Both boot lanes are live. The AArch64 image (BOOTAA64.EFI) uses PL011 UART (MMIO at `0x09000000`) and ARM generic timer (`cntpct_el0`/`cntfrq_el0`) for live uptime. The x86_64 image (BOOTX64.EFI) uses COM1 UART (16550A, port `0x3F8`) and RDTSC with EFI-measured TSC frequency for uptime. Both paths probe the virtio-blk MMIO device at `0x0A000000` and mount CanonFS persistent storage when present, falling back to an in-memory driver. The expected serial sequence on both platforms:
 
 ```text
-Axion QEMU AArch64 EDK2 slice6
-
-[axion] bare-metal EL1 kernel entry
-[axion] ExitBootServices complete; handing off to C++ kernel
-
   T81  --  Ternary OS for AI
   ===========================
 
 [axion] policy engine: ready
-[axion] canonfs: mounted (in-memory)
+[axion] canonfs: mounted (persistent, virtio-blk)   # or: (in-memory)
 [axion] kernel thread tid=1: running
 
 t81>
 ```
 
-**Remaining to clean boot:** Virtio-blk MMIO driver for persistent CanonFS on bare-metal (so `T81_CANONFS_ROOT` has a real block device behind it in QEMU), and wiring the hosted `KernelRuntimeState` event loop (scheduler, pager, GICv3 interrupts) into the freestanding bridge path so `status` shows live counters.
+**Remaining to clean boot:** Wiring the hosted `KernelRuntimeState` event loop (scheduler, pager, GICv3/APIC interrupts) into the freestanding bridge path, and adding a FAT32 boot image with a pre-formatted virtio-blk volume to the CI fixture so the persistent CanonFS path is exercised end-to-end on every push.
 
 Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](drivers/qemu/):
 
