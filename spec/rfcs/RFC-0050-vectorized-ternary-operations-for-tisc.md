@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0050
 - **Title:** Vectorized Ternary Operations for TISC
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** `spec/tisc-spec.md`, `spec/t81vm-spec.md`, vector/tritwise opcode surfaces, SWAR/SIMD backend integration
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-22
 - **Supersedes:** None
 - **Superseded-By:** None
 - **Discussion:** Builds on RFC-0002, RFC-0005, RFC-0040, RFC-0041, RFC-0042, RFC-0044, RFC-0047, and RFC-0049
@@ -234,3 +234,48 @@ Compatibility rules:
 - Scalar, SWAR, and SIMD execution of explicit vector operations are covered by RFC-0042 equivalence tests and RFC-0043 conformance rules.
 - RFC-0040 and RFC-0041 are cross-referenced as implementation-layer companions rather than de facto ISA definitions.
 - JIT/lowering rules for vector operations are explicitly tied to RFC-0047.
+
+## Implementation Record (2026-03-22)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — ISA/VM specs explicitly define the semantic role of vectorized ternary operations:**
+`spec/tisc-spec.md §5.2.4` ("Vectorized Ternary Operations (RFC-0050)") was added as a
+normative section.  It defines the canonical lane model (lane count, lane ordering,
+element interpretation, result shape), the explicit-vs-implicit vectorization distinction,
+the fault and validation semantics, and the promotion gate.  The section is normative and
+unambiguously part of the frozen TISC spec.
+
+**AC2 — Explicit vector opcode families have canonical lane-order, width, trace, and fault semantics:**
+`spec/tisc-spec.md §5.2.4` "Canonical Lane Model" table codifies all four required
+properties — lane count / width (declared, not inferred), lane ordering (architecture-
+independent, MUST NOT vary by endianness), element interpretation (canonical balanced-trit
+`{-1, 0, +1}` per lane, arithmetic lanes inheriting RFC-0049), and result shape (same
+width as operands unless a reduction is declared).  The "Fault and Validation Semantics"
+subsection defines the fail-closed rule for invalid width, incompatible shapes, out-of-range
+lane metadata, and unsupported explicit width on a given runtime, including the trace-stability
+requirement that fallback to scalar MUST NOT change the semantic trace category.
+
+**AC3 — RFC-0042 equivalence tests and RFC-0043 conformance rules cover explicit vector ops:**
+`spec/tisc-spec.md §5.2.4` "Conformance (RFC-0050)" subsection explicitly extends the
+RFC-0042 backend-equivalence matrix to include scalar vs SWAR, scalar vs SIMD, and SWAR vs
+SIMD for the vector semantic form, and requires the RFC-0047 §12 matrix (interpreter vs JIT)
+when JIT lowers vector opcodes.  It establishes that no vector opcode family is DCP-eligible
+until this matrix is satisfied, making RFC-0043 conformance layers 1, 2, and 5 the governing
+proof requirements before any promotion.
+
+**AC4 — RFC-0040 and RFC-0041 cross-referenced as implementation-layer companions:**
+`spec/tisc-spec.md §5.2.4` "Relation to SWAR and SIMD Backends" explicitly names
+RFC-0040 and RFC-0041 as "stable implementation-facing SWAR and SIMD surfaces" and
+states that "they are companions at the implementation layer, not de facto ISA definitions."
+The section distinguishes the three legal relationships: SWAR/SIMD may implement explicit
+vector opcodes, SWAR/SIMD may remain internal execution backends for scalar-intent operations
+under RFC-0042 dispatch, and SWAR/SIMD artifacts MUST NOT be exposed at the DCP surface.
+
+**AC5 — JIT/lowering rules for vector operations explicitly tied to RFC-0047:**
+`spec/tisc-spec.md §5.2.4` "JIT and Lowering Interaction" cites RFC-0047 §4–§5
+(allowed/forbidden transformations), RFC-0047 §7 (state reconstruction on side-exit must
+cover the vector register file width), and RFC-0047 §8 (policy boundaries inside vectorized
+loops MUST NOT be bypassed or merged away).  RFC-0050 §10 also cites RFC-0047 directly
+("lowered traces may use governed execution backends ... only under RFC-0042 equivalence
+constraints"), completing the circuit from vector opcode semantics through lowering rules.

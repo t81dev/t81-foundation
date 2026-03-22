@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <iostream>
 #include "t81/tritwise/tritwise.hpp"
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 
 #ifdef T81_TRITWISE_PROFILE
 struct ProfilingWarning {
@@ -17,8 +17,8 @@ static ProfilingWarning warning_instance;
 #endif
 
 using namespace t81::tritwise;
-using t81::experimental::ComputeTritVector;
-using t81::experimental::PackedTritVector;
+using t81::ComputeTritVector;
+using t81::PackedTritVector;
 
 // Workload 1: Ternary Mask Apply
 static void BM_MaskApply_Scalar(benchmark::State& state) {

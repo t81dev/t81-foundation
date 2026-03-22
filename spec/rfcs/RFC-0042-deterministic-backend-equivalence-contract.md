@@ -2,13 +2,13 @@
 
 - **RFC-ID:** RFC-0042
 - **Title:** Deterministic Backend Equivalence Contract
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** TISC, T81VM, Trace-JIT, SWAR, SIMD, future heterogeneous execution backends
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
-- **Discussion:** Builds on RFC-0002, RFC-0040, RFC-0041, and the Determinism Surface Registry
+- **Discussion:** Builds on RFC-0002, RFC-0040, RFC-0041, RFC-0049, and the Determinism Surface Registry
 
 ## Summary
 
@@ -50,6 +50,21 @@ For every governed operation family, T81 MUST define a canonical oracle implemen
 For the current tritwise surface, the canonical oracle is:
 
 - scalar trit semantics over canonical packed-trit values
+
+For arithmetic surfaces (ADD, SUB, MUL, NEG, DIV, MOD and their type-specific
+variants), the canonical oracle is defined by RFC-0049 (Canonical Ternary
+Arithmetic Semantics).  The arithmetic oracle specifies:
+
+- the canonical trit domain `{-1, 0, +1}`
+- the carry propagation law (digit-wise balanced-ternary summation)
+- the negation law (trit flip: Pos↔Neg, Zero unchanged)
+- the subtraction identity: `a − b ≡ a + (−b)` (no independent borrow)
+- the overflow/fault policy per surface (unbounded for BigInt, exception for `T81Int<N>`,
+  special-value saturation for T81Float, explicit fault for division by zero)
+- the comparison rule (value-based, not representation-based)
+
+Backends claiming equivalence on arithmetic surfaces MUST satisfy the RFC-0049
+arithmetic oracle, not merely an approximate or locally-defined scalar reference.
 
 The canonical oracle is not required to be the fastest implementation. It is required to be the semantically authoritative implementation.
 
@@ -247,5 +262,65 @@ Rejected because JIT and heterogeneous acceleration would reopen the same govern
 - `spec/rfcs/RFC-0002-deterministic-execution-contract.md`
 - `spec/rfcs/RFC-0040-swar-formalization.md`
 - `spec/rfcs/RFC-0041-simd-formalization.md`
+- `spec/rfcs/RFC-0049-canonical-ternary-arithmetic-semantics.md`
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 - `tests/cpp/test_tritwise_backend_equivalence.cpp`
+- `tests/cpp/test_arithmetic_backend_equivalence.cpp`
+- `docs/developer-guide/internals/jit-equivalence-plan.md`
+
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Canonical oracle declared for every governed backend family:**
+`spec/tisc-spec.md §5.2.3` ("Backend Equivalence Contract (RFC-0042)") defines the
+canonical oracle table.  For tritwise operations the oracle is the scalar trit-by-trit
+reference implementation.  For arithmetic operations (ADD, SUB, MUL, NEG, DIV, MOD)
+the oracle is the RFC-0049 arithmetic specification (`t81::ternary::arith.hpp`).
+No governed backend family is without an explicitly declared oracle.
+
+**AC2 — Backend dispatch rules documented for scalar, SWAR, and SIMD:**
+`spec/tisc-spec.md §5.2.3` contains the normative dispatch rules table with explicit
+size thresholds (`AVX2_THRESHOLD_BYTES = 64`, `NEON_TOR_THRESHOLD_BYTES = 64`),
+tail handling strategy (SWAR tail for SIMD kernels), and disabled-path notation
+(NEON TNot/TAnd set to `SIZE_MAX` → always falls to SWAR).
+
+**AC3 — Trace-visible equivalence wired into the determinism surface inventory:**
+`docs/governance/DETERMINISM_SURFACE_REGISTRY.md §5` was updated with two explicit
+backend equivalence rows:
+
+- "Tritwise Backend Equivalence (RFC-0042)": `test_tritwise_backend_equivalence.cpp`
+  covering scalar vs SWAR vs AVX2/NEON for sizes 1–4097.
+- "Arithmetic Backend Equivalence (RFC-0042 + RFC-0049)":
+  `test_arithmetic_backend_equivalence.cpp` covering scalar trit oracle vs T81BigInt
+  for ADD, SUB, MUL, NEG, comparison, carry propagation, and overflow policy.
+
+`docs/governance/DETERMINISM_SURFACE_REGISTRY.md §3.1` marks RFC-0042 as `accepted`.
+
+**AC4 — Executable conformance suite enforcing scalar vs SWAR vs SIMD equivalence:**
+Two CI-enforced test targets enforce equivalence across architectures:
+
+- `t81_tritwise_backend_equivalence_test` (`tests/cpp/test_tritwise_backend_equivalence.cpp`)
+  — verifies scalar ↔ SWAR ↔ AVX2 ↔ NEON for NOT, AND, OR across 14 sizes on each
+  supported architecture.
+- `t81_arithmetic_backend_equivalence_test` (`tests/cpp/test_arithmetic_backend_equivalence.cpp`)
+  — verifies scalar trit oracle ↔ T81BigInt for all arithmetic ops including algebraic
+  laws, overflow policy, and 3^k carry boundaries.
+
+Both targets are registered in `T81_TEST_TARGETS` in `CMakeLists.txt` and run in `ci.yml`.
+
+**AC5 — JIT and future heterogeneous work explicitly constrained to this contract:**
+`docs/developer-guide/internals/jit-equivalence-plan.md` was updated with a governance
+note establishing the JIT as tier 4 in the RFC-0042 backend hierarchy.  The note
+enumerates all five equivalence conditions the JIT must satisfy (register-visible result,
+memory-visible result, fault class and timing, Axion-visible audit meaning, and
+CanonHash-relevant trace contribution) and specifies that failure to satisfy any
+condition MUST trigger interpreter fallback or a deterministic fault — never silent drift.
+
+**Promotion framework:**
+This implementation record constitutes the first promotion path that cites RFC-0043
+(Deterministic Conformance Validation Framework) as the governing proof model, satisfying
+RFC-0043 AC5.  Backend equivalence for this RFC is proven via RFC-0043 conformance layers
+1 (semantic) and 2 (backend equivalence).  The cross-platform replay artifacts for
+x86_64 + AArch64 are defined in `docs/governance/DETERMINISM_SURFACE_REGISTRY.md §5.2`.
+Breach classification follows RFC-0043 §6 as codified in `docs/governance/FREEZE_ENFORCEMENT.md §4`.

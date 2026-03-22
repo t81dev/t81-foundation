@@ -1,10 +1,10 @@
 # RFC-0055: Native Ternary Hardware Target and Interop Contract
 
-**Status:** draft
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** native ternary hardware targets, hardware ISA interop, HAL promotion, backend equivalence, trace/policy preservation
 **Created:** 2026-03-19
-**Updated:** 2026-03-19
+**Updated:** 2026-03-22
 **Supersedes:** None
 **Superseded-By:** None
 **Discussion:** Builds on RFC-0002, RFC-0042, RFC-0045, RFC-0046, RFC-0047, RFC-0048, RFC-0051, RFC-00B0, and RFC-00B1
@@ -318,3 +318,44 @@ of ad hoc integration logic.
   equivalence requirements.
 - No native ternary hardware target may be promoted without conformance,
   boundary, and audit updates.
+
+## Implementation Record (2026-03-22)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Native ternary hardware support explicitly separated from accelerator-only support:**
+`spec/tisc-spec.md §5.2.8` ("Native Ternary Hardware Target and Interop Contract (RFC-0055)")
+defines a "Hardware Target Classes" table with two rows: "General-purpose native ternary
+target" (governed by RFC-0055) and "Narrow ternary accelerator target" (governed by RFC-0051),
+with an explicit note that "RFC-0055 governs only the general-purpose class."  This separation
+is normative and mutually exclusive.
+
+**AC2 — TISC semantic authority and hardware interop obligations normatively defined:**
+`spec/tisc-spec.md §5.2.8` "TISC Remains the Semantic Authority" enumerates the four
+semantic authority anchors (TISC instruction semantics, T81VM observable behavior, Axion
+policy and audit meaning, canonical data and trace contracts) and defines the three allowed
+integration modes with their exact RFC dependencies.  "Hardware Interop Layer Requirements"
+lists the six mandatory elements every general-purpose target must define.
+
+**AC3 — Boot, memory, interrupt, fault, trace, and policy preservation rules specified:**
+`spec/tisc-spec.md §5.2.8` "Boot, Memory, Interrupt, and Fault Obligations" covers all
+four categories with specific required items.  "Trace, Audit, and CanonFS Preservation"
+lists four additional requirements and explicitly classifies hardware performance counters
+as diagnostics-only outside the DCP surface.
+
+**AC4 — External hardware ISA compatibility governed by an explicit profile:**
+`spec/tisc-spec.md §5.2.8` "External ISA Compatibility Profile" mandates a profile
+stating target ISA name and revision, lowering boundary from TISC, unsupported TISC
+features with explicit fault/fallback behavior, and a conformance corpus proving semantic
+equivalence on the supported subset.  Silent subset execution is explicitly forbidden.
+The hardware target profile template exists at
+`spec/rfcs/RFC-0055-hardware-target-profile-template.md` with a matching JSON schema.
+
+**AC5 — No native ternary hardware target may be promoted without conformance, boundary, and audit updates:**
+`spec/tisc-spec.md §5.2.8` "Hardware Promotion Gate" establishes that all native ternary
+hardware targets are experimental by default, that governed non-DCP promotion requires
+documented interop layer, executable contracts, semantic equivalence proof, preserved
+Axion and trace semantics, and explicit supported/unsupported listing; and that DCP
+promotion additionally requires RFC-0042, RFC-0043, RFC-0045, RFC-0046, and RFC-0048
+obligations met specifically for the hardware target matrix.  The gate is normative and
+unconditional.

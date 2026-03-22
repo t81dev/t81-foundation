@@ -100,12 +100,20 @@ If a freeze boundary **must** be broken (e.g., to fix a critical design flaw or 
 
 ## 4. Determinism Breach Protocol
 
-If a change is detected that breaks determinism on a verified surface (e.g., CI failure in `repro-ledger.yml` or `t81lang_repro_gate.py`):
+Breach classification follows RFC-0043 §6 (Deterministic Conformance Validation Framework):
+
+| Class | Trigger | Merge Impact |
+| :---- | :------ | :----------- |
+| **Hard Divergence** | Final bytes, trap class, trace hash, or canonical serialization differ across platforms or backends | Merge-blocked — Critical Defect |
+| **Soft Divergence** | Non-DCP diagnostic strings or non-governed metadata differ | Not blocking unless it crosses a governed boundary |
+| **UB Exposure** | Backend depends on undefined behavior; memory layout or ABI mismatch changes results | Treated as Hard Divergence on a verified surface |
+
+If a change is detected that breaks determinism on a verified surface (e.g., CI failure in `repro-ledger.yml`, `t81lang_repro_gate.py`, or any backend equivalence test):
 
 1.  **Immediate Stop**: The PR is blocked. **Do not merge.**
-2.  **Classification**: The issue is classified as a **Critical Defect**.
+2.  **Classification**: Classify the failure using the RFC-0043 §6 breach taxonomy above.
 3.  **Root Cause Analysis**:
-    *   Identify the source of nondeterminism (e.g., uninitialized memory, hash map iteration order, floating-point compiler flags).
+    *   Identify the source of nondeterminism (e.g., uninitialized memory, hash map iteration order, floating-point compiler flags, UB-dependent backend).
     *   Produce a minimal reproduction case.
 4.  **Postmortem**:
     *   Document the cause and the fix.

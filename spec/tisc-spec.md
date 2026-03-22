@@ -381,6 +381,745 @@ image). Any opcode that dereferences a handle MUST fault with
   - Division by zero (`FRACDIV` with zero numerator in divisor or canonical zero
     denominator) → `DivideByZero`.
 
+______________________________________________________________________
+
+### 5.2.1 Normative Arithmetic Semantics (RFC-0049)
+
+This section is **normative**.  It encodes the canonical arithmetic law
+defined by [RFC-0049](rfcs/RFC-0049-canonical-ternary-arithmetic-semantics.md)
+into the TISC specification.  All arithmetic opcodes in §5.2 and all
+implementation surfaces that serve as backends for those opcodes MUST
+conform to the rules below.
+
+#### Canonical Trit Domain
+
+The canonical value domain is balanced ternary: digits in `{-1, 0, +1}`.
+No implementation may expose a non-canonical intermediate trit state through
+a public or governed arithmetic surface.
+
+#### Primitive Semantics
+
+| Operation | Canonical definition |
+| --------- | -------------------- |
+| **Negation** | Flip every trit: `Pos↔Neg`, `Zero` unchanged.  Followed by leading-zero normalization. |
+| **Addition** | Digit-wise balanced-ternary summation with carry propagation.  Carry values are always in `{-1, 0, +1}`.  Sum in `{−3,−2}` → trit=sum+3, carry=−1; sum in `{2,3}` → trit=sum−3, carry=+1; otherwise carry=0. |
+| **Subtraction** | `a − b ≡ a + (−b)`.  No independent borrow convention may be introduced. |
+| **Multiplication** | Partial-product generation using canonical trit multiplication, accumulated via the addition/carry law above.  Backend groupings (Karatsuba, schoolbook, lookup) must not change place-value interpretation. |
+| **Comparison** | Value-based.  Two canonical representations of the same numeric value MUST compare equal.  Lexical byte comparison is valid only when the normalized encoding is proven to preserve canonical numeric order. |
+
+#### Carry Propagation Rule
+
+The carry propagation law must be consistent across scalar, packed, SWAR,
+and SIMD execution.  Any lookup-table or chunk-based carry normalization
+MUST produce a result identical to the trit-by-trit carry law above.
+
+#### Overflow Policies (Explicit Per Surface)
+
+Each governed arithmetic surface adopts one of the following policies.
+The chosen policy MUST NOT vary by backend.
+
+| Surface | Overflow policy | Notes |
+| ------- | --------------- | ----- |
+| `T81BigInt` (ADD, SUB, MUL, NEG opcodes) | **Unbounded** — arbitrary precision; no overflow possible. | Multi-limb expansion maintains exact value. |
+| `T81Int<N>` (fixed-width ternary integer) | **Exception trap** — `std::overflow_error` on out-of-range. | Caller must catch or use `T81BigInt`. |
+| `T81Float<M,E>` (FADD, FSUB, FMUL, FDIV opcodes) | **Special-value saturation** — produces `Infinity` or `NaE` (Not-an-Entity); never silent UB. | `NaE` propagates like IEEE NaN. |
+| Raw trit-vector decode (`decode_i64`) | **Saturation** — clamps to `INT64_MAX` / `INT64_MIN` on overflow. | Decode only; not a governed arithmetic operation. |
+| DIV / MOD (integer division) | **Explicit fault** — `DivisionFault` when divisor is zero. | Truncation toward zero for signed operands. |
+
+#### Forbidden Behaviors
+
+The following are **unconditionally forbidden** on any arithmetic surface:
+
+- Silent host-language signed-overflow UB.
+- Backend-specific implicit carry or borrow rules not reducible to the canonical law.
+- Comparison results that depend on internal byte encoding, padding, or stale trit storage.
+- Overflow behavior that varies between scalar, SWAR, or SIMD backends.
+
+#### Relation to Backend Equivalence
+
+RFC-0042 defines *when* two backends are equivalent.  RFC-0049 defines
+*what result* they must be equivalent to.  Backend equivalence for any
+arithmetic surface therefore requires identical canonical value, identical
+fault/trap result where applicable, and identical externally-governed trace
+semantics where arithmetic events are observable.
+
+#### Conformance
+
+Conformance is verified by `t81_arithmetic_backend_equivalence_test`
+(RFC-0049 §AC4), which checks the scalar trit oracle against the T81BigInt
+multi-limb packed path for addition, subtraction, multiplication, negation,
+comparison, carry propagation, and overflow policy.
+
+______________________________________________________________________
+
+### 5.2.2 Normative Packed-Trit Encoding (RFC-0044)
+
+This section is **normative**.  It records the stable packed-trit encoding
+contract defined by [RFC-0044](rfcs/RFC-0044-stable-packed-trit-vector-interface.md).
+All execution backends, VM tensor helpers, SWAR kernels, and SIMD kernels that
+operate on packed trit storage MUST conform to this layout.
+
+#### Stable Surface
+
+The governed stable type is `t81::ComputeTritVector` (header
+`include/t81/packed_trit_vector.hpp`).  The implementation currently lives in
+`t81::experimental` and is re-exported via alias; the governed public surface is
+the `t81::` namespace alias.  Code MUST NOT depend directly on
+`t81::experimental::ComputeTritVector` outside the implementation file.
+
+#### Encoding Invariants
+
+| Property | Value |
+| -------- | ----- |
+| **Bits per trit** | 2 |
+| **Trits per byte** | 4 |
+| **Bit ordering** | LSB-first within each byte (trit 0 occupies bits [1:0], trit 1 bits [3:2], etc.) |
+| **Valid patterns** | `00` → 0 (Zero), `01` → +1 (Pos), `11` → −1 (Neg) |
+| **Forbidden pattern** | `10` — no valid trit value; MUST be rejected on entry |
+| **Byte count** | `⌈trit_count / 4⌉` — deterministic function of trit count |
+| **Tail bits** | Unused bits in the last byte MUST be zero (zero-extended, not sign-extended) |
+
+#### Validation Contract
+
+- `ComputeTritVector::from_packed(bytes, trit_count)` MUST return a deterministic
+  error result if any trit slot contains the forbidden `10` pattern, or if any
+  unused trailing bit is non-zero.
+- `ComputeTritVector::from_trits(trits)` constructs from canonical `{-1, 0, +1}`
+  values and is always valid if the input values are in range.
+- `ComputeTritVector::to_trits()` decodes packed bytes back to canonical trit
+  values; it MUST return an error result if an invalid `10` pattern is encountered
+  in stored bytes.
+- All in-place operations MUST re-apply tail masking after mutation to maintain
+  the zero-extension invariant.
+
+#### Mutability Classification
+
+| Method category | Example | Side effects |
+| --------------- | ------- | ------------ |
+| **Pure** | `t_not()`, `t_and()`, `t_or()`, `t_xor()` (const dispatchers) | Returns new `ComputeTritVector`; caller owns result |
+| **In-place** | `t_not_inplace()`, `t_and_inplace()`, `t_or_inplace()` | Mutates self in-place; re-applies tail mask |
+| **Raw kernel** | `kernel_not_swar()`, `kernel_and_avx2()`, etc. | Takes pre-validated raw byte pointers; callers MUST ensure canonical input |
+
+Raw kernel entry points require prevalidated canonical data.  They do not
+re-validate their inputs.  Callers producing raw bytes by any means other than
+`from_trits` or `from_packed` are responsible for maintaining the encoding
+invariants documented above.
+
+#### Backend Interoperability
+
+Every backend that reads or writes packed-trit storage (scalar, SWAR, SIMD, VM
+tensor helpers, JIT lowering) MUST consume the same canonical `t81::ComputeTritVector`
+layout.  Backend-specific reinterpretations of the 2-bit trit encoding are
+forbidden on the deterministic surface.
+
+#### Conformance (RFC-0044)
+
+Conformance is verified by `test_swar` (`tests/cpp/test_swar.cpp`), specifically
+`test_rfc0044_invalid_pattern_rejection()`, which asserts that:
+
+- `from_packed` rejects the forbidden `10` bit pattern in any trit slot
+- `from_packed` rejects non-zero tail padding
+- `from_packed` accepts valid bytes and round-trips to the same trit sequence
+- `to_trits()` always produces values in `{-1, 0, +1}`
+
+______________________________________________________________________
+
+### 5.2.3 Backend Equivalence Contract (RFC-0042)
+
+This section is **normative**.  It records the backend equivalence rules defined
+by [RFC-0042](rfcs/RFC-0042-deterministic-backend-equivalence-contract.md).
+All execution backends (scalar, SWAR, SIMD, JIT, future heterogeneous) MUST
+satisfy this contract before being permitted to substitute for the canonical oracle.
+
+#### Canonical Oracle Table
+
+Each governed operation family has exactly one canonical oracle.  All backends
+in that family MUST produce identical results to that oracle at every observable
+boundary.
+
+| Operation family | Canonical oracle | Location |
+| ---------------- | ---------------- | -------- |
+| Tritwise NOT | `ComputeTritVector::t_not_ref()` — scalar unpack–negate–repack | `include/t81/experimental/packed_trit_vector.hpp` |
+| Tritwise AND | `ComputeTritVector::t_and_ref()` — scalar trit-min | same |
+| Tritwise OR | `ComputeTritVector::t_or_ref()` — scalar trit-max | same |
+| Tritwise XOR | `ComputeTritVector::t_xor_ref()` — scalar bounded difference | same |
+| Integer ADD / SUB / MUL / NEG / DIV / MOD | RFC-0049 arithmetic oracle — digit-wise balanced-ternary with canonical carry | `include/t81/ternary/arith.hpp`; `T81BigInt` |
+| Float FADD / FSUB / FMUL / FDIV | `T81Float<M,E>` soft-math path (when `T81_DETERMINISTIC` defined) | `include/t81/types/T81Float.hpp` |
+
+#### Backend Dispatch Rules (Tritwise)
+
+Dispatch is compile-time and size-gated.  Thresholds are expressed in **bytes**
+(1 byte = 4 trits at 2 bits/trit).
+
+| Architecture | Operation | Threshold | Backend selected |
+| ------------ | --------- | --------- | ---------------- |
+| x86\_64 + AVX2 | NOT, AND, OR | ≥ 64 B (≥ 256 trits) | AVX2 kernel; SWAR tail for remainder |
+| x86\_64 + AVX2 | XOR | any size | LUT-based (no AVX2 XOR kernel) |
+| AArch64 + NEON | OR | ≥ 64 B | NEON kernel; SWAR tail for remainder |
+| AArch64 + NEON | NOT, AND | any size | SWAR (NEON kernels disabled) |
+| All other | NOT, AND, OR, XOR | any size | SWAR |
+
+Dispatch decisions MUST NOT depend on elapsed time, benchmark history, or
+non-governed host environment features.  Dispatch is determined entirely by
+compile-time architecture flags and the byte length of the operand.
+
+#### Fallback Order
+
+If a higher-tier backend cannot satisfy the equivalence contract it MUST fall
+back to the nearest lower verified backend, in this order:
+
+```text
+JIT / heterogeneous  →  SIMD  →  SWAR  →  scalar
+```
+
+Silent semantic drift is forbidden.  If no verified backend is available the
+system MUST fail closed with a deterministic error.
+
+#### JIT and Heterogeneous Acceleration Constraint
+
+Any JIT-lowered or accelerator-dispatched form MUST satisfy:
+
+- identical register-visible result
+- identical fault class and timing at the observable instruction boundary
+- identical Axion-visible audit meaning
+- identical CanonHash-relevant trace contribution
+
+The equivalence requirement is formalized in
+`docs/developer-guide/internals/jit-equivalence-plan.md` and is governed by
+RFC-0042.  JIT or accelerator work that cannot satisfy these requirements MUST
+NOT be promoted to the verified surface.
+
+#### Conformance (RFC-0042)
+
+Backend equivalence is verified by:
+
+- `t81_tritwise_backend_equivalence_test` — scalar vs SWAR vs AVX2/NEON for NOT/AND/OR/XOR across sizes 1–4097 trits
+- `t81_arithmetic_backend_equivalence_test` — scalar trit oracle vs T81BigInt multi-limb path for ADD/SUB/MUL/NEG/comparison/carry/overflow
+
+______________________________________________________________________
+
+### 5.2.4 Vectorized Ternary Operations (RFC-0050)
+
+This section is **normative**.  It records the semantic governance rules defined by
+[RFC-0050](rfcs/RFC-0050-vectorized-ternary-operations-for-tisc.md).
+
+#### Semantic, Not Hardware, Vectorization
+
+Vector operations in TISC are **semantic operations over declared-width ternary lanes**.
+They are not AVX-specific, NEON-specific, or otherwise backend-specific instructions.
+The ISA contract names vector intent and vector semantics; backend selection is an
+implementation detail governed by RFC-0042.
+
+#### Canonical Lane Model
+
+Every vectorized ternary operation is defined over:
+
+| Property | Requirement |
+| -------- | ----------- |
+| **Lane count / width** | Declared per opcode or operand metadata; canonical, not inferred |
+| **Lane ordering** | Architecture-independent; MUST NOT vary by endianness, register layout, or packed physical arrangement |
+| **Element interpretation** | Canonical balanced-trit `{-1, 0, +1}` per lane; arithmetic lanes inherit RFC-0049 semantics |
+| **Result shape** | Same width as operands unless the opcode explicitly defines a reduction |
+
+#### Opcode Surface (Illustrative)
+
+The following mnemonics name the governed semantic intent.  Final encoding and
+availability per ISA revision are defined in the opcode table.  Mnemonic selection
+MUST remain consistent with existing opcode naming conventions.
+
+| Mnemonic | Operation | Canonical semantic authority |
+| -------- | --------- | ---------------------------- |
+| `TVNOT` | Lane-wise ternary NOT | Tritwise oracle (RFC-0042 §1) |
+| `TVAND` | Lane-wise ternary AND | Same |
+| `TVOR` | Lane-wise ternary OR | Same |
+| `TVXOR` | Lane-wise ternary XOR | Same |
+| `TVADD` | Lane-wise balanced-ternary ADD | RFC-0049 arithmetic oracle per lane |
+| `TVSUB` | Lane-wise balanced-ternary SUB | Same |
+| `TVMUL` | Lane-wise balanced-ternary MUL | Same |
+
+#### Explicit vs Implicit Vectorization
+
+| Form | When required | Governing rule |
+| ---- | ------------- | -------------- |
+| **Explicit vector opcodes** | Vector width, trace meaning, policy behavior, or fault behavior is externally relevant | This section + RFC-0042 + RFC-0043 |
+| **Implicit backend vectorization** | Purely internal optimization with no governed semantic effect at the DCP boundary | RFC-0042 §4 (Allowed Backend Substitutions) + RFC-0047 §4 (Allowed Transformations) |
+
+#### Fault and Validation Semantics
+
+Vector operations MUST fail closed for:
+
+- invalid width declaration
+- incompatible operand shapes
+- out-of-range lane metadata
+- unsupported explicit vector width on a given runtime configuration
+
+Allowed fallback: deterministic SWAR or scalar execution if the opcode contract permits it;
+otherwise, a deterministic fault.  Fallback behavior MUST be explicit and **trace-stable**:
+if a vector opcode falls back to scalar execution, the semantic trace remains the vector
+opcode event, not a scalar event.
+
+#### Trace and Policy Semantics
+
+- Trace hashing MUST NOT depend on the physical backend used beneath the vector semantic opcode.
+- Vector operations MUST produce stable semantic trace categories independent of whether AVX2, NEON, or SWAR handles the operation internally.
+- Axion / policy hooks MUST reason about semantic vector operations, not backend intrinsic details.
+
+#### Relation to SWAR and SIMD Backends
+
+[RFC-0040](rfcs/RFC-0040-swar-formalization.md) and
+[RFC-0041](rfcs/RFC-0041-simd-formalization.md) define stable **implementation-facing**
+SWAR and SIMD surfaces.  They are companions at the implementation layer, not de facto
+ISA definitions.
+
+- SWAR / SIMD MAY implement explicit vector opcodes.
+- SWAR / SIMD MAY also remain internal execution backends for scalar-intent operations under RFC-0042 dispatch rules.
+- Explicit vector opcodes MUST NOT expose SWAR- or SIMD-specific artifacts at the DCP surface.
+
+#### JIT and Lowering Interaction
+
+JIT lowering of vector opcodes is governed by RFC-0047:
+
+- Lowering may replace a vector opcode with backend-specific sequences **only** under RFC-0047 §4–§5 (allowed / forbidden transformations).
+- State reconstruction on side-exit MUST cover the vector register file width (RFC-0047 §7).
+- Policy boundaries inside vectorized loops MUST NOT be bypassed or merged away (RFC-0047 §8).
+
+#### Promotion Gate
+
+No explicit vector opcode family may be promoted to **Verified / DCP** scope unless:
+
+1. arithmetic or tritwise semantics are defined independently of backend
+2. lane ordering is canonical and architecture-independent
+3. trace behavior is stable across backends
+4. fallback / fault behavior is explicit
+5. backend equivalence is validated through the RFC-0042 equivalence test matrix and the RFC-0043 conformance framework
+
+#### Conformance (RFC-0050)
+
+Equivalence testing for explicit vector opcode families MUST extend the RFC-0042
+backend-equivalence matrix to include scalar vs SWAR, scalar vs SIMD, and SWAR vs SIMD
+for the vector semantic form.  When JIT lowers vector opcodes, the matrix MUST also
+include interpreter vs JIT per RFC-0047 §12.  No vector opcode family is DCP-eligible
+until this matrix is satisfied.
+
+______________________________________________________________________
+
+### 5.2.5 Heterogeneous Acceleration Governance (RFC-0051)
+
+This section is **normative**.  It records the governance boundary rules defined by
+[RFC-0051](rfcs/RFC-0051-deterministic-heterogeneous-acceleration.md).
+
+#### Default Classification: Governed non-DCP
+
+Any heterogeneous accelerator execution path (GPU, Metal, CUDA, HIP, SYCL, Vulkan
+compute, or equivalent) is classified as **governed non-DCP** by default.
+
+No accelerator backend is automatically DCP-eligible, semantically trusted, or
+interchangeable with verified CPU backends.  It must earn equivalence and promotion
+explicitly under the RFC-0048 §6 promotion rules.
+
+#### Allowed Accelerator Kernel Classes
+
+An accelerator kernel class is eligible for governed execution only if all of the
+following can be defined:
+
+- canonical input serialization
+- canonical kernel boundary
+- canonical output interpretation
+- explicit fault / fallback rules
+- proof obligations satisfiable under RFC-0043
+
+Eligible example classes:
+
+- lane-local tritwise transforms (with RFC-0042 scalar-oracle equivalence)
+- canonical packed-trit arithmetic kernels (inheriting RFC-0049 arithmetic oracle per lane)
+- width-bounded tensor primitives with explicit shape contracts
+- backend-stable reductions with an explicit canonical ordering model
+
+**Not eligible by default:**
+
+- vendor-tuned floating-point heuristics
+- unordered atomic accumulation
+- nondeterministic work-stealing kernels
+- sampling or hardware-RNG-driven execution
+
+#### Memory Transfer Rules
+
+All host ↔ accelerator memory movement MUST be deterministic and explicitly modeled:
+
+- canonical byte / trit serialization MUST be applied before transfer
+- transfer boundaries MUST be visible to the governed execution model
+- hidden mutation outside RFC-0045 visibility rules is forbidden
+- device-visible memory MUST be deterministically initialized
+- padding, alignment, and unused bits MUST be handled deterministically
+
+#### Kernel Launch and Scheduling Semantics
+
+Accelerator launches MUST obey RFC-0046 ordering rules:
+
+- kernel launch order is semantically defined where externally relevant
+- completion order MUST NOT alter canonical results
+- queueing, batching, or stream selection MUST NOT change governed semantics
+- fallback from asynchronous to synchronous execution MUST preserve trace and fault identity
+
+#### Reduction and Cross-Workgroup Constraints
+
+Reductions are the highest-risk accelerator surface.
+
+Allowed only if:
+
+- the reduction order is explicitly defined, or
+- regrouping is proven equivalent under RFC-0049 arithmetic semantics and RFC-0046 ordering rules
+
+Forbidden:
+
+- backend-local unordered reduction accepted as "close enough"
+- race-resolved accumulation whose result depends on scheduler timing
+
+#### Fault, Fallback, and Availability
+
+Every accelerator surface MUST define behavior for:
+
+- unsupported device
+- unavailable driver
+- kernel-compilation failure
+- timeout or synchronization failure
+
+Allowed responses: deterministic fallback to a permitted CPU backend, or deterministic
+hard fault.  Silent backend substitution that changes governed semantics is forbidden.
+Best-effort execution with downgraded correctness is forbidden.
+
+#### DCP Promotion Gate
+
+An accelerator backend MAY become **Verified / DCP** only when all of the following
+are satisfied:
+
+1. backend equivalence proven against the scalar oracle per RFC-0042
+2. memory movement audited against RFC-0045
+3. scheduling audited against RFC-0046
+4. conformance evidence exists across supported vendors / architectures per RFC-0043
+5. public boundary docs updated per RFC-0048
+
+Until all five conditions are met, the surface MUST remain governed non-DCP.
+
+#### Vendor Neutrality
+
+Vendor APIs (CUDA, Metal, HIP, SYCL, Vulkan compute) are implementation mechanisms
+only.  No public deterministic claim may depend on vendor-specific semantic wording.
+All semantic contracts MUST be stated above the vendor API layer.
+
+#### Binding Cross-References
+
+RFC-0042 (backend equivalence), RFC-0043 (conformance framework), RFC-0045 (memory
+model), RFC-0046 (scheduling ordering), and RFC-0048 (surface classification) are all
+binding constraints on any accelerator path.  An accelerator backend may not relax any
+rule established by those RFCs.
+
+______________________________________________________________________
+
+### 5.2.6 Canonical Dataflow and State-Driven Execution (RFC-0052)
+
+This section is **normative**.  It records the architectural model defined by
+[RFC-0052](rfcs/RFC-0052-canonical-dataflow-and-state-driven-execution.md).
+
+#### State-Driven Computation
+
+Computation in T81 may be triggered only through:
+
+- explicit program invocation
+- canonical task-graph submission
+- governed state transition on a **registered** dataflow surface
+- CanonFS-backed state / materialization events where explicitly allowed
+
+No implicit or hidden reactive behavior is permitted outside registered dataflow surfaces.
+
+#### Canonical Dependency Graph
+
+Dataflow execution is defined over a canonical dependency graph with:
+
+| Property | Requirement |
+| -------- | ----------- |
+| **Node identity** | Deterministic; MUST NOT depend on container iteration order or host address |
+| **Edge identity** | Deterministic; expresses explicit dependency type |
+| **Ready-node ordering** | Canonical; obeys RFC-0046 ordering constraints |
+| **Graph semantics** | MUST NOT depend on host hash order or scheduler timing |
+
+#### Node Semantics
+
+Every dataflow node MUST define:
+
+- its input state dependencies
+- its output state transitions
+- its fault behavior
+- whether it is pure, effect-bounded, or policy-mediated
+
+Node execution MUST be reproducible from canonical input state plus canonical graph metadata.
+
+#### CanonFS Participation
+
+CanonFS participates in dataflow only through explicit governed surfaces.
+
+Allowed:
+
+- loading canonical artifacts as inputs
+- materializing outputs to canonical storage
+- policy-gated dependency resolution via canonical identifiers
+
+Forbidden:
+
+- implicit filesystem watch semantics
+- host-local path ordering affecting graph semantics
+- opportunistic external mutation bypassing canonical state rules
+
+#### Ready-State and Activation Semantics
+
+A node becomes ready only when all of the following are true:
+
+1. all required dependencies are satisfied
+2. all required policy gates are satisfied
+3. its activation condition evaluates true under canonical state
+
+Ready-node selection MUST obey RFC-0046 ordering constraints.
+
+#### Propagation Semantics
+
+When a node commits output state:
+
+- downstream readiness is recomputed deterministically
+- propagation order is canonical
+- faulted outputs MUST NOT silently activate downstream nodes
+- retry or requeue behavior MUST be explicit and deterministic
+
+#### Fault Propagation
+
+Faults in dataflow execution MUST define:
+
+- whether the fault blocks downstream activation
+- whether fallback state exists
+- whether retry is permitted
+- whether the graph enters a terminal or recoverable condition
+
+Fault propagation is deterministic and auditable.  A fault MUST be visible through the
+standard observability surfaces (node activation records, canonical summary state).
+
+#### DPE as a Dataflow Realization
+
+RFC-DPE defines concrete deterministic parallel execution mechanics.  RFC-0052 defines
+the architectural model above them:
+
+- DPE epochs may serve as one realization of dataflow scheduling
+- dataflow semantics do not replace DPE; they organize when and why DPE runs work
+- any DPE optimization remains subordinate to canonical dependency and commit semantics
+
+#### DCP Boundary Rule
+
+Dataflow surfaces are **governed non-DCP** by default.
+
+Rules:
+
+- any DCP claim for a dataflow surface requires conformance, ordering, memory, and
+  propagation proof under RFC-0043, RFC-0045, RFC-0046, and RFC-0048 respectively
+- local service orchestration and future distributed propagation MUST NOT inherit DCP
+  claims automatically
+
+______________________________________________________________________
+
+### 5.2.7 Distributed Deterministic Execution Protocol (RFC-0053)
+
+This section is **normative**.  It records the constitutional constraints defined by
+[RFC-0053](rfcs/RFC-0053-distributed-deterministic-execution-protocol.md).
+
+#### Distributed Execution Is One Canonical Computation
+
+A distributed T81 execution MUST be interpreted as a single canonical computation with
+multiple execution participants.  It is NOT loosely coordinated local computations.
+
+Consequences:
+
+- state identity is global to the computation
+- commit order is globally meaningful
+- node-local scheduling MUST NOT redefine semantic order
+
+#### Global State and Commit Identity
+
+Distributed execution requires:
+
+- canonical state identifiers (MUST NOT depend on local paths, local clocks, or ephemeral addresses)
+- canonical epoch or commit identifiers
+- canonical input artifact identifiers
+- explicit versioning or generation semantics
+
+#### Global Ordering Rule
+
+Distributed execution MUST define a canonical commit order that all nodes can derive or verify.
+
+| Ordering property | Requirement |
+| ----------------- | ----------- |
+| Input order | Canonical |
+| Dependency order | Canonical |
+| Conflict resolution order | Canonical |
+| Network arrival order | **MUST NOT define semantics** |
+
+#### Conflict Resolution
+
+Conflicts between distributed updates MUST be resolved by explicit deterministic rules.
+
+Allowed: canonical commit order, explicit tie-break keys, deterministic winner selection
+from canonical metadata, fail-closed conflict rejection.
+
+Forbidden: "first packet wins," host clock or wall-clock precedence, scheduler timing
+as a semantic tiebreak.
+
+#### Replay and Evidence Requirements
+
+Every distributed execution claiming deterministic status MUST produce:
+
+- canonical input set
+- canonical graph / state metadata
+- canonical commit ledger
+- node participation records
+- deterministic result hash or equivalent replay summary
+
+These artifacts MUST fit within the RFC-0043 conformance model.
+
+#### Fault and Partition Behavior
+
+Distributed execution MUST define deterministic behavior for node failure, message delay,
+message duplication, partition / quorum loss, and retry / rejoin.
+
+Allowed responses: deterministic abort; deterministic rollback to last canonical commit;
+deterministic suspension until conditions are met.
+
+Forbidden: speculative continuation with ambiguous semantics; silent local completion
+with later reconciliation changing results.
+
+#### Policy and Audit Participation
+
+- Policy-visible operations MUST remain policy-visible when distributed.
+- Node-local shortcuts MUST NOT bypass Axion or other governed policy checks.
+- Audit records MUST preserve semantic, not transport-only, meaning.
+
+#### DCP Boundary Rule (RFC-0053)
+
+Distributed execution is **experimental / non-DCP by default**.
+
+Promotion requirements are stricter than local execution:
+
+- state synchronization adds new divergence risk
+- network transport adds new timing and fault surfaces
+- replay and commit-ledger proof obligations are larger
+
+No distributed surface may be treated as DCP merely because its local executor is
+DCP-verified.  Explicit promotion under RFC-0043 and RFC-0048 promotion rules is
+required, including distributed-specific conformance evidence.
+
+#### Relation to Companion RFCs
+
+- RFC-0052: canonical dataflow / state model that distributed execution inherits
+- RFC-DPE: deterministic local parallel execution mechanisms that may serve as building blocks
+- RFC-0046: ordering model that distributed extensions MUST NOT relax
+
+______________________________________________________________________
+
+### 5.2.8 Native Ternary Hardware Target and Interop Contract (RFC-0055)
+
+This section is **normative**.  It records the governance contract defined by
+[RFC-0055](rfcs/RFC-0055-native-ternary-hardware-target-and-interop-contract.md).
+
+#### Hardware Target Classes
+
+T81 recognizes two distinct hardware target classes:
+
+| Class | Description | Governing RFC |
+| ----- | ----------- | ------------- |
+| **General-purpose native ternary target** | Platform capable of hosting the T81 runtime, memory model, interrupt model, and governed OS-facing surfaces | RFC-0055 (this section) |
+| **Narrow ternary accelerator target** | Executes only selected kernels or tensor operations beneath an existing governed runtime | RFC-0051 |
+
+RFC-0055 governs only the general-purpose class.
+
+#### TISC Remains the Semantic Authority
+
+For any native ternary hardware target, the semantic authority remains TISC instruction
+semantics, T81VM observable behavior, Axion policy and audit meaning, and canonical data
+and trace contracts.
+
+Allowed:
+
+- direct TISC-on-hardware execution
+- verified lowering from TISC into a hardware-native ISA (must satisfy RFC-0042 + RFC-0047)
+
+Forbidden:
+
+- a hardware target that changes user-visible semantics merely because the hardware has
+  a different native instruction vocabulary
+
+#### Hardware Integration Modes
+
+| Mode | Description | Prerequisite |
+| ---- | ----------- | ------------ |
+| **Direct semantic target** | Hardware executes a TISC-faithful implementation directly | Preferred long-term mode |
+| **Verified lowering target** | Lower-level ISA; verified lowering preserves TISC semantics | Must satisfy RFC-0042 + RFC-0047 |
+| **Hosted compatibility mode** | Hardware behavior surfaced through guest/host HAL | Transitional only; MUST NOT be described as native T81 hardware execution |
+
+#### Hardware Interop Layer Requirements
+
+Every general-purpose native ternary hardware target MUST define an explicit interop
+layer above the device ISA that covers:
+
+- boot handoff contract
+- memory discovery and mapping contract
+- interrupt and trap translation
+- device I/O exposure rules
+- fault classification and fallback rules
+- canonical serialization boundaries for host/hardware exchange
+
+RFC-00B0 HAL is the current architectural starting point but is not itself sufficient
+for real hardware promotion.
+
+#### Boot, Memory, Interrupt, and Fault Obligations
+
+- Boot: entry format, privilege levels, reset and trap entry, kernel/user boundary,
+  ethics-first boot, and Axion-first enforcement points MUST be defined.
+- Memory: address model, ternary page granularity, canonical endianness and packing,
+  alignment, DMA rules (per RFC-00B1 direction for MMU).
+- Interrupts: interrupt classes MUST map to canonical T81/Axion-visible meaning; device
+  completion timing MUST NOT alter deterministic observation boundaries.
+- Faults: fault classification and fallback rules MUST be deterministic.
+
+#### Trace, Audit, and CanonFS Preservation
+
+A native ternary hardware target is not eligible for governed promotion unless it preserves:
+
+- canonical trace meaning
+- Axion audit meaning
+- CanonFS-visible object identity semantics
+- deterministic error/fault classification at the observation boundary
+
+Hardware performance counters are diagnostics only and MUST remain outside the DCP surface.
+
+#### External ISA Compatibility Profile
+
+If T81 targets an external ternary ISA, a compatibility profile MUST state:
+
+- target ISA name and revision
+- lowering boundary from TISC into the target ISA
+- unsupported TISC features (if any) with explicit fault/fallback behavior
+- conformance corpus proving semantic equivalence on the supported subset
+
+Silent subset execution is forbidden.
+
+#### Hardware Promotion Gate
+
+All native ternary hardware targets are **experimental by default**.
+
+Governed non-DCP promotion requires: documented interop layer; executable boot/memory/
+interrupt/fault contracts; semantic equivalence proof on a bounded corpus; preserved Axion
+and trace semantics; explicit listing of supported vs unsupported hardware behavior.
+
+DCP promotion additionally requires RFC-0042, RFC-0043, RFC-0045, RFC-0046, and RFC-0048
+obligations met specifically for the hardware target matrix.
+
+______________________________________________________________________
+
 #### CHKSHAPE
 
 - **Form**: `CHKSHAPE RD, RS1, RS2`

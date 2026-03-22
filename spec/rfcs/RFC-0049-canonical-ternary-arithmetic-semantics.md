@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0049
 - **Title:** Canonical Ternary Arithmetic Semantics
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** `spec/tisc-spec.md`, `spec/t81-data-types.md`, `spec/t81lang-spec.md`, arithmetic opcodes, numeric lowering, backend equivalence work
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
 - **Superseded-By:** None
 - **Discussion:** Builds on RFC-0001, RFC-0002, RFC-0017, RFC-0018, RFC-0030, RFC-0042, RFC-0044, and RFC-0045
@@ -211,3 +211,47 @@ Compatibility effects:
 - Overflow behavior is explicit for all governed arithmetic surfaces touched by this RFC.
 - Conformance tests exist for scalar, packed, SWAR, and SIMD arithmetic against the same canonical result set.
 - RFC-0042 and RFC-0043 reference RFC-0049 as the arithmetic oracle for backend proof on arithmetic surfaces.
+
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Normative spec section:**
+`spec/tisc-spec.md §5.2.1` ("Normative Arithmetic Semantics (RFC-0049)") was added,
+documenting canonical domain, primitive semantics table, carry propagation rule,
+overflow policy table per surface, forbidden behaviors, relation to backend
+equivalence, and conformance test reference.
+
+**AC2 — Operations explicitly defined:**
+The §5.2.1 primitive semantics table defines negation, addition, subtraction,
+multiplication, and comparison in terms of canonical trit algebra.  The subtraction
+identity `a − b ≡ a + (−b)` is normative; no independent borrow convention is
+permitted.
+
+**AC3 — Overflow behavior explicit:**
+The §5.2.1 overflow policy table explicitly binds each governed surface to one
+policy: `T81BigInt` → unbounded; `T81Int<N>` → exception trap; `T81Float<M,E>` →
+special-value saturation; raw trit-vector decode → saturation; integer division →
+explicit `DivisionFault`.  Silent host UB is a named forbidden behavior.
+
+**AC4 — Conformance tests:**
+`tests/cpp/test_arithmetic_backend_equivalence.cpp` was created and registered as
+`t81_arithmetic_backend_equivalence_test`.  It verifies for the scalar trit oracle
+(`t81::ternary::add` / `encode_i64` / `decode_i64`) and the T81BigInt multi-limb
+chunk-based packed path:
+
+- negation (trit-flip involution, 2000 random + edge cases)
+- addition (2000 random, commutativity, identity, edge cases)
+- subtraction (2000 random, identity `a−b=a+(−b)`, `a−a=0`)
+- multiplication (2000 cases vs int64 reference, repeated-addition oracle for
+  small multipliers, commutativity, identity, zero, negate-by-−1, distributivity)
+- comparison semantics (value-based, reflexivity, int64 ordering parity, neg(0)==0)
+- overflow policy (BigInt unbounded, `to_int64` throws for out-of-range)
+- carry propagation (boundary cases, powers of 3, carry-chain stress)
+
+**AC5 — RFC-0042 and RFC-0043 updated:**
+RFC-0042 §1 (Canonical Oracle) now explicitly names RFC-0049 as the arithmetic
+oracle for arithmetic surfaces.  RFC-0043 §3 (Canonical Corpus Classes) now
+requires RFC-0049-derived corpus cases for arithmetic surfaces and references
+`t81_arithmetic_backend_equivalence_test`.  Both RFCs updated their Discussion
+and References fields.

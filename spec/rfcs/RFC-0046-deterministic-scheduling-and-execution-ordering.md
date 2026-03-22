@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0046
 - **Title:** Deterministic Scheduling and Execution Ordering
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** T81VM execution ordering, DPE task scheduling, Axion-visible execution order, future multi-core and distributed scheduling
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
 - **Discussion:** Builds on RFC-0002 and RFC-DPE-0001 through RFC-DPE-0009
 
@@ -240,9 +240,61 @@ Rejected because the ambiguity already exists with current DPE and future JIT in
 ## References
 
 - `spec/rfcs/RFC-0002-deterministic-execution-contract.md`
+- `spec/rfcs/RFC-0045-deterministic-memory-model.md`
+- `spec/rfcs/RFC-0053-distributed-deterministic-execution-protocol.md`
 - `spec/rfcs/RFC-DPE-0001-deterministic-parallel-execution-vision.md`
 - `spec/rfcs/RFC-DPE-0002-tisc-task-graph-primitives.md`
 - `spec/rfcs/RFC-DPE-0003-epoch-execution-and-canonical-commit.md`
+- `spec/rfcs/RFC-DPE-0004-topological-execution-order.md`
 - `spec/rfcs/RFC-DPE-0005-parallel-epoch-execution.md`
 - `spec/rfcs/RFC-DPE-0006-bounded-thread-pool.md`
 - `spec/rfcs/RFC-DPE-0007-epoch-execution-timeout.md`
+- `spec/rfcs/RFC-DPE-0008-epoch-audit-events.md`
+
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Program order / dependency order / canonical commit order consistently reflected in DPE language:**
+RFC-0046 §6 defines all three ordering classes canonically.  The terminology is uniformly
+adopted across the DPE RFC suite: RFC-DPE-0003 §2 ("Canonical Commit Ordering", TaskId-ascending
+commit rule), RFC-DPE-0004 §2 ("Topological Execution Order"), and RFC-DPE-0005 §2.2
+("within-level ordering is ascending canonical TaskId") all use the same three-class
+vocabulary without introducing local alternatives.  No DPE RFC contradicts or re-derives the ordering hierarchy.
+
+**AC2 — Scheduling observability defined consistently with Axion audit and trace surfaces:**
+RFC-0046 §2 enumerates exactly four observable scheduling surfaces: final committed state,
+deterministic fault result, Axion-visible scheduling and epoch audit meaning, and
+trace-visible ordering.  RFC-DPE-0008 (Epoch Audit Events) instantiates the Axion-visible
+surface with `EpochSubmitted`, `EpochCommitted`, and `EpochAborted` events tied to
+scheduling transitions, with audit entries following the same sequenced CanonHash81-signed
+path as existing policy events.  RFC-DPE-0003 §7 shows that epoch state-machine transitions
+are recorded in the Axion audit log with sequence numbers, satisfying the trace-visible ordering requirement.
+
+**AC3 — Conflict resolution explicitly referenced, not inferred from worker timing:**
+RFC-0046 §7 explicitly forbids implicit "winner depends on timing" conflict resolution and
+requires every scheduling domain to declare an explicit ordering rule before entering a
+deterministic surface.  For DPE-governed execution that rule is supplied by RFC-DPE-0003 §3:
+non-exclusive regions use last-writer-in-canonical-TaskId-order; exclusive regions abort at
+commit if violated.  RFC-DPE-0005 §8 proves that level-parallel execution does not change
+the EpochHash — canonical commit ordering is independent of thread scheduling and execution
+order, with no timing-based tiebreaks possible.
+
+**AC4 — Timeout/abort semantics documented as governed schedule effects:**
+RFC-0046 §9 establishes timeouts and aborts as first-class schedule effects when on the
+deterministic surface, and forbids partial canonical commit through an aborted scheduling unit.
+RFC-DPE-0007 (Epoch Execution Timeout) implements this: timeout checking occurs after level
+completion (not mid-task), producing `KernelEpochStatus::Aborted_Timeout` with no partial commit;
+the `EpochHash` is never computed for a timed-out epoch.  RFC-DPE-0003 §6 defines abort atomicity
+for all abort triggers (fault, mapping fault, exclusive conflict, policy fault).  RFC-DPE-0008
+emits `EpochAborted` audit events for timeout aborts, keeping the governed audit surface complete.
+
+**AC5 — Future multi-core/distributed work explicitly constrained to inherit this ordering contract:**
+RFC-0046 §11 establishes the constitutional inheritance rule: future extensions may add
+schedulable units and readiness rules but may not relax the requirement of one deterministic
+observable history per governed computation.  RFC-0053 (Distributed Deterministic Execution
+Protocol) explicitly cites RFC-0046 and directly inherits the ordering contract: §1 requires
+a distributed execution to be a single canonical computation; §4 requires a canonical commit
+order that all nodes can derive or verify; §5 forbids "first packet wins", wall-clock
+precedence, and timing-based tiebreaks.  RFC-0053 §10 prohibits inheriting DCP status
+merely from having a locally DCP-verified executor.

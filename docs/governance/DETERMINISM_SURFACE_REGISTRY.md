@@ -58,26 +58,27 @@ Clarify:
 
 ---
 
-## 3.1 Governing Draft RFCs For Verified Surfaces
+## 3.1 Governing RFCs For Verified Surfaces
 
-The following draft RFCs define the constitutional model that verified deterministic surfaces are expected to converge toward:
+| RFC | Status | Role |
+| --- | ------ | ---- |
+| **RFC-0042** | **accepted** | Scalar-oracle backend equivalence for scalar ↔ SWAR ↔ SIMD ↔ future backends |
+| **RFC-0043** | **accepted** | Common conformance, replay, breach-classification, and CI proof model |
+| **RFC-0044** | **accepted** | Stable packed-trit substrate beneath SWAR and SIMD surfaces |
+| **RFC-0045** | **accepted** | Canonical memory visibility, handle identity, and aliasing model |
+| **RFC-0046** | **accepted** | Program-order / dependency-order / canonical-commit scheduling constitution |
+| **RFC-0047** | **accepted** | Deterministic lowering and JIT constraints for alternate execution paths |
+| **RFC-0048** | **accepted** | DCP / governed non-DCP / experimental boundary constitution |
+| **RFC-0049** | **accepted** | Canonical arithmetic oracle for trit, packed, native, VM, and backend arithmetic |
+| **RFC-0050** | **accepted** | Semantic vector execution model at the ISA/VM layer |
+| **RFC-0051** | **accepted** | Heterogeneous acceleration rules for GPU and other accelerator backends |
+| **RFC-0052** | **accepted** | Canonical dataflow and state-driven propagation model above DPE |
+| **RFC-0053** | **accepted** | Distributed deterministic execution protocol for future cross-node execution |
+| **RFC-0054** | **accepted** | CanonFS object identity and persistence contract (payload-only hash rule) |
+| **RFC-0055** | **accepted** | Native ternary hardware target classification and interop governance |
 
-| RFC | Role |
-| ------- | ----- |
-| **RFC-0042** | Scalar-oracle backend equivalence for scalar ↔ SWAR ↔ SIMD ↔ future backends |
-| **RFC-0043** | Common conformance, replay, breach-classification, and CI proof model |
-| **RFC-0044** | Stable packed-trit substrate beneath SWAR and SIMD surfaces |
-| **RFC-0045** | Canonical memory visibility, handle identity, and aliasing model |
-| **RFC-0046** | Program-order / dependency-order / canonical-commit scheduling constitution |
-| **RFC-0047** | Deterministic lowering and JIT constraints for alternate execution paths |
-| **RFC-0048** | DCP / governed non-DCP / experimental boundary constitution |
-| **RFC-0049** | Canonical arithmetic oracle for trit, packed, native, VM, and backend arithmetic |
-| **RFC-0050** | Semantic vector execution model at the ISA/VM layer |
-| **RFC-0051** | Heterogeneous acceleration rules for GPU and other accelerator backends |
-| **RFC-0052** | Canonical dataflow and state-driven propagation model above DPE |
-| **RFC-0053** | Distributed deterministic execution protocol for future cross-node execution |
-
-Until these RFCs are accepted and fully integrated, they should be treated as draft governance direction rather than an expansion of currently verified guarantees.
+RFCs marked `accepted` are fully integrated and binding.  Draft RFCs define
+governance direction but do not yet expand verified guarantees.
 
 ---
 
@@ -104,7 +105,7 @@ Explicitly list areas that are:
 * **Backend Acceleration Beyond Current Verified CPU Paths**: Any future backend must satisfy RFC-0042 equivalence, RFC-0043 validation, RFC-0049 arithmetic, and RFC-0051 accelerator-boundary requirements before deterministic claims are expanded.
 * **Dataflow/Reactive Execution Beyond Current DPE Scope**: Any future state-driven execution surface must satisfy RFC-0052 before deterministic claims are expanded.
 * **Distributed Execution**: Any future cross-node execution surface must satisfy RFC-0053 before deterministic claims are expanded.
-* **External Hardware Accelerators**: Behavior on non-CPU devices is currently undefined.
+* **External Hardware Accelerators (governed non-DCP)**: Classified as governed non-DCP per RFC-0051 §1 and `spec/tisc-spec.md §5.2.5`.  Any future accelerator backend must satisfy RFC-0042 equivalence, RFC-0043 validation, RFC-0045 memory transfer audit, RFC-0046 scheduling audit, and RFC-0048 boundary promotion before any DCP claim may be made.
 
 ---
 
@@ -114,14 +115,44 @@ Explicitly list areas that are:
 | ------- | --------- | ------ | ------------ |
 | **TISC Execution** | `tests/cpp/vm_determinism_property_test.cpp` | `ci.yml` | N/A |
 | **VM Memory / State Determinism** | `tests/cpp/vm_tensor_get_set_conformance_test.cpp`<br>`tests/cpp/vm_state_transition_conformance_matrix_test.cpp` | `ci.yml` (`determinism-slice`) | N/A |
-| **Tritwise Ops** | `tests/cpp/test_tritwise_backend_equivalence.cpp` | `ci.yml` | N/A |
+| **Tritwise Backend Equivalence** (RFC-0042) | `tests/cpp/test_tritwise_backend_equivalence.cpp` — scalar vs SWAR vs AVX2/NEON, sizes 1–4097 trits | `ci.yml` | N/A |
+| **Arithmetic Backend Equivalence** (RFC-0042 + RFC-0049) | `tests/cpp/test_arithmetic_backend_equivalence.cpp` — scalar trit oracle vs T81BigInt for ADD/SUB/MUL/NEG/comparison/carry | `ci.yml` | N/A |
 | **Axion Epoch Runtime (scheduler + audit parity)** | `experimental/ternaryos/tests/epoch_submission_test.cpp`<br>`experimental/ternaryos/tests/epoch_audit_test.cpp` | `ci.yml` (`axion-epoch-determinism`) | N/A |
 | **Compiler Repro** | `tests/fixtures/t81lang_determinism/*.t81` | `repro-ledger.yml` | `scripts/ci/t81lang_repro_gate.py` |
 | **Quantization** | N/A | `repro-ledger.yml` | `scripts/ci/t3k_repro_gate.py` |
 
 Proof model note:
 
-> Verified-surface claims should be interpreted through RFC-0043 once that framework is accepted; until then, the table above remains authoritative for what is actually CI-enforced today.
+> Verified-surface claims are governed by RFC-0043 (Deterministic Conformance Validation Framework, `accepted`).
+> The table above is the authoritative CI-enforced record.  RFC-0043 §8 defines the promotion
+> rules that every entry must satisfy before a surface may be marked `Verified`.
+
+### 5.1 Conformance Layer Mapping (RFC-0043 §1)
+
+Each verified surface maps to one or more RFC-0043 conformance layers:
+
+| Surface | Semantic | Backend Equiv | Serialization | Cross-Platform | Gov Gate |
+| ------- | :------: | :-----------: | :-----------: | :------------: | :------: |
+| TISC Execution | Yes | — | — | Yes | Yes |
+| VM Memory / State | Yes | — | Yes | Yes | Yes |
+| Tritwise Backend Equiv | Yes | Yes | — | Yes | Yes |
+| Arithmetic Backend Equiv | Yes | Yes | — | Yes | Yes |
+| Axion Epoch Runtime | Yes | — | — | Yes | Yes |
+| Compiler Repro | — | — | Yes | Yes | Yes |
+| Quantization | — | — | Yes | Yes | Yes |
+
+### 5.2 Cross-Platform Replay Artifacts
+
+The supported architecture set for the current major version is **x86_64 + AArch64**.
+
+| Architecture | Kernel | Compiler | Backend Paths Active |
+| ------------ | ------ | -------- | -------------------- |
+| x86_64 + AVX2 | Linux / macOS | Clang 18+ / GCC 14+ | scalar, SWAR, AVX2 (≥ 64 B threshold) |
+| AArch64 + NEON | Linux / macOS | AppleClang 17+ / Clang 18+ | scalar, SWAR, NEON-OR (≥ 64 B threshold) |
+
+Replay succeeds only when all governed test binaries produce **bit-identical pass/fail outcomes**
+across both rows.  Architecture-specific exclusions (NEON TNot/TAnd disabled) are documented
+in `spec/tisc-spec.md §5.2.3` and do not constitute a divergence.
 
 ---
 
@@ -130,10 +161,21 @@ Proof model note:
 Reference:
 
 * `docs/governance/FREEZE_ENFORCEMENT.md`
+* `spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md` §6
+
+Breach classification (per RFC-0043 §6):
+
+* **Hard Divergence** — final bytes, trap class, trace hash, or canonical serialization differ.
+  Merge-blocking critical defect on a verified surface.
+* **Soft Divergence** — non-DCP diagnostic strings or non-governed metadata differ.
+  Not a DCP failure unless it crosses a governed boundary.
+* **Undefined Behavior Exposure** — backend depends on UB, memory layout assumptions break,
+  or ABI mismatch changes results.  Treated as a Hard Divergence if on a verified surface.
 
 State:
 
-> A regression on a verified surface is classified as a critical defect and must not be merged unresolved.
+> A regression on a verified surface is classified as a Hard Divergence (RFC-0043 §6)
+> and must not be merged unresolved.
 
 ---
 

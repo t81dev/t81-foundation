@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0053
 - **Title:** Distributed Deterministic Execution Protocol
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** distributed runtime, cross-node ordering, state synchronization, consensus of canonical results, future service/runtime distribution
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-22
 - **Supersedes:** None
 - **Superseded-By:** None
 - **Discussion:** Builds on RFC-0002, RFC-DPE-0001 through RFC-DPE-0009, RFC-0043, RFC-0045, RFC-0046, RFC-0048, and RFC-0052
@@ -201,3 +201,45 @@ Compatibility rules:
 - Replay/evidence artifacts are defined for distributed execution.
 - Fault/partition behavior is deterministic and fail-closed or deterministically suspended.
 - Distributed execution is explicitly classified as experimental / non-DCP until separately promoted.
+
+## Implementation Record (2026-03-22)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Global state identity, commit identity, and conflict-resolution rules explicitly defined:**
+`spec/tisc-spec.md §5.2.7` ("Distributed Deterministic Execution Protocol (RFC-0053)")
+defines three subsections covering these requirements: "Global State and Commit Identity"
+mandates canonical state identifiers, canonical epoch/commit identifiers, canonical input
+artifact identifiers, and explicit versioning semantics; "Global Ordering Rule" requires
+canonical input, dependency, and conflict-resolution order; "Conflict Resolution" enumerates
+the four allowed deterministic resolution strategies (canonical commit order, explicit
+tie-break keys, canonical metadata winner selection, fail-closed rejection).
+
+**AC2 — Network arrival order explicitly excluded as a semantic ordering source:**
+`spec/tisc-spec.md §5.2.7` "Global Ordering Rule" table explicitly lists "Network arrival
+order" with the requirement "MUST NOT define semantics."  The "Conflict Resolution" subsection
+lists "first packet wins" and "host clock or wall-clock precedence" as forbidden tiebreak
+strategies.  This exclusion is unconditional and normative.
+
+**AC3 — Replay/evidence artifacts defined for distributed execution:**
+`spec/tisc-spec.md §5.2.7` "Replay and Evidence Requirements" enumerates five required
+artifacts: canonical input set, canonical graph/state metadata, canonical commit ledger,
+node participation records, and deterministic result hash or equivalent replay summary.
+The section states these artifacts "MUST fit within the RFC-0043 conformance model,"
+binding distributed execution to the same evidence standard as local verified surfaces.
+
+**AC4 — Fault/partition behavior deterministic and fail-closed or deterministically suspended:**
+`spec/tisc-spec.md §5.2.7` "Fault and Partition Behavior" requires deterministic behavior
+for all five failure scenarios (node failure, message delay, duplication, partition/quorum
+loss, retry/rejoin), defines three allowed responses (deterministic abort, rollback to last
+canonical commit, deterministic suspension), and forbids speculative continuation with
+ambiguous semantics and silent local completion with later reconciliation.
+
+**AC5 — Distributed execution explicitly classified as experimental / non-DCP until separately promoted:**
+`spec/tisc-spec.md §5.2.7` "DCP Boundary Rule (RFC-0053)" states: "Distributed execution
+is experimental / non-DCP by default."  It enumerates three reasons promotion requirements
+are stricter (state synchronization, network fault surfaces, larger replay/ledger obligations)
+and explicitly forbids inheriting DCP status from a DCP-verified local executor.  The
+`docs/governance/DETERMINISM_SURFACE_REGISTRY.md §4` lists "Distributed Execution" under
+"Experimental / Planned" with the gate: "must satisfy RFC-0053 before deterministic claims
+are expanded."

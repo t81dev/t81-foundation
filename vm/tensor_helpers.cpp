@@ -32,7 +32,7 @@ namespace t81::vm::internal {
 namespace {
 
 using t81::core::detail::DFixed;
-using t81::experimental::ComputeTritVector;
+using t81::ComputeTritVector;
 
 std::expected<ComputeTritVector, t81::vm::Trap> encode_exact_trit_tensor(
     const t81::T729DynamicTensor& tensor) {

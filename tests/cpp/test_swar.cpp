@@ -159,10 +159,71 @@ void test_swar_public_api() {
   assert(check_vec(or_pub.to_trits().value(), or_ref.to_trits().value()));
 }
 
+// RFC-0044 §4 (Validation Contract): invalid packed-trit bit patterns must be
+// rejected at the validated surface boundary with a deterministic error result.
+// The forbidden pattern is 10 (decimal 2) — encodes no valid trit value.
+void test_rfc0044_invalid_pattern_rejection() {
+  std::cout << "[RFC-0044] Invalid packed-trit pattern rejection..." << std::endl;
+
+  // Build a raw byte containing the invalid 10 pattern in the lowest two bits.
+  // Byte layout (2 bits per trit, LSB first): trits 0..3 occupy bits [1:0], [3:2], [5:4], [7:6].
+  // Pattern 0x02 = 0b00000010 → trit 0 = 10 (invalid), trit 1 = 00 (Z), trit 2 = 00 (Z), trit 3 = 00 (Z).
+  {
+    std::vector<uint8_t> bad_bytes = {0x02};  // trit 0 = 10 (invalid)
+    auto result = ComputeTritVector::from_packed(bad_bytes, 4);
+    require(result.is_err(), "from_packed with 10-pattern in trit 0 must fail");
+  }
+
+  // Invalid pattern in a higher trit (bits [3:2] = 10 → 0b00001000 = 0x08).
+  {
+    std::vector<uint8_t> bad_bytes = {0x08};  // trit 1 = 10 (invalid)
+    auto result = ComputeTritVector::from_packed(bad_bytes, 4);
+    require(result.is_err(), "from_packed with 10-pattern in trit 1 must fail");
+  }
+
+  // Invalid tail padding: trit count = 3 means bits [7:6] of the byte must be
+  // zero.  A non-zero value in unused bits must be rejected.
+  {
+    std::vector<uint8_t> bad_tail = {0x40};  // bits [7:6] = 01 — nonzero tail
+    auto result = ComputeTritVector::from_packed(bad_tail, 3);
+    require(result.is_err(), "from_packed with nonzero tail padding must fail");
+  }
+
+  // Sanity: valid bytes must succeed.
+  {
+    // 0b10100101 = 0xA5: trits [P, N, P, N] = [01, 11, 01, 11] LSB-first
+    // trit 0 bits [1:0]=01=P, trit 1 bits [3:2]=01=P, trit 2 bits [5:4]=10=invalid!
+    // Use a known-good byte: 0b11010101 = 0xD5 = trits [P, N, P, N]
+    // Actually, let's just build from trits to ensure validity.
+    auto valid = ComputeTritVector::from_trits({1, -1, 0, 1});
+    require(valid.is_ok(), "from_trits with valid data must succeed");
+
+    // And round-trip through from_packed must also succeed.
+    auto repacked = ComputeTritVector::from_packed(valid.value().data(), 4);
+    require(repacked.is_ok(), "from_packed with valid bytes (4 trits) must succeed");
+    require(repacked.value().to_trits().value() == valid.value().to_trits().value(),
+            "from_packed round-trip must preserve trit values");
+  }
+
+  // to_trits() on a valid vector must never produce invalid patterns.
+  {
+    auto v = ComputeTritVector::from_trits({1, 0, -1, 1, -1, 0}).value();
+    auto trits = v.to_trits();
+    require(trits.is_ok(), "to_trits on valid ComputeTritVector must succeed");
+    for (int8_t t : trits.value()) {
+      require(t == -1 || t == 0 || t == 1,
+              "to_trits must produce only canonical trit values {-1, 0, +1}");
+    }
+  }
+
+  std::cout << "  PASS\n";
+}
+
 int main() {
   test_swar_basics();
   test_swar_inplace();
   test_swar_public_api();
+  test_rfc0044_invalid_pattern_rejection();
 
   std::cout << "All SWAR tests passed!" << std::endl;
   return 0;

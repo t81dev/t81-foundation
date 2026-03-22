@@ -1999,6 +1999,12 @@ if(T81_BUILD_TESTS)
   endif()
   add_test(NAME t81_tritwise_backend_equivalence_test COMMAND t81_tritwise_backend_equivalence_test)
 
+  # RFC-0049 — Canonical Ternary Arithmetic Semantics conformance test.
+  # Verifies scalar trit oracle == T81BigInt multi-limb path for add/sub/mul/neg.
+  add_executable(t81_arithmetic_backend_equivalence_test
+    tests/cpp/test_arithmetic_backend_equivalence.cpp)
+  target_link_libraries(t81_arithmetic_backend_equivalence_test PRIVATE t81_core)
+
   add_executable(t81_simd_api_test tests/cpp/simd_api_test.cpp)
   target_link_libraries(t81_simd_api_test PRIVATE t81_core)
   if(T81_IS_X86_64 AND NOT MSVC)
@@ -3038,6 +3044,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_rfc0034_ternary_native_test
     t81_vm_rfc0040_swar_test
     t81_simd_api_test
+    t81_arithmetic_backend_equivalence_test
   )
   if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64")
     list(APPEND T81_TEST_TARGETS t81_base81_simd_test)

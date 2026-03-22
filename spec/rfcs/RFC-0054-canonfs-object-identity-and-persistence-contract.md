@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0054
 - **Title:** CanonFS Object Identity and Persistence Contract
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** CanonFS object identity, persistent-driver guarantees, capability persistence, parity semantics, CanonFS CLI/user-visible naming
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-22
 - **Supersedes:** None
 - **Superseded-By:** None
 - **Discussion:** Reconciles `spec/supplemental/canonfs-spec.md` with `include/t81/canonfs/canon_driver.hpp`, `include/t81/canonfs/canon_types.hpp`, `src/canonfs/persistent_driver.cpp`, and `src/canonfs/in_memory_driver.cpp`
@@ -218,3 +218,65 @@ Compatibility must be preserved explicitly either way. Existing persisted object
 - Parity/self-healing semantics are classified accurately as implemented, optional, or future work.
 - CanonFS user-visible reference naming is standardized across CLI/docs/tests.
 - Regression tests exist for the chosen identity rule and persistent-driver verification behavior.
+
+## Implementation Record (2026-03-22)
+
+All acceptance criteria are satisfied as of this date.  The chosen path is **option 1**:
+the current `CanonHash-81(payload_bytes)` rule is declared normative for the current release
+line; TypeID-prefixed identity is deferred to a future explicit migration.
+
+**AC1 — Normative CanonFS text defines exactly one current-release object identity rule:**
+`spec/supplemental/canonfs-spec.md` v0.4.2 §2 Architectural Invariant 2 states:
+"Current-release object identity is `CanonHash-81(payload_bytes)`."  §4 ("CanonHash-81 —
+Current Release Identity Function") defines the function as `t81::hash::hash_bytes(...)` over
+payload bytes.  §5 codifies the chosen path: "Future typed-envelope CanonFS versions MAY define
+identities over `TypeID || SerializedPayload`, but they MUST do so under an explicit
+compatibility or migration contract."  One rule, one release line, one section.
+
+**AC2 — Role of ObjectType explicit and matches implementation:**
+`spec/supplemental/canonfs-spec.md §5` states: "The T81 CanonFS API carries an `ObjectType`,
+but the current drivers do not include `ObjectType` in object identity.  In the current release
+line, `ObjectType` is descriptive API metadata rather than part of the hashed persistent
+identity."  `include/t81/canonfs/canon_types.hpp` confirms: `CanonBlock::hash()` calls
+`t81::hash::hash_bytes(raw)` over the tryte payload with no type prefix.
+`tests/cpp/canonfs_identity_contract_test.cpp` asserts that writing the same payload with
+`ObjectType::RawBlock` and `ObjectType::CanonTensor` produces identical hashes in both the
+in-memory and persistent drivers.
+
+**AC3 — Persistent-driver on-disk contract described without placeholder overclaim:**
+`spec/supplemental/canonfs-spec.md §7.1` documents the exact on-disk layout: objects at
+`objects/<hash>.blk`, capabilities at `caps/<hash>.cap` as decimal permission masks, and
+`parity/` as a placeholder directory.  §7.1 explicitly states: "The driver currently treats
+`parity/` as a placeholder directory for future repair shards."  §2 Invariant 5 ("Extension
+Honesty") forbids describing parity, typed envelopes, or compression-aware canonicalization
+as current persistent-driver guarantees unless implemented end to end.
+
+**AC4 — Capability persistence classified accurately:**
+`spec/supplemental/canonfs-spec.md §6.1` ("Current Persistent-Driver Capability Contract")
+specifies the current guarantee: per-object permission mask at `caps/<hash>.cap`, with
+`target`, `permissions`, bootstrap access, and read/write enforcement.  §6.2 explicitly
+labels the full `CapabilityGrant` signed structure as "a future-versioned CanonFS object
+model, not a current persistent-driver guarantee."
+
+**AC5 — Parity/self-healing classified accurately:**
+`spec/supplemental/canonfs-spec.md §8` ("CanonParity — Optional / Future-Versioned
+Recovery") states: "CanonFS parity support is not a current persistent-driver guarantee"
+and "Any CanonParity wire format or repair workflow described below is future-versioned
+until the persistent reference driver implements it end to end."  This accurately describes
+the gap: the in-memory path may have stronger parity logic, while the persistent reference
+driver has only the `parity/` placeholder.
+
+**AC6 — CanonFS user-visible reference naming standardized:**
+`spec/supplemental/canonfs-spec.md §4` documents the current CLI naming convention:
+"User-facing CanonFS and related CLI surfaces currently expose CanonFS object references
+as `sha3-256:<hash>`" and states that changing the identity function requires an explicit
+migration plan per RFC-0054 §8.  The naming is standardized as `sha3-256:<hash>` for
+the current release, with RFC-0054 §7 defining the compatibility rule if the prefix changes.
+
+**AC7 — Regression tests exist for chosen identity rule and persistent-driver verification:**
+`tests/cpp/canonfs_identity_contract_test.cpp` verifies: (a) identical payloads with
+different ObjectTypes produce identical hashes in both drivers (payload-only rule), and
+(b) the test covers both `make_in_memory_driver()` and `make_persistent_driver()`.
+`tests/cpp/canonfs_read_verify_test.cpp` and `tests/cpp/canonfs_persistent_driver_test.cpp`
+provide complementary verification of the read-path identity recomputation (`CanonHash-81`
+recomputed on read and compared to the stored reference, failing deterministically on mismatch).

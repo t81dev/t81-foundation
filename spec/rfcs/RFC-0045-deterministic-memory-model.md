@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0045
 - **Title:** Deterministic Memory Model
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** T81VM, TISC-visible state, DPE staging/commit, CanonFS-backed state artifacts, backend-sensitive execution surfaces
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
 - **Discussion:** Builds on RFC-0002, RFC-0004, RFC-0006, RFC-DPE-0002, and RFC-DPE-0003
 
@@ -281,4 +281,65 @@ Rejected because it is fundamentally incompatible with cross-platform determinis
 - `spec/rfcs/RFC-0006-deterministic-gc.md`
 - `spec/rfcs/RFC-DPE-0002-tisc-task-graph-primitives.md`
 - `spec/rfcs/RFC-DPE-0003-epoch-execution-and-canonical-commit.md`
+- `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md`
+- `spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md`
 - `core/vm/memory_segments.cpp`
+- `include/t81/vm/state.hpp`
+- `include/t81/vm/traps.hpp`
+- `tests/cpp/vm_fault_test.cpp`
+- `tests/cpp/test_vm_deterministic_fault.cpp`
+- `tests/cpp/vm_fault_family_determinism_matrix_test.cpp`
+
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Segment model and canonical visibility referenced from RFC-0002 and governance docs:**
+`spec/rfcs/RFC-0002-deterministic-execution-contract.md §5` ("Deterministic Memory Model")
+explicitly enumerates the five canonical segment families (Code, Stack, Heap, Tensor, Meta)
+and states the canonical read, canonical write, deterministic bounds, and handle-identity
+requirements.  The implementation at `core/vm/memory_segments.cpp` defines `MemorySegmentKind`
+with the same five entries and `segment_for_address()` which maps every VM address to
+exactly one segment at the observation boundary.  `DETERMINISM_SURFACE_REGISTRY §3.1`
+lists RFC-0045 as `accepted`, making the memory model a fully governed determinism surface.
+
+**AC2 — Immediate vs deferred visibility consistent with DPE epoch commit behavior:**
+RFC-0045 §5 defines Immediate Visibility (interpreter execution; write is canonical
+immediately after the governed operation) and Deferred Visibility (DPE epoch execution;
+write enters the staged delta and is invisible to canonical readers until commit).
+`spec/rfcs/RFC-DPE-0003-epoch-execution-and-canonical-commit.md §2.2` specifies that
+the staging area is a copy-on-write snapshot updated by delta application and the
+original input_snapshot is unmodified until the epoch completes successfully — exactly
+consistent with the deferred-visibility rule.  RFC-DPE-0003 §9 explicitly notes the
+interaction with RFC-0045.
+
+**AC3 — Deterministic memory fault classes mapped to executable tests:**
+`include/t81/vm/traps.hpp` defines the fault taxonomy: `BoundsFault` (out-of-bounds
+access), `StackFault` (stack overflow/underflow), `TypeFault`, `DecodeFault`,
+`DivisionFault`, `SecurityFault`, `TierFault`, `ShapeFault`.  Executable test coverage
+includes `tests/cpp/vm_fault_test.cpp`, `tests/cpp/test_vm_deterministic_fault.cpp`,
+`tests/cpp/vm_fault_family_determinism_matrix_test.cpp`, and
+`tests/cpp/axion_policy_segment_event_test.cpp`.  `spec/rfcs/RFC-0002-deterministic-execution-contract.md §11`
+lists `tisc/bounds-fault-contract.t81` as a conformance fixture for the deterministic
+BoundsFault contract.
+
+**AC4 — Handle identity and compaction rules consistent with current VM/GC behavior:**
+RFC-0045 §7 specifies handle-centric (not pointer-centric) object identity: logical
+identity is based on stable handle indices and canonical content, not host pointer values.
+RFC-0045 §11 prohibits compaction from changing visible value semantics, logical handle
+identity, canonical serialization, or deterministic fault outcomes.  `core/vm/memory_segments.cpp`
+implements `update_memory_stats()` and `contract_memory_pool()` using segment-based
+logical accounting without exposing host pointer addresses at the DCP surface.
+`spec/rfcs/RFC-0006-deterministic-gc.md` provides complementary GC constraints that
+preserve handle identity across collection cycles.
+
+**AC5 — Backend-sensitive surfaces cite RFC-0045 for memory and aliasing assumptions:**
+`spec/rfcs/RFC-0047-deterministic-jit-and-lowering-rules.md` lists RFC-0045 in its
+Discussion field and §5 ("Memory Visibility") explicitly cites "the memory visibility
+model of RFC-0045" as a constraint on all JIT lowering transformations.  RFC-0047 §4
+forbids any JIT transformation that changes canonical commit order or write visibility
+rules.  `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
+lists `spec/rfcs/RFC-0045-deterministic-memory-model.md` as a normative reference and
+uses RFC-0045 as the memory semantics authority for DCP classification.  RFC-0042
+(backend equivalence) §5 (Observable Boundaries) extends the equivalent list to include
+"canonical bytes" and "canonical tags" — both defined by RFC-0045.

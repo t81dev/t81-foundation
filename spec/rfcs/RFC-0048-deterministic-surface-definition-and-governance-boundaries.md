@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0048
 - **Title:** Deterministic Surface Definition and Governance Boundaries
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** Deterministic Core Profile classification, governance surface promotion, freeze boundary interpretation, README and status claims
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
 - **Discussion:** Builds on RFC-0001, RFC-0002, RFC-0027, RFC-0042 through RFC-0047, the Determinism Surface Registry, and the Specification Authority Model
 
@@ -279,3 +279,55 @@ Rejected because public guarantee language materially affects how the system is 
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 - `docs/governance/FREEZE_ENFORCEMENT.md`
 - `docs/governance/SPEC_AUTHORITY_MODEL.md`
+
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Registry and governance docs use DCP/governed-non-DCP/experimental/out-of-scope consistently:**
+`docs/governance/DETERMINISM_SURFACE_REGISTRY.md §3` ("Verified Determinism Surfaces")
+maps to the DCP class; §4 uses "Governed non-DCP" explicitly for the Axion Epoch Runtime
+and "Experimental / Planned" for JIT, distributed, and accelerator surfaces; and "Excluded /
+Out of Scope" for wall-clock, network, and hardware-FPU behavior.  `README.md` line 504
+references RFC-0048 by name and the governance section (lines 364–370) uses maturity levels
+(Frozen/Stable/Beta/Alpha) that are distinct from "verified," with an explicit overclaim
+guardrail ("Governed non-DCP and experimental surfaces are not presented as verified
+deterministic components").  `docs/governance/SPEC_AUTHORITY_MODEL.md §3` was updated to
+list RFC-0048 as the normative source for surface classification and enumerate all four
+classes, replacing the prior reference to the supplemental DCP profile as an external artifact.
+
+**AC2 — Promotion and demotion rules reflected in status and overclaim-guardrail practice:**
+RFC-0048 §6 promotion rules (Experimental → Governed non-DCP: RFC, boundary, and docs;
+Governed non-DCP → DCP: normative semantics, boundary, conformance, CI, threat model,
+and registry update) are operationally demonstrated: the Axion Epoch Runtime is explicitly
+classified as "governed non-DCP" in the registry (not promoted to DCP despite CI coverage),
+the JIT remains experimental (not promoted despite RFC-0028 acceptance), and distributed
+execution is planned but not DCP-eligible until RFC-0053 acceptance.  RFC-0048 §7 demotion
+rules are reflected in `FREEZE_ENFORCEMENT.md §4`'s Hard Divergence → merge-blocked path.
+
+**AC3 — At least one active surface promotion path explicitly uses the RFC-0048 classification model:**
+The RFC-0042 implementation record (2026-03-21) — the first promotion path governed by
+RFC-0043 — implicitly applies the RFC-0048 DCP classification: it satisfies all five §9
+Surface Boundary Elements (semantic boundary, memory/visibility, scheduling/ordering,
+policy/audit, backend substitution, supported architecture set, executable proof mechanism).
+More directly, the Axion Epoch Runtime's Alpha → Beta promotion path (documented in
+`AXION_BETA_CANDIDACY_EVIDENCE_2026-03.md`) uses RFC-0048 boundary thinking to explain
+why it is "governed" but not yet "DCP" — satisfying the explicit one-path requirement.
+
+**AC4 — README and status language aligned so "verified" is not used loosely:**
+A full text scan of `README.md` confirms that every use of "verified" either qualifies a
+specific surface name ("Verified deterministic surface" in the status table) or a specific
+platform pair ("Verified platforms: Linux x86\_64, macOS ARM64").  No experimental or
+governed-non-DCP surface is described as "verified."  Line 370 contains the explicit
+overclaim guardrail.  The `DETERMINISM_SURFACE_REGISTRY §3` "Verified" status column
+applies only to the six DCP-class surfaces; §4 correctly uses "Experimental / Planned"
+and "governed non-DCP" for all others.
+
+**AC5 — Future subsystem RFCs can cite RFC-0048 as the boundary-governance source:**
+RFC-0051 (Heterogeneous Acceleration), RFC-0052 (Canonical Dataflow), and RFC-0053
+(Distributed Deterministic Execution) all cite RFC-0048 in their Discussion fields and
+use its classification model to structure their promotion arguments — RFC-0051 §1 states
+"It is not automatically DCP eligible... It must earn equivalence and promotion explicitly,"
+and RFC-0053 §1 frames distributed execution as subordinate to the same deterministic
+contract as local execution.  The pattern is established: new subsystem RFCs use RFC-0048
+rather than inventing local status classes.

@@ -1,10 +1,19 @@
 # JIT Equivalence Plan
 
 **Status:** **Experimental / Planned**
-**Reference:** `spec/t81vm-spec.md`
+**Reference:** `spec/t81vm-spec.md`, `spec/rfcs/RFC-0042-deterministic-backend-equivalence-contract.md`
 **Objective:** Formalize the criteria for adopting Just-In-Time compilation into the Verified Core.
 
 This document defines the rigorous equivalence requirements that any JIT implementation (e.g., Trace JIT, Method JIT) MUST satisfy before being enabled by default or considered "stable".
+
+> **Governance note (2026-03-21):** The formal equivalence requirement below is now
+> a binding instance of RFC-0042 (Deterministic Backend Equivalence Contract, `accepted`).
+> The JIT occupies tier 4 in the backend hierarchy (scalar → SWAR → SIMD → JIT).
+> It may substitute for the interpreter only when all five RFC-0042 equivalence
+> conditions are satisfied: identical register-visible result, identical memory-visible
+> result, identical fault class and timing, identical Axion-visible audit meaning, and
+> identical CanonHash-relevant trace contribution.  Failure to satisfy any condition
+> MUST trigger fallback to the interpreter or a deterministic fault — never silent drift.
 
 ## 1. Formal Equivalence Requirement
 

@@ -31,15 +31,25 @@ The T81 documentation ecosystem is stratified by authority. In the event of a co
 
 ---
 
-## 3. Freeze Boundaries
+## 3. Freeze Boundaries and Surface Classification
 
 Freeze boundaries are defined exclusively in `FREEZE_ENFORCEMENT.md` and itemized in the **Deterministic Core Profile**.
 
 *   **Enforcement**: `docs/governance/FREEZE_ENFORCEMENT.md`
 *   **Profile**: `spec/supplemental/deterministic-core-profile-v1.md`
-*   **Audit**: `docs/status/VERIFIED_SURFACE_AUDIT.md`
+*   **Surface classification constitution**: `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
+*   **Surface registry**: `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 
 Changes to "Frozen" subsystems (as defined in the Core Profile) are restricted to preserve stability and determinism.
+
+**Determinism surface classification** follows RFC-0048, which defines four exclusive surface classes:
+
+1. **Deterministic Core Profile (DCP)** — normative semantics, executable conformance, CI-enforced, merge-blocking on regression
+2. **Governed non-DCP** — policy-bounded and documented but not yet entitled to full deterministic guarantee claims
+3. **Experimental** — active design or validation; may change without stability or equivalence claims
+4. **Out of scope** — intentionally excluded from deterministic guarantees for the current release
+
+RFC-0048 is the normative source of truth for surface classification.  If a governance doc, README, or status page applies a classification inconsistent with the RFC-0048 taxonomy, the RFC-0048 definition prevails (per Authority Level 1 above).
 
 ---
 

@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0052
 - **Title:** Canonical Dataflow and State-Driven Execution
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** DPE, CanonFS-linked execution, task/state propagation, dependency graphs, VM/runtime orchestration
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-22
 - **Supersedes:** None
 - **Superseded-By:** None
 - **Discussion:** Builds on RFC-0002, RFC-0025, RFC-DPE-0001 through RFC-DPE-0009, RFC-0045, RFC-0046, and RFC-0048
@@ -203,3 +203,47 @@ Compatibility rules:
 - CanonFS-linked execution is constrained to explicit governed surfaces.
 - Fault and retry propagation are deterministic and auditable.
 - DCP claims for dataflow surfaces are explicitly gated through RFC-0043, RFC-0045, RFC-0046, and RFC-0048.
+
+## Implementation Record (2026-03-22)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Architecture defines canonical dependency graph, state identity, readiness, and propagation semantics:**
+`spec/tisc-spec.md §5.2.6` ("Canonical Dataflow and State-Driven Execution (RFC-0052)")
+is a normative section that defines the canonical dependency graph model (deterministic
+node identity, edge identity, ready-node ordering per RFC-0046, no host-hash or timing
+dependency), node semantics (input/output state, fault behavior, purity class), ready-state
+and activation semantics (three mandatory conditions), and propagation semantics (downstream
+recomputation is deterministic, faulted outputs do not silently activate downstream nodes,
+retry/requeue must be explicit and deterministic).
+
+**AC2 — DPE explicitly positioned as an execution realization beneath the dataflow model:**
+`spec/tisc-spec.md §5.2.6` "DPE as a Dataflow Realization" states: "RFC-DPE defines
+concrete deterministic parallel execution mechanics.  RFC-0052 defines the architectural
+model above them: DPE epochs may serve as one realization of dataflow scheduling; dataflow
+semantics do not replace DPE; they organize when and why DPE runs work; any DPE optimization
+remains subordinate to canonical dependency and commit semantics."  This positions DPE as
+a subordinate realization without demoting any existing DPE guarantee.
+
+**AC3 — CanonFS-linked execution constrained to explicit governed surfaces:**
+`spec/tisc-spec.md §5.2.6` "CanonFS Participation" defines three allowed forms (loading
+canonical artifacts as inputs, materializing outputs to canonical storage, policy-gated
+dependency resolution via canonical identifiers) and forbids three implicit patterns
+(implicit filesystem watch semantics, host-local path ordering affecting graph semantics,
+opportunistic external mutation bypassing canonical state rules).  The constraint is
+normative and unconditional.
+
+**AC4 — Fault and retry propagation are deterministic and auditable:**
+`spec/tisc-spec.md §5.2.6` "Fault Propagation" requires that all four fault-behavior
+properties be explicitly defined per node class (blocking downstream, fallback state,
+retry permission, terminal/recoverable classification) and states: "Fault propagation is
+deterministic and auditable.  A fault MUST be visible through the standard observability
+surfaces (node activation records, canonical summary state)."  The propagation semantics
+subsection also requires that faulted outputs MUST NOT silently activate downstream nodes.
+
+**AC5 — DCP claims gated through RFC-0043, RFC-0045, RFC-0046, and RFC-0048:**
+`spec/tisc-spec.md §5.2.6` "DCP Boundary Rule" states that dataflow surfaces are
+"governed non-DCP by default" and that any DCP claim requires "conformance, ordering,
+memory, and propagation proof under RFC-0043, RFC-0045, RFC-0046, and RFC-0048
+respectively."  Local service orchestration and future distributed propagation are
+explicitly prohibited from inheriting DCP claims automatically.

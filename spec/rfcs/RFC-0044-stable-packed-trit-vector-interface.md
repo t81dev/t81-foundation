@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0044
 - **Title:** Stable Packed Trit Vector Interface
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** packed trit storage, SWAR, SIMD, VM tensor helpers, future JIT lowering
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
 - **Discussion:** Builds on RFC-0040 and RFC-0041; stabilizes the substrate currently exposed through `experimental/packed_trit_vector.hpp`
 
@@ -198,11 +198,48 @@ Rejected because they already share representation assumptions.
 
 Rejected because mutation and validation semantics are part of the determinism contract.
 
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — Stable type outside experimental namespace:**
+`t81::ComputeTritVector` and `t81::PackedTritVector` are the governed stable
+aliases at `include/t81/packed_trit_vector.hpp`.  The implementation in
+`t81::experimental` is the backing detail; the public surface is `t81::`.
+`vm/tensor_helpers.cpp`, `vm/jit/jit_compiler.cpp`, and all four benchmark files
+were updated to use `t81::ComputeTritVector` / `t81::PackedTritVector` directly.
+
+**AC2 — Canonical encoding and tail-byte rules documented:**
+`spec/tisc-spec.md §5.2.2` ("Normative Packed-Trit Encoding (RFC-0044)") now
+documents the 2-bit encoding table (00=Z, 01=P, 11=N, 10=forbidden), LSB-first
+byte layout, 4 trits/byte, zero-extension of trailing bits, and the
+deterministic byte-count formula `⌈trit_count / 4⌉`.
+
+**AC3 — SWAR and SIMD headers use stable substrate:**
+`include/t81/swar/swar.hpp` includes `"t81/packed_trit_vector.hpp"` (stable shim).
+`include/t81/tritwise/tritwise.hpp` likewise uses the stable surface for dispatch.
+No SWAR or SIMD public header imports `experimental` directly.
+
+**AC4 — Invalid-pattern handling executable and covered by tests:**
+`test_rfc0044_invalid_pattern_rejection()` was added to `tests/cpp/test_swar.cpp`.
+It verifies: `from_packed` rejects the `10` bit pattern in trit 0 and trit 1;
+rejects non-zero tail padding for a 3-trit vector; accepts valid bytes and
+round-trips correctly; `to_trits()` only produces `{-1, 0, +1}`.
+
+**AC5 — VM helpers depend on stable surface:**
+`vm/tensor_helpers.cpp` now uses `using t81::ComputeTritVector;` (stable alias).
+`vm/jit/jit_compiler.cpp` now includes `t81/packed_trit_vector.hpp` explicitly
+and uses `t81::ComputeTritVector` throughout.
+
 ## References
 
 - `spec/rfcs/RFC-0040-swar-formalization.md`
 - `spec/rfcs/RFC-0041-simd-formalization.md`
+- `spec/rfcs/RFC-0049-canonical-ternary-arithmetic-semantics.md`
+- `include/t81/packed_trit_vector.hpp`
 - `include/t81/experimental/packed_trit_vector.hpp`
 - `include/t81/swar/swar.hpp`
 - `include/t81/simd/simd.hpp`
-- `core/vm/tensor_helpers.cpp`
+- `vm/tensor_helpers.cpp`
+- `vm/jit/jit_compiler.cpp`
+- `tests/cpp/test_swar.cpp`

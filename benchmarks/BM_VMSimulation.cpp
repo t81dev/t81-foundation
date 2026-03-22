@@ -1,9 +1,10 @@
 #include <benchmark/benchmark.h>
 #include <vector>
 #include <random>
-#include "t81/experimental/packed_trit_vector.hpp"
+#include "t81/packed_trit_vector.hpp"
 
-using namespace t81::experimental;
+using t81::ComputeTritVector;
+using t81::PackedTritVector;
 
 enum Opcode {
   OP_HALT = 0,

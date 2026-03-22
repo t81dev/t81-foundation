@@ -1,5 +1,6 @@
 #include "t81/tensor/llama.hpp"
 #include "t81/tensor/matmul.hpp"
+#include "t81/packed_trit_vector.hpp"
 #include "t81/swar/swar.hpp"
 #include "t81/jit/jit.hpp"
 #include "t81/tracing/canonhash.hpp"
@@ -11,7 +12,7 @@ namespace t81::vm {
 
 namespace {
 
-std::optional<t81::experimental::ComputeTritVector> encode_exact_trit_tensor_for_jit(
+std::optional<t81::ComputeTritVector> encode_exact_trit_tensor_for_jit(
     const t81::T729DynamicTensor& tensor) {
   if (tensor.numeric_class() != t81::TensorNumericClass::ExactTrit) {
     return std::nullopt;
@@ -32,7 +33,7 @@ std::optional<t81::experimental::ComputeTritVector> encode_exact_trit_tensor_for
     }
   }
 
-  auto encoded = t81::experimental::ComputeTritVector::from_trits(trits);
+  auto encoded = t81::ComputeTritVector::from_trits(trits);
   if (encoded.is_err()) {
     return std::nullopt;
   }
@@ -40,7 +41,7 @@ std::optional<t81::experimental::ComputeTritVector> encode_exact_trit_tensor_for
 }
 
 std::optional<t81::T729DynamicTensor> decode_exact_trit_tensor_for_jit(
-    const t81::experimental::ComputeTritVector& vector, const std::vector<int>& shape) {
+    const t81::ComputeTritVector& vector, const std::vector<int>& shape) {
   auto trits = vector.to_trits();
   if (trits.is_err()) {
     return std::nullopt;

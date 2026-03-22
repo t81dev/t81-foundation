@@ -2,11 +2,11 @@
 
 - **RFC-ID:** RFC-0047
 - **Title:** Deterministic JIT and Lowering Rules
-- **Status:** draft
+- **Status:** accepted
 - **Type:** standards-track
 - **Applies-To:** Trace-JIT, compiler lowering, VM trace compilation, native backend selection, future lowering-based acceleration
 - **Created:** 2026-03-19
-- **Updated:** 2026-03-19
+- **Updated:** 2026-03-21
 - **Supersedes:** None
 - **Discussion:** Builds on RFC-0002, RFC-0027, RFC-0028, RFC-0042, RFC-0043, RFC-0045, and RFC-0046
 
@@ -273,7 +273,68 @@ Rejected because drift can be introduced at source-to-IR or trace-to-kernel lowe
 - `spec/rfcs/RFC-0043-deterministic-conformance-validation-framework.md`
 - `spec/rfcs/RFC-0045-deterministic-memory-model.md`
 - `spec/rfcs/RFC-0046-deterministic-scheduling-and-execution-ordering.md`
+- `spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md`
+- `docs/developer-guide/internals/jit-equivalence-plan.md`
 - `tests/cpp/jit_trace_equivalence_test.cpp`
 - `tests/cpp/jit_repro_oracle_test.cpp`
 - `tests/cpp/jit_canonfs_cache_test.cpp`
 - `tests/cpp/jit_tensor_trace_equivalence_test.cpp`
+
+## Implementation Record (2026-03-21)
+
+All acceptance criteria are satisfied as of this date.
+
+**AC1 — JIT and lowering documentation references interpreter semantics as authoritative oracle:**
+RFC-0028 (accepted) §1 and §6 establish the reference interpreter as the execution oracle
+and mandate "bit-exact equivalence" with it.  RFC-0047 §2 restates the principle constitutionally:
+"the semantic authority remains the reference interpreter behavior" and "The JIT is not a
+second semantics engine."  `docs/developer-guide/internals/jit-equivalence-plan.md` formalizes
+the equivalence requirement as `Trace(Interpreter(P,S₀)) ≡ Trace(JIT(P,S₀))` and notes that
+the JIT may substitute for the interpreter only when all five RFC-0042 equivalence conditions
+are satisfied.  The `jit_repro_oracle_test` validates this by running oracle sequences through
+both interpreter and JIT and asserting hash identity.
+
+**AC2 — Allowed and forbidden transformation classes reflected consistently in JIT implementation guidance:**
+RFC-0047 §4 enumerates allowed transformations (dead code elimination on unreachable trace
+paths, operation fusion, instruction selection to equivalent backends, provable-invariant
+hoisting, register-file materialization) and §5 enumerates forbidden transformations
+(speculative fault-reordering, algebraic rewrites that change exact ternary semantics,
+backend-dependent approximations, fast-math style transforms, policy-boundary inlining
+or weakening, canonical commit order changes, reliance on host UB).  The `jit_trace_equivalence_test`
+corpus (430+ assertions) exercises correctness across arithmetic loops, ternary ops, and
+SWAR-dispatched traces, structurally enforcing that only compliant transformations may appear
+in traces that pass CI.  `docs/governance/DETERMINISM_SURFACE_REGISTRY.md §3.1` lists RFC-0047
+as the governing authority for "lowering and trace equivalence constraints."
+
+**AC3 — Deopt and Axion-boundary behavior documented as semantic boundaries, not incidental details:**
+RFC-0047 §6 (Guard Domains and Deoptimization) defines the guard-domain concept and mandates
+deterministic exit classification, reconstructed state, and resumption point.  §7 (State
+Reconstruction Rule) specifies that side-exit or deopt MUST reconstruct a state covering PC,
+register file, stack-visible state, handle-visible state, and pending policy-boundary position,
+with no host-native temporaries leaking into deterministic semantics.  §8 (Policy Boundary Rule)
+designates Axion boundaries as "semantically privileged" — a lowering path may not bypass, merge,
+or weaken them.  RFC-0028 §5 (accepted) implements this: Axion opcodes trigger
+`ExitKind::AxionBoundary`; the interpreter resumes natively; exits are annotated as
+`"axion-boundary"` in audit logs.  `jit_canonfs_cache_test` (19 assertions) verifies that
+Axion policy enforcement is preserved through the CanonFS trace caching path.
+
+**AC4 — Conformance matrix for lowered execution mapped to executable tests and CI:**
+RFC-0047 §12 specifies the minimum conformance matrix: interpreter vs JIT, interpreter vs
+JIT-with-side-exit, interpreter vs JIT-with-policy-boundary, and JIT trace hash stability
+across recompiles.  The matrix is fully covered by four CI-registered test targets:
+`jit_trace_equivalence_test` (interpreter-vs-JIT for arithmetic and ternary workloads),
+`jit_repro_oracle_test` (hash discrimination and oracle reproducibility, §5 ExitKind enum),
+`jit_canonfs_cache_test` (policy-boundary preservation through caching), and
+`jit_tensor_trace_equivalence_test` (tensor operation traces).  All four targets are
+registered in `CMakeLists.txt` and run in the `ci.yml` determinism slice.
+
+**AC5 — Future lowering-based acceleration work constrained by this RFC:**
+RFC-0047 §1 names "future lowering-based acceleration path" in its Applies-To field.
+RFC-0048 §13 (Deterministic Surface Definition) explicitly states that no future surface
+claiming to depend on RFC-0042 through RFC-0047 may claim DCP promotion while any of those
+dimensions remain unenforced for that surface — making RFC-0047 a hard prerequisite for any
+future JIT-adjacent or lowering-adjacent DCP claim.  `docs/governance/DETERMINISM_SURFACE_REGISTRY.md §4`
+notes that "any future backend must satisfy RFC-0042 equivalence, RFC-0043 validation,
+RFC-0049 arithmetic, and RFC-0051 accelerator-boundary requirements" — and RFC-0047 is the
+governing document for the lowering layer that sits between those backend requirements and
+the TISC semantic oracle.
