@@ -45,7 +45,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
             clang-18 lld-18 \
-            qemu-system-arm qemu-efi-aarch64 \
+            qemu-system-arm qemu-efi-aarch64 ipxe-qemu \
             mtools parted \
             ninja-build cmake \
             python3
