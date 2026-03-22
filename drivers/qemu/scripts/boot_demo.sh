@@ -107,8 +107,29 @@ echo ""
 
 # ── CanonFS block store image ─────────────────────────────────────────────────
 CANON_IMG="$BUILD_DIR/canon_store.img"
-info "Creating CanonFS raw block store (4 MiB, slot 1 @ 0x0A000200)…"
+info "Creating CanonFS raw block store (4 MiB, virtio-mmio slot 1 @ 0x0A000200)…"
 dd if=/dev/zero of="$CANON_IMG" bs=1M count=4 status=none
+
+# Write a valid CanonFS superblock at byte offset 0 (729-byte LBA 0 block).
+# Layout: magic "CST1" | entry_count uint32-LE | 680 B entries | overflow uint64-LE | 33 B pad.
+python3 - <<'PYEOF'
+import struct
+magic          = b'CST1'
+entry_count    = struct.pack('<I', 0)
+entries        = bytes(17 * 40)
+overflow_count = struct.pack('<Q', 0)
+padding        = bytes(33)
+superblock     = magic + entry_count + entries + overflow_count + padding
+assert len(superblock) == 729
+import os, sys
+img = os.environ.get('CANON_IMG', '')
+if not img:
+    print("CANON_IMG not set", file=sys.stderr); sys.exit(1)
+with open(img, 'r+b') as f:
+    f.write(superblock)
+print(f"CST1 superblock written to {img}")
+PYEOF
+
 ok "CanonFS store: $(du -sh "$CANON_IMG" | cut -f1)"
 echo ""
 
