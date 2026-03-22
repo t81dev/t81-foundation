@@ -64,7 +64,7 @@ Added `serialize_canonical()` method to `SymbolicGraph` and updated VM's `format
 ```
 
 ### **Phase 2: VM Format Value Integration**
-**File:** `/core/vm/vm.cpp`
+**File:** `/vm/vm.cpp`
 
 ```cpp
 case ValueTag::SymbolicGraphHandle: {

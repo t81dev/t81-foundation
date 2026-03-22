@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: `Stable` (bounded persistence/integrity surface)
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "CanonFS Driver" -> `src/canonfs/*`; "Canon types" -> `include/t81/canonfs/canon_types.hpp`; "Axion hook" -> `include/t81/canonfs/axion_hook.hpp`.
+> - Terminology mapping: "CanonFS Driver" -> `fs/*`; "Canon types" -> `include/t81/canonfs/canon_types.hpp`; "Axion hook" -> `include/t81/canonfs/axion_hook.hpp`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -23,7 +23,7 @@ Provide content-addressed object storage with deterministic write/read behavior,
 - Axion policy hook helpers  
   [`include/t81/canonfs/axion_hook.hpp`](../../../include/t81/canonfs/axion_hook.hpp), [`kernel/axion/canonfs_hook.cpp`](../../../kernel/axion/canonfs_hook.cpp)
 - Drivers: in-memory and persistent  
-  [`src/canonfs/in_memory_driver.cpp`](../../../src/canonfs/in_memory_driver.cpp), [`src/canonfs/persistent_driver.cpp`](../../../src/canonfs/persistent_driver.cpp)
+  [`fs/in_memory_driver.cpp`](../../../fs/in_memory_driver.cpp), [`fs/persistent_driver.cpp`](../../../fs/persistent_driver.cpp)
 
 ## Data Flow
 
@@ -70,7 +70,7 @@ Diagram source: [`../diagrams/canonfs-dataflow.mmd`](../diagrams/canonfs-dataflo
 - [`include/t81/canonfs/canon_driver.hpp`](../../../include/t81/canonfs/canon_driver.hpp)
 - [`include/t81/canonfs/canon_types.hpp`](../../../include/t81/canonfs/canon_types.hpp)
 - [`include/t81/canonfs/axion_hook.hpp`](../../../include/t81/canonfs/axion_hook.hpp)
-- [`src/canonfs/in_memory_driver.cpp`](../../../src/canonfs/in_memory_driver.cpp)
-- [`src/canonfs/persistent_driver.cpp`](../../../src/canonfs/persistent_driver.cpp)
+- [`fs/in_memory_driver.cpp`](../../../fs/in_memory_driver.cpp)
+- [`fs/persistent_driver.cpp`](../../../fs/persistent_driver.cpp)
 - [`kernel/axion/canonfs_hook.cpp`](../../../kernel/axion/canonfs_hook.cpp)
 - [`spec/supplemental/canonfs-spec.md`](../../../spec/supplemental/canonfs-spec.md)

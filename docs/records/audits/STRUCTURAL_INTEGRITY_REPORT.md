@@ -8,7 +8,7 @@ Scope: Phase 10 structural invariants enforcement
 - Script: `scripts/architecture/check_dependency_firewall.py`
 - Result: PASS (no unwaived violations)
 - Waivers: 1
-  - `CORE_DEPENDS_EXPERIMENTAL` at `core/vm/vm.cpp:24` for include `t81/experimental/cog/promotion.hpp`
+  - `CORE_DEPENDS_EXPERIMENTAL` at `vm/vm.cpp:24` for include `t81/experimental/cog/promotion.hpp`
   - Rationale tracked in `scripts/architecture/dependency_firewall_waivers.tsv`
 
 ## Public API Boundary Confirmation
@@ -20,7 +20,7 @@ Scope: Phase 10 structural invariants enforcement
 ## Experimental Containment Confirmation
 
 - Rule enforced: `core/**` must not include `experimental/**`.
-- Current state: one explicit waived include in VM (`core/vm/vm.cpp`), no additional violations.
+- Current state: one explicit waived include in VM (`vm/vm.cpp`), no additional violations.
 
 ## Legacy Path References Confirmation
 

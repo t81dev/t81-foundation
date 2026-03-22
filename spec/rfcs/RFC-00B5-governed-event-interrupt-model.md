@@ -278,6 +278,6 @@ Both acceptance criteria are met. Status advanced to `integrated`.
 ### Test coverage
 
 All interrupt-path tests are in
-`experimental/ternaryos/tests/hal_boot_test.cpp`:
+`userland/experimental/tests/hal_boot_test.cpp`:
 [AC-22a], [AC-22g], [AC-22i], [AC-22j], [AC-22v], [AC-22w], [AC-22x].
 3214/3214 assertions pass.

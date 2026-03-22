@@ -89,7 +89,7 @@ The following are **outside the Frozen Core** and carry **no DCP guarantees**:
 | Hanoi VM | `experimental/hanoi/` | Non-DCP | Experimental kernel surface |
 | Distributed Compute | `experimental/distributed/` | Non-DCP | Network-layer; non-deterministic by design |
 | Axion Governance Kernel | `kernel/axion/` | Governed non-DCP | Scope-bounded evidence exists, including CI-enforced experimental epoch scheduler/audit parity, but broader kernel/governance behavior is outside the current DCP boundary |
-| Axion OS | `experimental/ternaryos/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates; `axion-epoch-determinism` proves bounded pooled-vs-unbounded epoch parity only |
+| Axion OS | `userland/experimental/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates; `axion-epoch-determinism` proves bounded pooled-vs-unbounded epoch parity only |
 | T81Lang Frontend | `lang/frontend/` | Governed non-DCP | Compiler/toolchain determinism remains partial and fixture-bounded; language-spec stability does not imply DCP promotion |
 | T81Graph | `lang/frontend/` (graph surface) | Governed non-DCP | Useful implemented surface, but not a verified deterministic surface as a whole |
 | llama.cpp adapter | `third_party/llama.cpp`, `tooling/model/` | Governed non-DCP | AGI inference; practical reproducibility only |
@@ -106,7 +106,7 @@ The dependency firewall is enforced by structural integrity checks:
 - `include/t81/` must not include experimental headers.
 - `core/` must not link against `runtime/jit/`, `experimental/`, or `kernel/axion/` except
   through the explicit, audited VM policy hook.
-- No active dependency firewall waivers. Historical waiver at `core/vm/vm.cpp` was retired on 2026-03-05.
+- No active dependency firewall waivers. Historical waiver at `vm/vm.cpp` was retired on 2026-03-05.
 - CI enforcement: `scripts/ci/check_core_numeric_wrapper_thinness.py`
 - Status: **PASS** (as of 2026-02-28)
 

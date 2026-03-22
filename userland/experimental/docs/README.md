@@ -120,17 +120,17 @@ For now, internal paths, namespaces, CMake targets, and test names still use
 `ternaryos` while the external/project-facing name shifts to `Axion`.
 
 The RFC-00B9 user-environment and shell public surface is no longer centered
-only inside `experimental/ternaryos/`. The supported boundary now lives at:
+only inside `userland/experimental/`. The supported boundary now lives at:
 
 - `include/t81/axion/userenv/`
 - `include/t81/axion/shell/`
 - `src/axion/userenv/`
 - `src/axion/shell/`
 
-The matching headers under `experimental/ternaryos/userenv/` and
-`experimental/ternaryos/shell/` remain as compatibility shims while the
+The matching headers under `userland/experimental/userenv/` and
+`userland/experimental/shell/` remain as compatibility shims while the
 broader kernel, HAL, MMU, scheduler, IPC, device, and guest-artifact lanes
-stay in `experimental/ternaryos/`.
+stay in `userland/experimental/`.
 
 Naming rule for now:
 - `T81 Foundation` is the umbrella project/ecosystem
@@ -508,7 +508,7 @@ Local hosted proof as of the current branch:
   terminal-failed, and boot-critical auto-resolved address-space state. That
   closes the current internal boot-ready kernel slice. The next step is
   external boot-lane validation, tracked explicitly in:
-  - `experimental/ternaryos/docs/kernel_execution_plan.md`
+  - `userland/experimental/docs/kernel_execution_plan.md`
 - the RFC-00B5 interrupt summary-convergence slice is now complete too: the
   kernel can intake explicit interrupt events, deliver them deterministically
   through `axion_kernel_step(...)`, and expose queue state, per-source
@@ -777,6 +777,6 @@ If no local `x86_64` host is available, use the handoff runbook:
 
 ## Promotion Path
 
-Each layer graduates from `experimental/ternaryos/` to the mainline when its
+Each layer graduates from `userland/experimental/` to the mainline when its
 RFC acceptance criteria are met (see `PROGRESS.md` promotion checklist).
 Promoted sources move to `include/t81/`, `src/`, `runtime/` and become CI-gated.

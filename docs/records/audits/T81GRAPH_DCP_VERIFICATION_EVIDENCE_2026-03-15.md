@@ -54,7 +54,7 @@ let serial: T81String = std.collections.graph_canonical(g);
 **Result:** ✅ **ALL TESTS PASSING (6/6)**
 
 ### **3. VM Integration Verification ✅**
-**Location:** `core/vm/vm.cpp` - `format_value()` function
+**Location:** `vm/vm.cpp` - `format_value()` function
 ```cpp
 case ValueTag::SymbolicGraphHandle: {
   auto* graph = symbolic_graph_ptr(val_data);

@@ -4,7 +4,7 @@ Status: Active
 Last Verified (UTC): 2026-02-26
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "Interpreter" -> `core/vm/vm.cpp`; "Trace JIT" -> `runtime/jit/jit_compiler.cpp`; "Trace object" -> `include/t81/jit/jit.hpp`.
+> - Terminology mapping: "Interpreter" -> `vm/vm.cpp`; "Trace JIT" -> `runtime/jit/jit_compiler.cpp`; "Trace object" -> `include/t81/jit/jit.hpp`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -50,7 +50,7 @@ Diagram source: [`../diagrams/execution-model-flow.mmd`](../diagrams/execution-m
 
 ## Evidence
 
-- [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+- [`vm/vm.cpp`](../../../vm/vm.cpp)
 - [`include/t81/jit/jit.hpp`](../../../include/t81/jit/jit.hpp)
 - [`runtime/jit/jit_compiler.cpp`](../../../runtime/jit/jit_compiler.cpp)
 - [`runtime/jit/README.md`](../../../runtime/jit/README.md)

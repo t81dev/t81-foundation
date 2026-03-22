@@ -24,7 +24,7 @@ strings for audits without inspecting the implementation.
 Axion’s determinism guarantees depend on a complete, replayable trace of every
 memory segment transition and privileged guard evaluation. Prior to this RFC,
 only stack/heap allocations and enum guards were reported. The instrumentation
-implemented in `core/vm/vm.cpp` now exposes tensor slot allocations, meta slot
+implemented in `vm/vm.cpp` now exposes tensor slot allocations, meta slot
 advances, and guard verdicts (stack/heap/tensor segment addresses). Specifying
 the expected format ensures documentation, tooling, and Axion policies can rely
 on these strings even as the runtime evolves.

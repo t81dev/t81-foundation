@@ -11,7 +11,7 @@ Updated: 2026-03-15
 > here (QMATMUL, ATTN, EMBED, and related ops) was formally specified and
 > implemented under RFC-0026 (accepted).  ATTN, QMATMUL, EMBED, and WLOAD are
 > live in the TISC ISA (`include/t81/isa/ai_native_opcodes.hpp`) and dispatched
-> through the T81 VM (`core/vm/vm.cpp`).  Phase-1 conformance evidence is in
+> through the T81 VM (`vm/vm.cpp`).  Phase-1 conformance evidence is in
 > `docs/architecture/ai-opcode-phase1-conformance.md` (status: spec_conformant).
 
 ______________________________________________________________________

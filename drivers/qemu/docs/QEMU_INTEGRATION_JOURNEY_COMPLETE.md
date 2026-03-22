@@ -250,21 +250,21 @@ Automated Build → Comprehensive Verification → Alternative Methods → Platf
 ## 🚀 Delivered Components
 
 ### **Core Integration**
-- `experimental/ternaryos/hal/qemu_platform.cpp` - QEMU platform support
-- `experimental/ternaryos/hal/qemu_kernel_entry.cpp` - Kernel entry point
-- `experimental/ternaryos/hal/qemu_slice6_bare_kernel.c` - Bare-metal kernel
-- `experimental/ternaryos/hal/qemu_armv8_efi_stub.c` - EFI boot stub
+- `userland/experimental/hal/qemu_platform.cpp` - QEMU platform support
+- `userland/experimental/hal/qemu_kernel_entry.cpp` - Kernel entry point
+- `userland/experimental/hal/qemu_slice6_bare_kernel.c` - Bare-metal kernel
+- `userland/experimental/hal/qemu_armv8_efi_stub.c` - EFI boot stub
 
 ### **Build System**
 - `CMakeLists.txt` - Complete build integration
-- `experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh` - Artifact creation
+- `userland/experimental/scripts/build_qemu_slice6_artifact.sh` - Artifact creation
 - Multiple build targets for different components
 
 ### **Verification System**
-- `experimental/ternaryos/qemu_monitor_test.sh` - Monitor integration
-- `experimental/ternaryos/memory_analyzer.sh` - Memory analysis
-- `experimental/ternaryos/automated_verification.sh` - Test suite
-- `experimental/ternaryos/production_qemu_setup.sh` - Production setup
+- `userland/experimental/qemu_monitor_test.sh` - Monitor integration
+- `userland/experimental/memory_analyzer.sh` - Memory analysis
+- `userland/experimental/automated_verification.sh` - Test suite
+- `userland/experimental/production_qemu_setup.sh` - Production setup
 
 ### **Documentation**
 - `QEMU_INTEGRATION_ACHIEVEMENTS.md` - Complete achievement record

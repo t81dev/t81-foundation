@@ -9,7 +9,7 @@
 - **Updated:** 2026-03-19
 - **Supersedes:** None
 - **Superseded-By:** None
-- **Discussion:** Reconciles `spec/supplemental/canonfs-spec.md` with `include/t81/canonfs/canon_driver.hpp`, `include/t81/canonfs/canon_types.hpp`, `src/canonfs/persistent_driver.cpp`, and `src/canonfs/in_memory_driver.cpp`
+- **Discussion:** Reconciles `spec/supplemental/canonfs-spec.md` with `include/t81/canonfs/canon_driver.hpp`, `include/t81/canonfs/canon_types.hpp`, `fs/persistent_driver.cpp`, and `fs/in_memory_driver.cpp`
 
 ---
 
@@ -68,8 +68,8 @@ Until a migration is explicitly implemented, the current CanonFS baseline MUST r
 
 - [canon_driver.hpp](/include/t81/canonfs/canon_driver.hpp)
 - [canon_types.hpp](/include/t81/canonfs/canon_types.hpp)
-- [persistent_driver.cpp](/src/canonfs/persistent_driver.cpp)
-- [in_memory_driver.cpp](/src/canonfs/in_memory_driver.cpp)
+- [persistent_driver.cpp](/fs/persistent_driver.cpp)
+- [in_memory_driver.cpp](/fs/in_memory_driver.cpp)
 
 That means the release baseline must explicitly choose one of these paths:
 

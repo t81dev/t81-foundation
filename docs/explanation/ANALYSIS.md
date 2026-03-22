@@ -27,7 +27,7 @@ ______________________________________________________________________
 - **Analysis:**
   - **Instruction Set:** **Complete.** The TISC opcodes are defined and executed by the interpreter, including family-specific opcodes for Axion kernel interaction and extended memory primitives. Supports 81 registers (R0-R80) including the Axion System Window.
   - **Binary Encoding:** **Complete.** The `BinaryEmitter` correctly encodes the TISC IR into the specified flat binary format. Uses the canonical Base-81 alphabet for symbolic views.
-  - **VM Execution Loop:** **Complete.** The interpreter (`core/vm/vm.cpp`) wires instruction execution through `eval_axion_call`, enabling pre-instruction policy enforcement and logging.
+  - **VM Execution Loop:** **Complete.** The interpreter (`vm/vm.cpp`) wires instruction execution through `eval_axion_call`, enabling pre-instruction policy enforcement and logging.
   - **Memory Model:** **Complete.** The runtime enforces a deterministic memory model with strict segment containment (CODE, STACK, HEAP, TENSOR, META). All segment operations and faults log canonical Axion trace strings.
   - **Fault Handling:** Faults like division-by-zero or Axion-denied instructions map to the spec's specific `Trap` taxonomy and emit the required `bounds fault` or `stack fault` trace reasons.
 

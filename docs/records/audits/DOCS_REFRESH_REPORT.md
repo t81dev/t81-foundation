@@ -22,7 +22,7 @@ This report documents the stabilization of the T81 epistemic boundary. The goal 
 
 **Status:** Beta (Verified)
 **Evidence:**
-- `src/canonfs/persistent_driver.cpp` implements `axion_allow` checks for read/write.
+- `fs/persistent_driver.cpp` implements `axion_allow` checks for read/write.
 - `vm.cpp` enforces `TLOADHASH` against `allowed-tensor-hashes` in the active policy.
 
 ## 4. JIT Stability Assessment

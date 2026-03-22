@@ -17,10 +17,10 @@ def main() -> int:
     errors: list[str] = []
 
     opcodes_h = (repo / "include/t81/isa/opcodes.hpp").read_text(encoding="utf-8")
-    vm_cpp = (repo / "core/vm/vm.cpp").read_text(encoding="utf-8")
-    tensor_helpers = (repo / "core/vm/tensor_helpers.cpp").read_text(encoding="utf-8")
+    vm_cpp = (repo / "vm/vm.cpp").read_text(encoding="utf-8")
+    tensor_helpers = (repo / "vm/tensor_helpers.cpp").read_text(encoding="utf-8")
     axion_reasons = (repo / "include/t81/axion/reasons.hpp").read_text(encoding="utf-8")
-    policy_trace_bridge = (repo / "core/vm/policy_trace_bridge.cpp").read_text(encoding="utf-8")
+    policy_trace_bridge = (repo / "vm/policy_trace_bridge.cpp").read_text(encoding="utf-8")
     tensor_native = (repo / "include/t81/tensor/native.hpp").read_text(encoding="utf-8")
     cmake = (repo / "CMakeLists.txt").read_text(encoding="utf-8")
     ci = (repo / ".github/workflows/ci.yml").read_text(encoding="utf-8")

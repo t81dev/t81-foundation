@@ -111,7 +111,7 @@ T81 integra un conjunto de "Principios Constitucionales" inmutables ($\Theta_1 \
 | Determinismo Estricto | `spec/determinism-profile.md` | `src/vm/vm.cpp` | `tests/cpp/test_property_invariants.cpp` |
 | Lógica Ternaria | `spec/t81-data-types.md` | `include/t81/ternary.hpp` | `tests/cpp/ternary_arith_test.cpp` |
 | Auditabilidad | `spec/axion-kernel.md` | `include/t81/axion/api.hpp` | `tests/cpp/test_ethics.cpp` |
-| Almacenamiento Canónico | `spec/supplemental/canonfs-spec.md` | `src/canonfs/` | `tests/cpp/canonfs_driver_test.cpp` |
+| Almacenamiento Canónico | `spec/supplemental/canonfs-spec.md` | `fs/` | `tests/cpp/canonfs_driver_test.cpp` |
 
 ---
 **Canonical Source**: /book (English)

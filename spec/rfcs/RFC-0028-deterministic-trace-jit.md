@@ -54,7 +54,7 @@ canonfs/jit/
 ### 5. Safe Fallback Mechanism (Axion Policy Interruption)
 Axion policy boundaries (e.g., `TLOADHASH` bounding, AI model validation) are complex and non-trivial to safely inline into JIT machine code. The JIT must treat Axion boundaries as trace-terminating events using On-Stack Replacement (OSR).
 *   **Synchronous State Materialization (Deoptimization):** When compiling a trace that encounters an Axion-gated opcode (e.g., `AXREAD`, `AXVERIFY`), the JIT compiler emits a "Side-Exit Stub" instead of native instructions for that policy check.
-*   **Bailout Routine:** If a trace hits a dynamic constraint or policy check mid-execution, the stub executes an OSR bailout. It deterministically reconstructs the VM interpreter state (`InstructionPointer`, registers, stack pointer) and yields control back to the `core/vm/vm.cpp` main dispatch loop.
+*   **Bailout Routine:** If a trace hits a dynamic constraint or policy check mid-execution, the stub executes an OSR bailout. It deterministically reconstructs the VM interpreter state (`InstructionPointer`, registers, stack pointer) and yields control back to the `vm/vm.cpp` main dispatch loop.
 *   **Verdict Enforcement:** The reference interpreter subsequently natively evaluates the Axion policy via `kernel/axion/policy_engine.cpp`. If `Allow`, execution continues and may re-enter a new JIT trace. If `Warn`, `Deny`, or `Defer`, the standard deterministic fault pipeline is invoked.
 
 ### 6. Deterministic Runtime Oracle

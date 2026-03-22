@@ -1,11 +1,11 @@
 # VM Monolith Decomposition Plan
 
 Date: 2026-02-26  
-Scope: `core/vm/vm.cpp`  
+Scope: `vm/vm.cpp`
 Status: Completed (Phase A+B+C+D+E+F complete)
 
 ## Objective
-Reduce regression blast radius and improve assurance depth by decomposing `core/vm/vm.cpp` into testable modules while preserving byte-for-byte runtime behavior on DCP surfaces.
+Reduce regression blast radius and improve assurance depth by decomposing `vm/vm.cpp` into testable modules while preserving byte-for-byte runtime behavior on DCP surfaces.
 
 ## Constraints
 - No opcode semantic changes during extraction phases.
@@ -15,7 +15,7 @@ Reduce regression blast radius and improve assurance depth by decomposing `core/
 - Pre-dispatch policy denies must remain observable in Axion logs (no silent deny paths).
 
 ## Target Decomposition (Current Baseline)
-1. `core/vm/vm.cpp`  
+1. `vm/vm.cpp`
 Purpose: dispatch integration, trap routing, and opcode-family orchestration.
 2. `core/vm/value_ops.cpp`  
 Purpose: scalar arithmetic helpers.
@@ -71,14 +71,14 @@ Mitigation: keep per-instruction policy hook call order unchanged and assert via
 Mitigation: benchmark after each major phase and keep hot helpers inline where needed.
 
 ## Exit Criteria
-- `core/vm/vm.cpp` reduced to integration layer with materially lower cyclomatic concentration.
+- `vm/vm.cpp` reduced to integration layer with materially lower cyclomatic concentration.
 - No regressions in determinism and governance gate suites.
 - Updated architecture docs reflect new module boundaries with evidence links.
 - Pre-dispatch deny-path observability remains locked by explicit VM tests.
 - Tensor shape-fault behavior remains locked by explicit VM trap-conformance tests.
 
 ## Exit Evidence
-- `core/vm/vm.cpp` reduced from 5294 to 5021 LOC in this decomposition cycle; high-risk helper clusters moved to dedicated modules.
+- `vm/vm.cpp` reduced from 5294 to 5021 LOC in this decomposition cycle; high-risk helper clusters moved to dedicated modules.
 - Determinism and governance gates passed on post-Phase-F baseline:
   - `scripts/ci/run_determinism_slice.sh build`
   - `python3 scripts/ci/check_tisc_freeze_integrity.py`

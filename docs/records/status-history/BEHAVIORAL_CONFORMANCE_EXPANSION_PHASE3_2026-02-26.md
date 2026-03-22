@@ -30,7 +30,7 @@ Completed items:
 6. Continued VM extraction on trace/log boundaries:
    - `core/vm/internal/policy_trace_bridge.hpp`
    - `core/vm/policy_trace_bridge.cpp`
-   - `core/vm/vm.cpp`
+   - `vm/vm.cpp`
    - Memory-segment and bounds-fault logging now route through bridge helpers.
 7. Expanded `TLOADHASH` deterministic classification matrix:
    - `tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp`
@@ -46,11 +46,11 @@ Completed items:
    - Added clause-ordering equivalence checks for allow and deny policy sets.
    - Added deterministic Axion-event signature checks to detect order-dependent drift.
 10. Reduced VM dispatch concentration for Axion-report/check opcode family:
-   - `core/vm/vm.cpp`
+   - `vm/vm.cpp`
    - Extracted `AxCheck`/`AxReport`/blocked-privileged-Axion handling into dedicated dispatch lambdas.
    - Preserved fail-closed trap and event semantics while reducing switch-body control density.
 11. Reduced VM dispatch concentration for blocked-neural and bitwise opcode families:
-   - `core/vm/vm.cpp`
+   - `vm/vm.cpp`
    - Extracted `TNeuralFwd/TNeuralBwd` blocked-op handling and `BitAnd/BitOr/BitXor/BitNot/BitShl/BitShr/BitUShr` execution into dedicated dispatch lambdas.
    - Preserved decode-fault guards, fail-closed neural security traps, and bitwise result/tag/flag semantics.
 
@@ -74,7 +74,7 @@ Status: Not yet started.
 Planned work:
 
 1. Continue VM integration extraction with additional opcode-family dispatch
-   splitting to reduce `core/vm/vm.cpp` control concentration.
+   splitting to reduce `vm/vm.cpp` control concentration.
 2. Expand workload-level determinism/conformance cases toward longer multi-op
    mixes with bounded fault-injection checkpoints.
 3. Expand Axion conformance matrices from clause-ordering checks into

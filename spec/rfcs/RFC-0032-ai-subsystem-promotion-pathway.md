@@ -161,7 +161,7 @@ Disposition KEEP EXPERIMENTAL does not prevent future re-audit if the component 
 - The model manager MUST validate model artifact hashes against the `allowed-tensor-hashes` list in the active Axion policy. An unverified or policy-denied hash MUST result in a `SecurityFault (POLICY_VIOLATION)` — the model handle MUST NOT be materialized.
 - The model manager MUST emit the canonical Axion trace event `TLOADHASH success|failure hash=<hash> reason=<reason>` on every load attempt.
 - Model artifacts MUST be stored in and retrieved from CanonFS exclusively. Direct filesystem access to model weight files outside of CanonFS is prohibited on promoted code paths.
-- Promoted target: Axion subsystem (`kernel/axion/`) and CanonFS integration layer (`src/canonfs/`).
+- Promoted target: Axion subsystem (`kernel/axion/`) and CanonFS integration layer (`fs/`).
 
 ### 6.4 C-04 — `axion_hooks.cpp` (PROMOTE)
 
@@ -353,7 +353,7 @@ The following five phases are derived directly from the AI Promotion Audit Repor
 
 **Required actions:**
 1. Promote `IMPLEMENTATION_REPORT.md` to `docs/architecture/ai-opcode-phase1-conformance.md`.
-2. Integrate the AI-native inference opcodes (ATTN, QMATMUL, EMBED) into the core ISA (`core/isa/opcodes.hpp`, `core/isa/binary_emitter.cpp`) and VM dispatcher (`core/vm/vm.cpp`) in accordance with RFC-0026 §5.15.
+2. Integrate the AI-native inference opcodes (ATTN, QMATMUL, EMBED) into the core ISA (`core/isa/opcodes.hpp`, `core/isa/binary_emitter.cpp`) and VM dispatcher (`vm/vm.cpp`) in accordance with RFC-0026 §5.15.
 3. Add conformance programs per RFC-0027: `spec/conformance/ai/attn-determinism.t81`, `spec/conformance/ai/qmatmul-scale-order.t81`, `spec/conformance/ai/embed-bounds-check.t81`.
 
 **Phase 2 gate criteria:** All three conformance programs execute without fault and produce expected deterministic outputs on both reference platforms. ATTN and QMATMUL results are bit-exact across platforms.
@@ -453,7 +453,7 @@ Promoted components MUST be added to the appropriate CMake library target:
 | :--- | :--- | :--- |
 | C-01 (codec) | `core/math/quantization/` | `t81_core` |
 | C-02 (backend) | `core/vm/ai_backend/` | `t81_vm` |
-| C-03 (model mgr) | `kernel/axion/` + `src/canonfs/` | `t81_axion` |
+| C-03 (model mgr) | `kernel/axion/` + `fs/` | `t81_axion` |
 | C-04 (hooks) | `kernel/axion/ai_hooks.cpp` | `t81_axion` |
 | C-06 (evidence) | `tests/determinism/` | `t81_determinism_tests` |
 | C-07 (CLI) | `tools/cli/ai/` | `t81_tool_cli` |

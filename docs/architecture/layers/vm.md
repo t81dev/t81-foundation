@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: `Stable` interpreter, `Experimental` trace/JIT path
 
 > **Architecture File Style Guide**
-> - **Terminology mapping:** "Interpreter" -> `core/vm/vm.cpp` (`Interpreter` class); "VM state" -> `include/t81/vm/state.hpp`; "Trap" -> `include/t81/vm/traps.hpp`; "Axion check" -> `eval_axion_call(...)` in `core/vm/vm.cpp`.
+> - **Terminology mapping:** "Interpreter" -> `vm/vm.cpp` (`Interpreter` class); "VM state" -> `include/t81/vm/state.hpp`; "Trap" -> `include/t81/vm/traps.hpp`; "Axion check" -> `eval_axion_call(...)` in `vm/vm.cpp`.
 > - **Code/spec links:** use direct file links; avoid inferred behavior not present in code/spec.
 > - **Diagram conventions:** Mermaid only; decision diamonds are policy/trap points.
 > - **Maturity labels:** `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -28,7 +28,7 @@ Primary interface: [`include/t81/vm/vm.hpp`](../../../include/t81/vm/vm.hpp) (`I
 - Trap taxonomy (`DecodeFault`, `BoundsFault`, `SecurityFault`, etc.)  
   [`include/t81/vm/traps.hpp`](../../../include/t81/vm/traps.hpp)
 - Interpreter implementation and dispatch switch  
-  [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+  [`vm/vm.cpp`](../../../vm/vm.cpp)
 - Internal helper modules for memory/GC/policy-bridge/tensor/value operations  
   [`core/vm/internal/`](../../../core/vm/internal)
 
@@ -121,7 +121,7 @@ Diagram source: [`../diagrams/vm-dispatch-flow.mmd`](../diagrams/vm-dispatch-flo
 
 ## Evidence
 
-- [`core/vm/vm.cpp`](../../../core/vm/vm.cpp)
+- [`vm/vm.cpp`](../../../vm/vm.cpp)
 - [`include/t81/vm/vm.hpp`](../../../include/t81/vm/vm.hpp)
 - [`include/t81/vm/state.hpp`](../../../include/t81/vm/state.hpp)
 - [`include/t81/vm/traps.hpp`](../../../include/t81/vm/traps.hpp)

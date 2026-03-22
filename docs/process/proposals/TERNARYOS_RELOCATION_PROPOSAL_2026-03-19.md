@@ -6,7 +6,7 @@
 
 ## Problem Statement
 
-`experimental/ternaryos/` currently mixes several materially different surface
+`userland/experimental/` currently mixes several materially different surface
 classes in one tree:
 
 - hosted HAL and kernel-runtime implementation
@@ -24,7 +24,7 @@ This creates two problems:
    the user-environment slice as `Governed non-DCP`.
 
 This proposal defined what should and should not move out of
-`experimental/ternaryos/` at the current evidence level. The narrow
+`userland/experimental/` at the current evidence level. The narrow
 RFC-00B9 extraction has now been implemented as a stable boundary under
 `include/t81/axion/` and `src/axion/`; the remaining proposal content still
 applies to the broader kernel/guest lane.
@@ -47,8 +47,8 @@ applies to the broader kernel/guest lane.
 
 - [RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md](/docs/records/status-history/RFC_00B9_USER_ENV_EVIDENCE_2026-03-18.md)
 - [TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md](/docs/records/audits/TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md)
-- [kernel_execution_plan.md](/experimental/ternaryos/docs/kernel_execution_plan.md)
-- [virtualbox_x86_64_handoff.md](/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md)
+- [kernel_execution_plan.md](/userland/experimental/docs/kernel_execution_plan.md)
+- [virtualbox_x86_64_handoff.md](/userland/experimental/docs/virtualbox_x86_64_handoff.md)
 
 ### Local Verification Performed
 
@@ -90,23 +90,23 @@ Evidence:
 
 This slice is narrower and stronger than the rest of the tree:
 
-- `experimental/ternaryos/userenv/`
-- `experimental/ternaryos/shell/`
+- `userland/experimental/userenv/`
+- `userland/experimental/shell/`
 
 Judgment:
 
 The RFC-00B9 user environment was the only credible near-term move-out
-candidate inside `experimental/ternaryos/`, and that stable boundary
+candidate inside `userland/experimental/`, and that stable boundary
 extraction is now complete.
 
 ### 2. The Broader Kernel / Guest / Host Tooling Tree Is Not Ready To Move
 
 Evidence:
 
-- [kernel_execution_plan.md](/experimental/ternaryos/docs/kernel_execution_plan.md)
+- [kernel_execution_plan.md](/userland/experimental/docs/kernel_execution_plan.md)
   still frames the next major milestone as external `x86_64` VirtualBox host
   execution and evidence return.
-- [virtualbox_x86_64_handoff.md](/experimental/ternaryos/docs/virtualbox_x86_64_handoff.md)
+- [virtualbox_x86_64_handoff.md](/userland/experimental/docs/virtualbox_x86_64_handoff.md)
   is explicitly an external-host handoff runbook, not a closed in-repo
   implementation lane.
 - [EXTENSION_PROFILE.md](/docs/status/EXTENSION_PROFILE.md)
@@ -116,7 +116,7 @@ Evidence:
 
 Judgment:
 
-The full `experimental/ternaryos/` tree is not ready to move out wholesale.
+The full `userland/experimental/` tree is not ready to move out wholesale.
 The broader kernel/guest path still belongs to a governed experimental lane.
 
 ### 3. The Tree Is Structurally Mixed
@@ -139,7 +139,7 @@ Any relocation should be a narrow extraction, not a folder rename.
 
 ### 4. Local Documentation Still Has Status Drift
 
-[experimental/ternaryos/docs/README.md](/experimental/ternaryos/docs/README.md)
+[userland/experimental/docs/README.md](/userland/experimental/docs/README.md)
 currently says:
 
 - `Status: Experimental — non-DCP, not governance-gated.`
@@ -157,7 +157,7 @@ That wording should be corrected immediately even if no code moves yet.
 
 The passing test slice is substantial and materially better than a prototype.
 However, the scheduler suite still contains tautological checks in
-[scheduler_test.cpp](/experimental/ternaryos/tests/scheduler_test.cpp)
+[scheduler_test.cpp](/userland/experimental/tests/scheduler_test.cpp)
 that prove execution without strongly proving behavior:
 
 - `check(switched || !switched, ...)`
@@ -170,7 +170,7 @@ using them as promotion-quality evidence.
 
 ## Decision Summary
 
-### Do Not Move the Whole `experimental/ternaryos/` Tree
+### Do Not Move the Whole `userland/experimental/` Tree
 
 The broader Axion/TernaryOS kernel path is still a governed experimental lane.
 It is too mixed with guest-artifact packaging, external-host validation, and
@@ -180,8 +180,8 @@ ongoing kernel-runtime work to treat as a relocation-ready stable boundary.
 
 The extracted source slice was:
 
-- `experimental/ternaryos/userenv/`
-- `experimental/ternaryos/shell/`
+- `userland/experimental/userenv/`
+- `userland/experimental/shell/`
 
 Implemented stable destination:
 
@@ -191,7 +191,7 @@ Implemented stable destination:
 - `src/axion/shell/`
 
 The stable public headers and implementation entry points now live there, while
-the matching headers under `experimental/ternaryos/` remain compatibility
+the matching headers under `userland/experimental/` remain compatibility
 shims for existing internal consumers.
 
 ## Proposed Scope for a Narrow Extraction
@@ -249,7 +249,7 @@ lane be reconsidered for relocation.
 
 At current evidence, the right move was and remains:
 
-- **No** to moving all of `experimental/ternaryos/`
+- **No** to moving all of `userland/experimental/`
 - **Yes** to the completed narrow move of the RFC-00B9 user environment slice
 - **Yes** to immediately correcting status wording and strengthening weak tests
 

@@ -31,7 +31,7 @@ that is consistent with the current top-level specs and strict-profile split.
 
 | Surface | Current State | Why It Is Acceptable For Now | Key Paths |
 | :--- | :--- | :--- | :--- |
-| `QMATMUL` fallback lane | Fixed-point path exists for strict-core eligible inputs; non-fixed fallback now uses deterministic dequantization but still produces `HostFloat` tensors outside strict-core promotion rules | Acceptable outside strict mode; strict-core case is already covered | `include/t81/tensor/matmul.hpp`, `core/vm/vm.cpp:5096` |
+| `QMATMUL` fallback lane | Fixed-point path exists for strict-core eligible inputs; non-fixed fallback now uses deterministic dequantization but still produces `HostFloat` tensors outside strict-core promotion rules | Acceptable outside strict mode; strict-core case is already covered | `include/t81/tensor/matmul.hpp`, `vm/vm.cpp:5096` |
 
 ## Category B: Real RFC-0026 Closure Candidates
 
@@ -40,8 +40,8 @@ be reviewed before calling RFC-0026 operationally closed.
 
 | Surface | Current State | Why It Still Matters For RFC-0026 | Key Paths |
 | :--- | :--- | :--- | :--- |
-| Residual AI fallback inventory | The AI opcode family has both strict-core and host-float lanes, but there is no single status document describing where the boundary currently sits | Without that inventory, repo behavior can drift ahead of the written promotion/determinism story | This document plus `include/t81/tensor/llama.hpp`, `include/t81/tensor/matmul.hpp`, `core/vm/vm.cpp` |
-| `WLOAD` promotion boundary | `WLOAD` is functionally present and audited, but phase-1 behavior is still handle-to-handle materialization rather than true policy-gated CanonFS-backed loading | This is the main remaining gap between current implementation and the fuller promotion target described in follow-on AI execution docs | `include/t81/tensor/llama.hpp:447`, `core/vm/vm.cpp:5180`, `spec/tisc-spec.md` |
+| Residual AI fallback inventory | The AI opcode family has both strict-core and host-float lanes, but there is no single status document describing where the boundary currently sits | Without that inventory, repo behavior can drift ahead of the written promotion/determinism story | This document plus `include/t81/tensor/llama.hpp`, `include/t81/tensor/matmul.hpp`, `vm/vm.cpp` |
+| `WLOAD` promotion boundary | `WLOAD` is functionally present and audited, but phase-1 behavior is still handle-to-handle materialization rather than true policy-gated CanonFS-backed loading | This is the main remaining gap between current implementation and the fuller promotion target described in follow-on AI execution docs | `include/t81/tensor/llama.hpp:447`, `vm/vm.cpp:5180`, `spec/tisc-spec.md` |
 
 ## Category C: RFC-0030 Deterministic Math Dependencies
 

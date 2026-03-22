@@ -23,7 +23,7 @@ The kernel is already proving:
 
 The original structural issue was concentration of logic in:
 
-- `experimental/ternaryos/kernel/kernel_runtime.cpp`
+- `userland/experimental/kernel/kernel_runtime.cpp`
 
 That concentration has now been reduced materially. The kernel runtime has been
 split into:
@@ -205,8 +205,8 @@ Candidate responsibilities to extract:
 
 Likely file shape:
 
-- `experimental/ternaryos/kernel/kernel_views.hpp`
-- `experimental/ternaryos/kernel/kernel_views.cpp`
+- `userland/experimental/kernel/kernel_views.hpp`
+- `userland/experimental/kernel/kernel_views.cpp`
 
 Reason:
 
@@ -238,8 +238,8 @@ Candidate responsibilities:
 
 Likely file shape:
 
-- `experimental/ternaryos/kernel/kernel_faults.hpp`
-- `experimental/ternaryos/kernel/kernel_faults.cpp`
+- `userland/experimental/kernel/kernel_faults.hpp`
+- `userland/experimental/kernel/kernel_faults.cpp`
 
 Reason:
 
@@ -267,8 +267,8 @@ Candidate responsibilities:
 
 Likely file shape:
 
-- `experimental/ternaryos/kernel/kernel_pager.hpp`
-- `experimental/ternaryos/kernel/kernel_pager.cpp`
+- `userland/experimental/kernel/kernel_pager.hpp`
+- `userland/experimental/kernel/kernel_pager.cpp`
 
 Reason:
 
@@ -295,8 +295,8 @@ Candidate responsibilities:
 
 Likely file shape:
 
-- `experimental/ternaryos/kernel/kernel_services.hpp`
-- `experimental/ternaryos/kernel/kernel_services.cpp`
+- `userland/experimental/kernel/kernel_services.hpp`
+- `userland/experimental/kernel/kernel_services.cpp`
 
 Status:
 
@@ -318,8 +318,8 @@ Candidate responsibilities:
 
 Likely file shape:
 
-- `experimental/ternaryos/kernel/kernel_interrupts.hpp`
-- `experimental/ternaryos/kernel/kernel_interrupts.cpp`
+- `userland/experimental/kernel/kernel_interrupts.hpp`
+- `userland/experimental/kernel/kernel_interrupts.cpp`
 
 Status:
 
@@ -334,8 +334,8 @@ Objective:
 
 Implemented shape:
 
-- `experimental/ternaryos/kernel/kernel_lifecycle.cpp`
-- `experimental/ternaryos/kernel/kernel_runtime_utils.cpp`
+- `userland/experimental/kernel/kernel_lifecycle.cpp`
+- `userland/experimental/kernel/kernel_runtime_utils.cpp`
 
 Status:
 

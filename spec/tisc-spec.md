@@ -766,7 +766,7 @@ the purpose of bit-level manipulation; the result is stored as a canonical
 
 > *Freeze Exception addition — 2026-03-01. These opcodes are emitted by the
 > T81Lang compiler lowering table (§5 of [`t81lang-spec.md`](t81lang-spec.md#5-compilation-pipeline))
-> and implemented in `core/vm/vm.cpp`. They were omitted from previous spec
+> and implemented in `vm/vm.cpp`. They were omitted from previous spec
 > versions.*
 
 #### BITAND
@@ -827,7 +827,7 @@ Hardware floating-point is prohibited; all arithmetic uses the canonical
 
 > *Freeze Exception addition — 2026-03-07 (RFC-0026 AI-M1–M5). These opcodes
 > are emitted by AI inference workload compilation paths and implemented in
-> `core/vm/vm.cpp`. Opcode byte assignments: ATTN=0xBB, QMATMUL=0xBC,
+> `vm/vm.cpp`. Opcode byte assignments: ATTN=0xBB, QMATMUL=0xBC,
 > EMBED=0xBD, WLOAD=0xBE, GATHER=0xBF, SCATTER=0xC0.*
 
 #### Packed Operand Encoding
@@ -926,7 +926,7 @@ audit event **before** the callee begins executing.
 
 > *Freeze Exception addition — 2026-03-16 (RFC-0015). Opcode assigned
 > immediately after `GcSafepoint` in the enumeration.
-> Implemented in `lang/frontend/` (IRGen), `core/vm/vm.cpp`, and
+> Implemented in `lang/frontend/` (IRGen), `vm/vm.cpp`, and
 > `runtime/jit/jit_compiler.cpp` (Axion-boundary exit group).*
 
 #### AGENT_INVOKE
@@ -959,7 +959,7 @@ ______________________________________________________________________
 
 *Status: **accepted** — 2026-03-16. Full normative text below. Opcode bytes
 assigned in `spec/tisc/opcode-registry.md §2.19`. Implementation in
-`core/vm/vm.cpp`; math layer in `include/t81/tensor/ternary_native.hpp`.*
+`vm/vm.cpp`; math layer in `include/t81/tensor/ternary_native.hpp`.*
 
 All opcodes in this class operate on `T729DynamicTensor` handles. All require
 Tier 2+. All are subject to Axion pre-instruction shape and domain verification.
@@ -1004,7 +1004,7 @@ index out of range), `TierFault` (Tier < 2). All other faults follow §6.
 ### 5.17A SWAR Tensor Operations (RFC-0040)
 
 *Status: **draft implementation** — 2026-03-18. Opcode bytes assigned in
-`spec/tisc/opcode-registry.md §2.23`. Implementation in `core/vm/vm.cpp`;
+`spec/tisc/opcode-registry.md §2.23`. Implementation in `vm/vm.cpp`;
 stable SWAR API in `include/t81/swar/swar.hpp`.*
 
 These opcodes expose RFC-0040 SWAR kernels as explicit VM instructions over
@@ -1034,7 +1034,7 @@ Fault behavior:
 ### 5.18 Governed Foreign Function Interface (RFC-0036 + RFC-00B8)
 
 *Status: **accepted** — 2026-03-18 alignment refresh. Implementation exists in
-`core/vm/vm.cpp` (FFICall, FFIRegister, FFIPolicySet), `core/vm/ffi_dispatcher.cpp`,
+`vm/vm.cpp` (FFICall, FFIRegister, FFIPolicySet), `core/vm/ffi_dispatcher.cpp`,
 and the RFC-0036 frontend path, with VM evidence covering success, failure, audit-trail,
 quarantine, and real system-library calls. The runtime remains beta for promotion
 purposes while broader schemas, ecosystem bindings, and the sandbox-boundary decision
@@ -1068,7 +1068,7 @@ Faults: `FFINotInitialized`, `FFIPolicyDenied`, `FFITimeout`, `FFIMemoryExhauste
 
 *Status: **proposed** — 2026-03-16. Full normative text in
 `spec/rfcs/RFC-0038-lattice-crypto.md`. Math layer: `include/t81/tensor/lattice_crypto.hpp`.
-Implementation: `core/vm/vm.cpp`.*
+Implementation: `vm/vm.cpp`.*
 
 Negacyclic polynomial arithmetic over `{−1, 0, +1}` coefficients in `Z[x]/(x^n + 1)`.
 No integer multiplications required — only add/sub/trit-flip. T81BigInt-exact accumulators.

@@ -5,7 +5,7 @@ Last Verified (UTC): 2026-02-26
 Maturity: Mixed (`Frozen` core, `Experimental` periphery)
 
 > **Architecture File Style Guide**
-> - Terminology mapping: "TISC ISA" -> `core/isa/`; "VM Interpreter" -> `core/vm/vm.cpp`; "Axion Governance Engine" -> `kernel/axion/`; "CanonFS" -> `src/canonfs/` + `include/t81/canonfs/`; "Experimental tiers" -> `experimental/`.
+> - Terminology mapping: "TISC ISA" -> `core/isa/`; "VM Interpreter" -> `vm/vm.cpp`; "Axion Governance Engine" -> `kernel/axion/`; "CanonFS" -> `fs/` + `include/t81/canonfs/`; "Experimental tiers" -> `experimental/`.
 > - Link style: repo-relative markdown links to concrete files only.
 > - Diagram conventions: GitHub-renderable Mermaid only.
 > - Maturity labels: `Frozen`, `Stable`, `Experimental`, `Stubbed`.
@@ -41,7 +41,7 @@ Diagram source: [`diagrams/overview-layer-cake.mmd`](./diagrams/overview-layer-c
 | TISC ISA | `core/isa/` + VM decode/dispatch | [`spec/tisc-spec.md`](../../spec/tisc-spec.md) | Frozen | Opcode semantics/freeze governed. |
 | VM interpreter | `core/vm/` | [`spec/t81vm-spec.md`](../../spec/t81vm-spec.md) | Stable | DCP includes interpreter path, not JIT. |
 | Axion governance | `kernel/axion/` | [`spec/axion-kernel.md`](../../spec/axion-kernel.md) | Stable (bounded) | Policy verdicts integrated in VM step path. |
-| CanonFS | `src/canonfs/` + `include/t81/canonfs/` | [`spec/supplemental/canonfs-spec.md`](../../spec/supplemental/canonfs-spec.md) | Stable (bounded) | Integrity controls implemented; claims remain bounded. |
+| CanonFS | `fs/` + `include/t81/canonfs/` | [`spec/supplemental/canonfs-spec.md`](../../spec/supplemental/canonfs-spec.md) | Stable (bounded) | Integrity controls implemented; claims remain bounded. |
 | Experimental tiers/kernel concepts | `experimental/` | [`spec/cognitive-tiers.md`](../../spec/cognitive-tiers.md), [`spec/supplemental/hanoi-kernel-spec.md`](../../spec/supplemental/hanoi-kernel-spec.md) | Experimental / Stubbed | Not part of DCP guarantees. |
 
 ## Binary Host Execution Boundary
@@ -85,11 +85,11 @@ Diagram source: [`diagrams/governance-axion-sequence.mmd`](./diagrams/governance
 
 ## Evidence
 
-- [`core/vm/vm.cpp`](../../core/vm/vm.cpp)
+- [`vm/vm.cpp`](../../vm/vm.cpp)
 - [`include/t81/vm/vm.hpp`](../../include/t81/vm/vm.hpp)
 - [`include/t81/vm/state.hpp`](../../include/t81/vm/state.hpp)
 - [`kernel/axion/policy_engine.cpp`](../../kernel/axion/policy_engine.cpp)
-- [`src/canonfs/persistent_driver.cpp`](../../src/canonfs/persistent_driver.cpp)
+- [`fs/persistent_driver.cpp`](../../fs/persistent_driver.cpp)
 - [`docs/product/DETERMINISTIC_CORE_PROFILE.md`](../product/DETERMINISTIC_CORE_PROFILE.md)
 - [`docs/governance/DETERMINISM_SURFACE_REGISTRY.md`](../governance/DETERMINISM_SURFACE_REGISTRY.md)
 - [`docs/status/IMPLEMENTATION_MATRIX.md`](../status/IMPLEMENTATION_MATRIX.md)

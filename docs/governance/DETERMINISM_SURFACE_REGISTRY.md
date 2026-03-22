@@ -115,7 +115,7 @@ Explicitly list areas that are:
 | **TISC Execution** | `tests/cpp/vm_determinism_property_test.cpp` | `ci.yml` | N/A |
 | **VM Memory / State Determinism** | `tests/cpp/vm_tensor_get_set_conformance_test.cpp`<br>`tests/cpp/vm_state_transition_conformance_matrix_test.cpp` | `ci.yml` (`determinism-slice`) | N/A |
 | **Tritwise Ops** | `tests/cpp/test_tritwise_backend_equivalence.cpp` | `ci.yml` | N/A |
-| **Axion Epoch Runtime (scheduler + audit parity)** | `experimental/ternaryos/tests/epoch_submission_test.cpp`<br>`experimental/ternaryos/tests/epoch_audit_test.cpp` | `ci.yml` (`axion-epoch-determinism`) | N/A |
+| **Axion Epoch Runtime (scheduler + audit parity)** | `userland/experimental/tests/epoch_submission_test.cpp`<br>`userland/experimental/tests/epoch_audit_test.cpp` | `ci.yml` (`axion-epoch-determinism`) | N/A |
 | **Compiler Repro** | `tests/fixtures/t81lang_determinism/*.t81` | `repro-ledger.yml` | `scripts/ci/t81lang_repro_gate.py` |
 | **Quantization** | N/A | `repro-ledger.yml` | `scripts/ci/t3k_repro_gate.py` |
 

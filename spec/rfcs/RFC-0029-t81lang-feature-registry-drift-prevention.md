@@ -36,7 +36,7 @@ A strict Lexical/AST gating mechanism must be implemented, governed by C++23 com
 The Semantic Analyzer must enforce profile awareness to guarantee graceful degradation and prevent undefined behavior.
 *   **Profile-Aware Diagnostics:** If the frontend encounters a legacy code construct that attempts to utilize an experimental feature (e.g., `T81Agent`) while in standard DCP mode, the `SemanticAnalyzer` must safely trap the unresolvable type symbol.
 *   **Deterministic Fault Emission:** The Semantic Analyzer must emit a specific diagnostic error: `CompilerError::FeatureNotAvailableInProfile` during analysis, halting compilation deterministically rather than falling back to polyfills.
-*   **VM Safeguard:** The `core/vm/vm.cpp` main dispatch loop must natively trap any experimental instructions that bypass frontend checks, immediately emitting a `DecodeFault` (as defined in `spec/t81lang-spec.md`) and halting execution.
+*   **VM Safeguard:** The `vm/vm.cpp` main dispatch loop must natively trap any experimental instructions that bypass frontend checks, immediately emitting a `DecodeFault` (as defined in `spec/t81lang-spec.md`) and halting execution.
 
 ### 4. Spec-as-Executable Tests and IR Normalization Gate
 *   **Spec-as-Executable:** Introduce automated checks via `tests/spec/t81lang_feature_matrix_test.cpp` to continuously confirm that the active implementation aligns exactly with the Feature Registry.

@@ -9,7 +9,7 @@ Scope: VM invariants, Axion policy invariants, CanonFS integrity matrix, workloa
 | Objective | Status | Evidence |
 |---|---|---|
 | 1. Behavioral conformance expansion | Completed | `tests/cpp/vm_state_transition_conformance_matrix_test.cpp`, `tests/cpp/axion_policy_allow_deny_determinism_test.cpp` |
-| 2. VM integration-layer decomposition follow-up | Completed (sprint slice) | `core/vm/internal/memory_segments.hpp`, `core/vm/memory_segments.cpp`, `core/vm/vm.cpp` (`segment_for_address` extraction) |
+| 2. VM integration-layer decomposition follow-up | Completed (sprint slice) | `core/vm/internal/memory_segments.hpp`, `core/vm/memory_segments.cpp`, `vm/vm.cpp` (`segment_for_address` extraction) |
 | 3. CanonFS integrity policy closure depth | Completed (expanded matrix) | `tests/cpp/canonfs_integrity_matrix_test.cpp` (truncate/append/default-read-verify corruption cases) |
 | 4. Determinism workload breadth expansion | Completed | `tests/cpp/vm_workload_determinism_tiers_test.cpp` (policy-heavy + tensor-access tiers; stronger Axion signature hashing) |
 | 5. Documentation parity depth | Completed (governance gate upgrade) | `scripts/governance/check_translation_semantic_alignment.py` (required section-heading checks per translation README) |

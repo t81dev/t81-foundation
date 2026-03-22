@@ -27,7 +27,7 @@ This audit was based on:
 
 - direct review of the kernel, HAL, MMU, scheduler, IPC, device, shell, and
   test sources under `experimental/ternaryos`
-- review of local status documents in `experimental/ternaryos/docs`
+- review of local status documents in `userland/experimental/docs`
 - local verification via:
 
 ```sh
@@ -48,13 +48,13 @@ The boot chain is simple and explicit:
 
 Key implementation anchors:
 
-- HAL entry: [hal_main.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hal_main.cpp#L30)
+- HAL entry: [hal_main.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/hal/hal_main.cpp#L30)
 - Kernel bootstrap/runtime coordinator:
-  [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp)
+  [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_runtime.cpp)
 - Kernel lifecycle/bootstrap:
-  [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_lifecycle.cpp)
+  [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_lifecycle.cpp)
 - Kernel entry surface:
-  [kernel_main.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_main.hpp)
+  [kernel_main.hpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_main.hpp)
 
 Architecturally, the kernel is still a centralized runtime kernel with helper
 subsystems, not a strongly layered implementation. But the implementation is
@@ -65,7 +65,7 @@ have distinct implementation seams.
 ## Kernel Structure
 
 `KernelRuntimeState` in
-[kernel_runtime_state.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime_state.hpp)
+[kernel_runtime_state.hpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_runtime_state.hpp)
 owns:
 
 - allocator
@@ -102,8 +102,8 @@ Assessment:
 
 References:
 
-- [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_lifecycle.cpp)
-- [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp)
+- [kernel_lifecycle.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_lifecycle.cpp)
+- [kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_runtime.cpp)
 
 What is proven:
 
@@ -129,7 +129,7 @@ Assessment:
 ## Runtime Execution Flow
 
 The runtime loop in
-[kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime.cpp)
+[kernel_runtime.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_runtime.cpp)
 uses a fixed priority order:
 
 1. pending faults
@@ -154,9 +154,9 @@ Assessment:
 
 The memory subsystem has three clear pieces:
 
-- TVA model: [tva.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/mmu/tva.hpp)
-- physical allocator: [ternary_page_alloc.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/mmu/ternary_page_alloc.cpp)
-- radix page table: [page_table.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/mmu/page_table.cpp#L115)
+- TVA model: [tva.hpp](/Users/t81dev/Code/t81-foundation/userland/experimental/mmu/tva.hpp)
+- physical allocator: [ternary_page_alloc.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/mmu/ternary_page_alloc.cpp)
+- radix page table: [page_table.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/mmu/page_table.cpp#L115)
 
 ### Strengths
 
@@ -176,7 +176,7 @@ The memory subsystem has three clear pieces:
 ### Pager Status
 
 The pager logic in
-[kernel_pager.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_pager.cpp)
+[kernel_pager.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_pager.cpp)
 is sophisticated as a deterministic fault-work queue. It includes:
 
 - fault coalescing
@@ -205,9 +205,9 @@ The scheduler is compact and reasonably clean.
 
 References:
 
-- run queue: [run_queue.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/sched/run_queue.cpp)
-- scheduler: [scheduler.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/sched/scheduler.cpp#L18)
-- context switching: [context_switch.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/sched/context_switch.cpp)
+- run queue: [run_queue.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/sched/run_queue.cpp)
+- scheduler: [scheduler.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/sched/scheduler.cpp#L18)
+- context switching: [context_switch.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/sched/context_switch.cpp)
 
 What exists:
 
@@ -236,7 +236,7 @@ small scalar/tag metadata.
 
 Reference:
 
-- [canon_message.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/ipc/canon_message.cpp#L15)
+- [canon_message.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/ipc/canon_message.cpp#L15)
 
 This matches the project’s determinism and content-addressing direction well.
 It is clear and deliberately narrow.
@@ -265,11 +265,11 @@ This is one of the strongest subsystems in the kernel.
 References:
 
 - fault delivery/quarantine/group blocking:
-  [kernel_faults.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_faults.cpp)
+  [kernel_faults.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_faults.cpp)
 - thread/process-group acknowledgement:
-  [kernel_faults.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_faults.cpp)
+  [kernel_faults.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_faults.cpp)
 - supervisor acknowledgement:
-  [kernel_actions.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_actions.cpp)
+  [kernel_actions.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_actions.cpp)
 
 Behavior proven in code:
 
@@ -295,11 +295,11 @@ Assessment:
 The interrupt layer currently consists of:
 
 - HAL-side registry and dispatch:
-  [interrupt_table.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/interrupt_table.cpp#L51)
+  [interrupt_table.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/hal/interrupt_table.cpp#L51)
 - hosted synthetic boot use:
-  [hosted_stub.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/hosted_stub.cpp)
+  [hosted_stub.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/hal/hosted_stub.cpp)
 - kernel interrupt recording/delivery:
-  [kernel_interrupts.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_interrupts.cpp)
+  [kernel_interrupts.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_interrupts.cpp)
 
 What exists:
 
@@ -332,11 +332,11 @@ entrypoints rather than only internal helper calls.
 References:
 
 - request surface:
-  [kernel_queries.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_queries.cpp)
+  [kernel_queries.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_queries.cpp)
 - action surface:
-  [kernel_actions.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_actions.cpp)
+  [kernel_actions.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_actions.cpp)
 - ABI dispatch:
-  [kernel_abi.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_abi.cpp)
+  [kernel_abi.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_abi.cpp)
 
 What exists:
 
@@ -374,17 +374,17 @@ mostly hosted.
 References:
 
 - block device abstraction:
-  [block_device.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/block_device.hpp)
+  [block_device.hpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/block_device.hpp)
 - hosted block device:
-  [hosted_block_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/hosted_block_dev.cpp)
+  [hosted_block_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/hosted_block_dev.cpp)
 - AHCI wrapper:
-  [virtualbox_ahci_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/virtualbox_ahci_dev.cpp)
+  [virtualbox_ahci_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/virtualbox_ahci_dev.cpp)
 - E1000 wrapper:
-  [virtualbox_e1000_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/virtualbox_e1000_dev.cpp)
+  [virtualbox_e1000_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/virtualbox_e1000_dev.cpp)
 - VMSVGA wrapper:
-  [virtualbox_vmsvga_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/virtualbox_vmsvga_dev.cpp)
+  [virtualbox_vmsvga_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/virtualbox_vmsvga_dev.cpp)
 - content-addressed store:
-  [canon_store.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/canon_store.cpp)
+  [canon_store.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/canon_store.cpp)
 
 Strengths:
 
@@ -449,7 +449,7 @@ CanonStore is one of the strongest concrete components in the stack.
 
 Reference:
 
-- [canon_store.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/canon_store.cpp)
+- [canon_store.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/canon_store.cpp)
 
 It provides:
 
@@ -546,7 +546,7 @@ execution.
 ### R1. Broad shared runtime contract
 
 - evidence:
-  [kernel_runtime_state.hpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_runtime_state.hpp)
+  [kernel_runtime_state.hpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_runtime_state.hpp)
 - impact: high
 - likelihood: high
 - issue: the implementation monolith has been reduced, but the shared runtime
@@ -558,8 +558,8 @@ execution.
 ### R2. Diagnostics ahead of substrate
 
 - evidence:
-  [kernel_queries.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_queries.cpp),
-  [kernel_views.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_views.cpp)
+  [kernel_queries.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_queries.cpp),
+  [kernel_views.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_views.cpp)
 - impact: medium-high
 - likelihood: high
 - issue: there is more detailed status plumbing than low-level execution capability
@@ -569,7 +569,7 @@ execution.
 ### R3. Synthetic pager model
 
 - evidence:
-  [kernel_pager.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/kernel/kernel_pager.cpp)
+  [kernel_pager.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/kernel/kernel_pager.cpp)
 - impact: high
 - likelihood: high
 - issue: pager logic is advanced as queue policy but incomplete as VM implementation
@@ -579,7 +579,7 @@ execution.
 ### R4. Simulated interrupts
 
 - evidence:
-  [interrupt_table.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/hal/interrupt_table.cpp#L51)
+  [interrupt_table.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/hal/interrupt_table.cpp#L51)
 - impact: high
 - likelihood: high
 - issue: no real interrupt-controller behavior exists yet
@@ -589,9 +589,9 @@ execution.
 ### R5. Hosted wrappers mistaken for drivers
 
 - evidence:
-  [virtualbox_ahci_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/virtualbox_ahci_dev.cpp),
-  [virtualbox_e1000_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/virtualbox_e1000_dev.cpp),
-  [virtualbox_vmsvga_dev.cpp](/Users/t81dev/Code/t81-foundation/experimental/ternaryos/dev/virtualbox_vmsvga_dev.cpp)
+  [virtualbox_ahci_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/virtualbox_ahci_dev.cpp),
+  [virtualbox_e1000_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/virtualbox_e1000_dev.cpp),
+  [virtualbox_vmsvga_dev.cpp](/Users/t81dev/Code/t81-foundation/userland/experimental/dev/virtualbox_vmsvga_dev.cpp)
 - impact: high
 - likelihood: high
 - issue: adapters preserve device boundaries but not hardware behavior

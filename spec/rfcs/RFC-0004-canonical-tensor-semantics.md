@@ -141,7 +141,7 @@ Key implementation mapping:
 
 - **§2.1 Canonical Shape Model** — `T729DynamicTensor` shape tuples in `include/t81/tensor.hpp` are immutable after construction; `vm_tensor_shape_faults_test.cpp` verifies deterministic faults on dimension mismatches across all tensor ops.
 - **§2.2 Tensor Pools** — `State::tensors` (`std::vector<std::optional<T729DynamicTensor>>`) provides 1-based handle allocation; `free_tensor_indices` enables deterministic recycling; `vm_tensor_get_set_conformance_test.cpp` confirms handle semantics.
-- **§2.3 Canonical Operations** — `TVECADD`, `TMATMUL`, and elementwise ops are implemented in `core/vm/vm.cpp` with shape-validation guards; `tensor_matmul_test.cpp` and `tensor_elementwise_test.cpp` cover correct and fault paths.
+- **§2.3 Canonical Operations** — `TVECADD`, `TMATMUL`, and elementwise ops are implemented in `vm/vm.cpp` with shape-validation guards; `tensor_matmul_test.cpp` and `tensor_elementwise_test.cpp` cover correct and fault paths.
 - **§2.4 Language Integration** — The IR generator lowers T81Lang tensor literals to handle-allocation + opcode sequences; `tensor_broadcast_test.cpp` confirms numpy-style trailing-dimension alignment with deterministic fault on mismatch.
 - **§2.5 Axion Hooks** — `vm_tensor_provenance_trace_test.cpp` verifies that tensor opcodes record shape metadata into the Axion trace. Policies using `(deny-shape ...)` are enforced by `policy_engine.cpp`.
 

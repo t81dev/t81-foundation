@@ -106,7 +106,7 @@ implementation immaturity.
   [T81Graph.hpp](/include/t81/types/T81Graph.hpp).
 - The language/runtime symbolic graph path is now implemented under
   [symbolic_graph.hpp](/include/t81/cog/v1/symbolic_graph.hpp)
-  and used in [vm.cpp](/core/vm/vm.cpp).
+  and used in [vm.cpp](/vm/vm.cpp).
 - BG-09 evidence indicates the symbolic graph serialization gap was closed in
   [BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md](/docs/records/audits/BG-09_IMPLEMENTATION_EVIDENCE_T81GRAPH_SERIALIZATION.md).
 
@@ -218,7 +218,7 @@ Evidence:
 
 1. Create a stable header path for symbolic graph runtime APIs.
 2. Move the tier-1 symbolic graph header and implementation to that new path.
-3. Update `core/vm/vm.cpp` and tests to include the new stable path.
+3. Update `vm/vm.cpp` and tests to include the new stable path.
 4. Leave the remaining cognitive-tier files untouched in `experimental/`.
 5. Update status docs to clarify that only the symbolic graph runtime moved, not
    the cognitive tiers as a whole.

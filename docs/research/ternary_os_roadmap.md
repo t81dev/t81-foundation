@@ -128,7 +128,7 @@ contract.
 
 That near-term kernel slice is now tracked explicitly in:
 
-- `experimental/ternaryos/docs/kernel_execution_plan.md`
+- `userland/experimental/docs/kernel_execution_plan.md`
 
 The roadmap is now centered on promotion of those layers from `experimental/` into mainline, plus delivery of the Phase 4 driver layer needed for a reboot-persistent CanonFS system. The concrete promotion environment is a **VirtualBox-first virtual machine target**: Axion should graduate from hosted process simulation into a bootable guest image that runs under VirtualBox before any real-hardware push.
 
@@ -143,7 +143,7 @@ The foundational computational, storage, and process primitives already exist in
 | Component | Location | Status |
 | :--- | :--- | :--- |
 | TISC ISA (frozen) | `spec/tisc-spec.md`, `core/` | Normative / Frozen |
-| T81VM interpreter | `core/vm/vm.cpp` | Beta |
+| T81VM interpreter | `vm/vm.cpp` | Beta |
 | T81Lang compiler | `lang/frontend/` | Beta |
 | T81BigInt / T81Float | `core/types/` | Beta |
 
@@ -151,7 +151,7 @@ The foundational computational, storage, and process primitives already exist in
 
 | Component | Location | Status |
 | :--- | :--- | :--- |
-| CanonFS | `src/canonfs/`, `include/t81/canonfs/` | Beta |
+| CanonFS | `fs/`, `include/t81/canonfs/` | Beta |
 | CanonHash-81 / CanonHash384 | `include/t81/tracing/canonhash.hpp`, `runtime/tracing/canonhash81.cpp` | Beta |
 | Reed-Solomon 3+2 (GF(3^9)) | `include/t81/canonfs/rs_repair.hpp`, `gf3_9.hpp` | Beta |
 | Axion Policy Kernel | `kernel/axion/` | Beta |
@@ -169,12 +169,12 @@ The foundational computational, storage, and process primitives already exist in
 
 | Component | Location | Status |
 | :--- | :--- | :--- |
-| HAL interface + hosted boot stub | `experimental/ternaryos/hal/` | Complete for Phase 1 hosted gate |
-| Ternary page allocator | `experimental/ternaryos/mmu/ternary_page_alloc.*` | Complete |
-| TVA + ternary radix page table MMU | `experimental/ternaryos/mmu/` | Complete for Phase 2 |
-| TISC context switch machinery | `experimental/ternaryos/sched/context_switch.*` | Complete |
-| 81-slot run queue + scheduler | `experimental/ternaryos/sched/` | Complete for Phase 3 |
-| CanonRef-based IPC bus | `experimental/ternaryos/ipc/` | Complete |
+| HAL interface + hosted boot stub | `userland/experimental/hal/` | Complete for Phase 1 hosted gate |
+| Ternary page allocator | `userland/experimental/mmu/ternary_page_alloc.*` | Complete |
+| TVA + ternary radix page table MMU | `userland/experimental/mmu/` | Complete for Phase 2 |
+| TISC context switch machinery | `userland/experimental/sched/context_switch.*` | Complete |
+| 81-slot run queue + scheduler | `userland/experimental/sched/` | Complete for Phase 3 |
+| CanonRef-based IPC bus | `userland/experimental/ipc/` | Complete |
 
 ---
 

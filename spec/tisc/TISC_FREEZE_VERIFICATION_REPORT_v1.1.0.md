@@ -44,7 +44,7 @@ Confirm the ISA freeze is internally consistent across specifications, implement
 
 ## 6. Stub Status Checks
 
-The following opcodes are confirmed as functional stubs or placeholders in `core/vm/vm.cpp`:
+The following opcodes are confirmed as functional stubs or placeholders in `vm/vm.cpp`:
 
 *   **Network**: `NSend`, `NRecv`, `VWait`, `VYield` (Log Axion events, no network I/O).
 *   **Axion**: `AxCheck`, `AxReport` (Implemented logic), `AxSign`, `AxLineage`, `AxCanon` (Log Axion events).

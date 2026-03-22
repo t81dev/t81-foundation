@@ -34,7 +34,7 @@ Added state fields:
 - `call_depth`
 - `contradiction_events`
 
-Runtime behavior in `core/vm/vm.cpp`:
+Runtime behavior in `vm/vm.cpp`:
 
 - `Call` enforces a hard recursion ceiling and records a security event when exceeded.
 - `Ret` decrements tracked depth and increments contradiction count when depth underflows.

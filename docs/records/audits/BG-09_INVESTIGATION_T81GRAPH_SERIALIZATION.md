@@ -36,7 +36,7 @@ The current `std.collections.graph_canonical` function works with a `Vector[T81S
 - **Problem**: Manual string construction bypasses T81Graph.serialize_canonical()
 
 ### **Phase 3: VM Format Value Analysis ✅**
-- **Location**: `/core/vm/vm.cpp`
+- **Location**: `/vm/vm.cpp`
 - **Function**: `format_value()` handles `ValueTag::SymbolicGraphHandle`
 - **Issue**: Returns placeholder `"<graph#" + std::to_string(val_data) + ">"`
 - **Missing**: No call to serialize_canonical() for graph objects

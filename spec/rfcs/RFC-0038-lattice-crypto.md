@@ -162,7 +162,7 @@ under CanonHash81.
 | `include/t81/tensor/lattice_crypto.hpp` | New — `polymul` and `polymod` math layer |
 | `include/t81/isa/opcodes.hpp` | `POLYMUL`, `POLYMOD` added to `tisc::Opcode` |
 | `include/t81/isa/ir.hpp` | `POLYMUL`, `POLYMOD` added to `tisc::ir::Opcode` |
-| `core/vm/vm.cpp` | VM dispatch cases between TACT and FFICall |
+| `vm/vm.cpp` | VM dispatch cases between TACT and FFICall |
 | `include/t81/frontend/builtin_registry.hpp` | 2 new entries: `std.crypto.polymul`, `std.crypto.polymod` |
 | `lang/frontend/ir_generator.cpp` | Custom emit handlers for `crypto_polymul`, `crypto_polymod` |
 | `tests/cpp/lattice_crypto_test.cpp` | 8 ACs / 11 assertions |

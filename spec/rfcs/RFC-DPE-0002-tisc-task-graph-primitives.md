@@ -240,7 +240,7 @@ equivalent to a normal TISC execution.
 ## 10. Implementation Plan
 
 1. Define `CanonFS` schema for `TaskDesc` and `EpochGraph` (extends RFC-00A3)
-2. Implement VM task execution mode in `core/vm/vm.cpp` behind a build flag
+2. Implement VM task execution mode in `vm/vm.cpp` behind a build flag
 3. Implement delta buffer accumulation in the VM
 4. Implement `SubmitEpochGraph` kernel call (extends RFC-00B6)
 5. Wire cycle detection at epoch acceptance

@@ -730,14 +730,14 @@ This RFC can move from `draft` to `proposed` when: *(met 2026-03-16)*
 
 This RFC moves from `proposed` to `accepted` when:
 
-- ✅ All six opcodes are implemented in `core/vm/vm.cpp` and dispatch correctly
+- ✅ All six opcodes are implemented in `vm/vm.cpp` and dispatch correctly
 - `TWMATMUL` produces bit-exact results verified against reference vectors on
   x86-64 and ARM64
 - Axion emits the correct guard events for `TWMATMUL`, `TQUANT`, `TATTN`,
   `TWEMBED`, and `TACT` (including `verdict=` field for all three outcomes)
 - ✅ `allowed-ternary-model-hashes`, `ternary-weight-domain-check`, and
   `activation-ceiling` are implemented and tested in the interpreter/runtime
-  path (`include/t81/axion/policy.hpp`, `core/vm/vm.cpp`,
+  path (`include/t81/axion/policy.hpp`, `vm/vm.cpp`,
   `tests/cpp/vm_rfc0034_ternary_native_test.cpp`)
 - ✅ `TACT` `Quarantine` verdict: `RD` is not committed and PC does not advance;
   verified by test

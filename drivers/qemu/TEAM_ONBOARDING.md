@@ -81,7 +81,7 @@ cd production_qemu
 ### **2. Development Work**
 ```bash
 # Make changes to source code
-cd ../experimental/ternaryos/hal/
+cd ../userland/experimental/hal/
 # Edit files...
 
 # Rebuild
@@ -232,7 +232,7 @@ ps aux | grep qemu
 1. **Edit Source Code**
    ```bash
    # Navigate to source
-   cd ../experimental/ternaryos/hal/
+   cd ../userland/experimental/hal/
    
    # Edit files
    vim qemu_slice6_bare_kernel.c
@@ -300,7 +300,7 @@ qemu-system-aarch64 -machine virt \
 echo "dump-guest-memory /tmp/memory.dump" | nc localhost 1234
 
 # Analyze memory
-../experimental/ternaryos/memory_analyzer.sh /tmp/memory.dump
+../userland/experimental/memory_analyzer.sh /tmp/memory.dump
 ```
 
 ### **Debug Logging**

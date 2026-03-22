@@ -117,4 +117,4 @@ the complete interrupt governance stack reaches bare-metal boot.
 The QEMU x86_64 lane validates the staged EFI binary under TCG emulation.
 Actual VirtualBox host execution (real hardware-assisted virtualization) and
 evidence return from that environment remains the next external milestone.
-See `experimental/ternaryos/docs/kernel_execution_plan.md` — Boot Milestones.
+See `userland/experimental/docs/kernel_execution_plan.md` — Boot Milestones.

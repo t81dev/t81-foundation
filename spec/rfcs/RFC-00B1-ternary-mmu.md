@@ -6,7 +6,7 @@
 **Created:** 2026-03-10
 **Updated:** 2026-03-11
 **Author:** @t81dev
-**Depends on:** RFC-00B0 (HAL), `experimental/ternaryos/mmu/ternary_page_alloc`
+**Depends on:** RFC-00B0 (HAL), `userland/experimental/mmu/ternary_page_alloc`
 **Blocks:** TernOS Phase 2 (v1.6 gate)
 
 ---

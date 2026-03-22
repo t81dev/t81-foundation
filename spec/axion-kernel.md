@@ -206,7 +206,7 @@ ______________________________________________________________________
 
 > **Implementation status note:** The five subsystems described below are
 > **architectural targets**. In the current implementation their functionality
-> is distributed across `kernel/axion/policy_engine.cpp` and `core/vm/vm.cpp`
+> is distributed across `kernel/axion/policy_engine.cpp` and `vm/vm.cpp`
 > rather than realized as distinct classes with formal boundaries. Formal
 > subsystem separation is a post-Alpha milestone.
 

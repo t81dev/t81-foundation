@@ -17,8 +17,8 @@ RFC-00B9 boundary note:
 - the supported user-environment and shell public surface now lives under
   `include/t81/axion/userenv/`, `include/t81/axion/shell/`,
   `src/axion/userenv/`, and `src/axion/shell/`
-- the matching headers under `experimental/ternaryos/userenv/` and
-  `experimental/ternaryos/shell/` remain compatibility shims while the
+- the matching headers under `userland/experimental/userenv/` and
+  `userland/experimental/shell/` remain compatibility shims while the
   broader kernel lane stays experimental
 
 **Last updated:** 2026-03-16

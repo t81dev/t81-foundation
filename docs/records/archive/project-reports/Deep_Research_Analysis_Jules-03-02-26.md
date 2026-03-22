@@ -29,7 +29,7 @@ Binary systems use `0, 1`, resulting in asymmetrical signed numbers or complex t
 The codebase (`~93,000` KB size) is written in modern **C++23** (tested with Clang, GCC, MSVC, AppleClang), employing heavily modular CMake definitions.
 
 *   **Modularity:** Cleanly decoupled into `core` (`types`, `isa`, `vm`), `kernel` (`axion`), `lang` (`frontend`, `stdlib`), and `experimental`.
-*   **`core/vm/vm.cpp` (~5,400 lines):** Houses the main interpreter loop. It contains explicit dispatch tables mapping the TISC ISA. The VM interacts closely with Axion by checking bounds and emitting structured logs (`[VM] push_axion_event`) prior to executing memory allocations or GC cycles.
+*   **`vm/vm.cpp` (~5,400 lines):** Houses the main interpreter loop. It contains explicit dispatch tables mapping the TISC ISA. The VM interacts closely with Axion by checking bounds and emitting structured logs (`[VM] push_axion_event`) prior to executing memory allocations or GC cycles.
 *   **Data Types (`include/t81/types/T81BigInt.hpp` / `core/types/bigint.cpp`):** `bigint.cpp` acts merely as a thin translation unit, whereas the heavy lifting is done in header-only templates like `T81BigInt.hpp` (~1,600 lines), which implement multi-limb Karatsuba multiplication and chunk-based carry propagation using packed base-81 integer chunks and an AVX2 SIMD path.
 *   **Testing:** Thorough validation with Google Benchmark and CTest (`tests/cpp/`, `tests/python/`, `tests/determinism/`), holding 283+ strict conformance entries evaluating ring properties, canonical forms, and reproducible bounds faults.
 

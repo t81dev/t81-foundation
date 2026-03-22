@@ -22,7 +22,7 @@ The architecture intends to follow a strict layered pipeline:
 
 Canonical architecture adherence: Partial. The conceptual layers exist, but boundary enforcement is porous.
 Pipeline consistency: Mostly present, but optional/experimental execution paths (like JIT traces and cognitive tiers) bypass or complicate the standard deterministic interpreter flow.
-Layering discipline: Inconsistent. Core VM source files (core/vm/vm.cpp, include/t81/vm/state.hpp) contain direct references to experimental cognitive tiers (t81::cog), violating the intended dependency firewall.
+Layering discipline: Inconsistent. Core VM source files (vm/vm.cpp, include/t81/vm/state.hpp) contain direct references to experimental cognitive tiers (t81::cog), violating the intended dependency firewall.
 
 ---
 
@@ -135,7 +135,7 @@ Remove core/ dependency claims over experimental/ until the firewall is physical
 
 Toolchain consistency: Strong. Strict formatting (clang-format 18) and modern C++23 usage.
 CI rigor: Excellent. The t81lang_repro_gate.py and canonical hash checks aggressively defend the deterministic surfaces.
-Complexity hotspots: core/vm/vm.cpp is a massive god-class switch statement managing standard execution, tensor math, string parsing, and distributed networking stubs all in one loop.
+Complexity hotspots: vm/vm.cpp is a massive god-class switch statement managing standard execution, tensor math, string parsing, and distributed networking stubs all in one loop.
 Engineering maturity level: Emerging System.
 
 ---

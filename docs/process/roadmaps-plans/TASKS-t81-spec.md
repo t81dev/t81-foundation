@@ -42,7 +42,7 @@
   - [x] `recurse`, `distributed`, `infinite`, `reflect` blocks
 - [x] Recursion tiers & depth limits
   - [x+] Tiered promotion enforcement (T81 → T243 → T729)
-  - [x] Configurable depth guards + Axion recursion traps (see `include/t81/axion/policy.hpp`, `core/vm/vm.cpp`)
+  - [x] Configurable depth guards + Axion recursion traps (see `include/t81/axion/policy.hpp`, `vm/vm.cpp`)
 - [x] Option[T] and Result[T, E] (First-class core types)
   - [x] Basic headers (see `include/t81/types/Option.hpp`, `Result.hpp`)
   - [x] Full standard library integration (Added `std.option` and `std.result` modules)
@@ -51,7 +51,7 @@
 - [x] Verification of legacy generic syntax (`<...>`) rejection (Verified in `tests/cpp/frontend_parser_legacy_rejection_test.cpp`)
 
 ## 4. HanoiVM / TISC Instruction Set (section 8–10)
-- [x] Segmented memory model (see `core/vm/vm.cpp`)
+- [x] Segmented memory model (see `vm/vm.cpp`)
 - [x] Deterministic fault injection points (see `IVirtualMachine::set_fault_injections`)
   - [x] For testing Axion enforcement (overflow, illegal access, etc.)
 - [x] Axion trap hooks (overflow, illegal access, recursion guard) (see `include/t81/axion/api.hpp`)
@@ -63,7 +63,7 @@
     - [x] ReflJustify (Append reasoning)
     - [x] ReflCheck, ReflTrace, ReflSeal
     - [x] Tier 3 Recursive Opcodes (Recurse, Contract, Entropy, Depth, Terminate)
-  - [x+] Infinite Series Compression (Geometric Series, see `experimental/tiers/cog/tier5/infinite.cpp`, `core/vm/vm.cpp`)
+  - [x+] Infinite Series Compression (Geometric Series, see `experimental/tiers/cog/tier5/infinite.cpp`, `vm/vm.cpp`)
 - [x] Concurrency Model (spec section 3)
   - [x] Multiple execution contexts / threads support
   - [x] Shared memory segments
@@ -75,19 +75,19 @@
   - [x] Plan/Implement software float math for full cross-platform determinism (Added deterministic `pow`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh` in `dmath` backend)
 
 ## 5. CanonFS & Tensor Storage (section 11)
-- [x+] In-memory read/write throughput (see `src/canonfs/in_memory_driver.cpp`)
-- [x] Persistent backend (see `src/canonfs/persistent_driver.cpp`)
+- [x+] In-memory read/write throughput (see `fs/in_memory_driver.cpp`)
+- [x] Persistent backend (see `fs/persistent_driver.cpp`)
 - [x] Hash-addressed blocks & verification
-  - [x] Block hashing (SHA3-256 verified in `TLoadHash`, see `core/vm/vm.cpp`)
+  - [x] Block hashing (SHA3-256 verified in `TLoadHash`, see `vm/vm.cpp`)
   - [x] Integrity checks on read (implicit via content addressing and header check)
 - [x+] .t81w / T3_K quantization import
   - [x] Converter from GGUF / SafeTensors
-  - [x] T3_K format parser & validation (see `promote_to_tensor` in `core/vm/vm.cpp`)
+  - [x] T3_K format parser & validation (see `promote_to_tensor` in `vm/vm.cpp`)
 
 ## 6. Axion Governance Kernel & Safety Invariants (section 12)
 - [x] Full enforcement in VM loop (VM hooks `axion::check`)
 - [x] GC hooks for tensor lifetimes
-  - [x+] Reference counting / mark-sweep integration (see `mark_and_sweep` in `core/vm/vm.cpp`)
+  - [x+] Reference counting / mark-sweep integration (see `mark_and_sweep` in `vm/vm.cpp`)
   - [x+] Tensor-specific lifetime rules (via `free_tensor_indices` reuse)
 - [x] Ethics checks (Θ₁–Θ₉ implementation)
   - [x] Θ enforcement points in VM / interpreter (see `kernel/axion/ethics.cpp`, `check_ethics`)
@@ -134,7 +134,7 @@
 - [x] RFC-0001: Architecture Principles (Enforced via `AGENTS.md` and codebase structure)
 - [x] RFC-0002: Deterministic Execution Contract (Verified by `t81_float_deterministic_test`, `libm` gap mitigation)
 - [x] RFC-0003: Axion Safety Model (Implemented in `kernel/axion/`, `ethics.cpp`)
-- [x] RFC-0004: Canonical Tensor Semantics (Implemented in `core/vm/vm.cpp`, `T81Tensor`)
+- [x] RFC-0004: Canonical Tensor Semantics (Implemented in `vm/vm.cpp`, `T81Tensor`)
 - [x] RFC-0005: TISC v0.4 Extensions (Standard `TISC` instruction set in `vm.cpp`)
 - [x] RFC-0006: Deterministic GC (Implemented `mark_and_sweep` in `vm.cpp`)
 - [x] RFC-0007: T81Lang Standard Library (`std.option`, `std.result`, `std.io` in `lang/stdlib/std`)
@@ -145,10 +145,10 @@
   - [x] Policy bytecode parser (see `kernel/axion/policy_serialization.cpp`)
   - [x] Runtime enforcement engine (see `kernel/axion/policy_engine.cpp`)
   - [ ] Full parser for `.apl` source files (Currently using bytecode)
-- [x] RFC-0019: Axion Match Logging (VM emits `match_guard` events, see `core/vm/vm.cpp`)
-- [x] RFC-0020: Axion Segment Trace (VM emits segment access traces, see `core/vm/vm.cpp`)
+- [x] RFC-0019: Axion Match Logging (VM emits `match_guard` events, see `vm/vm.cpp`)
+- [x] RFC-0020: Axion Segment Trace (VM emits segment access traces, see `vm/vm.cpp`)
 - [x] RFC-0025: Policy-Gated Tensor Loading
-  - [x] `TLOADHASH` opcode logic in VM (see `core/vm/vm.cpp`, `TLoadHash` case)
+  - [x] `TLOADHASH` opcode logic in VM (see `vm/vm.cpp`, `TLoadHash` case)
   - [x] Axion policy check for `allowed-tensor-hashes` (see `kernel/axion/policy_engine.cpp`)
   - [x] `t81-canonize-tensor` CLI tool (Implemented as `t81 canonize-tensor` subcommand)
 

@@ -649,7 +649,7 @@ is normatively owned by RFC-0026.
 
 Magic: `T81WTN` (bytes `54 38 31 57 54 4E`).
 
-*Status: accepted — normative definition in RFC-0034; this entry reflects the committed format.*
+*Status: proposed — normative definition in RFC-0034; this entry is a stub.*
 
 Used by RFC-0034 `TWMATMUL`, `TWEMBED`, and `TATTN`. Weights are stored as
 packed 2-bit balanced-trit values. No dequantization scale is present; the

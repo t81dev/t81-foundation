@@ -46,20 +46,20 @@ cmake --build . --target t81_ternaryos_qemu_slice6_efi
 ### **1. Code Development Phase**
 ```bash
 # Edit source files
-vim experimental/ternaryos/hal/qemu_slice6_bare_kernel.c
-vim experimental/ternaryos/hal/qemu_kernel_entry.cpp
+vim userland/experimental/hal/qemu_slice6_bare_kernel.c
+vim userland/experimental/hal/qemu_kernel_entry.cpp
 
 # Build changes
 cmake --build . --target t81_ternaryos_qemu_slice6_efi
 
 # Create disk image
-./experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh build build/qemu_dev
+./userland/experimental/scripts/build_qemu_slice6_artifact.sh build build/qemu_dev
 ```
 
 ### **2. Testing Phase**
 ```bash
 # Run comprehensive verification
-./experimental/ternaryos/automated_verification.sh
+./userland/experimental/automated_verification.sh
 
 # Quick boot test
 timeout 10 qemu-system-aarch64 -machine virt \
@@ -72,10 +72,10 @@ timeout 10 qemu-system-aarch64 -machine virt \
 ### **3. Debugging Phase**
 ```bash
 # Monitor-based debugging
-./experimental/ternaryos/qemu_monitor_test.sh
+./userland/experimental/qemu_monitor_test.sh
 
 # Memory analysis
-./experimental/ternaryos/memory_analyzer.sh /tmp/qemu_memory_dump.bin
+./userland/experimental/memory_analyzer.sh /tmp/qemu_memory_dump.bin
 
 # Debug logging
 qemu-system-aarch64 -machine virt \
@@ -118,7 +118,7 @@ qemu-system-aarch64 -machine virt \
 3. **Basic Boot Test**
    ```bash
    # Create test image
-   ./experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh build build/test
+   ./userland/experimental/scripts/build_qemu_slice6_artifact.sh build build/test
    
    # Quick boot test
    timeout 5 qemu-system-aarch64 -machine virt \
@@ -135,8 +135,8 @@ qemu-system-aarch64 -machine virt \
 1. **Feature Implementation**
    ```bash
    # Edit relevant source files
-   vim experimental/ternaryos/hal/qemu_platform.cpp
-   vim experimental/ternaryos/kernel/kernel_main.cpp
+   vim userland/experimental/hal/qemu_platform.cpp
+   vim userland/experimental/kernel/kernel_main.cpp
    
    # Add debugging output
    # Implement new functionality
@@ -149,16 +149,16 @@ qemu-system-aarch64 -machine virt \
    cmake --build . --target t81_ternaryos_qemu_slice6_efi
    
    # Create test image
-   ./experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh build build/feature_test
+   ./userland/experimental/scripts/build_qemu_slice6_artifact.sh build build/feature_test
    
    # Run verification
-   ./experimental/ternaryos/automated_verification.sh
+   ./userland/experimental/automated_verification.sh
    ```
 
 3. **Debug and Refine**
    ```bash
    # Monitor-based debugging
-   ./experimental/ternaryos/qemu_monitor_test.sh
+   ./userland/experimental/qemu_monitor_test.sh
    
    # Analyze results
    cat /tmp/ternaryos_verification/verification_summary.txt
@@ -173,7 +173,7 @@ qemu-system-aarch64 -machine virt \
 1. **Full System Test**
    ```bash
    # Complete verification suite
-   ./experimental/ternaryos/automated_verification.sh
+   ./userland/experimental/automated_verification.sh
    
    # Analyze all results
    ls -la /tmp/ternaryos_verification/
@@ -189,7 +189,7 @@ qemu-system-aarch64 -machine virt \
        -nographic -serial null -monitor none
    
    # Memory usage analysis
-   ./experimental/ternaryos/memory_analyzer.sh /tmp/qemu_memory_dump.bin
+   ./userland/experimental/memory_analyzer.sh /tmp/qemu_memory_dump.bin
    ```
 
 3. **Cross-Platform Validation**
@@ -235,7 +235,7 @@ dump-guest-memory /tmp/debug_memory.bin
 echo "dump-guest-memory /tmp/analysis_dump.bin" | nc localhost 1234
 
 # Analyze memory
-./experimental/ternaryos/memory_analyzer.sh /tmp/analysis_dump.bin
+./userland/experimental/memory_analyzer.sh /tmp/analysis_dump.bin
 
 # Examine specific regions
 hexdump -C /tmp/analysis_dump.bin -s 0x09000000 -n 64  # UART
@@ -265,7 +265,7 @@ grep "Taking exception" /tmp/debug_trace.log | tail -10
 
 ```bash
 # Monitor hardware initialization
-./experimental/ternaryos/qemu_monitor_test.sh
+./userland/experimental/qemu_monitor_test.sh
 
 # Check specific hardware
 echo "info block" | nc localhost 1234
@@ -286,10 +286,10 @@ echo "info history" | nc localhost 1234
 cmake --build . --target t81_ternaryos_qemu_slice6_efi
 
 # Create test image
-./experimental/ternaryos/scripts/build_qemu_slice6_artifact.sh build build/ci_test
+./userland/experimental/scripts/build_qemu_slice6_artifact.sh build build/ci_test
 
 # Run verification
-./experimental/ternaryos/automated_verification.sh
+./userland/experimental/automated_verification.sh
 
 # Check results
 if grep -q "VERIFICATION SUCCESSFUL" /tmp/ternaryos_verification/verification_summary.txt; then
@@ -375,8 +375,8 @@ qemu-system-aarch64 -machine virt -bios /opt/homebrew/share/qemu/edk2-aarch64-co
 **Problem:** No serial output visible
 ```bash
 # Solution: Use alternative verification
-./experimental/ternaryos/automated_verification.sh
-./experimental/ternaryos/qemu_monitor_test.sh
+./userland/experimental/automated_verification.sh
+./userland/experimental/qemu_monitor_test.sh
 ```
 
 #### **4. Memory Dump Issues**
@@ -509,4 +509,4 @@ The QEMU TernaryOS integration is production-ready and provides a solid foundati
 
 ---
 
-**For additional support and resources, refer to the complete documentation in the experimental/ternaryos/ directory.**
+**For additional support and resources, refer to the complete documentation in the userland/experimental/ directory.**

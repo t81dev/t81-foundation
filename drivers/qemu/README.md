@@ -124,7 +124,7 @@ qemu-system-aarch64 -machine virt \
 echo "dump-guest-memory /tmp/memory.dump" | nc localhost 1234
 
 # Analyze memory
-../experimental/ternaryos/memory_analyzer.sh /tmp/memory.dump
+../userland/experimental/memory_analyzer.sh /tmp/memory.dump
 ```
 
 ## Performance Tuning

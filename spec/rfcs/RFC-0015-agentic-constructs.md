@@ -108,7 +108,7 @@ All 9 acceptance criteria are met.  Implementation spans:
 - `include/t81/isa/ir.hpp` — `tisc::ir::Opcode::AGENT_INVOKE`
 - `lang/frontend/ir_generator.cpp` — agent pre-pass labeling, `visit(AgentDecl)`, agent
   call dispatch (before `VariableExpr` gate), `infer` sugar lowering
-- `core/vm/vm.cpp` — `AgentInvoke` dispatch with Axion event
+- `vm/vm.cpp` — `AgentInvoke` dispatch with Axion event
 - `runtime/jit/jit_compiler.cpp` — `AgentInvoke` in Axion-boundary exit group
 - `tests/cpp/agent_constructs_test.cpp` — 9 test functions, 16/16 assertions passing
 - `spec/t81lang-spec.md` — §1 grammar additions, §3.5 new section

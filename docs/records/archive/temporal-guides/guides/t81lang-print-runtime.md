@@ -8,7 +8,7 @@ This guide documents the current deterministic runtime behavior of the T81Lang
 - Frontend semantic contract: `lang/frontend/semantic_analyzer.cpp`
 - Frontend IR lowering: `include/t81/frontend/ir_generator.hpp`
 - TISC opcode mapping: `core/isa/binary_emitter.cpp`
-- VM execution: `core/vm/vm.cpp`
+- VM execution: `vm/vm.cpp`
 
 ## Contract
 

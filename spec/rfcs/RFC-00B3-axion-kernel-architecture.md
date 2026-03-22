@@ -399,7 +399,7 @@ service contract.
 
 The working execution note for this slice is:
 
-- `experimental/ternaryos/docs/kernel_execution_plan.md`
+- `userland/experimental/docs/kernel_execution_plan.md`
 
 ---
 

@@ -30,7 +30,7 @@ This guide provides an overview of the TISC instruction set and the T81 Virtual 
 - **Specification:** [`spec/tisc-spec.md`](../../../spec/tisc-spec.md), [`spec/t81vm-spec.md`](../../../spec/t81vm-spec.md)
 - **Key Source Files:**
     - [`include/t81/isa/opcodes.hpp`](../../../include/t81/isa/opcodes.hpp): The `Opcode` enum.
-    - [`core/vm/vm.cpp`](../../../core/vm/vm.cpp): The VM implementation.
+    - [`vm/vm.cpp`](../../../vm/vm.cpp): The VM implementation.
 - **Tests:** `tests/cpp/t81_vm_*_test.cpp`, `tests/cpp/e2e_*_test.cpp`
 
 ______________________________________________________________________
@@ -143,14 +143,14 @@ This section provides a conceptual walkthrough for adding a new instruction to t
 
 ### Step 2: Implement the Opcode in the VM
 
-In `core/vm/vm.cpp`, find the main `switch` statement in the `execute` or `run` method and add a new `case` for your opcode. The logic should:
+In `vm/vm.cpp`, find the main `switch` statement in the `execute` or `run` method and add a new `case` for your opcode. The logic should:
 1.  Fetch the operands (registers or immediate values).
 2.  Perform the core operation.
 3.  Store the result in the destination register.
 4.  Handle any potential faults according to the spec (e.g., division by zero).
 
 ```cpp
-// in VM::execute() in core/vm/vm.cpp
+// in VM::execute() in vm/vm.cpp
 switch (instruction.opcode) {
     // ...
     case Opcode::MOD: {

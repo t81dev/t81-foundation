@@ -22,7 +22,7 @@ covering the modified claims (RFC-0032 §6.10).
 Evidence Files:
 - `include/t81/isa/ai_native_opcodes.hpp`
 - `include/t81/isa/opcodes.hpp`
-- `core/vm/vm.cpp`
+- `vm/vm.cpp`
 - `build/ai-opcodes/ai_phase1_opcode_ctest.log`
 
 Phase-1 Conformance Evidence:

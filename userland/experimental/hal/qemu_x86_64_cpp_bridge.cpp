@@ -55,44 +55,6 @@ static inline uint8_t inb_x86(uint16_t port) noexcept {
 #endif
 }
 
-// 32-bit port I/O — used for PCI config space access.
-static inline void outl_x86(uint16_t port, uint32_t val) noexcept {
-#if defined(__x86_64__) && defined(_WIN32)
-  __asm__ volatile("outl %0, %1" : : "a"(val), "Nd"(port) : "memory");
-#else
-  (void)port; (void)val;
-#endif
-}
-
-static inline uint32_t inl_x86(uint16_t port) noexcept {
-#if defined(__x86_64__) && defined(_WIN32)
-  uint32_t val;
-  __asm__ volatile("inl %1, %0" : "=a"(val) : "Nd"(port) : "memory");
-  return val;
-#else
-  (void)port;
-  return 0u;
-#endif
-}
-
-// ── PCI config space — mechanism 1 ───────────────────────────────────────────
-// CONFIG_ADDRESS at 0xCF8; CONFIG_DATA at 0xCFC.  Available at ring 0 after
-// ExitBootServices on every x86 platform.
-
-static constexpr uint16_t kPciCfgAddr = 0xCF8u;
-static constexpr uint16_t kPciCfgData = 0xCFCu;
-
-static uint32_t pci_config_read32(uint8_t bus, uint8_t dev,
-                                   uint8_t func, uint8_t off) noexcept {
-  const uint32_t addr = (1u << 31)
-                      | (static_cast<uint32_t>(bus)  << 16)
-                      | (static_cast<uint32_t>(dev)  << 11)
-                      | (static_cast<uint32_t>(func) <<  8)
-                      | (off & 0xFCu);
-  outl_x86(kPciCfgAddr, addr);
-  return inl_x86(kPciCfgData);
-}
-
 // ── COM1 TX / RX ─────────────────────────────────────────────────────────────
 
 static void com1_putchar(char c) noexcept {
@@ -117,17 +79,11 @@ static int com1_getchar() noexcept {
   return static_cast<int>(inb_x86(kCom1Base + kUartRBR));
 }
 
-// ── Virtio-blk discovery (x86_64) ────────────────────────────────────────────
-// Two-path probe:
-//   1. MMIO: reads magic/version/device-id at the virtio-mmio slot 1 address.
-//      Succeeds when QEMU is launched with an explicit virtio-mmio bus at
-//      0x0A000200 (future improvement; slot 0 = 0x0A000000 is the boot disk).
-//   2. PCI scan: counts virtio-blk-pci devices on bus 0 via config space.
-//      QEMU q35 creates virtio-blk-pci for -drive if=virtio (PCI transport).
-//      Two devices = boot disk + CanonFS disk → persistent CanonFS available.
+// ── Virtio-blk MMIO probe (x86_64) ───────────────────────────────────────────
+// QEMU q35 maps virtio MMIO devices at 0x0A000000 (same as virt for AArch64).
+// Probe-only: read magic/version/device-id without queue init.
 
-// MMIO base for virtio slot 1 (dedicated CanonFS store; slot 0 = boot disk).
-static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000200);
+static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000000);
 
 static inline uint32_t mmio_rd32_x86(uint64_t base, uint32_t off) noexcept {
 #if defined(__x86_64__) && defined(_WIN32)
@@ -139,40 +95,11 @@ static inline uint32_t mmio_rd32_x86(uint64_t base, uint32_t off) noexcept {
 #endif
 }
 
-// Virtio PCI IDs (vendor 0x1AF4 = Red Hat / virtio).
-static constexpr uint16_t kVirtioPciVendor    = 0x1AF4u;
-static constexpr uint16_t kVirtioBlkPciLegacy = 0x1001u;  // virtio < 1.0
-static constexpr uint16_t kVirtioBlkPciModern = 0x1042u;  // virtio 1.0+
-
-// Scan PCI bus 0 (devices 0–31, function 0) and count virtio-blk devices.
-static int count_virtio_blk_pci() noexcept {
-  int found = 0;
-  for (uint8_t dev = 0u; dev < 32u; ++dev) {
-    const uint32_t id = pci_config_read32(0u, dev, 0u, 0x00u);
-    if (id == 0xFFFFFFFFu) continue;  // empty slot
-    const uint16_t vendor = static_cast<uint16_t>(id & 0xFFFFu);
-    const uint16_t device = static_cast<uint16_t>(id >> 16);
-    if (vendor == kVirtioPciVendor
-        && (device == kVirtioBlkPciLegacy || device == kVirtioBlkPciModern)) {
-      ++found;
-    }
-  }
-  return found;
-}
-
-// Returns true if a CanonFS block device is detected (not the boot disk).
-// On AArch64 virt: virtio-mmio probe succeeds at kVirtioMmioBase.
-// On x86_64 q35:  PCI scan finds ≥2 virtio-blk-pci devices.
 static bool probe_virtio_blk_bare() noexcept {
-  // Path 1 — MMIO (virt machine or future explicit virtio-mmio bus on q35).
   const uint32_t magic = mmio_rd32_x86(kVirtioMmioBase, 0x000u);
   const uint32_t ver   = mmio_rd32_x86(kVirtioMmioBase, 0x004u);
   const uint32_t devid = mmio_rd32_x86(kVirtioMmioBase, 0x008u);
-  if (magic == 0x74726976u && ver == 2u && devid == 2u) return true;
-
-  // Path 2 — PCI scan (q35 with virtio-blk-pci).
-  // ≥2 virtio-blk devices → boot disk (device N) + CanonFS disk (device N+1).
-  return count_virtio_blk_pci() >= 2;
+  return magic == 0x74726976u && ver == 2u && devid == 2u;
 }
 
 // ── RDTSC timer ──────────────────────────────────────────────────────────────
@@ -217,86 +144,12 @@ static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
   return &buf[i + 1];
 }
 
-// ── Freestanding thread table ─────────────────────────────────────────────────
-
-enum class FsThreadState : uint8_t { Empty = 0, Running = 1, Ready = 2, Blocked = 3 };
-
-struct FsThread {
-  uint32_t      tid        = 0;
-  FsThreadState state      = FsThreadState::Empty;
-  uint64_t      tick_count = 0;
-};
-
-static constexpr int kMaxFsThreads = 8;
-static FsThread  s_threads[kMaxFsThreads];
-static int       s_thread_count   = 0;
-static int       s_current_thread = 0;
-
 // ── Live kernel counters ──────────────────────────────────────────────────────
 
-static uint64_t s_tsc_freq_hz     = 1;   // set at bridge entry
-static uint64_t s_boot_tsc        = 0;
-static uint64_t s_cmd_count       = 0;
-static uint64_t s_loop_iters      = 0;
-static uint64_t s_tick_count      = 0;
-static uint64_t s_sched_switches  = 0;
-static uint64_t s_interrupt_count = 0;  // serial RX events
-static uint64_t s_timer_irqs      = 0;  // hardware timer IRQ count (PIT ch0)
-static bool     s_has_blk         = false;
-
-// ── Hardware-timer IRQ callback ───────────────────────────────────────────────
-// Called from axion_timer_stub_x86_64() (qemu_x86_64_bridge_irq.cpp) on
-// every PIT channel 0 tick (~100Hz).  Must be async-signal-safe.
-
-static constexpr uint64_t kSchedTickInterval = 500u;
-
-extern "C" void bridge_timer_irq_tick_x86() noexcept {
-  ++s_timer_irqs;
-  ++s_tick_count;
-  if (s_thread_count > 1 && (s_tick_count % kSchedTickInterval) == 0) {
-    s_threads[s_current_thread].state = FsThreadState::Ready;
-    int next = (s_current_thread + 1) % s_thread_count;
-    while (next != s_current_thread) {
-      if (s_threads[next].state == FsThreadState::Ready) break;
-      next = (next + 1) % s_thread_count;
-    }
-    if (next != s_current_thread) {
-      s_threads[next].state    = FsThreadState::Running;
-      s_current_thread         = next;
-      ++s_sched_switches;
-    } else {
-      s_threads[s_current_thread].state = FsThreadState::Running;
-    }
-  }
-  ++s_threads[s_current_thread].tick_count;
-}
-
-// Forward declaration of the hw-init function (defined in bridge_irq.cpp).
-extern "C" void bridge_hw_init_x86_64() noexcept;
-
-// ── Freestanding scheduler tick ───────────────────────────────────────────────
-
-static void freestanding_sched_tick() noexcept {
-  ++s_tick_count;
-  if (s_thread_count <= 1 || (s_tick_count % kSchedTickInterval) != 0) {
-    ++s_threads[s_current_thread].tick_count;
-    return;
-  }
-  s_threads[s_current_thread].state = FsThreadState::Ready;
-  int next = (s_current_thread + 1) % s_thread_count;
-  while (next != s_current_thread) {
-    if (s_threads[next].state == FsThreadState::Ready) break;
-    next = (next + 1) % s_thread_count;
-  }
-  if (next != s_current_thread) {
-    s_threads[next].state = FsThreadState::Running;
-    s_current_thread = next;
-    ++s_sched_switches;
-  } else {
-    s_threads[s_current_thread].state = FsThreadState::Running;
-  }
-  ++s_threads[s_current_thread].tick_count;
-}
+static uint64_t s_tsc_freq_hz = 1;   // set at bridge entry from EFI measurement
+static uint64_t s_boot_tsc    = 0;   // captured at qemu_x86_64_cpp_bridge_entry()
+static uint64_t s_cmd_count   = 0;
+static uint64_t s_poll_count  = 0;
 
 // ── Shell command handlers ────────────────────────────────────────────────────
 
@@ -304,8 +157,6 @@ static void cmd_help() noexcept {
   com1_puts("  help     -- this message\r\n");
   com1_puts("  version  -- T81 build info\r\n");
   com1_puts("  status   -- kernel counters and governance state\r\n");
-  com1_puts("  threads  -- thread table (tid, state, ticks)\r\n");
-  com1_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
   com1_puts("  policy   -- Axion policy summary\r\n");
 }
 
@@ -323,35 +174,16 @@ static void cmd_status() noexcept {
 
   com1_puts("  [kernel]\r\n");
   com1_puts("    path          : bare-metal (EFI C++ bridge, x86_64)\r\n");
-  if (s_has_blk) {
-    com1_puts("    canonfs       : mounted (persistent, virtio-blk)\r\n");
-  } else {
-    com1_puts("    canonfs       : mounted (in-memory)\r\n");
-  }
+  com1_puts("    canonfs       : mounted (in-memory)\r\n");
   com1_puts("    policy engine : ready\r\n");
-
-  com1_puts("    threads       : ");
-  com1_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
+  com1_puts("    threads       : 1\r\n");
 
   com1_puts("    uptime (s)    : ");
   com1_puts(u64_dec(uptime_s, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
 
-  com1_puts("    loop_iters    : ");
-  com1_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-
-  com1_puts("    tick_count    : ");
-  com1_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-
-  com1_puts("    sched switches: ");
-  com1_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-
-  com1_puts("    interrupts    : ");
-  com1_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
+  com1_puts("    poll cycles   : ");
+  com1_puts(u64_dec(s_poll_count, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
 
   com1_puts("    commands      : ");
@@ -363,60 +195,10 @@ static void cmd_status() noexcept {
   com1_puts("\r\n");
 }
 
-static void cmd_threads() noexcept {
-  char buf[24];
-  com1_puts("  [threads]\r\n");
-  for (int i = 0; i < s_thread_count; ++i) {
-    const FsThread& t = s_threads[i];
-    com1_puts("    tid=");
-    com1_puts(u64_dec(t.tid, buf, static_cast<int>(sizeof(buf))));
-    switch (t.state) {
-      case FsThreadState::Running: com1_puts("  Running"); break;
-      case FsThreadState::Ready:   com1_puts("  Ready  "); break;
-      case FsThreadState::Blocked: com1_puts("  Blocked"); break;
-      default:                     com1_puts("  Empty  "); break;
-    }
-    com1_puts("  ticks=");
-    com1_puts(u64_dec(t.tick_count, buf, static_cast<int>(sizeof(buf))));
-    com1_puts("\r\n");
-  }
-  com1_puts("    count=");
-  com1_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-}
-
-static void cmd_sched() noexcept {
-  char buf[24];
-  com1_puts("  [scheduler]\r\n");
-  com1_puts("    model        : preemptive (PIT ch0, 100Hz, IDT 0x20)\r\n");
-  com1_puts("    loop_iters   : ");
-  com1_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-  com1_puts("    tick_count   : ");
-  com1_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-  com1_puts("    timer_irqs   : ");
-  com1_puts(u64_dec(s_timer_irqs, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-  com1_puts("    switches     : ");
-  com1_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-  com1_puts("    serial_rx    : ");
-  com1_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
-  com1_puts("\r\n");
-  com1_puts("    tick_interval: ");
-  com1_puts(u64_dec(kSchedTickInterval, buf, static_cast<int>(sizeof(buf))));
-  com1_puts(" hw ticks\r\n");
-}
-
 static void cmd_policy() noexcept {
   com1_puts("  [axion policy]\r\n");
   com1_puts("    governance  : active\r\n");
-  if (s_has_blk) {
-    com1_puts("    audit trail : canonfs (persistent, virtio-blk)\r\n");
-  } else {
-    com1_puts("    audit trail : canonfs (in-memory)\r\n");
-  }
+  com1_puts("    audit trail : canonfs (in-memory)\r\n");
   com1_puts("    constraints : RFC-00B0 ethics-first boot\r\n");
 }
 
@@ -429,8 +211,6 @@ static void shell_dispatch(const char* line) noexcept {
   if      (str_eq(line, "help"))    { cmd_help(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
-  else if (str_eq(line, "threads")) { cmd_threads(); }
-  else if (str_eq(line, "sched"))   { cmd_sched(); }
   else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
     com1_puts("  unknown command: '");
@@ -454,78 +234,53 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   s_tsc_freq_hz = tsc_freq_hz > 0 ? tsc_freq_hz : 1;
   s_boot_tsc    = rdtsc();
 
-  // Register kernel thread (tid=1) in the freestanding thread table.
-  s_threads[0] = FsThread{1u, FsThreadState::Running, 0u};
-  s_thread_count   = 1;
-  s_current_thread = 0;
-
-  s_has_blk = probe_virtio_blk_bare();
+  const bool has_blk = probe_virtio_blk_bare();
 
   com1_puts("\r\n");
   com1_puts("  T81  --  Ternary OS for AI\r\n");
   com1_puts("  ===========================\r\n");
   com1_puts("\r\n");
   com1_puts("[axion] policy engine: ready\r\n");
-  if (s_has_blk) {
+  if (has_blk) {
     com1_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
   } else {
     com1_puts("[axion] canonfs: mounted (in-memory)\r\n");
   }
   com1_puts("[axion] kernel thread tid=1: running\r\n");
-  com1_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
-
-  // Wire hardware timer interrupts: IDT 0x20 + 8259 PIC + PIT ch0 at 100Hz.
-  bridge_hw_init_x86_64();
-  com1_puts("[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)\r\n");
-
   com1_puts("\r\n");
   com1_puts("t81> ");
 
   s_line_len = 0;
 
-  // ── Priority-dispatch event loop ─────────────────────────────────────────────
-  // Mirrors axion_kernel_step() priority order:
-  //   1. Fault queue      (placeholder)
-  //   2. Interrupt source (COM1 RX ≡ hardware interrupt)
-  //   3. Pager events     (placeholder)
-  //   4. Scheduler tick   (cooperative round-robin, every kSchedTickInterval iters)
   for (;;) {
 #if !defined(__x86_64__) || !defined(_WIN32)
-    return;  // hosted: return immediately for test linkage
+    // Hosted build (no port I/O): return immediately so tests can link.
+    return;
 #endif
-    ++s_loop_iters;
+    ++s_poll_count;
 
-    // Priority 2 — serial RX (interrupt source).
     if (com1_rx_ready()) {
       const int c = com1_getchar();
-      if (c >= 0) {
-        ++s_interrupt_count;
-        if (c == '\r' || c == '\n') {
-          s_line[s_line_len] = '\0';
-          com1_puts("\r\n");
-          shell_dispatch(s_line);
-          s_line_len = 0;
-          com1_puts("t81> ");
-        } else if (c == 127 || c == '\b') {
-          if (s_line_len > 0) { --s_line_len; com1_puts("\b \b"); }
-        } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
-          s_line[s_line_len++] = static_cast<char>(c);
-          com1_putchar(static_cast<char>(c));
+      if (c < 0) continue;
+
+      if (c == '\r' || c == '\n') {
+        s_line[s_line_len] = '\0';
+        com1_puts("\r\n");
+        shell_dispatch(s_line);
+        s_line_len = 0;
+        com1_puts("t81> ");
+      } else if (c == 127 || c == '\b') {
+        if (s_line_len > 0) {
+          --s_line_len;
+          com1_puts("\b \b");
         }
+      } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
+        s_line[s_line_len++] = static_cast<char>(c);
+        com1_putchar(static_cast<char>(c));
       }
-      continue;
     }
-
-    // Priority 3 — pager (no-op placeholder).
-    // Priority 4 — fallback poll tick (active before PIT IRQs fire, or every
-    //              10 000 iterations as a safety net).
-    if (s_timer_irqs == 0 || (s_loop_iters % 10000u) == 0) {
-      freestanding_sched_tick();
-    }
-
-    // Idle: HLT — wakes on the next timer (PIT IRQ 0x20) or COM1 RX event.
 #if defined(__x86_64__) && defined(_WIN32)
-    __asm__ volatile("hlt" ::: "memory");
+    __asm__ volatile("pause" ::: "memory");
 #endif
   }
 }

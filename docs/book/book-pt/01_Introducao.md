@@ -118,7 +118,7 @@ O CanonFS é uma camada de armazenamento endereçável por conteúdo que garante
 
 Quando a VM solicita carregar um módulo ou um modelo de tensor, ela fornece um hash. O CanonFS localiza o blob, verifica se seu hash corresponde à solicitação e só então permite que ele seja carregado na memória. Esse mecanismo garante que os dados na memória sejam idênticos bit-a-bit ao artefato que foi assinado e publicado, eliminando ataques de "deriva de dependência" e discrepâncias de "funciona na minha máquina".
 
-> **Referência**: Implementado em `src/canonfs/` e definido em `spec/supplemental/canonfs-spec.md`. Atualmente suporta verificação básica de hash e carregamento.
+> **Referência**: Implementado em `fs/` e definido em `spec/supplemental/canonfs-spec.md`. Atualmente suporta verificação básica de hash e carregamento.
 
 ### 1.2.4 Os Níveis Cognitivos
 

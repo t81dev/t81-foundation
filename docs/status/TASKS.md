@@ -105,12 +105,12 @@ Immediate, actionable items only. Structural hardening items live in `HARDENING_
   - ✅ Extracted `AxCheck`/`AxReport` helpers from dispatch loop
   - ✅ Extracted `AxRead`/`AxSet`/`AxVerify`/`AxHalt` helpers from dispatch loop
   - ✅ Routed `Ax*` opcode handling through centralized VM handlers
-  - ✅ Reduced dispatch concentration by pre-dispatching Axion opcodes via `dispatch_axion_opcode_from_step` before the main VM opcode switch (`core/vm/vm.cpp`, 2026-03-05)
+  - ✅ Reduced dispatch concentration by pre-dispatching Axion opcodes via `dispatch_axion_opcode_from_step` before the main VM opcode switch (`vm/vm.cpp`, 2026-03-05)
   - Completed: 2026-03-05
   - Status: **✅ RESOLVED**
 
 - [x] **FW-01 Dependency Waiver Retirement** - **✅ COMPLETED**
-  - Removed `t81/experimental/cog/promotion.hpp` include from `core/vm/vm.cpp`
+  - Removed `t81/experimental/cog/promotion.hpp` include from `vm/vm.cpp`
   - Tier promotion path now handled locally inside VM module
   - `scripts/architecture/dependency_firewall_waivers.tsv` contains no active waivers
   - Completed: 2026-03-05

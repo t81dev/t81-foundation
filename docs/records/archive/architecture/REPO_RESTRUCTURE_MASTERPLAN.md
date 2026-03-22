@@ -56,7 +56,7 @@ This layout reflects the conceptual architecture of the T81 Foundation stack.
 | `core/isa/**`                   | `core/isa/**`           | |
 | `src/vm/**`                     | `core/vm/**`            | Interpreter core |
 | `src/axion/**`                  | `kernel/axion/**`       | |
-| `src/canonfs/**`                | `core/serialization/**` | CanonFS drivers |
+| `fs/**`                | `core/serialization/**` | CanonFS drivers |
 | `src/codec/**`                  | `core/serialization/codec/**` | |
 | `src/io/**`                     | `core/io/**`            | |
 | `src/frontend/**`               | `lang/frontend/**`      | |

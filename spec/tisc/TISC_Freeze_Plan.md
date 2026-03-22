@@ -50,7 +50,7 @@ This sequence minimizes risk and separates "fix what we have" from "add what is 
     *   `BitUShr` (0xAD)
 *   [ ] **Update Status:** Change "Status: Active" to "Status: Canonical / Frozen (v1.1.0)".
 *   [ ] **Reserved Range:** Update reserved note to "Opcodes 174 (0xAE) through 255 (0xFF) are reserved".
-*   [ ] **Implementation Location:** Ensure all 174 opcodes point to `core/vm/vm.cpp`.
+*   [ ] **Implementation Location:** Ensure all 174 opcodes point to `vm/vm.cpp`.
 
 ### 3.2 `spec/tisc/opcode-semantics.md`
 
@@ -73,7 +73,7 @@ This sequence minimizes risk and separates "fix what we have" from "add what is 
 
 ## 4. Core Opcode Change Tasks (if applicable)
 
-| Opcode | Spec Work | VM Work (`core/vm/vm.cpp`) | Tests | Determinism Notes | Status |
+| Opcode | Spec Work | VM Work (`vm/vm.cpp`) | Tests | Determinism Notes | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `BitAnd` | Add to Registry/Semantics | Add `Opcode::BitAnd` case | `test_bitwise.cpp` | Pure integer logic | Pending |
 | `BitOr` | Add to Registry/Semantics | Add `Opcode::BitOr` case | `test_bitwise.cpp` | Pure integer logic | Pending |
