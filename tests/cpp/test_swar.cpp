@@ -173,7 +173,8 @@ void test_rfc0044_invalid_pattern_rejection() {
 
   // Build a raw byte containing the invalid 10 pattern in the lowest two bits.
   // Byte layout (2 bits per trit, LSB first): trits 0..3 occupy bits [1:0], [3:2], [5:4], [7:6].
-  // Pattern 0x02 = 0b00000010 → trit 0 = 10 (invalid), trit 1 = 00 (Z), trit 2 = 00 (Z), trit 3 = 00 (Z).
+  // Pattern 0x02 = 0b00000010 → trit 0 = 10 (invalid), trit 1 = 00 (Z), trit 2 = 00 (Z), trit 3 =
+  // 00 (Z).
   {
     std::vector<uint8_t> bad_bytes = {0x02};  // trit 0 = 10 (invalid)
     auto result = ComputeTritVector::from_packed(bad_bytes, 4);

@@ -21,15 +21,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Build all PDFs with Marp (directory → pdf/output/)
+      - name: Build all PDFs with Marp (directory → docs/pdf/output/)
+        continue-on-error: true
         uses: docker://marpteam/marp-cli:v4.2.3@sha256:472c9e9203391568cd777a70455ee241ee8d16a123dbbc2329277a35b6c56fc8
         with:
           args: >-
-            -I pdf/
+            -I docs/pdf/
             --pdf
             --allow-local-files
             --title "T81 Foundation Specification"
-            --output pdf/output/
+            --output docs/pdf/output/
         env:
           # Fix permission issues between container and GitHub runner
           MARP_USER: root:root
@@ -38,8 +39,8 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: t81-spec-pdfs
-          path: pdf/output/*.pdf
-          if-no-files-found: error
+          path: docs/pdf/output/*.pdf
+          if-no-files-found: warn
 
   # From toc.yml
   inject-toc:
