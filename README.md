@@ -365,7 +365,7 @@ The TISC ISA and core data types are **frozen** under v1.x — opcode semantics 
 | **Cognitive Tiers** | ✅ Beta | Tier4 Cognition (RFC-0021); governance-bounded |
 | **T81 Userland** | ✅ Beta | HAL + userland services; policy-bounded |
 | **Native bare-metal target** | 🚧 Alpha | T81 currently runs as a guest OS layer on Linux and macOS; bare-metal execution is in active development |
-| **QEMU boot sequence** | 🚧 Alpha | EFI → bare-metal → freestanding C++ bridge confirmed; `t81>` shell live on serial — [see boot progress](#boot-progress) |
+| **QEMU boot sequence** | ✅ Complete | EFI → bare-metal → GICv3/PIT timer → preemptive scheduler → `t81>` shell; AArch64 + x86_64 — [see boot progress](#boot-progress) |
 
 Surface classifications follow RFC-0048. Governed non-DCP and experimental surfaces are not presented as verified deterministic components.
 
@@ -384,37 +384,34 @@ Live recording of the current QEMU AArch64 boot sequence (serial output):
 
 <br><small>Interactive replay: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">t81-boot.cast (asciinema)</a></small>
 
-T81 boots on QEMU AArch64 (EDK2/UEFI). The table below tracks completion toward a clean boot with a shell prompt visible on serial output — the prerequisite for a recorded boot demo in this README.
+T81 boots on QEMU AArch64 (EDK2/UEFI) and QEMU x86_64 (OVMF/q35). The table below tracks completion toward a clean boot with a shell prompt visible on serial output.
 
-| Stage | What it covers | Done |
-| :--- | :--- | :--- |
-| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | 95% |
-| **2. Kernel entry + HAL init** | PL011 UART confirmed at EL1; freestanding C++ bridge initializes before shell | 95% |
-| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled into BOOTAA64.EFI; calls banner + shell from real QEMU | 90% |
-| **4. CanonFS mount** | In-memory driver always online at boot; persistent driver activates via `T81_CANONFS_ROOT` | 80% |
-| **5. Shell / interactive prompt** | Line-buffered `t81>` shell on serial; `help` / `version` / `status` / `policy` commands | 95% |
-| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → scheduler tick), WFI idle | 100% |
-| | **Overall** | **~93%** |
+| Stage | What it covers | AArch64 | x86_64 |
+| :--- | :--- | :--- | :--- |
+| **1. EFI/UEFI boot** | PE32+ EFI binary loads, `ExitBootServices` completes, handoff to bare-metal kernel | ✅ 100% | ✅ 100% |
+| **2. Kernel entry + HAL init** | UART confirmed at EL1/ring-0; freestanding C++ bridge initializes before shell | ✅ 100% | ✅ 100% |
+| **3. EFI ↔ C++ kernel bridge** | Freestanding C++ (`-ffreestanding -fno-exceptions`) compiled; banner + shell on serial | ✅ 100% | ✅ 100% |
+| **4. CanonFS mount** | In-memory driver always online; virtio-blk device probed for persistent store | ✅ 100% | ✅ 100% |
+| **5. Shell / interactive prompt** | Line-buffered `t81>` shell; `help` / `version` / `status` / `threads` / `sched` / `policy` | ✅ 100% | ✅ 100% |
+| **6. Kernel event loop** | Priority dispatch (faults → interrupts → pager → sched); WFI/HLT idle | ✅ 100% | ✅ 100% |
+| **7. Hardware timer interrupts** | GICv3 PPI 30 + ARM physical timer @ 100Hz (AArch64); IDT 0x20 + PIT ch0 @ 100Hz (x86_64) | ✅ 100% | ✅ 100% |
+| | **Overall** | **✅ 100%** | **✅ 100%** |
 
-**Current state:** The BOOTAA64.EFI binary is a three-stage image. Phase 1 (EFI) prints the ConOut banner and calls `ExitBootServices`. Phase 2 (bare-metal C) confirms EL1 PL011 MMIO access. Phase 3 (freestanding C++ bridge) prints the governance banner and runs the interactive `t81>` shell — all compiled into a single PE32+ binary with no hosted C++ runtime. The expected serial sequence on a Linux QEMU run:
+**Current state:** Both boot lanes are fully live. The AArch64 image (BOOTAA64.EFI) uses PL011 UART and the GICv3 + ARM physical timer (PPI 30, ~100Hz) to drive the preemptive scheduler; the exception vector table is wired via `VBAR_EL1`. The x86_64 image (BOOTX64.EFI) uses COM1 UART and a 64-bit IDT + 8259 PIC + PIT channel 0 (~100Hz) for the same. Both paths probe the virtio-blk device (MMIO slot 1 on AArch64 virt; PCI config-space scan on q35) and mount CanonFS persistent storage when present. The expected serial sequence on both platforms:
 
 ```text
-Axion QEMU AArch64 EDK2 slice6
-
-[axion] bare-metal EL1 kernel entry
-[axion] ExitBootServices complete; handing off to C++ kernel
-
   T81  --  Ternary OS for AI
   ===========================
 
 [axion] policy engine: ready
-[axion] canonfs: mounted (in-memory)
+[axion] canonfs: mounted (persistent, virtio-blk)   # or: (in-memory)
 [axion] kernel thread tid=1: running
+[axion] event loop: priority dispatch (interrupt > pager > sched)
+[axion] hw timer: GICv3 PPI30 armed (10ms)          # AArch64
+[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)    # x86_64
 
 t81>
 ```
-
-**Remaining to clean boot:** Virtio-blk MMIO driver for persistent CanonFS on bare-metal (so `T81_CANONFS_ROOT` has a real block device behind it in QEMU), and wiring the hosted `KernelRuntimeState` event loop (scheduler, pager, GICv3 interrupts) into the freestanding bridge path so `status` shows live counters.
 
 Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](drivers/qemu/):
 
@@ -422,7 +419,7 @@ Boot scripts, disk image, and captured serial output are in [`drivers/qemu/`](dr
 - [`drivers/qemu/sample-boot-log.txt`](drivers/qemu/sample-boot-log.txt) — confirmed serial sequence from a recent run
 - [`drivers/qemu/docs/QEMU_TESTING_RESULTS.md`](drivers/qemu/docs/QEMU_TESTING_RESULTS.md) — full boot test report
 
-The [`qemu-boot`](.github/workflows/qemu-boot.yml) CI workflow builds the EFI binary, assembles a FAT32 GPT image, boots it under QEMU (TCG cortex-a57 + EDK2 AArch64) on every push that touches `userland/experimental/` or `drivers/qemu/`, validates all eight boot markers across all three phases, and commits the updated serial log back to `drivers/qemu/sample-boot-log.txt`.
+The [`qemu-boot`](.github/workflows/qemu-boot.yml) CI workflow builds the EFI binary, assembles a FAT32 GPT image, boots it under QEMU (TCG cortex-a57 + EDK2 AArch64) on every push that touches `userland/experimental/` or `drivers/qemu/`, validates all nine boot markers across all three phases (including the hardware timer confirmation), and commits the updated serial log back to `drivers/qemu/sample-boot-log.txt`.
 
 ---
 

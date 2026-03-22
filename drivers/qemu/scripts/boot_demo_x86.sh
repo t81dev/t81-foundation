@@ -99,6 +99,36 @@ else
 fi
 echo ""
 
+# ── CanonFS block store image ─────────────────────────────────────────────────
+# QEMU q35 uses virtio-blk-pci (PCI transport) for -drive if=virtio.
+# The freestanding bridge first tries MMIO probe at slot 1 (0x0A000200);
+# on q35 that fails, then falls back to PCI config-space scan which counts
+# virtio-blk-pci devices: ≥2 → boot disk + CanonFS disk → (persistent, virtio-blk).
+CANON_IMG="$BUILD_DIR/canon_store_x86.img"
+info "Creating CanonFS raw block store (4 MiB, virtio-blk-pci slot 2 on q35)…"
+dd if=/dev/zero of="$CANON_IMG" bs=1M count=4 status=none
+
+# Write a valid CanonFS superblock at byte offset 0 (729-byte LBA 0 block).
+python3 - <<'PYEOF'
+import struct, os, sys
+magic          = b'CST1'
+entry_count    = struct.pack('<I', 0)
+entries        = bytes(17 * 40)
+overflow_count = struct.pack('<Q', 0)
+padding        = bytes(33)
+superblock     = magic + entry_count + entries + overflow_count + padding
+assert len(superblock) == 729
+img = os.environ.get('CANON_IMG', '')
+if not img:
+    print("CANON_IMG not set", file=sys.stderr); sys.exit(1)
+with open(img, 'r+b') as f:
+    f.write(superblock)
+print(f"CST1 superblock written to {img}")
+PYEOF
+
+ok "CanonFS store: $(du -sh "$CANON_IMG" | cut -f1)"
+echo ""
+
 # ── Assemble FAT32 GPT disk image ─────────────────────────────────────────────
 info "Assembling boot disk image…"
 OFFSET=1048576
@@ -132,6 +162,7 @@ timeout "$TIMEOUT" qemu-system-x86_64 \
   -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE" \
   -drive if=pflash,format=raw,file="$VARS_TMP" \
   -drive if=virtio,format=raw,file="$IMG" \
+  -drive if=virtio,format=raw,file="$CANON_IMG" \
   2>/dev/null || true
 
 echo "────────────────────────────────────────────────────────────────────────────────"

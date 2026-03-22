@@ -65,6 +65,42 @@ jobs:
           mmd    -i "${IMG}@@${OFFSET}" ::/EFI ::/EFI/BOOT
           mcopy  -i "${IMG}@@${OFFSET}" "$EFI" ::/EFI/BOOT/BOOTX64.EFI
 
+      - name: Create and format CanonFS raw block store image
+        run: |
+          # 4 MiB zero-filled raw disk — presented as virtio-blk-pci on q35.
+          # The freestanding bridge detects it via PCI config-space scan (≥2
+          # virtio-blk devices → boot disk + CanonFS store).
+          dd if=/dev/zero of=build/canon_store_x86.img bs=1M count=4 status=none
+
+          # Write a valid CanonFS superblock at byte offset 0 (729-byte block,
+          # matching CanonStore LBA 0 layout in src/canonfs and canon_store.cpp).
+          python3 - <<'PYEOF'
+          import struct, sys
+          magic          = b'CST1'
+          entry_count    = struct.pack('<I', 0)
+          entries        = bytes(17 * 40)          # 680 bytes — no objects
+          overflow_count = struct.pack('<Q', 0)
+          padding        = bytes(33)
+          superblock     = magic + entry_count + entries + overflow_count + padding
+          assert len(superblock) == 729, f"superblock is {len(superblock)} bytes, expected 729"
+          with open('build/canon_store_x86.img', 'r+b') as f:
+              f.write(superblock)
+          print(f"CanonFS superblock written ({len(superblock)} bytes, magic=CST1, 0 entries)")
+          PYEOF
+
+      - name: Verify CanonFS superblock (x86)
+        run: |
+          python3 - <<'PYEOF'
+          import sys
+          with open('build/canon_store_x86.img', 'rb') as f:
+              magic = f.read(4)
+          if magic == b'CST1':
+              print('PASS: CanonFS x86 superblock CST1 magic verified')
+          else:
+              print(f'FAIL: expected CST1, got {magic!r}', file=sys.stderr)
+              sys.exit(1)
+          PYEOF
+
       - name: Boot under QEMU (OVMF x86_64)
         run: |
           OVMF_CODE=/usr/share/OVMF/OVMF_CODE.fd
@@ -79,6 +115,7 @@ jobs:
             -drive if=pflash,format=raw,readonly=on,file="$OVMF_CODE" \
             -drive if=pflash,format=raw,file="$OVMF_VARS" \
             -drive if=virtio,format=raw,file=build/qemu_x86_64_boot.img \
+            -drive if=virtio,format=raw,file=build/canon_store_x86.img \
             -serial file:serial_x86.log \
             2>/dev/null || true
 
@@ -98,6 +135,9 @@ jobs:
           check "Axion QEMU x86_64 OVMF slice6"
           check "[axion] bare-metal x86_64 entry"
           check "[axion] ExitBootServices complete"
+          check "[axion] canonfs: mounted (persistent, virtio-blk)"
+          check "[axion] event loop: priority dispatch"
+          check "[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)"
 
       - name: Save boot log
         run: cp serial_x86.log drivers/qemu/sample-boot-log-x86.txt

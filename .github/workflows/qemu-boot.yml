@@ -93,6 +93,50 @@ jobs:
 
           echo "disk image: $(du -sh $IMG | cut -f1)"
 
+      # ── CanonFS block store image ─────────────────────────────────────────
+      - name: Create and format CanonFS raw block store image
+        run: |
+          # 4 MiB zero-filled raw disk — virtio-mmio slot 1 (0x0A000200).
+          # VirtioBlkMmioDevice::kDefaultMmioBase targets this slot; slot 0
+          # (0x0A000000) is the FAT32 boot disk loaded by OVMF.
+          dd if=/dev/zero of=canon_store.img bs=1M count=4 status=none
+
+          # Write a valid CanonFS superblock at byte offset 0.
+          # Layout (729 bytes = one CanonBlock, matching CanonStore LBA 0):
+          #   [0:4]   magic          "CST1"
+          #   [4:8]   entry_count    0  (little-endian uint32)
+          #   [8:688] entries        (17 × 40 B, all zero — no objects yet)
+          #   [688:696] overflow_count  0  (little-endian uint64)
+          #   [696:729] padding          (33 B, zero)
+          python3 - <<'PYEOF'
+          import struct, sys
+          magic          = b'CST1'
+          entry_count    = struct.pack('<I', 0)
+          entries        = bytes(17 * 40)          # 680 bytes — no objects
+          overflow_count = struct.pack('<Q', 0)
+          padding        = bytes(33)
+          superblock     = magic + entry_count + entries + overflow_count + padding
+          assert len(superblock) == 729, f"superblock is {len(superblock)} bytes, expected 729"
+          with open('canon_store.img', 'r+b') as f:
+              f.write(superblock)
+          print(f"CanonFS superblock written ({len(superblock)} bytes, magic=CST1, 0 entries)")
+          PYEOF
+
+          echo "canon store: $(du -sh canon_store.img | cut -f1)"
+
+      - name: Verify CanonFS superblock
+        run: |
+          python3 - <<'PYEOF'
+          import sys
+          with open('canon_store.img', 'rb') as f:
+              magic = f.read(4)
+          if magic == b'CST1':
+              print('PASS: CanonFS superblock CST1 magic verified')
+          else:
+              print(f'FAIL: expected CST1, got {magic!r}', file=sys.stderr)
+              sys.exit(1)
+          PYEOF
+
       # ── Boot ──────────────────────────────────────────────────────────────
       - name: Boot QEMU and capture serial
         run: |
@@ -100,6 +144,7 @@ jobs:
 
           # Run for up to 40 seconds; exit code 124 (timeout) is expected and
           # treated as success — the kernel event loop runs indefinitely.
+          # Two virtio drives: slot 0 = FAT32 boot disk, slot 1 = CanonFS store.
           timeout 40 qemu-system-aarch64 \
             -machine virt \
             -cpu cortex-a57 \
@@ -109,6 +154,7 @@ jobs:
             -drive if=pflash,format=raw,readonly=on,file=/usr/share/AAVMF/AAVMF_CODE.fd \
             -drive if=pflash,format=raw,file=/tmp/edk2-vars.fd \
             -drive if=virtio,format=raw,file=boot.img \
+            -drive if=virtio,format=raw,file=canon_store.img \
             2>/dev/null || true
 
           echo "=== Captured serial output ==="
@@ -135,8 +181,10 @@ jobs:
           # — proves freestanding C++ executes after the bare-metal handoff.
           check "T81  --  Ternary OS for AI"
           check "[axion] policy engine: ready"
-          check "[axion] canonfs: mounted (in-memory)"
+          check "[axion] canonfs: mounted (persistent, virtio-blk)"
           check "[axion] kernel thread tid=1: running"
+          check "[axion] event loop: priority dispatch"
+          check "[axion] hw timer: GICv3 PPI30 armed (10ms)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]
 
