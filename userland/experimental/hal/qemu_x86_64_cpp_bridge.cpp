@@ -55,6 +55,44 @@ static inline uint8_t inb_x86(uint16_t port) noexcept {
 #endif
 }
 
+// 32-bit port I/O — used for PCI config space access.
+static inline void outl_x86(uint16_t port, uint32_t val) noexcept {
+#if defined(__x86_64__) && defined(_WIN32)
+  __asm__ volatile("outl %0, %1" : : "a"(val), "Nd"(port) : "memory");
+#else
+  (void)port; (void)val;
+#endif
+}
+
+static inline uint32_t inl_x86(uint16_t port) noexcept {
+#if defined(__x86_64__) && defined(_WIN32)
+  uint32_t val;
+  __asm__ volatile("inl %1, %0" : "=a"(val) : "Nd"(port) : "memory");
+  return val;
+#else
+  (void)port;
+  return 0u;
+#endif
+}
+
+// ── PCI config space — mechanism 1 ───────────────────────────────────────────
+// CONFIG_ADDRESS at 0xCF8; CONFIG_DATA at 0xCFC.  Available at ring 0 after
+// ExitBootServices on every x86 platform.
+
+static constexpr uint16_t kPciCfgAddr = 0xCF8u;
+static constexpr uint16_t kPciCfgData = 0xCFCu;
+
+static uint32_t pci_config_read32(uint8_t bus, uint8_t dev,
+                                   uint8_t func, uint8_t off) noexcept {
+  const uint32_t addr = (1u << 31)
+                      | (static_cast<uint32_t>(bus)  << 16)
+                      | (static_cast<uint32_t>(dev)  << 11)
+                      | (static_cast<uint32_t>(func) <<  8)
+                      | (off & 0xFCu);
+  outl_x86(kPciCfgAddr, addr);
+  return inl_x86(kPciCfgData);
+}
+
 // ── COM1 TX / RX ─────────────────────────────────────────────────────────────
 
 static void com1_putchar(char c) noexcept {
@@ -79,16 +117,16 @@ static int com1_getchar() noexcept {
   return static_cast<int>(inb_x86(kCom1Base + kUartRBR));
 }
 
-// ── Virtio-blk MMIO probe (x86_64) ───────────────────────────────────────────
-// Probe the second virtio MMIO slot (0x0A000200) for the CanonFS block device.
-// Slot 0 (0x0A000000) is the FAT32 boot disk; slot 1 (0x0A000200) is the
-// dedicated raw CanonFS store.
-// Note: QEMU q35 with -drive if=virtio creates virtio-blk-pci (PCI transport),
-// not virtio-mmio — this probe will return false on q35 unless the QEMU launch
-// explicitly creates a virtio-mmio bus.  The banner will show (in-memory) in
-// that case, which is accurate.
-// Probe-only: read magic/version/device-id without queue init.
+// ── Virtio-blk discovery (x86_64) ────────────────────────────────────────────
+// Two-path probe:
+//   1. MMIO: reads magic/version/device-id at the virtio-mmio slot 1 address.
+//      Succeeds when QEMU is launched with an explicit virtio-mmio bus at
+//      0x0A000200 (future improvement; slot 0 = 0x0A000000 is the boot disk).
+//   2. PCI scan: counts virtio-blk-pci devices on bus 0 via config space.
+//      QEMU q35 creates virtio-blk-pci for -drive if=virtio (PCI transport).
+//      Two devices = boot disk + CanonFS disk → persistent CanonFS available.
 
+// MMIO base for virtio slot 1 (dedicated CanonFS store; slot 0 = boot disk).
 static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A000200);
 
 static inline uint32_t mmio_rd32_x86(uint64_t base, uint32_t off) noexcept {
@@ -101,11 +139,40 @@ static inline uint32_t mmio_rd32_x86(uint64_t base, uint32_t off) noexcept {
 #endif
 }
 
+// Virtio PCI IDs (vendor 0x1AF4 = Red Hat / virtio).
+static constexpr uint16_t kVirtioPciVendor    = 0x1AF4u;
+static constexpr uint16_t kVirtioBlkPciLegacy = 0x1001u;  // virtio < 1.0
+static constexpr uint16_t kVirtioBlkPciModern = 0x1042u;  // virtio 1.0+
+
+// Scan PCI bus 0 (devices 0–31, function 0) and count virtio-blk devices.
+static int count_virtio_blk_pci() noexcept {
+  int found = 0;
+  for (uint8_t dev = 0u; dev < 32u; ++dev) {
+    const uint32_t id = pci_config_read32(0u, dev, 0u, 0x00u);
+    if (id == 0xFFFFFFFFu) continue;  // empty slot
+    const uint16_t vendor = static_cast<uint16_t>(id & 0xFFFFu);
+    const uint16_t device = static_cast<uint16_t>(id >> 16);
+    if (vendor == kVirtioPciVendor
+        && (device == kVirtioBlkPciLegacy || device == kVirtioBlkPciModern)) {
+      ++found;
+    }
+  }
+  return found;
+}
+
+// Returns true if a CanonFS block device is detected (not the boot disk).
+// On AArch64 virt: virtio-mmio probe succeeds at kVirtioMmioBase.
+// On x86_64 q35:  PCI scan finds ≥2 virtio-blk-pci devices.
 static bool probe_virtio_blk_bare() noexcept {
+  // Path 1 — MMIO (virt machine or future explicit virtio-mmio bus on q35).
   const uint32_t magic = mmio_rd32_x86(kVirtioMmioBase, 0x000u);
   const uint32_t ver   = mmio_rd32_x86(kVirtioMmioBase, 0x004u);
   const uint32_t devid = mmio_rd32_x86(kVirtioMmioBase, 0x008u);
-  return magic == 0x74726976u && ver == 2u && devid == 2u;
+  if (magic == 0x74726976u && ver == 2u && devid == 2u) return true;
+
+  // Path 2 — PCI scan (q35 with virtio-blk-pci).
+  // ≥2 virtio-blk devices → boot disk (device N) + CanonFS disk (device N+1).
+  return count_virtio_blk_pci() >= 2;
 }
 
 // ── RDTSC timer ──────────────────────────────────────────────────────────────

@@ -100,12 +100,12 @@ fi
 echo ""
 
 # ── CanonFS block store image ─────────────────────────────────────────────────
-# Note: QEMU q35 uses virtio-blk-pci (PCI transport) for -drive if=virtio,
-# not virtio-mmio.  The freestanding bridge probes MMIO slot 1 (0x0A000200)
-# which will not match a PCI device.  The banner will show (in-memory) on
-# x86_64 q35 until explicit virtio-mmio bus support is added.
+# QEMU q35 uses virtio-blk-pci (PCI transport) for -drive if=virtio.
+# The freestanding bridge first tries MMIO probe at slot 1 (0x0A000200);
+# on q35 that fails, then falls back to PCI config-space scan which counts
+# virtio-blk-pci devices: ≥2 → boot disk + CanonFS disk → (persistent, virtio-blk).
 CANON_IMG="$BUILD_DIR/canon_store_x86.img"
-info "Creating CanonFS raw block store (4 MiB — attached but MMIO probe pending on q35)…"
+info "Creating CanonFS raw block store (4 MiB, virtio-blk-pci slot 2 on q35)…"
 dd if=/dev/zero of="$CANON_IMG" bs=1M count=4 status=none
 ok "CanonFS store: $(du -sh "$CANON_IMG" | cut -f1)"
 echo ""

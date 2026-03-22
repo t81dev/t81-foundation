@@ -108,6 +108,7 @@ jobs:
           check "Axion QEMU x86_64 OVMF slice6"
           check "[axion] bare-metal x86_64 entry"
           check "[axion] ExitBootServices complete"
+          check "[axion] canonfs: mounted (persistent, virtio-blk)"
 
       - name: Save boot log
         run: cp serial_x86.log drivers/qemu/sample-boot-log-x86.txt
