@@ -21,8 +21,8 @@ on:
       - 'include/t81/tensor/ternary_native.hpp'
       - 'include/t81/tensor.hpp'
       - 'src/tensor/**'
-  tags:
-    - 'v*.*.*'
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 permissions:

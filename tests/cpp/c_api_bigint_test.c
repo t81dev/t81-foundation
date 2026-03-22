@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "src/c_api/t81_c_api.h"
+#include "ffi/c_api/t81_c_api.h"
 
 int main(void) {
   // Construct from canonical base-81 digit string (digits 0..80 separated by '.')

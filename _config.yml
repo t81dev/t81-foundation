@@ -1,0 +1,26 @@
+# Jekyll configuration for GitHub Pages
+# Excludes third-party sources and build artifacts that contain Liquid-incompatible syntax.
+
+exclude:
+  - third_party/
+  - build/
+  - ".claude/"
+  - "*.cast"
+  - "*.img"
+  - "*.pdf"
+  - "benchmarks/"
+  - "tests/"
+  - "fuzz/"
+  - "experimental/"
+  - "drivers/"
+  - "vm/"
+  - "fs/"
+  - "ffi/"
+  - "lang/"
+  - "kernel/"
+  - "core/"
+  - "src/"
+  - "tooling/"
+  - "tools/"
+  - "scripts/"
+  - "userland/"

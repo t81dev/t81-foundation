@@ -25,6 +25,12 @@ void require(bool condition) {
   }
 }
 
+void require(bool condition, const char* /*msg*/) {
+  if (!condition) {
+    std::abort();
+  }
+}
+
 void test_swar_basics() {
   std::cout << "[SWAR] Testing Basic Logic..." << std::endl;
   std::mt19937 rng(42);

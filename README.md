@@ -260,9 +260,9 @@ t81 code run inference.t81 \
 
 **Try it in your browser — no install required:**
 
-> **[Launch the T81Lang Playground →](https://t81dev.github.io/t81-foundation/playground)**
+> **T81Lang Playground** *(coming soon — WebAssembly build in progress)*
 >
-> Write and run T81Lang programs directly in the browser. The full compiler + T81VM interpreter runs as WebAssembly. Eight built-in examples: Hello World, BigInt arithmetic, tensors, agent/behavior, and more.
+> Write and run T81Lang programs directly in the browser. The full compiler + T81VM interpreter will run as WebAssembly. Eight built-in examples: Hello World, BigInt arithmetic, tensors, agent/behavior, and more.
 
 **Interactive exploration (local):**
 

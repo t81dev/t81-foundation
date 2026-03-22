@@ -660,5 +660,5 @@ criteria are fully met with no remaining open questions.
 - [RFC-00B3: Axion Governance Kernel Architecture](RFC-00B3-axion-kernel-architecture.md)
 - [RFC-00B4: Axion Userland Service Contract](RFC-00B4-userland-service-contract.md)
 - [RFC-00B5: Governed Event Interrupt Model](RFC-00B5-governed-event-interrupt-model.md)
-- [kernel_architecture_audit.md](../../experimental/ternaryos/docs/kernel_architecture_audit.md)
-- [kernel_engineering_follow_on_plan.md](../../experimental/ternaryos/docs/kernel_engineering_follow_on_plan.md)
+- kernel_architecture_audit.md (archived, not present in current tree)
+- kernel_engineering_follow_on_plan.md (archived, not present in current tree)

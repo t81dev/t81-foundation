@@ -53,6 +53,10 @@ jobs:
             --exclude "https://www.mdpi.com/*"
             --exclude "https://fossies.org/*"
             --exclude "https://github.com/ggerganov/*"
+            --exclude "https://www.researchgate.net/*"
+            --exclude "https://medium.com/*"
+            --exclude "https://t81dev.medium.com/*"
+            --exclude "https://www.reddit.com/*"
             .github/**/*.md spec/**/*.md docs/**/*.md README.md CONTRIBUTING.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

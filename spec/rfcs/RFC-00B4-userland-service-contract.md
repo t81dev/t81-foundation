@@ -104,4 +104,4 @@ The introduction of Process Groups, Supervisors, and explicit device arbitration
 *   [RFC-00B1: Ternary MMU](RFC-00B1-ternary-mmu.md)
 *   [RFC-00B2: Device Drivers](RFC-00B2-device-drivers.md)
 *   [RFC-00B3: Axion Governance Kernel Architecture](RFC-00B3-axion-kernel-architecture.md)
-*   [Kernel Execution Plan](../../experimental/ternaryos/docs/kernel_execution_plan.md)
+*   Kernel Execution Plan (archived, not present in current tree)

@@ -7,7 +7,7 @@
 //   3. FTXUI DOM rendering at fixed terminal size (golden snapshot)
 //   4. Trit-probability bar arithmetic (fill widths)
 
-#include "tooling/tui/common.hpp"
+#include "tools/tui/common.hpp"
 
 #include <ftxui/dom/elements.hpp>
 #include <ftxui/screen/screen.hpp>
