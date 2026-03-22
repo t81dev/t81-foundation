@@ -145,7 +145,11 @@ jobs:
 
           # Run for up to 40 seconds; exit code 124 (timeout) is expected and
           # treated as success — the kernel event loop runs indefinitely.
-          # Two virtio drives: slot 0 = FAT32 boot disk, slot 1 = CanonFS store.
+          # Two virtio-mmio drives:
+          #   slot 0 (0x0A000000): FAT32 boot disk — UEFI finds BOOTAA64.EFI here.
+          #   slot 1 (0x0A000200): CanonFS raw block store — probed by bare-metal bridge.
+          # Use -device virtio-blk-device (MMIO transport), not -drive if=virtio
+          # (which defaults to PCI on the virt machine in QEMU 8.x).
           timeout 40 qemu-system-aarch64 \
             -machine virt \
             -cpu cortex-a57 \
@@ -154,8 +158,10 @@ jobs:
             -serial file:serial.log \
             -drive if=pflash,format=raw,readonly=on,file=/usr/share/AAVMF/AAVMF_CODE.fd \
             -drive if=pflash,format=raw,file=/tmp/edk2-vars.fd \
-            -drive if=virtio,format=raw,file=boot.img \
-            -drive if=virtio,format=raw,file=canon_store.img \
+            -drive id=boot0,if=none,format=raw,file=boot.img \
+            -device virtio-blk-device,drive=boot0 \
+            -drive id=canon0,if=none,format=raw,file=canon_store.img \
+            -device virtio-blk-device,drive=canon0 \
             || true
 
           echo "=== Captured serial output ==="
