@@ -265,10 +265,13 @@ Implemented as of 2026-03-18:
 
 Still open:
 
-- Cross-architecture bit-exact evidence refresh on x86_64 alongside ARM64
+- Cross-architecture bit-exact evidence refresh on x86_64 (pending CI x86_64 runner)
 
-Status 2026-03-18: accepted in-repo. The remaining work above is stable-promotion
-hardening and evidence refresh, not an `accepted` blocker.
+Status 2026-03-22: accepted in-repo. ARM64 evidence is current (see
+`RFC_0041_SIMD_EVIDENCE_2026-03-22.md` §Benchmark Results for refreshed numbers).
+Deprecation wording for `t81/experimental/packed_trit_vector.hpp` is now in place
+(`#pragma message` guard, 2026-03-22). The sole remaining `stable`-promotion item is
+the x86_64 evidence refresh.
 
 ### Future Operations Roadmap
 After core SWAR stabilization, priority extensions for ternary ML/AI workloads:

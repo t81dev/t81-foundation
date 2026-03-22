@@ -451,13 +451,18 @@ namespace t81::simd::kernel {
 - [x] Keep explicit boundary-size tests in the packed-trit validation corpus
 - [~] Refresh and record explicit x86_64 and ARM64 evidence under this RFC
   - ARM64/NEON evidence recorded: `docs/records/status-history/RFC_0041_SIMD_EVIDENCE_2026-03-18.md`
-  - ARM64 tuning now keeps NEON enabled for `TOr` while routing `TAnd` and `TNot` to SWAR on the current host class
-  - x86_64 refresh still pending
+  - ARM64 updated snapshot: `docs/records/status-history/RFC_0041_SIMD_EVIDENCE_2026-03-22.md`
+  - ARM64 tuning keeps NEON for `TOr`; SWAR default for `TAnd`/`TNot` on Neoverse-class
+  - x86_64 refresh pending CI x86_64 runner
 
 ### Phase 3: Documentation & Migration
 - [x] Create migration guidance for callers moving off direct `experimental` usage
-- [~] Complete formal deprecation wording for direct external `experimental` inclusion
-- [~] Add a dedicated RFC-0041 evidence note summarizing current benchmark status
+- [x] Complete formal deprecation wording for direct external `experimental` inclusion
+  - `t81/experimental/packed_trit_vector.hpp` emits `#pragma message` on direct include
+  - Suppressed via `T81_PACKED_TRIT_VECTOR_STABLE_INCLUDE` guard from stable header
+  - Removal timeline: 2 release cycles from 2026-03-22
+- [x] Add a dedicated RFC-0041 evidence note summarizing current benchmark status
+  - `docs/records/status-history/RFC_0041_SIMD_EVIDENCE_2026-03-22.md`
 
 ### Deferred Work
 - [ ] SIMD-specific VM opcode surface
@@ -474,7 +479,7 @@ namespace t81::simd::kernel {
 | [A-0041-04] | Backward compatibility maintained through a compatibility period | Met: stable API is currently a promotion wrapper over the existing implementation |
 | [A-0041-05] | Cross-platform differential/property tests remain in CI-visible test targets | Met |
 | [A-0041-06] | Boundary condition tests (63,64,65,127,128,129 bytes) pass | Met |
-| [A-0041-07] | Documentation and migration guide complete | Accepted in-repo; migration guide and RFC evidence/status surfaces exist, while final cross-arch closeout remains part of the next promotion step |
+| [A-0041-07] | Documentation and migration guide complete | Met: migration guide, deprecation wording (`#pragma message`), and 2026-03-22 evidence note all in place; x86_64 refreshed evidence is the sole remaining item for next promotion step |
 | [A-0041-08] | SIMD-specific VM/JIT scope is either implemented or explicitly deferred | Met: explicitly deferred in this RFC revision |
 
 ## References

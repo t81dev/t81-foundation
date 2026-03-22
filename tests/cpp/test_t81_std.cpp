@@ -75,6 +75,7 @@ void test_math() {
 void test_string() {
   std::cout << "Testing t81::text...\n";
 
+  // Diagnostic: arbitrary value (precision check happens in native tests below)
   F val = F::from_double(123.456);
   t81::text::String s = t81::text::to_string(val);
   std::cout << "to_string(123.456): " << s << "\n";
@@ -95,9 +96,81 @@ void test_string() {
   check(joined.str() == "A-B-C", "Join A-B-C");
 }
 
+// Native ternary-to-decimal conversion tests (no host-float dependency).
+// These verify that to_string() produces exact decimal output for values
+// that are exactly representable in balanced ternary.
+void test_native_float_to_string() {
+  std::cout << "Testing native T81Float::to_string...\n";
+
+  // Special values
+  check(t81::text::to_string(F::nae()).str() == "NAE", "NAE");
+  check(t81::text::to_string(F::inf(true)).str() == "INF", "+INF");
+  check(t81::text::to_string(F::inf(false)).str() == "-INF", "-INF");
+  check(t81::text::to_string(F::zero()).str() == "0", "zero");
+  check(t81::text::to_string(F::zero(false)).str() == "0", "-zero");
+
+  // Exact integer: 1  (mantissa leading trit P, exp = M-1)
+  F one = F::from_double(1.0);
+  auto s_one = t81::text::to_string(one).str();
+  std::cout << "to_string(1.0): " << s_one << "\n";
+  check(s_one == "1", "1.0 -> \"1\"");
+
+  // Exact integer: 3  (1 * 3^1)
+  F three = F::from_double(3.0);
+  auto s_three = t81::text::to_string(three).str();
+  std::cout << "to_string(3.0): " << s_three << "\n";
+  check(s_three == "3", "3.0 -> \"3\"");
+
+  // Exact integer: 9  (1 * 3^2)
+  F nine = F::from_double(9.0);
+  auto s_nine = t81::text::to_string(nine).str();
+  std::cout << "to_string(9.0): " << s_nine << "\n";
+  check(s_nine == "9", "9.0 -> \"9\"");
+
+  // Negative integer: -3
+  F neg_three = F::from_double(-3.0);
+  auto s_neg_three = t81::text::to_string(neg_three).str();
+  std::cout << "to_string(-3.0): " << s_neg_three << "\n";
+  check(s_neg_three == "-3", "-3.0 -> \"-3\"");
+
+  // Exact fraction: 1/3 in balanced ternary is exactly 0.1 (base-3)
+  F third = F::from_double(1.0 / 3.0);
+  auto s_third = t81::text::to_string(third).str();
+  std::cout << "to_string(1/3): " << s_third << "\n";
+  // 1/3 is exact in balanced ternary; decimal expansion terminates: "0.333..."
+  // Native output must start with "0." and consist of '3' digits only.
+  check(s_third.size() >= 3, "1/3 has fractional digits");
+  check(s_third[0] == '0' && s_third[1] == '.', "1/3 starts with 0.");
+  for (size_t ci = 2; ci < s_third.size(); ++ci) {
+    check(s_third[ci] == '3', "1/3 fractional digits are all '3'");
+  }
+
+  // Round-trip sanity: double(to_string(v)) ≈ v.to_double() for 0.5
+  // 0.5 is not exactly representable in balanced ternary, so we only check
+  // that the decimal output parses back to within 1e-10.
+  F half = F::from_double(0.5);
+  auto s_half = t81::text::to_string(half).str();
+  std::cout << "to_string(0.5): " << s_half << "\n";
+  double parsed = std::stod(s_half);
+  check(std::abs(parsed - 0.5) < 1e-10, "0.5 round-trip within 1e-10");
+
+  // 0.125 = 1/8: not exact in ternary — check round-trip precision
+  F eighth = F::from_double(0.125);
+  auto s_eighth = t81::text::to_string(eighth).str();
+  std::cout << "to_string(0.125): " << s_eighth << "\n";
+  check(std::abs(std::stod(s_eighth) - 0.125) < 1e-10, "0.125 round-trip within 1e-10");
+
+  // Exact integer large: 81 = 3^4
+  F eighty_one = F::from_double(81.0);
+  auto s_81 = t81::text::to_string(eighty_one).str();
+  std::cout << "to_string(81.0): " << s_81 << "\n";
+  check(s_81 == "81", "81.0 -> \"81\"");
+}
+
 int main() {
   test_math();
   test_string();
+  test_native_float_to_string();
   std::cout << "All t81::standard tests passed.\n";
   return 0;
 }

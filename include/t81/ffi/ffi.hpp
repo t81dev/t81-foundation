@@ -68,10 +68,16 @@ struct FFIStringListResult {
   std::uint32_t count{0};
 };
 
+struct FFIIntListResult {
+  const std::int64_t* items{nullptr};
+  std::uint32_t count{0};
+};
+
 // FFI call result with audit data
 struct FFICallResult {
   FFIResult status;
-  std::variant<uint64_t, int64_t, double, std::string, std::vector<std::string>, void*> result;
+  std::variant<uint64_t, int64_t, double, std::string,
+               std::vector<std::string>, std::vector<int64_t>, void*> result;
   std::string error_message;
   uint64_t execution_time_ns;
   std::vector<std::string> audit_events;

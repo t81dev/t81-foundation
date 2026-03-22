@@ -133,8 +133,8 @@ inline T729DynamicTensor contract_dot(const T729DynamicTensor& a, const T729Dyna
     throw std::invalid_argument("contract_dot: size mismatch");
   }
   const TensorNumericClass result_class = reduce_detail::contract_result_class(a, b);
-  if (a.has_canonical_fixed_data() && b.has_canonical_fixed_data() &&
-      a.strict_core_eligible() && b.strict_core_eligible()) {
+  if (a.strict_core_eligible() && b.strict_core_eligible() &&
+      a.has_canonical_fixed_data() && b.has_canonical_fixed_data()) {
     reduce_detail::DFixed sum = reduce_detail::DFixed::zero();
     const auto& lhs = a.canonical_fixed_data();
     const auto& rhs = b.canonical_fixed_data();

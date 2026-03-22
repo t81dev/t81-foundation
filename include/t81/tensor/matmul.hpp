@@ -96,8 +96,8 @@ inline T729DynamicTensor matmul(const T729DynamicTensor& A, const T729DynamicTen
   if (kA != kB) throw std::invalid_argument("matmul: inner dimensions mismatch");
   const TensorNumericClass result_class = matmul_detail::matmul_result_class(A, B);
 
-  if (A.has_canonical_fixed_data() && B.has_canonical_fixed_data() &&
-      A.strict_core_eligible() && B.strict_core_eligible()) {
+  if (A.strict_core_eligible() && B.strict_core_eligible() &&
+      A.has_canonical_fixed_data() && B.has_canonical_fixed_data()) {
     auto out = matmul_detail::fixed_matmul(A.canonical_fixed_data(), B.canonical_fixed_data(), m, kA, n);
     return T729DynamicTensor::from_canonical_fixed({m, n}, std::move(out), result_class);
   }
@@ -139,16 +139,29 @@ inline T729DynamicTensor matmul(const T729DynamicTensor& A, const T729DynamicTen
         c[c_row + j] += av * b[b_row + j];
       }
 #else
-      for (int j = 0; j < n; ++j) {
-        c[c_row + j] = matmul_detail::deterministic_fma(c[c_row + j], av, b[b_row + j]);
+      // When result_class is HostFloat, at least one operand is already a
+      // float approximation (e.g. the output of a native unary fast path such
+      // as TExp).  Using deterministic_fma here would convert each value to
+      // T81Float<72,9> and back for no semantic benefit — the result is
+      // HostFloat regardless.  Plain IEEE multiply is correct and fast.
+      if (result_class == TensorNumericClass::HostFloat) {
+        for (int j = 0; j < n; ++j) {
+          c[c_row + j] += av * b[b_row + j];
+        }
+      } else {
+        for (int j = 0; j < n; ++j) {
+          c[c_row + j] = matmul_detail::deterministic_fma(c[c_row + j], av, b[b_row + j]);
+        }
       }
 #endif
     }
   }
 
-  auto result = T729DynamicTensor({m, n}, std::move(c));
-  result.set_numeric_class(result_class);
-  return result;
+  // Use from_host_float_data to skip the eager canonical-fixed cache build
+  // that the two-argument constructor would trigger.  The cache is lazily
+  // built on demand if a downstream op needs it (ExactInt/ExactTrit results),
+  // and never built for HostFloat results (strict_core_eligible() is false).
+  return T729DynamicTensor::from_host_float_data({m, n}, std::move(c), result_class);
 }
 
 inline T729DynamicTensor qmatmul(const T729DynamicTensor& activations, const T729DynamicTensor& weights,
@@ -163,8 +176,8 @@ inline T729DynamicTensor qmatmul(const T729DynamicTensor& activations, const T72
 
 inline T729DynamicTensor qmatmul(const T729DynamicTensor& activations, const T729DynamicTensor& weights,
                                  const t81::core::detail::DFixed& scale) {
-  if (activations.has_canonical_fixed_data() && weights.has_canonical_fixed_data() &&
-      activations.strict_core_eligible() && weights.strict_core_eligible()) {
+  if (activations.strict_core_eligible() && weights.strict_core_eligible() &&
+      activations.has_canonical_fixed_data() && weights.has_canonical_fixed_data()) {
     auto dequantized = matmul_detail::fixed_scale(weights.canonical_fixed_data(), scale);
     auto dequantized_tensor =
         T729DynamicTensor::from_canonical_fixed(weights.shape(), std::move(dequantized),

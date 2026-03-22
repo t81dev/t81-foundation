@@ -1,6 +1,7 @@
 # RFC-00B8: Governed Foreign Function Interface
 
 **Status:** accepted
+**Updated:** 2026-03-22
 **Type:** standards-track
 **Applies-To:** T81VM runtime, T81Lang compiler, Axion governance kernel
 **Created:** 2026-03-16
@@ -222,14 +223,45 @@ This RFC extends but does not break existing T81 contracts:
 - Axion gains FFI policy governance
 - Deterministic execution preserved for pure FFI calls
 
-## 7. Open Questions
+## 7. Resolved Questions (closed 2026-03-22)
 
-1. **Performance Overhead**: What is the governance cost for FFI calls?
-2. **Library Management**: How to version and validate external libraries?
-3. **Cross-Platform**: Handle platform-specific FFI differences?
-4. **Error Propagation**: Best practices for richer FFI error/result handling?
-5. **Resource Limits**: Appropriate default quotas for FFI operations?
-6. **Sandbox Boundary**: Should quarantined FFI remain governed-loading only, or gain a real isolation boundary?
+1. **Performance Overhead** — *Resolved.* The governance cost is one `policy_engine_.evaluate()` call
+   per FFI dispatch. Deterministic (`@deterministic`) calls additionally benefit from a
+   result cache keyed on function name + argument hash, making repeated pure-function calls
+   O(1) after the first. This is acceptable for governed interop; performance-critical paths
+   should avoid FFI.
+
+2. **Library Management** — *Resolved.* Libraries are registered with a version hash via
+   `FFIRegister`/`ffi_register`. The hash is stored in `FFIFunction::version_hash` and
+   validated at registration time. Dynamic re-registration of the same library name with a
+   different hash is rejected. This provides immutable versioning semantics compatible with
+   CanonFS object identity.
+
+3. **Cross-Platform** — *Resolved.* FFI dispatch uses `dlopen`/`dlsym` (POSIX) with a
+   Windows `LoadLibrary`/`GetProcAddress` fallback. Platform differences are encapsulated
+   inside `FFIDispatcher`. T81 programs are not aware of platform specifics; the function
+   symbol is resolved at dispatch time and the calling convention is determined by the
+   registered schema.
+
+4. **Error Propagation** — *Resolved.* FFI errors propagate as `FFIResult` status codes
+   (`PolicyDenied`, `TypeMismatch`, `ResourceExhausted`, `ExternalError`, `QuarantineRequired`)
+   mapped to TISC traps at the VM boundary. The audit trail captures error detail. Richer
+   structured error returns are deferred to the `stable` promotion track as part of broader
+   schema coverage.
+
+5. **Resource Limits** — *Resolved.* Defaults: 1 second max call time, 1 GB max memory usage.
+   Both are overridable per-call-site via `FFIPolicySet` (policy type 0 = time, type 1 =
+   memory). These are conservative defaults appropriate for governed external calls.
+
+6. **Sandbox Boundary** — *Resolved: policy-mediated gate is the normative isolation model.*
+   Quarantined FFI (`@quarantined`) uses Axion policy enforcement as its isolation boundary:
+   calls are fail-closed by default (`QuarantineRequired`) and can only proceed if an explicit
+   policy verdict of `Allow` is issued. OS-level process/memory isolation (seccomp, pledge,
+   macOS sandbox) would introduce platform variance and non-determinism incompatible with
+   T81's reproducibility guarantees. The `required_capabilities` field on `FFIFunction`
+   provides a capability-layer gate within the existing model (checked at call time against
+   the active policy context). OS-level isolation is deferred to a future RFC if and when
+   a specific threat model requires it.
 
 ## 8. Acceptance Criteria
 
@@ -246,7 +278,7 @@ This RFC moves from `proposed` to `accepted` when:
 Status 2026-03-18: met in-repo. Remaining work is promotion hardening and broader
 ecosystem scope, not an `accepted` blocker.
 
-## 9. Implementation Status (2026-03-18)
+## 9. Implementation Status (2026-03-22)
 
 Implemented:
 - `FFICall`, `FFIRegister`, and `FFIPolicySet` opcodes in the TISC registry and VM dispatch
@@ -254,19 +286,24 @@ Implemented:
 - `FFIDispatcher` and `FFILibraryRegistry`
 - VM bridge round-trip for encoded function-name symbols, register-backed library registration,
   and concrete success/failure path execution through the current scalar bridge
-- current bridge covers no-arg `uint64_t`, unary `int64_t`, binary `int64_t`,
+- bridge covers no-arg `uint64_t`, unary `int64_t`, binary `int64_t`,
   unary string-arg to integer-result, no-arg string-result, unary double-arg to double-result,
   no-arg double-result, unary bytes-arg to integer-result, and no-arg bytes-result
-  call shapes end to end, plus mixed-type ordered arguments such as `(int64_t, string) -> int64_t`
-  and initial structured argument/return paths materialized as `StringVectorHandle`
+  call shapes end to end, plus mixed-type ordered arguments such as `(int64_t, string) -> int64_t`,
+  structured string-vector argument path (`string[]`), and structured integer-vector result path
+  (`int64[]` via `FFIIntListResult` ABI struct, stored as `IntVectorHandle`)
 - real external-library VM evidence through the system C library for no-arg integer,
   unary integer, unary string, and unary double call shapes
 - governance evidence for audit-trail emission on success and fail-closed quarantine behavior
-- RFC-0036 language acceptance tests plus focused VM bridge regression coverage
+- `required_capabilities` wired to `SyscallContext::trace_reasons` for Axion policy evaluation
+  (Q6 resolution: capability-layer gate within the policy-mediated isolation model)
+- canonical audit event format (`ffi_call`, `ffi_quarantine`, `ffi_policy_deny`,
+  `ffi_capability`, `ffi_error`) matching the Axion event registry (axion-event-registry.md §FFI)
+- RFC-0036 language acceptance tests plus focused VM bridge regression coverage (405/405)
 
 Not yet complete:
-- real sandbox/isolation for quarantined FFI
-- broader structured schema coverage than the current `StringVectorHandle` path
+
+- OS-level sandbox/isolation for quarantined FFI (deferred per Q6 resolution — future RFC)
 - additional ecosystem bindings and performance evidence for eventual `stable`
 
 ---

@@ -243,6 +243,35 @@ Current execution evidence note:
   any family from `experimental_native` toward `native_supported` now depends
   not only on conversion correctness and rejection discipline, but also on
   improved post-load execution behavior for native tensors.
+- Result-representation fix implemented 2026-03-22: the three native unary fast
+  paths (`native_tensor_unary_exp_direct`, `native_tensor_unary_silu_direct`,
+  `native_tensor_unary_softmax_direct` in `vm/tensor_helpers.cpp`) previously
+  returned tensors tagged `ExactInt`, which is semantically incorrect — values
+  such as `exp(-1) ≈ 0.368` are not integers.  The incorrect tag caused
+  downstream `ops::matmul` (and related ops) to treat the float-backed result as
+  strict-core eligible, triggering an O(N) lazy canonical-fixed cache build
+  before the eligibility check that would have skipped it.  The tags are now
+  `HostFloat`, and `strict_core_eligible()` guards have been moved ahead of
+  `has_canonical_fixed_data()` in seven locations across `matmul.hpp`,
+  `reduce.hpp`, `unary.hpp`, and `llama.hpp` so that `HostFloat` tensors never
+  pay the cache-build cost.  The chained `TExp → TMatMul` path now completes
+  end-to-end across all tested sizes; the remaining per-iteration cost is
+  `deterministic_fma` (T81Float<72,9> per multiply-accumulate in
+  `T81_DETERMINISTIC` mode), not the canonical-fixed cache build.  See
+  `docs/records/status-history/TRACK_K_RESULT_REPRESENTATION_EVIDENCE_2026-03-22.md`
+  for full details and benchmark numbers.
+- HostFloat matmul fast path implemented 2026-03-22 (Track L): two further
+  changes to `ops::matmul` in `include/t81/tensor/matmul.hpp` eliminated the
+  remaining cost from the `TExp → TMatMul` chain.  (1) When `result_class ==
+  HostFloat`, the scalar fall-through now uses plain IEEE float multiply instead
+  of `deterministic_fma` (T81Float<72,9> round-trip only needed for ExactTrit ×
+  ExactTrit paths).  (2) The output tensor is now constructed via
+  `from_host_float_data`, skipping the eager O(N) `build_canonical_fixed_cache_`
+  call in the two-argument constructor.  Together with Track K, the chained
+  `WeightsLoad → TExp → TMatMul` path drops from ~4 160 ms/iter to **0.0073 ms**
+  at 64 elements (8×8), **10–873× faster** than the binary BigInt reference
+  across sizes 64–4096.  See
+  `docs/records/status-history/TRACK_L_HOSTFLOAT_MATMUL_EVIDENCE_2026-03-22.md`.
 
 ## 7. Alternatives Considered
 
@@ -280,7 +309,7 @@ Too limiting for the intended model-ingestion roadmap.
 
 ### 8.3 Phase 3: Expansion
 
-- [~] add mistral/phi/qwen dense profiles
+- [x] add mistral/phi/qwen dense profiles
 - [x] add explicit rejection tests for unsupported advanced features
 
 Current status:
@@ -293,27 +322,29 @@ Current status:
 
 ### 8.4 Phase 4: Evidence
 
-- run end-to-end conversion plus RFC-0034 execution evidence for each promoted family
+- [x] run end-to-end conversion plus RFC-0034 execution evidence for each promoted family
 - document known quality and coverage limits
 
-Current evidence state on 2026-03-18:
+Current evidence state on 2026-03-22:
 
 - real TinyLlama GGUF conversion into native `.t81w` is verified in-repo
-- real TinyLlama family-specific execution is now also verified in-repo via the
-  full `GGUF -> native .t81w -> reload -> VM TWEMBED` path on
-  `blk.0.attn_q.weight`, not just via generic native-weight benchmarks
-- synthetic fixture coverage exists for `gemma`, `mistral`, `phi3`, and `qwen2`
-- native execution evidence now exists for the generic `.t81w` path via
+- real TinyLlama family-specific execution is verified in-repo via the full
+  `GGUF -> native .t81w -> reload -> VM TWEMBED` path on `blk.0.attn_q.weight`
+- synthetic `GGUF -> .t81w -> VM TWEMBED` execution evidence added for all 4
+  remaining dense decoder families (`gemma`, `mistral`, `phi3`, `qwen2`) via
+  `run_synthetic_family_vm_execution()` in `tests/cpp/gguf_import_bridge_test.cpp`
+  (2026-03-22); each family proves the full conversion + TISC WeightsLoad + TWEMBED
+  path and verifies the output TensorHandle has shape `[1, 8]` with ExactTrit numeric
+  class; tests are gated by `T81_ENABLE_LLAMA_CPP` (same gate as all GGUF tests)
+- native execution evidence also exists for the generic `.t81w` path via
   `docs/records/status-history/NATIVE_WEIGHTS_EXECUTION_EVIDENCE_2026-03-18.md`
-- the next step for this RFC is not another profile name alone; it is
-  family-by-family execution evidence after conversion, starting with the
-  already-admitted dense decoder families
 
-Status 2026-03-18: accepted in-repo. The compatibility framework, explicit
+Status 2026-03-22: accepted in-repo. The compatibility framework, explicit
 profile matrix, deterministic rejection rules, real TinyLlama conversion path,
-and first family-specific `GGUF -> .t81w -> VM` execution evidence are all
-implemented. Remaining work is post-acceptance expansion and hardening:
-additional family-specific execution evidence, more profile coverage, and
+and synthetic family-by-family `GGUF -> .t81w -> VM` execution evidence for all
+5 dense decoder families (`llama`, `gemma`, `mistral`, `phi3`, `qwen2`) are all
+implemented. Remaining post-acceptance work: real (non-synthetic) GGUF execution
+evidence for non-llama families once reference model files are available, and
 possible promotion of mature families from `experimental_native` toward
 `native_supported`.
 

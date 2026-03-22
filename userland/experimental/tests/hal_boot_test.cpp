@@ -11211,6 +11211,10 @@ static void test_kernel_execution_abi_calls() {
     check(axion_kernel_bind_published_executable_store(*publishing_state,
                                                        std::move(external_store)),
           "execution ABI can bind an external published-executable store");
+    // axion_kernel_bootstrap always sets published_executable_canonfs to an
+    // in-memory fallback driver.  Clear it here so this test exercises the
+    // block-device persistence path (HostedBlockDev → backing file on disk).
+    publishing_state->published_executable_canonfs = nullptr;
 
     t81::ternaryos::sched::TiscContext publishing_thread;
     publishing_thread.registers[0] = 9101;
@@ -11575,6 +11579,9 @@ static void test_kernel_execution_abi_calls() {
         check(axion_kernel_bind_published_executable_store_from_virtualbox_guest(
                   *vbox_state, *guest),
               "execution ABI can adopt VirtualBox guest storage as the executable store");
+        // Clear the CanonFS fallback (set by axion_kernel_bootstrap) so this
+        // test exercises the block-device reload path through HostedBlockDev.
+        vbox_state->published_executable_canonfs = nullptr;
 
         t81::ternaryos::sched::TiscContext vbox_thread;
         vbox_thread.registers[0] = 9107;

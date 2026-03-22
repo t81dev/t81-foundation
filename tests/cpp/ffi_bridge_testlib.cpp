@@ -14,6 +14,11 @@ struct FFIStringListResult {
   std::uint32_t count;
 };
 
+struct FFIIntListResult {
+  const std::int64_t* items;
+  std::uint32_t count;
+};
+
 }  // namespace ffi
 }  // namespace t81
 
@@ -67,3 +72,11 @@ extern "C" std::int64_t t81_ffi_string_list_total_len(const char* const* items,
 }
 
 extern "C" std::int64_t t81_ffi_quarantined_probe() { return 99; }
+
+extern "C" t81::ffi::FFIIntListResult t81_ffi_int_list_bridge() {
+  static const std::int64_t payload[] = {10, 20, 30};
+  t81::ffi::FFIIntListResult result;
+  result.items = payload;
+  result.count = 3;
+  return result;
+}

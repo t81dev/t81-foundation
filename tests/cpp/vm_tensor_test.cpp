@@ -181,7 +181,7 @@ int main() {
           .tensors[static_cast<std::size_t>(native_exp_handle - 1)];
   T81_TEST_CHECK(native_exp_res.has_value());
   T81_TEST_CHECK(native_exp_res.value().shape() == std::vector<int>({2, 2}));
-  T81_TEST_CHECK(native_exp_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(native_exp_res.value().numeric_class() == t81::TensorNumericClass::HostFloat);
   T81_TEST_CHECK(std::fabs(native_exp_res.value().data()[0] - std::exp(-1.0f)) < 1e-4f);
   T81_TEST_CHECK(std::fabs(native_exp_res.value().data()[3] - std::exp(-1.0f)) < 1e-4f);
 
@@ -215,7 +215,7 @@ int main() {
           .tensors[static_cast<std::size_t>(native_silu_handle - 1)];
   T81_TEST_CHECK(native_silu_res.has_value());
   T81_TEST_CHECK(native_silu_res.value().shape() == std::vector<int>({2, 2}));
-  T81_TEST_CHECK(native_silu_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(native_silu_res.value().numeric_class() == t81::TensorNumericClass::HostFloat);
   const float silu_neg_one = -1.0f / (1.0f + std::exp(1.0f));
   T81_TEST_CHECK(std::fabs(native_silu_res.value().data()[0] - silu_neg_one) < 1e-4f);
   T81_TEST_CHECK(std::fabs(native_silu_res.value().data()[3] - silu_neg_one) < 1e-4f);
@@ -226,7 +226,7 @@ int main() {
           .tensors[static_cast<std::size_t>(native_softmax_handle - 1)];
   T81_TEST_CHECK(native_softmax_res.has_value());
   T81_TEST_CHECK(native_softmax_res.value().shape() == std::vector<int>({2, 2}));
-  T81_TEST_CHECK(native_softmax_res.value().numeric_class() == t81::TensorNumericClass::ExactInt);
+  T81_TEST_CHECK(native_softmax_res.value().numeric_class() == t81::TensorNumericClass::HostFloat);
   const float softmax_row_sum0 =
       native_softmax_res.value().data()[0] + native_softmax_res.value().data()[1];
   const float softmax_row_sum1 =

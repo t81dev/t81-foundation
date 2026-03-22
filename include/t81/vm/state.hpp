@@ -57,6 +57,7 @@ enum class ValueTag : std::uint8_t {
   AsyncThreadHandle,
   AsyncPromiseHandle,
   StringVectorHandle,
+  IntVectorHandle,
   SymbolicGraphHandle,
   Tier2FrameHandle,
   InfiniteHandle,
@@ -367,6 +368,7 @@ struct State {
   std::vector<t81::T81Fraction> fractions;
   std::vector<std::string> symbols;
   std::vector<std::vector<std::string>> string_vectors;
+  std::vector<std::vector<std::int64_t>> int_vectors;
   std::vector<std::string> printed_output;
   std::vector<std::vector<int>> shapes;
   std::vector<OptionValue> options;

@@ -1246,6 +1246,7 @@ public:
         case ValueTag::SymbolHandle:
           return std::nullopt;
         case ValueTag::StringVectorHandle:
+        case ValueTag::IntVectorHandle:
         case ValueTag::SymbolicGraphHandle:
         case ValueTag::Tier2FrameHandle:
         case ValueTag::InfiniteHandle:
@@ -1352,6 +1353,8 @@ public:
           if (!ptr_val) return std::nullopt;
           return "<strvec#" + std::to_string(val_data) + ">";
         }
+        case ValueTag::IntVectorHandle:
+          return "<intvec#" + std::to_string(val_data) + ">";
         case ValueTag::SymbolicGraphHandle: {
           auto* graph = symbolic_graph_ptr(val_data);
           if (!graph) return std::nullopt;

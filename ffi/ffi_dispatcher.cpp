@@ -197,25 +197,29 @@ t81::expected<FFICallResult, std::string> FFIDispatcher::call(const FFICallConte
 
   const FFIFunction& function = *func_result.value();
 
-  // Check quarantine status
+  // Check quarantine status — fail-closed; emit canonical ffi_quarantine event.
   if (function.type == FFIType::Quarantined) {
-    return FFICallResult{.status = FFIResult::QuarantineRequired,
-                         .result = {},
-                         .error_message = "Function is quarantined: " + context.function_name,
-                         .execution_time_ns = 0,
-                         .audit_events = {"QuarantineCheck"},
-                         .provenance_hash = ""};
+    return FFICallResult{
+        .status = FFIResult::QuarantineRequired,
+        .result = {},
+        .error_message = "Function is quarantined: " + context.function_name,
+        .execution_time_ns = 0,
+        .audit_events = {"ffi_quarantine fn=" + context.function_name +
+                         " lib=" + function.library_name},
+        .provenance_hash = ""};
   }
 
-  // Policy check
+  // Policy check — emit canonical ffi_policy_deny on rejection.
   auto policy_result = check_policy_(context, function);
   if (!policy_result) {
-    return FFICallResult{.status = FFIResult::PolicyDenied,
-                         .result = {},
-                         .error_message = policy_result.error(),
-                         .execution_time_ns = 0,
-                         .audit_events = {"PolicyCheck"},
-                         .provenance_hash = ""};
+    return FFICallResult{
+        .status = FFIResult::PolicyDenied,
+        .result = {},
+        .error_message = policy_result.error(),
+        .execution_time_ns = 0,
+        .audit_events = {"ffi_policy_deny fn=" + context.function_name +
+                         " reason=" + policy_result.error()},
+        .provenance_hash = ""};
   }
 
   // Resource quota check
@@ -252,14 +256,22 @@ void FFIDispatcher::set_resource_quota(uint64_t max_time_ns, uint64_t max_memory
 std::vector<FFICallResult> FFIDispatcher::get_audit_trail() const { return audit_trail_; }
 
 t81::expected<void, std::string> FFIDispatcher::check_policy_(
-    const FFICallContext& context, [[maybe_unused]] const FFIFunction& function) {
+    const FFICallContext& context, const FFIFunction& function) {
+  // Surface required_capabilities as trace_reasons so the policy engine can
+  // observe and enforce them.  string_view is safe: function outlives this call.
+  std::vector<std::string_view> trace_reasons;
+  trace_reasons.reserve(function.required_capabilities.size());
+  for (const auto& cap : function.required_capabilities) {
+    trace_reasons.emplace_back(cap);
+  }
+
   // Create Axion syscall context
   axion::SyscallContext syscall_context{.snapshot = {},  // No snapshot for FFI calls
                                         .caller = context.caller_location,
                                         .syscall = "FFI_Call",
                                         .payload = context.function_name,
                                         .policy = nullptr,
-                                        .trace_reasons = {},
+                                        .trace_reasons = std::move(trace_reasons),
                                         .pc = 0,
                                         .next_opcode = t81::tisc::Opcode::FFICall,
                                         .recursion_depth = 0,
@@ -269,15 +281,14 @@ t81::expected<void, std::string> FFIDispatcher::check_policy_(
                                         .meta_write_count = 0,
                                         .current_tier = 0};
 
-  // Check with policy engine
+  // Check with policy engine.  The verdict covers all required_capabilities
+  // surfaced via trace_reasons; a Deny verdict here means at least one
+  // required capability was not satisfied by the active policy.
   auto policy_result = policy_engine_.evaluate(syscall_context);
 
   if (policy_result.kind != axion::VerdictKind::Allow) {
     return t81::unexpected(std::string("Policy denied: " + policy_result.reason));
   }
-
-  // TODO: Check required capabilities when Engine interface supports it
-  // For now, assume all capabilities are available
 
   return {};
 }
@@ -385,17 +396,45 @@ void FFIDispatcher::generate_audit_events_(const FFICallContext& context,
                                 result.error_message;
   std::string provenance_hash = compute_provenance_hash_(provenance_data);
 
-  // Create audit events
-  std::vector<std::string> events = {
-      "FFICall_" + context.function_name,
-      "FunctionType_" + std::to_string(static_cast<int>(function.type)),
-      "Library_" + function.library_name,
-      "Status_" + std::to_string(static_cast<int>(result.status)),
-      "ExecutionTime_" + std::to_string(result.execution_time_ns) + "ns"};
+  // Canonical type label for audit.
+  auto type_label = [&]() -> std::string_view {
+    switch (function.type) {
+      case FFIType::Deterministic: return "deterministic";
+      case FFIType::Governed:      return "governed";
+      case FFIType::Quarantined:   return "quarantined";
+    }
+    return "unknown";
+  }();
 
-  // Add error events if applicable
-  if (result.status != FFIResult::Success) {
-    events.push_back("Error_" + result.error_message);
+  auto status_label = [&]() -> std::string_view {
+    switch (result.status) {
+      case FFIResult::Success:             return "success";
+      case FFIResult::PolicyDenied:        return "policy_denied";
+      case FFIResult::TypeMismatch:        return "type_mismatch";
+      case FFIResult::ResourceExhausted:   return "resource_exhausted";
+      case FFIResult::ExternalError:       return "external_error";
+      case FFIResult::QuarantineRequired:  return "quarantine_required";
+    }
+    return "unknown";
+  }();
+
+  // Create canonical audit events (key=value format, RFC-00B8 §7 resolution).
+  std::vector<std::string> events;
+  events.push_back("ffi_call fn=" + context.function_name +
+                   " lib=" + function.library_name +
+                   " type=" + std::string(type_label) +
+                   " status=" + std::string(status_label) +
+                   " ns=" + std::to_string(result.execution_time_ns));
+
+  // One ffi_capability event per required capability surfaced to policy.
+  for (const auto& cap : function.required_capabilities) {
+    events.push_back("ffi_capability fn=" + context.function_name + " cap=" + cap);
+  }
+
+  // Error detail on non-success.
+  if (result.status != FFIResult::Success && !result.error_message.empty()) {
+    events.push_back("ffi_error fn=" + context.function_name +
+                     " msg=" + result.error_message);
   }
 
   // Store events in result
@@ -634,6 +673,22 @@ FFICallResult FFIDispatcher::call_foreign_function_(void* func_ptr, const FFICal
     for (std::uint32_t i = 0; i < result.count; ++i) {
       const char* item = result.items ? result.items[i] : nullptr;
       values.emplace_back(item ? item : "");
+    }
+    return FFICallResult{.status = FFIResult::Success,
+                         .result = std::move(values),
+                         .error_message = "",
+                         .execution_time_ns = 0,
+                         .audit_events = {},
+                         .provenance_hash = ""};
+  }
+
+  if (function.return_type == "int64[]" && function.param_types.empty()) {
+    auto typed_func = reinterpret_cast<FFIIntListResult (*)()>(func_ptr);
+    const FFIIntListResult list = typed_func();
+    std::vector<std::int64_t> values;
+    values.reserve(list.count);
+    for (std::uint32_t i = 0; i < list.count; ++i) {
+      values.push_back(list.items ? list.items[i] : 0);
     }
     return FFICallResult{.status = FFIResult::Success,
                          .result = std::move(values),

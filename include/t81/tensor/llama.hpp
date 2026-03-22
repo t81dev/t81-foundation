@@ -213,7 +213,7 @@ inline T729DynamicTensor rmsnorm(const T729DynamicTensor& x, const T729DynamicTe
 }
 
 inline T729DynamicTensor silu(const T729DynamicTensor& x) {
-  if (x.has_canonical_fixed_data()) {
+  if (x.strict_core_eligible() && x.has_canonical_fixed_data()) {
     std::vector<detail::DFixed> out;
     out.reserve(x.size());
     for (const auto& value : x.canonical_fixed_data()) {
@@ -247,7 +247,7 @@ inline T729DynamicTensor silu(const T729DynamicTensor& x) {
 
 inline T729DynamicTensor softmax(const T729DynamicTensor& x) {
   if (x.rank() == 0) throw std::invalid_argument("softmax: rank 0");
-  if (x.has_canonical_fixed_data()) {
+  if (x.strict_core_eligible() && x.has_canonical_fixed_data()) {
     const int dim = x.shape().back();
     const int rows = static_cast<int>(x.size() / static_cast<std::size_t>(dim));
     auto out = detail::fixed_softmax_rows(x.canonical_fixed_data(), rows, dim);
@@ -341,7 +341,8 @@ inline T729DynamicTensor attention(const T729DynamicTensor& q, const T729Dynamic
           ? TensorNumericClass::ExactInt
           : TensorNumericClass::HostFloat;
 
-  if (q.has_canonical_fixed_data() && k.has_canonical_fixed_data() && v.has_canonical_fixed_data()) {
+  if (result_class != TensorNumericClass::HostFloat &&
+      q.has_canonical_fixed_data() && k.has_canonical_fixed_data() && v.has_canonical_fixed_data()) {
     std::vector<detail::DFixed> k_transposed(static_cast<std::size_t>(dk) *
                                                  static_cast<std::size_t>(k_rows),
                                              detail::DFixed::zero());

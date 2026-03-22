@@ -621,13 +621,13 @@ else()
 endif()
 
 # =============================================================================
-# TernOS Phase 1 — HAL experimental scaffold (RFC-00B0)
-# Enable with -DT81_ENABLE_TERNARYOS=ON
+# TernaryOS — HAL, shell, and user environment (RFC-00B0 through RFC-00B9)
+# Enabled by default; disable with -DT81_ENABLE_TERNARYOS=OFF
 # =============================================================================
-option(T81_ENABLE_TERNARYOS "Enable experimental TernOS HAL scaffold (non-DCP)" OFF)
+option(T81_ENABLE_TERNARYOS "Enable TernaryOS HAL, shell, and user environment" ON)
 
 if(T81_ENABLE_TERNARYOS)
-  message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building experimental TernOS HAL")
+  message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building TernaryOS HAL, shell, and user environment")
 
   add_library(t81_ternaryos_hal STATIC
     userland/experimental/hal/hal_main.cpp
@@ -1521,13 +1521,13 @@ if(T81_ENABLE_TERNARYOS)
 endif()
 
 # =============================================================================
-# Experimental DPE — Deterministic Parallel Execution (RFC-DPE-0002+)
-# Enable with -DT81_ENABLE_DPE=ON
+# DPE — Deterministic Parallel Execution (RFC-DPE-0002 through RFC-DPE-0009)
+# Enabled by default; disable with -DT81_ENABLE_DPE=OFF
 # =============================================================================
-option(T81_ENABLE_DPE "Enable DPE task graph primitives (RFC-DPE-0002)" OFF)
+option(T81_ENABLE_DPE "Enable DPE task graph primitives (RFC-DPE-0002 through RFC-DPE-0009)" ON)
 
 if(T81_ENABLE_DPE)
-  message(STATUS "[t81] T81_ENABLE_DPE=ON — building DPE task graph")
+  message(STATUS "[t81] T81_ENABLE_DPE=ON — building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)")
 
   add_library(t81_dpe STATIC
     vm/dpe/task_graph.cpp

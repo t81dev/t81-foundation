@@ -519,9 +519,8 @@ AI agent sessions (RFC-0033 `t81 agent`) with Tier 2 default.
 - Add `ternaryos_user_env_test` to the CTest suite (AC-1 through AC-15)
 - Snapshot-style golden-output tests for `t81sh` prompt, login flow, and command audit trail
 
-Status 2026-03-18: met in the opt-in TernaryOS build (`-DT81_ENABLE_TERNARYOS=ON`).
-The remaining work is promotion hardening for default-on/runtime integration, not an
-acceptance blocker.
+Status 2026-03-22: all AC-1..15 met; `T81_ENABLE_TERNARYOS` is now default-ON in CMake
+(promoted from opt-in). No further promotion hardening required.
 
 ---
 

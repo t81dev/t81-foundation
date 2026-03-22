@@ -39,7 +39,39 @@
       "cacheVariables": {
         "T81_BUILD_TESTS": "ON",
         "T81_BUILD_EXAMPLES": "ON",
-        "T81_BUILD_BENCHMARKS": "OFF"
+        "T81_BUILD_BENCHMARKS": "OFF",
+        "T81_ENABLE_TERNARYOS": "ON",
+        "T81_ENABLE_DPE": "ON"
+      }
+    },
+    {
+      "name": "dev",
+      "displayName": "Dev Config (debug + tests + TernaryOS + DPE)",
+      "description": "Local development preset: debug build with tests, TernaryOS, and DPE enabled. Matches the full 405-test suite. Run: cmake --preset dev && cmake --build build-dev && ctest --preset dev",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build-dev",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "T81_BUILD_TESTS": "ON",
+        "T81_BUILD_EXAMPLES": "OFF",
+        "T81_BUILD_BENCHMARKS": "OFF",
+        "T81_ENABLE_TERNARYOS": "ON",
+        "T81_ENABLE_DPE": "ON"
+      }
+    },
+    {
+      "name": "asan",
+      "displayName": "ASan/UBSan (matches CI sanitizers job)",
+      "description": "Debug build with AddressSanitizer and UndefinedBehaviorSanitizer. Mirrors the CI 'sanitizers' job exactly. Run: cmake --preset asan && cmake --build build-asan && ctest --preset asan",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build-asan",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "T81_BUILD_TESTS": "ON",
+        "T81_BUILD_EXAMPLES": "OFF",
+        "T81_BUILD_BENCHMARKS": "OFF",
+        "T81_ENABLE_ASAN": "ON",
+        "T81_ENABLE_UBSAN": "ON"
       }
     },
     {
@@ -71,6 +103,14 @@
       "configurePreset": "ci"
     },
     {
+      "name": "dev",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan"
+    },
+    {
       "name": "warn-strict",
       "configurePreset": "warn-strict"
     }
@@ -85,6 +125,39 @@
       "execution": {
         "noTestsAction": "error",
         "stopOnFailure": true
+      }
+    },
+    {
+      "name": "dev",
+      "configurePreset": "dev",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false
+      }
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false
+      }
+    },
+    {
+      "name": "warn-strict",
+      "configurePreset": "warn-strict",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false
       }
     }
   ]

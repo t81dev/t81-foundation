@@ -1,10 +1,10 @@
 # RFC-00B5: Governed Event Interrupt Model
 
-**Status:** integrated
+**Status:** accepted
 **Type:** standards-track
 **Applies-To:** Axion HAL interrupt translation, kernel event delivery, TISC ISA interrupt and trap model
 **Created:** 2026-03-12
-**Updated:** 2026-03-16
+**Updated:** 2026-03-22
 **Author:** @t81dev
 **Depends on:** RFC-00B0 (HAL), RFC-00B1 (MMU), RFC-00B3 (Axion Governance Kernel Architecture)
 **Blocks:** Later interrupt and timer integration beyond the current kernel bootstrap path
@@ -224,26 +224,34 @@ its own interrupt model rather than promising x86 or ARM kernel behavior.
    kernel or HAL behavior to follow the governed event model instead of
    introducing ad hoc trap-return behavior.
 
-## 7. Open Questions (Narrowed — 2026-03-16)
+## 7. Resolved Questions (closed 2026-03-22)
 
-The following questions have been narrowed to policy and prioritization concerns
-only; basic continuation semantics are no longer open:
+All open questions from the 2026-03-16 narrowing have been formally resolved or
+deferred to named future tracks:
 
-- **Priority classes**: Interrupt events may gain explicit priority ordering in a
-  future policy extension. This is a policy question, not a continuation-semantics
-  question. The event delivery path itself is stable.
-- **Interrupt nesting**: The kernel event queue already serializes delivery; nesting
-  representation in kernel state is a policy/scheduling concern for future work.
-  No new architectural mechanism is required for the current phase.
-- **Stable audit surface**: `InterruptRecorded`, `InterruptDelivered`,
-  `InterruptPolicyAllow`, `InterruptPolicyQuarantine`, `InterruptPolicyDeny`, and
-  `UnhandledInterruptDropped` are the normative audit event kinds for the interrupt
-  path. Which of these become part of the stable public audit ABI is deferred to
-  the post-Stable Axion OS promotion track.
-- **Tooling observability**: Interrupt events are currently observable via
-  `KernelRuntimeStatusView` (interrupt counters, last audit kind/source). Direct
-  user-facing tooling or summarized supervisor views are deferred to the TUI /
-  diagnostics track.
+- **Interrupt nesting** — *Resolved by design.* The kernel event queue serializes
+  interrupt delivery. This is not a limitation; it is the correct architectural
+  choice for a deterministic system. Nesting would introduce implicit ordering
+  dependencies that break TISC reproducibility guarantees. The serialized queue IS
+  the nesting policy. No future RFC is needed to "fix" this.
+
+- **Stable audit surface** — *Resolved.* The following six events are the normative
+  and stable interrupt audit ABI for RFC-00B5:
+  `InterruptRecorded`, `InterruptDelivered`, `InterruptPolicyAllow`,
+  `InterruptPolicyQuarantine`, `InterruptPolicyDeny`, `UnhandledInterruptDropped`.
+  These events are stable as of 2026-03-22. Additions require a new RFC; removals
+  require a major version bump of the Axion governance ABI.
+
+- **Priority classes** — *Deferred to a future policy RFC.* Explicit interrupt
+  priority ordering is a policy-layer concern that can be layered on top of the
+  current stable delivery path without changing interrupt semantics. A new RFC
+  (to be numbered when authored) will define priority-class policy if and when
+  multi-priority interrupt sources are required.
+
+- **Tooling observability** — *Deferred to the diagnostics/TUI track.* Interrupt
+  events are currently observable via `KernelRuntimeStatusView`. Direct
+  user-facing tooling and supervisor-level summary views are deferred to the TUI
+  and diagnostics RFC track.
 
 ## 8. Acceptance Criteria
 
@@ -257,6 +265,14 @@ This RFC can move from `accepted` to `integrated` when:
 ## Integration Note (2026-03-16)
 
 Both acceptance criteria are met. Status advanced to `integrated`.
+
+## Closure Note (2026-03-22)
+
+All four open questions from §7 have been formally resolved or deferred to named
+future tracks (see §7 for dispositions). Status normalized to `accepted` —
+consistent with the B-series vocabulary where `accepted` is the terminal status
+for a fully implemented and closed RFC. No further work is required under this
+RFC number.
 
 ### Implemented surfaces (Slices 26–28)
 

@@ -98,6 +98,8 @@ std::string string_list_arg_test_function_name() { return "t81_ffi_string_list_t
 
 std::string quarantined_test_function_name() { return "t81_ffi_quarantined_probe"; }
 
+std::string int_list_result_test_function_name() { return "t81_ffi_int_list_bridge"; }
+
 void register_bridge_target() {
   auto& registry = t81::ffi::FFILibraryRegistry::instance();
   auto result = registry.register_library(unavailable_library_name(), "bridge-test-v1",
@@ -304,6 +306,18 @@ void register_binary_success_target() {
                                      .return_type = "int64_t",
                                      .is_variadic = false,
                                      .policy_reason = "VM bridge string-list-arg regression",
+                                     .resource_quota = 64,
+                                     .required_capabilities = {},
+                                 },
+                                 t81::ffi::FFIFunction{
+                                     .name = int_list_result_test_function_name(),
+                                     .type = t81::ffi::FFIType::Deterministic,
+                                     .library_name = binary_test_library_name(),
+                                     .version_hash = "bridge-binary-v1",
+                                     .param_types = {},
+                                     .return_type = "int64[]",
+                                     .is_variadic = false,
+                                     .policy_reason = "VM bridge int-list-result regression",
                                      .resource_quota = 64,
                                      .required_capabilities = {},
                                  },
@@ -1032,6 +1046,51 @@ void test_vm_ffi_call_emits_audit_trail() {
   }
 }
 
+void test_vm_ffi_call_int_list_result_round_trip() {
+  if (binary_test_library_name().empty()) {
+    std::cerr << "missing ffi test library path\n";
+    std::abort();
+  }
+  register_binary_success_target();
+
+  t81::tisc::ir::IntermediateProgram ir_program;
+  t81::tisc::ir::Instruction ffi_call{t81::tisc::ir::Opcode::FFI_CALL,
+                                      {t81::tisc::ir::Register{15}, t81::tisc::ir::Immediate{0}}};
+  ffi_call.literal_kind = t81::tisc::LiteralKind::SymbolHandle;
+  ffi_call.text_literal = int_list_result_test_function_name();
+  ir_program.add_instruction(ffi_call);
+  ir_program.add_instruction({t81::tisc::ir::Opcode::HALT, {}});
+
+  t81::tisc::BinaryEmitter emitter;
+  auto program = emitter.emit(ir_program);
+
+  auto vm = t81::vm::make_interpreter_vm();
+  t81::axion::PolicyEngine policy_engine(std::nullopt);
+  vm->initialize_ffi_subsystem(policy_engine);
+  vm->load_program(program);
+
+  const auto result = vm->run_to_halt();
+  if (!result.has_value()) {
+    std::cerr << "expected successful int-list-result FFI call through VM bridge, got trap "
+              << t81::vm::to_string(result.error()) << "\n";
+    std::abort();
+  }
+
+  const auto& state = vm->state();
+  const auto& ctx = state.contexts[state.current_context];
+  if (ctx.register_tags[15] != t81::vm::ValueTag::IntVectorHandle || ctx.registers[15] <= 0) {
+    std::cerr << "expected IntVectorHandle result from structured FFI call\n";
+    std::abort();
+  }
+  const auto handle = static_cast<std::size_t>(ctx.registers[15] - 1);
+  if (handle >= state.int_vectors.size() || state.int_vectors[handle].size() != 3 ||
+      state.int_vectors[handle][0] != 10 || state.int_vectors[handle][1] != 20 ||
+      state.int_vectors[handle][2] != 30) {
+    std::cerr << "expected structured int-vector result [10, 20, 30]\n";
+    std::abort();
+  }
+}
+
 void test_vm_ffi_quarantine_fails_closed() {
   register_binary_success_target();
 
@@ -1079,6 +1138,7 @@ int main() {
   test_vm_ffi_call_mixed_argument_round_trip();
   test_vm_ffi_call_string_list_result_round_trip();
   test_vm_ffi_call_string_list_argument_round_trip();
+  test_vm_ffi_call_int_list_result_round_trip();
   test_vm_ffi_call_emits_audit_trail();
   test_vm_ffi_quarantine_fails_closed();
   test_vm_ffi_register_reads_symbol_registers();

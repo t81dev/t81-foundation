@@ -132,6 +132,25 @@ public:
                                   static_cast<std::uint32_t>(payload.size()));
                 continue;
             }
+            if (tag == ValueTag::IntVectorHandle) {
+                if (value <= 0 || static_cast<std::size_t>(value) > state.int_vectors.size()) {
+                    continue;
+                }
+                const auto& vec = state.int_vectors[static_cast<std::size_t>(value - 1)];
+                std::vector<std::uint8_t> payload;
+                const std::uint32_t count = static_cast<std::uint32_t>(vec.size());
+                const auto* count_bytes = reinterpret_cast<const std::uint8_t*>(&count);
+                payload.insert(payload.end(), count_bytes, count_bytes + sizeof(count));
+                for (const auto& item : vec) {
+                    const auto* item_bytes = reinterpret_cast<const std::uint8_t*>(&item);
+                    payload.insert(payload.end(), item_bytes, item_bytes + sizeof(item));
+                }
+                append_arg_record(encoded,
+                                  static_cast<std::uint8_t>(tag),
+                                  payload.data(),
+                                  static_cast<std::uint32_t>(payload.size()));
+                continue;
+            }
             const auto* bytes = reinterpret_cast<const std::uint8_t*>(&value);
             append_arg_record(encoded,
                               static_cast<std::uint8_t>(tag),
@@ -191,6 +210,12 @@ public:
             state.string_vectors.push_back(std::get<std::vector<std::string>>(result.result));
             ctx->registers[result_reg] = static_cast<std::int64_t>(state.string_vectors.size());
             ctx->register_tags[result_reg] = ValueTag::StringVectorHandle;
+            return {};
+        }
+        if (std::holds_alternative<std::vector<std::int64_t>>(result.result)) {
+            state.int_vectors.push_back(std::get<std::vector<std::int64_t>>(result.result));
+            ctx->registers[result_reg] = static_cast<std::int64_t>(state.int_vectors.size());
+            ctx->register_tags[result_reg] = ValueTag::IntVectorHandle;
             return {};
         }
         return t81::unexpected(Trap::TypeFault);

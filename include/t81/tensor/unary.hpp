@@ -62,7 +62,7 @@ inline T729DynamicTensor tanh(const T729DynamicTensor& x) {
 }
 
 inline T729DynamicTensor exp(const T729DynamicTensor& x) {
-  if (x.has_canonical_fixed_data()) {
+  if (x.strict_core_eligible() && x.has_canonical_fixed_data()) {
     if (x.numeric_class() == TensorNumericClass::ExactTrit) {
       static const detail::DFixed kExpNegOne = t81::core::detail::exp(-detail::DFixed::one());
       static const detail::DFixed kExpZero = detail::DFixed::one();
@@ -105,7 +105,7 @@ inline T729DynamicTensor exp(const T729DynamicTensor& x) {
 }
 
 inline T729DynamicTensor sqrt(const T729DynamicTensor& x) {
-  if (x.has_canonical_fixed_data()) {
+  if (x.strict_core_eligible() && x.has_canonical_fixed_data()) {
     if (!detail::unary_all_nonnegative(x)) {
       throw std::domain_error("unary sqrt: negative input");
     }
@@ -125,7 +125,7 @@ inline T729DynamicTensor sqrt(const T729DynamicTensor& x) {
 }
 
 inline T729DynamicTensor log(const T729DynamicTensor& x) {
-  if (x.has_canonical_fixed_data()) {
+  if (x.strict_core_eligible() && x.has_canonical_fixed_data()) {
     if (!detail::unary_all_nonnegative(x) ||
         std::any_of(x.canonical_fixed_data().begin(), x.canonical_fixed_data().end(),
                     [](const detail::DFixed& value) { return value.is_zero(); })) {

@@ -1,4 +1,27 @@
+// DEPRECATED — RFC-0041 / RFC-0040 compatibility period
+//
+// Direct inclusion of this header is deprecated as of 2026-03-22.
+// It will be removed after two release cycles.
+//
+// Migration:
+//   - Packed-trit storage  →  #include "t81/packed_trit_vector.hpp"
+//   - SIMD operations      →  #include "t81/simd/simd.hpp"
+//   - SWAR kernel access   →  #include "t81/swar/swar.hpp"
+//
+// The stable aliases t81::PackedTritVector and t81::ComputeTritVector
+// remain available through t81/packed_trit_vector.hpp.  The
+// t81::experimental:: classes below are the same objects but will not
+// receive new API surface.  See docs/process/migration/RFC_0040_SWAR_MIGRATION.md
+// and RFC-0041 / RFC-0040 for the full migration guide.
+
 #pragma once
+
+#ifndef T81_PACKED_TRIT_VECTOR_STABLE_INCLUDE
+// Direct inclusion of this experimental header is deprecated (RFC-0041).
+// Use: #include "t81/packed_trit_vector.hpp"  (stable surface)
+//   or #include "t81/simd/simd.hpp"           (SIMD operations)
+#pragma message("t81/experimental/packed_trit_vector.hpp: direct include deprecated (RFC-0041). Use t81/packed_trit_vector.hpp instead.")
+#endif
 
 #include <algorithm>
 #include <cstdint>

@@ -1119,3 +1119,63 @@ static void BM_NativeWeightsPackedExpRawFloat_T81Native(benchmark::State& state)
   state.SetLabel("comparison=systems-path; work: ops/iter=" + std::to_string(elements));
 }
 BENCHMARK(BM_NativeWeightsPackedExpRawFloat_T81Native)->Arg(8192)->Arg(65536);
+
+// Chained TExp → TWMATMUL benchmark.
+// Measures the cost of the full native path: WeightsLoad (BalancedTernary),
+// TExp (native fast path, HostFloat result), TWMATMUL (float-backed matmul).
+// This validates that the numeric-class fix (ExactInt → HostFloat) prevents
+// the lazy canonical-fixed cache build from triggering inside TWMATMUL.
+
+// Chained TExp → TMatMul: WeightsLoad (BalancedTernary) → TExp (native HostFloat fast path)
+// → TMatMul (float-backed ops::matmul).  Verifies that the numeric-class fix
+// (ExactInt → HostFloat on the TExp fast path) prevents the lazy
+// canonical-fixed cache build from triggering inside ops::matmul.
+static t81::tisc::Program make_weights_exp_then_tmatmul_loop_program(uint64_t elements) {
+  t81::tisc::Program program;
+  program.symbol_pool = {"tensorA"};
+  program.tensor_pool.push_back(make_host_ternary_tensor_for_elements(elements));
+
+  auto model = std::make_shared<t81::weights::ModelFile>();
+  model->native["tensorA"] = make_native_tensor_for_elements(elements);
+  program.weights_model = model;
+
+  t81::tisc::Insn load_act;
+  load_act.opcode = t81::tisc::Opcode::LoadImm;
+  load_act.a = 1;
+  load_act.b = 1;
+  load_act.literal_kind = t81::tisc::LiteralKind::TensorHandle;
+
+  t81::tisc::Insn load_w;
+  load_w.opcode = t81::tisc::Opcode::WeightsLoad;
+  load_w.a = 2;
+  load_w.b = 1;
+
+  t81::tisc::Insn texp;
+  texp.opcode = t81::tisc::Opcode::TExp;
+  texp.a = 3;
+  texp.b = 2;
+
+  t81::tisc::Insn tmatmul;
+  tmatmul.opcode = t81::tisc::Opcode::TMatMul;
+  tmatmul.a = 4;
+  tmatmul.b = 1;
+  tmatmul.c = 3;
+
+  t81::tisc::Insn jump;
+  jump.opcode = t81::tisc::Opcode::Jump;
+  jump.a = 0;
+
+  program.insns = {load_act, load_w, texp, tmatmul, jump};
+  return program;
+}
+
+static void BM_NativeWeightsExpThenMatMul_T81Native(benchmark::State& state) {
+  const uint64_t elements = static_cast<uint64_t>(state.range(0));
+  auto program = make_weights_exp_then_tmatmul_loop_program(elements);
+  benchmark_program_loop(state, program, 5);
+  state.SetItemsProcessed(state.iterations() * static_cast<int64_t>(elements));
+  state.counters["trits"] = static_cast<double>(elements);
+  state.counters["work_per_iter"] = static_cast<double>(elements);
+  state.SetLabel("chained=TExp->TMatMul; work: trits/iter=" + std::to_string(elements));
+}
+BENCHMARK(BM_NativeWeightsExpThenMatMul_T81Native)->Arg(64)->RangeMultiplier(4)->Range(256, 4096);

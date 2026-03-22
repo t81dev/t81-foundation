@@ -155,6 +155,61 @@ void write_multi_tensor_gguf(const fs::path& path,
   }
 }
 
+// Run a synthetic GGUF -> .t81w -> VM TWEMBED round-trip for a given family.
+// Proves end-to-end execution evidence without requiring a real model file.
+// The minimal GGUF produced by write_minimal_gguf() has tensor dims {16, 8},
+// so TWEMBED(row=0) should yield shape [1, 8] with ExactTrit numeric class.
+void run_synthetic_family_vm_execution(t81::weights::ModelFile imported,
+                                       std::string_view tensor_key,
+                                       std::string_view family_label) {
+  const fs::path t81w = fs::temp_directory_path() /
+                        (std::string("t81-gguf-vm-evidence-") + std::string(family_label) + ".t81w");
+  t81::weights::save_t81w(imported.native, t81w);
+  auto reloaded = t81::weights::load_t81w(t81w);
+  T81_TEST_CHECK(reloaded.native.find(std::string(tensor_key)) != reloaded.native.end());
+
+  auto model = std::make_shared<t81::weights::ModelFile>(std::move(reloaded));
+
+  t81::tisc::Program prog;
+  prog.symbol_pool = {std::string(tensor_key)};
+  prog.weights_model = model;
+  prog.insns.push_back({t81::tisc::Opcode::WeightsLoad, 1, 1, 0});
+  prog.insns.push_back({t81::tisc::Opcode::LoadImm, 2, 0, 0});
+  prog.insns.push_back({t81::tisc::Opcode::TWEMBED, 3, 1, 2});
+  prog.insns.push_back({t81::tisc::Opcode::Halt, 0, 0, 0});
+  prog.axion_policy_text = "(policy (tier 5))";
+
+  auto vm = t81::vm::make_interpreter_vm();
+  vm->load_program(prog);
+  auto& state = const_cast<t81::vm::State&>(vm->state());
+  state.contexts[0].tier_status.current = t81::cog::TierId::Tier5;
+  state.contexts[0].tier_status.label = "tier-5-test";
+
+  // WeightsLoad
+  auto step1 = vm->step();
+  T81_TEST_CHECK(step1.has_value());
+  T81_TEST_CHECK(vm->state().contexts[0].register_tags[1] == t81::vm::ValueTag::WeightsTensorHandle);
+  T81_TEST_CHECK(vm->state().contexts[0].registers[1] > 0);
+  // LoadImm
+  auto step2 = vm->step();
+  T81_TEST_CHECK(step2.has_value());
+  // TWEMBED
+  auto step3 = vm->step();
+  T81_TEST_CHECK(step3.has_value());
+  T81_TEST_CHECK(vm->state().contexts[0].register_tags[3] == t81::vm::ValueTag::TensorHandle);
+
+  const auto embed_handle = vm->state().contexts[0].registers[3];
+  const auto& embed_tensor = state.tensors[static_cast<std::size_t>(embed_handle - 1)];
+  T81_TEST_CHECK(embed_tensor.has_value());
+  T81_TEST_CHECK(embed_tensor->shape().size() == 2);
+  T81_TEST_CHECK(embed_tensor->shape()[0] == 1);
+  T81_TEST_CHECK(embed_tensor->shape()[1] == 8);  // dim[1] from write_minimal_gguf {16,8}
+  T81_TEST_CHECK(embed_tensor->numeric_class() == t81::TensorNumericClass::ExactTrit);
+
+  std::error_code ec;
+  fs::remove(t81w, ec);
+}
+
 fs::path find_repo_model(std::string_view filename) {
   const std::vector<fs::path> candidates = {
       fs::path("models") / filename,
@@ -322,6 +377,17 @@ int main() {
                  "GGUF(llama.cpp bridge; arch=llama; profile=llama-dense-v1)");
   T81_TEST_CHECK(imported_llama_ggml.native.find("blk.0.attn_q.weight") !=
                  imported_llama_ggml.native.end());
+
+  // RFC-00BB: synthetic GGUF -> .t81w -> VM TWEMBED execution evidence for each family.
+  // These prove end-to-end native execution without requiring real model files.
+  run_synthetic_family_vm_execution(
+      std::move(imported_phi3), "model.layers.0.self_attn.q_proj.weight", "phi3");
+  run_synthetic_family_vm_execution(
+      std::move(imported_qwen2), "model.layers.0.attn.q_proj.weight", "qwen2");
+  run_synthetic_family_vm_execution(
+      std::move(imported_mistral), "model.layers.0.self_attn.q_proj.weight", "mistral");
+  run_synthetic_family_vm_execution(
+      std::move(imported_gemma), "model.layers.0.self_attn.q_proj.weight", "gemma");
 
   const fs::path tinyllama = find_repo_model("tinyllama-1.1b.Q2_K.gguf");
   T81_TEST_CHECK(!tinyllama.empty());

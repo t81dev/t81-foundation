@@ -254,7 +254,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_unary_exp_direct(
     shape.push_back(static_cast<int>(dim));
   }
   auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
-  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  tensor.set_numeric_class(t81::TensorNumericClass::HostFloat);
   return tensor;
 }
 
@@ -505,7 +505,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_unary_silu_direct(
     shape.push_back(static_cast<int>(dim));
   }
   auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
-  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  tensor.set_numeric_class(t81::TensorNumericClass::HostFloat);
   return tensor;
 }
 
@@ -595,7 +595,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_unary_softmax_direct(
     shape.push_back(static_cast<int>(dim_value));
   }
   auto tensor = t81::T729DynamicTensor::from_host_float_data(std::move(shape), std::move(out));
-  tensor.set_numeric_class(t81::TensorNumericClass::ExactInt);
+  tensor.set_numeric_class(t81::TensorNumericClass::HostFloat);
   return tensor;
 }
 
