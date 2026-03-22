@@ -1,6 +1,6 @@
 #include "test_runtime_check.hpp"
 
-#include "core/vm/internal/tensor_helpers.hpp"
+#include "vm/internal/tensor_helpers.hpp"
 #include "t81/tensor.hpp"
 
 int main() {
