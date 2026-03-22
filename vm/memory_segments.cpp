@@ -4,7 +4,7 @@
 
 namespace t81::vm::internal {
 
-bool mem_ok(const State& state, int addr, bool code_segment) {
+bool mem_ok(const State& state, std::int64_t addr, bool code_segment) {
   if (addr < 0) return false;
   const std::size_t a = static_cast<std::size_t>(addr);
   const auto& layout = state.layout;

@@ -8,7 +8,7 @@
 
 namespace t81::vm::internal {
 
-bool mem_ok(const State& state, int addr, bool code_segment);
+bool mem_ok(const State& state, std::int64_t addr, bool code_segment);
 
 std::optional<std::size_t> push_stack_word(State& state, ThreadContext& ctx, std::int64_t value,
                                            ValueTag tag);

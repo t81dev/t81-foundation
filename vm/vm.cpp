@@ -604,16 +604,16 @@ public:
       record_axion_event(insn.opcode, 0, 0, step_verdict);
     }
 
-    auto reg_ok = [&ctx](int r) {
+    auto reg_ok = [&ctx](std::int64_t r) {
       return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
     };
-    auto mem_ok = [this](int addr, bool code = false) {
+    auto mem_ok = [this](std::int64_t addr, bool code = false) {
       return t81::vm::internal::mem_ok(state_, addr, code);
     };
-    auto check_mem = [this, &mem_ok](t81::tisc::Opcode opcode, int addr, std::string_view action,
-                                     bool code = false) -> bool {
+    auto check_mem = [this, &mem_ok](t81::tisc::Opcode opcode, std::int64_t addr,
+                                     std::string_view action, bool code = false) -> bool {
       if (mem_ok(addr, code)) return true;
-      this->log_bounds_fault(opcode, addr, action);
+      this->log_bounds_fault(opcode, static_cast<int>(addr), action);
       return false;
     };
     bool restore_pc_on_trap = false;
@@ -7159,7 +7159,7 @@ private:
 
   std::optional<Trap> handle_axread(const t81::tisc::Insn& insn, ThreadContext& ctx,
                                     std::size_t current_pc) {
-    const auto reg_ok = [&ctx](int r) {
+    const auto reg_ok = [&ctx](std::int64_t r) {
       return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
     };
     if (!reg_ok(insn.a)) {
@@ -7184,7 +7184,7 @@ private:
 
   std::optional<Trap> handle_axset(const t81::tisc::Insn& insn, ThreadContext& ctx,
                                    std::size_t current_pc) {
-    const auto reg_ok = [&ctx](int r) {
+    const auto reg_ok = [&ctx](std::int64_t r) {
       return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
     };
     if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
@@ -7213,7 +7213,7 @@ private:
 
   std::optional<Trap> handle_axverify(const t81::tisc::Insn& insn, ThreadContext& ctx,
                                       std::size_t current_pc) {
-    const auto reg_ok = [&ctx](int r) {
+    const auto reg_ok = [&ctx](std::int64_t r) {
       return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
     };
     if (!reg_ok(insn.a)) {
@@ -7320,15 +7320,16 @@ private:
       const t81::tisc::Insn& insn, ThreadContext& ctx, std::size_t current_pc,
       const std::function<std::optional<std::string_view>(ValueTag, std::int64_t)>&
           symbol_like_text) {
-    const auto reg_ok = [&ctx](int r) {
+    const auto reg_ok = [&ctx](std::int64_t r) {
       return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
     };
     if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
       return Trap::DecodeFault;
     }
 
-    const bool ok = ctx.registers[insn.a] != 0;
-    auto msg = symbol_like_text(ctx.register_tags[insn.b], ctx.registers[insn.b]);
+    const bool ok = ctx.registers[static_cast<std::size_t>(insn.a)] != 0;
+    auto msg = symbol_like_text(ctx.register_tags[static_cast<std::size_t>(insn.b)],
+                                ctx.registers[static_cast<std::size_t>(insn.b)]);
     std::string text = msg.has_value() ? std::string(*msg) : "Check";
 
     t81::axion::Verdict verdict;
@@ -7354,7 +7355,7 @@ private:
       const t81::tisc::Insn& insn, ThreadContext& ctx, std::size_t current_pc,
       const std::function<std::optional<std::string_view>(ValueTag, std::int64_t)>&
           symbol_like_text) {
-    const auto reg_ok = [&ctx](int r) {
+    const auto reg_ok = [&ctx](std::int64_t r) {
       return r >= 0 && static_cast<std::size_t>(r) < ctx.registers.size();
     };
     if (!reg_ok(insn.a)) {

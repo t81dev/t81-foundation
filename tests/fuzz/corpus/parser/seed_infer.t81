@@ -1,0 +1,1 @@
+infer x = model.predict(y);
