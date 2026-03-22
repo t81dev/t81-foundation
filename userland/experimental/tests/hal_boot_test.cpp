@@ -1865,8 +1865,8 @@ static void test_kernel_device_wake_interrupt() {
   // ── Fire a Storage interrupt ──────────────────────────────────────────────
   HardwareInterrupt storage_irq{
       .source       = InterruptSource::Storage,
-      .payload      = 0xAB,
       .timestamp_ns = 1000,
+      .payload      = 0xAB,
   };
   check(axion_kernel_record_interrupt(*state, storage_irq),
         "device wake: Storage interrupt recorded");
@@ -1940,8 +1940,8 @@ static void test_kernel_device_wake_interrupt() {
 
   HardwareInterrupt net_irq{
       .source       = InterruptSource::Network,
-      .payload      = 0xCD,
       .timestamp_ns = 2000,
+      .payload      = 0xCD,
   };
   check(axion_kernel_record_interrupt(*state, net_irq),
         "device wake (net): Network interrupt recorded");
@@ -1956,8 +1956,8 @@ static void test_kernel_device_wake_interrupt() {
   const uint64_t wakes_before_keyboard = state->counters.device_wakes;
   HardwareInterrupt kbd_irq{
       .source       = InterruptSource::Keyboard,
-      .payload      = 0x41,
       .timestamp_ns = 3000,
+      .payload      = 0x41,
   };
   check(axion_kernel_record_interrupt(*state, kbd_irq),
         "device wake (kbd): Keyboard interrupt recorded");
@@ -6144,8 +6144,8 @@ static void test_kernel_service_fault_ack_action() {
       *state,
       KernelServiceAction{
           .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .supervisor_id = *supervisor_id,
           .process_group_id = group_id,
+          .supervisor_id = *supervisor_id,
       });
   check(premature_action.status == KernelServiceStatus::InvalidRequest,
         "service action rejects supervisor acknowledgement before thread inbox drain");
@@ -6160,8 +6160,8 @@ static void test_kernel_service_fault_ack_action() {
       *state,
       KernelServiceAction{
           .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .supervisor_id = 999999,
           .process_group_id = group_id,
+          .supervisor_id = 999999,
       });
   check(missing_supervisor.status == KernelServiceStatus::NotFound,
         "service action returns NotFound for missing supervisor");
@@ -6174,8 +6174,8 @@ static void test_kernel_service_fault_ack_action() {
       KernelServiceAction{
           .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
           .requesting_process_group_id = 999999,
-          .supervisor_id = *supervisor_id,
           .process_group_id = group_id,
+          .supervisor_id = *supervisor_id,
       });
   check(missing_requester.status == KernelServiceStatus::NotFound,
         "service action returns NotFound for missing requesting group");
@@ -6187,8 +6187,8 @@ static void test_kernel_service_fault_ack_action() {
       *state,
       KernelServiceAction{
           .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .supervisor_id = *supervisor_id,
           .process_group_id = group_id,
+          .supervisor_id = *supervisor_id,
       });
   check(ack_action.status == KernelServiceStatus::Ok,
         "service action acknowledges the supervisor fault gate");
@@ -6319,8 +6319,8 @@ static void test_kernel_service_supervisor_recovery_status() {
       *state,
       KernelServiceAction{
           .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .supervisor_id = *supervisor_id,
           .process_group_id = group_id,
+          .supervisor_id = *supervisor_id,
       });
   check(ack_action.status == KernelServiceStatus::Ok,
         "supervisor recovery action succeeds after thread acknowledgement");
@@ -8457,8 +8457,8 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = sibling_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
       });
   check(abi_transition_history.status == KernelCallStatus::Ok,
         "capability transition history ABI query returns Ok");
@@ -8477,8 +8477,8 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = sibling_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
           .capability =
               KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
       });
@@ -8502,8 +8502,8 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = sibling_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
           .capability = KernelCapabilityRecord{.record_id = sibling_ipc_receive->record_id},
       });
   check(abi_revoked_record_history.status == KernelCallStatus::Ok,
@@ -8709,8 +8709,8 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = outsider_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
       });
   check(query_foreign_inventory.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability inventory ABI query is denied");
@@ -8720,8 +8720,8 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = outsider_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
       });
   check(query_foreign_transition_history.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability transition history query is denied");
@@ -8746,8 +8746,8 @@ static void test_kernel_capability_management_abi() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .supervisor_id = *leader_supervisor,
           .process_group_id = outsider_runtime->process_group_id,
+          .supervisor_id = *leader_supervisor,
           .capability =
               KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
       });
@@ -8904,8 +8904,8 @@ static void test_kernel_abi_wire_blocks() {
       .target_process_group_id = 101,
       .process_group_owned_page_count = 3,
       .process_group_pending_fault_count = 1,
-      .runtime_mapped_pages = 5,
       .runtime_boot_critical_address_space_count = 2,
+      .runtime_mapped_pages = 5,
       .fault_summary_recorded_faults = 7,
       .fault_summary_pending_faults = 11,
       .fault_summary_delivered_faults = 13,
@@ -9150,13 +9150,13 @@ static void test_kernel_abi_wire_call_boundary() {
   const auto register_entry_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterThreadEntryDescriptor,
-          .service_name = "wire-entry",
           .spawn_descriptor = KernelThreadSpawnDescriptor{
               .pc = 15,
               .sp = 45,
               .register0 = 515,
               .label = "wire-entry-label",
           },
+          .service_name = "wire-entry",
       });
   KernelCallWireResponseBlock register_entry_response;
   check(axion_kernel_call_wire(*state, &register_entry_request, &register_entry_response),
@@ -9333,8 +9333,8 @@ static void test_kernel_abi_wire_call_boundary() {
   const auto register_service_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
-          .service_name = "wire.svc.exec",
           .object_ref = wire_executable_ref,
+          .service_name = "wire.svc.exec",
       });
   KernelCallWireResponseBlock register_service_response;
   check(axion_kernel_call_wire(*state,
@@ -9895,13 +9895,13 @@ static void test_kernel_call_c_bridge() {
   const auto register_entry_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterThreadEntryDescriptor,
-          .service_name = "c-entry",
           .spawn_descriptor = KernelThreadSpawnDescriptor{
               .pc = 21,
               .sp = 63,
               .register0 = 717,
               .label = "c-entry-label",
           },
+          .service_name = "c-entry",
       });
   KernelCallWireResponseBlock register_entry_response;
   check(ternaryos_kernel_call_c(&*state,
@@ -10088,8 +10088,8 @@ static void test_kernel_call_c_bridge() {
   const auto register_service_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterService,
-          .service_name = "c.svc.exec",
           .object_ref = c_executable_ref,
+          .service_name = "c.svc.exec",
       });
   KernelCallWireResponseBlock register_service_response;
   check(ternaryos_kernel_call_c(&*state,
@@ -10533,8 +10533,8 @@ static void test_kernel_call_tva_c_bridge() {
   const auto register_executable_request = axion_kernel_encode_wire_request(
       KernelCallRequest{
           .kind = KernelCallKind::RegisterExecutableObjectFromTva,
-          .object_ref = executable_ref,
           .object_tva = executable_tva,
+          .object_ref = executable_ref,
       });
   check(axion_kernel_write_address_space_bytes(
             *state,
