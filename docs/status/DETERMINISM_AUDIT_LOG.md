@@ -1,6 +1,6 @@
 # Determinism Audit Log
 
-Last Updated: 2026-03-19
+Last Updated: 2026-03-22
 Owner: @t81dev
 
 Chronological record of determinism audits: what was audited, what failed,
@@ -11,6 +11,141 @@ Entries are append-only. Do not edit past entries.
 ---
 
 ## Log
+
+### 2026-03-22 — VM Fuzzer: Three-Wave int-Narrowing OOB Security Fix
+
+**Scope:** libFuzzer-driven security audit of `fuzz_vm` and `fuzz_parser` harnesses.
+Found and closed three separate `int`-narrowing OOB vulnerabilities in `vm/vm.cpp`.
+
+**Audited:**
+
+- `vm/vm.cpp` — all `reg_ok`, `mem_ok`, and `check_mem` bounds-checking lambdas
+- `vm/internal/memory_segments.hpp` + `vm/memory_segments.cpp` — `t81::vm::internal::mem_ok` signature
+- `tests/fuzz/fuzz_vm.cpp` / `tests/fuzz/fuzz_parser.cpp` — harness instruction encoding
+- Crash corpus: 9 minimised inputs across three fault classes
+
+**Findings:**
+
+| Location | Vulnerability | Class |
+| :--- | :--- | :--- |
+| `step()` → `reg_ok(int r)` (line 607) | `insn.b` (int64_t) truncated before bounds check; passes 0-based check, indexes with original int64 → OOB heap access | CWE-190 (int truncation) → OOB |
+| `step()` → `mem_ok(int addr)` / `check_mem(int addr)` (lines 610–618) + `t81::vm::internal::mem_ok(int addr)` | Same truncation in Load/Store handler memory-address path | CWE-190 → OOB |
+| `handle_axread/axset/axverify/axcheck/axreport` → local `reg_ok(int r)` (5 sites, lines 7162–7357) | Axion opcode handlers each had their own `int`-typed lambda; AxCheck also indexed `ctx.registers[insn.b]` with unguarded int64_t after the narrowed guard passed | CWE-190 → OOB |
+
+**Patches Applied:**
+
+- `vm/vm.cpp` — widened `reg_ok`, `mem_ok`, `check_mem` lambdas in `step()` (wave 1 + 2)
+- `vm/vm.cpp` — widened 5 local `reg_ok` lambdas in Axion handlers + explicit `static_cast<std::size_t>` on `insn.a/b` register-index accesses in `handle_axcheck` (wave 3)
+- `vm/internal/memory_segments.hpp` — `mem_ok` declaration: `int addr` → `std::int64_t addr`
+- `vm/memory_segments.cpp` — `mem_ok` implementation signature widened to match
+
+**Verification:**
+
+- All 9 crash inputs verified: `fuzz_vm <crash> → exit 0` post-fix
+- 406/406 main tests passing (AArch64, 2026-03-22)
+- 120-second post-fix fuzz run: 113,027 executions, no new crashes
+- Fuzz corpus: 79 minimised VM seed inputs committed to `tests/fuzz/corpus/vm/`
+
+**Evidence:**
+
+- `tests/fuzz/crashes/vm/` — 9 archived crash inputs
+- `tests/fuzz/corpus/vm/` — 79-entry minimised corpus
+
+---
+
+### 2026-03-22 — Axion AgentInvoke Runtime Integration Evidence
+
+**Scope:** Close the policy-enforcement evidence gap at the AgentInvoke VM boundary
+identified in `DRIFT_DECOMPOSITION.md`. The existing `agent_constructs_test.cpp`
+([RFC-0015-01..09]) verified compilation correctness but did not prove the Axion policy
+engine is wired to the per-instruction `eval_axion_call` gate for AgentInvoke dispatch.
+
+**Audited:**
+
+- `vm/vm.cpp` — per-instruction `eval_axion_call(kStep)` gate and AgentInvoke audit path
+- `include/t81/axion/policy_engine.hpp` / `kernel/axion/policy_engine.cpp` — `LimitInstructions` bytecode op; `evaluate_internal` deny condition (`instruction_count > max_instructions`)
+- `include/t81/vm/vm.hpp` — `make_interpreter_vm(engine)` injection API
+- `include/t81/isa/program.hpp` — `axion_policy_text` field and `load_program()` policy install path
+- `tests/cpp/axion_agent_invoke_policy_test.cpp` — new integration evidence test
+
+**Findings:**
+
+| Surface | Finding | State |
+| :--- | :--- | :--- |
+| AgentInvoke audit event | Logged with `reason="agent-invoke"` on every invocation | Confirmed present |
+| Policy-text path (`axion_policy_text`) | `load_program()` parses policy and installs `PolicyEngine`; per-instruction gate enforces `max-instructions` | Confirmed wired |
+| Engine-injection path (`make_interpreter_vm(engine)`) | Externally supplied engine replaces default allow-all; same `eval_axion_call` gate used | Confirmed wired |
+| Deny verdict produces SecurityFault | When `instruction_count > max_instructions` the VM returns `Trap::SecurityFault`, not `Halt` | Confirmed |
+
+**Patches Applied:**
+
+- Added `tests/cpp/axion_agent_invoke_policy_test.cpp` — 5 test functions, 9 assertions ([AI-01..05])
+- Registered in `CMakeLists.txt` as `axion_agent_invoke_policy_test` linked against `t81_vm t81_axion t81_core`
+
+**Remaining Open:**
+
+- `eval_axion_call` is called before the AgentInvoke body enters; the audit event inside the
+  `AgentInvoke` case itself uses a hardcoded `Allow` verdict rather than calling `eval_axion_call`.
+  This is correct by design (RFC-0015 §3.2 audit-only semantics for the dispatch record); the
+  per-instruction gate fires separately. No change needed.
+- TernaryOS kernel integration remains experimental and deferred.
+
+**Evidence:**
+
+- `tests/cpp/axion_agent_invoke_policy_test.cpp`
+- 406/406 tests passing on AArch64 (2026-03-22)
+
+---
+
+### 2026-03-22 — HostFloat Result Representation Fix (Track K) + Matmul Fast Path (Track L)
+
+**Scope:** Correct numeric-class tagging on native unary fast paths and remove
+O(N) DFixed canonical-fixed cache builds from HostFloat tensor construction in
+the ternary-native inference path.
+
+**Audited:**
+
+- `vm/tensor_helpers.cpp` — `native_tensor_unary_exp_direct`, `_silu_direct`, `_softmax_direct`
+- `include/t81/tensor/matmul.hpp` — `ops::matmul`, `ops::qmatmul`
+- `include/t81/tensor/reduce.hpp` — `contract_dot`
+- `include/t81/tensor/unary.hpp` — `exp`, `sqrt`, `log`
+- `include/t81/tensor/llama.hpp` — `silu`, `softmax`, attention block
+- `tests/cpp/vm_tensor_test.cpp` — TExp/TSiLU/TSoftmax numeric-class assertions
+- `benchmarks/BM_NativeWeightsExecution.cpp` — chained TExp→TMatMul benchmark
+
+**Findings:**
+
+| Surface | Finding | State |
+| :--- | :--- | :--- |
+| `native_tensor_unary_exp_direct` / `_silu_direct` / `_softmax_direct` | Tagged output tensor `ExactInt` instead of `HostFloat` — semantically wrong for transcendental float results; caused downstream matmul to treat the tensor as strict-core eligible, triggering O(N) DFixed builds | Closed |
+| `ops::matmul` / `contract_dot` / `unary::exp` / `silu` / `softmax` / attention | `has_canonical_fixed_data()` called before `strict_core_eligible()` — cache built eagerly even for HostFloat operands whose DFixed data is never used | Closed |
+| `ops::matmul` scalar path | Used `deterministic_fma` (3× T81Float round-trip) for HostFloat result tensors — semantically incorrect and ~570 000× slower than IEEE float multiply | Closed |
+| Result tensor construction in `ops::matmul` | Two-argument `T729TensorBase` constructor calls `initialize_canonical_storage_mode_()` which eagerly builds DFixed cache on ALL output elements regardless of class | Closed |
+
+**Patches Applied:**
+
+- Changed `ExactInt` → `HostFloat` in three `vm/tensor_helpers.cpp` native unary fast paths
+- Added `strict_core_eligible()` outer guard before `has_canonical_fixed_data()` in 7 locations across `matmul.hpp`, `reduce.hpp`, `unary.hpp`, `llama.hpp`
+- Added `result_class == HostFloat` branch in `ops::matmul` scalar path (IEEE float multiply, no `deterministic_fma`)
+- Replaced `T729DynamicTensor({m,n}, std::move(c))` with `T729DynamicTensor::from_host_float_data({m,n}, std::move(c), result_class)` in matmul result construction — skips eager DFixed cache build entirely
+- Updated 3 test assertions in `vm_tensor_test.cpp` (TExp/TSiLU/TSoftmax: `ExactInt` → `HostFloat`)
+- Added `BM_NativeWeightsExpThenMatMul_T81Native` benchmark (chained WeightsLoad→TExp→TMatMul)
+- RFC-00BB §6.3 updated with execution evidence and benchmark numbers
+
+**Performance impact:** Chained `WeightsLoad → TExp → TMatMul` path: ~4 160 ms/iter → **0.0073 ms/iter** at 64 elements; 10–873× faster than binary BigInt reference at sizes 64–4096.
+
+**Remaining Open:**
+
+- `deterministic_fma` still used for ExactTrit×ExactTrit paths — correct behaviour, no change needed.
+- `experimental_native → native_supported` progression for dense decoder families unblocked; remaining gates are per RFC-00BB §7 (GGUF schema coverage, multi-head attention profile).
+
+**Evidence:**
+
+- `docs/records/status-history/TRACK_K_RESULT_REPRESENTATION_EVIDENCE_2026-03-22.md`
+- `docs/records/status-history/TRACK_L_HOSTFLOAT_MATMUL_EVIDENCE_2026-03-22.md`
+- Commit: `ffe867ff`
+
+---
 
 ### 2026-03-19 — Axion Epoch Scheduler / Audit Parity Promotion
 
