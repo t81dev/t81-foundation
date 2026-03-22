@@ -70,25 +70,23 @@ jobs:
       # ── Disk image ────────────────────────────────────────────────────────
       - name: Create FAT32 GPT disk image
         run: |
-          set -x
           EFI=build/ternaryos/qemu_slice6/BOOTAA64.EFI
           IMG=boot.img
 
-          ls -lh "$EFI" || echo "WARNING: EFI not found at $EFI"
-
           # 64 MiB raw image; partition table at sector 0, FAT32 at 1 MiB.
-          dd if=/dev/zero of=$IMG bs=1M count=64 status=progress
+          dd if=/dev/zero of=$IMG bs=1M count=64 status=none
           parted -s $IMG mklabel gpt
           parted -s $IMG mkpart EFI fat32 1MiB 63MiB
           parted -s $IMG set 1 esp on
 
           # Populate FAT32 partition using mtools (no loop device / no root).
           # The @@offset syntax selects the byte offset of the partition.
+          # Note: FAT32 is case-insensitive; copy only once as BOOTAA64.EFI
+          # (the EDK2 default boot path for AArch64).
           OFFSET=1048576
           mformat -i "${IMG}@@${OFFSET}" -F -v SLICE6GUEST ::
           mmd    -i "${IMG}@@${OFFSET}" ::/EFI ::/EFI/BOOT ::/TERNOS
           mcopy  -i "${IMG}@@${OFFSET}" "$EFI" ::/EFI/BOOT/BOOTAA64.EFI
-          mcopy  -i "${IMG}@@${OFFSET}" "$EFI" ::/EFI/BOOT/bootaa64.efi
 
           COMMIT=$(git rev-parse --short HEAD)
           printf 'profile=qemu-armv8:AArch64/EDK2/slice6-boot-probe\ngit_commit=%s\n' "$COMMIT" > profile.txt
