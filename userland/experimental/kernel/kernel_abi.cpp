@@ -1785,8 +1785,8 @@ KernelCallResult axion_kernel_call(KernelRuntimeState& state,
               KernelServiceAction{
                   .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
                   .requesting_process_group_id = caller.process_group_id,
-                  .supervisor_id = *request.supervisor_id,
                   .process_group_id = target_group_state->id,
+                  .supervisor_id = *request.supervisor_id,
               }));
     }
     case KernelCallKind::QueryProcessGroupMemory: {

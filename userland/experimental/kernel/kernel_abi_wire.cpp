@@ -510,8 +510,8 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .rejection = static_cast<KernelCallRejection>(block.rejection),
       .action_performed = block.action_performed != 0,
       .yielded = block.yielded != 0,
-      .executable_published = block.executable_published != 0,
       .executable_registered = block.executable_registered != 0,
+      .executable_published = block.executable_published != 0,
       .service_registered = block.service_registered != 0,
       .service_has_entry_descriptor = block.service_has_entry_descriptor != 0,
       .service_suspended = block.service_suspended != 0,
@@ -519,34 +519,34 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .service_blocked = block.service_blocked != 0,
       .process_group_owned_page_count = block.process_group_owned_page_count,
       .process_group_pending_fault_count = block.process_group_pending_fault_count,
-      .runtime_mapped_pages = block.runtime_mapped_pages,
       .runtime_boot_critical_address_space_count =
           block.runtime_boot_critical_address_space_count,
+      .runtime_mapped_pages = block.runtime_mapped_pages,
       .fault_summary_recorded_faults = block.fault_summary_recorded_faults,
       .fault_summary_pending_faults = block.fault_summary_pending_faults,
       .fault_summary_delivered_faults = block.fault_summary_delivered_faults,
       .fault_summary_routed_thread_faults = block.fault_summary_routed_thread_faults,
       .fault_summary_quarantined_threads = block.fault_summary_quarantined_threads,
-      .supervisor_fault_notifications = block.supervisor_fault_notifications,
-      .supervisor_acknowledgements = block.supervisor_acknowledgements,
-      .supervisor_recovered_groups = block.supervisor_recovered_groups,
-      .supervisor_capability_transitions = block.supervisor_capability_transitions,
       .supervisor_managed_group_count = block.supervisor_managed_group_count,
       .supervisor_managed_faulted_group_count =
           block.supervisor_managed_faulted_group_count,
       .supervisor_pending_group_count = block.supervisor_pending_group_count,
+      .supervisor_fault_notifications = block.supervisor_fault_notifications,
+      .supervisor_acknowledgements = block.supervisor_acknowledgements,
+      .supervisor_recovered_groups = block.supervisor_recovered_groups,
+      .supervisor_capability_process_group_count =
+          block.supervisor_capability_process_group_count,
       .supervisor_service_count = block.supervisor_service_count,
       .supervisor_blocked_service_count = block.supervisor_blocked_service_count,
       .supervisor_suspended_service_count = block.supervisor_suspended_service_count,
       .supervisor_unhealthy_service_count = block.supervisor_unhealthy_service_count,
-      .supervisor_capability_process_group_count =
-          block.supervisor_capability_process_group_count,
+      .supervisor_capability_transitions = block.supervisor_capability_transitions,
+      .supervisor_service_lifecycle_transitions =
+          block.supervisor_service_lifecycle_transitions,
       .supervisor_delegation_process_group_count =
           block.supervisor_delegation_process_group_count,
       .supervisor_delegation_entry_count = block.supervisor_delegation_entry_count,
       .supervisor_delegated_capability_count = block.supervisor_delegated_capability_count,
-      .supervisor_service_lifecycle_transitions =
-          block.supervisor_service_lifecycle_transitions,
   };
   if (block.executable_has_entry_descriptor != 0) {
     result.executable_entry_descriptor = KernelThreadSpawnDescriptor{

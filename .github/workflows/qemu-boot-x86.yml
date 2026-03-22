@@ -103,9 +103,10 @@ jobs:
 
       - name: Boot under QEMU (OVMF x86_64)
         run: |
-          OVMF_CODE=/usr/share/OVMF/OVMF_CODE.fd
+          OVMF_CODE=$(find /usr/share/OVMF -name 'OVMF_CODE*.fd' | sort | head -1)
+          OVMF_VARS_SRC=$(find /usr/share/OVMF -name 'OVMF_VARS*.fd' | sort | head -1)
           OVMF_VARS=$(mktemp --suffix=.fd)
-          cp /usr/share/OVMF/OVMF_VARS.fd "$OVMF_VARS"
+          cp "$OVMF_VARS_SRC" "$OVMF_VARS"
 
           timeout 40 qemu-system-x86_64 \
             -machine q35 \
