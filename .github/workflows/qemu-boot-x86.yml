@@ -136,6 +136,7 @@ jobs:
           check "[axion] bare-metal x86_64 entry"
           check "[axion] ExitBootServices complete"
           check "[axion] canonfs: mounted (persistent, virtio-blk)"
+          check "[axion] canonfs: I/O probe OK"
           check "[axion] event loop: priority dispatch"
           check "[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)"
 

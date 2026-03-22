@@ -36,6 +36,8 @@
 namespace {
 
 using namespace t81::ternary;
+using t81::Trit;
+using t81::v1::T81BigInt;
 
 // ── Scalar oracle helpers ────────────────────────────────────────────────────
 
@@ -70,7 +72,7 @@ std::vector<Trit> mul_scalar_ref(const std::vector<Trit>& a, int32_t n) {
 }
 
 // Decode T81BigInt to int64, asserting in-range.
-int64_t bigint_to_i64(const t81::T81BigInt& b) {
+int64_t bigint_to_i64(const T81BigInt& b) {
     return b.to_int64();
 }
 
@@ -86,7 +88,7 @@ void require(bool cond, const char* msg) {
 // Compare a scalar trit-vector result against a T81BigInt result.
 // Both encode the same int64 value; we decode both and compare numerically.
 void check_arith(const std::vector<Trit>& oracle_trits,
-                 const t81::T81BigInt& bigint_result,
+                 const T81BigInt& bigint_result,
                  const char* op_name, int64_t a, int64_t b) {
     int64_t oracle_val  = decode_i64(oracle_trits);
     int64_t bigint_val  = bigint_to_i64(bigint_result);
@@ -113,8 +115,8 @@ void test_negation() {
         auto oracle_neg    = negate_trits(trits);
         int64_t oracle_val = decode_i64(oracle_neg);
 
-        t81::T81BigInt bi(v);
-        t81::T81BigInt bi_neg = -bi;
+        T81BigInt bi(v);
+        T81BigInt bi_neg = -bi;
         int64_t bigint_val    = bigint_to_i64(bi_neg);
 
         if (oracle_val != bigint_val) {
@@ -127,7 +129,7 @@ void test_negation() {
     for (int64_t edge : {int64_t(0), int64_t(1), int64_t(-1),
                          int64_t(3), int64_t(-3), int64_t(9), int64_t(-9)}) {
         int64_t oracle_val = decode_i64(negate_trits(encode_i64(edge)));
-        int64_t bigint_val = bigint_to_i64(-t81::T81BigInt(edge));
+        int64_t bigint_val = bigint_to_i64(-T81BigInt(edge));
         require(oracle_val == bigint_val, "negation edge case");
     }
     // Double negation involution: --v == v
@@ -135,7 +137,7 @@ void test_negation() {
         auto trits = encode_i64(v);
         auto nn    = negate_trits(negate_trits(trits));
         require(decode_i64(nn) == v, "double negation involution (oracle)");
-        require(bigint_to_i64(-(-t81::T81BigInt(v))) == v, "double negation involution (bigint)");
+        require(bigint_to_i64(-(-T81BigInt(v))) == v, "double negation involution (bigint)");
     }
     std::cout << "  PASS\n";
 }
@@ -149,7 +151,7 @@ void test_addition() {
     for (int i = 0; i < 2000; ++i) {
         int64_t a = dist(rng), b = dist(rng);
         auto oracle = add(encode_i64(a), encode_i64(b));
-        t81::T81BigInt bi_res = t81::T81BigInt(a) + t81::T81BigInt(b);
+        T81BigInt bi_res = T81BigInt(a) + T81BigInt(b);
         check_arith(oracle, bi_res, "add", a, b);
     }
     // Edge cases: identity, sign crossing, zero
@@ -157,15 +159,15 @@ void test_addition() {
             {0, 0}, {0, 1}, {1, 0}, {-1, 1}, {1, -1},
             {1, 2}, {-5, 5}, {3, -3}, {729, -729}}) {
         auto oracle = add(encode_i64(a), encode_i64(b));
-        t81::T81BigInt bi_res = t81::T81BigInt(a) + t81::T81BigInt(b);
+        T81BigInt bi_res = T81BigInt(a) + T81BigInt(b);
         check_arith(oracle, bi_res, "add_edge", a, b);
     }
     // Commutativity: a+b == b+a
     std::uniform_int_distribution<int64_t> comm(-100'000LL, 100'000LL);
     for (int i = 0; i < 500; ++i) {
         int64_t a = comm(rng), b = comm(rng);
-        t81::T81BigInt ab = t81::T81BigInt(a) + t81::T81BigInt(b);
-        t81::T81BigInt ba = t81::T81BigInt(b) + t81::T81BigInt(a);
+        T81BigInt ab = T81BigInt(a) + T81BigInt(b);
+        T81BigInt ba = T81BigInt(b) + T81BigInt(a);
         require(bigint_to_i64(ab) == bigint_to_i64(ba), "addition commutativity");
     }
     std::cout << "  PASS\n";
@@ -181,17 +183,17 @@ void test_subtraction() {
     for (int i = 0; i < 2000; ++i) {
         int64_t a = dist(rng), b = dist(rng);
         auto oracle = sub_trits(encode_i64(a), encode_i64(b));
-        t81::T81BigInt bi_res = t81::T81BigInt(a) - t81::T81BigInt(b);
+        T81BigInt bi_res = T81BigInt(a) - T81BigInt(b);
         check_arith(oracle, bi_res, "sub", a, b);
 
         // Verify a - b == a + (-b) at the BigInt level
-        t81::T81BigInt bi_add_neg = t81::T81BigInt(a) + (-t81::T81BigInt(b));
+        T81BigInt bi_add_neg = T81BigInt(a) + (-T81BigInt(b));
         require(bigint_to_i64(bi_res) == bigint_to_i64(bi_add_neg),
                 "sub axiom: a-b == a+(-b)");
     }
     // a - a == 0
     for (int64_t v : {int64_t(0), int64_t(1), int64_t(-42), int64_t(729)}) {
-        t81::T81BigInt bi(v);
+        T81BigInt bi(v);
         require(bigint_to_i64(bi - bi) == 0, "a - a == 0");
         auto trits = encode_i64(v);
         require(decode_i64(sub_trits(trits, trits)) == 0, "a - a == 0 (oracle)");
@@ -211,7 +213,7 @@ void test_multiplication() {
     for (int i = 0; i < 2000; ++i) {
         int64_t a = dist(rng), b = dist(rng);
         int64_t expected = a * b;
-        t81::T81BigInt bi_res = t81::T81BigInt(a) * t81::T81BigInt(b);
+        T81BigInt bi_res = T81BigInt(a) * T81BigInt(b);
         int64_t got = bigint_to_i64(bi_res);
         if (got != expected) {
             std::cerr << "FAIL mul(" << a << "," << b << "): expected=" << expected
@@ -230,7 +232,7 @@ void test_multiplication() {
         auto oracle = mul_scalar_ref(encode_i64(a), n);
         int64_t oracle_val = decode_i64(oracle);
 
-        t81::T81BigInt bi_res = t81::T81BigInt(a) * t81::T81BigInt(static_cast<int64_t>(n));
+        T81BigInt bi_res = T81BigInt(a) * T81BigInt(static_cast<int64_t>(n));
         int64_t bigint_val = bigint_to_i64(bi_res);
 
         if (oracle_val != bigint_val) {
@@ -244,29 +246,29 @@ void test_multiplication() {
     std::uniform_int_distribution<int64_t> law_dist(-5000LL, 5000LL);
     for (int i = 0; i < 500; ++i) {
         int64_t a = law_dist(rng), b = law_dist(rng), c = law_dist(rng);
-        t81::T81BigInt A(a), B(b), C(c);
+        T81BigInt A(a), B(b), C(c);
 
         // Commutativity: a*b == b*a
         require(bigint_to_i64(A * B) == bigint_to_i64(B * A),
                 "mul commutativity");
 
         // Multiplicative identity: a * 1 == a
-        require(bigint_to_i64(A * t81::T81BigInt(1)) == a,
+        require(bigint_to_i64(A * T81BigInt(1)) == a,
                 "mul identity");
 
         // Multiplicative zero: a * 0 == 0
-        require(bigint_to_i64(A * t81::T81BigInt(0)) == 0,
+        require(bigint_to_i64(A * T81BigInt(0)) == 0,
                 "mul zero");
 
         // Negation via multiplication: a * (-1) == -a
-        require(bigint_to_i64(A * t81::T81BigInt(-1)) == bigint_to_i64(-A),
+        require(bigint_to_i64(A * T81BigInt(-1)) == bigint_to_i64(-A),
                 "mul by -1 == negate");
     }
     // Distributivity: a*(b+c) == a*b + a*c — use narrower range to stay in int64
     std::uniform_int_distribution<int64_t> dist_law(-1000LL, 1000LL);
     for (int i = 0; i < 500; ++i) {
         int64_t a = dist_law(rng), b = dist_law(rng), c = dist_law(rng);
-        t81::T81BigInt A(a), B(b), C(c);
+        T81BigInt A(a), B(b), C(c);
         int64_t lhs = bigint_to_i64(A * (B + C));
         int64_t rhs = bigint_to_i64(A * B + A * C);
         if (lhs != rhs) {
@@ -288,10 +290,10 @@ void test_comparison_semantics() {
 
     for (int i = 0; i < 2000; ++i) {
         int64_t a = dist(rng), b = dist(rng);
-        t81::T81BigInt A(a), B(b);
+        T81BigInt A(a), B(b);
 
         // Reflexivity: a == a regardless of object identity
-        t81::T81BigInt A2(a);
+        T81BigInt A2(a);
         require(A == A2, "comparison: reflexivity (same value, different object)");
 
         // Antisymmetry: a < b iff !(b <= a... via ordering)
@@ -315,8 +317,8 @@ void test_comparison_semantics() {
 
     // Edge: zero is canonically unique — positive zero == negative zero does not
     // arise in balanced ternary (canonical zero has no sign), but confirm:
-    t81::T81BigInt pos_zero(0);
-    t81::T81BigInt neg_zero = -t81::T81BigInt(0);  // negation of zero is zero
+    T81BigInt pos_zero(0);
+    T81BigInt neg_zero = -T81BigInt(0);  // negation of zero is zero
     require(pos_zero == neg_zero,
             "comparison: neg(0) == 0 (zero has no sign)");
     require(bigint_to_i64(neg_zero) == 0,
@@ -332,9 +334,9 @@ void test_overflow_policy_bigint_unbounded() {
     std::cout << "[RFC-0049] overflow policy: T81BigInt is unbounded (arbitrary precision)...\n";
 
     // INT64_MAX + 1: would wrap in int64, must be exact in BigInt.
-    t81::T81BigInt max64(INT64_MAX);
-    t81::T81BigInt one(1);
-    t81::T81BigInt over = max64 + one;
+    T81BigInt max64(INT64_MAX);
+    T81BigInt one(1);
+    T81BigInt over = max64 + one;
     // over should not throw; and should decode to > INT64_MAX when cast back
     try {
         int64_t v = over.to_int64();
@@ -345,13 +347,13 @@ void test_overflow_policy_bigint_unbounded() {
     }
 
     // But the arithmetic itself is exact: (INT64_MAX + 1) - 1 == INT64_MAX
-    t81::T81BigInt round_trip = over - one;
+    T81BigInt round_trip = over - one;
     require(round_trip == max64,
             "overflow: (INT64_MAX+1)-1 == INT64_MAX (exact bigint)");
 
     // Same for the negative side
-    t81::T81BigInt min64(INT64_MIN);
-    t81::T81BigInt under = min64 - one;
+    T81BigInt min64(INT64_MIN);
+    T81BigInt under = min64 - one;
     try {
         int64_t v = under.to_int64();
         std::cerr << "FAIL: expected overflow exception for INT64_MIN-1 to_int64, got " << v << "\n";
@@ -359,7 +361,7 @@ void test_overflow_policy_bigint_unbounded() {
     } catch (const std::exception&) {
         // Expected
     }
-    t81::T81BigInt round_trip2 = under + one;
+    T81BigInt round_trip2 = under + one;
     require(round_trip2 == min64,
             "overflow: (INT64_MIN-1)+1 == INT64_MIN (exact bigint)");
 
@@ -379,7 +381,7 @@ void test_carry_propagation() {
         auto a = encode_i64(1), b = encode_i64(1);
         auto r = add(a, b);
         require(decode_i64(r) == 2, "carry: 1+1=2 (oracle)");
-        require(bigint_to_i64(t81::T81BigInt(1) + t81::T81BigInt(1)) == 2,
+        require(bigint_to_i64(T81BigInt(1) + T81BigInt(1)) == 2,
                 "carry: 1+1=2 (bigint)");
     }
     // Powers of 3 (each is a single non-zero trit in BT): 3^k + 3^k = 2*3^k
@@ -389,7 +391,7 @@ void test_carry_propagation() {
         int64_t expected = 2 * p;
         auto oracle = add(encode_i64(p), encode_i64(p));
         require(decode_i64(oracle) == expected, "carry: 3^k + 3^k (oracle)");
-        t81::T81BigInt bi_res = t81::T81BigInt(p) + t81::T81BigInt(p);
+        T81BigInt bi_res = T81BigInt(p) + T81BigInt(p);
         require(bigint_to_i64(bi_res) == expected, "carry: 3^k + 3^k (bigint)");
     }
     // Sum that produces maximal carry chain: (3^13 - 1)/2 + (3^13 - 1)/2
@@ -399,7 +401,7 @@ void test_carry_propagation() {
         int64_t expected = 2 * half;          // 1594322
         auto oracle = add(encode_i64(half), encode_i64(half));
         require(decode_i64(oracle) == expected, "carry chain: large oracle");
-        t81::T81BigInt bi_res = t81::T81BigInt(half) + t81::T81BigInt(half);
+        T81BigInt bi_res = T81BigInt(half) + T81BigInt(half);
         require(bigint_to_i64(bi_res) == expected, "carry chain: large bigint");
     }
     std::cout << "  PASS\n";

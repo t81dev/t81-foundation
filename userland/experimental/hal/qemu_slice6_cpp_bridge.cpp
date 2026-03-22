@@ -97,6 +97,175 @@ static bool probe_virtio_blk_bare() noexcept {
 #endif
 }
 
+// ── Virtio-blk I/O probe (AArch64, modern MMIO transport) ────────────────────
+// Full virtio queue initialisation + 3-step I/O test:
+//   1. READ  LBA 0 → verify CST1 magic
+//   2. WRITE known pattern to LBA 1
+//   3. READ  LBA 1 → byte-compare round-trip
+// Called once from qemu_cpp_bridge_entry() when s_has_blk is true.
+// Emits [axion] canonfs: I/O probe OK/FAIL banner.
+
+static constexpr int kVQSize = 4;  // queue depth — power-of-2, ≥3 (descs/req)
+
+// Virtio-mmio register offsets (spec 1.0 §4.2.2, modern transport).
+static constexpr uint32_t kVR_Status      = 0x070u;
+static constexpr uint32_t kVR_DrvFeatSel  = 0x024u;
+static constexpr uint32_t kVR_DrvFeatures = 0x020u;
+static constexpr uint32_t kVR_QueueSel    = 0x030u;
+static constexpr uint32_t kVR_QueueNumMax = 0x034u;
+static constexpr uint32_t kVR_QueueNum    = 0x038u;
+static constexpr uint32_t kVR_QueueReady  = 0x044u;
+static constexpr uint32_t kVR_QueueNotify = 0x050u;
+static constexpr uint32_t kVR_QueueDescLo = 0x080u;
+static constexpr uint32_t kVR_QueueDescHi = 0x084u;
+static constexpr uint32_t kVR_QueueDrvLo  = 0x090u;
+static constexpr uint32_t kVR_QueueDrvHi  = 0x094u;
+static constexpr uint32_t kVR_QueueDevLo  = 0x0A0u;
+static constexpr uint32_t kVR_QueueDevHi  = 0x0A4u;
+
+static constexpr uint32_t kVS_Ack         = 0x01u;
+static constexpr uint32_t kVS_Driver      = 0x02u;
+static constexpr uint32_t kVS_DriverOk    = 0x04u;
+static constexpr uint32_t kVS_FeaturesOk  = 0x08u;
+
+static constexpr uint16_t kVD_Next        = 0x0001u;
+static constexpr uint16_t kVD_Write       = 0x0002u;
+
+static constexpr uint32_t kBlkIn          = 0u;  // device→memory (read)
+static constexpr uint32_t kBlkOut         = 1u;  // memory→device (write)
+
+struct VirtqDesc { uint64_t addr; uint32_t len; uint16_t flags; uint16_t next; };
+struct VirtqAvail { uint16_t flags; uint16_t idx; uint16_t ring[kVQSize]; };
+struct VirtqUsedElem { uint32_t id; uint32_t len; };
+struct VirtqUsed  { uint16_t flags; uint16_t idx; VirtqUsedElem ring[kVQSize]; };
+struct VirtioBlkReqHdr { uint32_t type; uint32_t reserved; uint64_t sector; };
+
+// Static virtio queue data — resides in BSS (zero at startup, identity-mapped).
+alignas(16)  static VirtqDesc       s_vq_desc[kVQSize];
+alignas(2)   static VirtqAvail      s_vq_avail;
+alignas(4)   static VirtqUsed       s_vq_used;
+alignas(16)  static VirtioBlkReqHdr s_blk_req;
+alignas(512) static uint8_t         s_sector_buf[512];
+static uint8_t s_blk_status;
+
+static inline void aarch64_dsb() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  __asm__ volatile("dsb sy" ::: "memory");
+#endif
+}
+
+// Submit one virtio-blk request and poll for completion.
+static bool vblk_do_io(uint32_t type, uint64_t lba) noexcept {
+  s_blk_req.type     = type;
+  s_blk_req.reserved = 0u;
+  s_blk_req.sector   = lba;
+  s_blk_status       = 0xFFu;
+
+  s_vq_desc[0] = { reinterpret_cast<uint64_t>(&s_blk_req),
+                   static_cast<uint32_t>(sizeof(s_blk_req)),
+                   kVD_Next, 1u };
+  s_vq_desc[1] = { reinterpret_cast<uint64_t>(s_sector_buf), 512u,
+                   static_cast<uint16_t>(kVD_Next |
+                     (type == kBlkIn ? kVD_Write : 0u)), 2u };
+  s_vq_desc[2] = { reinterpret_cast<uint64_t>(&s_blk_status), 1u,
+                   kVD_Write, 0u };
+
+  const uint16_t old_used = s_vq_used.idx;
+  s_vq_avail.ring[s_vq_avail.idx % kVQSize] = 0u;
+  aarch64_dsb();
+  s_vq_avail.idx = static_cast<uint16_t>(s_vq_avail.idx + 1u);
+  aarch64_dsb();
+  mmio_write32(kVirtioMmioBase, kVR_QueueNotify, 0u);
+  aarch64_dsb();
+
+  for (uint32_t i = 0u; i < 2000000u; ++i) {
+    aarch64_dsb();
+    if (s_vq_used.idx != old_used) break;
+#if defined(__aarch64__) && !defined(__APPLE__)
+    __asm__ volatile("yield" ::: "memory");
+#endif
+  }
+  return (s_vq_used.idx != old_used) && (s_blk_status == 0u);
+}
+
+static void canonfs_io_probe() noexcept {
+  const uint64_t mmio = kVirtioMmioBase;
+
+  // Reset → ACK → DRIVER → negotiate features (none) → FEATURES_OK.
+  mmio_write32(mmio, kVR_Status, 0u);
+  aarch64_dsb();
+  mmio_write32(mmio, kVR_Status, kVS_Ack | kVS_Driver);
+  mmio_write32(mmio, kVR_DrvFeatSel, 0u);
+  mmio_write32(mmio, kVR_DrvFeatures, 0u);
+  mmio_write32(mmio, kVR_Status, kVS_Ack | kVS_Driver | kVS_FeaturesOk);
+  aarch64_dsb();
+  if (!(mmio_read32(mmio, kVR_Status) & kVS_FeaturesOk)) {
+    pl011_puts("[axion] canonfs: I/O probe FAIL (feature negotiation)\r\n");
+    return;
+  }
+
+  // Queue 0 setup.
+  mmio_write32(mmio, kVR_QueueSel, 0u);
+  if (mmio_read32(mmio, kVR_QueueNumMax) < static_cast<uint32_t>(kVQSize)) {
+    pl011_puts("[axion] canonfs: I/O probe FAIL (queue too small)\r\n");
+    return;
+  }
+  mmio_write32(mmio, kVR_QueueNum, static_cast<uint32_t>(kVQSize));
+
+  const uint64_t desc_pa  = reinterpret_cast<uint64_t>(s_vq_desc);
+  const uint64_t avail_pa = reinterpret_cast<uint64_t>(&s_vq_avail);
+  const uint64_t used_pa  = reinterpret_cast<uint64_t>(&s_vq_used);
+  mmio_write32(mmio, kVR_QueueDescLo, static_cast<uint32_t>(desc_pa));
+  mmio_write32(mmio, kVR_QueueDescHi, static_cast<uint32_t>(desc_pa  >> 32));
+  mmio_write32(mmio, kVR_QueueDrvLo,  static_cast<uint32_t>(avail_pa));
+  mmio_write32(mmio, kVR_QueueDrvHi,  static_cast<uint32_t>(avail_pa >> 32));
+  mmio_write32(mmio, kVR_QueueDevLo,  static_cast<uint32_t>(used_pa));
+  mmio_write32(mmio, kVR_QueueDevHi,  static_cast<uint32_t>(used_pa  >> 32));
+  mmio_write32(mmio, kVR_QueueReady, 1u);
+
+  // DRIVER_OK — device is live.
+  mmio_write32(mmio, kVR_Status,
+               kVS_Ack | kVS_Driver | kVS_FeaturesOk | kVS_DriverOk);
+  aarch64_dsb();
+
+  // LBA 0 READ → check CST1 magic.
+  for (int i = 0; i < 512; ++i) s_sector_buf[i] = 0u;
+  if (!vblk_do_io(kBlkIn, 0u)) {
+    pl011_puts("[axion] canonfs: I/O probe FAIL (LBA0 read error)\r\n");
+    return;
+  }
+  if (s_sector_buf[0] != 'C' || s_sector_buf[1] != 'S' ||
+      s_sector_buf[2] != 'T' || s_sector_buf[3] != '1') {
+    pl011_puts("[axion] canonfs: I/O probe FAIL (LBA0 bad magic)\r\n");
+    return;
+  }
+
+  // LBA 1 WRITE known pattern.
+  for (int i = 0; i < 512; ++i)
+    s_sector_buf[i] = static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i));
+  if (!vblk_do_io(kBlkOut, 1u)) {
+    pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 write error)\r\n");
+    return;
+  }
+
+  // LBA 1 READ back and verify.
+  for (int i = 0; i < 512; ++i) s_sector_buf[i] = 0u;
+  if (!vblk_do_io(kBlkIn, 1u)) {
+    pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 read-back error)\r\n");
+    return;
+  }
+  for (int i = 0; i < 512; ++i) {
+    if (s_sector_buf[i] !=
+        static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i))) {
+      pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 mismatch)\r\n");
+      return;
+    }
+  }
+
+  pl011_puts("[axion] canonfs: I/O probe OK"
+             " (LBA0 magic=CST1, LBA1 round-trip pass)\r\n");
+}
+
 // ── ARM generic timer ────────────────────────────────────────────────────────
 // CNTPCT_EL0 (physical counter) and CNTFRQ_EL0 (frequency in Hz) are
 // accessible from EL1 without additional configuration on QEMU virt.
@@ -179,6 +348,8 @@ static uint64_t s_interrupt_count = 0; // serial RX events (our interrupt source
 static uint64_t s_timer_irqs     = 0;  // hardware timer IRQ count (GICv3 PPI30)
 static bool     s_has_blk        = false;
 
+static constexpr uint64_t kSchedTickInterval = 500u;
+
 // ── Hardware-timer IRQ callback ───────────────────────────────────────────────
 // Called from axion_irq_handler_aarch64() (qemu_slice6_bridge_irq.cpp) on
 // every GICv3 PPI 30 tick (~100Hz).  Declared extern "C" so the IRQ file can
@@ -216,8 +387,6 @@ extern "C" void bridge_hw_init_aarch64() noexcept;
 // the first few loop iterations before GICv3 is live).  After hardware timer
 // IRQs start firing, bridge_timer_irq_tick() drives the scheduler directly.
 // Round-robin among ready threads every kSchedTickInterval loop iterations.
-
-static constexpr uint64_t kSchedTickInterval = 500u;
 
 static void freestanding_sched_tick() noexcept {
   ++s_tick_count;
@@ -406,6 +575,7 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   pl011_puts("[axion] policy engine: ready\r\n");
   if (s_has_blk) {
     pl011_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
+    canonfs_io_probe();
   } else {
     pl011_puts("[axion] canonfs: mounted (in-memory)\r\n");
   }

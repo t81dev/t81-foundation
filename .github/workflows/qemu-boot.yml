@@ -182,6 +182,7 @@ jobs:
           check "T81  --  Ternary OS for AI"
           check "[axion] policy engine: ready"
           check "[axion] canonfs: mounted (persistent, virtio-blk)"
+          check "[axion] canonfs: I/O probe OK"
           check "[axion] kernel thread tid=1: running"
           check "[axion] event loop: priority dispatch"
           check "[axion] hw timer: GICv3 PPI30 armed (10ms)"
