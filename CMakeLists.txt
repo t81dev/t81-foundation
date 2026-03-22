@@ -166,6 +166,7 @@ add_library(t81_core STATIC
   isa/encoding.cpp
   fs/in_memory_driver.cpp
   fs/persistent_driver.cpp
+  fs/block_backed_driver.cpp
   vm/determinism/canon_hash81.cpp
   isa/math/t81_soft_math/t81_soft_math.cpp
   codec/base243.cpp
@@ -183,6 +184,10 @@ target_compile_features(t81_core PUBLIC ${T81_CXX_STD_FEATURE})
 target_include_directories(t81_core PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+# block_backed_driver.cpp needs access to dev/block_device.hpp and dev/canon_store.hpp.
+target_include_directories(t81_core PRIVATE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental>
 )
 
 add_library(t81_tracing OBJECT

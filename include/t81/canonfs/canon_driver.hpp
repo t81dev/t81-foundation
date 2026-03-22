@@ -8,6 +8,10 @@
 #include <vector>
 #include "t81/canonfs/canon_types.hpp"
 
+// Forward-declare IBlockDevice before opening t81::canonfs so that the
+// make_block_backed_driver factory parameter type resolves correctly.
+namespace t81::ternaryos::dev { class IBlockDevice; }
+
 namespace t81::canonfs {
 enum class Error {
   None = 0,
@@ -34,7 +38,21 @@ public:
   virtual void set_axion_hook(std::function<AxionVerdict(OpKind, const CanonRef&)> hook) = 0;
 };
 
-// Utility factory for the in-memory driver implementation.
+// ── Driver factories ──────────────────────────────────────────────────────────
+
+/// Volatile in-memory store; lost on process exit.
 std::unique_ptr<Driver> make_in_memory_driver();
+
+/// Filesystem-rooted persistent store; survives process restart.
 std::unique_ptr<Driver> make_persistent_driver(std::filesystem::path root);
+
+/// Block-device-backed persistent store (virtio-blk, hosted image, etc.).
+/// The driver takes ownership of `dev`.  If `rebuild_on_open` is true,
+/// the on-device index is scanned and rebuilt on construction (safe after
+/// a clean shutdown that called flush(); required after an unclean shutdown).
+/// Returns nullptr if `dev` is null.
+std::unique_ptr<Driver> make_block_backed_driver(
+    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev,
+    bool rebuild_on_open = true);
+
 }  // namespace t81::canonfs

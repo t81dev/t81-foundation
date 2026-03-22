@@ -87,17 +87,16 @@ std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
 }
 
 std::unique_ptr<t81::canonfs::Driver> bootstrap_published_executable_canonfs() {
-  // Priority 1: virtio-blk MMIO device present (bare-metal AArch64 / x86_64).
-  // probe() is a no-op on hosted builds (returns false).  When the device IS
-  // present, record it for the kernel banner; the full block-backed CanonFS
-  // driver (make_block_backed_driver) is a follow-on task once the factory
-  // overload is added to the CanonFS public API.
+  // Priority 1: virtio-blk MMIO device (bare-metal AArch64 / x86_64).
+  // probe() is a no-op on hosted builds (returns false).
   {
-    dev::VirtioBlkMmioDevice vblk;
-    if (dev::VirtioBlkMmioDevice::probe(dev::VirtioBlkMmioDevice::kDefaultMmioBase, vblk)) {
-      // Bare-metal path: device detected.  Use in-memory for now; the banner
-      // in kernel_runtime.cpp will show "mounted (persistent, virtio-blk)".
-      return t81::canonfs::make_in_memory_driver();
+    auto vblk = std::make_unique<dev::VirtioBlkMmioDevice>();
+    if (dev::VirtioBlkMmioDevice::probe(dev::VirtioBlkMmioDevice::kDefaultMmioBase, *vblk)) {
+      // Device detected — mount a block-backed CanonFS driver.
+      // rebuild_on_open=true scans on-device blocks to recover the index after
+      // any prior clean or unclean shutdown.
+      return t81::canonfs::make_block_backed_driver(std::move(vblk),
+                                                    /*rebuild_on_open=*/true);
     }
   }
 
