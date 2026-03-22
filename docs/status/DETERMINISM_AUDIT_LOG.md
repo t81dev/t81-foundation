@@ -18,8 +18,8 @@ Entries are append-only. Do not edit past entries.
 experimental TernaryOS + DPE kernel lane.
 
 **Audited:**
-- `experimental/ternaryos/tests/epoch_submission_test.cpp`
-- `experimental/ternaryos/tests/epoch_audit_test.cpp`
+- `userland/experimental/tests/epoch_submission_test.cpp`
+- `userland/experimental/tests/epoch_audit_test.cpp`
 - `.github/workflows/ci.yml` (`axion-epoch-determinism`)
 - status / governance surfaces that describe the Axion/TernaryOS boundary
 
@@ -135,7 +135,7 @@ legacy path references, build and test pass status.
 
 | Check | Result | Notes |
 | :--- | :--- | :--- |
-| Dependency firewall | **PASS** | Controlled waiver existed at the time (`core/vm/vm.cpp:24`) and was documented |
+| Dependency firewall | **PASS** | Controlled waiver existed at the time (`vm/vm.cpp:24`) and was documented |
 | Public API boundary (`include/t81/`) | **PASS** | No violations |
 | Experimental containment | **PASS** | 1 controlled include waiver at audit time |
 | Legacy path references | **PASS** | No stale paths |
@@ -185,7 +185,7 @@ satisfaction.
 - Full structural integrity check: each release candidate
 - Verified surface audit: each monthly governance cadence
 - Data type / language surface audits: triggered by implementation changes to
-  `core/types/`, `lang/frontend/`, or any type header in `include/t81/`
+  `include/t81/types/`, `lang/frontend/`, or any type header in `include/t81/`
 
 ## Adding Entries
 

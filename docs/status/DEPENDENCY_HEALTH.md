@@ -60,7 +60,7 @@ permitted.
 | **Path** | `third_party/llama.cpp` |
 | **Pinned Commit** | `3769fe6eb` |
 | **Upstream** | https://github.com/ggml-org/llama.cpp |
-| **Integration Surface** | `tooling/model/llama_cpp_adapter.cpp`, `t81_llama_adapter` static library, CLI `llama-run` |
+| **Integration Surface** | `tools/model/llama_cpp_adapter.cpp`, `t81_llama_adapter` static library, CLI `llama-run` |
 | **DCP Classification** | **Governed non-DCP** (see DEC-003 in `docs/status/DECISION_LOG.md`) |
 | **CMake Flag** | `T81_ENABLE_LLAMA_CPP=OFF` (default disabled) |
 | **Export Status** | Internal / build-only; `T81_EXPORT_LLAMA_ADAPTER` guard active (see DEC-004) |

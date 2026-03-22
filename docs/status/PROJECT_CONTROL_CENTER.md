@@ -123,7 +123,7 @@ Full boundary: `EXTENSION_PROFILE.md`
 2. **2026-05-15** — T81Lang promotion follow-on: bytecode deterministic compilation profile; full spec-section traceability audit; clarify compiler-surface promotion against RFC-0043/RFC-0048
 3. **Closed** — RFC-00B5 interrupt governance: Slice 28 `UnhandledInterruptDropped` done; RFC-00B5 → `integrated`; 3214/3214 ternaryos assertions
 4. **Closed** — TernaryOS QEMU x86_64 EFI boot lane: BOOTX64.EFI validated, all 5 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete` (evidence: `TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`)
-5. **TBD** — TernaryOS bare-metal boot: actual x86_64 VirtualBox host execution + evidence return (next external milestone; see `experimental/ternaryos/docs/kernel_execution_plan.md`)
+5. **TBD** — TernaryOS bare-metal boot: actual x86_64 VirtualBox host execution + evidence return (next external milestone; see `userland/experimental/docs/kernel_execution_plan.md`)
 6. **Active now** — Fuzz corpus growth: run libFuzzer on `fuzz_parser` / `fuzz_vm`; commit any crash inputs
 7. **Active now** — Governance closure path: connect RFC-0042..RFC-0053 to registry, threat model, promotion evidence, and CI gate inventory so public status claims remain classification-correct
 

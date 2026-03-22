@@ -65,7 +65,7 @@ This backlog tracks active AI integration RFC work only. It is separate from str
 - RFC-00A8: `draft` → **`superseded`** by RFC-0026 (ATTN/QMATMUL/EMBED/WLOAD in TISC)
 - ai-opcode-phase1-conformance.md: `phase_status` → `spec_conformant` (was `runtime_bound`)
 - Conformance suite: 27 programs (3 new AI programs: attn-determinism, qmatmul-scale-order, embed-bounds-check)
-- New deliverables: `spec/supplemental/axion-event-registry.md`, `core/vm/ai_backend/backend_adapter.cpp`, `tests/determinism/evidence_collector.cpp`, `tooling/cli/ai/t81_ai_cli.cpp`
+- New deliverables: `spec/supplemental/axion-event-registry.md`, `vm/ai_backend/backend_adapter.cpp`, `tests/determinism/evidence_collector.cpp`, `tools/cli/ai/t81_ai_cli.cpp`
 
 ## Compliance Snapshot (2026-03-08)
 

@@ -13,9 +13,9 @@ SRC_DIR = REPO_ROOT / "src"
 
 # Spec -> Implementation Mapping
 SPEC_MAP = {
-    "tisc-spec.md": "core/isa",
-    "t81vm-spec.md": "core/vm",
-    "t81-data-types.md": "core/types",
+    "tisc-spec.md": "isa",
+    "t81vm-spec.md": "vm",
+    "t81-data-types.md": "include/t81/types",
     "t81lang-spec.md": "lang/frontend",
     "axion-kernel.md": "kernel/axion",
     "cognitive-tiers.md": "experimental/tiers/cog", # Assumption

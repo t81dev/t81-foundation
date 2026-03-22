@@ -41,10 +41,10 @@ Classification rule: implementation maturity is not the same thing as DCP / veri
 
 | Layer | Paths | Determinism Status | Promotion State | Governance Gate |
 | :--- | :--- | :--- | :--- | :--- |
-| Deterministic Substrate | `core/types`, `core/isa`, `core/vm`, `include/t81/**` | DCP / registry Verified | Verified | Freeze enforcement + DCP release discipline |
+| Deterministic Substrate | `include/t81/types`, `isa`, `vm`, `include/t81/**` | DCP / registry Verified | Verified | Freeze enforcement + DCP release discipline |
 | Governance Kernel | `kernel/axion` | Governed non-DCP, scope-bounded | Governed non-DCP | Axion evidence milestones + incident-response; broader kernel behavior still requires explicit promotion before stronger deterministic claims |
-| AGI Runtime / Research | `runtime/tracing`, `experimental/*`, cognitive tiers | Non-DCP unless promoted | Experimental | Governed AGI promotion pipeline |
-| Governed Inference | `third_party/llama.cpp`, `tooling/model/`, CLI `llama-run` | Governed non-DCP | Experimental | Governed AGI pipeline + release boundary classification |
+| AGI Runtime / Research | `vm/tracing`, `experimental/*`, cognitive tiers | Non-DCP unless promoted | Experimental | Governed AGI promotion pipeline |
+| Governed Inference | `third_party/llama.cpp`, `tools/model/`, CLI `llama-run` | Governed non-DCP | Experimental | Governed AGI pipeline + release boundary classification |
 
 ---
 

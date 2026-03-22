@@ -1,28 +1,20 @@
 #!/usr/bin/env python3
 """Lightweight docs/governance hygiene checks (non-CI mandatory by default)."""
-
 from __future__ import annotations
-
 import re
 import subprocess
 import sys
 from pathlib import Path
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 QUEUE_FILE = REPO_ROOT / "docs/status/T81LANG_IMPLEMENTATION_TASK_QUEUE_2026-03.md"
-
 REQUIRED_READMES = [
-    "core/README.md",
     "kernel/README.md",
-    "runtime/README.md",
-    "runtime/jit/README.md",
+    "vm/jit/README.md",
     "lang/README.md",
     "experimental/README.md",
     "experimental/distributed/README.md",
-    "internal/README.md",
-    "internal/axion/README.md",
-    "internal/tooling/README.md",
-    "tooling/README.md",
+    "kernel/axion/README.md",
+    "tools/README.md",
     "scripts/architecture/README.md",
     "scripts/governance/README.md",
     "scripts/restructure/README.md",
@@ -48,8 +40,6 @@ REQUIRED_READMES = [
     "docs/status/README.md",
     "docs/tutorials/README.md",
 ]
-
-
 def parse_queue_statuses(queue_text: str) -> dict[str, set[str]]:
     statuses: dict[str, set[str]] = {}
     for line in queue_text.splitlines():
@@ -64,17 +54,13 @@ def parse_queue_statuses(queue_text: str) -> dict[str, set[str]]:
             continue
         statuses.setdefault(task_id, set()).add(status)
     return statuses
-
-
 def main() -> int:
     issues: list[str] = []
-
     # 1) Required README presence check.
     for rel in REQUIRED_READMES:
         path = REPO_ROOT / rel
         if not path.exists():
             issues.append(f"missing required README: {rel}")
-
     # 2) Queue consistency check.
     if not QUEUE_FILE.exists():
         issues.append(f"missing queue file: {QUEUE_FILE.relative_to(REPO_ROOT)}")
@@ -89,7 +75,6 @@ def main() -> int:
                 issues.append(
                     f"task has both Planned and Completed statuses in queue: {task_id}"
                 )
-
     # 3) Stale planned markers for completed tasks in status/audit artifacts.
     scan_dirs = [REPO_ROOT / "docs/status", REPO_ROOT / "docs/records/audits"]
     for task_id, vals in sorted(queue_statuses.items()):
@@ -106,7 +91,6 @@ def main() -> int:
                         issues.append(
                             f"stale planned marker for completed task {task_id}: {rel}:{idx}"
                         )
-
     # 4) Cross-document status label coherence check.
     coherence_check = REPO_ROOT / "scripts/governance/check_status_label_coherence.py"
     if not coherence_check.exists():
@@ -125,7 +109,6 @@ def main() -> int:
           if output:
               for line in output.splitlines():
                   issues.append(f"coherence: {line}")
-
     # 5) Supplemental governance policy checks promoted from warning-only rows.
     supplemental_checks = [
         ("root structure", "scripts/governance/check_root_structure.py"),
@@ -164,13 +147,11 @@ def main() -> int:
             if output:
                 for line in output.splitlines():
                     issues.append(f"{label}: {line}")
-
     if issues:
         print("governance hygiene check FAILED:")
         for issue in issues:
             print(f"- {issue}")
         return 1
-
     print("governance hygiene check PASSED")
     print(f"- required README coverage checked: {len(REQUIRED_READMES)} paths")
     print("- task-queue status consistency checked")
@@ -181,7 +162,5 @@ def main() -> int:
         "(structure/readme/translation/staleness/semantic/license/artifact/api/spec-boundary/stdlib/snapshot/overclaim/rfc-lifecycle) checked"
     )
     return 0
-
-
 if __name__ == "__main__":
     sys.exit(main())

@@ -19,9 +19,9 @@ review as a spec change.
 The Frozen Core is exactly these paths. Nothing else.
 
 ```
-core/types/          ← Data types (T81BigInt, T81Float, T81Fixed, T81Complex, etc.)
-core/isa/            ← TISC ISA definition and opcode encoding
-core/vm/             ← Reference interpreter (non-JIT path only)
+include/t81/types/          ← Data types (T81BigInt, T81Float, T81Fixed, T81Complex, etc.)
+isa/            ← TISC ISA definition and opcode encoding
+vm/             ← Reference interpreter (non-JIT path only)
 include/t81/         ← Public C++ API (the only stable external surface)
 ```
 
@@ -84,15 +84,15 @@ The following are **outside the Frozen Core** and carry **no DCP guarantees**:
 
 | Surface | Path | Status | Reason |
 | :--- | :--- | :--- | :--- |
-| Trace-JIT | `runtime/jit/` | Non-DCP | Equivalence unproven; disabled by default |
+| Trace-JIT | `vm/jit/` | Non-DCP | Equivalence unproven; disabled by default |
 | Cognitive Tiers | `experimental/tiers/` | Non-DCP | Experimental; consensus determinism not verified |
 | Hanoi VM | `experimental/hanoi/` | Non-DCP | Experimental kernel surface |
 | Distributed Compute | `experimental/distributed/` | Non-DCP | Network-layer; non-deterministic by design |
 | Axion Governance Kernel | `kernel/axion/` | Governed non-DCP | Scope-bounded evidence exists, including CI-enforced experimental epoch scheduler/audit parity, but broader kernel/governance behavior is outside the current DCP boundary |
-| Axion OS | `experimental/ternaryos/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates; `axion-epoch-determinism` proves bounded pooled-vs-unbounded epoch parity only |
+| Axion OS | `userland/experimental/` | Governed non-DCP / experimental | Experimental OS kernel path governed by RFC-00B3 and external promotion gates; `axion-epoch-determinism` proves bounded pooled-vs-unbounded epoch parity only |
 | T81Lang Frontend | `lang/frontend/` | Governed non-DCP | Compiler/toolchain determinism remains partial and fixture-bounded; language-spec stability does not imply DCP promotion |
 | T81Graph | `lang/frontend/` (graph surface) | Governed non-DCP | Useful implemented surface, but not a verified deterministic surface as a whole |
-| llama.cpp adapter | `third_party/llama.cpp`, `tooling/model/` | Governed non-DCP | AGI inference; practical reproducibility only |
+| llama.cpp adapter | `third_party/llama.cpp`, `tools/model/` | Governed non-DCP | AGI inference; practical reproducibility only |
 | Hardware FPU | — | Excluded | Platform-dependent; use `T81Float` soft-float instead |
 | Network IO | — | Excluded | Non-deterministic by design |
 | Real-time Scheduling | — | Excluded | Platform-dependent |
@@ -104,9 +104,9 @@ The following are **outside the Frozen Core** and carry **no DCP guarantees**:
 The dependency firewall is enforced by structural integrity checks:
 
 - `include/t81/` must not include experimental headers.
-- `core/` must not link against `runtime/jit/`, `experimental/`, or `kernel/axion/` except
+- `core/` must not link against `vm/jit/`, `experimental/`, or `kernel/axion/` except
   through the explicit, audited VM policy hook.
-- No active dependency firewall waivers. Historical waiver at `core/vm/vm.cpp` was retired on 2026-03-05.
+- No active dependency firewall waivers. Historical waiver at `vm/vm.cpp` was retired on 2026-03-05.
 - CI enforcement: `scripts/ci/check_core_numeric_wrapper_thinness.py`
 - Status: **PASS** (as of 2026-02-28)
 

@@ -83,8 +83,8 @@ with a full target opcode surface.
 - `include/t81/isa/opcodes.hpp` — `WLOAD`, `GATHER`, `SCATTER` enum entries
 - `include/t81/tensor/llama.hpp` — `t81::ops::wload`, `gather`, `scatter_add` kernels
 - `include/t81/tensor/contracts.hpp` — `wload_compatible`, `gather_compatible`, `scatter_compatible`
-- `core/vm/tensor_helpers.cpp` — `tensor_wload_checked`, `tensor_gather_checked`, `tensor_scatter_checked`
-- `core/vm/vm.cpp` — VM dispatch for WLOAD/GATHER/SCATTER
+- `vm/tensor_helpers.cpp` — `tensor_wload_checked`, `tensor_gather_checked`, `tensor_scatter_checked`
+- `vm/vm.cpp` — VM dispatch for WLOAD/GATHER/SCATTER
 - `tests/cpp/vm_ai_phase1_wload_conformance_test.cpp`
 - `tests/cpp/vm_ai_phase1_gather_conformance_test.cpp`
 - `tests/cpp/vm_ai_phase1_scatter_conformance_test.cpp`
@@ -148,7 +148,7 @@ velocity while spec review continues.
 **Category:** Architecture / Governance
 
 **Decision:** The llama.cpp integration path (`t81_llama_adapter`,
-`tooling/model/llama_cpp_adapter.cpp`, CLI `llama-run`) is classified as
+`tools/model/llama_cpp_adapter.cpp`, CLI `llama-run`) is classified as
 **governed non-DCP**. Determinism claims are bounded to practical reproducibility
 evidence only and do not imply registry-Verified deterministic guarantees.
 Promotion beyond governed non-DCP requires the governed AGI promotion pipeline.
@@ -363,8 +363,8 @@ expansion.
 **References:**
 - `docs/status/HARDENING_BACKLOG.md`
 - `docs/status/BG07_PHASE2_IMPLEMENTATION_NOTES.md`
-- `core/vm/vm.cpp`
-- `runtime/jit/jit_compiler.cpp`
+- `vm/vm.cpp`
+- `vm/jit/jit_compiler.cpp`
 - `tests/cpp/test_vm_literal_pool_extension.cpp`
 
 ---
@@ -518,7 +518,7 @@ Trap taxonomy: invalid hash format → `DecodeFault`; valid hash with no driver 
 
 **References:**
 - `include/t81/vm/vm.hpp` — `set_canonfs_root()` virtual method
-- `core/vm/vm.cpp` — null-guard + `Interpreter::set_canonfs_root()` implementation
+- `vm/vm.cpp` — null-guard + `Interpreter::set_canonfs_root()` implementation
 - `tests/cpp/vm_tloadhash_conformance_test.cpp`, `vm_tloadhash_canonical_fixed_test.cpp`, `vm_tloadhash_decodefault_determinism_matrix_test.cpp`
 - commit `7d92bb09`
 
