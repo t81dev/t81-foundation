@@ -3,6 +3,13 @@ name: T81 Speed Oracle
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'benchmarks/**'
+      - 'CMakeLists.txt'
+      - 'core/**'
+      - 'vm/**'
 
 permissions:
   contents: write
