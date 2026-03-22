@@ -1112,6 +1112,86 @@ if(T81_ENABLE_TERNARYOS)
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_slice6_efi
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})
+
+      # ── x86_64: QEMU OVMF slice6 BOOTX64.EFI ─────────────────────────────
+      # Three-object EFI binary: EFI stub + bare-metal C entry + C++ bridge.
+      # Mirrors the AArch64 slice6 layout; uses COM1 UART + RDTSC instead of
+      # PL011 MMIO + cntpct_el0.
+
+      set(T81_TERNARYOS_QEMU_X86_EFI_DIR  ${CMAKE_BINARY_DIR}/ternaryos/qemu_x86_64)
+      set(T81_TERNARYOS_QEMU_X86_STUB_OBJ ${T81_TERNARYOS_QEMU_X86_EFI_DIR}/BOOTX64_stub.obj)
+      set(T81_TERNARYOS_QEMU_X86_BARE_OBJ ${T81_TERNARYOS_QEMU_X86_EFI_DIR}/BOOTX64_bare.obj)
+      set(T81_TERNARYOS_QEMU_X86_CPP_OBJ  ${T81_TERNARYOS_QEMU_X86_EFI_DIR}/BOOTX64_cpp.obj)
+      set(T81_TERNARYOS_QEMU_X86_EFI      ${T81_TERNARYOS_QEMU_X86_EFI_DIR}/BOOTX64.EFI)
+
+      add_custom_command(
+        OUTPUT  ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${T81_TERNARYOS_QEMU_X86_EFI_DIR}
+        COMMAND ${T81_LLVM_CLANG}
+                --target=x86_64-pc-windows-msvc
+                -ffreestanding
+                -fno-stack-protector
+                -mno-stack-arg-probe
+                -nostdlib
+                -c
+                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_efi_stub.c
+                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                -o ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_efi_stub.c)
+
+      add_custom_command(
+        OUTPUT  ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${T81_TERNARYOS_QEMU_X86_EFI_DIR}
+        COMMAND ${T81_LLVM_CLANG}
+                --target=x86_64-pc-windows-msvc
+                -ffreestanding
+                -fno-stack-protector
+                -mno-stack-arg-probe
+                -nostdlib
+                -c
+                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bare_kernel.c
+                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                -o ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bare_kernel.c)
+
+      add_custom_command(
+        OUTPUT  ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${T81_TERNARYOS_QEMU_X86_EFI_DIR}
+        COMMAND ${T81_LLVM_CLANG}
+                --target=x86_64-pc-windows-msvc
+                -ffreestanding
+                -fno-stack-protector
+                -mno-stack-arg-probe
+                -nostdlib
+                -fno-exceptions
+                -fno-rtti
+                -fno-use-cxa-atexit
+                -std=c++17
+                -c
+                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp
+                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                -o ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp)
+
+      add_custom_command(
+        OUTPUT ${T81_TERNARYOS_QEMU_X86_EFI}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${T81_TERNARYOS_QEMU_X86_EFI_DIR}
+        COMMAND ${T81_LLD_LINK}
+                /subsystem:efi_application
+                /entry:efi_main
+                /machine:x64
+                /nodefaultlib
+                /out:${T81_TERNARYOS_QEMU_X86_EFI}
+                ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
+                ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
+                ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
+                ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ}
+        DEPENDS ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
+                ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
+                ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
+                ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ})
+      add_custom_target(t81_ternaryos_qemu_x86_64_efi
+        DEPENDS ${T81_TERNARYOS_QEMU_X86_EFI})
     endif()
   endif()
 
