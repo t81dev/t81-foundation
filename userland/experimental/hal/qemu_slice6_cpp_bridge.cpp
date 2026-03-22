@@ -415,11 +415,16 @@ static void freestanding_sched_tick() noexcept {
 
 static void cmd_help() noexcept {
   pl011_puts("  help     -- this message\r\n");
+  pl011_puts("  uname    -- system identity (RFC-00B9 §8.3)\r\n");
   pl011_puts("  version  -- T81 build info\r\n");
   pl011_puts("  status   -- kernel counters and governance state\r\n");
   pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
   pl011_puts("  policy   -- Axion policy summary\r\n");
+}
+
+static void cmd_uname() noexcept {
+  pl011_puts("  T81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)\r\n");
 }
 
 static void cmd_version() noexcept {
@@ -533,15 +538,16 @@ static void shell_dispatch(const char* line) noexcept {
   ++s_cmd_count;
 
   if      (str_eq(line, "help"))    { cmd_help(); }
+  else if (str_eq(line, "uname"))   { cmd_uname(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
   else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
-    pl011_puts("  unknown command: '");
+    pl011_puts("  [axion] ShellExec: Deny -- '");
     pl011_puts(line);
-    pl011_puts("' -- type 'help'\r\n");
+    pl011_puts("' not in builtin table\r\n");
   }
 }
 
@@ -585,9 +591,10 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   // Wire hardware timer interrupts: GICv3 + ARM physical timer (PPI 30, ~100Hz).
   bridge_hw_init_aarch64();
   pl011_puts("[axion] hw timer: GICv3 PPI30 armed (10ms)\r\n");
+  pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
 
   pl011_puts("\r\n");
-  pl011_puts("t81> ");
+  pl011_puts("[axion@T81 tier=1]$ ");
 
   s_line_len = 0;
 
@@ -616,7 +623,7 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
           pl011_puts("\r\n");
           shell_dispatch(s_line);
           s_line_len = 0;
-          pl011_puts("t81> ");
+          pl011_puts("[axion@T81 tier=1]$ ");
         } else if (c == 127 || c == '\b') {
           if (s_line_len > 0) { --s_line_len; pl011_puts("\b \b"); }
         } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {

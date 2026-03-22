@@ -424,8 +424,9 @@ static uint64_t s_loop_iters      = 0;
 static uint64_t s_tick_count      = 0;
 static uint64_t s_sched_switches  = 0;
 static uint64_t s_interrupt_count = 0;  // serial RX events
-static uint64_t s_timer_irqs      = 0;  // hardware timer IRQ count (PIT ch0)
+static uint64_t s_timer_irqs      = 0;  // hardware timer IRQ count
 static bool     s_has_blk         = false;
+static bool     s_lapic_armed     = false;  // true = LAPIC 100Hz; false = PIT fallback
 
 // ── Hardware-timer IRQ callback ───────────────────────────────────────────────
 // Called from axion_timer_stub_x86_64() (qemu_x86_64_bridge_irq.cpp) on
@@ -486,11 +487,16 @@ static void freestanding_sched_tick() noexcept {
 
 static void cmd_help() noexcept {
   com1_puts("  help     -- this message\r\n");
+  com1_puts("  uname    -- system identity (RFC-00B9 §8.3)\r\n");
   com1_puts("  version  -- T81 build info\r\n");
   com1_puts("  status   -- kernel counters and governance state\r\n");
   com1_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   com1_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
   com1_puts("  policy   -- Axion policy summary\r\n");
+}
+
+static void cmd_uname() noexcept {
+  com1_puts("  T81 TernaryOS 1.0 x86_64 axion-kernel (bare-metal EFI)\r\n");
 }
 
 static void cmd_version() noexcept {
@@ -572,7 +578,11 @@ static void cmd_threads() noexcept {
 static void cmd_sched() noexcept {
   char buf[24];
   com1_puts("  [scheduler]\r\n");
-  com1_puts("    model        : preemptive (PIT ch0, 100Hz, IDT 0x20)\r\n");
+  if (s_lapic_armed) {
+    com1_puts("    model        : preemptive (LAPIC, 100Hz, IDT 0x40)\r\n");
+  } else {
+    com1_puts("    model        : preemptive (PIT ch0, 100Hz, IDT 0x20)\r\n");
+  }
   com1_puts("    loop_iters   : ");
   com1_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
   com1_puts("\r\n");
@@ -611,15 +621,16 @@ static void shell_dispatch(const char* line) noexcept {
   ++s_cmd_count;
 
   if      (str_eq(line, "help"))    { cmd_help(); }
+  else if (str_eq(line, "uname"))   { cmd_uname(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
   else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
-    com1_puts("  unknown command: '");
+    com1_puts("  [axion] ShellExec: Deny -- '");
     com1_puts(line);
-    com1_puts("' -- type 'help'\r\n");
+    com1_puts("' not in builtin table\r\n");
   }
 }
 
@@ -660,14 +671,16 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   com1_puts("[axion] event loop: priority dispatch (interrupt > pager > sched)\r\n");
 
   // Wire hardware timer interrupts: LAPIC (preferred) or 8259 PIC + PIT (fallback).
-  if (bridge_hw_init_x86_64(s_tsc_freq_hz)) {
+  s_lapic_armed = bridge_hw_init_x86_64(s_tsc_freq_hz);
+  if (s_lapic_armed) {
     com1_puts("[axion] hw timer: LAPIC 100Hz armed (IDT 0x40)\r\n");
   } else {
     com1_puts("[axion] hw timer: PIT ch0 100Hz armed (IDT 0x20)\r\n");
   }
+  com1_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
 
   com1_puts("\r\n");
-  com1_puts("t81> ");
+  com1_puts("[axion@T81 tier=1]$ ");
 
   s_line_len = 0;
 
@@ -693,7 +706,7 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
           com1_puts("\r\n");
           shell_dispatch(s_line);
           s_line_len = 0;
-          com1_puts("t81> ");
+          com1_puts("[axion@T81 tier=1]$ ");
         } else if (c == 127 || c == '\b') {
           if (s_line_len > 0) { --s_line_len; com1_puts("\b \b"); }
         } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {

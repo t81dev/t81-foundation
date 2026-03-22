@@ -138,6 +138,7 @@ jobs:
           check "[axion] canonfs: mounted (persistent, virtio-blk)"
           check "[axion] canonfs: I/O probe OK"
           check "[axion] event loop: priority dispatch"
+          check "[axion] t81sh: ready (principal=axion, tier=1)"
           # LAPIC is the preferred path on q35; PIT banner is accepted as fallback.
           if grep -qF "[axion] hw timer: LAPIC 100Hz armed (IDT 0x40)" serial_x86.log 2>/dev/null; then
             echo "PASS: [axion] hw timer: LAPIC 100Hz armed (IDT 0x40)"
