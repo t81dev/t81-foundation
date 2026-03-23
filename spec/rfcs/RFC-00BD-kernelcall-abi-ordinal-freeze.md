@@ -347,7 +347,7 @@ FAIL: KernelCallKind ordinal drift detected
 
 Success message:
 ```
-PASS: KernelCallKind ordinals match manifest (53 entries, wire version=1)
+PASS: KernelCallKind ordinals match manifest (54 entries, wire version=1)
 ```
 
 ---
@@ -376,13 +376,13 @@ frozen constant.  A future RFC may define per-call minimum request sizes.
 
 ## Acceptance Criteria
 
-- [x] `kernelcall_abi_manifest.txt` checked in with all 53 current entries
+- [x] `kernelcall_abi_manifest.txt` checked in with all 54 current entries
 - [x] `scripts/ci/check_kernelcall_abi_freeze.py` implemented and passing
 - [x] `kernelcall_abi.inc` implemented with full kind table + wire constants
 - [x] `axion_el0_init.S`, `el0_process_stub.S`, `el0_ipc_test_a.S`,
   `el0_ipc_test_b.S` updated to use symbolic constants; no literal ordinals
 - [x] QEMU boot CI gate extended with ordinal freeze check
-- [ ] RFC-00BE (scheduler) and RFC-00BF (observability) reference this RFC
+- [x] RFC-00BE (scheduler) and RFC-00BF (observability) reference this RFC
   for their `BlockOnIpcReceive` (42) and `WaitForDevice` (43) kind values
 
 ---

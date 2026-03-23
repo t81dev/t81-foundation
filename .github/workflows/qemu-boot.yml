@@ -435,6 +435,8 @@ jobs:
           # SendMessage(ipc_dst=3) waking B, then ExitThread; scheduler resumes B
           # which calls ExitThread; EL1 confirms delivery and emits this gate.
           check "[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)"
+          # Phase 10 (RFC-00BF): observability ring captured the expected Phase 9 call graph.
+          check "[axion] el0: obs OK (BlockOnIpcReceive tid=3, SendMessage tid=2->3)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

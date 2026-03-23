@@ -92,6 +92,11 @@ extern "C" void fs_sched_mark_running(uint32_t tid) noexcept;
 extern "C" void fs_sched_reset()         noexcept;
 extern "C" bool fs_sched_ipc_delivered() noexcept;
 
+// Phase 10 (RFC-00BF) observability API (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" bool     fs_obs_find(uint32_t tid, uint32_t kind,
+                                 uint32_t peer_tid) noexcept;
+extern "C" uint64_t fs_obs_count() noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -307,6 +312,16 @@ extern "C" void canon_sched_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: sched roundtrip FAIL (IPC not delivered)\r\n");
+    }
+
+    // Phase 10 (RFC-00BF): verify observability ring captured the expected
+    // Phase 9 call graph — BlockOnIpcReceive from tid=3 and SendMessage tid=2→3.
+    const bool saw_block = fs_obs_find(3u, 42u, 0u);
+    const bool saw_send  = fs_obs_find(2u, 13u, 3u);
+    if (saw_block && saw_send) {
+        cel_pl011_puts("[axion] el0: obs OK (BlockOnIpcReceive tid=3, SendMessage tid=2->3)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: obs FAIL (expected records missing)\r\n");
     }
 }
 

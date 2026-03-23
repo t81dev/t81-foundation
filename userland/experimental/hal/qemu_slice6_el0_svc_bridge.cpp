@@ -191,12 +191,15 @@ extern "C" void fs_sched_mark_running(uint32_t tid) noexcept {
     }
 }
 
+extern "C" void fs_obs_reset() noexcept;  // forward decl; defined below
+
 extern "C" void fs_sched_reset() noexcept {
     for (int i = 0; i < kMaxSchedThreads; ++i) {
         s_sched[i] = FsSchedThread{};
     }
     s_sched_running_tid   = 0u;
     s_sched_ipc_delivered = false;
+    fs_obs_reset();  // RFC-00BF: clear ring at start of each scheduler session
 }
 
 extern "C" bool fs_sched_ipc_delivered() noexcept {
@@ -233,6 +236,61 @@ extern "C" void fs_sched_exit_thread(void* frame_ptr) noexcept {
         f->elr_el1  = g_axion_el1_return_pc;
         f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
     }
+}
+
+// ── RFC-00BF: KernelCall observability ring ───────────────────────────────────
+//
+// 32-slot fixed-capacity ring.  Each slot holds one FsObsRecord (24 bytes).
+// Written on every successful SVC #1 dispatch; never modified after write.
+// s_obs_seq is the monotonic counter; slot = s_obs_seq % kObsRingCap.
+
+struct FsObsRecord {
+    uint32_t seq_id;     // record index (low 32 bits of s_obs_seq)
+    uint32_t tid;        // caller tid at dispatch time
+    uint32_t kind;       // KernelCallKind ordinal (frozen, RFC-00BD)
+    uint32_t status;     // 0 = Ok, 1 = InvalidRequest
+    uint32_t peer_tid;   // SendMessage: ipc_dst; else 0
+    uint32_t _reserved;  // zeroed
+};
+
+static constexpr uint32_t kObsRingCap = 32u;
+static FsObsRecord s_obs_ring[kObsRingCap];
+static uint64_t    s_obs_seq = 0u;
+
+static void fs_obs_record(uint32_t tid, uint32_t kind,
+                           uint32_t status, uint32_t peer_tid) noexcept {
+    const uint32_t slot = static_cast<uint32_t>(s_obs_seq % kObsRingCap);
+    s_obs_ring[slot] = {
+        static_cast<uint32_t>(s_obs_seq), tid, kind, status, peer_tid, 0u
+    };
+    ++s_obs_seq;
+}
+
+extern "C" void fs_obs_reset() noexcept {
+    for (uint32_t i = 0u; i < kObsRingCap; ++i)
+        s_obs_ring[i] = FsObsRecord{};
+    s_obs_seq = 0u;
+}
+
+extern "C" uint64_t fs_obs_count() noexcept { return s_obs_seq; }
+
+// Return true iff a record with status=Ok exists matching tid, kind, and
+// (if peer_tid != 0) peer_tid.  Searches the live set (min(s_obs_seq, 32)).
+extern "C" bool fs_obs_find(uint32_t tid, uint32_t kind,
+                              uint32_t peer_tid) noexcept {
+    const uint32_t count =
+        s_obs_seq < kObsRingCap
+            ? static_cast<uint32_t>(s_obs_seq)
+            : kObsRingCap;
+    for (uint32_t i = 0u; i < count; ++i) {
+        const FsObsRecord& r = s_obs_ring[i];
+        if (r.tid    == tid  &&
+            r.kind   == kind &&
+            r.status == 0u   &&
+            (peer_tid == 0u || r.peer_tid == peer_tid))
+            return true;
+    }
+    return false;
 }
 
 // ── Phase 8 IPC mailbox ───────────────────────────────────────────────────────
@@ -341,6 +399,7 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 // 11 bool bytes + 1 alignment pad byte + spawned_tid[4] +
                 // queried_tid[4] = 44).
                 write_u32(rsp, 44, 1u);
+                fs_obs_record(s_current_el0_tid, kKindGetThreadIdentity, kStatusOk, 0u);
                 return;
 
             case kKindSendMessage: {
@@ -366,6 +425,7 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 s_ipc_mailbox.sender_tid = s_current_el0_tid;
                 s_ipc_mailbox.ready      = true;
                 s_ipc_mailbox.delivered  = false;
+                fs_obs_record(s_current_el0_tid, kKindSendMessage, kStatusOk, ipc_dst);
                 return;
             }
 
@@ -373,12 +433,16 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 // Phase 8 IPC — if a message is pending, deliver it by writing
                 // sender_tid at spawned_tid offset [36:40] in the response.
                 // If no message is ready, return InvalidRequest.
+                uint32_t recv_status;
                 if (s_ipc_mailbox.ready) {
                     write_u32(rsp, 36, s_ipc_mailbox.sender_tid);
                     s_ipc_mailbox.delivered = true;
+                    recv_status = kStatusOk;
                 } else {
                     write_u32(rsp, 8, kStatusInvalidRequest);
+                    recv_status = kStatusInvalidRequest;
                 }
+                fs_obs_record(s_current_el0_tid, kKindReceiveMessage, recv_status, 0u);
                 return;
             }
 
@@ -396,6 +460,8 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 cur->ipc_rsp_tva   = rsp_tva;
                 cur->ipc_rsp_size  = rsp_size;
                 cur->state         = FsSchedState::BlockedIpcReceive;
+                // Record before frame redirect: s_current_el0_tid is still the caller.
+                fs_obs_record(s_current_el0_tid, kKindBlockOnIpcReceive, kStatusOk, 0u);
 
                 FsSchedThread* next = fs_find_next_runnable();
                 if (next) {
@@ -424,6 +490,7 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 cur->resume_sp_el0 = f->sp_el0;
                 cur->resume_spsr   = f->spsr_el1;
                 cur->state         = FsSchedState::BlockedDeviceWait;
+                fs_obs_record(s_current_el0_tid, kKindWaitForDevice, kStatusOk, 0u);
 
                 FsSchedThread* next = fs_find_next_runnable();
                 if (next) {
@@ -443,9 +510,8 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
 
             default:
                 // Unsupported kind in the Phase 6–9 freestanding subset.
-                // Write an InvalidRequest status and return — no EL1 state is
-                // modified.
                 write_u32(rsp, 8, kStatusInvalidRequest);
+                fs_obs_record(s_current_el0_tid, kind, kStatusInvalidRequest, 0u);
                 return;
         }
     }
