@@ -136,6 +136,7 @@ struct FsSchedThread {
     uint64_t     resume_spsr;     // SPSR_EL1 (0x3C0 for EL0t + DAIF masked)
     uint64_t     ipc_rsp_tva;     // EL0 VA of response buffer (saved at block)
     uint64_t     ipc_rsp_size;    // response buffer size in bytes
+    uint32_t     device_id;       // RFC-00C4: INTID to match on wake; 0 = any
 };
 
 static constexpr int kMaxSchedThreads = 8;
@@ -228,18 +229,24 @@ extern "C" void fs_sched_wake_device(uint32_t tid) noexcept {
 
 // RFC-00C0: return the saved resume context for the given tid.
 // Used by EL1 to construct a run_proc_entry() call after waking a device thread.
-// RFC-00C3: forward declaration — gov ring defined after obs ring below.
+// RFC-00C3/C4: forward declaration — gov ring defined after obs ring below.
+// Third param is device_id (RFC-00C4); 0 = not device-specific.
 static void fs_gov_record(uint32_t tid, uint32_t event,
-                           uint32_t obs_seq_at) noexcept;
+                           uint32_t device_id) noexcept;
 
-// RFC-00C2: wake all BlockedDeviceWait threads on a timer tick.
-// Called from axion_irq_handler_aarch64() — async-signal-safe.
+// RFC-00C2/C4: wake BlockedDeviceWait threads matching intid on a timer tick.
+// Called from axion_irq_handler_aarch64() with the fired INTID — async-signal-safe.
+// RFC-00C4: threads with device_id==0 (any) or device_id==intid are woken;
+//           others remain parked waiting for their specific INTID.
 // RFC-00C3: records kGovTimerDeviceWake for each woken thread.
-extern "C" void fs_sched_timer_device_wake() noexcept {
+extern "C" void fs_sched_timer_device_wake(uint32_t intid) noexcept {
     for (uint32_t i = 0u; i < kMaxSchedThreads; ++i) {
         if (s_sched[i].state == FsSchedState::BlockedDeviceWait) {
-            s_sched[i].state = FsSchedState::Runnable;
-            fs_gov_record(s_sched[i].tid, 1u /*kGovTimerDeviceWake*/, 0u);
+            const uint32_t did = s_sched[i].device_id;
+            if (did == 0u || did == intid) {
+                s_sched[i].state = FsSchedState::Runnable;
+                fs_gov_record(s_sched[i].tid, 1u /*kGovTimerDeviceWake*/, intid);
+            }
         }
     }
 }
@@ -363,20 +370,23 @@ struct FsGovRecord {
     uint32_t tid;         // thread being woken / switched to
     uint32_t event;       // kGovTimerDeviceWake or kGovAsyncContextSwitch
     uint32_t obs_seq_at;  // s_obs_seq value at time of event (logical timestamp)
+    uint32_t device_id;   // RFC-00C4: INTID that triggered wake; 0 = N/A
+    uint32_t _reserved;
 };
 
 static FsGovRecord s_gov_ring[kGovRingCap];
 static uint64_t    s_gov_seq = 0u;
 
 static void fs_gov_record(uint32_t tid, uint32_t event,
-                           uint32_t /*unused_obs_seq*/) noexcept {
-    // Use current obs ring sequence as logical timestamp.
+                           uint32_t device_id) noexcept {
     const uint32_t obs_at = static_cast<uint32_t>(s_obs_seq);
     FsGovRecord& slot = s_gov_ring[s_gov_seq % kGovRingCap];
     slot.seq_id     = static_cast<uint32_t>(s_gov_seq);
     slot.tid        = tid;
     slot.event      = event;
     slot.obs_seq_at = obs_at;
+    slot.device_id  = device_id;   // RFC-00C4
+    slot._reserved  = 0u;
     ++s_gov_seq;
 }
 
@@ -393,6 +403,21 @@ extern "C" bool fs_gov_find(uint32_t tid, uint32_t event) noexcept {
                                : kGovRingCap;
     for (uint32_t i = 0u; i < count; ++i) {
         if (s_gov_ring[i].tid == tid && s_gov_ring[i].event == event)
+            return true;
+    }
+    return false;
+}
+
+// RFC-00C4: find a gov record matching tid, event, AND device_id exactly.
+extern "C" bool fs_gov_find_device(uint32_t tid, uint32_t event,
+                                    uint32_t device_id) noexcept {
+    const uint32_t count = s_gov_seq < kGovRingCap
+                               ? static_cast<uint32_t>(s_gov_seq)
+                               : kGovRingCap;
+    for (uint32_t i = 0u; i < count; ++i) {
+        if (s_gov_ring[i].tid       == tid       &&
+            s_gov_ring[i].event     == event     &&
+            s_gov_ring[i].device_id == device_id)
             return true;
     }
     return false;
@@ -623,15 +648,19 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
             }
 
             case kKindWaitForDevice: {
-                // Phase 9 (RFC-00BE): park the calling thread on a device
-                // event.  No waker is defined in Phase 9; the thread stays
-                // BlockedDeviceWait until a future RFC-00C0 device interrupt.
+                // Phase 9 (RFC-00BE): park the calling thread on a device event.
+                // RFC-00C4: read device_id from req[12:16] if present (bytes≥16);
+                // 0 means wake on any device (backward compatible with 12-byte req).
                 FsSchedThread* cur = fs_find_running();
                 if (!cur) { write_u32(rsp, 8, kStatusInvalidRequest); return; }
+
+                uint32_t req_device_id = 0u;
+                if (req_size >= 16u) __builtin_memcpy(&req_device_id, req + 12, 4);
 
                 cur->resume_elr    = f->elr_el1;
                 cur->resume_sp_el0 = f->sp_el0;
                 cur->resume_spsr   = f->spsr_el1;
+                cur->device_id     = req_device_id;  // RFC-00C4
                 cur->state         = FsSchedState::BlockedDeviceWait;
                 fs_obs_record(s_current_el0_tid, kKindWaitForDevice, kStatusOk, 0u);
 

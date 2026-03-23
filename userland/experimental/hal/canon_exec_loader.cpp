@@ -113,6 +113,10 @@ extern "C" void     fs_sched_device_wait_loop() noexcept;
 extern "C" bool     fs_gov_find(uint32_t tid, uint32_t event) noexcept;
 extern "C" uint64_t fs_gov_count() noexcept;
 
+// Phase 15 (RFC-00C4) per-device gov ring query.
+extern "C" bool     fs_gov_find_device(uint32_t tid, uint32_t event,
+                                        uint32_t device_id) noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -655,6 +659,95 @@ extern "C" void canon_irq_wake_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: async audit OK (AsyncWake tid=5, irq-driven)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: async audit FAIL (gov record missing)\r\n");
+    }
+}
+
+// ── Phase 15 (RFC-00C4): per-device wake filtering ────────────────────────────
+//
+// Loads el0_device_filter_test from LBA 11 as T81X v2 with tid=6.
+// Process E calls WaitForDevice(device_id=30).  The WaitForDevice SVC handler
+// stores device_id=30 into FsSchedThread.device_id and redirects ERET to
+// fs_sched_device_wait_loop.
+// Timer IRQ fires → fs_sched_timer_device_wake(30) → did==intid → Runnable.
+// device_wait_loop ERets back to E → E calls ExitThread → EL1.
+//
+// Verification: fs_gov_find_device(6, kGovTimerDeviceWake=1, device_id=30).
+//
+// CI gate: "[axion] el0: device filter OK (device_id=30, tid=6)"
+
+extern "C" void canon_device_filter_load_and_run() noexcept {
+    if (!canon_store_read_lba(11u)) {
+        cel_pl011_puts("[axion] canonfs: device filter FAIL (LBA11 read error)\r\n");
+        return;
+    }
+
+    const uint8_t* sec = canon_store_sector_buf();
+
+    if (sec[0] != kT81XMagic[0] || sec[1] != kT81XMagic[1] ||
+        sec[2] != kT81XMagic[2] || sec[3] != kT81XMagic[3]) {
+        cel_pl011_puts("[axion] canonfs: device filter FAIL (bad T81X magic)\r\n");
+        return;
+    }
+    if (sec[4] != kT81XVersion2) {
+        cel_pl011_puts("[axion] canonfs: device filter FAIL (expected T81X v2)\r\n");
+        return;
+    }
+
+    uint32_t entry_offset, code_size;
+    __builtin_memcpy(&entry_offset, sec +  7, 4);
+    __builtin_memcpy(&code_size,    sec + 11, 4);
+
+    if (code_size == 0u || code_size > kT81XMaxCodeSize) {
+        cel_pl011_puts("[axion] canonfs: device filter FAIL (code_size out of range)\r\n");
+        return;
+    }
+    if (entry_offset >= code_size) {
+        cel_pl011_puts("[axion] canonfs: device filter FAIL (entry_offset >= code_size)\r\n");
+        return;
+    }
+
+    uint64_t stored_hash;
+    __builtin_memcpy(&stored_hash, sec + kT81XHashOffset, 8);
+    const uint64_t computed_hash = fnv1a64(sec + kT81XHdrSize, code_size);
+    if (computed_hash != stored_hash) {
+        cel_pl011_puts("[axion] canonfs: device filter FAIL (hash mismatch)\r\n");
+        return;
+    }
+
+    uint8_t* dest = el0_mmu_proc_code_page();
+    __builtin_memcpy(dest, sec + kT81XHdrSize, code_size);
+    __builtin_memset(dest + code_size, 0,
+                     static_cast<__SIZE_TYPE__>(4096u - code_size));
+    flush_icache_for_new_code();
+
+    // Install the IRQ-driven device-wait loop (same as Phase 13).
+    g_axion_el1_device_wait_pc =
+        reinterpret_cast<uint64_t>(fs_sched_device_wait_loop);
+
+    fs_sched_reset();  // also resets obs + gov rings
+
+    const uint64_t stack_top = el0_mmu_proc_stack_top();
+    const uint64_t code_pa   = reinterpret_cast<uint64_t>(dest) + entry_offset;
+
+    fs_sched_register(6u, code_pa, stack_top, 0x3C0u);
+    fs_sched_mark_running(6u);
+    el0_svc_set_current_tid(6u);
+
+    // Single ERET: E parks on WaitForDevice(device_id=30) → wfi →
+    // timer IRQ calls fs_sched_timer_device_wake(30) → did==30 match → Runnable →
+    // E resumes → ExitThread → EL1.
+    run_proc_entry(code_pa, stack_top);
+
+    el0_svc_set_current_tid(1u);
+
+    // Restore to immediate-return mode.
+    g_axion_el1_device_wait_pc = 0u;
+
+    // Phase 15: verify gov ring recorded a timer wake for tid=6, device_id=30.
+    if (fs_gov_find_device(6u, 1u /*kGovTimerDeviceWake*/, 30u)) {
+        cel_pl011_puts("[axion] el0: device filter OK (device_id=30, tid=6)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: device filter FAIL (gov record missing)\r\n");
     }
 }
 
