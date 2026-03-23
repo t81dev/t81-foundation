@@ -1,0 +1,35 @@
+UEFI firmware (version edk2-stable202408-prebuilt.qemu.org built at 16:28:50 on Sep 12 2024)
+ArmTrngLib could not be correctly initialized.
+Error: Image at 0005FDB6000 start failed: 00000001
+Error: Image at 0005FD6D000 start failed: Not Found
+Error: Image at 0005FCBA000 start failed: Unsupported
+Error: Image at 0005FC3F000 start failed: Not Found
+Error: Image at 0005FB65000 start failed: Aborted
+Tpm2SubmitCommand - Tcg2 - Not Found
+Tpm2GetCapabilityPcrs fail!
+Tpm2SubmitCommand - Tcg2 - Not Found
+Image type X64 can't be loaded on AARCH64 UEFI system.
+[2J[01;01H[=3h[2J[01;01H[2J[01;01H[=3h[2J[01;01HBdsDxe: failed to load Boot0001 "UEFI Misc Device" from VenHw(837DCA9E-E874-4D82-B29A-23FE0E23D1E2,003C000A00000000): Not Found
+BdsDxe: loading Boot0002 "UEFI Misc Device 2" from VenHw(837DCA9E-E874-4D82-B29A-23FE0E23D1E2,003E000A00000000)
+ConvertPages: failed to find range 140000000 - 14001DFFF
+BdsDxe: starting Boot0002 "UEFI Misc Device 2" from VenHw(837DCA9E-E874-4D82-B29A-23FE0E23D1E2,003E000A00000000)
+Axion QEMU AArch64 EDK2 slice6
+[axion] bare-metal EL1 kernel entry
+[axion] ExitBootServices complete; handing off to C++ kernel
+
+  T81  --  Ternary OS for AI
+  ===========================
+
+[axion] policy engine: ready
+[axion] canonfs: mounted (persistent, virtio-blk)
+[axion] canonfs: I/O probe OK (LBA0 magic=CST1, LBA1 round-trip pass)
+[axion] kernel thread tid=1: running
+[axion] event loop: priority dispatch (interrupt > pager > sched)
+[axion] hw timer: GICv3 PPI30 armed (10ms)
+[axion] el0: page-isolated (TTBR0 active, EL0 stack mapped)
+[axion] el0: init OK (tid=1)
+[axion] el0: kernel call bridge OK (KernelCall SVC wired)
+[axion] el0: process loaded from CanonFS (tid=2)
+[axion] t81sh: ready (principal=axion, tier=1)
+
+[axion@T81 tier=1]$ 
