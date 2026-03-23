@@ -52,7 +52,7 @@ If something cannot be verified, it does not execute.
 
 ## What happens under the hood
 
-Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matmul with addition — no multiply unit required. Any AI expressible in ternary weights runs here: verifiably, reproducibly, and under explicit policy control.
+Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matmul with addition — no multiply unit required. Any AI expressible in ternary weights runs here — verifiably, reproducibly, and under explicit policy control.
 
 ```sh
 curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
@@ -60,7 +60,7 @@ curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/ins
 
 ## First thing to try
 
-Run the demo. At the 't81>' prompt, type:
+Run the demo. At the `t81>` prompt, type:
 
 ```sh
 status
@@ -76,7 +76,7 @@ policy
 - AI systems that can be audited like financial ledgers  
 - models whose behavior can be reproduced exactly, anywhere  
 - execution environments where policy is enforced by the system itself
-  
+
 ---
 
 ## Current reality
@@ -85,7 +85,7 @@ policy
 - deterministic surfaces are verified on select platforms
 - bare-metal support is in progress
 
-This is an early-stage system with strong guarantees in its core layers.
+This is an early-stage system with strong guarantees in its core layers and active development beyond them.
 
 ---
 
@@ -137,7 +137,7 @@ The full three-phase boot log is at [`drivers/qemu/sample-boot-log.txt`](drivers
 
 ## Table of Contents
 
-- [Demo](#demo)
+- [See it in action](#See-it-in-action)
 - [The OS that AI was missing](#the-os-that-ai-was-missing)
 - [Architecture](#architecture)
 - [What T81Lang looks like](#what-t81lang-looks-like)
@@ -441,8 +441,6 @@ ctest --test-dir build --output-on-failure   # 404 tests
 ---
 
 ## Status
-
----
 
 v1.9.2 · 404/404 tests passing · Apache 2.0
 
