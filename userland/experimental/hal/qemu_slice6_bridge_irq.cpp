@@ -30,6 +30,10 @@
 /// Called from the IRQ handler every timer tick (~100Hz).
 extern "C" void bridge_timer_irq_tick() noexcept;
 
+// RFC-00C2: wake any BlockedDeviceWait scheduler threads on each timer tick.
+// Defined in qemu_slice6_el0_svc_bridge.cpp; async-signal-safe.
+extern "C" void fs_sched_timer_device_wake() noexcept;
+
 // ── GICv3 MMIO helpers ────────────────────────────────────────────────────────
 
 #if defined(__aarch64__) && !defined(__APPLE__)
@@ -363,6 +367,9 @@ extern "C" void axion_irq_handler_aarch64() noexcept {
     cntp_tval_write(kTimerPeriod);
     // Notify the bridge (updates scheduler counters, advances ready threads).
     bridge_timer_irq_tick();
+    // RFC-00C2: transition any BlockedDeviceWait threads to Runnable so that
+    // fs_sched_device_wait_loop() detects them after wfi returns.
+    fs_sched_timer_device_wake();
   }
 
   icc_eoir1_write(static_cast<uint64_t>(intid));

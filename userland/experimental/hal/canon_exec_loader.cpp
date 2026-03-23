@@ -103,6 +103,11 @@ extern "C" bool fs_sched_get_resume(uint32_t tid,
                                      uint64_t* out_elr,
                                      uint64_t* out_sp) noexcept;
 
+// Phase 13 (RFC-00C2) IRQ-driven device-wait loop
+// (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" uint64_t g_axion_el1_device_wait_pc;
+extern "C" void     fs_sched_device_wait_loop() noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -542,6 +547,99 @@ extern "C" void canon_identity_load_and_run() noexcept {
     // ── Phase 12 (RFC-00C1): verify manifest matches the obs ring ─────────────
     // manifest_lba = binary_lba + 1 (convention: LBA 8 binary → LBA 9 manifest).
     canon_manifest_verify(computed_hash, 9u);
+}
+
+// ── Phase 13 (RFC-00C2): IRQ-driven WaitForDevice wake ───────────────────────
+//
+// Loads el0_wait_test (same stub as Phase 11) from LBA 10 as T81X v2 with
+// tid=5.  Installs fs_sched_device_wait_loop as the device-wait loop so that
+// when Process D parks on WaitForDevice the SVC handler redirects ERET to the
+// wfi idle loop instead of returning to EL1 immediately.
+//
+// A single run_proc_entry() call covers the full roundtrip:
+//   D → WaitForDevice → wfi idle loop → timer IRQ → Runnable → D resumes →
+//   ExitThread → no Runnable → g_axion_el1_return_pc → EL1.
+//
+// CI gates:
+//   "[axion] el0: irq identity OK (hash=verified, tid=5)"  — Phase 13a
+//   "[axion] el0: irq wake OK (WaitForDevice tid=5, timer-driven)"  — Phase 13b
+
+extern "C" void canon_irq_wake_load_and_run() noexcept {
+    if (!canon_store_read_lba(10u)) {
+        cel_pl011_puts("[axion] canonfs: irq wake FAIL (LBA10 read error)\r\n");
+        return;
+    }
+
+    const uint8_t* sec = canon_store_sector_buf();
+
+    if (sec[0] != kT81XMagic[0] || sec[1] != kT81XMagic[1] ||
+        sec[2] != kT81XMagic[2] || sec[3] != kT81XMagic[3]) {
+        cel_pl011_puts("[axion] canonfs: irq wake FAIL (bad T81X magic)\r\n");
+        return;
+    }
+    if (sec[4] != kT81XVersion2) {
+        cel_pl011_puts("[axion] canonfs: irq wake FAIL (expected T81X v2)\r\n");
+        return;
+    }
+
+    uint32_t entry_offset, code_size;
+    __builtin_memcpy(&entry_offset, sec +  7, 4);
+    __builtin_memcpy(&code_size,    sec + 11, 4);
+
+    if (code_size == 0u || code_size > kT81XMaxCodeSize) {
+        cel_pl011_puts("[axion] canonfs: irq wake FAIL (code_size out of range)\r\n");
+        return;
+    }
+    if (entry_offset >= code_size) {
+        cel_pl011_puts("[axion] canonfs: irq wake FAIL (entry_offset >= code_size)\r\n");
+        return;
+    }
+
+    uint64_t stored_hash;
+    __builtin_memcpy(&stored_hash, sec + kT81XHashOffset, 8);
+    const uint64_t computed_hash = fnv1a64(sec + kT81XHdrSize, code_size);
+    if (computed_hash != stored_hash) {
+        cel_pl011_puts("[axion] canonfs: irq wake FAIL (hash mismatch)\r\n");
+        return;
+    }
+
+    cel_pl011_puts("[axion] el0: irq identity OK (hash=verified, tid=5)\r\n");
+
+    uint8_t* dest = el0_mmu_proc_code_page();
+    __builtin_memcpy(dest, sec + kT81XHdrSize, code_size);
+    __builtin_memset(dest + code_size, 0,
+                     static_cast<__SIZE_TYPE__>(4096u - code_size));
+    flush_icache_for_new_code();
+
+    // Install the IRQ-driven device-wait loop so that the WaitForDevice
+    // handler redirects to it instead of returning to EL1 immediately.
+    g_axion_el1_device_wait_pc =
+        reinterpret_cast<uint64_t>(fs_sched_device_wait_loop);
+
+    fs_sched_reset();  // also resets obs ring
+
+    const uint64_t stack_top = el0_mmu_proc_stack_top();
+    const uint64_t code_pa   = reinterpret_cast<uint64_t>(dest) + entry_offset;
+
+    fs_sched_register(5u, code_pa, stack_top, 0x3C0u);
+    fs_sched_mark_running(5u);
+    el0_svc_set_current_tid(5u);
+
+    // Single ERET: D parks on WaitForDevice → wfi → timer IRQ wakes D →
+    // D resumes → ExitThread → EL1.
+    run_proc_entry(code_pa, stack_top);
+
+    el0_svc_set_current_tid(1u);
+
+    // Restore to immediate-return mode for any subsequent scheduler sessions.
+    g_axion_el1_device_wait_pc = 0u;
+
+    // Phase 13b: confirm obs ring captured WaitForDevice from tid=5.
+    if (fs_obs_find(5u, 43u, 0u)) {
+        cel_pl011_puts("[axion] el0: irq wake OK (WaitForDevice tid=5, timer-driven)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: irq wake FAIL (obs record missing)\r\n");
+    }
 }
 
 // ── Phase 8 IPC symbols (qemu_slice6_el0_svc_bridge.cpp) ─────────────────────

@@ -98,6 +98,12 @@ extern "C" int el0_tva_valid(uint64_t va, uint64_t size) noexcept;
 // the first ERET; ExitThread uses it when no Runnable threads remain.
 extern "C" uint64_t g_axion_el1_return_pc;
 
+// RFC-00C2: device-wait loop PC — set to fs_sched_device_wait_loop() by
+// canon_irq_wake_load_and_run() before a scheduler session that uses
+// IRQ-driven WaitForDevice waking.  Zero means use g_axion_el1_return_pc
+// (Phase 11 EL1-direct wake path).
+extern "C" uint64_t g_axion_el1_device_wait_pc = 0u;
+
 // ── Per-thread identity tracker (Phase 7) ────────────────────────────────────
 //
 // Declared here (before the scheduler block) because both el0_svc_set_current_tid
@@ -220,6 +226,16 @@ extern "C" void fs_sched_wake_device(uint32_t tid) noexcept {
 
 // RFC-00C0: return the saved resume context for the given tid.
 // Used by EL1 to construct a run_proc_entry() call after waking a device thread.
+// RFC-00C2: wake all BlockedDeviceWait threads on a timer tick.
+// Called from axion_irq_handler_aarch64() — async-signal-safe (only touches
+// s_sched[] state, no I/O).
+extern "C" void fs_sched_timer_device_wake() noexcept {
+    for (uint32_t i = 0u; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::BlockedDeviceWait)
+            s_sched[i].state = FsSchedState::Runnable;
+    }
+}
+
 extern "C" bool fs_sched_get_resume(uint32_t tid,
                                      uint64_t* out_elr,
                                      uint64_t* out_sp) noexcept {
@@ -318,6 +334,42 @@ extern "C" bool fs_obs_find(uint32_t tid, uint32_t kind,
             return true;
     }
     return false;
+}
+
+// ── RFC-00C2: EL1 device-wait idle loop ──────────────────────────────────────
+//
+// Entered via ERET from the WaitForDevice SVC handler when no Runnable threads
+// remain and g_axion_el1_device_wait_pc is set to this function's address.
+// SPSR on entry = 0x5 (EL1h, DAIF = 0 = IRQs enabled).
+//
+// Spins with wfi until the GICv3 timer ISR calls fs_sched_timer_device_wake(),
+// which transitions BlockedDeviceWait → Runnable.  After wfi returns the loop
+// detects the Runnable thread and ERets to it at EL0.
+extern "C" __attribute__((noinline)) void fs_sched_device_wait_loop() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    for (;;) {
+        __asm__ volatile("wfi" ::: "memory");
+        FsSchedThread* next = fs_find_next_runnable();
+        if (next) {
+            next->state         = FsSchedState::Running;
+            s_sched_running_tid = next->tid;
+            s_current_el0_tid   = next->tid;
+            const uint64_t elr = next->resume_elr;
+            const uint64_t sp  = next->resume_sp_el0;
+            __asm__ volatile(
+                "msr elr_el1,  %[elr]\n\t"
+                "msr sp_el0,   %[sp]\n\t"
+                "mov x8, #0x3c0\n\t"
+                "msr spsr_el1, x8\n\t"
+                "isb\n\t"
+                "eret\n\t"
+                :
+                : [elr] "r"(elr), [sp] "r"(sp)
+                : "x8", "memory");
+            __builtin_unreachable();
+        }
+    }
+#endif
 }
 
 // ── Phase 8 IPC mailbox ───────────────────────────────────────────────────────
@@ -529,8 +581,13 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                     f->spsr_el1 = next->resume_spsr;
                 } else {
                     s_sched_running_tid = 0u;
-                    f->elr_el1  = g_axion_el1_return_pc;
-                    f->spsr_el1 = 0x5u;
+                    // RFC-00C2: if the device-wait loop is installed, redirect
+                    // ERET there (EL1 wfi loop awaiting timer IRQ wake).
+                    // Otherwise fall back to immediate EL1 return (Phase 11).
+                    f->elr_el1  = (g_axion_el1_device_wait_pc != 0u)
+                                      ? g_axion_el1_device_wait_pc
+                                      : g_axion_el1_return_pc;
+                    f->spsr_el1 = 0x5u;  // EL1h, DAIF unmasked (IRQs enabled)
                 }
                 return;
             }

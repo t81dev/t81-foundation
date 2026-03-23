@@ -448,9 +448,14 @@ jobs:
                     f"code_hash=0x{code_hash:016x}, {entry_count} entries")
 
           write_t81m('el0_wait_test.bin', [(4, 43, 0)], lba=9)
+
+          # ── Phase 13 (RFC-00C2): same stub at LBA 10, loaded as tid=5 ─────────
+          # The binary is identical to el0_wait_test.bin (same code_hash).
+          # No separate manifest needed for Phase 13 (obs verification is inline).
+          write_t81x_v2('el0_wait_test.bin', 10)
           PYEOF
 
-          echo "canon store with identity+manifest images: $(du -sh canon_store.img | cut -f1)"
+          echo "canon store with identity+manifest+irq-wake images: $(du -sh canon_store.img | cut -f1)"
 
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
@@ -544,6 +549,11 @@ jobs:
           # Phase 12 (RFC-00C1): T81M manifest loaded from LBA 9; code_hash matches
           # binary; obs ring contains all expected manifest entries (1/1).
           check "[axion] el0: manifest OK (code_hash=verified, seq=1/1 matched)"
+          # Phase 13a (RFC-00C2): T81X v2 hash verified for IRQ-wake binary (tid=5).
+          check "[axion] el0: irq identity OK (hash=verified, tid=5)"
+          # Phase 13b (RFC-00C2): timer IRQ woke BlockedDeviceWait tid=5 via
+          # fs_sched_timer_device_wake() + fs_sched_device_wait_loop wfi idle.
+          check "[axion] el0: irq wake OK (WaitForDevice tid=5, timer-driven)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

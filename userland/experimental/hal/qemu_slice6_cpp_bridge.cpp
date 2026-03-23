@@ -422,6 +422,8 @@ extern "C" void canon_ipc_load_and_run() noexcept;
 extern "C" void canon_sched_load_and_run() noexcept;
 // Phase 11 (RFC-00C0): T81X v2 identity validation + WaitForDevice waker.
 extern "C" void canon_identity_load_and_run() noexcept;
+// Phase 13 (RFC-00C2): IRQ-driven WaitForDevice wake (canon_exec_loader.cpp).
+extern "C" void canon_irq_wake_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -712,6 +714,17 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //           "[axion] el0: device wake OK (WaitForDevice tid=4)"
   if (s_has_blk) {
     canon_identity_load_and_run();
+  }
+
+  // Phase 13 (RFC-00C2): GICv3 timer-driven WaitForDevice wake.
+  //   Process D (tid=5) calls WaitForDevice; the SVC handler redirects ERET to
+  //   fs_sched_device_wait_loop (wfi idle); the timer ISR wakes D via
+  //   fs_sched_timer_device_wake(); D resumes and calls ExitThread.
+  //   CI gates:
+  //     "[axion] el0: irq identity OK (hash=verified, tid=5)"
+  //     "[axion] el0: irq wake OK (WaitForDevice tid=5, timer-driven)"
+  if (s_has_blk) {
+    canon_irq_wake_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
