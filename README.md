@@ -52,7 +52,9 @@ If something cannot be verified, it does not execute.
 
 ## What happens under the hood
 
-Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matrix multiplication with addition — no multiply unit required. Any AI expressible in ternary weights runs here — verifiably, reproducibly, and under explicit policy control.
+Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matrix multiplication with addition — no multiply unit required. Any AI expressible in ternary weights runs here — verifiable, reproducible, and under explicit policy control.
+
+### Install
 
 ```sh
 curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
@@ -82,8 +84,8 @@ policy   # view active governance rules
 ## Current reality
 
 - runs as a guest layer (QEMU, Docker, host OS)
-- deterministic surfaces are verified on select platforms
-- bare-metal support is in progress
+- deterministic surfaces verified on select platforms
+- bare-metal support in progress
 
 This is an early-stage system with strong guarantees in its core layers and active development beyond them.
 
@@ -91,7 +93,7 @@ This is an early-stage system with strong guarantees in its core layers and acti
 
 ## See it in action
 
-Boot T81 on QEMU AArch64 (EDK2 slice6) on any Linux host:
+Boot T81 and observe the system state directly:
 
 ```sh
 # Install deps (Ubuntu 24.04)
