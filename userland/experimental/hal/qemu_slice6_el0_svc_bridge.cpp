@@ -206,6 +206,33 @@ extern "C" bool fs_sched_ipc_delivered() noexcept {
     return s_sched_ipc_delivered;
 }
 
+// RFC-00C0: transition a BlockedDeviceWait thread to Runnable.
+// Called from EL1 C code (outside any SVC handler) when the device event fires.
+extern "C" void fs_sched_wake_device(uint32_t tid) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid &&
+            s_sched[i].state == FsSchedState::BlockedDeviceWait) {
+            s_sched[i].state = FsSchedState::Runnable;
+            return;
+        }
+    }
+}
+
+// RFC-00C0: return the saved resume context for the given tid.
+// Used by EL1 to construct a run_proc_entry() call after waking a device thread.
+extern "C" bool fs_sched_get_resume(uint32_t tid,
+                                     uint64_t* out_elr,
+                                     uint64_t* out_sp) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid) {
+            *out_elr = s_sched[i].resume_elr;
+            *out_sp  = s_sched[i].resume_sp_el0;
+            return true;
+        }
+    }
+    return false;
+}
+
 // Called from ExitThread (SVC #2) handler in qemu_slice6_bridge_irq.cpp.
 // Marks the current running thread as Exited and either:
 //   • redirects the trap frame to the next Runnable thread (context switch), or

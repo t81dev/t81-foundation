@@ -97,6 +97,12 @@ extern "C" bool     fs_obs_find(uint32_t tid, uint32_t kind,
                                  uint32_t peer_tid) noexcept;
 extern "C" uint64_t fs_obs_count() noexcept;
 
+// Phase 11 (RFC-00C0) device-wake API (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" void fs_sched_wake_device(uint32_t tid) noexcept;
+extern "C" bool fs_sched_get_resume(uint32_t tid,
+                                     uint64_t* out_elr,
+                                     uint64_t* out_sp) noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -106,8 +112,23 @@ extern "C" const uint8_t* canon_store_sector_buf()          noexcept;
 
 static constexpr uint8_t  kT81XMagic[4]   = { 'T', '8', '1', 'X' };
 static constexpr uint8_t  kT81XVersion     = 1u;
+static constexpr uint8_t  kT81XVersion2    = 2u;   // RFC-00C0: adds code_hash at [19:27]
 static constexpr uint32_t kT81XHdrSize     = 64u;   // header occupies first 64 bytes
 static constexpr uint32_t kT81XMaxCodeSize = 448u;  // 512 - 64 bytes header
+static constexpr uint32_t kT81XHashOffset  = 19u;   // code_hash uint64_t in v2 header
+
+// ── FNV-1a-64 hash (RFC-00C0) ────────────────────────────────────────────────
+// Used to compute the content hash for T81X v2 identity validation.
+// No lookup tables; freestanding-safe.
+
+static uint64_t fnv1a64(const uint8_t* data, uint32_t len) noexcept {
+    uint64_t h = UINT64_C(14695981039346656037);  // FNV offset basis
+    for (uint32_t i = 0u; i < len; ++i) {
+        h ^= static_cast<uint64_t>(data[i]);
+        h *= UINT64_C(1099511628211);             // FNV prime
+    }
+    return h;
+}
 
 // ── Icache flush helper ───────────────────────────────────────────────────────
 // Must be called after writing new code into s_el0_proc_code_page so that
@@ -322,6 +343,112 @@ extern "C" void canon_sched_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: obs OK (BlockOnIpcReceive tid=3, SendMessage tid=2->3)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: obs FAIL (expected records missing)\r\n");
+    }
+}
+
+// ── Phase 11 (RFC-00C0) — T81X v2 identity validation + WaitForDevice waker ──
+//
+// Loads el0_wait_test.bin from LBA 8 as a T81X v2 binary, validates the
+// FNV-1a-64 code_hash, then runs the two-pass scheduler sequence:
+//   Pass 1 — Process C (tid=4) calls WaitForDevice and parks.
+//   EL1 wakes C via fs_sched_wake_device(4u).
+//   Pass 2 — C resumes and calls ExitThread.
+// After pass 2 the obs ring is queried to confirm WaitForDevice was recorded.
+//
+// CI gates:
+//   "[axion] el0: identity OK (hash=verified, tid=4)"
+//   "[axion] el0: device wake OK (WaitForDevice tid=4)"
+
+static constexpr uint32_t kKindWaitForDevice = 43u;  // RFC-00BD frozen ordinal
+
+extern "C" void canon_identity_load_and_run() noexcept {
+    // ── Load and validate T81X v2 from LBA 8 ─────────────────────────────────
+    if (!canon_store_read_lba(8u)) {
+        cel_pl011_puts("[axion] canonfs: identity load FAIL (LBA8 read error)\r\n");
+        return;
+    }
+
+    const uint8_t* sec = canon_store_sector_buf();
+
+    if (sec[0] != kT81XMagic[0] || sec[1] != kT81XMagic[1] ||
+        sec[2] != kT81XMagic[2] || sec[3] != kT81XMagic[3]) {
+        cel_pl011_puts("[axion] canonfs: identity load FAIL (bad T81X magic)\r\n");
+        return;
+    }
+
+    if (sec[4] != kT81XVersion2) {
+        cel_pl011_puts("[axion] canonfs: identity load FAIL (expected T81X v2)\r\n");
+        return;
+    }
+
+    uint32_t entry_offset, code_size;
+    __builtin_memcpy(&entry_offset, sec +  7, 4);
+    __builtin_memcpy(&code_size,    sec + 11, 4);
+
+    if (code_size == 0u || code_size > kT81XMaxCodeSize) {
+        cel_pl011_puts("[axion] canonfs: identity load FAIL (T81X code_size out of range)\r\n");
+        return;
+    }
+    if (entry_offset >= code_size) {
+        cel_pl011_puts("[axion] canonfs: identity load FAIL (T81X entry_offset >= code_size)\r\n");
+        return;
+    }
+
+    // Read stored code_hash (little-endian uint64_t at header[19:27]).
+    uint64_t stored_hash;
+    __builtin_memcpy(&stored_hash, sec + kT81XHashOffset, 8);
+
+    // Compute FNV-1a-64 of the code section.
+    const uint64_t computed_hash = fnv1a64(sec + kT81XHdrSize, code_size);
+
+    if (computed_hash != stored_hash) {
+        cel_pl011_puts("[axion] canonfs: identity load FAIL (hash mismatch)\r\n");
+        return;
+    }
+
+    cel_pl011_puts("[axion] el0: identity OK (hash=verified, tid=4)\r\n");
+
+    // ── Copy code section into proc page and flush I-cache ────────────────────
+    uint8_t* dest = el0_mmu_proc_code_page();
+    __builtin_memcpy(dest, sec + kT81XHdrSize, code_size);
+    __builtin_memset(dest + code_size, 0,
+                     static_cast<__SIZE_TYPE__>(4096u - code_size));
+    flush_icache_for_new_code();
+
+    // ── Pass 1: register C (tid=4) and ERET — C calls WaitForDevice ──────────
+    fs_sched_reset();  // also resets obs ring
+
+    const uint64_t stack_top = el0_mmu_proc_stack_top();
+    const uint64_t code_pa   = reinterpret_cast<uint64_t>(dest) + entry_offset;
+
+    fs_sched_register(4u, code_pa, stack_top, 0x3C0u);
+    fs_sched_mark_running(4u);
+    el0_svc_set_current_tid(4u);
+    run_proc_entry(code_pa, stack_top);
+    // EL1 resumes here: C is parked (BlockedDeviceWait), no Runnable threads.
+
+    // ── Wake C and run pass 2 ─────────────────────────────────────────────────
+    fs_sched_wake_device(4u);  // BlockedDeviceWait → Runnable
+
+    uint64_t resume_elr = 0u, resume_sp = 0u;
+    if (!fs_sched_get_resume(4u, &resume_elr, &resume_sp)) {
+        cel_pl011_puts("[axion] el0: device wake FAIL (resume context missing)\r\n");
+        el0_svc_set_current_tid(1u);
+        return;
+    }
+
+    fs_sched_mark_running(4u);  // Runnable → Running
+    el0_svc_set_current_tid(4u);
+    run_proc_entry(resume_elr, resume_sp);
+    // EL1 resumes here: C has exited.
+
+    el0_svc_set_current_tid(1u);
+
+    // ── Phase 11b: verify obs ring captured WaitForDevice from tid=4 ──────────
+    if (fs_obs_find(4u, kKindWaitForDevice, 0u)) {
+        cel_pl011_puts("[axion] el0: device wake OK (WaitForDevice tid=4)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: device wake FAIL (obs record missing)\r\n");
     }
 }
 

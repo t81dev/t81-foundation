@@ -352,6 +352,74 @@ jobs:
 
           echo "canon store with sched images: $(du -sh canon_store.img | cut -f1)"
 
+      # ── Phase 11: T81X v2 identity test image at LBA 8 (RFC-00C0) ─────────
+      # el0_wait_test.S = Process C (tid=4): calls WaitForDevice, gets woken by
+      # EL1 via fs_sched_wake_device, then calls ExitThread.
+      # Embedded as T81X v2 with FNV-1a-64 code_hash in header[19:27].
+      - name: Build and embed Phase 11 identity test image
+        run: |
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -I userland/experimental/hal \
+            -c \
+            userland/experimental/hal/el0_wait_test.S \
+            -o el0_wait_test.o
+
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -Wl,-Ttext=0x0 -Wl,--omagic \
+            el0_wait_test.o -o el0_wait_test.elf
+
+          llvm-objcopy-18 -O binary \
+            --only-section=.text \
+            el0_wait_test.elf el0_wait_test.bin
+
+          CODE_SIZE=$(wc -c < el0_wait_test.bin)
+          echo "el0_wait_test.bin: ${CODE_SIZE} bytes"
+
+          # Wrap as T81X v2 with FNV-1a-64 code_hash and write to LBA 8.
+          python3 - <<'PYEOF'
+          import struct
+
+          FNV_OFFSET = 14695981039346656037
+          FNV_PRIME  = 1099511628211
+
+          def fnv1a64(data):
+              h = FNV_OFFSET
+              for b in data:
+                  h ^= b
+                  h = (h * FNV_PRIME) & 0xFFFFFFFFFFFFFFFF
+              return h
+
+          def write_t81x_v2(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              code_hash = fnv1a64(code)
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 2)           # version 2  [4]
+              hdr += b'\x00\x00'                   # reserved0  [5:7]
+              hdr += struct.pack('<I', 0)           # entry_offset [7:11]
+              hdr += struct.pack('<I', len(code))   # code_size  [11:15]
+              hdr += struct.pack('<I', 0)           # data_size  [15:19]
+              hdr += struct.pack('<Q', code_hash)   # code_hash  [19:27]
+              hdr += bytes(64 - len(hdr))           # pad to 64  [27:64]
+              assert len(hdr) == 64
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              assert len(sector) == 512
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X v2 sector written at LBA{lba} (offset {offset}): "
+                    f"code_size={len(code)} bytes, code_hash=0x{code_hash:016x} ({bin_path})")
+
+          write_t81x_v2('el0_wait_test.bin', 8)
+          PYEOF
+
+          echo "canon store with identity image: $(du -sh canon_store.img | cut -f1)"
+
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
         run: python3 scripts/ci/check_kernelcall_abi_freeze.py .
@@ -437,6 +505,10 @@ jobs:
           check "[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)"
           # Phase 10 (RFC-00BF): observability ring captured the expected Phase 9 call graph.
           check "[axion] el0: obs OK (BlockOnIpcReceive tid=3, SendMessage tid=2->3)"
+          # Phase 11a (RFC-00C0): T81X v2 FNV-1a-64 code_hash validated before execute.
+          check "[axion] el0: identity OK (hash=verified, tid=4)"
+          # Phase 11b (RFC-00C0): WaitForDevice waker roundtrip confirmed via obs ring.
+          check "[axion] el0: device wake OK (WaitForDevice tid=4)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]
