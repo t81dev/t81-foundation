@@ -117,6 +117,10 @@ extern "C" uint64_t fs_gov_count() noexcept;
 extern "C" bool     fs_gov_find_device(uint32_t tid, uint32_t event,
                                         uint32_t device_id) noexcept;
 
+// Phase 16 (RFC-00C5) second process code/stack pages (qemu_slice6_el0_mmu.cpp).
+extern "C" uint8_t* el0_mmu_proc_code_page2()  noexcept;
+extern "C" uint64_t el0_mmu_proc_stack_top2()  noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -748,6 +752,127 @@ extern "C" void canon_device_filter_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: device filter OK (device_id=30, tid=6)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: device filter FAIL (gov record missing)\r\n");
+    }
+}
+
+// ── Phase 16 (RFC-00C5): concurrent device wait ───────────────────────────────
+//
+// Loads two processes simultaneously and registers both as Runnable before
+// issuing a single run_proc_entry().  Both threads park on WaitForDevice;
+// the timer IRQ (INTID 30) wakes both via fs_sched_timer_device_wake(30).
+//
+// Thread F (tid=7) — el0_wait_test (LBA 10, device_id=0, 12-byte request):
+//   Wildcard wait: wakes on any INTID.
+// Thread E (tid=6) — el0_device_filter_test (LBA 11, device_id=30, 16-byte):
+//   Exact match: wakes only on INTID 30.
+//
+// Execution order:
+//   run_proc_entry → tid=6
+//   tid=6 WaitForDevice(30) → BlockedDeviceWait → SVC finds tid=7 Runnable
+//                              → ERET to tid=7 (no wfi needed yet)
+//   tid=7 WaitForDevice(0)  → BlockedDeviceWait → no Runnable → device_wait_loop
+//   device_wait_loop wfi → timer INTID=30 → both wake
+//   device_wait_loop → ERET to tid=6 (resume after svc#1)
+//   tid=6 ExitThread → fs_sched_exit_thread → finds tid=7 Runnable → ERET tid=7
+//   tid=7 ExitThread → fs_sched_exit_thread → no Runnable → g_axion_el1_return_pc
+//
+// CI gate: "[axion] el0: concurrent wake OK (device_id=30, tid=6+7)"
+
+// Helper: load a T81X v2 binary from lba into dest_page and return the
+// absolute PA of the entry point.  Returns 0 on any error.
+static uint64_t load_t81x_v2_into(uint64_t lba,
+                                   uint8_t* dest_page,
+                                   const char* label) noexcept {
+    if (!canon_store_read_lba(lba)) {
+        cel_pl011_puts("[axion] canonfs: concurrent load FAIL (LBA read error: ");
+        cel_pl011_puts(label);
+        cel_pl011_puts(")\r\n");
+        return 0u;
+    }
+    const uint8_t* sec = canon_store_sector_buf();
+    if (sec[0] != kT81XMagic[0] || sec[1] != kT81XMagic[1] ||
+        sec[2] != kT81XMagic[2] || sec[3] != kT81XMagic[3]) {
+        cel_pl011_puts("[axion] canonfs: concurrent load FAIL (bad T81X magic: ");
+        cel_pl011_puts(label);
+        cel_pl011_puts(")\r\n");
+        return 0u;
+    }
+    if (sec[4] != kT81XVersion2) {
+        cel_pl011_puts("[axion] canonfs: concurrent load FAIL (expected v2: ");
+        cel_pl011_puts(label);
+        cel_pl011_puts(")\r\n");
+        return 0u;
+    }
+    uint32_t entry_offset, code_size;
+    __builtin_memcpy(&entry_offset, sec +  7, 4);
+    __builtin_memcpy(&code_size,    sec + 11, 4);
+    if (code_size == 0u || code_size > kT81XMaxCodeSize || entry_offset >= code_size) {
+        cel_pl011_puts("[axion] canonfs: concurrent load FAIL (bad sizes: ");
+        cel_pl011_puts(label);
+        cel_pl011_puts(")\r\n");
+        return 0u;
+    }
+    uint64_t stored_hash;
+    __builtin_memcpy(&stored_hash, sec + kT81XHashOffset, 8);
+    if (fnv1a64(sec + kT81XHdrSize, code_size) != stored_hash) {
+        cel_pl011_puts("[axion] canonfs: concurrent load FAIL (hash mismatch: ");
+        cel_pl011_puts(label);
+        cel_pl011_puts(")\r\n");
+        return 0u;
+    }
+    __builtin_memcpy(dest_page, sec + kT81XHdrSize, code_size);
+    __builtin_memset(dest_page + code_size, 0,
+                     static_cast<__SIZE_TYPE__>(4096u - code_size));
+    return reinterpret_cast<uint64_t>(dest_page) + entry_offset;
+}
+
+extern "C" void canon_concurrent_wait_load_and_run() noexcept {
+    // Load Thread F (tid=7, device_id=0) from LBA 10 into code page 2.
+    const uint64_t code_pa_f = load_t81x_v2_into(10u,
+                                                   el0_mmu_proc_code_page2(),
+                                                   "tid7/LBA10");
+    if (!code_pa_f) return;
+
+    // Load Thread E (tid=6, device_id=30) from LBA 11 into code page 1.
+    const uint64_t code_pa_e = load_t81x_v2_into(11u,
+                                                   el0_mmu_proc_code_page(),
+                                                   "tid6/LBA11");
+    if (!code_pa_e) return;
+
+    flush_icache_for_new_code();
+
+    // Install IRQ-driven device-wait loop.
+    g_axion_el1_device_wait_pc =
+        reinterpret_cast<uint64_t>(fs_sched_device_wait_loop);
+
+    fs_sched_reset();  // resets sched, obs, and gov rings
+
+    const uint64_t stack_top_e = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_f = el0_mmu_proc_stack_top2();
+
+    // Register both threads as Runnable.
+    fs_sched_register(6u, code_pa_e, stack_top_e, 0x3C0u);
+    fs_sched_mark_running(6u);
+    fs_sched_register(7u, code_pa_f, stack_top_f, 0x3C0u);
+    // tid=7 stays Runnable (not marked Running) — the scheduler picks it up.
+
+    el0_svc_set_current_tid(6u);
+
+    // Single ERET to tid=6.  The scheduler handles tid=7 and both ExitThread
+    // transitions without further EL1 intervention.
+    run_proc_entry(code_pa_e, stack_top_e);
+
+    el0_svc_set_current_tid(1u);
+    g_axion_el1_device_wait_pc = 0u;
+
+    // Phase 16: both threads must appear in the gov ring with kGovTimerDeviceWake
+    // and device_id=30 (the INTID that fired, regardless of their registered did).
+    const bool woke_e = fs_gov_find_device(6u, 1u /*kGovTimerDeviceWake*/, 30u);
+    const bool woke_f = fs_gov_find_device(7u, 1u /*kGovTimerDeviceWake*/, 30u);
+    if (woke_e && woke_f) {
+        cel_pl011_puts("[axion] el0: concurrent wake OK (device_id=30, tid=6+7)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: concurrent wake FAIL (gov record missing)\r\n");
     }
 }
 

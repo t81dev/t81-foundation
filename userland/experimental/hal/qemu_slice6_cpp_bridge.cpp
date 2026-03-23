@@ -426,6 +426,8 @@ extern "C" void canon_identity_load_and_run() noexcept;
 extern "C" void canon_irq_wake_load_and_run() noexcept;
 // Phase 15 (RFC-00C4): per-device wake filtering (canon_exec_loader.cpp).
 extern "C" void canon_device_filter_load_and_run() noexcept;
+// Phase 16 (RFC-00C5): concurrent device wait (canon_exec_loader.cpp).
+extern "C" void canon_concurrent_wait_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -734,6 +736,14 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //   CI gate: "[axion] el0: device filter OK (device_id=30, tid=6)"
   if (s_has_blk) {
     canon_device_filter_load_and_run();
+  }
+
+  // Phase 16 (RFC-00C5): concurrent device wait — Process E (tid=6, did=30) and
+  //   Process F (tid=7, did=0/any) both park on WaitForDevice simultaneously.
+  //   Timer IRQ (INTID 30) wakes both via per-device filter; both exit cleanly.
+  //   CI gate: "[axion] el0: concurrent wake OK (device_id=30, tid=6+7)"
+  if (s_has_blk) {
+    canon_concurrent_wait_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");

@@ -631,6 +631,12 @@ jobs:
           # Confirms that fs_sched_timer_device_wake(intid) correctly filters
           # threads whose device_id does not match the firing interrupt.
           check "[axion] el0: device filter OK (device_id=30, tid=6)"
+          # Phase 16 (RFC-00C5): concurrent device wait — tid=6 (device_id=30,
+          # exact match) and tid=7 (device_id=0, wildcard) park simultaneously;
+          # both are woken by timer INTID 30; gov ring records both wake events.
+          # Validates: single timer IRQ correctly wakes two concurrent waiters
+          # with different device_id discriminators (exact + wildcard).
+          check "[axion] el0: concurrent wake OK (device_id=30, tid=6+7)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

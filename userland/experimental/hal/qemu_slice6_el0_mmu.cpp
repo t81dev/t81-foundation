@@ -122,11 +122,17 @@ alignas(4096) static uint8_t s_el0_stack_page[4096];
 alignas(4096) static uint8_t s_el0_proc_code_page[4096];
 alignas(4096) static uint8_t s_el0_proc_stack_page[4096];
 
+// 4 KB pages for RFC-00C5 second concurrent process slot.
+alignas(4096) static uint8_t s_el0_proc_code_page2[4096];
+alignas(4096) static uint8_t s_el0_proc_stack_page2[4096];
+
 // ── TVA state (written once by el0_mmu_init, read by el0_tva_valid) ──────────
-static uint64_t s_code_page_pa       = 0;
-static uint64_t s_stack_page_pa      = 0;
-static uint64_t s_proc_code_page_pa  = 0;
-static uint64_t s_proc_stack_page_pa = 0;
+static uint64_t s_code_page_pa        = 0;
+static uint64_t s_stack_page_pa       = 0;
+static uint64_t s_proc_code_page_pa   = 0;
+static uint64_t s_proc_stack_page_pa  = 0;
+static uint64_t s_proc_code_page2_pa  = 0;
+static uint64_t s_proc_stack_page2_pa = 0;
 
 // ── System-register helpers (AArch64 only) ───────────────────────────────────
 
@@ -243,11 +249,13 @@ static void install_el0_page(uint64_t pa, uint64_t leaf,
 ///
 /// After this call el0_tva_valid() can validate EL0-supplied SVC pointers.
 extern "C" void el0_mmu_init() noexcept {
-    s_code_page_pa       = reinterpret_cast<uint64_t>(
-                               reinterpret_cast<void*>(axion_el0_entry)) & ~0xFFFULL;
-    s_stack_page_pa      = reinterpret_cast<uint64_t>(s_el0_stack_page);
-    s_proc_code_page_pa  = reinterpret_cast<uint64_t>(s_el0_proc_code_page);
-    s_proc_stack_page_pa = reinterpret_cast<uint64_t>(s_el0_proc_stack_page);
+    s_code_page_pa        = reinterpret_cast<uint64_t>(
+                                reinterpret_cast<void*>(axion_el0_entry)) & ~0xFFFULL;
+    s_stack_page_pa       = reinterpret_cast<uint64_t>(s_el0_stack_page);
+    s_proc_code_page_pa   = reinterpret_cast<uint64_t>(s_el0_proc_code_page);
+    s_proc_stack_page_pa  = reinterpret_cast<uint64_t>(s_el0_proc_stack_page);
+    s_proc_code_page2_pa  = reinterpret_cast<uint64_t>(s_el0_proc_code_page2);
+    s_proc_stack_page2_pa = reinterpret_cast<uint64_t>(s_el0_proc_stack_page2);
 
 #if defined(__aarch64__) && !defined(__APPLE__)
     // Zero our page table arrays.
@@ -310,13 +318,17 @@ extern "C" void el0_mmu_init() noexcept {
     // else: entry is 0 (unmapped) — s_l2 stays zeroed; install_el0_page handles it.
     our_l1[l1_idx] = reinterpret_cast<uint64_t>(s_l2) | kTableDesc;
 
-    // Step 4: Add the four EL0 pages, splitting 2 MB blocks as needed.
+    // Step 4: Add the six EL0 pages, splitting 2 MB blocks as needed.
+    // All pages share one BSS 2 MB block so at most one L3 slot is consumed.
     uint64_t* l3_pool[3] = { s_l3_a, s_l3_b, s_l3_c };
     uint32_t  l3_used = 0u;
-    install_el0_page(s_code_page_pa,       kLeafCode,     l3_pool, l3_used);
-    install_el0_page(s_stack_page_pa,      kLeafStack,    l3_pool, l3_used);
-    install_el0_page(s_proc_code_page_pa,  kLeafProcCode, l3_pool, l3_used);
-    install_el0_page(s_proc_stack_page_pa, kLeafStack,    l3_pool, l3_used);
+    install_el0_page(s_code_page_pa,         kLeafCode,     l3_pool, l3_used);
+    install_el0_page(s_stack_page_pa,        kLeafStack,    l3_pool, l3_used);
+    install_el0_page(s_proc_code_page_pa,    kLeafProcCode, l3_pool, l3_used);
+    install_el0_page(s_proc_stack_page_pa,   kLeafStack,    l3_pool, l3_used);
+    // RFC-00C5: second process slot.
+    install_el0_page(s_proc_code_page2_pa,   kLeafProcCode, l3_pool, l3_used);
+    install_el0_page(s_proc_stack_page2_pa,  kLeafStack,    l3_pool, l3_used);
 
     // Step 5: Flush → install → TLB invalidate.
     aarch64_dsb_sy();
@@ -341,7 +353,17 @@ extern "C" uint64_t el0_mmu_proc_stack_top() noexcept {
     return s_proc_stack_page_pa + 4096u;
 }
 
-/// Returns 1 if the range [va, va+size) lies entirely within one of the four
+/// Returns a writable pointer to the second process code page (RFC-00C5).
+extern "C" uint8_t* el0_mmu_proc_code_page2() noexcept {
+    return s_el0_proc_code_page2;
+}
+
+/// Returns the top of the second process stack page (RFC-00C5).
+extern "C" uint64_t el0_mmu_proc_stack_top2() noexcept {
+    return s_proc_stack_page2_pa + 4096u;
+}
+
+/// Returns 1 if the range [va, va+size) lies entirely within one of the six
 /// EL0-mapped pages; 0 otherwise.
 /// Size 0 always returns 0 (vacuously invalid — reject zero-length spans).
 /// Used by the SVC dispatcher for TVA validation (RFC-00BC §5,
@@ -351,10 +373,12 @@ extern "C" int el0_tva_valid(uint64_t va, uint64_t size) noexcept {
     if (size == 0 || s_code_page_pa == 0) return 0;
     const uint64_t va_end = va + size;
     if (va_end < va) return 0;  // wraparound
-    if (va >= s_code_page_pa       && va_end <= s_code_page_pa       + 4096u) return 1;
-    if (va >= s_stack_page_pa      && va_end <= s_stack_page_pa      + 4096u) return 1;
-    if (va >= s_proc_code_page_pa  && va_end <= s_proc_code_page_pa  + 4096u) return 1;
-    if (va >= s_proc_stack_page_pa && va_end <= s_proc_stack_page_pa + 4096u) return 1;
+    if (va >= s_code_page_pa         && va_end <= s_code_page_pa         + 4096u) return 1;
+    if (va >= s_stack_page_pa        && va_end <= s_stack_page_pa        + 4096u) return 1;
+    if (va >= s_proc_code_page_pa    && va_end <= s_proc_code_page_pa    + 4096u) return 1;
+    if (va >= s_proc_stack_page_pa   && va_end <= s_proc_stack_page_pa   + 4096u) return 1;
+    if (va >= s_proc_code_page2_pa   && va_end <= s_proc_code_page2_pa   + 4096u) return 1;
+    if (va >= s_proc_stack_page2_pa  && va_end <= s_proc_stack_page2_pa  + 4096u) return 1;
     return 0;
 #else
     (void)va; (void)size;
