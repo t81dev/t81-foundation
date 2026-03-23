@@ -231,6 +231,6 @@ EL1: canon_identity_load_and_run() resumes after second run_proc_entry()
 - [RFC-00BD: KernelCall ABI Ordinal Freeze](RFC-00BD-kernelcall-abi-ordinal-freeze.md)
 - [RFC-00BE: Freestanding Cooperative Scheduler](RFC-00BE-freestanding-cooperative-scheduler.md)
 - [RFC-00BF: Freestanding KernelCall Observability](RFC-00BF-freestanding-kernelcall-observability.md)
-- `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` — waker impl
-- `userland/experimental/hal/canon_exec_loader.cpp` — hash validation + Phase 11
-- `userland/experimental/hal/el0_wait_test.S` — Phase 11 Process C
+- `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` — waker impl
+- `ternaryos/hal/canon_exec_loader.cpp` — hash validation + Phase 11
+- `ternaryos/hal/el0_wait_test.S` — Phase 11 Process C

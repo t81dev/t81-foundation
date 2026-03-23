@@ -192,7 +192,7 @@ What OQ-5 does **not** require, and what this RFC explicitly defers:
 - [x] Phase 14 verification in `canon_irq_wake_load_and_run()`: both gov records
   confirmed; emits Phase 14 gate
 - [x] Phase 14 CI gate: `[axion] el0: async audit OK (AsyncWake tid=5, irq-driven)`
-- [x] OQ-5 closed in `userland/experimental/docs/PROGRESS.md`
+- [x] OQ-5 closed in `ternaryos/docs/PROGRESS.md`
 - [ ] RFC-00C4: per-device wake filtering (`device_id` in `FsSchedThread` + wire request)
 - [ ] RFC-00C5: Axion policy enforcement on async transitions via gov ring
 
@@ -214,6 +214,6 @@ What OQ-5 does **not** require, and what this RFC explicitly defers:
 - [RFC-00BE: Freestanding Cooperative Scheduler](RFC-00BE-freestanding-cooperative-scheduler.md)
 - [RFC-00BF: Freestanding KernelCall Observability](RFC-00BF-freestanding-kernelcall-observability.md)
 - [RFC-00C2: Hardware-Interrupt-Driven WaitForDevice Wake](RFC-00C2-hardware-interrupt-driven-waitfordevice.md)
-- `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` — gov ring impl
-- `userland/experimental/hal/canon_exec_loader.cpp` — Phase 14 verification
-- `userland/experimental/docs/PROGRESS.md` — OQ-5
+- `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` — gov ring impl
+- `ternaryos/hal/canon_exec_loader.cpp` — Phase 14 verification
+- `ternaryos/docs/PROGRESS.md` — OQ-5

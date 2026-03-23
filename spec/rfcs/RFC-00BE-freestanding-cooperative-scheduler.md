@@ -337,9 +337,9 @@ EL1: canon_sched_load_and_run() resumes
 
 - [RFC-00BD: KernelCall ABI Ordinal Freeze](RFC-00BD-kernelcall-abi-ordinal-freeze.md)
 - [RFC-00BC: TernaryOS EL0 Userland Bring-Up](RFC-00BC-ternaryos-el0-userland-bringup.md)
-- `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` — scheduler impl
-- `userland/experimental/hal/qemu_slice6_bridge_irq.cpp` — ExitThread hook
-- `userland/experimental/hal/canon_exec_loader.cpp` — Phase 9 loader
-- `userland/experimental/hal/el0_sched_test_a.S` — Phase 9 Process A
-- `userland/experimental/hal/el0_sched_test_b.S` — Phase 9 Process B
-- `userland/experimental/hal/kernelcall_abi.inc` — symbolic constants (RFC-00BD)
+- `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` — scheduler impl
+- `ternaryos/hal/qemu_slice6_bridge_irq.cpp` — ExitThread hook
+- `ternaryos/hal/canon_exec_loader.cpp` — Phase 9 loader
+- `ternaryos/hal/el0_sched_test_a.S` — Phase 9 Process A
+- `ternaryos/hal/el0_sched_test_b.S` — Phase 9 Process B
+- `ternaryos/hal/kernelcall_abi.inc` — symbolic constants (RFC-00BD)

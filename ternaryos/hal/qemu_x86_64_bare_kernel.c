@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_x86_64_bare_kernel.c
+// ternaryos/hal/qemu_x86_64_bare_kernel.c
 //
 // Post-ExitBootServices bare-metal entry for QEMU x86_64 (OVMF slice6).
 //

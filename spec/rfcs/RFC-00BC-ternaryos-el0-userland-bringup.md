@@ -85,10 +85,10 @@ gate (`[axion] el0: init OK (tid=1)`).
 
 **Key files:**
 
-- New: `userland/experimental/hal/qemu_slice6_el0_mmu.cpp` — `el0_mmu_init()`:
+- New: `ternaryos/hal/qemu_slice6_el0_mmu.cpp` — `el0_mmu_init()`:
   clones EDK2 TTBR0, detects T0SZ/walk-depth, builds 4-page EL0 table;
   `el0_tva_valid()`: range check used by the SVC dispatcher
-- New: `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` — freestanding
+- New: `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` — freestanding
   `el0_svc_kernel_call_dispatch()`: handles TVA-validated KernelCall wire requests
 - Modified: `qemu_slice6_cpp_bridge.cpp` — call `el0_mmu_init()` before
   `run_el0_init()`; add proc page helpers `el0_mmu_proc_code_page()` /
@@ -147,7 +147,7 @@ the thread's resources, not a raw frame patch.
 
 - Modified: `qemu_slice6_bridge_irq.cpp` — replace SVC #1/2 with KernelCall /
   ExitThread; route SVC #1 to `el0_svc_kernel_call_dispatch()`
-- New: `userland/experimental/hal/axion_el0_init.S` — use SVC #1 KernelCall
+- New: `ternaryos/hal/axion_el0_init.S` — use SVC #1 KernelCall
   for GetThreadIdentity, SVC #2 ExitThread to terminate
 - Modified: `qemu-boot.yml` — add Phase 6 CI gate string
 
@@ -198,10 +198,10 @@ the EFI image (as Phase 4 does) does not prove the load path.
 
 **Key files:**
 
-- New: `userland/experimental/hal/canon_exec_loader.cpp` — `canon_exec_load_and_run()`:
+- New: `ternaryos/hal/canon_exec_loader.cpp` — `canon_exec_load_and_run()`:
   reads LBA 3, validates T81X header, copies code to proc page, flushes I-cache,
   ERets to EL0, returns after ExitThread
-- New: `userland/experimental/hal/el0_process_stub.S` — position-independent EL0
+- New: `ternaryos/hal/el0_process_stub.S` — position-independent EL0
   process stub; calls GetThreadIdentity, WriteSerial, ExitThread
 - Modified: `qemu-boot.yml` — assemble `el0_process_stub.S` with clang-18, embed
   T81X sector at LBA 3 via Python; add Phase 7 CI gate; add
@@ -238,8 +238,8 @@ the EFI image (as Phase 4 does) does not prove the load path.
 ```
 
 **Key files:**
-- New: `userland/experimental/hal/el0_ipc_test_a.S` — sender stub
-- New: `userland/experimental/hal/el0_ipc_test_b.S` — receiver stub
+- New: `ternaryos/hal/el0_ipc_test_a.S` — sender stub
+- New: `ternaryos/hal/el0_ipc_test_b.S` — receiver stub
 - Modified: `canon_exec_loader.cpp` — load and spawn two objects
 - Modified: `qemu-boot.yml` — embed both stubs; add Phase 8 CI gate
 

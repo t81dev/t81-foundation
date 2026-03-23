@@ -1,4 +1,4 @@
-// userland/experimental/hal/kernelcall_abi.inc
+// ternaryos/hal/kernelcall_abi.inc
 //
 // KernelCall ABI symbolic constants for EL0 AArch64 assembly.
 // RFC-00BD: KernelCall ABI Ordinal Freeze.

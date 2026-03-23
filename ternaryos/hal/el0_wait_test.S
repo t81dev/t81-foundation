@@ -1,4 +1,4 @@
-// userland/experimental/hal/el0_wait_test.S
+// ternaryos/hal/el0_wait_test.S
 //
 // Phase 11 (RFC-00C0) — Process C (tid=4, WaitForDevice tester).
 //

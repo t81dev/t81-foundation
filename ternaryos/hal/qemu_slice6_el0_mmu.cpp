@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_slice6_el0_mmu.cpp
+// ternaryos/hal/qemu_slice6_el0_mmu.cpp
 //
 // Freestanding EL0 page table setup for the QEMU AArch64 slice6 EFI bridge.
 //

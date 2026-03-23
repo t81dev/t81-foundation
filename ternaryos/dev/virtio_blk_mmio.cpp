@@ -1,4 +1,4 @@
-// userland/experimental/dev/virtio_blk_mmio.cpp
+// ternaryos/dev/virtio_blk_mmio.cpp
 //
 // VirtioBlkMmioDevice — virtio v1.0 MMIO transport, synchronous polling.
 //

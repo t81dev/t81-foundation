@@ -2,7 +2,7 @@
 //
 // BlockBackedDriver — t81::canonfs::Driver backed by an IBlockDevice.
 //
-// Wraps userland/experimental/dev/CanonStore (content-addressed block store)
+// Wraps ternaryos/dev/CanonStore (content-addressed block store)
 // to provide the full CanonFS Driver interface over any IBlockDevice
 // implementation: VirtioBlkMmioDevice (bare-metal), HostedBlockDev (test /
 // simulation), or any future NVMe / AHCI driver.

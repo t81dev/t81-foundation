@@ -236,5 +236,5 @@ write_t81m('el0_wait_test.bin',
 - [RFC-00BE: Freestanding Cooperative Scheduler](RFC-00BE-freestanding-cooperative-scheduler.md)
 - [RFC-00BF: Freestanding KernelCall Observability](RFC-00BF-freestanding-kernelcall-observability.md)
 - [RFC-00C0: CanonFS Executable Identity](RFC-00C0-canonfs-executable-identity.md)
-- `userland/experimental/hal/canon_exec_loader.cpp` — manifest verification impl
+- `ternaryos/hal/canon_exec_loader.cpp` — manifest verification impl
 - `.github/workflows/qemu-boot.yml` — `write_t81m()` CI toolchain function

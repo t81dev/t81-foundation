@@ -1,4 +1,4 @@
-// userland/experimental/hal/el0_sched_test_a.S
+// ternaryos/hal/el0_sched_test_a.S
 //
 // Phase 9 cooperative scheduler test — Process A (tid=2, sender).
 //

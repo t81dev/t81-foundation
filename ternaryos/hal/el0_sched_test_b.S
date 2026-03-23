@@ -1,4 +1,4 @@
-// userland/experimental/hal/el0_sched_test_b.S
+// ternaryos/hal/el0_sched_test_b.S
 //
 // Phase 9 cooperative scheduler test — Process B (tid=3, blocker).
 //

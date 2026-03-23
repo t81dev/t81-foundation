@@ -4,15 +4,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'userland/experimental/hal/qemu_x86_64_efi_stub.c'
-      - 'userland/experimental/hal/qemu_x86_64_bare_kernel.c'
-      - 'userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp'
+      - 'ternaryos/hal/qemu_x86_64_efi_stub.c'
+      - 'ternaryos/hal/qemu_x86_64_bare_kernel.c'
+      - 'ternaryos/hal/qemu_x86_64_cpp_bridge.cpp'
       - 'CMakeLists.txt'
       - '.github/workflows/qemu-boot-x86.yml'
   pull_request:
     paths:
-      - 'userland/experimental/hal/qemu_x86_64_*.c'
-      - 'userland/experimental/hal/qemu_x86_64_*.cpp'
+      - 'ternaryos/hal/qemu_x86_64_*.c'
+      - 'ternaryos/hal/qemu_x86_64_*.cpp'
       - '.github/workflows/qemu-boot-x86.yml'
   workflow_dispatch:
 

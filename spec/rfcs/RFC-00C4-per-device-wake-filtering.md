@@ -225,9 +225,9 @@ Threads using the 12-byte request format (RFC-00C2) continue to receive
 
 | File                                         | Change                                         |
 |----------------------------------------------|------------------------------------------------|
-| `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` | `FsSchedThread.device_id`, `FsGovRecord` 24-byte layout, `fs_sched_timer_device_wake(intid)`, `fs_gov_find_device()`, WaitForDevice SVC reads device_id |
-| `userland/experimental/hal/qemu_slice6_bridge_irq.cpp`     | Timer ISR passes `kTimerIntid` to `fs_sched_timer_device_wake` |
-| `userland/experimental/hal/canon_exec_loader.cpp`          | `canon_device_filter_load_and_run()` + `fs_gov_find_device` extern |
-| `userland/experimental/hal/qemu_slice6_cpp_bridge.cpp`     | Declaration + call for `canon_device_filter_load_and_run()` |
-| `userland/experimental/hal/el0_device_filter_test.S`       | New — Process E, 16-byte WaitForDevice(device_id=30) |
+| `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` | `FsSchedThread.device_id`, `FsGovRecord` 24-byte layout, `fs_sched_timer_device_wake(intid)`, `fs_gov_find_device()`, WaitForDevice SVC reads device_id |
+| `ternaryos/hal/qemu_slice6_bridge_irq.cpp`     | Timer ISR passes `kTimerIntid` to `fs_sched_timer_device_wake` |
+| `ternaryos/hal/canon_exec_loader.cpp`          | `canon_device_filter_load_and_run()` + `fs_gov_find_device` extern |
+| `ternaryos/hal/qemu_slice6_cpp_bridge.cpp`     | Declaration + call for `canon_device_filter_load_and_run()` |
+| `ternaryos/hal/el0_device_filter_test.S`       | New — Process E, 16-byte WaitForDevice(device_id=30) |
 | `.github/workflows/qemu-boot.yml`                          | Phase 15 build step (LBA 11) + CI gate check  |

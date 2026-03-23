@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_x86_64_bridge_irq.cpp
+// ternaryos/hal/qemu_x86_64_bridge_irq.cpp
 //
 // Freestanding x86_64 hardware-interrupt wiring for the QEMU OVMF EFI bridge.
 //

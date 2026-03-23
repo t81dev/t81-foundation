@@ -166,7 +166,7 @@ This confirms:
 
 | File                                              | Change                                                         |
 |---------------------------------------------------|----------------------------------------------------------------|
-| `userland/experimental/hal/qemu_slice6_el0_mmu.cpp`      | Add proc_code_page2 / proc_stack_page2 BSS + PA vars + map + accessors + tva_valid |
-| `userland/experimental/hal/canon_exec_loader.cpp`         | `load_t81x_v2_into()` helper + `canon_concurrent_wait_load_and_run()` |
-| `userland/experimental/hal/qemu_slice6_cpp_bridge.cpp`    | Declaration + call for `canon_concurrent_wait_load_and_run()` |
+| `ternaryos/hal/qemu_slice6_el0_mmu.cpp`      | Add proc_code_page2 / proc_stack_page2 BSS + PA vars + map + accessors + tva_valid |
+| `ternaryos/hal/canon_exec_loader.cpp`         | `load_t81x_v2_into()` helper + `canon_concurrent_wait_load_and_run()` |
+| `ternaryos/hal/qemu_slice6_cpp_bridge.cpp`    | Declaration + call for `canon_concurrent_wait_load_and_run()` |
 | `.github/workflows/qemu-boot.yml`                         | Phase 16 CI gate (no new LBA — reuses 10+11)                  |

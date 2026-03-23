@@ -17,7 +17,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'userland/experimental/**'
+      - 'ternaryos/**'
       - 'drivers/qemu/**'
   workflow_dispatch:
 
@@ -149,9 +149,9 @@ jobs:
           # -I: expose kernelcall_abi.inc for .include directives (RFC-00BD).
           clang-18 --target=aarch64-unknown-elf \
             -ffreestanding -nostdlib \
-            -I userland/experimental/hal \
+            -I ternaryos/hal \
             -c \
-            userland/experimental/hal/el0_process_stub.S \
+            ternaryos/hal/el0_process_stub.S \
             -o el0_process_stub.o
 
           # Link into an ELF executable at VA 0x0 (code runs from proc_code_page_pa).
@@ -233,7 +233,7 @@ jobs:
       - name: Build and embed Phase 8 IPC process images
         run: |
           for STUB in a b; do
-            SRC="userland/experimental/hal/el0_ipc_test_${STUB}.S"
+            SRC="ternaryos/hal/el0_ipc_test_${STUB}.S"
             OBJ="el0_ipc_test_${STUB}.o"
             ELF="el0_ipc_test_${STUB}.elf"
             BIN="el0_ipc_test_${STUB}.bin"
@@ -241,7 +241,7 @@ jobs:
             # -I: expose kernelcall_abi.inc for .include directives (RFC-00BD).
             clang-18 --target=aarch64-unknown-elf \
               -ffreestanding -nostdlib \
-              -I userland/experimental/hal \
+              -I ternaryos/hal \
               -c \
               "${SRC}" -o "${OBJ}"
 
@@ -296,14 +296,14 @@ jobs:
       - name: Build and embed Phase 9 scheduler test images
         run: |
           for STUB in a b; do
-            SRC="userland/experimental/hal/el0_sched_test_${STUB}.S"
+            SRC="ternaryos/hal/el0_sched_test_${STUB}.S"
             OBJ="el0_sched_test_${STUB}.o"
             ELF="el0_sched_test_${STUB}.elf"
             BIN="el0_sched_test_${STUB}.bin"
 
             clang-18 --target=aarch64-unknown-elf \
               -ffreestanding -nostdlib \
-              -I userland/experimental/hal \
+              -I ternaryos/hal \
               -c \
               "${SRC}" -o "${OBJ}"
 
@@ -360,9 +360,9 @@ jobs:
         run: |
           clang-18 --target=aarch64-unknown-elf \
             -ffreestanding -nostdlib \
-            -I userland/experimental/hal \
+            -I ternaryos/hal \
             -c \
-            userland/experimental/hal/el0_wait_test.S \
+            ternaryos/hal/el0_wait_test.S \
             -o el0_wait_test.o
 
           clang-18 --target=aarch64-unknown-elf \
@@ -465,9 +465,9 @@ jobs:
         run: |
           clang-18 --target=aarch64-unknown-elf \
             -ffreestanding -nostdlib \
-            -I userland/experimental/hal \
+            -I ternaryos/hal \
             -c \
-            userland/experimental/hal/el0_device_filter_test.S \
+            ternaryos/hal/el0_device_filter_test.S \
             -o el0_device_filter_test.o
 
           clang-18 --target=aarch64-unknown-elf \

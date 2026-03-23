@@ -1,4 +1,4 @@
-// userland/experimental/hal/el0_device_filter_test.S
+// ternaryos/hal/el0_device_filter_test.S
 //
 // Phase 15 (RFC-00C4) — Process E (tid=6, per-device filter tester).
 //

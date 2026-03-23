@@ -36,7 +36,7 @@ ARMv8 boot evidence path on Apple Silicon hosts.
 | Machine | `virt,accel=hvf`, `-cpu host`, 512 MB |
 | Firmware | EDK2 AArch64 (`edk2-aarch64-code.fd` + `edk2-arm-vars.fd`) |
 | EFI binary | `build/ternaryos/virtualbox_armv8/BOOTAA64.EFI` |
-| Source stub | `userland/experimental/hal/virtualbox_armv8_efi_stub.c` |
+| Source stub | `ternaryos/hal/virtualbox_armv8_efi_stub.c` |
 
 ---
 
@@ -170,6 +170,6 @@ boot_path_inference=default-bootaa64-efi
 ## Cross-References
 
 - `docs/records/audits/TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md` — x86_64 lane
-- `userland/experimental/hal/virtualbox_armv8_efi_stub.c` — EFI stub source
-- `userland/experimental/scripts/run_qemu_armv8_guest_probe.sh` — probe script
+- `ternaryos/hal/virtualbox_armv8_efi_stub.c` — EFI stub source
+- `ternaryos/scripts/run_qemu_armv8_guest_probe.sh` — probe script
 - `build/ternaryos/virtualbox_armv8/BOOTAA64.EFI` — EFI binary

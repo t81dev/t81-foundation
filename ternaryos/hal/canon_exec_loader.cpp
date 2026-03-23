@@ -1,4 +1,4 @@
-// userland/experimental/hal/canon_exec_loader.cpp
+// ternaryos/hal/canon_exec_loader.cpp
 //
 // Phase 7 — CanonFS process loader (RFC-00BC §"Phase 7").
 //

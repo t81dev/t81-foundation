@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp
+// ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp
 //
 // Phase 6 — Freestanding KernelCall SVC bridge (RFC-00BC §"Phase 6").
 //

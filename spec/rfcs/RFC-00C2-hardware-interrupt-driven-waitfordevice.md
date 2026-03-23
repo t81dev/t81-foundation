@@ -219,6 +219,6 @@ g_axion_el1_device_wait_pc = 0u;
 - [RFC-00BF: Freestanding KernelCall Observability](RFC-00BF-freestanding-kernelcall-observability.md)
 - [RFC-00C0: CanonFS Executable Identity](RFC-00C0-canonfs-executable-identity.md)
 - [RFC-00C1: CanonFS Per-Binary Call Sequence Manifest](RFC-00C1-canonfs-per-binary-call-sequence-manifest.md)
-- `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` — timer wake + idle loop
-- `userland/experimental/hal/qemu_slice6_bridge_irq.cpp` — timer ISR wiring
-- `userland/experimental/hal/canon_exec_loader.cpp` — Phase 13 loader
+- `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` — timer wake + idle loop
+- `ternaryos/hal/qemu_slice6_bridge_irq.cpp` — timer ISR wiring
+- `ternaryos/hal/canon_exec_loader.cpp` — Phase 13 loader

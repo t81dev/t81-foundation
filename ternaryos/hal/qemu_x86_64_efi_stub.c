@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_x86_64_efi_stub.c
+// ternaryos/hal/qemu_x86_64_efi_stub.c
 //
 // UEFI entry point for QEMU x86_64 + OVMF (T81 slice6 developer lane).
 //

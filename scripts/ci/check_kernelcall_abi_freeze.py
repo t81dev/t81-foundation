@@ -26,8 +26,8 @@ def repo_root() -> Path:
     return Path.cwd()
 
 ROOT          = repo_root()
-ENUM_FILE     = ROOT / "userland/experimental/kernel/kernel_abi.hpp"
-WIRE_FILE     = ROOT / "userland/experimental/kernel/kernel_abi_wire.hpp"
+ENUM_FILE     = ROOT / "ternaryos/kernel/kernel_abi.hpp"
+WIRE_FILE     = ROOT / "ternaryos/kernel/kernel_abi_wire.hpp"
 MANIFEST_FILE = ROOT / "spec/rfcs/kernelcall_abi_manifest.txt"
 
 # ── Parser: KernelCallKind enum ────────────────────────────────────────────────

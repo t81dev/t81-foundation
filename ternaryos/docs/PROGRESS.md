@@ -18,12 +18,43 @@ RFC-00B9 boundary note:
   `include/t81/axion/userenv/`, `include/t81/axion/shell/`,
   `src/axion/userenv/`, and `src/axion/shell/`
 - the matching headers under `experimental/ternaryos/userenv/` and
-  `experimental/ternaryos/shell/` remain compatibility shims while the
-  broader kernel lane stays experimental
+  `experimental/ternaryos/shell/` remain compatibility shims; the
+  broader scheduler lane has now **graduated** (see below)
 
-**Last updated:** 2026-03-16
-**Commit:** Slice 28 — RFC-00B5 integrated (UnhandledInterruptDropped)
+**Last updated:** 2026-03-23
+**Commit:** Scheduler graduation — RFC-00B0 through RFC-00C6 promoted to mainline
 **Branch:** `main`
+
+---
+
+## Scheduler Graduation (2026-03-23)
+
+The cooperative EL0 scheduler lane (`userland/experimental/`) has been promoted
+to `ternaryos/` as a stable, mainline subsystem.
+
+**RFC chain completed:** RFC-00B0 → RFC-00BE → RFC-00BF → RFC-00C0 → RFC-00C1 →
+RFC-00C2 → RFC-00C3 → RFC-00C4 → RFC-00C5 → RFC-00C6
+
+**Phases 11–17 all passing:**
+
+| Phase | Description | CI gate |
+|-------|-------------|---------|
+| 11 | CanonFS executable identity (T81X v2, tid=4) | `identity OK (tid=4)` |
+| 12 | T81M call-sequence manifest | `manifest OK (tid=4)` |
+| 13 | IRQ-driven WaitForDevice (tid=5) | `irq wake OK (tid=5)` |
+| 14 | Async audit / governance ring | `obs ring OK (tid=5)` |
+| 15 | Per-device wake filtering (device_id=30) | `device filter OK (device_id=30, tid=6)` |
+| 16 | Concurrent device wait (tid=6+7) | `concurrent wake OK (device_id=30, tid=6+7)` |
+| 17 | Per-thread TTBR0 address-space isolation | `per-thread pt OK (tid=6+7, isolated)` |
+
+**Key stable APIs:** `WaitForDevice` (KernelCall kind=43, 12-byte or 16-byte),
+`ExitThread` (SVC #2), `fs_sched_*`, obs ring, gov ring (`fs_gov_record`,
+`fs_gov_find_device`), per-thread L3 (`el0_mmu_build_thread_l3`,
+`el0_mmu_install_thread_l3`, `el0_mmu_install_shared_l3`).
+
+See `ternaryos/GRADUATION.md` for the complete stable API reference.
+
+---
 
 Recent architecture milestone:
 

@@ -166,7 +166,7 @@ receives kind=53 on the wire returns `kStatusInvalidRequest`.
 
 The following constants are **frozen** at wire format version 1.  They are
 defined in `kernel_abi_wire.hpp` and mirrored in
-`userland/experimental/hal/kernelcall_abi.inc` for EL0 assembly use.
+`ternaryos/hal/kernelcall_abi.inc` for EL0 assembly use.
 
 | Constant | Value | Meaning |
 | :--- | :--- | :--- |
@@ -232,7 +232,7 @@ the ordinal) is permitted for internal clarity but must be accompanied by:
 
 EL0 assembly files MUST NOT embed literal `KernelCallKind` ordinal values as
 unnamed immediate constants.  All kind fields must use the symbolic constants
-from `userland/experimental/hal/kernelcall_abi.inc`.
+from `ternaryos/hal/kernelcall_abi.inc`.
 
 Permitted:
 ```asm
@@ -283,7 +283,7 @@ A **breaking** wire format change requires:
 
 ## Assembly Symbolic Constants
 
-The file `userland/experimental/hal/kernelcall_abi.inc` is the canonical
+The file `ternaryos/hal/kernelcall_abi.inc` is the canonical
 source of `KernelCallKind` ordinals for EL0 assembly.  It must be kept in
 sync with `kernel_abi.hpp` and is checked by the CI gate (see below).
 
@@ -411,8 +411,8 @@ frozen constant.  A future RFC may define per-call minimum request sizes.
 - [RFC-00B6: Minimal Syscall and Capability Boundary](RFC-00B6-minimal-syscall-capability-boundary.md)
 - [RFC-00BC: TernaryOS EL0 Userland Bring-Up](RFC-00BC-ternaryos-el0-userland-bringup.md)
 - [RFC-DPE-0002: TISC Task Graph Primitives](RFC-DPE-0002-tisc-task-graph-primitives.md)
-- `userland/experimental/kernel/kernel_abi.hpp` — authoritative enum source
-- `userland/experimental/kernel/kernel_abi_wire.hpp` — wire constants source
-- `userland/experimental/hal/kernelcall_abi.inc` — assembly symbolic constants
+- `ternaryos/kernel/kernel_abi.hpp` — authoritative enum source
+- `ternaryos/kernel/kernel_abi_wire.hpp` — wire constants source
+- `ternaryos/hal/kernelcall_abi.inc` — assembly symbolic constants
 - `spec/rfcs/kernelcall_abi_manifest.txt` — CI golden manifest
 - `scripts/ci/check_kernelcall_abi_freeze.py` — CI enforcement script

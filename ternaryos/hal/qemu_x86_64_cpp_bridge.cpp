@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp
+// ternaryos/hal/qemu_x86_64_cpp_bridge.cpp
 //
 // Freestanding C++ kernel bridge for QEMU x86_64 bare-metal.
 //

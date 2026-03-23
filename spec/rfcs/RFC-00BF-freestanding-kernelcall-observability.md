@@ -230,5 +230,5 @@ that a content-addressed binary produced the expected interaction pattern.
 
 - [RFC-00BD: KernelCall ABI Ordinal Freeze](RFC-00BD-kernelcall-abi-ordinal-freeze.md)
 - [RFC-00BE: Freestanding Cooperative Scheduler](RFC-00BE-freestanding-cooperative-scheduler.md)
-- `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` — ring implementation
-- `userland/experimental/hal/canon_exec_loader.cpp` — Phase 10 verification
+- `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` — ring implementation
+- `ternaryos/hal/canon_exec_loader.cpp` — Phase 10 verification

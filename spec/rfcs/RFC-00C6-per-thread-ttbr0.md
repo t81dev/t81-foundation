@@ -186,8 +186,8 @@ All new BSS. No additional L3 pool slots consumed (same 2 MB block as existing p
 
 | File                                              | Change                                                              |
 |---------------------------------------------------|---------------------------------------------------------------------|
-| `userland/experimental/hal/qemu_slice6_el0_mmu.cpp`      | `s_thread_l3[2][512]`, `s_shared_l3`, `s_l2_el0_block_idx`, `s_all_proc_page_pas`; `el0_mmu_build_thread_l3()`, `el0_mmu_install_thread_l3()`, `el0_mmu_install_shared_l3()` |
-| `userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp` | `kNoThreadL3`, `FsSchedThread.l3_slot`, `fs_sched_set_thread_l3()`; L3 install at all three ERET sites; shared-L3 restore on last exit |
-| `userland/experimental/hal/canon_exec_loader.cpp`          | `canon_per_thread_pt_load_and_run()` + new externs               |
-| `userland/experimental/hal/qemu_slice6_cpp_bridge.cpp`     | Declaration + Phase 17 call                                      |
+| `ternaryos/hal/qemu_slice6_el0_mmu.cpp`      | `s_thread_l3[2][512]`, `s_shared_l3`, `s_l2_el0_block_idx`, `s_all_proc_page_pas`; `el0_mmu_build_thread_l3()`, `el0_mmu_install_thread_l3()`, `el0_mmu_install_shared_l3()` |
+| `ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp` | `kNoThreadL3`, `FsSchedThread.l3_slot`, `fs_sched_set_thread_l3()`; L3 install at all three ERET sites; shared-L3 restore on last exit |
+| `ternaryos/hal/canon_exec_loader.cpp`          | `canon_per_thread_pt_load_and_run()` + new externs               |
+| `ternaryos/hal/qemu_slice6_cpp_bridge.cpp`     | Declaration + Phase 17 call                                      |
 | `.github/workflows/qemu-boot.yml`                          | Phase 17 CI gate (reuses LBA 10+11)                              |

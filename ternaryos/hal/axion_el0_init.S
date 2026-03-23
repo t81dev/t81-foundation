@@ -1,4 +1,4 @@
-// userland/experimental/hal/axion_el0_init.S
+// ternaryos/hal/axion_el0_init.S
 //
 // Phase 6 EL0 entry stub for the Axion QEMU AArch64 EFI bridge.
 //

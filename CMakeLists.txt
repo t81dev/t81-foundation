@@ -187,7 +187,7 @@ target_include_directories(t81_core PUBLIC
 )
 # block_backed_driver.cpp needs access to dev/block_device.hpp and dev/canon_store.hpp.
 target_include_directories(t81_core PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
 )
 
 add_library(t81_tracing OBJECT
@@ -621,8 +621,8 @@ else()
 endif()
 
 # =============================================================================
-# TernaryOS — HAL, shell, and user environment (RFC-00B0 through RFC-00B9)
-# Enabled by default; disable with -DT81_ENABLE_TERNARYOS=OFF
+# TernaryOS — HAL, shell, and user environment (RFC-00B0 through RFC-00C6)
+# Stable; disable with -DT81_ENABLE_TERNARYOS=OFF
 # =============================================================================
 option(T81_ENABLE_TERNARYOS "Enable TernaryOS HAL, shell, and user environment" ON)
 
@@ -630,50 +630,50 @@ if(T81_ENABLE_TERNARYOS)
   message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building TernaryOS HAL, shell, and user environment")
 
   add_library(t81_ternaryos_hal STATIC
-    userland/experimental/hal/hal_main.cpp
-    userland/experimental/hal/hal_c_abi.cpp
-    userland/experimental/hal/interrupt_table.cpp
-    userland/experimental/hal/hosted_stub.cpp
-    userland/experimental/hal/virtualbox_platform.cpp
-    userland/experimental/hal/virtualbox_guest_devices.cpp
-    userland/experimental/hal/qemu_platform.cpp
-    userland/experimental/hal/qemu_kernel_entry.cpp
-    userland/experimental/kernel/kernel_runtime.cpp
-    userland/experimental/kernel/kernel_actions.cpp
-    userland/experimental/kernel/kernel_abi.cpp
-    userland/experimental/kernel/kernel_abi_wire.cpp
-    userland/experimental/kernel/kernel_executable.cpp
-    userland/experimental/kernel/kernel_faults.cpp
-    userland/experimental/kernel/kernel_interrupts.cpp
-    userland/experimental/kernel/kernel_interrupt_policy.cpp
-    userland/experimental/kernel/kernel_loader.cpp
-    userland/experimental/kernel/kernel_lifecycle.cpp
-    userland/experimental/kernel/kernel_trap_shim.cpp
-    userland/experimental/hal/aarch64_trap_entry.cpp
-    userland/experimental/kernel/kernel_pager.cpp
-    userland/experimental/kernel/kernel_queries.cpp
-    userland/experimental/kernel/kernel_runtime_utils.cpp
-    userland/experimental/kernel/kernel_views.cpp
-    userland/experimental/dev/hosted_block_dev.cpp
-    userland/experimental/dev/virtio_blk_mmio.cpp
-    userland/experimental/dev/virtualbox_ahci_dev.cpp
-    userland/experimental/dev/virtualbox_e1000_dev.cpp
-    userland/experimental/dev/virtualbox_vmsvga_dev.cpp
-    userland/experimental/dev/canon_store.cpp
-    userland/experimental/dev/framebuffer.cpp
-    userland/experimental/dev/ttf.cpp
-    userland/experimental/dev/pl011_uart.cpp
-    userland/experimental/dev/gicv3.cpp
-    userland/experimental/mmu/ternary_page_alloc.cpp
-    userland/experimental/mmu/page_table.cpp
-    userland/experimental/sched/context_switch.cpp
+    ternaryos/hal/hal_main.cpp
+    ternaryos/hal/hal_c_abi.cpp
+    ternaryos/hal/interrupt_table.cpp
+    ternaryos/hal/hosted_stub.cpp
+    ternaryos/hal/virtualbox_platform.cpp
+    ternaryos/hal/virtualbox_guest_devices.cpp
+    ternaryos/hal/qemu_platform.cpp
+    ternaryos/hal/qemu_kernel_entry.cpp
+    ternaryos/kernel/kernel_runtime.cpp
+    ternaryos/kernel/kernel_actions.cpp
+    ternaryos/kernel/kernel_abi.cpp
+    ternaryos/kernel/kernel_abi_wire.cpp
+    ternaryos/kernel/kernel_executable.cpp
+    ternaryos/kernel/kernel_faults.cpp
+    ternaryos/kernel/kernel_interrupts.cpp
+    ternaryos/kernel/kernel_interrupt_policy.cpp
+    ternaryos/kernel/kernel_loader.cpp
+    ternaryos/kernel/kernel_lifecycle.cpp
+    ternaryos/kernel/kernel_trap_shim.cpp
+    ternaryos/hal/aarch64_trap_entry.cpp
+    ternaryos/kernel/kernel_pager.cpp
+    ternaryos/kernel/kernel_queries.cpp
+    ternaryos/kernel/kernel_runtime_utils.cpp
+    ternaryos/kernel/kernel_views.cpp
+    ternaryos/dev/hosted_block_dev.cpp
+    ternaryos/dev/virtio_blk_mmio.cpp
+    ternaryos/dev/virtualbox_ahci_dev.cpp
+    ternaryos/dev/virtualbox_e1000_dev.cpp
+    ternaryos/dev/virtualbox_vmsvga_dev.cpp
+    ternaryos/dev/canon_store.cpp
+    ternaryos/dev/framebuffer.cpp
+    ternaryos/dev/ttf.cpp
+    ternaryos/dev/pl011_uart.cpp
+    ternaryos/dev/gicv3.cpp
+    ternaryos/mmu/ternary_page_alloc.cpp
+    ternaryos/mmu/page_table.cpp
+    ternaryos/sched/context_switch.cpp
     # Phase 3 — scheduling & IPC
-    userland/experimental/sched/run_queue.cpp
-    userland/experimental/sched/scheduler.cpp
-    userland/experimental/ipc/canon_message.cpp)
+    ternaryos/sched/run_queue.cpp
+    ternaryos/sched/scheduler.cpp
+    ternaryos/ipc/canon_message.cpp)
 
   target_include_directories(t81_ternaryos_hal PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
 
   target_link_libraries(t81_ternaryos_hal PUBLIC t81_core t81_axion)
@@ -689,7 +689,7 @@ if(T81_ENABLE_TERNARYOS)
   # DPE kernel wiring — compiled into t81_ternaryos_hal only when both flags are ON.
   if(T81_ENABLE_DPE)
     target_sources(t81_ternaryos_hal PRIVATE
-      userland/experimental/kernel/kernel_epoch.cpp)
+      ternaryos/kernel/kernel_epoch.cpp)
     target_include_directories(t81_ternaryos_hal PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
     target_link_libraries(t81_ternaryos_hal PUBLIC t81_dpe)
@@ -699,7 +699,7 @@ if(T81_ENABLE_TERNARYOS)
   add_library(t81_ternaryos_shell STATIC
     kernel/axion/shell/shell_session.cpp)
   target_include_directories(t81_ternaryos_shell PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   target_link_libraries(t81_ternaryos_shell PUBLIC t81_ternaryos_hal)
   target_compile_features(t81_ternaryos_shell PUBLIC ${T81_CXX_STD_FEATURE})
@@ -708,34 +708,34 @@ if(T81_ENABLE_TERNARYOS)
   add_library(t81_ternaryos_userenv STATIC
     kernel/axion/userenv/user_env.cpp)
   target_include_directories(t81_ternaryos_userenv PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   target_link_libraries(t81_ternaryos_userenv PUBLIC t81_ternaryos_shell)
   target_compile_features(t81_ternaryos_userenv PUBLIC ${T81_CXX_STD_FEATURE})
 
   add_executable(t81_ternaryos_demo
-    userland/experimental/apps/demo.cpp)
+    ternaryos/apps/demo.cpp)
   target_link_libraries(t81_ternaryos_demo PRIVATE t81_ternaryos_hal)
 
   add_executable(t81_ternaryos_shell_demo
-    userland/experimental/apps/shell_demo.cpp)
+    ternaryos/apps/shell_demo.cpp)
   target_link_libraries(t81_ternaryos_shell_demo PRIVATE t81_ternaryos_shell)
 
   add_executable(t81_ternaryos_shell_startup_snapshot
-    userland/experimental/shell/shell_startup_snapshot.cpp)
+    ternaryos/shell/shell_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_shell_startup_snapshot PRIVATE t81_ternaryos_shell)
 
   add_executable(t81_ternaryos_phase4_startup_snapshot
-    userland/experimental/dev/phase4_startup_snapshot.cpp)
+    ternaryos/dev/phase4_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_phase4_startup_snapshot PRIVATE t81_ternaryos_hal)
 
   add_executable(t81_ternaryos_qemu_slice6_snapshot
-    userland/experimental/dev/qemu_slice6_startup_snapshot.cpp)
+    ternaryos/dev/qemu_slice6_startup_snapshot.cpp)
   target_link_libraries(t81_ternaryos_qemu_slice6_snapshot PRIVATE t81_ternaryos_hal)
 
   if(T81_BUILD_TUI)
     add_executable(t81_ternaryos_shell_tui
-      userland/experimental/apps/shell_tui.cpp)
+      ternaryos/apps/shell_tui.cpp)
     target_link_libraries(t81_ternaryos_shell_tui PRIVATE
       t81_ternaryos_shell
       ftxui::screen
@@ -781,12 +781,12 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_efi_stub.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_EFI_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_efi_stub.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/hal_c_abi.h)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/hal_c_abi.h)
     add_custom_target(t81_ternaryos_virtualbox_efi_obj
       DEPENDS ${T81_TERNARYOS_EFI_OBJ})
     list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_efi_obj)
@@ -801,12 +801,12 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_x86_64_efi_shim.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_x86_64_efi_shim.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_x86_64_efi_shim.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/hal_c_abi.h)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_x86_64_efi_shim.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/hal_c_abi.h)
     add_custom_target(t81_ternaryos_virtualbox_x86_64_efi_shim_obj
       DEPENDS ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ})
     list(APPEND T81_TERNARYOS_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_x86_64_efi_shim_obj)
@@ -873,13 +873,13 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_armv8_efi_stub.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_armv8_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -I${CMAKE_BINARY_DIR}/ternaryos/generated
               -o ${T81_TERNARYOS_ARMV8_EFI_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_armv8_efi_stub.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/hal_c_abi.h
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_armv8_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/hal_c_abi.h
               ${T81_TERNARYOS_ARMV8_STARTUP_SHELL_HDR}
               ${T81_TERNARYOS_ARMV8_STARTUP_SESSION_HDR}
               ${T81_TERNARYOS_ARMV8_STARTUP_HISTORY_HDR}
@@ -901,11 +901,11 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_armv8_efi_control.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_armv8_efi_control.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_armv8_efi_control.c)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_armv8_efi_control.c)
     add_custom_target(t81_ternaryos_virtualbox_armv8_efi_control_obj
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control_obj)
@@ -920,12 +920,12 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_armv8_efi_shim.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_armv8_efi_shim.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/virtualbox_armv8_efi_shim.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/hal_c_abi.h)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/virtualbox_armv8_efi_shim.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/hal_c_abi.h)
     add_custom_target(t81_ternaryos_virtualbox_armv8_efi_shim_obj
       DEPENDS ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
     list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_shim_obj)
@@ -947,11 +947,11 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/aarch64_exception_vectors.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/aarch64_exception_vectors.S
               -o ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/aarch64_exception_vectors.S
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/aarch64_trap_entry.hpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/aarch64_exception_vectors.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/aarch64_trap_entry.hpp)
     add_custom_target(t81_ternaryos_aarch64_exception_vectors_obj
       DEPENDS ${T81_TERNARYOS_AARCH64_VECTORS_OBJ})
 
@@ -970,13 +970,13 @@ if(T81_ENABLE_TERNARYOS)
               -ffreestanding
               -fno-stack-protector
               -nostdlib
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/axion_el0_init.S
               -o ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/kernelcall_abi.inc)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/axion_el0_init.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/kernelcall_abi.inc)
     add_custom_target(t81_ternaryos_aarch64_el0_init_obj
       DEPENDS ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ})
 
@@ -1020,13 +1020,13 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_armv8_efi_stub.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_armv8_efi_stub.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -I${CMAKE_BINARY_DIR}/ternaryos/generated
               -o ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_armv8_efi_stub.c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/hal_c_abi.h
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_armv8_efi_stub.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/hal_c_abi.h
               ${T81_TERNARYOS_QEMU_SLICE6_STARTUP_HDR})
     add_custom_target(t81_ternaryos_qemu_slice6_efi_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ})
@@ -1042,11 +1042,11 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_bare_kernel.c
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_bare_kernel.c
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_bare_kernel.c)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_bare_kernel.c)
     add_custom_target(t81_ternaryos_qemu_slice6_bare_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ})
 
@@ -1067,11 +1067,11 @@ if(T81_ENABLE_TERNARYOS)
               -fno-use-cxa-atexit
               -std=c++17
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_cpp_bridge.cpp
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_cpp_bridge.cpp
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_cpp_bridge.cpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_cpp_bridge.cpp)
     add_custom_target(t81_ternaryos_qemu_slice6_cpp_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ})
 
@@ -1095,11 +1095,11 @@ if(T81_ENABLE_TERNARYOS)
               -fno-use-cxa-atexit
               -std=c++17
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_bridge_irq.cpp
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_bridge_irq.cpp
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_bridge_irq.cpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_bridge_irq.cpp)
     add_custom_target(t81_ternaryos_qemu_slice6_irq_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ})
 
@@ -1123,10 +1123,10 @@ if(T81_ENABLE_TERNARYOS)
               -nostdlib
               -std=c++17
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_mmu.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_el0_mmu.cpp
               -o ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_mmu.cpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_el0_mmu.cpp)
     add_custom_target(t81_ternaryos_qemu_slice6_mmu_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ})
 
@@ -1151,10 +1151,10 @@ if(T81_ENABLE_TERNARYOS)
               -nostdlib
               -std=c++17
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp
               -o ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_el0_svc_bridge.cpp)
     add_custom_target(t81_ternaryos_qemu_slice6_svc_bridge_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ})
 
@@ -1174,10 +1174,10 @@ if(T81_ENABLE_TERNARYOS)
               -fno-stack-protector
               -nostdlib
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_freestanding_crt.c
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_freestanding_crt.c
               -o ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_freestanding_crt.c)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_freestanding_crt.c)
     add_custom_target(t81_ternaryos_qemu_slice6_crt_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ})
 
@@ -1200,10 +1200,10 @@ if(T81_ENABLE_TERNARYOS)
               -nostdlib
               -std=c++17
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/canon_exec_loader.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/canon_exec_loader.cpp
               -o ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/canon_exec_loader.cpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/canon_exec_loader.cpp)
     add_custom_target(t81_ternaryos_qemu_slice6_canon_exec_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ})
 
@@ -1222,13 +1222,13 @@ if(T81_ENABLE_TERNARYOS)
               -fno-exceptions
               -fno-rtti
               -nostdlib
-              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal
+              -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal
               -c
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/el0_process_stub.S
               -o ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/kernelcall_abi.inc)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/el0_process_stub.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/kernelcall_abi.inc)
     add_custom_target(t81_ternaryos_qemu_slice6_proc_stub_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ})
 
@@ -1353,10 +1353,10 @@ if(T81_ENABLE_TERNARYOS)
                 -mno-stack-arg-probe
                 -nostdlib
                 -c
-                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_efi_stub.c
-                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_efi_stub.c
+                -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
                 -o ${T81_TERNARYOS_QEMU_X86_STUB_OBJ}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_efi_stub.c)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_efi_stub.c)
 
       add_custom_command(
         OUTPUT  ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
@@ -1368,10 +1368,10 @@ if(T81_ENABLE_TERNARYOS)
                 -mno-stack-arg-probe
                 -nostdlib
                 -c
-                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bare_kernel.c
-                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_bare_kernel.c
+                -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
                 -o ${T81_TERNARYOS_QEMU_X86_BARE_OBJ}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bare_kernel.c)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_bare_kernel.c)
 
       add_custom_command(
         OUTPUT  ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
@@ -1387,10 +1387,10 @@ if(T81_ENABLE_TERNARYOS)
                 -fno-use-cxa-atexit
                 -std=c++17
                 -c
-                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp
-                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_cpp_bridge.cpp
+                -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
                 -o ${T81_TERNARYOS_QEMU_X86_CPP_OBJ}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_cpp_bridge.cpp)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_cpp_bridge.cpp)
 
       # Hardware-interrupt wiring — IDT + 8259 PIC + PIT ch0 (~100Hz).
       # Provides bridge_hw_init_x86_64() and axion_timer_stub_x86_64() for the
@@ -1411,10 +1411,10 @@ if(T81_ENABLE_TERNARYOS)
                 -fno-use-cxa-atexit
                 -std=c++17
                 -c
-                ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bridge_irq.cpp
-                -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental
+                ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_bridge_irq.cpp
+                -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
                 -o ${T81_TERNARYOS_QEMU_X86_IRQ_OBJ}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_x86_64_bridge_irq.cpp)
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_x86_64_bridge_irq.cpp)
 
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_QEMU_X86_EFI}
@@ -1443,7 +1443,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_virtualbox_guest_artifact
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/build_virtualbox_guest_artifact.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/build_virtualbox_guest_artifact.sh
             ${CMAKE_BINARY_DIR}
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
             x86_64
@@ -1453,23 +1453,23 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/handoff
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/package_virtualbox_x86_64_handoff.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/package_virtualbox_x86_64_handoff.sh
             ${CMAKE_BINARY_DIR}
             ${CMAKE_BINARY_DIR}/ternaryos/handoff
     DEPENDS t81_ternaryos_virtualbox_guest_artifact
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/docs/virtualbox_x86_64_handoff.md
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/docs/virtualbox_x86_64_handoff.md
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_bundle_smoke
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/validate_packaged_virtualbox_x86_64_handoff_bundle.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/validate_packaged_virtualbox_x86_64_handoff_bundle.sh
             ${CMAKE_BINARY_DIR}/ternaryos/handoff/ternos_virtualbox_x86_64_handoff
     DEPENDS t81_ternaryos_virtualbox_x86_64_handoff
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_bundle_negative_smoke
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/expect_packaged_virtualbox_x86_64_handoff_bundle_failure.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/expect_packaged_virtualbox_x86_64_handoff_bundle_failure.sh
             ${CMAKE_BINARY_DIR}/ternaryos/handoff/ternos_virtualbox_x86_64_handoff
     DEPENDS t81_ternaryos_virtualbox_x86_64_handoff
     USES_TERMINAL)
@@ -1477,7 +1477,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_virtualbox_armv8_dev_artifact
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/build_virtualbox_guest_artifact.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/build_virtualbox_guest_artifact.sh
             ${CMAKE_BINARY_DIR}
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
             armv8
@@ -1486,28 +1486,28 @@ if(T81_ENABLE_TERNARYOS)
 
   add_custom_target(t81_ternaryos_virtualbox_host_check
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/check_virtualbox_host.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/check_virtualbox_host.sh
             --soft
             x86_64
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_virtualbox_armv8_host_check
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/check_virtualbox_host.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/check_virtualbox_host.sh
             --soft
             ARMv8
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_virtualbox_armv8_efi_link_check
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/check_efi_link_toolchain.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/check_efi_link_toolchain.sh
             armv8
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/efi-link-status.txt
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_virtualbox_armv8_boot_probe
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/probe_virtualbox_armv8_vm.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/probe_virtualbox_armv8_vm.sh
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.vdi
             5
@@ -1519,7 +1519,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_qemu_armv8_efi_control_probe
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_control
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/run_qemu_armv8_efi_control.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_armv8_efi_control.sh
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_control
     DEPENDS t81_ternaryos_virtualbox_armv8_dev_artifact
@@ -1528,7 +1528,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_qemu_armv8_guest_probe
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/run_qemu_armv8_guest_probe.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_armv8_guest_probe.sh
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_armv8/ternos_virtualbox_armv8_dev_guest.img
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest
             8
@@ -1538,7 +1538,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_qemu_x86_64_guest_probe
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_x86_64_guest
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/run_qemu_x86_64_guest_probe.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_x86_64_guest_probe.sh
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/ternos_virtualbox_guest.img
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_x86_64_guest
     DEPENDS t81_ternaryos_virtualbox_guest_artifact
@@ -1548,7 +1548,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_qemu_slice6_dev_artifact
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/build_qemu_slice6_artifact.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/build_qemu_slice6_artifact.sh
             ${CMAKE_BINARY_DIR}
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
     DEPENDS t81_ternaryos_qemu_slice6_efi
@@ -1557,7 +1557,7 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_qemu_armv8_slice6_probe
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/run_qemu_armv8_slice6_probe.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_armv8_slice6_probe.sh
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/qemu_slice6_guest.img
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
             8
@@ -1567,10 +1567,10 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/dev/qemu_armv8_guest_probe_blocked_fixture
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/dev/qemu_armv8_guest_probe_blocked_fixture
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/validate_qemu_armv8_guest_reports.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/validate_qemu_armv8_guest_reports.sh
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
             blocked
             qemu-armv8-guest-probe-fixture
@@ -1579,10 +1579,10 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_fixture
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/dev/virtualbox_x86_64_handoff_validation_fixture
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/dev/virtualbox_x86_64_handoff_validation_fixture
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/validate_virtualbox_x86_64_handoff.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/validate_virtualbox_x86_64_handoff.sh
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/expected-boot-report.txt
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/expected-startup-status.txt
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_fixture/recovered-artifacts
@@ -1591,11 +1591,11 @@ if(T81_ENABLE_TERNARYOS)
   add_custom_target(t81_ternaryos_virtualbox_x86_64_handoff_negative_fixture
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/dev/virtualbox_x86_64_handoff_validation_negative_fixture
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/dev/virtualbox_x86_64_handoff_validation_negative_fixture
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture
     COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/expect_virtualbox_x86_64_handoff_failure.sh
-            ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/scripts/validate_virtualbox_x86_64_handoff.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/expect_virtualbox_x86_64_handoff_failure.sh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/validate_virtualbox_x86_64_handoff.sh
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/expected-boot-report.txt
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/expected-startup-status.txt
             ${CMAKE_BINARY_DIR}/ternaryos/virtualbox_x86_64_handoff_negative_fixture/recovered-artifacts
@@ -1603,49 +1603,49 @@ if(T81_ENABLE_TERNARYOS)
 
   if(T81_BUILD_TESTS)
     add_executable(t81_ternaryos_hal_boot_test
-      userland/experimental/tests/hal_boot_test.cpp)
+      ternaryos/tests/hal_boot_test.cpp)
     target_link_libraries(t81_ternaryos_hal_boot_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_hal_boot_test COMMAND t81_ternaryos_hal_boot_test)
 
     add_executable(t81_ternaryos_page_alloc_test
-      userland/experimental/tests/ternary_page_alloc_test.cpp)
+      ternaryos/tests/ternary_page_alloc_test.cpp)
     target_link_libraries(t81_ternaryos_page_alloc_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_page_alloc_test COMMAND t81_ternaryos_page_alloc_test)
 
     add_executable(t81_ternaryos_context_switch_test
-      userland/experimental/tests/context_switch_test.cpp)
+      ternaryos/tests/context_switch_test.cpp)
     target_link_libraries(t81_ternaryos_context_switch_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_context_switch_test COMMAND t81_ternaryos_context_switch_test)
 
     add_executable(t81_ternaryos_mmu_test
-      userland/experimental/tests/mmu_test.cpp)
+      ternaryos/tests/mmu_test.cpp)
     target_link_libraries(t81_ternaryos_mmu_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_mmu_test COMMAND t81_ternaryos_mmu_test)
 
     # Phase 3 tests
     add_executable(t81_ternaryos_scheduler_test
-      userland/experimental/tests/scheduler_test.cpp)
+      ternaryos/tests/scheduler_test.cpp)
     target_link_libraries(t81_ternaryos_scheduler_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_scheduler_test COMMAND t81_ternaryos_scheduler_test)
 
     add_executable(t81_ternaryos_ipc_test
-      userland/experimental/tests/ipc_test.cpp)
+      ternaryos/tests/ipc_test.cpp)
     target_link_libraries(t81_ternaryos_ipc_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_ipc_test COMMAND t81_ternaryos_ipc_test)
 
     add_executable(t81_ternaryos_device_driver_test
-      userland/experimental/tests/device_driver_test.cpp)
+      ternaryos/tests/device_driver_test.cpp)
     target_link_libraries(t81_ternaryos_device_driver_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_device_driver_test COMMAND t81_ternaryos_device_driver_test)
 
     add_executable(t81_ternaryos_shell_session_test
-      userland/experimental/tests/shell_session_test.cpp)
+      ternaryos/tests/shell_session_test.cpp)
     target_link_libraries(t81_ternaryos_shell_session_test PRIVATE t81_ternaryos_shell)
     add_test(NAME t81_ternaryos_shell_session_test COMMAND t81_ternaryos_shell_session_test)
 
     # RFC-00B9 — TernaryOS User Environment acceptance tests (AC-1 through AC-15)
     add_executable(t81_ternaryos_user_env_test
-      userland/experimental/tests/user_env_test.cpp)
+      ternaryos/tests/user_env_test.cpp)
     target_link_libraries(t81_ternaryos_user_env_test PRIVATE t81_ternaryos_userenv)
     add_test(NAME t81_ternaryos_user_env_test COMMAND t81_ternaryos_user_env_test)
 
@@ -1656,43 +1656,43 @@ if(T81_ENABLE_TERNARYOS)
 
     if(T81_ENABLE_DPE)
       add_executable(t81_ternaryos_epoch_submission_test
-        userland/experimental/tests/epoch_submission_test.cpp)
+        ternaryos/tests/epoch_submission_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_submission_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_submission_test COMMAND t81_ternaryos_epoch_submission_test)
 
       add_executable(t81_ternaryos_epoch_policy_test
-        userland/experimental/tests/epoch_policy_test.cpp)
+        ternaryos/tests/epoch_policy_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_policy_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_policy_test COMMAND t81_ternaryos_epoch_policy_test)
 
       # RFC-DPE-0003 §10 / RFC-DPE-0006 §4 — SubmitEpoch KernelCallKind ABI tests [DPE-07]
       add_executable(t81_ternaryos_epoch_syscall_test
-        userland/experimental/tests/epoch_syscall_test.cpp)
+        ternaryos/tests/epoch_syscall_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_syscall_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_syscall_test COMMAND t81_ternaryos_epoch_syscall_test)
 
       # RFC-DPE-0007 — Epoch Execution Timeout tests [DPE-08]
       add_executable(t81_ternaryos_epoch_timeout_test
-        userland/experimental/tests/epoch_timeout_test.cpp)
+        ternaryos/tests/epoch_timeout_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_timeout_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_timeout_test COMMAND t81_ternaryos_epoch_timeout_test)
 
       # RFC-DPE-0008 — Epoch Audit Events tests [DPE-09]
       add_executable(t81_ternaryos_epoch_audit_test
-        userland/experimental/tests/epoch_audit_test.cpp)
+        ternaryos/tests/epoch_audit_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_audit_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_audit_test COMMAND t81_ternaryos_epoch_audit_test)
 
       # RFC-DPE-0009 — Epoch History Ring tests [DPE-10]
       add_executable(t81_ternaryos_epoch_history_test
-        userland/experimental/tests/epoch_history_test.cpp)
+        ternaryos/tests/epoch_history_test.cpp)
       target_link_libraries(t81_ternaryos_epoch_history_test PRIVATE t81_ternaryos_hal)
       add_test(NAME t81_ternaryos_epoch_history_test COMMAND t81_ternaryos_epoch_history_test)
     endif()
 
     # RFC-00B6 §5.3.6 — ClaimDevice/ReleaseDevice/QueryDevice KernelCallKind ABI tests [AC-22d]
     add_executable(t81_ternaryos_device_arbitration_syscall_test
-      userland/experimental/tests/device_arbitration_syscall_test.cpp)
+      ternaryos/tests/device_arbitration_syscall_test.cpp)
     target_link_libraries(t81_ternaryos_device_arbitration_syscall_test PRIVATE t81_ternaryos_hal)
     add_test(NAME t81_ternaryos_device_arbitration_syscall_test
              COMMAND t81_ternaryos_device_arbitration_syscall_test)

@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_slice6_freestanding_crt.c
+// ternaryos/hal/qemu_slice6_freestanding_crt.c
 //
 // Minimal freestanding CRT stubs for the QEMU slice6 EFI binary.
 //

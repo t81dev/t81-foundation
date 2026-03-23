@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_slice6_cpp_bridge.cpp
+// ternaryos/hal/qemu_slice6_cpp_bridge.cpp
 //
 // Freestanding C++ kernel bridge for QEMU AArch64 bare-metal.
 //

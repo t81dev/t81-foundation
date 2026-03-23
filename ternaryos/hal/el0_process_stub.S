@@ -1,4 +1,4 @@
-// userland/experimental/hal/el0_process_stub.S
+// ternaryos/hal/el0_process_stub.S
 //
 // Phase 7 EL0 process entry stub — CanonFS-loaded process (tid=2).
 //

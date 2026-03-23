@@ -1,4 +1,4 @@
-// userland/experimental/hal/qemu_slice6_bridge_irq.cpp
+// ternaryos/hal/qemu_slice6_bridge_irq.cpp
 //
 // Freestanding AArch64 hardware-interrupt wiring for the QEMU slice6 EFI bridge.
 //

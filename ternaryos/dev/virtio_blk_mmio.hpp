@@ -1,6 +1,6 @@
 #pragma once
 
-// userland/experimental/dev/virtio_blk_mmio.hpp
+// ternaryos/dev/virtio_blk_mmio.hpp
 //
 // VirtioBlkMmioDevice: IBlockDevice backed by a virtio-blk MMIO transport.
 //
