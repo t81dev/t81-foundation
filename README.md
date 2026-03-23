@@ -20,15 +20,76 @@
 
 **T81 is a ternary operating system for AI.**
 
+---
+
+## What this actually means
+
+Most AI systems today:
+- cannot prove what they computed
+- cannot guarantee reproducibility across machines
+- cannot enforce policy before taking action
+
+T81 was built to change that.
+
+It is an operating system where:
+- every computation is deterministic
+- every model execution is governed
+- every result can be verified after the fact
+
+---
+
+## 30-second mental model
+
+Think of T81 as:
+
+- a kernel that intercepts every AI action before it happens  
+- a runtime that produces identical results on every machine  
+- a filesystem that guarantees the data you loaded is the data that ran  
+
+If something cannot be verified, it does not execute.
+
+---
+
+## What happens under the hood
+
 Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matmul with addition — no multiply unit required. Any AI expressible in ternary weights runs here: verifiably, reproducibly, and under explicit policy control.
 
 ```sh
 curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
 ```
 
+## First thing to try
+
+Run the demo. At the 't81>' prompt, type:
+
+```sh
+status
+policy
+```
+
 ---
 
-## Demo
+> If a computation cannot be reproduced, it cannot be trusted.
+
+### What this enables
+
+- AI systems that can be audited like financial ledgers  
+- models whose behavior can be reproduced exactly, anywhere  
+- execution environments where policy is enforced by the system itself
+  
+---
+
+## Current reality
+
+- runs as a guest layer (QEMU, Docker, host OS)
+- deterministic surfaces are verified on select platforms
+- bare-metal support is in progress
+
+This is an early-stage system with strong guarantees in its core layers.
+
+---
+
+## See it in action
 
 Boot T81 on QEMU AArch64 (EDK2 slice6) on any Linux host:
 
@@ -94,6 +155,17 @@ The full three-phase boot log is at [`drivers/qemu/sample-boot-log.txt`](drivers
 
 ## The OS that AI was missing
 
+### Why not just use existing operating systems?
+
+Traditional operating systems:
+- execute programs, but do not verify them
+- load models, but do not guarantee their integrity
+- allow actions, but do not enforce policy at the instruction level
+
+T81 moves these concerns into the kernel itself.
+
+---
+
 Binary operating systems give AI agents a process slot and a filesystem. That's it. They cannot tell you whether an inference was bit-exact, which policy authorized a model load, or whether the weights on disk are the weights that ran. T81 closes that gap — not by layering tooling on top of an existing OS, but by building the kernel, ISA, filesystem, and process model that AI-native computing requires.
 
 ### 1. A kernel that governs every AI operation before side effects
@@ -148,6 +220,30 @@ This aligns with BitNet b1.58 / xTern class models: **15–60× energy reduction
 t81 weights import model.safetensors -o model.t81w
 t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl
 ```
+
+---
+
+## Who this is for
+
+T81 may be relevant if you care about:
+
+- reproducible AI and verifiable inference  
+- systems where correctness must be provable  
+- enforcing policy at runtime, not after execution  
+- exploring alternatives to binary-first computing  
+
+This is not a general-purpose OS replacement (yet).  
+It is a foundation for deterministic, governed computation.
+
+---
+
+## What T81 is not
+
+- not a drop-in replacement for Linux/macOS  
+- not focused on GUI-first workflows  
+- not optimized for legacy software compatibility  
+
+T81 prioritizes determinism, governance, and verifiability over compatibility.
 
 ---
 
@@ -345,6 +441,8 @@ ctest --test-dir build --output-on-failure   # 404 tests
 ---
 
 ## Status
+
+---
 
 v1.9.2 · 404/404 tests passing · Apache 2.0
 
@@ -546,7 +644,7 @@ Apache License 2.0.
 ---
 
 <details>
-<summary>Honest bootstrap note (March 2026)</summary>
+<summary>Honest bootstrap note (2026)</summary>
 
 T81 is designed as a standalone OS with its own ISA and kernel — but no native ternary hardware exists yet. The current preview runs as a guest layer on Linux/macOS/Windows via binaries, Docker, or QEMU.
 
