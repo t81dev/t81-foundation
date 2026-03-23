@@ -274,6 +274,19 @@ static void canonfs_io_probe() noexcept {
              " (LBA0 magic=CST1, LBA1 round-trip pass)\r\n");
 }
 
+// ── CanonFS I/O wrappers (used by canon_exec_loader.cpp) ─────────────────────
+// These thin wrappers expose the static vblk_do_io() and s_sector_buf to other
+// TUs.  The queue must already be initialised by canonfs_io_probe() before
+// these are called.
+
+extern "C" bool canon_store_read_lba(uint64_t lba) noexcept {
+  return vblk_do_io(kBlkIn, lba);
+}
+
+extern "C" const uint8_t* canon_store_sector_buf() noexcept {
+  return s_sector_buf;
+}
+
 // ── ARM generic timer ────────────────────────────────────────────────────────
 // CNTPCT_EL0 (physical counter) and CNTFRQ_EL0 (frequency in Hz) are
 // accessible from EL1 without additional configuration on QEMU virt.
@@ -389,6 +402,56 @@ extern "C" void bridge_timer_irq_tick() noexcept {
 
 // Forward declaration of the hw-init function (defined in bridge_irq.cpp).
 extern "C" void bridge_hw_init_aarch64() noexcept;
+
+// ── EL0 init bootstrap ────────────────────────────────────────────────────────
+// Symbols from axion_el0_init.S, qemu_slice6_bridge_irq.cpp, and
+// qemu_slice6_el0_mmu.cpp (Phase 5: controlled TTBR0 page tables).
+extern "C" void     axion_el0_entry()  noexcept;
+extern "C" uint64_t g_axion_el1_return_pc;
+extern "C" void     el0_mmu_init()           noexcept;  // build + install TTBR0 tables
+extern "C" uint64_t el0_mmu_stack_top()      noexcept;  // PA of top of EL0 init stack
+// Phase 7: process pages (qemu_slice6_el0_mmu.cpp).
+extern "C" uint8_t* el0_mmu_proc_code_page() noexcept;
+extern "C" uint64_t el0_mmu_proc_stack_top() noexcept;
+
+// Phase 7: CanonFS process loader (canon_exec_loader.cpp).
+extern "C" void canon_exec_load_and_run() noexcept;
+// Phase 8: EL0 IPC roundtrip (canon_exec_loader.cpp).
+extern "C" void canon_ipc_load_and_run() noexcept;
+
+// ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
+// Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
+// ExitToEL1 SVC (#2) handler can redirect the return ERET back here.
+// Returns only after SVC #2 fires and the trap frame is patched.
+// Phase 5: el0_sp comes from el0_mmu_stack_top() (4 KB page in controlled
+// TTBR0); the old 1 KiB BSS buffer has been removed.
+static void run_el0_init() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  const uint64_t el0_fn =
+      reinterpret_cast<uint64_t>(reinterpret_cast<void*>(axion_el0_entry));
+  const uint64_t el0_sp = el0_mmu_stack_top();
+
+  __asm__ volatile(
+      // x8 = address of EL1 resume label (after eret); save to global.
+      "adr     x8, 1f\n\t"
+      "str     x8, [%[ret_pc]]\n\t"
+      // Set ERET target and EL0 stack.
+      "msr     elr_el1,  %[el0_fn]\n\t"
+      "msr     sp_el0,   %[el0_sp]\n\t"
+      // SPSR_EL1 = 0x3C0: EL0t (M=0b0000) + DAIF all masked (bits[9:6]=1111).
+      "mov     x8, #0x3c0\n\t"
+      "msr     spsr_el1, x8\n\t"
+      "isb\n\t"
+      // ERET to EL0 — execution returns here when SVC #2 fires.
+      "eret\n\t"
+      "1:\n\t"
+      :
+      : [ret_pc] "r"(&g_axion_el1_return_pc),
+        [el0_fn] "r"(el0_fn),
+        [el0_sp] "r"(el0_sp)
+      : "x8", "memory");
+#endif
+}
 
 // ── Freestanding scheduler tick ───────────────────────────────────────────────
 // Fallback poll-based tick — used only when IRQs have not fired yet (e.g.
@@ -599,6 +662,37 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   // Wire hardware timer interrupts: GICv3 + ARM physical timer (PPI 30, ~100Hz).
   bridge_hw_init_aarch64();
   pl011_puts("[axion] hw timer: GICv3 PPI30 armed (10ms)\r\n");
+
+  // Phase 5: Install controlled TTBR0 page tables before ERETing to EL0.
+  // el0_mmu_init() replaces EDK2's identity-mapped TTBR0 with a minimal table
+  // that maps only the code page (EL0 R+X) and the stack page (EL0 R/W).
+  el0_mmu_init();
+  pl011_puts("[axion] el0: page-isolated (TTBR0 active, EL0 stack mapped)\r\n");
+
+  // EL0 init probe: ERET to axion_el0_entry at EL0t.
+  // Phase 6 sequence (RFC-00BC):
+  //   SVC #1 (KernelCall/GetThreadIdentity) → wire request on EL0 stack
+  //   SVC #3 (WriteSerial) → "[axion] el0: init OK (tid=1)\r\n"
+  //   SVC #2 (ExitThread)  → ERET returns here
+  run_el0_init();
+  // Phase 6 CI gate: KernelCall SVC bridge is wired if we reached this point.
+  pl011_puts("[axion] el0: kernel call bridge OK (KernelCall SVC wired)\r\n");
+
+  // Phase 7: CanonFS process loading — read T81X from LBA 3, copy to proc code
+  // page (already mapped in TTBR0 by el0_mmu_init), set tid=2, ERET to EL0.
+  // The process emits "[axion] el0: process loaded from CanonFS (tid=2)" via
+  // WriteSerial SVC #3, which is the Phase 7 CI gate.
+  if (s_has_blk) {
+    canon_exec_load_and_run();
+  }
+
+  // Phase 8: EL0 IPC roundtrip — load Process A (LBA 4, tid=2) and
+  // Process B (LBA 5, tid=3); confirm A→B message delivery.
+  // CI gate: "[axion] el0: IPC roundtrip OK (A->B, tid=2,3)"
+  if (s_has_blk) {
+    canon_ipc_load_and_run();
+  }
+
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
 
   pl011_puts("\r\n");

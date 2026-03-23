@@ -424,7 +424,11 @@ responsibility for the kernel core.
 The kernel integration target remains aligned with the current practical lanes:
 
 - acceptance lane: VirtualBox `x86_64`
-- local developer lane: QEMU AArch64 + EDK2
+- local developer lane: QEMU AArch64 + EDK2 — boot phases as of 2026-03-22:
+  - Phase 1 (EFI): `efi_main` ConOut banner, `ExitBootServices`
+  - Phase 2 (bare-metal C): PL011 EL1 MMIO probe, C++ bridge handoff
+  - Phase 3 (C++ bridge): T81 governance banner, GICv3 + ARM physical timer (PPI 30, 100 Hz), CanonFS virtio-blk I/O probe, `t81sh` shell
+  - Phase 4 (EL0 init probe): `run_el0_init()` ERets to `axion_el0_entry` at EL0t (SPSR_EL1 = 0x3C0); EL0 exercises SVC #0 (`GetThreadIdentity`), SVC #1 (`WriteSerial`), SVC #2 (`ExitToEL1`); returns to EL1h via patched trap frame. Proven by QEMU boot CI (`[axion] el0: init OK (tid=1)` gate, `.github/workflows/qemu-boot.yml`).
 
 First supported device profile:
 

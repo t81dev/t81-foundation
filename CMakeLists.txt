@@ -955,6 +955,29 @@ if(T81_ENABLE_TERNARYOS)
     add_custom_target(t81_ternaryos_aarch64_exception_vectors_obj
       DEPENDS ${T81_TERNARYOS_AARCH64_VECTORS_OBJ})
 
+    # ── Slice 9: EL0 init stub (axion_el0_entry) ──────────────────────────────
+    # Compiled with the same freestanding AArch64 PE/COFF constraints as the
+    # exception vector table.  Linked into BOOTAA64.EFI; provides the minimal
+    # EL0 userland entry point that proves the EL0→SVC→EL1 roundtrip.
+    set(T81_TERNARYOS_AARCH64_EL0_INIT_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/aarch64/BOOTAA64_el0_init.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/aarch64
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S
+              -o ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S)
+    add_custom_target(t81_ternaryos_aarch64_el0_init_obj
+      DEPENDS ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ})
+
     # ── Slice 6: QEMU AArch64 EDK2 guest image ────────────────────────────────
     set(T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ
         ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64.obj)
@@ -1078,6 +1101,133 @@ if(T81_ENABLE_TERNARYOS)
     add_custom_target(t81_ternaryos_qemu_slice6_irq_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ})
 
+    # ── Slice 10: EL0 MMU page table builder (Phase 5 — RFC-00BC) ─────────────
+    # Compiles qemu_slice6_el0_mmu.cpp: builds the controlled TTBR0_EL1 page
+    # tables (code page R+X, stack page R/W) and exports el0_mmu_init(),
+    # el0_mmu_stack_top(), and el0_tva_valid() to the rest of the EFI binary.
+    set(T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_el0_mmu.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-exceptions
+              -fno-rtti
+              -fno-use-cxa-atexit
+              -fno-stack-protector
+              -nostdlib
+              -std=c++17
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_mmu.cpp
+              -o ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_mmu.cpp)
+    add_custom_target(t81_ternaryos_qemu_slice6_mmu_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ})
+
+    # ── Slice 11: EL0 KernelCall SVC bridge (Phase 6 — RFC-00BC) ─────────────
+    # Compiles qemu_slice6_el0_svc_bridge.cpp: freestanding subset of the
+    # Axion kernel call wire protocol reachable from EL0 through SVC #1.
+    # Exports el0_svc_kernel_call_dispatch() to the SVC dispatcher.
+    # RFC-0048 governance: governed non-DCP transport layer.
+    set(T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_el0_svc_bridge.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-exceptions
+              -fno-rtti
+              -fno-use-cxa-atexit
+              -fno-stack-protector
+              -nostdlib
+              -std=c++17
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp
+              -o ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_el0_svc_bridge.cpp)
+    add_custom_target(t81_ternaryos_qemu_slice6_svc_bridge_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ})
+
+    # ── Slice 0: Freestanding CRT stubs (memset / memcpy / memmove) ──────────
+    # The MSVC ABI emits calls to memset/memcpy for non-constant sizes even in
+    # -ffreestanding mode.  This stub provides byte-loop implementations so the
+    # /nodefaultlib EFI link succeeds without the MSVC CRT.
+    set(T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_crt.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-stack-protector
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_freestanding_crt.c
+              -o ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/qemu_slice6_freestanding_crt.c)
+    add_custom_target(t81_ternaryos_qemu_slice6_crt_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ})
+
+    # ── Slice 12: CanonFS process loader (Phase 7 — RFC-00BC) ─────────────────
+    # Compiles canon_exec_loader.cpp: reads a T81X binary from CanonFS LBA 3,
+    # copies the code section into the EL0 process code page, and ERets to EL0
+    # with tid=2.  Exports canon_exec_load_and_run() to qemu_slice6_cpp_bridge.
+    set(T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_canon_exec.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-exceptions
+              -fno-rtti
+              -fno-use-cxa-atexit
+              -nostdlib
+              -std=c++17
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/canon_exec_loader.cpp
+              -o ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/canon_exec_loader.cpp)
+    add_custom_target(t81_ternaryos_qemu_slice6_canon_exec_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ})
+
+    # ── Slice 13: EL0 process stub (Phase 7 — RFC-00BC) ──────────────────────
+    # Assembles el0_process_stub.S: position-independent AArch64 stub that runs
+    # from the proc code page at EL0 and emits the Phase 7 CI gate banner.
+    set(T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ
+        ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6/BOOTAA64_el0_proc_stub.obj)
+    add_custom_command(
+      OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
+      COMMAND ${CMAKE_COMMAND} -E make_directory
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND ${T81_LLVM_CLANG}
+              --target=aarch64-pc-windows-msvc
+              -ffreestanding
+              -fno-exceptions
+              -fno-rtti
+              -nostdlib
+              -c
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S
+              -o ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
+      DEPENDS
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S)
+    add_custom_target(t81_ternaryos_qemu_slice6_proc_stub_obj
+      DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ})
+
     if(T81_LLD_LINK)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_X86_64_EFI}
@@ -1128,12 +1278,18 @@ if(T81_ENABLE_TERNARYOS)
         DEPENDS ${T81_TERNARYOS_ARMV8_EFI_CTRL})
       list(APPEND T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_virtualbox_armv8_efi_control)
 
-      # Slice 6: link QEMU slice6 BOOTAA64.EFI
+      # Slice 6: link QEMU slice6 BOOTAA64.EFI (12 TUs)
       #   stub (EFI entry + ExitBootServices)
       #   + bare kernel (Phase 2 probe, calls C++ bridge)
       #   + cpp bridge (T81 banner + t81> shell, freestanding C++)
       #   + exception vectors (VBAR_EL1 table; axion_irq_entry calls bridge IRQ)
-      #   + bridge irq (GICv3 + ARM timer; defines axion_irq_handler_aarch64)
+      #   + bridge irq (GICv3 + ARM timer; SVC dispatcher; defines axion_irq_handler_aarch64)
+      #   + el0 init (axion_el0_entry: Phase 6 EL0→SVC#1 KernelCall→EL1 roundtrip)
+      #   + el0 mmu (TTBR0 page tables; el0_mmu_init / el0_tva_valid; Phase 5+7)
+      #   + el0 svc bridge (KernelCall SVC#1 dispatcher; Phase 6+7 tid tracking)
+      #   + freestanding CRT (memset/memcpy/memmove stubs for /nodefaultlib link)
+      #   + canon exec loader (T81X loader; Phase 7 CanonFS process bring-up)
+      #   + el0 process stub (Phase 7 EL0 process: tid=2 SVC sequence)
       #   + shim (ternaryos_hal_main_c stub)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_QEMU_SLICE6_EFI}
@@ -1150,12 +1306,24 @@ if(T81_ENABLE_TERNARYOS)
                 ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
                 ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
+                ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ}
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_BARE_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
                 ${T81_TERNARYOS_AARCH64_VECTORS_OBJ}
                 ${T81_TERNARYOS_QEMU_SLICE6_IRQ_OBJ}
+                ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_MMU_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_SVC_BRIDGE_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_CRT_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_CANON_EXEC_OBJ}
+                ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
                 ${T81_TERNARYOS_ARMV8_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_slice6_efi
         DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_EFI})

@@ -138,6 +138,151 @@ jobs:
               sys.exit(1)
           PYEOF
 
+      # ── Phase 7: T81X process image at LBA 3 ─────────────────────────────
+      # Assemble el0_process_stub.S into a flat binary with
+      # --target=aarch64-unknown-elf (position-independent, no EFI headers),
+      # then wrap it in a 64-byte T81X header and write the 512-byte sector
+      # to LBA 3 (byte offset 1536) of canon_store.img.
+      - name: Build and embed T81X process image
+        run: |
+          # Assemble the EL0 process stub to a raw ELF object.
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib -c \
+            userland/experimental/hal/el0_process_stub.S \
+            -o el0_process_stub.o
+
+          # Link into an ELF executable at VA 0x0 (code runs from proc_code_page_pa).
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -Wl,-Ttext=0x0 -Wl,--omagic \
+            el0_process_stub.o \
+            -o el0_process_stub.elf
+
+          # Extract raw .text section as a flat binary.
+          llvm-objcopy-18 -O binary \
+            --only-section=.text \
+            el0_process_stub.elf \
+            el0_process_stub.bin
+
+          CODE_SIZE=$(wc -c < el0_process_stub.bin)
+          echo "el0_process_stub.bin: ${CODE_SIZE} bytes"
+
+          # Write T81X sector (512 bytes) to LBA 3 of canon_store.img.
+          # T81X header layout (64 bytes):
+          #   [0:4]   magic        "T81X"
+          #   [4]     version      1
+          #   [5:7]   reserved0    0
+          #   [7:11]  entry_offset 0 (little-endian uint32)
+          #   [11:15] code_size    N (little-endian uint32)
+          #   [15:63] reserved     0
+          #   [64:]   code section (raw bytes from el0_process_stub.bin)
+          python3 - <<'PYEOF'
+          import struct, sys
+
+          with open('el0_process_stub.bin', 'rb') as f:
+              code = f.read()
+
+          assert len(code) <= 448, f"process stub too large: {len(code)} bytes (max 448)"
+
+          hdr  = b'T81X'                      # magic [0:4]
+          hdr += struct.pack('B', 1)           # version [4]
+          hdr += b'\x00\x00'                   # reserved0 [5:7]
+          hdr += struct.pack('<I', 0)          # entry_offset [7:11]
+          hdr += struct.pack('<I', len(code))  # code_size [11:15]
+          hdr += bytes(64 - len(hdr))          # pad header to 64 bytes [15:64]
+          assert len(hdr) == 64, f"header is {len(hdr)} bytes, expected 64"
+
+          sector = hdr + code
+          sector += bytes(512 - len(sector))   # pad to one full sector
+          assert len(sector) == 512
+
+          LBA3_OFFSET = 3 * 512  # byte offset 1536
+          with open('canon_store.img', 'r+b') as f:
+              f.seek(LBA3_OFFSET)
+              f.write(sector)
+
+          print(f"T81X sector written at LBA3 (offset {LBA3_OFFSET}): "
+                f"magic=T81X version=1 code_size={len(code)} bytes")
+          PYEOF
+
+          echo "canon store with T81X: $(du -sh canon_store.img | cut -f1)"
+
+      - name: Verify T81X image at LBA 3
+        run: |
+          python3 - <<'PYEOF'
+          import sys
+          LBA3_OFFSET = 3 * 512
+          with open('canon_store.img', 'rb') as f:
+              f.seek(LBA3_OFFSET)
+              magic   = f.read(4)
+              version = int.from_bytes(f.read(1), 'little')
+          if magic == b'T81X' and version == 1:
+              print(f'PASS: T81X image at LBA3: magic=T81X version={version}')
+          else:
+              print(f'FAIL: expected T81X v1, got magic={magic!r} version={version}',
+                    file=sys.stderr)
+              sys.exit(1)
+          PYEOF
+
+      # ── Phase 8: IPC test images at LBA 4 (Process A) and LBA 5 (Process B) ─
+      # Assemble el0_ipc_test_a.S and el0_ipc_test_b.S as flat T81X sectors
+      # and write them to LBA 4 and LBA 5 of canon_store.img.
+      - name: Build and embed Phase 8 IPC process images
+        run: |
+          for STUB in a b; do
+            SRC="userland/experimental/hal/el0_ipc_test_${STUB}.S"
+            OBJ="el0_ipc_test_${STUB}.o"
+            ELF="el0_ipc_test_${STUB}.elf"
+            BIN="el0_ipc_test_${STUB}.bin"
+
+            clang-18 --target=aarch64-unknown-elf \
+              -ffreestanding -nostdlib -c \
+              "${SRC}" -o "${OBJ}"
+
+            clang-18 --target=aarch64-unknown-elf \
+              -ffreestanding -nostdlib \
+              -Wl,-Ttext=0x0 -Wl,--omagic \
+              "${OBJ}" -o "${ELF}"
+
+            llvm-objcopy-18 -O binary \
+              --only-section=.text \
+              "${ELF}" "${BIN}"
+
+            CODE_SIZE=$(wc -c < "${BIN}")
+            echo "${BIN}: ${CODE_SIZE} bytes"
+          done
+
+          # Wrap each binary in a T81X header and write to canon_store.img.
+          python3 - <<'PYEOF'
+          import struct, sys
+
+          def write_t81x(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 1)
+              hdr += b'\x00\x00'
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<I', len(code))
+              hdr += bytes(64 - len(hdr))
+              assert len(hdr) == 64
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              assert len(sector) == 512
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X sector written at LBA{lba} (offset {offset}): "
+                    f"magic=T81X version=1 code_size={len(code)} bytes ({bin_path})")
+
+          write_t81x('el0_ipc_test_a.bin', 4)
+          write_t81x('el0_ipc_test_b.bin', 5)
+          PYEOF
+
+          echo "canon store with IPC images: $(du -sh canon_store.img | cut -f1)"
+
       # ── Boot ──────────────────────────────────────────────────────────────
       - name: Boot QEMU and capture serial
         run: |
@@ -198,6 +343,20 @@ jobs:
           check "[axion] kernel thread tid=1: running"
           check "[axion] event loop: priority dispatch"
           check "[axion] hw timer: GICv3 PPI30 armed (10ms)"
+          # Phase 5 (MMU): controlled TTBR0 installed before ERET to EL0.
+          check "[axion] el0: page-isolated (TTBR0 active, EL0 stack mapped)"
+          # Phase 6 (KernelCall SVC bridge): axion_el0_entry uses SVC #1 KernelCall
+          # (GetThreadIdentity wire request) then SVC #3 WriteSerial for banner.
+          check "[axion] el0: init OK (tid=1)"
+          check "[axion] el0: kernel call bridge OK (KernelCall SVC wired)"
+          # Phase 7 (CanonFS process loading): canon_exec_load_and_run() reads
+          # the T81X binary from LBA 3, copies it into the EL0 proc code page,
+          # and ERets to el0_process_stub.S which emits this banner via SVC #3.
+          check "[axion] el0: process loaded from CanonFS (tid=2)"
+          # Phase 8 (EL0 IPC): canon_ipc_load_and_run() loads Process A (LBA 4,
+          # tid=2) which calls SendMessage(tid=3), then Process B (LBA 5, tid=3)
+          # which calls ReceiveMessage; EL1 confirms delivery and emits this gate.
+          check "[axion] el0: IPC roundtrip OK (A->B, tid=2,3)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

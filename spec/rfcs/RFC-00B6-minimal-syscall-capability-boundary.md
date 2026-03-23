@@ -653,6 +653,52 @@ implementation evidence below.
 are now `KernelCallKind` entries wired through `axion_kernel_call()`.  All §8 acceptance
 criteria are fully met with no remaining open questions.
 
+---
+
+### Freestanding SVC ABI — live in BOOTAA64.EFI (2026-03-22)
+
+The acceptance notes above cover the **hosted** kernel path
+(`axion_kernel_handle_svc_trap_aarch64()` → `axion_kernel_call_wire_tva()`).  A
+complementary **freestanding** SVC dispatcher was wired into the QEMU AArch64
+EFI binary (`BOOTAA64.EFI`) as part of Phase 4 of the boot-lane bring-up:
+
+**What was implemented:**
+
+- `axion_kernel_handle_svc_trap_aarch64()` in `qemu_slice6_bridge_irq.cpp`
+  replaced its previous no-op body with a real dispatcher.  It reads the SVC
+  immediate from `ESR_EL1[15:0]` and handles three calls:
+
+  | SVC # | Name | Effect |
+  | ---: | :--- | :--- |
+  | 0 | `GetThreadIdentity` | Sets `x0 = 1` (kernel thread tid) in the trap frame |
+  | 1 | `WriteSerial(x0)` | Writes the null-terminated string at `x0` to PL011 UART |
+  | 2 | `ExitToEL1` | Patches `elr_el1 = g_axion_el1_return_pc`, `spsr_el1 = 0x5` (EL1h) so the ERET in `axion_svc_entry` returns to the saved EL1 label |
+
+- `run_el0_init()` in `qemu_slice6_cpp_bridge.cpp` saves the EL1 resume label
+  to `g_axion_el1_return_pc`, sets `ELR_EL1 = axion_el0_entry`,
+  `SP_EL0 = s_el0_stack + 1024`, `SPSR_EL1 = 0x3C0` (EL0t + DAIF all
+  masked), then executes `eret`.
+
+- `axion_el0_entry` in `axion_el0_init.S` runs at EL0t, invokes all three
+  SVCs in sequence, then spins in a WFE loop that is never reached because
+  SVC #2 redirects the ERET.
+
+**Why DAIF is masked in SPSR_EL1 (0x3C0):** The EL0 probe is a synchronous
+one-shot test.  Masking DAIF prevents the live GICv3 timer IRQ (PPI 30, 100 Hz)
+from pre-empting the brief EL0 window before the SVC #2 return is complete.
+SVC exceptions are synchronous and bypass DAIF, so the three SVCs fire
+unimpeded.
+
+**Why a freestanding ABI rather than the hosted wire ABI:** The BOOTAA64.EFI
+binary is a fully freestanding PE32+ image with no hosted C++ runtime, no STL,
+and no `axion_kernel_call_wire_tva()`.  The three-SVC freestanding ABI is the
+minimal contract needed to prove the EL0→EL1 exception path works in real
+silicon/emulator conditions before the full hosted kernel is wired in.
+
+**CI gate:** `qemu-boot.yml` `Validate boot sequence` step checks for
+`[axion] el0: init OK (tid=1)` — the string emitted by `axion_el0_entry` via
+SVC #1 — as a required Phase 4 pass condition.
+
 ## 10. References
 
 - [RFC-00B7: Pager Service ABI](RFC-00B7-pager-service-abi.md)

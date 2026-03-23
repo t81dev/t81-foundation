@@ -211,12 +211,136 @@ extern "C" void bridge_hw_init_aarch64() noexcept {
 #endif
 }
 
-// ── SVC trap stub ─────────────────────────────────────────────────────────────
-// axion_svc_entry in aarch64_exception_vectors.S calls this for Lower-EL SVC.
-// The freestanding bridge has no user-space; this stub satisfies the linker and
-// returns safely if an SVC fires unexpectedly.
+// ── SVC trap frame (must match axion_svc_entry layout in aarch64_exception_vectors.S)
+//   x[0..30]  : offsets   0..247  (31 × 8 bytes)
+//   sp_el0    : offset  248
+//   elr_el1   : offset  256
+//   spsr_el1  : offset  264
+//   esr_el1   : offset  272
 
-extern "C" void axion_kernel_handle_svc_trap_aarch64(void* /*frame*/) noexcept {}
+struct AArch64TrapFrameSimple {
+  uint64_t x[31];      //   0..247
+  uint64_t sp_el0;     // 248
+  uint64_t elr_el1;    // 256
+  uint64_t spsr_el1;   // 264
+  uint64_t esr_el1;    // 272
+};
+
+// Written by run_el0_init() (qemu_slice6_cpp_bridge.cpp) before ERET to EL0.
+// Read by the ExitThread SVC (#2) handler below to redirect ERET back to EL1.
+extern "C" uint64_t g_axion_el1_return_pc = 0;
+
+// Phase 5: TVA validation — defined in qemu_slice6_el0_mmu.cpp.
+// Returns 1 iff [va, va+size) lies entirely within the EL0-mapped VA range.
+extern "C" int el0_tva_valid(uint64_t va, uint64_t size) noexcept;
+
+// Phase 6: KernelCall dispatcher — defined in qemu_slice6_el0_svc_bridge.cpp.
+// Handles SVC #1 (KernelCall): reads the wire request block from TVA,
+// dispatches based on kind, writes the wire response block back.
+extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept;
+
+// ── PL011 helpers for the SVC dispatcher ─────────────────────────────────────
+// Mirrors the pl011 helpers in qemu_slice6_cpp_bridge.cpp; duplicated here so
+// this translation unit remains self-contained (no cross-TU static calls).
+
+static constexpr uint64_t kSvcPl011Base = UINT64_C(0x09000000);
+
+static void svc_pl011_putchar(char c) noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+  volatile uint32_t* fr = reinterpret_cast<volatile uint32_t*>(
+      static_cast<uintptr_t>(kSvcPl011Base + 0x018u));
+  volatile uint32_t* dr = reinterpret_cast<volatile uint32_t*>(
+      static_cast<uintptr_t>(kSvcPl011Base + 0x000u));
+  while (*fr & (1u << 5u)) { __asm__ volatile("yield" ::: "memory"); }
+  *dr = static_cast<uint32_t>(static_cast<unsigned char>(c));
+#else
+  (void)c;
+#endif
+}
+
+static void svc_pl011_puts(const char* s) noexcept {
+  while (*s) svc_pl011_putchar(*s++);
+}
+
+// Print a 64-bit value as 16 hex digits (debug diagnostic helper).
+static void svc_pl011_puthex64(uint64_t v) noexcept {
+  static const char kHex[] = "0123456789abcdef";
+  for (int i = 60; i >= 0; i -= 4)
+    svc_pl011_putchar(kHex[(v >> i) & 0xFu]);
+}
+
+// ── SVC dispatcher ────────────────────────────────────────────────────────────
+//
+// Called by axion_svc_entry (aarch64_exception_vectors.S) for every SVC taken
+// from Lower EL (AArch64).  The trap frame is the 280-byte block saved on the
+// EL1 stack; modifying elr_el1/spsr_el1 redirects the ERET destination.
+//
+// Phase 6 SVC ABI (RFC-00BC §"Phase 6 SVC ABI version table"):
+//   svc #0  GetThreadIdentity            →  x0 = tid (unchanged from Phase 4)
+//   svc #1  KernelCall(x0,x1,x2,x3)     →  x0=req_tva x1=req_sz x2=rsp_tva x3=rsp_sz
+//                                            routes to el0_svc_kernel_call_dispatch()
+//   svc #2  ExitThread(x0=exit_code)     →  thread teardown; ERET to EL1
+//   svc #3  WriteSerial(x0=str_tva)      →  debug PL011 write (AXION_DEBUG_SERIAL)
+//
+// SVC #1 (KernelCall) replaces Phase 4 WriteSerial; the single narrow entry
+// point follows RFC-00B6 §5.1 — one governed channel for all kernel operations.
+// SVC #2 (ExitThread) replaces Phase 4 ExitToEL1; semantically identical in
+// the freestanding bridge (patches ELR_EL1 / SPSR_EL1) but carries the correct
+// kernel API name for Phase 7+ thread lifecycle management.
+// SVC #3 (WriteSerial) is demoted to debug-only per RFC-00BC D1.
+
+extern "C" void axion_kernel_handle_svc_trap_aarch64(void* frame_ptr) noexcept {
+  auto* f = static_cast<AArch64TrapFrameSimple*>(frame_ptr);
+
+  // ESR_EL1[15:0] = SVC immediate (EC=0x15 for SVC from AArch64 EL0).
+  const uint32_t imm = static_cast<uint32_t>(f->esr_el1 & 0xFFFFu);
+
+  switch (imm) {
+    case 0u:  // GetThreadIdentity → x0 = tid (kernel thread = 1)
+      f->x[0] = 1u;
+      break;
+
+    case 1u:  // KernelCall(x0=req_tva, x1=req_size, x2=rsp_tva, x3=rsp_size)
+      // Route to the Phase 6 freestanding KernelCall dispatcher.  Both TVAs
+      // are Phase 5 TVA-validated inside el0_svc_kernel_call_dispatch().
+      el0_svc_kernel_call_dispatch(f);
+      break;
+
+    case 2u:  // ExitThread(x0 = exit_code)
+      // Redirect ERET to the saved EL1 return address.  Semantically the
+      // same as Phase 4 ExitToEL1 in the freestanding bridge; named correctly
+      // for Phase 7+ thread lifecycle integration.
+      f->elr_el1  = g_axion_el1_return_pc;
+      f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
+      break;
+
+    case 3u: {  // WriteSerial(x0 = const char* str_tva) — debug-only
+      // TVA-validated before dereferencing.  The 1-byte probe covers the
+      // pointer itself; the null terminator must also be in the mapped region
+      // or a translation fault occurs (the intended Phase 5 isolation behavior).
+      const uint64_t va = f->x[0];
+      if (!el0_tva_valid(va, 1u)) {
+        svc_pl011_puts("[axion] svc#3: TVA denied\r\n");
+        break;
+      }
+      svc_pl011_puts(reinterpret_cast<const char*>(
+          static_cast<uintptr_t>(va)));
+      break;
+    }
+
+    default:
+      // Unexpected exception from lower EL — dump ESR so we can diagnose.
+      svc_pl011_puts("[axion] TRAP: esr=");
+      svc_pl011_puthex64(f->esr_el1);
+      svc_pl011_puts(" elr=");
+      svc_pl011_puthex64(f->elr_el1);
+      svc_pl011_puts("\r\n");
+      // Halt: redirect ERET to EL1 halt loop (prevent infinite fault).
+      f->elr_el1  = g_axion_el1_return_pc;
+      f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
+      break;
+  }
+}
 
 // ── IRQ handler ───────────────────────────────────────────────────────────────
 //
