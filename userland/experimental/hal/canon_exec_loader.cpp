@@ -130,6 +130,26 @@ static uint64_t fnv1a64(const uint8_t* data, uint32_t len) noexcept {
     return h;
 }
 
+// ── Decimal printer (RFC-00C1) ────────────────────────────────────────────────
+// cel_pl011_puts only accepts null-terminated strings; this helper converts a
+// uint32_t to decimal digits and emits them via cel_pl011_puts.
+
+static void cel_pl011_putd(uint32_t n) noexcept {
+    char buf[12];
+    uint32_t i = 11u;
+    buf[i] = '\0';
+    do { buf[--i] = static_cast<char>('0' + (n % 10u)); n /= 10u; } while (n);
+    cel_pl011_puts(buf + i);
+}
+
+// ── T81M manifest constants (RFC-00C1) ───────────────────────────────────────
+
+static constexpr uint8_t  kT81MMagic[4]   = { 'T', '8', '1', 'M' };
+static constexpr uint8_t  kT81MVersion    = 1u;
+static constexpr uint32_t kT81MHdrSize    = 32u;
+static constexpr uint32_t kT81MEntrySize  = 12u;
+static constexpr uint32_t kT81MMaxEntries = (512u - kT81MHdrSize) / kT81MEntrySize;  // 40
+
 // ── Icache flush helper ───────────────────────────────────────────────────────
 // Must be called after writing new code into s_el0_proc_code_page so that
 // the I-cache sees the updated instructions when EL0 executes them.
@@ -346,6 +366,74 @@ extern "C" void canon_sched_load_and_run() noexcept {
     }
 }
 
+// ── Phase 12 (RFC-00C1): T81M manifest verification ──────────────────────────
+//
+// Loads a T81M manifest sector from `manifest_lba`, verifies the magic/version,
+// checks that the stored code_hash equals `expected_hash`, then walks each
+// manifest entry against the observability ring via fs_obs_find().
+//
+// On full match emits:
+//   "[axion] el0: manifest OK (code_hash=verified, seq=N/N matched)"
+// On any mismatch emits a FAIL banner and returns.
+
+static void canon_manifest_verify(uint64_t expected_hash,
+                                   uint64_t manifest_lba) noexcept {
+    if (!canon_store_read_lba(manifest_lba)) {
+        cel_pl011_puts("[axion] canonfs: manifest FAIL (LBA read error)\r\n");
+        return;
+    }
+
+    const uint8_t* sec = canon_store_sector_buf();
+
+    if (sec[0] != kT81MMagic[0] || sec[1] != kT81MMagic[1] ||
+        sec[2] != kT81MMagic[2] || sec[3] != kT81MMagic[3]) {
+        cel_pl011_puts("[axion] canonfs: manifest FAIL (bad T81M magic)\r\n");
+        return;
+    }
+
+    if (sec[4] != kT81MVersion) {
+        cel_pl011_puts("[axion] canonfs: manifest FAIL (unsupported T81M version)\r\n");
+        return;
+    }
+
+    uint64_t stored_hash;
+    __builtin_memcpy(&stored_hash, sec + 8, 8);
+    if (stored_hash != expected_hash) {
+        cel_pl011_puts("[axion] canonfs: manifest FAIL (hash mismatch vs binary)\r\n");
+        return;
+    }
+
+    const uint32_t entry_count = static_cast<uint32_t>(sec[16]);
+    if (entry_count == 0u || entry_count > kT81MMaxEntries) {
+        cel_pl011_puts("[axion] canonfs: manifest FAIL (invalid entry_count)\r\n");
+        return;
+    }
+
+    uint32_t matched = 0u;
+    const uint8_t* ep = sec + kT81MHdrSize;
+    for (uint32_t i = 0u; i < entry_count; ++i, ep += kT81MEntrySize) {
+        uint32_t tid, kind, peer_tid;
+        __builtin_memcpy(&tid,      ep + 0, 4);
+        __builtin_memcpy(&kind,     ep + 4, 4);
+        __builtin_memcpy(&peer_tid, ep + 8, 4);
+        if (fs_obs_find(tid, kind, peer_tid)) ++matched;
+    }
+
+    if (matched == entry_count) {
+        cel_pl011_puts("[axion] el0: manifest OK (code_hash=verified, seq=");
+        cel_pl011_putd(matched);
+        cel_pl011_puts("/");
+        cel_pl011_putd(entry_count);
+        cel_pl011_puts(" matched)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: manifest FAIL (seq mismatch: ");
+        cel_pl011_putd(matched);
+        cel_pl011_puts("/");
+        cel_pl011_putd(entry_count);
+        cel_pl011_puts(" matched)\r\n");
+    }
+}
+
 // ── Phase 11 (RFC-00C0) — T81X v2 identity validation + WaitForDevice waker ──
 //
 // Loads el0_wait_test.bin from LBA 8 as a T81X v2 binary, validates the
@@ -450,6 +538,10 @@ extern "C" void canon_identity_load_and_run() noexcept {
     } else {
         cel_pl011_puts("[axion] el0: device wake FAIL (obs record missing)\r\n");
     }
+
+    // ── Phase 12 (RFC-00C1): verify manifest matches the obs ring ─────────────
+    // manifest_lba = binary_lba + 1 (convention: LBA 8 binary → LBA 9 manifest).
+    canon_manifest_verify(computed_hash, 9u);
 }
 
 // ── Phase 8 IPC symbols (qemu_slice6_el0_svc_bridge.cpp) ─────────────────────

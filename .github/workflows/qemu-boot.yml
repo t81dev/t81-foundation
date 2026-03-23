@@ -416,9 +416,41 @@ jobs:
                     f"code_size={len(code)} bytes, code_hash=0x{code_hash:016x} ({bin_path})")
 
           write_t81x_v2('el0_wait_test.bin', 8)
+
+          # ── Phase 12 (RFC-00C1): T81M manifest at LBA 9 ──────────────────────
+          # Entry: {tid=4, kind=43 (WaitForDevice), peer_tid=0}.
+          # code_hash is computed from el0_wait_test.bin (same hash as LBA 8 header).
+
+          def write_t81m(bin_path, manifest_entries, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              code_hash = fnv1a64(code)
+              entry_count = len(manifest_entries)
+              assert entry_count <= 40, f"too many manifest entries: {entry_count}"
+              hdr  = b'T81M'
+              hdr += struct.pack('B', 1)            # version        [4]
+              hdr += b'\x00\x00\x00'                # reserved0      [5:8]
+              hdr += struct.pack('<Q', code_hash)   # code_hash      [8:16]
+              hdr += struct.pack('B', entry_count)  # entry_count    [16]
+              hdr += bytes(15)                      # reserved1      [17:32]
+              assert len(hdr) == 32
+              body = b''
+              for (tid, kind, peer_tid) in manifest_entries:
+                  body += struct.pack('<III', tid, kind, peer_tid)
+              sector = hdr + body
+              sector += bytes(512 - len(sector))
+              assert len(sector) == 512
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81M manifest written at LBA{lba} (offset {offset}): "
+                    f"code_hash=0x{code_hash:016x}, {entry_count} entries")
+
+          write_t81m('el0_wait_test.bin', [(4, 43, 0)], lba=9)
           PYEOF
 
-          echo "canon store with identity image: $(du -sh canon_store.img | cut -f1)"
+          echo "canon store with identity+manifest images: $(du -sh canon_store.img | cut -f1)"
 
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
@@ -509,6 +541,9 @@ jobs:
           check "[axion] el0: identity OK (hash=verified, tid=4)"
           # Phase 11b (RFC-00C0): WaitForDevice waker roundtrip confirmed via obs ring.
           check "[axion] el0: device wake OK (WaitForDevice tid=4)"
+          # Phase 12 (RFC-00C1): T81M manifest loaded from LBA 9; code_hash matches
+          # binary; obs ring contains all expected manifest entries (1/1).
+          check "[axion] el0: manifest OK (code_hash=verified, seq=1/1 matched)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]
