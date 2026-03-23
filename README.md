@@ -1,6 +1,7 @@
 <p align="center">
   <img src="docs/assets/banner.png" alt="T81 — A Ternary Operating System for AI" width="100%">
-  Bootable preview in QEMU · Governed ternary inference · Bit-exact across platforms
+Bit-exact, policy-enforced ternary inference — built from the kernel up for agents you can actually audit.
+
 </p>
 
 
@@ -35,6 +36,16 @@ It is an operating system where:
 - every computation is deterministic
 - every model execution is governed
 - every result can be verified after the fact
+
+---
+
+In 2026 we have agents that can act on our behalf — but:  
+- No one can prove exactly what weights ran on a given inference  
+- Floating-point drift means the same prompt can give subtly different answers across machines/cloud providers  
+- Policy is usually a post-hoc filter, not enforced before the model even loads  
+- Auditing an agent run is detective work, not a deterministic ledger
+
+T81 changes that at the foundation: ternary weights (like BitNet b1.58 but native), bit-exact identical traces everywhere it's verified, policy gates before any side-effect, and every artifact hash-verified by the kernel.  It's early (guest/QEMU today, bare-metal alpha), but the core determinism + governance is already running in demo.
 
 ---
 
