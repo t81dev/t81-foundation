@@ -1,3 +1,5 @@
+# T81: **A Ternary Operating System for AI.**
+
 <p align="center">
   <img src="docs/assets/banner.png" alt="T81 — A Ternary Operating System for AI" width="100%">
 Bit-exact, policy-enforced ternary inference — built from the kernel up for agents you can actually audit.
@@ -9,9 +11,6 @@ Bit-exact, policy-enforced ternary inference — built from the kernel up for ag
 
 <!-- T81-SPEED-START -->
 <!-- T81-SPEED-END -->
-
-# T81: **A Ternary Operating System for AI.**
-
 
 ![Release](https://img.shields.io/badge/release-v1.9.2--Stable-blue)
 ![Tests](https://img.shields.io/badge/tests-404%2F404_passing-brightgreen)
