@@ -616,7 +616,7 @@ The deterministic surface registry is defined in `docs/governance/DETERMINISM_SU
 
 ## The ternary advantage
 
-While modern binary hardware is highly optimised for general-purpose computing, **balanced ternary** ({−1, 0, +1}) has structural properties that matter specifically in deterministic execution, governed AI inference, and low-complexity neural workloads.
+Ternary isn't nostalgia — it's the practical substrate for the things BitNet b1.58 / 1.58-bit models already prove: extreme efficiency without multiply hardware, plus inherent determinism that floating-point can't match. Here's why it matters beyond theory:
 
 ### 1. O(1) negation — zero carry propagation
 
