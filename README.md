@@ -10,7 +10,8 @@ Bit-exact, policy-enforced ternary inference — built from the kernel up for ag
 <!-- T81-SPEED-START -->
 <!-- T81-SPEED-END -->
 
-# T81 Foundation©
+# T81 Foundation - **A ternary operating system for AI.**
+
 
 ![Release](https://img.shields.io/badge/release-v1.9.2--Stable-blue)
 ![Tests](https://img.shields.io/badge/tests-404%2F404_passing-brightgreen)
@@ -18,8 +19,6 @@ Bit-exact, policy-enforced ternary inference — built from the kernel up for ag
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
-
-**T81 is a ternary operating system for AI.**
 
 ---
 
