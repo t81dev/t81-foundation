@@ -83,7 +83,7 @@ policy   # view active governance rules
 
 ## Current reality
 
-- runs as a guest layer (QEMU, Docker, host OS)
+- runs as a guest layer (QEMU, Docker, or host OS)
 - deterministic surfaces verified on select platforms
 - bare-metal support in progress
 
@@ -93,7 +93,7 @@ This is an early-stage system with strong guarantees in its core layers and acti
 
 ## See it in action
 
-Boot T81 and observe the system state directly:
+Boot T81 and observe the system state directly.
 
 ```sh
 # Install deps (Ubuntu 24.04)
