@@ -81,9 +81,16 @@ sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools cmake ninja-buil
 git clone https://github.com/t81dev/t81-foundation.git && cd t81-foundation
 ./drivers/qemu/scripts/boot_demo.sh
 ```
-
 Watch EFI → Axion kernel → `t81>` prompt.  
-Replay asciinema: `asciinema play drivers/qemu/t81-boot.cast`
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/assets/boot.gif" 
+       alt="T81 QEMU AArch64 boot sequence — live t81> shell demo" 
+       width="95%" style="border:1px solid #ddd; border-radius:8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+  <br><small>Current boot progress: EFI → bare-metal EL1 → policy engine → CanonFS mount → interactive t81> prompt</small>
+</p>
+
+<br><small>Interactive replay: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">t81-boot.cast (asciinema)</a></small>
 
 At the `t81>` prompt try:
 
