@@ -33,6 +33,9 @@
 // Compilation constraints:
 //   --target=aarch64-unknown-elf  -ffreestanding  -nostdlib
 
+    // RFC-00BD: use named KernelCallKind constants; no literal ordinals.
+    .include "kernelcall_abi.inc"
+
     .section .text, "ax"
     .balign 16
     .global ipc_a_entry
@@ -47,20 +50,20 @@ ipc_a_entry:
     stp     xzr, xzr, [sp, #48]
 
     // ── Build SendMessage KernelCallWireRequestBlock at sp+0..sp+15 ──────────
-    // offset [0:4]  magic = 0x4B415152 (KAQR LE)
-    mov     w8, #0x5152
-    movk    w8, #0x4B41, lsl #16
+    // offset [0:4]  magic = KCALL_REQ_MAGIC (kKernelAbiWireRequestMagic)
+    mov     w8, #KCALL_REQ_MAGIC_LO
+    movk    w8, #KCALL_REQ_MAGIC_HI, lsl #16
     str     w8, [sp]
 
-    // offset [4:6]  version = 1
+    // offset [4:6]  version = KCALL_WIRE_VERSION
     // offset [6:8]  bytes   = 16
     // packed 32-bit store: 0x00100001
     mov     w8, #0x0001
     movk    w8, #0x0010, lsl #16
     str     w8, [sp, #4]
 
-    // offset [8:12] kind = 13 (SendMessage)
-    mov     w8, #13
+    // offset [8:12] kind = KCALL_SendMessage
+    mov     w8, #KCALL_SendMessage
     str     w8, [sp, #8]
 
     // offset [12:16] ipc_dst = 3 (target tid = Process B)

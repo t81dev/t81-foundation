@@ -146,8 +146,11 @@ jobs:
       - name: Build and embed T81X process image
         run: |
           # Assemble the EL0 process stub to a raw ELF object.
+          # -I: expose kernelcall_abi.inc for .include directives (RFC-00BD).
           clang-18 --target=aarch64-unknown-elf \
-            -ffreestanding -nostdlib -c \
+            -ffreestanding -nostdlib \
+            -I userland/experimental/hal \
+            -c \
             userland/experimental/hal/el0_process_stub.S \
             -o el0_process_stub.o
 
@@ -235,8 +238,11 @@ jobs:
             ELF="el0_ipc_test_${STUB}.elf"
             BIN="el0_ipc_test_${STUB}.bin"
 
+            # -I: expose kernelcall_abi.inc for .include directives (RFC-00BD).
             clang-18 --target=aarch64-unknown-elf \
-              -ffreestanding -nostdlib -c \
+              -ffreestanding -nostdlib \
+              -I userland/experimental/hal \
+              -c \
               "${SRC}" -o "${OBJ}"
 
             clang-18 --target=aarch64-unknown-elf \
@@ -282,6 +288,10 @@ jobs:
           PYEOF
 
           echo "canon store with IPC images: $(du -sh canon_store.img | cut -f1)"
+
+      # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
+      - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
+        run: python3 scripts/ci/check_kernelcall_abi_freeze.py .
 
       # ── Boot ──────────────────────────────────────────────────────────────
       - name: Boot QEMU and capture serial

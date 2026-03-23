@@ -1,0 +1,75 @@
+# KernelCall ABI Ordinal Manifest
+# RFC-00BD — KernelCall ABI Ordinal Freeze
+# Frozen as of: RFC-00BC acceptance (commit afbc41bf, 2026-03-23)
+#
+# Rules (see RFC-00BD §Stability Rules):
+#   - Existing entries MUST NOT be renumbered or removed.
+#   - New entries are appended after the last unconditional entry.
+#   - Retired entries remain with a "retired" annotation.
+#   - Conditional entries (T81_ENABLE_DPE) reserve their ordinal unconditionally.
+#
+# Format:
+#   NAME=ORDINAL
+#   NAME=ORDINAL conditional:PREPROCESSOR_SYMBOL
+#   NAME=ORDINAL retired:RFC-XXXX
+
+[ordinals]
+Yield=0
+SpawnThreadInCallerGroup=1
+SpawnThreadUnderSupervisor=2
+RegisterThreadEntryDescriptor=3
+RegisterExecutableObject=4
+PublishExecutableObjectFromTva=5
+RegisterExecutableObjectFromTva=6
+QueryExecutableObject=7
+SpawnThreadFromExecutableObject=8
+SpawnThreadFromEntryDescriptor=9
+GetThreadIdentity=10
+QueryThreadExecutionState=11
+ExitThread=12
+SendMessage=13
+ReceiveMessage=14
+ReadFaultInbox=15
+AcknowledgeThreadFault=16
+AcknowledgeSupervisorFaultGroup=17
+QueryProcessGroupMemory=18
+SetAddressSpaceBootCritical=19
+QueryRuntimeStatus=20
+QueryFaultSummary=21
+QuerySupervisorStatus=22
+QuerySupervisorRecoveryStatus=23
+QuerySupervisorServiceStatus=24
+QuerySupervisorServiceInventory=25
+QuerySupervisorCapabilityInventory=26
+QuerySupervisorDelegationSummary=27
+QueryCapabilityTransitionHistory=28
+QueryCapabilities=29
+QueryDelegatedCapabilities=30
+QueryCapabilityRecord=31
+GrantCapability=32
+RevokeCapability=33
+RevokeDelegatedCapabilities=34
+RegisterService=35
+SpawnThreadForService=36
+QueryServiceStatus=37
+SuspendService=38
+ResumeService=39
+MarkServiceUnhealthy=40
+MarkServiceHealthy=41
+BlockOnIpcReceive=42
+WaitForDevice=43
+RequestPageMapping=44
+WaitForPagerHandoff=45
+ResumePageFaultedThread=46
+ClaimDevice=47
+ReleaseDevice=48
+QueryDevice=49
+SetInterruptPolicy=50
+ClearInterruptQuarantine=51
+QueryInterruptPolicy=52
+SubmitEpoch=53 conditional:T81_ENABLE_DPE
+
+[wire]
+request_magic=0x4B415152
+response_magic=0x4B415250
+version=1

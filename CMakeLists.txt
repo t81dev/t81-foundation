@@ -970,11 +970,13 @@ if(T81_ENABLE_TERNARYOS)
               -ffreestanding
               -fno-stack-protector
               -nostdlib
+              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal
               -c
               ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S
               -o ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S)
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/axion_el0_init.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/kernelcall_abi.inc)
     add_custom_target(t81_ternaryos_aarch64_el0_init_obj
       DEPENDS ${T81_TERNARYOS_AARCH64_EL0_INIT_OBJ})
 
@@ -1220,11 +1222,13 @@ if(T81_ENABLE_TERNARYOS)
               -fno-exceptions
               -fno-rtti
               -nostdlib
+              -I${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal
               -c
               ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S
               -o ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S)
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/el0_process_stub.S
+              ${CMAKE_CURRENT_SOURCE_DIR}/userland/experimental/hal/kernelcall_abi.inc)
     add_custom_target(t81_ternaryos_qemu_slice6_proc_stub_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ})
 

@@ -45,6 +45,9 @@
 //   -ffreestanding  -fno-exceptions  -fno-rtti  -nostdlib
 //   --target=aarch64-pc-windows-msvc
 
+    // RFC-00BD: use named KernelCallKind constants; no literal ordinals.
+    .include "kernelcall_abi.inc"
+
     .section .text, "ax"
     .balign 16
     .global axion_el0_entry
@@ -63,21 +66,21 @@ axion_el0_entry:
 
     // ── Build compact KernelCallWireRequestBlock at sp+0..sp+15 ──────────────
     //
-    // offset [0:4]  magic = 0x4B415152 (kKernelAbiWireRequestMagic)
+    // offset [0:4]  magic = KCALL_REQ_MAGIC (kKernelAbiWireRequestMagic)
     //   LE bytes in memory: 0x52, 0x51, 0x41, 0x4B
-    mov     w8, #0x5152
-    movk    w8, #0x4B41, lsl #16
+    mov     w8, #KCALL_REQ_MAGIC_LO
+    movk    w8, #KCALL_REQ_MAGIC_HI, lsl #16
     str     w8, [sp]
 
-    // offset [4:6]  version = 1  (uint16_t LE → 0x01, 0x00)
-    // offset [6:8]  bytes   = 16 (uint16_t LE → 0x10, 0x00)
+    // offset [4:6]  version = KCALL_WIRE_VERSION (uint16_t LE)
+    // offset [6:8]  bytes   = 16                 (uint16_t LE)
     // Pack both into a single 32-bit store: 0x00100001
     mov     w8, #0x0001
     movk    w8, #0x0010, lsl #16
     str     w8, [sp, #4]
 
-    // offset [8:12] kind = 10 (GetThreadIdentity; Yield=0 … GetThreadIdentity=10)
-    mov     w8, #10
+    // offset [8:12] kind = KCALL_GetThreadIdentity
+    mov     w8, #KCALL_GetThreadIdentity
     str     w8, [sp, #8]
 
     // offset [12:16] pad = 0 (reserved field)
