@@ -198,6 +198,7 @@ extern "C" void fs_sched_mark_running(uint32_t tid) noexcept {
 }
 
 extern "C" void fs_obs_reset() noexcept;  // forward decl; defined below
+extern "C" void fs_gov_reset() noexcept;  // forward decl; defined below
 
 extern "C" void fs_sched_reset() noexcept {
     for (int i = 0; i < kMaxSchedThreads; ++i) {
@@ -206,6 +207,7 @@ extern "C" void fs_sched_reset() noexcept {
     s_sched_running_tid   = 0u;
     s_sched_ipc_delivered = false;
     fs_obs_reset();  // RFC-00BF: clear ring at start of each scheduler session
+    fs_gov_reset();  // RFC-00C3: clear governance ring
 }
 
 extern "C" bool fs_sched_ipc_delivered() noexcept {
@@ -226,13 +228,19 @@ extern "C" void fs_sched_wake_device(uint32_t tid) noexcept {
 
 // RFC-00C0: return the saved resume context for the given tid.
 // Used by EL1 to construct a run_proc_entry() call after waking a device thread.
+// RFC-00C3: forward declaration — gov ring defined after obs ring below.
+static void fs_gov_record(uint32_t tid, uint32_t event,
+                           uint32_t obs_seq_at) noexcept;
+
 // RFC-00C2: wake all BlockedDeviceWait threads on a timer tick.
-// Called from axion_irq_handler_aarch64() — async-signal-safe (only touches
-// s_sched[] state, no I/O).
+// Called from axion_irq_handler_aarch64() — async-signal-safe.
+// RFC-00C3: records kGovTimerDeviceWake for each woken thread.
 extern "C" void fs_sched_timer_device_wake() noexcept {
     for (uint32_t i = 0u; i < kMaxSchedThreads; ++i) {
-        if (s_sched[i].state == FsSchedState::BlockedDeviceWait)
+        if (s_sched[i].state == FsSchedState::BlockedDeviceWait) {
             s_sched[i].state = FsSchedState::Runnable;
+            fs_gov_record(s_sched[i].tid, 1u /*kGovTimerDeviceWake*/, 0u);
+        }
     }
 }
 
@@ -336,6 +344,60 @@ extern "C" bool fs_obs_find(uint32_t tid, uint32_t kind,
     return false;
 }
 
+// ── RFC-00C3: Axion governance audit ring ─────────────────────────────────────
+//
+// 16-slot fixed-capacity ring recording async scheduler transitions.
+// Complements the obs ring (SVC-driven events) with IRQ-driven events.
+// obs_seq_at cross-references each gov event against the obs ring timeline.
+//
+// Event constants:
+//   kGovTimerDeviceWake    = 1  — timer ISR: BlockedDeviceWait → Runnable
+//   kGovAsyncContextSwitch = 2  — device_wait_loop: ERET to EL0 thread
+
+static constexpr uint32_t kGovTimerDeviceWake    = 1u;
+static constexpr uint32_t kGovAsyncContextSwitch = 2u;
+static constexpr uint32_t kGovRingCap            = 16u;
+
+struct FsGovRecord {
+    uint32_t seq_id;      // monotonic gov counter (low 32 bits of s_gov_seq)
+    uint32_t tid;         // thread being woken / switched to
+    uint32_t event;       // kGovTimerDeviceWake or kGovAsyncContextSwitch
+    uint32_t obs_seq_at;  // s_obs_seq value at time of event (logical timestamp)
+};
+
+static FsGovRecord s_gov_ring[kGovRingCap];
+static uint64_t    s_gov_seq = 0u;
+
+static void fs_gov_record(uint32_t tid, uint32_t event,
+                           uint32_t /*unused_obs_seq*/) noexcept {
+    // Use current obs ring sequence as logical timestamp.
+    const uint32_t obs_at = static_cast<uint32_t>(s_obs_seq);
+    FsGovRecord& slot = s_gov_ring[s_gov_seq % kGovRingCap];
+    slot.seq_id     = static_cast<uint32_t>(s_gov_seq);
+    slot.tid        = tid;
+    slot.event      = event;
+    slot.obs_seq_at = obs_at;
+    ++s_gov_seq;
+}
+
+extern "C" void fs_gov_reset() noexcept {
+    for (uint32_t i = 0u; i < kGovRingCap; ++i) s_gov_ring[i] = FsGovRecord{};
+    s_gov_seq = 0u;
+}
+
+extern "C" uint64_t fs_gov_count() noexcept { return s_gov_seq; }
+
+extern "C" bool fs_gov_find(uint32_t tid, uint32_t event) noexcept {
+    const uint32_t count = s_gov_seq < kGovRingCap
+                               ? static_cast<uint32_t>(s_gov_seq)
+                               : kGovRingCap;
+    for (uint32_t i = 0u; i < count; ++i) {
+        if (s_gov_ring[i].tid == tid && s_gov_ring[i].event == event)
+            return true;
+    }
+    return false;
+}
+
 // ── RFC-00C2: EL1 device-wait idle loop ──────────────────────────────────────
 //
 // Entered via ERET from the WaitForDevice SVC handler when no Runnable threads
@@ -354,6 +416,8 @@ extern "C" __attribute__((noinline)) void fs_sched_device_wait_loop() noexcept {
             next->state         = FsSchedState::Running;
             s_sched_running_tid = next->tid;
             s_current_el0_tid   = next->tid;
+            // RFC-00C3: record async context switch before ERET.
+            fs_gov_record(next->tid, kGovAsyncContextSwitch, 0u);
             const uint64_t elr = next->resume_elr;
             const uint64_t sp  = next->resume_sp_el0;
             __asm__ volatile(

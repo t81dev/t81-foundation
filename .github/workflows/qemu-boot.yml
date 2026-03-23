@@ -554,6 +554,10 @@ jobs:
           # Phase 13b (RFC-00C2): timer IRQ woke BlockedDeviceWait tid=5 via
           # fs_sched_timer_device_wake() + fs_sched_device_wait_loop wfi idle.
           check "[axion] el0: irq wake OK (WaitForDevice tid=5, timer-driven)"
+          # Phase 14 (RFC-00C3): governance audit ring confirmed both async
+          # events for tid=5 — kGovTimerDeviceWake + kGovAsyncContextSwitch.
+          # Closes OQ-5: Axion audit trail now covers IRQ-driven context switches.
+          check "[axion] el0: async audit OK (AsyncWake tid=5, irq-driven)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

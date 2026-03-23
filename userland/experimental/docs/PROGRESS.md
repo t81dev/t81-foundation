@@ -405,7 +405,7 @@ Status: all deliverables implemented and passing; 193 assertions green.
 - `Scheduler::tick()` returns `false` when only one thread exists (same-thread re-schedule detected); returns `true` only on a genuine context switch.
 - Round-robin is deterministic: `rr_index_` advances through `slots_` in insertion order; 81-slot cap mirrors Hanoi scheduler.
 - `CanonRef` handles (not raw pointers) cross IPC boundaries, preserving CanonFS audit trail invariants.
-- OQ-5 (Axion determinism under pre-emption) is still open — governance audit trail not yet extended for async interleaving.
+- OQ-5 (Axion determinism under pre-emption) — **closed by RFC-00C3**: governance audit ring (`FsGovRecord`, 16 slots) records every IRQ-driven wake (`kGovTimerDeviceWake`) and every async ERET (`kGovAsyncContextSwitch`); `obs_seq_at` cross-references gov events against the KernelCall obs ring timeline; Phase 14 CI gate validates completeness.
 - RFC-00B3 now defines the active integration path: the first kernel-owned runtime entry exists, and the kernel now consumes checked MMU translation through a kernel-facing fault/reporting path instead of leaving the runtime bootstrap as a thin handoff.
 - The first persistent kernel runtime state object now exists: allocator, page table, scheduler, IPC bus, and fault log are now owned by kernel runtime state seeded from `BootContext`.
 - Active device arbitration for the first supported VirtualBox storage/display/network profile is now attached to that same owned boundary.
@@ -539,7 +539,7 @@ ctest --test-dir build -R ternaryos -V
 | OQ-2 | First supported VirtualBox device profile is intentionally narrow (VBox EFI + AHCI + E1000 + VMSVGA + HPET/IOAPIC); implementation is now scaffolded, but host/target architecture mismatch still blocks acceptance-lane local boot proof | Phase 1 promotion |
 | OQ-3 | CI target now leans toward QEMU for local ARM automation, with VirtualBox reserved for acceptance/demo validation and host-specific diagnostics | Phase 1 promotion |
 | OQ-4 | TISC interrupt semantics are now architecturally narrowed by RFC-00B5: no trap-return opcode is required in the current Axion path, but later priority, nesting, and audit-surface choices remain open | Phase 4 |
-| OQ-5 | Axion determinism under pre-emption — governance model must be extended for async context switches | Phase 3 |
+| ~~OQ-5~~ | ~~Axion determinism under pre-emption — governance model must be extended for async context switches~~ | **Closed — RFC-00C3** |
 | OQ-7 | Real AHCI / E1000 / VMSVGA-facing adapters are not implemented; Phase 4 currently satisfies the gate only in hosted simulation despite the new guest-artifact packaging target | Phase 4 promotion |
 | OQ-8 | CanonStore now scales past the root header via tail-resident overflow metadata blocks, but compaction/rewrite strategy for long-lived stores is still deferred | Phase 4 scaling |
 | OQ-9 | VirtualBox should remain a tactical promotion target, not a permanent HAL dependency; portability boundaries must stay explicit | Cross-phase portability |

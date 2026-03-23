@@ -108,6 +108,11 @@ extern "C" bool fs_sched_get_resume(uint32_t tid,
 extern "C" uint64_t g_axion_el1_device_wait_pc;
 extern "C" void     fs_sched_device_wait_loop() noexcept;
 
+// Phase 14 (RFC-00C3) governance audit ring
+// (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" bool     fs_gov_find(uint32_t tid, uint32_t event) noexcept;
+extern "C" uint64_t fs_gov_count() noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -639,6 +644,17 @@ extern "C" void canon_irq_wake_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: irq wake OK (WaitForDevice tid=5, timer-driven)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: irq wake FAIL (obs record missing)\r\n");
+    }
+
+    // Phase 14 (RFC-00C3): verify governance ring captured both async events.
+    // kGovTimerDeviceWake=1: timer ISR transitioned tid=5 BlockedDeviceWait→Runnable.
+    // kGovAsyncContextSwitch=2: device_wait_loop EReted to tid=5 at EL0.
+    const bool saw_timer_wake  = fs_gov_find(5u, 1u);
+    const bool saw_async_eret  = fs_gov_find(5u, 2u);
+    if (saw_timer_wake && saw_async_eret) {
+        cel_pl011_puts("[axion] el0: async audit OK (AsyncWake tid=5, irq-driven)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: async audit FAIL (gov record missing)\r\n");
     }
 }
 
