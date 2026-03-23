@@ -289,6 +289,69 @@ jobs:
 
           echo "canon store with IPC images: $(du -sh canon_store.img | cut -f1)"
 
+      # ── Phase 9: cooperative scheduler test images at LBA 6 (A) and LBA 7 (B)
+      # el0_sched_test_a.S = Process A (sender, code-page offset 256).
+      # el0_sched_test_b.S = Process B (blocker, code-page offset 0).
+      # Both use .include "kernelcall_abi.inc" (RFC-00BD R4 mandate).
+      - name: Build and embed Phase 9 scheduler test images
+        run: |
+          for STUB in a b; do
+            SRC="userland/experimental/hal/el0_sched_test_${STUB}.S"
+            OBJ="el0_sched_test_${STUB}.o"
+            ELF="el0_sched_test_${STUB}.elf"
+            BIN="el0_sched_test_${STUB}.bin"
+
+            clang-18 --target=aarch64-unknown-elf \
+              -ffreestanding -nostdlib \
+              -I userland/experimental/hal \
+              -c \
+              "${SRC}" -o "${OBJ}"
+
+            clang-18 --target=aarch64-unknown-elf \
+              -ffreestanding -nostdlib \
+              -Wl,-Ttext=0x0 -Wl,--omagic \
+              "${OBJ}" -o "${ELF}"
+
+            llvm-objcopy-18 -O binary \
+              --only-section=.text \
+              "${ELF}" "${BIN}"
+
+            CODE_SIZE=$(wc -c < "${BIN}")
+            echo "${BIN}: ${CODE_SIZE} bytes"
+          done
+
+          # Wrap each binary in a T81X header and write to canon_store.img.
+          # Process A → LBA 6, Process B → LBA 7.
+          python3 - <<'PYEOF'
+          import struct
+
+          def write_t81x(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 1)
+              hdr += b'\x00\x00'
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<I', len(code))
+              hdr += bytes(64 - len(hdr))
+              assert len(hdr) == 64
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              assert len(sector) == 512
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X sector written at LBA{lba} (offset {offset}): "
+                    f"magic=T81X version=1 code_size={len(code)} bytes ({bin_path})")
+
+          write_t81x('el0_sched_test_a.bin', 6)
+          write_t81x('el0_sched_test_b.bin', 7)
+          PYEOF
+
+          echo "canon store with sched images: $(du -sh canon_store.img | cut -f1)"
+
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
         run: python3 scripts/ci/check_kernelcall_abi_freeze.py .
@@ -367,6 +430,11 @@ jobs:
           # tid=2) which calls SendMessage(tid=3), then Process B (LBA 5, tid=3)
           # which calls ReceiveMessage; EL1 confirms delivery and emits this gate.
           check "[axion] el0: IPC roundtrip OK (A->B, tid=2,3)"
+          # Phase 9 (RFC-00BE): canon_sched_load_and_run() starts B (tid=3) which
+          # calls BlockOnIpcReceive; scheduler ERets to A (tid=2) which calls
+          # SendMessage(ipc_dst=3) waking B, then ExitThread; scheduler resumes B
+          # which calls ExitThread; EL1 confirms delivery and emits this gate.
+          check "[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

@@ -239,6 +239,11 @@ extern "C" int el0_tva_valid(uint64_t va, uint64_t size) noexcept;
 // dispatches based on kind, writes the wire response block back.
 extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept;
 
+// Phase 9 (RFC-00BE): cooperative scheduler ExitThread hook.
+// Marks current running thread Exited and context-switches to the next
+// Runnable thread (or returns to EL1 if none remain).
+extern "C" void fs_sched_exit_thread(void* frame_ptr) noexcept;
+
 // ── PL011 helpers for the SVC dispatcher ─────────────────────────────────────
 // Mirrors the pl011 helpers in qemu_slice6_cpp_bridge.cpp; duplicated here so
 // this translation unit remains self-contained (no cross-TU static calls).
@@ -307,11 +312,11 @@ extern "C" void axion_kernel_handle_svc_trap_aarch64(void* frame_ptr) noexcept {
       break;
 
     case 2u:  // ExitThread(x0 = exit_code)
-      // Redirect ERET to the saved EL1 return address.  Semantically the
-      // same as Phase 4 ExitToEL1 in the freestanding bridge; named correctly
-      // for Phase 7+ thread lifecycle integration.
-      f->elr_el1  = g_axion_el1_return_pc;
-      f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
+      // Phase 9 (RFC-00BE): delegate to the cooperative scheduler hook.
+      // When the scheduler is active it context-switches to the next Runnable
+      // thread; when inactive it redirects ERET to g_axion_el1_return_pc
+      // (same as the Phase 6–8 behaviour).
+      fs_sched_exit_thread(f);
       break;
 
     case 3u: {  // WriteSerial(x0 = const char* str_tva) — debug-only

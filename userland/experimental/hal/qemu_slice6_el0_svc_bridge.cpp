@@ -72,14 +72,18 @@ static constexpr uint32_t kRspMagic              = 0x4B415250u;  // KARP
 static constexpr uint32_t kStatusOk              = 0u;
 static constexpr uint32_t kStatusInvalidRequest  = 1u;
 
-// KernelCallKind numeric values (Phase 6–8 subset, from kernel_abi.hpp):
-//   GetThreadIdentity = 10 (Yield=0 … SpawnThreadFromEntryDescriptor=9)
-//   ExitThread        = 12
-//   SendMessage       = 13  (Phase 8 IPC)
-//   ReceiveMessage    = 14  (Phase 8 IPC)
-static constexpr uint32_t kKindGetThreadIdentity = 10u;
-static constexpr uint32_t kKindSendMessage        = 13u;
-static constexpr uint32_t kKindReceiveMessage     = 14u;
+// KernelCallKind numeric values (Phase 6–9 subset, from kernel_abi.hpp):
+//   GetThreadIdentity   = 10
+//   ExitThread          = 12
+//   SendMessage         = 13  (Phase 8 IPC; Phase 9 waker)
+//   ReceiveMessage      = 14  (Phase 8 IPC)
+//   BlockOnIpcReceive   = 42  (Phase 9 cooperative scheduler park, RFC-00BE)
+//   WaitForDevice       = 43  (Phase 9 cooperative scheduler park, RFC-00BE)
+static constexpr uint32_t kKindGetThreadIdentity  = 10u;
+static constexpr uint32_t kKindSendMessage         = 13u;
+static constexpr uint32_t kKindReceiveMessage      = 14u;
+static constexpr uint32_t kKindBlockOnIpcReceive   = 42u;
+static constexpr uint32_t kKindWaitForDevice       = 43u;
 
 // Minimum response size covering all fields through caller_tid at [44:48].
 static constexpr uint64_t kMinRspBytes = 48u;
@@ -90,15 +94,145 @@ static constexpr uint64_t kMinReqBytes = 12u;
 // Phase 5 TVA validator — defined in qemu_slice6_el0_mmu.cpp.
 extern "C" int el0_tva_valid(uint64_t va, uint64_t size) noexcept;
 
+// EL1 return PC — written by run_proc_entry() in canon_exec_loader.cpp before
+// the first ERET; ExitThread uses it when no Runnable threads remain.
+extern "C" uint64_t g_axion_el1_return_pc;
+
 // ── Per-thread identity tracker (Phase 7) ────────────────────────────────────
 //
-// el0_svc_set_current_tid() is called by canon_exec_load_and_run() /
-// canon_ipc_load_and_run() before each ERET to EL0 so that GetThreadIdentity
-// returns the correct tid (1=init, 2=process A, 3=process B).
+// Declared here (before the scheduler block) because both el0_svc_set_current_tid
+// and fs_sched_exit_thread write to it.
 static uint32_t s_current_el0_tid = 1u;
 
 extern "C" void el0_svc_set_current_tid(uint32_t tid) noexcept {
     s_current_el0_tid = tid;
+}
+
+// ── RFC-00BE cooperative scheduler ───────────────────────────────────────────
+//
+// Fixed-capacity thread table.  All state is module-private except the exported
+// APIs used by canon_exec_loader.cpp and qemu_slice6_bridge_irq.cpp.
+
+enum class FsSchedState : uint8_t {
+    Unused            = 0,
+    Runnable          = 1,
+    Running           = 2,
+    BlockedIpcReceive = 3,
+    BlockedDeviceWait = 4,
+    Exited            = 5,
+};
+
+struct FsSchedThread {
+    uint32_t     tid;             // 0 = slot unused
+    FsSchedState state;
+    uint64_t     resume_elr;      // ELR_EL1: entry PA or resume PC
+    uint64_t     resume_sp_el0;   // SP_EL0 at registration or block time
+    uint64_t     resume_spsr;     // SPSR_EL1 (0x3C0 for EL0t + DAIF masked)
+    uint64_t     ipc_rsp_tva;     // EL0 VA of response buffer (saved at block)
+    uint64_t     ipc_rsp_size;    // response buffer size in bytes
+};
+
+static constexpr int kMaxSchedThreads = 8;
+static FsSchedThread s_sched[kMaxSchedThreads];
+static uint32_t      s_sched_running_tid  = 0u;
+static bool          s_sched_ipc_delivered = false;
+
+// ── Scheduler helper functions ────────────────────────────────────────────────
+
+static FsSchedThread* fs_find_running() noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Running) return &s_sched[i];
+    }
+    return nullptr;
+}
+
+static FsSchedThread* fs_find_next_runnable() noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Runnable) return &s_sched[i];
+    }
+    return nullptr;
+}
+
+static FsSchedThread* fs_find_blocked_ipc(uint32_t tid) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid &&
+            s_sched[i].state == FsSchedState::BlockedIpcReceive)
+            return &s_sched[i];
+    }
+    return nullptr;
+}
+
+// ── Scheduler public API ──────────────────────────────────────────────────────
+
+extern "C" void fs_sched_register(uint32_t tid, uint64_t elr,
+                                   uint64_t sp_el0, uint64_t spsr) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Unused) {
+            s_sched[i].tid           = tid;
+            s_sched[i].state         = FsSchedState::Runnable;
+            s_sched[i].resume_elr    = elr;
+            s_sched[i].resume_sp_el0 = sp_el0;
+            s_sched[i].resume_spsr   = spsr;
+            s_sched[i].ipc_rsp_tva   = 0u;
+            s_sched[i].ipc_rsp_size  = 0u;
+            return;
+        }
+    }
+}
+
+extern "C" void fs_sched_mark_running(uint32_t tid) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid &&
+            s_sched[i].state == FsSchedState::Runnable) {
+            s_sched[i].state  = FsSchedState::Running;
+            s_sched_running_tid = tid;
+            return;
+        }
+    }
+}
+
+extern "C" void fs_sched_reset() noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        s_sched[i] = FsSchedThread{};
+    }
+    s_sched_running_tid   = 0u;
+    s_sched_ipc_delivered = false;
+}
+
+extern "C" bool fs_sched_ipc_delivered() noexcept {
+    return s_sched_ipc_delivered;
+}
+
+// Called from ExitThread (SVC #2) handler in qemu_slice6_bridge_irq.cpp.
+// Marks the current running thread as Exited and either:
+//   • redirects the trap frame to the next Runnable thread (context switch), or
+//   • redirects to g_axion_el1_return_pc to return to EL1.
+// When the scheduler is not active (s_sched_running_tid == 0) this function
+// behaves identically to the Phase 6–8 ExitThread handler.
+extern "C" void fs_sched_exit_thread(void* frame_ptr) noexcept {
+    auto* f = static_cast<FsBridgeTrapFrame*>(frame_ptr);
+
+    // Mark current running thread Exited (if any).
+    if (s_sched_running_tid != 0u) {
+        FsSchedThread* cur = fs_find_running();
+        if (cur) cur->state = FsSchedState::Exited;
+        s_sched_running_tid = 0u;
+    }
+
+    // Find next Runnable thread.
+    FsSchedThread* next = fs_find_next_runnable();
+    if (next) {
+        next->state           = FsSchedState::Running;
+        s_sched_running_tid   = next->tid;
+        s_current_el0_tid     = next->tid;
+        f->elr_el1            = next->resume_elr;
+        f->sp_el0             = next->resume_sp_el0;
+        f->spsr_el1           = next->resume_spsr;
+    } else {
+        // All threads done (or scheduler not active) — return to EL1.
+        f->elr_el1  = g_axion_el1_return_pc;
+        f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
+    }
 }
 
 // ── Phase 8 IPC mailbox ───────────────────────────────────────────────────────
@@ -210,10 +344,25 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 return;
 
             case kKindSendMessage: {
-                // Phase 8 IPC — store sender identity in the single-slot
-                // mailbox.  req[12:16] carries ipc_dst (target tid); we only
-                // need it for validation; the sender_tid is s_current_el0_tid.
-                // Status Ok is already written in the common header above.
+                // Phase 8 / Phase 9 IPC — store sender identity.
+                // req[12:16] carries ipc_dst (target tid, uint32).
+                uint32_t ipc_dst = 0u;
+                if (req_size >= 16u) __builtin_memcpy(&ipc_dst, req + 12, 4);
+
+                // Phase 9 (RFC-00BE): if a scheduler thread is blocking on
+                // IpcReceive for this dst tid, deliver directly to its saved
+                // response buffer (write sender_tid at offset 36).
+                FsSchedThread* target = fs_find_blocked_ipc(ipc_dst);
+                if (target && target->ipc_rsp_tva != 0u &&
+                    target->ipc_rsp_size >= 40u) {
+                    auto* trsp = reinterpret_cast<uint8_t*>(
+                        static_cast<uintptr_t>(target->ipc_rsp_tva));
+                    write_u32(trsp, 36, s_current_el0_tid);
+                    target->state         = FsSchedState::Runnable;
+                    s_sched_ipc_delivered = true;
+                }
+
+                // Phase 8 legacy mailbox (always updated for backward compat).
                 s_ipc_mailbox.sender_tid = s_current_el0_tid;
                 s_ipc_mailbox.ready      = true;
                 s_ipc_mailbox.delivered  = false;
@@ -233,8 +382,67 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 return;
             }
 
+            case kKindBlockOnIpcReceive: {
+                // Phase 9 (RFC-00BE): park the calling thread and switch to
+                // the next Runnable thread.  The common header (status=Ok) was
+                // already written above; the waker will fill spawned_tid[36:40]
+                // when it delivers.
+                FsSchedThread* cur = fs_find_running();
+                if (!cur) { write_u32(rsp, 8, kStatusInvalidRequest); return; }
+
+                cur->resume_elr    = f->elr_el1;   // PC after svc #1
+                cur->resume_sp_el0 = f->sp_el0;
+                cur->resume_spsr   = f->spsr_el1;
+                cur->ipc_rsp_tva   = rsp_tva;
+                cur->ipc_rsp_size  = rsp_size;
+                cur->state         = FsSchedState::BlockedIpcReceive;
+
+                FsSchedThread* next = fs_find_next_runnable();
+                if (next) {
+                    next->state         = FsSchedState::Running;
+                    s_sched_running_tid = next->tid;
+                    s_current_el0_tid   = next->tid;
+                    f->elr_el1  = next->resume_elr;
+                    f->sp_el0   = next->resume_sp_el0;
+                    f->spsr_el1 = next->resume_spsr;
+                } else {
+                    s_sched_running_tid = 0u;
+                    f->elr_el1  = g_axion_el1_return_pc;
+                    f->spsr_el1 = 0x5u;  // EL1h
+                }
+                return;
+            }
+
+            case kKindWaitForDevice: {
+                // Phase 9 (RFC-00BE): park the calling thread on a device
+                // event.  No waker is defined in Phase 9; the thread stays
+                // BlockedDeviceWait until a future RFC-00C0 device interrupt.
+                FsSchedThread* cur = fs_find_running();
+                if (!cur) { write_u32(rsp, 8, kStatusInvalidRequest); return; }
+
+                cur->resume_elr    = f->elr_el1;
+                cur->resume_sp_el0 = f->sp_el0;
+                cur->resume_spsr   = f->spsr_el1;
+                cur->state         = FsSchedState::BlockedDeviceWait;
+
+                FsSchedThread* next = fs_find_next_runnable();
+                if (next) {
+                    next->state         = FsSchedState::Running;
+                    s_sched_running_tid = next->tid;
+                    s_current_el0_tid   = next->tid;
+                    f->elr_el1  = next->resume_elr;
+                    f->sp_el0   = next->resume_sp_el0;
+                    f->spsr_el1 = next->resume_spsr;
+                } else {
+                    s_sched_running_tid = 0u;
+                    f->elr_el1  = g_axion_el1_return_pc;
+                    f->spsr_el1 = 0x5u;
+                }
+                return;
+            }
+
             default:
-                // Unsupported kind in the Phase 6–8 freestanding subset.
+                // Unsupported kind in the Phase 6–9 freestanding subset.
                 // Write an InvalidRequest status and return — no EL1 state is
                 // modified.
                 write_u32(rsp, 8, kStatusInvalidRequest);

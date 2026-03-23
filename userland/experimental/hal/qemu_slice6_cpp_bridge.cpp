@@ -418,6 +418,8 @@ extern "C" uint64_t el0_mmu_proc_stack_top() noexcept;
 extern "C" void canon_exec_load_and_run() noexcept;
 // Phase 8: EL0 IPC roundtrip (canon_exec_loader.cpp).
 extern "C" void canon_ipc_load_and_run() noexcept;
+// Phase 9 (RFC-00BE): cooperative scheduler roundtrip (canon_exec_loader.cpp).
+extern "C" void canon_sched_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -691,6 +693,14 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   // CI gate: "[axion] el0: IPC roundtrip OK (A->B, tid=2,3)"
   if (s_has_blk) {
     canon_ipc_load_and_run();
+  }
+
+  // Phase 9 (RFC-00BE): cooperative scheduler roundtrip — Process B (LBA 7,
+  // tid=3) blocks on IpcReceive; Process A (LBA 6, tid=2) sends and exits;
+  // scheduler resumes B; B exits.
+  // CI gate: "[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)"
+  if (s_has_blk) {
+    canon_sched_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");

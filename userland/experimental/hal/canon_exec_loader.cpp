@@ -82,6 +82,16 @@ extern "C" uint64_t el0_mmu_proc_stack_top() noexcept;
 // Phase 7 tid tracker — set before ERET so GetThreadIdentity returns tid=2.
 extern "C" void el0_svc_set_current_tid(uint32_t tid) noexcept;
 
+// Phase 8 IPC mailbox reset (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" void canon_ipc_reset() noexcept;
+
+// Phase 9 (RFC-00BE) scheduler API (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" void fs_sched_register(uint32_t tid, uint64_t elr,
+                                   uint64_t sp_el0, uint64_t spsr) noexcept;
+extern "C" void fs_sched_mark_running(uint32_t tid) noexcept;
+extern "C" void fs_sched_reset()         noexcept;
+extern "C" bool fs_sched_ipc_delivered() noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -206,10 +216,103 @@ extern "C" void canon_exec_load_and_run() noexcept {
     el0_svc_set_current_tid(1u);
 }
 
+// ── Phase 9 scheduler helpers ─────────────────────────────────────────────────
+//
+// Load a T81X binary from the given LBA into the proc code page at byte offset
+// `page_offset` and register the thread in the freestanding scheduler.
+// Does NOT flush the I-cache (caller flushes once after all loads).
+// Does NOT ERET (caller schedules the initial ERET separately).
+
+static bool load_sched_process_at(uint64_t lba, uint32_t tid,
+                                   uint32_t page_offset, uint64_t sp_top) noexcept {
+    if (!canon_store_read_lba(lba)) {
+        cel_pl011_puts("[axion] canonfs: sched load FAIL (LBA read error)\r\n");
+        return false;
+    }
+
+    const uint8_t* sec = canon_store_sector_buf();
+
+    if (sec[0] != kT81XMagic[0] || sec[1] != kT81XMagic[1] ||
+        sec[2] != kT81XMagic[2] || sec[3] != kT81XMagic[3]) {
+        cel_pl011_puts("[axion] canonfs: sched load FAIL (bad T81X magic)\r\n");
+        return false;
+    }
+
+    if (sec[4] != kT81XVersion) {
+        cel_pl011_puts("[axion] canonfs: sched load FAIL (unsupported T81X version)\r\n");
+        return false;
+    }
+
+    uint32_t entry_offset, code_size;
+    __builtin_memcpy(&entry_offset, sec +  7, 4);
+    __builtin_memcpy(&code_size,    sec + 11, 4);
+
+    if (code_size == 0u || code_size > kT81XMaxCodeSize) {
+        cel_pl011_puts("[axion] canonfs: sched load FAIL (T81X code_size out of range)\r\n");
+        return false;
+    }
+    if (entry_offset >= code_size) {
+        cel_pl011_puts("[axion] canonfs: sched load FAIL (T81X entry_offset >= code_size)\r\n");
+        return false;
+    }
+
+    uint8_t* dest = el0_mmu_proc_code_page() + page_offset;
+    __builtin_memcpy(dest, sec + kT81XHdrSize, code_size);
+    __builtin_memset(dest + code_size, 0,
+                     static_cast<__SIZE_TYPE__>(256u - code_size));  // zero up to next slot
+
+    const uint64_t entry_pa =
+        reinterpret_cast<uint64_t>(dest) + entry_offset;
+    fs_sched_register(tid, entry_pa, sp_top, 0x3C0u);
+    return true;
+}
+
+// ── Public entry point (Phase 9) ──────────────────────────────────────────────
+
+/// Run the Phase 9 cooperative scheduler roundtrip (RFC-00BE):
+///   Process B (LBA 7, tid=3) blocks on IpcReceive first;
+///   Process A (LBA 6, tid=2) sends a message and exits;
+///   the scheduler resumes B, which exits; EL1 confirms delivery.
+///
+/// CI gate: "[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)"
+extern "C" void canon_sched_load_and_run() noexcept {
+    fs_sched_reset();
+    canon_ipc_reset();
+
+    uint64_t stack_top = el0_mmu_proc_stack_top();
+
+    // Load Process B at code page offset 0, stack = stack_top (tid=3, blocker).
+    if (!load_sched_process_at(7u, 3u, 0u, stack_top)) return;
+
+    // Load Process A at code page offset 256, stack offset −256 (tid=2, sender).
+    if (!load_sched_process_at(6u, 2u, 256u, stack_top - 256u)) return;
+
+    // Flush I-cache once for both loaded binaries.
+    flush_icache_for_new_code();
+
+    // Mark B as the initial Running thread.
+    fs_sched_mark_running(3u);
+    el0_svc_set_current_tid(3u);
+
+    // ERET to B's entry.  All context switches happen inside SVC handlers;
+    // control returns here only when the last thread calls ExitThread with no
+    // remaining Runnable threads.
+    const uint64_t proc_code_pa =
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page());
+    run_proc_entry(proc_code_pa, stack_top);
+
+    el0_svc_set_current_tid(1u);
+
+    if (fs_sched_ipc_delivered()) {
+        cel_pl011_puts("[axion] el0: sched roundtrip OK (B blocked, A->B, tid=3<-2)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: sched roundtrip FAIL (IPC not delivered)\r\n");
+    }
+}
+
 // ── Phase 8 IPC symbols (qemu_slice6_el0_svc_bridge.cpp) ─────────────────────
 
 extern "C" bool canon_ipc_delivered() noexcept;
-extern "C" void canon_ipc_reset()     noexcept;
 
 // ── Phase 8 IPC helpers ───────────────────────────────────────────────────────
 //
