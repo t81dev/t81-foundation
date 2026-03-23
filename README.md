@@ -64,6 +64,8 @@ If something cannot be verified, it does not execute.
 
 Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matrix multiplication with addition — no multiply unit required. Any AI expressible in ternary weights runs here — verifiable, reproducible, and under explicit policy control.
 
+--- 
+
 ### Install
 
 ```sh
