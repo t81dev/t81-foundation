@@ -185,7 +185,7 @@ Binary operating systems give AI agents a process slot and a filesystem. That's 
 
 When an AI agent takes an action today, there is typically no mechanism to verify *after the fact* what it computed, which policy it applied, or whether the result was altered. T81 fixes this at the instruction level.
 
-The **Axion kernel** intercepts `AgentInvoke`, FFI calls, and every inference opcode in the TISC ISA *before any side effect occurs*. Policy is written in the Axion Policy Language (APL) and is fail-closed — a policy parse failure halts the operation. Every intercepted event is written to a **CanonFS**-anchored audit trail that can be replayed deterministically.
+The **Axion kernel** intercepts `AgentInvoke`, FFI calls, and every inference opcode in the Ternary Instruction Set Computing (TISC) ISA *before any side effect occurs*. Policy is written in the Axion Policy Language (APL) and is fail-closed — a policy parse failure halts the operation. Every intercepted event is written to a **CanonFS**-anchored audit trail that can be replayed deterministically.
 
 ```apl
 # secure_model.apl — allow inference only for verified model hashes
