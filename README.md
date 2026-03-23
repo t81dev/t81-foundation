@@ -52,7 +52,6 @@ Think of T81 as:
 - a runtime that produces identical results everywhere  
 - a system where execution can be audited deterministically
 
-
 If something cannot be reproduced or verified, it should not run.
 
 ## Quick start — Try it now
@@ -81,7 +80,7 @@ sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools cmake ninja-buil
 git clone https://github.com/t81dev/t81-foundation.git && cd t81-foundation
 ./drivers/qemu/scripts/boot_demo.sh
 ```
-Watch EFI → Axion kernel → `t81>` prompt.  
+Watch: EFI → Axion kernel → `t81>` prompt.  
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/assets/boot.gif" 
