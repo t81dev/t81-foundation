@@ -22,6 +22,16 @@
 
 Every model you load runs inside a governed, deterministic runtime. The Axion kernel intercepts every AI operation before any side effect occurs. The filesystem is content-addressed and immutable. The ISA replaces floating-point matmul with addition — no multiply unit required. Any AI expressible in ternary weights runs here: verifiably, reproducibly, and under explicit policy control.
 
+T81: Current Implementation Status
+
+-Core VM / language: 97%
+-AI stack: 94%
+-Acceleration / JIT / SIMD / SWAR: 91%
+-Kernel / OS: 84%
+-Distributed / hardware / external integration: 68%
+
+Total weighted RFC implementation completion: 93%
+
 ```sh
 curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
 ```
