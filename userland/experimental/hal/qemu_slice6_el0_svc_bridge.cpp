@@ -128,6 +128,9 @@ enum class FsSchedState : uint8_t {
     Exited            = 5,
 };
 
+// RFC-00C6: sentinel meaning "use shared L3 (no per-thread isolation)".
+static constexpr uint32_t kNoThreadL3 = ~0u;
+
 struct FsSchedThread {
     uint32_t     tid;             // 0 = slot unused
     FsSchedState state;
@@ -137,7 +140,12 @@ struct FsSchedThread {
     uint64_t     ipc_rsp_tva;     // EL0 VA of response buffer (saved at block)
     uint64_t     ipc_rsp_size;    // response buffer size in bytes
     uint32_t     device_id;       // RFC-00C4: INTID to match on wake; 0 = any
+    uint32_t     l3_slot;         // RFC-00C6: per-thread L3 slot; kNoThreadL3 = shared
 };
+
+// RFC-00C6: per-thread L3 MMU API (qemu_slice6_el0_mmu.cpp).
+extern "C" void el0_mmu_install_thread_l3(uint32_t slot) noexcept;
+extern "C" void el0_mmu_install_shared_l3() noexcept;
 
 static constexpr int kMaxSchedThreads = 8;
 static FsSchedThread s_sched[kMaxSchedThreads];
@@ -203,12 +211,24 @@ extern "C" void fs_gov_reset() noexcept;  // forward decl; defined below
 
 extern "C" void fs_sched_reset() noexcept {
     for (int i = 0; i < kMaxSchedThreads; ++i) {
-        s_sched[i] = FsSchedThread{};
+        s_sched[i]          = FsSchedThread{};
+        s_sched[i].l3_slot  = kNoThreadL3;  // RFC-00C6: default shared L3
     }
     s_sched_running_tid   = 0u;
     s_sched_ipc_delivered = false;
     fs_obs_reset();  // RFC-00BF: clear ring at start of each scheduler session
     fs_gov_reset();  // RFC-00C3: clear governance ring
+}
+
+// RFC-00C6: assign a per-thread L3 slot to a registered thread.
+// Call after fs_sched_register() and before the first run_proc_entry().
+extern "C" void fs_sched_set_thread_l3(uint32_t tid, uint32_t l3_slot) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid) {
+            s_sched[i].l3_slot = l3_slot;
+            return;
+        }
+    }
 }
 
 extern "C" bool fs_sched_ipc_delivered() noexcept {
@@ -286,11 +306,15 @@ extern "C" void fs_sched_exit_thread(void* frame_ptr) noexcept {
         next->state           = FsSchedState::Running;
         s_sched_running_tid   = next->tid;
         s_current_el0_tid     = next->tid;
+        // RFC-00C6: install next thread's private L3 before ERET.
+        if (next->l3_slot != kNoThreadL3)
+            el0_mmu_install_thread_l3(next->l3_slot);
         f->elr_el1            = next->resume_elr;
         f->sp_el0             = next->resume_sp_el0;
         f->spsr_el1           = next->resume_spsr;
     } else {
-        // All threads done (or scheduler not active) — return to EL1.
+        // All threads done — restore shared L3 and return to EL1.
+        el0_mmu_install_shared_l3();  // RFC-00C6
         f->elr_el1  = g_axion_el1_return_pc;
         f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
     }
@@ -443,6 +467,9 @@ extern "C" __attribute__((noinline)) void fs_sched_device_wait_loop() noexcept {
             s_current_el0_tid   = next->tid;
             // RFC-00C3: record async context switch before ERET.
             fs_gov_record(next->tid, kGovAsyncContextSwitch, 0u);
+            // RFC-00C6: install per-thread L3 before ERET (no-op if kNoThreadL3).
+            if (next->l3_slot != kNoThreadL3)
+                el0_mmu_install_thread_l3(next->l3_slot);
             const uint64_t elr = next->resume_elr;
             const uint64_t sp  = next->resume_sp_el0;
             __asm__ volatile(
@@ -669,6 +696,9 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                     next->state         = FsSchedState::Running;
                     s_sched_running_tid = next->tid;
                     s_current_el0_tid   = next->tid;
+                    // RFC-00C6: install next thread's private L3 before ERET.
+                    if (next->l3_slot != kNoThreadL3)
+                        el0_mmu_install_thread_l3(next->l3_slot);
                     f->elr_el1  = next->resume_elr;
                     f->sp_el0   = next->resume_sp_el0;
                     f->spsr_el1 = next->resume_spsr;

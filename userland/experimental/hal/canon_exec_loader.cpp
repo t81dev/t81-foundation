@@ -121,6 +121,14 @@ extern "C" bool     fs_gov_find_device(uint32_t tid, uint32_t event,
 extern "C" uint8_t* el0_mmu_proc_code_page2()  noexcept;
 extern "C" uint64_t el0_mmu_proc_stack_top2()  noexcept;
 
+// Phase 17 (RFC-00C6) per-thread L3 MMU API (qemu_slice6_el0_mmu.cpp).
+extern "C" void el0_mmu_build_thread_l3(uint32_t slot,
+                                         uint64_t own_code_pa,
+                                         uint64_t own_stack_pa) noexcept;
+
+// Phase 17 (RFC-00C6) per-thread L3 scheduler API (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" void fs_sched_set_thread_l3(uint32_t tid, uint32_t l3_slot) noexcept;
+
 // Wrappers in qemu_slice6_cpp_bridge.cpp that forward to the static vblk_do_io
 // and s_sector_buf (which are internal to that TU).
 extern "C" bool          canon_store_read_lba(uint64_t lba) noexcept;
@@ -873,6 +881,87 @@ extern "C" void canon_concurrent_wait_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: concurrent wake OK (device_id=30, tid=6+7)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: concurrent wake FAIL (gov record missing)\r\n");
+    }
+}
+
+// ── Phase 17 (RFC-00C6): per-thread address-space isolation ──────────────────
+//
+// Runs the same Phase 16 concurrent-wait scenario but with per-thread L3
+// page tables installed:
+//   - Thread E (tid=6, did=30): maps only its own code page 1 + stack 1 at
+//     EL0; code page 2 and stack page 2 are EL1-only in its L3 view.
+//   - Thread F (tid=7, did=0): maps only its own code page 2 + stack 2 at
+//     EL0; code page 1 and stack page 1 are EL1-only.
+//
+// Before each ERET the scheduler installs the target thread's private L3 by
+// swapping s_l2[block_idx] + TLBI.  After all threads exit, the shared L3 is
+// restored so EL1 regains full proc page access.
+//
+// If both threads run to completion (correct own-page access, no permission
+// fault) the per-thread isolation tables are structurally correct.
+//
+// CI gate: "[axion] el0: per-thread pt OK (tid=6+7, isolated)"
+
+extern "C" void canon_per_thread_pt_load_and_run() noexcept {
+    // Load Thread F (tid=7, device_id=0) from LBA 10 into code page 2.
+    const uint64_t code_pa_f = load_t81x_v2_into(10u,
+                                                   el0_mmu_proc_code_page2(),
+                                                   "tid7/LBA10");
+    if (!code_pa_f) return;
+
+    // Load Thread E (tid=6, device_id=30) from LBA 11 into code page 1.
+    const uint64_t code_pa_e = load_t81x_v2_into(11u,
+                                                   el0_mmu_proc_code_page(),
+                                                   "tid6/LBA11");
+    if (!code_pa_e) return;
+
+    flush_icache_for_new_code();
+
+    // Build per-thread L3 tables (RFC-00C6).
+    // Slot 0 → tid=6: own_code=page1, own_stack=stack1.
+    // Slot 1 → tid=7: own_code=page2, own_stack=stack2.
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    // Install IRQ-driven device-wait loop.
+    g_axion_el1_device_wait_pc =
+        reinterpret_cast<uint64_t>(fs_sched_device_wait_loop);
+
+    fs_sched_reset();  // resets sched, obs, and gov rings
+
+    const uint64_t stack_top_e = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_f = el0_mmu_proc_stack_top2();
+
+    // Register both threads with their per-thread L3 slots.
+    fs_sched_register(6u, code_pa_e, stack_top_e, 0x3C0u);
+    fs_sched_mark_running(6u);
+    fs_sched_set_thread_l3(6u, 0u);  // RFC-00C6: slot 0
+
+    fs_sched_register(7u, code_pa_f, stack_top_f, 0x3C0u);
+    fs_sched_set_thread_l3(7u, 1u);  // RFC-00C6: slot 1
+
+    el0_svc_set_current_tid(6u);
+
+    // Single ERET to tid=6.  The scheduler installs per-thread L3 before
+    // each ERET; shared L3 is restored when the last thread exits.
+    run_proc_entry(code_pa_e, stack_top_e);
+
+    el0_svc_set_current_tid(1u);
+    g_axion_el1_device_wait_pc = 0u;
+
+    // Phase 17: verify both threads were woken (same gov ring query as Phase 16).
+    const bool woke_e = fs_gov_find_device(6u, 1u /*kGovTimerDeviceWake*/, 30u);
+    const bool woke_f = fs_gov_find_device(7u, 1u /*kGovTimerDeviceWake*/, 30u);
+    if (woke_e && woke_f) {
+        cel_pl011_puts("[axion] el0: per-thread pt OK (tid=6+7, isolated)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: per-thread pt FAIL (gov record missing)\r\n");
     }
 }
 

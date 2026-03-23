@@ -637,6 +637,12 @@ jobs:
           # Validates: single timer IRQ correctly wakes two concurrent waiters
           # with different device_id discriminators (exact + wildcard).
           check "[axion] el0: concurrent wake OK (device_id=30, tid=6+7)"
+          # Phase 17 (RFC-00C6): per-thread address-space isolation — same
+          # concurrent scenario but with private per-thread L3 tables.  The
+          # scheduler swaps s_l2[block_idx]+TLBI before each ERET so each thread
+          # sees only its own EL0 proc pages at EL0; other thread's pages are
+          # EL1-only.  Shared L3 is restored on return to EL1.
+          check "[axion] el0: per-thread pt OK (tid=6+7, isolated)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

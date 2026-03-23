@@ -126,6 +126,22 @@ alignas(4096) static uint8_t s_el0_proc_stack_page[4096];
 alignas(4096) static uint8_t s_el0_proc_code_page2[4096];
 alignas(4096) static uint8_t s_el0_proc_stack_page2[4096];
 
+// ── RFC-00C6: per-thread L3 tables ───────────────────────────────────────────
+//
+// Each concurrent thread gets a private L3 table (512 × 8 = 4 KB) for the
+// 2 MB block containing all EL0 proc pages.  The table is cloned from the
+// shared L3 baseline, then the other threads' proc code/stack entries are
+// remapped to EL1-only (AP=0b00, UXN=1) so EL0 cannot reach them.
+//
+// Isolation is enforced by swapping s_l2[s_l2_el0_block_idx] to the thread's
+// private L3 pointer before each ERET, and restoring the shared L3 pointer
+// when all threads have exited back to EL1.
+//
+// Two slots cover the Phase 16/17 concurrent pair; extend kMaxThreadL3Slots
+// if more threads are added.
+static constexpr uint32_t kMaxThreadL3Slots = 2u;
+alignas(4096) static uint64_t s_thread_l3[kMaxThreadL3Slots][512];
+
 // ── TVA state (written once by el0_mmu_init, read by el0_tva_valid) ──────────
 static uint64_t s_code_page_pa        = 0;
 static uint64_t s_stack_page_pa       = 0;
@@ -133,6 +149,13 @@ static uint64_t s_proc_code_page_pa   = 0;
 static uint64_t s_proc_stack_page_pa  = 0;
 static uint64_t s_proc_code_page2_pa  = 0;
 static uint64_t s_proc_stack_page2_pa = 0;
+
+// ── RFC-00C6: runtime state set by el0_mmu_init ───────────────────────────────
+static uint64_t* s_shared_l3          = nullptr;  // L3 for the EL0 pages block
+static uint32_t  s_l2_el0_block_idx   = 0u;       // s_l2 index for that block
+// All proc page PAs (used to strip EL0 access from other thread's pages).
+static uint64_t  s_all_proc_page_pas[4];
+static uint32_t  s_all_proc_page_count = 0u;
 
 // ── System-register helpers (AArch64 only) ───────────────────────────────────
 
@@ -257,6 +280,17 @@ extern "C" void el0_mmu_init() noexcept {
     s_proc_code_page2_pa  = reinterpret_cast<uint64_t>(s_el0_proc_code_page2);
     s_proc_stack_page2_pa = reinterpret_cast<uint64_t>(s_el0_proc_stack_page2);
 
+    // RFC-00C6: record all proc page PAs for per-thread L3 isolation.
+    s_all_proc_page_pas[0] = s_proc_code_page_pa;
+    s_all_proc_page_pas[1] = s_proc_stack_page_pa;
+    s_all_proc_page_pas[2] = s_proc_code_page2_pa;
+    s_all_proc_page_pas[3] = s_proc_stack_page2_pa;
+    s_all_proc_page_count  = 4u;
+
+    // RFC-00C6: record the L2 index for the EL0 pages 2 MB block.
+    // All proc pages are in the same 2 MB bank as the EFI binary (BSS).
+    s_l2_el0_block_idx = static_cast<uint32_t>((s_proc_code_page_pa >> 21) & 0x1FFu);
+
 #if defined(__aarch64__) && !defined(__APPLE__)
     // Zero our page table arrays.
     for (auto& e : s_l1)   e = 0;
@@ -330,6 +364,11 @@ extern "C" void el0_mmu_init() noexcept {
     install_el0_page(s_proc_code_page2_pa,   kLeafProcCode, l3_pool, l3_used);
     install_el0_page(s_proc_stack_page2_pa,  kLeafStack,    l3_pool, l3_used);
 
+    // RFC-00C6: capture the shared L3 pointer for this block so
+    // el0_mmu_build_thread_l3() can clone it as a per-thread baseline.
+    s_shared_l3 = reinterpret_cast<uint64_t*>(
+                      s_l2[s_l2_el0_block_idx] & ~0xFFFULL);
+
     // Step 5: Flush → install → TLB invalidate.
     aarch64_dsb_sy();
     write_ttbr0_el1(reinterpret_cast<uint64_t>(s_l1));
@@ -361,6 +400,71 @@ extern "C" uint8_t* el0_mmu_proc_code_page2() noexcept {
 /// Returns the top of the second process stack page (RFC-00C5).
 extern "C" uint64_t el0_mmu_proc_stack_top2() noexcept {
     return s_proc_stack_page2_pa + 4096u;
+}
+
+// ── RFC-00C6: per-thread L3 table management ──────────────────────────────────
+
+// Page leaf for proc pages that must not be EL0-accessible in a given thread's
+// view: AP[2:1]=0b00 = EL1 R/W / EL0 no access; UXN = EL0 execute-never.
+static constexpr uint64_t kLeafProcEl1Only =
+    kPD_Valid | kPD_Table | kPD_AttrIdx0 | kPD_SH_Inner | kPD_AF | kPD_UXN;
+
+/// Build an isolated L3 table for thread slot `slot`.
+///
+/// Clones the shared L3 baseline, then:
+///   – Strips EL0 access from ALL proc pages (all 4 code/stack page pairs).
+///   – Re-enables EL0 access for `own_code_pa` (R/W/X) and `own_stack_pa` (R/W, NX).
+///
+/// `own_code_pa`  — physical address of the thread's 4 KB code page base.
+/// `own_stack_pa` — physical address of the thread's 4 KB stack page base
+///                  (= stack_top - 4096).
+extern "C" void el0_mmu_build_thread_l3(uint32_t slot,
+                                          uint64_t own_code_pa,
+                                          uint64_t own_stack_pa) noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    if (slot >= kMaxThreadL3Slots || !s_shared_l3) return;
+    uint64_t* tbl = s_thread_l3[slot];
+    // Clone shared L3 (preserves EL1 mappings and init code/stack entries).
+    for (int i = 0; i < 512; ++i) tbl[i] = s_shared_l3[i];
+    // Strip EL0 access from every registered proc page.
+    for (uint32_t i = 0u; i < s_all_proc_page_count; ++i) {
+        const uint32_t idx = static_cast<uint32_t>(
+                                 (s_all_proc_page_pas[i] >> 12) & 0x1FFu);
+        tbl[idx] = (s_all_proc_page_pas[i] & ~0xFFFULL) | kLeafProcEl1Only;
+    }
+    // Re-enable own code page (EL0 R/W/X) and own stack (EL0 R/W, NX).
+    tbl[(own_code_pa  >> 12) & 0x1FFu] = (own_code_pa  & ~0xFFFULL) | kLeafProcCode;
+    tbl[(own_stack_pa >> 12) & 0x1FFu] = (own_stack_pa & ~0xFFFULL) | kLeafStack;
+#else
+    (void)slot; (void)own_code_pa; (void)own_stack_pa;
+#endif
+}
+
+/// Install thread `slot`'s private L3 by swapping the L2 entry for the EL0
+/// pages block, then invalidating TLB entries for the TTBR0 regime.
+/// Must be called immediately before EReting to that thread.
+extern "C" void el0_mmu_install_thread_l3(uint32_t slot) noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    if (slot >= kMaxThreadL3Slots) return;
+    s_l2[s_l2_el0_block_idx] =
+        reinterpret_cast<uint64_t>(s_thread_l3[slot]) | kTableDesc;
+    aarch64_dsb_sy();
+    tlbi_vmalle1();
+#else
+    (void)slot;
+#endif
+}
+
+/// Restore the shared L3 (full EL0 proc page access) after all threads have
+/// exited and execution returns to EL1.
+extern "C" void el0_mmu_install_shared_l3() noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    if (!s_shared_l3) return;
+    s_l2[s_l2_el0_block_idx] =
+        reinterpret_cast<uint64_t>(s_shared_l3) | kTableDesc;
+    aarch64_dsb_sy();
+    tlbi_vmalle1();
+#endif
 }
 
 /// Returns 1 if the range [va, va+size) lies entirely within one of the six

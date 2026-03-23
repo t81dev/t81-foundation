@@ -428,6 +428,8 @@ extern "C" void canon_irq_wake_load_and_run() noexcept;
 extern "C" void canon_device_filter_load_and_run() noexcept;
 // Phase 16 (RFC-00C5): concurrent device wait (canon_exec_loader.cpp).
 extern "C" void canon_concurrent_wait_load_and_run() noexcept;
+// Phase 17 (RFC-00C6): per-thread address-space isolation (canon_exec_loader.cpp).
+extern "C" void canon_per_thread_pt_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -744,6 +746,15 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //   CI gate: "[axion] el0: concurrent wake OK (device_id=30, tid=6+7)"
   if (s_has_blk) {
     canon_concurrent_wait_load_and_run();
+  }
+
+  // Phase 17 (RFC-00C6): per-thread address-space isolation — same scenario as
+  //   Phase 16 but with per-thread L3 tables.  Before each ERET the scheduler
+  //   swaps s_l2[block_idx] to the target thread's private L3 + TLBI, so each
+  //   thread can only access its own EL0 proc pages.
+  //   CI gate: "[axion] el0: per-thread pt OK (tid=6+7, isolated)"
+  if (s_has_blk) {
+    canon_per_thread_pt_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
