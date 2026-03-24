@@ -428,7 +428,7 @@ jobs:
           ccache --set-config=max_size=500M
 
       - name: Cache ccache
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: ${{ runner.os == 'Linux' && '~/.ccache' || runner.os == 'macOS' && '~/Library/Caches/ccache' || 'C:/Users/runneradmin/AppData/Local/ccache' }}
           key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
@@ -436,7 +436,7 @@ jobs:
             ccache-${{ runner.os }}-${{ matrix.compiler }}-
 
       - name: Cache CMake build directory
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: build
           key: >-
