@@ -525,6 +525,74 @@ jobs:
 
           echo "canon store with device-filter image: $(du -sh canon_store.img | cut -f1)"
 
+      # ── Phase 18: fault containment test image at LBA 12 (RFC-00C7) ────────
+      # el0_fault_test.S = Process G (tid=8): immediately dereferences address
+      # 0x0 (unmapped at EL0) → Data Abort EC=0x24.  Fault handler marks thread
+      # Faulted, records kGovThreadFault, returns to EL1 cleanly.
+      - name: Build and embed Phase 18 fault containment test image
+        run: |
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -I ternaryos/hal \
+            -c \
+            ternaryos/hal/el0_fault_test.S \
+            -o el0_fault_test.o
+
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -Wl,-Ttext=0x0 -Wl,--omagic \
+            el0_fault_test.o -o el0_fault_test.elf
+
+          llvm-objcopy-18 -O binary \
+            --only-section=.text \
+            el0_fault_test.elf el0_fault_test.bin
+
+          CODE_SIZE=$(wc -c < el0_fault_test.bin)
+          echo "el0_fault_test.bin: ${CODE_SIZE} bytes"
+
+          # Wrap as T81X v2 and write to LBA 12.
+          python3 - <<'PYEOF'
+          import struct
+
+          FNV_OFFSET = 14695981039346656037
+          FNV_PRIME  = 1099511628211
+
+          def fnv1a64(data):
+              h = FNV_OFFSET
+              for b in data:
+                  h ^= b
+                  h = (h * FNV_PRIME) & 0xFFFFFFFFFFFFFFFF
+              return h
+
+          def write_t81x_v2(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              code_hash = fnv1a64(code)
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 2)           # version 2  [4]
+              hdr += b'\x00\x00'                   # reserved0  [5:7]
+              hdr += struct.pack('<I', 0)           # entry_offset [7:11]
+              hdr += struct.pack('<I', len(code))   # code_size  [11:15]
+              hdr += struct.pack('<I', 0)           # data_size  [15:19]
+              hdr += struct.pack('<Q', code_hash)   # code_hash  [19:27]
+              hdr += bytes(64 - len(hdr))           # pad to 64  [27:64]
+              assert len(hdr) == 64
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              assert len(sector) == 512
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X v2 sector written at LBA{lba} (offset {offset}): "
+                    f"code_size={len(code)} bytes, code_hash=0x{code_hash:016x} ({bin_path})")
+
+          write_t81x_v2('el0_fault_test.bin', 12)
+          PYEOF
+
+          echo "canon store with fault-test image: $(du -sh canon_store.img | cut -f1)"
+
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
         run: python3 scripts/ci/check_kernelcall_abi_freeze.py .
@@ -643,6 +711,10 @@ jobs:
           # sees only its own EL0 proc pages at EL0; other thread's pages are
           # EL1-only.  Shared L3 is restored on return to EL1.
           check "[axion] el0: per-thread pt OK (tid=6+7, isolated)"
+          # Phase 18 (RFC-00C7): EL0 fault containment — Process G (tid=8)
+          # dereferences address 0x0, generating a Data Abort EC=0x24.
+          # The scheduler's fault handler must contain it and return to EL1.
+          check "[axion] el0: fault contained (tid=8, ec=0x24)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

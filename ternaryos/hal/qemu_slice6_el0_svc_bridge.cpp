@@ -126,6 +126,7 @@ enum class FsSchedState : uint8_t {
     BlockedIpcReceive = 3,
     BlockedDeviceWait = 4,
     Exited            = 5,
+    Faulted           = 6,  // RFC-00C7: thread terminated by a hardware fault
 };
 
 // RFC-00C6: sentinel meaning "use shared L3 (no per-thread isolation)".
@@ -141,6 +142,8 @@ struct FsSchedThread {
     uint64_t     ipc_rsp_size;    // response buffer size in bytes
     uint32_t     device_id;       // RFC-00C4: INTID to match on wake; 0 = any
     uint32_t     l3_slot;         // RFC-00C6: per-thread L3 slot; kNoThreadL3 = shared
+    uint32_t     fault_ec;        // RFC-00C7: ESR_EL1 EC when thread faulted; 0 = no fault
+    uint64_t     fault_far;       // RFC-00C7: FAR_EL1 when thread faulted; 0 = no fault
 };
 
 // RFC-00C6: per-thread L3 MMU API (qemu_slice6_el0_mmu.cpp).
@@ -320,6 +323,57 @@ extern "C" void fs_sched_exit_thread(void* frame_ptr) noexcept {
     }
 }
 
+// ── RFC-00C7: EL0 fault containment ──────────────────────────────────────────
+//
+// Called from axion_kernel_handle_svc_trap_aarch64() when ESR_EL1 EC is not
+// 0x15 (SVC64) — i.e., a Data Abort (EC=0x24) or Instruction Abort (EC=0x20)
+// taken from Lower EL hits the synchronous exception vector at offset 0x400.
+//
+// Marks the running thread Faulted, records kGovThreadFault in the gov ring
+// (repurposing the device_id field as ec for compact storage), then either:
+//   • context-switches to the next Runnable thread (if any), or
+//   • restores the shared L3 and redirects ERET to g_axion_el1_return_pc.
+
+extern "C" void fs_sched_fault_handler(void* frame_ptr) noexcept {
+    auto* f = static_cast<FsBridgeTrapFrame*>(frame_ptr);
+
+    // Extract EC from ESR_EL1[31:26].
+    const uint32_t ec = static_cast<uint32_t>((f->esr_el1 >> 26) & 0x3fu);
+
+    // Read FAR_EL1 (faulting virtual address).
+    uint64_t far = 0u;
+#if defined(__aarch64__) && !defined(__APPLE__)
+    __asm__ volatile("mrs %[r], far_el1" : [r] "=r"(far) :: "memory");
+#endif
+
+    // Mark the running thread Faulted and record in the gov ring.
+    FsSchedThread* cur = fs_find_running();
+    if (cur) {
+        cur->state     = FsSchedState::Faulted;
+        cur->fault_ec  = ec;
+        cur->fault_far = far;
+        fs_gov_record(cur->tid, 3u /*kGovThreadFault*/, ec);
+        s_sched_running_tid = 0u;
+    }
+
+    // Find next Runnable thread; if none, return to EL1.
+    FsSchedThread* next = fs_find_next_runnable();
+    if (next) {
+        next->state         = FsSchedState::Running;
+        s_sched_running_tid = next->tid;
+        s_current_el0_tid   = next->tid;
+        if (next->l3_slot != kNoThreadL3)
+            el0_mmu_install_thread_l3(next->l3_slot);
+        f->elr_el1  = next->resume_elr;
+        f->sp_el0   = next->resume_sp_el0;
+        f->spsr_el1 = next->resume_spsr;
+    } else {
+        el0_mmu_install_shared_l3();  // restore shared L3
+        f->elr_el1  = g_axion_el1_return_pc;
+        f->spsr_el1 = 0x5u;  // EL1h, DAIF all unmasked
+    }
+}
+
 // ── RFC-00BF: KernelCall observability ring ───────────────────────────────────
 //
 // 32-slot fixed-capacity ring.  Each slot holds one FsObsRecord (24 bytes).
@@ -387,6 +441,7 @@ extern "C" bool fs_obs_find(uint32_t tid, uint32_t kind,
 
 static constexpr uint32_t kGovTimerDeviceWake    = 1u;
 static constexpr uint32_t kGovAsyncContextSwitch = 2u;
+static constexpr uint32_t kGovThreadFault        = 3u;  // RFC-00C7
 static constexpr uint32_t kGovRingCap            = 16u;
 
 struct FsGovRecord {
@@ -442,6 +497,21 @@ extern "C" bool fs_gov_find_device(uint32_t tid, uint32_t event,
         if (s_gov_ring[i].tid       == tid       &&
             s_gov_ring[i].event     == event     &&
             s_gov_ring[i].device_id == device_id)
+            return true;
+    }
+    return false;
+}
+
+// RFC-00C7: query the gov ring for a kGovThreadFault record matching tid and ec.
+// device_id field in FsGovRecord is repurposed as ec for fault records.
+extern "C" bool fs_gov_find_fault(uint32_t tid, uint32_t ec) noexcept {
+    const uint32_t count = s_gov_seq < kGovRingCap
+                               ? static_cast<uint32_t>(s_gov_seq)
+                               : kGovRingCap;
+    for (uint32_t i = 0u; i < count; ++i) {
+        if (s_gov_ring[i].tid       == tid              &&
+            s_gov_ring[i].event     == kGovThreadFault  &&
+            s_gov_ring[i].device_id == ec)
             return true;
     }
     return false;

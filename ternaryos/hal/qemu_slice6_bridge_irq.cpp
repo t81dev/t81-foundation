@@ -33,6 +33,8 @@ extern "C" void bridge_timer_irq_tick() noexcept;
 // RFC-00C2/C4: wake BlockedDeviceWait threads matching the fired INTID.
 // Defined in qemu_slice6_el0_svc_bridge.cpp; async-signal-safe.
 extern "C" void fs_sched_timer_device_wake(uint32_t intid) noexcept;
+// RFC-00C7: EL0 fault containment (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" void fs_sched_fault_handler(void* frame_ptr) noexcept;
 
 // ── GICv3 MMIO helpers ────────────────────────────────────────────────────────
 
@@ -300,6 +302,16 @@ static void svc_pl011_puthex64(uint64_t v) noexcept {
 
 extern "C" void axion_kernel_handle_svc_trap_aarch64(void* frame_ptr) noexcept {
   auto* f = static_cast<AArch64TrapFrameSimple*>(frame_ptr);
+
+  // RFC-00C7: check ESR_EL1 EC field [31:26].
+  // EC=0x15 = SVC from AArch64 EL0.  Any other EC (e.g. 0x24 Data Abort
+  // from Lower EL, 0x20 Instruction Abort from Lower EL) is a hardware fault —
+  // route to the fault containment handler and return.
+  const uint32_t ec_raw = static_cast<uint32_t>((f->esr_el1 >> 26) & 0x3fu);
+  if (ec_raw != 0x15u) {
+    fs_sched_fault_handler(f);
+    return;
+  }
 
   // ESR_EL1[15:0] = SVC immediate (EC=0x15 for SVC from AArch64 EL0).
   const uint32_t imm = static_cast<uint32_t>(f->esr_el1 & 0xFFFFu);

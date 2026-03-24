@@ -430,6 +430,8 @@ extern "C" void canon_device_filter_load_and_run() noexcept;
 extern "C" void canon_concurrent_wait_load_and_run() noexcept;
 // Phase 17 (RFC-00C6): per-thread address-space isolation (canon_exec_loader.cpp).
 extern "C" void canon_per_thread_pt_load_and_run() noexcept;
+// Phase 18 (RFC-00C7): EL0 fault containment (canon_exec_loader.cpp).
+extern "C" void canon_fault_contain_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -755,6 +757,17 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //   CI gate: "[axion] el0: per-thread pt OK (tid=6+7, isolated)"
   if (s_has_blk) {
     canon_per_thread_pt_load_and_run();
+  }
+
+  // Phase 18 (RFC-00C7): EL0 fault containment — Process G (tid=8) immediately
+  //   dereferences address 0x0 (unmapped at EL0), triggering a Data Abort
+  //   (ESR_EL1 EC=0x24).  The EL1 synchronous vector (offset 0x400) now checks
+  //   the EC field; non-SVC faults route to fs_sched_fault_handler() which marks
+  //   the thread Faulted, records kGovThreadFault in the gov ring, and returns
+  //   to EL1 without hanging.
+  //   CI gate: "[axion] el0: fault contained (tid=8, ec=0x24)"
+  if (s_has_blk) {
+    canon_fault_contain_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");

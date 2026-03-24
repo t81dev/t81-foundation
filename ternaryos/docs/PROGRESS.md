@@ -27,6 +27,29 @@ RFC-00B9 boundary note:
 
 ---
 
+## RFC-00C7 — EL0 Fault Containment (2026-03-23)
+
+Phase 18: hardware fault containment for the cooperative EL0 scheduler.
+
+- **Problem:** RFC-00C6's per-thread L3 isolation generates real Data Aborts
+  (ESR_EL1 EC=0x24) when a thread accesses the other's pages.  Before this RFC,
+  the `axion_kernel_handle_svc_trap_aarch64()` handler treated every Lower EL
+  Synchronous exception as an SVC, misinterpreting abort syndrome bits as an SVC
+  immediate.  A faulting thread with other runnable threads would stall the system.
+- **EC discriminator:** ESR_EL1[31:26] is now checked before the SVC dispatch
+  switch.  EC != 0x15 (SVC64) routes to `fs_sched_fault_handler()`.
+- **`fs_sched_fault_handler()`:** marks running thread `Faulted`, reads
+  `far_el1`, records `kGovThreadFault=3` in gov ring (device_id field = ec),
+  context-switches to next Runnable or restores shared L3 and returns to EL1.
+- **New state `Faulted=6`** in `FsSchedState`; new fields `fault_ec` / `fault_far`
+  in `FsSchedThread`.
+- **`fs_gov_find_fault(tid, ec)`:** governance query function.
+- **Process G** (`el0_fault_test.S`, tid=8, LBA 12): `ldr x0, [xzr]` → EC=0x24
+  → contained → CI gate.
+- **CI gate:** `[axion] el0: fault contained (tid=8, ec=0x24)`
+
+---
+
 ## Scheduler Graduation (2026-03-23)
 
 The cooperative EL0 scheduler lane (`userland/experimental/`) has been promoted

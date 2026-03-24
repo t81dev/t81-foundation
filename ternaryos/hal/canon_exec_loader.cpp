@@ -965,6 +965,55 @@ extern "C" void canon_per_thread_pt_load_and_run() noexcept {
     }
 }
 
+// ── Phase 18 (RFC-00C7) symbols ───────────────────────────────────────────────
+
+// RFC-00C7: query whether a kGovThreadFault record exists for (tid, ec).
+extern "C" bool fs_gov_find_fault(uint32_t tid, uint32_t ec) noexcept;
+
+// ── Phase 18 (RFC-00C7): EL0 fault containment ───────────────────────────────
+//
+// Loads Process G (el0_fault_test.bin, T81X v2, tid=8) from LBA 12.
+// Process G immediately dereferences virtual address 0x0, triggering a
+// Data Abort (ESR_EL1 EC=0x24).  The EL1 fault handler marks tid=8 as
+// Faulted, records kGovThreadFault in the gov ring, and returns to EL1 via
+// g_axion_el1_return_pc — without hanging.
+//
+// CI gate: "[axion] el0: fault contained (tid=8, ec=0x24)"
+extern "C" void canon_fault_contain_load_and_run() noexcept {
+    // Load Process G (tid=8) from LBA 12 into code page 1.
+    const uint64_t code_pa = load_t81x_v2_into(12u,
+                                                el0_mmu_proc_code_page(),
+                                                "tid8/LBA12");
+    if (!code_pa) return;
+
+    flush_icache_for_new_code();
+
+    // No device-wait loop needed — G faults immediately without parking.
+    // g_axion_el1_device_wait_pc stays 0.
+
+    fs_sched_reset();  // resets sched, obs, and gov rings
+
+    const uint64_t stack_top = el0_mmu_proc_stack_top();
+
+    // Register tid=8; mark it Running immediately (no concurrent thread).
+    fs_sched_register(8u, code_pa, stack_top, 0x3C0u);
+    fs_sched_mark_running(8u);
+    el0_svc_set_current_tid(8u);
+
+    // ERET to Process G.  G dereferences address 0 → Data Abort EC=0x24.
+    // fs_sched_fault_handler(): marks Faulted, gov record, ERET to EL1.
+    run_proc_entry(code_pa, stack_top);
+
+    el0_svc_set_current_tid(1u);
+
+    // Phase 18 CI gate: verify gov ring has kGovThreadFault for tid=8, ec=0x24.
+    if (fs_gov_find_fault(8u, 0x24u)) {
+        cel_pl011_puts("[axion] el0: fault contained (tid=8, ec=0x24)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: fault FAIL (gov record missing)\r\n");
+    }
+}
+
 // ── Phase 8 IPC symbols (qemu_slice6_el0_svc_bridge.cpp) ─────────────────────
 
 extern "C" bool canon_ipc_delivered() noexcept;
