@@ -64,7 +64,7 @@ jobs:
 
       - name: Set up QEMU (Linux aarch64 emulation)
         if: matrix.qemu
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v4
         with:
           platforms: aarch64
 
