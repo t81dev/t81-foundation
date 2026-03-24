@@ -153,7 +153,7 @@ jobs:
         run: cp serial_x86.log drivers/qemu/sample-boot-log-x86.txt
 
       - name: Commit boot log
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           add: 'drivers/qemu/sample-boot-log-x86.txt'
           message: 'ci(qemu-x86): update sample x86_64 boot log [skip ci]'
