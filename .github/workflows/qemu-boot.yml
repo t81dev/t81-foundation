@@ -751,7 +751,7 @@ jobs:
       # ── Artifact ──────────────────────────────────────────────────────────
       - name: Upload serial log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: qemu-serial-log
           path: serial.log
