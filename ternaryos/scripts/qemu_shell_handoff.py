@@ -2,6 +2,7 @@
 import argparse
 import os
 import pty
+import re
 import select
 import signal
 import subprocess
@@ -25,6 +26,29 @@ def parse_args() -> argparse.Namespace:
 def restore_tty(fd: int, old_attrs):
     if old_attrs is not None:
         termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
+
+
+def parse_handoff_env(buffer: str) -> dict:
+    env = {}
+
+    canonfs_match = re.search(r"\[axion\] canonfs: mounted \(([^)]+)\)", buffer)
+    if canonfs_match:
+        env["T81_TUI_HANDOFF_CANONFS"] = canonfs_match.group(1)
+        if "persistent" in canonfs_match.group(1):
+            env["T81_TUI_HANDOFF_STORAGE"] = "virtio-blk handoff"
+        else:
+            env["T81_TUI_HANDOFF_STORAGE"] = "in-memory handoff"
+
+    prompt_match = re.search(r"(\[axion@T81[^\r\n]*\]\$)", buffer)
+    if prompt_match:
+        env["T81_TUI_HANDOFF_PROMPT"] = prompt_match.group(1)
+
+    env["T81_TUI_HANDOFF_SOURCE"] = "t81sh"
+    env["T81_TUI_HANDOFF_PROFILE"] = "qemu-armv8:AArch64/EDK2/slice6-boot-probe"
+    env["T81_TUI_HANDOFF_DISPLAY"] = "serial-console handoff"
+    env["T81_TUI_HANDOFF_STATUS"] = "handoff from Axion serial shell"
+    env["T81_TUI_HANDOFF_COMMAND"] = "tui"
+    return env
 
 
 def main() -> int:
@@ -109,7 +133,9 @@ def main() -> int:
                 os.killpg(proc.pid, signal.SIGKILL)
                 proc.wait()
         print("\n[axion] launching hosted TUI frontend...\n")
-        return subprocess.call([args.launch])
+        launch_env = os.environ.copy()
+        launch_env.update(parse_handoff_env(buffer))
+        return subprocess.call([args.launch], env=launch_env)
 
     return proc.returncode or 0
 

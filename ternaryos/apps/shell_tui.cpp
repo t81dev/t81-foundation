@@ -12,12 +12,72 @@
 #include <ftxui/screen/screen.hpp>
 
 #include <cstdio>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
 using namespace ftxui;
 
 namespace {
+
+struct ShellTuiHandoff {
+  bool        present{false};
+  std::string source;
+  std::string profile_summary;
+  std::string storage_binding_name;
+  std::string display_binding_name;
+  std::string canonfs_mode_summary;
+  std::string prompt;
+  std::string command;
+  std::string status_line;
+};
+
+const char* env_or_null(const char* name) {
+  const char* value = std::getenv(name);
+  return (value != nullptr && *value != '\0') ? value : nullptr;
+}
+
+ShellTuiHandoff shell_tui_handoff_from_env() {
+  ShellTuiHandoff handoff;
+  const char* source = env_or_null("T81_TUI_HANDOFF_SOURCE");
+  if (source == nullptr) return handoff;
+
+  handoff.present = true;
+  handoff.source = source;
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_PROFILE")) {
+    handoff.profile_summary = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_STORAGE")) {
+    handoff.storage_binding_name = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_DISPLAY")) {
+    handoff.display_binding_name = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_CANONFS")) {
+    handoff.canonfs_mode_summary = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_PROMPT")) {
+    handoff.prompt = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_COMMAND")) {
+    handoff.command = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_STATUS")) {
+    handoff.status_line = value;
+  }
+  return handoff;
+}
+
+std::string shell_tui_status_value(const char* value, const std::string& override_value) {
+  if (!override_value.empty()) return override_value;
+  return value != nullptr ? value : "";
+}
+
+std::string shell_tui_canonfs_value(const t81::ternaryos::ShellCommandContext& context,
+                                    const ShellTuiHandoff& handoff) {
+  if (!handoff.canonfs_mode_summary.empty()) return handoff.canonfs_mode_summary;
+  return context.canonfs_mode_summary != nullptr ? context.canonfs_mode_summary : "n/a";
+}
 
 std::vector<std::string> split_lines(const std::string& text) {
   std::vector<std::string> out;
@@ -36,21 +96,30 @@ std::vector<std::string> split_lines(const std::string& text) {
 
 Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
                            const t81::ternaryos::ShellCommandContext& context,
+                           const ShellTuiHandoff& handoff,
                            const std::string& command_buffer,
                            const std::string& status_line) {
   Elements transcript;
+  if (handoff.present) {
+    transcript.push_back(
+        text("HANDOFF FROM AXION SERIAL SHELL") | color(Color::Yellow) | bold);
+    if (!handoff.prompt.empty()) {
+      transcript.push_back(text(handoff.prompt + " " + handoff.command) | color(Color::Cyan));
+    }
+  }
   for (const auto& line : state.transcript_lines) {
     const bool is_prompt = line.rfind("tsh>", 0) == 0;
     transcript.push_back(text(line) | color(is_prompt ? Color::Cyan : Color::White));
   }
 
   Elements status = {
-      text(std::string("Profile: ") + (context.profile_summary ? context.profile_summary : "")) |
+      text("Profile: " +
+           shell_tui_status_value(context.profile_summary, handoff.profile_summary)) |
           color(Color::Green),
-      text(std::string("Storage: ") +
-           (context.storage_binding_name ? context.storage_binding_name : "")),
-      text(std::string("Display: ") +
-           (context.display_binding_name ? context.display_binding_name : "")),
+      text("Storage: " +
+           shell_tui_status_value(context.storage_binding_name, handoff.storage_binding_name)),
+      text("Display: " +
+           shell_tui_status_value(context.display_binding_name, handoff.display_binding_name)),
       text("Session Commands: " + std::to_string(context.command_count)),
       text("Durable Refs: " + std::to_string(context.durable_ref_count)),
       text(std::string("Durable Anchor: ") +
@@ -58,10 +127,12 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
           color(context.durable_anchor_present ? Color::Green : Color::Yellow),
       text("Recovered: " + std::to_string(context.recovered_entries) + " block(s)"),
       text("Glyphs: " + std::to_string(context.rendered_glyphs)),
-      text(std::string("CanonFS: ") +
-           (context.canonfs_mode_summary ? context.canonfs_mode_summary : "n/a")) |
+      text("CanonFS: " + shell_tui_canonfs_value(context, handoff)) |
           color(Color::Yellow),
   };
+  if (handoff.present) {
+    status.push_back(text("Handoff: " + handoff.source) | color(Color::Cyan));
+  }
 
   Elements commands;
   for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
@@ -131,6 +202,7 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
 }  // namespace
 
 int main(int argc, char** argv) {
+  const auto handoff = shell_tui_handoff_from_env();
   auto scripted = t81::ternaryos::build_scripted_shell_session(true);
   if (!scripted.has_value()) {
     std::fputs("build_scripted_shell_session failed\n", stderr);
@@ -152,7 +224,12 @@ int main(int argc, char** argv) {
     snapshot_context.has_hosted_session_status = true;
     snapshot_context.has_canonfs_status = true;
     auto screen = Screen::Create(Dimension::Fixed(100), Dimension::Fixed(30));
-    Render(screen, shell_tui_document(*scripted, snapshot_context, "help", "snapshot replay"));
+    Render(screen, shell_tui_document(
+                       *scripted,
+                       snapshot_context,
+                       handoff,
+                       handoff.present ? std::string() : "help",
+                       handoff.present ? handoff.status_line : "snapshot replay"));
     std::printf("%s", screen.ToString().c_str());
     return 0;
   }
@@ -164,12 +241,12 @@ int main(int argc, char** argv) {
   }
   t81::ternaryos::ShellBackend& backend = *session;
 
-  std::string command_buffer = "help";
-  std::string status_line = "ready";
+  std::string command_buffer = handoff.present ? std::string() : "help";
+  std::string status_line = handoff.present ? handoff.status_line : "ready";
 
   auto renderer = Renderer([&] {
     return shell_tui_document(
-        backend.state(), backend.command_context(), command_buffer, status_line);
+        backend.state(), backend.command_context(), handoff, command_buffer, status_line);
   });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {

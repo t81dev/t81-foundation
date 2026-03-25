@@ -493,6 +493,14 @@ shuts down QEMU, and opens the hosted frontend at:
 If you boot the EFI image through raw QEMU instead of the launcher, `tui`
 prints the same handoff target and token but does not auto-launch anything.
 
+The launcher-assisted handoff currently carries a minimal shell context into the
+TUI:
+
+- shell source (`t81sh`)
+- prompt and command (`[axion@T81 tier=1]$ tui`)
+- CanonFS mode (`in-memory` or `persistent, virtio-blk`)
+- serial-shell status line / handoff banner
+
 That command surface comes from the bare-metal bridge in
 `hal/qemu_slice6_cpp_bridge.cpp`. Internally this boot lane is still called
 `slice6`; that is an implementation/build name, not the user-facing shell name.
