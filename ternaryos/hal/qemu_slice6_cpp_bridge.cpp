@@ -971,43 +971,54 @@ static void cmd_status() noexcept {
   const uint64_t now      = read_cntpct();
   const uint64_t freq     = read_cntfrq();
   const uint64_t uptime_s = (now - s_boot_cntpct) / freq;
+  const t81::ternaryos::ShellStatusTextField text_fields[] = {
+      {"path", "bare-metal (EFI C++ bridge, AArch64)"},
+      {"canonfs", s_has_blk ? "mounted (persistent, virtio-blk)" : "mounted (in-memory)"},
+      {"policy engine", "ready"},
+  };
+  const t81::ternaryos::ShellStatusUintField uint_fields[] = {
+      {"threads", static_cast<unsigned long long>(s_thread_count), true},
+      {"uptime (s)", static_cast<unsigned long long>(uptime_s), true},
+      {"loop_iters", static_cast<unsigned long long>(s_loop_iters), true},
+      {"tick_count", static_cast<unsigned long long>(s_tick_count), true},
+      {"sched switches", static_cast<unsigned long long>(s_sched_switches), true},
+      {"interrupts", static_cast<unsigned long long>(s_interrupt_count), true},
+      {"commands", static_cast<unsigned long long>(s_cmd_count), true},
+  };
 
-  pl011_puts("  [kernel]\r\n");
-  pl011_puts("    path          : bare-metal (EFI C++ bridge, AArch64)\r\n");
-  if (s_has_blk) {
-    pl011_puts("    canonfs       : mounted (persistent, virtio-blk)\r\n");
-  } else {
-    pl011_puts("    canonfs       : mounted (in-memory)\r\n");
-  }
-  pl011_puts("    policy engine : ready\r\n");
-
-  pl011_puts("    threads       : ");
-  pl011_puts(u64_dec(static_cast<uint64_t>(s_thread_count), buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
-
-  pl011_puts("    uptime (s)    : ");
-  pl011_puts(u64_dec(uptime_s, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
-
-  pl011_puts("    loop_iters    : ");
-  pl011_puts(u64_dec(s_loop_iters, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
-
-  pl011_puts("    tick_count    : ");
-  pl011_puts(u64_dec(s_tick_count, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
-
-  pl011_puts("    sched switches: ");
-  pl011_puts(u64_dec(s_sched_switches, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
-
-  pl011_puts("    interrupts    : ");
-  pl011_puts(u64_dec(s_interrupt_count, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
-
-  pl011_puts("    commands      : ");
-  pl011_puts(u64_dec(s_cmd_count, buf, static_cast<int>(sizeof(buf))));
-  pl011_puts("\r\n");
+  t81::ternaryos::shell_emit_status_view(
+      "[kernel]",
+      text_fields,
+      sizeof(text_fields) / sizeof(text_fields[0]),
+      uint_fields,
+      sizeof(uint_fields) / sizeof(uint_fields[0]),
+      [&](const char* header) {
+        pl011_puts("  ");
+        pl011_puts(header);
+        pl011_puts("\r\n");
+      },
+      [&](const char* label, const char* value) {
+        pl011_puts("    ");
+        pl011_puts(label);
+        const auto name_len = cstr_len(label);
+        if (name_len < 14u) {
+          for (unsigned long long i = name_len; i < 14u; ++i) pl011_puts(" ");
+        }
+        pl011_puts(": ");
+        pl011_puts(value);
+        pl011_puts("\r\n");
+      },
+      [&](const char* label, unsigned long long value) {
+        pl011_puts("    ");
+        pl011_puts(label);
+        const auto name_len = cstr_len(label);
+        if (name_len < 14u) {
+          for (unsigned long long i = name_len; i < 14u; ++i) pl011_puts(" ");
+        }
+        pl011_puts(": ");
+        pl011_puts(u64_dec(value, buf, static_cast<int>(sizeof(buf))));
+        pl011_puts("\r\n");
+      });
 }
 
 static void cmd_threads() noexcept {

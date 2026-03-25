@@ -28,6 +28,17 @@ struct ShellBuiltinView {
   const char*          text;
 };
 
+struct ShellStatusTextField {
+  const char* label;
+  const char* value;
+};
+
+struct ShellStatusUintField {
+  const char*          label;
+  unsigned long long   value;
+  bool                 present;
+};
+
 inline bool shell_cstr_eq(const char* lhs, const char* rhs) {
   while (*lhs != '\0' && *rhs != '\0') {
     if (*lhs != *rhs) return false;
@@ -117,6 +128,26 @@ inline void shell_emit_help(ShellSurface surface, EmitFn emit) {
   for (const auto& spec : kShellCommandCatalog) {
     if (!shell_command_visible(spec, surface)) continue;
     emit(spec.name, spec.summary);
+  }
+}
+
+template <typename EmitHeaderFn, typename EmitTextFn, typename EmitUintFn>
+inline void shell_emit_status_view(const char* header,
+                                   const ShellStatusTextField* text_fields,
+                                   decltype(sizeof(0)) text_count,
+                                   const ShellStatusUintField* uint_fields,
+                                   decltype(sizeof(0)) uint_count,
+                                   EmitHeaderFn emit_header,
+                                   EmitTextFn emit_text,
+                                   EmitUintFn emit_uint) {
+  emit_header(header);
+  for (decltype(text_count) i = 0; i < text_count; ++i) {
+    if (text_fields[i].value == nullptr) continue;
+    emit_text(text_fields[i].label, text_fields[i].value);
+  }
+  for (decltype(uint_count) i = 0; i < uint_count; ++i) {
+    if (!uint_fields[i].present) continue;
+    emit_uint(uint_fields[i].label, uint_fields[i].value);
   }
 }
 

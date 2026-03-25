@@ -295,6 +295,41 @@ std::string hosted_builtin_text(ShellBuiltinCommand command) {
   return {};
 }
 
+std::string hosted_session_status_text(const ShellSessionState& state,
+                                       const std::vector<t81::canonfs::CanonRef>& stored_refs,
+                                       bool durable_anchor_tracked) {
+  const ShellStatusTextField text_fields[] = {
+      {"session profile", state.profile_summary.c_str()},
+      {"storage", state.storage_binding_name.c_str()},
+      {"display", state.display_binding_name.c_str()},
+      {"durable anchor", durable_anchor_tracked ? "tracked" : "none"},
+  };
+  const ShellStatusUintField uint_fields[] = {
+      {"commands", static_cast<unsigned long long>(state.command_records.size()), true},
+      {"durable refs", static_cast<unsigned long long>(stored_refs.size()), true},
+      {"recovered", static_cast<unsigned long long>(state.recovered_entries), true},
+      {"glyphs", static_cast<unsigned long long>(state.rendered_glyphs), true},
+  };
+
+  std::ostringstream out;
+  shell_emit_status_view(
+      nullptr,
+      text_fields,
+      sizeof(text_fields) / sizeof(text_fields[0]),
+      uint_fields,
+      sizeof(uint_fields) / sizeof(uint_fields[0]),
+      [&](const char*) {},
+      [&](const char* label, const char* value) {
+        out << label << ' ' << value << '\n';
+      },
+      [&](const char* label, unsigned long long value) {
+        out << label << ' ' << value << '\n';
+      });
+  std::string text = out.str();
+  if (!text.empty() && text.back() == '\n') text.pop_back();
+  return text;
+}
+
 }  // namespace
 
 namespace {
@@ -547,16 +582,8 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 2 && words[0] == "session" && words[1] == "status") {
-    std::ostringstream out;
-    out << "session profile " << state_.profile_summary << '\n'
-        << "storage " << state_.storage_binding_name << '\n'
-        << "display " << state_.display_binding_name << '\n'
-        << "commands " << state_.command_records.size() << '\n'
-        << "durable refs " << stored_refs_.size() << '\n'
-        << "durable anchor " << (history_ref_.has_value() ? "tracked" : "none") << '\n'
-        << "recovered " << state_.recovered_entries << '\n'
-        << "glyphs " << state_.rendered_glyphs;
-    state_.command_records.push_back({command, out.str()});
+    state_.command_records.push_back(
+        {command, hosted_session_status_text(state_, stored_refs_, history_ref_.has_value())});
     return refresh_render();
   }
 
