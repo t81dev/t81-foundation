@@ -409,6 +409,60 @@ What it is not yet:
 - a general command parser or process manager
 - arbitrary command piping or process composition
 
+## Slice6 Serial Shell
+
+To boot the AArch64 slice6 kernel under QEMU and drop into the freestanding
+serial shell:
+
+```sh
+cmake --build build --target t81_ternaryos_qemu_slice6_shell
+```
+
+Or run the launcher directly:
+
+```sh
+./ternaryos/scripts/run_qemu_slice6_shell.sh build
+```
+
+To attach a second raw CanonFS image as the persistent store:
+
+```sh
+./ternaryos/scripts/run_qemu_slice6_shell.sh build /path/to/canon_store.img
+```
+
+Notes:
+
+- the launcher defaults to `tcg` because it is more reliable than `hvf` on the
+  slice6 EL0 scheduler and shell handoff path
+- override the accelerator explicitly with `T81_QEMU_ACCEL=hvf` if you want to
+  try the hardware-accelerated lane anyway
+- exit QEMU with `Ctrl-a x`
+- the early `ArmTrngLib`, `Tpm2*`, and `Error: Image at ... start failed`
+  lines come from stock EDK2 probing optional firmware features; they are not
+  the slice6 kernel failing to boot
+
+Boot is complete when serial reaches:
+
+```text
+[axion] t81sh: ready (principal=axion, tier=1)
+[axion@T81 tier=1]$
+```
+
+The current freestanding serial shell is intentionally narrow. Its built-in
+commands are:
+
+- `help`
+- `uname`
+- `version`
+- `status`
+- `threads`
+- `sched`
+- `policy`
+
+That command surface comes from the bare-metal bridge in
+`hal/qemu_slice6_cpp_bridge.cpp`. It is separate from the broader hosted Phase
+5 shell/TUI command model documented above.
+
 Local hosted proof as of the current branch:
 
 - all 8 TernOS test binaries pass
