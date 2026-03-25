@@ -49,14 +49,25 @@ struct ShellSessionState {
 
 std::vector<std::string> default_shell_command_sequence();
 
-class ShellSession {
+class ShellBackend {
+public:
+  virtual ~ShellBackend() = default;
+
+  virtual const ShellSessionState& state() const = 0;
+  virtual ShellCommandContext command_context() const = 0;
+  virtual bool execute_command(std::string_view command) = 0;
+};
+
+class ShellSession : public ShellBackend {
 public:
   static std::optional<ShellSession> create(bool quiet_boot = false);
 
-  const ShellSessionState& state() const { return state_; }
-  ShellCommandContext command_context() const;
+  ~ShellSession() override;
 
-  bool execute_command(std::string_view command);
+  const ShellSessionState& state() const override { return state_; }
+  ShellCommandContext command_context() const override;
+
+  bool execute_command(std::string_view command) override;
 
 private:
   explicit ShellSession(bool quiet_boot);

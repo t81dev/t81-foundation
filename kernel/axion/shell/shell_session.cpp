@@ -400,6 +400,8 @@ ShellSession::ShellSession(bool quiet_boot) : quiet_boot_(quiet_boot), store_pat
   state_.available_commands = hosted_command_names();
 }
 
+ShellSession::~ShellSession() = default;
+
 bool ShellSession::initialize() {
   HostedBlockDev backing(48, "shell-demo-ahci");
   backing.set_backing_file(store_path_);

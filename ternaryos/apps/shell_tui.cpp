@@ -162,13 +162,14 @@ int main(int argc, char** argv) {
     std::fputs("ShellSession::create failed\n", stderr);
     return 1;
   }
+  t81::ternaryos::ShellBackend& backend = *session;
 
   std::string command_buffer = "help";
   std::string status_line = "ready";
 
   auto renderer = Renderer([&] {
     return shell_tui_document(
-        session->state(), session->command_context(), command_buffer, status_line);
+        backend.state(), backend.command_context(), command_buffer, status_line);
   });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {
@@ -182,7 +183,7 @@ int main(int argc, char** argv) {
     }
     if (event == Event::Return) {
       const auto submitted = command_buffer;
-      if (session->execute_command(submitted)) {
+      if (backend.execute_command(submitted)) {
         status_line = submitted.empty() ? "executed: <empty>" : "executed: " + submitted;
       } else {
         status_line = submitted.empty() ? "execution failed: <empty>"
