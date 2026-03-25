@@ -9,6 +9,22 @@ enum class ShellSurface {
   FreestandingSlice6,
 };
 
+enum class ShellBuiltinCommand {
+  None,
+  Help,
+  Uname,
+  Version,
+};
+
+inline bool shell_cstr_eq(const char* lhs, const char* rhs) {
+  while (*lhs != '\0' && *rhs != '\0') {
+    if (*lhs != *rhs) return false;
+    ++lhs;
+    ++rhs;
+  }
+  return *lhs == *rhs;
+}
+
 inline bool shell_command_visible(const ShellCommandSpec& spec, ShellSurface surface) {
   switch (surface) {
     case ShellSurface::HostedPhase5:
@@ -17,6 +33,13 @@ inline bool shell_command_visible(const ShellCommandSpec& spec, ShellSurface sur
       return spec.freestanding_slice6;
   }
   return false;
+}
+
+inline ShellBuiltinCommand shell_builtin_command(const char* word) {
+  if (shell_cstr_eq(word, "help")) return ShellBuiltinCommand::Help;
+  if (shell_cstr_eq(word, "uname")) return ShellBuiltinCommand::Uname;
+  if (shell_cstr_eq(word, "version")) return ShellBuiltinCommand::Version;
+  return ShellBuiltinCommand::None;
 }
 
 inline const char* shell_uname_text(ShellSurface surface) {
@@ -41,6 +64,14 @@ inline const char* shell_version_text(ShellSurface surface) {
              "Boot path    : EFI efi_main -> ExitBootServices -> C++ bridge";
   }
   return "T81 / Axion";
+}
+
+template <typename EmitFn>
+inline void shell_emit_help(ShellSurface surface, EmitFn emit) {
+  for (const auto& spec : kShellCommandCatalog) {
+    if (!shell_command_visible(spec, surface)) continue;
+    emit(spec.name, spec.summary);
+  }
 }
 
 }  // namespace t81::ternaryos

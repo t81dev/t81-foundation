@@ -680,23 +680,21 @@ static void freestanding_sched_tick() noexcept {
 // ── Shell command handlers ────────────────────────────────────────────────────
 
 static void cmd_help() noexcept {
-  for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
-    if (!t81::ternaryos::shell_command_visible(
-            spec, t81::ternaryos::ShellSurface::FreestandingSlice6)) {
-      continue;
-    }
+  t81::ternaryos::shell_emit_help(
+      t81::ternaryos::ShellSurface::FreestandingSlice6,
+      [&](const char* name, const char* summary) {
     pl011_puts("  ");
-    pl011_puts(spec.name);
-    const auto name_len = cstr_len(spec.name);
+    pl011_puts(name);
+    const auto name_len = cstr_len(name);
     if (name_len < 9u) {
       for (unsigned long long i = name_len; i < 9u; ++i) pl011_puts(" ");
     } else {
       pl011_puts(" ");
     }
     pl011_puts(" -- ");
-    pl011_puts(spec.summary);
+    pl011_puts(summary);
     pl011_puts("\r\n");
-  }
+  });
 }
 
 static void cmd_uname() noexcept {

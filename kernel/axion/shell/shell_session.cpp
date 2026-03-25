@@ -273,13 +273,12 @@ std::vector<std::string> hosted_command_names() {
 
 std::string hosted_help_text() {
   std::string text = "builtins";
-  for (const auto& spec : kShellCommandCatalog) {
-    if (!shell_command_visible(spec, ShellSurface::HostedPhase5)) continue;
+  shell_emit_help(ShellSurface::HostedPhase5, [&](const char* name, const char* summary) {
     text += "\n";
-    text += spec.name;
+    text += name;
     text += " -- ";
-    text += spec.summary;
-  }
+    text += summary;
+  });
   return text;
 }
 
@@ -411,21 +410,20 @@ bool ShellSession::execute_command(std::string_view command_view) {
   const auto& words = parsed.words;
   if (words.empty()) return refresh_render();
 
-  if (words[0] == "help") {
-    state_.command_records.push_back({command, hosted_help_text()});
-    return refresh_render();
-  }
-
-  if (words[0] == "uname") {
-    state_.command_records.push_back(
-        {command, shell_uname_text(ShellSurface::HostedPhase5)});
-    return refresh_render();
-  }
-
-  if (words[0] == "version") {
-    state_.command_records.push_back(
-        {command, shell_version_text(ShellSurface::HostedPhase5)});
-    return refresh_render();
+  switch (shell_builtin_command(words[0].c_str())) {
+    case ShellBuiltinCommand::Help:
+      state_.command_records.push_back({command, hosted_help_text()});
+      return refresh_render();
+    case ShellBuiltinCommand::Uname:
+      state_.command_records.push_back(
+          {command, shell_uname_text(ShellSurface::HostedPhase5)});
+      return refresh_render();
+    case ShellBuiltinCommand::Version:
+      state_.command_records.push_back(
+          {command, shell_version_text(ShellSurface::HostedPhase5)});
+      return refresh_render();
+    case ShellBuiltinCommand::None:
+      break;
   }
 
   if (words[0] == "profile") {
