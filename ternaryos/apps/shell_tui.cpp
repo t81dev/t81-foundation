@@ -94,6 +94,11 @@ std::string shell_tui_canonfs_value(const t81::ternaryos::ShellCommandContext& c
   return context.canonfs_mode_summary != nullptr ? context.canonfs_mode_summary : "n/a";
 }
 
+bool shell_tui_show_hosted_bootstrap(const t81::ternaryos::ShellCommandContext& context,
+                                     const ShellTuiHandoff& handoff) {
+  return !(handoff.present && context.command_count == 0);
+}
+
 std::vector<std::string> split_lines(const std::string& text) {
   std::vector<std::string> out;
   std::string current;
@@ -114,6 +119,7 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
                            const ShellTuiHandoff& handoff,
                            const std::string& command_buffer,
                            const std::string& status_line) {
+  const bool show_hosted_bootstrap = shell_tui_show_hosted_bootstrap(context, handoff);
   Elements transcript;
   if (handoff.present) {
     transcript.push_back(text("HANDOFF FROM AXION SERIAL SHELL") | color(Color::Yellow) | bold);
@@ -126,9 +132,11 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
       transcript.push_back(text(handoff.prompt + " " + handoff.command) | color(Color::Cyan));
     }
   }
-  for (const auto& line : state.transcript_lines) {
-    const bool is_prompt = line.rfind("tsh>", 0) == 0;
-    transcript.push_back(text(line) | color(is_prompt ? Color::Cyan : Color::White));
+  if (show_hosted_bootstrap) {
+    for (const auto& line : state.transcript_lines) {
+      const bool is_prompt = line.rfind("tsh>", 0) == 0;
+      transcript.push_back(text(line) | color(is_prompt ? Color::Cyan : Color::White));
+    }
   }
 
   Elements status = {
@@ -163,8 +171,12 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
   }
 
   Elements framebuffer;
-  for (const auto& line : split_lines(state.framebuffer_ascii)) {
-    framebuffer.push_back(text(line) | color(Color::GrayLight));
+  if (show_hosted_bootstrap) {
+    for (const auto& line : split_lines(state.framebuffer_ascii)) {
+      framebuffer.push_back(text(line) | color(Color::GrayLight));
+    }
+  } else {
+    framebuffer.push_back(text("handoff pending hosted rendering") | color(Color::GrayDark));
   }
 
   auto header = hbox({
@@ -222,29 +234,43 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
 
 int main(int argc, char** argv) {
   const auto handoff = shell_tui_handoff_from_env();
-  auto scripted = t81::ternaryos::build_scripted_shell_session(true);
-  if (!scripted.has_value()) {
-    std::fputs("build_scripted_shell_session failed\n", stderr);
-    return 1;
-  }
-
   if (argc > 1 && std::string(argv[1]) == "--snapshot") {
+    t81::ternaryos::ShellSessionState snapshot_state{};
     t81::ternaryos::ShellCommandContext snapshot_context{};
     snapshot_context.surface = t81::ternaryos::ShellSurface::HostedPhase5;
-    snapshot_context.profile_summary = scripted->profile_summary.c_str();
-    snapshot_context.storage_binding_name = scripted->storage_binding_name.c_str();
-    snapshot_context.display_binding_name = scripted->display_binding_name.c_str();
-    snapshot_context.durable_anchor_present = scripted->durable_anchor_present;
-    snapshot_context.command_count = scripted->session_command_count;
-    snapshot_context.durable_ref_count = scripted->durable_ref_count;
-    snapshot_context.recovered_entries = scripted->recovered_entries;
-    snapshot_context.rendered_glyphs = scripted->rendered_glyphs;
-    snapshot_context.canonfs_mode_summary = "persistent (CanonStore-backed)";
     snapshot_context.has_hosted_session_status = true;
     snapshot_context.has_canonfs_status = true;
+
+    if (handoff.present) {
+      snapshot_context.profile_summary =
+          handoff.profile_summary.empty() ? nullptr : handoff.profile_summary.c_str();
+      snapshot_context.storage_binding_name =
+          handoff.storage_binding_name.empty() ? nullptr : handoff.storage_binding_name.c_str();
+      snapshot_context.display_binding_name =
+          handoff.display_binding_name.empty() ? nullptr : handoff.display_binding_name.c_str();
+      snapshot_context.canonfs_mode_summary =
+          handoff.canonfs_mode_summary.empty() ? nullptr : handoff.canonfs_mode_summary.c_str();
+    } else {
+      auto scripted = t81::ternaryos::build_scripted_shell_session(true);
+      if (!scripted.has_value()) {
+        std::fputs("build_scripted_shell_session failed\n", stderr);
+        return 1;
+      }
+      snapshot_state = *scripted;
+      snapshot_context.profile_summary = snapshot_state.profile_summary.c_str();
+      snapshot_context.storage_binding_name = snapshot_state.storage_binding_name.c_str();
+      snapshot_context.display_binding_name = snapshot_state.display_binding_name.c_str();
+      snapshot_context.durable_anchor_present = snapshot_state.durable_anchor_present;
+      snapshot_context.command_count = snapshot_state.session_command_count;
+      snapshot_context.durable_ref_count = snapshot_state.durable_ref_count;
+      snapshot_context.recovered_entries = snapshot_state.recovered_entries;
+      snapshot_context.rendered_glyphs = snapshot_state.rendered_glyphs;
+      snapshot_context.canonfs_mode_summary = "persistent (CanonStore-backed)";
+    }
+
     auto screen = Screen::Create(Dimension::Fixed(100), Dimension::Fixed(30));
     Render(screen, shell_tui_document(
-                       *scripted,
+                       snapshot_state,
                        snapshot_context,
                        handoff,
                        handoff.present ? std::string() : "help",
