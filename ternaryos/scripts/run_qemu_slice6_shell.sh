@@ -32,12 +32,13 @@ canon_store=${2:-}
 
 script_dir=${0:A:h}
 repo_root=${script_dir:h:h}
+cmake_bin=${T81_CMAKE_BIN:-/opt/homebrew/bin/cmake}
 
 qemu_bin=${T81_QEMU_BIN:-/opt/homebrew/bin/qemu-system-aarch64}
 edk2_code=${T81_EDK2_CODE:-/opt/homebrew/share/qemu/edk2-aarch64-code.fd}
 edk2_vars_template=${T81_EDK2_VARS:-/opt/homebrew/share/qemu/edk2-arm-vars.fd}
 
-for path in "$qemu_bin" "$edk2_code" "$edk2_vars_template" "$build_dir"; do
+for path in "$cmake_bin" "$qemu_bin" "$edk2_code" "$edk2_vars_template" "$build_dir"; do
   if [[ ! -e "$path" ]]; then
     echo "missing required path: $path" >&2
     exit 1
@@ -51,6 +52,10 @@ fi
 
 output_dir="$build_dir/ternaryos/qemu_slice6_shell"
 /bin/mkdir -p "$output_dir"
+
+# Always refresh the slice6 EFI first so the interactive shell cannot boot a
+# stale BOOTAA64.EFI after shell/backend changes.
+"$cmake_bin" --build "$build_dir" --target t81_ternaryos_qemu_slice6_efi
 
 /bin/zsh "$script_dir/build_qemu_slice6_artifact.sh" "$build_dir" "$output_dir"
 
