@@ -971,27 +971,31 @@ static void cmd_status() noexcept {
   const uint64_t now      = read_cntpct();
   const uint64_t freq     = read_cntfrq();
   const uint64_t uptime_s = (now - s_boot_cntpct) / freq;
-  const t81::ternaryos::ShellStatusTextField text_fields[] = {
-      {"path", "bare-metal (EFI C++ bridge, AArch64)"},
-      {"canonfs", s_has_blk ? "mounted (persistent, virtio-blk)" : "mounted (in-memory)"},
-      {"policy engine", "ready"},
-  };
-  const t81::ternaryos::ShellStatusUintField uint_fields[] = {
-      {"threads", static_cast<unsigned long long>(s_thread_count), true},
-      {"uptime (s)", static_cast<unsigned long long>(uptime_s), true},
-      {"loop_iters", static_cast<unsigned long long>(s_loop_iters), true},
-      {"tick_count", static_cast<unsigned long long>(s_tick_count), true},
-      {"sched switches", static_cast<unsigned long long>(s_sched_switches), true},
-      {"interrupts", static_cast<unsigned long long>(s_interrupt_count), true},
-      {"commands", static_cast<unsigned long long>(s_cmd_count), true},
+  const t81::ternaryos::ShellCommandContext context = {
+      t81::ternaryos::ShellSurface::FreestandingSlice6,
+      nullptr,
+      nullptr,
+      nullptr,
+      "bare-metal (EFI C++ bridge, AArch64)",
+      s_has_blk ? "mounted (persistent, virtio-blk)" : "mounted (in-memory)",
+      "ready",
+      false,
+      static_cast<unsigned long long>(s_cmd_count),
+      0u,
+      0u,
+      0u,
+      static_cast<unsigned long long>(s_thread_count),
+      static_cast<unsigned long long>(uptime_s),
+      static_cast<unsigned long long>(s_loop_iters),
+      static_cast<unsigned long long>(s_tick_count),
+      static_cast<unsigned long long>(s_sched_switches),
+      static_cast<unsigned long long>(s_interrupt_count),
+      false,
+      true,
   };
 
-  t81::ternaryos::shell_emit_status_view(
-      "[kernel]",
-      text_fields,
-      sizeof(text_fields) / sizeof(text_fields[0]),
-      uint_fields,
-      sizeof(uint_fields) / sizeof(uint_fields[0]),
+  t81::ternaryos::shell_emit_status_from_context(
+      context,
       [&](const char* header) {
         pl011_puts("  ");
         pl011_puts(header);

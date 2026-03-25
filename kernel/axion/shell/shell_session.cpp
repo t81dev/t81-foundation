@@ -298,26 +298,32 @@ std::string hosted_builtin_text(ShellBuiltinCommand command) {
 std::string hosted_session_status_text(const ShellSessionState& state,
                                        const std::vector<t81::canonfs::CanonRef>& stored_refs,
                                        bool durable_anchor_tracked) {
-  const ShellStatusTextField text_fields[] = {
-      {"session profile", state.profile_summary.c_str()},
-      {"storage", state.storage_binding_name.c_str()},
-      {"display", state.display_binding_name.c_str()},
-      {"durable anchor", durable_anchor_tracked ? "tracked" : "none"},
-  };
-  const ShellStatusUintField uint_fields[] = {
-      {"commands", static_cast<unsigned long long>(state.command_records.size()), true},
-      {"durable refs", static_cast<unsigned long long>(stored_refs.size()), true},
-      {"recovered", static_cast<unsigned long long>(state.recovered_entries), true},
-      {"glyphs", static_cast<unsigned long long>(state.rendered_glyphs), true},
+  const ShellCommandContext context = {
+      ShellSurface::HostedPhase5,
+      state.profile_summary.c_str(),
+      state.storage_binding_name.c_str(),
+      state.display_binding_name.c_str(),
+      nullptr,
+      nullptr,
+      nullptr,
+      durable_anchor_tracked,
+      static_cast<unsigned long long>(state.command_records.size()),
+      static_cast<unsigned long long>(stored_refs.size()),
+      static_cast<unsigned long long>(state.recovered_entries),
+      static_cast<unsigned long long>(state.rendered_glyphs),
+      0u,
+      0u,
+      0u,
+      0u,
+      0u,
+      0u,
+      true,
+      false,
   };
 
   std::ostringstream out;
-  shell_emit_status_view(
-      nullptr,
-      text_fields,
-      sizeof(text_fields) / sizeof(text_fields[0]),
-      uint_fields,
-      sizeof(uint_fields) / sizeof(uint_fields[0]),
+  shell_emit_status_from_context(
+      context,
       [&](const char*) {},
       [&](const char* label, const char* value) {
         out << label << ' ' << value << '\n';

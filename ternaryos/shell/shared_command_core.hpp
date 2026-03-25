@@ -39,6 +39,29 @@ struct ShellStatusUintField {
   bool                 present;
 };
 
+struct ShellCommandContext {
+  ShellSurface       surface;
+  const char*        profile_summary;
+  const char*        storage_binding_name;
+  const char*        display_binding_name;
+  const char*        path_summary;
+  const char*        canonfs_summary;
+  const char*        policy_engine_summary;
+  bool               durable_anchor_present;
+  unsigned long long command_count;
+  unsigned long long durable_ref_count;
+  unsigned long long recovered_entries;
+  unsigned long long rendered_glyphs;
+  unsigned long long thread_count;
+  unsigned long long uptime_s;
+  unsigned long long loop_iters;
+  unsigned long long tick_count;
+  unsigned long long sched_switches;
+  unsigned long long interrupt_count;
+  bool               has_hosted_session_status;
+  bool               has_kernel_status;
+};
+
 inline bool shell_cstr_eq(const char* lhs, const char* rhs) {
   while (*lhs != '\0' && *rhs != '\0') {
     if (*lhs != *rhs) return false;
@@ -148,6 +171,63 @@ inline void shell_emit_status_view(const char* header,
   for (decltype(uint_count) i = 0; i < uint_count; ++i) {
     if (!uint_fields[i].present) continue;
     emit_uint(uint_fields[i].label, uint_fields[i].value);
+  }
+}
+
+template <typename EmitHeaderFn, typename EmitTextFn, typename EmitUintFn>
+inline void shell_emit_status_from_context(const ShellCommandContext& context,
+                                           EmitHeaderFn emit_header,
+                                           EmitTextFn emit_text,
+                                           EmitUintFn emit_uint) {
+  if (context.has_hosted_session_status) {
+    const ShellStatusTextField text_fields[] = {
+        {"session profile", context.profile_summary},
+        {"storage", context.storage_binding_name},
+        {"display", context.display_binding_name},
+        {"durable anchor", context.durable_anchor_present ? "tracked" : "none"},
+    };
+    const ShellStatusUintField uint_fields[] = {
+        {"commands", context.command_count, true},
+        {"durable refs", context.durable_ref_count, true},
+        {"recovered", context.recovered_entries, true},
+        {"glyphs", context.rendered_glyphs, true},
+    };
+    shell_emit_status_view(
+        nullptr,
+        text_fields,
+        sizeof(text_fields) / sizeof(text_fields[0]),
+        uint_fields,
+        sizeof(uint_fields) / sizeof(uint_fields[0]),
+        [&](const char*) {},
+        emit_text,
+        emit_uint);
+    return;
+  }
+
+  if (context.has_kernel_status) {
+    const ShellStatusTextField text_fields[] = {
+        {"path", context.path_summary},
+        {"canonfs", context.canonfs_summary},
+        {"policy engine", context.policy_engine_summary},
+    };
+    const ShellStatusUintField uint_fields[] = {
+        {"threads", context.thread_count, true},
+        {"uptime (s)", context.uptime_s, true},
+        {"loop_iters", context.loop_iters, true},
+        {"tick_count", context.tick_count, true},
+        {"sched switches", context.sched_switches, true},
+        {"interrupts", context.interrupt_count, true},
+        {"commands", context.command_count, true},
+    };
+    shell_emit_status_view(
+        "[kernel]",
+        text_fields,
+        sizeof(text_fields) / sizeof(text_fields[0]),
+        uint_fields,
+        sizeof(uint_fields) / sizeof(uint_fields[0]),
+        emit_header,
+        emit_text,
+        emit_uint);
   }
 }
 
