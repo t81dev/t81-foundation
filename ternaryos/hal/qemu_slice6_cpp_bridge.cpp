@@ -591,6 +591,7 @@ static void cmd_help() noexcept {
   pl011_puts("  uname    -- system identity (RFC-00B9 §8.3)\r\n");
   pl011_puts("  version  -- T81 build info\r\n");
   pl011_puts("  canonfs  -- storage transport and probe status\r\n");
+  pl011_puts("  irq      -- timer IRQ and governed wake counters\r\n");
   pl011_puts("  status   -- kernel counters and governance state\r\n");
   pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
@@ -628,6 +629,25 @@ static void cmd_canonfs() noexcept {
     pl011_puts("    transport     : none\r\n");
     pl011_puts("    io_probe      : skipped (no virtio-blk store)\r\n");
   }
+}
+
+static void cmd_irq() noexcept {
+  char buf[24];
+  const uint64_t timer = s_timer_irqs;
+  const uint64_t wakes = fs_gov_event_count(1u);
+  const uint64_t async = fs_gov_event_count(2u);
+
+  pl011_puts("  [irq]\r\n");
+  pl011_puts("    source        : GICv3 PPI30 physical timer\r\n");
+  pl011_puts("    timer_irqs    : ");
+  pl011_puts(u64_dec(timer, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    timer_wake    : ");
+  pl011_puts(u64_dec(wakes, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    async_switch  : ");
+  pl011_puts(u64_dec(async, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
 }
 
 static void cmd_status() noexcept {
@@ -791,6 +811,7 @@ static void shell_dispatch(const char* line) noexcept {
   else if (str_eq(line, "uname"))   { cmd_uname(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
+  else if (str_eq(line, "irq"))     { cmd_irq(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
