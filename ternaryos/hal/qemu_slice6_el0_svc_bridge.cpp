@@ -109,6 +109,7 @@ static constexpr uint32_t kRejectionFaultInboxEmpty = 10u;
 static constexpr uint32_t kKindGetThreadIdentity  = 10u;
 static constexpr uint32_t kKindReadFaultInbox      = 15u;
 static constexpr uint32_t kKindAcknowledgeThreadFault = 16u;
+static constexpr uint32_t kKindAcknowledgeSupervisorFaultGroup = 17u;
 static constexpr uint32_t kKindQueryFaultSummary   = 21u;
 static constexpr uint32_t kKindQuerySupervisorRecoveryStatus = 23u;
 static constexpr uint32_t kKindSendMessage         = 13u;
@@ -205,6 +206,7 @@ static constexpr int kMaxSchedThreads = 8;
 static FsSchedThread s_sched[kMaxSchedThreads];
 static uint32_t      s_sched_running_tid  = 0u;
 static bool          s_sched_ipc_delivered = false;
+static bool          s_sched_supervisor_fault_group_acknowledged = false;
 
 // ── Scheduler helper functions ────────────────────────────────────────────────
 
@@ -270,6 +272,7 @@ extern "C" void fs_sched_reset() noexcept {
     }
     s_sched_running_tid   = 0u;
     s_sched_ipc_delivered = false;
+    s_sched_supervisor_fault_group_acknowledged = false;
     fs_obs_reset();  // RFC-00BF: clear ring at start of each scheduler session
     fs_gov_reset();  // RFC-00C3: clear governance ring
 }
@@ -347,6 +350,14 @@ extern "C" uint64_t fs_sched_faulted_drained_count() noexcept {
             ++count;
     }
     return count;
+}
+
+extern "C" bool fs_sched_ack_supervisor_fault_group(uint32_t group_id) noexcept {
+    if (group_id != 1u) return false;
+    if (s_sched_supervisor_fault_group_acknowledged) return false;
+    if (fs_sched_faulted_total_count() == 0u) return false;
+    s_sched_supervisor_fault_group_acknowledged = true;
+    return true;
 }
 
 extern "C" bool fs_sched_fault_nth(uint32_t index,
@@ -908,6 +919,35 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 return;
             }
 
+            case kKindAcknowledgeSupervisorFaultGroup: {
+                if (req_size < 16u || rsp_size < kMinRspBytes) {
+                    write_u32(rsp, 8, kStatusInvalidRequest);
+                    fs_obs_record(s_current_el0_tid,
+                                  kKindAcknowledgeSupervisorFaultGroup,
+                                  kStatusInvalidRequest, 0u);
+                    return;
+                }
+
+                uint32_t group_id = 0u;
+                __builtin_memcpy(&group_id, req + 12, 4);
+                write_u32(rsp, 40, group_id);          // queried_tid reused as group_id
+                write_u32(rsp, 44, s_current_el0_tid); // caller_tid
+
+                if (!fs_sched_ack_supervisor_fault_group(group_id)) {
+                    write_u32(rsp, 8,  kStatusRetryLater);
+                    write_u32(rsp, 12, kRejectionFaultInboxEmpty);
+                    fs_obs_record(s_current_el0_tid,
+                                  kKindAcknowledgeSupervisorFaultGroup,
+                                  kStatusRetryLater, group_id);
+                    return;
+                }
+
+                fs_obs_record(s_current_el0_tid,
+                              kKindAcknowledgeSupervisorFaultGroup,
+                              kStatusOk, group_id);
+                return;
+            }
+
             case kKindQueryFaultSummary: {
                 if (rsp_size < kMinFaultSummaryRspBytes) {
                     write_u32(rsp, 8, kStatusInvalidRequest);
@@ -948,8 +988,12 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 const uint64_t faulted_total = fs_sched_faulted_total_count();
                 const uint64_t drained = fs_sched_faulted_drained_count();
                 const uint64_t recorded_groups = faulted_total ? 1u : 0u;
-                const uint64_t pending_groups = faulted_total ? 1u : 0u;
-                const uint64_t acknowledged_groups = 0u;
+                const uint64_t pending_groups =
+                    (faulted_total != 0u && !s_sched_supervisor_fault_group_acknowledged)
+                        ? 1u : 0u;
+                const uint64_t acknowledged_groups =
+                    (faulted_total != 0u && s_sched_supervisor_fault_group_acknowledged)
+                        ? 1u : 0u;
                 const uint64_t blocked_groups = 0u;
                 const uint64_t recoverable_threads = faulted_total;
                 const uint64_t quarantined_threads = faulted_total;

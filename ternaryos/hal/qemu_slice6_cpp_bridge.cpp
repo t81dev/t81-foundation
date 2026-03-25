@@ -501,6 +501,8 @@ extern "C" void canon_fault_detail_query_load_and_run() noexcept;
 extern "C" void canon_fault_ack_load_and_run() noexcept;
 // Phase 23 (RFC-00CD): EL0 supervisor recovery status query.
 extern "C" void canon_supervisor_recovery_query_load_and_run() noexcept;
+// Phase 24 (RFC-00CE): EL0 supervisor fault-group acknowledgement.
+extern "C" void canon_supervisor_ack_load_and_run() noexcept;
 // Slice6 shell introspection helpers (qemu_slice6_el0_svc_bridge.cpp).
 extern "C" uint64_t fs_sched_faulted_count() noexcept;
 extern "C" bool fs_sched_fault_nth(uint32_t index,
@@ -1087,6 +1089,16 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //     "[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)"
   if (s_has_blk) {
     canon_supervisor_recovery_query_load_and_run();
+  }
+
+  // Phase 24 (RFC-00CE): start a faulting thread with an EL0 observer thread
+  //   already Runnable. The observer drains tid=8, queries supervisor
+  //   recovery status, acknowledges supervisor fault group 1, and then proves
+  //   recovery moved from pending to acknowledged.
+  //   CI gate:
+  //     "[axion] el0: supervisor ack OK (tid=13 pending->0 acked=1)"
+  if (s_has_blk) {
+    canon_supervisor_ack_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");

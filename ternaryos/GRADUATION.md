@@ -168,7 +168,7 @@ struct FsGovRecord {
 
 ---
 
-## 5. CI Gates (Phases 11–23)
+## 5. CI Gates (Phases 11–24)
 
 | Phase | CI gate string |
 |-------|----------------|
@@ -185,6 +185,7 @@ struct FsGovRecord {
 | 21 | `[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)` |
 | 22 | `[axion] el0: fault ack OK (tid=11 drained tid=8 fault)` |
 | 23 | `[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)` |
+| 24 | `[axion] el0: supervisor ack OK (tid=13 pending->0 acked=1)` |
 
 ---
 

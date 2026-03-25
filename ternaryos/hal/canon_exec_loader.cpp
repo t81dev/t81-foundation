@@ -1010,6 +1010,7 @@ extern "C" bool fs_sched_ack_fault(uint32_t tid) noexcept;
 extern "C" uint64_t fs_sched_faulted_count() noexcept;
 extern "C" uint64_t fs_sched_faulted_total_count() noexcept;
 extern "C" uint64_t fs_sched_faulted_drained_count() noexcept;
+extern "C" bool fs_sched_ack_supervisor_fault_group(uint32_t group_id) noexcept;
 
 // ── Phase 18 (RFC-00C7): EL0 fault containment ───────────────────────────────
 //
@@ -1499,6 +1500,132 @@ extern "C" void canon_supervisor_recovery_query_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: supervisor recovery FAIL (bad EL0 recovery response)\r\n");
+    }
+}
+
+// ── Phase 24 (RFC-00CE): EL0 supervisor fault-group acknowledgement ────────
+//
+// Start a faulting thread first, with an EL0 observer thread already Runnable.
+// The observer:
+//   1. drains tid=8 through AcknowledgeThreadFault,
+//   2. queries supervisor recovery status and sees it pending,
+//   3. acknowledges supervisor fault group 1,
+//   4. queries supervisor recovery status again and sees it acknowledged.
+//
+// CI gate:
+//   "[axion] el0: supervisor ack OK (tid=13 pending->0 acked=1)"
+extern "C" void canon_supervisor_ack_load_and_run() noexcept {
+    const uint64_t code_pa_fault = load_t81x_v2_into(12u,
+                                                       el0_mmu_proc_code_page2(),
+                                                       "tid8/LBA12");
+    if (!code_pa_fault) return;
+
+    const uint64_t code_pa_query = load_t81x_v2_into(17u,
+                                                       el0_mmu_proc_code_page(),
+                                                       "tid13/LBA17");
+    if (!code_pa_query) return;
+
+    flush_icache_for_new_code();
+
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    fs_sched_reset();
+
+    const uint64_t stack_top_query = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_fault = el0_mmu_proc_stack_top2();
+
+    fs_sched_register(13u, code_pa_query, stack_top_query, 0x3C0u);
+    fs_sched_set_thread_l3(13u, 0u);
+
+    fs_sched_register(8u, code_pa_fault, stack_top_fault, 0x3C0u);
+    fs_sched_set_thread_l3(8u, 1u);
+    fs_sched_mark_running(8u);
+
+    el0_svc_set_current_tid(8u);
+    el0_mmu_install_thread_l3(1u);
+    run_proc_entry(code_pa_fault, stack_top_fault);
+
+    el0_svc_set_current_tid(1u);
+    el0_mmu_install_shared_l3();
+
+    const uint8_t* frame = reinterpret_cast<const uint8_t*>(
+        static_cast<uintptr_t>(stack_top_query - 672u));
+    const uint8_t* rsp1 = frame + 16u;
+    const uint8_t* rsp2 = frame + 80u;
+    const uint8_t* rsp3 = frame + 352u;
+    const uint8_t* rsp4 = frame + 416u;
+
+    const uint32_t thread_ack_status    = read_u32_le(rsp1 + 8u);
+    const uint32_t thread_ack_rejection = read_u32_le(rsp1 + 12u);
+    const uint32_t thread_ack_target    = read_u32_le(rsp1 + 40u);
+    const uint32_t thread_ack_caller    = read_u32_le(rsp1 + 44u);
+
+    const uint32_t pre_status   = read_u32_le(rsp2 + 8u);
+    const uint32_t pre_rej      = read_u32_le(rsp2 + 12u);
+    const uint32_t pre_caller   = read_u32_le(rsp2 + 44u);
+    const uint64_t pre_recorded = read_u64_le(rsp2 + 200u);
+    const uint64_t pre_pending  = read_u64_le(rsp2 + 208u);
+    const uint64_t pre_acked    = read_u64_le(rsp2 + 216u);
+    const uint64_t pre_drained  = read_u64_le(rsp2 + 240u);
+
+    const uint32_t group_ack_status    = read_u32_le(rsp3 + 8u);
+    const uint32_t group_ack_rejection = read_u32_le(rsp3 + 12u);
+    const uint32_t group_ack_target    = read_u32_le(rsp3 + 40u);
+    const uint32_t group_ack_caller    = read_u32_le(rsp3 + 44u);
+
+    const uint32_t post_status   = read_u32_le(rsp4 + 8u);
+    const uint32_t post_rej      = read_u32_le(rsp4 + 12u);
+    const uint32_t post_caller   = read_u32_le(rsp4 + 44u);
+    const uint64_t post_recorded = read_u64_le(rsp4 + 200u);
+    const uint64_t post_pending  = read_u64_le(rsp4 + 208u);
+    const uint64_t post_acked    = read_u64_le(rsp4 + 216u);
+    const uint64_t post_blocked  = read_u64_le(rsp4 + 224u);
+    const uint64_t post_recover  = read_u64_le(rsp4 + 232u);
+    const uint64_t post_drained  = read_u64_le(rsp4 + 240u);
+    const uint64_t post_quar     = read_u64_le(rsp4 + 248u);
+
+    const uint64_t retained_faults = fs_sched_faulted_count();
+    const uint64_t total_faults = fs_sched_faulted_total_count();
+    const uint64_t drained_faults = fs_sched_faulted_drained_count();
+
+    if (thread_ack_status == 0u &&
+        thread_ack_rejection == 0u &&
+        thread_ack_target == 8u &&
+        thread_ack_caller == 13u &&
+        pre_status == 0u &&
+        pre_rej == 0u &&
+        pre_caller == 13u &&
+        pre_recorded == 1u &&
+        pre_pending == 1u &&
+        pre_acked == 0u &&
+        pre_drained == 1u &&
+        group_ack_status == 0u &&
+        group_ack_rejection == 0u &&
+        group_ack_target == 1u &&
+        group_ack_caller == 13u &&
+        post_status == 0u &&
+        post_rej == 0u &&
+        post_caller == 13u &&
+        post_recorded == 1u &&
+        post_pending == 0u &&
+        post_acked == 1u &&
+        post_blocked == 0u &&
+        post_recover == 1u &&
+        post_drained == 1u &&
+        post_quar == 1u &&
+        retained_faults == 0u &&
+        total_faults == 1u &&
+        drained_faults == 1u) {
+        cel_pl011_puts("[axion] el0: supervisor ack OK (tid=13 pending->0 acked=1)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: supervisor ack FAIL (bad EL0 group ack response)\r\n");
     }
 }
 

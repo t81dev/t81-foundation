@@ -22,8 +22,31 @@ RFC-00B9 boundary note:
   broader scheduler lane has now **graduated** (see below)
 
 **Last updated:** 2026-03-25
-**Commit:** RFC-00CD supervisor recovery status added
+**Commit:** RFC-00CE supervisor fault-group acknowledgement added
 **Branch:** `main`
+
+---
+
+## RFC-00CE — Supervisor Fault-Group Acknowledgement (2026-03-25)
+
+Phase 24 activates `KernelCall(AcknowledgeSupervisorFaultGroup)` in the
+freestanding EL0 bridge.
+
+- **ABI decision:** reuse the already-frozen ordinal `17`
+  (`AcknowledgeSupervisorFaultGroup`) instead of inventing a new call.
+- **Freestanding mapping:** the slice6 lane defines a single synthetic
+  supervisor recovery group with `group_id == 1` whenever faulted threads
+  exist in the scheduler. Acknowledging that group clears
+  `pending_fault_groups` and raises `acknowledged_fault_groups`.
+- **Recovery distinction preserved:** thread-level drain remains separate from
+  supervisor-group acknowledgement. After `AcknowledgeThreadFault(8)`,
+  recovery still reports pending; after
+  `AcknowledgeSupervisorFaultGroup(1)`, recovery reports acknowledged.
+- **EL0 proof:** after `tid=8` faults, `tid=13` drains `tid=8`, queries
+  recovery state, acknowledges supervisor group `1`, then queries recovery
+  state again. EL1 validates the `pending -> acknowledged` transition from
+  `tid=13`'s stack.
+- **CI gate:** `[axion] el0: supervisor ack OK (tid=13 pending->0 acked=1)`
 
 ---
 

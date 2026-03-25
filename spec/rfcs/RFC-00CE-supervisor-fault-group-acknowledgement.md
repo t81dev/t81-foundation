@@ -1,6 +1,6 @@
 # RFC-00CE: Supervisor Fault-Group Acknowledgement
 
-**Status:** draft  
+**Status:** accepted  
 **Type:** standards-track  
 **Applies-To:** supervisor recovery lifecycle, fault-group acknowledgement, freestanding recovery bridge  
 **Created:** 2026-03-25  
@@ -146,7 +146,8 @@ RFC-00CE is additive.
    - supervisor recovery pending
    - group acknowledgement succeeds
    - recovery status changes deterministically afterward
-5. Add a CI gate for the Phase 24 proof.
+5. Add a Phase 24 CI gate:
+   `[axion] el0: supervisor ack OK (tid=13 pending->0 acked=1)`.
 
 ## Open Questions
 
@@ -161,9 +162,10 @@ RFC-00CE is additive.
 
 ## Acceptance Criteria
 
-- The role of ordinal `17` is specified coherently with RFC-00CD.
+- The role of ordinal `17` is activated coherently with RFC-00CD.
 - The RFC clearly distinguishes supervisor-group acknowledgement from
   thread-level drain.
 - A deterministic post-acknowledgement recovery-state transition is defined.
-- A concrete Phase 24 proof sequence is specified.
-- The design can be implemented without changing the frozen ABI ordinal table.
+- Phase 24 proves supervisor recovery moves from `pending_fault_groups == 1`
+  to `pending_fault_groups == 0` with `acknowledged_fault_groups == 1`.
+- The design is implemented without changing the frozen ABI ordinal table.
