@@ -424,6 +424,9 @@ static uint64_t s_sched_switches = 0;  // thread context switches
 static uint64_t s_interrupt_count = 0; // serial RX events (our interrupt source)
 static uint64_t s_timer_irqs     = 0;  // hardware timer IRQ count (GICv3 PPI30)
 static bool     s_has_blk        = false;
+static bool     s_el0_page_isolated = false;
+static bool     s_el0_init_ok = false;
+static bool     s_el0_kernel_call_bridge_ok = false;
 
 static constexpr uint64_t kSchedTickInterval = 500u;
 
@@ -592,6 +595,7 @@ static void cmd_help() noexcept {
   pl011_puts("  version  -- T81 build info\r\n");
   pl011_puts("  canonfs  -- storage transport and probe status\r\n");
   pl011_puts("  irq      -- timer IRQ and governed wake counters\r\n");
+  pl011_puts("  el0      -- EL0 bridge and capability status\r\n");
   pl011_puts("  status   -- kernel counters and governance state\r\n");
   pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
@@ -647,6 +651,24 @@ static void cmd_irq() noexcept {
   pl011_puts("\r\n");
   pl011_puts("    async_switch  : ");
   pl011_puts(u64_dec(async, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+}
+
+static void cmd_el0() noexcept {
+  pl011_puts("  [el0]\r\n");
+  pl011_puts("    page_isolation: ");
+  pl011_puts(s_el0_page_isolated ? "active" : "inactive");
+  pl011_puts("\r\n");
+  pl011_puts("    init_probe    : ");
+  pl011_puts(s_el0_init_ok ? "ok" : "not-run");
+  pl011_puts("\r\n");
+  pl011_puts("    svc_bridge    : ");
+  pl011_puts(s_el0_kernel_call_bridge_ok ? "wired" : "not-wired");
+  pl011_puts("\r\n");
+  pl011_puts("    fault_summary : available\r\n");
+  pl011_puts("    fault_detail  : available\r\n");
+  pl011_puts("    canonfs_lane  : ");
+  pl011_puts(s_has_blk ? "enabled" : "unavailable (no store)");
   pl011_puts("\r\n");
 }
 
@@ -812,6 +834,7 @@ static void shell_dispatch(const char* line) noexcept {
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
   else if (str_eq(line, "irq"))     { cmd_irq(); }
+  else if (str_eq(line, "el0"))     { cmd_el0(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
@@ -870,6 +893,7 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   // el0_mmu_init() replaces EDK2's identity-mapped TTBR0 with a minimal table
   // that maps only the code page (EL0 R+X) and the stack page (EL0 R/W).
   el0_mmu_init();
+  s_el0_page_isolated = true;
   pl011_puts("[axion] el0: page-isolated (TTBR0 active, EL0 stack mapped)\r\n");
 
   // EL0 init probe: ERET to axion_el0_entry at EL0t.
@@ -878,7 +902,9 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //   SVC #3 (WriteSerial) → "[axion] el0: init OK (tid=1)\r\n"
   //   SVC #2 (ExitThread)  → ERET returns here
   run_el0_init();
+  s_el0_init_ok = true;
   // Phase 6 CI gate: KernelCall SVC bridge is wired if we reached this point.
+  s_el0_kernel_call_bridge_ok = true;
   pl011_puts("[axion] el0: kernel call bridge OK (KernelCall SVC wired)\r\n");
 
   // Phase 7: CanonFS process loading — read T81X from LBA 3, copy to proc code

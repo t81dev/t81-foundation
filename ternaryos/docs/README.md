@@ -456,6 +456,7 @@ commands are:
 - `version`
 - `canonfs`
 - `irq`
+- `el0`
 - `status`
 - `threads`
 - `sched`

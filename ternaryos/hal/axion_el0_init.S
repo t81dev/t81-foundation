@@ -48,7 +48,9 @@
     // RFC-00BD: use named KernelCallKind constants; no literal ordinals.
     .include "kernelcall_abi.inc"
 
-    .section .text, "ax"
+    // Keep the EL0 init stub in its own executable section so axion_el0_entry
+    // and its local banner string remain within the same mapped 4 KB page.
+    .section .axion_el0_init, "ax"
     .balign 16
     .global axion_el0_entry
 
