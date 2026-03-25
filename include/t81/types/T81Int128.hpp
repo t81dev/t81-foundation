@@ -5,31 +5,32 @@
 #include <intrin.h>
 
 #if defined(__clang__)
-inline uint64_t clang_udiv128(uint64_t high, uint64_t low, uint64_t divisor, uint64_t *remainder) {
-    if (divisor == 0) {
-        if (remainder) *remainder = 0;
-        return 0;
-    }
-    if (high >= divisor) {
-        if (remainder) *remainder = 0;
-        return 0; // Overflow condition not fully handled as per _udiv128 spec, but we mimic MSVC's constraint
-    }
+inline uint64_t clang_udiv128(uint64_t high, uint64_t low, uint64_t divisor, uint64_t* remainder) {
+  if (divisor == 0) {
+    if (remainder) *remainder = 0;
+    return 0;
+  }
+  if (high >= divisor) {
+    if (remainder) *remainder = 0;
+    return 0;  // Overflow condition not fully handled as per _udiv128 spec, but we mimic MSVC's
+               // constraint
+  }
 
-    uint64_t q = 0;
-    uint64_t r = high;
-    for (int i = 0; i < 64; ++i) {
-        uint64_t next_bit = (low >> 63) & 1;
-        low <<= 1;
-        r = (r << 1) | next_bit;
-        if (r >= divisor) {
-            r -= divisor;
-            q = (q << 1) | 1;
-        } else {
-            q <<= 1;
-        }
+  uint64_t q = 0;
+  uint64_t r = high;
+  for (int i = 0; i < 64; ++i) {
+    uint64_t next_bit = (low >> 63) & 1;
+    low <<= 1;
+    r = (r << 1) | next_bit;
+    if (r >= divisor) {
+      r -= divisor;
+      q = (q << 1) | 1;
+    } else {
+      q <<= 1;
     }
-    if (remainder) *remainder = r;
-    return q;
+  }
+  if (remainder) *remainder = r;
+  return q;
 }
 #define T81_UDIV128 clang_udiv128
 #else
