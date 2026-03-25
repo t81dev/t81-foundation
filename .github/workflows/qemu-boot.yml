@@ -864,6 +864,66 @@ jobs:
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]
 
+      - name: Validate slice6 shell smoke
+        run: |
+          cp /usr/share/AAVMF/AAVMF_VARS.fd /tmp/edk2-shell-vars.fd
+          rm -f shell-smoke.log shell-smoke.in
+          mkfifo shell-smoke.in
+
+          cleanup() {
+            if [[ -n "${QEMU_PID:-}" ]]; then
+              kill "$QEMU_PID" >/dev/null 2>&1 || true
+              wait "$QEMU_PID" 2>/dev/null || true
+            fi
+            rm -f shell-smoke.in
+          }
+          trap cleanup EXIT
+
+          qemu-system-aarch64 \
+            -nodefaults \
+            -machine virt,gic-version=3 \
+            -cpu cortex-a57 \
+            -m 512M \
+            -nographic \
+            -monitor none \
+            -serial stdio \
+            -global virtio-mmio.force-legacy=off \
+            -drive if=pflash,format=raw,readonly=on,file=/usr/share/AAVMF/AAVMF_CODE.fd \
+            -drive if=pflash,format=raw,file=/tmp/edk2-shell-vars.fd \
+            -drive id=boot0,if=none,format=raw,file=boot.img \
+            -device virtio-blk-device,drive=boot0,bootindex=0 \
+            < shell-smoke.in > shell-smoke.log 2>&1 &
+          QEMU_PID=$!
+
+          {
+            sleep 10
+            printf 'help\rcanonfs\rirq\rel0\rfaults\rgov\r'
+          } > shell-smoke.in &
+          WRITER_PID=$!
+
+          sleep 14
+          kill "$QEMU_PID" >/dev/null 2>&1 || true
+          wait "$QEMU_PID" 2>/dev/null || true
+          wait "$WRITER_PID" 2>/dev/null || true
+
+          check() {
+            if grep -qF "$1" shell-smoke.log 2>/dev/null; then
+              echo "PASS: $1"
+            else
+              echo "FAIL: $1"
+              exit 1
+            fi
+          }
+
+          check "[axion] t81sh: ready (principal=axion, tier=1)"
+          check "[axion@T81 tier=1]$"
+          check "help     -- this message"
+          check "[canonfs]"
+          check "[irq]"
+          check "[el0]"
+          check "[faults]"
+          check "[governance]"
+
       # ── Update sample boot log ────────────────────────────────────────────
       - name: Update sample-boot-log.txt
         run: |
@@ -899,5 +959,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: qemu-serial-log
-          path: serial.log
+          path: |
+            serial.log
+            shell-smoke.log
           retention-days: 30
