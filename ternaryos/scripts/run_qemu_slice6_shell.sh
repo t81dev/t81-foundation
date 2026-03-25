@@ -5,9 +5,9 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PA
 
 # run_qemu_slice6_shell.sh
 #
-# Builds the Slice 6 QEMU AArch64 disk image from the current build tree and
+# Builds the current QEMU AArch64 disk image from the current build tree and
 # boots it interactively, attaching the serial console to stdio so the user can
-# work directly at the `t81sh` prompt.
+# work directly at the Axion serial shell (`t81sh`) prompt.
 #
 # Usage:
 #   run_qemu_slice6_shell.sh <build-dir> [canon-store-img]
@@ -82,7 +82,7 @@ else
   cpu_arg="cortex-a57"
 fi
 
-echo "booting slice6 shell:"
+echo "booting Axion serial shell:"
 echo "  image: $arm_image"
 echo "  vars:  $vars_copy"
 if [[ -n "$canon_store" ]]; then

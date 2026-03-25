@@ -409,10 +409,10 @@ What it is not yet:
 - a general command parser or process manager
 - arbitrary command piping or process composition
 
-## Slice6 Serial Shell
+## Axion Serial Shell
 
-To boot the AArch64 slice6 kernel under QEMU and drop into the freestanding
-serial shell:
+To boot the current AArch64 QEMU/EDK2 kernel lane under QEMU and drop into the
+Axion serial shell:
 
 ```sh
 cmake --build build --target t81_ternaryos_qemu_slice6_shell
@@ -445,13 +445,13 @@ To exercise the CanonFS operator actions against a persistent store image:
 Notes:
 
 - the launcher defaults to `tcg` because it is more reliable than `hvf` on the
-  slice6 EL0 scheduler and shell handoff path
+  current EL0 scheduler and shell handoff path
 - override the accelerator explicitly with `T81_QEMU_ACCEL=hvf` if you want to
   try the hardware-accelerated lane anyway
 - exit QEMU with `Ctrl-a x`
 - the early `ArmTrngLib`, `Tpm2*`, and `Error: Image at ... start failed`
   lines come from stock EDK2 probing optional firmware features; they are not
-  the slice6 kernel failing to boot
+  the Axion serial shell failing to boot
 
 Boot is complete when serial reaches:
 
@@ -482,7 +482,7 @@ commands are:
 - `policy`
 
 `tui` is a shared shell entry command, but it does not launch a guest-native UI
-from slice6 yet. In the current branch it reports the hosted frontend entry
+from the serial shell yet. In the current branch it reports the hosted frontend entry
 path:
 
 ```text
@@ -490,8 +490,10 @@ path:
 ```
 
 That command surface comes from the bare-metal bridge in
-`hal/qemu_slice6_cpp_bridge.cpp`. It is separate from the broader hosted Phase
-5 shell/TUI command model documented above.
+`hal/qemu_slice6_cpp_bridge.cpp`. Internally this boot lane is still called
+`slice6`; that is an implementation/build name, not the user-facing shell name.
+It is separate from the broader hosted Phase 5 shell/TUI command model
+documented above.
 
 The `canonfs` subcommands are intentionally narrow:
 
