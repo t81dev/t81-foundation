@@ -120,7 +120,7 @@ check() {
 
 check "[axion] t81sh: ready (principal=axion, tier=1)"
 check "[axion@T81 tier=1]$"
-check "help     -- this message"
+check "help      -- show available commands"
 check "[canonfs]"
 check "[irq]"
 check "[el0]"

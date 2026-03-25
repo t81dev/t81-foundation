@@ -22,6 +22,8 @@
 
 #include <stdint.h>
 
+#include "../shell/command_catalog.hpp"
+
 // ── QEMU virt AArch64 memory map ─────────────────────────────────────────────
 
 static constexpr uint64_t kPl011Base     = UINT64_C(0x09000000);
@@ -64,6 +66,12 @@ static void pl011_putchar(char c) noexcept {
 
 static void pl011_puts(const char* s) noexcept {
   while (*s) pl011_putchar(*s++);
+}
+
+static unsigned long long cstr_len(const char* s) noexcept {
+  unsigned long long len = 0u;
+  while (s[len] != '\0') ++len;
+  return len;
 }
 
 static bool pl011_rx_ready() noexcept {
@@ -660,19 +668,20 @@ static void freestanding_sched_tick() noexcept {
 // ── Shell command handlers ────────────────────────────────────────────────────
 
 static void cmd_help() noexcept {
-  pl011_puts("  help     -- this message\r\n");
-  pl011_puts("  uname    -- system identity (RFC-00B9 §8.3)\r\n");
-  pl011_puts("  version  -- T81 build info\r\n");
-  pl011_puts("  canonfs  -- storage status / ls / hash / run\r\n");
-  pl011_puts("  irq      -- timer IRQ and governed wake counters\r\n");
-  pl011_puts("  el0      -- EL0 bridge and capability status\r\n");
-  pl011_puts("  waits    -- device-wait scheduler view\r\n");
-  pl011_puts("  status   -- kernel counters and governance state\r\n");
-  pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
-  pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
-  pl011_puts("  faults   -- retained EL0 fault records (tid, ec, far)\r\n");
-  pl011_puts("  gov      -- governance ring counters by event\r\n");
-  pl011_puts("  policy   -- Axion policy summary\r\n");
+  for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
+    if (!spec.freestanding_slice6) continue;
+    pl011_puts("  ");
+    pl011_puts(spec.name);
+    const auto name_len = cstr_len(spec.name);
+    if (name_len < 9u) {
+      for (unsigned long long i = name_len; i < 9u; ++i) pl011_puts(" ");
+    } else {
+      pl011_puts(" ");
+    }
+    pl011_puts(" -- ");
+    pl011_puts(spec.summary);
+    pl011_puts("\r\n");
+  }
 }
 
 static void cmd_uname() noexcept {
