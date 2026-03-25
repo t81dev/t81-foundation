@@ -33,10 +33,12 @@ canon_store=${2:-}
 script_dir=${0:A:h}
 repo_root=${script_dir:h:h}
 cmake_bin=${T81_CMAKE_BIN:-/opt/homebrew/bin/cmake}
+python_bin=${T81_PYTHON_BIN:-/usr/bin/python3}
 
 qemu_bin=${T81_QEMU_BIN:-/opt/homebrew/bin/qemu-system-aarch64}
 edk2_code=${T81_EDK2_CODE:-/opt/homebrew/share/qemu/edk2-aarch64-code.fd}
 edk2_vars_template=${T81_EDK2_VARS:-/opt/homebrew/share/qemu/edk2-arm-vars.fd}
+tui_bin=${T81_SHELL_TUI_BIN:-$build_dir/t81_ternaryos_shell_tui}
 
 for path in "$cmake_bin" "$qemu_bin" "$edk2_code" "$edk2_vars_template" "$build_dir"; do
   if [[ ! -e "$path" ]]; then
@@ -56,6 +58,16 @@ output_dir="$build_dir/ternaryos/qemu_slice6_shell"
 # Always refresh the slice6 EFI first so the interactive shell cannot boot a
 # stale BOOTAA64.EFI after shell/backend changes.
 "$cmake_bin" --build "$build_dir" --target t81_ternaryos_qemu_slice6_efi
+
+tui_handoff_enabled=0
+if [[ -x "$python_bin" ]]; then
+  if [[ ! -x "$tui_bin" && -z "${T81_SHELL_TUI_BIN:-}" ]]; then
+    "$cmake_bin" --build "$build_dir" --target t81_ternaryos_shell_tui >/dev/null 2>&1 || true
+  fi
+  if [[ -x "$tui_bin" ]]; then
+    tui_handoff_enabled=1
+  fi
+fi
 
 /bin/zsh "$script_dir/build_qemu_slice6_artifact.sh" "$build_dir" "$output_dir"
 
@@ -89,6 +101,11 @@ if [[ -n "$canon_store" ]]; then
   echo "  canon: $canon_store"
 fi
 echo "  accel: $accel"
+if [[ "$tui_handoff_enabled" -eq 1 ]]; then
+  echo "  tui:   host-assisted handoff enabled"
+else
+  echo "  tui:   hosted handoff unavailable"
+fi
 echo "  exit:  Ctrl-a x"
 
 cmd=(
@@ -113,6 +130,13 @@ if [[ -n "$canon_store" ]]; then
     -drive "id=canon0,if=none,format=raw,file=$canon_store"
     -device "virtio-blk-device,drive=canon0,bootindex=1"
   )
+fi
+
+if [[ "$tui_handoff_enabled" -eq 1 ]]; then
+  exec "$python_bin" "$script_dir/qemu_shell_handoff.py" \
+    --trigger "[axion tui handoff] hosted-phase5" \
+    --launch "$tui_bin" \
+    -- "${cmd[@]}"
 fi
 
 exec "${cmd[@]}"

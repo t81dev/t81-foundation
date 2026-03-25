@@ -1120,6 +1120,7 @@ jobs:
           check "help      -- show available commands"
           check "tui       -- show TUI frontend entry / handoff status"
           check "[axion tui]"
+          check "[axion tui handoff] hosted-phase5"
           check "[canonfs]"
           check "[canonfs inventory]"
           check "alias         : proc-stub"

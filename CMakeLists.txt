@@ -1071,7 +1071,9 @@ if(T81_ENABLE_TERNARYOS)
               -I${CMAKE_CURRENT_SOURCE_DIR}/ternaryos
               -o ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ}
       DEPENDS
-              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_cpp_bridge.cpp)
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/hal/qemu_slice6_cpp_bridge.cpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/shell/command_catalog.hpp
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/shell/shared_command_core.hpp)
     add_custom_target(t81_ternaryos_qemu_slice6_cpp_obj
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_CPP_OBJ})
 

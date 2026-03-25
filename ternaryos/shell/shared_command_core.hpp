@@ -106,8 +106,9 @@ inline const char* shell_tui_text(ShellSurface surface) {
     case ShellSurface::FreestandingSlice6:
       return "[axion tui]\n"
              "  frontend    : unavailable in slice6 guest\n"
-             "  handoff     : not implemented\n"
-             "  host entry  : ./build/t81_ternaryos_shell_tui";
+             "  handoff     : host-assisted launcher bridge\n"
+             "  host entry  : ./build/t81_ternaryos_shell_tui\n"
+             "  [axion tui handoff] hosted-phase5";
   }
   return "[axion tui]";
 }

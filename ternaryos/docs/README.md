@@ -482,12 +482,16 @@ commands are:
 - `policy`
 
 `tui` is a shared shell entry command, but it does not launch a guest-native UI
-from the serial shell yet. In the current branch it reports the hosted frontend entry
-path:
+from the serial shell yet. When you boot through
+`run_qemu_slice6_shell.sh`, the launcher now watches for the shell handoff token,
+shuts down QEMU, and opens the hosted frontend at:
 
 ```text
 ./build/t81_ternaryos_shell_tui
 ```
+
+If you boot the EFI image through raw QEMU instead of the launcher, `tui`
+prints the same handoff target and token but does not auto-launch anything.
 
 That command surface comes from the bare-metal bridge in
 `hal/qemu_slice6_cpp_bridge.cpp`. Internally this boot lane is still called
