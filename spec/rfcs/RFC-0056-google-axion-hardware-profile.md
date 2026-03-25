@@ -1,6 +1,6 @@
 # RFC-0056 Google Axion Hardware Target Profile
 
-**Status:** draft
+**Status:** accepted
 **Type:** hardware-profile
 **Applies-To:** Google Axion Processor (C4A/N4A instances)
 **Created:** 2026-03-19

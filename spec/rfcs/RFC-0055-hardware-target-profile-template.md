@@ -1,6 +1,6 @@
 # RFC-0055 Hardware Target Profile Template
 
-**Status:** draft
+**Status:** accepted
 **Type:** hardware-profile
 **Applies-To:** [target device or family]
 **Created:** [YYYY-MM-DD]
