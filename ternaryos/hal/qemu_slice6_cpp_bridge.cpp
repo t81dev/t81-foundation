@@ -357,7 +357,20 @@ static bool str_eq(const char* a, const char* b) noexcept {
   return *a == *b;
 }
 
+static bool str_starts_with(const char* s, const char* prefix) noexcept {
+  while (*prefix) {
+    if (*s++ != *prefix++) return false;
+  }
+  return true;
+}
+
 static const char* str_trim(const char* s) noexcept {
+  while (*s == ' ') ++s;
+  return s;
+}
+
+static const char* str_after_token(const char* s) noexcept {
+  while (*s && *s != ' ') ++s;
   while (*s == ' ') ++s;
   return s;
 }
@@ -427,6 +440,38 @@ static bool     s_has_blk        = false;
 static bool     s_el0_page_isolated = false;
 static bool     s_el0_init_ok = false;
 static bool     s_el0_kernel_call_bridge_ok = false;
+
+struct CanonFsArtifact {
+  const char* alias;
+  uint64_t    lba;
+  uint8_t     t81x_version;
+  bool        runnable;
+};
+
+static constexpr CanonFsArtifact kCanonFsArtifacts[] = {
+  {"proc-stub",            3u, 1u, true},
+  {"ipc-a",                4u, 1u, false},
+  {"ipc-b",                5u, 1u, false},
+  {"sched-a",              6u, 1u, false},
+  {"sched-b",              7u, 1u, false},
+  {"wait-test",            8u, 2u, true},
+  {"wait-test-manifest",   9u, 0u, false},
+  {"irq-wake",            10u, 2u, false},
+  {"device-filter",       11u, 2u, false},
+  {"fault-test",          12u, 2u, true},
+  {"fault-summary",       13u, 2u, false},
+  {"fault-detail",        14u, 2u, false},
+  {"fault-ack",           15u, 2u, false},
+  {"supervisor-recovery", 16u, 2u, false},
+  {"supervisor-ack",      17u, 2u, false},
+};
+
+static const CanonFsArtifact* find_canonfs_artifact(const char* alias) noexcept {
+  for (const auto& artifact : kCanonFsArtifacts) {
+    if (str_eq(alias, artifact.alias)) return &artifact;
+  }
+  return nullptr;
+}
 
 static constexpr uint64_t kSchedTickInterval = 500u;
 
@@ -604,7 +649,7 @@ static void cmd_help() noexcept {
   pl011_puts("  help     -- this message\r\n");
   pl011_puts("  uname    -- system identity (RFC-00B9 §8.3)\r\n");
   pl011_puts("  version  -- T81 build info\r\n");
-  pl011_puts("  canonfs  -- storage transport and probe status\r\n");
+  pl011_puts("  canonfs  -- storage status / ls / hash / run\r\n");
   pl011_puts("  irq      -- timer IRQ and governed wake counters\r\n");
   pl011_puts("  el0      -- EL0 bridge and capability status\r\n");
   pl011_puts("  waits    -- device-wait scheduler view\r\n");
@@ -645,6 +690,121 @@ static void cmd_canonfs() noexcept {
     pl011_puts("    transport     : none\r\n");
     pl011_puts("    io_probe      : skipped (no virtio-blk store)\r\n");
   }
+}
+
+static void cmd_canonfs_ls() noexcept {
+  char buf[24];
+  pl011_puts("  [canonfs inventory]\r\n");
+  if (!s_has_blk) {
+    pl011_puts("    unavailable   : no persistent CanonFS store attached\r\n");
+    return;
+  }
+
+  for (const auto& artifact : kCanonFsArtifacts) {
+    pl011_puts("    ");
+    pl011_puts(artifact.alias);
+    pl011_puts("  lba=");
+    pl011_puts(u64_dec(artifact.lba, buf, static_cast<int>(sizeof(buf))));
+    if (artifact.t81x_version == 0u) {
+      pl011_puts("  kind=T81M");
+    } else {
+      pl011_puts("  kind=T81Xv");
+      pl011_puts(u64_dec(static_cast<uint64_t>(artifact.t81x_version), buf,
+                         static_cast<int>(sizeof(buf))));
+    }
+    pl011_puts("  run=");
+    pl011_puts(artifact.runnable ? "yes" : "no");
+    pl011_puts("\r\n");
+  }
+}
+
+static void cmd_canonfs_hash(const char* alias) noexcept {
+  char buf[24];
+  char hex[24];
+
+  pl011_puts("  [canonfs hash]\r\n");
+  if (!s_has_blk) {
+    pl011_puts("    unavailable   : no persistent CanonFS store attached\r\n");
+    return;
+  }
+
+  const CanonFsArtifact* artifact = find_canonfs_artifact(alias);
+  if (!artifact) {
+    pl011_puts("    error         : unknown artifact alias\r\n");
+    return;
+  }
+
+  pl011_puts("    alias         : ");
+  pl011_puts(artifact->alias);
+  pl011_puts("\r\n");
+  pl011_puts("    lba           : ");
+  pl011_puts(u64_dec(artifact->lba, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  if (!canon_store_read_lba(artifact->lba)) {
+    pl011_puts("    error         : LBA read error\r\n");
+    return;
+  }
+
+  const uint8_t* sec = canon_store_sector_buf();
+  if (artifact->t81x_version == 0u) {
+    pl011_puts("    hash          : unavailable (manifest)\r\n");
+    return;
+  }
+
+  if (sec[0] != 'T' || sec[1] != '8' || sec[2] != '1' || sec[3] != 'X') {
+    pl011_puts("    error         : bad T81X magic\r\n");
+    return;
+  }
+  if (sec[4] != artifact->t81x_version) {
+    pl011_puts("    error         : unexpected T81X version\r\n");
+    return;
+  }
+  if (artifact->t81x_version < 2u) {
+    pl011_puts("    hash          : unavailable (T81X v1)\r\n");
+    return;
+  }
+
+  uint64_t stored_hash = 0u;
+  __builtin_memcpy(&stored_hash, sec + 19u, 8);
+  pl011_puts("    code_hash     : ");
+  pl011_puts(u64_hex(stored_hash, hex, static_cast<int>(sizeof(hex))));
+  pl011_puts("\r\n");
+}
+
+static void cmd_canonfs_run(const char* alias) noexcept {
+  pl011_puts("  [canonfs run]\r\n");
+  if (!s_has_blk) {
+    pl011_puts("    unavailable   : no persistent CanonFS store attached\r\n");
+    return;
+  }
+
+  const CanonFsArtifact* artifact = find_canonfs_artifact(alias);
+  if (!artifact) {
+    pl011_puts("    error         : unknown artifact alias\r\n");
+    return;
+  }
+  if (!artifact->runnable) {
+    pl011_puts("    error         : artifact is not operator-runnable\r\n");
+    return;
+  }
+
+  pl011_puts("    launch        : ");
+  pl011_puts(artifact->alias);
+  pl011_puts("\r\n");
+
+  if (str_eq(alias, "proc-stub")) {
+    canon_exec_load_and_run();
+  } else if (str_eq(alias, "wait-test")) {
+    canon_identity_load_and_run();
+  } else if (str_eq(alias, "fault-test")) {
+    canon_fault_contain_load_and_run();
+  } else {
+    pl011_puts("    error         : runnable alias not wired\r\n");
+    return;
+  }
+
+  pl011_puts("    complete      : returned to shell\r\n");
 }
 
 static void cmd_irq() noexcept {
@@ -888,6 +1048,13 @@ static void shell_dispatch(const char* line) noexcept {
   else if (str_eq(line, "uname"))   { cmd_uname(); }
   else if (str_eq(line, "version")) { cmd_version(); }
   else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
+  else if (str_eq(line, "canonfs ls")) { cmd_canonfs_ls(); }
+  else if (str_starts_with(line, "canonfs hash ")) {
+    cmd_canonfs_hash(str_trim(str_after_token(str_after_token(line))));
+  }
+  else if (str_starts_with(line, "canonfs run ")) {
+    cmd_canonfs_run(str_trim(str_after_token(str_after_token(line))));
+  }
   else if (str_eq(line, "irq"))     { cmd_irq(); }
   else if (str_eq(line, "el0"))     { cmd_el0(); }
   else if (str_eq(line, "waits"))   { cmd_waits(); }

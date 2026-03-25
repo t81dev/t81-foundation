@@ -1090,12 +1090,14 @@ jobs:
             -drive if=pflash,format=raw,file=/tmp/edk2-shell-vars.fd \
             -drive id=boot0,if=none,format=raw,file=boot.img \
             -device virtio-blk-device,drive=boot0,bootindex=0 \
+            -drive id=canon0,if=none,format=raw,file=canon_store.img \
+            -device virtio-blk-device,drive=canon0,bootindex=1 \
             < shell-smoke.in > shell-smoke.log 2>&1 &
           QEMU_PID=$!
 
           {
             sleep 10
-            printf 'help\rcanonfs\rirq\rel0\rfaults\rgov\r'
+            printf 'help\rcanonfs\rcanonfs ls\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
           } > shell-smoke.in &
           WRITER_PID=$!
 
@@ -1117,6 +1119,10 @@ jobs:
           check "[axion@T81 tier=1]$"
           check "help     -- this message"
           check "[canonfs]"
+          check "[canonfs inventory]"
+          check "code_hash     :"
+          check "launch        : proc-stub"
+          check "complete      : returned to shell"
           check "[irq]"
           check "[el0]"
           check "[faults]"

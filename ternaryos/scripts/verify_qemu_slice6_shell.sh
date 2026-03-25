@@ -10,15 +10,16 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:${PA
 # reaches the prompt and exposes the current operator command surface.
 #
 # Usage:
-#   verify_qemu_slice6_shell.sh <build-dir> [output-dir]
+#   verify_qemu_slice6_shell.sh <build-dir> [output-dir] [canon-store-img]
 
-if [[ $# -lt 1 || $# -gt 2 ]]; then
-  echo "usage: $0 <build-dir> [output-dir]" >&2
+if [[ $# -lt 1 || $# -gt 3 ]]; then
+  echo "usage: $0 <build-dir> [output-dir] [canon-store-img]" >&2
   exit 2
 fi
 
 build_dir=$1
 output_dir=${2:-"$build_dir/ternaryos/qemu_slice6_shell_smoke"}
+canon_store_img=${3:-}
 
 script_dir=${0:A:h}
 qemu_bin=${T81_QEMU_BIN:-/opt/homebrew/bin/qemu-system-aarch64}
@@ -31,6 +32,10 @@ for path in "$qemu_bin" "$edk2_code" "$edk2_vars_template" "$build_dir"; do
     exit 1
   fi
 done
+if [[ -n "$canon_store_img" && ! -e "$canon_store_img" ]]; then
+  echo "missing required path: $canon_store_img" >&2
+  exit 1
+fi
 
 /bin/mkdir -p "$output_dir"
 /bin/zsh "$script_dir/build_qemu_slice6_artifact.sh" "$build_dir" "$output_dir"
@@ -78,13 +83,23 @@ qemu_cmd=(
   -drive "id=boot0,if=none,format=raw,file=$arm_image"
   -device "virtio-blk-device,drive=boot0,bootindex=0"
 )
+if [[ -n "$canon_store_img" ]]; then
+  qemu_cmd+=(
+    -drive "id=canon0,if=none,format=raw,file=$canon_store_img"
+    -device "virtio-blk-device,drive=canon0,bootindex=1"
+  )
+fi
 
 "${qemu_cmd[@]}" <"$stdin_fifo" >"$log_file" 2>&1 &
 qemu_pid=$!
 
 {
   /bin/sleep 10
-  printf 'help\rcanonfs\rirq\rel0\rfaults\rgov\r'
+  if [[ -n "$canon_store_img" ]]; then
+    printf 'help\rcanonfs\rcanonfs ls\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
+  else
+    printf 'help\rcanonfs\rirq\rel0\rfaults\rgov\r'
+  fi
 } >"$stdin_fifo" &
 writer_pid=$!
 
@@ -111,6 +126,12 @@ check "[irq]"
 check "[el0]"
 check "[faults]"
 check "[governance]"
+if [[ -n "$canon_store_img" ]]; then
+  check "[canonfs inventory]"
+  check "code_hash     :"
+  check "launch        : proc-stub"
+  check "complete      : returned to shell"
+fi
 
 echo "Slice6 shell smoke-check succeeded."
 echo "log: $log_file"

@@ -436,6 +436,12 @@ For a noninteractive boot-to-prompt smoke check:
 cmake --build build --target t81_ternaryos_qemu_slice6_shell_smoke
 ```
 
+To exercise the CanonFS operator actions against a persistent store image:
+
+```sh
+./ternaryos/scripts/verify_qemu_slice6_shell.sh build /tmp/qemu_slice6_shell_smoke /path/to/canon_store.img
+```
+
 Notes:
 
 - the launcher defaults to `tcg` because it is more reliable than `hvf` on the
@@ -461,6 +467,9 @@ commands are:
 - `uname`
 - `version`
 - `canonfs`
+- `canonfs ls`
+- `canonfs hash <alias>`
+- `canonfs run <alias>`
 - `irq`
 - `el0`
 - `waits`
@@ -474,6 +483,14 @@ commands are:
 That command surface comes from the bare-metal bridge in
 `hal/qemu_slice6_cpp_bridge.cpp`. It is separate from the broader hosted Phase
 5 shell/TUI command model documented above.
+
+The `canonfs` subcommands are intentionally narrow:
+
+- `canonfs` reports the current storage mode and retained I/O probe state
+- `canonfs ls` shows the known boot-lane artifact aliases and LBAs
+- `canonfs hash <alias>` reports the retained T81X v2 `code_hash` when present
+- `canonfs run <alias>` launches a small allowlisted artifact and returns to
+  the shell after the EL0 helper completes
 
 Local hosted proof as of the current branch:
 
