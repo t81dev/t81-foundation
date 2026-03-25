@@ -13,6 +13,8 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -32,6 +34,8 @@ struct ShellTuiHandoff {
   std::string status_line;
   std::vector<std::string> transcript_lines;
 };
+
+std::vector<std::string> split_lines(const std::string& text);
 
 const char* env_or_null(const char* name) {
   const char* value = std::getenv(name);
@@ -93,6 +97,137 @@ std::string shell_tui_canonfs_value(const t81::ternaryos::ShellCommandContext& c
   if (!handoff.canonfs_mode_summary.empty()) return handoff.canonfs_mode_summary;
   return context.canonfs_mode_summary != nullptr ? context.canonfs_mode_summary : "n/a";
 }
+
+std::string render_text_block(const char* text) {
+  return text != nullptr ? std::string(text) : std::string();
+}
+
+std::string render_help_text() {
+  std::ostringstream out;
+  out << "builtins";
+  t81::ternaryos::shell_emit_help(
+      t81::ternaryos::ShellSurface::HostedPhase5,
+      [&](const char* name, const char* summary) {
+        out << '\n' << name << " -- " << summary;
+      });
+  return out.str();
+}
+
+std::string render_status_text(const t81::ternaryos::ShellCommandContext& context) {
+  std::ostringstream out;
+  t81::ternaryos::shell_emit_status_from_context(
+      context,
+      [&](const char* header) {
+        if (header != nullptr && *header != '\0') out << header << '\n';
+      },
+      [&](const char* label, const char* value) { out << label << ' ' << value << '\n'; },
+      [&](const char* label, unsigned long long value) { out << label << ' ' << value << '\n'; });
+  std::string text = out.str();
+  if (!text.empty() && text.back() == '\n') text.pop_back();
+  return text;
+}
+
+std::string render_canonfs_text(const t81::ternaryos::ShellCommandContext& context) {
+  std::ostringstream out;
+  t81::ternaryos::shell_emit_canonfs_from_context(
+      context,
+      [&](const char* header) { out << header << '\n'; },
+      [&](const char* label, const char* value) { out << "  " << label << ' ' << value << '\n'; });
+  std::string text = out.str();
+  if (!text.empty() && text.back() == '\n') text.pop_back();
+  return text;
+}
+
+class HandoffShellBackend final : public t81::ternaryos::ShellBackend {
+public:
+  explicit HandoffShellBackend(const ShellTuiHandoff& handoff) {
+    context_.surface = t81::ternaryos::ShellSurface::HostedPhase5;
+    state_.profile_summary = handoff.profile_summary.empty()
+                                 ? "qemu-armv8:AArch64/EDK2/slice6-boot-probe"
+                                 : handoff.profile_summary;
+    state_.storage_binding_name = handoff.storage_binding_name.empty()
+                                      ? "in-memory handoff"
+                                      : handoff.storage_binding_name;
+    state_.display_binding_name = handoff.display_binding_name.empty()
+                                      ? "serial-console handoff"
+                                      : handoff.display_binding_name;
+    state_.available_commands = {"help", "tui", "uname", "version", "policy", "status", "canonfs"};
+    state_.transcript_lines = handoff.transcript_lines;
+    state_.transcript_text = [this] {
+      std::string text;
+      for (std::size_t i = 0; i < state_.transcript_lines.size(); ++i) {
+        if (i != 0) text.push_back('\n');
+        text += state_.transcript_lines[i];
+      }
+      return text;
+    }();
+    state_.framebuffer_ascii = "handoff pending hosted rendering";
+
+    context_.profile_summary = state_.profile_summary.c_str();
+    context_.storage_binding_name = state_.storage_binding_name.c_str();
+    context_.display_binding_name = state_.display_binding_name.c_str();
+    context_.canonfs_mode_summary = handoff.canonfs_mode_summary.empty()
+                                        ? "in-memory"
+                                        : handoff.canonfs_mode_summary.c_str();
+    context_.durable_anchor_present = false;
+    context_.command_count = 0;
+    context_.durable_ref_count = 0;
+    context_.recovered_entries = 0;
+    context_.rendered_glyphs = 0;
+    context_.has_hosted_session_status = true;
+    context_.has_canonfs_status = true;
+  }
+
+  const t81::ternaryos::ShellSessionState& state() const override { return state_; }
+
+  t81::ternaryos::ShellCommandContext command_context() const override { return context_; }
+
+  bool execute_command(std::string_view command_view) override {
+    const std::string command(command_view);
+    if (command.empty()) return true;
+
+    std::string result;
+    if (const auto builtin = t81::ternaryos::shell_builtin_command(command.c_str());
+        builtin != t81::ternaryos::ShellBuiltinCommand::None) {
+      const auto view = t81::ternaryos::shell_builtin_view(
+          builtin, t81::ternaryos::ShellSurface::HostedPhase5);
+      switch (view.kind) {
+        case t81::ternaryos::ShellBuiltinViewKind::HelpCatalog:
+          result = render_help_text();
+          break;
+        case t81::ternaryos::ShellBuiltinViewKind::TextBlock:
+          result = render_text_block(view.text);
+          break;
+        case t81::ternaryos::ShellBuiltinViewKind::None:
+          break;
+      }
+    } else if (command == "status") {
+      result = render_status_text(context_);
+    } else if (command == "canonfs") {
+      result = render_canonfs_text(context_);
+    } else {
+      result = "handoff view: command unavailable";
+    }
+
+    state_.command_records.push_back({command, result});
+    state_.session_command_count = state_.command_records.size();
+    context_.command_count = static_cast<unsigned long long>(state_.session_command_count);
+    state_.transcript_lines.push_back("tsh> " + command);
+    for (const auto& line : split_lines(result)) {
+      state_.transcript_lines.push_back(line);
+    }
+    state_.transcript_text.clear();
+    for (std::size_t i = 0; i < state_.transcript_lines.size(); ++i) {
+      if (i != 0) state_.transcript_text.push_back('\n');
+      state_.transcript_text += state_.transcript_lines[i];
+    }
+    return true;
+  }
+
+private:
+  t81::ternaryos::ShellSessionState state_{};
+  t81::ternaryos::ShellCommandContext context_{};
+};
 
 bool shell_tui_show_hosted_bootstrap(const t81::ternaryos::ShellCommandContext& context,
                                      const ShellTuiHandoff& handoff) {
@@ -279,19 +414,27 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  auto session = t81::ternaryos::ShellSession::create(true);
-  if (!session.has_value()) {
-    std::fputs("ShellSession::create failed\n", stderr);
-    return 1;
+  std::optional<t81::ternaryos::ShellSession> session;
+  std::unique_ptr<t81::ternaryos::ShellBackend> handoff_backend;
+  t81::ternaryos::ShellBackend* backend = nullptr;
+  if (handoff.present) {
+    handoff_backend = std::make_unique<HandoffShellBackend>(handoff);
+    backend = handoff_backend.get();
+  } else {
+    session = t81::ternaryos::ShellSession::create(true);
+    if (!session.has_value()) {
+      std::fputs("ShellSession::create failed\n", stderr);
+      return 1;
+    }
+    backend = &*session;
   }
-  t81::ternaryos::ShellBackend& backend = *session;
 
   std::string command_buffer = handoff.present ? std::string() : "help";
   std::string status_line = handoff.present ? handoff.status_line : "ready";
 
   auto renderer = Renderer([&] {
     return shell_tui_document(
-        backend.state(), backend.command_context(), handoff, command_buffer, status_line);
+        backend->state(), backend->command_context(), handoff, command_buffer, status_line);
   });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {
@@ -305,7 +448,7 @@ int main(int argc, char** argv) {
     }
     if (event == Event::Return) {
       const auto submitted = command_buffer;
-      if (backend.execute_command(submitted)) {
+      if (backend->execute_command(submitted)) {
         status_line = submitted.empty() ? "executed: <empty>" : "executed: " + submitted;
       } else {
         status_line = submitted.empty() ? "execution failed: <empty>"
