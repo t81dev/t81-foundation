@@ -24,11 +24,11 @@
 
 // ── QEMU virt AArch64 memory map ─────────────────────────────────────────────
 
-static constexpr uint64_t kPl011Base     = UINT64_C(0x09000000);
-static constexpr uint32_t kPl011DR       = 0x000u;  // Data Register
-static constexpr uint32_t kPl011FR       = 0x018u;  // Flag Register
-static constexpr uint32_t kPl011FRtxff   = (1u << 5);  // TX FIFO full
-static constexpr uint32_t kPl011FRRXFE   = (1u << 4);  // RX FIFO empty
+static constexpr uint64_t kPl011Base = UINT64_C(0x09000000);
+static constexpr uint32_t kPl011DR = 0x000u;         // Data Register
+static constexpr uint32_t kPl011FR = 0x018u;         // Flag Register
+static constexpr uint32_t kPl011FRtxff = (1u << 5);  // TX FIFO full
+static constexpr uint32_t kPl011FRRXFE = (1u << 4);  // RX FIFO empty
 
 // ── MMIO helpers ─────────────────────────────────────────────────────────────
 
@@ -36,16 +36,18 @@ static inline void mmio_write32(uint64_t base, uint32_t off, uint32_t val) noexc
 #if defined(__aarch64__) && !defined(__APPLE__)
   *reinterpret_cast<volatile uint32_t*>(static_cast<uintptr_t>(base + off)) = val;
 #else
-  (void)base; (void)off; (void)val;
+  (void)base;
+  (void)off;
+  (void)val;
 #endif
 }
 
 static inline uint32_t mmio_read32(uint64_t base, uint32_t off) noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
-  return *reinterpret_cast<const volatile uint32_t*>(
-      static_cast<uintptr_t>(base + off));
+  return *reinterpret_cast<const volatile uint32_t*>(static_cast<uintptr_t>(base + off));
 #else
-  (void)base; (void)off;
+  (void)base;
+  (void)off;
   return 0u;
 #endif
 }
@@ -58,8 +60,7 @@ static void pl011_putchar(char c) noexcept {
     __asm__ volatile("yield" ::: "memory");
 #endif
   }
-  mmio_write32(kPl011Base, kPl011DR,
-               static_cast<uint32_t>(static_cast<unsigned char>(c)));
+  mmio_write32(kPl011Base, kPl011DR, static_cast<uint32_t>(static_cast<unsigned char>(c)));
 }
 
 static void pl011_puts(const char* s) noexcept {
@@ -97,7 +98,7 @@ static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A003C00);
 static bool probe_virtio_blk_bare() noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
   const uint32_t magic = mmio_read32(kVirtioMmioBase, 0x000u);
-  const uint32_t ver   = mmio_read32(kVirtioMmioBase, 0x004u);
+  const uint32_t ver = mmio_read32(kVirtioMmioBase, 0x004u);
   const uint32_t devid = mmio_read32(kVirtioMmioBase, 0x008u);
   return magic == 0x74726976u && ver == 2u && devid == 2u;
 #else
@@ -116,44 +117,64 @@ static bool probe_virtio_blk_bare() noexcept {
 static constexpr int kVQSize = 4;  // queue depth — power-of-2, ≥3 (descs/req)
 
 // Virtio-mmio register offsets (spec 1.0 §4.2.2, modern transport).
-static constexpr uint32_t kVR_Status      = 0x070u;
-static constexpr uint32_t kVR_DrvFeatSel  = 0x024u;
+static constexpr uint32_t kVR_Status = 0x070u;
+static constexpr uint32_t kVR_DrvFeatSel = 0x024u;
 static constexpr uint32_t kVR_DrvFeatures = 0x020u;
-static constexpr uint32_t kVR_QueueSel    = 0x030u;
+static constexpr uint32_t kVR_QueueSel = 0x030u;
 static constexpr uint32_t kVR_QueueNumMax = 0x034u;
-static constexpr uint32_t kVR_QueueNum    = 0x038u;
-static constexpr uint32_t kVR_QueueReady  = 0x044u;
+static constexpr uint32_t kVR_QueueNum = 0x038u;
+static constexpr uint32_t kVR_QueueReady = 0x044u;
 static constexpr uint32_t kVR_QueueNotify = 0x050u;
 static constexpr uint32_t kVR_QueueDescLo = 0x080u;
 static constexpr uint32_t kVR_QueueDescHi = 0x084u;
-static constexpr uint32_t kVR_QueueDrvLo  = 0x090u;
-static constexpr uint32_t kVR_QueueDrvHi  = 0x094u;
-static constexpr uint32_t kVR_QueueDevLo  = 0x0A0u;
-static constexpr uint32_t kVR_QueueDevHi  = 0x0A4u;
+static constexpr uint32_t kVR_QueueDrvLo = 0x090u;
+static constexpr uint32_t kVR_QueueDrvHi = 0x094u;
+static constexpr uint32_t kVR_QueueDevLo = 0x0A0u;
+static constexpr uint32_t kVR_QueueDevHi = 0x0A4u;
 
-static constexpr uint32_t kVS_Ack         = 0x01u;
-static constexpr uint32_t kVS_Driver      = 0x02u;
-static constexpr uint32_t kVS_DriverOk    = 0x04u;
-static constexpr uint32_t kVS_FeaturesOk  = 0x08u;
+static constexpr uint32_t kVS_Ack = 0x01u;
+static constexpr uint32_t kVS_Driver = 0x02u;
+static constexpr uint32_t kVS_DriverOk = 0x04u;
+static constexpr uint32_t kVS_FeaturesOk = 0x08u;
 
-static constexpr uint16_t kVD_Next        = 0x0001u;
-static constexpr uint16_t kVD_Write       = 0x0002u;
+static constexpr uint16_t kVD_Next = 0x0001u;
+static constexpr uint16_t kVD_Write = 0x0002u;
 
-static constexpr uint32_t kBlkIn          = 0u;  // device→memory (read)
-static constexpr uint32_t kBlkOut         = 1u;  // memory→device (write)
+static constexpr uint32_t kBlkIn = 0u;   // device→memory (read)
+static constexpr uint32_t kBlkOut = 1u;  // memory→device (write)
 
-struct VirtqDesc { uint64_t addr; uint32_t len; uint16_t flags; uint16_t next; };
-struct VirtqAvail { uint16_t flags; uint16_t idx; uint16_t ring[kVQSize]; };
-struct VirtqUsedElem { uint32_t id; uint32_t len; };
-struct VirtqUsed  { uint16_t flags; uint16_t idx; VirtqUsedElem ring[kVQSize]; };
-struct VirtioBlkReqHdr { uint32_t type; uint32_t reserved; uint64_t sector; };
+struct VirtqDesc {
+  uint64_t addr;
+  uint32_t len;
+  uint16_t flags;
+  uint16_t next;
+};
+struct VirtqAvail {
+  uint16_t flags;
+  uint16_t idx;
+  uint16_t ring[kVQSize];
+};
+struct VirtqUsedElem {
+  uint32_t id;
+  uint32_t len;
+};
+struct VirtqUsed {
+  uint16_t flags;
+  uint16_t idx;
+  VirtqUsedElem ring[kVQSize];
+};
+struct VirtioBlkReqHdr {
+  uint32_t type;
+  uint32_t reserved;
+  uint64_t sector;
+};
 
 // Static virtio queue data — resides in BSS (zero at startup, identity-mapped).
-alignas(16)  static VirtqDesc       s_vq_desc[kVQSize];
-alignas(2)   static VirtqAvail      s_vq_avail;
-alignas(4)   static VirtqUsed       s_vq_used;
-alignas(16)  static VirtioBlkReqHdr s_blk_req;
-alignas(512) static uint8_t         s_sector_buf[512];
+alignas(16) static VirtqDesc s_vq_desc[kVQSize];
+alignas(2) static VirtqAvail s_vq_avail;
+alignas(4) static VirtqUsed s_vq_used;
+alignas(16) static VirtioBlkReqHdr s_blk_req;
+alignas(512) static uint8_t s_sector_buf[512];
 static uint8_t s_blk_status;
 
 static inline void aarch64_dsb() noexcept {
@@ -164,19 +185,16 @@ static inline void aarch64_dsb() noexcept {
 
 // Submit one virtio-blk request and poll for completion.
 static bool vblk_do_io(uint32_t type, uint64_t lba) noexcept {
-  s_blk_req.type     = type;
+  s_blk_req.type = type;
   s_blk_req.reserved = 0u;
-  s_blk_req.sector   = lba;
-  s_blk_status       = 0xFFu;
+  s_blk_req.sector = lba;
+  s_blk_status = 0xFFu;
 
-  s_vq_desc[0] = { reinterpret_cast<uint64_t>(&s_blk_req),
-                   static_cast<uint32_t>(sizeof(s_blk_req)),
-                   kVD_Next, 1u };
-  s_vq_desc[1] = { reinterpret_cast<uint64_t>(s_sector_buf), 512u,
-                   static_cast<uint16_t>(kVD_Next |
-                     (type == kBlkIn ? kVD_Write : 0u)), 2u };
-  s_vq_desc[2] = { reinterpret_cast<uint64_t>(&s_blk_status), 1u,
-                   kVD_Write, 0u };
+  s_vq_desc[0] = {reinterpret_cast<uint64_t>(&s_blk_req), static_cast<uint32_t>(sizeof(s_blk_req)),
+                  kVD_Next, 1u};
+  s_vq_desc[1] = {reinterpret_cast<uint64_t>(s_sector_buf), 512u,
+                  static_cast<uint16_t>(kVD_Next | (type == kBlkIn ? kVD_Write : 0u)), 2u};
+  s_vq_desc[2] = {reinterpret_cast<uint64_t>(&s_blk_status), 1u, kVD_Write, 0u};
 
   const uint16_t old_used = s_vq_used.idx;
   s_vq_avail.ring[s_vq_avail.idx % kVQSize] = 0u;
@@ -220,20 +238,19 @@ static void canonfs_io_probe() noexcept {
   }
   mmio_write32(mmio, kVR_QueueNum, static_cast<uint32_t>(kVQSize));
 
-  const uint64_t desc_pa  = reinterpret_cast<uint64_t>(s_vq_desc);
+  const uint64_t desc_pa = reinterpret_cast<uint64_t>(s_vq_desc);
   const uint64_t avail_pa = reinterpret_cast<uint64_t>(&s_vq_avail);
-  const uint64_t used_pa  = reinterpret_cast<uint64_t>(&s_vq_used);
+  const uint64_t used_pa = reinterpret_cast<uint64_t>(&s_vq_used);
   mmio_write32(mmio, kVR_QueueDescLo, static_cast<uint32_t>(desc_pa));
-  mmio_write32(mmio, kVR_QueueDescHi, static_cast<uint32_t>(desc_pa  >> 32));
-  mmio_write32(mmio, kVR_QueueDrvLo,  static_cast<uint32_t>(avail_pa));
-  mmio_write32(mmio, kVR_QueueDrvHi,  static_cast<uint32_t>(avail_pa >> 32));
-  mmio_write32(mmio, kVR_QueueDevLo,  static_cast<uint32_t>(used_pa));
-  mmio_write32(mmio, kVR_QueueDevHi,  static_cast<uint32_t>(used_pa  >> 32));
+  mmio_write32(mmio, kVR_QueueDescHi, static_cast<uint32_t>(desc_pa >> 32));
+  mmio_write32(mmio, kVR_QueueDrvLo, static_cast<uint32_t>(avail_pa));
+  mmio_write32(mmio, kVR_QueueDrvHi, static_cast<uint32_t>(avail_pa >> 32));
+  mmio_write32(mmio, kVR_QueueDevLo, static_cast<uint32_t>(used_pa));
+  mmio_write32(mmio, kVR_QueueDevHi, static_cast<uint32_t>(used_pa >> 32));
   mmio_write32(mmio, kVR_QueueReady, 1u);
 
   // DRIVER_OK — device is live.
-  mmio_write32(mmio, kVR_Status,
-               kVS_Ack | kVS_Driver | kVS_FeaturesOk | kVS_DriverOk);
+  mmio_write32(mmio, kVR_Status, kVS_Ack | kVS_Driver | kVS_FeaturesOk | kVS_DriverOk);
   aarch64_dsb();
 
   // LBA 0 READ → check CST1 magic.
@@ -242,8 +259,8 @@ static void canonfs_io_probe() noexcept {
     pl011_puts("[axion] canonfs: I/O probe FAIL (LBA0 read error)\r\n");
     return;
   }
-  if (s_sector_buf[0] != 'C' || s_sector_buf[1] != 'S' ||
-      s_sector_buf[2] != 'T' || s_sector_buf[3] != '1') {
+  if (s_sector_buf[0] != 'C' || s_sector_buf[1] != 'S' || s_sector_buf[2] != 'T' ||
+      s_sector_buf[3] != '1') {
     pl011_puts("[axion] canonfs: I/O probe FAIL (LBA0 bad magic)\r\n");
     return;
   }
@@ -263,8 +280,7 @@ static void canonfs_io_probe() noexcept {
     return;
   }
   for (int i = 0; i < 512; ++i) {
-    if (s_sector_buf[i] !=
-        static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i))) {
+    if (s_sector_buf[i] != static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i))) {
       pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 mismatch)\r\n");
       return;
     }
@@ -279,13 +295,9 @@ static void canonfs_io_probe() noexcept {
 // TUs.  The queue must already be initialised by canonfs_io_probe() before
 // these are called.
 
-extern "C" bool canon_store_read_lba(uint64_t lba) noexcept {
-  return vblk_do_io(kBlkIn, lba);
-}
+extern "C" bool canon_store_read_lba(uint64_t lba) noexcept { return vblk_do_io(kBlkIn, lba); }
 
-extern "C" const uint8_t* canon_store_sector_buf() noexcept {
-  return s_sector_buf;
-}
+extern "C" const uint8_t* canon_store_sector_buf() noexcept { return s_sector_buf; }
 
 // ── ARM generic timer ────────────────────────────────────────────────────────
 // CNTPCT_EL0 (physical counter) and CNTFRQ_EL0 (frequency in Hz) are
@@ -315,7 +327,10 @@ static uint64_t read_cntfrq() noexcept {
 // ── String helpers (no stdlib) ───────────────────────────────────────────────
 
 static bool str_eq(const char* a, const char* b) noexcept {
-  while (*a && *b && *a == *b) { ++a; ++b; }
+  while (*a && *b && *a == *b) {
+    ++a;
+    ++b;
+  }
   return *a == *b;
 }
 
@@ -347,27 +362,27 @@ static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
 enum class FsThreadState : uint8_t { Empty = 0, Running = 1, Ready = 2, Blocked = 3 };
 
 struct FsThread {
-  uint32_t      tid        = 0;
-  FsThreadState state      = FsThreadState::Empty;
-  uint64_t      tick_count = 0;
+  uint32_t tid = 0;
+  FsThreadState state = FsThreadState::Empty;
+  uint64_t tick_count = 0;
 };
 
 static constexpr int kMaxFsThreads = 8;
-static FsThread  s_threads[kMaxFsThreads];
-static int       s_thread_count   = 0;
-static int       s_current_thread = 0;
+static FsThread s_threads[kMaxFsThreads];
+static int s_thread_count = 0;
+static int s_current_thread = 0;
 
 // ── Live kernel counters ──────────────────────────────────────────────────────
 // Mirrors KernelRuntimeState::Counters for the freestanding bridge context.
 
-static uint64_t s_boot_cntpct    = 0;  // captured at bridge entry
-static uint64_t s_cmd_count      = 0;  // commands dispatched
-static uint64_t s_loop_iters     = 0;  // priority-dispatch loop iterations
-static uint64_t s_tick_count     = 0;  // scheduler tick calls
-static uint64_t s_sched_switches = 0;  // thread context switches
-static uint64_t s_interrupt_count = 0; // serial RX events (our interrupt source)
-static uint64_t s_timer_irqs     = 0;  // hardware timer IRQ count (GICv3 PPI30)
-static bool     s_has_blk        = false;
+static uint64_t s_boot_cntpct = 0;      // captured at bridge entry
+static uint64_t s_cmd_count = 0;        // commands dispatched
+static uint64_t s_loop_iters = 0;       // priority-dispatch loop iterations
+static uint64_t s_tick_count = 0;       // scheduler tick calls
+static uint64_t s_sched_switches = 0;   // thread context switches
+static uint64_t s_interrupt_count = 0;  // serial RX events (our interrupt source)
+static uint64_t s_timer_irqs = 0;       // hardware timer IRQ count (GICv3 PPI30)
+static bool s_has_blk = false;
 
 static constexpr uint64_t kSchedTickInterval = 500u;
 
@@ -390,8 +405,8 @@ extern "C" void bridge_timer_irq_tick() noexcept {
       next = (next + 1) % s_thread_count;
     }
     if (next != s_current_thread) {
-      s_threads[next].state    = FsThreadState::Running;
-      s_current_thread         = next;
+      s_threads[next].state = FsThreadState::Running;
+      s_current_thread = next;
       ++s_sched_switches;
     } else {
       s_threads[s_current_thread].state = FsThreadState::Running;
@@ -406,10 +421,10 @@ extern "C" void bridge_hw_init_aarch64() noexcept;
 // ── EL0 init bootstrap ────────────────────────────────────────────────────────
 // Symbols from axion_el0_init.S, qemu_slice6_bridge_irq.cpp, and
 // qemu_slice6_el0_mmu.cpp (Phase 5: controlled TTBR0 page tables).
-extern "C" void     axion_el0_entry()  noexcept;
+extern "C" void axion_el0_entry() noexcept;
 extern "C" uint64_t g_axion_el1_return_pc;
-extern "C" void     el0_mmu_init()           noexcept;  // build + install TTBR0 tables
-extern "C" uint64_t el0_mmu_stack_top()      noexcept;  // PA of top of EL0 init stack
+extern "C" void el0_mmu_init() noexcept;           // build + install TTBR0 tables
+extern "C" uint64_t el0_mmu_stack_top() noexcept;  // PA of top of EL0 init stack
 // Phase 7: process pages (qemu_slice6_el0_mmu.cpp).
 extern "C" uint8_t* el0_mmu_proc_code_page() noexcept;
 extern "C" uint64_t el0_mmu_proc_stack_top() noexcept;
@@ -432,6 +447,8 @@ extern "C" void canon_concurrent_wait_load_and_run() noexcept;
 extern "C" void canon_per_thread_pt_load_and_run() noexcept;
 // Phase 18 (RFC-00C7): EL0 fault containment (canon_exec_loader.cpp).
 extern "C" void canon_fault_contain_load_and_run() noexcept;
+// Phase 19 (RFC-00C8): EL0 concurrent fault containment (canon_exec_loader.cpp).
+extern "C" void canon_concurrent_fault_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -441,8 +458,7 @@ extern "C" void canon_fault_contain_load_and_run() noexcept;
 // TTBR0); the old 1 KiB BSS buffer has been removed.
 static void run_el0_init() noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
-  const uint64_t el0_fn =
-      reinterpret_cast<uint64_t>(reinterpret_cast<void*>(axion_el0_entry));
+  const uint64_t el0_fn = reinterpret_cast<uint64_t>(reinterpret_cast<void*>(axion_el0_entry));
   const uint64_t el0_sp = el0_mmu_stack_top();
 
   __asm__ volatile(
@@ -460,9 +476,7 @@ static void run_el0_init() noexcept {
       "eret\n\t"
       "1:\n\t"
       :
-      : [ret_pc] "r"(&g_axion_el1_return_pc),
-        [el0_fn] "r"(el0_fn),
-        [el0_sp] "r"(el0_sp)
+      : [ret_pc] "r"(&g_axion_el1_return_pc), [el0_fn] "r"(el0_fn), [el0_sp] "r"(el0_sp)
       : "x8", "memory");
 #endif
 }
@@ -521,8 +535,8 @@ static void cmd_version() noexcept {
 static void cmd_status() noexcept {
   char buf[24];
 
-  const uint64_t now      = read_cntpct();
-  const uint64_t freq     = read_cntfrq();
+  const uint64_t now = read_cntpct();
+  const uint64_t freq = read_cntfrq();
   const uint64_t uptime_s = (now - s_boot_cntpct) / freq;
 
   pl011_puts("  [kernel]\r\n");
@@ -571,10 +585,18 @@ static void cmd_threads() noexcept {
     pl011_puts("    tid=");
     pl011_puts(u64_dec(t.tid, buf, static_cast<int>(sizeof(buf))));
     switch (t.state) {
-      case FsThreadState::Running: pl011_puts("  Running"); break;
-      case FsThreadState::Ready:   pl011_puts("  Ready  "); break;
-      case FsThreadState::Blocked: pl011_puts("  Blocked"); break;
-      default:                     pl011_puts("  Empty  "); break;
+      case FsThreadState::Running:
+        pl011_puts("  Running");
+        break;
+      case FsThreadState::Ready:
+        pl011_puts("  Ready  ");
+        break;
+      case FsThreadState::Blocked:
+        pl011_puts("  Blocked");
+        break;
+      default:
+        pl011_puts("  Empty  ");
+        break;
     }
     pl011_puts("  ticks=");
     pl011_puts(u64_dec(t.tick_count, buf, static_cast<int>(sizeof(buf))));
@@ -622,14 +644,21 @@ static void shell_dispatch(const char* line) noexcept {
 
   ++s_cmd_count;
 
-  if      (str_eq(line, "help"))    { cmd_help(); }
-  else if (str_eq(line, "uname"))   { cmd_uname(); }
-  else if (str_eq(line, "version")) { cmd_version(); }
-  else if (str_eq(line, "status"))  { cmd_status(); }
-  else if (str_eq(line, "threads")) { cmd_threads(); }
-  else if (str_eq(line, "sched"))   { cmd_sched(); }
-  else if (str_eq(line, "policy"))  { cmd_policy(); }
-  else {
+  if (str_eq(line, "help")) {
+    cmd_help();
+  } else if (str_eq(line, "uname")) {
+    cmd_uname();
+  } else if (str_eq(line, "version")) {
+    cmd_version();
+  } else if (str_eq(line, "status")) {
+    cmd_status();
+  } else if (str_eq(line, "threads")) {
+    cmd_threads();
+  } else if (str_eq(line, "sched")) {
+    cmd_sched();
+  } else if (str_eq(line, "policy")) {
+    cmd_policy();
+  } else {
     pl011_puts("  [axion] ShellExec: Deny -- '");
     pl011_puts(line);
     pl011_puts("' not in builtin table\r\n");
@@ -639,7 +668,7 @@ static void shell_dispatch(const char* line) noexcept {
 // ── Static shell buffer (file scope avoids static-local runtime concerns) ────
 
 static char s_line[64];
-static int  s_line_len;
+static int s_line_len;
 
 // ── Bridge entry point ────────────────────────────────────────────────────────
 //
@@ -653,7 +682,7 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
 
   // Register kernel thread (tid=1) in the freestanding thread table.
   s_threads[0] = FsThread{1u, FsThreadState::Running, 0u};
-  s_thread_count   = 1;
+  s_thread_count = 1;
   s_current_thread = 0;
 
   s_has_blk = probe_virtio_blk_bare();
@@ -770,6 +799,14 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
     canon_fault_contain_load_and_run();
   }
 
+  // Phase 19 (RFC-00C8): concurrent fault isolation.
+  //   Process F (tid=7) faults immediately on start. Process E (tid=6) continues
+  //   running normally and calls WaitForDevice.
+  //   CI gate: "[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)"
+  if (s_has_blk) {
+    canon_concurrent_fault_load_and_run();
+  }
+
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
 
   pl011_puts("\r\n");
@@ -804,7 +841,10 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
           s_line_len = 0;
           pl011_puts("[axion@T81 tier=1]$ ");
         } else if (c == 127 || c == '\b') {
-          if (s_line_len > 0) { --s_line_len; pl011_puts("\b \b"); }
+          if (s_line_len > 0) {
+            --s_line_len;
+            pl011_puts("\b \b");
+          }
         } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {
           s_line[s_line_len++] = static_cast<char>(c);
           pl011_putchar(static_cast<char>(c));

@@ -1,0 +1,451 @@
+ninja: Entering directory `build'
+[1/1070] Building CXX object CMakeFiles/t81_core.dir/isa/encoding.cpp.o
+[2/1070] Building CXX object CMakeFiles/t81_core.dir/isa/types/bigint.cpp.o
+[3/1070] Building CXX object CMakeFiles/t81_core.dir/fs/in_memory_driver.cpp.o
+[4/1070] Building CXX object CMakeFiles/t81_core.dir/isa/types/fraction.cpp.o
+[5/1070] Building CXX object CMakeFiles/t81_core.dir/vm/determinism/canon_hash81.cpp.o
+[6/1070] Building CXX object CMakeFiles/t81_core.dir/fs/block_backed_driver.cpp.o
+/app/fs/block_backed_driver.cpp:93:17: warning: ‘t81::canonfs::CapabilityGrant t81::canonfs::{anonymous}::deserialize_cap(std::span<const std::byte>)’ defined but not used [-Wunused-function]
+   93 | CapabilityGrant deserialize_cap(std::span<const std::byte> raw) {
+      |                 ^~~~~~~~~~~~~~~
+[7/1070] Building CXX object CMakeFiles/t81_core.dir/fs/persistent_driver.cpp.o
+[8/1070] Building CXX object CMakeFiles/t81_core.dir/codec/base81.cpp.o
+[9/1070] Building CXX object CMakeFiles/t81_core.dir/codec/base243.cpp.o
+[10/1070] Building CXX object CMakeFiles/t81_core.dir/codec/base81_balanced.cpp.o
+[11/1070] Building CXX object CMakeFiles/t81_core.dir/isa/math/t81_soft_math/t81_soft_math.cpp.o
+[12/1070] Building CXX object CMakeFiles/t81_core.dir/codec/base81_packed.cpp.o
+[13/1070] Building CXX object CMakeFiles/t81_core.dir/crypto/sha3.cpp.o
+[14/1070] Building CXX object CMakeFiles/t81_core.dir/codec/metadata.cpp.o
+[15/1070] Building CXX object CMakeFiles/t81_core.dir/inference/simd/base81_digits_avx2.cpp.o
+[16/1070] Building CXX object CMakeFiles/t81_tracing.dir/vm/tracing/canonhash81.cpp.o
+[17/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/hanoi/error.cpp.o
+[18/1070] Building CXX object CMakeFiles/t81_core.dir/codec/trit_packing.cpp.o
+[19/1070] Building CXX object CMakeFiles/t81_core.dir/experimental/cog/v1/symbolic_graph.cpp.o
+[20/1070] Building CXX object CMakeFiles/t81_core.dir/experimental/setun/bridge.cpp.o
+[21/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/hanoi/in_memory_kernel.cpp.o
+[22/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/tier3/recursive.cpp.o
+[23/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/promotion.cpp.o
+[24/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/tier2/reflective.cpp.o
+[25/1070] Linking CXX static library libt81_core.a
+[26/1070] Building CXX object CMakeFiles/t81_math_quantization.dir/isa/math/quantization/ternary_codec.cpp.o
+[27/1070] Linking CXX static library libt81_math_quantization.a
+[28/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/distributed/distributed.cpp.o
+[29/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/engine.cpp.o
+[30/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/axion_api.cpp.o
+[31/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/ethics.cpp.o
+[32/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/tier4/tier4_loop.cpp.o
+[33/1070] Building CXX object CMakeFiles/t81_experimental.dir/experimental/tiers/cog/tier5/infinite.cpp.o
+[34/1070] Linking CXX static library libt81_experimental.a
+[35/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/nondeterminism_detector.cpp.o
+[36/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/policy_serialization.cpp.o
+[37/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/policy_engine.cpp.o
+[38/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/ai_model_loader.cpp.o
+[39/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/ai_hooks.cpp.o
+[40/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/canonfs_hook.cpp.o
+[41/1070] Building CXX object CMakeFiles/t81_axion.dir/kernel/axion/policy_validator.cpp.o
+[42/1070] Building CXX object CMakeFiles/t81_io.dir/vm/io/tensor_loader.cpp.o
+[43/1070] Linking CXX static library libt81_io.a
+[44/1070] Linking CXX static library libt81_axion.a
+[45/1070] Building CXX object CMakeFiles/t81_tool_model.dir/tools/model/gguf_import_bridge.cpp.o
+[46/1070] Building CXX object CMakeFiles/t81_tool_model.dir/tools/model/weights_t81w_emitter.cpp.o
+[47/1070] Building CXX object CMakeFiles/t81_ffi.dir/ffi/ffi_dispatcher.cpp.o
+[48/1070] Linking CXX static library libt81_ffi.a
+[49/1070] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/builtin_registry.cpp.o
+[50/1070] Building CXX object CMakeFiles/t81_c_api.dir/ffi/c_api/t81_c_api.cpp.o
+[51/1070] Linking CXX static library libt81_c_api.a
+[52/1070] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/lexer.cpp.o
+[53/1070] Building CXX object CMakeFiles/t81_tool_model.dir/tools/model/weights.cpp.o
+[54/1070] Linking CXX static library libt81_tool_model.a
+[55/1070] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/symbol_table.cpp.o
+[56/1070] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/parser.cpp.o
+[57/1070] Building CXX object CMakeFiles/t81_isa.dir/isa/pretty_printer.cpp.o
+[58/1070] Building CXX object CMakeFiles/t81_isa.dir/isa/binary_emitter.cpp.o
+[59/1070] Building CXX object CMakeFiles/t81_isa.dir/isa/binary_io.cpp.o
+[60/1070] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/ir_generator.cpp.o
+[61/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/tier_limits.cpp.o
+[62/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/value_ops.cpp.o
+[63/1070] Building CXX object CMakeFiles/t81_isa.dir/isa/base81_view.cpp.o
+[64/1070] Linking CXX static library libt81_isa.a
+[65/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/memory_segments.cpp.o
+[66/1070] Building CXX object CMakeFiles/t81_lang_frontend.dir/lang/frontend/semantic_analyzer.cpp.o
+[67/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/policy_trace_bridge.cpp.o
+[68/1070] Linking CXX static library libt81_lang_frontend.a
+[69/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/runtime_state_helpers.cpp.o
+[70/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/gc_helpers.cpp.o
+[71/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/ffi_dispatcher.cpp.o
+[72/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/ai_backend/backend_adapter.cpp.o
+[73/1070] Building CXX object CMakeFiles/t81_vm.dir/ffi/ffi_dispatcher.cpp.o
+[74/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/tensor_helpers.cpp.o
+[75/1070] Building CXX object CMakeFiles/t81_jit.dir/vm/jit/jit_trace_cache.cpp.o
+[76/1070] Building CXX object CMakeFiles/t81_jit.dir/vm/jit/jit_compiler.cpp.o
+[77/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/interrupt_table.cpp.o
+[78/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/hal_main.cpp.o
+[79/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/hosted_stub.cpp.o
+[80/1070] Building CXX object CMakeFiles/t81_vm.dir/vm/vm.cpp.o
+[81/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/virtualbox_platform.cpp.o
+[82/1070] Linking CXX static library libt81_vm.a
+[83/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/virtualbox_guest_devices.cpp.o
+[84/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/qemu_platform.cpp.o
+[85/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/hal_c_abi.cpp.o
+[86/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/qemu_kernel_entry.cpp.o
+[87/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_runtime.cpp.o
+[88/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_actions.cpp.o
+[89/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_executable.cpp.o
+[90/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_abi_wire.cpp.o
+/app/ternaryos/kernel/kernel_abi_wire.cpp: In function ‘std::optional<t81::ternaryos::kernel::KernelCallResult> t81::ternaryos::kernel::axion_kernel_decode_wire_response(const KernelCallWireResponseBlock&)’:
+/app/ternaryos/kernel/kernel_abi_wire.cpp:550:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::capabilities’ [-Wmissing-field-initializers]
+  550 |   };
+      |   ^
+/app/ternaryos/kernel/kernel_abi_wire.cpp:550:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::thread_label’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:550:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_capability_transition_history’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:550:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_services’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:550:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_delegation_entries’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp: In function ‘t81::ternaryos::kernel::KernelCallWireResponseBlock t81::ternaryos::kernel::{anonymous}::make_invalid_wire_response()’:
+/app/ternaryos/kernel/kernel_abi_wire.cpp:709:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::capabilities’ [-Wmissing-field-initializers]
+  709 |   });
+      |   ^
+/app/ternaryos/kernel/kernel_abi_wire.cpp:709:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::thread_label’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:709:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_capability_transition_history’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:709:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_services’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:709:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_delegation_entries’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp: In function ‘t81::ternaryos::kernel::KernelCallWireResponseBlock t81::ternaryos::kernel::{anonymous}::make_invalid_span_wire_response(const t81::ternaryos::kernel::KernelFaultRecord&)’:
+/app/ternaryos/kernel/kernel_abi_wire.cpp:718:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::capabilities’ [-Wmissing-field-initializers]
+  718 |   });
+      |   ^
+/app/ternaryos/kernel/kernel_abi_wire.cpp:718:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::thread_label’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:718:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_capability_transition_history’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:718:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_services’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_abi_wire.cpp:718:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_delegation_entries’ [-Wmissing-field-initializers]
+[91/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_abi.cpp.o
+[92/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_faults.cpp.o
+[93/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_interrupts.cpp.o
+[94/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_interrupt_policy.cpp.o
+[95/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_loader.cpp.o
+[96/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_trap_shim.cpp.o
+[97/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/hal/aarch64_trap_entry.cpp.o
+[98/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_lifecycle.cpp.o
+/app/ternaryos/kernel/kernel_lifecycle.cpp: In function ‘t81::ternaryos::kernel::KernelRuntimeState::ProcessGroupState* t81::ternaryos::kernel::{anonymous}::create_process_group(t81::ternaryos::kernel::KernelRuntimeState&)’:
+/app/ternaryos/kernel/kernel_lifecycle.cpp:123:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ProcessGroupState::member_tids’ [-Wmissing-field-initializers]
+  123 |       });
+      |       ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp:123:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ProcessGroupState::entry_descriptors’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp:123:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ProcessGroupState::executable_records’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp: In function ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState* t81::ternaryos::kernel::{anonymous}::create_supervisor(t81::ternaryos::kernel::KernelRuntimeState&)’:
+/app/ternaryos/kernel/kernel_lifecycle.cpp:130:81: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::managed_groups’ [-Wmissing-field-initializers]
+  130 |       state.supervisors.emplace(id, KernelRuntimeState::SupervisorState{.id = id});
+      |                                                                                 ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp:130:81: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::managed_services’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp:130:81: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::pending_groups’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp:130:81: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::recent_capability_transitions’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp: In function ‘std::optional<t81::ternaryos::kernel::KernelRuntimeState> t81::ternaryos::kernel::axion_kernel_bootstrap(const t81::ternaryos::hal::BootContext&)’:
+/app/ternaryos/kernel/kernel_lifecycle.cpp:220:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ThreadRuntimeState::fault_inbox’ [-Wmissing-field-initializers]
+  220 |       });
+      |       ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp:229:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ProcessGroupState::entry_descriptors’ [-Wmissing-field-initializers]
+  229 |       });
+      |       ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp:229:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ProcessGroupState::executable_records’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp:242:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::managed_services’ [-Wmissing-field-initializers]
+  242 |       });
+      |       ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp:242:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::pending_groups’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp:242:7: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::SupervisorState::recent_capability_transitions’ [-Wmissing-field-initializers]
+/app/ternaryos/kernel/kernel_lifecycle.cpp: In function ‘std::optional<unsigned int> t81::ternaryos::kernel::axion_kernel_spawn_thread(KernelRuntimeState&, t81::ternaryos::sched::TiscContext)’:
+/app/ternaryos/kernel/kernel_lifecycle.cpp:276:34: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ThreadRuntimeState::fault_inbox’ [-Wmissing-field-initializers]
+  276 |                                  });
+      |                                  ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp: In function ‘std::optional<unsigned int> t81::ternaryos::kernel::axion_kernel_spawn_thread_in_group(KernelRuntimeState&, t81::ternaryos::sched::TiscContext, ProcessGroupId)’:
+/app/ternaryos/kernel/kernel_lifecycle.cpp:302:34: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ThreadRuntimeState::fault_inbox’ [-Wmissing-field-initializers]
+  302 |                                  });
+      |                                  ^
+/app/ternaryos/kernel/kernel_lifecycle.cpp: In function ‘std::optional<unsigned int> t81::ternaryos::kernel::axion_kernel_spawn_thread_under_supervisor(KernelRuntimeState&, t81::ternaryos::sched::TiscContext, SupervisorId)’:
+/app/ternaryos/kernel/kernel_lifecycle.cpp:334:32: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelRuntimeState::ThreadRuntimeState::fault_inbox’ [-Wmissing-field-initializers]
+  334 |                                });
+      |                                ^
+[99/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_pager.cpp.o
+[100/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/hosted_block_dev.cpp.o
+[101/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/virtio_blk_mmio.cpp.o
+[102/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/virtualbox_ahci_dev.cpp.o
+[103/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_queries.cpp.o
+[104/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/virtualbox_vmsvga_dev.cpp.o
+[105/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/virtualbox_e1000_dev.cpp.o
+[106/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/canon_store.cpp.o
+[107/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_runtime_utils.cpp.o
+[108/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/pl011_uart.cpp.o
+[109/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/gicv3.cpp.o
+[110/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/framebuffer.cpp.o
+[111/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/dev/ttf.cpp.o
+[112/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/mmu/ternary_page_alloc.cpp.o
+[113/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/mmu/page_table.cpp.o
+[114/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/kernel/kernel_views.cpp.o
+/app/ternaryos/kernel/kernel_views.cpp: In function ‘t81::ternaryos::kernel::KernelAuditSummaryView t81::ternaryos::kernel::make_audit_summary_view(const KernelRuntimeState&)’:
+/app/ternaryos/kernel/kernel_views.cpp:1326:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelAuditSummaryView::recent_events’ [-Wmissing-field-initializers]
+ 1326 |   };
+      |   ^
+/app/ternaryos/kernel/kernel_views.cpp: In function ‘t81::ternaryos::kernel::KernelDeviceSummaryView t81::ternaryos::kernel::make_device_summary_view(const KernelRuntimeState&)’:
+/app/ternaryos/kernel/kernel_views.cpp:1347:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelDeviceSummaryView::devices’ [-Wmissing-field-initializers]
+ 1347 |   };
+      |   ^
+[115/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/sched/context_switch.cpp.o
+[116/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/sched/run_queue.cpp.o
+[117/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/sched/scheduler.cpp.o
+[118/1070] Building CXX object CMakeFiles/t81_ternaryos_demo.dir/ternaryos/apps/demo.cpp.o
+[119/1070] Building CXX object CMakeFiles/t81_ternaryos_hal.dir/ternaryos/ipc/canon_message.cpp.o
+[120/1070] Building CXX object CMakeFiles/t81_ternaryos_shell_demo.dir/ternaryos/apps/shell_demo.cpp.o
+[121/1070] Linking CXX static library libt81_ternaryos_hal.a
+[122/1070] Linking CXX executable t81_ternaryos_demo
+[123/1070] Building CXX object CMakeFiles/t81_ternaryos_shell_startup_snapshot.dir/ternaryos/shell/shell_startup_snapshot.cpp.o
+[124/1070] Building CXX object CMakeFiles/t81_ternaryos_userenv.dir/kernel/axion/userenv/user_env.cpp.o
+/app/kernel/axion/userenv/user_env.cpp: In member function ‘t81::ternaryos::userenv::LogoutResult t81::ternaryos::userenv::SessionManager::logout(uint64_t, uint32_t)’:
+/app/kernel/axion/userenv/user_env.cpp:412:45: warning: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 4 has type ‘long long unsigned int’ [-Wformat=]
+  412 |   std::snprintf(hash_buf, sizeof(hash_buf), "%016" PRIx64,
+      |                                             ^
+  413 |                 fnv1a_session(rec) ^ 0xdeadbeefULL);
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                                    |
+      |                                    long long unsigned int
+[125/1070] Building CXX object CMakeFiles/t81_ternaryos_shell.dir/kernel/axion/shell/shell_session.cpp.o
+/app/kernel/axion/shell/shell_session.cpp: In constructor ‘t81::ternaryos::{anonymous}::StdoutSilencer::StdoutSilencer(bool)’:
+/app/kernel/axion/shell/shell_session.cpp:309:17: warning: ignoring return value of ‘FILE* freopen(const char*, const char*, FILE*)’ declared with attribute ‘warn_unused_result’ [-Wunused-result]
+  309 |     std::freopen("/dev/null", "w", stdout);
+      |     ~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~
+[126/1070] Linking CXX static library libt81_ternaryos_shell.a
+[127/1070] Linking CXX static library libt81_ternaryos_userenv.a
+[128/1070] Building CXX object CMakeFiles/t81_ternaryos_phase4_startup_snapshot.dir/ternaryos/dev/phase4_startup_snapshot.cpp.o
+[129/1070] Linking CXX executable t81_ternaryos_shell_demo
+[130/1070] Linking CXX executable t81_ternaryos_shell_startup_snapshot
+[131/1070] Linking CXX executable t81_ternaryos_phase4_startup_snapshot
+[132/1070] Building CXX object CMakeFiles/t81_ternaryos_page_alloc_test.dir/ternaryos/tests/ternary_page_alloc_test.cpp.o
+[133/1070] Linking CXX executable t81_ternaryos_page_alloc_test
+[134/1070] Building CXX object CMakeFiles/t81_ternaryos_shell_tui.dir/ternaryos/apps/shell_tui.cpp.o
+[135/1070] Building CXX object CMakeFiles/t81_ternaryos_qemu_slice6_snapshot.dir/ternaryos/dev/qemu_slice6_startup_snapshot.cpp.o
+[136/1070] Linking CXX executable t81_ternaryos_qemu_slice6_snapshot
+[137/1070] Building CXX object CMakeFiles/t81_ternaryos_context_switch_test.dir/ternaryos/tests/context_switch_test.cpp.o
+[138/1070] Linking CXX executable t81_ternaryos_context_switch_test
+[139/1070] Building CXX object CMakeFiles/t81_ternaryos_mmu_test.dir/ternaryos/tests/mmu_test.cpp.o
+[140/1070] Linking CXX executable t81_ternaryos_mmu_test
+[141/1070] Building CXX object CMakeFiles/t81_ternaryos_scheduler_test.dir/ternaryos/tests/scheduler_test.cpp.o
+[142/1070] Building CXX object CMakeFiles/t81_ternaryos_device_driver_test.dir/ternaryos/tests/device_driver_test.cpp.o
+[143/1070] Linking CXX executable t81_ternaryos_scheduler_test
+[144/1070] Building CXX object CMakeFiles/t81_ternaryos_ipc_test.dir/ternaryos/tests/ipc_test.cpp.o
+[145/1070] Linking CXX executable t81_ternaryos_device_driver_test
+[146/1070] Linking CXX executable t81_ternaryos_ipc_test
+[147/1070] Building CXX object CMakeFiles/t81_ternaryos_shell_session_test.dir/ternaryos/tests/shell_session_test.cpp.o
+[148/1070] Building CXX object CMakeFiles/t81_axion_userenv_include_surface_test.dir/tests/cpp/axion_userenv_include_surface_test.cpp.o
+[149/1070] Linking CXX executable t81_ternaryos_shell_session_test
+[150/1070] Linking CXX executable t81_axion_userenv_include_surface_test
+[151/1070] Building CXX object CMakeFiles/t81_ternaryos_user_env_test.dir/ternaryos/tests/user_env_test.cpp.o
+[152/1070] Linking CXX executable t81_ternaryos_user_env_test
+[153/1070] Building CXX object CMakeFiles/t81_dpe.dir/vm/dpe/task_graph.cpp.o
+[154/1070] Building CXX object CMakeFiles/t81_dpe.dir/vm/dpe/task_runner.cpp.o
+[155/1070] Building CXX object CMakeFiles/t81_dpe.dir/vm/dpe/thread_pool.cpp.o
+[156/1070] Building CXX object CMakeFiles/t81_dpe.dir/vm/dpe/epoch_commit.cpp.o
+[157/1070] Linking CXX static library libt81_dpe.a
+[158/1070] Building CXX object CMakeFiles/t81_ternaryos_device_arbitration_syscall_test.dir/ternaryos/tests/device_arbitration_syscall_test.cpp.o
+[159/1070] Linking CXX executable t81_ternaryos_device_arbitration_syscall_test
+[160/1070] Building CXX object CMakeFiles/t81_dpe_task_graph_test.dir/tests/cpp/dpe/task_graph_test.cpp.o
+[161/1070] Linking CXX executable t81_dpe_task_graph_test
+[162/1070] Building CXX object CMakeFiles/t81_dpe_epoch_commit_test.dir/tests/cpp/dpe/epoch_commit_test.cpp.o
+[163/1070] Linking CXX executable t81_dpe_epoch_commit_test
+[164/1070] Building CXX object CMakeFiles/t81_dpe_task_runner_test.dir/tests/cpp/dpe/task_runner_test.cpp.o
+[165/1070] Building CXX object CMakeFiles/t81_ternaryos_hal_boot_test.dir/ternaryos/tests/hal_boot_test.cpp.o
+/app/ternaryos/tests/hal_boot_test.cpp: In function ‘void test_kernel_abi_wire_blocks()’:
+/app/ternaryos/tests/hal_boot_test.cpp:8945:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::thread_label’ [-Wmissing-field-initializers]
+ 8945 |   };
+      |   ^
+/app/ternaryos/tests/hal_boot_test.cpp:8945:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_capability_transition_history’ [-Wmissing-field-initializers]
+/app/ternaryos/tests/hal_boot_test.cpp:8945:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_services’ [-Wmissing-field-initializers]
+/app/ternaryos/tests/hal_boot_test.cpp:8945:3: warning: missing initializer for member ‘t81::ternaryos::kernel::KernelCallResult::supervisor_delegation_entries’ [-Wmissing-field-initializers]
+/app/ternaryos/tests/hal_boot_test.cpp: In function ‘void test_kernel_call_tva_c_bridge()’:
+/app/ternaryos/tests/hal_boot_test.cpp:10457:37: warning: ‘*(const unsigned int*)((char*)&caller_address_space + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ may be used uninitialized [-Wmaybe-uninitialized]
+10457 |   check(t81::ternaryos::mmu::mmu_map(
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+10458 |             state->page_table,
+      |             ~~~~~~~~~~~~~~~~~~
+10459 |             state->allocator,
+      |             ~~~~~~~~~~~~~~~~~
+10460 |             request_tva,
+      |             ~~~~~~~~~~~~
+10461 |             *caller_address_space,
+      |             ~~~~~~~~~~~~~~~~~~~~~~
+10462 |             {.readable = true, .writable = true, .executable = false}),
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp:10445:14: note: ‘*(const unsigned int*)((char*)&caller_address_space + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ was declared here
+10445 |   const auto caller_address_space =
+      |              ^~~~~~~~~~~~~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp:10773:41: warning: ‘*(const unsigned int*)((char*)&outsider_address_space + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ may be used uninitialized [-Wmaybe-uninitialized]
+10773 |       check(t81::ternaryos::mmu::mmu_map(
+      |             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+10774 |                 state->page_table,
+      |                 ~~~~~~~~~~~~~~~~~~
+10775 |                 state->allocator,
+      |                 ~~~~~~~~~~~~~~~~~
+10776 |                 t81::ternaryos::mmu::tva_from_vpn_offset(84, 0),
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+10777 |                 *outsider_address_space,
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~
+10778 |                 {.readable = true, .writable = true, .executable = false}),
+      |                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp:10766:16: note: ‘*(const unsigned int*)((char*)&outsider_address_space + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ was declared here
+10766 |     const auto outsider_address_space =
+      |                ^~~~~~~~~~~~~~~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp: In function ‘void test_kernel_syscall_trap_wiring()’:
+/app/ternaryos/tests/hal_boot_test.cpp:2017:37: warning: ‘*(const unsigned int*)((char*)&caller_as + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ may be used uninitialized [-Wmaybe-uninitialized]
+ 2017 |   check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator,
+      |         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 2018 |                                      req_tva, *caller_as,
+      |                                      ~~~~~~~~~~~~~~~~~~~~
+ 2019 |                                      {.readable = true, .writable = true, .executable = false}),
+      |                                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp:2007:14: note: ‘*(const unsigned int*)((char*)&caller_as + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ was declared here
+ 2007 |   const auto caller_as =
+      |              ^~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp: In function ‘void test_kernel_user_space_isolation()’:
+/app/ternaryos/tests/hal_boot_test.cpp:2143:56: warning: ‘*(const unsigned int*)((char*)&user_as + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ may be used uninitialized [-Wmaybe-uninitialized]
+ 2143 |   const auto* user_as_state = state->find_address_space(*user_as);
+      |                               ~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~
+/app/ternaryos/tests/hal_boot_test.cpp:2135:14: note: ‘*(const unsigned int*)((char*)&user_as + offsetof(const std::optional<unsigned int>,std::optional<unsigned int>::<unnamed>.std::_Optional_base<unsigned int, true, true>::<unnamed>))’ was declared here
+ 2135 |   const auto user_as =
+      |              ^~~~~~~
+[166/1070] Linking CXX executable t81_dpe_task_runner_test
+[167/1070] Linking CXX executable t81_ternaryos_hal_boot_test
+[168/1070] Building CXX object CMakeFiles/t81_dpe_epoch_dag_test.dir/tests/cpp/dpe/epoch_dag_test.cpp.o
+[169/1070] Building CXX object CMakeFiles/t81_dpe_epoch_parallel_test.dir/tests/cpp/dpe/epoch_parallel_test.cpp.o
+[170/1070] Linking CXX executable t81_dpe_epoch_dag_test
+[171/1070] Linking CXX executable t81_dpe_epoch_parallel_test
+[172/1070] Building CXX object CMakeFiles/t81_dpe_float_reduction_test.dir/tests/cpp/dpe/dpe_float_reduction_test.cpp.o
+[173/1070] Building CXX object CMakeFiles/t81_dpe_include_surface_test.dir/tests/cpp/dpe/include_surface_test.cpp.o
+[174/1070] Linking CXX executable t81_dpe_float_reduction_test
+[175/1070] Linking CXX executable t81_dpe_include_surface_test
+[176/1070] Building CXX object CMakeFiles/t81_dpe_thread_pool_test.dir/tests/cpp/dpe/thread_pool_test.cpp.o
+[177/1070] Linking CXX executable t81_dpe_thread_pool_test
+[178/1070] Building CXX object CMakeFiles/t81_tool_cli.dir/tools/cli/canonize_tensor.cpp.o
+[179/1070] Building CXX object CMakeFiles/t81_tool_cli.dir/tools/cli/debugger.cpp.o
+[180/1070] Building CXX object CMakeFiles/t81_tui.dir/tools/tui/common.cpp.o
+[181/1070] Building CXX object CMakeFiles/tui_snapshot_test.dir/tests/cpp/tui_snapshot_test.cpp.o
+[182/1070] Building CXX object CMakeFiles/t81_tui.dir/tools/tui/agent.cpp.o
+[183/1070] Building CXX object CMakeFiles/t81_tool_cli.dir/tools/cli/driver.cpp.o
+[184/1070] Linking CXX static library libt81_tool_cli.a
+[185/1070] Building CXX object CMakeFiles/t81_tui.dir/tools/tui/studio.cpp.o
+[186/1070] Building CXX object CMakeFiles/t81.dir/tools/cli/ai/ai_cli_shared.cpp.o
+[187/1070] Building CXX object CMakeFiles/t81_ir_roundtrip.dir/examples/ir_roundtrip.cpp.o
+[188/1070] Linking CXX executable t81_ir_roundtrip
+[189/1070] Building CXX object CMakeFiles/t81_demo.dir/examples/demo.cpp.o
+[190/1070] Linking CXX executable t81_demo
+[191/1070] Building CXX object CMakeFiles/t81_tensor_ops.dir/examples/tensor_ops.cpp.o
+[192/1070] Building CXX object CMakeFiles/axion_demo.dir/examples/axion_demo.cpp.o
+[193/1070] Linking CXX executable t81_tensor_ops
+[194/1070] Linking CXX executable axion_demo
+[195/1070] Building CXX object CMakeFiles/axion_guard_trace.dir/examples/axion_guard_trace.cpp.o
+[196/1070] Linking CXX executable axion_guard_trace
+[197/1070] Building CXX object CMakeFiles/axion_policy_trace.dir/examples/axion_policy_trace.cpp.o
+[198/1070] Linking CXX executable axion_policy_trace
+[199/1070] Building CXX object CMakeFiles/canonfs_trace_demo.dir/examples/canonfs_trace_demo.cpp.o
+[200/1070] Linking CXX executable canonfs_trace_demo
+[201/1070] Building CXX object CMakeFiles/axion_policy_runner.dir/examples/axion_policy_runner.cpp.o
+[202/1070] Linking CXX executable axion_policy_runner
+[203/1070] Building CXX object CMakeFiles/t81_ai_cli.dir/tools/cli/ai/t81_ai_cli.cpp.o
+[204/1070] Building CXX object CMakeFiles/llama32_demo.dir/examples/llama32_demo.cpp.o
+[205/1070] Linking CXX executable llama32_demo
+[206/1070] Building CXX object CMakeFiles/t81_ai_cli.dir/tools/cli/ai/ai_cli_shared.cpp.o
+[207/1070] Linking CXX executable t81_ai_cli
+[208/1070] Building CXX object CMakeFiles/t81_bigint_test.dir/tests/cpp/bigint_roundtrip.cpp.o
+[209/1070] Linking CXX executable t81_bigint_test
+[210/1070] Building CXX object CMakeFiles/t81_fraction_test.dir/tests/cpp/fraction_roundtrip.cpp.o
+[211/1070] Linking CXX executable t81_fraction_test
+[212/1070] Building CXX object CMakeFiles/t81_bigint_properties_test.dir/tests/cpp/bigint_properties_test.cpp.o
+[213/1070] Linking CXX executable t81_bigint_properties_test
+[214/1070] Building CXX object CMakeFiles/complex_demo.dir/examples/complex_demo.cpp.o
+[215/1070] Linking CXX executable complex_demo
+[216/1070] Building CXX object CMakeFiles/t81_prob_properties_test.dir/tests/cpp/prob_properties_test.cpp.o
+[217/1070] Linking CXX executable t81_prob_properties_test
+[218/1070] Building CXX object CMakeFiles/t81_bigint_division_semantics_test.dir/tests/cpp/bigint_division_semantics_test.cpp.o
+[219/1070] Linking CXX executable t81_bigint_division_semantics_test
+[220/1070] Building CXX object CMakeFiles/t81_t81int_properties_test.dir/tests/cpp/t81int_properties_test.cpp.o
+[221/1070] Linking CXX executable t81_t81int_properties_test
+[222/1070] Building CXX object CMakeFiles/t81.dir/tools/cli/main.cpp.o
+[223/1070] Building CXX object CMakeFiles/t81_bigint_division_edge_properties_test.dir/tests/cpp/bigint_division_edge_properties_test.cpp.o
+[224/1070] Linking CXX executable t81_bigint_division_edge_properties_test
+[225/1070] Building CXX object CMakeFiles/t81_bigint_gcd_divmod_property_test.dir/tests/cpp/bigint_gcd_divmod_property_test.cpp.o
+[226/1070] Linking CXX executable t81_bigint_gcd_divmod_property_test
+[227/1070] Building CXX object CMakeFiles/t81_bigint_mod_test.dir/tests/cpp/test_T81BigInt_mod.cpp.o
+[228/1070] Linking CXX executable t81_bigint_mod_test
+[229/1070] Building CXX object CMakeFiles/t81_bigint_sqrt_test.dir/tests/cpp/test_T81BigInt_sqrt.cpp.o
+[230/1070] Linking CXX executable t81_bigint_sqrt_test
+[231/1070] Building CXX object CMakeFiles/t81_bigint_modular_inverse_test.dir/tests/cpp/bigint_modular_inverse_test.cpp.o
+[232/1070] Linking CXX executable t81_bigint_modular_inverse_test
+[233/1070] Building CXX object CMakeFiles/fuzz_bigint_div.dir/tests/cpp/fuzz_bigint_div.cpp.o
+[234/1070] Linking CXX executable fuzz_bigint_div
+[235/1070] Building CXX object CMakeFiles/t81_core_numeric_compat_test.dir/tests/cpp/core_numeric_compat_test.cpp.o
+[236/1070] Linking CXX executable t81_core_numeric_compat_test
+[237/1070] Building CXX object CMakeFiles/t81_fraction_properties_test.dir/tests/cpp/fraction_properties_test.cpp.o
+[238/1070] Linking CXX executable t81_fraction_properties_test
+[239/1070] Building CXX object CMakeFiles/fuzz_bigint_libfuzzer.dir/tests/cpp/fuzz_bigint_libfuzzer.cpp.o
+[240/1070] Linking CXX executable fuzz_bigint_libfuzzer
+[241/1070] Building CXX object CMakeFiles/t81_tensor_transpose_test.dir/tests/cpp/tensor_transpose_test.cpp.o
+[242/1070] Linking CXX executable t81_tensor_transpose_test
+[243/1070] Building CXX object CMakeFiles/t81_core_bigint_compat_properties_test.dir/tests/cpp/core_bigint_compat_properties_test.cpp.o
+[244/1070] Linking CXX executable t81_core_bigint_compat_properties_test
+[245/1070] Building CXX object CMakeFiles/t81_core_fraction_compat_properties_test.dir/tests/cpp/core_fraction_compat_properties_test.cpp.o
+[246/1070] Linking CXX executable t81_core_fraction_compat_properties_test
+[247/1070] Building CXX object CMakeFiles/t81_v1_canonical_numeric_contract_test.dir/tests/cpp/v1_canonical_numeric_contract_test.cpp.o
+[248/1070] Linking CXX executable t81_v1_canonical_numeric_contract_test
+[249/1070] Building CXX object CMakeFiles/t81_tensor_slice_test.dir/tests/cpp/tensor_slice_test.cpp.o
+[250/1070] Linking CXX executable t81_tensor_slice_test
+[251/1070] Building CXX object CMakeFiles/t81_tensor_reshape_test.dir/tests/cpp/tensor_reshape_test.cpp.o
+[252/1070] Linking CXX executable t81_tensor_reshape_test
+[253/1070] Building CXX object CMakeFiles/t81_weights_quantize_test.dir/tests/cpp/weights_quantize_test.cpp.o
+[254/1070] Linking CXX executable t81_weights_quantize_test
+[255/1070] Building CXX object CMakeFiles/t81_core_improvements_test.dir/tests/cpp/test_core_improvements.cpp.o
+[256/1070] Building CXX object CMakeFiles/t81_tensor_loader_test.dir/tests/cpp/tensor_loader_test.cpp.o
+[257/1070] Building CXX object CMakeFiles/t81_canonfs_io_test.dir/tests/cpp/canonfs_io_test.cpp.o
+[258/1070] Linking CXX executable t81_tensor_loader_test
+[259/1070] Linking CXX executable t81_core_improvements_test
+[260/1070] Linking CXX executable t81_canonfs_io_test
+[261/1070] Building CXX object CMakeFiles/canonfs_persistent_driver_test.dir/tests/cpp/canonfs_persistent_driver_test.cpp.o
+[262/1070] Building CXX object CMakeFiles/t81_core_features_test.dir/tests/cpp/test_core_features.cpp.o
+[263/1070] Linking CXX executable t81_core_features_test
+[264/1070] Linking CXX executable canonfs_persistent_driver_test
+[265/1070] Building CXX object CMakeFiles/canonfs_axion_trace_test.dir/tests/cpp/canonfs_axion_trace_test.cpp.o
+[266/1070] Building CXX object CMakeFiles/canonfs_read_verify_test.dir/tests/cpp/canonfs_read_verify_test.cpp.o
+[267/1070] Linking CXX executable canonfs_axion_trace_test
+[268/1070] Linking CXX executable canonfs_read_verify_test
+[269/1070] Building CXX object CMakeFiles/t81_ir_encoding_test.dir/tests/cpp/ir_encoding_test.cpp.o
+[270/1070] Linking CXX executable t81_ir_encoding_test
+[271/1070] Building CXX object CMakeFiles/canonfs_identity_contract_test.dir/tests/cpp/canonfs_identity_contract_test.cpp.o
+[272/1070] Building CXX object CMakeFiles/canonfs_read_verify_env_contract_test.dir/tests/cpp/canonfs_read_verify_env_contract_test.cpp.o
+[273/1070] Linking CXX executable canonfs_identity_contract_test
+[274/1070] Linking CXX executable canonfs_read_verify_env_contract_test
+[275/1070] Building CXX object CMakeFiles/canonfs_integrity_matrix_test.dir/tests/cpp/canonfs_integrity_matrix_test.cpp.o
+[276/1070] Linking CXX executable canonfs_integrity_matrix_test
+[277/1070] Building CXX object CMakeFiles/t81_isa_encoding_test.dir/tests/cpp/tisc_encoding_test.cpp.o
+[278/1070] Linking CXX executable t81_isa_encoding_test
+[279/1070] Building CXX object CMakeFiles/t81_vm_tloadhash_custom_driver_test.dir/tests/cpp/vm_tloadhash_custom_driver_test.cpp.o
+[280/1070] Linking CXX executable t81_vm_tloadhash_custom_driver_test
+[281/1070] Building CXX object CMakeFiles/t81_vm_tloadhash_conformance_test.dir/tests/cpp/vm_tloadhash_conformance_test.cpp.o
+[282/1070] Linking CXX executable t81_vm_tloadhash_conformance_test
+[283/1070] Building CXX object CMakeFiles/t81_vm_tloadhash_canonical_fixed_test.dir/tests/cpp/vm_tloadhash_canonical_fixed_test.cpp.o
+[284/1070] Linking CXX executable t81_vm_tloadhash_canonical_fixed_test
+[285/1070] Building CXX object CMakeFiles/t81_vm_canonfs_root_env_contract_test.dir/tests/cpp/vm_canonfs_root_env_contract_test.cpp.o
+[286/1070] Linking CXX executable t81_vm_canonfs_root_env_contract_test
+[287/1070] Building CXX object CMakeFiles/t81_vm_tensor_test.dir/tests/cpp/vm_tensor_test.cpp.o
+[288/1070] Linking CXX executable t81_vm_tensor_test
+[289/1070] Building CXX object CMakeFiles/t81_vm_tloadhash_decodefault_determinism_matrix_test.dir/tests/cpp/vm_tloadhash_decodefault_determinism_matrix_test.cpp.o
+[290/1070] Linking CXX executable t81_vm_tloadhash_decodefault_determinism_matrix_test
+[291/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_embed_conformance_test.dir/tests/cpp/vm_ai_phase1_embed_conformance_test.cpp.o
+[292/1070] Linking CXX executable t81_vm_ai_phase1_embed_conformance_test
+[293/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_attention_conformance_test.dir/tests/cpp/vm_ai_phase1_attention_conformance_test.cpp.o
+[294/1070] Linking CXX executable t81_vm_ai_phase1_attention_conformance_test
+[295/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_qmatmul_conformance_test.dir/tests/cpp/vm_ai_phase1_qmatmul_conformance_test.cpp.o
+[296/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_wload_conformance_test.dir/tests/cpp/vm_ai_phase1_wload_conformance_test.cpp.o
+[297/1070] Linking CXX executable t81_vm_ai_phase1_qmatmul_conformance_test
+[298/1070] Linking CXX executable t81_vm_ai_phase1_wload_conformance_test
+[299/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_gather_conformance_test.dir/tests/cpp/vm_ai_phase1_gather_conformance_test.cpp.o
+[300/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_shared_helper_parity_test.dir/tests/cpp/vm_ai_phase1_shared_helper_parity_test.cpp.o
+[301/1070] Linking CXX executable t81_vm_ai_phase1_gather_conformance_test
+[302/1070] Linking CXX executable t81_vm_ai_phase1_shared_helper_parity_test
+[303/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_wload_canonfs_audit_test.dir/tests/cpp/vm_ai_phase1_wload_canonfs_audit_test.cpp.o
+[304/1070] Building CXX object CMakeFiles/t81_vm_ai_phase1_scatter_conformance_test.dir/tests/cpp/vm_ai_phase1_scatter_conformance_test.cpp.o
+[305/1070] Linking CXX executable t81_vm_ai_phase1_wload_canonfs_audit_test
+[306/1070] Linking CXX executable t81_vm_ai_phase1_scatter_conformance_test
+ninja: build stopped: interrupted by user.

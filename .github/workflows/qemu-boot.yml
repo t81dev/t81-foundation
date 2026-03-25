@@ -715,6 +715,12 @@ jobs:
           # dereferences address 0x0, generating a Data Abort EC=0x24.
           # The scheduler's fault handler must contain it and return to EL1.
           check "[axion] el0: fault contained (tid=8, ec=0x24)"
+
+          # Phase 19 (RFC-00C8): EL0 concurrent fault isolation — Process F (tid=7)
+          # faults immediately on start. Process E (tid=6) continues running
+          # normally, proving the fault handler context-switches correctly.
+          check "[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)"
+
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

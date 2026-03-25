@@ -27,6 +27,15 @@ RFC-00B9 boundary note:
 
 ---
 
+## RFC-00C8 — Concurrent Fault Isolation (2026-03-23)
+
+Phase 19: Validates the fault handler context-switch path and per-thread L3 isolation.
+
+- **Two threads:** Thread E (tid=6, device wait) and Thread F (tid=7, immediate fault).
+- **Execution flow:** Process F faults immediately upon start. The fault handler marks it as Faulted, installs E's L3 table, and context-switches to E. E runs successfully, blocks on a device wait, wakes up, and exits.
+- **Verification:** Ensures the governance ring contains both `kGovThreadFault(7)` and `kGovTimerDeviceWake(6)`.
+- **CI gate:** `[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)`
+
 ## RFC-00C7 — EL0 Fault Containment (2026-03-23)
 
 Phase 18: hardware fault containment for the cooperative EL0 scheduler.
