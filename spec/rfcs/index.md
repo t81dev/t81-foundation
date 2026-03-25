@@ -59,7 +59,7 @@ Auxiliary note:
 | RFC-0034 | T81-Native AI Inference | accepted | In-repo implementation closure is complete: opcode/runtime path, Axion policy surface, `@ternary_inference` lowering, conformance programs, CanonFS-backed `.t81w` execution evidence, and native benchmark evidence are all in place; a first native VM fast-path set (`TExp`, `TQUANT`, `TACT`, `TERNACCUM`, `TSiLU`, `TSoftmax`, `TRMSNorm`, `TRoPE`, `TWEMBED`, `TWMATMUL`, `TATTN`) for balanced-trit weights is now implemented, with matched VM native-vs-binary wins recorded at roughly `62x-67x` for the unary set, `6259.43x` for `TQUANT`, `6834.34x` for `TACT`, `80.57x` for `TERNACCUM`, `11.99x` for `TRMSNorm`, `4.07x` for `TRoPE`, `769.63x` for `TWEMBED`, a scale-dependent `TWMATMUL` crossover from `0.84x` at `64` to `11.84x` at `256` and `570.42x` at `4096`, and `TATTN` at `110970.48x` on the current `256`-trit VM comparison; remaining work is cross-platform evidence refresh plus broader optimization of the post-decode result-representation path |
 | RFC-0036 | T81Lang Foreign Function Interface Grammar | accepted | Language/frontend contract for the governed FFI surface defined by RFC-00B8 |
 | RFC-0037 | T81Lang TNN Standard Library | accepted | TNN library surface for ternary-native AI/runtime work; depends on RFC-0034 |
-| RFC-0038 | Ternary Lattice Cryptography Primitives | proposed | Post-quantum primitive proposal (`POLYMUL` / `POLYMOD`) awaiting full review; parent for RFC-0039 |
+| RFC-0038 | Ternary Lattice Cryptography Primitives | accepted | `POLYMUL` / `POLYMOD` lattice-crypto substrate is implemented and is the accepted parent for RFC-0039 |
 | RFC-0039 | NTRU-KEM: Ternary Key Encapsulation Mechanism | accepted | Accepted narrow KEM construction built on the lattice-crypto direction; revisit if RFC-0038 changes materially |
 | RFC-0040 | SWAR Formalization | accepted | In-repo implementation closure is complete: stable SWAR API, explicit TISC opcodes (`0xD5`-`0xD7`), Setun bridge mnemonics, VM/JIT/CanonFS coverage, Axion trace/policy coverage, performance evidence, and `experimental/packed_trit_vector.hpp` deprecation wording all in place (2026-03-22); remaining `stable`-promotion item: refreshed x86_64 cross-architecture evidence (pending CI runner) |
 | RFC-0041 | SIMD Formalization | accepted | In-repo implementation closure complete: AVX2/NEON kernels, `t81/simd/simd.hpp` facade, migration guide, ARM64 evidence (2026-03-18 + 2026-03-22 snapshots), formal deprecation wording (`#pragma message` guard on direct experimental include), and RFC-0041 evidence note all in place; remaining `stable`-promotion item: x86_64 evidence refresh (pending CI runner) |
@@ -139,18 +139,6 @@ increment inside them as grounds for a new RFC.
 - Small bridge additions, importer coverage, or compatibility-profile
   expansions should not get standalone RFCs unless they change the external
   contract materially.
-
-## Open Review Items
-
-- `RFC-0038` vs `RFC-0039` status mismatch:
-  [RFC-0038-lattice-crypto.md](RFC-0038-lattice-crypto.md) is still
-  `proposed`, while [RFC-0039-ntru-kem.md](RFC-0039-ntru-kem.md) is
-  `accepted` and depends on it.
-  Follow-up must choose one of:
-  - advance `RFC-0038` to a status consistent with `RFC-0039`
-  - mark `RFC-0039` as contingent/partial in the index notes
-  - explicitly document why `RFC-0039` can remain accepted while `RFC-0038`
-    stays `proposed`
 
 ## DPE RFCs (Deterministic Parallel Execution series)
 

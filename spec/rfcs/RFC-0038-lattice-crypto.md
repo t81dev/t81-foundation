@@ -4,7 +4,7 @@
 |-------------|---------------------------------------|
 | RFC         | 0038                                  |
 | Title       | Ternary Lattice Cryptography          |
-| Status      | proposed                              |
+| Status      | accepted                              |
 | Stage       | 3 — Post-Quantum Security             |
 | Author      | t81dev                                |
 | Created     | 2026-03-16                            |
@@ -194,3 +194,11 @@ Next potential Stage 3 items:
   against 0/sign — constant-time with respect to coefficient values in {−1,0,+1}.
 - **Determinism**: T81BigInt accumulators guarantee bit-exact reproducibility
   across platforms, satisfying RFC-0002 deterministic execution contract.
+
+---
+
+## 12. Changelog
+
+| Date       | Change                      |
+|------------|-----------------------------|
+| 2026-03-16 | Initial accepted version    |
