@@ -454,6 +454,7 @@ commands are:
 - `help`
 - `uname`
 - `version`
+- `canonfs`
 - `status`
 - `threads`
 - `sched`

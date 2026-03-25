@@ -94,6 +94,35 @@ static int pl011_getchar() noexcept {
 
 static constexpr uint64_t kVirtioMmioBase = UINT64_C(0x0A003C00);
 
+enum class CanonFsProbeStatus : uint8_t {
+  NotRun = 0,
+  Ok,
+  FailFeatureNegotiation,
+  FailQueueTooSmall,
+  FailLba0Read,
+  FailLba0Magic,
+  FailLba1Write,
+  FailLba1ReadBack,
+  FailLba1Mismatch,
+};
+
+static CanonFsProbeStatus s_canonfs_probe_status = CanonFsProbeStatus::NotRun;
+
+static const char* canonfs_probe_status_text(CanonFsProbeStatus status) noexcept {
+  switch (status) {
+    case CanonFsProbeStatus::NotRun:                 return "not-run";
+    case CanonFsProbeStatus::Ok:                     return "ok";
+    case CanonFsProbeStatus::FailFeatureNegotiation: return "fail(feature-negotiation)";
+    case CanonFsProbeStatus::FailQueueTooSmall:      return "fail(queue-too-small)";
+    case CanonFsProbeStatus::FailLba0Read:           return "fail(lba0-read)";
+    case CanonFsProbeStatus::FailLba0Magic:          return "fail(lba0-magic)";
+    case CanonFsProbeStatus::FailLba1Write:          return "fail(lba1-write)";
+    case CanonFsProbeStatus::FailLba1ReadBack:       return "fail(lba1-read-back)";
+    case CanonFsProbeStatus::FailLba1Mismatch:       return "fail(lba1-mismatch)";
+  }
+  return "unknown";
+}
+
 static bool probe_virtio_blk_bare() noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
   const uint32_t magic = mmio_read32(kVirtioMmioBase, 0x000u);
@@ -198,6 +227,7 @@ static bool vblk_do_io(uint32_t type, uint64_t lba) noexcept {
 
 static void canonfs_io_probe() noexcept {
   const uint64_t mmio = kVirtioMmioBase;
+  s_canonfs_probe_status = CanonFsProbeStatus::NotRun;
 
   // Reset → ACK → DRIVER → negotiate features (none) → FEATURES_OK.
   mmio_write32(mmio, kVR_Status, 0u);
@@ -208,6 +238,7 @@ static void canonfs_io_probe() noexcept {
   mmio_write32(mmio, kVR_Status, kVS_Ack | kVS_Driver | kVS_FeaturesOk);
   aarch64_dsb();
   if (!(mmio_read32(mmio, kVR_Status) & kVS_FeaturesOk)) {
+    s_canonfs_probe_status = CanonFsProbeStatus::FailFeatureNegotiation;
     pl011_puts("[axion] canonfs: I/O probe FAIL (feature negotiation)\r\n");
     return;
   }
@@ -215,6 +246,7 @@ static void canonfs_io_probe() noexcept {
   // Queue 0 setup.
   mmio_write32(mmio, kVR_QueueSel, 0u);
   if (mmio_read32(mmio, kVR_QueueNumMax) < static_cast<uint32_t>(kVQSize)) {
+    s_canonfs_probe_status = CanonFsProbeStatus::FailQueueTooSmall;
     pl011_puts("[axion] canonfs: I/O probe FAIL (queue too small)\r\n");
     return;
   }
@@ -239,11 +271,13 @@ static void canonfs_io_probe() noexcept {
   // LBA 0 READ → check CST1 magic.
   for (int i = 0; i < 512; ++i) s_sector_buf[i] = 0u;
   if (!vblk_do_io(kBlkIn, 0u)) {
+    s_canonfs_probe_status = CanonFsProbeStatus::FailLba0Read;
     pl011_puts("[axion] canonfs: I/O probe FAIL (LBA0 read error)\r\n");
     return;
   }
   if (s_sector_buf[0] != 'C' || s_sector_buf[1] != 'S' ||
       s_sector_buf[2] != 'T' || s_sector_buf[3] != '1') {
+    s_canonfs_probe_status = CanonFsProbeStatus::FailLba0Magic;
     pl011_puts("[axion] canonfs: I/O probe FAIL (LBA0 bad magic)\r\n");
     return;
   }
@@ -252,6 +286,7 @@ static void canonfs_io_probe() noexcept {
   for (int i = 0; i < 512; ++i)
     s_sector_buf[i] = static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i));
   if (!vblk_do_io(kBlkOut, 1u)) {
+    s_canonfs_probe_status = CanonFsProbeStatus::FailLba1Write;
     pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 write error)\r\n");
     return;
   }
@@ -259,17 +294,20 @@ static void canonfs_io_probe() noexcept {
   // LBA 1 READ back and verify.
   for (int i = 0; i < 512; ++i) s_sector_buf[i] = 0u;
   if (!vblk_do_io(kBlkIn, 1u)) {
+    s_canonfs_probe_status = CanonFsProbeStatus::FailLba1ReadBack;
     pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 read-back error)\r\n");
     return;
   }
   for (int i = 0; i < 512; ++i) {
     if (s_sector_buf[i] !=
         static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i))) {
+      s_canonfs_probe_status = CanonFsProbeStatus::FailLba1Mismatch;
       pl011_puts("[axion] canonfs: I/O probe FAIL (LBA1 mismatch)\r\n");
       return;
     }
   }
 
+  s_canonfs_probe_status = CanonFsProbeStatus::Ok;
   pl011_puts("[axion] canonfs: I/O probe OK"
              " (LBA0 magic=CST1, LBA1 round-trip pass)\r\n");
 }
@@ -552,6 +590,7 @@ static void cmd_help() noexcept {
   pl011_puts("  help     -- this message\r\n");
   pl011_puts("  uname    -- system identity (RFC-00B9 §8.3)\r\n");
   pl011_puts("  version  -- T81 build info\r\n");
+  pl011_puts("  canonfs  -- storage transport and probe status\r\n");
   pl011_puts("  status   -- kernel counters and governance state\r\n");
   pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
@@ -568,6 +607,27 @@ static void cmd_version() noexcept {
   pl011_puts("  T81 / Axion  --  ternary OS kernel (bare-metal EFI bridge)\r\n");
   pl011_puts("  Architecture : AArch64 (QEMU virt, cortex-a57, EDK2)\r\n");
   pl011_puts("  Boot path    : EFI efi_main -> ExitBootServices -> C++ bridge\r\n");
+}
+
+static void cmd_canonfs() noexcept {
+  char hex[24];
+  pl011_puts("  [canonfs]\r\n");
+  if (s_has_blk) {
+    pl011_puts("    mode          : persistent (virtio-blk)\r\n");
+    pl011_puts("    transport     : virtio-mmio v2\r\n");
+    pl011_puts("    store_mmio    : ");
+    pl011_puts(u64_hex(kVirtioMmioBase, hex, static_cast<int>(sizeof(hex))));
+    pl011_puts("\r\n");
+    pl011_puts("    io_probe      : ");
+    pl011_puts(canonfs_probe_status_text(s_canonfs_probe_status));
+    pl011_puts("\r\n");
+    pl011_puts("    lba0_expect   : CST1\r\n");
+    pl011_puts("    lba1_probe    : round-trip pattern\r\n");
+  } else {
+    pl011_puts("    mode          : in-memory\r\n");
+    pl011_puts("    transport     : none\r\n");
+    pl011_puts("    io_probe      : skipped (no virtio-blk store)\r\n");
+  }
 }
 
 static void cmd_status() noexcept {
@@ -730,6 +790,7 @@ static void shell_dispatch(const char* line) noexcept {
   if      (str_eq(line, "help"))    { cmd_help(); }
   else if (str_eq(line, "uname"))   { cmd_uname(); }
   else if (str_eq(line, "version")) { cmd_version(); }
+  else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
