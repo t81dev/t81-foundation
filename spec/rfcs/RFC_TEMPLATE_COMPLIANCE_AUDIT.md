@@ -1,66 +1,40 @@
-# RFC Template Compliance Audit Report
+# T81 Foundation RFC Consistency Audit
+**Date:** 2026-03-24
+**Scope:** `spec/rfcs/` directory and standard templates
 
-## Audit Status: ✅ COMPLETED
+This document presents a brief gap analysis and consistency audit of the current RFC catalog against the T81 Foundation standard template requirements.
 
-### ✅ All RFCs Now Fully Compliant
-- RFC-00A0: AI Experiment Sandbox - FULLY COMPLIANT
-- RFC-00A1: Deterministic Evidence Protocol - FULLY COMPLIANT
-- RFC-00A2: AI Benchmark Spec - FULLY COMPLIANT
-- RFC-00A3: Model Artifact Provenance - FULLY COMPLIANT
-- RFC-00A4: Ternary Quantization Codec - FULLY COMPLIANT
-- RFC-00A5: LLM Backend Adapter - FULLY COMPLIANT
-- RFC-00A6: Axion Policy Hooks - FULLY COMPLIANT
-- RFC-00A7: UX Integration - FULLY COMPLIANT
-- RFC-00A8: AI-Native VM Opcodes - FULLY COMPLIANT
+## 1. Governance Boundary Consistency
 
-## Template Requirements Applied to All RFCs
-1. ✅ Version 0.1 — Standards Track
-2. ✅ Status: Draft
-3. ✅ Author: T81 Foundation Architecture Team
-4. ✅ Applies to: [specific components]
-5. ✅ Separator lines: ______________________________________________________________________
-6. ✅ Standard sections: Summary, Motivation, Proposal, Impact, Alternatives Considered, References
-7. ✅ Impact subsections: Backward Compatibility, Performance, Security
+The `check_rfc_lifecycle_hygiene.py` CI script enforces alignment between the `spec/rfcs/index.md` status catalog and the `**Status:**` frontmatter inside each individual RFC document.
 
-## Final Architecture Audit Summary
+### Identified Gap
+- `RFC-0055-hardware-target-profile-template.md`: Marked as **accepted** in the index, but contained `**Status:** draft` in the file.
+- `RFC-0056-google-axion-hardware-profile.md`: Marked as **accepted** in the index, but contained `**Status:** draft` in the file.
 
-### Repository Boundary Compliance: ✅ PASS
-- All RFCs respect core system boundaries
-- Experimental work properly isolated in `/experiments/ai/`
-- Only RFC-00A8 requires eventual core modifications (post-promotion)
+### Resolution
+- The frontmatter in both files was manually updated from `draft` to `accepted` to align with the canonical `index.md` and satisfy the CI check.
 
-### Determinism Risk Analysis: ✅ DOCUMENTED
-- Risk levels assessed for each RFC
-- Validation mechanisms specified
-- High-risk items (00A5, 00A8) clearly identified
+## 2. Template Adherence (RFC-0000-template.md)
 
-### UX Consistency: ✅ STANDARDIZED
-- CLI command structure reviewed
-- Inconsistencies identified and corrected
-- Standard format: `t81 ai <command> [options]`
+RFCs are required to follow a standard structure:
+- **Status:** (draft, proposed, accepted, integrated, superseded, rejected)
+- **Type:** (e.g., standard, hardware-profile)
+- **Applies-To:**
+- **Created:**
+- **Updated:**
 
-### Dependency Graph: ✅ ESTABLISHED
-- Clear implementation order defined
-- Interdependencies mapped
-- Safe progression path identified
+### Audit Findings
+- Recent additions (e.g., RFC-0055, RFC-0056) adhere strictly to this frontmatter format.
+- Older RFCs (e.g., RFC-0001 through RFC-0010) often lack the `Type:` and `Applies-To:` fields. This is acceptable legacy drift, but any updates to those documents should enforce the modern template.
 
-## RFCs Recommended for Permanent Experimental Status
-- **RFC-00A8**: AI-Native VM Opcodes (highest architectural risk)
+## 3. Promotion-Readiness Review
 
-## Final Implementation Order
-1. RFC-00A0: AI Experiment Sandbox
-2. RFC-00A1: Deterministic Evidence Protocol  
-3. RFC-00A3: Model Artifact Provenance
-4. RFC-00A5: LLM Backend Adapter
-5. RFC-00A4: Ternary Quantization Codec
-6. RFC-00A6: Axion Policy Hooks
-7. RFC-00A2: AI Benchmark Specification
-8. RFC-00A7: UX Integration
-9. RFC-00A8: AI-Native VM Opcodes (permanent experimental)
+Several RFCs are in an "accepted" state but indicate pending implementation or evidence work:
+- **RFC-0034 (T81-Native AI Inference):** Implemented in-repo. Pending cross-platform evidence refresh and result-representation optimization before promotion to `integrated`.
+- **RFC-0040 (SWAR Formalization) / RFC-0041 (SIMD Formalization):** Implemented in-repo. Pending refreshed x86_64 cross-architecture evidence (waiting on CI runner availability).
+- **RFC-0056 (Google Axion Integration):** Phase 1-3 implementation (TISC-to-ARM64 equivalence proof and conformance testing) is listed as post-acceptance work.
 
-## Architecture Risk Summary
-- **High Risk**: RFC-00A5 (Backend determinism), RFC-00A8 (VM modifications)
-- **Medium Risk**: RFC-00A3 (Model security), RFC-00A4 (Quantization quality)
-- **Low Risk**: RFC-00A0, 00A1, 00A2, 00A6, 00A7
+## Conclusion
 
-All RFCs are now ready for review and implementation with proper template compliance and architectural safety boundaries.
+The active RFC catalog is largely healthy and in compliance with the lifecycle hygiene script following the updates to RFC-0055 and RFC-0056. The primary bottleneck for promotion to `integrated` across several major hardware/acceleration RFCs (0034, 0040, 0041, 0056) is the collection of cross-architecture performance evidence.

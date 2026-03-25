@@ -176,7 +176,7 @@ t81 code run inference.t81 --policy secure_model.apl --weights-model model.t81w 
 - GUI-first or general-purpose desktop OS
 - Running on real ternary hardware (none exists)
 
-T81 prioritizes **verifiability, determinism, and governance** over broad compatibility.
+T81 prioritizes **verifiability, determinism, and governance** over broad compatibility. All determinism claims must be strictly bounded by the Determinism Surface Registry.
 
 ## License
 

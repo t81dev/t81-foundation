@@ -974,7 +974,11 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
             weight_trits.data() + static_cast<std::size_t>(p) * static_cast<std::size_t>(n);
         // Prefetch next weight row into L2 (read, L2 locality).
         if (p + 1 < pend) {
+#if defined(__GNUC__) || defined(__clang__)
           __builtin_prefetch(wrow + n, 0, 2);
+#elif defined(_MSC_VER)
+          // No direct equivalent for L2 prefetch in MSVC intrin.h _mm_prefetch that compiles everywhere without immintrin.h.
+#endif
         }
         int j = 0;
 #ifdef __ARM_NEON
