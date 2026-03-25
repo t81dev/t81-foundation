@@ -60,6 +60,7 @@ cleanup() {
 trap cleanup EXIT
 
 "$qemu_bin" \
+  -nodefaults \
   -machine virt,accel=hvf \
   -cpu host \
   -smp 1 \

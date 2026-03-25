@@ -125,6 +125,8 @@ extern "C" uint64_t el0_mmu_proc_stack_top2()  noexcept;
 extern "C" void el0_mmu_build_thread_l3(uint32_t slot,
                                          uint64_t own_code_pa,
                                          uint64_t own_stack_pa) noexcept;
+extern "C" void el0_mmu_install_thread_l3(uint32_t slot) noexcept;
+extern "C" void el0_mmu_install_shared_l3() noexcept;
 
 // Phase 17 (RFC-00C6) per-thread L3 scheduler API (qemu_slice6_el0_svc_bridge.cpp).
 extern "C" void fs_sched_set_thread_l3(uint32_t tid, uint32_t l3_slot) noexcept;
@@ -191,6 +193,18 @@ static inline void flush_icache_for_new_code() noexcept {
 #endif
 }
 
+static inline uint32_t read_u32_le(const uint8_t* p) noexcept {
+    uint32_t v = 0u;
+    __builtin_memcpy(&v, p, 4);
+    return v;
+}
+
+static inline uint64_t read_u64_le(const uint8_t* p) noexcept {
+    uint64_t v = 0u;
+    __builtin_memcpy(&v, p, 8);
+    return v;
+}
+
 // ── Process ERET trampoline ───────────────────────────────────────────────────
 // Mirrors run_el0_init() in qemu_slice6_cpp_bridge.cpp.
 // el0_fn: PA of process entry (identity-mapped proc code page + entry_offset).
@@ -199,6 +213,16 @@ static inline void flush_icache_for_new_code() noexcept {
 static void run_proc_entry(uint64_t el0_fn, uint64_t el0_sp) noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
     __asm__ volatile(
+        // Preserve EL1 callee-saved state across the EL0 roundtrip. The
+        // synchronous trap return path restores the EL0 register file before
+        // ERET, so the EL1 continuation must recover its own frame here.
+        "sub     sp, sp, #96\n\t"
+        "stp     x19, x20, [sp, #0]\n\t"
+        "stp     x21, x22, [sp, #16]\n\t"
+        "stp     x23, x24, [sp, #32]\n\t"
+        "stp     x25, x26, [sp, #48]\n\t"
+        "stp     x27, x28, [sp, #64]\n\t"
+        "stp     x29, x30, [sp, #80]\n\t"
         "adr     x8, 1f\n\t"
         "str     x8, [%[ret_pc]]\n\t"
         "msr     elr_el1,  %[el0_fn]\n\t"
@@ -208,11 +232,20 @@ static void run_proc_entry(uint64_t el0_fn, uint64_t el0_sp) noexcept {
         "isb\n\t"
         "eret\n\t"
         "1:\n\t"
+        "ldp     x19, x20, [sp, #0]\n\t"
+        "ldp     x21, x22, [sp, #16]\n\t"
+        "ldp     x23, x24, [sp, #32]\n\t"
+        "ldp     x25, x26, [sp, #48]\n\t"
+        "ldp     x27, x28, [sp, #64]\n\t"
+        "ldp     x29, x30, [sp, #80]\n\t"
+        "add     sp, sp, #96\n\t"
         :
         : [ret_pc] "r"(&g_axion_el1_return_pc),
           [el0_fn] "r"(el0_fn),
           [el0_sp] "r"(el0_sp)
-        : "x8", "memory");
+        : "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7",
+          "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15",
+          "x16", "x17", "memory");
 #else
     (void)el0_fn; (void)el0_sp;
 #endif
@@ -969,6 +1002,10 @@ extern "C" void canon_per_thread_pt_load_and_run() noexcept {
 
 // RFC-00C7: query whether a kGovThreadFault record exists for (tid, ec).
 extern "C" bool fs_gov_find_fault(uint32_t tid, uint32_t ec) noexcept;
+// RFC-00C9: query retained fault evidence (ec + far) for a faulted thread.
+extern "C" bool fs_sched_get_fault(uint32_t tid,
+                                    uint32_t* out_ec,
+                                    uint64_t* out_far) noexcept;
 
 // ── Phase 18 (RFC-00C7): EL0 fault containment ───────────────────────────────
 //
@@ -1006,11 +1043,249 @@ extern "C" void canon_fault_contain_load_and_run() noexcept {
 
     el0_svc_set_current_tid(1u);
 
-    // Phase 18 CI gate: verify gov ring has kGovThreadFault for tid=8, ec=0x24.
-    if (fs_gov_find_fault(8u, 0x24u)) {
+    // Phase 18 CI gate: verify both the gov ring record and retained fault
+    // evidence (EC + FAR_EL1) for tid=8.
+    uint32_t fault_ec  = 0u;
+    uint64_t fault_far = ~UINT64_C(0);
+    const bool saw_fault = fs_gov_find_fault(8u, 0x24u) &&
+                           fs_sched_get_fault(8u, &fault_ec, &fault_far) &&
+                           fault_ec == 0x24u &&
+                           fault_far == 0u;
+    if (saw_fault) {
         cel_pl011_puts("[axion] el0: fault contained (tid=8, ec=0x24)\r\n");
     } else {
-        cel_pl011_puts("[axion] el0: fault FAIL (gov record missing)\r\n");
+        cel_pl011_puts("[axion] el0: fault FAIL (fault evidence missing)\r\n");
+    }
+}
+
+// ── Phase 19 (RFC-00C8): concurrent fault isolation ─────────────────────────
+//
+// Reuses the existing per-thread L3 setup from Phase 17 but starts the
+// faulting thread first:
+//   - Thread F (tid=7, LBA 12) faults immediately on VA 0x0.
+//   - Thread E (tid=6, LBA 11, device_id=30) remains Runnable and is selected
+//     by fs_sched_fault_handler(), exercising the fault-handler context-switch
+//     path that Phase 18 never reached.
+//   - E then parks on WaitForDevice(30), the timer IRQ wakes it, and E exits.
+//
+// CI gate:
+//   "[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)"
+extern "C" void canon_concurrent_fault_load_and_run() noexcept {
+    // Load Thread F (tid=7, fault test) from LBA 12 into code page 2.
+    const uint64_t code_pa_f = load_t81x_v2_into(12u,
+                                                   el0_mmu_proc_code_page2(),
+                                                   "tid7/LBA12");
+    if (!code_pa_f) return;
+
+    // Load Thread E (tid=6, device wait) from LBA 11 into code page 1.
+    const uint64_t code_pa_e = load_t81x_v2_into(11u,
+                                                   el0_mmu_proc_code_page(),
+                                                   "tid6/LBA11");
+    if (!code_pa_e) return;
+
+    flush_icache_for_new_code();
+
+    // Build per-thread L3 tables (same layout as Phase 17).
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    // E will later park on WaitForDevice and resume from the IRQ-driven loop.
+    g_axion_el1_device_wait_pc =
+        reinterpret_cast<uint64_t>(fs_sched_device_wait_loop);
+
+    fs_sched_reset();  // resets sched, obs, and gov rings
+
+    const uint64_t stack_top_e = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_f = el0_mmu_proc_stack_top2();
+
+    // Register E first so it remains Runnable while F faults.
+    fs_sched_register(6u, code_pa_e, stack_top_e, 0x3C0u);
+    fs_sched_set_thread_l3(6u, 0u);
+
+    fs_sched_register(7u, code_pa_f, stack_top_f, 0x3C0u);
+    fs_sched_set_thread_l3(7u, 1u);
+    fs_sched_mark_running(7u);
+
+    // Start F under its private L3 so the fault-to-sibling switch exercises
+    // the full isolated path on both sides.
+    el0_svc_set_current_tid(7u);
+    el0_mmu_install_thread_l3(1u);
+
+    // Single ERET to tid=7:
+    //   tid=7 faults immediately -> fs_sched_fault_handler() switches to tid=6
+    //   tid=6 WaitForDevice(30)  -> device_wait_loop wfi
+    //   timer IRQ wakes tid=6    -> tid=6 resumes and exits -> EL1
+    run_proc_entry(code_pa_f, stack_top_f);
+
+    el0_svc_set_current_tid(1u);
+    g_axion_el1_device_wait_pc = 0u;
+    el0_mmu_install_shared_l3();
+
+    uint32_t fault_ec  = 0u;
+    uint64_t fault_far = ~UINT64_C(0);
+    const bool saw_fault = fs_gov_find_fault(7u, 0x24u) &&
+                           fs_sched_get_fault(7u, &fault_ec, &fault_far) &&
+                           fault_ec == 0x24u &&
+                           fault_far == 0u;
+    const bool woke_e    = fs_gov_find_device(6u, 1u /*kGovTimerDeviceWake*/, 30u);
+    if (saw_fault && woke_e) {
+        cel_pl011_puts("[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: concurrent fault FAIL (fault evidence or wake record missing)\r\n");
+    }
+}
+
+// ── Phase 20 (RFC-00CA): EL0 fault summary query ────────────────────────────
+//
+// Start a faulting thread first, with a QueryFaultSummary thread already
+// Runnable.  The fault handler must switch directly to the query thread, which
+// issues KernelCall(QueryFaultSummary) from EL0 and exits.  EL1 then validates
+// the returned response block from the query thread's stack.
+//
+// CI gate:
+//   "[axion] el0: fault summary OK (tid=9 sees tid=8 fault)"
+extern "C" void canon_fault_summary_query_load_and_run() noexcept {
+    const uint64_t code_pa_fault = load_t81x_v2_into(12u,
+                                                       el0_mmu_proc_code_page2(),
+                                                       "tid8/LBA12");
+    if (!code_pa_fault) return;
+
+    const uint64_t code_pa_query = load_t81x_v2_into(13u,
+                                                       el0_mmu_proc_code_page(),
+                                                       "tid9/LBA13");
+    if (!code_pa_query) return;
+
+    flush_icache_for_new_code();
+
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    fs_sched_reset();
+
+    const uint64_t stack_top_query = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_fault = el0_mmu_proc_stack_top2();
+
+    fs_sched_register(9u, code_pa_query, stack_top_query, 0x3C0u);
+    fs_sched_set_thread_l3(9u, 0u);
+
+    fs_sched_register(8u, code_pa_fault, stack_top_fault, 0x3C0u);
+    fs_sched_set_thread_l3(8u, 1u);
+    fs_sched_mark_running(8u);
+
+    el0_svc_set_current_tid(8u);
+    el0_mmu_install_thread_l3(1u);
+    run_proc_entry(code_pa_fault, stack_top_fault);
+
+    el0_svc_set_current_tid(1u);
+    el0_mmu_install_shared_l3();
+
+    const uint8_t* rsp = reinterpret_cast<const uint8_t*>(
+        static_cast<uintptr_t>(stack_top_query - 240u));
+    const uint32_t status    = read_u32_le(rsp + 8u);
+    const uint32_t caller    = read_u32_le(rsp + 44u);
+    const uint64_t recorded  = read_u64_le(rsp + 200u);
+    const uint64_t pending   = read_u64_le(rsp + 208u);
+    const uint64_t delivered = read_u64_le(rsp + 216u);
+    const uint64_t routed    = read_u64_le(rsp + 224u);
+    const uint64_t quarant   = read_u64_le(rsp + 232u);
+
+    if (status == 0u &&
+        caller == 9u &&
+        recorded == 1u &&
+        pending == 0u &&
+        delivered == 1u &&
+        routed == 1u &&
+        quarant == 1u) {
+        cel_pl011_puts("[axion] el0: fault summary OK (tid=9 sees tid=8 fault)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: fault summary FAIL (bad EL0 query response)\r\n");
+    }
+}
+
+// ── Phase 21 (RFC-00CB): EL0 fault detail query ─────────────────────────────
+//
+// Start a faulting thread first, with an EL0 observer thread already Runnable.
+// The fault handler must switch directly to the observer, which issues
+// KernelCall(ReadFaultInbox) for the faulted sibling and exits. EL1 validates
+// the returned compact detail block from the observer thread's stack.
+//
+// CI gate:
+//   "[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)"
+extern "C" void canon_fault_detail_query_load_and_run() noexcept {
+    const uint64_t code_pa_fault = load_t81x_v2_into(12u,
+                                                       el0_mmu_proc_code_page2(),
+                                                       "tid8/LBA12");
+    if (!code_pa_fault) return;
+
+    const uint64_t code_pa_query = load_t81x_v2_into(14u,
+                                                       el0_mmu_proc_code_page(),
+                                                       "tid10/LBA14");
+    if (!code_pa_query) return;
+
+    flush_icache_for_new_code();
+
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    fs_sched_reset();
+
+    const uint64_t stack_top_query = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_fault = el0_mmu_proc_stack_top2();
+
+    fs_sched_register(10u, code_pa_query, stack_top_query, 0x3C0u);
+    fs_sched_set_thread_l3(10u, 0u);
+
+    fs_sched_register(8u, code_pa_fault, stack_top_fault, 0x3C0u);
+    fs_sched_set_thread_l3(8u, 1u);
+    fs_sched_mark_running(8u);
+
+    el0_svc_set_current_tid(8u);
+    el0_mmu_install_thread_l3(1u);
+    run_proc_entry(code_pa_fault, stack_top_fault);
+
+    el0_svc_set_current_tid(1u);
+    el0_mmu_install_shared_l3();
+
+    const uint8_t* rsp = reinterpret_cast<const uint8_t*>(
+        static_cast<uintptr_t>(stack_top_query - 496u));
+    const uint32_t status      = read_u32_le(rsp + 8u);
+    const uint32_t rejection   = read_u32_le(rsp + 12u);
+    const uint32_t queried_tid = read_u32_le(rsp + 40u);
+    const uint32_t caller_tid  = read_u32_le(rsp + 44u);
+    const uint32_t subject_tid = read_u32_le(rsp + 200u);
+    const uint32_t fault_ec    = read_u32_le(rsp + 204u);
+    const uint64_t fault_far   = read_u64_le(rsp + 208u);
+    const uint32_t retained    = read_u32_le(rsp + 216u);
+
+    if (status == 0u &&
+        rejection == 0u &&
+        queried_tid == 8u &&
+        caller_tid == 10u &&
+        subject_tid == 8u &&
+        fault_ec == 0x24u &&
+        fault_far == 0u &&
+        retained == 1u) {
+        cel_pl011_puts("[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: fault detail FAIL (bad EL0 detail response)\r\n");
     }
 }
 

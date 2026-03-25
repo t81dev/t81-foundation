@@ -21,9 +21,90 @@ RFC-00B9 boundary note:
   `experimental/ternaryos/shell/` remain compatibility shims; the
   broader scheduler lane has now **graduated** (see below)
 
-**Last updated:** 2026-03-23
-**Commit:** Scheduler graduation — RFC-00B0 through RFC-00C6 promoted to mainline
+**Last updated:** 2026-03-25
+**Commit:** RFC-00CB EL0 fault detail query added
 **Branch:** `main`
+
+---
+
+## RFC-00CB — EL0 Fault Detail Query (2026-03-25)
+
+Phase 21 activates `KernelCall(ReadFaultInbox)` in the freestanding EL0
+bridge.
+
+- **ABI decision:** reuse the already-frozen ordinal `15`
+  (`ReadFaultInbox`) instead of inventing a new call.
+- **Request surface:** freestanding bridge reads `target_tid` from `req[12:16]`
+  with a 16-byte minimum request block.
+- **Response surface:** freestanding bridge writes a compact retained-fault
+  detail block with `subject_tid`, `fault_ec`, and `fault_far` at offsets
+  `200..216`, alongside standard `queried_tid` and `caller_tid` fields.
+- **Freestanding mapping:** `ReadFaultInbox(target_tid)` succeeds iff retained
+  fault evidence exists for `target_tid`; otherwise it returns
+  `RetryLater/FaultInboxEmpty`.
+- **EL0 proof:** after `tid=8` faults, the fault handler switches directly to
+  `tid=10`, which issues `KernelCall(ReadFaultInbox)` for `tid=8`. EL1 then
+  validates the returned detail block from `tid=10`'s stack.
+- **CI gate:** `[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)`
+
+---
+
+## RFC-00CA — EL0 Fault Summary Query (2026-03-25)
+
+Phase 20 activates `KernelCall(QueryFaultSummary)` in the freestanding EL0
+bridge.
+
+- **ABI decision:** reuse the already-frozen ordinal `21`
+  (`QueryFaultSummary`) instead of inventing a new call.
+- **Response surface:** freestanding bridge now writes hosted-compatible
+  fault-summary counters into a 240-byte wire response block.
+- **Freestanding mapping:** `recorded=delivered=routed=quarantined=faulted`,
+  `pending=0`, where `faulted` is the number of retained `Faulted` threads in
+  the scheduler table.
+- **EL0 proof:** after `tid=8` faults, the fault handler switches directly to
+  `tid=9`, which issues `KernelCall(QueryFaultSummary)` from EL0.  EL1 then
+  validates the returned summary block from `tid=9`'s stack.
+- **CI gate:** `[axion] el0: fault summary OK (tid=9 sees tid=8 fault)`
+
+---
+
+## RFC-00C9 — EL0 Fault Evidence Query (2026-03-25)
+
+Phase 18 and 19 fault validation now inspect retained per-thread fault
+evidence directly.
+
+- **Problem:** `fs_gov_find_fault(tid, ec)` proves that a fault record exists in
+  the governance ring, but it cannot prove which faulting virtual address was
+  captured or whether the retained per-thread evidence matches the ring entry.
+- **New helper:** `fs_sched_get_fault(tid, &ec, &far)` exposes the retained
+  `fault_ec` and `fault_far` stored in `FsSchedThread` by
+  `fs_sched_fault_handler()`.
+- **Semantics:** read-only, EL1-internal, stable until `fs_sched_reset()`.
+- **Strengthened checks:** Phase 18 now requires `{ec=0x24, far=0x0}` for
+  `tid=8`; Phase 19 requires `{ec=0x24, far=0x0}` for `tid=7` plus the
+  existing timer wake proof for surviving `tid=6`.
+- **CI gates unchanged:** retained fault evidence strengthens the proof surface
+  behind the existing serial output.
+
+---
+
+## RFC-00C8 — Concurrent Fault Isolation (2026-03-25)
+
+Phase 19: prove that one EL0 thread can fault while a healthy sibling keeps
+running.
+
+- **Problem:** RFC-00C7 added a fault-handler branch that context-switches to
+  the next Runnable thread, but Phase 18 never exercised it because the
+  faulting process was the only active thread.
+- **Scenario:** start `tid=7` with `el0_fault_test.bin` under its private L3
+  while `tid=6` is already `Runnable` with `el0_device_filter_test.bin`.
+  `tid=7` faults immediately on VA `0x0`; the fault handler marks it
+  `Faulted`, installs `tid=6`'s L3, and ERets directly into `tid=6`.
+- **Healthy sibling path:** `tid=6` then executes `WaitForDevice(30)`, blocks,
+  is woken by timer IRQ INTID 30, resumes, and exits cleanly.
+- **Governance proof:** phase success requires both `kGovThreadFault`
+  (`tid=7`, `ec=0x24`) and `kGovTimerDeviceWake` (`tid=6`, `device_id=30`).
+- **CI gate:** `[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)`
 
 ---
 
@@ -58,7 +139,7 @@ to `ternaryos/` as a stable, mainline subsystem.
 **RFC chain completed:** RFC-00B0 → RFC-00BE → RFC-00BF → RFC-00C0 → RFC-00C1 →
 RFC-00C2 → RFC-00C3 → RFC-00C4 → RFC-00C5 → RFC-00C6
 
-**Phases 11–17 all passing:**
+**Phases 11–19 all passing:**
 
 | Phase | Description | CI gate |
 |-------|-------------|---------|
@@ -69,6 +150,8 @@ RFC-00C2 → RFC-00C3 → RFC-00C4 → RFC-00C5 → RFC-00C6
 | 15 | Per-device wake filtering (device_id=30) | `device filter OK (device_id=30, tid=6)` |
 | 16 | Concurrent device wait (tid=6+7) | `concurrent wake OK (device_id=30, tid=6+7)` |
 | 17 | Per-thread TTBR0 address-space isolation | `per-thread pt OK (tid=6+7, isolated)` |
+| 18 | EL0 fault containment | `fault contained (tid=8, ec=0x24)` |
+| 19 | Concurrent fault isolation | `concurrent fault OK (tid=7 faulted, tid=6 exited)` |
 
 **Key stable APIs:** `WaitForDevice` (KernelCall kind=43, 12-byte or 16-byte),
 `ExitThread` (SVC #2), `fs_sched_*`, obs ring, gov ring (`fs_gov_record`,

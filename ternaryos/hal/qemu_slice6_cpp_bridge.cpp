@@ -432,6 +432,12 @@ extern "C" void canon_concurrent_wait_load_and_run() noexcept;
 extern "C" void canon_per_thread_pt_load_and_run() noexcept;
 // Phase 18 (RFC-00C7): EL0 fault containment (canon_exec_loader.cpp).
 extern "C" void canon_fault_contain_load_and_run() noexcept;
+// Phase 19 (RFC-00C8): concurrent fault isolation (canon_exec_loader.cpp).
+extern "C" void canon_concurrent_fault_load_and_run() noexcept;
+// Phase 20 (RFC-00CA): EL0 fault summary query (canon_exec_loader.cpp).
+extern "C" void canon_fault_summary_query_load_and_run() noexcept;
+// Phase 21 (RFC-00CB): EL0 fault detail query (canon_exec_loader.cpp).
+extern "C" void canon_fault_detail_query_load_and_run() noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -446,6 +452,15 @@ static void run_el0_init() noexcept {
   const uint64_t el0_sp = el0_mmu_stack_top();
 
   __asm__ volatile(
+      // Preserve EL1 callee-saved state across the EL0 roundtrip. The trap
+      // exit path restores EL0 registers before it ERETs back here.
+      "sub     sp, sp, #96\n\t"
+      "stp     x19, x20, [sp, #0]\n\t"
+      "stp     x21, x22, [sp, #16]\n\t"
+      "stp     x23, x24, [sp, #32]\n\t"
+      "stp     x25, x26, [sp, #48]\n\t"
+      "stp     x27, x28, [sp, #64]\n\t"
+      "stp     x29, x30, [sp, #80]\n\t"
       // x8 = address of EL1 resume label (after eret); save to global.
       "adr     x8, 1f\n\t"
       "str     x8, [%[ret_pc]]\n\t"
@@ -459,11 +474,20 @@ static void run_el0_init() noexcept {
       // ERET to EL0 — execution returns here when SVC #2 fires.
       "eret\n\t"
       "1:\n\t"
+      "ldp     x19, x20, [sp, #0]\n\t"
+      "ldp     x21, x22, [sp, #16]\n\t"
+      "ldp     x23, x24, [sp, #32]\n\t"
+      "ldp     x25, x26, [sp, #48]\n\t"
+      "ldp     x27, x28, [sp, #64]\n\t"
+      "ldp     x29, x30, [sp, #80]\n\t"
+      "add     sp, sp, #96\n\t"
       :
       : [ret_pc] "r"(&g_axion_el1_return_pc),
         [el0_fn] "r"(el0_fn),
         [el0_sp] "r"(el0_sp)
-      : "x8", "memory");
+      : "x0", "x1", "x2", "x3", "x4", "x5", "x6", "x7",
+        "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15",
+        "x16", "x17", "memory");
 #endif
 }
 
@@ -768,6 +792,36 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //   CI gate: "[axion] el0: fault contained (tid=8, ec=0x24)"
   if (s_has_blk) {
     canon_fault_contain_load_and_run();
+  }
+
+  // Phase 19 (RFC-00C8): concurrent fault isolation — start faulting tid=7
+  //   with healthy tid=6 already Runnable.  tid=7 faults immediately;
+  //   fs_sched_fault_handler() must switch directly to tid=6, which then
+  //   completes the normal WaitForDevice(timer) -> ExitThread path.
+  //   CI gate:
+  //     "[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)"
+  if (s_has_blk) {
+    canon_concurrent_fault_load_and_run();
+  }
+
+  // Phase 20 (RFC-00CA): start a faulting thread with an EL0 query thread
+  //   already Runnable.  After the fault-handler handoff, the query thread
+  //   calls KernelCall(QueryFaultSummary) from EL0 and exits; EL1 validates
+  //   the returned summary block from the thread's stack.
+  //   CI gate:
+  //     "[axion] el0: fault summary OK (tid=9 sees tid=8 fault)"
+  if (s_has_blk) {
+    canon_fault_summary_query_load_and_run();
+  }
+
+  // Phase 21 (RFC-00CB): start a faulting thread with an EL0 observer thread
+  //   already Runnable. After the fault-handler handoff, the observer issues
+  //   KernelCall(ReadFaultInbox) for tid=8 and EL1 validates the returned
+  //   retained EC/FAR detail block from the observer's stack.
+  //   CI gate:
+  //     "[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)"
+  if (s_has_blk) {
+    canon_fault_detail_query_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");

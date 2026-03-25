@@ -50,6 +50,30 @@
 
 #include <stdint.h>
 
+static constexpr uint64_t kSvcBridgePl011Base   = UINT64_C(0x09000000);
+static constexpr uint32_t kSvcBridgePl011DR     = 0x000u;
+static constexpr uint32_t kSvcBridgePl011FR     = 0x018u;
+static constexpr uint32_t kSvcBridgePl011FRtxff = (1u << 5);
+
+static void svc_bridge_pl011_putchar(char c) noexcept {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    volatile uint32_t* fr = reinterpret_cast<volatile uint32_t*>(
+        static_cast<uintptr_t>(kSvcBridgePl011Base + kSvcBridgePl011FR));
+    volatile uint32_t* dr = reinterpret_cast<volatile uint32_t*>(
+        static_cast<uintptr_t>(kSvcBridgePl011Base + kSvcBridgePl011DR));
+    while (*fr & kSvcBridgePl011FRtxff) {
+        __asm__ volatile("yield" ::: "memory");
+    }
+    *dr = static_cast<uint32_t>(static_cast<unsigned char>(c));
+#else
+    (void)c;
+#endif
+}
+
+static void svc_bridge_pl011_puts(const char* s) noexcept {
+    while (*s) svc_bridge_pl011_putchar(*s++);
+}
+
 // ── AArch64 trap frame layout ─────────────────────────────────────────────────
 //
 // Must match AArch64TrapFrameSimple in qemu_slice6_bridge_irq.cpp and the
@@ -71,6 +95,9 @@ static constexpr uint32_t kReqMagic              = 0x4B415152u;  // KAQR
 static constexpr uint32_t kRspMagic              = 0x4B415250u;  // KARP
 static constexpr uint32_t kStatusOk              = 0u;
 static constexpr uint32_t kStatusInvalidRequest  = 1u;
+static constexpr uint32_t kStatusRetryLater      = 6u;
+static constexpr uint32_t kRejectionNone         = 0u;
+static constexpr uint32_t kRejectionFaultInboxEmpty = 10u;
 
 // KernelCallKind numeric values (Phase 6–9 subset, from kernel_abi.hpp):
 //   GetThreadIdentity   = 10
@@ -80,6 +107,8 @@ static constexpr uint32_t kStatusInvalidRequest  = 1u;
 //   BlockOnIpcReceive   = 42  (Phase 9 cooperative scheduler park, RFC-00BE)
 //   WaitForDevice       = 43  (Phase 9 cooperative scheduler park, RFC-00BE)
 static constexpr uint32_t kKindGetThreadIdentity  = 10u;
+static constexpr uint32_t kKindReadFaultInbox      = 15u;
+static constexpr uint32_t kKindQueryFaultSummary   = 21u;
 static constexpr uint32_t kKindSendMessage         = 13u;
 static constexpr uint32_t kKindReceiveMessage      = 14u;
 static constexpr uint32_t kKindBlockOnIpcReceive   = 42u;
@@ -87,6 +116,16 @@ static constexpr uint32_t kKindWaitForDevice       = 43u;
 
 // Minimum response size covering all fields through caller_tid at [44:48].
 static constexpr uint64_t kMinRspBytes = 48u;
+// Freestanding ReadFaultInbox uses the common header fields plus a compact
+// retained-fault detail block at offsets 200..216:
+//   subject_tid @ 200 (u32)
+//   fault_ec    @ 204 (u32)
+//   fault_far   @ 208 (u64)
+//   retained    @ 216 (u32; 1 = detail valid)
+static constexpr uint64_t kMinFaultInboxRspBytes = 224u;
+// Compact freestanding QueryFaultSummary uses the shared wire offsets through
+// fault_summary_quarantined_threads (5x uint64 at offsets 200..232).
+static constexpr uint64_t kMinFaultSummaryRspBytes = 240u;
 
 // Minimum request size covering magic (4B) + version/bytes (4B) + kind (4B).
 static constexpr uint64_t kMinReqBytes = 12u;
@@ -236,6 +275,34 @@ extern "C" void fs_sched_set_thread_l3(uint32_t tid, uint32_t l3_slot) noexcept 
 
 extern "C" bool fs_sched_ipc_delivered() noexcept {
     return s_sched_ipc_delivered;
+}
+
+// RFC-00C9: query retained fault evidence for a thread.
+// Returns true iff tid exists and is currently Faulted with a non-zero EC.
+extern "C" bool fs_sched_get_fault(uint32_t tid,
+                                    uint32_t* out_ec,
+                                    uint64_t* out_far) noexcept {
+    if (!out_ec || !out_far) return false;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid &&
+            s_sched[i].state == FsSchedState::Faulted &&
+            s_sched[i].fault_ec != 0u) {
+            *out_ec  = s_sched[i].fault_ec;
+            *out_far = s_sched[i].fault_far;
+            return true;
+        }
+    }
+    return false;
+}
+
+static uint64_t fs_sched_faulted_count() noexcept {
+    uint64_t count = 0u;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Faulted &&
+            s_sched[i].fault_ec != 0u)
+            ++count;
+    }
+    return count;
 }
 
 // RFC-00C0: transition a BlockedDeviceWait thread to Runnable.
@@ -526,35 +593,39 @@ extern "C" bool fs_gov_find_fault(uint32_t tid, uint32_t ec) noexcept {
 // Spins with wfi until the GICv3 timer ISR calls fs_sched_timer_device_wake(),
 // which transitions BlockedDeviceWait → Runnable.  After wfi returns the loop
 // detects the Runnable thread and ERets to it at EL0.
-extern "C" __attribute__((noinline)) void fs_sched_device_wait_loop() noexcept {
+struct FsResumeTarget {
+    uint64_t elr;
+    uint64_t sp_el0;
+};
+
+extern "C" FsResumeTarget fs_sched_device_wait_prepare_resume() noexcept {
+    FsSchedThread* next = fs_find_next_runnable();
+    if (!next) return FsResumeTarget{0u, 0u};
+
+    next->state         = FsSchedState::Running;
+    s_sched_running_tid = next->tid;
+    s_current_el0_tid   = next->tid;
+    fs_gov_record(next->tid, kGovAsyncContextSwitch, 0u);
+    if (next->l3_slot != kNoThreadL3)
+        el0_mmu_install_thread_l3(next->l3_slot);
+    return FsResumeTarget{next->resume_elr, next->resume_sp_el0};
+}
+
+extern "C" __attribute__((naked)) void fs_sched_device_wait_loop() noexcept {
 #if defined(__aarch64__) && !defined(__APPLE__)
-    for (;;) {
-        __asm__ volatile("wfi" ::: "memory");
-        FsSchedThread* next = fs_find_next_runnable();
-        if (next) {
-            next->state         = FsSchedState::Running;
-            s_sched_running_tid = next->tid;
-            s_current_el0_tid   = next->tid;
-            // RFC-00C3: record async context switch before ERET.
-            fs_gov_record(next->tid, kGovAsyncContextSwitch, 0u);
-            // RFC-00C6: install per-thread L3 before ERET (no-op if kNoThreadL3).
-            if (next->l3_slot != kNoThreadL3)
-                el0_mmu_install_thread_l3(next->l3_slot);
-            const uint64_t elr = next->resume_elr;
-            const uint64_t sp  = next->resume_sp_el0;
-            __asm__ volatile(
-                "msr elr_el1,  %[elr]\n\t"
-                "msr sp_el0,   %[sp]\n\t"
-                "mov x8, #0x3c0\n\t"
-                "msr spsr_el1, x8\n\t"
-                "isb\n\t"
-                "eret\n\t"
-                :
-                : [elr] "r"(elr), [sp] "r"(sp)
-                : "x8", "memory");
-            __builtin_unreachable();
-        }
-    }
+    __asm__ volatile(
+        "1:\n\t"
+        "wfi\n\t"
+        "bl      fs_sched_device_wait_prepare_resume\n\t"
+        "cbz     x0, 1b\n\t"
+        "msr     elr_el1, x0\n\t"
+        "msr     sp_el0,  x1\n\t"
+        "mov     x8, #0x3c0\n\t"
+        "msr     spsr_el1, x8\n\t"
+        "isb\n\t"
+        "eret\n\t");
+#else
+    for (;;) {}
 #endif
 }
 
@@ -666,6 +737,67 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 write_u32(rsp, 44, 1u);
                 fs_obs_record(s_current_el0_tid, kKindGetThreadIdentity, kStatusOk, 0u);
                 return;
+
+            case kKindReadFaultInbox: {
+                if (req_size < 16u || rsp_size < kMinFaultInboxRspBytes) {
+                    write_u32(rsp, 8, kStatusInvalidRequest);
+                    fs_obs_record(s_current_el0_tid, kKindReadFaultInbox,
+                                  kStatusInvalidRequest, 0u);
+                    return;
+                }
+
+                uint32_t target_tid = 0u;
+                __builtin_memcpy(&target_tid, req + 12, 4);
+                write_u32(rsp, 40, target_tid);         // queried_tid
+                write_u32(rsp, 44, s_current_el0_tid);  // caller_tid
+
+                uint32_t fault_ec = 0u;
+                uint64_t fault_far = 0u;
+                if (!fs_sched_get_fault(target_tid, &fault_ec, &fault_far)) {
+                    write_u32(rsp, 8,  kStatusRetryLater);
+                    write_u32(rsp, 12, kRejectionFaultInboxEmpty);
+                    fs_obs_record(s_current_el0_tid, kKindReadFaultInbox,
+                                  kStatusRetryLater, target_tid);
+                    return;
+                }
+
+                write_u32(rsp, 12, kRejectionNone);
+                write_u32(rsp, 200, target_tid);
+                write_u32(rsp, 204, fault_ec);
+                __builtin_memcpy(rsp + 208, &fault_far, 8);
+                write_u32(rsp, 216, 1u);
+                fs_obs_record(s_current_el0_tid, kKindReadFaultInbox,
+                              kStatusOk, target_tid);
+                return;
+            }
+
+            case kKindQueryFaultSummary: {
+                if (rsp_size < kMinFaultSummaryRspBytes) {
+                    write_u32(rsp, 8, kStatusInvalidRequest);
+                    fs_obs_record(s_current_el0_tid, kKindQueryFaultSummary,
+                                  kStatusInvalidRequest, 0u);
+                    return;
+                }
+
+                const uint64_t faulted = fs_sched_faulted_count();
+                // Match the full wire response offsets used by the hosted ABI:
+                //   caller_tid                        @ 44
+                //   fault_summary_recorded_faults     @ 200
+                //   fault_summary_pending_faults      @ 208
+                //   fault_summary_delivered_faults    @ 216
+                //   fault_summary_routed_thread_faults@ 224
+                //   fault_summary_quarantined_threads @ 232
+                write_u32(rsp, 44, s_current_el0_tid);
+                __builtin_memcpy(rsp + 200, &faulted, 8);
+                const uint64_t pending = 0u;
+                __builtin_memcpy(rsp + 208, &pending, 8);
+                __builtin_memcpy(rsp + 216, &faulted, 8);
+                __builtin_memcpy(rsp + 224, &faulted, 8);
+                __builtin_memcpy(rsp + 232, &faulted, 8);
+                fs_obs_record(s_current_el0_tid, kKindQueryFaultSummary,
+                              kStatusOk, 0u);
+                return;
+            }
 
             case kKindSendMessage: {
                 // Phase 8 / Phase 9 IPC — store sender identity.

@@ -162,11 +162,13 @@ struct FsGovRecord {
 | 8 | `el0_wait_test.bin` (T81X v2, tid=4) | Phase 11 |
 | 9 | T81M manifest | Phase 12 |
 | 10 | `el0_wait_test.bin` (T81X v2, tid=5) | Phase 13–14, reused as tid=7 in Phase 16–17 |
-| 11 | `el0_device_filter_test.bin` (T81X v2, tid=6) | Phase 15, reused as tid=6 in Phase 16–17 |
+| 11 | `el0_device_filter_test.bin` (T81X v2, tid=6) | Phase 15, reused as tid=6 in Phase 16–17 and Phase 19 |
+| 12 | `el0_fault_test.bin` (T81X v2, tid=8) | Phase 18, reused as tid=7 in Phase 19 |
+| 13 | `el0_fault_summary_test.bin` (T81X v2, tid=9) | Phase 20 |
 
 ---
 
-## 5. CI Gates (Phases 11–17)
+## 5. CI Gates (Phases 11–21)
 
 | Phase | CI gate string |
 |-------|----------------|
@@ -177,6 +179,10 @@ struct FsGovRecord {
 | 15 | `[axion] el0: device filter OK (device_id=30, tid=6)` |
 | 16 | `[axion] el0: concurrent wake OK (device_id=30, tid=6+7)` |
 | 17 | `[axion] el0: per-thread pt OK (tid=6+7, isolated)` |
+| 18 | `[axion] el0: fault contained (tid=8, ec=0x24)` |
+| 19 | `[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)` |
+| 20 | `[axion] el0: fault summary OK (tid=9 sees tid=8 fault)` |
+| 21 | `[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)` |
 
 ---
 

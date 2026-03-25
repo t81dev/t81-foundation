@@ -1303,6 +1303,7 @@ if(T81_ENABLE_TERNARYOS)
                 /subsystem:efi_application
                 /entry:efi_main
                 /machine:arm64
+                /base:0x0
                 /nodefaultlib
                 /out:${T81_TERNARYOS_QEMU_SLICE6_EFI}
                 ${T81_TERNARYOS_QEMU_SLICE6_EFI_OBJ}
@@ -1562,6 +1563,13 @@ if(T81_ENABLE_TERNARYOS)
             ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
             8
     DEPENDS t81_ternaryos_qemu_slice6_dev_artifact
+    USES_TERMINAL)
+
+  add_custom_target(t81_ternaryos_qemu_slice6_shell
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_slice6_shell.sh
+            ${CMAKE_BINARY_DIR}
+    DEPENDS t81_ternaryos_qemu_slice6_efi
     USES_TERMINAL)
 
   add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture

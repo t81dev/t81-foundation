@@ -593,6 +593,130 @@ jobs:
 
           echo "canon store with fault-test image: $(du -sh canon_store.img | cut -f1)"
 
+      # ── Phase 20: EL0 fault summary query test image at LBA 13 (RFC-00CA) ──
+      - name: Build and embed Phase 20 fault summary query image
+        run: |
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -I ternaryos/hal \
+            -c \
+            ternaryos/hal/el0_fault_summary_test.S \
+            -o el0_fault_summary_test.o
+
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -Wl,-Ttext=0x0 -Wl,--omagic \
+            el0_fault_summary_test.o -o el0_fault_summary_test.elf
+
+          llvm-objcopy-18 -O binary \
+            --only-section=.text \
+            el0_fault_summary_test.elf el0_fault_summary_test.bin
+
+          CODE_SIZE=$(wc -c < el0_fault_summary_test.bin)
+          echo "el0_fault_summary_test.bin: ${CODE_SIZE} bytes"
+
+          python3 - <<'PYEOF'
+          import struct
+
+          FNV_OFFSET = 14695981039346656037
+          FNV_PRIME  = 1099511628211
+
+          def fnv1a64(data):
+              h = FNV_OFFSET
+              for b in data:
+                  h ^= b
+                  h = (h * FNV_PRIME) & 0xFFFFFFFFFFFFFFFF
+              return h
+
+          def write_t81x_v2(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              code_hash = fnv1a64(code)
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 2)
+              hdr += b'\x00\x00'
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<I', len(code))
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<Q', code_hash)
+              hdr += bytes(64 - len(hdr))
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X v2 sector written at LBA{lba} (offset {offset}): "
+                    f"code_size={len(code)} bytes, code_hash=0x{code_hash:016x} ({bin_path})")
+
+          write_t81x_v2('el0_fault_summary_test.bin', 13)
+          PYEOF
+
+          echo "canon store with fault-summary image: $(du -sh canon_store.img | cut -f1)"
+
+      # ── Phase 21: EL0 fault detail query test image at LBA 14 (RFC-00CB) ──
+      - name: Build and embed Phase 21 fault detail query image
+        run: |
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -I ternaryos/hal \
+            -c \
+            ternaryos/hal/el0_fault_detail_test.S \
+            -o el0_fault_detail_test.o
+
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -Wl,-Ttext=0x0 -Wl,--omagic \
+            el0_fault_detail_test.o -o el0_fault_detail_test.elf
+
+          llvm-objcopy-18 -O binary \
+            --only-section=.text \
+            el0_fault_detail_test.elf el0_fault_detail_test.bin
+
+          CODE_SIZE=$(wc -c < el0_fault_detail_test.bin)
+          echo "el0_fault_detail_test.bin: ${CODE_SIZE} bytes"
+
+          python3 - <<'PYEOF'
+          import struct
+
+          FNV_OFFSET = 14695981039346656037
+          FNV_PRIME  = 1099511628211
+
+          def fnv1a64(data):
+              h = FNV_OFFSET
+              for b in data:
+                  h ^= b
+                  h = (h * FNV_PRIME) & 0xFFFFFFFFFFFFFFFF
+              return h
+
+          def write_t81x_v2(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              code_hash = fnv1a64(code)
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 2)
+              hdr += b'\x00\x00'
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<I', len(code))
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<Q', code_hash)
+              hdr += bytes(64 - len(hdr))
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X v2 sector written at LBA{lba} (offset {offset}): "
+                    f"code_size={len(code)} bytes, code_hash=0x{code_hash:016x} ({bin_path})")
+
+          write_t81x_v2('el0_fault_detail_test.bin', 14)
+          PYEOF
+
+          echo "canon store with fault-detail image: $(du -sh canon_store.img | cut -f1)"
+
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
         run: python3 scripts/ci/check_kernelcall_abi_freeze.py .
@@ -609,11 +733,20 @@ jobs:
           #   slot 31 (0x0A003E00): FAT32 boot disk — first device added, highest slot.
           #   slot 30 (0x0A003C00): CanonFS raw block store — second device, next slot.
           # QEMU virt allocates virtio-mmio buses top-down (slot 31 first).
+          # bootindex pins the EFI disk first so EDK2 does not probe the raw
+          # CanonFS store as Boot0001 before the real boot device.
+          # -nodefaults trims QEMU's implicit device set; on the AArch64 EDK2
+          # lane this suppresses the stray X64 image probe while keeping the
+          # explicit pflash + virtio-mmio boot contract intact.
+          # Residual ArmTrngLib / Tpm2 / "Error: Image ..." lines are emitted
+          # by the stock firmware's own optional-driver probes before our EFI
+          # app starts; they are treated as environment noise, not gate input.
           # gic-version=3: force GICv3 (redistributor at 0x080A0000 is mapped).
           # force-legacy=off: force virtio-mmio modern transport (version 2)
           #   so the bare-metal bridge's virtio queue setup code works; by
           #   default ubuntu-24.04's QEMU uses legacy (version 1) transport.
           timeout 40 qemu-system-aarch64 \
+            -nodefaults \
             -machine virt,gic-version=3 \
             -cpu cortex-a57 \
             -m 512M \
@@ -623,9 +756,9 @@ jobs:
             -drive if=pflash,format=raw,readonly=on,file=/usr/share/AAVMF/AAVMF_CODE.fd \
             -drive if=pflash,format=raw,file=/tmp/edk2-vars.fd \
             -drive id=boot0,if=none,format=raw,file=boot.img \
-            -device virtio-blk-device,drive=boot0 \
+            -device virtio-blk-device,drive=boot0,bootindex=0 \
             -drive id=canon0,if=none,format=raw,file=canon_store.img \
-            -device virtio-blk-device,drive=canon0 \
+            -device virtio-blk-device,drive=canon0,bootindex=1 \
             || true
 
           echo "=== Captured serial output ==="
@@ -715,6 +848,18 @@ jobs:
           # dereferences address 0x0, generating a Data Abort EC=0x24.
           # The scheduler's fault handler must contain it and return to EL1.
           check "[axion] el0: fault contained (tid=8, ec=0x24)"
+          # Phase 19 (RFC-00C8): concurrent fault isolation — tid=7 faults
+          # first, the fault handler switches directly to healthy tid=6, and
+          # tid=6 completes the timer-driven WaitForDevice/ExitThread path.
+          check "[axion] el0: concurrent fault OK (tid=7 faulted, tid=6 exited)"
+          # Phase 20 (RFC-00CA): an EL0 thread issues QueryFaultSummary after a
+          # sibling fault handoff and observes the retained freestanding fault
+          # counters through the wire response block.
+          check "[axion] el0: fault summary OK (tid=9 sees tid=8 fault)"
+          # Phase 21 (RFC-00CB): an EL0 observer issues ReadFaultInbox after a
+          # sibling fault handoff and observes retained per-thread fault EC/FAR
+          # detail through the freestanding response block.
+          check "[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]

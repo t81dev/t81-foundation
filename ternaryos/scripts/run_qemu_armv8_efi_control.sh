@@ -30,6 +30,7 @@ pid_file="$output_dir/qemu-armv8-control.pid"
 /bin/rm -f "$serial_log" "$monitor_log" "$pid_file"
 
 "$qemu_bin" \
+  -nodefaults \
   -machine virt,accel=hvf \
   -cpu host \
   -smp 1 \
