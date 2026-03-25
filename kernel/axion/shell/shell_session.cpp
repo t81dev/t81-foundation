@@ -502,6 +502,10 @@ bool ShellSession::execute_command(std::string_view command_view) {
       state_.command_records.push_back(
           {command, hosted_builtin_text(ShellBuiltinCommand::Help)});
       return refresh_render();
+    case ShellBuiltinCommand::Tui:
+      state_.command_records.push_back(
+          {command, hosted_builtin_text(ShellBuiltinCommand::Tui)});
+      return refresh_render();
     case ShellBuiltinCommand::Uname:
       state_.command_records.push_back(
           {command, hosted_builtin_text(ShellBuiltinCommand::Uname)});

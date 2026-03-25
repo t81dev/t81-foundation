@@ -1097,7 +1097,7 @@ jobs:
 
           {
             sleep 10
-            printf 'help\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test-manifest\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
+            printf 'help\rtui\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test-manifest\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
           } > shell-smoke.in &
           WRITER_PID=$!
 
@@ -1118,6 +1118,8 @@ jobs:
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           check "[axion@T81 tier=1]$"
           check "help      -- show available commands"
+          check "tui       -- show TUI frontend entry / handoff status"
+          check "[axion tui]"
           check "[canonfs]"
           check "[canonfs inventory]"
           check "alias         : proc-stub"

@@ -11,6 +11,7 @@ struct ShellCommandSpec {
 
 inline constexpr ShellCommandSpec kShellCommandCatalog[] = {
     {"help", "show available commands", true, true},
+    {"tui", "show TUI frontend entry / handoff status", true, true},
     {"uname", "show system identity", true, true},
     {"version", "show shell/runtime build info", true, true},
     {"policy", "show Axion policy summary", true, true},

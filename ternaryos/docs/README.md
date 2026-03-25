@@ -464,6 +464,7 @@ The current freestanding serial shell is intentionally narrow. Its built-in
 commands are:
 
 - `help`
+- `tui`
 - `uname`
 - `version`
 - `canonfs`
@@ -479,6 +480,14 @@ commands are:
 - `faults`
 - `gov`
 - `policy`
+
+`tui` is a shared shell entry command, but it does not launch a guest-native UI
+from slice6 yet. In the current branch it reports the hosted frontend entry
+path:
+
+```text
+./build/t81_ternaryos_shell_tui
+```
 
 That command surface comes from the bare-metal bridge in
 `hal/qemu_slice6_cpp_bridge.cpp`. It is separate from the broader hosted Phase

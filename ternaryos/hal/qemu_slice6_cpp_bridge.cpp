@@ -1162,6 +1162,9 @@ static void shell_dispatch(const char* line) noexcept {
     case t81::ternaryos::ShellBuiltinCommand::Help:
       cmd_help();
       return;
+    case t81::ternaryos::ShellBuiltinCommand::Tui:
+      cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Tui);
+      return;
     case t81::ternaryos::ShellBuiltinCommand::Uname:
       cmd_uname();
       return;

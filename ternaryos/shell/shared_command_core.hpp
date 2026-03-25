@@ -12,6 +12,7 @@ enum class ShellSurface {
 enum class ShellBuiltinCommand {
   None,
   Help,
+  Tui,
   Uname,
   Version,
   Policy,
@@ -88,10 +89,27 @@ inline bool shell_command_visible(const ShellCommandSpec& spec, ShellSurface sur
 
 inline ShellBuiltinCommand shell_builtin_command(const char* word) {
   if (shell_cstr_eq(word, "help")) return ShellBuiltinCommand::Help;
+  if (shell_cstr_eq(word, "tui")) return ShellBuiltinCommand::Tui;
   if (shell_cstr_eq(word, "uname")) return ShellBuiltinCommand::Uname;
   if (shell_cstr_eq(word, "version")) return ShellBuiltinCommand::Version;
   if (shell_cstr_eq(word, "policy")) return ShellBuiltinCommand::Policy;
   return ShellBuiltinCommand::None;
+}
+
+inline const char* shell_tui_text(ShellSurface surface) {
+  switch (surface) {
+    case ShellSurface::HostedPhase5:
+      return "[axion tui]\n"
+             "  frontend    : hosted FTXUI\n"
+             "  entry       : ./build/t81_ternaryos_shell_tui\n"
+             "  note        : uses the shared shell backend contract";
+    case ShellSurface::FreestandingSlice6:
+      return "[axion tui]\n"
+             "  frontend    : unavailable in slice6 guest\n"
+             "  handoff     : not implemented\n"
+             "  host entry  : ./build/t81_ternaryos_shell_tui";
+  }
+  return "[axion tui]";
 }
 
 inline const char* shell_uname_text(ShellSurface surface) {
@@ -139,6 +157,8 @@ inline ShellBuiltinView shell_builtin_view(ShellBuiltinCommand command,
   switch (command) {
     case ShellBuiltinCommand::Help:
       return {ShellBuiltinViewKind::HelpCatalog, nullptr};
+    case ShellBuiltinCommand::Tui:
+      return {ShellBuiltinViewKind::TextBlock, shell_tui_text(surface)};
     case ShellBuiltinCommand::Uname:
       return {ShellBuiltinViewKind::TextBlock, shell_uname_text(surface)};
     case ShellBuiltinCommand::Version:
