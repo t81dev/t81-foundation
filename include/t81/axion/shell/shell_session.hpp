@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "t81/canonfs/canon_types.hpp"
+#include "ternaryos/shell/shared_command_core.hpp"
 
 namespace t81::ternaryos {
 
@@ -53,6 +54,7 @@ public:
   static std::optional<ShellSession> create(bool quiet_boot = false);
 
   const ShellSessionState& state() const { return state_; }
+  ShellCommandContext command_context() const;
 
   bool execute_command(std::string_view command);
 

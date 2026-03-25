@@ -2,6 +2,8 @@
 
 #include "t81/axion/shell/shell_session.hpp"
 
+#include "../shell/command_catalog.hpp"
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/event.hpp>
 #include <ftxui/component/screen_interactive.hpp>
@@ -33,6 +35,7 @@ std::vector<std::string> split_lines(const std::string& text) {
 }
 
 Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
+                           const t81::ternaryos::ShellCommandContext& context,
                            const std::string& command_buffer,
                            const std::string& status_line) {
   Elements transcript;
@@ -42,22 +45,31 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
   }
 
   Elements status = {
-      text("Profile: " + state.profile_summary) | color(Color::Green),
-      text("Storage: " + state.storage_binding_name),
-      text("Display: " + state.display_binding_name),
-      text("Session Commands: " + std::to_string(state.session_command_count)),
-      text("Durable Refs: " + std::to_string(state.durable_ref_count)),
+      text(std::string("Profile: ") + (context.profile_summary ? context.profile_summary : "")) |
+          color(Color::Green),
+      text(std::string("Storage: ") +
+           (context.storage_binding_name ? context.storage_binding_name : "")),
+      text(std::string("Display: ") +
+           (context.display_binding_name ? context.display_binding_name : "")),
+      text("Session Commands: " + std::to_string(context.command_count)),
+      text("Durable Refs: " + std::to_string(context.durable_ref_count)),
       text(std::string("Durable Anchor: ") +
-           (state.durable_anchor_present ? "present" : "missing")) |
-          color(state.durable_anchor_present ? Color::Green : Color::Yellow),
-      text("Recovered: " + std::to_string(state.recovered_entries) + " block(s)"),
-      text("Glyphs: " + std::to_string(state.rendered_glyphs)),
-      text("Backend: guest-bootstrap + CanonStore + VMSVGA") | color(Color::Yellow),
+           (context.durable_anchor_present ? "present" : "missing")) |
+          color(context.durable_anchor_present ? Color::Green : Color::Yellow),
+      text("Recovered: " + std::to_string(context.recovered_entries) + " block(s)"),
+      text("Glyphs: " + std::to_string(context.rendered_glyphs)),
+      text(std::string("CanonFS: ") +
+           (context.canonfs_mode_summary ? context.canonfs_mode_summary : "n/a")) |
+          color(Color::Yellow),
   };
 
   Elements commands;
-  for (const auto& command : state.available_commands) {
-    commands.push_back(text(command) | color(Color::Magenta));
+  for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
+    if (!t81::ternaryos::shell_command_visible(
+            spec, t81::ternaryos::ShellSurface::HostedPhase5)) {
+      continue;
+    }
+    commands.push_back(text(spec.name) | color(Color::Magenta));
   }
 
   Elements framebuffer;
@@ -126,8 +138,21 @@ int main(int argc, char** argv) {
   }
 
   if (argc > 1 && std::string(argv[1]) == "--snapshot") {
+    t81::ternaryos::ShellCommandContext snapshot_context{};
+    snapshot_context.surface = t81::ternaryos::ShellSurface::HostedPhase5;
+    snapshot_context.profile_summary = scripted->profile_summary.c_str();
+    snapshot_context.storage_binding_name = scripted->storage_binding_name.c_str();
+    snapshot_context.display_binding_name = scripted->display_binding_name.c_str();
+    snapshot_context.durable_anchor_present = scripted->durable_anchor_present;
+    snapshot_context.command_count = scripted->session_command_count;
+    snapshot_context.durable_ref_count = scripted->durable_ref_count;
+    snapshot_context.recovered_entries = scripted->recovered_entries;
+    snapshot_context.rendered_glyphs = scripted->rendered_glyphs;
+    snapshot_context.canonfs_mode_summary = "persistent (CanonStore-backed)";
+    snapshot_context.has_hosted_session_status = true;
+    snapshot_context.has_canonfs_status = true;
     auto screen = Screen::Create(Dimension::Fixed(100), Dimension::Fixed(30));
-    Render(screen, shell_tui_document(*scripted, "help", "snapshot replay"));
+    Render(screen, shell_tui_document(*scripted, snapshot_context, "help", "snapshot replay"));
     std::printf("%s", screen.ToString().c_str());
     return 0;
   }
@@ -142,7 +167,8 @@ int main(int argc, char** argv) {
   std::string status_line = "ready";
 
   auto renderer = Renderer([&] {
-    return shell_tui_document(session->state(), command_buffer, status_line);
+    return shell_tui_document(
+        session->state(), session->command_context(), command_buffer, status_line);
   });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {

@@ -298,33 +298,17 @@ std::string hosted_builtin_text(ShellBuiltinCommand command) {
 std::string hosted_session_status_text(const ShellSessionState& state,
                                        const std::vector<t81::canonfs::CanonRef>& stored_refs,
                                        bool durable_anchor_tracked) {
-  const ShellCommandContext context = {
-      ShellSurface::HostedPhase5,
-      state.profile_summary.c_str(),
-      state.storage_binding_name.c_str(),
-      state.display_binding_name.c_str(),
-      nullptr,
-      nullptr,
-      nullptr,
-      nullptr,
-      nullptr,
-      nullptr,
-      nullptr,
-      durable_anchor_tracked,
-      static_cast<unsigned long long>(state.command_records.size()),
-      static_cast<unsigned long long>(stored_refs.size()),
-      static_cast<unsigned long long>(state.recovered_entries),
-      static_cast<unsigned long long>(state.rendered_glyphs),
-      0u,
-      0u,
-      0u,
-      0u,
-      0u,
-      0u,
-      true,
-      false,
-      false,
-  };
+  ShellCommandContext context{};
+  context.surface = ShellSurface::HostedPhase5;
+  context.profile_summary = state.profile_summary.c_str();
+  context.storage_binding_name = state.storage_binding_name.c_str();
+  context.display_binding_name = state.display_binding_name.c_str();
+  context.durable_anchor_present = durable_anchor_tracked;
+  context.command_count = static_cast<unsigned long long>(state.command_records.size());
+  context.durable_ref_count = static_cast<unsigned long long>(stored_refs.size());
+  context.recovered_entries = static_cast<unsigned long long>(state.recovered_entries);
+  context.rendered_glyphs = static_cast<unsigned long long>(state.rendered_glyphs);
+  context.has_hosted_session_status = true;
 
   std::ostringstream out;
   shell_emit_status_from_context(
@@ -479,6 +463,26 @@ std::optional<ShellSession> ShellSession::create(bool quiet_boot) {
   ShellSession session(quiet_boot);
   if (!session.initialize()) return std::nullopt;
   return std::optional<ShellSession>(std::move(session));
+}
+
+ShellCommandContext ShellSession::command_context() const {
+  ShellCommandContext context{};
+  context.surface = ShellSurface::HostedPhase5;
+  context.profile_summary = state_.profile_summary.c_str();
+  context.storage_binding_name = state_.storage_binding_name.c_str();
+  context.display_binding_name = state_.display_binding_name.c_str();
+  context.durable_anchor_present = history_ref_.has_value();
+  context.command_count = static_cast<unsigned long long>(state_.command_records.size());
+  context.durable_ref_count = static_cast<unsigned long long>(stored_refs_.size());
+  context.recovered_entries = static_cast<unsigned long long>(state_.recovered_entries);
+  context.rendered_glyphs = static_cast<unsigned long long>(state_.rendered_glyphs);
+  context.canonfs_mode_summary = "persistent (CanonStore-backed)";
+  context.canonfs_transport_summary = "hosted-block-dev";
+  context.canonfs_binding_summary = state_.storage_binding_name.c_str();
+  context.canonfs_probe_summary = "n/a (hosted bootstrap seam)";
+  context.has_hosted_session_status = true;
+  context.has_canonfs_status = true;
+  return context;
 }
 
 bool ShellSession::execute_command(std::string_view command_view) {
