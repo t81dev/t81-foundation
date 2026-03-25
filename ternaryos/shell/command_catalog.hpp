@@ -13,6 +13,7 @@ inline constexpr ShellCommandSpec kShellCommandCatalog[] = {
     {"help", "show available commands", true, true},
     {"uname", "show system identity", true, true},
     {"version", "show shell/runtime build info", true, true},
+    {"policy", "show Axion policy summary", true, true},
     {"profile", "show active profile summary", true, false},
     {"name set <label> <ref>", "bind a stable label to a CanonRef", true, false},
     {"name ls", "list named CanonRef labels", true, false},
@@ -52,7 +53,6 @@ inline constexpr ShellCommandSpec kShellCommandCatalog[] = {
     {"sched", "show scheduler counters", false, true},
     {"faults", "show retained EL0 fault records", false, true},
     {"gov", "show governance ring counters by event", false, true},
-    {"policy", "show Axion policy summary", false, true},
 };
 
 inline constexpr decltype(sizeof(0)) kShellCommandCatalogCount =

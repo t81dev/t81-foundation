@@ -1106,10 +1106,11 @@ static void cmd_gov() noexcept {
 }
 
 static void cmd_policy() noexcept {
-  pl011_puts("  [axion policy]\r\n");
-  pl011_puts("    governance  : active\r\n");
-  pl011_puts("    audit trail : canonfs (in-memory)\r\n");
-  pl011_puts("    constraints : RFC-00B0 ethics-first boot\r\n");
+  pl011_puts("  ");
+  pl011_puts_text_block(
+      t81::ternaryos::shell_policy_text(
+          t81::ternaryos::ShellSurface::FreestandingSlice6));
+  pl011_puts("\r\n");
 }
 
 static void shell_dispatch(const char* line) noexcept {

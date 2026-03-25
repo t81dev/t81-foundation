@@ -14,6 +14,7 @@ enum class ShellBuiltinCommand {
   Help,
   Uname,
   Version,
+  Policy,
 };
 
 inline bool shell_cstr_eq(const char* lhs, const char* rhs) {
@@ -39,6 +40,7 @@ inline ShellBuiltinCommand shell_builtin_command(const char* word) {
   if (shell_cstr_eq(word, "help")) return ShellBuiltinCommand::Help;
   if (shell_cstr_eq(word, "uname")) return ShellBuiltinCommand::Uname;
   if (shell_cstr_eq(word, "version")) return ShellBuiltinCommand::Version;
+  if (shell_cstr_eq(word, "policy")) return ShellBuiltinCommand::Policy;
   return ShellBuiltinCommand::None;
 }
 
@@ -64,6 +66,22 @@ inline const char* shell_version_text(ShellSurface surface) {
              "Boot path    : EFI efi_main -> ExitBootServices -> C++ bridge";
   }
   return "T81 / Axion";
+}
+
+inline const char* shell_policy_text(ShellSurface surface) {
+  switch (surface) {
+    case ShellSurface::HostedPhase5:
+      return "[axion policy]\n"
+             "  governance  : active\n"
+             "  audit trail : canonfs-backed hosted session\n"
+             "  constraints : RFC-00B0 ethics-first boot";
+    case ShellSurface::FreestandingSlice6:
+      return "[axion policy]\n"
+             "  governance  : active\n"
+             "  audit trail : canonfs (in-memory)\n"
+             "  constraints : RFC-00B0 ethics-first boot";
+  }
+  return "[axion policy]";
 }
 
 template <typename EmitFn>

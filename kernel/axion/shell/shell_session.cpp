@@ -422,6 +422,10 @@ bool ShellSession::execute_command(std::string_view command_view) {
       state_.command_records.push_back(
           {command, shell_version_text(ShellSurface::HostedPhase5)});
       return refresh_render();
+    case ShellBuiltinCommand::Policy:
+      state_.command_records.push_back(
+          {command, shell_policy_text(ShellSurface::HostedPhase5)});
+      return refresh_render();
     case ShellBuiltinCommand::None:
       break;
   }
