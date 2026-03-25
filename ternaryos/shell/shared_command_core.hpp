@@ -1,0 +1,46 @@
+#pragma once
+
+#include "command_catalog.hpp"
+
+namespace t81::ternaryos {
+
+enum class ShellSurface {
+  HostedPhase5,
+  FreestandingSlice6,
+};
+
+inline bool shell_command_visible(const ShellCommandSpec& spec, ShellSurface surface) {
+  switch (surface) {
+    case ShellSurface::HostedPhase5:
+      return spec.hosted_phase5;
+    case ShellSurface::FreestandingSlice6:
+      return spec.freestanding_slice6;
+  }
+  return false;
+}
+
+inline const char* shell_uname_text(ShellSurface surface) {
+  switch (surface) {
+    case ShellSurface::HostedPhase5:
+      return "T81 TernaryOS 1.0 hosted axion-shell";
+    case ShellSurface::FreestandingSlice6:
+      return "T81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)";
+  }
+  return "T81 TernaryOS";
+}
+
+inline const char* shell_version_text(ShellSurface surface) {
+  switch (surface) {
+    case ShellSurface::HostedPhase5:
+      return "T81 / Axion  --  hosted shell session\n"
+             "Architecture : Hosted C++ guest-bootstrap seam\n"
+             "Boot path    : ShellSession -> bootstrap_virtualbox_guest -> hal_main";
+    case ShellSurface::FreestandingSlice6:
+      return "T81 / Axion  --  ternary OS kernel (bare-metal EFI bridge)\n"
+             "Architecture : AArch64 (QEMU virt, cortex-a57, EDK2)\n"
+             "Boot path    : EFI efi_main -> ExitBootServices -> C++ bridge";
+  }
+  return "T81 / Axion";
+}
+
+}  // namespace t81::ternaryos

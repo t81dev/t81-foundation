@@ -3,6 +3,7 @@
 #include "shell_session.hpp"
 
 #include "command_catalog.hpp"
+#include "shared_command_core.hpp"
 
 #include "dev/canon_store.hpp"
 #include "dev/framebuffer.hpp"
@@ -271,7 +272,7 @@ std::vector<std::string> hosted_command_names() {
 std::string hosted_help_text() {
   std::string text = "builtins";
   for (const auto& spec : kShellCommandCatalog) {
-    if (!spec.hosted_phase5) continue;
+    if (!shell_command_visible(spec, ShellSurface::HostedPhase5)) continue;
     text += "\n";
     text += spec.name;
     text += " -- ";
@@ -410,6 +411,18 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words[0] == "help") {
     state_.command_records.push_back({command, hosted_help_text()});
+    return refresh_render();
+  }
+
+  if (words[0] == "uname") {
+    state_.command_records.push_back(
+        {command, shell_uname_text(ShellSurface::HostedPhase5)});
+    return refresh_render();
+  }
+
+  if (words[0] == "version") {
+    state_.command_records.push_back(
+        {command, shell_version_text(ShellSurface::HostedPhase5)});
     return refresh_render();
   }
 

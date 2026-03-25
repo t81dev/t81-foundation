@@ -11,6 +11,8 @@ struct ShellCommandSpec {
 
 inline constexpr ShellCommandSpec kShellCommandCatalog[] = {
     {"help", "show available commands", true, true},
+    {"uname", "show system identity", true, true},
+    {"version", "show shell/runtime build info", true, true},
     {"profile", "show active profile summary", true, false},
     {"name set <label> <ref>", "bind a stable label to a CanonRef", true, false},
     {"name ls", "list named CanonRef labels", true, false},
@@ -41,8 +43,6 @@ inline constexpr ShellCommandSpec kShellCommandCatalog[] = {
     {"history use <ref>", "rebind the durable history anchor", true, false},
     {"history show durable", "show the durable history object", true, false},
     {"clear", "clear the hosted shell transcript window", true, false},
-    {"uname", "show freestanding system identity", false, true},
-    {"version", "show slice6 build and boot path", false, true},
     {"canonfs", "show storage mode and transport status", false, true},
     {"irq", "show timer IRQ and governed wake counters", false, true},
     {"el0", "show EL0 bridge and capability status", false, true},

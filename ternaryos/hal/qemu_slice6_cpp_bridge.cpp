@@ -23,6 +23,7 @@
 #include <stdint.h>
 
 #include "../shell/command_catalog.hpp"
+#include "../shell/shared_command_core.hpp"
 
 // ── QEMU virt AArch64 memory map ─────────────────────────────────────────────
 
@@ -72,6 +73,17 @@ static unsigned long long cstr_len(const char* s) noexcept {
   unsigned long long len = 0u;
   while (s[len] != '\0') ++len;
   return len;
+}
+
+static void pl011_puts_text_block(const char* s) noexcept {
+  while (*s) {
+    if (*s == '\n') {
+      pl011_puts("\r\n");
+    } else {
+      pl011_putchar(*s);
+    }
+    ++s;
+  }
 }
 
 static bool pl011_rx_ready() noexcept {
@@ -669,7 +681,10 @@ static void freestanding_sched_tick() noexcept {
 
 static void cmd_help() noexcept {
   for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
-    if (!spec.freestanding_slice6) continue;
+    if (!t81::ternaryos::shell_command_visible(
+            spec, t81::ternaryos::ShellSurface::FreestandingSlice6)) {
+      continue;
+    }
     pl011_puts("  ");
     pl011_puts(spec.name);
     const auto name_len = cstr_len(spec.name);
@@ -685,13 +700,19 @@ static void cmd_help() noexcept {
 }
 
 static void cmd_uname() noexcept {
-  pl011_puts("  T81 TernaryOS 1.0 AArch64 axion-kernel (bare-metal EFI)\r\n");
+  pl011_puts("  ");
+  pl011_puts_text_block(
+      t81::ternaryos::shell_uname_text(
+          t81::ternaryos::ShellSurface::FreestandingSlice6));
+  pl011_puts("\r\n");
 }
 
 static void cmd_version() noexcept {
-  pl011_puts("  T81 / Axion  --  ternary OS kernel (bare-metal EFI bridge)\r\n");
-  pl011_puts("  Architecture : AArch64 (QEMU virt, cortex-a57, EDK2)\r\n");
-  pl011_puts("  Boot path    : EFI efi_main -> ExitBootServices -> C++ bridge\r\n");
+  pl011_puts("  ");
+  pl011_puts_text_block(
+      t81::ternaryos::shell_version_text(
+          t81::ternaryos::ShellSurface::FreestandingSlice6));
+  pl011_puts("\r\n");
 }
 
 static void cmd_canonfs() noexcept {

@@ -2,6 +2,9 @@
 
 #include "t81/axion/shell/shell_session.hpp"
 
+#include "../../../ternaryos/shell/command_catalog.hpp"
+#include "../../../ternaryos/shell/shared_command_core.hpp"
+
 #include "dev/canon_store.hpp"
 #include "dev/framebuffer.hpp"
 #include "dev/hosted_block_dev.hpp"
@@ -29,40 +32,6 @@ using namespace t81::ternaryos::hal;
 namespace t81::ternaryos {
 
 namespace {
-
-constexpr std::array<const char*, 31> kBuiltinCommands = {
-    "help",
-    "profile",
-    "name set <label> <ref>",
-    "name ls",
-    "object pin <kind> <name> <ref>",
-    "object ls",
-    "object show <name>",
-    "session status",
-    "session checkpoint",
-    "session export",
-    "session import <ref>",
-    "session diff <ref>",
-    "session run <ref>",
-    "session show durable",
-    "session refs",
-    "show profile",
-    "show session",
-    "show ref <canonref>",
-    "store put <text>",
-    "store put script <line>|<line>|...>",
-    "store put ref <ref>",
-    "store cp <ref>",
-    "store ls",
-    "store get <ref>",
-    "store rm <ref>",
-    "history",
-    "history show session",
-    "history show object <ref>",
-    "history use <ref>",
-    "history show durable",
-    "clear",
-};
 
 struct ShellStep {
   std::string command;
@@ -291,6 +260,29 @@ std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& s
   return lines;
 }
 
+std::vector<std::string> hosted_command_names() {
+  std::vector<std::string> names;
+  names.reserve(kShellCommandCatalogCount);
+  for (const auto& spec : kShellCommandCatalog) {
+    if (shell_command_visible(spec, ShellSurface::HostedPhase5)) {
+      names.emplace_back(spec.name);
+    }
+  }
+  return names;
+}
+
+std::string hosted_help_text() {
+  std::string text = "builtins";
+  for (const auto& spec : kShellCommandCatalog) {
+    if (!shell_command_visible(spec, ShellSurface::HostedPhase5)) continue;
+    text += "\n";
+    text += spec.name;
+    text += " -- ";
+    text += spec.summary;
+  }
+  return text;
+}
+
 }  // namespace
 
 namespace {
@@ -341,7 +333,7 @@ std::vector<std::string> default_shell_command_sequence() {
 }
 
 ShellSession::ShellSession(bool quiet_boot) : quiet_boot_(quiet_boot), store_path_(unique_store_path()) {
-  state_.available_commands = {kBuiltinCommands.begin(), kBuiltinCommands.end()};
+  state_.available_commands = hosted_command_names();
 }
 
 bool ShellSession::initialize() {
@@ -420,9 +412,19 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words.empty()) return refresh_render();
 
   if (words[0] == "help") {
+    state_.command_records.push_back({command, hosted_help_text()});
+    return refresh_render();
+  }
+
+  if (words[0] == "uname") {
     state_.command_records.push_back(
-        {command,
-         "builtins help profile name set <label> <ref> name ls object pin <kind> <name> <ref> object ls object show <name> session status session checkpoint session export session import <ref> session diff <ref> session run <ref> session show durable session refs show profile show session show ref <canonref> store put <text> store put script <line>|<line>|...> store put ref <ref> store cp <ref> store ls store get <ref> store rm <ref> history history show session history show object <ref> history use <ref> history show durable clear"});
+        {command, shell_uname_text(ShellSurface::HostedPhase5)});
+    return refresh_render();
+  }
+
+  if (words[0] == "version") {
+    state_.command_records.push_back(
+        {command, shell_version_text(ShellSurface::HostedPhase5)});
     return refresh_render();
   }
 
