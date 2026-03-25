@@ -85,7 +85,8 @@ This index tracks RFC status and intended disposition.
 | RFC-00CB | EL0 Fault Detail Query | accepted | Activates reserved KernelCall ordinal 15 in the freestanding bridge and proves an EL0 sibling can query retained `subject_tid` / `fault_ec` / `fault_far` detail immediately after fault-handler handoff |
 | RFC-00CC | EL0 Fault Acknowledgement and Drain | accepted | Activates reserved KernelCall ordinal 16 in the freestanding bridge and proves an EL0 sibling can drain retained fault state deterministically after querying it |
 | RFC-00CD | Supervisor Fault Recovery Status | accepted | Activates reserved KernelCall ordinal 23 in the freestanding bridge and proves supervisor recovery remains pending even after thread-level fault drain |
-| RFC-00CE | Supervisor Fault-Group Acknowledgement | draft | Defines the next recovery-state transition over reserved ordinal 17 so supervisor recovery can move from pending to acknowledged after thread-level drain |
+| RFC-00CE | Supervisor Fault-Group Acknowledgement | accepted | Activates reserved KernelCall ordinal 17 in the freestanding bridge and proves supervisor recovery moves from pending to acknowledged after thread-level drain |
+| RFC-00CF | Slice6 CanonFS Operator Actions | draft | Defines the first product-facing CanonFS action surface for the real slice6 shell: narrow read-only inspection plus one governed launch path |
 
 ## DPE RFCs (Deterministic Parallel Execution series)
 
