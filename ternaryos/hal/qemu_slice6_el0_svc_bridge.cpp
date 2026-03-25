@@ -326,6 +326,41 @@ extern "C" bool fs_sched_fault_nth(uint32_t index,
     return false;
 }
 
+extern "C" uint64_t fs_sched_wait_count() noexcept {
+    uint64_t count = 0u;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::BlockedDeviceWait ||
+            s_sched[i].state == FsSchedState::Runnable ||
+            s_sched[i].state == FsSchedState::Running) {
+            if (s_sched[i].tid != 0u) ++count;
+        }
+    }
+    return count;
+}
+
+extern "C" bool fs_sched_wait_nth(uint32_t index,
+                                   uint32_t* out_tid,
+                                   uint32_t* out_state,
+                                   uint32_t* out_device_id) noexcept {
+    if (!out_tid || !out_state || !out_device_id) return false;
+    uint32_t seen = 0u;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == 0u) continue;
+        if (s_sched[i].state == FsSchedState::BlockedDeviceWait ||
+            s_sched[i].state == FsSchedState::Runnable ||
+            s_sched[i].state == FsSchedState::Running) {
+            if (seen == index) {
+                *out_tid = s_sched[i].tid;
+                *out_state = static_cast<uint32_t>(s_sched[i].state);
+                *out_device_id = s_sched[i].device_id;
+                return true;
+            }
+            ++seen;
+        }
+    }
+    return false;
+}
+
 // RFC-00C0: transition a BlockedDeviceWait thread to Runnable.
 // Called from EL1 C code (outside any SVC handler) when the device event fires.
 extern "C" void fs_sched_wake_device(uint32_t tid) noexcept {

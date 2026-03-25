@@ -463,6 +463,7 @@ commands are:
 - `canonfs`
 - `irq`
 - `el0`
+- `waits`
 - `status`
 - `threads`
 - `sched`

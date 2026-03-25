@@ -503,6 +503,11 @@ extern "C" bool fs_sched_fault_nth(uint32_t index,
                                     uint32_t* out_tid,
                                     uint32_t* out_ec,
                                     uint64_t* out_far) noexcept;
+extern "C" uint64_t fs_sched_wait_count() noexcept;
+extern "C" bool fs_sched_wait_nth(uint32_t index,
+                                   uint32_t* out_tid,
+                                   uint32_t* out_state,
+                                   uint32_t* out_device_id) noexcept;
 extern "C" uint64_t fs_gov_count() noexcept;
 extern "C" uint64_t fs_gov_event_count(uint32_t event) noexcept;
 
@@ -596,6 +601,7 @@ static void cmd_help() noexcept {
   pl011_puts("  canonfs  -- storage transport and probe status\r\n");
   pl011_puts("  irq      -- timer IRQ and governed wake counters\r\n");
   pl011_puts("  el0      -- EL0 bridge and capability status\r\n");
+  pl011_puts("  waits    -- device-wait scheduler view\r\n");
   pl011_puts("  status   -- kernel counters and governance state\r\n");
   pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
@@ -670,6 +676,49 @@ static void cmd_el0() noexcept {
   pl011_puts("    canonfs_lane  : ");
   pl011_puts(s_has_blk ? "enabled" : "unavailable (no store)");
   pl011_puts("\r\n");
+}
+
+static const char* wait_state_text(uint32_t state) noexcept {
+  switch (state) {
+    case 1u: return "Runnable";
+    case 2u: return "Running";
+    case 4u: return "BlockedDeviceWait";
+    default: return "Other";
+  }
+}
+
+static void cmd_waits() noexcept {
+  char buf[24];
+  const uint64_t count = fs_sched_wait_count();
+
+  pl011_puts("  [waits]\r\n");
+  pl011_puts("    tracked       : ");
+  pl011_puts(u64_dec(count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  if (count == 0u) {
+    pl011_puts("    retained      : none\r\n");
+    return;
+  }
+
+  for (uint32_t i = 0u; i < count; ++i) {
+    uint32_t tid = 0u;
+    uint32_t state = 0u;
+    uint32_t device_id = 0u;
+    if (!fs_sched_wait_nth(i, &tid, &state, &device_id)) continue;
+
+    pl011_puts("    tid=");
+    pl011_puts(u64_dec(static_cast<uint64_t>(tid), buf, static_cast<int>(sizeof(buf))));
+    pl011_puts(" state=");
+    pl011_puts(wait_state_text(state));
+    pl011_puts(" device_id=");
+    if (device_id == 0u) {
+      pl011_puts("any");
+    } else {
+      pl011_puts(u64_dec(static_cast<uint64_t>(device_id), buf, static_cast<int>(sizeof(buf))));
+    }
+    pl011_puts("\r\n");
+  }
 }
 
 static void cmd_status() noexcept {
@@ -835,6 +884,7 @@ static void shell_dispatch(const char* line) noexcept {
   else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
   else if (str_eq(line, "irq"))     { cmd_irq(); }
   else if (str_eq(line, "el0"))     { cmd_el0(); }
+  else if (str_eq(line, "waits"))   { cmd_waits(); }
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
