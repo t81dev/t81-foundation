@@ -239,6 +239,7 @@ Dado que todo el TISC ISA es nativo ternario, el **Axion Governance Kernel** pue
 - Un modelo de seguridad que es fundamentalmente más inspeccionable que la ejecución binaria de caja negra.
 
 Estas ventajas se combinan en dominios donde **la reproducibilidad**, **la inferencia de baja complejidad**, **la ejecución gobernada** y **la simetría matemática** importan más — exactamente los casos de uso objetivo de la arquitectura T81.
+Todas las afirmaciones de determinismo deben estar estrictamente limitadas por el Registro de Superficie de Determinismo.
 
 ---
 
