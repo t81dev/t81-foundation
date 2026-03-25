@@ -83,6 +83,7 @@ This index tracks RFC status and intended disposition.
 | RFC-00C9 | EL0 Fault Evidence Query | accepted | Freezes the minimal post-mortem read path over retained `fault_ec` and `fault_far`, strengthening Phase 18/19 proof without widening the EL0 ABI |
 | RFC-00CA | EL0 Fault Summary Query | accepted | Activates reserved KernelCall ordinal 21 in the freestanding bridge and proves an EL0 sibling can query retained fault summary state immediately after fault-handler handoff |
 | RFC-00CB | EL0 Fault Detail Query | accepted | Activates reserved KernelCall ordinal 15 in the freestanding bridge and proves an EL0 sibling can query retained `subject_tid` / `fault_ec` / `fault_far` detail immediately after fault-handler handoff |
+| RFC-00CC | EL0 Fault Acknowledgement and Drain | draft | Defines the next fault-lifecycle step: explicit acknowledgement and deterministic draining of retained freestanding fault state |
 
 ## DPE RFCs (Deterministic Parallel Execution series)
 
