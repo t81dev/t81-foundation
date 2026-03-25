@@ -4,6 +4,38 @@
 #if defined(_MSC_VER) && defined(_WIN64)
 #include <intrin.h>
 
+#if defined(__clang__)
+inline uint64_t clang_udiv128(uint64_t high, uint64_t low, uint64_t divisor, uint64_t *remainder) {
+    if (divisor == 0) {
+        if (remainder) *remainder = 0;
+        return 0;
+    }
+    if (high >= divisor) {
+        if (remainder) *remainder = 0;
+        return 0; // Overflow condition not fully handled as per _udiv128 spec, but we mimic MSVC's constraint
+    }
+
+    uint64_t q = 0;
+    uint64_t r = high;
+    for (int i = 0; i < 64; ++i) {
+        uint64_t next_bit = (low >> 63) & 1;
+        low <<= 1;
+        r = (r << 1) | next_bit;
+        if (r >= divisor) {
+            r -= divisor;
+            q = (q << 1) | 1;
+        } else {
+            q <<= 1;
+        }
+    }
+    if (remainder) *remainder = r;
+    return q;
+}
+#define T81_UDIV128 clang_udiv128
+#else
+#define T81_UDIV128 _udiv128
+#endif
+
 namespace t81::v1::detail {
 struct int128_t {
   uint64_t lo;
@@ -64,7 +96,7 @@ struct int128_t {
     if (num.hi >= (uint64_t)d) {
       return {0, 0};
     }
-    uint64_t q = _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
+    uint64_t q = T81_UDIV128(num.hi, num.lo, (uint64_t)d, &rem);
     int128_t res = {q, 0};
     return neg ? -res : res;
   }
@@ -80,7 +112,7 @@ struct int128_t {
     if (num.hi >= (uint64_t)d) {
       return {0, 0};
     }
-    _udiv128(num.hi, num.lo, (uint64_t)d, &rem);
+    T81_UDIV128(num.hi, num.lo, (uint64_t)d, &rem);
     int128_t res = {rem, 0};
     return neg ? -res : res;
   }

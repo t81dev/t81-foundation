@@ -90,7 +90,7 @@ std::vector<std::byte> serialize_cap(const CapabilityGrant& g) {
   return out;
 }
 
-CapabilityGrant deserialize_cap(std::span<const std::byte> raw) {
+[[maybe_unused]] CapabilityGrant deserialize_cap(std::span<const std::byte> raw) {
   CapabilityGrant g;
   if (raw.size() < kCapBytes) return g;
   const std::byte* p = raw.data();
