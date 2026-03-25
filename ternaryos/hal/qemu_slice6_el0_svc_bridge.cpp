@@ -110,6 +110,7 @@ static constexpr uint32_t kKindGetThreadIdentity  = 10u;
 static constexpr uint32_t kKindReadFaultInbox      = 15u;
 static constexpr uint32_t kKindAcknowledgeThreadFault = 16u;
 static constexpr uint32_t kKindQueryFaultSummary   = 21u;
+static constexpr uint32_t kKindQuerySupervisorRecoveryStatus = 23u;
 static constexpr uint32_t kKindSendMessage         = 13u;
 static constexpr uint32_t kKindReceiveMessage      = 14u;
 static constexpr uint32_t kKindBlockOnIpcReceive   = 42u;
@@ -127,6 +128,16 @@ static constexpr uint64_t kMinFaultInboxRspBytes = 224u;
 // Compact freestanding QueryFaultSummary uses the shared wire offsets through
 // fault_summary_quarantined_threads (5x uint64 at offsets 200..232).
 static constexpr uint64_t kMinFaultSummaryRspBytes = 240u;
+// Compact freestanding QuerySupervisorRecoveryStatus uses seven uint64 counters
+// at offsets 200..248:
+//   recorded_fault_groups     @ 200
+//   pending_fault_groups      @ 208
+//   acknowledged_fault_groups @ 216
+//   blocked_fault_groups      @ 224
+//   recoverable_threads       @ 232
+//   drained_threads           @ 240
+//   quarantined_threads       @ 248
+static constexpr uint64_t kMinSupervisorRecoveryRspBytes = 256u;
 
 // Minimum request size covering magic (4B) + version/bytes (4B) + kind (4B).
 static constexpr uint64_t kMinReqBytes = 12u;
@@ -314,6 +325,25 @@ extern "C" uint64_t fs_sched_faulted_count() noexcept {
     for (int i = 0; i < kMaxSchedThreads; ++i) {
         if (s_sched[i].state == FsSchedState::Faulted &&
             s_sched[i].fault_ec != 0u)
+            ++count;
+    }
+    return count;
+}
+
+extern "C" uint64_t fs_sched_faulted_total_count() noexcept {
+    uint64_t count = 0u;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Faulted)
+            ++count;
+    }
+    return count;
+}
+
+extern "C" uint64_t fs_sched_faulted_drained_count() noexcept {
+    uint64_t count = 0u;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Faulted &&
+            s_sched[i].fault_ec == 0u)
             ++count;
     }
     return count;
@@ -902,6 +932,38 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 __builtin_memcpy(rsp + 224, &faulted, 8);
                 __builtin_memcpy(rsp + 232, &faulted, 8);
                 fs_obs_record(s_current_el0_tid, kKindQueryFaultSummary,
+                              kStatusOk, 0u);
+                return;
+            }
+
+            case kKindQuerySupervisorRecoveryStatus: {
+                if (rsp_size < kMinSupervisorRecoveryRspBytes) {
+                    write_u32(rsp, 8, kStatusInvalidRequest);
+                    fs_obs_record(s_current_el0_tid,
+                                  kKindQuerySupervisorRecoveryStatus,
+                                  kStatusInvalidRequest, 0u);
+                    return;
+                }
+
+                const uint64_t faulted_total = fs_sched_faulted_total_count();
+                const uint64_t drained = fs_sched_faulted_drained_count();
+                const uint64_t recorded_groups = faulted_total ? 1u : 0u;
+                const uint64_t pending_groups = faulted_total ? 1u : 0u;
+                const uint64_t acknowledged_groups = 0u;
+                const uint64_t blocked_groups = 0u;
+                const uint64_t recoverable_threads = faulted_total;
+                const uint64_t quarantined_threads = faulted_total;
+
+                write_u32(rsp, 44, s_current_el0_tid);
+                __builtin_memcpy(rsp + 200, &recorded_groups, 8);
+                __builtin_memcpy(rsp + 208, &pending_groups, 8);
+                __builtin_memcpy(rsp + 216, &acknowledged_groups, 8);
+                __builtin_memcpy(rsp + 224, &blocked_groups, 8);
+                __builtin_memcpy(rsp + 232, &recoverable_threads, 8);
+                __builtin_memcpy(rsp + 240, &drained, 8);
+                __builtin_memcpy(rsp + 248, &quarantined_threads, 8);
+                fs_obs_record(s_current_el0_tid,
+                              kKindQuerySupervisorRecoveryStatus,
                               kStatusOk, 0u);
                 return;
             }

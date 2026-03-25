@@ -22,8 +22,32 @@ RFC-00B9 boundary note:
   broader scheduler lane has now **graduated** (see below)
 
 **Last updated:** 2026-03-25
-**Commit:** RFC-00CC EL0 fault acknowledgement added
+**Commit:** RFC-00CD supervisor recovery status added
 **Branch:** `main`
+
+---
+
+## RFC-00CD — Supervisor Fault Recovery Status (2026-03-25)
+
+Phase 23 activates `KernelCall(QuerySupervisorRecoveryStatus)` in the
+freestanding EL0 bridge.
+
+- **ABI decision:** reuse the already-frozen ordinal `23`
+  (`QuerySupervisorRecoveryStatus`) instead of inventing a new call.
+- **Response surface:** freestanding bridge now writes seven compact recovery
+  counters at offsets `200..248`:
+  `recorded_fault_groups`, `pending_fault_groups`,
+  `acknowledged_fault_groups`, `blocked_fault_groups`,
+  `recoverable_threads`, `drained_threads`, and `quarantined_threads`.
+- **Freestanding mapping:** a faulted thread remains counted in supervisor
+  recovery state even after `AcknowledgeThreadFault` drains the retained
+  per-thread inbox record.
+- **EL0 proof:** after `tid=8` faults, the fault handler switches directly to
+  `tid=12`, which first drains `tid=8` through `AcknowledgeThreadFault(8)` and
+  then issues `QuerySupervisorRecoveryStatus`. EL1 validates that the returned
+  status still reports `pending_fault_groups == 1` while
+  `drained_threads == 1`.
+- **CI gate:** `[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)`
 
 ---
 

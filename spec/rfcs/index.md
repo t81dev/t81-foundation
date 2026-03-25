@@ -84,7 +84,7 @@ This index tracks RFC status and intended disposition.
 | RFC-00CA | EL0 Fault Summary Query | accepted | Activates reserved KernelCall ordinal 21 in the freestanding bridge and proves an EL0 sibling can query retained fault summary state immediately after fault-handler handoff |
 | RFC-00CB | EL0 Fault Detail Query | accepted | Activates reserved KernelCall ordinal 15 in the freestanding bridge and proves an EL0 sibling can query retained `subject_tid` / `fault_ec` / `fault_far` detail immediately after fault-handler handoff |
 | RFC-00CC | EL0 Fault Acknowledgement and Drain | accepted | Activates reserved KernelCall ordinal 16 in the freestanding bridge and proves an EL0 sibling can drain retained fault state deterministically after querying it |
-| RFC-00CD | Supervisor Fault Recovery Status | draft | Defines the next fault-lifecycle layer above per-thread drain: supervisor-visible recovery state, grouping, and acknowledgement/query semantics over reserved ordinals 17, 22, and 23 |
+| RFC-00CD | Supervisor Fault Recovery Status | accepted | Activates reserved KernelCall ordinal 23 in the freestanding bridge and proves supervisor recovery remains pending even after thread-level fault drain |
 
 ## DPE RFCs (Deterministic Parallel Execution series)
 

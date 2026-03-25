@@ -1008,6 +1008,8 @@ extern "C" bool fs_sched_get_fault(uint32_t tid,
                                     uint64_t* out_far) noexcept;
 extern "C" bool fs_sched_ack_fault(uint32_t tid) noexcept;
 extern "C" uint64_t fs_sched_faulted_count() noexcept;
+extern "C" uint64_t fs_sched_faulted_total_count() noexcept;
+extern "C" uint64_t fs_sched_faulted_drained_count() noexcept;
 
 // ── Phase 18 (RFC-00C7): EL0 fault containment ───────────────────────────────
 //
@@ -1398,6 +1400,105 @@ extern "C" void canon_fault_ack_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: fault ack OK (tid=11 drained tid=8 fault)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: fault ack FAIL (bad EL0 ack lifecycle)\r\n");
+    }
+}
+
+// ── Phase 23 (RFC-00CD): EL0 supervisor recovery status query ──────────────
+//
+// Start a faulting thread first, with an EL0 observer thread already Runnable.
+// The observer:
+//   1. acknowledges tid=8 through AcknowledgeThreadFault,
+//   2. queries QuerySupervisorRecoveryStatus,
+//   3. proves supervisor recovery remains pending even after thread-level drain.
+//
+// CI gate:
+//   "[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)"
+extern "C" void canon_supervisor_recovery_query_load_and_run() noexcept {
+    const uint64_t code_pa_fault = load_t81x_v2_into(12u,
+                                                       el0_mmu_proc_code_page2(),
+                                                       "tid8/LBA12");
+    if (!code_pa_fault) return;
+
+    const uint64_t code_pa_query = load_t81x_v2_into(16u,
+                                                       el0_mmu_proc_code_page(),
+                                                       "tid12/LBA16");
+    if (!code_pa_query) return;
+
+    flush_icache_for_new_code();
+
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    fs_sched_reset();
+
+    const uint64_t stack_top_query = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_fault = el0_mmu_proc_stack_top2();
+
+    fs_sched_register(12u, code_pa_query, stack_top_query, 0x3C0u);
+    fs_sched_set_thread_l3(12u, 0u);
+
+    fs_sched_register(8u, code_pa_fault, stack_top_fault, 0x3C0u);
+    fs_sched_set_thread_l3(8u, 1u);
+    fs_sched_mark_running(8u);
+
+    el0_svc_set_current_tid(8u);
+    el0_mmu_install_thread_l3(1u);
+    run_proc_entry(code_pa_fault, stack_top_fault);
+
+    el0_svc_set_current_tid(1u);
+    el0_mmu_install_shared_l3();
+
+    const uint8_t* frame = reinterpret_cast<const uint8_t*>(
+        static_cast<uintptr_t>(stack_top_query - 336u));
+    const uint8_t* rsp1 = frame + 16u;
+    const uint8_t* rsp2 = frame + 80u;
+
+    const uint32_t ack_status      = read_u32_le(rsp1 + 8u);
+    const uint32_t ack_rejection   = read_u32_le(rsp1 + 12u);
+    const uint32_t ack_queried_tid = read_u32_le(rsp1 + 40u);
+    const uint32_t ack_caller_tid  = read_u32_le(rsp1 + 44u);
+
+    const uint32_t status      = read_u32_le(rsp2 + 8u);
+    const uint32_t rejection   = read_u32_le(rsp2 + 12u);
+    const uint32_t caller_tid  = read_u32_le(rsp2 + 44u);
+    const uint64_t recorded    = read_u64_le(rsp2 + 200u);
+    const uint64_t pending     = read_u64_le(rsp2 + 208u);
+    const uint64_t acknowledged = read_u64_le(rsp2 + 216u);
+    const uint64_t blocked     = read_u64_le(rsp2 + 224u);
+    const uint64_t recoverable = read_u64_le(rsp2 + 232u);
+    const uint64_t drained     = read_u64_le(rsp2 + 240u);
+    const uint64_t quarantined = read_u64_le(rsp2 + 248u);
+
+    const uint64_t retained_faults = fs_sched_faulted_count();
+    const uint64_t total_faults = fs_sched_faulted_total_count();
+    const uint64_t drained_faults = fs_sched_faulted_drained_count();
+
+    if (ack_status == 0u &&
+        ack_rejection == 0u &&
+        ack_queried_tid == 8u &&
+        ack_caller_tid == 12u &&
+        status == 0u &&
+        rejection == 0u &&
+        caller_tid == 12u &&
+        recorded == 1u &&
+        pending == 1u &&
+        acknowledged == 0u &&
+        blocked == 0u &&
+        recoverable == 1u &&
+        drained == 1u &&
+        quarantined == 1u &&
+        retained_faults == 0u &&
+        total_faults == 1u &&
+        drained_faults == 1u) {
+        cel_pl011_puts("[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: supervisor recovery FAIL (bad EL0 recovery response)\r\n");
     }
 }
 

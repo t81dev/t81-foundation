@@ -1,6 +1,6 @@
 # RFC-00CD: Supervisor Fault Recovery Status
 
-**Status:** draft  
+**Status:** accepted  
 **Type:** standards-track  
 **Applies-To:** supervisor fault lifecycle, freestanding/hosted recovery queries, KernelCall recovery status surfaces  
 **Created:** 2026-03-25  
@@ -145,17 +145,19 @@ This is the key distinction the current system does not yet formalize.
 
 The first implementation milestone should stay narrow.
 
-It should prove that after a controlled sibling-fault scenario:
+Phase 23 narrows the first freestanding proof to status visibility only.
 
-1. a supervisor-visible recovery status query is callable,
-2. the reported counts/flags reflect the faulted thread before drain,
-3. `AcknowledgeSupervisorFaultGroup` changes supervisor recovery state
-   deterministically,
-4. `QuerySupervisorRecoveryStatus` reflects that change afterward,
-5. thread-level drain and supervisor-level acknowledgement remain distinct.
+It proves that after a controlled sibling-fault scenario:
 
-The freestanding lane does not need to model the full hosted service runtime to
-prove that.
+1. an EL0 observer can drain the faulted sibling at the thread-inbox level via
+   `AcknowledgeThreadFault`,
+2. `QuerySupervisorRecoveryStatus` is callable immediately afterward,
+3. the returned recovery counters show `pending_fault_groups == 1` while
+   `drained_threads == 1`,
+4. thread-level drain and supervisor-level recovery completion remain distinct.
+
+This keeps the first implementation small while still proving the core
+architectural distinction RFC-00CD exists to capture.
 
 ## Determinism / Safety Considerations
 
@@ -184,10 +186,10 @@ RFC-00CD is additive.
 1. Define minimal retained supervisor-recovery bookkeeping in the kernel.
 2. Specify the compact response shape for `QuerySupervisorRecoveryStatus`.
 3. Wire the freestanding bridge activation for ordinal `23`.
-4. Define the minimum viable `AcknowledgeSupervisorFaultGroup` mapping for the
-   freestanding lane.
-5. Add a new proof phase and CI gate for
-   `query -> acknowledge group -> query changed state`.
+4. Add a new proof phase and CI gate for
+   `[axion] el0: supervisor recovery OK (tid=12 pending=1 drained=1)`.
+5. Define the minimum viable `AcknowledgeSupervisorFaultGroup` mapping for the
+   freestanding lane as a follow-on.
 6. Only after that, decide whether the slice6 shell needs a read-only
    supervisor recovery command.
 
@@ -205,9 +207,10 @@ RFC-00CD is additive.
 ## Acceptance Criteria
 
 - A deterministic supervisor recovery-status model is specified.
-- The roles of ordinals `17`, `22`, and `23` are made coherent.
+- The role of ordinal `23` is activated coherently with the existing fault arc.
 - The RFC clearly distinguishes thread-inbox drain from supervisor recovery
   completion.
-- A freestanding first milestone is defined with a concrete proof sequence.
-- The resulting design can be implemented without changing the frozen ABI
-  ordinal table.
+- Phase 23 proves `pending_fault_groups == 1` and `drained_threads == 1` after
+  a thread-level drain.
+- The resulting design is implemented without changing the frozen ABI ordinal
+  table.
