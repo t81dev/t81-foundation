@@ -46,6 +46,10 @@ struct ShellCommandContext {
   const char*        display_binding_name;
   const char*        path_summary;
   const char*        canonfs_summary;
+  const char*        canonfs_mode_summary;
+  const char*        canonfs_transport_summary;
+  const char*        canonfs_binding_summary;
+  const char*        canonfs_probe_summary;
   const char*        policy_engine_summary;
   bool               durable_anchor_present;
   unsigned long long command_count;
@@ -60,6 +64,7 @@ struct ShellCommandContext {
   unsigned long long interrupt_count;
   bool               has_hosted_session_status;
   bool               has_kernel_status;
+  bool               has_canonfs_status;
 };
 
 inline bool shell_cstr_eq(const char* lhs, const char* rhs) {
@@ -228,6 +233,24 @@ inline void shell_emit_status_from_context(const ShellCommandContext& context,
         emit_header,
         emit_text,
         emit_uint);
+  }
+}
+
+template <typename EmitHeaderFn, typename EmitTextFn>
+inline void shell_emit_canonfs_from_context(const ShellCommandContext& context,
+                                            EmitHeaderFn emit_header,
+                                            EmitTextFn emit_text) {
+  if (!context.has_canonfs_status) return;
+  emit_header("[canonfs]");
+  const ShellStatusTextField text_fields[] = {
+      {"mode", context.canonfs_mode_summary},
+      {"transport", context.canonfs_transport_summary},
+      {"binding", context.canonfs_binding_summary},
+      {"io_probe", context.canonfs_probe_summary},
+  };
+  for (decltype(sizeof(0)) i = 0; i < sizeof(text_fields) / sizeof(text_fields[0]); ++i) {
+    if (text_fields[i].value == nullptr) continue;
+    emit_text(text_fields[i].label, text_fields[i].value);
   }
 }
 

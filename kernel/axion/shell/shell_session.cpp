@@ -306,6 +306,10 @@ std::string hosted_session_status_text(const ShellSessionState& state,
       nullptr,
       nullptr,
       nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
       durable_anchor_tracked,
       static_cast<unsigned long long>(state.command_records.size()),
       static_cast<unsigned long long>(stored_refs.size()),
@@ -319,6 +323,7 @@ std::string hosted_session_status_text(const ShellSessionState& state,
       0u,
       true,
       false,
+      false,
   };
 
   std::ostringstream out;
@@ -331,6 +336,28 @@ std::string hosted_session_status_text(const ShellSessionState& state,
       [&](const char* label, unsigned long long value) {
         out << label << ' ' << value << '\n';
       });
+  std::string text = out.str();
+  if (!text.empty() && text.back() == '\n') text.pop_back();
+  return text;
+}
+
+std::string hosted_canonfs_text(const ShellSessionState& state) {
+  ShellCommandContext context{};
+  context.surface = ShellSurface::HostedPhase5;
+  context.profile_summary = state.profile_summary.c_str();
+  context.storage_binding_name = state.storage_binding_name.c_str();
+  context.display_binding_name = state.display_binding_name.c_str();
+  context.canonfs_mode_summary = "persistent (CanonStore-backed)";
+  context.canonfs_transport_summary = "hosted-block-dev";
+  context.canonfs_binding_summary = state.storage_binding_name.c_str();
+  context.canonfs_probe_summary = "n/a (hosted bootstrap seam)";
+  context.has_canonfs_status = true;
+
+  std::ostringstream out;
+  shell_emit_canonfs_from_context(
+      context,
+      [&](const char* header) { out << header << '\n'; },
+      [&](const char* label, const char* value) { out << "  " << label << ' ' << value << '\n'; });
   std::string text = out.str();
   if (!text.empty() && text.back() == '\n') text.pop_back();
   return text;
@@ -487,6 +514,11 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words[0] == "profile") {
     state_.command_records.push_back({command, state_.profile_summary});
+    return refresh_render();
+  }
+
+  if (words.size() == 1 && words[0] == "canonfs") {
+    state_.command_records.push_back({command, hosted_canonfs_text(state_)});
     return refresh_render();
   }
 

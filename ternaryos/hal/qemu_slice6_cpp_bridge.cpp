@@ -719,22 +719,41 @@ static void cmd_version() noexcept {
 
 static void cmd_canonfs() noexcept {
   char hex[24];
-  pl011_puts("  [canonfs]\r\n");
+  t81::ternaryos::ShellCommandContext context{};
+  context.surface = t81::ternaryos::ShellSurface::FreestandingSlice6;
+  context.path_summary = "bare-metal (EFI C++ bridge, AArch64)";
+  context.canonfs_summary =
+      s_has_blk ? "mounted (persistent, virtio-blk)" : "mounted (in-memory)";
+  context.canonfs_mode_summary = s_has_blk ? "persistent (virtio-blk)" : "in-memory";
+  context.canonfs_transport_summary = s_has_blk ? "virtio-mmio v2" : "none";
+  context.canonfs_binding_summary = s_has_blk ? "0x0A003C00" : "none";
+  context.canonfs_probe_summary =
+      s_has_blk ? canonfs_probe_status_text(s_canonfs_probe_status)
+                : "skipped (no virtio-blk store)";
+  context.policy_engine_summary = "ready";
+  context.has_canonfs_status = true;
+
+  t81::ternaryos::shell_emit_canonfs_from_context(
+      context,
+      [&](const char* header) {
+        pl011_puts("  ");
+        pl011_puts(header);
+        pl011_puts("\r\n");
+      },
+      [&](const char* label, const char* value) {
+        pl011_puts("    ");
+        pl011_puts(label);
+        const auto name_len = cstr_len(label);
+        if (name_len < 14u) {
+          for (unsigned long long i = name_len; i < 14u; ++i) pl011_puts(" ");
+        }
+        pl011_puts(": ");
+        pl011_puts(value);
+        pl011_puts("\r\n");
+      });
   if (s_has_blk) {
-    pl011_puts("    mode          : persistent (virtio-blk)\r\n");
-    pl011_puts("    transport     : virtio-mmio v2\r\n");
-    pl011_puts("    store_mmio    : ");
-    pl011_puts(u64_hex(kVirtioMmioBase, hex, static_cast<int>(sizeof(hex))));
-    pl011_puts("\r\n");
-    pl011_puts("    io_probe      : ");
-    pl011_puts(canonfs_probe_status_text(s_canonfs_probe_status));
-    pl011_puts("\r\n");
     pl011_puts("    lba0_expect   : CST1\r\n");
     pl011_puts("    lba1_probe    : round-trip pattern\r\n");
-  } else {
-    pl011_puts("    mode          : in-memory\r\n");
-    pl011_puts("    transport     : none\r\n");
-    pl011_puts("    io_probe      : skipped (no virtio-blk store)\r\n");
   }
 }
 
@@ -978,6 +997,10 @@ static void cmd_status() noexcept {
       nullptr,
       "bare-metal (EFI C++ bridge, AArch64)",
       s_has_blk ? "mounted (persistent, virtio-blk)" : "mounted (in-memory)",
+      nullptr,
+      nullptr,
+      nullptr,
+      nullptr,
       "ready",
       false,
       static_cast<unsigned long long>(s_cmd_count),
@@ -992,6 +1015,7 @@ static void cmd_status() noexcept {
       static_cast<unsigned long long>(s_interrupt_count),
       false,
       true,
+      false,
   };
 
   t81::ternaryos::shell_emit_status_from_context(

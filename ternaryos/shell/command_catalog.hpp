@@ -44,7 +44,7 @@ inline constexpr ShellCommandSpec kShellCommandCatalog[] = {
     {"history use <ref>", "rebind the durable history anchor", true, false},
     {"history show durable", "show the durable history object", true, false},
     {"clear", "clear the hosted shell transcript window", true, false},
-    {"canonfs", "show storage mode and transport status", false, true},
+    {"canonfs", "show storage mode and transport status", true, true},
     {"irq", "show timer IRQ and governed wake counters", false, true},
     {"el0", "show EL0 bridge and capability status", false, true},
     {"waits", "show device-wait scheduler view", false, true},
