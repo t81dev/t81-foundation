@@ -409,6 +409,15 @@ static const char* u64_hex(uint64_t v, char* buf, int bufsz) noexcept {
   return &buf[i];
 }
 
+static uint64_t fnv1a64(const uint8_t* data, uint32_t len) noexcept {
+  uint64_t h = UINT64_C(14695981039346656037);
+  for (uint32_t i = 0; i < len; ++i) {
+    h ^= static_cast<uint64_t>(data[i]);
+    h *= UINT64_C(1099511628211);
+  }
+  return h;
+}
+
 // ── Freestanding thread table ─────────────────────────────────────────────────
 // Mirrors KernelRuntimeState::thread_runtime without heap allocation.
 // Kernel thread (tid=1) is registered at bridge entry.
@@ -465,6 +474,9 @@ static constexpr CanonFsArtifact kCanonFsArtifacts[] = {
   {"supervisor-recovery", 16u, 2u, false},
   {"supervisor-ack",      17u, 2u, false},
 };
+
+static constexpr uint32_t kT81XHeaderSize  = 64u;
+static constexpr uint32_t kT81XMaxCodeSize = 448u;
 
 static const CanonFsArtifact* find_canonfs_artifact(const char* alias) noexcept {
   for (const auto& artifact : kCanonFsArtifacts) {
@@ -760,15 +772,26 @@ static void cmd_canonfs_hash(const char* alias) noexcept {
     pl011_puts("    error         : unexpected T81X version\r\n");
     return;
   }
-  if (artifact->t81x_version < 2u) {
-    pl011_puts("    hash          : unavailable (T81X v1)\r\n");
+
+  uint32_t code_size = 0u;
+  __builtin_memcpy(&code_size, sec + 11u, 4);
+  if (code_size == 0u || code_size > kT81XMaxCodeSize) {
+    pl011_puts("    error         : T81X code_size out of range\r\n");
     return;
   }
 
   uint64_t stored_hash = 0u;
-  __builtin_memcpy(&stored_hash, sec + 19u, 8);
+  if (artifact->t81x_version >= 2u) {
+    __builtin_memcpy(&stored_hash, sec + 19u, 8);
+  } else {
+    stored_hash = fnv1a64(sec + kT81XHeaderSize, code_size);
+  }
   pl011_puts("    code_hash     : ");
   pl011_puts(u64_hex(stored_hash, hex, static_cast<int>(sizeof(hex))));
+  pl011_puts("\r\n");
+  pl011_puts("    hash_source   : ");
+  pl011_puts(artifact->t81x_version >= 2u ? "stored header (T81X v2)"
+                                          : "computed payload (T81X v1)");
   pl011_puts("\r\n");
 }
 
