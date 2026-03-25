@@ -340,6 +340,24 @@ static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
   return &buf[i + 1];
 }
 
+static const char* u64_hex(uint64_t v, char* buf, int bufsz) noexcept {
+  static constexpr char kHex[] = "0123456789abcdef";
+  if (bufsz < 3) return "";
+  buf[bufsz - 1] = '\0';
+  int i = bufsz - 2;
+  if (v == 0) {
+    buf[i--] = '0';
+  } else {
+    while (v > 0 && i >= 2) {
+      buf[i--] = kHex[static_cast<int>(v & 0xFu)];
+      v >>= 4;
+    }
+  }
+  buf[i--] = 'x';
+  buf[i] = '0';
+  return &buf[i];
+}
+
 // ── Freestanding thread table ─────────────────────────────────────────────────
 // Mirrors KernelRuntimeState::thread_runtime without heap allocation.
 // Kernel thread (tid=1) is registered at bridge entry.
@@ -438,6 +456,14 @@ extern "C" void canon_concurrent_fault_load_and_run() noexcept;
 extern "C" void canon_fault_summary_query_load_and_run() noexcept;
 // Phase 21 (RFC-00CB): EL0 fault detail query (canon_exec_loader.cpp).
 extern "C" void canon_fault_detail_query_load_and_run() noexcept;
+// Slice6 shell introspection helpers (qemu_slice6_el0_svc_bridge.cpp).
+extern "C" uint64_t fs_sched_faulted_count() noexcept;
+extern "C" bool fs_sched_fault_nth(uint32_t index,
+                                    uint32_t* out_tid,
+                                    uint32_t* out_ec,
+                                    uint64_t* out_far) noexcept;
+extern "C" uint64_t fs_gov_count() noexcept;
+extern "C" uint64_t fs_gov_event_count(uint32_t event) noexcept;
 
 // ERets to axion_el0_entry at EL0t (SPSR_EL1 = 0x3C0 — EL0 + DAIF masked).
 // Saves the EL1 resume label in g_axion_el1_return_pc BEFORE ERET so the
@@ -529,6 +555,8 @@ static void cmd_help() noexcept {
   pl011_puts("  status   -- kernel counters and governance state\r\n");
   pl011_puts("  threads  -- thread table (tid, state, ticks)\r\n");
   pl011_puts("  sched    -- scheduler counters (loop iters, ticks, switches)\r\n");
+  pl011_puts("  faults   -- retained EL0 fault records (tid, ec, far)\r\n");
+  pl011_puts("  gov      -- governance ring counters by event\r\n");
   pl011_puts("  policy   -- Axion policy summary\r\n");
 }
 
@@ -633,6 +661,59 @@ static void cmd_sched() noexcept {
   pl011_puts(" hw ticks\r\n");
 }
 
+static void cmd_faults() noexcept {
+  char buf[24];
+  char hex[24];
+  const uint64_t count = fs_sched_faulted_count();
+
+  pl011_puts("  [faults]\r\n");
+  pl011_puts("    count         : ");
+  pl011_puts(u64_dec(count, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+
+  if (count == 0u) {
+    pl011_puts("    retained      : none\r\n");
+    return;
+  }
+
+  for (uint32_t i = 0u; i < count; ++i) {
+    uint32_t tid = 0u;
+    uint32_t ec = 0u;
+    uint64_t far = 0u;
+    if (!fs_sched_fault_nth(i, &tid, &ec, &far)) continue;
+
+    pl011_puts("    tid=");
+    pl011_puts(u64_dec(static_cast<uint64_t>(tid), buf, static_cast<int>(sizeof(buf))));
+    pl011_puts(" ec=");
+    pl011_puts(u64_hex(static_cast<uint64_t>(ec), hex, static_cast<int>(sizeof(hex))));
+    pl011_puts(" far=");
+    pl011_puts(u64_hex(far, hex, static_cast<int>(sizeof(hex))));
+    pl011_puts("\r\n");
+  }
+}
+
+static void cmd_gov() noexcept {
+  char buf[24];
+  const uint64_t total = fs_gov_count();
+  const uint64_t timer = fs_gov_event_count(1u);
+  const uint64_t async = fs_gov_event_count(2u);
+  const uint64_t fault = fs_gov_event_count(3u);
+
+  pl011_puts("  [governance]\r\n");
+  pl011_puts("    ring events   : ");
+  pl011_puts(u64_dec(total, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    timer_wake    : ");
+  pl011_puts(u64_dec(timer, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    async_switch  : ");
+  pl011_puts(u64_dec(async, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("    thread_fault  : ");
+  pl011_puts(u64_dec(fault, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+}
+
 static void cmd_policy() noexcept {
   pl011_puts("  [axion policy]\r\n");
   pl011_puts("    governance  : active\r\n");
@@ -652,6 +733,8 @@ static void shell_dispatch(const char* line) noexcept {
   else if (str_eq(line, "status"))  { cmd_status(); }
   else if (str_eq(line, "threads")) { cmd_threads(); }
   else if (str_eq(line, "sched"))   { cmd_sched(); }
+  else if (str_eq(line, "faults"))  { cmd_faults(); }
+  else if (str_eq(line, "gov"))     { cmd_gov(); }
   else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
     pl011_puts("  [axion] ShellExec: Deny -- '");

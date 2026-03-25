@@ -457,6 +457,8 @@ commands are:
 - `status`
 - `threads`
 - `sched`
+- `faults`
+- `gov`
 - `policy`
 
 That command surface comes from the bare-metal bridge in

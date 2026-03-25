@@ -295,7 +295,7 @@ extern "C" bool fs_sched_get_fault(uint32_t tid,
     return false;
 }
 
-static uint64_t fs_sched_faulted_count() noexcept {
+extern "C" uint64_t fs_sched_faulted_count() noexcept {
     uint64_t count = 0u;
     for (int i = 0; i < kMaxSchedThreads; ++i) {
         if (s_sched[i].state == FsSchedState::Faulted &&
@@ -303,6 +303,27 @@ static uint64_t fs_sched_faulted_count() noexcept {
             ++count;
     }
     return count;
+}
+
+extern "C" bool fs_sched_fault_nth(uint32_t index,
+                                    uint32_t* out_tid,
+                                    uint32_t* out_ec,
+                                    uint64_t* out_far) noexcept {
+    if (!out_tid || !out_ec || !out_far) return false;
+    uint32_t seen = 0u;
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].state == FsSchedState::Faulted &&
+            s_sched[i].fault_ec != 0u) {
+            if (seen == index) {
+                *out_tid = s_sched[i].tid;
+                *out_ec  = s_sched[i].fault_ec;
+                *out_far = s_sched[i].fault_far;
+                return true;
+            }
+            ++seen;
+        }
+    }
+    return false;
 }
 
 // RFC-00C0: transition a BlockedDeviceWait thread to Runnable.
@@ -542,6 +563,17 @@ extern "C" void fs_gov_reset() noexcept {
 }
 
 extern "C" uint64_t fs_gov_count() noexcept { return s_gov_seq; }
+
+extern "C" uint64_t fs_gov_event_count(uint32_t event) noexcept {
+    const uint32_t count = s_gov_seq < kGovRingCap
+                               ? static_cast<uint32_t>(s_gov_seq)
+                               : kGovRingCap;
+    uint64_t matches = 0u;
+    for (uint32_t i = 0u; i < count; ++i) {
+        if (s_gov_ring[i].event == event) ++matches;
+    }
+    return matches;
+}
 
 extern "C" bool fs_gov_find(uint32_t tid, uint32_t event) noexcept {
     const uint32_t count = s_gov_seq < kGovRingCap
