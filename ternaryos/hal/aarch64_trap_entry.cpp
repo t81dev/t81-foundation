@@ -43,7 +43,7 @@ void axion_kernel_install_exception_vectors() noexcept {
     // axion_exception_vector_base is the symbol defined by the .balign 2048 /
     // .global directive in aarch64_exception_vectors.S.  Writing its address
     // into VBAR_EL1 installs the Axion exception vector table.
-    extern char axion_exception_vector_base[];
+    extern "C" char axion_exception_vector_base[];
     asm volatile(
         "msr vbar_el1, %0"
         :
