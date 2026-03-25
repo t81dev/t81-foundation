@@ -282,6 +282,19 @@ std::string hosted_help_text() {
   return text;
 }
 
+std::string hosted_builtin_text(ShellBuiltinCommand command) {
+  const auto view = shell_builtin_view(command, ShellSurface::HostedPhase5);
+  switch (view.kind) {
+    case ShellBuiltinViewKind::HelpCatalog:
+      return hosted_help_text();
+    case ShellBuiltinViewKind::TextBlock:
+      return view.text != nullptr ? std::string(view.text) : std::string();
+    case ShellBuiltinViewKind::None:
+      break;
+  }
+  return {};
+}
+
 }  // namespace
 
 namespace {
@@ -412,19 +425,20 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   switch (shell_builtin_command(words[0].c_str())) {
     case ShellBuiltinCommand::Help:
-      state_.command_records.push_back({command, hosted_help_text()});
+      state_.command_records.push_back(
+          {command, hosted_builtin_text(ShellBuiltinCommand::Help)});
       return refresh_render();
     case ShellBuiltinCommand::Uname:
       state_.command_records.push_back(
-          {command, shell_uname_text(ShellSurface::HostedPhase5)});
+          {command, hosted_builtin_text(ShellBuiltinCommand::Uname)});
       return refresh_render();
     case ShellBuiltinCommand::Version:
       state_.command_records.push_back(
-          {command, shell_version_text(ShellSurface::HostedPhase5)});
+          {command, hosted_builtin_text(ShellBuiltinCommand::Version)});
       return refresh_render();
     case ShellBuiltinCommand::Policy:
       state_.command_records.push_back(
-          {command, shell_policy_text(ShellSurface::HostedPhase5)});
+          {command, hosted_builtin_text(ShellBuiltinCommand::Policy)});
       return refresh_render();
     case ShellBuiltinCommand::None:
       break;

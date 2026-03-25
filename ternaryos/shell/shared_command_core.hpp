@@ -17,6 +17,17 @@ enum class ShellBuiltinCommand {
   Policy,
 };
 
+enum class ShellBuiltinViewKind {
+  None,
+  TextBlock,
+  HelpCatalog,
+};
+
+struct ShellBuiltinView {
+  ShellBuiltinViewKind kind;
+  const char*          text;
+};
+
 inline bool shell_cstr_eq(const char* lhs, const char* rhs) {
   while (*lhs != '\0' && *rhs != '\0') {
     if (*lhs != *rhs) return false;
@@ -82,6 +93,23 @@ inline const char* shell_policy_text(ShellSurface surface) {
              "  constraints : RFC-00B0 ethics-first boot";
   }
   return "[axion policy]";
+}
+
+inline ShellBuiltinView shell_builtin_view(ShellBuiltinCommand command,
+                                           ShellSurface surface) {
+  switch (command) {
+    case ShellBuiltinCommand::Help:
+      return {ShellBuiltinViewKind::HelpCatalog, nullptr};
+    case ShellBuiltinCommand::Uname:
+      return {ShellBuiltinViewKind::TextBlock, shell_uname_text(surface)};
+    case ShellBuiltinCommand::Version:
+      return {ShellBuiltinViewKind::TextBlock, shell_version_text(surface)};
+    case ShellBuiltinCommand::Policy:
+      return {ShellBuiltinViewKind::TextBlock, shell_policy_text(surface)};
+    case ShellBuiltinCommand::None:
+      break;
+  }
+  return {ShellBuiltinViewKind::None, nullptr};
 }
 
 template <typename EmitFn>

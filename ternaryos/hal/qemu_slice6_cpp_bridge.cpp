@@ -86,6 +86,18 @@ static void pl011_puts_text_block(const char* s) noexcept {
   }
 }
 
+static void cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand command) noexcept {
+  const auto view =
+      t81::ternaryos::shell_builtin_view(
+          command, t81::ternaryos::ShellSurface::FreestandingSlice6);
+  if (view.kind != t81::ternaryos::ShellBuiltinViewKind::TextBlock || view.text == nullptr) {
+    return;
+  }
+  pl011_puts("  ");
+  pl011_puts_text_block(view.text);
+  pl011_puts("\r\n");
+}
+
 static bool pl011_rx_ready() noexcept {
   return !(mmio_read32(kPl011Base, kPl011FR) & kPl011FRRXFE);
 }
@@ -698,19 +710,11 @@ static void cmd_help() noexcept {
 }
 
 static void cmd_uname() noexcept {
-  pl011_puts("  ");
-  pl011_puts_text_block(
-      t81::ternaryos::shell_uname_text(
-          t81::ternaryos::ShellSurface::FreestandingSlice6));
-  pl011_puts("\r\n");
+  cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Uname);
 }
 
 static void cmd_version() noexcept {
-  pl011_puts("  ");
-  pl011_puts_text_block(
-      t81::ternaryos::shell_version_text(
-          t81::ternaryos::ShellSurface::FreestandingSlice6));
-  pl011_puts("\r\n");
+  cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Version);
 }
 
 static void cmd_canonfs() noexcept {
@@ -1106,11 +1110,7 @@ static void cmd_gov() noexcept {
 }
 
 static void cmd_policy() noexcept {
-  pl011_puts("  ");
-  pl011_puts_text_block(
-      t81::ternaryos::shell_policy_text(
-          t81::ternaryos::ShellSurface::FreestandingSlice6));
-  pl011_puts("\r\n");
+  cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Policy);
 }
 
 static void shell_dispatch(const char* line) noexcept {
