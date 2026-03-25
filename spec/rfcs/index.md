@@ -11,6 +11,13 @@ This index tracks RFC status and intended disposition.
 - `superseded`: replaced by a newer RFC
 - `rejected`: closed without adoption
 
+Auxiliary note:
+
+- Per-target hardware profile drafts and profile templates that reuse an RFC id
+  from a parent contract are treated as auxiliary documents unless explicitly
+  promoted into the primary catalog. The catalog below tracks the primary RFC
+  record for each RFC id.
+
 ## RFC Catalog
 
 | RFC | Title | Status | Notes |
@@ -50,6 +57,10 @@ This index tracks RFC status and intended disposition.
 | RFC-0032 | AI Subsystem Promotion Pathway | accepted | All 5 phases complete: ternary codec, doc, Axion hooks, T81VmBackend, EvidenceCollector + AI CLI; conformance suite closed |
 | RFC-0033 | Dual TUI Frontends | accepted | All 4 phases complete: FTXUI infra, `t81 studio` (7 views, palette, REPL), `t81 agent` (14 slash cmds, session save/load), CI snapshot test (11/11 assertions) |
 | RFC-0034 | T81-Native AI Inference | accepted | In-repo implementation closure is complete: opcode/runtime path, Axion policy surface, `@ternary_inference` lowering, conformance programs, CanonFS-backed `.t81w` execution evidence, and native benchmark evidence are all in place; a first native VM fast-path set (`TExp`, `TQUANT`, `TACT`, `TERNACCUM`, `TSiLU`, `TSoftmax`, `TRMSNorm`, `TRoPE`, `TWEMBED`, `TWMATMUL`, `TATTN`) for balanced-trit weights is now implemented, with matched VM native-vs-binary wins recorded at roughly `62x-67x` for the unary set, `6259.43x` for `TQUANT`, `6834.34x` for `TACT`, `80.57x` for `TERNACCUM`, `11.99x` for `TRMSNorm`, `4.07x` for `TRoPE`, `769.63x` for `TWEMBED`, a scale-dependent `TWMATMUL` crossover from `0.84x` at `64` to `11.84x` at `256` and `570.42x` at `4096`, and `TATTN` at `110970.48x` on the current `256`-trit VM comparison; remaining work is cross-platform evidence refresh plus broader optimization of the post-decode result-representation path |
+| RFC-0036 | T81Lang Foreign Function Interface Grammar | accepted | Language/frontend contract for the governed FFI surface defined by RFC-00B8 |
+| RFC-0037 | T81Lang TNN Standard Library | accepted | TNN library surface for ternary-native AI/runtime work; depends on RFC-0034 |
+| RFC-0038 | Ternary Lattice Cryptography Primitives | proposed | Post-quantum primitive proposal (`POLYMUL` / `POLYMOD`) awaiting full review; parent for RFC-0039 |
+| RFC-0039 | NTRU-KEM: Ternary Key Encapsulation Mechanism | accepted | Accepted narrow KEM construction built on the lattice-crypto direction; revisit if RFC-0038 changes materially |
 | RFC-0040 | SWAR Formalization | accepted | In-repo implementation closure is complete: stable SWAR API, explicit TISC opcodes (`0xD5`-`0xD7`), Setun bridge mnemonics, VM/JIT/CanonFS coverage, Axion trace/policy coverage, performance evidence, and `experimental/packed_trit_vector.hpp` deprecation wording all in place (2026-03-22); remaining `stable`-promotion item: refreshed x86_64 cross-architecture evidence (pending CI runner) |
 | RFC-0041 | SIMD Formalization | accepted | In-repo implementation closure complete: AVX2/NEON kernels, `t81/simd/simd.hpp` facade, migration guide, ARM64 evidence (2026-03-18 + 2026-03-22 snapshots), formal deprecation wording (`#pragma message` guard on direct experimental include), and RFC-0041 evidence note all in place; remaining `stable`-promotion item: x86_64 evidence refresh (pending CI runner) |
 | RFC-0042 | Deterministic Backend Equivalence Contract | accepted | Defines scalar as the canonical oracle and makes scalar ↔ SWAR ↔ SIMD ↔ future backend substitution a governed equivalence surface rather than an optimization-only convention |
@@ -79,6 +90,18 @@ This index tracks RFC status and intended disposition.
 | RFC-00B9 | TernaryOS User Environment Standard | accepted | `t81-init`, session model, `t81sh`, service registry, TTY contract, and Axion gates (`BootService`/`SessionCreate`/`ServiceSpawn`/`ShellExec`) are implemented with AC-1..15 passing; `T81_ENABLE_TERNARYOS` is now default-ON as of 2026-03-22 |
 | RFC-00BA | llama.cpp GGUF Ingestion Bridge | accepted | The narrow llama.cpp-backed GGUF bridge is now accepted in-repo: build-gated metadata enumeration, float export, bridge-backed `weights import --format gguf` conversion, real TinyLlama import evidence, and source-hash/bridge-revision reporting are all implemented while runtime execution remains independent from llama.cpp |
 | RFC-00BB | Native Model Architecture Compatibility | accepted | Compatibility-state/profile gating active for all 7 profiles; real TinyLlama `GGUF -> .t81w -> VM TWEMBED` proof for `llama-dense-v1`; synthetic `GGUF -> .t81w -> VM TWEMBED` execution evidence added for `gemma`, `mistral`, `phi3`, `qwen2` (2026-03-22, `gguf_import_bridge_test.cpp`); post-acceptance: real GGUF execution for non-llama families once reference models are available |
+| RFC-00BC | TernaryOS EL0 Userland Bring-Up | accepted | Foundational bring-up program for the freestanding EL0 lane; parent roadmap for the later `00BD..00CE` chain |
+| RFC-00BD | KernelCall ABI Ordinal Freeze | accepted | Freezes the freestanding `KernelCall` ordinal map; this is the contract that later `00C*` RFCs activate rather than redefining |
+| RFC-00BE | Freestanding Cooperative Scheduler | accepted | Establishes the baseline EL0 scheduler/state model for the slice6 lane |
+| RFC-00BF | Freestanding KernelCall Observability | accepted | Adds the observability ring used by later CanonFS and scheduler proofs |
+| RFC-00C0 | CanonFS Executable Identity | accepted | Freezes T81X executable identity and the first CanonFS-hosted EL0 load proof |
+| RFC-00C1 | CanonFS Per-Binary Call Sequence Manifest | accepted | Defines T81M manifest verification keyed by `code_hash` |
+| RFC-00C2 | Hardware-Interrupt-Driven WaitForDevice Wake | accepted | Activates IRQ-driven wake for the freestanding scheduler |
+| RFC-00C3 | Axion Async Context Switch Audit Trail | accepted | Adds governance/audit semantics for async IRQ wake and context-switch paths |
+| RFC-00C4 | Per-Device Wake Filtering | accepted | Adds `device_id` discrimination to `WaitForDevice` wake behavior |
+| RFC-00C5 | Concurrent Device Wait | accepted | Proves multiple EL0 threads can park and wake under the same scheduler lane |
+| RFC-00C6 | Per-Thread TTBR0 Address-Space Isolation | accepted | Introduces per-thread L3 isolation for the freestanding EL0 lane |
+| RFC-00C7 | EL0 Fault Containment | accepted | Defines contained fault handling and retained per-thread fault evidence in the scheduler |
 | RFC-00C8 | Concurrent Fault Isolation | accepted | Phase 19 validates the previously untested `fs_sched_fault_handler()` context-switch branch: faulting `tid=7` is contained while healthy `tid=6` continues through `WaitForDevice(30)` and exits cleanly |
 | RFC-00C9 | EL0 Fault Evidence Query | accepted | Freezes the minimal post-mortem read path over retained `fault_ec` and `fault_far`, strengthening Phase 18/19 proof without widening the EL0 ABI |
 | RFC-00CA | EL0 Fault Summary Query | accepted | Activates reserved KernelCall ordinal 21 in the freestanding bridge and proves an EL0 sibling can query retained fault summary state immediately after fault-handler handoff |
@@ -86,7 +109,48 @@ This index tracks RFC status and intended disposition.
 | RFC-00CC | EL0 Fault Acknowledgement and Drain | accepted | Activates reserved KernelCall ordinal 16 in the freestanding bridge and proves an EL0 sibling can drain retained fault state deterministically after querying it |
 | RFC-00CD | Supervisor Fault Recovery Status | accepted | Activates reserved KernelCall ordinal 23 in the freestanding bridge and proves supervisor recovery remains pending even after thread-level fault drain |
 | RFC-00CE | Supervisor Fault-Group Acknowledgement | accepted | Activates reserved KernelCall ordinal 17 in the freestanding bridge and proves supervisor recovery moves from pending to acknowledged after thread-level drain |
-| RFC-00CF | Slice6 CanonFS Operator Actions | draft | Defines the first product-facing CanonFS action surface for the real slice6 shell: narrow read-only inspection plus one governed launch path |
+| RFC-00CF | Slice6 CanonFS Operator Actions | draft | Narrow operator-shell surface over existing CanonFS/runtime machinery; treat follow-on shell command work as implementation unless it freezes a new stable contract |
+
+## Series Planning
+
+These series are the right planning unit for backlog work. Do not treat every
+increment inside them as grounds for a new RFC.
+
+### Axion Freestanding EL0 Series
+
+- `RFC-00BC..00CE` is one coherent program:
+  bring-up, ordinal freeze, scheduler/observability, CanonFS identity,
+  IRQ wake/audit, isolation, fault lifecycle, and supervisor recovery.
+- New RFCs in this area should be rare and should only appear when they freeze
+  a new ABI, governance rule, or lifecycle contract.
+- Ordinary shell commands, phase harnesses, CI additions, or allowlist updates
+  in this lane should be tracked as implementation work, not new RFCs.
+
+### DPE Series
+
+- `RFC-DPE-0001..0009` is a closed execution series for task/epoch semantics.
+- Future work should prefer series planning notes or implementation tasks unless
+  it changes the epoch ABI, canonical commit semantics, or audit contract.
+
+### AI Import / Compatibility Series
+
+- `RFC-0034`, `RFC-0037`, `RFC-0038`, `RFC-0039`, `RFC-00BA`, and `RFC-00BB`
+  together define the model-ingestion and compatibility lane.
+- Small bridge additions, importer coverage, or compatibility-profile
+  expansions should not get standalone RFCs unless they change the external
+  contract materially.
+
+## Open Review Items
+
+- `RFC-0038` vs `RFC-0039` status mismatch:
+  [RFC-0038-lattice-crypto.md](RFC-0038-lattice-crypto.md) is still
+  `proposed`, while [RFC-0039-ntru-kem.md](RFC-0039-ntru-kem.md) is
+  `accepted` and depends on it.
+  Follow-up must choose one of:
+  - advance `RFC-0038` to a status consistent with `RFC-0039`
+  - mark `RFC-0039` as contingent/partial in the index notes
+  - explicitly document why `RFC-0039` can remain accepted while `RFC-0038`
+    stays `proposed`
 
 ## DPE RFCs (Deterministic Parallel Execution series)
 
@@ -123,8 +187,14 @@ This index tracks RFC status and intended disposition.
 - AI-native track: RFC-0026 supersedes RFC-0012, RFC-0013, RFC-0014. Those are closed for new edits.
 - Conformance track: RFC-0027 supersedes RFC-0008. Spec-as-executable is the concrete realization.
 - Float determinism: RFC-0030 closes the RFC-0010 FDIV/transcendental caveat. RFC-0010 is fully accepted with no outstanding caveats.
+- Axion freestanding EL0 track: `RFC-00BC..00CE` should be planned as a single
+  architectural series. New RFCs in this area require a new stable contract,
+  not just another phase, command, or proof step.
 
 ## Authoring
 
 - Start from `spec/rfcs/template.md`.
 - Update this index whenever RFC status changes.
+- Before writing a new RFC, check whether the work instead belongs to an
+  existing accepted series and can be handled as implementation or roadmap
+  planning.
