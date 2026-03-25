@@ -30,6 +30,7 @@ struct ShellTuiHandoff {
   std::string prompt;
   std::string command;
   std::string status_line;
+  std::vector<std::string> transcript_lines;
 };
 
 const char* env_or_null(const char* name) {
@@ -64,6 +65,20 @@ ShellTuiHandoff shell_tui_handoff_from_env() {
   }
   if (const char* value = env_or_null("T81_TUI_HANDOFF_STATUS")) {
     handoff.status_line = value;
+  }
+  if (const char* value = env_or_null("T81_TUI_HANDOFF_TRANSCRIPT")) {
+    std::string current;
+    for (char ch : std::string(value)) {
+      if (ch == '\n') {
+        handoff.transcript_lines.push_back(current);
+        current.clear();
+      } else {
+        current.push_back(ch);
+      }
+    }
+    if (!current.empty()) {
+      handoff.transcript_lines.push_back(current);
+    }
   }
   return handoff;
 }
@@ -101,9 +116,13 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
                            const std::string& status_line) {
   Elements transcript;
   if (handoff.present) {
-    transcript.push_back(
-        text("HANDOFF FROM AXION SERIAL SHELL") | color(Color::Yellow) | bold);
-    if (!handoff.prompt.empty()) {
+    transcript.push_back(text("HANDOFF FROM AXION SERIAL SHELL") | color(Color::Yellow) | bold);
+    if (!handoff.transcript_lines.empty()) {
+      for (const auto& line : handoff.transcript_lines) {
+        const bool is_prompt = line.rfind("[axion@T81", 0) == 0;
+        transcript.push_back(text(line) | color(is_prompt ? Color::Cyan : Color::White));
+      }
+    } else if (!handoff.prompt.empty()) {
       transcript.push_back(text(handoff.prompt + " " + handoff.command) | color(Color::Cyan));
     }
   }

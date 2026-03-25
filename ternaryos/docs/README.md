@@ -498,6 +498,7 @@ TUI:
 
 - shell source (`t81sh`)
 - prompt and command (`[axion@T81 tier=1]$ tui`)
+- the emitted `tui` handoff transcript block
 - CanonFS mode (`in-memory` or `persistent, virtio-blk`)
 - serial-shell status line / handoff banner
 

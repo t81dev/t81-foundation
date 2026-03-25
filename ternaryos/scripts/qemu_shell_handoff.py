@@ -28,10 +28,11 @@ def restore_tty(fd: int, old_attrs):
         termios.tcsetattr(fd, termios.TCSADRAIN, old_attrs)
 
 
-def parse_handoff_env(buffer: str) -> dict:
+def parse_handoff_env(buffer: str, trigger: str) -> dict:
     env = {}
+    normalized = buffer.replace("\r", "")
 
-    canonfs_match = re.search(r"\[axion\] canonfs: mounted \(([^)]+)\)", buffer)
+    canonfs_match = re.search(r"\[axion\] canonfs: mounted \(([^)]+)\)", normalized)
     if canonfs_match:
         env["T81_TUI_HANDOFF_CANONFS"] = canonfs_match.group(1)
         if "persistent" in canonfs_match.group(1):
@@ -39,9 +40,20 @@ def parse_handoff_env(buffer: str) -> dict:
         else:
             env["T81_TUI_HANDOFF_STORAGE"] = "in-memory handoff"
 
-    prompt_match = re.search(r"(\[axion@T81[^\r\n]*\]\$)", buffer)
+    prompt_match = re.search(r"(\[axion@T81[^\n]*\]\$)", normalized)
     if prompt_match:
         env["T81_TUI_HANDOFF_PROMPT"] = prompt_match.group(1)
+
+    trigger_index = normalized.rfind(trigger)
+    if trigger_index != -1:
+        start = normalized.rfind("[axion@T81", 0, trigger_index)
+        end = normalized.find("\n", trigger_index)
+        if end == -1:
+            end = len(normalized)
+        if start != -1 and start < end:
+            transcript = normalized[start:end].strip()
+            if transcript:
+                env["T81_TUI_HANDOFF_TRANSCRIPT"] = transcript
 
     env["T81_TUI_HANDOFF_SOURCE"] = "t81sh"
     env["T81_TUI_HANDOFF_PROFILE"] = "qemu-armv8:AArch64/EDK2/slice6-boot-probe"
@@ -134,7 +146,7 @@ def main() -> int:
                 proc.wait()
         print("\n[axion] launching hosted TUI frontend...\n")
         launch_env = os.environ.copy()
-        launch_env.update(parse_handoff_env(buffer))
+        launch_env.update(parse_handoff_env(buffer, args.trigger))
         return subprocess.call([args.launch], env=launch_env)
 
     return proc.returncode or 0
