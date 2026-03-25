@@ -1119,10 +1119,24 @@ static void shell_dispatch(const char* line) noexcept {
 
   ++s_cmd_count;
 
-  if      (str_eq(line, "help"))    { cmd_help(); }
-  else if (str_eq(line, "uname"))   { cmd_uname(); }
-  else if (str_eq(line, "version")) { cmd_version(); }
-  else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
+  switch (t81::ternaryos::shell_builtin_command(line)) {
+    case t81::ternaryos::ShellBuiltinCommand::Help:
+      cmd_help();
+      return;
+    case t81::ternaryos::ShellBuiltinCommand::Uname:
+      cmd_uname();
+      return;
+    case t81::ternaryos::ShellBuiltinCommand::Version:
+      cmd_version();
+      return;
+    case t81::ternaryos::ShellBuiltinCommand::Policy:
+      cmd_policy();
+      return;
+    case t81::ternaryos::ShellBuiltinCommand::None:
+      break;
+  }
+
+  if      (str_eq(line, "canonfs")) { cmd_canonfs(); }
   else if (str_eq(line, "canonfs ls")) { cmd_canonfs_ls(); }
   else if (str_starts_with(line, "canonfs hash ")) {
     cmd_canonfs_hash(str_trim(str_after_token(str_after_token(line))));
@@ -1138,7 +1152,6 @@ static void shell_dispatch(const char* line) noexcept {
   else if (str_eq(line, "sched"))   { cmd_sched(); }
   else if (str_eq(line, "faults"))  { cmd_faults(); }
   else if (str_eq(line, "gov"))     { cmd_gov(); }
-  else if (str_eq(line, "policy"))  { cmd_policy(); }
   else {
     pl011_puts("  [axion] ShellExec: Deny -- '");
     pl011_puts(line);
