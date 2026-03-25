@@ -96,7 +96,7 @@ qemu_pid=$!
 {
   /bin/sleep 10
   if [[ -n "$canon_store_img" ]]; then
-    printf 'help\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test-manifest\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
   else
     printf 'help\rcanonfs\rirq\rel0\rfaults\rgov\r'
   fi
@@ -131,6 +131,9 @@ if [[ -n "$canon_store_img" ]]; then
   check "alias         : proc-stub"
   check "code_hash     :"
   check "hash_source   : computed payload (T81X v1)"
+  check "alias         : wait-test-manifest"
+  check "hash_source   : stored header (T81M)"
+  check "entry_count   : 1"
   check "launch        : proc-stub"
   check "complete      : returned to shell"
 fi

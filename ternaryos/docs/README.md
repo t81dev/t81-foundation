@@ -489,7 +489,8 @@ The `canonfs` subcommands are intentionally narrow:
 - `canonfs` reports the current storage mode and retained I/O probe state
 - `canonfs ls` shows the known boot-lane artifact aliases and LBAs
 - `canonfs hash <alias>` reports the stored `code_hash` for T81X v2 artifacts
-  and computes the payload hash on demand for T81X v1 artifacts
+  and T81M manifests, and computes the payload hash on demand for T81X v1
+  artifacts
 - `canonfs run <alias>` launches a small allowlisted artifact and returns to
   the shell after the EL0 helper completes
 

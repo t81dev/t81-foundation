@@ -477,6 +477,8 @@ static constexpr CanonFsArtifact kCanonFsArtifacts[] = {
 
 static constexpr uint32_t kT81XHeaderSize  = 64u;
 static constexpr uint32_t kT81XMaxCodeSize = 448u;
+static constexpr uint32_t kT81MHeaderSize  = 32u;
+static constexpr uint32_t kT81MMaxEntries  = (512u - kT81MHeaderSize) / 12u;
 
 static const CanonFsArtifact* find_canonfs_artifact(const char* alias) noexcept {
   for (const auto& artifact : kCanonFsArtifacts) {
@@ -760,7 +762,28 @@ static void cmd_canonfs_hash(const char* alias) noexcept {
 
   const uint8_t* sec = canon_store_sector_buf();
   if (artifact->t81x_version == 0u) {
-    pl011_puts("    hash          : unavailable (manifest)\r\n");
+    if (sec[0] != 'T' || sec[1] != '8' || sec[2] != '1' || sec[3] != 'M') {
+      pl011_puts("    error         : bad T81M magic\r\n");
+      return;
+    }
+    if (sec[4] != 1u) {
+      pl011_puts("    error         : unsupported T81M version\r\n");
+      return;
+    }
+    const uint32_t entry_count = static_cast<uint32_t>(sec[16]);
+    if (entry_count == 0u || entry_count > kT81MMaxEntries) {
+      pl011_puts("    error         : invalid T81M entry_count\r\n");
+      return;
+    }
+    uint64_t manifest_hash = 0u;
+    __builtin_memcpy(&manifest_hash, sec + 8u, 8);
+    pl011_puts("    code_hash     : ");
+    pl011_puts(u64_hex(manifest_hash, hex, static_cast<int>(sizeof(hex))));
+    pl011_puts("\r\n");
+    pl011_puts("    hash_source   : stored header (T81M)\r\n");
+    pl011_puts("    entry_count   : ");
+    pl011_puts(u64_dec(entry_count, buf, static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
     return;
   }
 
