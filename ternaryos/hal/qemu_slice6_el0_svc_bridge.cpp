@@ -108,6 +108,7 @@ static constexpr uint32_t kRejectionFaultInboxEmpty = 10u;
 //   WaitForDevice       = 43  (Phase 9 cooperative scheduler park, RFC-00BE)
 static constexpr uint32_t kKindGetThreadIdentity  = 10u;
 static constexpr uint32_t kKindReadFaultInbox      = 15u;
+static constexpr uint32_t kKindAcknowledgeThreadFault = 16u;
 static constexpr uint32_t kKindQueryFaultSummary   = 21u;
 static constexpr uint32_t kKindSendMessage         = 13u;
 static constexpr uint32_t kKindReceiveMessage      = 14u;
@@ -289,6 +290,19 @@ extern "C" bool fs_sched_get_fault(uint32_t tid,
             s_sched[i].fault_ec != 0u) {
             *out_ec  = s_sched[i].fault_ec;
             *out_far = s_sched[i].fault_far;
+            return true;
+        }
+    }
+    return false;
+}
+
+extern "C" bool fs_sched_ack_fault(uint32_t tid) noexcept {
+    for (int i = 0; i < kMaxSchedThreads; ++i) {
+        if (s_sched[i].tid == tid &&
+            s_sched[i].state == FsSchedState::Faulted &&
+            s_sched[i].fault_ec != 0u) {
+            s_sched[i].fault_ec = 0u;
+            s_sched[i].fault_far = 0u;
             return true;
         }
     }
@@ -834,6 +848,32 @@ extern "C" void el0_svc_kernel_call_dispatch(void* frame_ptr) noexcept {
                 __builtin_memcpy(rsp + 208, &fault_far, 8);
                 write_u32(rsp, 216, 1u);
                 fs_obs_record(s_current_el0_tid, kKindReadFaultInbox,
+                              kStatusOk, target_tid);
+                return;
+            }
+
+            case kKindAcknowledgeThreadFault: {
+                if (req_size < 16u || rsp_size < kMinRspBytes) {
+                    write_u32(rsp, 8, kStatusInvalidRequest);
+                    fs_obs_record(s_current_el0_tid, kKindAcknowledgeThreadFault,
+                                  kStatusInvalidRequest, 0u);
+                    return;
+                }
+
+                uint32_t target_tid = 0u;
+                __builtin_memcpy(&target_tid, req + 12, 4);
+                write_u32(rsp, 40, target_tid);         // queried_tid
+                write_u32(rsp, 44, s_current_el0_tid);  // caller_tid
+
+                if (!fs_sched_ack_fault(target_tid)) {
+                    write_u32(rsp, 8,  kStatusRetryLater);
+                    write_u32(rsp, 12, kRejectionFaultInboxEmpty);
+                    fs_obs_record(s_current_el0_tid, kKindAcknowledgeThreadFault,
+                                  kStatusRetryLater, target_tid);
+                    return;
+                }
+
+                fs_obs_record(s_current_el0_tid, kKindAcknowledgeThreadFault,
                               kStatusOk, target_tid);
                 return;
             }

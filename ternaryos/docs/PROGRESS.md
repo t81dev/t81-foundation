@@ -22,8 +22,32 @@ RFC-00B9 boundary note:
   broader scheduler lane has now **graduated** (see below)
 
 **Last updated:** 2026-03-25
-**Commit:** RFC-00CB EL0 fault detail query added
+**Commit:** RFC-00CC EL0 fault acknowledgement added
 **Branch:** `main`
+
+---
+
+## RFC-00CC — EL0 Fault Acknowledgement and Drain (2026-03-25)
+
+Phase 22 activates `KernelCall(AcknowledgeThreadFault)` in the freestanding EL0
+bridge.
+
+- **ABI decision:** reuse the already-frozen ordinal `16`
+  (`AcknowledgeThreadFault`) instead of inventing a new call.
+- **Request surface:** freestanding bridge reads `target_tid` from `req[12:16]`
+  with a 16-byte minimum request block.
+- **Freestanding mapping:** acknowledgement succeeds iff retained fault
+  evidence still exists for `target_tid`; otherwise it returns
+  `RetryLater/FaultInboxEmpty`, matching the existing empty-inbox convention.
+- **Drain semantics:** acknowledgement clears retained `fault_ec` and
+  `fault_far` visibility while keeping the thread itself in `Faulted` state for
+  scheduler-history classification.
+- **EL0 proof:** after `tid=8` faults, the fault handler switches directly to
+  `tid=11`, which issues `ReadFaultInbox(8)`, then
+  `AcknowledgeThreadFault(8)`, then `ReadFaultInbox(8)` again. EL1 validates
+  the success -> drain transition from `tid=11`'s stack and confirms retained
+  fault-summary state dropped to zero.
+- **CI gate:** `[axion] el0: fault ack OK (tid=11 drained tid=8 fault)`
 
 ---
 

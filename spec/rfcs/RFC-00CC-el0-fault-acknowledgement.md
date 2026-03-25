@@ -1,6 +1,6 @@
 # RFC-00CC: EL0 Fault Acknowledgement and Drain
 
-**Status:** draft  
+**Status:** accepted  
 **Type:** standards-track  
 **Applies-To:** freestanding EL0 bridge, slice6 scheduler fault lifecycle, governed fault observation  
 **Created:** 2026-03-25  
@@ -106,7 +106,7 @@ Inputs:
 Outputs:
 
 - `StatusOk` if the retained fault existed and is now acknowledged/drained
-- `StatusNotFound` if no retained fault exists for `target_tid`
+- `RetryLater/FaultInboxEmpty` if no retained fault exists for `target_tid`
 
 The call is governed and auditable in the same style as the existing fault
 query path. It is not a general supervisor operation; it only acknowledges
@@ -166,7 +166,8 @@ RFC-00CC is additive.
    - EL0 acknowledgement succeeds
    - subsequent detail query reports not found / empty
    - summary counters reflect the drained state
-4. Add a CI gate for the new phase.
+4. Add a Phase 22 CI gate:
+   `[axion] el0: fault ack OK (tid=11 drained tid=8 fault)`.
 5. Optionally add operator-shell read-only reflection if the drained/pending
    distinction becomes useful at the prompt.
 
@@ -186,9 +187,10 @@ RFC-00CC is additive.
 - A freestanding helper exists that acknowledges retained fault state for a
   named `tid`.
 - An EL0 observer can acknowledge a sibling's retained fault deterministically.
-- After acknowledgement, fault-detail query for that `tid` reports no retained
-  fault.
+- After acknowledgement, `ReadFaultInbox(target_tid)` reports
+  `RetryLater/FaultInboxEmpty`.
 - Fault-summary counters change in a deterministic, documented way after
   acknowledgement.
 - Governance history for the original fault remains queryable and unchanged.
-- A new CI gate proves the full query -> acknowledge -> drained lifecycle.
+- Phase 22 proves the full `query -> acknowledge -> drained` lifecycle with CI
+  gate `[axion] el0: fault ack OK (tid=11 drained tid=8 fault)`.

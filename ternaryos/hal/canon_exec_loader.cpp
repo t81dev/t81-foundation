@@ -1006,6 +1006,8 @@ extern "C" bool fs_gov_find_fault(uint32_t tid, uint32_t ec) noexcept;
 extern "C" bool fs_sched_get_fault(uint32_t tid,
                                     uint32_t* out_ec,
                                     uint64_t* out_far) noexcept;
+extern "C" bool fs_sched_ack_fault(uint32_t tid) noexcept;
+extern "C" uint64_t fs_sched_faulted_count() noexcept;
 
 // ── Phase 18 (RFC-00C7): EL0 fault containment ───────────────────────────────
 //
@@ -1286,6 +1288,116 @@ extern "C" void canon_fault_detail_query_load_and_run() noexcept {
         cel_pl011_puts("[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)\r\n");
     } else {
         cel_pl011_puts("[axion] el0: fault detail FAIL (bad EL0 detail response)\r\n");
+    }
+}
+
+// ── Phase 22 (RFC-00CC): EL0 fault acknowledgement and drain ───────────────
+//
+// Start a faulting thread first, with an EL0 observer thread already Runnable.
+// The observer:
+//   1. reads retained fault detail for tid=8,
+//   2. acknowledges tid=8 through AcknowledgeThreadFault,
+//   3. proves a second ReadFaultInbox(tid=8) reports the inbox drained.
+//
+// EL1 validates both response blocks from the observer stack and also confirms
+// that retained fault-summary state has dropped to zero.
+//
+// CI gate:
+//   "[axion] el0: fault ack OK (tid=11 drained tid=8 fault)"
+extern "C" void canon_fault_ack_load_and_run() noexcept {
+    const uint64_t code_pa_fault = load_t81x_v2_into(12u,
+                                                       el0_mmu_proc_code_page2(),
+                                                       "tid8/LBA12");
+    if (!code_pa_fault) return;
+
+    const uint64_t code_pa_ack = load_t81x_v2_into(15u,
+                                                     el0_mmu_proc_code_page(),
+                                                     "tid11/LBA15");
+    if (!code_pa_ack) return;
+
+    flush_icache_for_new_code();
+
+    el0_mmu_build_thread_l3(
+        0u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page()),
+        el0_mmu_proc_stack_top() - 4096u);
+    el0_mmu_build_thread_l3(
+        1u,
+        reinterpret_cast<uint64_t>(el0_mmu_proc_code_page2()),
+        el0_mmu_proc_stack_top2() - 4096u);
+
+    fs_sched_reset();
+
+    const uint64_t stack_top_ack   = el0_mmu_proc_stack_top();
+    const uint64_t stack_top_fault = el0_mmu_proc_stack_top2();
+
+    fs_sched_register(11u, code_pa_ack, stack_top_ack, 0x3C0u);
+    fs_sched_set_thread_l3(11u, 0u);
+
+    fs_sched_register(8u, code_pa_fault, stack_top_fault, 0x3C0u);
+    fs_sched_set_thread_l3(8u, 1u);
+    fs_sched_mark_running(8u);
+
+    el0_svc_set_current_tid(8u);
+    el0_mmu_install_thread_l3(1u);
+    run_proc_entry(code_pa_fault, stack_top_fault);
+
+    el0_svc_set_current_tid(1u);
+    el0_mmu_install_shared_l3();
+
+    const uint8_t* frame = reinterpret_cast<const uint8_t*>(
+        static_cast<uintptr_t>(stack_top_ack - 1088u));
+    const uint8_t* rsp1 = frame + 16u;
+    const uint8_t* rsp2 = frame + 528u;
+    const uint8_t* rsp3 = frame + 592u;
+
+    const uint32_t read1_status      = read_u32_le(rsp1 + 8u);
+    const uint32_t read1_rejection   = read_u32_le(rsp1 + 12u);
+    const uint32_t read1_queried_tid = read_u32_le(rsp1 + 40u);
+    const uint32_t read1_caller_tid  = read_u32_le(rsp1 + 44u);
+    const uint32_t read1_subject_tid = read_u32_le(rsp1 + 200u);
+    const uint32_t read1_fault_ec    = read_u32_le(rsp1 + 204u);
+    const uint64_t read1_fault_far   = read_u64_le(rsp1 + 208u);
+    const uint32_t read1_retained    = read_u32_le(rsp1 + 216u);
+
+    const uint32_t ack_status      = read_u32_le(rsp2 + 8u);
+    const uint32_t ack_rejection   = read_u32_le(rsp2 + 12u);
+    const uint32_t ack_queried_tid = read_u32_le(rsp2 + 40u);
+    const uint32_t ack_caller_tid  = read_u32_le(rsp2 + 44u);
+
+    const uint32_t read2_status      = read_u32_le(rsp3 + 8u);
+    const uint32_t read2_rejection   = read_u32_le(rsp3 + 12u);
+    const uint32_t read2_queried_tid = read_u32_le(rsp3 + 40u);
+    const uint32_t read2_caller_tid  = read_u32_le(rsp3 + 44u);
+    const uint32_t read2_retained    = read_u32_le(rsp3 + 216u);
+
+    uint32_t residual_ec = 0u;
+    uint64_t residual_far = 0u;
+    const bool residual_fault = fs_sched_get_fault(8u, &residual_ec, &residual_far);
+    const uint64_t retained_faults = fs_sched_faulted_count();
+
+    if (read1_status == 0u &&
+        read1_rejection == 0u &&
+        read1_queried_tid == 8u &&
+        read1_caller_tid == 11u &&
+        read1_subject_tid == 8u &&
+        read1_fault_ec == 0x24u &&
+        read1_fault_far == 0u &&
+        read1_retained == 1u &&
+        ack_status == 0u &&
+        ack_rejection == 0u &&
+        ack_queried_tid == 8u &&
+        ack_caller_tid == 11u &&
+        read2_status == 6u &&
+        read2_rejection == 10u &&
+        read2_queried_tid == 8u &&
+        read2_caller_tid == 11u &&
+        read2_retained == 0u &&
+        !residual_fault &&
+        retained_faults == 0u) {
+        cel_pl011_puts("[axion] el0: fault ack OK (tid=11 drained tid=8 fault)\r\n");
+    } else {
+        cel_pl011_puts("[axion] el0: fault ack FAIL (bad EL0 ack lifecycle)\r\n");
     }
 }
 

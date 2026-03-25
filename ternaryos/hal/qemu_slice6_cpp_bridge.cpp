@@ -497,6 +497,8 @@ extern "C" void canon_concurrent_fault_load_and_run() noexcept;
 extern "C" void canon_fault_summary_query_load_and_run() noexcept;
 // Phase 21 (RFC-00CB): EL0 fault detail query (canon_exec_loader.cpp).
 extern "C" void canon_fault_detail_query_load_and_run() noexcept;
+// Phase 22 (RFC-00CC): EL0 fault acknowledgement and drain.
+extern "C" void canon_fault_ack_load_and_run() noexcept;
 // Slice6 shell introspection helpers (qemu_slice6_el0_svc_bridge.cpp).
 extern "C" uint64_t fs_sched_faulted_count() noexcept;
 extern "C" bool fs_sched_fault_nth(uint32_t index,
@@ -1063,6 +1065,16 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   //     "[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)"
   if (s_has_blk) {
     canon_fault_detail_query_load_and_run();
+  }
+
+  // Phase 22 (RFC-00CC): start a faulting thread with an EL0 observer thread
+  //   already Runnable. The observer queries retained fault detail for tid=8,
+  //   acknowledges it through KernelCall(AcknowledgeThreadFault), then proves
+  //   the retained detail has been drained on a second ReadFaultInbox call.
+  //   CI gate:
+  //     "[axion] el0: fault ack OK (tid=11 drained tid=8 fault)"
+  if (s_has_blk) {
+    canon_fault_ack_load_and_run();
   }
 
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");

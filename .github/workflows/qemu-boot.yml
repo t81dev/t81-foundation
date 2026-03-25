@@ -717,6 +717,68 @@ jobs:
 
           echo "canon store with fault-detail image: $(du -sh canon_store.img | cut -f1)"
 
+      # ── Phase 22: EL0 fault acknowledgement image at LBA 15 (RFC-00CC) ──
+      - name: Build and embed Phase 22 fault acknowledgement image
+        run: |
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -I ternaryos/hal \
+            -c \
+            ternaryos/hal/el0_fault_ack_test.S \
+            -o el0_fault_ack_test.o
+
+          clang-18 --target=aarch64-unknown-elf \
+            -ffreestanding -nostdlib \
+            -Wl,-Ttext=0x0 -Wl,--omagic \
+            el0_fault_ack_test.o -o el0_fault_ack_test.elf
+
+          llvm-objcopy-18 -O binary \
+            --only-section=.text \
+            el0_fault_ack_test.elf el0_fault_ack_test.bin
+
+          CODE_SIZE=$(wc -c < el0_fault_ack_test.bin)
+          echo "el0_fault_ack_test.bin: ${CODE_SIZE} bytes"
+
+          python3 - <<'PYEOF'
+          import struct
+
+          FNV_OFFSET = 14695981039346656037
+          FNV_PRIME  = 1099511628211
+
+          def fnv1a64(data):
+              h = FNV_OFFSET
+              for b in data:
+                  h ^= b
+                  h = (h * FNV_PRIME) & 0xFFFFFFFFFFFFFFFF
+              return h
+
+          def write_t81x_v2(bin_path, lba, img_path='canon_store.img'):
+              with open(bin_path, 'rb') as f:
+                  code = f.read()
+              assert len(code) <= 448, f"{bin_path} too large: {len(code)} bytes (max 448)"
+              code_hash = fnv1a64(code)
+              hdr  = b'T81X'
+              hdr += struct.pack('B', 2)
+              hdr += b'\x00\x00'
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<I', len(code))
+              hdr += struct.pack('<I', 0)
+              hdr += struct.pack('<Q', code_hash)
+              hdr += bytes(64 - len(hdr))
+              sector = hdr + code
+              sector += bytes(512 - len(sector))
+              offset = lba * 512
+              with open(img_path, 'r+b') as f:
+                  f.seek(offset)
+                  f.write(sector)
+              print(f"T81X v2 sector written at LBA{lba} (offset {offset}): "
+                    f"code_size={len(code)} bytes, code_hash=0x{code_hash:016x} ({bin_path})")
+
+          write_t81x_v2('el0_fault_ack_test.bin', 15)
+          PYEOF
+
+          echo "canon store with fault-ack image: $(du -sh canon_store.img | cut -f1)"
+
       # ── RFC-00BD: KernelCall ABI ordinal freeze check ─────────────────────
       - name: Verify KernelCallKind ordinal freeze (RFC-00BD)
         run: python3 scripts/ci/check_kernelcall_abi_freeze.py .
@@ -860,6 +922,10 @@ jobs:
           # sibling fault handoff and observes retained per-thread fault EC/FAR
           # detail through the freestanding response block.
           check "[axion] el0: fault detail OK (tid=10 sees tid=8 ec=0x24 far=0x0)"
+          # Phase 22 (RFC-00CC): an EL0 observer reads retained fault detail,
+          # acknowledges tid=8, and proves a second ReadFaultInbox sees the
+          # drained state for that tid.
+          check "[axion] el0: fault ack OK (tid=11 drained tid=8 fault)"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
           echo "$pass passed, $fail failed"
           [ "$fail" -eq 0 ]
