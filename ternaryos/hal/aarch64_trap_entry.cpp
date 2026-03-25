@@ -35,15 +35,18 @@ void axion_kernel_handle_svc_trap_aarch64(
     axion_kernel_handle_svc_trap(*g_trap_dispatch_state, svc_frame);
 }
 
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
+// axion_exception_vector_base is the symbol defined by the .balign 2048 /
+// .global directive in aarch64_exception_vectors.S.  Writing its address
+// into VBAR_EL1 installs the Axion exception vector table.
+extern "C" char axion_exception_vector_base[];
+#endif
+
 void axion_kernel_install_exception_vectors() noexcept {
     // Only execute on bare-metal AArch64 targets (QEMU / real hardware).
     // Excluded on macOS/Apple Silicon: the host OS runs at EL0 and VBAR_EL1
     // is privileged; attempting to write it would fault immediately.
 #if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
-    // axion_exception_vector_base is the symbol defined by the .balign 2048 /
-    // .global directive in aarch64_exception_vectors.S.  Writing its address
-    // into VBAR_EL1 installs the Axion exception vector table.
-    extern "C" char axion_exception_vector_base[];
     asm volatile(
         "msr vbar_el1, %0"
         :
