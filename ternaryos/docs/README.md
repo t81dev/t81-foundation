@@ -430,6 +430,12 @@ To attach a second raw CanonFS image as the persistent store:
 ./ternaryos/scripts/run_qemu_slice6_shell.sh build /path/to/canon_store.img
 ```
 
+For a noninteractive boot-to-prompt smoke check:
+
+```sh
+cmake --build build --target t81_ternaryos_qemu_slice6_shell_smoke
+```
+
 Notes:
 
 - the launcher defaults to `tcg` because it is more reliable than `hvf` on the

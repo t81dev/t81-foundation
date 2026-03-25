@@ -1572,6 +1572,15 @@ if(T81_ENABLE_TERNARYOS)
     DEPENDS t81_ternaryos_qemu_slice6_efi
     USES_TERMINAL)
 
+  add_custom_target(t81_ternaryos_qemu_slice6_shell_smoke
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6_shell_smoke
+    COMMAND /bin/zsh
+            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/verify_qemu_slice6_shell.sh
+            ${CMAKE_BINARY_DIR}
+            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6_shell_smoke
+    DEPENDS t81_ternaryos_qemu_slice6_efi
+    USES_TERMINAL)
+
   add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
     COMMAND ${CMAKE_COMMAND} -E copy_directory
