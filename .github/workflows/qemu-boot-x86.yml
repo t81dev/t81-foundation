@@ -151,13 +151,6 @@ jobs:
       - name: Save boot log
         run: cp serial_x86.log drivers/qemu/sample-boot-log-x86.txt
 
-      - name: Commit boot log
-        uses: EndBug/add-and-commit@v10
-        with:
-          add: 'drivers/qemu/sample-boot-log-x86.txt'
-          message: 'ci(qemu-x86): update sample x86_64 boot log [skip ci]'
-          default_author: github_actions
-
       - name: Upload serial log artifact
         uses: actions/upload-artifact@v7
         with:

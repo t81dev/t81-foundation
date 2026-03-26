@@ -34,6 +34,16 @@ namespace {
 using t81::core::detail::DFixed;
 using t81::ComputeTritVector;
 
+inline void prefetch_read_l2(const void* ptr) noexcept {
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+  _mm_prefetch(static_cast<const char*>(ptr), _MM_HINT_T1);
+#elif defined(__clang__) || defined(__GNUC__)
+  __builtin_prefetch(ptr, 0, 2);
+#else
+  (void)ptr;
+#endif
+}
+
 std::expected<ComputeTritVector, t81::vm::Trap> encode_exact_trit_tensor(
     const t81::T729DynamicTensor& tensor) {
   if (tensor.numeric_class() != t81::TensorNumericClass::ExactTrit) {
@@ -974,7 +984,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
             weight_trits.data() + static_cast<std::size_t>(p) * static_cast<std::size_t>(n);
         // Prefetch next weight row into L2 (read, L2 locality).
         if (p + 1 < pend) {
-          __builtin_prefetch(wrow + n, 0, 2);
+          prefetch_read_l2(wrow + n);
         }
         int j = 0;
 #ifdef __ARM_NEON
