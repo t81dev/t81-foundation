@@ -164,6 +164,7 @@ add_library(t81_core STATIC
   isa/types/bigint.cpp
   isa/types/fraction.cpp
   isa/encoding.cpp
+  fs/canonfs_interchange.cpp
   fs/in_memory_driver.cpp
   fs/persistent_driver.cpp
   fs/block_backed_driver.cpp
@@ -1795,7 +1796,6 @@ endif()
 # =============================================================================
 add_library(t81_tool_cli STATIC
   tools/cli/driver.cpp
-  tools/cli/canonfs_interchange.cpp
   tools/cli/debugger.cpp
   tools/cli/canonize_tensor.cpp
 )
@@ -2370,7 +2370,7 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
 
   add_executable(canonfs_interchange_test tests/cpp/canonfs_interchange_test.cpp)
-  target_link_libraries(canonfs_interchange_test PRIVATE t81_tool_cli)
+  target_link_libraries(canonfs_interchange_test PRIVATE t81_core)
 
   add_executable(t81_canonfs_rs_repair_test tests/cpp/canonfs_rs_repair_test.cpp)
   target_link_libraries(t81_canonfs_rs_repair_test PRIVATE t81_core)
