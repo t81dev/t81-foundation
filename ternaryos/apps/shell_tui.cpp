@@ -252,11 +252,13 @@ std::vector<std::string> split_lines(const std::string& text) {
 Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
                            const t81::ternaryos::ShellCommandContext& context,
                            const ShellTuiHandoff& handoff,
+                           bool handoff_mode,
                            const std::string& command_buffer,
                            const std::string& status_line) {
-  const bool show_hosted_bootstrap = shell_tui_show_hosted_bootstrap(context, handoff);
+  const bool show_hosted_bootstrap =
+      handoff_mode ? shell_tui_show_hosted_bootstrap(context, handoff) : true;
   Elements transcript;
-  if (handoff.present) {
+  if (handoff_mode) {
     transcript.push_back(text("HANDOFF FROM AXION SERIAL SHELL") | color(Color::Yellow) | bold);
     if (!handoff.transcript_lines.empty()) {
       for (const auto& line : handoff.transcript_lines) {
@@ -292,17 +294,27 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
       text("CanonFS: " + shell_tui_canonfs_value(context, handoff)) |
           color(Color::Yellow),
   };
-  if (handoff.present) {
+  if (handoff_mode) {
     status.push_back(text("Handoff: " + handoff.source) | color(Color::Cyan));
+    status.push_back(text("Mode: handoff view (read-only)") | color(Color::Yellow));
+  } else {
+    status.push_back(text("Mode: hosted shell session") | color(Color::Green));
   }
 
   Elements commands;
-  for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
-    if (!t81::ternaryos::shell_command_visible(
-            spec, t81::ternaryos::ShellSurface::HostedPhase5)) {
-      continue;
+  if (handoff_mode) {
+    for (const auto& name : state.available_commands) {
+      commands.push_back(text(name) | color(Color::Magenta));
     }
-    commands.push_back(text(spec.name) | color(Color::Magenta));
+    commands.push_back(text("hosted") | color(Color::Yellow));
+  } else {
+    for (const auto& spec : t81::ternaryos::kShellCommandCatalog) {
+      if (!t81::ternaryos::shell_command_visible(
+              spec, t81::ternaryos::ShellSurface::HostedPhase5)) {
+        continue;
+      }
+      commands.push_back(text(spec.name) | color(Color::Magenta));
+    }
   }
 
   Elements framebuffer;
@@ -316,9 +328,11 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
 
   auto header = hbox({
       text(" Axion Shell ") | bold | color(Color::Black) | bgcolor(Color::Cyan),
-      text("  v0.1.0-alpha  Phase 5 typed shell TUI ") | color(Color::White),
+      text(handoff_mode ? "  handoff view  " : "  hosted session  ") | color(Color::White),
       filler(),
-      text(" type command  enter run  backspace edit  q quit ") | color(Color::GrayDark),
+      text(handoff_mode ? " hosted to enter hosted mode  q quit "
+                        : " type command  enter run  backspace edit  q quit ") |
+          color(Color::GrayDark),
   });
 
   auto input_panel = window(
@@ -408,6 +422,7 @@ int main(int argc, char** argv) {
                        snapshot_state,
                        snapshot_context,
                        handoff,
+                       handoff.present,
                        handoff.present ? std::string() : "help",
                        handoff.present ? handoff.status_line : "snapshot replay"));
     std::printf("%s", screen.ToString().c_str());
@@ -417,7 +432,8 @@ int main(int argc, char** argv) {
   std::optional<t81::ternaryos::ShellSession> session;
   std::unique_ptr<t81::ternaryos::ShellBackend> handoff_backend;
   t81::ternaryos::ShellBackend* backend = nullptr;
-  if (handoff.present) {
+  bool handoff_mode = handoff.present;
+  if (handoff_mode) {
     handoff_backend = std::make_unique<HandoffShellBackend>(handoff);
     backend = handoff_backend.get();
   } else {
@@ -434,7 +450,7 @@ int main(int argc, char** argv) {
 
   auto renderer = Renderer([&] {
     return shell_tui_document(
-        backend->state(), backend->command_context(), handoff, command_buffer, status_line);
+        backend->state(), backend->command_context(), handoff, handoff_mode, command_buffer, status_line);
   });
   auto screen = ScreenInteractive::Fullscreen();
   auto app = CatchEvent(renderer, [&](Event event) {
@@ -448,6 +464,19 @@ int main(int argc, char** argv) {
     }
     if (event == Event::Return) {
       const auto submitted = command_buffer;
+      if (handoff_mode && submitted == "hosted") {
+        session = t81::ternaryos::ShellSession::create(true);
+        if (!session.has_value()) {
+          status_line = "failed to enter hosted mode";
+        } else {
+          handoff_backend.reset();
+          backend = &*session;
+          handoff_mode = false;
+          status_line = "entered hosted shell mode";
+        }
+        command_buffer.clear();
+        return true;
+      }
       if (backend->execute_command(submitted)) {
         status_line = submitted.empty() ? "executed: <empty>" : "executed: " + submitted;
       } else {

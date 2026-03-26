@@ -502,6 +502,10 @@ TUI:
 - CanonFS mode (`in-memory` or `persistent, virtio-blk`)
 - serial-shell status line / handoff banner
 
+In that handoff startup mode, the TUI now opens on a read-only carried-shell
+backend first. Enter `hosted` inside the TUI to switch deliberately into the
+hosted Phase 5 shell backend.
+
 That command surface comes from the bare-metal bridge in
 `hal/qemu_slice6_cpp_bridge.cpp`. Internally this boot lane is still called
 `slice6`; that is an implementation/build name, not the user-facing shell name.
