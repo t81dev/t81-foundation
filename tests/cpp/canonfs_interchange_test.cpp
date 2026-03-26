@@ -1,8 +1,11 @@
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 #include <string>
 #include <vector>
 
 #include "t81/canonfs/interchange.hpp"
+#include "t81/canonfs/interchange_ops.hpp"
 
 namespace {
 
@@ -115,6 +118,57 @@ int main() {
   if (!expect(!validate_export_result_document(invalid_export_result, error_message),
               "invalid export result should fail validation")) {
     return 1;
+  }
+
+  {
+    namespace fs = std::filesystem;
+    const fs::path root = fs::temp_directory_path() / "canonfs-interchange-ops-test";
+    const fs::path source = root / "payload.txt";
+    const fs::path restored = root / "restored.txt";
+    std::error_code ec;
+    fs::remove_all(root, ec);
+    fs::create_directories(root, ec);
+    if (!expect(!ec, "ops test root create failed")) return 1;
+
+    {
+      std::ofstream out(source);
+      out << "canonfs-interchange-ops";
+    }
+
+    t81::canonfs::ImportOptions import_options;
+    import_options.canonfs_root = root / ".t81_canonfs";
+    const auto import_outcome = t81::canonfs::import_path(source, import_options);
+    if (!expect(import_outcome.ok(), "core import_path should succeed")) return 1;
+    if (!expect(import_outcome.imported_objects.size() == 1, "core import_path object count mismatch")) {
+      return 1;
+    }
+
+    t81::canonfs::ExportOptions export_options;
+    export_options.canonfs_root = import_options.canonfs_root;
+    const auto export_outcome =
+        t81::canonfs::export_ref(import_outcome.imported_objects.front(), restored, export_options);
+    if (!expect(export_outcome.ok(), "core export_ref should succeed")) return 1;
+
+    std::ifstream in(restored);
+    std::string restored_text;
+    std::getline(in, restored_text);
+    if (!expect(restored_text == "canonfs-interchange-ops", "core export_ref payload mismatch")) {
+      return 1;
+    }
+
+    export_options.policy_evaluator = [](std::string_view, std::string_view, std::string_view) {
+      return t81::canonfs::InterchangePolicyDecision{.allowed = false, .reason = "blocked"};
+    };
+    const auto denied_export =
+        t81::canonfs::export_ref(import_outcome.imported_objects.front(), root / "denied.txt",
+                                 export_options);
+    if (!expect(!denied_export.ok(), "policy-denied core export should fail")) return 1;
+    if (!expect(denied_export.policy_result == "denied", "policy-denied export result mismatch")) {
+      return 1;
+    }
+
+    fs::remove_all(root, ec);
+    if (!expect(!ec, "ops test root cleanup failed")) return 1;
   }
 
   return 0;

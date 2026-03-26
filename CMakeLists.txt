@@ -165,6 +165,7 @@ add_library(t81_core STATIC
   isa/types/fraction.cpp
   isa/encoding.cpp
   fs/canonfs_interchange.cpp
+  fs/canonfs_interchange_ops.cpp
   fs/in_memory_driver.cpp
   fs/persistent_driver.cpp
   fs/block_backed_driver.cpp
