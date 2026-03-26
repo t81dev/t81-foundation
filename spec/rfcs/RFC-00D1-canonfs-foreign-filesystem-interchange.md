@@ -243,6 +243,7 @@ imported_paths: <array of source-relative paths>
 warnings: <array of strings>
 errors: <array of structured error entries>
 policy_result: allowed | denied | partial
+policy_profile: permissive | import-only | export-only | deny-all
 normalization_summary: <object>
 ```
 
@@ -261,6 +262,7 @@ Illustrative JSON document:
   "warnings": [],
   "errors": [],
   "policy_result": "allowed",
+  "policy_profile": "permissive",
   "normalization_summary": {
     "timestamps": "provenance-only",
     "ownership": "provenance-only",
@@ -412,6 +414,7 @@ materialized_paths: <array of target-relative paths>
 warnings: <array of strings>
 errors: <array of structured error entries>
 policy_result: allowed | denied | partial
+policy_profile: permissive | import-only | export-only | deny-all
 materialization_summary: <object>
 ```
 
@@ -430,6 +433,7 @@ Illustrative JSON document:
   "warnings": [],
   "errors": [],
   "policy_result": "allowed",
+  "policy_profile": "permissive",
   "materialization_summary": {
     "timestamps": "not-restored",
     "ownership": "synthesized",

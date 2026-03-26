@@ -47,6 +47,7 @@ struct ImportOutcome {
   std::vector<std::string> warnings;
   std::vector<std::string> errors;
   std::string policy_result;
+  std::string policy_profile;
 
   [[nodiscard]] bool ok() const { return status != "error"; }
 };
@@ -62,6 +63,7 @@ struct ExportOutcome {
   std::vector<std::string> warnings;
   std::vector<std::string> errors;
   std::string policy_result;
+  std::string policy_profile;
 
   [[nodiscard]] bool ok() const { return status != "error"; }
 };

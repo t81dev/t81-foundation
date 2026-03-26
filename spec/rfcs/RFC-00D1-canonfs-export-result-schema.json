@@ -15,6 +15,7 @@
     "warnings",
     "errors",
     "policy_result",
+    "policy_profile",
     "materialization_summary"
   ],
   "properties": {
@@ -70,6 +71,12 @@
     "policy_result": {
       "type": "string",
       "enum": ["allowed", "denied", "partial"]
+    },
+    "policy_profile": {
+      "anyOf": [
+        { "type": "string", "enum": ["permissive", "import-only", "export-only", "deny-all"] },
+        { "type": "null" }
+      ]
     },
     "materialization_summary": {
       "type": "object",

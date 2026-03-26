@@ -5,7 +5,7 @@
   "description": "Schema for t81.canonfs-export-provenance.v1 CanonFS-side provenance records.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "source_objects", "target_kind", "target_ref", "manifest_ref"],
+  "required": ["schema", "source_objects", "target_kind", "target_ref", "manifest_ref", "policy_profile"],
   "properties": {
     "schema": {
       "const": "t81.canonfs-export-provenance.v1"
@@ -30,6 +30,10 @@
         { "type": "string", "pattern": "^sha3-256:.+$" },
         { "type": "null" }
       ]
+    },
+    "policy_profile": {
+      "type": "string",
+      "enum": ["permissive", "import-only", "export-only", "deny-all"]
     }
   }
 }

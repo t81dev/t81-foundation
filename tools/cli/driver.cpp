@@ -5,16 +5,14 @@
 #ifdef T81_HAS_MLIR
 #include "t81/mlir/tisc_to_mlir.hpp"
 #endif
-#include "t81/c_frontend/compile.hpp"
-#include "t81/python_frontend/compile.hpp"
-#include "t81/rust_frontend/compile.hpp"
 #include "debugger.hpp"
 #include "logging.hpp"
 #include "t81/axion/policy_engine.hpp"
+#include "t81/c_frontend/compile.hpp"
 #include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/canon_types.hpp"
 #include "t81/canonfs/interchange.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
-#include "t81/canonfs/canon_types.hpp"
 #include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/frontend/ir_generator.hpp"
@@ -24,6 +22,8 @@
 #include "t81/isa/binary_emitter.hpp"
 #include "t81/isa/binary_io.hpp"
 #include "t81/isa/opcodes.hpp"
+#include "t81/python_frontend/compile.hpp"
+#include "t81/rust_frontend/compile.hpp"
 #include "t81/tracing/canonhash.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
@@ -118,8 +118,8 @@ void print_parse_diagnostics(const t81::frontend::Parser& parser, std::string_vi
   for (const auto& diag : parser.diagnostics()) {
     std::cerr << diag.file << ':' << diag.line << ':' << diag.column << ": error: " << diag.message
               << '\n';
-    const bool print_context =
-        source && (diag.file == primary_source || diag.file == "<source>" || primary_source.empty());
+    const bool print_context = source && (diag.file == primary_source || diag.file == "<source>" ||
+                                          primary_source.empty());
     if (print_context && diag.line > 0 && diag.line <= static_cast<int>(lines.size())) {
       const std::string& context = lines[diag.line - 1];
       std::cerr << "    " << context << '\n';
@@ -534,11 +534,10 @@ std::string render_import_result(std::string_view status, std::string_view sourc
                                  const std::vector<std::string>& imported_paths,
                                  const std::vector<std::string>& warnings,
                                  const std::vector<std::string>& errors,
-                                 std::string_view policy_result) {
-  return t81::canonfs::interchange::render_import_result(status, source_kind, source_ref,
-                                                         imported_objects, provenance_ref,
-                                                         manifest_ref, imported_paths, warnings,
-                                                         errors, policy_result);
+                                 std::string_view policy_result, std::string_view policy_profile) {
+  return t81::canonfs::interchange::render_import_result(
+      status, source_kind, source_ref, imported_objects, provenance_ref, manifest_ref,
+      imported_paths, warnings, errors, policy_result, policy_profile);
 }
 
 std::string render_export_result(std::string_view status,
@@ -548,10 +547,10 @@ std::string render_export_result(std::string_view status,
                                  const std::vector<std::string>& materialized_paths,
                                  const std::vector<std::string>& warnings,
                                  const std::vector<std::string>& errors,
-                                 std::string_view policy_result) {
+                                 std::string_view policy_result, std::string_view policy_profile) {
   return t81::canonfs::interchange::render_export_result(
       status, source_objects, target_kind, target_ref, provenance_ref, manifest_ref,
-      materialized_paths, warnings, errors, policy_result);
+      materialized_paths, warnings, errors, policy_result, policy_profile);
 }
 
 bool validate_import_result_document(std::string_view text, std::string& error_message) {
@@ -611,7 +610,7 @@ CanonFsPolicyCheck evaluate_canonfs_policy(const std::optional<t81::axion::Polic
 }
 
 std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root,
-                                                            std::string* error_message = nullptr) {
+                                                             std::string* error_message = nullptr) {
   std::vector<SnapshotManifestEntry> entries;
   if (!fs::exists(root)) {
     return entries;
@@ -628,7 +627,8 @@ std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& roo
     }
     if (is_symlink_path(path)) {
       if (error_message) {
-        *error_message = "symlinks are not permitted in CanonFS snapshot trees: " + rel.generic_string();
+        *error_message =
+            "symlinks are not permitted in CanonFS snapshot trees: " + rel.generic_string();
       }
       return {};
     }
@@ -646,9 +646,8 @@ std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& roo
     }
     entries.push_back(std::move(entry));
   }
-  std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
-    return lhs.relative_path < rhs.relative_path;
-  });
+  std::sort(entries.begin(), entries.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.relative_path < rhs.relative_path; });
   return entries;
 }
 
@@ -678,7 +677,8 @@ bool copy_directory_contents(const fs::path& from, const fs::path& to, std::stri
       continue;
     }
     if (is_symlink_path(src)) {
-      error_message = "symlinks are not permitted in CanonFS snapshot trees: " + rel.generic_string();
+      error_message =
+          "symlinks are not permitted in CanonFS snapshot trees: " + rel.generic_string();
       return false;
     }
     const fs::path dst = to / rel;
@@ -717,7 +717,8 @@ bool clear_directory_except_snapshots(const fs::path& root, std::string& error_m
       continue;
     }
     if (is_symlink_path(entry.path())) {
-      error_message = "refusing to mutate symlinked path under CanonFS root: " + entry.path().string();
+      error_message =
+          "refusing to mutate symlinked path under CanonFS root: " + entry.path().string();
       return false;
     }
     fs::remove_all(entry.path(), ec);
@@ -751,9 +752,8 @@ std::vector<CanonFsListEntry> collect_canonfs_objects(const fs::path& canonfs_ro
     }
     entries.push_back(std::move(item));
   }
-  std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
-    return lhs.hash < rhs.hash;
-  });
+  std::sort(entries.begin(), entries.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.hash < rhs.hash; });
   return entries;
 }
 
@@ -1022,8 +1022,7 @@ std::optional<fs::path> resolve_repo_model_path(std::string_view selector,
 }
 
 std::shared_ptr<t81::weights::ModelFile> load_weights_model(
-    std::string_view selector, std::string* error_message,
-    std::optional<fs::path>* resolved_path) {
+    std::string_view selector, std::string* error_message, std::optional<fs::path>* resolved_path) {
   std::shared_ptr<t81::weights::ModelFile> model;
   std::optional<fs::path> local_path;
   std::string error;
@@ -1619,8 +1618,8 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
           " (expected one of: permissive, import-only, export-only, deny-all)";
       const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
       if (as_json) {
-        const auto json = render_import_result("error", source_kind, input.string(), {}, "", "",
-                                               {}, {}, {profile_error}, "denied");
+        const auto json = render_import_result("error", source_kind, input.string(), {}, "", "", {},
+                                               {}, {profile_error}, "denied", "");
         if (!emit_validated_json_document(json, validate_import_result_document,
                                           "canonfs import: internal JSON validation failed: ")) {
           return 1;
@@ -1639,8 +1638,9 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
     if (!policy) {
       const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
       if (as_json) {
-        const auto json = render_import_result("error", source_kind, input.string(), {}, "", "",
-                                               {}, {}, {policy_error}, "denied");
+        const auto json = render_import_result(
+            "error", source_kind, input.string(), {}, "", "", {}, {}, {policy_error}, "denied",
+            std::string(t81::canonfs::interchange_policy_profile_name(options.policy_profile)));
         if (!emit_validated_json_document(json, validate_import_result_document,
                                           "canonfs import: internal JSON validation failed: ")) {
           return 1;
@@ -1650,9 +1650,9 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
       }
       return 1;
     }
-    options.policy_evaluator =
-        [&policy](std::string_view canonical_ref, std::string_view operation,
-                  std::string_view) -> t81::canonfs::InterchangePolicyDecision {
+    options.policy_evaluator = [&policy](
+                                   std::string_view canonical_ref, std::string_view operation,
+                                   std::string_view) -> t81::canonfs::InterchangePolicyDecision {
       const auto verdict = evaluate_canonfs_policy(policy, canonical_ref, operation);
       return t81::canonfs::InterchangePolicyDecision{.allowed = verdict.allowed,
                                                      .reason = verdict.reason};
@@ -1661,10 +1661,10 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
 
   const auto outcome = t81::canonfs::import_path(input, options);
   if (as_json) {
-    const auto json = render_import_result(outcome.status, outcome.source_kind, outcome.source_ref,
-                                           outcome.imported_objects, outcome.provenance_ref,
-                                           outcome.manifest_ref, outcome.imported_paths,
-                                           outcome.warnings, outcome.errors, outcome.policy_result);
+    const auto json = render_import_result(
+        outcome.status, outcome.source_kind, outcome.source_ref, outcome.imported_objects,
+        outcome.provenance_ref, outcome.manifest_ref, outcome.imported_paths, outcome.warnings,
+        outcome.errors, outcome.policy_result, outcome.policy_profile);
     if (!emit_validated_json_document(json, validate_import_result_document,
                                       "canonfs import: internal JSON validation failed: ")) {
       return 1;
@@ -1853,9 +1853,9 @@ std::optional<std::string> canonfs_capture_snapshot_hash(const fs::path& canonfs
   }
   const std::string manifest = render_snapshot_manifest(entries);
   const std::string snapshot_hash =
-      t81::hash::hash_bytes(std::span<const std::byte>(
-                                reinterpret_cast<const std::byte*>(manifest.data()),
-                                manifest.size()))
+      t81::hash::hash_bytes(
+          std::span<const std::byte>(reinterpret_cast<const std::byte*>(manifest.data()),
+                                     manifest.size()))
           .to_string();
 
   const fs::path snapshots_root = canonfs_root / "snapshots";
@@ -1866,7 +1866,8 @@ std::optional<std::string> canonfs_capture_snapshot_hash(const fs::path& canonfs
     return std::nullopt;
   }
   std::string copy_error;
-  if (!fs::exists(snapshot_dir) && !copy_directory_contents(canonfs_root, snapshot_dir, copy_error)) {
+  if (!fs::exists(snapshot_dir) &&
+      !copy_directory_contents(canonfs_root, snapshot_dir, copy_error)) {
     if (error_message) *error_message = copy_error;
     return std::nullopt;
   }
@@ -1903,8 +1904,9 @@ int canonfs_snapshot(const fs::path& canonfs_root, bool as_json) {
   return 0;
 }
 
-int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::string& rhs_snapshot_hash,
-                          const fs::path& canonfs_root, bool as_json) {
+int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash,
+                          const std::string& rhs_snapshot_hash, const fs::path& canonfs_root,
+                          bool as_json) {
   std::string hash_error;
   if (!parse_snapshot_hash(lhs_snapshot_hash, hash_error)) {
     error("canonfs snapshot-diff: " + hash_error);
@@ -1983,8 +1985,8 @@ int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_r
     error("canonfs rollback: " + error_message);
     return 1;
   }
-  for (auto it = fs::recursive_directory_iterator(snapshot_dir); it != fs::recursive_directory_iterator();
-       ++it) {
+  for (auto it = fs::recursive_directory_iterator(snapshot_dir);
+       it != fs::recursive_directory_iterator(); ++it) {
     const auto& src = it->path();
     if (src.filename() == "MANIFEST.txt") {
       continue;
@@ -2034,9 +2036,9 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
           "invalid policy profile: " + *policy_profile +
           " (expected one of: permissive, import-only, export-only, deny-all)";
       if (as_json) {
-        const auto json = render_export_result("error", {canonical_hash}, "host-file",
-                                               output_path.string(), "", "", {}, {},
-                                               {profile_error}, "denied");
+        const auto json =
+            render_export_result("error", {canonical_hash}, "host-file", output_path.string(), "",
+                                 "", {}, {}, {profile_error}, "denied", "");
         if (!emit_validated_json_document(json, validate_export_result_document,
                                           "canonfs export: internal JSON validation failed: ")) {
           return 1;
@@ -2054,9 +2056,10 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
     policy = load_axion_policy(*policy_path, policy_error);
     if (!policy) {
       if (as_json) {
-        const auto json = render_export_result("error", {canonical_hash}, "host-file",
-                                               output_path.string(), "", "", {}, {},
-                                               {policy_error}, "denied");
+        const auto json = render_export_result(
+            "error", {canonical_hash}, "host-file", output_path.string(), "", "", {}, {},
+            {policy_error}, "denied",
+            std::string(t81::canonfs::interchange_policy_profile_name(options.policy_profile)));
         if (!emit_validated_json_document(json, validate_export_result_document,
                                           "canonfs export: internal JSON validation failed: ")) {
           return 1;
@@ -2081,7 +2084,7 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
     const auto json = render_export_result(
         outcome.status, outcome.source_objects, outcome.target_kind, outcome.target_ref,
         outcome.provenance_ref, outcome.manifest_ref, outcome.materialized_paths, outcome.warnings,
-        outcome.errors, outcome.policy_result);
+        outcome.errors, outcome.policy_result, outcome.policy_profile);
     if (!emit_validated_json_document(json, validate_export_result_document,
                                       "canonfs export: internal JSON validation failed: ")) {
       return 1;
@@ -2471,7 +2474,8 @@ int run_trace_replay(const TraceArgs& args) {
     error("Trace size mismatch at entry " + std::to_string(mismatch_index) +
           " (actual=" + std::to_string(current_trace.size()) +
           ", expected=" + std::to_string(saved_trace.size()) + ")");
-    if (expected_line) std::cerr << "Expected[" << mismatch_index << "]: " << *expected_line << "\n";
+    if (expected_line)
+      std::cerr << "Expected[" << mismatch_index << "]: " << *expected_line << "\n";
     if (actual_line) std::cerr << "Actual[" << mismatch_index << "]:   " << *actual_line << "\n";
     return 1;
   }
@@ -2487,13 +2491,13 @@ int run_trace_replay(const TraceArgs& args) {
       std::cerr << "Actual[" << i << "]:   " << cur << "\n";
       if (i > 0) {
         std::cerr << "Previous expected[" << (i - 1) << "]: " << saved_trace[i - 1] << "\n";
-        std::cerr << "Previous actual[" << (i - 1) << "]:   "
-                  << format_trace_entry(current_trace[i - 1]) << "\n";
+        std::cerr << "Previous actual[" << (i - 1)
+                  << "]:   " << format_trace_entry(current_trace[i - 1]) << "\n";
       }
       if (i + 1 < current_trace.size()) {
         std::cerr << "Next expected[" << (i + 1) << "]: " << saved_trace[i + 1] << "\n";
-        std::cerr << "Next actual[" << (i + 1) << "]:   " << format_trace_entry(current_trace[i + 1])
-                  << "\n";
+        std::cerr << "Next actual[" << (i + 1)
+                  << "]:   " << format_trace_entry(current_trace[i + 1]) << "\n";
       }
       return 1;
     }
@@ -2665,8 +2669,7 @@ int run_trace_export(const TraceArgs& args) {
     rendered << "[\n";
     for (size_t i = 0; i < entries.size(); ++i) {
       const auto& entry = entries[i];
-      rendered << "  {\"schema\":\"t81.trace-export-entry.v1\",\"index\":" << (i + 1)
-               << ",\"pc\":";
+      rendered << "  {\"schema\":\"t81.trace-export-entry.v1\",\"index\":" << (i + 1) << ",\"pc\":";
       if (entry.pc.has_value()) {
         rendered << *entry.pc;
       } else {
@@ -2808,8 +2811,8 @@ int run_trace_summary(const TraceArgs& args) {
   std::cout << "Lines:             " << line_count << "\n";
   std::cout << "Canonical entries: " << canonical_entries << "\n";
   std::cout << "Trap entries:      " << trap_entries << "\n";
-  std::cout << "First PC:          " << (first_pc ? std::to_string(*first_pc) : std::string("<none>"))
-            << "\n";
+  std::cout << "First PC:          "
+            << (first_pc ? std::to_string(*first_pc) : std::string("<none>")) << "\n";
   std::cout << "Last PC:           " << (last_pc ? std::to_string(*last_pc) : std::string("<none>"))
             << "\n";
   std::cout << "Opcodes:\n";
@@ -2984,7 +2987,8 @@ int run_trace_canonicalize(const TraceArgs& args) {
 
 int run_trace(const TraceArgs& args) {
   if (args.subcommand.empty()) {
-    error("trace requires a subcommand (show|diff|replay|summary|stats|filter|canonicalize|export). Run 't81 help trace'.");
+    error("trace requires a subcommand "
+          "(show|diff|replay|summary|stats|filter|canonicalize|export). Run 't81 help trace'.");
     return 1;
   }
   if (args.subcommand == "show") return run_trace_show(args);
@@ -3040,20 +3044,20 @@ int run_llvm(const LLVMArgs& la) {
   return 1;
 #else
   if (la.subcommand == "help" || la.subcommand.empty()) {
-    std::cout <<
-      "Usage: t81 llvm compile <file.tisc|file.t81> [-o <out>] [--bitcode] [--no-comments]\n"
-      "\n"
-      "Translate a TISC program to LLVM IR.\n"
-      "\n"
-      "Options:\n"
-      "  -o <path>       Output path (default: <input>.ll or <input>.bc)\n"
-      "  --bitcode       Emit LLVM bitcode (.bc) instead of text IR (.ll)\n"
-      "  --no-comments   Omit per-instruction annotation in the IR\n"
-      "\n"
-      "Examples:\n"
-      "  t81 llvm compile hello.tisc\n"
-      "  t81 llvm compile hello.t81 -o hello.ll\n"
-      "  t81 llvm compile hello.tisc --bitcode -o hello.bc\n";
+    std::cout
+        << "Usage: t81 llvm compile <file.tisc|file.t81> [-o <out>] [--bitcode] [--no-comments]\n"
+           "\n"
+           "Translate a TISC program to LLVM IR.\n"
+           "\n"
+           "Options:\n"
+           "  -o <path>       Output path (default: <input>.ll or <input>.bc)\n"
+           "  --bitcode       Emit LLVM bitcode (.bc) instead of text IR (.ll)\n"
+           "  --no-comments   Omit per-instruction annotation in the IR\n"
+           "\n"
+           "Examples:\n"
+           "  t81 llvm compile hello.tisc\n"
+           "  t81 llvm compile hello.t81 -o hello.ll\n"
+           "  t81 llvm compile hello.tisc --bitcode -o hello.bc\n";
     return 0;
   }
 
@@ -3074,11 +3078,17 @@ int run_llvm(const LLVMArgs& la) {
     prog = t81::tisc::load_program(la.input.string());
   } else if (ext == ".t81") {
     std::ifstream f(la.input);
-    if (!f) { error("Cannot open " + la.input.string()); return 1; }
+    if (!f) {
+      error("Cannot open " + la.input.string());
+      return 1;
+    }
     std::ostringstream ss;
     ss << f.rdbuf();
     auto maybe = t81::cli::build_program_from_source(ss.str(), la.input.string());
-    if (!maybe) { error("Compilation failed: " + la.input.string()); return 1; }
+    if (!maybe) {
+      error("Compilation failed: " + la.input.string());
+      return 1;
+    }
     prog = std::move(*maybe);
   } else {
     error("t81 llvm compile: expected .tisc or .t81 input, got: " + la.input.string());
@@ -3093,12 +3103,11 @@ int run_llvm(const LLVMArgs& la) {
   }
 
   t81::llvm_backend::TranslationConfig cfg;
-  cfg.module_name   = la.input.stem().string();
+  cfg.module_name = la.input.stem().string();
   cfg.emit_comments = !la.no_comments;
 
-  bool ok = la.bitcode
-      ? t81::llvm_backend::emit_ir_bitcode(prog, out, cfg)
-      : t81::llvm_backend::emit_ir_text(prog, out, cfg);
+  bool ok = la.bitcode ? t81::llvm_backend::emit_ir_bitcode(prog, out, cfg)
+                       : t81::llvm_backend::emit_ir_text(prog, out, cfg);
 
   if (!ok) {
     error("LLVM IR emission failed for: " + la.input.string());
@@ -3124,37 +3133,36 @@ int run_mlir(const MlirArgs& ma) {
   using FM = t81::mlir_frontend::FloatMode;
 
   if (ma.subcommand == "help" || ma.subcommand.empty()) {
-    std::cout <<
-      "Usage: t81 mlir <subcommand> <input> [-o <out>] [options]\n"
-      "\n"
-      "Subcommands:\n"
-      "  compile  <input.tisc|input.t81>  [-o out.mlir]   TISC → MLIR text\n"
-      "  lower    <input.mlir>            [-o out.ll]     MLIR → LLVM IR\n"
-      "  pipeline <input.tisc|input.t81>  [-o out.ll]     TISC → MLIR → LLVM IR\n"
-      "\n"
-      "Options:\n"
-      "  -o <path>         Output file (default: derived from input)\n"
-      "  --dialect=t81     Emit custom t81.reg_* register access ops\n"
-      "  --dialect=std     Emit standard memref register accesses (default)\n"
-      "  --mode=dcp        DCP float mode: func.call @t81_dmath_* (requires T81 runtime)\n"
-      "  --mode=compat     Standard math.* dialect ops — IEEE-754 (default)\n"
-      "  --no-comments     Omit PC annotations in block names\n"
-      "\n"
-      "Examples:\n"
-      "  t81 mlir compile hello.tisc\n"
-      "  t81 mlir compile hello.t81 -o hello.mlir --mode=dcp\n"
-      "  t81 mlir lower hello.mlir -o hello.ll\n"
-      "  t81 mlir pipeline hello.t81 -o hello.ll\n";
+    std::cout
+        << "Usage: t81 mlir <subcommand> <input> [-o <out>] [options]\n"
+           "\n"
+           "Subcommands:\n"
+           "  compile  <input.tisc|input.t81>  [-o out.mlir]   TISC → MLIR text\n"
+           "  lower    <input.mlir>            [-o out.ll]     MLIR → LLVM IR\n"
+           "  pipeline <input.tisc|input.t81>  [-o out.ll]     TISC → MLIR → LLVM IR\n"
+           "\n"
+           "Options:\n"
+           "  -o <path>         Output file (default: derived from input)\n"
+           "  --dialect=t81     Emit custom t81.reg_* register access ops\n"
+           "  --dialect=std     Emit standard memref register accesses (default)\n"
+           "  --mode=dcp        DCP float mode: func.call @t81_dmath_* (requires T81 runtime)\n"
+           "  --mode=compat     Standard math.* dialect ops — IEEE-754 (default)\n"
+           "  --no-comments     Omit PC annotations in block names\n"
+           "\n"
+           "Examples:\n"
+           "  t81 mlir compile hello.tisc\n"
+           "  t81 mlir compile hello.t81 -o hello.mlir --mode=dcp\n"
+           "  t81 mlir lower hello.mlir -o hello.ll\n"
+           "  t81 mlir pipeline hello.t81 -o hello.ll\n";
     return 0;
   }
 
-  const bool is_compile  = (ma.subcommand == "compile");
-  const bool is_lower    = (ma.subcommand == "lower");
+  const bool is_compile = (ma.subcommand == "compile");
+  const bool is_lower = (ma.subcommand == "lower");
   const bool is_pipeline = (ma.subcommand == "pipeline");
 
   if (!is_compile && !is_lower && !is_pipeline) {
-    error("t81 mlir: unknown subcommand '" + ma.subcommand +
-          "'. Try 't81 mlir help'.");
+    error("t81 mlir: unknown subcommand '" + ma.subcommand + "'. Try 't81 mlir help'.");
     return 1;
   }
 
@@ -3164,15 +3172,13 @@ int run_mlir(const MlirArgs& ma) {
   }
 
   t81::mlir_frontend::TranslationConfig cfg;
-  cfg.float_mode    = ma.dcp_floats ? FM::DCP : FM::Compat;
+  cfg.float_mode = ma.dcp_floats ? FM::DCP : FM::Compat;
   cfg.use_t81_dialect = ma.use_t81_dialect;
   cfg.emit_comments = !ma.no_comments;
 
   // ── lower: parse existing .mlir → LLVM IR ────────────────────────────
   if (is_lower) {
-    fs::path out = ma.output.empty()
-        ? fs::path(ma.input).replace_extension(".ll")
-        : ma.output;
+    fs::path out = ma.output.empty() ? fs::path(ma.input).replace_extension(".ll") : ma.output;
     if (!t81::mlir_frontend::lower_mlir_file(ma.input, out)) {
       error("MLIR lowering failed for: " + ma.input.string());
       return 1;
@@ -3188,11 +3194,17 @@ int run_mlir(const MlirArgs& ma) {
     prog = t81::tisc::load_program(ma.input.string());
   } else if (ext == ".t81") {
     std::ifstream f(ma.input);
-    if (!f) { error("Cannot open " + ma.input.string()); return 1; }
+    if (!f) {
+      error("Cannot open " + ma.input.string());
+      return 1;
+    }
     std::ostringstream ss;
     ss << f.rdbuf();
     auto maybe = t81::cli::build_program_from_source(ss.str(), ma.input.string());
-    if (!maybe) { error("Compilation failed: " + ma.input.string()); return 1; }
+    if (!maybe) {
+      error("Compilation failed: " + ma.input.string());
+      return 1;
+    }
     prog = std::move(*maybe);
   } else {
     error("t81 mlir " + ma.subcommand +
@@ -3201,9 +3213,7 @@ int run_mlir(const MlirArgs& ma) {
   }
 
   if (is_compile) {
-    fs::path out = ma.output.empty()
-        ? fs::path(ma.input).replace_extension(".mlir")
-        : ma.output;
+    fs::path out = ma.output.empty() ? fs::path(ma.input).replace_extension(".mlir") : ma.output;
     if (!t81::mlir_frontend::emit_mlir_text(prog, out, cfg)) {
       error("MLIR emission failed for: " + ma.input.string());
       return 1;
@@ -3217,9 +3227,7 @@ int run_mlir(const MlirArgs& ma) {
   }
 
   // pipeline
-  fs::path out = ma.output.empty()
-      ? fs::path(ma.input).replace_extension(".ll")
-      : ma.output;
+  fs::path out = ma.output.empty() ? fs::path(ma.input).replace_extension(".ll") : ma.output;
   if (!t81::mlir_frontend::pipeline_to_llvm(prog, out, cfg)) {
     error("MLIR pipeline failed for: " + ma.input.string());
     return 1;
@@ -3241,31 +3249,31 @@ int run_c(const CArgs& ca) {
 #ifndef T81_HAS_C_FRONTEND
   (void)ca;
   error("t81 was built without the experimental C frontend.\n"
-        "Re-configure with: cmake -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON");
+        "Re-configure with: cmake -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON "
+        "-DT81_ENABLE_LLVM=ON");
   return 1;
 #else
   if (ca.subcommand == "help" || ca.subcommand.empty()) {
-    std::cout <<
-      "Usage: t81 c compile <file.c> [-o <out.mlir>] [--emit mlir] [options]\n"
-      "\n"
-      "Compile a tightly restricted deterministic-safe C subset to MLIR.\n"
-      "\n"
-      "Options:\n"
-      "  -o <path>         Output file (default: <input>.mlir)\n"
-      "  --emit mlir       Emit MLIR text (the only supported mode in v0)\n"
-      "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
-      "  --dialect=std     Emit standard memref-based MLIR (default)\n"
-      "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
-      "  --mode=compat     Use standard math lowering mode (default)\n"
-      "  --no-comments     Omit PC annotations in generated block names\n"
-      "\n"
-      "Current subset v0:\n"
-      "  - exactly one entry function: int main()\n"
-      "  - additional int helper functions with int parameters\n"
-      "  - local int variables with initializers\n"
-      "  - same-translation-unit calls without recursion\n"
-      "  - integer literals, assignment, arithmetic, and comparisons\n"
-      "  - compound blocks, if, while, for, and reachable return\n";
+    std::cout << "Usage: t81 c compile <file.c> [-o <out.mlir>] [--emit mlir] [options]\n"
+                 "\n"
+                 "Compile a tightly restricted deterministic-safe C subset to MLIR.\n"
+                 "\n"
+                 "Options:\n"
+                 "  -o <path>         Output file (default: <input>.mlir)\n"
+                 "  --emit mlir       Emit MLIR text (the only supported mode in v0)\n"
+                 "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
+                 "  --dialect=std     Emit standard memref-based MLIR (default)\n"
+                 "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
+                 "  --mode=compat     Use standard math lowering mode (default)\n"
+                 "  --no-comments     Omit PC annotations in generated block names\n"
+                 "\n"
+                 "Current subset v0:\n"
+                 "  - exactly one entry function: int main()\n"
+                 "  - additional int helper functions with int parameters\n"
+                 "  - local int variables with initializers\n"
+                 "  - same-translation-unit calls without recursion\n"
+                 "  - integer literals, assignment, arithmetic, and comparisons\n"
+                 "  - compound blocks, if, while, for, and reachable return\n";
     return 0;
   }
 
@@ -3306,31 +3314,32 @@ int run_rust(const RustArgs& ra) {
 #ifndef T81_HAS_RUST_FRONTEND
   (void)ra;
   error("t81 was built without the experimental Rust frontend.\n"
-        "Re-configure with: cmake -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
-        "A Rust toolchain with 'rustc' on PATH and the experimental C frontend adapter are also required.");
+        "Re-configure with: cmake -DT81_ENABLE_RUST_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON "
+        "-DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
+        "A Rust toolchain with 'rustc' on PATH and the experimental C frontend adapter are also "
+        "required.");
   return 1;
 #else
   if (ra.subcommand == "help" || ra.subcommand.empty()) {
-    std::cout <<
-      "Usage: t81 rust compile <file.rs> [-o <out.mlir>] [--emit mlir] [options]\n"
-      "\n"
-      "Compile an experimental Rust-subset ingress path to MLIR.\n"
-      "\n"
-      "Options:\n"
-      "  -o <path>         Output file (default: <input>.mlir)\n"
-      "  --emit mlir       Emit MLIR text (the only planned mode in v0)\n"
-      "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
-      "  --dialect=std     Emit standard memref-based MLIR (default)\n"
-      "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
-      "  --mode=compat     Use standard math lowering mode (default)\n"
-      "  --no-comments     Omit PC annotations in generated block names\n"
-      "\n"
-      "Status:\n"
-      "  - minimal scalar Rust subset is implemented experimentally\n"
-      "  - accepted subset v0: fn main() -> i32, i32 helpers, let bindings,\n"
-      "    assignment, arithmetic/bitwise/comparison/logical expressions,\n"
-      "    if/else, and return\n"
-      "  - unsupported constructs fail closed with explicit diagnostics\n";
+    std::cout << "Usage: t81 rust compile <file.rs> [-o <out.mlir>] [--emit mlir] [options]\n"
+                 "\n"
+                 "Compile an experimental Rust-subset ingress path to MLIR.\n"
+                 "\n"
+                 "Options:\n"
+                 "  -o <path>         Output file (default: <input>.mlir)\n"
+                 "  --emit mlir       Emit MLIR text (the only planned mode in v0)\n"
+                 "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
+                 "  --dialect=std     Emit standard memref-based MLIR (default)\n"
+                 "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
+                 "  --mode=compat     Use standard math lowering mode (default)\n"
+                 "  --no-comments     Omit PC annotations in generated block names\n"
+                 "\n"
+                 "Status:\n"
+                 "  - minimal scalar Rust subset is implemented experimentally\n"
+                 "  - accepted subset v0: fn main() -> i32, i32 helpers, let bindings,\n"
+                 "    assignment, arithmetic/bitwise/comparison/logical expressions,\n"
+                 "    if/else, and return\n"
+                 "  - unsupported constructs fail closed with explicit diagnostics\n";
     return 0;
   }
 
@@ -3371,31 +3380,32 @@ int run_python(const PythonArgs& pa) {
 #ifndef T81_HAS_PYTHON_FRONTEND
   (void)pa;
   error("t81 was built without the experimental Python frontend.\n"
-        "Re-configure with: cmake -DT81_ENABLE_PYTHON_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON -DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
+        "Re-configure with: cmake -DT81_ENABLE_PYTHON_FRONTEND=ON -DT81_ENABLE_C_FRONTEND=ON "
+        "-DT81_ENABLE_MLIR=ON -DT81_ENABLE_LLVM=ON\n"
         "Python 3 on PATH and the experimental C frontend adapter are also required.");
   return 1;
 #else
   if (pa.subcommand == "help" || pa.subcommand.empty()) {
-    std::cout <<
-      "Usage: t81 python compile <file.py> [-o <out.mlir>] [--emit mlir] [options]\n"
-      "\n"
-      "Compile an experimental Python-subset ingress path to MLIR.\n"
-      "\n"
-      "Options:\n"
-      "  -o <path>         Output file (default: <input>.mlir)\n"
-      "  --emit mlir       Emit MLIR text (the only planned mode in v0)\n"
-      "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
-      "  --dialect=std     Emit standard memref-based MLIR (default)\n"
-      "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
-      "  --mode=compat     Use standard math lowering mode (default)\n"
-      "  --no-comments     Omit PC annotations in generated block names\n"
-      "\n"
-      "Status:\n"
-      "  - minimal scalar Python subset is implemented experimentally\n"
-      "  - accepted subset v0: def main() -> int, int helpers, annotated local bindings,\n"
-      "    assignment, arithmetic/bitwise/comparison/logical expressions,\n"
-      "    if/else, same-file helper calls, and return\n"
-      "  - unsupported constructs fail closed with explicit diagnostics\n";
+    std::cout
+        << "Usage: t81 python compile <file.py> [-o <out.mlir>] [--emit mlir] [options]\n"
+           "\n"
+           "Compile an experimental Python-subset ingress path to MLIR.\n"
+           "\n"
+           "Options:\n"
+           "  -o <path>         Output file (default: <input>.mlir)\n"
+           "  --emit mlir       Emit MLIR text (the only planned mode in v0)\n"
+           "  --dialect=t81     Emit custom t81.* ops in the generated MLIR\n"
+           "  --dialect=std     Emit standard memref-based MLIR (default)\n"
+           "  --mode=dcp        Route float lowering to t81_dmath_* when supported\n"
+           "  --mode=compat     Use standard math lowering mode (default)\n"
+           "  --no-comments     Omit PC annotations in generated block names\n"
+           "\n"
+           "Status:\n"
+           "  - minimal scalar Python subset is implemented experimentally\n"
+           "  - accepted subset v0: def main() -> int, int helpers, annotated local bindings,\n"
+           "    assignment, arithmetic/bitwise/comparison/logical expressions,\n"
+           "    if/else, same-file helper calls, and return\n"
+           "  - unsupported constructs fail closed with explicit diagnostics\n";
     return 0;
   }
 

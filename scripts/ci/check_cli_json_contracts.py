@@ -236,6 +236,7 @@ def main() -> int:
                         "warnings",
                         "errors",
                         "policy_result",
+                        "policy_profile",
                         "normalization_summary",
                     ],
                     "canonfs import --json",
@@ -250,6 +251,13 @@ def main() -> int:
                     )
                 if import_obj.get("status") not in {"ok", "partial", "error"}:
                     failures.append("canonfs import --json: invalid status")
+                if import_obj.get("policy_profile") not in {
+                    "permissive",
+                    "import-only",
+                    "export-only",
+                    "deny-all",
+                }:
+                    failures.append("canonfs import --json: invalid policy_profile")
                 imported_objects = import_obj.get("imported_objects")
                 if not isinstance(imported_objects, list) or not imported_objects:
                     failures.append("canonfs import --json: imported_objects must be a non-empty array")
@@ -293,6 +301,7 @@ def main() -> int:
                                         "warnings",
                                         "errors",
                                         "policy_result",
+                                        "policy_profile",
                                         "materialization_summary",
                                     ],
                                     "canonfs export --json",
@@ -307,6 +316,13 @@ def main() -> int:
                                     )
                                 if export_obj.get("status") not in {"ok", "partial", "error"}:
                                     failures.append("canonfs export --json: invalid status")
+                                if export_obj.get("policy_profile") not in {
+                                    "permissive",
+                                    "import-only",
+                                    "export-only",
+                                    "deny-all",
+                                }:
+                                    failures.append("canonfs export --json: invalid policy_profile")
                                 source_objects = export_obj.get("source_objects")
                                 if not isinstance(source_objects, list) or not source_objects:
                                     failures.append(

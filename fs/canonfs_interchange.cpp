@@ -64,9 +64,8 @@ std::string json_array_of_error_objects(const std::vector<std::string>& errors, 
   if (!errors.empty()) {
     out << "\n";
     for (std::size_t i = 0; i < errors.size(); ++i) {
-      out << indent_text
-          << "{\"kind\": \"source-failure\", \"message\": \"" << escape_json_text(errors[i])
-          << "\", \"code\": \"canonfs-import-failure\"}";
+      out << indent_text << "{\"kind\": \"source-failure\", \"message\": \""
+          << escape_json_text(errors[i]) << "\", \"code\": \"canonfs-import-failure\"}";
       if (i + 1 < errors.size()) {
         out << ",";
       }
@@ -85,8 +84,7 @@ std::string json_array_of_export_error_objects(const std::vector<std::string>& e
   if (!errors.empty()) {
     out << "\n";
     for (std::size_t i = 0; i < errors.size(); ++i) {
-      out << indent_text
-          << "{\"kind\": \"materialization-failure\", \"message\": \""
+      out << indent_text << "{\"kind\": \"materialization-failure\", \"message\": \""
           << escape_json_text(errors[i]) << "\", \"code\": \"canonfs-export-failure\"}";
       if (i + 1 < errors.size()) {
         out << ",";
@@ -182,7 +180,8 @@ std::optional<std::size_t> extract_json_size_field(std::string_view text, std::s
   return value;
 }
 
-std::optional<std::string_view> extract_json_array_field(std::string_view text, std::string_view key) {
+std::optional<std::string_view> extract_json_array_field(std::string_view text,
+                                                         std::string_view key) {
   const std::string needle = "\"" + std::string(key) + "\"";
   std::size_t pos = text.find(needle);
   if (pos == std::string_view::npos) {
@@ -310,8 +309,9 @@ std::optional<std::vector<std::string>> extract_json_string_array(std::string_vi
   return values;
 }
 
-bool validate_string_array(std::string_view text, std::string_view key, bool require_non_empty_items,
-                           bool require_canonfs_refs, std::string& error_message) {
+bool validate_string_array(std::string_view text, std::string_view key,
+                           bool require_non_empty_items, bool require_canonfs_refs,
+                           std::string& error_message) {
   const auto values = extract_json_string_array(text, key);
   if (!values) {
     error_message = std::string("missing array field: ") + std::string(key);
@@ -453,7 +453,8 @@ std::string render_manifest(std::string_view source_kind, std::string_view sourc
 
 std::string render_import_provenance(std::string_view source_kind, std::string_view source_ref,
                                      const std::vector<std::string>& imported_objects,
-                                     std::string_view manifest_ref) {
+                                     std::string_view manifest_ref,
+                                     std::string_view policy_profile) {
   std::ostringstream out;
   out << "{\n"
       << "  \"schema\": \"t81.canonfs-import-provenance.v1\",\n"
@@ -462,17 +463,19 @@ std::string render_import_provenance(std::string_view source_kind, std::string_v
       << "  \"imported_objects\": " << json_array_of_strings(imported_objects, 4) << ",\n"
       << "  \"manifest_ref\": ";
   if (manifest_ref.empty()) {
-    out << "null\n";
+    out << "null,\n";
   } else {
-    out << "\"" << escape_json_text(manifest_ref) << "\"\n";
+    out << "\"" << escape_json_text(manifest_ref) << "\",\n";
   }
+  out << "  \"policy_profile\": \"" << escape_json_text(policy_profile) << "\"\n";
   out << "}\n";
   return out.str();
 }
 
 std::string render_export_provenance(const std::vector<std::string>& source_objects,
                                      std::string_view target_kind, std::string_view target_ref,
-                                     std::string_view manifest_ref) {
+                                     std::string_view manifest_ref,
+                                     std::string_view policy_profile) {
   std::ostringstream out;
   out << "{\n"
       << "  \"schema\": \"t81.canonfs-export-provenance.v1\",\n"
@@ -481,10 +484,11 @@ std::string render_export_provenance(const std::vector<std::string>& source_obje
       << "  \"target_ref\": \"" << escape_json_text(target_ref) << "\",\n"
       << "  \"manifest_ref\": ";
   if (manifest_ref.empty()) {
-    out << "null\n";
+    out << "null,\n";
   } else {
-    out << "\"" << escape_json_text(manifest_ref) << "\"\n";
+    out << "\"" << escape_json_text(manifest_ref) << "\",\n";
   }
+  out << "  \"policy_profile\": \"" << escape_json_text(policy_profile) << "\"\n";
   out << "}\n";
   return out.str();
 }
@@ -496,7 +500,7 @@ std::string render_import_result(std::string_view status, std::string_view sourc
                                  const std::vector<std::string>& imported_paths,
                                  const std::vector<std::string>& warnings,
                                  const std::vector<std::string>& errors,
-                                 std::string_view policy_result) {
+                                 std::string_view policy_result, std::string_view policy_profile) {
   std::ostringstream out;
   out << "{\n"
       << "  \"schema\": \"t81.canonfs-import.v1\",\n"
@@ -515,7 +519,13 @@ std::string render_import_result(std::string_view status, std::string_view sourc
       << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
       << "  \"errors\": " << json_array_of_error_objects(errors, 4) << ",\n"
       << "  \"policy_result\": \"" << escape_json_text(policy_result) << "\",\n"
-      << "  \"normalization_summary\": {\n"
+      << "  \"policy_profile\": ";
+  if (policy_profile.empty()) {
+    out << "null,\n";
+  } else {
+    out << "\"" << escape_json_text(policy_profile) << "\",\n";
+  }
+  out << "  \"normalization_summary\": {\n"
       << "    \"timestamps\": \"provenance-only\",\n"
       << "    \"ownership\": \"provenance-only\",\n"
       << "    \"mode_hint\": \"preserved\"\n"
@@ -531,7 +541,7 @@ std::string render_export_result(std::string_view status,
                                  const std::vector<std::string>& materialized_paths,
                                  const std::vector<std::string>& warnings,
                                  const std::vector<std::string>& errors,
-                                 std::string_view policy_result) {
+                                 std::string_view policy_result, std::string_view policy_profile) {
   std::ostringstream out;
   out << "{\n"
       << "  \"schema\": \"t81.canonfs-export.v1\",\n"
@@ -550,7 +560,13 @@ std::string render_export_result(std::string_view status,
       << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
       << "  \"errors\": " << json_array_of_export_error_objects(errors, 4) << ",\n"
       << "  \"policy_result\": \"" << escape_json_text(policy_result) << "\",\n"
-      << "  \"materialization_summary\": {\n"
+      << "  \"policy_profile\": ";
+  if (policy_profile.empty()) {
+    out << "null,\n";
+  } else {
+    out << "\"" << escape_json_text(policy_profile) << "\",\n";
+  }
+  out << "  \"materialization_summary\": {\n"
       << "    \"timestamps\": \"not-restored\",\n"
       << "    \"ownership\": \"synthesized\",\n"
       << "    \"mode_hint\": \"preserved\"\n"
@@ -587,6 +603,7 @@ bool validate_import_provenance_document(std::string_view text, std::string& err
   const auto schema = extract_json_string_field(text, "schema");
   const auto source_kind = extract_json_string_field(text, "source_kind");
   const auto source_ref = extract_json_string_field(text, "source_ref");
+  const auto policy_profile = extract_json_string_field(text, "policy_profile");
   if (!schema || *schema != "t81.canonfs-import-provenance.v1") {
     error_message = "invalid import provenance schema";
     return false;
@@ -609,6 +626,11 @@ bool validate_import_provenance_document(std::string_view text, std::string& err
       return false;
     }
   }
+  if (!policy_profile ||
+      !is_one_of(*policy_profile, {"permissive", "import-only", "export-only", "deny-all"})) {
+    error_message = "invalid import provenance policy_profile";
+    return false;
+  }
   return true;
 }
 
@@ -616,6 +638,7 @@ bool validate_export_provenance_document(std::string_view text, std::string& err
   const auto schema = extract_json_string_field(text, "schema");
   const auto target_kind = extract_json_string_field(text, "target_kind");
   const auto target_ref = extract_json_string_field(text, "target_ref");
+  const auto policy_profile = extract_json_string_field(text, "policy_profile");
   if (!schema || *schema != "t81.canonfs-export-provenance.v1") {
     error_message = "invalid export provenance schema";
     return false;
@@ -638,6 +661,11 @@ bool validate_export_provenance_document(std::string_view text, std::string& err
       return false;
     }
   }
+  if (!policy_profile ||
+      !is_one_of(*policy_profile, {"permissive", "import-only", "export-only", "deny-all"})) {
+    error_message = "invalid export provenance policy_profile";
+    return false;
+  }
   return true;
 }
 
@@ -648,6 +676,7 @@ bool validate_import_result_document(std::string_view text, std::string& error_m
   const auto source_ref = extract_json_string_field(text, "source_ref");
   const auto provenance_ref = extract_json_string_field(text, "provenance_ref");
   const auto policy_result = extract_json_string_field(text, "policy_result");
+  const auto policy_profile = extract_json_string_field(text, "policy_profile");
   const auto timestamps = extract_json_string_field(text, "timestamps");
   const auto ownership = extract_json_string_field(text, "ownership");
   const auto mode_hint = extract_json_string_field(text, "mode_hint");
@@ -679,6 +708,12 @@ bool validate_import_result_document(std::string_view text, std::string& error_m
     error_message = "invalid import result policy_result";
     return false;
   }
+  if (!is_json_null_field(text, "policy_profile") &&
+      (!policy_profile ||
+       !is_one_of(*policy_profile, {"permissive", "import-only", "export-only", "deny-all"}))) {
+    error_message = "invalid import result policy_profile";
+    return false;
+  }
   if (!timestamps || !ownership || !mode_hint) {
     error_message = "missing import normalization summary fields";
     return false;
@@ -708,6 +743,7 @@ bool validate_export_result_document(std::string_view text, std::string& error_m
   const auto target_ref = extract_json_string_field(text, "target_ref");
   const auto provenance_ref = extract_json_string_field(text, "provenance_ref");
   const auto policy_result = extract_json_string_field(text, "policy_result");
+  const auto policy_profile = extract_json_string_field(text, "policy_profile");
   const auto timestamps = extract_json_string_field(text, "timestamps");
   const auto ownership = extract_json_string_field(text, "ownership");
   const auto mode_hint = extract_json_string_field(text, "mode_hint");
@@ -737,6 +773,12 @@ bool validate_export_result_document(std::string_view text, std::string& error_m
   }
   if (!policy_result || !is_one_of(*policy_result, {"allowed", "denied", "partial"})) {
     error_message = "invalid export result policy_result";
+    return false;
+  }
+  if (!is_json_null_field(text, "policy_profile") &&
+      (!policy_profile ||
+       !is_one_of(*policy_profile, {"permissive", "import-only", "export-only", "deny-all"}))) {
+    error_message = "invalid export result policy_profile";
     return false;
   }
   if (!timestamps || !ownership || !mode_hint) {

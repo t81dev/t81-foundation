@@ -910,6 +910,8 @@ int main(int argc, char* argv[]) {
         contains(import_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(import_policy_deny_result.stdout_text, "\"policy_profile\": \"permissive\""));
     T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"status\": \"error\""));
 
     const auto export_policy_deny_result =
@@ -920,6 +922,8 @@ int main(int argc, char* argv[]) {
         contains(export_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(export_policy_deny_result.stdout_text, "\"policy_profile\": \"permissive\""));
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"status\": \"error\""));
 
     const auto import_profile_deny_result = run_cli(
@@ -930,6 +934,8 @@ int main(int argc, char* argv[]) {
         contains(import_profile_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(
         contains(import_profile_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(import_profile_deny_result.stdout_text, "\"policy_profile\": \"export-only\""));
     T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text, "\"status\": \"error\""));
 
     const auto export_profile_deny_result =
@@ -940,6 +946,8 @@ int main(int argc, char* argv[]) {
         contains(export_profile_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(
         contains(export_profile_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(export_profile_deny_result.stdout_text, "\"policy_profile\": \"import-only\""));
     T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text, "\"status\": \"error\""));
 
     const auto invalid_profile_result = run_cli(

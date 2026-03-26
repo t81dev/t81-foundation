@@ -50,9 +50,9 @@ int main() {
     return 1;
   }
 
-  const std::string import_provenance =
-      render_import_provenance("host-directory", "/tmp/input-tree",
-                               {"sha3-256:abc123", "sha3-256:def456"}, "sha3-256:manifest001");
+  const std::string import_provenance = render_import_provenance(
+      "host-directory", "/tmp/input-tree", {"sha3-256:abc123", "sha3-256:def456"},
+      "sha3-256:manifest001", "permissive");
   if (!expect(validate_import_provenance_document(import_provenance, error_message),
               "import provenance should validate")) {
     return 1;
@@ -60,24 +60,25 @@ int main() {
 
   const std::string export_provenance =
       render_export_provenance({"sha3-256:abc123", "sha3-256:def456"}, "host-directory",
-                               "/tmp/output-tree", "sha3-256:manifest001");
+                               "/tmp/output-tree", "sha3-256:manifest001", "permissive");
   if (!expect(validate_export_provenance_document(export_provenance, error_message),
               "export provenance should validate")) {
     return 1;
   }
 
-  const std::string import_result =
-      render_import_result("partial", "host-directory", "/tmp/input-tree", {"sha3-256:abc123"},
-                           "sha3-256:prov001", "sha3-256:manifest001", {"a.txt"}, {},
-                           {"policy denied import of nested/b.txt: hash not allowed"}, "partial");
+  const std::string import_result = render_import_result(
+      "partial", "host-directory", "/tmp/input-tree", {"sha3-256:abc123"}, "sha3-256:prov001",
+      "sha3-256:manifest001", {"a.txt"}, {},
+      {"policy denied import of nested/b.txt: hash not allowed"}, "partial", "permissive");
   if (!expect(validate_import_result_document(import_result, error_message),
               "import result should validate")) {
     return 1;
   }
 
-  const std::string export_result = render_export_result(
-      "ok", {"sha3-256:abc123", "sha3-256:def456"}, "host-directory", "/tmp/output-tree",
-      "sha3-256:prov002", "sha3-256:manifest001", {"a.txt", "nested/b.txt"}, {}, {}, "allowed");
+  const std::string export_result =
+      render_export_result("ok", {"sha3-256:abc123", "sha3-256:def456"}, "host-directory",
+                           "/tmp/output-tree", "sha3-256:prov002", "sha3-256:manifest001",
+                           {"a.txt", "nested/b.txt"}, {}, {}, "allowed", "permissive");
   if (!expect(validate_export_result_document(export_result, error_message),
               "export result should validate")) {
     return 1;
@@ -108,6 +109,7 @@ int main() {
       "  \"warnings\": [],\n"
       "  \"errors\": [{\"kind\": \"wrong-kind\", \"message\": \"bad\", \"code\": \"x\"}],\n"
       "  \"policy_result\": \"allowed\",\n"
+      "  \"policy_profile\": \"permissive\",\n"
       "  \"materialization_summary\": {\n"
       "    \"timestamps\": \"not-restored\",\n"
       "    \"ownership\": \"synthesized\",\n"
@@ -138,6 +140,10 @@ int main() {
     import_options.canonfs_root = root / ".t81_canonfs";
     const auto import_outcome = t81::canonfs::import_path(source, import_options);
     if (!expect(import_outcome.ok(), "core import_path should succeed")) return 1;
+    if (!expect(import_outcome.policy_profile == "permissive",
+                "core import_path policy profile mismatch")) {
+      return 1;
+    }
     if (!expect(import_outcome.imported_objects.size() == 1,
                 "core import_path object count mismatch")) {
       return 1;
@@ -148,6 +154,10 @@ int main() {
     const auto export_outcome =
         t81::canonfs::export_ref(import_outcome.imported_objects.front(), restored, export_options);
     if (!expect(export_outcome.ok(), "core export_ref should succeed")) return 1;
+    if (!expect(export_outcome.policy_profile == "permissive",
+                "core export_ref policy profile mismatch")) {
+      return 1;
+    }
 
     std::ifstream in(restored);
     std::string restored_text;
@@ -175,6 +185,10 @@ int main() {
                 "export-only profile import result mismatch")) {
       return 1;
     }
+    if (!expect(denied_import.policy_profile == "export-only",
+                "export-only profile import policy profile mismatch")) {
+      return 1;
+    }
 
     t81::canonfs::ExportOptions import_only_export_options;
     import_only_export_options.canonfs_root = import_options.canonfs_root;
@@ -185,6 +199,10 @@ int main() {
     if (!expect(!import_only_export.ok(), "import-only profile should deny export")) return 1;
     if (!expect(import_only_export.policy_result == "denied",
                 "import-only profile export result mismatch")) {
+      return 1;
+    }
+    if (!expect(import_only_export.policy_profile == "import-only",
+                "import-only profile export policy profile mismatch")) {
       return 1;
     }
 

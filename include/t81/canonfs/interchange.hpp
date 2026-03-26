@@ -27,10 +27,12 @@ std::string render_manifest(std::string_view source_kind, std::string_view sourc
                             const std::vector<Entry>& entries);
 std::string render_import_provenance(std::string_view source_kind, std::string_view source_ref,
                                      const std::vector<std::string>& imported_objects,
-                                     std::string_view manifest_ref);
+                                     std::string_view manifest_ref,
+                                     std::string_view policy_profile);
 std::string render_export_provenance(const std::vector<std::string>& source_objects,
                                      std::string_view target_kind, std::string_view target_ref,
-                                     std::string_view manifest_ref);
+                                     std::string_view manifest_ref,
+                                     std::string_view policy_profile);
 std::string render_import_result(std::string_view status, std::string_view source_kind,
                                  std::string_view source_ref,
                                  const std::vector<std::string>& imported_objects,
@@ -38,7 +40,7 @@ std::string render_import_result(std::string_view status, std::string_view sourc
                                  const std::vector<std::string>& imported_paths,
                                  const std::vector<std::string>& warnings,
                                  const std::vector<std::string>& errors,
-                                 std::string_view policy_result);
+                                 std::string_view policy_result, std::string_view policy_profile);
 std::string render_export_result(std::string_view status,
                                  const std::vector<std::string>& source_objects,
                                  std::string_view target_kind, std::string_view target_ref,
@@ -46,7 +48,7 @@ std::string render_export_result(std::string_view status,
                                  const std::vector<std::string>& materialized_paths,
                                  const std::vector<std::string>& warnings,
                                  const std::vector<std::string>& errors,
-                                 std::string_view policy_result);
+                                 std::string_view policy_result, std::string_view policy_profile);
 
 bool validate_manifest_document(std::string_view text, std::string& error_message);
 bool validate_import_provenance_document(std::string_view text, std::string& error_message);
