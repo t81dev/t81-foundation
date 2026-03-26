@@ -444,6 +444,18 @@ std::string hosted_ls_text(const std::vector<t81::canonfs::CanonRef>& stored_ref
   return out.str();
 }
 
+std::string make_compiled_block_text(std::string_view input_desc,
+                                     std::string_view source_text) {
+  std::string text = "AXION_COMPILED\nsource ";
+  text += input_desc;
+  text += "\nemit tisc";
+  if (!source_text.empty() && source_text != "<empty>") {
+    text += "\n---\n";
+    text += source_text;
+  }
+  return text;
+}
+
 std::string hosted_help_text() {
   std::string text = "builtins";
   shell_emit_help(ShellSurface::HostedPhase5, false, [&](const char* name, const char* summary) {
@@ -833,7 +845,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
     return refresh_render();
   }
 
-  if (words[0] == "cd" || words[0] == "compile") {
+  if (words[0] == "cd") {
     if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
     state_.command_records.push_back({command, hosted_rfc00b9_stub(words[0])});
     return refresh_render();
@@ -1054,6 +1066,41 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
     state_.command_records.push_back(
         {command, "cat " + words[1] + "\n" + decode_text_block(*block)});
+    return refresh_render();
+  }
+
+  if (words[0] == "compile") {
+    if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
+    if (words.size() < 2) {
+      state_.command_records.push_back({command, "compile invalid"});
+      return refresh_render();
+    }
+
+    std::optional<t81::canonfs::CanonRef> input_ref = hosted_path_ref(words[1], named_refs_);
+    std::string source_text;
+    if (input_ref.has_value()) {
+      state_.recovered_entries = store.rebuild_index();
+      const auto source_block = store.get(*input_ref);
+      if (!source_block.has_value()) {
+        state_.command_records.push_back({command, "compile missing"});
+        return refresh_render();
+      }
+      source_text = decode_text_block(*source_block);
+    }
+
+    const auto compiled_text = make_compiled_block_text(words[1], source_text);
+    auto compiled_ref = store.put(make_text_block(compiled_text));
+    if (!compiled_ref.has_value()) {
+      state_.command_records.push_back({command, "compile failed"});
+      return refresh_render();
+    }
+    if (!canon_ref_known(stored_refs_, *compiled_ref)) stored_refs_.push_back(*compiled_ref);
+    if (!store.flush()) {
+      state_.command_records.push_back({command, "compile flush failed"});
+      return refresh_render();
+    }
+    state_.recovered_entries = store.rebuild_index();
+    state_.command_records.push_back({command, "compile ok " + canon_ref_text(*compiled_ref)});
     return refresh_render();
   }
 

@@ -418,10 +418,11 @@ static void test_rfc00b9_shell_core() {
   check(session->execute_command("service list"), "service list executes");
   check(session->execute_command("service start studio"), "service start studio executes");
   check(session->execute_command("hash /usr/bin/t81"), "hash on service binary executes");
+  check(session->execute_command("compile main.t81"), "compile source path executes");
   check(session->execute_command("store put script \"show profile|history\""),
         "store put script executes for run alias");
   const auto script_ref =
-      suffix_after(session->state().command_records[4].result, "canon script ok ");
+      suffix_after(session->state().command_records[5].result, "canon script ok ");
   check(!script_ref.empty(), "store put script returns a CanonRef");
   check(session->execute_command(std::string("object pin script bootstrap ") + script_ref),
         "object pin bootstrap executes");
@@ -442,22 +443,26 @@ static void test_rfc00b9_shell_core() {
         "service start routes through userenv activation");
   check(records[3].result == "hash /usr/bin/t81\ncanon_hash deadbeef00000003",
         "hash exposes service canon_hash");
-  check(records[5].result == "object pin ok script bootstrap " + script_ref,
+  const auto compile_ref = suffix_after(records[4].result, "compile ok ");
+  check(!compile_ref.empty(), "compile returns a durable CanonRef");
+  check(records[6].result == "object pin ok script bootstrap " + script_ref,
         "object pin records named script alias");
-  check(records[6].result.starts_with("ls\nentries "), "ls reports RFC-00B9 product inventory");
-  check(records[6].result.find("script bootstrap " + script_ref) != std::string::npos,
+  check(records[7].result.starts_with("ls\nentries "), "ls reports RFC-00B9 product inventory");
+  check(records[7].result.find(compile_ref) != std::string::npos,
+        "ls exposes compiled artifact ref");
+  check(records[7].result.find("script bootstrap " + script_ref) != std::string::npos,
         "ls exposes named script object");
-  check(records[7].result == "cat @bootstrap\nAXION_SCRIPT\nshow profile\nhistory",
+  check(records[8].result == "cat @bootstrap\nAXION_SCRIPT\nshow profile\nhistory",
         "cat resolves named ref alias and decodes script payload");
-  check(records[8].result == "hash " + script_ref + "\ncanon_hash " + script_ref,
+  check(records[9].result == "hash " + script_ref + "\ncanon_hash " + script_ref,
         "hash on stored object exposes CanonRef identity");
-  check(records[9].result == "run ok " + script_ref,
+  check(records[10].result == "run ok " + script_ref,
         "run aliases through session-run path");
-  check(records[10].result.find("history canonfs://var/sessions/") != std::string::npos,
+  check(records[11].result.find("history canonfs://var/sessions/") != std::string::npos,
         "session status exposes CanonFS history path");
-  check(records[10].result.find("tier 2") != std::string::npos,
+  check(records[11].result.find("tier 2") != std::string::npos,
         "session status exposes current tier");
-  check(records[10].result.find("history_ref ") != std::string::npos,
+  check(records[11].result.find("history_ref ") != std::string::npos,
         "session status exposes persisted history CanonRef");
 }
 
