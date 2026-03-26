@@ -377,6 +377,7 @@ jobs:
             /crypto/**
             /fs/**
             /ffi/**
+            /inference/**
             /isa/**
             /vm/**
             /experimental/**

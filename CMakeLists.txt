@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 if(POLICY CMP0135)
   cmake_policy(SET CMP0135 NEW)
 endif()
-project(t81 LANGUAGES C CXX)
+project(t81 LANGUAGES C CXX ASM)
 
 # ---------- Version ----------
 set(T81_VERSION_MAJOR 1)
