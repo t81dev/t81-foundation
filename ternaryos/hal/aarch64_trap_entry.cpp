@@ -54,3 +54,10 @@ void axion_kernel_install_exception_vectors() noexcept {
 }
 
 }  // namespace t81::ternaryos::hal
+
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
+extern "C" void axion_kernel_handle_svc_trap_aarch64(
+    const t81::ternaryos::hal::AArch64TrapFrame* frame) noexcept {
+  t81::ternaryos::hal::axion_kernel_handle_svc_trap_aarch64(frame);
+}
+#endif

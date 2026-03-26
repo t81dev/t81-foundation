@@ -45,10 +45,8 @@ KernelCallWireCapabilityRecord encode_capability(
       .record_id = capability.record_id,
       .kind = static_cast<uint32_t>(capability.kind),
       .process_group_scope = capability.process_group_scope.value_or(0),
-      .delegated_by_process_group_id =
-          capability.delegated_by_process_group_id.value_or(0),
-      .delegated_by_supervisor_id =
-          capability.delegated_by_supervisor_id.value_or(0),
+      .delegated_by_process_group_id = capability.delegated_by_process_group_id.value_or(0),
+      .delegated_by_supervisor_id = capability.delegated_by_supervisor_id.value_or(0),
   };
 }
 
@@ -57,10 +55,9 @@ KernelCapabilityRecord decode_capability(
   return KernelCapabilityRecord{
       .record_id = capability.record_id,
       .kind = static_cast<KernelCapabilityKind>(capability.kind),
-      .process_group_scope =
-          (capability.flags & kWireCapabilityHasProcessGroupScope)
-              ? std::optional<ProcessGroupId>{capability.process_group_scope}
-              : std::nullopt,
+      .process_group_scope = (capability.flags & kWireCapabilityHasProcessGroupScope)
+                                 ? std::optional<ProcessGroupId>{capability.process_group_scope}
+                                 : std::nullopt,
       .kernel_seeded = (capability.flags & kWireCapabilityKernelSeeded) != 0,
       .delegated_by_process_group_id =
           (capability.flags & kWireCapabilityHasDelegatedByProcessGroupId)
@@ -79,9 +76,7 @@ KernelCallWireMessage encode_message(const ipc::CanonMessage& message) noexcept 
       .payload = message.payload,
   };
   encode_fixed_string(message.tag, wire.tag.data(), wire.tag.size());
-  std::copy(message.ref.hash.h.bytes.begin(),
-            message.ref.hash.h.bytes.end(),
-            wire.ref.begin());
+  std::copy(message.ref.hash.h.bytes.begin(), message.ref.hash.h.bytes.end(), wire.ref.begin());
   return wire;
 }
 
@@ -140,8 +135,7 @@ KernelCallWireServiceEntry encode_service_entry(
       .blocked = static_cast<uint8_t>(service.blocked ? 1 : 0),
       .suspended = static_cast<uint8_t>(service.suspended ? 1 : 0),
       .unhealthy = static_cast<uint8_t>(service.unhealthy ? 1 : 0),
-      .has_entry_descriptor =
-          static_cast<uint8_t>(service.has_entry_descriptor ? 1 : 0),
+      .has_entry_descriptor = static_cast<uint8_t>(service.has_entry_descriptor ? 1 : 0),
   };
   encode_fixed_string(service.name, entry.name.data(), entry.name.size());
   if (service.entry_descriptor.has_value()) {
@@ -150,15 +144,13 @@ KernelCallWireServiceEntry encode_service_entry(
     entry.entry_register0 = service.entry_descriptor->register0;
     entry.entry_halted = service.entry_descriptor->halted ? 1 : 0;
     entry.entry_active = service.entry_descriptor->active ? 1 : 0;
-    encode_fixed_string(service.entry_descriptor->label,
-                        entry.entry_label.data(),
+    encode_fixed_string(service.entry_descriptor->label, entry.entry_label.data(),
                         entry.entry_label.size());
   }
   return entry;
 }
 
-KernelSupervisorServiceSummaryEntry decode_service_entry(
-    const KernelCallWireServiceEntry& entry) {
+KernelSupervisorServiceSummaryEntry decode_service_entry(const KernelCallWireServiceEntry& entry) {
   KernelSupervisorServiceSummaryEntry service{
       .id = entry.id,
       .name = decode_fixed_string(entry.name.data(), entry.name.size()),
@@ -176,8 +168,7 @@ KernelSupervisorServiceSummaryEntry decode_service_entry(
         .register0 = entry.entry_register0,
         .halted = entry.entry_halted != 0,
         .active = entry.entry_active != 0,
-        .label = decode_fixed_string(entry.entry_label.data(),
-                                     entry.entry_label.size()),
+        .label = decode_fixed_string(entry.entry_label.data(), entry.entry_label.size()),
     };
   }
   return service;
@@ -185,15 +176,13 @@ KernelSupervisorServiceSummaryEntry decode_service_entry(
 
 }  // namespace
 
-bool axion_kernel_validate_wire_request_block(
-    const KernelCallWireRequestBlock& block) noexcept {
+bool axion_kernel_validate_wire_request_block(const KernelCallWireRequestBlock& block) noexcept {
   return block.header.magic == kKernelAbiWireRequestMagic &&
          block.header.version == kKernelAbiWireVersion &&
          block.header.bytes == sizeof(KernelCallWireRequestBlock);
 }
 
-bool axion_kernel_validate_wire_response_block(
-    const KernelCallWireResponseBlock& block) noexcept {
+bool axion_kernel_validate_wire_response_block(const KernelCallWireResponseBlock& block) noexcept {
   return block.header.magic == kKernelAbiWireResponseMagic &&
          block.header.version == kKernelAbiWireVersion &&
          block.header.bytes == sizeof(KernelCallWireResponseBlock);
@@ -257,8 +246,7 @@ KernelCallWireRequestBlock axion_kernel_encode_wire_request(
     block.spawn_register0 = request.spawn_descriptor->register0;
     block.spawn_halted = request.spawn_descriptor->halted ? 1 : 0;
     block.spawn_active = request.spawn_descriptor->active ? 1 : 0;
-    encode_fixed_string(request.spawn_descriptor->label,
-                        block.spawn_label.data(),
+    encode_fixed_string(request.spawn_descriptor->label, block.spawn_label.data(),
                         block.spawn_label.size());
   }
   if (request.service_id.has_value()) {
@@ -267,8 +255,8 @@ KernelCallWireRequestBlock axion_kernel_encode_wire_request(
   }
   if (request.service_name.has_value()) {
     block.flags |= kWireHasServiceName;
-    encode_fixed_string(
-        *request.service_name, block.service_name.data(), block.service_name.size());
+    encode_fixed_string(*request.service_name, block.service_name.data(),
+                        block.service_name.size());
   }
   return block;
 }
@@ -343,8 +331,7 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   block.yielded = result.yielded ? 1 : 0;
   block.executable_published = result.executable_published ? 1 : 0;
   block.executable_registered = result.executable_registered ? 1 : 0;
-  block.executable_has_entry_descriptor =
-      result.executable_entry_descriptor.has_value() ? 1 : 0;
+  block.executable_has_entry_descriptor = result.executable_entry_descriptor.has_value() ? 1 : 0;
   if (result.thread_exited) {
     block.flags |= kWireResponseThreadExited;
   }
@@ -367,14 +354,12 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
     block.service_entry_register0 = result.service_entry_descriptor->register0;
     block.service_entry_halted = result.service_entry_descriptor->halted ? 1 : 0;
     block.service_entry_active = result.service_entry_descriptor->active ? 1 : 0;
-    encode_fixed_string(result.service_entry_descriptor->label,
-                        block.service_entry_label.data(),
+    encode_fixed_string(result.service_entry_descriptor->label, block.service_entry_label.data(),
                         block.service_entry_label.size());
   }
-  block.thread_state_bits =
-      (result.thread_active ? 0x1u : 0u) |
-      (result.thread_halted ? 0x2u : 0u) |
-      (result.thread_running ? 0x4u : 0u);
+  block.thread_state_bits = (result.thread_active ? 0x1u : 0u) |
+                            (result.thread_halted ? 0x2u : 0u) |
+                            (result.thread_running ? 0x4u : 0u);
   block.thread_pc = result.thread_pc;
   block.thread_sp = result.thread_sp;
   block.thread_register0 = result.thread_register0;
@@ -401,15 +386,11 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   if (result.executable_entry_descriptor.has_value()) {
     block.executable_entry_pc = result.executable_entry_descriptor->pc;
     block.executable_entry_sp = result.executable_entry_descriptor->sp;
-    block.executable_entry_register0 =
-        result.executable_entry_descriptor->register0;
-    block.executable_entry_halted =
-        result.executable_entry_descriptor->halted ? 1 : 0;
-    block.executable_entry_active =
-        result.executable_entry_descriptor->active ? 1 : 0;
+    block.executable_entry_register0 = result.executable_entry_descriptor->register0;
+    block.executable_entry_halted = result.executable_entry_descriptor->halted ? 1 : 0;
+    block.executable_entry_active = result.executable_entry_descriptor->active ? 1 : 0;
     encode_fixed_string(result.executable_entry_descriptor->label,
-                        block.executable_entry_label.data(),
-                        block.executable_entry_label.size());
+                        block.executable_entry_label.data(), block.executable_entry_label.size());
   }
   if (result.service_id.has_value()) {
     block.flags |= kWireResponseHasServiceId;
@@ -417,12 +398,10 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
   }
   if (result.service_name.has_value()) {
     block.flags |= kWireResponseHasServiceName;
-    encode_fixed_string(
-        *result.service_name, block.service_name.data(), block.service_name.size());
+    encode_fixed_string(*result.service_name, block.service_name.data(), block.service_name.size());
   }
   if (!result.thread_label.empty()) {
-    encode_fixed_string(
-        result.thread_label, block.thread_label.data(), block.thread_label.size());
+    encode_fixed_string(result.thread_label, block.thread_label.data(), block.thread_label.size());
   }
   if (result.supervisor_id.has_value()) {
     block.flags |= kWireResponseHasSupervisorId;
@@ -448,55 +427,62 @@ KernelCallWireResponseBlock axion_kernel_encode_wire_response(
     block.flags |= kWireResponseHasSupervisorLastRecoveredGroup;
     block.supervisor_last_recovered_group = *result.supervisor_last_recovered_group;
   }
-  block.process_group_owned_page_count = result.process_group_owned_page_count;
-  block.process_group_pending_fault_count = result.process_group_pending_fault_count;
-  block.runtime_mapped_pages = result.runtime_mapped_pages;
+  block.process_group_owned_page_count =
+      static_cast<uint32_t>(result.process_group_owned_page_count);
+  block.process_group_pending_fault_count =
+      static_cast<uint32_t>(result.process_group_pending_fault_count);
+  block.runtime_mapped_pages = static_cast<uint32_t>(result.runtime_mapped_pages);
   block.runtime_boot_critical_address_space_count =
-      result.runtime_boot_critical_address_space_count;
-  block.fault_summary_recorded_faults = result.fault_summary_recorded_faults;
-  block.fault_summary_pending_faults = result.fault_summary_pending_faults;
-  block.fault_summary_delivered_faults = result.fault_summary_delivered_faults;
-  block.fault_summary_routed_thread_faults = result.fault_summary_routed_thread_faults;
-  block.fault_summary_quarantined_threads = result.fault_summary_quarantined_threads;
+      static_cast<uint32_t>(result.runtime_boot_critical_address_space_count);
+  block.fault_summary_recorded_faults = static_cast<uint32_t>(result.fault_summary_recorded_faults);
+  block.fault_summary_pending_faults = static_cast<uint32_t>(result.fault_summary_pending_faults);
+  block.fault_summary_delivered_faults =
+      static_cast<uint32_t>(result.fault_summary_delivered_faults);
+  block.fault_summary_routed_thread_faults =
+      static_cast<uint32_t>(result.fault_summary_routed_thread_faults);
+  block.fault_summary_quarantined_threads =
+      static_cast<uint32_t>(result.fault_summary_quarantined_threads);
   block.supervisor_fault_notifications = result.supervisor_fault_notifications;
   block.supervisor_acknowledgements = result.supervisor_acknowledgements;
   block.supervisor_recovered_groups = result.supervisor_recovered_groups;
   block.supervisor_capability_transitions = result.supervisor_capability_transitions;
   block.supervisor_delegated_capability_count = result.supervisor_delegated_capability_count;
-  block.supervisor_managed_group_count = result.supervisor_managed_group_count;
+  block.supervisor_managed_group_count =
+      static_cast<uint32_t>(result.supervisor_managed_group_count);
   block.supervisor_managed_faulted_group_count =
-      result.supervisor_managed_faulted_group_count;
-  block.supervisor_pending_group_count = result.supervisor_pending_group_count;
-  block.supervisor_service_count = result.supervisor_service_count;
-  block.supervisor_blocked_service_count = result.supervisor_blocked_service_count;
+      static_cast<uint32_t>(result.supervisor_managed_faulted_group_count);
+  block.supervisor_pending_group_count =
+      static_cast<uint32_t>(result.supervisor_pending_group_count);
+  block.supervisor_service_count = static_cast<uint32_t>(result.supervisor_service_count);
+  block.supervisor_blocked_service_count =
+      static_cast<uint32_t>(result.supervisor_blocked_service_count);
   block.supervisor_suspended_service_count =
-      result.supervisor_suspended_service_count;
+      static_cast<uint32_t>(result.supervisor_suspended_service_count);
   block.supervisor_unhealthy_service_count =
-      result.supervisor_unhealthy_service_count;
+      static_cast<uint32_t>(result.supervisor_unhealthy_service_count);
   block.supervisor_capability_process_group_count =
-      result.supervisor_capability_process_group_count;
+      static_cast<uint32_t>(result.supervisor_capability_process_group_count);
   block.supervisor_delegation_process_group_count =
-      result.supervisor_delegation_process_group_count;
-  block.supervisor_delegation_entry_count = result.supervisor_delegation_entry_count;
+      static_cast<uint32_t>(result.supervisor_delegation_process_group_count);
+  block.supervisor_delegation_entry_count =
+      static_cast<uint32_t>(result.supervisor_delegation_entry_count);
   block.supervisor_last_capability_transition_group_id =
       result.supervisor_last_capability_transition_group_id.value_or(0);
   block.supervisor_last_capability_transition_record_id =
       result.supervisor_last_capability_transition_record_id.value_or(0);
-  block.supervisor_service_lifecycle_transitions =
-      result.supervisor_service_lifecycle_transitions;
-  block.capability_count = static_cast<uint32_t>(
-      std::min(result.capabilities.size(), block.capabilities.size()));
+  block.supervisor_service_lifecycle_transitions = result.supervisor_service_lifecycle_transitions;
+  block.capability_count =
+      static_cast<uint32_t>(std::min(result.capabilities.size(), block.capabilities.size()));
   for (std::size_t i = 0; i < block.capability_count; ++i) {
     block.capabilities[i] = encode_capability(result.capabilities[i]);
   }
-  const auto service_count = std::min(result.supervisor_services.size(),
-                                      block.services.size());
+  const auto service_count = std::min(result.supervisor_services.size(), block.services.size());
   for (std::size_t i = 0; i < service_count; ++i) {
     block.services[i] = encode_service_entry(result.supervisor_services[i]);
   }
-  block.delegation_entry_count = static_cast<uint32_t>(
-      std::min(result.supervisor_delegation_entries.size(),
-               static_cast<std::size_t>(kKernelAbiWireCapabilitySlots)));
+  block.delegation_entry_count =
+      static_cast<uint32_t>(std::min(result.supervisor_delegation_entries.size(),
+                                     static_cast<std::size_t>(kKernelAbiWireCapabilitySlots)));
   return block;
 }
 
@@ -510,6 +496,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .rejection = static_cast<KernelCallRejection>(block.rejection),
       .action_performed = block.action_performed != 0,
       .yielded = block.yielded != 0,
+      .capabilities = {},
       .executable_registered = block.executable_registered != 0,
       .executable_published = block.executable_published != 0,
       .service_registered = block.service_registered != 0,
@@ -519,8 +506,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .service_blocked = block.service_blocked != 0,
       .process_group_owned_page_count = block.process_group_owned_page_count,
       .process_group_pending_fault_count = block.process_group_pending_fault_count,
-      .runtime_boot_critical_address_space_count =
-          block.runtime_boot_critical_address_space_count,
+      .runtime_boot_critical_address_space_count = block.runtime_boot_critical_address_space_count,
       .runtime_mapped_pages = block.runtime_mapped_pages,
       .fault_summary_recorded_faults = block.fault_summary_recorded_faults,
       .fault_summary_pending_faults = block.fault_summary_pending_faults,
@@ -528,23 +514,19 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .fault_summary_routed_thread_faults = block.fault_summary_routed_thread_faults,
       .fault_summary_quarantined_threads = block.fault_summary_quarantined_threads,
       .supervisor_managed_group_count = block.supervisor_managed_group_count,
-      .supervisor_managed_faulted_group_count =
-          block.supervisor_managed_faulted_group_count,
+      .supervisor_managed_faulted_group_count = block.supervisor_managed_faulted_group_count,
       .supervisor_pending_group_count = block.supervisor_pending_group_count,
       .supervisor_fault_notifications = block.supervisor_fault_notifications,
       .supervisor_acknowledgements = block.supervisor_acknowledgements,
       .supervisor_recovered_groups = block.supervisor_recovered_groups,
-      .supervisor_capability_process_group_count =
-          block.supervisor_capability_process_group_count,
+      .supervisor_capability_process_group_count = block.supervisor_capability_process_group_count,
       .supervisor_service_count = block.supervisor_service_count,
       .supervisor_blocked_service_count = block.supervisor_blocked_service_count,
       .supervisor_suspended_service_count = block.supervisor_suspended_service_count,
       .supervisor_unhealthy_service_count = block.supervisor_unhealthy_service_count,
       .supervisor_capability_transitions = block.supervisor_capability_transitions,
-      .supervisor_service_lifecycle_transitions =
-          block.supervisor_service_lifecycle_transitions,
-      .supervisor_delegation_process_group_count =
-          block.supervisor_delegation_process_group_count,
+      .supervisor_service_lifecycle_transitions = block.supervisor_service_lifecycle_transitions,
+      .supervisor_delegation_process_group_count = block.supervisor_delegation_process_group_count,
       .supervisor_delegation_entry_count = block.supervisor_delegation_entry_count,
       .supervisor_delegated_capability_count = block.supervisor_delegated_capability_count,
   };
@@ -566,8 +548,8 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
         .register0 = block.service_entry_register0,
         .halted = block.service_entry_halted != 0,
         .active = block.service_entry_active != 0,
-        .label = decode_fixed_string(block.service_entry_label.data(),
-                                     block.service_entry_label.size()),
+        .label =
+            decode_fixed_string(block.service_entry_label.data(), block.service_entry_label.size()),
     };
   }
   result.thread_exited = (block.flags & kWireResponseThreadExited) != 0;
@@ -596,8 +578,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
     result.service_id = block.service_id;
   }
   if (block.flags & kWireResponseHasServiceName) {
-    result.service_name =
-        decode_fixed_string(block.service_name.data(), block.service_name.size());
+    result.service_name = decode_fixed_string(block.service_name.data(), block.service_name.size());
   }
   if (block.flags & kWireResponseHasSupervisorId) {
     result.supervisor_id = block.supervisor_id;
@@ -614,8 +595,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
   result.thread_active = (block.thread_state_bits & 0x1u) != 0;
   result.thread_halted = (block.thread_state_bits & 0x2u) != 0;
   result.thread_running = (block.thread_state_bits & 0x4u) != 0;
-  result.thread_label =
-      decode_fixed_string(block.thread_label.data(), block.thread_label.size());
+  result.thread_label = decode_fixed_string(block.thread_label.data(), block.thread_label.size());
   if (block.flags & kWireResponseHasSupervisorLastPendingGroup) {
     result.supervisor_last_pending_group = block.supervisor_last_pending_group;
   }
@@ -636,9 +616,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
   for (std::size_t i = 0; i < block.capability_count && i < block.capabilities.size(); ++i) {
     result.capabilities.push_back(decode_capability(block.capabilities[i]));
   }
-  for (std::size_t i = 0;
-       i < block.supervisor_service_count && i < block.services.size();
-       ++i) {
+  for (std::size_t i = 0; i < block.supervisor_service_count && i < block.services.size(); ++i) {
     result.supervisor_services.push_back(decode_service_entry(block.services[i]));
   }
   return result;
@@ -659,12 +637,10 @@ std::optional<AddressSpaceId> resolve_current_caller_address_space(
   return state.find_process_group_address_space(caller_runtime->process_group_id);
 }
 
-std::optional<KernelFaultRecord> resolve_address_space_span_fault(
-    const KernelRuntimeState& state,
-    AddressSpaceId address_space_id,
-    uint64_t tva,
-    std::size_t size,
-    mmu::MmuAccessMode mode) {
+std::optional<KernelFaultRecord> resolve_address_space_span_fault(const KernelRuntimeState& state,
+                                                                  AddressSpaceId address_space_id,
+                                                                  uint64_t tva, std::size_t size,
+                                                                  mmu::MmuAccessMode mode) {
   if (!mmu::tva_valid(tva) ||
       (size > 0 && (!mmu::tva_valid(tva + size - 1) || tva + size - 1 < tva))) {
     return KernelFaultRecord{
@@ -677,8 +653,7 @@ std::optional<KernelFaultRecord> resolve_address_space_span_fault(
   }
   for (std::size_t i = 0; i < size; ++i) {
     const auto current_tva = tva + i;
-    const auto translation =
-        mmu::mmu_translate_checked(state.page_table, current_tva, mode);
+    const auto translation = mmu::mmu_translate_checked(state.page_table, current_tva, mode);
     if (translation.fault != mmu::MmuFault::None) {
       return KernelFaultRecord{
           .platform_id = state.platform_id,
@@ -706,6 +681,7 @@ KernelCallWireResponseBlock make_invalid_wire_response() noexcept {
   return axion_kernel_encode_wire_response(KernelCallResult{
       .status = KernelCallStatus::InvalidRequest,
       .rejection = KernelCallRejection::None,
+      .capabilities = {},
   });
 }
 
@@ -715,6 +691,7 @@ KernelCallWireResponseBlock make_invalid_span_wire_response(
       .status = KernelCallStatus::InvalidRequest,
       .rejection = KernelCallRejection::InvalidAddressSpaceSpan,
       .fault = fault,
+      .capabilities = {},
   });
 }
 
@@ -738,22 +715,18 @@ bool axion_kernel_call_wire(KernelRuntimeState& state,
     return true;
   }
 
-  *response_block = axion_kernel_encode_wire_response(
-      axion_kernel_call(state, *request));
+  *response_block = axion_kernel_encode_wire_response(axion_kernel_call(state, *request));
   return true;
 }
 
-bool axion_kernel_call_wire_bytes(KernelRuntimeState& state,
-                                  const void* request_bytes,
-                                  std::size_t request_size,
-                                  void* response_bytes,
+bool axion_kernel_call_wire_bytes(KernelRuntimeState& state, const void* request_bytes,
+                                  std::size_t request_size, void* response_bytes,
                                   std::size_t response_size) noexcept {
   if (!response_bytes || response_size < sizeof(KernelCallWireResponseBlock)) {
     return false;
   }
 
-  auto* response_block =
-      static_cast<KernelCallWireResponseBlock*>(response_bytes);
+  auto* response_block = static_cast<KernelCallWireResponseBlock*>(response_bytes);
   if (!request_bytes || request_size < sizeof(KernelCallWireRequestBlock)) {
     *response_block = make_invalid_wire_response();
     return true;
@@ -764,16 +737,13 @@ bool axion_kernel_call_wire_bytes(KernelRuntimeState& state,
   return axion_kernel_call_wire(state, &request_block, response_block);
 }
 
-bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
-                                uint64_t request_tva,
+bool axion_kernel_call_wire_tva(KernelRuntimeState& state, uint64_t request_tva,
                                 uint64_t response_tva) noexcept {
   const auto caller_address_space_id = resolve_current_caller_address_space(state);
   if (!caller_address_space_id.has_value()) {
     return false;
   }
-  if (!axion_kernel_validate_address_space_span(state,
-                                                *caller_address_space_id,
-                                                response_tva,
+  if (!axion_kernel_validate_address_space_span(state, *caller_address_space_id, response_tva,
                                                 sizeof(KernelCallWireResponseBlock),
                                                 mmu::MmuAccessMode::Write)) {
     const auto* as = state.find_address_space(*caller_address_space_id);
@@ -782,31 +752,22 @@ bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
     }
     return false;
   }
-  if (!axion_kernel_validate_address_space_span(state,
-                                                *caller_address_space_id,
-                                                request_tva,
+  if (!axion_kernel_validate_address_space_span(state, *caller_address_space_id, request_tva,
                                                 sizeof(KernelCallWireRequestBlock),
                                                 mmu::MmuAccessMode::Read)) {
-    const auto fault = resolve_address_space_span_fault(state,
-                                                        *caller_address_space_id,
-                                                        request_tva,
-                                                        sizeof(KernelCallWireRequestBlock),
-                                                        mmu::MmuAccessMode::Read);
+    const auto fault = resolve_address_space_span_fault(
+        state, *caller_address_space_id, request_tva, sizeof(KernelCallWireRequestBlock),
+        mmu::MmuAccessMode::Read);
     if (!fault.has_value()) {
       return false;
     }
     const auto response_block = make_invalid_span_wire_response(*fault);
     return axion_kernel_write_address_space_bytes(
-        state,
-        *caller_address_space_id,
-        response_tva,
-        reinterpret_cast<const std::byte*>(&response_block),
-        sizeof(response_block));
+        state, *caller_address_space_id, response_tva,
+        reinterpret_cast<const std::byte*>(&response_block), sizeof(response_block));
   }
   KernelCallWireRequestBlock request_block;
-  if (!axion_kernel_read_address_space_bytes(state,
-                                             *caller_address_space_id,
-                                             request_tva,
+  if (!axion_kernel_read_address_space_bytes(state, *caller_address_space_id, request_tva,
                                              reinterpret_cast<std::byte*>(&request_block),
                                              sizeof(request_block))) {
     return false;
@@ -817,12 +778,9 @@ bool axion_kernel_call_wire_tva(KernelRuntimeState& state,
     return false;
   }
 
-  return axion_kernel_write_address_space_bytes(
-      state,
-      *caller_address_space_id,
-      response_tva,
-      reinterpret_cast<const std::byte*>(&response_block),
-      sizeof(response_block));
+  return axion_kernel_write_address_space_bytes(state, *caller_address_space_id, response_tva,
+                                                reinterpret_cast<const std::byte*>(&response_block),
+                                                sizeof(response_block));
 }
 
 }  // namespace t81::ternaryos::kernel
