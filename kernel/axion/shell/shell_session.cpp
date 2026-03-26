@@ -11,6 +11,9 @@
 #include "dev/ttf.hpp"
 #include "hal/hal.hpp"
 #include "hal/virtualbox_guest_devices.hpp"
+#include "t81/axion/userenv/service_registry.hpp"
+#include "t81/axion/userenv/session_manager.hpp"
+#include "t81/axion/userenv/t81sh.hpp"
 
 #include <algorithm>
 #include <array>
@@ -271,6 +274,125 @@ std::vector<std::string> hosted_command_names() {
   return names;
 }
 
+userenv::ServiceRegistry make_hosted_service_registry() {
+  using userenv::ActivationMode;
+  using userenv::ServiceEntry;
+
+  ServiceEntry session_mgr;
+  session_mgr.id = "t81-session-mgr";
+  session_mgr.binary = "/bin/t81-session-mgr";
+  session_mgr.canon_hash = "deadbeef00000001";
+  session_mgr.activation = ActivationMode::Required;
+  session_mgr.capabilities = {"SessionCreate", "TtyAllocate", "ServiceSpawn"};
+  session_mgr.start_timeout_ms = 2000;
+
+  ServiceEntry canonfs_daemon;
+  canonfs_daemon.id = "t81-canonfs-daemon";
+  canonfs_daemon.binary = "/bin/t81-canonfs-daemon";
+  canonfs_daemon.canon_hash = "deadbeef00000002";
+  canonfs_daemon.activation = ActivationMode::Required;
+  canonfs_daemon.capabilities = {"CanonFSWrite"};
+  canonfs_daemon.start_timeout_ms = 1000;
+
+  ServiceEntry studio;
+  studio.id = "t81-studio";
+  studio.binary = "/usr/bin/t81";
+  studio.canon_hash = "deadbeef00000003";
+  studio.activation = ActivationMode::OnDemand;
+  studio.depends = {"t81-session-mgr"};
+  studio.capabilities = {"TtyRead", "TtyWrite"};
+  studio.start_timeout_ms = 5000;
+  studio.restart_policy = "never";
+
+  ServiceEntry agent;
+  agent.id = "t81-agent";
+  agent.binary = "/usr/bin/t81";
+  agent.canon_hash = "deadbeef00000004";
+  agent.activation = ActivationMode::OnDemand;
+  agent.depends = {"t81-session-mgr"};
+  agent.capabilities = {"TtyRead", "TtyWrite"};
+  agent.start_timeout_ms = 5000;
+  agent.restart_policy = "never";
+
+  return userenv::make_service_registry(
+      {session_mgr, canonfs_daemon, studio, agent});
+}
+
+std::vector<userenv::PrincipalEntry> make_hosted_principals() {
+  userenv::PrincipalEntry root;
+  root.id = 1;
+  root.name = "root";
+  root.password_hash = "argon2id:correct_hash";
+  root.capabilities = {"SessionCreate", "ServiceSpawn", "TtyAllocate",
+                       "CanonFSWrite", "TierElevate", "PrincipalAdmin"};
+  root.default_tier = 1;
+
+  userenv::PrincipalEntry agent;
+  agent.id = 2;
+  agent.name = "agent";
+  agent.password_hash = "argon2id:agent_hash";
+  agent.capabilities = {"SessionCreate", "ServiceSpawn", "TtyAllocate"};
+  agent.default_tier = 2;
+
+  return {root, agent};
+}
+
+const char* activation_mode_text(userenv::ActivationMode mode) {
+  switch (mode) {
+    case userenv::ActivationMode::Required:
+      return "required";
+    case userenv::ActivationMode::OnDemand:
+      return "on_demand";
+    case userenv::ActivationMode::Manual:
+      return "manual";
+  }
+  return "unknown";
+}
+
+std::string hosted_service_text(const userenv::ServiceRegistry& registry,
+                                const userenv::SessionRecord& session,
+                                const ParsedCommand& parsed) {
+  const auto& words = parsed.words;
+  if (words.size() == 1) {
+    return "service commands\nlist\nshow <id>\nstart <id>";
+  }
+
+  if (words.size() == 2 && words[1] == "list") {
+    std::string out = "service list " + std::to_string(registry.services.size());
+    for (const auto& service : registry.services) {
+      out += "\n" + service.id + " " + activation_mode_text(service.activation);
+    }
+    return out;
+  }
+
+  if (words.size() == 3 && words[1] == "show") {
+    const auto* svc = registry.find(words[2]);
+    if (svc == nullptr) return "service show missing";
+
+    std::string out = "service show " + svc->id;
+    out += "\nbinary " + svc->binary;
+    out += "\nactivation " + std::string(activation_mode_text(svc->activation));
+    out += "\nrestart " + svc->restart_policy;
+    out += "\ncanon_hash " + svc->canon_hash;
+    out += "\ncapabilities " + std::to_string(svc->capabilities.size());
+    for (const auto& cap : svc->capabilities) out += "\ncap " + cap;
+    return out;
+  }
+
+  if (words.size() == 3 && words[1] == "start") {
+    std::string service_id = words[2];
+    if (service_id == "studio") service_id = "t81-studio";
+    if (service_id == "agent") service_id = "t81-agent";
+    const auto result = userenv::activate_service(registry, service_id, session.session_id);
+    if (!result.success) {
+      return "service start denied " + service_id + "\nreason " + result.rejection_reason;
+    }
+    return "service start ok " + service_id;
+  }
+
+  return "service invalid";
+}
+
 std::string hosted_help_text() {
   std::string text = "builtins";
   shell_emit_help(ShellSurface::HostedPhase5, false, [&](const char* name, const char* summary) {
@@ -312,7 +434,8 @@ std::string hosted_builtin_text(ShellBuiltinCommand command) {
 
 std::string hosted_session_status_text(const ShellSessionState& state,
                                        const std::vector<t81::canonfs::CanonRef>& stored_refs,
-                                       bool durable_anchor_tracked) {
+                                       bool durable_anchor_tracked,
+                                       const std::optional<userenv::T81Shell>& user_shell) {
   ShellCommandContext context{};
   context.surface = ShellSurface::HostedPhase5;
   context.profile_summary = state.profile_summary.c_str();
@@ -337,6 +460,11 @@ std::string hosted_session_status_text(const ShellSessionState& state,
       });
   std::string text = out.str();
   if (!text.empty() && text.back() == '\n') text.pop_back();
+  if (user_shell.has_value()) {
+    text += "\nprompt " + user_shell->prompt();
+    text += "\nhistory " + user_shell->history_canon_path();
+    text += "\ntier " + std::to_string(user_shell->tier());
+  }
   return text;
 }
 
@@ -411,8 +539,11 @@ std::vector<std::string> default_shell_command_sequence() {
   };
 }
 
-ShellSession::ShellSession(bool quiet_boot) : quiet_boot_(quiet_boot), store_path_(unique_store_path()) {
+ShellSession::ShellSession(bool quiet_boot)
+    : quiet_boot_(quiet_boot), store_path_(unique_store_path()) {
   state_.available_commands = hosted_command_names();
+  service_registry_ = make_hosted_service_registry();
+  session_manager_.load_principals(make_hosted_principals());
 }
 
 ShellSession::~ShellSession() = default;
@@ -432,6 +563,15 @@ bool ShellSession::initialize() {
   state_.profile_summary = guest->profile_summary;
   state_.storage_binding_name = guest->storage.binding_name;
   state_.display_binding_name = guest->display.binding_name;
+
+  const auto login =
+      session_manager_.login("root",
+                             userenv::SessionManager::kAnonymousHash,
+                             "/dev/tty0",
+                             0);
+  if (login.status != userenv::LoginStatus::Success) return false;
+  user_shell_.emplace(login.record, 1u);
+
   if (!backing.flush()) return false;
   return refresh_render();
 }
@@ -524,10 +664,12 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     case ShellBuiltinCommand::Tui:
     case ShellBuiltinCommand::Studio:
+      if (user_shell_.has_value()) (void)user_shell_->exec_command("studio");
       state_.command_records.push_back(
           {command, hosted_builtin_text(ShellBuiltinCommand::Studio)});
       return refresh_render();
     case ShellBuiltinCommand::Agent:
+      if (user_shell_.has_value()) (void)user_shell_->exec_command("agent");
       state_.command_records.push_back(
           {command, hosted_builtin_text(ShellBuiltinCommand::Agent)});
       return refresh_render();
@@ -540,6 +682,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
           {command, hosted_builtin_text(ShellBuiltinCommand::Version)});
       return refresh_render();
     case ShellBuiltinCommand::Policy:
+      if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
       state_.command_records.push_back(
           {command, hosted_builtin_text(ShellBuiltinCommand::Policy)});
       return refresh_render();
@@ -547,9 +690,38 @@ bool ShellSession::execute_command(std::string_view command_view) {
       break;
   }
 
-  if (words[0] == "exit" || words[0] == "cd" || words[0] == "ls" || words[0] == "cat" ||
-      words[0] == "hash" || words[0] == "run" || words[0] == "compile" ||
-      words[0] == "service" || words[0] == "tier") {
+  if (words[0] == "exit") {
+    if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
+    state_.command_records.push_back({command, "session exit requested"});
+    return refresh_render();
+  }
+
+  if (words[0] == "tier") {
+    if (!user_shell_.has_value()) {
+      state_.command_records.push_back({command, "tier unavailable"});
+      return refresh_render();
+    }
+    const bool ok = user_shell_->exec_command(command);
+    const auto tier = user_shell_->tier();
+    state_.command_records.push_back(
+        {command, ok ? "tier ok " + std::to_string(tier) : "tier failed"});
+    return refresh_render();
+  }
+
+  if (words[0] == "service") {
+    if (!user_shell_.has_value()) {
+      state_.command_records.push_back({command, "service unavailable"});
+      return refresh_render();
+    }
+    (void)user_shell_->exec_command(command);
+    state_.command_records.push_back(
+        {command, hosted_service_text(service_registry_, user_shell_->session(), parsed)});
+    return refresh_render();
+  }
+
+  if (words[0] == "cd" || words[0] == "ls" || words[0] == "cat" ||
+      words[0] == "hash" || words[0] == "run" || words[0] == "compile") {
+    if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
     state_.command_records.push_back({command, hosted_rfc00b9_stub(words[0])});
     return refresh_render();
   }
@@ -663,7 +835,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words.size() == 2 && words[0] == "session" && words[1] == "status") {
     state_.command_records.push_back(
-        {command, hosted_session_status_text(state_, stored_refs_, history_ref_.has_value())});
+        {command, hosted_session_status_text(state_, stored_refs_, history_ref_.has_value(), user_shell_)});
     return refresh_render();
   }
 
@@ -690,6 +862,11 @@ bool ShellSession::execute_command(std::string_view command_view) {
         << "durable refs " << state_.durable_ref_count << '\n'
         << "durable anchor " << (state_.durable_anchor_present ? "present" : "missing") << '\n'
         << "recovered " << state_.recovered_entries;
+    if (user_shell_.has_value()) {
+      out << '\n' << "prompt " << user_shell_->prompt()
+          << '\n' << "history " << user_shell_->history_canon_path()
+          << '\n' << "tier " << user_shell_->tier();
+    }
     state_.command_records.push_back({command, out.str()});
     return refresh_render();
   }

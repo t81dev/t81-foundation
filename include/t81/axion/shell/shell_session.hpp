@@ -7,6 +7,9 @@
 #include <vector>
 
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/axion/userenv/service_registry.hpp"
+#include "t81/axion/userenv/session_manager.hpp"
+#include "t81/axion/userenv/t81sh.hpp"
 #include "ternaryos/shell/shared_command_core.hpp"
 
 namespace t81::ternaryos {
@@ -78,6 +81,9 @@ private:
   bool        quiet_boot_{false};
   std::string store_path_;
   ShellSessionState state_;
+  userenv::ServiceRegistry service_registry_;
+  userenv::SessionManager  session_manager_;
+  std::optional<userenv::T81Shell> user_shell_;
   std::optional<t81::canonfs::CanonRef> history_ref_;
   std::vector<t81::canonfs::CanonRef> stored_refs_;
   std::vector<ShellNamedRef> named_refs_;

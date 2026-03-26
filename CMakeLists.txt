@@ -710,8 +710,9 @@ if(T81_ENABLE_TERNARYOS)
   target_include_directories(t81_ternaryos_userenv PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
-  target_link_libraries(t81_ternaryos_userenv PUBLIC t81_ternaryos_shell)
+  target_link_libraries(t81_ternaryos_userenv PUBLIC t81_ternaryos_hal)
   target_compile_features(t81_ternaryos_userenv PUBLIC ${T81_CXX_STD_FEATURE})
+  target_link_libraries(t81_ternaryos_shell PUBLIC t81_ternaryos_userenv)
 
   add_executable(t81_ternaryos_demo
     ternaryos/apps/demo.cpp)

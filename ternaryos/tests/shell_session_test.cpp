@@ -407,6 +407,31 @@ static void test_named_shell_objects() {
         "session run @bootstrap reports successful execution");
 }
 
+static void test_rfc00b9_shell_core() {
+  std::printf("\n[S6] RFC-00B9 hosted shell core\n");
+
+  auto session = t81::ternaryos::ShellSession::create(true);
+  check(session.has_value(), "rfc00b9 session creates");
+  if (!session.has_value()) return;
+
+  check(session->execute_command("tier 2"), "tier builtin executes");
+  check(session->execute_command("service list"), "service list executes");
+  check(session->execute_command("service start studio"), "service start studio executes");
+  check(session->execute_command("session status"), "session status exposes userenv shell state");
+
+  const auto& records = session->state().command_records;
+  check(records[0].result == "tier ok 2", "tier updates hosted session tier");
+  check(records[1].result.starts_with("service list "), "service list reports registry inventory");
+  check(records[1].result.find("t81-studio on_demand") != std::string::npos,
+        "service list exposes studio service");
+  check(records[2].result == "service start ok t81-studio",
+        "service start routes through userenv activation");
+  check(records[3].result.find("history canonfs://var/sessions/") != std::string::npos,
+        "session status exposes CanonFS history path");
+  check(records[3].result.find("tier 2") != std::string::npos,
+        "session status exposes current tier");
+}
+
 int main() {
   std::printf("== Axion Shell Session Test ==\n");
   test_scripted_shell_session();
@@ -414,6 +439,7 @@ int main() {
   test_shell_script_objects();
   test_named_shell_refs();
   test_named_shell_objects();
+  test_rfc00b9_shell_core();
 
   std::printf("\nSummary: %d passed, %d failed\n", g_pass, g_fail);
   return g_fail == 0 ? 0 : 1;
