@@ -423,6 +423,10 @@ static void test_rfc00b9_shell_core() {
   const auto script_ref =
       suffix_after(session->state().command_records[4].result, "canon script ok ");
   check(!script_ref.empty(), "store put script returns a CanonRef");
+  check(session->execute_command(std::string("object pin script bootstrap ") + script_ref),
+        "object pin bootstrap executes");
+  check(session->execute_command("ls"), "ls executes");
+  check(session->execute_command("cat @bootstrap"), "cat @bootstrap executes");
   check(session->execute_command(std::string("hash ") + script_ref),
         "hash on CanonFS object executes");
   check(session->execute_command(std::string("run ") + script_ref),
@@ -438,13 +442,20 @@ static void test_rfc00b9_shell_core() {
         "service start routes through userenv activation");
   check(records[3].result == "hash /usr/bin/t81\ncanon_hash deadbeef00000003",
         "hash exposes service canon_hash");
-  check(records[5].result == "hash " + script_ref + "\ncanon_hash " + script_ref,
+  check(records[5].result == "object pin ok script bootstrap " + script_ref,
+        "object pin records named script alias");
+  check(records[6].result.starts_with("ls\nentries "), "ls reports RFC-00B9 product inventory");
+  check(records[6].result.find("script bootstrap " + script_ref) != std::string::npos,
+        "ls exposes named script object");
+  check(records[7].result == "cat @bootstrap\nAXION_SCRIPT\nshow profile\nhistory",
+        "cat resolves named ref alias and decodes script payload");
+  check(records[8].result == "hash " + script_ref + "\ncanon_hash " + script_ref,
         "hash on stored object exposes CanonRef identity");
-  check(records[6].result == "run ok " + script_ref,
+  check(records[9].result == "run ok " + script_ref,
         "run aliases through session-run path");
-  check(records[7].result.find("history canonfs://var/sessions/") != std::string::npos,
+  check(records[10].result.find("history canonfs://var/sessions/") != std::string::npos,
         "session status exposes CanonFS history path");
-  check(records[7].result.find("tier 2") != std::string::npos,
+  check(records[10].result.find("tier 2") != std::string::npos,
         "session status exposes current tier");
 }
 

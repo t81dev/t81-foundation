@@ -396,7 +396,14 @@ std::string hosted_service_text(const userenv::ServiceRegistry& registry,
 std::optional<t81::canonfs::CanonRef> hosted_path_ref(
     std::string_view path,
     const std::vector<ShellNamedRef>& named_refs) {
-  return resolve_named_or_raw_ref(path, named_refs);
+  const std::string path_key(path);
+  if (const auto ref = resolve_named_or_raw_ref(path, named_refs); ref.has_value()) {
+    return ref;
+  }
+  for (const auto& named : named_refs) {
+    if (named.label == path_key) return named.ref;
+  }
+  return std::nullopt;
 }
 
 std::string hosted_hash_text(const userenv::ServiceRegistry& registry,
@@ -413,6 +420,28 @@ std::string hosted_hash_text(const userenv::ServiceRegistry& registry,
   }
 
   return "hash missing";
+}
+
+std::string hosted_ls_text(const std::vector<t81::canonfs::CanonRef>& stored_refs,
+                           const std::vector<ShellNamedRef>& named_refs,
+                           const std::vector<ShellNamedObject>& named_objects) {
+  std::ostringstream out;
+  out << "ls";
+  const std::size_t total_entries =
+      stored_refs.size() + named_refs.size() + named_objects.size();
+  out << '\n' << "entries " << total_entries;
+
+  for (const auto& object : named_objects) {
+    out << '\n' << object.kind << ' ' << object.name << ' ' << canon_ref_text(object.ref);
+  }
+  for (const auto& named : named_refs) {
+    out << '\n' << '@' << named.label << ' ' << canon_ref_text(named.ref);
+  }
+  for (const auto& ref : stored_refs) {
+    out << '\n' << canon_ref_text(ref);
+  }
+
+  return out.str();
 }
 
 std::string hosted_help_text() {
@@ -783,8 +812,14 @@ bool ShellSession::execute_command(std::string_view command_view) {
     return refresh_render();
   }
 
-  if (words[0] == "cd" || words[0] == "ls" || words[0] == "cat" ||
-      words[0] == "compile") {
+  if (words[0] == "ls") {
+    if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
+    state_.command_records.push_back(
+        {command, hosted_ls_text(stored_refs_, named_refs_, named_objects_)});
+    return refresh_render();
+  }
+
+  if (words[0] == "cd" || words[0] == "compile") {
     if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
     state_.command_records.push_back({command, hosted_rfc00b9_stub(words[0])});
     return refresh_render();
@@ -960,6 +995,48 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (hal_main(guest->boot_context) != 0) return false;
 
   CanonStore store(*guest->storage.device);
+
+  if (words[0] == "cat") {
+    if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
+    if (words.size() < 2) {
+      state_.command_records.push_back({command, "cat invalid"});
+      return refresh_render();
+    }
+
+    const std::string path_key(words[1]);
+    std::optional<t81::canonfs::CanonRef> ref = resolve_named_or_raw_ref(path_key, named_refs_);
+    if (!ref.has_value()) {
+      for (const auto& named : named_refs_) {
+        if (named.label == path_key) {
+          ref = named.ref;
+          break;
+        }
+      }
+    }
+    if (!ref.has_value()) {
+      for (const auto& object : named_objects_) {
+        if (object.name == path_key) {
+          ref = object.ref;
+          break;
+        }
+      }
+    }
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "cat missing"});
+      return refresh_render();
+    }
+
+    state_.recovered_entries = store.rebuild_index();
+    const auto block = store.get(*ref);
+    if (!block.has_value()) {
+      state_.command_records.push_back({command, "cat missing"});
+      return refresh_render();
+    }
+
+    state_.command_records.push_back(
+        {command, "cat " + words[1] + "\n" + decode_text_block(*block)});
+    return refresh_render();
+  }
 
   if (words.size() == 2 && words[0] == "session" && words[1] == "checkpoint") {
     state_.recovered_entries = store.rebuild_index();
