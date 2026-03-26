@@ -47,6 +47,9 @@ int canonize_tensor(const std::string& input_file,
                     const std::filesystem::path& canonfs_root = ".t81_canonfs");
 int canonfs_put_file(const std::filesystem::path& input,
                      const std::filesystem::path& canonfs_root = ".t81_canonfs");
+int canonfs_import(const std::filesystem::path& input,
+                   const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                   bool as_json = false);
 int canonfs_list(const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);
 int canonfs_get(const std::string& canonical_hash,
                 const std::optional<std::filesystem::path>& output_path = std::nullopt,
@@ -69,6 +72,10 @@ int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::strin
 int canonfs_rollback(const std::string& snapshot_hash,
                      const std::filesystem::path& canonfs_root = ".t81_canonfs",
                      bool as_json = false);
+int canonfs_export(const std::string& canonical_hash,
+                   const std::filesystem::path& output_path,
+                   const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                   bool as_json = false);
 
 int determinism_hash_file(const std::filesystem::path& input, bool as_json = false);
 int determinism_hash_trace(const std::filesystem::path& input, bool as_json = false);

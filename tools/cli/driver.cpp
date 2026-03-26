@@ -39,6 +39,7 @@
 #include <map>
 #include <optional>
 #include <set>
+#include <span>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -511,6 +512,389 @@ struct CanonFsListEntry {
   std::string hash;
   std::uintmax_t size_bytes = 0;
 };
+
+struct CanonFsInterchangeEntry {
+  std::string path;
+  std::string object_ref;
+  std::size_t size_bytes = 0;
+};
+
+struct CanonFsInterchangeManifest {
+  std::vector<CanonFsInterchangeEntry> entries;
+};
+
+constexpr std::string_view kCanonFsInterchangeManifestSchema =
+    "t81.canonfs-interchange-manifest.v1";
+
+std::string bytes_to_string(const std::vector<std::byte>& bytes) {
+  std::string text;
+  text.reserve(bytes.size());
+  for (std::byte b : bytes) {
+    text.push_back(static_cast<char>(std::to_integer<unsigned char>(b)));
+  }
+  return text;
+}
+
+std::vector<std::byte> string_to_bytes(std::string_view text) {
+  std::vector<std::byte> bytes;
+  bytes.reserve(text.size());
+  for (char c : text) {
+    bytes.push_back(static_cast<std::byte>(static_cast<unsigned char>(c)));
+  }
+  return bytes;
+}
+
+std::string json_array_of_strings(const std::vector<std::string>& values, int indent = 2) {
+  std::ostringstream out;
+  const std::string indent_text(static_cast<std::size_t>(indent), ' ');
+  out << "[";
+  if (!values.empty()) {
+    out << "\n";
+    for (std::size_t i = 0; i < values.size(); ++i) {
+      out << indent_text << "\"" << escape_json_text(values[i]) << "\"";
+      if (i + 1 < values.size()) {
+        out << ",";
+      }
+      out << "\n";
+    }
+  }
+  out << std::string(static_cast<std::size_t>(std::max(0, indent - 2)), ' ') << "]";
+  return out.str();
+}
+
+std::string json_array_of_error_objects(const std::vector<std::string>& errors, int indent = 2) {
+  std::ostringstream out;
+  const std::string indent_text(static_cast<std::size_t>(indent), ' ');
+  out << "[";
+  if (!errors.empty()) {
+    out << "\n";
+    for (std::size_t i = 0; i < errors.size(); ++i) {
+      out << indent_text << "{\"kind\": \"source-failure\", \"message\": \""
+          << escape_json_text(errors[i]) << "\", \"code\": \"canonfs-import-failure\"}";
+      if (i + 1 < errors.size()) {
+        out << ",";
+      }
+      out << "\n";
+    }
+  }
+  out << std::string(static_cast<std::size_t>(std::max(0, indent - 2)), ' ') << "]";
+  return out.str();
+}
+
+std::string json_array_of_export_error_objects(const std::vector<std::string>& errors, int indent = 2) {
+  std::ostringstream out;
+  const std::string indent_text(static_cast<std::size_t>(indent), ' ');
+  out << "[";
+  if (!errors.empty()) {
+    out << "\n";
+    for (std::size_t i = 0; i < errors.size(); ++i) {
+      out << indent_text << "{\"kind\": \"materialization-failure\", \"message\": \""
+          << escape_json_text(errors[i]) << "\", \"code\": \"canonfs-export-failure\"}";
+      if (i + 1 < errors.size()) {
+        out << ",";
+      }
+      out << "\n";
+    }
+  }
+  out << std::string(static_cast<std::size_t>(std::max(0, indent - 2)), ' ') << "]";
+  return out.str();
+}
+
+std::optional<std::string> extract_json_string_field(std::string_view text, std::string_view key) {
+  const std::string needle = "\"" + std::string(key) + "\"";
+  std::size_t pos = text.find(needle);
+  if (pos == std::string_view::npos) {
+    return std::nullopt;
+  }
+  pos = text.find(':', pos + needle.size());
+  if (pos == std::string_view::npos) {
+    return std::nullopt;
+  }
+  ++pos;
+  while (pos < text.size() && std::isspace(static_cast<unsigned char>(text[pos]))) {
+    ++pos;
+  }
+  if (pos >= text.size() || text[pos] != '"') {
+    return std::nullopt;
+  }
+  ++pos;
+  std::string value;
+  while (pos < text.size()) {
+    const char c = text[pos++];
+    if (c == '\\') {
+      if (pos >= text.size()) {
+        return std::nullopt;
+      }
+      const char escaped = text[pos++];
+      switch (escaped) {
+        case '\\':
+        case '"':
+        case '/':
+          value.push_back(escaped);
+          break;
+        case 'n':
+          value.push_back('\n');
+          break;
+        case 'r':
+          value.push_back('\r');
+          break;
+        case 't':
+          value.push_back('\t');
+          break;
+        default:
+          value.push_back(escaped);
+          break;
+      }
+      continue;
+    }
+    if (c == '"') {
+      return value;
+    }
+    value.push_back(c);
+  }
+  return std::nullopt;
+}
+
+std::optional<std::size_t> extract_json_size_field(std::string_view text, std::string_view key) {
+  const std::string needle = "\"" + std::string(key) + "\"";
+  std::size_t pos = text.find(needle);
+  if (pos == std::string_view::npos) {
+    return std::nullopt;
+  }
+  pos = text.find(':', pos + needle.size());
+  if (pos == std::string_view::npos) {
+    return std::nullopt;
+  }
+  ++pos;
+  while (pos < text.size() && std::isspace(static_cast<unsigned char>(text[pos]))) {
+    ++pos;
+  }
+  std::size_t end = pos;
+  while (end < text.size() && std::isdigit(static_cast<unsigned char>(text[end]))) {
+    ++end;
+  }
+  if (end == pos) {
+    return std::nullopt;
+  }
+  std::size_t value = 0;
+  const auto parsed = std::from_chars(text.data() + pos, text.data() + end, value);
+  if (parsed.ec != std::errc()) {
+    return std::nullopt;
+  }
+  return value;
+}
+
+bool parse_interchange_manifest(std::string_view text, CanonFsInterchangeManifest& manifest,
+                                std::string& error_message) {
+  const auto schema = extract_json_string_field(text, "schema");
+  if (!schema || *schema != kCanonFsInterchangeManifestSchema) {
+    error_message = "object is not a t81.canonfs-interchange-manifest.v1 document";
+    return false;
+  }
+  std::size_t entries_pos = text.find("\"entries\"");
+  if (entries_pos == std::string_view::npos) {
+    error_message = "manifest is missing entries";
+    return false;
+  }
+  entries_pos = text.find('[', entries_pos);
+  if (entries_pos == std::string_view::npos) {
+    error_message = "manifest entries are not an array";
+    return false;
+  }
+  const std::size_t entries_end = text.find(']', entries_pos);
+  if (entries_end == std::string_view::npos) {
+    error_message = "manifest entries array is not terminated";
+    return false;
+  }
+  manifest.entries.clear();
+  std::size_t cursor = entries_pos;
+  while (true) {
+    const std::size_t object_start = text.find('{', cursor);
+    if (object_start == std::string_view::npos || object_start > entries_end) {
+      break;
+    }
+    const std::size_t object_end = text.find('}', object_start);
+    if (object_end == std::string_view::npos || object_end > entries_end) {
+      error_message = "manifest entry is malformed";
+      return false;
+    }
+    const std::string_view entry_text = text.substr(object_start, object_end - object_start + 1);
+    CanonFsInterchangeEntry entry;
+    const auto path = extract_json_string_field(entry_text, "path");
+    const auto object_ref = extract_json_string_field(entry_text, "object_ref");
+    const auto size_bytes = extract_json_size_field(entry_text, "size_bytes");
+    if (!path || !object_ref || !size_bytes) {
+      error_message = "manifest entry is missing required fields";
+      return false;
+    }
+    entry.path = *path;
+    entry.object_ref = *object_ref;
+    entry.size_bytes = *size_bytes;
+    manifest.entries.push_back(std::move(entry));
+    cursor = object_end + 1;
+  }
+  if (manifest.entries.empty()) {
+    error_message = "manifest must contain at least one entry";
+    return false;
+  }
+  return true;
+}
+
+std::string render_interchange_manifest(std::string_view source_kind, std::string_view source_ref,
+                                        const std::vector<CanonFsInterchangeEntry>& entries) {
+  std::ostringstream out;
+  out << "{\n"
+      << "  \"schema\": \"" << kCanonFsInterchangeManifestSchema << "\",\n"
+      << "  \"source_kind\": \"" << escape_json_text(source_kind) << "\",\n"
+      << "  \"source_ref\": \"" << escape_json_text(source_ref) << "\",\n"
+      << "  \"entries\": [\n";
+  for (std::size_t i = 0; i < entries.size(); ++i) {
+    const auto& entry = entries[i];
+    out << "    {\"path\": \"" << escape_json_text(entry.path) << "\", "
+        << "\"object_ref\": \"" << escape_json_text(entry.object_ref) << "\", "
+        << "\"size_bytes\": " << entry.size_bytes << "}";
+    if (i + 1 < entries.size()) {
+      out << ",";
+    }
+    out << "\n";
+  }
+  out << "  ]\n}\n";
+  return out.str();
+}
+
+std::string render_import_provenance(std::string_view source_kind, std::string_view source_ref,
+                                     const std::vector<std::string>& imported_objects,
+                                     std::string_view manifest_ref) {
+  std::ostringstream out;
+  out << "{\n"
+      << "  \"schema\": \"t81.canonfs-import-provenance.v1\",\n"
+      << "  \"source_kind\": \"" << escape_json_text(source_kind) << "\",\n"
+      << "  \"source_ref\": \"" << escape_json_text(source_ref) << "\",\n"
+      << "  \"imported_objects\": " << json_array_of_strings(imported_objects, 4) << ",\n"
+      << "  \"manifest_ref\": ";
+  if (manifest_ref.empty()) {
+    out << "null\n";
+  } else {
+    out << "\"" << escape_json_text(manifest_ref) << "\"\n";
+  }
+  out << "}\n";
+  return out.str();
+}
+
+std::string render_export_provenance(const std::vector<std::string>& source_objects,
+                                     std::string_view target_kind, std::string_view target_ref,
+                                     std::string_view manifest_ref) {
+  std::ostringstream out;
+  out << "{\n"
+      << "  \"schema\": \"t81.canonfs-export-provenance.v1\",\n"
+      << "  \"source_objects\": " << json_array_of_strings(source_objects, 4) << ",\n"
+      << "  \"target_kind\": \"" << escape_json_text(target_kind) << "\",\n"
+      << "  \"target_ref\": \"" << escape_json_text(target_ref) << "\",\n"
+      << "  \"manifest_ref\": ";
+  if (manifest_ref.empty()) {
+    out << "null\n";
+  } else {
+    out << "\"" << escape_json_text(manifest_ref) << "\"\n";
+  }
+  out << "}\n";
+  return out.str();
+}
+
+std::optional<std::string> write_canonfs_raw_object(const fs::path& canonfs_root,
+                                                    std::span<const std::byte> bytes,
+                                                    std::string& error_message) {
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+  auto write_res = driver->write_object(t81::canonfs::ObjectType::RawBlock, bytes);
+  if (!write_res) {
+    error_message = "failed to write CanonFS object";
+    return std::nullopt;
+  }
+  return "sha3-256:" + write_res->hash.h.to_string();
+}
+
+bool collect_import_entries(const fs::path& input, std::vector<CanonFsInterchangeEntry>& entries,
+                            std::vector<std::string>& imported_objects,
+                            std::vector<std::string>& imported_paths,
+                            std::vector<std::string>& warnings,
+                            std::vector<std::string>& errors, const fs::path& canonfs_root) {
+  if (is_symlink_path(input)) {
+    errors.push_back("symlinks are not supported by canonfs import v1: " + input.string());
+    return false;
+  }
+  if (fs::is_regular_file(input)) {
+    auto bytes = read_file_bytes(input);
+    std::string write_error;
+    const auto object_ref = write_canonfs_raw_object(
+        canonfs_root, std::span<const std::byte>(bytes.data(), bytes.size()), write_error);
+    if (!object_ref) {
+      errors.push_back(write_error);
+      return false;
+    }
+    CanonFsInterchangeEntry entry;
+    entry.path = input.filename().generic_string();
+    entry.object_ref = *object_ref;
+    entry.size_bytes = bytes.size();
+    entries.push_back(entry);
+    imported_objects.push_back(*object_ref);
+    imported_paths.push_back(entry.path);
+    return true;
+  }
+  if (!fs::is_directory(input)) {
+    errors.push_back("unsupported import source: " + input.string());
+    return false;
+  }
+  for (auto it = fs::recursive_directory_iterator(input); it != fs::recursive_directory_iterator(); ++it) {
+    const fs::path path = it->path();
+    const fs::path rel = fs::relative(path, input);
+    if (is_symlink_path(path)) {
+      errors.push_back("symlinks are not supported by canonfs import v1: " + rel.generic_string());
+      if (it->is_directory()) {
+        it.disable_recursion_pending();
+      }
+      continue;
+    }
+    if (it->is_directory()) {
+      continue;
+    }
+    if (!it->is_regular_file()) {
+      warnings.push_back("skipped non-regular path: " + rel.generic_string());
+      continue;
+    }
+    auto bytes = read_file_bytes(path);
+    std::string write_error;
+    const auto object_ref = write_canonfs_raw_object(
+        canonfs_root, std::span<const std::byte>(bytes.data(), bytes.size()), write_error);
+    if (!object_ref) {
+      errors.push_back(rel.generic_string() + ": " + write_error);
+      continue;
+    }
+    CanonFsInterchangeEntry entry;
+    entry.path = rel.generic_string();
+    entry.object_ref = *object_ref;
+    entry.size_bytes = bytes.size();
+    entries.push_back(entry);
+    imported_objects.push_back(*object_ref);
+    imported_paths.push_back(entry.path);
+  }
+  std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
+    return lhs.path < rhs.path;
+  });
+  std::sort(imported_objects.begin(), imported_objects.end());
+  std::sort(imported_paths.begin(), imported_paths.end());
+  return !entries.empty();
+}
+
+bool is_safe_relative_export_path(const fs::path& path) {
+  if (path.is_absolute()) {
+    return false;
+  }
+  for (const auto& part : path) {
+    if (part == "..") {
+      return false;
+    }
+  }
+  return true;
+}
 
 std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root,
                                                             std::string* error_message = nullptr) {
@@ -1508,6 +1892,110 @@ int canonfs_put_file(const fs::path& input, const fs::path& canonfs_root) {
   return 0;
 }
 
+int canonfs_import(const fs::path& input, const fs::path& canonfs_root, bool as_json) {
+  if (!fs::exists(input)) {
+    const std::string message = "input path does not exist: " + input.string();
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.canonfs-import.v1\",\n"
+                << "  \"status\": \"error\",\n"
+                << "  \"source_kind\": \"host-file\",\n"
+                << "  \"source_ref\": \"" << escape_json_text(input.string()) << "\",\n"
+                << "  \"imported_objects\": [],\n"
+                << "  \"provenance_ref\": \"\",\n"
+                << "  \"warnings\": [],\n"
+                << "  \"errors\": " << json_array_of_error_objects({message}, 4) << ",\n"
+                << "  \"policy_result\": \"denied\"\n"
+                << "}\n";
+    } else {
+      error("canonfs import: " + message);
+    }
+    return 1;
+  }
+
+  std::vector<CanonFsInterchangeEntry> entries;
+  std::vector<std::string> imported_objects;
+  std::vector<std::string> imported_paths;
+  std::vector<std::string> warnings;
+  std::vector<std::string> errors;
+  const bool has_entries =
+      collect_import_entries(input, entries, imported_objects, imported_paths, warnings, errors,
+                             canonfs_root);
+  const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
+
+  std::string manifest_ref;
+  if (has_entries) {
+    const std::string manifest_text =
+        render_interchange_manifest(source_kind, input.string(), entries);
+    const auto manifest_bytes = string_to_bytes(manifest_text);
+    std::string manifest_error;
+    auto manifest_result =
+        write_canonfs_raw_object(canonfs_root, std::span<const std::byte>(manifest_bytes.data(),
+                                                                          manifest_bytes.size()),
+                                 manifest_error);
+    if (!manifest_result) {
+      errors.push_back("failed to write import manifest: " + manifest_error);
+    } else {
+      manifest_ref = *manifest_result;
+    }
+  }
+
+  const std::string provenance_text =
+      render_import_provenance(source_kind, input.string(), imported_objects, manifest_ref);
+  const auto provenance_bytes = string_to_bytes(provenance_text);
+  std::string provenance_error;
+  const auto provenance_result =
+      write_canonfs_raw_object(canonfs_root, std::span<const std::byte>(provenance_bytes.data(),
+                                                                        provenance_bytes.size()),
+                               provenance_error);
+  if (!provenance_result) {
+    errors.push_back("failed to write import provenance: " + provenance_error);
+  }
+
+  const std::string status =
+      imported_objects.empty() ? "error" : (errors.empty() ? "ok" : "partial");
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-import.v1\",\n"
+              << "  \"status\": \"" << status << "\",\n"
+              << "  \"source_kind\": \"" << source_kind << "\",\n"
+              << "  \"source_ref\": \"" << escape_json_text(input.string()) << "\",\n"
+              << "  \"imported_objects\": " << json_array_of_strings(imported_objects, 4) << ",\n"
+              << "  \"provenance_ref\": \""
+              << escape_json_text(provenance_result.value_or(std::string())) << "\",\n"
+              << "  \"manifest_ref\": ";
+    if (manifest_ref.empty()) {
+      std::cout << "null,\n";
+    } else {
+      std::cout << "\"" << escape_json_text(manifest_ref) << "\",\n";
+    }
+    std::cout << "  \"imported_paths\": " << json_array_of_strings(imported_paths, 4) << ",\n"
+              << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
+              << "  \"errors\": " << json_array_of_error_objects(errors, 4) << ",\n"
+              << "  \"policy_result\": \"" << (status == "error" ? "denied" : "allowed")
+              << "\",\n"
+              << "  \"normalization_summary\": {\n"
+              << "    \"timestamps\": \"provenance-only\",\n"
+              << "    \"ownership\": \"provenance-only\",\n"
+              << "    \"mode_hint\": \"preserved\"\n"
+              << "  }\n"
+              << "}\n";
+  } else if (status == "error") {
+    error("canonfs import: " + (errors.empty() ? std::string("import failed") : errors.front()));
+  } else {
+    std::cout << "CanonFS import " << status << ".\n";
+    std::cout << "Source:      " << input.string() << "\n";
+    std::cout << "Imported:    " << imported_objects.size() << " object(s)\n";
+    if (!manifest_ref.empty()) {
+      std::cout << "Manifest:    " << manifest_ref << "\n";
+    }
+    if (provenance_result) {
+      std::cout << "Provenance:  " << *provenance_result << "\n";
+    }
+  }
+  return status == "error" ? 1 : 0;
+}
+
 int canonfs_list(const fs::path& canonfs_root, bool as_json) {
   const auto entries = collect_canonfs_objects(canonfs_root);
   if (as_json) {
@@ -1842,6 +2330,173 @@ int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_r
     std::cout << "Rollback complete. Active snapshot: " << snapshot_hash << "\n";
   }
   return 0;
+}
+
+int canonfs_export(const std::string& canonical_hash, const fs::path& output_path,
+                   const fs::path& canonfs_root, bool as_json) {
+  std::vector<std::byte> bytes;
+  CanonFsObjectInfo info;
+  std::string error_message;
+  if (!load_canonfs_object(canonfs_root, canonical_hash, bytes, info, error_message)) {
+    if (as_json) {
+      std::cout << "{\n"
+                << "  \"schema\": \"t81.canonfs-export.v1\",\n"
+                << "  \"status\": \"error\",\n"
+                << "  \"source_objects\": [\"" << escape_json_text(canonical_hash) << "\"],\n"
+                << "  \"target_kind\": \"host-file\",\n"
+                << "  \"target_ref\": \"" << escape_json_text(output_path.string()) << "\",\n"
+                << "  \"provenance_ref\": \"\",\n"
+                << "  \"warnings\": [],\n"
+                << "  \"errors\": " << json_array_of_export_error_objects({error_message}, 4)
+                << ",\n"
+                << "  \"policy_result\": \"denied\"\n"
+                << "}\n";
+    } else {
+      error("canonfs export: " + error_message);
+    }
+    return 1;
+  }
+
+  std::vector<std::string> source_objects;
+  std::vector<std::string> materialized_paths;
+  std::vector<std::string> warnings;
+  std::vector<std::string> errors;
+  std::string manifest_ref;
+  std::string target_kind = "host-file";
+
+  CanonFsInterchangeManifest manifest;
+  std::string manifest_error;
+  const std::string payload_text = bytes_to_string(bytes);
+  const auto payload_schema = extract_json_string_field(payload_text, "schema");
+  const bool is_manifest_document =
+      payload_schema && *payload_schema == kCanonFsInterchangeManifestSchema;
+  if (parse_interchange_manifest(payload_text, manifest, manifest_error)) {
+    target_kind = "host-directory";
+    manifest_ref = canonical_hash;
+    source_objects.reserve(manifest.entries.size());
+    std::error_code ec;
+    fs::create_directories(output_path, ec);
+    if (ec) {
+      errors.push_back("could not create export directory: " + output_path.string());
+    } else {
+      for (const auto& entry : manifest.entries) {
+        source_objects.push_back(entry.object_ref);
+        const fs::path relative_path(entry.path);
+        if (!is_safe_relative_export_path(relative_path)) {
+          errors.push_back("unsafe export path in manifest: " + entry.path);
+          continue;
+        }
+        std::vector<std::byte> entry_bytes;
+        CanonFsObjectInfo entry_info;
+        std::string entry_error;
+        if (!load_canonfs_object(canonfs_root, entry.object_ref, entry_bytes, entry_info, entry_error)) {
+          errors.push_back(entry.path + ": " + entry_error);
+          continue;
+        }
+        const fs::path target_file = output_path / relative_path;
+        fs::create_directories(target_file.parent_path(), ec);
+        if (ec) {
+          errors.push_back("could not create export directory: " + target_file.parent_path().string());
+          continue;
+        }
+        std::ofstream out(target_file, std::ios::binary | std::ios::trunc);
+        if (!out) {
+          errors.push_back("could not open output file: " + target_file.string());
+          continue;
+        }
+        for (std::byte b : entry_bytes) {
+          out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
+        }
+        if (!out.good()) {
+          errors.push_back("failed writing output file: " + target_file.string());
+          continue;
+        }
+        materialized_paths.push_back(entry.path);
+      }
+    }
+  } else if (!is_manifest_document) {
+    source_objects.push_back(canonical_hash);
+    std::error_code ec;
+    if (!output_path.parent_path().empty()) {
+      fs::create_directories(output_path.parent_path(), ec);
+    }
+    if (ec) {
+      errors.push_back("could not create export directory: " + output_path.parent_path().string());
+    } else {
+      std::ofstream out(output_path, std::ios::binary | std::ios::trunc);
+      if (!out) {
+        errors.push_back("could not open output file: " + output_path.string());
+      } else {
+        for (std::byte b : bytes) {
+          out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
+        }
+        if (!out.good()) {
+          errors.push_back("failed writing output file: " + output_path.string());
+        } else {
+          materialized_paths.push_back(output_path.filename().generic_string());
+        }
+      }
+    }
+  } else {
+    source_objects.push_back(canonical_hash);
+    errors.push_back("invalid interchange manifest: " + manifest_error);
+  }
+
+  const std::string provenance_text =
+      render_export_provenance(source_objects, target_kind, output_path.string(), manifest_ref);
+  const auto provenance_bytes = string_to_bytes(provenance_text);
+  std::string provenance_error;
+  const auto provenance_result =
+      write_canonfs_raw_object(canonfs_root, std::span<const std::byte>(provenance_bytes.data(),
+                                                                        provenance_bytes.size()),
+                               provenance_error);
+  if (!provenance_result) {
+    errors.push_back("failed to write export provenance: " + provenance_error);
+  }
+
+  const std::string status =
+      materialized_paths.empty() ? "error" : (errors.empty() ? "ok" : "partial");
+  if (as_json) {
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.canonfs-export.v1\",\n"
+              << "  \"status\": \"" << status << "\",\n"
+              << "  \"source_objects\": " << json_array_of_strings(source_objects, 4) << ",\n"
+              << "  \"target_kind\": \"" << target_kind << "\",\n"
+              << "  \"target_ref\": \"" << escape_json_text(output_path.string()) << "\",\n"
+              << "  \"provenance_ref\": \""
+              << escape_json_text(provenance_result.value_or(std::string())) << "\",\n"
+              << "  \"manifest_ref\": ";
+    if (manifest_ref.empty()) {
+      std::cout << "null,\n";
+    } else {
+      std::cout << "\"" << escape_json_text(manifest_ref) << "\",\n";
+    }
+    std::cout << "  \"materialized_paths\": " << json_array_of_strings(materialized_paths, 4)
+              << ",\n"
+              << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
+              << "  \"errors\": " << json_array_of_export_error_objects(errors, 4) << ",\n"
+              << "  \"policy_result\": \"" << (status == "error" ? "denied" : "allowed")
+              << "\",\n"
+              << "  \"materialization_summary\": {\n"
+              << "    \"timestamps\": \"not-restored\",\n"
+              << "    \"ownership\": \"synthesized\",\n"
+              << "    \"mode_hint\": \"preserved\"\n"
+              << "  }\n"
+              << "}\n";
+  } else if (status == "error") {
+    error("canonfs export: " + (errors.empty() ? std::string("export failed") : errors.front()));
+  } else {
+    std::cout << "CanonFS export " << status << ".\n";
+    std::cout << "Target:      " << output_path.string() << "\n";
+    std::cout << "Materialized:" << " " << materialized_paths.size() << " path(s)\n";
+    if (!manifest_ref.empty()) {
+      std::cout << "Manifest:    " << manifest_ref << "\n";
+    }
+    if (provenance_result) {
+      std::cout << "Provenance:  " << *provenance_result << "\n";
+    }
+  }
+  return status == "error" ? 1 : 0;
 }
 
 int determinism_hash_file(const fs::path& input, bool as_json) {

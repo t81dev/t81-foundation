@@ -720,8 +720,12 @@ Usage: t81 canonfs <action> [args]
 Actions:
   put-file <file> [--canonfs-root <path>]       Store raw bytes and print canonical hash
   put-tensor <file> [--canonfs-root <path>]     Canonicalize tensor/model payloads
+  import <path> [--json] [--canonfs-root <path>]
+                                                 Import a host file or directory tree into CanonFS
   ls [--json] [--canonfs-root <path>]           List stored objects
   get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root <path>]
+  export <sha3-256:hash> -o <path> [--json] [--canonfs-root <path>]
+                                                 Export a CanonFS object or interchange manifest
   stat <sha3-256:hash> [--json] [--canonfs-root <path>]
   verify <sha3-256:hash> [--json] [--canonfs-root <path>]
   snapshot [--json] [--canonfs-root <path>]
@@ -734,6 +738,8 @@ Actions:
 
 Examples:
   t81 canonfs put-file README.md
+  t81 canonfs import README.md --json
+  t81 canonfs export sha3-256:... -o restored.bin --json
   t81 canonfs stat sha3-256:... --json
   t81 canonfs snapshot
 )";
@@ -4013,6 +4019,13 @@ int run_canonfs_command(const Args& args) {
     }
     return t81::cli::canonfs_put_file(positional[0], canonfs_root);
   }
+  if (action == "import") {
+    if (positional.size() != 1) {
+      error("canonfs import requires exactly one input path.");
+      return 1;
+    }
+    return t81::cli::canonfs_import(positional[0], canonfs_root, as_json);
+  }
   if (action == "put-tensor") {
     if (positional.size() != 1) {
       error("canonfs put-tensor requires exactly one input file.");
@@ -4033,6 +4046,17 @@ int run_canonfs_command(const Args& args) {
       return 1;
     }
     return t81::cli::canonfs_get(positional[0], output_path, canonfs_root, as_json);
+  }
+  if (action == "export") {
+    if (positional.size() != 1) {
+      error("canonfs export requires exactly one canonical hash.");
+      return 1;
+    }
+    if (!output_path) {
+      error("canonfs export requires -o/--out <path>.");
+      return 1;
+    }
+    return t81::cli::canonfs_export(positional[0], *output_path, canonfs_root, as_json);
   }
   if (action == "stat") {
     if (positional.size() != 1) {
