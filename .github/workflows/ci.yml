@@ -372,12 +372,15 @@ jobs:
             /CMakePresets.json
             /cmake/**
             /include/**
-            /src/**
             /core/**
+            /fs/**
+            /ffi/**
+            /isa/**
             /vm/**
             /experimental/**
             /runtime/**
             /kernel/**
+            /ternaryos/**
             /tooling/**
             /lang/**
             /examples/**

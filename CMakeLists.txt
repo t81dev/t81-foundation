@@ -699,6 +699,7 @@ if(T81_ENABLE_TERNARYOS)
   add_library(t81_ternaryos_shell STATIC
     kernel/axion/shell/shell_session.cpp)
   target_include_directories(t81_ternaryos_shell PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)
   target_link_libraries(t81_ternaryos_shell PUBLIC t81_ternaryos_hal)
@@ -1671,7 +1672,7 @@ if(T81_ENABLE_TERNARYOS)
 
     add_executable(t81_axion_userenv_include_surface_test
       tests/cpp/axion_userenv_include_surface_test.cpp)
-    target_link_libraries(t81_axion_userenv_include_surface_test PRIVATE t81_ternaryos_userenv)
+    target_link_libraries(t81_axion_userenv_include_surface_test PRIVATE t81_ternaryos_shell)
     add_test(NAME t81_axion_userenv_include_surface_test COMMAND t81_axion_userenv_include_surface_test)
 
     if(T81_ENABLE_DPE)

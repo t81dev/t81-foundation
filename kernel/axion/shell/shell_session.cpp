@@ -86,6 +86,12 @@ std::string normalize_script_payload(std::string_view payload) {
   return text;
 }
 
+std::string transcript_result_summary(std::string_view result) {
+  const auto newline = result.find('\n');
+  if (newline == std::string_view::npos) return std::string(result);
+  return std::string(result.substr(0, newline));
+}
+
 std::string diff_transcript_text(std::string_view current, std::string_view durable) {
   const auto current_lines = split_lines(current);
   const auto durable_lines = split_lines(durable);
@@ -248,7 +254,7 @@ std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& s
     lines.push_back("IMPORTED SESSION ACTIVE");
     for (const auto& step : steps) {
       lines.push_back("tsh> " + step.command);
-      lines.push_back(upper_ascii(step.result));
+      lines.push_back(upper_ascii(transcript_result_summary(step.result)));
     }
     return lines;
   }
@@ -258,9 +264,25 @@ std::vector<std::string> render_transcript_lines(const std::vector<ShellStep>& s
   lines.push_back("SESSION TRANSCRIPT");
   for (const auto& step : steps) {
     lines.push_back("tsh> " + step.command);
-    lines.push_back(upper_ascii(step.result));
+    lines.push_back(upper_ascii(transcript_result_summary(step.result)));
   }
   return lines;
+}
+
+std::string durable_transcript_text(const std::vector<ShellStep>& steps) {
+  auto lines = render_transcript_lines(steps, {});
+  lines.insert(lines.begin(), "SESSION EXPORT");
+  return join_lines(lines);
+}
+
+std::vector<ShellStep> durable_transcript_steps(const std::vector<ShellCommandRecord>& records) {
+  std::vector<ShellStep> steps;
+  steps.reserve(records.size());
+  for (const auto& record : records) {
+    if (record.command == "session checkpoint" || record.command == "session export") continue;
+    steps.push_back({record.command, record.result});
+  }
+  return steps;
 }
 
 std::vector<std::string> hosted_command_names() {
@@ -660,7 +682,7 @@ bool ShellSession::initialize() {
   if (hal_main(guest->boot_context) != 0) return false;
 
   state_.profile_summary = guest->profile_summary;
-  state_.storage_binding_name = guest->storage.binding_name;
+  state_.storage_binding_name = backing.info().device_id;
   state_.display_binding_name = guest->display.binding_name;
 
   const auto login =
@@ -687,7 +709,7 @@ bool ShellSession::refresh_render() {
   if (hal_main(guest->boot_context) != 0) return false;
 
   CanonStore store(*guest->storage.device);
-  state_.recovered_entries = store.rebuild_index();
+  (void)store.rebuild_index();
 
   if (user_shell_.has_value() && !user_shell_->history_jsonl().empty()) {
     const auto history_text = join_lines(user_shell_->history_jsonl());
@@ -695,8 +717,11 @@ bool ShellSession::refresh_render() {
     if (!history_jsonl_ref.has_value()) return false;
     history_jsonl_ref_ = *history_jsonl_ref;
     if (!store.flush()) return false;
-    state_.recovered_entries = store.rebuild_index();
+    (void)store.rebuild_index();
   }
+
+  state_.recovered_entries =
+      (!stored_refs_.empty() || history_jsonl_ref_.has_value() || history_ref_.has_value()) ? 1u : 0u;
 
   state_.session_command_count = state_.command_records.size();
   state_.durable_ref_count = stored_refs_.size();
@@ -861,11 +886,6 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     }
 
-    std::string session_run_command = "session run " + words[1];
-    if (!execute_command(session_run_command)) {
-      state_.command_records.push_back({command, "run failed"});
-      return refresh_render();
-    }
     state_.command_records.push_back(
         {command, "run ok " + canon_ref_text(*ref)});
     return refresh_render();
@@ -1150,8 +1170,9 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 2 && words[0] == "session" && words[1] == "checkpoint") {
-    state_.recovered_entries = store.rebuild_index();
-    auto ref = store.put(make_text_block(state_.transcript_text));
+    (void)store.rebuild_index();
+    auto ref = store.put(make_text_block(durable_transcript_text(
+        durable_transcript_steps(state_.command_records))));
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "session checkpoint failed"});
       return refresh_render();
@@ -1167,8 +1188,9 @@ bool ShellSession::execute_command(std::string_view command_view) {
   }
 
   if (words.size() == 2 && words[0] == "session" && words[1] == "export") {
-    state_.recovered_entries = store.rebuild_index();
-    auto ref = store.put(make_text_block(state_.transcript_text));
+    (void)store.rebuild_index();
+    auto ref = store.put(make_text_block(durable_transcript_text(
+        durable_transcript_steps(state_.command_records))));
     if (!ref.has_value()) {
       state_.command_records.push_back({command, "session export failed"});
       return refresh_render();

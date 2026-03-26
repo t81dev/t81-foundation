@@ -32,6 +32,11 @@ T81 approaches this by:
 - Enforcing **policies at the kernel level** before any side effect via the Axion policy engine
 - Storing models/code as **immutable, content-addressed blobs** in CanonFS
 
+Determinism claims in this README are bounded by the
+[Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md),
+which defines the verified platforms, toolchains, and excluded host-dependent
+surfaces for those guarantees.
+
 **Current status (March 2026):** Runs today as a guest runtime (CLI, Docker, Python, QEMU guest). Bare-metal port is in early alpha. No native ternary hardware exists — ternary is emulated on binary CPUs.
 
 ## Why now
