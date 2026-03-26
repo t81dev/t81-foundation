@@ -1795,6 +1795,7 @@ endif()
 # =============================================================================
 add_library(t81_tool_cli STATIC
   tools/cli/driver.cpp
+  tools/cli/canonfs_interchange.cpp
   tools/cli/debugger.cpp
   tools/cli/canonize_tensor.cpp
 )
