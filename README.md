@@ -15,51 +15,67 @@ Bit-exact reproducibility • Pre-side-effect policy enforcement • Ternary-wei
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
-## In short
+## What T81 is
 
-T81 is an experimental runtime and (in progress) bare-metal kernel designed for **verifiable, reproducible, and policy-gated AI inference** using balanced ternary arithmetic ({−1, 0, +1}).
+T81 is a **deterministic, policy-gated runtime for auditable AI inference**.
 
-It addresses three recurring problems in agentic AI systems:
+It is built around four ideas:
 
-- Lack of bit-exact reproducibility across hardware
-- Difficulty proving exactly which model weights were executed
-- Policy enforcement that is usually reactive rather than preventive
+- **Deterministic execution** with bit-identical traces on governed platforms
+- **Policy enforcement before side effects** via the Axion policy engine
+- **Immutable, content-addressed artifacts** via CanonFS
+- **Ternary-native execution paths** for efficient, reproducible inference work
 
-T81 approaches this by:
+In longer form, T81 is also an in-progress guest OS and bare-metal kernel effort.
+But the most useful way to understand it today is as a runtime you can use to:
 
-- Using **ternary-native weights and operations** (inspired by BitNet b1.58 and similar) → no floating-point multiplies needed
-- Guaranteeing **deterministic execution** with bit-identical traces (CanonHash81) on verified platforms
-- Enforcing **policies at the kernel level** before any side effect via the Axion policy engine
-- Storing models/code as **immutable, content-addressed blobs** in CanonFS
+- run governed inference workloads
+- prove which artifacts executed
+- reproduce results across verified environments
+- keep policy and evidence attached to execution from the start
 
 Determinism claims in this README are bounded by the
 [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md),
 which defines the verified platforms, toolchains, and excluded host-dependent
 surfaces for those guarantees.
 
-**Current status (March 2026):** Runs today as a guest runtime (CLI, Docker, Python, QEMU guest). Bare-metal port is in early alpha. No native ternary hardware exists — ternary is emulated on binary CPUs.
+## Why it exists
 
-## Why now
+T81 is aimed at three recurring problems in agentic and model-driven systems:
 
-Agent systems are already acting on our behalf — but:
+- identical inputs producing different outputs across platforms
+- weak evidence about which weights and artifacts actually ran
+- policy enforcement that happens after execution rather than before it
 
-- we cannot prove exactly what weights ran  
-- identical inputs can yield different outputs across platforms  
-- policy is typically enforced after execution, not before  
+The project’s position is simple:
 
-T81 addresses these at the system level.
+> If something cannot be reproduced, governed, and audited, it should not be trusted to act.
 
-## Mental model
+## What works today
 
-Think of T81 as:
+As of March 2026, T81 is usable today as a:
 
-- a kernel that intercepts AI actions before side effects  
-- a runtime that produces identical results everywhere  
-- a system where execution can be audited deterministically
+- CLI runtime
+- Docker-delivered demo/runtime environment
+- Python-integrated execution environment
+- QEMU guest with interactive shell and CanonFS-backed runtime surfaces
 
-If something cannot be reproduced or verified, it should not run.
+Still experimental:
 
-## Quick start — Try it now
+- bare-metal/native hardware bring-up
+- broader OS/userland ambitions beyond the current guest/runtime path
+- real ternary hardware targets, which do not exist yet
+
+No native ternary hardware exists today. T81’s ternary execution model runs on conventional binary CPUs.
+
+## Choose your path
+
+- **Try it in 60 seconds:** use Docker and get a working demo plus REPL
+- **Use the runtime locally:** install the CLI and run T81 code, policies, and CanonFS flows
+- **See the OS direction:** boot the QEMU demo and interact with the `t81>` shell
+- **Inspect the architecture:** read the [RFC catalog](spec/rfcs/index.md), [handoff guide](docs/HANDOFF.md), and subsystem docs
+
+## Quick start
 
 ### Docker (easiest, ~60 seconds)
 
@@ -75,6 +91,20 @@ Runs hello-world → ternary demo → determinism check → interactive REPL.
 curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
 t81 repl
 ```
+
+### End-to-end runtime example
+
+```bash
+t81 canonfs import model.t81w --json
+t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl --trace
+```
+
+This is the core T81 workflow today:
+
+- import immutable artifacts into CanonFS
+- run under Axion policy
+- produce deterministic execution evidence
+- keep execution tied to content-addressed inputs
 
 ### QEMU boot demo (most "OS-like" experience)
 
@@ -103,6 +133,8 @@ status    # kernel & governance state
 policy    # active rules
 help
 ```
+
+If you want the quickest accurate mental model, start with the runtime and treat the QEMU/bare-metal work as the longer-term systems direction.
 
 ## Why ternary? Key technical advantages
 

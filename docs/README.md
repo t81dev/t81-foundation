@@ -6,6 +6,9 @@ This directory is the canonical documentation surface below `/spec` and
 ## Canonical Entry Points
 
 - [Architecture Overview](architecture/OVERVIEW.md)
+- [Maintainer Handoff](HANDOFF.md)
+- [Contributor Roadmap](ROADMAP.md)
+- [Buildable Next Steps](BUILDABLE_NEXT_STEPS.md)
 - [Specification Authority Model](governance/SPEC_AUTHORITY_MODEL.md)
 - [Freeze Enforcement](governance/FREEZE_ENFORCEMENT.md)
 - [Determinism Surface Registry](governance/DETERMINISM_SURFACE_REGISTRY.md)
