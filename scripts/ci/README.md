@@ -13,6 +13,8 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - CLI docs parity guard: `check_cli_docs_parity.py`
 - CLI docs smoke guard: `check_cli_docs_smoke.py`
 - CLI JSON contract guard: `check_cli_json_contracts.py`
+  - now also validates RFC-00D1 CanonFS interchange schema artifacts plus
+    `canonfs import/export --json` contract surfaces
 - AI sandbox boundary guard: `check_ai_experiment_boundary.py`
 - AI status document freshness guard: `check_ai_status_doc_freshness.py`
 - AI status document freshness expectation contract (global default max/warn age with per-doc overrides): `ai_status_doc_freshness_expectations.json`

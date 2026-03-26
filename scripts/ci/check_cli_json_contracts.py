@@ -34,6 +34,12 @@ def ensure_json_array(output: str, context: str) -> list:
     return value
 
 
+def ensure_keys(obj: dict, keys: list[str], context: str) -> None:
+    missing = [key for key in keys if key not in obj]
+    if missing:
+        raise RuntimeError(f"{context}: missing keys: {', '.join(missing)}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -57,6 +63,23 @@ def main() -> int:
         return 1
 
     failures: list[str] = []
+
+    schema_paths = [
+        repo_root / "spec/rfcs/RFC-00D1-canonfs-import-result-schema.json",
+        repo_root / "spec/rfcs/RFC-00D1-canonfs-export-result-schema.json",
+        repo_root / "spec/rfcs/RFC-00D1-canonfs-interchange-manifest-schema.json",
+        repo_root / "spec/rfcs/RFC-00D1-canonfs-import-provenance-schema.json",
+        repo_root / "spec/rfcs/RFC-00D1-canonfs-export-provenance-schema.json",
+    ]
+    for schema_path in schema_paths:
+        if not schema_path.exists():
+            failures.append(f"missing schema file: {schema_path.relative_to(repo_root)}")
+            continue
+        try:
+            with schema_path.open("r", encoding="utf-8") as fh:
+                json.load(fh)
+        except json.JSONDecodeError as exc:
+            failures.append(f"{schema_path.relative_to(repo_root)}: invalid JSON: {exc}")
 
     def check_object_schema(
         cmd: list[str], expected_schema: str, context: str, allowed_exits: set[int] | None = None
@@ -185,6 +208,112 @@ def main() -> int:
                         "feedback report: schema mismatch "
                         f"(got={obj.get('schema')}, expected=t81.feedback-report.v1)"
                     )
+
+        # RFC-00D1 CanonFS interchange seed
+        canonfs_root = temp_path / "canonfs-root"
+        canonfs_root.mkdir(parents=True, exist_ok=True)
+
+        import_file = temp_path / "canonfs-import.txt"
+        import_file.write_text("canonfs-json-contract", encoding="utf-8")
+        import_proc = run_cmd(
+            [str(t81_bin), "canonfs", "import", str(import_file), "--canonfs-root", str(canonfs_root), "--json"],
+            cwd=repo_root,
+        )
+        if import_proc.returncode != 0:
+            failures.append(f"canonfs import --json: unexpected exit={import_proc.returncode}")
+        else:
+            try:
+                import_obj = ensure_json_object(import_proc.stdout, "canonfs import --json")
+                ensure_keys(
+                    import_obj,
+                    [
+                        "schema",
+                        "status",
+                        "source_kind",
+                        "source_ref",
+                        "imported_objects",
+                        "provenance_ref",
+                        "warnings",
+                        "errors",
+                        "policy_result",
+                        "normalization_summary",
+                    ],
+                    "canonfs import --json",
+                )
+            except RuntimeError as exc:
+                failures.append(str(exc))
+            else:
+                if import_obj.get("schema") != "t81.canonfs-import.v1":
+                    failures.append(
+                        "canonfs import --json: schema mismatch "
+                        f"(got={import_obj.get('schema')}, expected=t81.canonfs-import.v1)"
+                    )
+                if import_obj.get("status") not in {"ok", "partial", "error"}:
+                    failures.append("canonfs import --json: invalid status")
+                imported_objects = import_obj.get("imported_objects")
+                if not isinstance(imported_objects, list) or not imported_objects:
+                    failures.append("canonfs import --json: imported_objects must be a non-empty array")
+                manifest_ref = import_obj.get("manifest_ref")
+                if manifest_ref is not None and not isinstance(manifest_ref, str):
+                    failures.append("canonfs import --json: manifest_ref must be string or null")
+                else:
+                    export_target = temp_path / "canonfs-export.txt"
+                    object_ref = imported_objects[0] if isinstance(imported_objects, list) and imported_objects else None
+                    if isinstance(object_ref, str):
+                        export_proc = run_cmd(
+                            [
+                                str(t81_bin),
+                                "canonfs",
+                                "export",
+                                object_ref,
+                                "--canonfs-root",
+                                str(canonfs_root),
+                                "--out",
+                                str(export_target),
+                                "--json",
+                            ],
+                            cwd=repo_root,
+                        )
+                        if export_proc.returncode != 0:
+                            failures.append(
+                                f"canonfs export --json: unexpected exit={export_proc.returncode}"
+                            )
+                        else:
+                            try:
+                                export_obj = ensure_json_object(export_proc.stdout, "canonfs export --json")
+                                ensure_keys(
+                                    export_obj,
+                                    [
+                                        "schema",
+                                        "status",
+                                        "source_objects",
+                                        "target_kind",
+                                        "target_ref",
+                                        "provenance_ref",
+                                        "warnings",
+                                        "errors",
+                                        "policy_result",
+                                        "materialization_summary",
+                                    ],
+                                    "canonfs export --json",
+                                )
+                            except RuntimeError as exc:
+                                failures.append(str(exc))
+                            else:
+                                if export_obj.get("schema") != "t81.canonfs-export.v1":
+                                    failures.append(
+                                        "canonfs export --json: schema mismatch "
+                                        f"(got={export_obj.get('schema')}, expected=t81.canonfs-export.v1)"
+                                    )
+                                if export_obj.get("status") not in {"ok", "partial", "error"}:
+                                    failures.append("canonfs export --json: invalid status")
+                                source_objects = export_obj.get("source_objects")
+                                if not isinstance(source_objects, list) or not source_objects:
+                                    failures.append(
+                                        "canonfs export --json: source_objects must be a non-empty array"
+                                    )
+                                if export_target.read_text(encoding="utf-8") != "canonfs-json-contract":
+                                    failures.append("canonfs export --json: exported payload mismatch")
 
     if failures:
         print("cli json contracts: FAILED")
