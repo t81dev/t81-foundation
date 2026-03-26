@@ -1607,9 +1607,31 @@ int canonfs_put_file(const fs::path& input, const fs::path& canonfs_root) {
 }
 
 int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
-                   const std::optional<fs::path>& policy_path, bool as_json) {
+                   const std::optional<fs::path>& policy_path,
+                   const std::optional<std::string>& policy_profile, bool as_json) {
   t81::canonfs::ImportOptions options;
   options.canonfs_root = canonfs_root;
+  if (policy_profile) {
+    const auto parsed_profile = t81::canonfs::parse_interchange_policy_profile(*policy_profile);
+    if (!parsed_profile) {
+      const std::string profile_error =
+          "invalid policy profile: " + *policy_profile +
+          " (expected one of: permissive, import-only, export-only, deny-all)";
+      const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
+      if (as_json) {
+        const auto json = render_import_result("error", source_kind, input.string(), {}, "", "",
+                                               {}, {}, {profile_error}, "denied");
+        if (!emit_validated_json_document(json, validate_import_result_document,
+                                          "canonfs import: internal JSON validation failed: ")) {
+          return 1;
+        }
+      } else {
+        error("canonfs import: " + profile_error);
+      }
+      return 1;
+    }
+    options.policy_profile = *parsed_profile;
+  }
   std::optional<t81::axion::Policy> policy;
   if (policy_path) {
     std::string policy_error;
@@ -2002,9 +2024,30 @@ int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_r
 
 int canonfs_export(const std::string& canonical_hash, const fs::path& output_path,
                    const fs::path& canonfs_root, const std::optional<fs::path>& policy_path,
-                   bool as_json) {
+                   const std::optional<std::string>& policy_profile, bool as_json) {
   t81::canonfs::ExportOptions options;
   options.canonfs_root = canonfs_root;
+  if (policy_profile) {
+    const auto parsed_profile = t81::canonfs::parse_interchange_policy_profile(*policy_profile);
+    if (!parsed_profile) {
+      const std::string profile_error =
+          "invalid policy profile: " + *policy_profile +
+          " (expected one of: permissive, import-only, export-only, deny-all)";
+      if (as_json) {
+        const auto json = render_export_result("error", {canonical_hash}, "host-file",
+                                               output_path.string(), "", "", {}, {},
+                                               {profile_error}, "denied");
+        if (!emit_validated_json_document(json, validate_export_result_document,
+                                          "canonfs export: internal JSON validation failed: ")) {
+          return 1;
+        }
+      } else {
+        error("canonfs export: " + profile_error);
+      }
+      return 1;
+    }
+    options.policy_profile = *parsed_profile;
+  }
   std::optional<t81::axion::Policy> policy;
   if (policy_path) {
     std::string policy_error;

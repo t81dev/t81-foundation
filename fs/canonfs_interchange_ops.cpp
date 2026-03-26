@@ -133,9 +133,34 @@ bool is_safe_relative_export_path(const fs::path& path) {
   return true;
 }
 
-bool allow_by_policy(const t81::canonfs::InterchangePolicyEvaluator& evaluator,
+bool allow_by_policy(t81::canonfs::InterchangePolicyProfile profile,
+                     const t81::canonfs::InterchangePolicyEvaluator& evaluator,
                      std::string_view canonical_ref, std::string_view operation,
                      std::string_view path, bool& saw_policy_denial, std::string& reason) {
+  const bool is_import = operation == "canonfs.import";
+  const bool is_export = operation == "canonfs.export";
+  switch (profile) {
+    case t81::canonfs::InterchangePolicyProfile::Permissive:
+      break;
+    case t81::canonfs::InterchangePolicyProfile::ImportOnly:
+      if (is_export) {
+        saw_policy_denial = true;
+        reason = "policy-profile import-only denies canonfs.export";
+        return false;
+      }
+      break;
+    case t81::canonfs::InterchangePolicyProfile::ExportOnly:
+      if (is_import) {
+        saw_policy_denial = true;
+        reason = "policy-profile export-only denies canonfs.import";
+        return false;
+      }
+      break;
+    case t81::canonfs::InterchangePolicyProfile::DenyAll:
+      saw_policy_denial = true;
+      reason = "policy-profile deny-all denies " + std::string(operation);
+      return false;
+  }
   if (!evaluator) {
     reason = "allow";
     return true;
@@ -154,6 +179,7 @@ bool collect_import_entries(const fs::path& input,
                             std::vector<std::string>& imported_paths,
                             std::vector<std::string>& warnings,
                             std::vector<std::string>& errors, const fs::path& canonfs_root,
+                            t81::canonfs::InterchangePolicyProfile policy_profile,
                             const t81::canonfs::InterchangePolicyEvaluator& policy_evaluator,
                             bool& saw_policy_denial) {
   if (is_symlink_path(input)) {
@@ -165,7 +191,7 @@ bool collect_import_entries(const fs::path& input,
     const std::string object_ref =
         canonfs_ref_from_bytes(std::span<const std::byte>(bytes.data(), bytes.size()));
     std::string policy_reason;
-    if (!allow_by_policy(policy_evaluator, object_ref, "canonfs.import",
+    if (!allow_by_policy(policy_profile, policy_evaluator, object_ref, "canonfs.import",
                          input.filename().generic_string(), saw_policy_denial, policy_reason)) {
       errors.push_back("policy denied import of " + input.filename().generic_string() + ": " +
                        policy_reason);
@@ -212,8 +238,8 @@ bool collect_import_entries(const fs::path& input,
     const std::string object_ref =
         canonfs_ref_from_bytes(std::span<const std::byte>(bytes.data(), bytes.size()));
     std::string policy_reason;
-    if (!allow_by_policy(policy_evaluator, object_ref, "canonfs.import", rel.generic_string(),
-                         saw_policy_denial, policy_reason)) {
+    if (!allow_by_policy(policy_profile, policy_evaluator, object_ref, "canonfs.import",
+                         rel.generic_string(), saw_policy_denial, policy_reason)) {
       errors.push_back("policy denied import of " + rel.generic_string() + ": " + policy_reason);
       continue;
     }
@@ -243,6 +269,37 @@ bool collect_import_entries(const fs::path& input,
 
 namespace t81::canonfs {
 
+std::string_view interchange_policy_profile_name(InterchangePolicyProfile profile) {
+  switch (profile) {
+    case InterchangePolicyProfile::Permissive:
+      return "permissive";
+    case InterchangePolicyProfile::ImportOnly:
+      return "import-only";
+    case InterchangePolicyProfile::ExportOnly:
+      return "export-only";
+    case InterchangePolicyProfile::DenyAll:
+      return "deny-all";
+  }
+  return "permissive";
+}
+
+std::optional<InterchangePolicyProfile> parse_interchange_policy_profile(
+    std::string_view profile_name) {
+  if (profile_name == "permissive") {
+    return InterchangePolicyProfile::Permissive;
+  }
+  if (profile_name == "import-only") {
+    return InterchangePolicyProfile::ImportOnly;
+  }
+  if (profile_name == "export-only") {
+    return InterchangePolicyProfile::ExportOnly;
+  }
+  if (profile_name == "deny-all") {
+    return InterchangePolicyProfile::DenyAll;
+  }
+  return std::nullopt;
+}
+
 ImportOutcome import_path(const fs::path& input, const ImportOptions& options) {
   ImportOutcome outcome;
   outcome.source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
@@ -259,6 +316,7 @@ ImportOutcome import_path(const fs::path& input, const ImportOptions& options) {
   const bool has_entries = collect_import_entries(input, entries, outcome.imported_objects,
                                                   outcome.imported_paths, outcome.warnings,
                                                   outcome.errors, options.canonfs_root,
+                                                  options.policy_profile,
                                                   options.policy_evaluator, saw_policy_denial);
   if (has_entries) {
     const auto manifest_text =
@@ -328,8 +386,8 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
       for (const auto& entry : manifest.entries) {
         outcome.source_objects.push_back(entry.object_ref);
         std::string policy_reason;
-        if (!allow_by_policy(options.policy_evaluator, entry.object_ref, "canonfs.export", entry.path,
-                             saw_policy_denial, policy_reason)) {
+        if (!allow_by_policy(options.policy_profile, options.policy_evaluator, entry.object_ref,
+                             "canonfs.export", entry.path, saw_policy_denial, policy_reason)) {
           outcome.errors.push_back("policy denied export of " + entry.path + ": " + policy_reason);
           continue;
         }
@@ -371,7 +429,8 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
   } else if (!is_manifest_document) {
     outcome.source_objects.push_back(canonical_hash);
     std::string policy_reason;
-    if (!allow_by_policy(options.policy_evaluator, canonical_hash, "canonfs.export",
+    if (!allow_by_policy(options.policy_profile, options.policy_evaluator, canonical_hash,
+                         "canonfs.export",
                          output_path.filename().generic_string(), saw_policy_denial,
                          policy_reason)) {
       outcome.errors.push_back("policy denied export: " + policy_reason);

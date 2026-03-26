@@ -9,6 +9,13 @@
 
 namespace t81::canonfs {
 
+enum class InterchangePolicyProfile {
+  Permissive,
+  ImportOnly,
+  ExportOnly,
+  DenyAll,
+};
+
 struct InterchangePolicyDecision {
   bool allowed = true;
   std::string reason = "allow";
@@ -19,11 +26,13 @@ using InterchangePolicyEvaluator = std::function<InterchangePolicyDecision(
 
 struct ImportOptions {
   std::filesystem::path canonfs_root = ".t81_canonfs";
+  InterchangePolicyProfile policy_profile = InterchangePolicyProfile::Permissive;
   InterchangePolicyEvaluator policy_evaluator{};
 };
 
 struct ExportOptions {
   std::filesystem::path canonfs_root = ".t81_canonfs";
+  InterchangePolicyProfile policy_profile = InterchangePolicyProfile::Permissive;
   InterchangePolicyEvaluator policy_evaluator{};
 };
 
@@ -56,6 +65,10 @@ struct ExportOutcome {
 
   [[nodiscard]] bool ok() const { return status != "error"; }
 };
+
+[[nodiscard]] std::string_view interchange_policy_profile_name(InterchangePolicyProfile profile);
+[[nodiscard]] std::optional<InterchangePolicyProfile> parse_interchange_policy_profile(
+    std::string_view profile_name);
 
 ImportOutcome import_path(const std::filesystem::path& input, const ImportOptions& options = {});
 ExportOutcome export_ref(const std::string& canonical_hash, const std::filesystem::path& output_path,

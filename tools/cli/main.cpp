@@ -720,12 +720,15 @@ Usage: t81 canonfs <action> [args]
 Actions:
   put-file <file> [--canonfs-root <path>]       Store raw bytes and print canonical hash
   put-tensor <file> [--canonfs-root <path>]     Canonicalize tensor/model payloads
-  import <path> [--json] [--policy <file.apl>] [--canonfs-root <path>]
+  import <path> [--json] [--policy <file.apl>] [--policy-profile <name>] [--canonfs-root <path>]
                                                  Import a host file or directory tree into CanonFS
   ls [--json] [--canonfs-root <path>]           List stored objects
   get <sha3-256:hash> [-o <file>] [--json] [--canonfs-root <path>]
-  export <sha3-256:hash> -o <path> [--json] [--policy <file.apl>] [--canonfs-root <path>]
+  export <sha3-256:hash> -o <path> [--json] [--policy <file.apl>] [--policy-profile <name>] [--canonfs-root <path>]
                                                  Export a CanonFS object or interchange manifest
+
+Policy profiles:
+  permissive | import-only | export-only | deny-all
   stat <sha3-256:hash> [--json] [--canonfs-root <path>]
   verify <sha3-256:hash> [--json] [--canonfs-root <path>]
   snapshot [--json] [--canonfs-root <path>]
@@ -3980,6 +3983,7 @@ int run_canonfs_command(const Args& args) {
   bool dry_run = false;
   std::optional<fs::path> output_path = args.output;
   std::optional<fs::path> policy_path = args.policy;
+  std::optional<std::string> policy_profile;
   std::vector<std::string> positional;
   for (std::size_t i = 1; i < args.command_args.size(); ++i) {
     const std::string& token = args.command_args[i];
@@ -3997,6 +4001,12 @@ int run_canonfs_command(const Args& args) {
         return 1;
       }
       policy_path = fs::path(args.command_args[i]);
+    } else if (token == "--policy-profile") {
+      if (++i >= args.command_args.size()) {
+        error("canonfs: missing value for --policy-profile.");
+        return 1;
+      }
+      policy_profile = args.command_args[i];
     } else if (token == "--dry-run") {
       dry_run = true;
     } else if (token == "--out" || token == "--output" || token == "-o") {
@@ -4031,7 +4041,8 @@ int run_canonfs_command(const Args& args) {
       error("canonfs import requires exactly one input path.");
       return 1;
     }
-    return t81::cli::canonfs_import(positional[0], canonfs_root, policy_path, as_json);
+    return t81::cli::canonfs_import(positional[0], canonfs_root, policy_path, policy_profile,
+                                    as_json);
   }
   if (action == "put-tensor") {
     if (positional.size() != 1) {
@@ -4063,7 +4074,8 @@ int run_canonfs_command(const Args& args) {
       error("canonfs export requires -o/--out <path>.");
       return 1;
     }
-    return t81::cli::canonfs_export(positional[0], *output_path, canonfs_root, policy_path, as_json);
+    return t81::cli::canonfs_export(positional[0], *output_path, canonfs_root, policy_path,
+                                    policy_profile, as_json);
   }
   if (action == "stat") {
     if (positional.size() != 1) {

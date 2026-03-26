@@ -914,6 +914,34 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"status\": \"error\""));
 
+    const auto import_profile_deny_result = run_cli(
+        t81_bin,
+        {"canonfs", "import", payload.string(), "--policy-profile", "export-only", "--json"});
+    T81_TEST_CHECK(import_profile_deny_result.exit_code != 0);
+    T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text,
+                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text,
+                            "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text, "\"status\": \"error\""));
+
+    const auto export_profile_deny_result =
+        run_cli(t81_bin, {"canonfs", "export", hash, "--policy-profile", "import-only", "--out",
+                          imported_file_restore.string(), "--json"});
+    T81_TEST_CHECK(export_profile_deny_result.exit_code != 0);
+    T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text,
+                            "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text,
+                            "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text, "\"status\": \"error\""));
+
+    const auto invalid_profile_result =
+        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "bogus",
+                          "--json"});
+    T81_TEST_CHECK(invalid_profile_result.exit_code != 0);
+    T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
+                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(contains(invalid_profile_result.stdout_text, "invalid policy profile"));
+
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");
     const auto get_result =
         run_cli(t81_bin, {"canonfs", "get", hash, "--out", restored.string(), "--json"});

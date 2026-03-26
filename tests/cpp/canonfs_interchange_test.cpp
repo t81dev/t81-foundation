@@ -167,6 +167,28 @@ int main() {
       return 1;
     }
 
+    t81::canonfs::ImportOptions denied_import_options;
+    denied_import_options.canonfs_root = import_options.canonfs_root;
+    denied_import_options.policy_profile = t81::canonfs::InterchangePolicyProfile::ExportOnly;
+    const auto denied_import = t81::canonfs::import_path(source, denied_import_options);
+    if (!expect(!denied_import.ok(), "export-only profile should deny import")) return 1;
+    if (!expect(denied_import.policy_result == "denied",
+                "export-only profile import result mismatch")) {
+      return 1;
+    }
+
+    t81::canonfs::ExportOptions import_only_export_options;
+    import_only_export_options.canonfs_root = import_options.canonfs_root;
+    import_only_export_options.policy_profile = t81::canonfs::InterchangePolicyProfile::ImportOnly;
+    const auto import_only_export =
+        t81::canonfs::export_ref(import_outcome.imported_objects.front(),
+                                 root / "import-only-denied.txt", import_only_export_options);
+    if (!expect(!import_only_export.ok(), "import-only profile should deny export")) return 1;
+    if (!expect(import_only_export.policy_result == "denied",
+                "import-only profile export result mismatch")) {
+      return 1;
+    }
+
     fs::remove_all(root, ec);
     if (!expect(!ec, "ops test root cleanup failed")) return 1;
   }
