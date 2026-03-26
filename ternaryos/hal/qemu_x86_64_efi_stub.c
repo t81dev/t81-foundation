@@ -20,11 +20,21 @@ typedef uint64_t  EFI_STATUS;
 typedef void*     EFI_HANDLE;
 typedef uint16_t  CHAR16;
 typedef uint64_t  UINTN;
+typedef uint64_t  EFI_PHYSICAL_ADDRESS;
 
 #define EFI_SUCCESS  0ULL
 #define EFI_ERROR_BIT UINT64_C(0x8000000000000000)
 #define EFI_INVALID_PARAMETER (EFI_ERROR_BIT | 2ULL)
 #define EFI_BUFFER_TOO_SMALL (EFI_ERROR_BIT | 5ULL)
+#define EFI_OUT_OF_RESOURCES (EFI_ERROR_BIT | 9ULL)
+
+enum {
+  AllocateAnyPages = 0,
+};
+
+enum {
+  EfiLoaderData = 4,
+};
 
 #if defined(__x86_64__) && defined(_WIN32)
 #define EFIAPI __attribute__((ms_abi))
@@ -51,7 +61,8 @@ typedef struct EFI_BOOT_SERVICES {
   EFI_TABLE_HEADER  Hdr;
   void*             RaiseTPL;
   void*             RestoreTPL;
-  void*             AllocatePages;
+  EFI_STATUS      (EFIAPI *AllocatePages)(UINTN, UINTN, UINTN,
+                                          EFI_PHYSICAL_ADDRESS*);
   void*             FreePages;
   EFI_STATUS      (EFIAPI *GetMemoryMap)(UINTN*, void*, UINTN*, UINTN*,
                                          uint32_t*);
@@ -146,6 +157,8 @@ static void con_puthex(EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* con, uint64_t value) {
 // ── Forward declaration (qemu_x86_64_bare_kernel.c) ──────────────────────────
 
 void qemu_x86_64_bare_kernel_entry(uint64_t tsc_freq_hz);
+extern EFI_PHYSICAL_ADDRESS g_axion_x86_virtio_dma_base;
+extern UINTN                g_axion_x86_virtio_dma_pages;
 
 // ── EFI entry point ───────────────────────────────────────────────────────────
 
@@ -173,6 +186,28 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE* ST) {
     } else {
       con_puts(co, "[axion] EFI Stall failed: ");
       con_puthex(co, stall_status);
+      con_puts(co, "\r\n");
+    }
+  }
+
+  // Reserve DMA-safe pages for the legacy virtio-blk PCI queue and I/O
+  // buffers. The x86 QEMU bridge uses these physical addresses directly
+  // after ExitBootServices.
+  g_axion_x86_virtio_dma_base = 0;
+  g_axion_x86_virtio_dma_pages = 0;
+  if (BS->AllocatePages != (void*)0) {
+    EFI_PHYSICAL_ADDRESS dma_base = 0;
+    const UINTN dma_pages = 8;
+    const EFI_STATUS alloc_status = BS->AllocatePages(
+        AllocateAnyPages, EfiLoaderData, dma_pages, &dma_base);
+    if (alloc_status == EFI_SUCCESS) {
+      volatile uint8_t* p = (volatile uint8_t*)(uintptr_t)dma_base;
+      for (UINTN i = 0; i < dma_pages * 4096u; ++i) p[i] = 0u;
+      g_axion_x86_virtio_dma_base = dma_base;
+      g_axion_x86_virtio_dma_pages = dma_pages;
+    } else if (alloc_status != EFI_OUT_OF_RESOURCES) {
+      con_puts(co, "[axion] EFI AllocatePages failed: ");
+      con_puthex(co, alloc_status);
       con_puts(co, "\r\n");
     }
   }

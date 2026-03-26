@@ -135,15 +135,10 @@ jobs:
 
           check "Axion QEMU x86_64 OVMF slice6"
           check "[axion] ExitBootServices complete"
+          check "[axion] canonfs: I/O probe OK"
+          check "[axion] canonfs: mounted (persistent, virtio-blk)"
           check "[axion] event loop: priority dispatch"
           check "[axion] t81sh: ready (principal=axion, tier=1)"
-          if grep -qF "[axion] canonfs: I/O probe OK" serial_x86.log 2>/dev/null; then
-            check "[axion] canonfs: mounted (persistent, virtio-blk)"
-            echo "PASS: [axion] canonfs: I/O probe OK"
-          else
-            check "[axion] canonfs: mounted (in-memory)"
-            echo "PASS: x86 CanonFS in-memory fallback"
-          fi
           # LAPIC is the preferred path on q35; PIT banner is accepted as fallback.
           if grep -qF "[axion] hw timer: LAPIC 100Hz armed (IDT 0x40)" serial_x86.log 2>/dev/null; then
             echo "PASS: [axion] hw timer: LAPIC 100Hz armed (IDT 0x40)"

@@ -93,6 +93,18 @@ static uint32_t pci_config_read32(uint8_t bus, uint8_t dev,
   return inl_x86(kPciCfgData);
 }
 
+static void pci_config_write32(uint8_t bus, uint8_t dev,
+                               uint8_t func, uint8_t off,
+                               uint32_t value) noexcept {
+  const uint32_t addr = (1u << 31)
+                      | (static_cast<uint32_t>(bus)  << 16)
+                      | (static_cast<uint32_t>(dev)  << 11)
+                      | (static_cast<uint32_t>(func) <<  8)
+                      | (off & 0xFCu);
+  outl_x86(kPciCfgAddr, addr);
+  outl_x86(kPciCfgData, value);
+}
+
 // ── COM1 TX / RX ─────────────────────────────────────────────────────────────
 
 static void com1_putchar(char c) noexcept {
@@ -216,27 +228,76 @@ static inline void x86_mfence() noexcept {
 }
 
 struct LVirtqDesc     { uint64_t addr; uint32_t len; uint16_t flags; uint16_t next; };
-struct LVirtqAvail    { uint16_t flags; uint16_t idx; uint16_t ring[kVQSz]; };
+struct LVirtqAvailHdr { uint16_t flags; uint16_t idx; };
 struct LVirtqUsedElem { uint32_t id; uint32_t len; };
-struct LVirtqUsed     { uint16_t flags; uint16_t idx; LVirtqUsedElem ring[kVQSz]; };
+struct LVirtqUsedHdr  { uint16_t flags; uint16_t idx; };
 struct LVirtioBlkReq  { uint32_t type; uint32_t reserved; uint64_t sector; };
 
-// Legacy queue: contiguous 4096-aligned buffer.
-// Available ring immediately after descriptor table (offset 64).
-// Used ring at offset 4096.
-alignas(4096) static uint8_t    s_lvq_buf[8192];
-alignas(16)   static LVirtioBlkReq s_lblk_req;
-alignas(512)  static uint8_t    s_lsector_buf[512];
-static uint8_t s_lblk_status;
+extern "C" uint64_t g_axion_x86_virtio_dma_base = 0;
+extern "C" uint64_t g_axion_x86_virtio_dma_pages = 0;
 
-static constexpr uint16_t kLVD_Next  = 0x0001u;
-static constexpr uint16_t kLVD_Write = 0x0002u;
-static constexpr uint32_t kLBlkIn   = 0u;
-static constexpr uint32_t kLBlkOut  = 1u;
+static constexpr uint16_t kLVD_Next   = 0x0001u;
+static constexpr uint16_t kLVD_Write  = 0x0002u;
+static constexpr uint32_t kLBlkIn     = 0u;
+static constexpr uint32_t kLBlkOut    = 1u;
+static constexpr uint32_t kVirtAlign  = 4096u;
+static constexpr uint64_t kVirtPageSz = 4096u;
+
+static inline uint32_t align_up32(uint32_t value, uint32_t align) noexcept {
+  return (value + align - 1u) & ~(align - 1u);
+}
+
+static inline uint8_t* dma_base_ptr() noexcept {
+  return g_axion_x86_virtio_dma_base != 0
+      ? reinterpret_cast<uint8_t*>(static_cast<uintptr_t>(
+            g_axion_x86_virtio_dma_base))
+      : nullptr;
+}
+
+static inline uint32_t lvq_desc_bytes(uint16_t qsz) noexcept {
+  return static_cast<uint32_t>(sizeof(LVirtqDesc)) * qsz;
+}
+
+static inline uint32_t lvq_avail_bytes(uint16_t qsz) noexcept {
+  return 6u + static_cast<uint32_t>(2u * qsz);
+}
+
+static inline uint32_t lvq_used_bytes(uint16_t qsz) noexcept {
+  return 6u + static_cast<uint32_t>(8u * qsz);
+}
+
+static inline uint32_t lvq_used_offset(uint16_t qsz) noexcept {
+  return align_up32(lvq_desc_bytes(qsz) + lvq_avail_bytes(qsz), kVirtAlign);
+}
+
+static inline uint32_t lvq_total_bytes(uint16_t qsz) noexcept {
+  return lvq_used_offset(qsz) + lvq_used_bytes(qsz);
+}
+
+static inline uint8_t* lvq_data_base_ptr(uint16_t qsz) noexcept {
+  uint8_t* const base = dma_base_ptr();
+  if (!base) return nullptr;
+  return base + align_up32(lvq_total_bytes(qsz), kVirtAlign);
+}
+
+static inline LVirtioBlkReq* lblk_req_ptr(uint16_t qsz) noexcept {
+  uint8_t* const data = lvq_data_base_ptr(qsz);
+  return data ? reinterpret_cast<LVirtioBlkReq*>(data) : nullptr;
+}
+
+static inline uint8_t* lblk_status_ptr(uint16_t qsz) noexcept {
+  uint8_t* const data = lvq_data_base_ptr(qsz);
+  return data ? (data + 64u) : nullptr;
+}
+
+static inline uint8_t* lsector_buf_ptr(uint16_t qsz) noexcept {
+  uint8_t* const data = lvq_data_base_ptr(qsz);
+  return data ? (data + 512u) : nullptr;
+}
 
 // Find the I/O port base (BAR0 & ~3) of the N-th virtio-blk-pci device
 // (0-indexed).  Returns 0 if not found or BAR0 is not an I/O BAR.
-static uint16_t find_nth_vblk_iobase(int n) noexcept {
+static uint16_t find_nth_vblk_iobase(int n, uint8_t* out_dev = nullptr) noexcept {
   int found = 0;
   for (uint8_t dev = 0u; dev < 32u; ++dev) {
     const uint32_t id = pci_config_read32(0u, dev, 0u, 0x00u);
@@ -246,6 +307,7 @@ static uint16_t find_nth_vblk_iobase(int n) noexcept {
     if (vendor == kVirtioPciVendor &&
         (device == kVirtioBlkPciLegacy || device == kVirtioBlkPciModern)) {
       if (found == n) {
+        if (out_dev) *out_dev = dev;
         const uint32_t bar0 = pci_config_read32(0u, dev, 0u, 0x10u);
         return (bar0 & 1u) ? static_cast<uint16_t>(bar0 & ~3u) : 0u;
       }
@@ -255,27 +317,35 @@ static uint16_t find_nth_vblk_iobase(int n) noexcept {
   return 0u;
 }
 
-static bool lvblk_do_io(uint16_t base, uint32_t type, uint64_t lba) noexcept {
-  auto* desc  = reinterpret_cast<LVirtqDesc*>(&s_lvq_buf[0]);
-  auto* avail = reinterpret_cast<LVirtqAvail*>(&s_lvq_buf[kVQSz * 16]);
-  auto* used  = reinterpret_cast<LVirtqUsed*>(&s_lvq_buf[4096]);
+static bool lvblk_do_io(uint16_t base, uint16_t qsz,
+                        uint32_t type, uint64_t lba) noexcept {
+  uint8_t* const lvq_buf = dma_base_ptr();
+  auto* const req = lblk_req_ptr(qsz);
+  uint8_t* const sector = lsector_buf_ptr(qsz);
+  uint8_t* const status = lblk_status_ptr(qsz);
+  if (!lvq_buf || !req || !sector || !status) return false;
 
-  s_lblk_req.type     = type;
-  s_lblk_req.reserved = 0u;
-  s_lblk_req.sector   = lba;
-  s_lblk_status       = 0xFFu;
+  auto* desc = reinterpret_cast<LVirtqDesc*>(&lvq_buf[0]);
+  auto* avail = reinterpret_cast<LVirtqAvailHdr*>(&lvq_buf[lvq_desc_bytes(qsz)]);
+  auto* avail_ring = reinterpret_cast<uint16_t*>(
+      reinterpret_cast<uint8_t*>(avail) + sizeof(LVirtqAvailHdr));
+  auto* used = reinterpret_cast<LVirtqUsedHdr*>(&lvq_buf[lvq_used_offset(qsz)]);
+  req->type     = type;
+  req->reserved = 0u;
+  req->sector   = lba;
+  *status       = 0xFFu;
 
-  desc[0] = { reinterpret_cast<uint64_t>(&s_lblk_req),
-              static_cast<uint32_t>(sizeof(s_lblk_req)),
+  desc[0] = { reinterpret_cast<uint64_t>(req),
+              static_cast<uint32_t>(sizeof(*req)),
               kLVD_Next, 1u };
-  desc[1] = { reinterpret_cast<uint64_t>(s_lsector_buf), 512u,
+  desc[1] = { reinterpret_cast<uint64_t>(sector), 512u,
               static_cast<uint16_t>(kLVD_Next |
                 (type == kLBlkIn ? kLVD_Write : 0u)), 2u };
-  desc[2] = { reinterpret_cast<uint64_t>(&s_lblk_status), 1u,
+  desc[2] = { reinterpret_cast<uint64_t>(status), 1u,
               kLVD_Write, 0u };
 
   const uint16_t old_used = used->idx;
-  avail->ring[avail->idx % kVQSz] = 0u;
+  avail_ring[avail->idx % qsz] = 0u;
   x86_mfence();
   avail->idx = static_cast<uint16_t>(avail->idx + 1u);
   x86_mfence();
@@ -289,16 +359,21 @@ static bool lvblk_do_io(uint16_t base, uint32_t type, uint64_t lba) noexcept {
     __asm__ volatile("pause" ::: "memory");
 #endif
   }
-  return (used->idx != old_used) && (s_lblk_status == 0u);
+  return (used->idx != old_used) && (*status == 0u);
 }
 
 static bool canonfs_io_probe_x86() noexcept {
   // Find I/O base of the second virtio-blk device (index 1 = CanonFS store).
-  const uint16_t base = find_nth_vblk_iobase(1);
+  uint8_t dev = 0u;
+  const uint16_t base = find_nth_vblk_iobase(1, &dev);
   if (base == 0u) {
     com1_puts("[axion] canonfs: I/O probe FAIL (no virtio-blk I/O BAR)\r\n");
     return false;
   }
+
+  // Ensure the PCI function can decode I/O cycles and issue DMA.
+  const uint32_t cmd = pci_config_read32(0u, dev, 0u, 0x04u);
+  pci_config_write32(0u, dev, 0u, 0x04u, cmd | 0x00000005u);
 
   // Reset → ACK → DRIVER.
   outb_x86(static_cast<uint16_t>(base + 0x12u), 0u);   // reset
@@ -307,47 +382,59 @@ static bool canonfs_io_probe_x86() noexcept {
   outb_x86(static_cast<uint16_t>(base + 0x12u), 0x03u); // ACK | DRIVER
   outl_x86(static_cast<uint16_t>(base + 0x04u), 0u);    // no guest features
 
-  // Queue 0 setup: select, read size, write address (page frame number).
+  // Legacy PCI virtio uses the full QueueSize value reported by the device.
+  // There is no queue-size negotiation, so the in-memory vring layout must
+  // match the device-reported size exactly.
   outw_x86(static_cast<uint16_t>(base + 0x0Eu), 0u);    // QueueSelect = 0
   const uint16_t qsz = inw_x86(static_cast<uint16_t>(base + 0x0Cu));
-  if (qsz < static_cast<uint16_t>(kVQSz)) {
+  if (qsz < static_cast<uint16_t>(kVQSz) || qsz == 0u) {
     com1_puts("[axion] canonfs: I/O probe FAIL (queue too small)\r\n");
     return false;
   }
+  const uint32_t total_bytes =
+      align_up32(lvq_total_bytes(qsz), kVirtAlign) + 4096u;
+  if (g_axion_x86_virtio_dma_base == 0 ||
+      g_axion_x86_virtio_dma_pages == 0 ||
+      total_bytes > g_axion_x86_virtio_dma_pages * kVirtPageSz) {
+    com1_puts("[axion] canonfs: I/O probe FAIL (DMA workspace too small)\r\n");
+    return false;
+  }
+
   const uint32_t pfn = static_cast<uint32_t>(
-      reinterpret_cast<uint64_t>(s_lvq_buf) >> 12);
+      reinterpret_cast<uint64_t>(dma_base_ptr()) >> 12);
   outl_x86(static_cast<uint16_t>(base + 0x08u), pfn);   // QueueAddress (PFN)
   outb_x86(static_cast<uint16_t>(base + 0x12u), 0x07u); // ACK|DRIVER|DRIVER_OK
   x86_mfence();
 
   // LBA 0 READ → check CST1 magic.
-  for (int i = 0; i < 512; ++i) s_lsector_buf[i] = 0u;
-  if (!lvblk_do_io(base, kLBlkIn, 0u)) {
+  uint8_t* const sector = lsector_buf_ptr(qsz);
+  for (int i = 0; i < 512; ++i) sector[i] = 0u;
+  if (!lvblk_do_io(base, qsz, kLBlkIn, 0u)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA0 read error)\r\n");
     return false;
   }
-  if (s_lsector_buf[0] != 'C' || s_lsector_buf[1] != 'S' ||
-      s_lsector_buf[2] != 'T' || s_lsector_buf[3] != '1') {
+  if (sector[0] != 'C' || sector[1] != 'S' ||
+      sector[2] != 'T' || sector[3] != '1') {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA0 bad magic)\r\n");
     return false;
   }
 
   // LBA 1 WRITE known pattern.
   for (int i = 0; i < 512; ++i)
-    s_lsector_buf[i] = static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i));
-  if (!lvblk_do_io(base, kLBlkOut, 1u)) {
+    sector[i] = static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i));
+  if (!lvblk_do_io(base, qsz, kLBlkOut, 1u)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA1 write error)\r\n");
     return false;
   }
 
   // LBA 1 READ back and verify.
-  for (int i = 0; i < 512; ++i) s_lsector_buf[i] = 0u;
-  if (!lvblk_do_io(base, kLBlkIn, 1u)) {
+  for (int i = 0; i < 512; ++i) sector[i] = 0u;
+  if (!lvblk_do_io(base, qsz, kLBlkIn, 1u)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA1 read-back error)\r\n");
     return false;
   }
   for (int i = 0; i < 512; ++i) {
-    if (s_lsector_buf[i] !=
+    if (sector[i] !=
         static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i))) {
       com1_puts("[axion] canonfs: I/O probe FAIL (LBA1 mismatch)\r\n");
       return false;
