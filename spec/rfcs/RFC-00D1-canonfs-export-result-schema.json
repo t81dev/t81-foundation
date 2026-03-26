@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d1-canonfs-export-result.schema.json",
+  "title": "RFC-00D1 CanonFS Export Result",
+  "description": "Schema for t81.canonfs-export.v1 result documents emitted by CanonFS interchange tooling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "source_objects",
+    "target_kind",
+    "target_ref",
+    "provenance_ref",
+    "warnings",
+    "errors",
+    "policy_result",
+    "materialization_summary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "t81.canonfs-export.v1"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "partial", "error"]
+    },
+    "source_objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/canonfsRef"
+      }
+    },
+    "target_kind": {
+      "type": "string",
+      "enum": ["host-file", "host-directory"]
+    },
+    "target_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "provenance_ref": {
+      "type": "string"
+    },
+    "manifest_ref": {
+      "anyOf": [
+        { "$ref": "#/$defs/canonfsRef" },
+        { "type": "null" }
+      ]
+    },
+    "materialized_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/exportError"
+      }
+    },
+    "policy_result": {
+      "type": "string",
+      "enum": ["allowed", "denied", "partial"]
+    },
+    "materialization_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timestamps", "ownership", "mode_hint"],
+      "properties": {
+        "timestamps": { "type": "string" },
+        "ownership": { "type": "string" },
+        "mode_hint": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "canonfsRef": {
+      "type": "string",
+      "pattern": "^sha3-256:.+$"
+    },
+    "exportError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "message", "code"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["materialization-failure", "target-failure", "policy-failure"]
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

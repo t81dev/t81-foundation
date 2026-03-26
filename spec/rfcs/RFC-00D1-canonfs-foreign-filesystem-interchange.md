@@ -26,6 +26,15 @@ file systems as interchange surfaces. It does not yet standardize a
 bidirectional live-sync or mount-through model; those may be considered later
 as follow-on work once the import/export contract is stable.
 
+Initial machine-readable schema artifacts for the v1 JSON surfaces now live
+alongside this RFC:
+
+- `RFC-00D1-canonfs-import-result-schema.json`
+- `RFC-00D1-canonfs-export-result-schema.json`
+- `RFC-00D1-canonfs-interchange-manifest-schema.json`
+- `RFC-00D1-canonfs-import-provenance-schema.json`
+- `RFC-00D1-canonfs-export-provenance-schema.json`
+
 ## 2. Motivation
 
 CanonFS already serves as the project's canonical storage identity layer. But a
@@ -612,6 +621,21 @@ reference/provenance information.
 The likely v1 direction is JSON-capable reporting with explicit schema fields,
 consistent with other T81 tooling surfaces.
 
+### 12.1 Initial Schema Artifacts
+
+The current draft now has RFC-scoped JSON Schema companions for the first
+concrete v1 document surfaces:
+
+- import result: [RFC-00D1-canonfs-import-result-schema.json](RFC-00D1-canonfs-import-result-schema.json)
+- export result: [RFC-00D1-canonfs-export-result-schema.json](RFC-00D1-canonfs-export-result-schema.json)
+- interchange manifest: [RFC-00D1-canonfs-interchange-manifest-schema.json](RFC-00D1-canonfs-interchange-manifest-schema.json)
+- import provenance: [RFC-00D1-canonfs-import-provenance-schema.json](RFC-00D1-canonfs-import-provenance-schema.json)
+- export provenance: [RFC-00D1-canonfs-export-provenance-schema.json](RFC-00D1-canonfs-export-provenance-schema.json)
+
+These schema artifacts are intentionally narrow. They freeze the current JSON
+shape used by the RFC-00D1 CLI seed without claiming that policy integration or
+Axion evidence linkage is finished.
+
 ## 13. Open Questions
 
 1. Should symlinks be included in v1, and if so under what normalization rules?
@@ -621,6 +645,9 @@ consistent with other T81 tooling surfaces.
    filesystem materialization?
 4. Should any read-only bridge mode be mentioned as an experimental follow-on,
    or kept entirely out of the first RFC?
+5. Should the RFC-00D1 schema files remain RFC-scoped artifacts, or move into a
+   broader stable schema catalog once the interchange surface reaches
+   `proposed`?
 
 ## 14. Impact
 
@@ -679,14 +706,21 @@ should standardize only what can be defended precisely.
 Before this RFC should move from `draft` to `proposed`, follow-on work should
 settle:
 
-- the metadata preservation matrix
-- the provenance/evidence schema integration
+- the provenance/evidence schema integration beyond the initial RFC-scoped JSON
+  schemas
 - whether bundle export is in v1
 - whether symlinks are in or out for v1
 - whether a compact text projection ships alongside the JSON result schemas
+- whether the RFC-scoped schema files should be promoted into a stable shared
+  schema catalog
 
 ## 17. References
 
 - RFC-0054: CanonFS Object Identity and Persistence Contract
 - RFC-00CF: Slice6 CanonFS Operator Actions
 - RFC-00D0: Base-81-Aware TCP/IP Stack
+- [RFC-00D1-canonfs-import-result-schema.json](RFC-00D1-canonfs-import-result-schema.json)
+- [RFC-00D1-canonfs-export-result-schema.json](RFC-00D1-canonfs-export-result-schema.json)
+- [RFC-00D1-canonfs-interchange-manifest-schema.json](RFC-00D1-canonfs-interchange-manifest-schema.json)
+- [RFC-00D1-canonfs-import-provenance-schema.json](RFC-00D1-canonfs-import-provenance-schema.json)
+- [RFC-00D1-canonfs-export-provenance-schema.json](RFC-00D1-canonfs-export-provenance-schema.json)

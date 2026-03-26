@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d1-canonfs-import-result.schema.json",
+  "title": "RFC-00D1 CanonFS Import Result",
+  "description": "Schema for t81.canonfs-import.v1 result documents emitted by CanonFS interchange tooling.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "status",
+    "source_kind",
+    "source_ref",
+    "imported_objects",
+    "provenance_ref",
+    "warnings",
+    "errors",
+    "policy_result",
+    "normalization_summary"
+  ],
+  "properties": {
+    "schema": {
+      "const": "t81.canonfs-import.v1"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ok", "partial", "error"]
+    },
+    "source_kind": {
+      "type": "string",
+      "enum": ["host-file", "host-directory"]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "imported_objects": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/canonfsRef"
+      }
+    },
+    "provenance_ref": {
+      "type": "string"
+    },
+    "manifest_ref": {
+      "anyOf": [
+        { "$ref": "#/$defs/canonfsRef" },
+        { "type": "null" }
+      ]
+    },
+    "imported_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/importError"
+      }
+    },
+    "policy_result": {
+      "type": "string",
+      "enum": ["allowed", "denied", "partial"]
+    },
+    "normalization_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timestamps", "ownership", "mode_hint"],
+      "properties": {
+        "timestamps": { "type": "string" },
+        "ownership": { "type": "string" },
+        "mode_hint": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "canonfsRef": {
+      "type": "string",
+      "pattern": "^sha3-256:.+$"
+    },
+    "importError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "message", "code"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["source-failure", "normalization-failure", "policy-failure"]
+        },
+        "path": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "code": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

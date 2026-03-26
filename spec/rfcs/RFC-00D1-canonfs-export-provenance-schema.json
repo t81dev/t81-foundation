@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d1-canonfs-export-provenance.schema.json",
+  "title": "RFC-00D1 CanonFS Export Provenance",
+  "description": "Schema for t81.canonfs-export-provenance.v1 CanonFS-side provenance records.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "source_objects", "target_kind", "target_ref", "manifest_ref"],
+  "properties": {
+    "schema": {
+      "const": "t81.canonfs-export-provenance.v1"
+    },
+    "source_objects": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^sha3-256:.+$"
+      }
+    },
+    "target_kind": {
+      "type": "string",
+      "enum": ["host-file", "host-directory"]
+    },
+    "target_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "manifest_ref": {
+      "anyOf": [
+        { "type": "string", "pattern": "^sha3-256:.+$" },
+        { "type": "null" }
+      ]
+    }
+  }
+}

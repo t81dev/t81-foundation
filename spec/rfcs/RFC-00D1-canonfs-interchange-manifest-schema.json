@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d1-canonfs-interchange-manifest.schema.json",
+  "title": "RFC-00D1 CanonFS Interchange Manifest",
+  "description": "Schema for t81.canonfs-interchange-manifest.v1 directory interchange manifests.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "source_kind", "source_ref", "entries"],
+  "properties": {
+    "schema": {
+      "const": "t81.canonfs-interchange-manifest.v1"
+    },
+    "source_kind": {
+      "type": "string",
+      "enum": ["host-file", "host-directory"]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "object_ref", "size_bytes"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "object_ref": {
+            "type": "string",
+            "pattern": "^sha3-256:.+$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}
