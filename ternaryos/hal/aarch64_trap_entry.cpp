@@ -10,6 +10,10 @@
 #include "aarch64_trap_entry.hpp"
 #include "../kernel/kernel_main.hpp"
 
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
+extern "C" char axion_exception_vector_base[];
+#endif
+
 namespace t81::ternaryos::hal {
 
 namespace {
@@ -41,7 +45,6 @@ void axion_kernel_install_exception_vectors() noexcept {
   // axion_exception_vector_base is the symbol defined by the .balign 2048 /
   // .global directive in aarch64_exception_vectors.S.  Writing its address
   // into VBAR_EL1 installs the Axion exception vector table.
-  extern "C" char axion_exception_vector_base[];
   asm volatile("msr vbar_el1, %0"
                :
                : "r"(static_cast<void*>(axion_exception_vector_base))

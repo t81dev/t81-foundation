@@ -39,7 +39,7 @@ namespace {
 // ── Payload helpers ───────────────────────────────────────────────────────────
 
 constexpr std::size_t kHeaderBytes = 4;
-constexpr std::size_t kMaxPayload  = CanonBlock::kTryteCount - kHeaderBytes;  // 725
+constexpr std::size_t kMaxPayload = CanonBlock::kTryteCount - kHeaderBytes;  // 725
 
 static_assert(kMaxPayload == 725u, "CanonBlock layout invariant");
 
@@ -49,8 +49,8 @@ std::optional<CanonBlock> pack(std::span<const std::byte> bytes) {
   if (bytes.size() > kMaxPayload) return std::nullopt;
   CanonBlock blk{};
   const auto sz = static_cast<uint32_t>(bytes.size());
-  blk.trytes[0] = static_cast<uint8_t>( sz        & 0xFFu);
-  blk.trytes[1] = static_cast<uint8_t>((sz >>  8) & 0xFFu);
+  blk.trytes[0] = static_cast<uint8_t>(sz & 0xFFu);
+  blk.trytes[1] = static_cast<uint8_t>((sz >> 8) & 0xFFu);
   blk.trytes[2] = static_cast<uint8_t>((sz >> 16) & 0xFFu);
   blk.trytes[3] = static_cast<uint8_t>((sz >> 24) & 0xFFu);
   std::memcpy(blk.trytes.data() + kHeaderBytes, bytes.data(), bytes.size());
@@ -60,14 +60,10 @@ std::optional<CanonBlock> pack(std::span<const std::byte> bytes) {
 /// Unpack a CanonBlock packed by pack(), returning the original byte span.
 std::vector<std::byte> unpack(const CanonBlock& blk) {
   const uint32_t sz =
-      static_cast<uint32_t>(blk.trytes[0])
-    | (static_cast<uint32_t>(blk.trytes[1]) <<  8)
-    | (static_cast<uint32_t>(blk.trytes[2]) << 16)
-    | (static_cast<uint32_t>(blk.trytes[3]) << 24);
-  const auto count = static_cast<std::size_t>(
-      sz <= kMaxPayload ? sz : kMaxPayload);
-  const auto* src = reinterpret_cast<const std::byte*>(
-      blk.trytes.data() + kHeaderBytes);
+      static_cast<uint32_t>(blk.trytes[0]) | (static_cast<uint32_t>(blk.trytes[1]) << 8) |
+      (static_cast<uint32_t>(blk.trytes[2]) << 16) | (static_cast<uint32_t>(blk.trytes[3]) << 24);
+  const auto count = static_cast<std::size_t>(sz <= kMaxPayload ? sz : kMaxPayload);
+  const auto* src = reinterpret_cast<const std::byte*>(blk.trytes.data() + kHeaderBytes);
   return std::vector<std::byte>(src, src + count);
 }
 
@@ -80,30 +76,18 @@ static_assert(kCapBytes <= kMaxPayload);
 std::vector<std::byte> serialize_cap(const CapabilityGrant& g) {
   std::vector<std::byte> out(kCapBytes, std::byte{0});
   std::byte* p = out.data();
-  std::memcpy(p, g.target.hash.h.bytes.data(), 32); p += 32;
+  std::memcpy(p, g.target.hash.h.bytes.data(), 32);
+  p += 32;
   const uint16_t perms = g.perms;
-  std::memcpy(p, &perms, 2);                         p += 2;
+  std::memcpy(p, &perms, 2);
+  p += 2;
   const uint64_t exp = g.expires_at;
-  std::memcpy(p, &exp, 8);                           p += 8;
-  std::memcpy(p, g.granted_by.h.bytes.data(), 32);   p += 32;
+  std::memcpy(p, &exp, 8);
+  p += 8;
+  std::memcpy(p, g.granted_by.h.bytes.data(), 32);
+  p += 32;
   std::memcpy(p, g.revocable_by.h.bytes.data(), 32);
   return out;
-}
-
-CapabilityGrant deserialize_cap(std::span<const std::byte> raw) {
-  CapabilityGrant g;
-  if (raw.size() < kCapBytes) return g;
-  const std::byte* p = raw.data();
-  std::memcpy(g.target.hash.h.bytes.data(), p, 32);   p += 32;
-  uint16_t perms = 0;
-  std::memcpy(&perms, p, 2);                           p += 2;
-  g.perms = perms;
-  uint64_t exp = 0;
-  std::memcpy(&exp, p, 8);                             p += 8;
-  g.expires_at = exp;
-  std::memcpy(g.granted_by.h.bytes.data(), p, 32);    p += 32;
-  std::memcpy(g.revocable_by.h.bytes.data(), p, 32);
-  return g;
 }
 
 // ── BlockBackedDriver ─────────────────────────────────────────────────────────
@@ -190,9 +174,9 @@ private:
     return hook_(kind, nil).allow;
   }
 
-  std::unique_ptr<t81::ternaryos::dev::IBlockDevice>   dev_;
-  t81::ternaryos::dev::CanonStore                      store_;
-  std::map<CanonHash, CapabilityGrant>                 caps_;
+  std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev_;
+  t81::ternaryos::dev::CanonStore store_;
+  std::map<CanonHash, CapabilityGrant> caps_;
   std::function<AxionVerdict(OpKind, const CanonRef&)> hook_;
 };
 
@@ -201,8 +185,7 @@ private:
 // ── Factory ───────────────────────────────────────────────────────────────────
 
 std::unique_ptr<Driver> make_block_backed_driver(
-    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev,
-    bool rebuild_on_open) {
+    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev, bool rebuild_on_open) {
   if (!dev) return nullptr;
   return std::make_unique<BlockBackedDriver>(std::move(dev), rebuild_on_open);
 }
