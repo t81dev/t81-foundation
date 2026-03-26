@@ -417,6 +417,16 @@ static void test_rfc00b9_shell_core() {
   check(session->execute_command("tier 2"), "tier builtin executes");
   check(session->execute_command("service list"), "service list executes");
   check(session->execute_command("service start studio"), "service start studio executes");
+  check(session->execute_command("hash /usr/bin/t81"), "hash on service binary executes");
+  check(session->execute_command("store put script \"show profile|history\""),
+        "store put script executes for run alias");
+  const auto script_ref =
+      suffix_after(session->state().command_records[4].result, "canon script ok ");
+  check(!script_ref.empty(), "store put script returns a CanonRef");
+  check(session->execute_command(std::string("hash ") + script_ref),
+        "hash on CanonFS object executes");
+  check(session->execute_command(std::string("run ") + script_ref),
+        "run on CanonFS object executes");
   check(session->execute_command("session status"), "session status exposes userenv shell state");
 
   const auto& records = session->state().command_records;
@@ -426,9 +436,15 @@ static void test_rfc00b9_shell_core() {
         "service list exposes studio service");
   check(records[2].result == "service start ok t81-studio",
         "service start routes through userenv activation");
-  check(records[3].result.find("history canonfs://var/sessions/") != std::string::npos,
+  check(records[3].result == "hash /usr/bin/t81\ncanon_hash deadbeef00000003",
+        "hash exposes service canon_hash");
+  check(records[5].result == "hash " + script_ref + "\ncanon_hash " + script_ref,
+        "hash on stored object exposes CanonRef identity");
+  check(records[6].result == "run ok " + script_ref,
+        "run aliases through session-run path");
+  check(records[7].result.find("history canonfs://var/sessions/") != std::string::npos,
         "session status exposes CanonFS history path");
-  check(records[3].result.find("tier 2") != std::string::npos,
+  check(records[7].result.find("tier 2") != std::string::npos,
         "session status exposes current tier");
 }
 

@@ -393,6 +393,28 @@ std::string hosted_service_text(const userenv::ServiceRegistry& registry,
   return "service invalid";
 }
 
+std::optional<t81::canonfs::CanonRef> hosted_path_ref(
+    std::string_view path,
+    const std::vector<ShellNamedRef>& named_refs) {
+  return resolve_named_or_raw_ref(path, named_refs);
+}
+
+std::string hosted_hash_text(const userenv::ServiceRegistry& registry,
+                             std::string_view path,
+                             const std::vector<ShellNamedRef>& named_refs) {
+  if (const auto ref = hosted_path_ref(path, named_refs); ref.has_value()) {
+    return "hash " + std::string(path) + "\ncanon_hash " + canon_ref_text(*ref);
+  }
+
+  for (const auto& service : registry.services) {
+    if (service.binary == path) {
+      return "hash " + std::string(path) + "\ncanon_hash " + service.canon_hash;
+    }
+  }
+
+  return "hash missing";
+}
+
 std::string hosted_help_text() {
   std::string text = "builtins";
   shell_emit_help(ShellSurface::HostedPhase5, false, [&](const char* name, const char* summary) {
@@ -719,8 +741,50 @@ bool ShellSession::execute_command(std::string_view command_view) {
     return refresh_render();
   }
 
+  if (words[0] == "hash") {
+    if (!user_shell_.has_value()) {
+      state_.command_records.push_back({command, "hash unavailable"});
+      return refresh_render();
+    }
+    (void)user_shell_->exec_command(command);
+    if (words.size() < 2) {
+      state_.command_records.push_back({command, "hash invalid"});
+      return refresh_render();
+    }
+    state_.command_records.push_back(
+        {command, hosted_hash_text(service_registry_, words[1], named_refs_)});
+    return refresh_render();
+  }
+
+  if (words[0] == "run") {
+    if (!user_shell_.has_value()) {
+      state_.command_records.push_back({command, "run unavailable"});
+      return refresh_render();
+    }
+    (void)user_shell_->exec_command(command);
+    if (words.size() < 2) {
+      state_.command_records.push_back({command, "run invalid"});
+      return refresh_render();
+    }
+
+    const auto ref = hosted_path_ref(words[1], named_refs_);
+    if (!ref.has_value()) {
+      state_.command_records.push_back({command, "run missing"});
+      return refresh_render();
+    }
+
+    std::string session_run_command = "session run " + words[1];
+    if (!execute_command(session_run_command)) {
+      state_.command_records.push_back({command, "run failed"});
+      return refresh_render();
+    }
+    state_.command_records.push_back(
+        {command, "run ok " + canon_ref_text(*ref)});
+    return refresh_render();
+  }
+
   if (words[0] == "cd" || words[0] == "ls" || words[0] == "cat" ||
-      words[0] == "hash" || words[0] == "run" || words[0] == "compile") {
+      words[0] == "compile") {
     if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
     state_.command_records.push_back({command, hosted_rfc00b9_stub(words[0])});
     return refresh_render();
