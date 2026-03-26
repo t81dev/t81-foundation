@@ -59,7 +59,7 @@ def parse_handoff_env(buffer: str, trigger: str) -> dict:
     env["T81_TUI_HANDOFF_PROFILE"] = "qemu-armv8:AArch64/EDK2/slice6-boot-probe"
     env["T81_TUI_HANDOFF_DISPLAY"] = "serial-console handoff"
     env["T81_TUI_HANDOFF_STATUS"] = "handoff from Axion serial shell"
-    env["T81_TUI_HANDOFF_COMMAND"] = "tui"
+    env["T81_TUI_HANDOFF_COMMAND"] = "studio"
     return env
 
 

@@ -13,6 +13,8 @@ enum class ShellBuiltinCommand {
   None,
   Help,
   Tui,
+  Studio,
+  Agent,
   Uname,
   Version,
   Policy,
@@ -90,27 +92,43 @@ inline bool shell_command_visible(const ShellCommandSpec& spec, ShellSurface sur
 inline ShellBuiltinCommand shell_builtin_command(const char* word) {
   if (shell_cstr_eq(word, "help")) return ShellBuiltinCommand::Help;
   if (shell_cstr_eq(word, "tui")) return ShellBuiltinCommand::Tui;
+  if (shell_cstr_eq(word, "studio")) return ShellBuiltinCommand::Studio;
+  if (shell_cstr_eq(word, "agent")) return ShellBuiltinCommand::Agent;
   if (shell_cstr_eq(word, "uname")) return ShellBuiltinCommand::Uname;
   if (shell_cstr_eq(word, "version")) return ShellBuiltinCommand::Version;
   if (shell_cstr_eq(word, "policy")) return ShellBuiltinCommand::Policy;
   return ShellBuiltinCommand::None;
 }
 
-inline const char* shell_tui_text(ShellSurface surface) {
+inline const char* shell_studio_text(ShellSurface surface) {
   switch (surface) {
     case ShellSurface::HostedPhase5:
-      return "[axion tui]\n"
+      return "[axion studio]\n"
              "  frontend    : hosted FTXUI\n"
              "  entry       : ./build/t81_ternaryos_shell_tui\n"
              "  note        : uses the shared shell backend contract";
     case ShellSurface::FreestandingSlice6:
-      return "[axion tui]\n"
+      return "[axion studio]\n"
              "  frontend    : unavailable in slice6 guest\n"
              "  handoff     : host-assisted launcher bridge\n"
              "  host entry  : ./build/t81_ternaryos_shell_tui\n"
-             "  [axion tui handoff] hosted-phase5";
+             "  [axion studio handoff] hosted-phase5";
   }
-  return "[axion tui]";
+  return "[axion studio]";
+}
+
+inline const char* shell_agent_text(ShellSurface surface) {
+  switch (surface) {
+    case ShellSurface::HostedPhase5:
+      return "[axion agent]\n"
+             "  frontend    : unavailable in current hosted shell lane\n"
+             "  note        : RFC-0033 agent frontend is not yet wired here";
+    case ShellSurface::FreestandingSlice6:
+      return "[axion agent]\n"
+             "  frontend    : unavailable in current shell lane\n"
+             "  note        : RFC-0033 agent handoff is not yet wired";
+  }
+  return "[axion agent]";
 }
 
 inline const char* shell_uname_text(ShellSurface surface) {
@@ -159,7 +177,10 @@ inline ShellBuiltinView shell_builtin_view(ShellBuiltinCommand command,
     case ShellBuiltinCommand::Help:
       return {ShellBuiltinViewKind::HelpCatalog, nullptr};
     case ShellBuiltinCommand::Tui:
-      return {ShellBuiltinViewKind::TextBlock, shell_tui_text(surface)};
+    case ShellBuiltinCommand::Studio:
+      return {ShellBuiltinViewKind::TextBlock, shell_studio_text(surface)};
+    case ShellBuiltinCommand::Agent:
+      return {ShellBuiltinViewKind::TextBlock, shell_agent_text(surface)};
     case ShellBuiltinCommand::Uname:
       return {ShellBuiltinViewKind::TextBlock, shell_uname_text(surface)};
     case ShellBuiltinCommand::Version:
@@ -173,9 +194,11 @@ inline ShellBuiltinView shell_builtin_view(ShellBuiltinCommand command,
 }
 
 template <typename EmitFn>
-inline void shell_emit_help(ShellSurface surface, EmitFn emit) {
+inline void shell_emit_help(ShellSurface surface, bool include_operator, EmitFn emit) {
   for (const auto& spec : kShellCommandCatalog) {
     if (!shell_command_visible(spec, surface)) continue;
+    if (!include_operator && !spec.main_help) continue;
+    if (include_operator && spec.main_help) continue;
     emit(spec.name, spec.summary);
   }
 }

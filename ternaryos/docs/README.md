@@ -322,38 +322,14 @@ What the TUI adds:
 - a proper terminal UI surface using the same FTXUI stack as the rest of the repo
 - a transcript pane, session/status pane, and framebuffer preview in one screen
 - a deterministic snapshot mode suitable for review and later test automation
-- a minimal built-in command model behind the transcript:
-  - `help`
-  - `profile`
-  - `name set <label> <ref>`
-  - `name ls`
-  - `object pin <kind> <name> <ref>`
-  - `object ls`
-  - `object show <name>`
-  - `show profile`
-  - `session status`
-  - `session checkpoint`
-  - `session export`
-  - `session import <ref>`
-  - `session diff <ref>`
-  - `session run <ref>`
-  - `session show durable`
-  - `show session`
-  - `session refs`
-  - `store put <text>`
-  - `store put script <line>|<line>|...>`
-  - `store put ref <ref>`
-  - `store cp <ref>`
-  - `store ls`
-  - `store get <ref>`
-  - `show ref <canonref>`
-  - `store rm <ref>`
-  - `history`
-  - `history show session`
-  - `history show object <ref>`
-  - `history use <ref>`
-  - `history show durable`
-  - `clear`
+- the same shell catalog and shared backend views that now drive the Axion
+  serial shell help, builtins, and status surfaces
+- an explicit handoff mode when launched from `studio` in `t81sh`
+  - starts in a read-only carried-shell view
+  - preserves the serial-shell prompt, command, and handoff transcript
+  - requires `hosted` to switch deliberately into the hosted backend
+- the older Phase 5 prototype commands are still present in the hosted lane for
+  development, but they are no longer the product-facing shell contract
 - a live typed-input loop in the interactive TUI:
   - printable characters append to the command buffer
   - `Backspace` edits
@@ -460,45 +436,46 @@ Boot is complete when serial reaches:
 [axion@T81 tier=1]$
 ```
 
-The current freestanding serial shell is intentionally narrow. Its built-in
-commands are:
+The current product-facing help in the Axion serial shell follows the
+RFC-00B9 shell contract. The default `help` output advertises:
 
 - `help`
-- `tui`
-- `uname`
-- `version`
-- `canonfs`
-- `canonfs ls`
-- `canonfs hash <alias>`
-- `canonfs run <alias>`
-- `irq`
-- `el0`
-- `waits`
-- `status`
-- `threads`
-- `sched`
-- `faults`
-- `gov`
+- `exit [code]`
+- `cd <path>`
+- `ls [path]`
+- `cat <path>`
+- `hash <path>`
+- `run <file.tisc>`
+- `compile <f.t81>`
 - `policy`
+- `service <cmd>`
+- `tier <n>`
+- `studio`
+- `agent`
 
-`tui` is a shared shell entry command, but it does not launch a guest-native UI
-from the serial shell yet. When you boot through
-`run_qemu_slice6_shell.sh`, the launcher now watches for the shell handoff token,
+In the current slice6 lane, the RFC-00B9 commands other than `policy` and
+`studio` are still explicit stubs. Operator and bring-up commands remain
+available behind `help operator`, including `canonfs`, `irq`, `el0`, `waits`,
+`status`, `threads`, `sched`, `faults`, and `gov`.
+
+`studio` is the shared shell entry command for the human TUI frontend. It does
+not launch a guest-native UI from the serial shell yet. When you boot through
+`run_qemu_slice6_shell.sh`, the launcher watches for the shell handoff token,
 shuts down QEMU, and opens the hosted frontend at:
 
 ```text
 ./build/t81_ternaryos_shell_tui
 ```
 
-If you boot the EFI image through raw QEMU instead of the launcher, `tui`
+If you boot the EFI image through raw QEMU instead of the launcher, `studio`
 prints the same handoff target and token but does not auto-launch anything.
 
 The launcher-assisted handoff currently carries a minimal shell context into the
 TUI:
 
 - shell source (`t81sh`)
-- prompt and command (`[axion@T81 tier=1]$ tui`)
-- the emitted `tui` handoff transcript block
+- prompt and command (`[axion@T81 tier=1]$ studio`)
+- the emitted `studio` handoff transcript block
 - CanonFS mode (`in-memory` or `persistent, virtio-blk`)
 - serial-shell status line / handoff banner
 

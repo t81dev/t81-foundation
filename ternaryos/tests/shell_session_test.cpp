@@ -36,7 +36,7 @@ static void test_scripted_shell_session() {
   check(state.has_value(), "scripted shell session builds");
   if (!state.has_value()) return;
 
-  check(state->available_commands.size() == 35, "thirty-five builtins are exposed");
+  check(state->available_commands.size() == 13, "RFC-00B9 product commands are exposed");
   check(state->command_records.size() == 6, "scripted session records six commands");
   check(state->command_records[2].result.starts_with("session profile "),
         "scripted session status reports shell state");

@@ -264,7 +264,7 @@ std::vector<std::string> hosted_command_names() {
   std::vector<std::string> names;
   names.reserve(kShellCommandCatalogCount);
   for (const auto& spec : kShellCommandCatalog) {
-    if (shell_command_visible(spec, ShellSurface::HostedPhase5)) {
+    if (shell_command_visible(spec, ShellSurface::HostedPhase5) && spec.main_help) {
       names.emplace_back(spec.name);
     }
   }
@@ -273,13 +273,28 @@ std::vector<std::string> hosted_command_names() {
 
 std::string hosted_help_text() {
   std::string text = "builtins";
-  shell_emit_help(ShellSurface::HostedPhase5, [&](const char* name, const char* summary) {
+  shell_emit_help(ShellSurface::HostedPhase5, false, [&](const char* name, const char* summary) {
     text += "\n";
     text += name;
     text += " -- ";
     text += summary;
   });
   return text;
+}
+
+std::string hosted_operator_help_text() {
+  std::string text = "operator commands";
+  shell_emit_help(ShellSurface::HostedPhase5, true, [&](const char* name, const char* summary) {
+    text += "\n";
+    text += name;
+    text += " -- ";
+    text += summary;
+  });
+  return text;
+}
+
+std::string hosted_rfc00b9_stub(std::string_view command) {
+  return std::string(command) + " not yet implemented in the current RFC-00B9 shell lane";
 }
 
 std::string hosted_builtin_text(ShellBuiltinCommand command) {
@@ -497,14 +512,24 @@ bool ShellSession::execute_command(std::string_view command_view) {
   const auto& words = parsed.words;
   if (words.empty()) return refresh_render();
 
+  if (words.size() == 2 && words[0] == "help" && words[1] == "operator") {
+    state_.command_records.push_back({command, hosted_operator_help_text()});
+    return refresh_render();
+  }
+
   switch (shell_builtin_command(words[0].c_str())) {
     case ShellBuiltinCommand::Help:
       state_.command_records.push_back(
           {command, hosted_builtin_text(ShellBuiltinCommand::Help)});
       return refresh_render();
     case ShellBuiltinCommand::Tui:
+    case ShellBuiltinCommand::Studio:
       state_.command_records.push_back(
-          {command, hosted_builtin_text(ShellBuiltinCommand::Tui)});
+          {command, hosted_builtin_text(ShellBuiltinCommand::Studio)});
+      return refresh_render();
+    case ShellBuiltinCommand::Agent:
+      state_.command_records.push_back(
+          {command, hosted_builtin_text(ShellBuiltinCommand::Agent)});
       return refresh_render();
     case ShellBuiltinCommand::Uname:
       state_.command_records.push_back(
@@ -520,6 +545,13 @@ bool ShellSession::execute_command(std::string_view command_view) {
       return refresh_render();
     case ShellBuiltinCommand::None:
       break;
+  }
+
+  if (words[0] == "exit" || words[0] == "cd" || words[0] == "ls" || words[0] == "cat" ||
+      words[0] == "hash" || words[0] == "run" || words[0] == "compile" ||
+      words[0] == "service" || words[0] == "tier") {
+    state_.command_records.push_back({command, hosted_rfc00b9_stub(words[0])});
+    return refresh_render();
   }
 
   if (words[0] == "profile") {

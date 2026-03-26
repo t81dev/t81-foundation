@@ -691,9 +691,10 @@ static void freestanding_sched_tick() noexcept {
 
 // ── Shell command handlers ────────────────────────────────────────────────────
 
-static void cmd_help() noexcept {
+static void cmd_help(bool include_operator = false) noexcept {
   t81::ternaryos::shell_emit_help(
       t81::ternaryos::ShellSurface::FreestandingSlice6,
+      include_operator,
       [&](const char* name, const char* summary) {
     pl011_puts("  ");
     pl011_puts(name);
@@ -867,6 +868,12 @@ static void cmd_canonfs_hash(const char* alias) noexcept {
   pl011_puts(artifact->t81x_version >= 2u ? "stored header (T81X v2)"
                                           : "computed payload (T81X v1)");
   pl011_puts("\r\n");
+}
+
+static void cmd_rfc00b9_stub(const char* name) noexcept {
+  pl011_puts("  [axion] ");
+  pl011_puts(name);
+  pl011_puts(" not yet implemented in the current RFC-00B9 shell lane\r\n");
 }
 
 static void cmd_canonfs_run(const char* alias) noexcept {
@@ -1158,12 +1165,21 @@ static void shell_dispatch(const char* line) noexcept {
 
   ++s_cmd_count;
 
+  if (str_eq(line, "help operator")) {
+    cmd_help(true);
+    return;
+  }
+
   switch (t81::ternaryos::shell_builtin_command(line)) {
     case t81::ternaryos::ShellBuiltinCommand::Help:
       cmd_help();
       return;
     case t81::ternaryos::ShellBuiltinCommand::Tui:
-      cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Tui);
+    case t81::ternaryos::ShellBuiltinCommand::Studio:
+      cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Studio);
+      return;
+    case t81::ternaryos::ShellBuiltinCommand::Agent:
+      cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Agent);
       return;
     case t81::ternaryos::ShellBuiltinCommand::Uname:
       cmd_uname();
@@ -1178,7 +1194,17 @@ static void shell_dispatch(const char* line) noexcept {
       break;
   }
 
-  if      (str_eq(line, "canonfs")) { cmd_canonfs(); }
+  if      (str_eq(line, "exit"))    { cmd_rfc00b9_stub("exit"); }
+  else if (str_starts_with(line, "cd ")) { cmd_rfc00b9_stub("cd"); }
+  else if (str_eq(line, "cd"))      { cmd_rfc00b9_stub("cd"); }
+  else if (str_eq(line, "ls") || str_starts_with(line, "ls ")) { cmd_rfc00b9_stub("ls"); }
+  else if (str_starts_with(line, "cat ")) { cmd_rfc00b9_stub("cat"); }
+  else if (str_starts_with(line, "hash ")) { cmd_rfc00b9_stub("hash"); }
+  else if (str_starts_with(line, "run ")) { cmd_rfc00b9_stub("run"); }
+  else if (str_starts_with(line, "compile ")) { cmd_rfc00b9_stub("compile"); }
+  else if (str_eq(line, "service") || str_starts_with(line, "service ")) { cmd_rfc00b9_stub("service"); }
+  else if (str_eq(line, "tier") || str_starts_with(line, "tier ")) { cmd_rfc00b9_stub("tier"); }
+  else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
   else if (str_eq(line, "canonfs ls")) { cmd_canonfs_ls(); }
   else if (str_starts_with(line, "canonfs hash ")) {
     cmd_canonfs_hash(str_trim(str_after_token(str_after_token(line))));

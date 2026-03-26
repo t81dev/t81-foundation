@@ -96,9 +96,9 @@ qemu_pid=$!
 {
   /bin/sleep 10
   if [[ -n "$canon_store_img" ]]; then
-    printf 'help\rtui\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test-manifest\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rstudio\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test-manifest\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
   else
-    printf 'help\rtui\rcanonfs\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rstudio\rcanonfs\rirq\rel0\rfaults\rgov\r'
   fi
 } >"$stdin_fifo" &
 writer_pid=$!
@@ -120,10 +120,10 @@ check() {
 
 check "[axion] t81sh: ready (principal=axion, tier=1)"
 check "[axion@T81 tier=1]$"
-check "help      -- show available commands"
-check "tui       -- show TUI frontend entry / handoff status"
-check "[axion tui]"
-check "[axion tui handoff] hosted-phase5"
+check "show RFC-00B9 shell commands"
+check "studio"
+check "[axion studio]"
+check "[axion studio handoff] hosted-phase5"
 check "[canonfs]"
 check "[irq]"
 check "[el0]"

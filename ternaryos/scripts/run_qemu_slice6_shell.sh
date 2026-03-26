@@ -102,9 +102,9 @@ if [[ -n "$canon_store" ]]; then
 fi
 echo "  accel: $accel"
 if [[ "$tui_handoff_enabled" -eq 1 ]]; then
-  echo "  tui:   host-assisted handoff enabled"
+  echo "  studio: host-assisted handoff enabled"
 else
-  echo "  tui:   hosted handoff unavailable"
+  echo "  studio: hosted handoff unavailable"
 fi
 echo "  exit:  Ctrl-a x"
 
@@ -134,7 +134,7 @@ fi
 
 if [[ "$tui_handoff_enabled" -eq 1 ]]; then
   exec "$python_bin" "$script_dir/qemu_shell_handoff.py" \
-    --trigger "[axion tui handoff] hosted-phase5" \
+    --trigger "[axion studio handoff] hosted-phase5" \
     --launch "$tui_bin" \
     -- "${cmd[@]}"
 fi

@@ -107,6 +107,7 @@ std::string render_help_text() {
   out << "builtins";
   t81::ternaryos::shell_emit_help(
       t81::ternaryos::ShellSurface::HostedPhase5,
+      false,
       [&](const char* name, const char* summary) {
         out << '\n' << name << " -- " << summary;
       });
@@ -151,7 +152,7 @@ public:
     state_.display_binding_name = handoff.display_binding_name.empty()
                                       ? "serial-console handoff"
                                       : handoff.display_binding_name;
-    state_.available_commands = {"help", "tui", "uname", "version", "policy", "status", "canonfs"};
+    state_.available_commands = {"help", "studio", "agent", "policy", "status", "canonfs"};
     state_.transcript_lines = handoff.transcript_lines;
     state_.transcript_text = [this] {
       std::string text;
@@ -313,8 +314,10 @@ Element shell_tui_document(const t81::ternaryos::ShellSessionState& state,
               spec, t81::ternaryos::ShellSurface::HostedPhase5)) {
         continue;
       }
+      if (!spec.main_help) continue;
       commands.push_back(text(spec.name) | color(Color::Magenta));
     }
+    commands.push_back(text("help operator") | color(Color::Yellow));
   }
 
   Elements framebuffer;
