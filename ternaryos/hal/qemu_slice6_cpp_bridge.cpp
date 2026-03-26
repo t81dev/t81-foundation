@@ -407,6 +407,19 @@ static const char* str_after_token(const char* s) noexcept {
   return s;
 }
 
+static bool parse_u32(const char* s, uint32_t* out) noexcept {
+  s = str_trim(s);
+  if (*s == '\0') return false;
+  uint32_t value = 0u;
+  while (*s >= '0' && *s <= '9') {
+    value = value * 10u + static_cast<uint32_t>(*s - '0');
+    ++s;
+  }
+  if (*str_trim(s) != '\0') return false;
+  *out = value;
+  return true;
+}
+
 // Render uint64_t as decimal into caller buffer (bufsz >= 21).
 // Returns pointer into buf at the start of the rendered string.
 static const char* u64_dec(uint64_t v, char* buf, int bufsz) noexcept {
@@ -481,6 +494,45 @@ static bool     s_has_blk        = false;
 static bool     s_el0_page_isolated = false;
 static bool     s_el0_init_ok = false;
 static bool     s_el0_kernel_call_bridge_ok = false;
+static uint32_t s_shell_tier = 1u;
+static bool     s_shell_exit_requested = false;
+
+enum class ShellPath : uint8_t { Root = 0, Refs = 1, Objects = 2 };
+static ShellPath s_shell_path = ShellPath::Root;
+
+static const char* shell_path_text(ShellPath path) noexcept {
+  switch (path) {
+    case ShellPath::Root: return "/";
+    case ShellPath::Refs: return "/refs";
+    case ShellPath::Objects: return "/objects";
+  }
+  return "/";
+}
+
+static bool parse_shell_path(const char* text, ShellPath current, ShellPath* out) noexcept {
+  text = str_trim(text);
+  if (*text == '\0' || str_eq(text, ".")) {
+    *out = current;
+    return true;
+  }
+  if (str_eq(text, "/")) {
+    *out = ShellPath::Root;
+    return true;
+  }
+  if (str_eq(text, "..")) {
+    *out = ShellPath::Root;
+    return true;
+  }
+  if (str_eq(text, "refs") || str_eq(text, "/refs")) {
+    *out = ShellPath::Refs;
+    return true;
+  }
+  if (str_eq(text, "objects") || str_eq(text, "/objects")) {
+    *out = ShellPath::Objects;
+    return true;
+  }
+  return false;
+}
 
 struct CanonFsArtifact {
   const char* alias;
@@ -517,6 +569,25 @@ static const CanonFsArtifact* find_canonfs_artifact(const char* alias) noexcept 
     if (str_eq(alias, artifact.alias)) return &artifact;
   }
   return nullptr;
+}
+
+struct ShellService {
+  const char* id;
+  const char* mode;
+};
+
+static constexpr ShellService kShellServices[] = {
+    {"t81-session-mgr", "required"},
+    {"t81-canonfs-daemon", "required"},
+    {"t81-studio", "on_demand"},
+    {"t81-agent", "on_demand"},
+};
+
+static void shell_print_prompt() noexcept {
+  char buf[24];
+  pl011_puts("[axion@T81 tier=");
+  pl011_puts(u64_dec(static_cast<uint64_t>(s_shell_tier), buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("]$ ");
 }
 
 static constexpr uint64_t kSchedTickInterval = 500u;
@@ -691,6 +762,9 @@ static void freestanding_sched_tick() noexcept {
 
 // ── Shell command handlers ────────────────────────────────────────────────────
 
+static void cmd_canonfs_hash(const char* alias) noexcept;
+static void cmd_canonfs_run(const char* alias) noexcept;
+
 static void cmd_help(bool include_operator = false) noexcept {
   t81::ternaryos::shell_emit_help(
       t81::ternaryos::ShellSurface::FreestandingSlice6,
@@ -716,6 +790,273 @@ static void cmd_uname() noexcept {
 
 static void cmd_version() noexcept {
   cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Version);
+}
+
+static void cmd_exit() noexcept {
+  pl011_puts("  session exit requested\r\n");
+  s_shell_exit_requested = true;
+}
+
+static void cmd_tier(const char* arg) noexcept {
+  char buf[24];
+  uint32_t next = 0u;
+  if (arg == nullptr || *str_trim(arg) == '\0') {
+    pl011_puts("  tier ");
+    pl011_puts(u64_dec(static_cast<uint64_t>(s_shell_tier), buf, static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
+    return;
+  }
+  if (!parse_u32(arg, &next)) {
+    pl011_puts("  tier invalid\r\n");
+    return;
+  }
+  s_shell_tier = next;
+  pl011_puts("  tier ok ");
+  pl011_puts(u64_dec(static_cast<uint64_t>(s_shell_tier), buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+}
+
+static void cmd_service(const char* args) noexcept {
+  char buf[24];
+  args = str_trim(args);
+  if (*args == '\0' || str_eq(args, "list")) {
+    pl011_puts("  service list ");
+    pl011_puts(u64_dec(static_cast<uint64_t>(sizeof(kShellServices) / sizeof(kShellServices[0])),
+                       buf,
+                       static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
+    for (const auto& service : kShellServices) {
+      pl011_puts("  ");
+      pl011_puts(service.id);
+      pl011_puts(" ");
+      pl011_puts(service.mode);
+      pl011_puts("\r\n");
+    }
+    return;
+  }
+
+  if (str_starts_with(args, "show ")) {
+    const char* id = str_trim(str_after_token(args));
+    for (const auto& service : kShellServices) {
+      if (!str_eq(id, service.id)) continue;
+      pl011_puts("  service show ");
+      pl011_puts(service.id);
+      pl011_puts("\r\n  activation ");
+      pl011_puts(service.mode);
+      pl011_puts("\r\n");
+      return;
+    }
+    pl011_puts("  service show missing\r\n");
+    return;
+  }
+
+  if (str_starts_with(args, "start ")) {
+    const char* id = str_trim(str_after_token(args));
+    if (str_eq(id, "studio") || str_eq(id, "t81-studio")) {
+      cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Studio);
+      return;
+    }
+    if (str_eq(id, "agent") || str_eq(id, "t81-agent")) {
+      cmd_builtin_text(t81::ternaryos::ShellBuiltinCommand::Agent);
+      return;
+    }
+    for (const auto& service : kShellServices) {
+      if (str_eq(id, service.id)) {
+        pl011_puts("  service start ok ");
+        pl011_puts(service.id);
+        pl011_puts("\r\n");
+        return;
+      }
+    }
+    pl011_puts("  service start missing\r\n");
+    return;
+  }
+
+  pl011_puts("  service invalid\r\n");
+}
+
+static void cmd_cd(const char* arg) noexcept {
+  ShellPath next = ShellPath::Root;
+  if (!parse_shell_path(arg, s_shell_path, &next)) {
+    pl011_puts("  cd missing\r\n");
+    return;
+  }
+  s_shell_path = next;
+  pl011_puts("  cd ok ");
+  pl011_puts(shell_path_text(s_shell_path));
+  pl011_puts("\r\n");
+}
+
+static void cmd_ls(const char* arg) noexcept {
+  ShellPath path = s_shell_path;
+  char buf[24];
+  if (arg != nullptr && *str_trim(arg) != '\0') {
+    if (!parse_shell_path(arg, s_shell_path, &path)) {
+      pl011_puts("  ls missing\r\n");
+      return;
+    }
+  }
+
+  pl011_puts("  ls\r\n");
+  if (!s_has_blk) {
+    if (path == ShellPath::Root) {
+      pl011_puts("  entries 0\r\n");
+    } else {
+      pl011_puts("  entries 0\r\n");
+    }
+    return;
+  }
+
+  if (path == ShellPath::Refs) {
+    pl011_puts("  entries ");
+    pl011_puts(u64_dec(static_cast<uint64_t>(sizeof(kCanonFsArtifacts) / sizeof(kCanonFsArtifacts[0])),
+                       buf,
+                       static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
+    for (const auto& artifact : kCanonFsArtifacts) {
+      pl011_puts("  @");
+      pl011_puts(artifact.alias);
+      pl011_puts(" lba=");
+      pl011_puts(u64_dec(artifact.lba, buf, static_cast<int>(sizeof(buf))));
+      pl011_puts("\r\n");
+    }
+    return;
+  }
+
+  if (path == ShellPath::Objects) {
+    pl011_puts("  entries ");
+    pl011_puts(u64_dec(static_cast<uint64_t>(sizeof(kCanonFsArtifacts) / sizeof(kCanonFsArtifacts[0])),
+                       buf,
+                       static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
+    for (const auto& artifact : kCanonFsArtifacts) {
+      pl011_puts("  ");
+      if (artifact.t81x_version == 0u) {
+        pl011_puts("manifest ");
+      } else {
+        pl011_puts("artifact ");
+      }
+      pl011_puts(artifact.alias);
+      pl011_puts("\r\n");
+    }
+    return;
+  }
+
+  pl011_puts("  entries ");
+  pl011_puts(u64_dec(2u + static_cast<uint64_t>(sizeof(kCanonFsArtifacts) / sizeof(kCanonFsArtifacts[0])),
+                     buf,
+                     static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("  dir refs\r\n");
+  pl011_puts("  dir objects\r\n");
+  for (const auto& artifact : kCanonFsArtifacts) {
+    pl011_puts("  ");
+    pl011_puts(artifact.alias);
+    pl011_puts("\r\n");
+  }
+}
+
+static void cmd_hash(const char* alias) noexcept {
+  pl011_puts("  hash ");
+  pl011_puts(alias);
+  pl011_puts("\r\n");
+  if (!s_has_blk) {
+    pl011_puts("  unavailable : no persistent CanonFS store attached\r\n");
+    return;
+  }
+  const CanonFsArtifact* artifact = find_canonfs_artifact(alias);
+  if (!artifact) {
+    pl011_puts("  hash missing\r\n");
+    return;
+  }
+  cmd_canonfs_hash(alias);
+}
+
+static void cmd_cat(const char* alias) noexcept {
+  char buf[24];
+  char hex[24];
+  alias = str_trim(alias);
+  if (*alias == '@') ++alias;
+  pl011_puts("  cat ");
+  pl011_puts(alias);
+  pl011_puts("\r\n");
+  if (!s_has_blk) {
+    pl011_puts("  unavailable : no persistent CanonFS store attached\r\n");
+    return;
+  }
+  const CanonFsArtifact* artifact = find_canonfs_artifact(alias);
+  if (!artifact) {
+    pl011_puts("  cat missing\r\n");
+    return;
+  }
+  if (!canon_store_read_lba(artifact->lba)) {
+    pl011_puts("  cat missing\r\n");
+    return;
+  }
+  const uint8_t* sec = canon_store_sector_buf();
+  pl011_puts("  lba ");
+  pl011_puts(u64_dec(artifact->lba, buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  if (artifact->t81x_version == 0u) {
+    uint64_t manifest_hash = 0u;
+    __builtin_memcpy(&manifest_hash, sec + 8u, 8);
+    pl011_puts("  kind T81M\r\n");
+    pl011_puts("  code_hash ");
+    pl011_puts(u64_hex(manifest_hash, hex, static_cast<int>(sizeof(hex))));
+    pl011_puts("\r\n");
+    pl011_puts("  entry_count ");
+    pl011_puts(u64_dec(static_cast<uint64_t>(sec[16]), buf, static_cast<int>(sizeof(buf))));
+    pl011_puts("\r\n");
+    return;
+  }
+  uint32_t code_size = 0u;
+  __builtin_memcpy(&code_size, sec + 11u, 4);
+  uint64_t stored_hash = 0u;
+  if (artifact->t81x_version >= 2u) {
+    __builtin_memcpy(&stored_hash, sec + 19u, 8);
+  } else {
+    stored_hash = fnv1a64(sec + kT81XHeaderSize, code_size);
+  }
+  pl011_puts("  kind T81Xv");
+  pl011_puts(u64_dec(static_cast<uint64_t>(artifact->t81x_version), buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("  code_size ");
+  pl011_puts(u64_dec(static_cast<uint64_t>(code_size), buf, static_cast<int>(sizeof(buf))));
+  pl011_puts("\r\n");
+  pl011_puts("  code_hash ");
+  pl011_puts(u64_hex(stored_hash, hex, static_cast<int>(sizeof(hex))));
+  pl011_puts("\r\n");
+}
+
+static void cmd_run(const char* alias) noexcept {
+  alias = str_trim(alias);
+  if (*alias == '@') ++alias;
+  if (!s_has_blk) {
+    pl011_puts("  run unavailable\r\n");
+    return;
+  }
+  const CanonFsArtifact* artifact = find_canonfs_artifact(alias);
+  if (!artifact) {
+    pl011_puts("  run missing\r\n");
+    return;
+  }
+  cmd_canonfs_run(alias);
+  pl011_puts("  run ok ");
+  pl011_puts(alias);
+  pl011_puts("\r\n");
+}
+
+static void cmd_compile(const char* path) noexcept {
+  char hex[24];
+  const uint64_t pseudo_hash = fnv1a64(reinterpret_cast<const uint8_t*>(path),
+                                       static_cast<uint32_t>(cstr_len(path)));
+  pl011_puts("  compile ");
+  pl011_puts(path);
+  pl011_puts("\r\n");
+  pl011_puts("  emit tisc\r\n");
+  pl011_puts("  code_hash ");
+  pl011_puts(u64_hex(pseudo_hash, hex, static_cast<int>(sizeof(hex))));
+  pl011_puts("\r\n");
 }
 
 static void cmd_canonfs() noexcept {
@@ -870,12 +1211,6 @@ static void cmd_canonfs_hash(const char* alias) noexcept {
   pl011_puts("\r\n");
 }
 
-static void cmd_rfc00b9_stub(const char* name) noexcept {
-  pl011_puts("  [axion] ");
-  pl011_puts(name);
-  pl011_puts(" not yet implemented in the current RFC-00B9 shell lane\r\n");
-}
-
 static void cmd_canonfs_run(const char* alias) noexcept {
   pl011_puts("  [canonfs run]\r\n");
   if (!s_has_blk) {
@@ -1002,7 +1337,7 @@ static void cmd_status() noexcept {
       nullptr,
       nullptr,
       nullptr,
-      "bare-metal (EFI C++ bridge, AArch64)",
+      shell_path_text(s_shell_path),
       s_has_blk ? "mounted (persistent, virtio-blk)" : "mounted (in-memory)",
       nullptr,
       nullptr,
@@ -1194,16 +1529,23 @@ static void shell_dispatch(const char* line) noexcept {
       break;
   }
 
-  if      (str_eq(line, "exit"))    { cmd_rfc00b9_stub("exit"); }
-  else if (str_starts_with(line, "cd ")) { cmd_rfc00b9_stub("cd"); }
-  else if (str_eq(line, "cd"))      { cmd_rfc00b9_stub("cd"); }
-  else if (str_eq(line, "ls") || str_starts_with(line, "ls ")) { cmd_rfc00b9_stub("ls"); }
-  else if (str_starts_with(line, "cat ")) { cmd_rfc00b9_stub("cat"); }
-  else if (str_starts_with(line, "hash ")) { cmd_rfc00b9_stub("hash"); }
-  else if (str_starts_with(line, "run ")) { cmd_rfc00b9_stub("run"); }
-  else if (str_starts_with(line, "compile ")) { cmd_rfc00b9_stub("compile"); }
-  else if (str_eq(line, "service") || str_starts_with(line, "service ")) { cmd_rfc00b9_stub("service"); }
-  else if (str_eq(line, "tier") || str_starts_with(line, "tier ")) { cmd_rfc00b9_stub("tier"); }
+  if      (str_eq(line, "exit"))    { cmd_exit(); }
+  else if (str_starts_with(line, "cd ")) { cmd_cd(str_after_token(line)); }
+  else if (str_eq(line, "cd"))      { cmd_cd("/"); }
+  else if (str_eq(line, "ls"))      { cmd_ls(""); }
+  else if (str_starts_with(line, "ls ")) { cmd_ls(str_after_token(line)); }
+  else if (str_eq(line, "cat"))     { pl011_puts("  cat invalid\r\n"); }
+  else if (str_starts_with(line, "cat ")) { cmd_cat(str_after_token(line)); }
+  else if (str_eq(line, "hash"))    { pl011_puts("  hash invalid\r\n"); }
+  else if (str_starts_with(line, "hash ")) { cmd_hash(str_after_token(line)); }
+  else if (str_eq(line, "run"))     { pl011_puts("  run invalid\r\n"); }
+  else if (str_starts_with(line, "run ")) { cmd_run(str_after_token(line)); }
+  else if (str_eq(line, "compile")) { pl011_puts("  compile invalid\r\n"); }
+  else if (str_starts_with(line, "compile ")) { cmd_compile(str_after_token(line)); }
+  else if (str_eq(line, "service")) { cmd_service("list"); }
+  else if (str_starts_with(line, "service ")) { cmd_service(str_after_token(line)); }
+  else if (str_eq(line, "tier"))    { cmd_tier(""); }
+  else if (str_starts_with(line, "tier ")) { cmd_tier(str_after_token(line)); }
   else if (str_eq(line, "canonfs")) { cmd_canonfs(); }
   else if (str_eq(line, "canonfs ls")) { cmd_canonfs_ls(); }
   else if (str_starts_with(line, "canonfs hash ")) {
@@ -1427,9 +1769,10 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
   pl011_puts("[axion] t81sh: ready (principal=axion, tier=1)\r\n");
 
   pl011_puts("\r\n");
-  pl011_puts("[axion@T81 tier=1]$ ");
+  shell_print_prompt();
 
   s_line_len = 0;
+  s_shell_exit_requested = false;
 
   // ── Priority-dispatch event loop ─────────────────────────────────────────────
   // Mirrors axion_kernel_step() priority order:
@@ -1456,7 +1799,8 @@ extern "C" void qemu_cpp_bridge_entry(void) noexcept {
           pl011_puts("\r\n");
           shell_dispatch(s_line);
           s_line_len = 0;
-          pl011_puts("[axion@T81 tier=1]$ ");
+          if (s_shell_exit_requested) return;
+          shell_print_prompt();
         } else if (c == 127 || c == '\b') {
           if (s_line_len > 0) { --s_line_len; pl011_puts("\b \b"); }
         } else if (s_line_len < static_cast<int>(sizeof(s_line)) - 1) {

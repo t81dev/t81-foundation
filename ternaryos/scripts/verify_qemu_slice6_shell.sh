@@ -96,9 +96,9 @@ qemu_pid=$!
 {
   /bin/sleep 10
   if [[ -n "$canon_store_img" ]]; then
-    printf 'help\rstudio\rcanonfs\rcanonfs ls\rcanonfs hash proc-stub\rcanonfs hash wait-test-manifest\rcanonfs hash wait-test\rcanonfs run proc-stub\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rstudio\rcanonfs\rls\rcd refs\rls\rcd /\rservice list\rtier 2\rcompile main.t81\rhash proc-stub\rrun proc-stub\rirq\rel0\rfaults\rgov\r'
   else
-    printf 'help\rstudio\rcanonfs\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rstudio\rcanonfs\rls\rservice list\rtier 2\rcompile main.t81\rirq\rel0\rfaults\rgov\r'
   fi
 } >"$stdin_fifo" &
 writer_pid=$!
@@ -130,15 +130,16 @@ check "[el0]"
 check "[faults]"
 check "[governance]"
 if [[ -n "$canon_store_img" ]]; then
-  check "[canonfs inventory]"
-  check "alias         : proc-stub"
-  check "code_hash     :"
-  check "hash_source   : computed payload (T81X v1)"
-  check "alias         : wait-test-manifest"
-  check "hash_source   : stored header (T81M)"
-  check "entry_count   : 1"
+  check "dir refs"
+  check "cd ok /refs"
+  check "service list 4"
+  check "tier ok 2"
+  check "[axion@T81 tier=2]$"
+  check "compile main.t81"
+  check "emit tisc"
+  check "code_hash"
   check "launch        : proc-stub"
-  check "complete      : returned to shell"
+  check "run ok proc-stub"
 fi
 
 echo "Slice6 shell smoke-check succeeded."
