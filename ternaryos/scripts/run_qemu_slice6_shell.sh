@@ -135,6 +135,7 @@ fi
 if [[ "$tui_handoff_enabled" -eq 1 ]]; then
   exec "$python_bin" "$script_dir/qemu_shell_handoff.py" \
     --trigger "[axion studio handoff] hosted-phase5" \
+    --trigger "[axion agent handoff] hosted-phase5" \
     --launch "$tui_bin" \
     -- "${cmd[@]}"
 fi

@@ -96,9 +96,9 @@ qemu_pid=$!
 {
   /bin/sleep 10
   if [[ -n "$canon_store_img" ]]; then
-    printf 'help\rstudio\rcanonfs\rls\rcd refs\rls\rcd /\rservice list\rtier 2\rcompile main.t81\rhash proc-stub\rrun proc-stub\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rstudio\ragent\rcanonfs\rls\rcd refs\rls\rcd /\rservice list\rtier 2\rcompile main.t81\rhash proc-stub\rrun proc-stub\rirq\rel0\rfaults\rgov\r'
   else
-    printf 'help\rstudio\rcanonfs\rls\rservice list\rtier 2\rcompile main.t81\rirq\rel0\rfaults\rgov\r'
+    printf 'help\rstudio\ragent\rcanonfs\rls\rservice list\rtier 2\rcompile main.t81\rirq\rel0\rfaults\rgov\r'
   fi
 } >"$stdin_fifo" &
 writer_pid=$!
@@ -124,6 +124,9 @@ check "show RFC-00B9 shell commands"
 check "studio"
 check "[axion studio]"
 check "[axion studio handoff] hosted-phase5"
+check "agent"
+check "[axion agent]"
+check "[axion agent handoff] hosted-phase5"
 check "[canonfs]"
 check "[irq]"
 check "[el0]"

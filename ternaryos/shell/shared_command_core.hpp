@@ -121,12 +121,15 @@ inline const char* shell_agent_text(ShellSurface surface) {
   switch (surface) {
     case ShellSurface::HostedPhase5:
       return "[axion agent]\n"
-             "  frontend    : unavailable in current hosted shell lane\n"
-             "  note        : RFC-0033 agent frontend is not yet wired here";
+             "  frontend    : hosted FTXUI\n"
+             "  entry       : ./build/t81_ternaryos_shell_tui\n"
+             "  note        : uses the shared shell backend contract";
     case ShellSurface::FreestandingSlice6:
       return "[axion agent]\n"
-             "  frontend    : unavailable in current shell lane\n"
-             "  note        : RFC-0033 agent handoff is not yet wired";
+             "  frontend    : unavailable in slice6 guest\n"
+             "  handoff     : host-assisted launcher bridge\n"
+             "  host entry  : ./build/t81_ternaryos_shell_tui\n"
+             "  [axion agent handoff] hosted-phase5";
   }
   return "[axion agent]";
 }

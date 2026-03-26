@@ -13,7 +13,7 @@ import tty
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--trigger", required=True)
+    parser.add_argument("--trigger", action="append", required=True)
     parser.add_argument("--launch", required=True)
     parser.add_argument("cmd", nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -55,11 +55,17 @@ def parse_handoff_env(buffer: str, trigger: str) -> dict:
             if transcript:
                 env["T81_TUI_HANDOFF_TRANSCRIPT"] = transcript
 
+    command = "studio"
+    status = "handoff from Axion serial shell"
+    if "agent handoff" in trigger:
+        command = "agent"
+        status = "handoff from Axion serial shell (agent)"
+
     env["T81_TUI_HANDOFF_SOURCE"] = "t81sh"
     env["T81_TUI_HANDOFF_PROFILE"] = "qemu-armv8:AArch64/EDK2/slice6-boot-probe"
     env["T81_TUI_HANDOFF_DISPLAY"] = "serial-console handoff"
-    env["T81_TUI_HANDOFF_STATUS"] = "handoff from Axion serial shell"
-    env["T81_TUI_HANDOFF_COMMAND"] = "studio"
+    env["T81_TUI_HANDOFF_STATUS"] = status
+    env["T81_TUI_HANDOFF_COMMAND"] = command
     return env
 
 
@@ -86,6 +92,7 @@ def main() -> int:
 
     buffer = ""
     handoff = False
+    matched_trigger = None
 
     stdin_open = True
 
@@ -105,12 +112,16 @@ def main() -> int:
                     os.write(stdout_fd, data)
                     text = data.decode("utf-8", errors="ignore")
                     buffer = (buffer + text)[-8192:]
-                    if not handoff and args.trigger in buffer:
-                        handoff = True
-                        try:
-                            os.killpg(proc.pid, signal.SIGTERM)
-                        except ProcessLookupError:
-                            pass
+                    if not handoff:
+                        for trigger in args.trigger:
+                            if trigger in buffer:
+                                handoff = True
+                                matched_trigger = trigger
+                                try:
+                                    os.killpg(proc.pid, signal.SIGTERM)
+                                except ProcessLookupError:
+                                    pass
+                                break
                 elif proc.poll() is not None:
                     break
 
@@ -146,7 +157,7 @@ def main() -> int:
                 proc.wait()
         print("\n[axion] launching hosted TUI frontend...\n")
         launch_env = os.environ.copy()
-        launch_env.update(parse_handoff_env(buffer, args.trigger))
+        launch_env.update(parse_handoff_env(buffer, matched_trigger or args.trigger[0]))
         return subprocess.call([args.launch], env=launch_env)
 
     return proc.returncode or 0

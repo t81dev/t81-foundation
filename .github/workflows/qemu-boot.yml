@@ -1097,7 +1097,7 @@ jobs:
 
           {
             sleep 10
-            printf 'help\rstudio\rcanonfs\rls\rcd refs\rls\rcd /\rservice list\rtier 2\rcompile main.t81\rhash proc-stub\rrun proc-stub\rirq\rel0\rfaults\rgov\r'
+            printf 'help\rstudio\ragent\rcanonfs\rls\rcd refs\rls\rcd /\rservice list\rtier 2\rcompile main.t81\rhash proc-stub\rrun proc-stub\rirq\rel0\rfaults\rgov\r'
           } > shell-smoke.in &
           WRITER_PID=$!
 
@@ -1121,6 +1121,9 @@ jobs:
           check "studio"
           check "[axion studio]"
           check "[axion studio handoff] hosted-phase5"
+          check "agent"
+          check "[axion agent]"
+          check "[axion agent handoff] hosted-phase5"
           check "[canonfs]"
           check "dir refs"
           check "cd ok /refs"
