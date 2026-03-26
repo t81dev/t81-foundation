@@ -2,6 +2,12 @@
 
 These are the best next tasks for a contributor who wants to ship something real instead of only studying the architecture.
 
+## Pick one lane
+
+- If you want the best chance of shipping code quickly, start with RFC-00D1.
+- If you want design work more than code, start with RFC-00D0.
+- If you want project leverage more than subsystem depth, start with public-story cleanup or CI boringness work.
+
 ## 1. RFC-00D1 policy-profile depth
 
 Why this matters:
@@ -28,6 +34,7 @@ Definition of done:
 - policy behavior is more expressive than allow/deny-by-profile
 - tests cover new denial/reporting cases
 - CLI and core API remain aligned
+- schema artifacts and emitted JSON stay aligned
 
 ## 2. RFC-00D1 contract promotion review
 
@@ -51,6 +58,11 @@ Definition of done:
 
 - a contributor can tell which RFC-00D1 surfaces are stable
 - promotion blockers are written down explicitly
+
+Suggested first read:
+
+- [RFC-00D1-canonfs-foreign-filesystem-interchange.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
+- [docs/HANDOFF.md](/Users/t81dev/Code/t81-foundation/docs/HANDOFF.md)
 
 ## 3. RFC-00D0 resolver prototype
 
@@ -76,6 +88,11 @@ Definition of done:
 - service descriptors can be loaded and resolved deterministically
 - evidence shows original T81 identity plus resolved transport target
 - no claim is made yet that the full TCP/IP stack exists
+
+Suggested first read:
+
+- [RFC-00D0-base81-aware-tcp-ip-stack.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md)
+- [spec/rfcs/index.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/index.md)
 
 ## 4. Public-story cleanup
 

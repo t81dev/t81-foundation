@@ -61,6 +61,13 @@ When in doubt, prefer these in order:
 - Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](/Users/t81dev/Code/t81-foundation/docs/BUILDABLE_NEXT_STEPS.md)
 - Contributor-facing roadmap: [docs/ROADMAP.md](/Users/t81dev/Code/t81-foundation/docs/ROADMAP.md)
 
+## If you only have 30 minutes
+
+1. Read [README.md](/Users/t81dev/Code/t81-foundation/README.md) through `Choose your path`.
+2. Skim [docs/BUILDABLE_NEXT_STEPS.md](/Users/t81dev/Code/t81-foundation/docs/BUILDABLE_NEXT_STEPS.md) and pick one lane.
+3. Read the matching RFC before touching code.
+4. Run the narrowest local verification for that lane before changing anything broad.
+
 ## Highest-leverage next tasks
 
 1. Finish making the public story match the actual usable runtime.
@@ -72,3 +79,10 @@ When in doubt, prefer these in order:
 ## Suggested owner mindset
 
 Treat T81 as a serious research-grade runtime that needs product discipline, not as a greenfield invention project. The main risk is no longer “lack of architecture.” The main risk is that the architecture stays easier to admire than to extend.
+
+## Good first contribution shape
+
+- pick a narrow lane with an existing RFC and tests
+- avoid repo-wide refactors on first contact
+- keep determinism, policy, and CanonFS integrity ahead of convenience
+- prefer making one draft surface clearer over adding a new subsystem

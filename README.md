@@ -75,6 +75,8 @@ No native ternary hardware exists today. T81’s ternary execution model runs on
 - **See the OS direction:** boot the QEMU demo and interact with the `t81>` shell
 - **Inspect the architecture:** read the [RFC catalog](spec/rfcs/index.md), [handoff guide](docs/HANDOFF.md), and subsystem docs
 
+If you want the shortest serious maintainer path, read [docs/HANDOFF.md](docs/HANDOFF.md) and then pick a task from [docs/BUILDABLE_NEXT_STEPS.md](docs/BUILDABLE_NEXT_STEPS.md).
+
 ## Quick start
 
 ### Docker (easiest, ~60 seconds)
