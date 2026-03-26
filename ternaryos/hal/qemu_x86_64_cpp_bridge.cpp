@@ -292,12 +292,12 @@ static bool lvblk_do_io(uint16_t base, uint32_t type, uint64_t lba) noexcept {
   return (used->idx != old_used) && (s_lblk_status == 0u);
 }
 
-static void canonfs_io_probe_x86() noexcept {
+static bool canonfs_io_probe_x86() noexcept {
   // Find I/O base of the second virtio-blk device (index 1 = CanonFS store).
   const uint16_t base = find_nth_vblk_iobase(1);
   if (base == 0u) {
     com1_puts("[axion] canonfs: I/O probe FAIL (no virtio-blk I/O BAR)\r\n");
-    return;
+    return false;
   }
 
   // Reset → ACK → DRIVER.
@@ -312,7 +312,7 @@ static void canonfs_io_probe_x86() noexcept {
   const uint16_t qsz = inw_x86(static_cast<uint16_t>(base + 0x0Cu));
   if (qsz < static_cast<uint16_t>(kVQSz)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (queue too small)\r\n");
-    return;
+    return false;
   }
   const uint32_t pfn = static_cast<uint32_t>(
       reinterpret_cast<uint64_t>(s_lvq_buf) >> 12);
@@ -324,12 +324,12 @@ static void canonfs_io_probe_x86() noexcept {
   for (int i = 0; i < 512; ++i) s_lsector_buf[i] = 0u;
   if (!lvblk_do_io(base, kLBlkIn, 0u)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA0 read error)\r\n");
-    return;
+    return false;
   }
   if (s_lsector_buf[0] != 'C' || s_lsector_buf[1] != 'S' ||
       s_lsector_buf[2] != 'T' || s_lsector_buf[3] != '1') {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA0 bad magic)\r\n");
-    return;
+    return false;
   }
 
   // LBA 1 WRITE known pattern.
@@ -337,25 +337,26 @@ static void canonfs_io_probe_x86() noexcept {
     s_lsector_buf[i] = static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i));
   if (!lvblk_do_io(base, kLBlkOut, 1u)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA1 write error)\r\n");
-    return;
+    return false;
   }
 
   // LBA 1 READ back and verify.
   for (int i = 0; i < 512; ++i) s_lsector_buf[i] = 0u;
   if (!lvblk_do_io(base, kLBlkIn, 1u)) {
     com1_puts("[axion] canonfs: I/O probe FAIL (LBA1 read-back error)\r\n");
-    return;
+    return false;
   }
   for (int i = 0; i < 512; ++i) {
     if (s_lsector_buf[i] !=
         static_cast<uint8_t>(0xA5u ^ static_cast<uint8_t>(i))) {
       com1_puts("[axion] canonfs: I/O probe FAIL (LBA1 mismatch)\r\n");
-      return;
+      return false;
     }
   }
 
   com1_puts("[axion] canonfs: I/O probe OK"
             " (LBA0 magic=CST1, LBA1 round-trip pass)\r\n");
+  return true;
 }
 
 // ── RDTSC timer ──────────────────────────────────────────────────────────────
@@ -654,16 +655,17 @@ extern "C" void qemu_x86_64_cpp_bridge_entry(uint64_t tsc_freq_hz) noexcept {
   s_thread_count   = 1;
   s_current_thread = 0;
 
-  s_has_blk = probe_virtio_blk_bare();
+  const bool blk_present = probe_virtio_blk_bare();
+  s_has_blk = false;
 
   com1_puts("\r\n");
   com1_puts("  T81  --  Ternary OS for AI\r\n");
   com1_puts("  ===========================\r\n");
   com1_puts("\r\n");
   com1_puts("[axion] policy engine: ready\r\n");
-  if (s_has_blk) {
+  if (blk_present && canonfs_io_probe_x86()) {
+    s_has_blk = true;
     com1_puts("[axion] canonfs: mounted (persistent, virtio-blk)\r\n");
-    canonfs_io_probe_x86();
   } else {
     com1_puts("[axion] canonfs: mounted (in-memory)\r\n");
   }

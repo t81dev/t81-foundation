@@ -26,7 +26,8 @@ fault_g_entry:
     //   ESR_EL1.EC  = 0x24  (Data Abort from Lower EL, AArch64)
     //   ESR_EL1.ISV = set (load instruction)
     //   FAR_EL1     = 0x0000000000000000
-    ldr     x0, [xzr]
+    mov     x1, xzr
+    ldr     x0, [x1]
 
     // Fault containment failed if execution reaches here.
     // Call ExitThread to hand back control to EL1 without hanging.
