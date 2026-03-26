@@ -4,10 +4,12 @@
 // IRQ C handler (axion_irq_handler_aarch64), and kernel event loop.
 
 #include "qemu_kernel_entry.hpp"
-#include "aarch64_trap_entry.hpp"
+#include <cstring>
+
 #include "../dev/gicv3.hpp"
 #include "../dev/pl011_uart.hpp"
 #include "../kernel/kernel_main.hpp"
+#include "aarch64_trap_entry.hpp"
 
 // ── File-scope state (shared between the namespace impl and extern "C") ───────
 // These must be at file scope (not inside a named namespace) so that the
@@ -22,20 +24,17 @@ static uint32_t s_timer_period_counts = t81::ternaryos::hal::kQemuDefaultTimerPe
 #if defined(__aarch64__) && !defined(__APPLE__)
 
 static inline void arm_timer_start(uint32_t tval) noexcept {
-  __asm__ volatile(
-      "msr cntp_tval_el0, %0\n\t"
-      "msr cntp_ctl_el0,  %1\n\t"
-      "isb"
-      :: "r"(static_cast<uint64_t>(tval)),
-         "r"(static_cast<uint64_t>(1u))   // ENABLE=1, IMASK=0
-      : "memory");
+  __asm__ volatile("msr cntp_tval_el0, %0\n\t"
+                   "msr cntp_ctl_el0,  %1\n\t"
+                   "isb" ::"r"(static_cast<uint64_t>(tval)),
+                   "r"(static_cast<uint64_t>(1u))  // ENABLE=1, IMASK=0
+                   : "memory");
 }
 
 static inline void arm_timer_reload(uint32_t tval) noexcept {
-  __asm__ volatile(
-      "msr cntp_tval_el0, %0\n\t"
-      "isb"
-      :: "r"(static_cast<uint64_t>(tval)) : "memory");
+  __asm__ volatile("msr cntp_tval_el0, %0\n\t"
+                   "isb" ::"r"(static_cast<uint64_t>(tval))
+                   : "memory");
 }
 
 #else
@@ -60,10 +59,10 @@ extern "C" void axion_irq_handler_aarch64() noexcept {
 
   if (intid == hal::kQemuTimerPhysIntId) {
     arm_timer_reload(s_timer_period_counts);
-    hw.source  = hal::InterruptSource::Timer;
+    hw.source = hal::InterruptSource::Timer;
     hw.payload = intid;
   } else {
-    hw.source  = hal::InterruptSource::Unknown;
+    hw.source = hal::InterruptSource::Unknown;
     hw.payload = intid;
   }
 
@@ -79,8 +78,13 @@ namespace {
 static const char* u64_str(uint64_t v, char* buf, int bufsz) noexcept {
   buf[bufsz - 1] = '\0';
   int i = bufsz - 2;
-  if (v == 0) { buf[i--] = '0'; }
-  while (v > 0 && i >= 0) { buf[i--] = static_cast<char>('0' + (v % 10)); v /= 10; }
+  if (v == 0) {
+    buf[i--] = '0';
+  }
+  while (v > 0 && i >= 0) {
+    buf[i--] = static_cast<char>('0' + (v % 10));
+    v /= 10;
+  }
   return &buf[i + 1];
 }
 
@@ -98,22 +102,21 @@ static void shell_dispatch(const char* line,
   if (line[0] == '\0') {
     // Empty line — just re-display prompt (handled by caller).
 
-  } else if (__builtin_strcmp(line, "help") == 0) {
-    pl011_puts(kQemuVirtPl011Base,
-      "  help     — this message\r\n"
-      "  version  — T81 build info\r\n"
-      "  status   — kernel counters and governance state\r\n"
-      "  policy   — Axion policy summary\r\n");
+  } else if (std::strcmp(line, "help") == 0) {
+    pl011_puts(kQemuVirtPl011Base, "  help     — this message\r\n"
+                                   "  version  — T81 build info\r\n"
+                                   "  status   — kernel counters and governance state\r\n"
+                                   "  policy   — Axion policy summary\r\n");
 
-  } else if (__builtin_strcmp(line, "version") == 0) {
+  } else if (std::strcmp(line, "version") == 0) {
     pl011_puts(kQemuVirtPl011Base,
-      "  T81 Foundation v1.9.2  |  TISC ISA v1.9.0 (frozen)\r\n"
-      "  Axion policy kernel     |  CanonHash81 deterministic traces\r\n"
-      "  Platform: ");
+               "  T81 Foundation v1.9.2  |  TISC ISA v1.9.0 (frozen)\r\n"
+               "  Axion policy kernel     |  CanonHash81 deterministic traces\r\n"
+               "  Platform: ");
     pl011_puts(kQemuVirtPl011Base, state.platform_id.c_str());
     pl011_puts(kQemuVirtPl011Base, "\r\n");
 
-  } else if (__builtin_strcmp(line, "status") == 0) {
+  } else if (std::strcmp(line, "status") == 0) {
     pl011_puts(kQemuVirtPl011Base, "  [kernel]\r\n");
 
     pl011_puts(kQemuVirtPl011Base, "    threads       : ");
@@ -140,9 +143,9 @@ static void shell_dispatch(const char* line,
 
     pl011_puts(kQemuVirtPl011Base, "    canonfs       : ");
     pl011_puts(kQemuVirtPl011Base,
-      state.published_executable_canonfs ? "mounted\r\n" : "offline\r\n");
+               state.published_executable_canonfs ? "mounted\r\n" : "offline\r\n");
 
-  } else if (__builtin_strcmp(line, "policy") == 0) {
+  } else if (std::strcmp(line, "policy") == 0) {
     pl011_puts(kQemuVirtPl011Base, "  [axion policy engine]\r\n");
     pl011_puts(kQemuVirtPl011Base, "    state         : ready\r\n");
     pl011_puts(kQemuVirtPl011Base, "    mode          : fail-closed\r\n");
@@ -169,8 +172,7 @@ static void shell_dispatch(const char* line,
 
 namespace t81::ternaryos::hal {
 
-bool qemu_hardware_init(const QemuProfile& profile,
-                        uint32_t timer_period_counts) noexcept {
+bool qemu_hardware_init(const QemuProfile& profile, uint32_t timer_period_counts) noexcept {
   s_timer_period_counts = timer_period_counts;
 
   using namespace dev;
@@ -205,8 +207,7 @@ bool qemu_hardware_init(const QemuProfile& profile,
 #endif
 }
 
-void qemu_kernel_run_loop(kernel::KernelRuntimeState& state,
-                          uint32_t timer_period_counts,
+void qemu_kernel_run_loop(kernel::KernelRuntimeState& state, uint32_t timer_period_counts,
                           uint64_t max_steps) noexcept {
   (void)timer_period_counts;  // reload is handled inside the IRQ handler
 
@@ -214,20 +215,17 @@ void qemu_kernel_run_loop(kernel::KernelRuntimeState& state,
 
   // Wire the timer source into the kernel: each tick advances the clock and
   // queues the interrupt for delivery in the step loop below.
-  register_interrupt_handler(
-      InterruptSource::Timer,
-      [&state](const HardwareInterrupt& hw) {
-        axion_kernel_record_interrupt(state, hw);
-        axion_kernel_tick(state);
-      });
+  register_interrupt_handler(InterruptSource::Timer, [&state](const HardwareInterrupt& hw) {
+    axion_kernel_record_interrupt(state, hw);
+    axion_kernel_tick(state);
+  });
 
   // RFC-00B5 §3.5 (Slice 28): wire the unhandled-interrupt governance callback.
   // Interrupts with no registered source handler are audited as
   // UnhandledInterruptDropped rather than silently discarded.
-  register_unhandled_interrupt_callback(
-      [&state](const HardwareInterrupt& hw) {
-        axion_kernel_record_unhandled_interrupt(state, hw);
-      });
+  register_unhandled_interrupt_callback([&state](const HardwareInterrupt& hw) {
+    axion_kernel_record_unhandled_interrupt(state, hw);
+  });
 
   const bool run_forever = (max_steps == 0);
   uint64_t steps = 0;
@@ -247,7 +245,7 @@ void qemu_kernel_run_loop(kernel::KernelRuntimeState& state,
 
       // Static line buffer — persistent across event-loop iterations.
       static char s_line[64];
-      static int  s_line_len = 0;
+      static int s_line_len = 0;
 
       while (pl011_rx_ready(kQemuVirtPl011Base)) {
         const int c = pl011_getchar(kQemuVirtPl011Base);

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#if defined(_MSC_VER) && defined(_WIN64)
+#if defined(_MSC_VER) && defined(_WIN64) && !defined(__clang__)
 #include <intrin.h>
 
 namespace t81::v1::detail {

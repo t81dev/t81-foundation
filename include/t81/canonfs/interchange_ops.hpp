@@ -71,7 +71,8 @@ struct ExportOutcome {
     std::string_view profile_name);
 
 ImportOutcome import_path(const std::filesystem::path& input, const ImportOptions& options = {});
-ExportOutcome export_ref(const std::string& canonical_hash, const std::filesystem::path& output_path,
+ExportOutcome export_ref(const std::string& canonical_hash,
+                         const std::filesystem::path& output_path,
                          const ExportOptions& options = {});
 
 }  // namespace t81::canonfs

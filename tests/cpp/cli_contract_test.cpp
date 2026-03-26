@@ -391,9 +391,8 @@ int main(int argc, char* argv[]) {
 
     const auto doctor_result = run_cli_in_dir(t81_bin, {"env", "doctor", "--json"}, repo_root);
     T81_TEST_CHECK(doctor_result.exit_code == 0 || doctor_result.exit_code == 2);
-    T81_TEST_CHECK(
-        contains(doctor_result.stdout_text, "\"detail\":\"CLI binary present at " +
-                                                abs_t81_bin.string() + "\""));
+    T81_TEST_CHECK(contains(doctor_result.stdout_text,
+                            "\"detail\":\"CLI binary present at " + abs_t81_bin.string() + "\""));
   }
 
   {
@@ -810,17 +809,19 @@ int main(int argc, char* argv[]) {
     const auto import_file_result =
         run_cli(t81_bin, {"canonfs", "import", payload.string(), "--json"});
     T81_TEST_CHECK(import_file_result.exit_code == 0);
-    T81_TEST_CHECK(contains(import_file_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(import_file_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(import_file_result.stdout_text, "\"source_kind\": \"host-file\""));
-    const auto imported_file_ref = extract_json_string(import_file_result.stdout_text, "manifest_ref");
+    const auto imported_file_ref =
+        extract_json_string(import_file_result.stdout_text, "manifest_ref");
     T81_TEST_CHECK(imported_file_ref.has_value());
 
     const fs::path imported_file_restore = make_temp_path("t81-cli-contract", ".imported");
     const auto export_file_result = run_cli(
-        t81_bin,
-        {"canonfs", "export", hash, "--out", imported_file_restore.string(), "--json"});
+        t81_bin, {"canonfs", "export", hash, "--out", imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_file_result.exit_code == 0);
-    T81_TEST_CHECK(contains(export_file_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(export_file_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(export_file_result.stdout_text, "\"target_kind\": \"host-file\""));
     T81_TEST_CHECK(read_file(imported_file_restore) == "canonfs-contract");
 
@@ -828,15 +829,16 @@ int main(int argc, char* argv[]) {
     const auto import_missing_result =
         run_cli(t81_bin, {"canonfs", "import", missing_import_path.string(), "--json"});
     T81_TEST_CHECK(import_missing_result.exit_code != 0);
-    T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(import_missing_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"status\": \"error\""));
 
     const auto export_missing_result = run_cli(
-        t81_bin,
-        {"canonfs", "export", "sha3-256:11111111111111111111111111111111111111111111", "--out",
-         imported_file_restore.string(), "--json"});
+        t81_bin, {"canonfs", "export", "sha3-256:11111111111111111111111111111111111111111111",
+                  "--out", imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_missing_result.exit_code != 0);
-    T81_TEST_CHECK(contains(export_missing_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(export_missing_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(export_missing_result.stdout_text, "\"status\": \"error\""));
 
     const fs::path import_tree = make_temp_path("t81-cli-contract-tree", "");
@@ -853,17 +855,18 @@ int main(int argc, char* argv[]) {
     const auto import_tree_result =
         run_cli(t81_bin, {"canonfs", "import", import_tree.string(), "--json"});
     T81_TEST_CHECK(import_tree_result.exit_code == 0);
-    T81_TEST_CHECK(contains(import_tree_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(import_tree_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(import_tree_result.stdout_text, "\"source_kind\": \"host-directory\""));
     const auto manifest_ref = extract_json_string(import_tree_result.stdout_text, "manifest_ref");
     T81_TEST_CHECK(manifest_ref.has_value());
 
     const fs::path export_tree = make_temp_path("t81-cli-contract-tree-export", "");
     const auto export_tree_result = run_cli(
-        t81_bin,
-        {"canonfs", "export", *manifest_ref, "--out", export_tree.string(), "--json"});
+        t81_bin, {"canonfs", "export", *manifest_ref, "--out", export_tree.string(), "--json"});
     T81_TEST_CHECK(export_tree_result.exit_code == 0);
-    T81_TEST_CHECK(contains(export_tree_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(export_tree_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(export_tree_result.stdout_text, "\"target_kind\": \"host-directory\""));
     T81_TEST_CHECK(read_file(export_tree / "alpha.txt") == "alpha");
     T81_TEST_CHECK(read_file(export_tree / "nested" / "beta.txt") == "beta");
@@ -885,11 +888,12 @@ int main(int argc, char* argv[]) {
       malformed_manifest_hash.pop_back();
     }
     const fs::path malformed_export_target = make_temp_path("t81-cli-contract-bad-export", "");
-    const auto malformed_export_result = run_cli(
-        t81_bin, {"canonfs", "export", malformed_manifest_hash, "--out",
-                  malformed_export_target.string(), "--json"});
+    const auto malformed_export_result =
+        run_cli(t81_bin, {"canonfs", "export", malformed_manifest_hash, "--out",
+                          malformed_export_target.string(), "--json"});
     T81_TEST_CHECK(malformed_export_result.exit_code != 0);
-    T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(malformed_export_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "\"status\": \"error\""));
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "invalid interchange manifest"));
 
@@ -902,44 +906,47 @@ int main(int argc, char* argv[]) {
         t81_bin,
         {"canonfs", "import", payload.string(), "--policy", canonfs_policy.string(), "--json"});
     T81_TEST_CHECK(import_policy_deny_result.exit_code != 0);
-    T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
-    T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(import_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(import_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"status\": \"error\""));
 
-    const auto export_policy_deny_result = run_cli(
-        t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
-                  imported_file_restore.string(), "--json"});
+    const auto export_policy_deny_result =
+        run_cli(t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
+                          imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_policy_deny_result.exit_code != 0);
-    T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
-    T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(export_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(export_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"status\": \"error\""));
 
     const auto import_profile_deny_result = run_cli(
         t81_bin,
         {"canonfs", "import", payload.string(), "--policy-profile", "export-only", "--json"});
     T81_TEST_CHECK(import_profile_deny_result.exit_code != 0);
-    T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text,
-                            "\"schema\": \"t81.canonfs-import.v1\""));
-    T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text,
-                            "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(import_profile_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(import_profile_deny_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text, "\"status\": \"error\""));
 
     const auto export_profile_deny_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy-profile", "import-only", "--out",
                           imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(export_profile_deny_result.exit_code != 0);
-    T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text,
-                            "\"schema\": \"t81.canonfs-export.v1\""));
-    T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text,
-                            "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(export_profile_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(export_profile_deny_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text, "\"status\": \"error\""));
 
-    const auto invalid_profile_result =
-        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "bogus",
-                          "--json"});
+    const auto invalid_profile_result = run_cli(
+        t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "bogus", "--json"});
     T81_TEST_CHECK(invalid_profile_result.exit_code != 0);
-    T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
-                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(invalid_profile_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(invalid_profile_result.stdout_text, "invalid policy profile"));
 
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");

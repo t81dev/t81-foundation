@@ -55,11 +55,9 @@ int canonfs_import(const std::filesystem::path& input,
 int canonfs_list(const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);
 int canonfs_get(const std::string& canonical_hash,
                 const std::optional<std::filesystem::path>& output_path = std::nullopt,
-                const std::filesystem::path& canonfs_root = ".t81_canonfs",
-                bool as_json = false);
+                const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);
 int canonfs_stat(const std::string& canonical_hash,
-                 const std::filesystem::path& canonfs_root = ".t81_canonfs",
-                 bool as_json = false);
+                 const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);
 int canonfs_verify(const std::string& canonical_hash,
                    const std::filesystem::path& canonfs_root = ".t81_canonfs",
                    bool as_json = false);
@@ -68,14 +66,14 @@ std::optional<std::string> canonfs_capture_snapshot_hash(
     std::string* error_message = nullptr);
 int canonfs_snapshot(const std::filesystem::path& canonfs_root = ".t81_canonfs",
                      bool as_json = false);
-int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash, const std::string& rhs_snapshot_hash,
+int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash,
+                          const std::string& rhs_snapshot_hash,
                           const std::filesystem::path& canonfs_root = ".t81_canonfs",
                           bool as_json = false);
 int canonfs_rollback(const std::string& snapshot_hash,
                      const std::filesystem::path& canonfs_root = ".t81_canonfs",
                      bool as_json = false);
-int canonfs_export(const std::string& canonical_hash,
-                   const std::filesystem::path& output_path,
+int canonfs_export(const std::string& canonical_hash, const std::filesystem::path& output_path,
                    const std::filesystem::path& canonfs_root = ".t81_canonfs",
                    const std::optional<std::filesystem::path>& policy_path = std::nullopt,
                    const std::optional<std::string>& policy_profile = std::nullopt,
@@ -98,11 +96,11 @@ int run_trace(const TraceArgs& args);
 // LLVM backend subcommand: `t81 llvm <subcommand> [args]`
 // Only meaningful when T81_HAS_LLVM is defined; otherwise always returns 1.
 struct LLVMArgs {
-  std::string              subcommand;   // "compile" | "help"
-  std::filesystem::path    input;
-  std::filesystem::path    output;       // default: <input>.ll or <input>.bc
-  bool                     bitcode = false;
-  bool                     no_comments = false;
+  std::string subcommand;  // "compile" | "help"
+  std::filesystem::path input;
+  std::filesystem::path output;  // default: <input>.ll or <input>.bc
+  bool bitcode = false;
+  bool no_comments = false;
 };
 int run_llvm(const LLVMArgs& args);
 
@@ -111,47 +109,47 @@ int run_llvm(const LLVMArgs& args);
 // ---------------------------------------------------------------------------
 
 struct MlirArgs {
-  std::string              subcommand;   // "compile" | "lower" | "pipeline" | "help"
-  std::filesystem::path    input;
-  std::filesystem::path    output;       // default: <input>.mlir or <input>.ll
-  bool                     dcp_floats  = false;  // --mode=dcp: func.call @t81_dmath_*
-  bool                     use_t81_dialect = false;  // --dialect=t81
-  bool                     no_comments = false;
+  std::string subcommand;  // "compile" | "lower" | "pipeline" | "help"
+  std::filesystem::path input;
+  std::filesystem::path output;  // default: <input>.mlir or <input>.ll
+  bool dcp_floats = false;       // --mode=dcp: func.call @t81_dmath_*
+  bool use_t81_dialect = false;  // --dialect=t81
+  bool no_comments = false;
   // For "lower" / "pipeline" subcommands:
-  std::string              passes;       // comma-separated extra pass names (future)
+  std::string passes;  // comma-separated extra pass names (future)
 };
 int run_mlir(const MlirArgs& args);
 
 struct CArgs {
-  std::string           subcommand;   // "compile" | "help"
+  std::string subcommand;  // "compile" | "help"
   std::filesystem::path input;
-  std::filesystem::path output;       // default: <input>.mlir
-  std::string           emit = "mlir";
-  bool                  dcp_floats = false;
-  bool                  use_t81_dialect = false;
-  bool                  no_comments = false;
+  std::filesystem::path output;  // default: <input>.mlir
+  std::string emit = "mlir";
+  bool dcp_floats = false;
+  bool use_t81_dialect = false;
+  bool no_comments = false;
 };
 int run_c(const CArgs& args);
 
 struct RustArgs {
-  std::string           subcommand;   // "compile" | "help"
+  std::string subcommand;  // "compile" | "help"
   std::filesystem::path input;
-  std::filesystem::path output;       // default: <input>.mlir
-  std::string           emit = "mlir";
-  bool                  dcp_floats = false;
-  bool                  use_t81_dialect = false;
-  bool                  no_comments = false;
+  std::filesystem::path output;  // default: <input>.mlir
+  std::string emit = "mlir";
+  bool dcp_floats = false;
+  bool use_t81_dialect = false;
+  bool no_comments = false;
 };
 int run_rust(const RustArgs& args);
 
 struct PythonArgs {
-  std::string           subcommand;   // "compile" | "help"
+  std::string subcommand;  // "compile" | "help"
   std::filesystem::path input;
-  std::filesystem::path output;       // default: <input>.mlir
-  std::string           emit = "mlir";
-  bool                  dcp_floats = false;
-  bool                  use_t81_dialect = false;
-  bool                  no_comments = false;
+  std::filesystem::path output;  // default: <input>.mlir
+  std::string emit = "mlir";
+  bool dcp_floats = false;
+  bool use_t81_dialect = false;
+  bool no_comments = false;
 };
 int run_python(const PythonArgs& args);
 
