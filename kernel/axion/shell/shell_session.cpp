@@ -486,7 +486,8 @@ std::string hosted_builtin_text(ShellBuiltinCommand command) {
 std::string hosted_session_status_text(const ShellSessionState& state,
                                        const std::vector<t81::canonfs::CanonRef>& stored_refs,
                                        bool durable_anchor_tracked,
-                                       const std::optional<userenv::T81Shell>& user_shell) {
+                                       const std::optional<userenv::T81Shell>& user_shell,
+                                       const std::optional<t81::canonfs::CanonRef>& history_jsonl_ref) {
   ShellCommandContext context{};
   context.surface = ShellSurface::HostedPhase5;
   context.profile_summary = state.profile_summary.c_str();
@@ -515,6 +516,9 @@ std::string hosted_session_status_text(const ShellSessionState& state,
     text += "\nprompt " + user_shell->prompt();
     text += "\nhistory " + user_shell->history_canon_path();
     text += "\ntier " + std::to_string(user_shell->tier());
+  }
+  if (history_jsonl_ref.has_value()) {
+    text += "\nhistory_ref " + canon_ref_text(*history_jsonl_ref);
   }
   return text;
 }
@@ -640,6 +644,16 @@ bool ShellSession::refresh_render() {
 
   CanonStore store(*guest->storage.device);
   state_.recovered_entries = store.rebuild_index();
+
+  if (user_shell_.has_value() && !user_shell_->history_jsonl().empty()) {
+    const auto history_text = join_lines(user_shell_->history_jsonl());
+    auto history_jsonl_ref = store.put(make_text_block(history_text));
+    if (!history_jsonl_ref.has_value()) return false;
+    history_jsonl_ref_ = *history_jsonl_ref;
+    if (!store.flush()) return false;
+    state_.recovered_entries = store.rebuild_index();
+  }
+
   state_.session_command_count = state_.command_records.size();
   state_.durable_ref_count = stored_refs_.size();
   state_.named_ref_count = named_refs_.size();
@@ -934,7 +948,9 @@ bool ShellSession::execute_command(std::string_view command_view) {
 
   if (words.size() == 2 && words[0] == "session" && words[1] == "status") {
     state_.command_records.push_back(
-        {command, hosted_session_status_text(state_, stored_refs_, history_ref_.has_value(), user_shell_)});
+        {command,
+         hosted_session_status_text(
+             state_, stored_refs_, history_ref_.has_value(), user_shell_, history_jsonl_ref_)});
     return refresh_render();
   }
 
@@ -965,6 +981,9 @@ bool ShellSession::execute_command(std::string_view command_view) {
       out << '\n' << "prompt " << user_shell_->prompt()
           << '\n' << "history " << user_shell_->history_canon_path()
           << '\n' << "tier " << user_shell_->tier();
+    }
+    if (history_jsonl_ref_.has_value()) {
+      out << '\n' << "history ref " << canon_ref_text(*history_jsonl_ref_);
     }
     state_.command_records.push_back({command, out.str()});
     return refresh_render();

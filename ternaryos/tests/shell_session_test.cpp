@@ -457,6 +457,8 @@ static void test_rfc00b9_shell_core() {
         "session status exposes CanonFS history path");
   check(records[10].result.find("tier 2") != std::string::npos,
         "session status exposes current tier");
+  check(records[10].result.find("history_ref ") != std::string::npos,
+        "session status exposes persisted history CanonRef");
 }
 
 int main() {

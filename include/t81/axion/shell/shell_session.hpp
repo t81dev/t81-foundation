@@ -85,6 +85,7 @@ private:
   userenv::SessionManager  session_manager_;
   std::optional<userenv::T81Shell> user_shell_;
   std::optional<t81::canonfs::CanonRef> history_ref_;
+  std::optional<t81::canonfs::CanonRef> history_jsonl_ref_;
   std::vector<t81::canonfs::CanonRef> stored_refs_;
   std::vector<ShellNamedRef> named_refs_;
   std::vector<ShellNamedObject> named_objects_;
