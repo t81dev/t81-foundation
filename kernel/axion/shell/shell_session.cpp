@@ -424,13 +424,35 @@ std::string hosted_hash_text(const userenv::ServiceRegistry& registry,
 
 std::string hosted_ls_text(const std::vector<t81::canonfs::CanonRef>& stored_refs,
                            const std::vector<ShellNamedRef>& named_refs,
-                           const std::vector<ShellNamedObject>& named_objects) {
+                           const std::vector<ShellNamedObject>& named_objects,
+                           std::string_view current_path) {
   std::ostringstream out;
   out << "ls";
-  const std::size_t total_entries =
-      stored_refs.size() + named_refs.size() + named_objects.size();
-  out << '\n' << "entries " << total_entries;
+  if (current_path == "/refs") {
+    const std::size_t total_entries = named_refs.size() + stored_refs.size();
+    out << '\n' << "entries " << total_entries;
+    for (const auto& named : named_refs) {
+      out << '\n' << '@' << named.label << ' ' << canon_ref_text(named.ref);
+    }
+    for (const auto& ref : stored_refs) {
+      out << '\n' << canon_ref_text(ref);
+    }
+    return out.str();
+  }
 
+  if (current_path == "/objects") {
+    out << '\n' << "entries " << named_objects.size();
+    for (const auto& object : named_objects) {
+      out << '\n' << object.kind << ' ' << object.name << ' ' << canon_ref_text(object.ref);
+    }
+    return out.str();
+  }
+
+  const std::size_t total_entries =
+      2 + stored_refs.size() + named_refs.size() + named_objects.size();
+  out << '\n' << "entries " << total_entries;
+  out << '\n' << "dir refs";
+  out << '\n' << "dir objects";
   for (const auto& object : named_objects) {
     out << '\n' << object.kind << ' ' << object.name << ' ' << canon_ref_text(object.ref);
   }
@@ -440,8 +462,20 @@ std::string hosted_ls_text(const std::vector<t81::canonfs::CanonRef>& stored_ref
   for (const auto& ref : stored_refs) {
     out << '\n' << canon_ref_text(ref);
   }
-
   return out.str();
+}
+
+std::optional<std::string> hosted_cd_path(std::string_view current_path,
+                                          std::string_view target) {
+  if (target.empty() || target == ".") return std::string(current_path);
+  if (target == "/") return std::string("/");
+  if (target == "..") {
+    if (current_path == "/refs" || current_path == "/objects") return std::string("/");
+    return std::string(current_path);
+  }
+  if (target == "refs" || target == "/refs") return std::string("/refs");
+  if (target == "objects" || target == "/objects") return std::string("/objects");
+  return std::nullopt;
 }
 
 std::string make_compiled_block_text(std::string_view input_desc,
@@ -478,10 +512,6 @@ std::string hosted_operator_help_text() {
   return text;
 }
 
-std::string hosted_rfc00b9_stub(std::string_view command) {
-  return std::string(command) + " not yet implemented in the current RFC-00B9 shell lane";
-}
-
 std::string hosted_builtin_text(ShellBuiltinCommand command) {
   const auto view = shell_builtin_view(command, ShellSurface::HostedPhase5);
   switch (view.kind) {
@@ -499,7 +529,8 @@ std::string hosted_session_status_text(const ShellSessionState& state,
                                        const std::vector<t81::canonfs::CanonRef>& stored_refs,
                                        bool durable_anchor_tracked,
                                        const std::optional<userenv::T81Shell>& user_shell,
-                                       const std::optional<t81::canonfs::CanonRef>& history_jsonl_ref) {
+                                       const std::optional<t81::canonfs::CanonRef>& history_jsonl_ref,
+                                       std::string_view current_path) {
   ShellCommandContext context{};
   context.surface = ShellSurface::HostedPhase5;
   context.profile_summary = state.profile_summary.c_str();
@@ -526,6 +557,7 @@ std::string hosted_session_status_text(const ShellSessionState& state,
   if (!text.empty() && text.back() == '\n') text.pop_back();
   if (user_shell.has_value()) {
     text += "\nprompt " + user_shell->prompt();
+    text += "\npath " + std::string(current_path);
     text += "\nhistory " + user_shell->history_canon_path();
     text += "\ntier " + std::to_string(user_shell->tier());
   }
@@ -705,6 +737,7 @@ ShellCommandContext ShellSession::command_context() const {
   context.profile_summary = state_.profile_summary.c_str();
   context.storage_binding_name = state_.storage_binding_name.c_str();
   context.display_binding_name = state_.display_binding_name.c_str();
+  context.path_summary = current_path_.c_str();
   context.durable_anchor_present = history_ref_.has_value();
   context.command_count = static_cast<unsigned long long>(state_.command_records.size());
   context.durable_ref_count = static_cast<unsigned long long>(stored_refs_.size());
@@ -841,13 +874,20 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words[0] == "ls") {
     if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
     state_.command_records.push_back(
-        {command, hosted_ls_text(stored_refs_, named_refs_, named_objects_)});
+        {command, hosted_ls_text(stored_refs_, named_refs_, named_objects_, current_path_)});
     return refresh_render();
   }
 
   if (words[0] == "cd") {
     if (user_shell_.has_value()) (void)user_shell_->exec_command(command);
-    state_.command_records.push_back({command, hosted_rfc00b9_stub(words[0])});
+    const std::string_view target = words.size() >= 2 ? std::string_view(words[1]) : std::string_view("/");
+    const auto next_path = hosted_cd_path(current_path_, target);
+    if (!next_path.has_value()) {
+      state_.command_records.push_back({command, "cd missing"});
+      return refresh_render();
+    }
+    current_path_ = *next_path;
+    state_.command_records.push_back({command, "cd ok " + current_path_});
     return refresh_render();
   }
 
@@ -961,8 +1001,12 @@ bool ShellSession::execute_command(std::string_view command_view) {
   if (words.size() == 2 && words[0] == "session" && words[1] == "status") {
     state_.command_records.push_back(
         {command,
-         hosted_session_status_text(
-             state_, stored_refs_, history_ref_.has_value(), user_shell_, history_jsonl_ref_)});
+         hosted_session_status_text(state_,
+                                    stored_refs_,
+                                    history_ref_.has_value(),
+                                    user_shell_,
+                                    history_jsonl_ref_,
+                                    current_path_)});
     return refresh_render();
   }
 
@@ -991,6 +1035,7 @@ bool ShellSession::execute_command(std::string_view command_view) {
         << "recovered " << state_.recovered_entries;
     if (user_shell_.has_value()) {
       out << '\n' << "prompt " << user_shell_->prompt()
+          << '\n' << "path " << current_path_
           << '\n' << "history " << user_shell_->history_canon_path()
           << '\n' << "tier " << user_shell_->tier();
     }

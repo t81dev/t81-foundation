@@ -80,6 +80,7 @@ private:
 
   bool        quiet_boot_{false};
   std::string store_path_;
+  std::string current_path_{"/"};
   ShellSessionState state_;
   userenv::ServiceRegistry service_registry_;
   userenv::SessionManager  session_manager_;
