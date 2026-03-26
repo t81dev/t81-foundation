@@ -2369,6 +2369,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(t81_canonfs_driver_test tests/cpp/canonfs_driver_test.cpp)
   target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
 
+  add_executable(canonfs_interchange_test tests/cpp/canonfs_interchange_test.cpp)
+  target_link_libraries(canonfs_interchange_test PRIVATE t81_tool_cli)
+
   add_executable(t81_canonfs_rs_repair_test tests/cpp/canonfs_rs_repair_test.cpp)
   target_link_libraries(t81_canonfs_rs_repair_test PRIVATE t81_core)
 
@@ -3124,6 +3127,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_axion_log_determinism_test
     t81_reflection_non_interference_test
     t81_canonfs_driver_test
+    canonfs_interchange_test
     t81_canonfs_rs_repair_test
     t81_canonhash81_reference_vectors_test
     t81_weights_load_test
