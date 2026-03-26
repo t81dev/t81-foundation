@@ -672,6 +672,11 @@ if(T81_ENABLE_TERNARYOS)
     ternaryos/sched/scheduler.cpp
     ternaryos/ipc/canon_message.cpp)
 
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64|ARM64)$")
+    target_sources(t81_ternaryos_hal PRIVATE
+      ternaryos/hal/aarch64_exception_vectors.S)
+  endif()
+
   target_include_directories(t81_ternaryos_hal PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/ternaryos>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>)

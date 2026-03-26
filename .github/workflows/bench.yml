@@ -87,9 +87,13 @@ jobs:
           target_name = os.environ["T81_BADGE_BENCHMARK"]
           data = json.loads(bench_path.read_text(encoding="utf-8"))
 
+          def canonical_name(name: str) -> str:
+              return name.split("/", 1)[0]
+
           target = None
           for bench in data.get("benchmarks", []):
-              if str(bench.get("name")) == target_name:
+              name = str(bench.get("name", ""))
+              if name == target_name or canonical_name(name) == target_name:
                   target = bench
                   break
 

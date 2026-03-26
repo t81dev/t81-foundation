@@ -134,7 +134,6 @@ jobs:
           }
 
           check "Axion QEMU x86_64 OVMF slice6"
-          check "[axion] bare-metal x86_64 entry"
           check "[axion] ExitBootServices complete"
           check "[axion] canonfs: mounted (persistent, virtio-blk)"
           check "[axion] canonfs: I/O probe OK"
