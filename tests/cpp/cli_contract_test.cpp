@@ -893,6 +893,27 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "\"status\": \"error\""));
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "invalid interchange manifest"));
 
+    const fs::path canonfs_policy = make_temp_path("t81-cli-contract-canonfs-policy", ".apl");
+    {
+      std::ofstream out(canonfs_policy);
+      out << "(policy (tier 1) (allowed-tensor-hashes []))\n";
+    }
+    const auto import_policy_deny_result = run_cli(
+        t81_bin,
+        {"canonfs", "import", payload.string(), "--policy", canonfs_policy.string(), "--json"});
+    T81_TEST_CHECK(import_policy_deny_result.exit_code != 0);
+    T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"status\": \"error\""));
+
+    const auto export_policy_deny_result = run_cli(
+        t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
+                  imported_file_restore.string(), "--json"});
+    T81_TEST_CHECK(export_policy_deny_result.exit_code != 0);
+    T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"status\": \"error\""));
+
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");
     const auto get_result =
         run_cli(t81_bin, {"canonfs", "get", hash, "--out", restored.string(), "--json"});
@@ -1011,6 +1032,7 @@ int main(int argc, char* argv[]) {
     ignore_ec.clear();
 #endif
     fs::remove(payload, ignore_ec);
+    fs::remove(canonfs_policy, ignore_ec);
     fs::remove(malformed_manifest, ignore_ec);
     fs::remove(imported_file_restore, ignore_ec);
     fs::remove(restored, ignore_ec);

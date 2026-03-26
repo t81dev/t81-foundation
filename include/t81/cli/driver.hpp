@@ -49,6 +49,7 @@ int canonfs_put_file(const std::filesystem::path& input,
                      const std::filesystem::path& canonfs_root = ".t81_canonfs");
 int canonfs_import(const std::filesystem::path& input,
                    const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                   const std::optional<std::filesystem::path>& policy_path = std::nullopt,
                    bool as_json = false);
 int canonfs_list(const std::filesystem::path& canonfs_root = ".t81_canonfs", bool as_json = false);
 int canonfs_get(const std::string& canonical_hash,
@@ -75,6 +76,7 @@ int canonfs_rollback(const std::string& snapshot_hash,
 int canonfs_export(const std::string& canonical_hash,
                    const std::filesystem::path& output_path,
                    const std::filesystem::path& canonfs_root = ".t81_canonfs",
+                   const std::optional<std::filesystem::path>& policy_path = std::nullopt,
                    bool as_json = false);
 
 int determinism_hash_file(const std::filesystem::path& input, bool as_json = false);

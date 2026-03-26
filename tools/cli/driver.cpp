@@ -10,6 +10,7 @@
 #include "t81/rust_frontend/compile.hpp"
 #include "debugger.hpp"
 #include "logging.hpp"
+#include "t81/axion/policy_engine.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/config.hpp"
@@ -526,6 +527,17 @@ struct CanonFsInterchangeManifest {
 constexpr std::string_view kCanonFsInterchangeManifestSchema =
     "t81.canonfs-interchange-manifest.v1";
 
+struct CanonFsPolicyCheck {
+  bool allowed = true;
+  std::string reason = "allow";
+};
+
+std::optional<t81::axion::Policy> load_axion_policy(const fs::path& policy_path,
+                                                    std::string& error_message);
+CanonFsPolicyCheck evaluate_canonfs_policy(const std::optional<t81::axion::Policy>& policy,
+                                           std::string_view canonical_ref,
+                                           std::string_view syscall_name);
+
 std::string bytes_to_string(const std::vector<std::byte>& bytes) {
   std::string text;
   text.reserve(bytes.size());
@@ -533,6 +545,10 @@ std::string bytes_to_string(const std::vector<std::byte>& bytes) {
     text.push_back(static_cast<char>(std::to_integer<unsigned char>(b)));
   }
   return text;
+}
+
+std::string canonfs_ref_from_bytes(std::span<const std::byte> bytes) {
+  return "sha3-256:" + t81::hash::hash_bytes(bytes).to_string();
 }
 
 std::vector<std::byte> string_to_bytes(std::string_view text) {
@@ -816,26 +832,37 @@ bool collect_import_entries(const fs::path& input, std::vector<CanonFsInterchang
                             std::vector<std::string>& imported_objects,
                             std::vector<std::string>& imported_paths,
                             std::vector<std::string>& warnings,
-                            std::vector<std::string>& errors, const fs::path& canonfs_root) {
+                            std::vector<std::string>& errors, const fs::path& canonfs_root,
+                            const std::optional<t81::axion::Policy>& policy,
+                            bool& saw_policy_denial) {
   if (is_symlink_path(input)) {
     errors.push_back("symlinks are not supported by canonfs import v1: " + input.string());
     return false;
   }
   if (fs::is_regular_file(input)) {
     auto bytes = read_file_bytes(input);
+    const std::string object_ref =
+        canonfs_ref_from_bytes(std::span<const std::byte>(bytes.data(), bytes.size()));
+    const auto policy_check = evaluate_canonfs_policy(policy, object_ref, "canonfs.import");
+    if (!policy_check.allowed) {
+      saw_policy_denial = true;
+      errors.push_back("policy denied import of " + input.filename().generic_string() + ": " +
+                       policy_check.reason);
+      return false;
+    }
     std::string write_error;
-    const auto object_ref = write_canonfs_raw_object(
+    const auto write_ref = write_canonfs_raw_object(
         canonfs_root, std::span<const std::byte>(bytes.data(), bytes.size()), write_error);
-    if (!object_ref) {
+    if (!write_ref) {
       errors.push_back(write_error);
       return false;
     }
     CanonFsInterchangeEntry entry;
     entry.path = input.filename().generic_string();
-    entry.object_ref = *object_ref;
+    entry.object_ref = *write_ref;
     entry.size_bytes = bytes.size();
     entries.push_back(entry);
-    imported_objects.push_back(*object_ref);
+    imported_objects.push_back(*write_ref);
     imported_paths.push_back(entry.path);
     return true;
   }
@@ -861,19 +888,27 @@ bool collect_import_entries(const fs::path& input, std::vector<CanonFsInterchang
       continue;
     }
     auto bytes = read_file_bytes(path);
+    const std::string object_ref =
+        canonfs_ref_from_bytes(std::span<const std::byte>(bytes.data(), bytes.size()));
+    const auto policy_check = evaluate_canonfs_policy(policy, object_ref, "canonfs.import");
+    if (!policy_check.allowed) {
+      saw_policy_denial = true;
+      errors.push_back("policy denied import of " + rel.generic_string() + ": " + policy_check.reason);
+      continue;
+    }
     std::string write_error;
-    const auto object_ref = write_canonfs_raw_object(
+    const auto write_ref = write_canonfs_raw_object(
         canonfs_root, std::span<const std::byte>(bytes.data(), bytes.size()), write_error);
-    if (!object_ref) {
+    if (!write_ref) {
       errors.push_back(rel.generic_string() + ": " + write_error);
       continue;
     }
     CanonFsInterchangeEntry entry;
     entry.path = rel.generic_string();
-    entry.object_ref = *object_ref;
+    entry.object_ref = *write_ref;
     entry.size_bytes = bytes.size();
     entries.push_back(entry);
-    imported_objects.push_back(*object_ref);
+    imported_objects.push_back(*write_ref);
     imported_paths.push_back(entry.path);
   }
   std::sort(entries.begin(), entries.end(), [](const auto& lhs, const auto& rhs) {
@@ -894,6 +929,42 @@ bool is_safe_relative_export_path(const fs::path& path) {
     }
   }
   return true;
+}
+
+std::optional<t81::axion::Policy> load_axion_policy(const fs::path& policy_path,
+                                                    std::string& error_message) {
+  std::ifstream in(policy_path);
+  if (!in) {
+    error_message = "could not open policy file: " + policy_path.string();
+    return std::nullopt;
+  }
+  std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  auto parsed = t81::axion::parse_policy(content);
+  if (!parsed) {
+    error_message = "policy parse failed: " + parsed.error();
+    return std::nullopt;
+  }
+  return parsed.value();
+}
+
+CanonFsPolicyCheck evaluate_canonfs_policy(const std::optional<t81::axion::Policy>& policy,
+                                           std::string_view canonical_ref,
+                                           std::string_view syscall_name) {
+  if (!policy) {
+    return CanonFsPolicyCheck{};
+  }
+  t81::axion::PolicyEngine engine(*policy);
+  t81::axion::SyscallContext ctx;
+  ctx.caller = "t81 canonfs";
+  ctx.syscall = std::string(syscall_name);
+  ctx.payload = std::string(canonical_ref);
+  ctx.next_opcode = t81::tisc::Opcode::TLoadHash;
+  ctx.current_tier = 1;
+  const auto verdict = engine.evaluate(ctx);
+  return CanonFsPolicyCheck{
+      .allowed = verdict.kind != t81::axion::VerdictKind::Deny,
+      .reason = verdict.reason.empty() ? "allow" : verdict.reason,
+  };
 }
 
 std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root,
@@ -1892,7 +1963,8 @@ int canonfs_put_file(const fs::path& input, const fs::path& canonfs_root) {
   return 0;
 }
 
-int canonfs_import(const fs::path& input, const fs::path& canonfs_root, bool as_json) {
+int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
+                   const std::optional<fs::path>& policy_path, bool as_json) {
   if (!fs::exists(input)) {
     const std::string message = "input path does not exist: " + input.string();
     if (as_json) {
@@ -1913,14 +1985,39 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root, bool as_
     return 1;
   }
 
+  std::optional<t81::axion::Policy> policy;
+  if (policy_path) {
+    std::string policy_error;
+    policy = load_axion_policy(*policy_path, policy_error);
+    if (!policy) {
+      if (as_json) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.canonfs-import.v1\",\n"
+                  << "  \"status\": \"error\",\n"
+                  << "  \"source_kind\": \"" << (fs::is_directory(input) ? "host-directory" : "host-file") << "\",\n"
+                  << "  \"source_ref\": \"" << escape_json_text(input.string()) << "\",\n"
+                  << "  \"imported_objects\": [],\n"
+                  << "  \"provenance_ref\": \"\",\n"
+                  << "  \"warnings\": [],\n"
+                  << "  \"errors\": " << json_array_of_error_objects({policy_error}, 4) << ",\n"
+                  << "  \"policy_result\": \"denied\"\n"
+                  << "}\n";
+      } else {
+        error("canonfs import: " + policy_error);
+      }
+      return 1;
+    }
+  }
+
   std::vector<CanonFsInterchangeEntry> entries;
   std::vector<std::string> imported_objects;
   std::vector<std::string> imported_paths;
   std::vector<std::string> warnings;
   std::vector<std::string> errors;
+  bool saw_policy_denial = false;
   const bool has_entries =
       collect_import_entries(input, entries, imported_objects, imported_paths, warnings, errors,
-                             canonfs_root);
+                             canonfs_root, policy, saw_policy_denial);
   const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
 
   std::string manifest_ref;
@@ -1954,6 +2051,8 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root, bool as_
 
   const std::string status =
       imported_objects.empty() ? "error" : (errors.empty() ? "ok" : "partial");
+  const std::string policy_result = saw_policy_denial ? (imported_objects.empty() ? "denied" : "partial")
+                                                      : "allowed";
   if (as_json) {
     std::cout << "{\n"
               << "  \"schema\": \"t81.canonfs-import.v1\",\n"
@@ -1972,8 +2071,7 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root, bool as_
     std::cout << "  \"imported_paths\": " << json_array_of_strings(imported_paths, 4) << ",\n"
               << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
               << "  \"errors\": " << json_array_of_error_objects(errors, 4) << ",\n"
-              << "  \"policy_result\": \"" << (status == "error" ? "denied" : "allowed")
-              << "\",\n"
+              << "  \"policy_result\": \"" << policy_result << "\",\n"
               << "  \"normalization_summary\": {\n"
               << "    \"timestamps\": \"provenance-only\",\n"
               << "    \"ownership\": \"provenance-only\",\n"
@@ -2333,7 +2431,33 @@ int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_r
 }
 
 int canonfs_export(const std::string& canonical_hash, const fs::path& output_path,
-                   const fs::path& canonfs_root, bool as_json) {
+                   const fs::path& canonfs_root, const std::optional<fs::path>& policy_path,
+                   bool as_json) {
+  std::optional<t81::axion::Policy> policy;
+  if (policy_path) {
+    std::string policy_error;
+    policy = load_axion_policy(*policy_path, policy_error);
+    if (!policy) {
+      if (as_json) {
+        std::cout << "{\n"
+                  << "  \"schema\": \"t81.canonfs-export.v1\",\n"
+                  << "  \"status\": \"error\",\n"
+                  << "  \"source_objects\": [\"" << escape_json_text(canonical_hash) << "\"],\n"
+                  << "  \"target_kind\": \"host-file\",\n"
+                  << "  \"target_ref\": \"" << escape_json_text(output_path.string()) << "\",\n"
+                  << "  \"provenance_ref\": \"\",\n"
+                  << "  \"warnings\": [],\n"
+                  << "  \"errors\": " << json_array_of_export_error_objects({policy_error}, 4)
+                  << ",\n"
+                  << "  \"policy_result\": \"denied\"\n"
+                  << "}\n";
+      } else {
+        error("canonfs export: " + policy_error);
+      }
+      return 1;
+    }
+  }
+
   std::vector<std::byte> bytes;
   CanonFsObjectInfo info;
   std::string error_message;
@@ -2363,6 +2487,7 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
   std::vector<std::string> errors;
   std::string manifest_ref;
   std::string target_kind = "host-file";
+  bool saw_policy_denial = false;
 
   CanonFsInterchangeManifest manifest;
   std::string manifest_error;
@@ -2381,6 +2506,12 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
     } else {
       for (const auto& entry : manifest.entries) {
         source_objects.push_back(entry.object_ref);
+        const auto policy_check = evaluate_canonfs_policy(policy, entry.object_ref, "canonfs.export");
+        if (!policy_check.allowed) {
+          saw_policy_denial = true;
+          errors.push_back("policy denied export of " + entry.path + ": " + policy_check.reason);
+          continue;
+        }
         const fs::path relative_path(entry.path);
         if (!is_safe_relative_export_path(relative_path)) {
           errors.push_back("unsafe export path in manifest: " + entry.path);
@@ -2416,13 +2547,18 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
     }
   } else if (!is_manifest_document) {
     source_objects.push_back(canonical_hash);
+    const auto policy_check = evaluate_canonfs_policy(policy, canonical_hash, "canonfs.export");
+    if (!policy_check.allowed) {
+      saw_policy_denial = true;
+      errors.push_back("policy denied export: " + policy_check.reason);
+    }
     std::error_code ec;
-    if (!output_path.parent_path().empty()) {
+    if (!output_path.parent_path().empty() && errors.empty()) {
       fs::create_directories(output_path.parent_path(), ec);
     }
     if (ec) {
       errors.push_back("could not create export directory: " + output_path.parent_path().string());
-    } else {
+    } else if (errors.empty()) {
       std::ofstream out(output_path, std::ios::binary | std::ios::trunc);
       if (!out) {
         errors.push_back("could not open output file: " + output_path.string());
@@ -2456,6 +2592,8 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
 
   const std::string status =
       materialized_paths.empty() ? "error" : (errors.empty() ? "ok" : "partial");
+  const std::string policy_result = saw_policy_denial ? (materialized_paths.empty() ? "denied" : "partial")
+                                                      : "allowed";
   if (as_json) {
     std::cout << "{\n"
               << "  \"schema\": \"t81.canonfs-export.v1\",\n"
@@ -2475,8 +2613,7 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
               << ",\n"
               << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
               << "  \"errors\": " << json_array_of_export_error_objects(errors, 4) << ",\n"
-              << "  \"policy_result\": \"" << (status == "error" ? "denied" : "allowed")
-              << "\",\n"
+              << "  \"policy_result\": \"" << policy_result << "\",\n"
               << "  \"materialization_summary\": {\n"
               << "    \"timestamps\": \"not-restored\",\n"
               << "    \"ownership\": \"synthesized\",\n"
