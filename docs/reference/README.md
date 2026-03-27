@@ -17,7 +17,7 @@ specification authority, freeze boundaries, or determinism claim scope.
 - ../spec/
 - ../governance/
 - ../status/
-- ../T81_FOUNDATION_PROJECT_PROFILE.md
+- ../explanation/T81_FOUNDATION_PROJECT_PROFILE.md
 - STATUS.md
 - system-status.md
 - benchmarks.md
