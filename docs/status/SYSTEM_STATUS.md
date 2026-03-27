@@ -1,7 +1,7 @@
 # System Status
 
 Status: Active
-Last Updated: 2026-03-22
+Last Updated: 2026-03-26
 Owner: Status / Governance
 
 ## Purpose
@@ -30,9 +30,22 @@ status boundaries.
 
 ## Program Risks (Current)
 
-- Spec-implementation drift on draft/experimental surfaces.
-- Determinism overclaim risk outside Verified registry surfaces.
-- Governance maintenance risk if release/status artifacts are not refreshed on cadence.
+- Spec-implementation drift on draft and experimental surfaces.
+- Determinism overclaim risk outside registry-backed verified surfaces.
+- CI portability churn across Windows and ARM64 lanes.
+- Governance and handoff maintenance risk if control-surface docs are not refreshed alongside code.
+
+## Operational Notes (2026-03-26)
+
+- **RFC-00D1 moved from draft-only to an implementation seed with real surface area** —
+  CanonFS import/export flows now exist in the CLI and core library, with schema artifacts,
+  runtime validation, CI JSON contract checks, module tests, and policy-profile recording.
+- **Handoff path tightened** — `README`, `HANDOFF`, `ROADMAP`, `BUILDABLE_NEXT_STEPS`,
+  project-profile guidance, and `AGENTS.md` now present a more consistent newcomer and
+  contributor story.
+- **Current operational focus is narrower than subsystem breadth** — keep `main` stable,
+  keep portability regressions closed, and make RFC-00D1 easier for another engineer to
+  extend without needing maintainer memory.
 
 ## Operational Notes (2026-03-05)
 

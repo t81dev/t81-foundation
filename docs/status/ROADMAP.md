@@ -1,5 +1,12 @@
 # Roadmap for the T81 Deterministic Ternary Stack
 
+Last Updated: 2026-03-26
+Owner: @t81dev
+
+This document is long-horizon roadmap context. For immediate execution, use
+`TASKS.md`. For the current operator/dashboard view, use
+`PROJECT_CONTROL_CENTER.md`.
+
 ## Current strategic position
 
 T81 Foundation, as described in your March 2026 status snapshot, is in a rare “maintenance-but-not-stagnant” posture: the deterministic substrate (frozen ISA + frozen data types) is stable, and the system-level differentiators (explicit governance interception, immutable provenance, deterministic parallelism) are already wired end-to-end. That matters because “determinism” is most valuable when it is **systemic**—when the compiler, runtime, storage, and governance plane agree on what reality is, and can prove it.

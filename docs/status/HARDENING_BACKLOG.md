@@ -1,6 +1,6 @@
 # Hardening Backlog
 
-Last Updated: 2026-03-14
+Last Updated: 2026-03-26
 Owner: @t81dev
 
 **This is not a feature backlog.**
@@ -19,6 +19,9 @@ Feature work, new capabilities, and API additions live elsewhere.
 
 | ID | Category | Surface | Gap | Acceptance Criteria | Owner | Target | State |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| CI-04 | Structural hardening | Windows / ARM64 portability lanes | Recent CI regressions have clustered around host-compiler and ABI portability edges rather than product semantics | `T81 Foundation CI` runs clean across Windows/MSVC, Windows/clang-cl, and Linux/ARM64 with no new portability-only failures | @t81dev | 2026-03-31 | Open |
+| DOC-02 | Structural hardening | Status / handoff control surface | New handoff docs and `AGENTS.md` increase the number of high-signal status documents that can drift from repo reality | `README`, `HANDOFF`, `BUILDABLE_NEXT_STEPS`, `AGENTS`, and `/docs/status` stay mutually consistent for current priorities and maturity claims | @t81dev | 2026-03-31 | Open |
+| RFC-00D1-H1 | Determinism tightening / promotion evidence | CanonFS interchange lane | RFC-00D1 has real code, schemas, and tests, but examples and negative-path semantics still need tightening to make the lane easier to finish by a new contributor | One golden example plus stronger negative tests and explicit error semantics keep CLI/schema/docs aligned | @t81dev | 2026-04-05 | Open |
 | BG-06 | Determinism tightening | `T81List`, `T81Map`, `T81Set`, `T81Tree` | No run-to-run determinism tests for collection types; populated-constructor determinism unverified | **✅ COMPLETED - T81Map/T81Set use canonical sorted vector storage; T81_DETERMINISTIC enforcement; explicit iteration order guarantees; cross-platform determinism tests passing** | @t81dev | 2026-05-15 | **Closed** |
 | BG-07 | Scope reduction / determinism tightening | `T81BigInt` | VM aliases BigInt to 64-bit; >64-bit literals silently truncated — spec claims arbitrary-precision | **✅ COMPLETED** — No silent truncation remains on IR→binary→VM literal path. Oversized literals lower to `LiteralKind::BigIntHandle` with deterministic transport (`Program::bigint_pool` + emitter/IO round-trip coverage). VM `LOADI` materializes BigInt as canonical `FractionHandle` (`BigInt/1`), JIT explicitly deopts `BigIntHandle` to preserve interpreter precision semantics, and narrowing back to `Int` (`Frac2I`) now fails closed on non-`int64` values. Governance decision recorded in `docs/status/DECISION_LOG.md` (2026-03-05). | @t81dev | 2026-05-15 | **Closed** |
 | BG-08 | Determinism tightening | `T81Complex` | Binary pool serialization absent in `binary_io.cpp` — persistence gap | **Round-trip binary serialization for T81Complex passes determinism test; complete implementation with RFC-0024 compliance** | @t81dev | 2026-05-15 | **Closed** |

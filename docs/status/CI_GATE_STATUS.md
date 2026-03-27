@@ -1,10 +1,10 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-22
+Last Updated: 2026-03-26
 Owner: @t81dev
-Reference Candidate: `ffe867ff` (origin/main, 2026-03-22)
-Current Main Head: working tree, 2026-03-22; axion_agent_invoke_policy_test added; 406/406 tests passing)
+Reference Candidate: `069963ea` (origin/main, 2026-03-26)
+Current Main Head: `069963ea` — AGENTS guidance refined; handoff docs updated in the immediately prior push (`5e8a2d6e`)
 
 ## Purpose
 
@@ -23,8 +23,8 @@ GO decision can be stamped.
 
 | Context | Workflow | Required | Last Known Status |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | completed / success ✅ (`03112f6c`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | success ✅ (`03112f6c`) |
+| `quality gate / required` | `ci.yml` | **Yes** | in progress ⏳ (`069963ea`) |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | in progress ⏳ (`069963ea`) |
 
 Verification command:
 
@@ -75,6 +75,18 @@ tracked here and must be addressed unless explicitly deferred.
 | `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
+
+## Operational Notes (2026-03-26)
+
+- **Current head is documentation-only, but required contexts are still running** —
+  `Format Check` and `runtime-contract` have already completed successfully on `069963ea`,
+  while `T81 Foundation CI`, `CodeQL`, `Cross-Platform Determinism Verification`, and
+  `Deterministic Core Profile Enforcement` remain in progress at the time of this update.
+- **Recent CI work has been dominated by portability closure rather than product regressions** —
+  the main fixes since 2026-03-22 have been Windows/MSVC, Windows/clang-cl, Linux/ARM64,
+  and QEMU workflow hardening. Treat new portability failures as immediate-fix items.
+- **Pages build is no longer the headline issue** — the active control concern is keeping
+  the required contexts boring on `main` while the handoff and RFC-00D1 work settles.
 
 ## Operational Notes (2026-03-22, axion integration)
 

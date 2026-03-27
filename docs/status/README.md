@@ -1,6 +1,6 @@
 # /docs/status — Control Surface
 
-Last Updated: 2026-03-19
+Last Updated: 2026-03-26
 Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
 This directory is a cockpit, not an archive.
@@ -85,7 +85,7 @@ or absorbed into the documents above:
 | EXPERIMENTAL_SURFACE_INVENTORY.md | `EXTENSION_PROFILE.md` |
 | GOVERNED_AGI_PROMOTION_PIPELINE.md | `EXTENSION_PROFILE.md` + `GOVERNANCE_REVIEW_CADENCE.md` |
 | RISK_REGISTER.md | `ACTIVE_RISKS.md` |
-| SYSTEM_STATUS.md | `PROJECT_CONTROL_CENTER.md` + `IMPLEMENTATION_MATRIX.md` |
+| SYSTEM_STATUS.md | active concise subsystem/maturity snapshot; keep aligned with `PROJECT_CONTROL_CENTER.md` |
 | STRUCTURAL_INTEGRITY_REPORT.md | `DETERMINISM_AUDIT_LOG.md` |
 | VERIFIED_SURFACE_AUDIT.md | `DETERMINISM_AUDIT_LOG.md` |
 | DETERMINISM_VERIFICATION_REPORT_LANGUAGE_SURFACE.md | `DETERMINISM_AUDIT_LOG.md` |
@@ -110,6 +110,6 @@ or absorbed into the documents above:
 | GOVERNANCE_BOUNDARIES_CLARIFICATION.md | placeholder — `records/` |
 | JIT_EQUIVALENCE_GAP.md | placeholder — `records/` |
 | AI_CLI_MILESTONE_EVIDENCE.md | milestone complete — `records/` |
-| CI_WORKFLOW_CONFIRMATION.md | absorbed into `CI_GATE_STATUS.md` — `records/` |
+| CI_WORKFLOW_CONFIRMATION.md | lightweight freshness-governed workflow marker; detailed gate state lives in `CI_GATE_STATUS.md` |
 | RFC_0026_RESIDUAL_EXCEPTIONS.md | point-in-time analysis — `records/status-history/` |
 | RFC_TRIAGE_MATRIX.md | triage complete; live status in `spec/rfcs/index.md` — `records/status-history/` |

@@ -1,9 +1,9 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-22
+Last Updated: 2026-03-26
 Owner: @t81dev
-Version: 1.9.0
+Version: 1.9.1
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Maintenance / Governance Alignment** — v1.9.0-Stable; core release surface remains active, while RFC-0042 through RFC-0053 are open draft governance layers that define backend equivalence, validation, packed-trit substrate, memory, scheduling, JIT, deterministic-surface boundaries, arithmetic semantics, vector semantics, heterogeneous acceleration, dataflow, and distributed execution.
+**Handoff Hardening / RFC-00D1 Consolidation** — core release surface remains active; the highest-value work is currently CI boringness, newcomer legibility, and turning RFC-00D1 into the clearest finishable lane for another engineer.
 
 ---
 
@@ -27,10 +27,10 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green — release branch remains healthy; determinism and structural-integrity gates remain the controlling signals |
-| Release Readiness | **GO** for the current shipped core profile; broader verticals remain classified per DCP / governed non-DCP / experimental boundaries |
-| Current Main | `64954188` — VM fuzz security fix: 3-wave int-narrowing OOB closed in reg_ok/mem_ok/check_mem + 5 Axion handler sites; 9 crashes fixed; 406/406 tests passing |
-| Open Blockers | None |
+| Overall | Green / Watch — core posture is healthy, but `main` is still under active CI observation on the latest documentation and portability churn fixes |
+| Release Readiness | **GO** for the shipped deterministic core profile; newer lanes remain governed by DCP / non-DCP / experimental boundaries and active CI evidence |
+| Current Main | `069963ea` — `AGENTS.md` refined; handoff/docs surface tightened; required CI contexts in progress |
+| Open Blockers | No confirmed product blocker on current head; active concern is keeping required contexts boring across Windows, ARM64, and control-surface changes |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
 | Determinism Registry | Verified surfaces remain the only source of DCP-strength deterministic claims |
 | Structural Integrity | Green — conformance, freeze, and determinism enforcement remain the governing release criteria |
@@ -83,9 +83,9 @@ Full decomposition: `DRIFT_DECOMPOSITION.md`
 
 | ID | Risk | Severity |
 | :--- | :--- | :--- |
-| R-05 | Governed non-DCP surface growth outpacing boundary and evidence updates | Medium |
-| R-06 | Documentation maintenance burden after reorganization | Low |
-| R-07 | Benchmark variability — false signal in `vm workload gate` guardrail | Low |
+| R-05 | Governed non-DCP and draft surfaces could outpace boundary, registry, and evidence updates | Medium |
+| R-06 | Documentation and handoff drift could reintroduce maintainer-memory dependence | Medium |
+| R-07 | CI portability churn on Windows / ARM64 could keep `main` operationally noisy | Medium |
 
 Full register: `ACTIVE_RISKS.md`
 
@@ -95,15 +95,9 @@ Full register: `ACTIVE_RISKS.md`
 
 | Item | Owner | Target |
 | :--- | :--- | :--- |
-| BG-07 — BigInt precision scope resolution (phase 2) | @t81dev | **Closed 2026-03-05** |
-| FW-02 — VM dispatch concentration reduction | @t81dev | **Closed 2026-03-05** |
-| FW-01 — dependency firewall waiver retirement | @t81dev | **Closed 2026-03-05** |
-| SEC-01 — Fuzz infrastructure (fuzz_parser, fuzz_vm) + 3 OOB VM fixes | @t81dev | **Closed 2026-03-10** |
-| SEC-02 — binary_io OOM-on-corrupt-input (read_checked_size guard) | @t81dev | **Closed 2026-03-10** |
-| QA-01 — CLI stress test covering full command surface (338th test) | @t81dev | **Closed 2026-03-10** |
-| RFC-0046 proof enforcement — Axion epoch scheduler/audit parity lane | @t81dev | **Closed 2026-03-19** |
-| Track K — HostFloat result-rep fix (TExp/TSiLU/TSoftmax; 7 eligibility guard sites) | @t81dev | **Closed 2026-03-22** |
-| Track L — HostFloat matmul fast path (`deterministic_fma` bypass + lazy result construction) | @t81dev | **Closed 2026-03-22** |
+| CI-04 — Windows / ARM64 portability churn closure | @t81dev | 2026-03-31 |
+| DOC-02 — handoff / status control-surface coherence | @t81dev | 2026-03-31 |
+| RFC-00D1-H1 — CanonFS interchange hardening (examples + error semantics) | @t81dev | 2026-04-05 |
 
 Full backlog: `HARDENING_BACKLOG.md`
 
@@ -121,14 +115,10 @@ Full boundary: `EXTENSION_PROFILE.md`
 
 ## Next Decision Points
 
-1. **2026-03-31** — C2 Month-Close runbook executed and stamped in `docs/records/audits/2026-03-governance-review.md` (**Completed 2026-03-10**)
-2. **2026-05-15** — T81Lang promotion follow-on: bytecode deterministic compilation profile; full spec-section traceability audit; clarify compiler-surface promotion against RFC-0043/RFC-0048
-3. **Closed** — RFC-00B5 interrupt governance: Slice 28 `UnhandledInterruptDropped` done; RFC-00B5 → `integrated`; 3214/3214 ternaryos assertions
-4. **Closed** — TernaryOS QEMU x86_64 EFI boot lane: BOOTX64.EFI validated, all 5 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete` (evidence: `TERNARYOS_X86_64_BOOT_EVIDENCE_2026-03-16.md`)
-5. **Closed 2026-03-22** — TernaryOS ARMv8 QEMU boot lane: BOOTAA64.EFI executed under QEMU HVF (Apple Silicon); 10/10 contract files verified, `hal_main_result=0`, `kernel_boot_ready_slice=complete`, `phase=5`, `shell_mode=typed-builtins` (evidence: `TERNARYOS_ARMV8_QEMU_BOOT_EVIDENCE_2026-03-22.md`). VirtualBox headless blocked by macOS 15 Gatekeeper symlink-escape policy (VirtualBox 7.2.97 packaging issue); QEMU HVF is the authoritative ARMv8 boot evidence path on Apple Silicon.
-6. **Closed 2026-03-22** — Fuzz corpus growth: 3-wave int-narrowing OOB fix in `vm/vm.cpp` + `mem_ok`; 9 crash inputs fixed + archived; 79-entry VM corpus committed; 120s clean run (113k execs); 406/406 passing
-7. **Active now** — Governance closure path: connect RFC-0042..RFC-0053 to registry, threat model, promotion evidence, and CI gate inventory so public status claims remain classification-correct
-8. **Closed 2026-03-22** — Axion runtime-integration evidence gap: `axion_agent_invoke_policy_test` ([AI-01..05]) proves policy engine is wired to `AgentInvoke` dispatch; 406/406 passing
+1. **Now** — Clear required CI contexts on `069963ea` and keep `main` boring after the recent documentation + portability update sequence
+2. **2026-03-31** — Keep handoff and status documents aligned through the next governance/status refresh window
+3. **2026-04-05** — Tighten RFC-00D1 CanonFS interchange examples, negative-path behavior, and error semantics so a new engineer can finish the lane without maintainer memory
+4. **Next after RFC-00D1 hardening** — Narrow RFC-00D0 into a resolver/descriptor prototype before any broader TCP/IP implementation work
 
 ---
 
