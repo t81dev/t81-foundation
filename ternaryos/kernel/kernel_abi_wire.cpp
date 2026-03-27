@@ -491,46 +491,46 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
   if (!axion_kernel_validate_wire_response_block(block)) {
     return std::nullopt;
   }
-  KernelCallResult result{
-      .status = static_cast<KernelCallStatus>(block.status),
-      .rejection = static_cast<KernelCallRejection>(block.rejection),
-      .action_performed = block.action_performed != 0,
-      .yielded = block.yielded != 0,
-      .capabilities = {},
-      .thread_label = {},
-      .executable_registered = block.executable_registered != 0,
-      .executable_published = block.executable_published != 0,
-      .service_registered = block.service_registered != 0,
-      .service_has_entry_descriptor = block.service_has_entry_descriptor != 0,
-      .service_suspended = block.service_suspended != 0,
-      .service_unhealthy = block.service_unhealthy != 0,
-      .service_blocked = block.service_blocked != 0,
-      .process_group_owned_page_count = block.process_group_owned_page_count,
-      .process_group_pending_fault_count = block.process_group_pending_fault_count,
-      .runtime_boot_critical_address_space_count = block.runtime_boot_critical_address_space_count,
-      .runtime_mapped_pages = block.runtime_mapped_pages,
-      .fault_summary_recorded_faults = block.fault_summary_recorded_faults,
-      .fault_summary_pending_faults = block.fault_summary_pending_faults,
-      .fault_summary_delivered_faults = block.fault_summary_delivered_faults,
-      .fault_summary_routed_thread_faults = block.fault_summary_routed_thread_faults,
-      .fault_summary_quarantined_threads = block.fault_summary_quarantined_threads,
-      .supervisor_managed_group_count = block.supervisor_managed_group_count,
-      .supervisor_managed_faulted_group_count = block.supervisor_managed_faulted_group_count,
-      .supervisor_pending_group_count = block.supervisor_pending_group_count,
-      .supervisor_fault_notifications = block.supervisor_fault_notifications,
-      .supervisor_acknowledgements = block.supervisor_acknowledgements,
-      .supervisor_recovered_groups = block.supervisor_recovered_groups,
-      .supervisor_capability_process_group_count = block.supervisor_capability_process_group_count,
-      .supervisor_service_count = block.supervisor_service_count,
-      .supervisor_blocked_service_count = block.supervisor_blocked_service_count,
-      .supervisor_suspended_service_count = block.supervisor_suspended_service_count,
-      .supervisor_unhealthy_service_count = block.supervisor_unhealthy_service_count,
-      .supervisor_capability_transitions = block.supervisor_capability_transitions,
-      .supervisor_service_lifecycle_transitions = block.supervisor_service_lifecycle_transitions,
-      .supervisor_delegation_process_group_count = block.supervisor_delegation_process_group_count,
-      .supervisor_delegation_entry_count = block.supervisor_delegation_entry_count,
-      .supervisor_delegated_capability_count = block.supervisor_delegated_capability_count,
-  };
+  KernelCallResult result;
+  result.status = static_cast<KernelCallStatus>(block.status);
+  result.rejection = static_cast<KernelCallRejection>(block.rejection);
+  result.action_performed = block.action_performed != 0;
+  result.yielded = block.yielded != 0;
+  result.executable_registered = block.executable_registered != 0;
+  result.executable_published = block.executable_published != 0;
+  result.service_registered = block.service_registered != 0;
+  result.service_has_entry_descriptor = block.service_has_entry_descriptor != 0;
+  result.service_suspended = block.service_suspended != 0;
+  result.service_unhealthy = block.service_unhealthy != 0;
+  result.service_blocked = block.service_blocked != 0;
+  result.process_group_owned_page_count = block.process_group_owned_page_count;
+  result.process_group_pending_fault_count = block.process_group_pending_fault_count;
+  result.runtime_boot_critical_address_space_count =
+      block.runtime_boot_critical_address_space_count;
+  result.runtime_mapped_pages = block.runtime_mapped_pages;
+  result.fault_summary_recorded_faults = block.fault_summary_recorded_faults;
+  result.fault_summary_pending_faults = block.fault_summary_pending_faults;
+  result.fault_summary_delivered_faults = block.fault_summary_delivered_faults;
+  result.fault_summary_routed_thread_faults = block.fault_summary_routed_thread_faults;
+  result.fault_summary_quarantined_threads = block.fault_summary_quarantined_threads;
+  result.supervisor_managed_group_count = block.supervisor_managed_group_count;
+  result.supervisor_managed_faulted_group_count = block.supervisor_managed_faulted_group_count;
+  result.supervisor_pending_group_count = block.supervisor_pending_group_count;
+  result.supervisor_fault_notifications = block.supervisor_fault_notifications;
+  result.supervisor_acknowledgements = block.supervisor_acknowledgements;
+  result.supervisor_recovered_groups = block.supervisor_recovered_groups;
+  result.supervisor_capability_process_group_count =
+      block.supervisor_capability_process_group_count;
+  result.supervisor_service_count = block.supervisor_service_count;
+  result.supervisor_blocked_service_count = block.supervisor_blocked_service_count;
+  result.supervisor_suspended_service_count = block.supervisor_suspended_service_count;
+  result.supervisor_unhealthy_service_count = block.supervisor_unhealthy_service_count;
+  result.supervisor_capability_transitions = block.supervisor_capability_transitions;
+  result.supervisor_service_lifecycle_transitions = block.supervisor_service_lifecycle_transitions;
+  result.supervisor_delegation_process_group_count =
+      block.supervisor_delegation_process_group_count;
+  result.supervisor_delegation_entry_count = block.supervisor_delegation_entry_count;
+  result.supervisor_delegated_capability_count = block.supervisor_delegated_capability_count;
   if (block.executable_has_entry_descriptor != 0) {
     result.executable_entry_descriptor = KernelThreadSpawnDescriptor{
         .pc = static_cast<std::size_t>(block.executable_entry_pc),
@@ -679,23 +679,19 @@ std::optional<KernelFaultRecord> resolve_address_space_span_fault(const KernelRu
 }
 
 KernelCallWireResponseBlock make_invalid_wire_response() noexcept {
-  return axion_kernel_encode_wire_response(KernelCallResult{
-      .status = KernelCallStatus::InvalidRequest,
-      .rejection = KernelCallRejection::None,
-      .capabilities = {},
-      .thread_label = {},
-  });
+  KernelCallResult result;
+  result.status = KernelCallStatus::InvalidRequest;
+  result.rejection = KernelCallRejection::None;
+  return axion_kernel_encode_wire_response(result);
 }
 
 KernelCallWireResponseBlock make_invalid_span_wire_response(
     const KernelFaultRecord& fault) noexcept {
-  return axion_kernel_encode_wire_response(KernelCallResult{
-      .status = KernelCallStatus::InvalidRequest,
-      .rejection = KernelCallRejection::InvalidAddressSpaceSpan,
-      .fault = fault,
-      .capabilities = {},
-      .thread_label = {},
-  });
+  KernelCallResult result;
+  result.status = KernelCallStatus::InvalidRequest;
+  result.rejection = KernelCallRejection::InvalidAddressSpaceSpan;
+  result.fault = fault;
+  return axion_kernel_encode_wire_response(result);
 }
 
 }  // namespace
