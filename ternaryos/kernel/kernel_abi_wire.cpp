@@ -497,6 +497,7 @@ std::optional<KernelCallResult> axion_kernel_decode_wire_response(
       .action_performed = block.action_performed != 0,
       .yielded = block.yielded != 0,
       .capabilities = {},
+      .thread_label = {},
       .executable_registered = block.executable_registered != 0,
       .executable_published = block.executable_published != 0,
       .service_registered = block.service_registered != 0,
@@ -682,6 +683,7 @@ KernelCallWireResponseBlock make_invalid_wire_response() noexcept {
       .status = KernelCallStatus::InvalidRequest,
       .rejection = KernelCallRejection::None,
       .capabilities = {},
+      .thread_label = {},
   });
 }
 
@@ -692,6 +694,7 @@ KernelCallWireResponseBlock make_invalid_span_wire_response(
       .rejection = KernelCallRejection::InvalidAddressSpaceSpan,
       .fault = fault,
       .capabilities = {},
+      .thread_label = {},
   });
 }
 
