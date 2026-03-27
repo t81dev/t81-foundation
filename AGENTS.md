@@ -1,5 +1,7 @@
 # AGENTS.md
 
+Purpose: Make T81 progressively more pick-up-able and extensible by new contributors while preserving determinism, pre-side-effect policy enforcement through Axion, and immutable provenance through CanonFS.
+
 ## Project Identity
 
 T81 Foundation is a deterministic, policy-gated runtime stack for auditable computation, with a longer-term systems direction rooted in ternary-native design.
@@ -66,7 +68,7 @@ Do not treat draft RFC text as license to overbuild. Narrow the implementation s
 - Prefer explicit contracts, schemas, and tests over implied behavior.
 - Preserve provenance and policy semantics when adding import/export or execution behavior.
 - Avoid broad refactors unless they clearly reduce duplication or improve transferability.
-- If a change touches portability, check Linux, macOS, Windows, and ARM64 implications early.
+- If a change touches portability or platform assumptions, verify Linux, macOS, Windows, and ARM64 implications before opening a PR.
 
 ## CI Expectations
 
@@ -125,9 +127,28 @@ Less good tasks:
 - premature TCP/IP implementation breadth
 - broad terminology churn across the repo
 
+More concrete high-value tasks include:
+
+- tighten CanonFS interchange error messages and add matching negative tests
+- add or improve one golden CanonFS import/export example under `examples/`
+- ensure documented CLI commands have matching contract-test coverage
+- fix current CI warnings or portability regressions across Linux, macOS, Windows, and ARM64
+- update `docs/BUILDABLE_NEXT_STEPS.md` with the next smallest finishable items
+
+## Success Metric
+
+A good contribution usually makes at least one of these noticeably better without increasing overall architectural surface area:
+
+- newcomer onboarding time
+- test coverage in a stable lane
+- clarity of a public contract, schema, or workflow
+- CI reliability and portability confidence
+
 ## Working Style
 
 - Be explicit about what is real today versus aspirational.
 - Prefer finishable increments.
 - Leave code, docs, and tests in a state another engineer can pick up.
 - When in doubt, reduce ambiguity rather than add surface area.
+
+For autonomous agents: reference the current priority lanes and stable surfaces when proposing or making changes. Prefer edits that reduce maintainer memory load. If a change would expand a draft area, narrow the scope first instead of broadening the implementation opportunistically.
