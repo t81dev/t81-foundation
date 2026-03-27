@@ -3,8 +3,8 @@
 #include <cstdlib>
 #include <filesystem>
 
-#include "dev/virtio_blk_mmio.hpp"
 #include "dev/hosted_block_dev.hpp"
+#include "dev/virtio_blk_mmio.hpp"
 
 namespace t81::ternaryos::kernel {
 
@@ -17,8 +17,7 @@ CapabilityRecordId next_capability_record_id(KernelRuntimeState& state) {
 }
 
 std::vector<KernelCapabilityRecord> default_process_group_capabilities(
-    KernelRuntimeState& state,
-    ProcessGroupId process_group_id) {
+    KernelRuntimeState& state, ProcessGroupId process_group_id) {
   return {
       KernelCapabilityRecord{
           .record_id = next_capability_record_id(state),
@@ -63,8 +62,7 @@ std::optional<KernelDeviceArbitrationState> bootstrap_device_arbitration(
 
   const hal::VBoxProfile profile{};
   const auto profile_summary = hal::virtualbox_profile_summary(profile);
-  const std::string expected_platform_id =
-      std::string(kVBoxPlatformPrefix) + profile_summary;
+  const std::string expected_platform_id = std::string(kVBoxPlatformPrefix) + profile_summary;
   if (platform_id != expected_platform_id) {
     return std::nullopt;
   }
@@ -115,37 +113,34 @@ std::unique_ptr<t81::canonfs::Driver> bootstrap_published_executable_canonfs() {
 
 KernelRuntimeState::ProcessGroupState* create_process_group(KernelRuntimeState& state) {
   const ProcessGroupId id = state.next_process_group_id++;
-  auto [it, inserted] = state.process_groups.emplace(
-      id,
-      KernelRuntimeState::ProcessGroupState{
-          .id = id,
-          .capabilities = default_process_group_capabilities(state, id),
-      });
+  KernelRuntimeState::ProcessGroupState group_state;
+  group_state.id = id;
+  group_state.capabilities = default_process_group_capabilities(state, id);
+  auto [it, inserted] = state.process_groups.emplace(id, std::move(group_state));
   return inserted ? &it->second : nullptr;
 }
 
 KernelRuntimeState::SupervisorState* create_supervisor(KernelRuntimeState& state) {
   const SupervisorId id = state.next_supervisor_id++;
-  auto [it, inserted] =
-      state.supervisors.emplace(id, KernelRuntimeState::SupervisorState{.id = id});
+  KernelRuntimeState::SupervisorState supervisor_state;
+  supervisor_state.id = id;
+  auto [it, inserted] = state.supervisors.emplace(id, std::move(supervisor_state));
   return inserted ? &it->second : nullptr;
 }
 
-KernelRuntimeState::AddressSpaceState* create_address_space(
-    KernelRuntimeState& state,
-    ProcessGroupId process_group_id) {
+KernelRuntimeState::AddressSpaceState* create_address_space(KernelRuntimeState& state,
+                                                            ProcessGroupId process_group_id) {
   const AddressSpaceId id = state.next_address_space_id++;
-  auto [it, inserted] = state.address_spaces.emplace(
-      id,
-      KernelRuntimeState::AddressSpaceState{
-          .id = id,
-          .process_group_id = process_group_id,
-      });
+  KernelRuntimeState::AddressSpaceState address_space_state;
+  address_space_state.id = id;
+  address_space_state.process_group_id = process_group_id;
+  auto [it, inserted] = state.address_spaces.emplace(id, std::move(address_space_state));
   return inserted ? &it->second : nullptr;
 }
 
-KernelRuntimeState::ProcessGroupState* assign_thread_to_group(
-    KernelRuntimeState& state, sched::Tid tid, ProcessGroupId process_group_id) {
+KernelRuntimeState::ProcessGroupState* assign_thread_to_group(KernelRuntimeState& state,
+                                                              sched::Tid tid,
+                                                              ProcessGroupId process_group_id) {
   auto* thread_state = state.find_thread_runtime_mut(tid);
   auto* group_state = state.find_process_group_mut(process_group_id);
   if (!thread_state || !group_state) {
@@ -156,8 +151,9 @@ KernelRuntimeState::ProcessGroupState* assign_thread_to_group(
   return group_state;
 }
 
-KernelRuntimeState::SupervisorState* assign_group_to_supervisor(
-    KernelRuntimeState& state, ProcessGroupId process_group_id, SupervisorId supervisor_id) {
+KernelRuntimeState::SupervisorState* assign_group_to_supervisor(KernelRuntimeState& state,
+                                                                ProcessGroupId process_group_id,
+                                                                SupervisorId supervisor_id) {
   auto* supervisor_state = state.find_supervisor_mut(supervisor_id);
   auto* group_state = state.find_process_group_mut(process_group_id);
   if (!supervisor_state || !group_state) {
@@ -169,9 +165,7 @@ KernelRuntimeState::SupervisorState* assign_group_to_supervisor(
 }
 
 KernelRuntimeState::AddressSpaceState* assign_group_to_address_space(
-    KernelRuntimeState& state,
-    ProcessGroupId process_group_id,
-    AddressSpaceId address_space_id) {
+    KernelRuntimeState& state, ProcessGroupId process_group_id, AddressSpaceId address_space_id) {
   auto* address_space = state.find_address_space_mut(address_space_id);
   auto* group_state = state.find_process_group_mut(process_group_id);
   if (!address_space || !group_state) {
@@ -184,8 +178,7 @@ KernelRuntimeState::AddressSpaceState* assign_group_to_address_space(
 
 }  // namespace
 
-std::optional<KernelRuntimeState> axion_kernel_bootstrap(
-    const hal::BootContext& ctx) noexcept {
+std::optional<KernelRuntimeState> axion_kernel_bootstrap(const hal::BootContext& ctx) noexcept {
   if (ctx.memory_map.empty()) {
     return std::nullopt;
   }
@@ -212,34 +205,32 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
   };
   state.ipc_bus.register_thread(KernelRuntimeState::kKernelTid);
   state.published_executable_canonfs = bootstrap_published_executable_canonfs();
-  state.thread_runtime.emplace(
-      KernelRuntimeState::kKernelTid,
-      KernelRuntimeState::ThreadRuntimeState{
-          .tid = KernelRuntimeState::kKernelTid,
-          .process_group_id = KernelRuntimeState::kKernelProcessGroup,
-      });
-  state.process_groups.emplace(
-      KernelRuntimeState::kKernelProcessGroup,
-      KernelRuntimeState::ProcessGroupState{
-          .id = KernelRuntimeState::kKernelProcessGroup,
-          .member_tids = {KernelRuntimeState::kKernelTid},
-          .capabilities = default_process_group_capabilities(
-              state,
-              KernelRuntimeState::kKernelProcessGroup),
-      });
-  state.address_spaces.emplace(
-      KernelRuntimeState::kKernelAddressSpace,
-      KernelRuntimeState::AddressSpaceState{
-          .id = KernelRuntimeState::kKernelAddressSpace,
-          .process_group_id = KernelRuntimeState::kKernelProcessGroup,
-          .kernel_owned = true,  // RFC-00B1 §3.1: kernel AS may map the full TVA space
-      });
-  state.supervisors.emplace(
-      KernelRuntimeState::kKernelSupervisor,
-      KernelRuntimeState::SupervisorState{
-          .id = KernelRuntimeState::kKernelSupervisor,
-          .managed_groups = {KernelRuntimeState::kKernelProcessGroup},
-      });
+  KernelRuntimeState::ThreadRuntimeState kernel_thread_state;
+  kernel_thread_state.tid = KernelRuntimeState::kKernelTid;
+  kernel_thread_state.process_group_id = KernelRuntimeState::kKernelProcessGroup;
+  state.thread_runtime.emplace(KernelRuntimeState::kKernelTid, std::move(kernel_thread_state));
+
+  KernelRuntimeState::ProcessGroupState kernel_group_state;
+  kernel_group_state.id = KernelRuntimeState::kKernelProcessGroup;
+  kernel_group_state.member_tids = {KernelRuntimeState::kKernelTid};
+  kernel_group_state.capabilities =
+      default_process_group_capabilities(state, KernelRuntimeState::kKernelProcessGroup);
+  state.process_groups.emplace(KernelRuntimeState::kKernelProcessGroup,
+                               std::move(kernel_group_state));
+
+  KernelRuntimeState::AddressSpaceState kernel_address_space_state;
+  kernel_address_space_state.id = KernelRuntimeState::kKernelAddressSpace;
+  kernel_address_space_state.process_group_id = KernelRuntimeState::kKernelProcessGroup;
+  kernel_address_space_state.kernel_owned =
+      true;  // RFC-00B1 §3.1: kernel AS may map the full TVA space
+  state.address_spaces.emplace(KernelRuntimeState::kKernelAddressSpace,
+                               std::move(kernel_address_space_state));
+
+  KernelRuntimeState::SupervisorState kernel_supervisor_state;
+  kernel_supervisor_state.id = KernelRuntimeState::kKernelSupervisor;
+  kernel_supervisor_state.managed_groups = {KernelRuntimeState::kKernelProcessGroup};
+  state.supervisors.emplace(KernelRuntimeState::kKernelSupervisor,
+                            std::move(kernel_supervisor_state));
   state.process_group_supervisors.emplace(KernelRuntimeState::kKernelProcessGroup,
                                           KernelRuntimeState::kKernelSupervisor);
   state.process_group_address_spaces.emplace(KernelRuntimeState::kKernelProcessGroup,
@@ -248,9 +239,8 @@ std::optional<KernelRuntimeState> axion_kernel_bootstrap(
   return state;
 }
 
-std::optional<sched::Tid> axion_kernel_spawn_thread(
-    KernelRuntimeState& state,
-    sched::TiscContext ctx) noexcept {
+std::optional<sched::Tid> axion_kernel_spawn_thread(KernelRuntimeState& state,
+                                                    sched::TiscContext ctx) noexcept {
   auto* group = create_process_group(state);
   auto* supervisor = create_supervisor(state);
   auto* address_space = group ? create_address_space(state, group->id) : nullptr;
@@ -269,11 +259,10 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
   auto tid = state.scheduler.spawn(std::move(ctx));
   if (tid.has_value()) {
     state.ipc_bus.register_thread(*tid);
-    state.thread_runtime.emplace(*tid,
-                                 KernelRuntimeState::ThreadRuntimeState{
-                                     .tid = *tid,
-                                     .process_group_id = group->id,
-                                 });
+    KernelRuntimeState::ThreadRuntimeState thread_state;
+    thread_state.tid = *tid;
+    thread_state.process_group_id = group->id;
+    state.thread_runtime.emplace(*tid, std::move(thread_state));
     assign_thread_to_group(state, *tid, group->id);
     assign_group_to_supervisor(state, group->id, supervisor->id);
     assign_group_to_address_space(state, group->id, address_space->id);
@@ -286,29 +275,24 @@ std::optional<sched::Tid> axion_kernel_spawn_thread(
 }
 
 std::optional<sched::Tid> axion_kernel_spawn_thread_in_group(
-    KernelRuntimeState& state,
-    sched::TiscContext ctx,
-    ProcessGroupId process_group_id) noexcept {
+    KernelRuntimeState& state, sched::TiscContext ctx, ProcessGroupId process_group_id) noexcept {
   if (!state.find_process_group(process_group_id)) {
     return std::nullopt;
   }
   auto tid = state.scheduler.spawn(std::move(ctx));
   if (tid.has_value()) {
     state.ipc_bus.register_thread(*tid);
-    state.thread_runtime.emplace(*tid,
-                                 KernelRuntimeState::ThreadRuntimeState{
-                                     .tid = *tid,
-                                     .process_group_id = process_group_id,
-                                 });
+    KernelRuntimeState::ThreadRuntimeState thread_state;
+    thread_state.tid = *tid;
+    thread_state.process_group_id = process_group_id;
+    state.thread_runtime.emplace(*tid, std::move(thread_state));
     assign_thread_to_group(state, *tid, process_group_id);
   }
   return tid;
 }
 
 std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
-    KernelRuntimeState& state,
-    sched::TiscContext ctx,
-    SupervisorId supervisor_id) noexcept {
+    KernelRuntimeState& state, sched::TiscContext ctx, SupervisorId supervisor_id) noexcept {
   if (!state.find_supervisor(supervisor_id)) {
     return std::nullopt;
   }
@@ -327,11 +311,10 @@ std::optional<sched::Tid> axion_kernel_spawn_thread_under_supervisor(
     return std::nullopt;
   }
   state.ipc_bus.register_thread(*tid);
-  state.thread_runtime.emplace(*tid,
-                               KernelRuntimeState::ThreadRuntimeState{
-                                   .tid = *tid,
-                                   .process_group_id = group->id,
-                               });
+  KernelRuntimeState::ThreadRuntimeState thread_state;
+  thread_state.tid = *tid;
+  thread_state.process_group_id = group->id;
+  state.thread_runtime.emplace(*tid, std::move(thread_state));
   assign_thread_to_group(state, *tid, group->id);
   if (!assign_group_to_supervisor(state, group->id, supervisor_id)) {
     state.thread_runtime.erase(*tid);

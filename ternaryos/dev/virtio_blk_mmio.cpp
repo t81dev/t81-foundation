@@ -19,6 +19,7 @@
 
 #include "virtio_blk_mmio.hpp"
 
+#include <atomic>
 #include <cstring>
 
 namespace t81::ternaryos::dev {
@@ -31,24 +32,25 @@ namespace t81::ternaryos::dev {
 namespace {
 
 inline void mmio_wr32(uint64_t base, uint32_t off, uint32_t v) noexcept {
-#if !defined(T81_TERNARYOS_HOSTED_BUILD) && \
+#if !defined(T81_TERNARYOS_HOSTED_BUILD) &&           \
     ((defined(__aarch64__) && !defined(__APPLE__)) || \
-     (defined(__x86_64__)  && !defined(_WIN32) && !defined(__APPLE__)))
-  *reinterpret_cast<volatile uint32_t*>(
-      static_cast<uintptr_t>(base + off)) = v;
+     (defined(__x86_64__) && !defined(_WIN32) && !defined(__APPLE__)))
+  *reinterpret_cast<volatile uint32_t*>(static_cast<uintptr_t>(base + off)) = v;
 #else
-  (void)base; (void)off; (void)v;
+  (void)base;
+  (void)off;
+  (void)v;
 #endif
 }
 
 inline uint32_t mmio_rd32(uint64_t base, uint32_t off) noexcept {
-#if !defined(T81_TERNARYOS_HOSTED_BUILD) && \
+#if !defined(T81_TERNARYOS_HOSTED_BUILD) &&           \
     ((defined(__aarch64__) && !defined(__APPLE__)) || \
-     (defined(__x86_64__)  && !defined(_WIN32) && !defined(__APPLE__)))
-  return *reinterpret_cast<const volatile uint32_t*>(
-      static_cast<uintptr_t>(base + off));
+     (defined(__x86_64__) && !defined(_WIN32) && !defined(__APPLE__)))
+  return *reinterpret_cast<const volatile uint32_t*>(static_cast<uintptr_t>(base + off));
 #else
-  (void)base; (void)off;
+  (void)base;
+  (void)off;
   return 0u;
 #endif
 }
@@ -59,7 +61,7 @@ inline void mem_barrier() noexcept {
 #elif defined(__x86_64__) && !defined(_WIN32)
   __asm__ volatile("mfence" ::: "memory");
 #else
-  __asm__ volatile("" ::: "memory");
+  std::atomic_signal_fence(std::memory_order_seq_cst);
 #endif
 }
 
@@ -75,9 +77,9 @@ inline uint64_t phys(const void* p) noexcept {
 
 bool VirtioBlkMmioDevice::probe(uint64_t base, VirtioBlkMmioDevice& dev) noexcept {
   // 1. Verify magic and device type.
-  if (mmio_rd32(base, kVirtioMagic)    != 0x74726976u) return false;  // 'virt'
-  if (mmio_rd32(base, kVirtioVersion)  != 2u)          return false;  // modern
-  if (mmio_rd32(base, kVirtioDeviceId) != 2u)          return false;  // block
+  if (mmio_rd32(base, kVirtioMagic) != 0x74726976u) return false;  // 'virt'
+  if (mmio_rd32(base, kVirtioVersion) != 2u) return false;         // modern
+  if (mmio_rd32(base, kVirtioDeviceId) != 2u) return false;        // block
 
   dev.mmio_base_ = base;
 
@@ -93,8 +95,7 @@ bool VirtioBlkMmioDevice::probe(uint64_t base, VirtioBlkMmioDevice& dev) noexcep
   mmio_wr32(base, kVirtioDrvFeatSel, 0u);
   mmio_wr32(base, kVirtioDrvFeatures, 0u);
 
-  mmio_wr32(base, kVirtioStatus,
-            kVirtioStatusACK | kVirtioStatusDriver | kVirtioStatusFeatOK);
+  mmio_wr32(base, kVirtioStatus, kVirtioStatusACK | kVirtioStatusDriver | kVirtioStatusFeatOK);
   mem_barrier();
 
   if (!(mmio_rd32(base, kVirtioStatus) & kVirtioStatusFeatOK)) {
@@ -116,29 +117,27 @@ bool VirtioBlkMmioDevice::probe(uint64_t base, VirtioBlkMmioDevice& dev) noexcep
     return false;
   }
 
-  const uint32_t qsize = (kQueueSize < static_cast<int>(qmax))
-                             ? static_cast<uint32_t>(kQueueSize)
-                             : qmax;
+  const uint32_t qsize =
+      (kQueueSize < static_cast<int>(qmax)) ? static_cast<uint32_t>(kQueueSize) : qmax;
   mmio_wr32(base, kVirtioQueueNum, qsize);
 
   // Zero-initialise rings before telling device about them.
-  std::memset(dev.desc_,  0, sizeof(dev.desc_));
+  std::memset(dev.desc_, 0, sizeof(dev.desc_));
   std::memset(&dev.avail_, 0, sizeof(dev.avail_));
-  std::memset(&dev.used_,  0, sizeof(dev.used_));
+  std::memset(&dev.used_, 0, sizeof(dev.used_));
   dev.next_avail_ = 0;
 
-  mmio_wr32(base, kVirtioQueueDescLow,  static_cast<uint32_t>(phys(dev.desc_)));
+  mmio_wr32(base, kVirtioQueueDescLow, static_cast<uint32_t>(phys(dev.desc_)));
   mmio_wr32(base, kVirtioQueueDescHigh, static_cast<uint32_t>(phys(dev.desc_) >> 32));
-  mmio_wr32(base, kVirtioQueueDrvLow,   static_cast<uint32_t>(phys(&dev.avail_)));
-  mmio_wr32(base, kVirtioQueueDrvHigh,  static_cast<uint32_t>(phys(&dev.avail_) >> 32));
-  mmio_wr32(base, kVirtioQueueDevLow,   static_cast<uint32_t>(phys(&dev.used_)));
-  mmio_wr32(base, kVirtioQueueDevHigh,  static_cast<uint32_t>(phys(&dev.used_) >> 32));
+  mmio_wr32(base, kVirtioQueueDrvLow, static_cast<uint32_t>(phys(&dev.avail_)));
+  mmio_wr32(base, kVirtioQueueDrvHigh, static_cast<uint32_t>(phys(&dev.avail_) >> 32));
+  mmio_wr32(base, kVirtioQueueDevLow, static_cast<uint32_t>(phys(&dev.used_)));
+  mmio_wr32(base, kVirtioQueueDevHigh, static_cast<uint32_t>(phys(&dev.used_) >> 32));
   mmio_wr32(base, kVirtioQueueReady, 1u);
 
   // 7. DRIVER_OK — device is live.
   mmio_wr32(base, kVirtioStatus,
-            kVirtioStatusACK | kVirtioStatusDriver |
-            kVirtioStatusFeatOK | kVirtioStatusDriverOK);
+            kVirtioStatusACK | kVirtioStatusDriver | kVirtioStatusFeatOK | kVirtioStatusDriverOK);
   mem_barrier();
 
   dev.ready_ = true;
@@ -149,10 +148,10 @@ bool VirtioBlkMmioDevice::probe(uint64_t base, VirtioBlkMmioDevice& dev) noexcep
 
 BlockDeviceInfo VirtioBlkMmioDevice::info() const noexcept {
   return BlockDeviceInfo{
-      .total_blocks     = total_sectors_ / kSectorsPerBlock,
+      .total_blocks = total_sectors_ / kSectorsPerBlock,
       .block_size_bytes = kBlockSize,
-      .read_only        = false,
-      .device_id        = "virtio-blk-mmio",
+      .read_only = false,
+      .device_id = "virtio-blk-mmio",
   };
 }
 
@@ -174,31 +173,31 @@ bool VirtioBlkMmioDevice::submit_and_wait(uint32_t type, uint64_t lba) const noe
   if (!ready_) return false;
 
   // Fill request header.
-  req_hdr_.type     = type;
+  req_hdr_.type = type;
   req_hdr_.reserved = 0u;
-  req_hdr_.sector   = lba * kSectorsPerBlock;
-  req_status_       = 0xFFu;  // sentinel — device overwrites on completion
+  req_hdr_.sector = lba * kSectorsPerBlock;
+  req_status_ = 0xFFu;  // sentinel — device overwrites on completion
 
   // Descriptor 0: request header (device reads).
   const int d0 = 0, d1 = 1, d2 = 2;
   auto& dd = const_cast<VirtioBlkMmioDevice*>(this)->desc_;
 
-  dd[d0].addr  = phys(&req_hdr_);
-  dd[d0].len   = sizeof(req_hdr_);
+  dd[d0].addr = phys(&req_hdr_);
+  dd[d0].len = sizeof(req_hdr_);
   dd[d0].flags = kVirtqDescFNext;
-  dd[d0].next  = static_cast<uint16_t>(d1);
+  dd[d0].next = static_cast<uint16_t>(d1);
 
   // Descriptor 1: data buffer (device reads for write, writes for read).
-  dd[d1].addr  = phys(data_buf_);
-  dd[d1].len   = static_cast<uint32_t>(kSectorsPerBlock * kPhysSectorBytes);
+  dd[d1].addr = phys(data_buf_);
+  dd[d1].len = static_cast<uint32_t>(kSectorsPerBlock * kPhysSectorBytes);
   dd[d1].flags = kVirtqDescFNext | (type == kVirtioBlkRead ? kVirtqDescFWrite : 0u);
-  dd[d1].next  = static_cast<uint16_t>(d2);
+  dd[d1].next = static_cast<uint16_t>(d2);
 
   // Descriptor 2: status byte (device always writes).
-  dd[d2].addr  = phys(&req_status_);
-  dd[d2].len   = 1u;
+  dd[d2].addr = phys(&req_status_);
+  dd[d2].len = 1u;
   dd[d2].flags = kVirtqDescFWrite;
-  dd[d2].next  = 0u;
+  dd[d2].next = 0u;
 
   mem_barrier();
 
