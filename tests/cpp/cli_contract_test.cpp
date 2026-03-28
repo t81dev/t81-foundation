@@ -1511,9 +1511,13 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"hidden_tensor_carry_mode_kind\": \"architecture_state_evolved_hidden_tensor_feedback.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
+                            "\"hidden_tensor_summary\": {"));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kv_state_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_hidden_tensor_signature_sha256\": \""));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
+                            "\"feedback_steps\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_kv_state_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,

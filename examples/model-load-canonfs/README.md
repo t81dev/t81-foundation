@@ -124,6 +124,7 @@ Expected result:
 - `kv_state_summary.kind: "bounded_qk_tensor_state.v1"`
 - `final_kv_state_signature_sha256` is present
 - `kv_state_summary.feedback_steps: ...`
+- `hidden_tensor_summary.feedback_steps: ...`
 - architecture-state stability now also participates in bounded recovery
   decisions
 - later carried hidden-tensor evolution reports

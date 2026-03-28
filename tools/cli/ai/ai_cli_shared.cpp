@@ -3296,6 +3296,7 @@ int cmd_inference_run(const Options& opts) {
         bool intermediate_tensor_export_supported = false;
         bool intermediate_tensor_import_used = false;
         bool intermediate_tensor_blend_used = false;
+        std::size_t hidden_tensor_feedback_steps = 0;
         std::size_t max_hidden_tensor_rank = 0;
         std::size_t max_hidden_tensor_elements = 0;
         std::string final_hidden_tensor_signature_sha256;
@@ -3324,6 +3325,10 @@ int cmd_inference_run(const Options& opts) {
               intermediate_tensor_import_used || step.hidden_tensor_import_used;
           intermediate_tensor_blend_used =
               intermediate_tensor_blend_used || step.hidden_tensor_blend_used;
+          if (step.hidden_tensor_carry_mode_kind != "current_only.v1" &&
+              step.hidden_tensor_carry_mode_kind != "unavailable") {
+            ++hidden_tensor_feedback_steps;
+          }
           max_hidden_tensor_rank =
               std::max(max_hidden_tensor_rank, step.hidden_tensor_rank);
           max_hidden_tensor_elements =
@@ -3454,9 +3459,12 @@ int cmd_inference_run(const Options& opts) {
               << "    \"max_elements\": " << max_hidden_tensor_elements << ",\n"
               << "    \"final_hidden_tensor_signature_sha256\": \""
               << final_hidden_tensor_signature_sha256 << "\",\n"
+              << "    \"feedback_steps\": " << hidden_tensor_feedback_steps << ",\n"
               << "    \"summary\": \""
               << json_escape(intermediate_tensor_export_supported
-                                 ? "native probes exported intermediate hidden-tensor evidence from live VM state"
+                                 ? "native probes exported intermediate hidden-tensor evidence from live VM state and carried it forward across " +
+                                       std::to_string(hidden_tensor_feedback_steps) +
+                                       " feedback steps"
                                  : "native probes did not export intermediate hidden-tensor evidence")
               << "\"\n"
               << "  },\n"

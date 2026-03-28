@@ -132,6 +132,9 @@ Readiness example coverage today:
   - top-level `architecture_state_summary` now also reports `feedback_steps`,
     so callers can see how many later decode steps were actually
     architecture-state-led
+  - top-level `hidden_tensor_summary` now also reports `feedback_steps`, so
+    hidden-tensor carry depth is visible alongside the forward/KV/architecture
+    summaries
 - the remaining limitation is narrower now: this is a bounded compiled-literal
   carry path, not a general KV-cache or arbitrary intermediate-tensor import
   primitive
