@@ -158,6 +158,35 @@ Key observations from the current implementation:
       emits `generated_token_ids`, `generated_token_pieces`, and a compact
       `generated_text_preview`, so bounded native decode output is easier to
       inspect than raw token ids alone
+    - degraded bounded decode now uses a conservative
+      `generated_preview_policy`, clipping preview output to the first decoded
+      token piece instead of showing the full low-confidence preview
+    - degraded bounded decode now also uses a conservative `output_policy`,
+      suppressing the raw VM probe `output` and replacing it with an explicit
+      `output_summary`
+    - degraded bounded decode now also uses a conservative
+      `decode_trace_policy`, exposing boundary steps instead of the full trace
+      once later bounded steps are no longer equally trustworthy
+    - degraded bounded decode also switches `decode_trace_detail_policy` to a
+      summary-only view, keeping signatures and counts while suppressing later
+      raw evidence arrays in `decode_trace` and `final_decode_state`
+    - degraded bounded decode now also switches top-level
+      `logits_evidence_policy` to a summary-only view, keeping
+      `sampled_logits_count`, `sampled_logits_signature_sha256`, and
+      `selected_candidate` while suppressing the raw `sampled_logits` array
+    - degraded bounded decode now also switches `candidate_selection` to a
+      summary-only evidence view, keeping `candidate_window_count`,
+      `candidate_window_signature_sha256`, and other metadata while
+      suppressing raw `window_ids` and prompt-token id arrays
+    - degraded bounded decode now also emits a compact
+      `degraded_artifact_summary` so callers can see, in one place, which
+      evidence surfaces were clipped or suppressed
+    - the top-level payload now also emits a compact `readiness` block so
+      callers can judge, at a glance, whether the bounded native lane ended in
+      a `ready`, `guarded`, or `degraded` posture
+    - the top-level payload now also emits `bounded_decode_health`, and the
+      overall `status` can degrade from `pass` to `degraded` when bounded
+      native decode exhausts repeated weak or unavailable recovery steps
     - the hidden-state class now also conditions the bounded sample width for
       later decode steps, surfaced as `sample_window_kind` and
       `sample_window_used`

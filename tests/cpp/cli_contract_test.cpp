@@ -1221,12 +1221,13 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"probe_kind\": \"llama_qk_projection\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"has_config_json\": false"));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"has_tokenizer_json\": false"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"readiness\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"kind\": \"ready\""));
     T81_TEST_CHECK(
         contains(ai_result.stdout_text, "\"lhs\": \"model.layers.0.self_attn.q_proj.weight\""));
     T81_TEST_CHECK(
         contains(ai_result.stdout_text, "\"rhs\": \"model.layers.0.self_attn.k_proj.weight\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output\": \"<tensor#1>\""));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_ids\": ["));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_tokens\": 1"));
 
     std::error_code ignore_ec;
@@ -1299,14 +1300,17 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"tokenizer_seed_supported\": true"));
     T81_TEST_CHECK(contains(ai_result.stdout_text,
                             "\"basis\": \"tokenizer_prompt_history_contiguous_window.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"evidence_policy\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"vocab_size\": 64"));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"prompt_token_history_token_ids\": ["));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"prompt_token_history_count\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"seed_token_id\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"window_start\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"window_end\": "));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"window_ids\": ["));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sampled_logits\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_window_count\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_window_signature_sha256\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"logits_evidence_policy\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sampled_logits_count\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sampled_logits_signature_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"selected_candidate\": {\"token_id\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"stateful_decode_supported\": false"));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"requested_max_tokens\": 2"));
@@ -1314,6 +1318,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"recovery_triggered\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"recovery_steps\": ["));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"weak_steps\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"bounded_decode_health\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"readiness\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"confidence_envelope\": \"bounded_native_probe.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_trace_policy\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_trace_truncated\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_trace_detail_policy\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"termination_reason\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_trace\": ["));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"step\": 0"));
@@ -1332,30 +1342,37 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_window_used\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"input_token_id\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_anchor_token_id\": "));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_history_token_ids\": ["));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"combined_history_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"evidence_visibility\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_history_count\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"combined_history_count\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_history_window\": 3"));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_history_token_ids\": ["));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"consumed_hidden_projection_row_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_history_count\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"consumed_hidden_projection_count\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"seed_token_id\": "));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_row_ids\": ["));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_scores\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_count\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_signature_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"projection_carry_mode_kind\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_state_class\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_state_class_signature_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"state_rationale\": {"));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"stability\": {"));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_row_ids\": ["));
-    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_scores\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_count\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_signature_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"carry_probe_layout_kind\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"state_seed_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_window_seed_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"final_decode_state\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"degraded_artifact_summary\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_selection_evidence_policy\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"logits_evidence_policy\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_trace_detail_policy\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output_policy\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output_summary\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_preview_policy\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_pieces\": ["));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_text_preview\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"status\": "));
 
     std::error_code ignore_ec;
     fs::remove_all(model_dir, ignore_ec);

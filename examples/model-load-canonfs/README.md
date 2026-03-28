@@ -33,6 +33,37 @@ cmake --build build --target t81 t81_make_demo_model t81_make_demo_safetensors t
 - [03_matmul_weights.t81](/Users/t81dev/Code/t81-foundation/tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81)
   loads those tensors via `std.tensor.load(...)`
 
+## Healthy AI Probe Path
+
+This is the smallest healthy `t81 ai inference run` lane in the repo. It does
+not exercise the bounded logits/decode path, so it stays in a simple `ready`
+posture instead of falling into degraded evidence shaping.
+
+```bash
+tmp_root="$(mktemp -d)"
+model_path="$tmp_root/ready-demo.t81w"
+
+build/t81_make_demo_model "$model_path"
+build/t81 ai inference run \
+  --model ready-demo \
+  --model-file "$model_path" \
+  --mode strict_deterministic \
+  --prompt hello
+```
+
+Expected result:
+
+- `status: "pass"`
+- `readiness.kind: "ready"`
+- `termination_reason: "no_logits_row_probe"`
+- `output: "<tensor#1>"`
+
+The same path is also wrapped in:
+
+```bash
+bash examples/model-load-canonfs/run_ready_ai_probe.sh
+```
+
 ## Real Weights Import Path
 
 This is the smallest source-format example in the repo. It uses a generated
