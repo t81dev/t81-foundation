@@ -70,6 +70,9 @@ Readiness example coverage today:
   top-level confidence envelope now upgrades to
   `bounded_deep_architecture_state_probe.v1` and reports
   `architecture_state_deep_feedback_used: true`
+- when a run reaches that bounded deep architecture-state horizon and stops at
+  the current 4-step ceiling, `termination_reason` now reports
+  `deep_architecture_state_horizon_reached`
 - the top-level payload now also emits a compact `forward_state_summary`, so
   callers can see max generation depth and carried-state usage without walking
   the full trace

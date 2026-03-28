@@ -1568,6 +1568,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"decode_trace_full_steps\": 4"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"termination_reason\": \"deep_architecture_state_horizon_reached\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"hidden_tensor_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"feedback_steps\": 3"));

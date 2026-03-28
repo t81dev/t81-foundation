@@ -3464,6 +3464,11 @@ int cmd_inference_run(const Options& opts) {
           guarded_bounded_decode = false;
         }
         generated_tokens = decode_steps.size();
+        if (termination_reason == "max_tokens_reached" &&
+            architecture_state_deep_feedback_used &&
+            generated_tokens == decode_limit && decode_limit == kBoundedDecodeTraceSteps) {
+          termination_reason = "deep_architecture_state_horizon_reached";
+        }
         const bool guarded_artifact_caution = bounded_decode_health_kind == "guarded";
         confidence_envelope =
             architecture_state_deep_feedback_used

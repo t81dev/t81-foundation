@@ -97,6 +97,8 @@ The fourth decode step now takes a deeper architecture-state-led control path
 instead of reusing the same mode as step three.
 When that happens, the top-level readiness/health envelope upgrades to
 `bounded_deep_architecture_state_probe.v1`.
+At the current bounded 4-step ceiling, the run now ends with
+`termination_reason: "deep_architecture_state_horizon_reached"`.
 
 ```bash
 MAX_TOKENS=4 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
