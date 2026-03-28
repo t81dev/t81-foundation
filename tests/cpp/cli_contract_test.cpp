@@ -1555,6 +1555,37 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"transition_kind\": \"forward_state_feedback_state_transition.v1\""));
 
+    const auto forward_state_four_step_result =
+        run_cli_with_timeout(t81_bin,
+                             {"ai", "inference", "run", "--model", "contract-forward-state-demo",
+                              "--model-file", forward_state_model_path.string(), "--mode",
+                              "strict_deterministic", "--prompt", "greet_hello", "--max-tokens",
+                              "4"},
+                             std::chrono::seconds(60));
+
+    T81_TEST_CHECK(forward_state_four_step_result.exit_code == 0);
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"generated_tokens\": 4"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"decode_trace_full_steps\": 4"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"hidden_tensor_summary\": {"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"feedback_steps\": 3"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"kv_state_summary\": {"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"feedback_steps\": 4"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"architecture_state_summary\": {"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"feedback_steps\": 2"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"transition_kind\": \"architecture_state_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"decode_mode_kind\": \"architecture_state_feedback_projection.v1\""));
+
     const fs::path degraded_model_path = model_dir / "contract-degraded-demo.t81w";
     const fs::path degraded_tokenizer_path = model_dir / "tokenizer.json";
     t81::weights::NativeModel degraded_model;

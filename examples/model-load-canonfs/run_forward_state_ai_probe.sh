@@ -6,7 +6,7 @@ cd "$repo_root"
 
 tmp_root="$(mktemp -d)"
 prompt="${PROMPT:-greet_hello}"
-max_tokens="${MAX_TOKENS:-2}"
+max_tokens="${MAX_TOKENS:-4}"
 
 build/t81_make_guarded_llama_demo "$tmp_root" >/dev/null
 

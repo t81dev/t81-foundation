@@ -88,21 +88,21 @@ Expected result:
 ## Forward-State AI Probe Path
 
 This is the smallest checked-in multi-step forward-state example. It runs the
-same tiny synthetic Llama-shaped model for three decode steps and now proves a
+same tiny synthetic Llama-shaped model for four decode steps and now proves a
 bounded carried hidden-tensor path, not just row-derived forward-state
 summaries. Later decode steps reimport a bounded hidden tensor through the
 compiled tensor-pool path, expose bounded q/k signature state, and now carry a
 combined bounded architecture-state object through the `ready` envelope.
 
 ```bash
-MAX_TOKENS=3 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
+MAX_TOKENS=4 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
 ```
 
 Expected result:
 
 - `status: "pass"`
 - `readiness.kind: "ready"`
-- `generated_tokens: 3`
+- `generated_tokens: 4`
 - `true_state_carry_supported: true`
 - `state_carry_limitations.kind: "bounded_intermediate_tensor_literal_import.v1"`
 - `intermediate_tensor_import_used: true`

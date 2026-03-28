@@ -52,10 +52,12 @@ Readiness example coverage today:
   previous forward-state signature into later-step state evolution, so it is no
   longer overwritten as a purely single-step snapshot
 - the carried `forward_state` now also persists bounded prior rows with decay,
-  ranks and trims them intentionally, and exposes a runnable 3-step evolution
+  ranks and trims them intentionally, and exposes a runnable 4-step evolution
   path through
   [run_forward_state_ai_probe.sh](/Users/t81dev/Code/t81-foundation/examples/model-load-canonfs/run_forward_state_ai_probe.sh)
-- that 3-step path now also has a visibly different third-step control mode:
+- that forward-state path now also has visibly different later control modes,
+  including an architecture-state-led fourth-step continuation beyond the
+  earlier 3-step ceiling:
   `forward_state_history_feedback_state_transition.v1`,
   `forward_state_history_projection.v1`, and
   `prefer_tail_nonnegative_else_max.v1`

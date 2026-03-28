@@ -35,7 +35,7 @@ constexpr std::string_view kPolicyAllowReason = "AI_POLICY_ALLOW_MODEL_HASH_MATC
 constexpr std::size_t kLogitsSampleWindow = 8;
 constexpr std::size_t kHiddenCarryProbeWidth = 4;
 constexpr std::size_t kHiddenCarryProjectionWidth = 2;
-constexpr std::size_t kBoundedDecodeTraceSteps = 3;
+constexpr std::size_t kBoundedDecodeTraceSteps = 4;
 constexpr std::size_t kDecodeContextHistoryWindow = 3;
 
 std::string json_escape(std::string_view text) {
