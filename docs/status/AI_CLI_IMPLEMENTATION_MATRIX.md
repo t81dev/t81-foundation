@@ -129,6 +129,9 @@ Readiness example coverage today:
     path, and that evolved KV signature feeds the combined architecture state
   - top-level `kv_state_summary` now also reports `feedback_steps`, so the
     bounded Q/K carry depth is visible without reading the full decode trace
+  - top-level `architecture_state_summary` now also reports `feedback_steps`,
+    so callers can see how many later decode steps were actually
+    architecture-state-led
 - the remaining limitation is narrower now: this is a bounded compiled-literal
   carry path, not a general KV-cache or arbitrary intermediate-tensor import
   primitive

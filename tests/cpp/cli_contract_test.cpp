@@ -1525,6 +1525,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"architecture_state_class\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
+                            "\"feedback_steps\": "));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"architecture_state_confidence_score\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"architecture_state_stability_kind\": \""));

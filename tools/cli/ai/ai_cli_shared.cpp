@@ -3308,6 +3308,7 @@ int cmd_inference_run(const Options& opts) {
         std::string final_architecture_state_signature_sha256;
         std::string final_architecture_state_class;
         double max_architecture_state_confidence = 0.0;
+        std::size_t architecture_state_feedback_steps = 0;
         final_architecture_state_stability_kind = "unclassified";
         for (const auto& step : decode_steps) {
           max_forward_state_generation =
@@ -3342,6 +3343,9 @@ int cmd_inference_run(const Options& opts) {
                          step.architecture_state_confidence_score);
             final_architecture_state_stability_kind =
                 step.architecture_state_stability_kind;
+          }
+          if (step.transition_kind == "architecture_state_feedback_state_transition.v1") {
+            ++architecture_state_feedback_steps;
           }
           if (step.transition_kind.find("forward_state_feedback_state_transition.v1") !=
                   std::string::npos ||
@@ -3479,7 +3483,10 @@ int cmd_inference_run(const Options& opts) {
               << "    \"max_confidence_score\": " << max_architecture_state_confidence << ",\n"
               << "    \"final_stability_kind\": \""
               << json_escape(final_architecture_state_stability_kind) << "\",\n"
-              << "    \"summary\": \"native probes carried a bounded combined architecture state across hidden-tensor, q/k, and forward-state evidence\"\n"
+              << "    \"feedback_steps\": " << architecture_state_feedback_steps << ",\n"
+              << "    \"summary\": \"native probes carried a bounded combined architecture state across hidden-tensor, q/k, and forward-state evidence through "
+              << architecture_state_feedback_steps
+              << " architecture-state-led feedback steps\"\n"
               << "  },\n"
               << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
               << "  \"stability_recovery_exhausted\": "

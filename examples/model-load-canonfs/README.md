@@ -110,6 +110,7 @@ Expected result:
 - `architecture_state_summary.kind: "bounded_hidden_tensor_qk_forward_state.v1"`
 - `final_architecture_state_signature_sha256: ...`
 - `architecture_state_summary.max_confidence_score: ...`
+- `architecture_state_summary.feedback_steps: ...`
 - later steps and `final_decode_state` now expose
   `architecture_state_confidence_score` and
   `architecture_state_stability_kind`
