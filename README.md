@@ -14,6 +14,7 @@ Bit-exact reproducibility • Pre-side-effect policy enforcement • Ternary-wei
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/t81dev/t81-foundation)
 
 ## What T81 is
 
