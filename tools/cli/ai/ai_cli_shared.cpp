@@ -1642,6 +1642,59 @@ std::vector<int> lookup_tokenizer_prompt_token_ids(const fs::path& tokenizer_pat
   return matched_tokens;
 }
 
+std::unordered_map<int, std::string> parse_inverse_vocab_map(std::string_view vocab_json) {
+  std::unordered_map<int, std::string> inverse_vocab;
+  const auto vocab = parse_vocab_map(vocab_json);
+  for (const auto& [piece, id] : vocab) {
+    inverse_vocab.emplace(id, piece);
+  }
+  return inverse_vocab;
+}
+
+std::vector<std::string> lookup_tokenizer_token_pieces(const fs::path& tokenizer_path,
+                                                       const std::vector<int>& token_ids) {
+  std::ifstream in(tokenizer_path, std::ios::binary);
+  if (!in) {
+    return {};
+  }
+  std::ostringstream buffer;
+  buffer << in.rdbuf();
+  const std::string text = buffer.str();
+  const auto model_json = extract_json_object_field(text, "model");
+  if (!model_json) {
+    return {};
+  }
+  const auto vocab_json = extract_json_object_field(*model_json, "vocab");
+  if (!vocab_json) {
+    return {};
+  }
+  const auto inverse_vocab = parse_inverse_vocab_map(*vocab_json);
+  std::vector<std::string> pieces;
+  pieces.reserve(token_ids.size());
+  for (int token_id : token_ids) {
+    const auto it = inverse_vocab.find(token_id);
+    if (it != inverse_vocab.end()) {
+      pieces.push_back(it->second);
+    } else {
+      pieces.push_back("<unk:" + std::to_string(token_id) + ">");
+    }
+  }
+  return pieces;
+}
+
+std::string render_token_piece_preview(const std::vector<std::string>& token_pieces) {
+  std::string preview;
+  for (const auto& piece : token_pieces) {
+    if (piece.rfind("\xE2\x96\x81", 0) == 0) {
+      preview.push_back(' ');
+      preview.append(piece.substr(3));
+    } else {
+      preview.append(piece);
+    }
+  }
+  return preview;
+}
+
 void populate_sampled_logits(NativeProbeResult& result) {
   if (!result.logits_row_probe_supported) {
     return;
@@ -2198,6 +2251,7 @@ int cmd_inference_run(const Options& opts) {
       }
       std::size_t generated_tokens = 1;
       std::string termination_reason = "single_probe_only";
+      std::vector<int> top_level_generated_token_ids;
       if (probe.selected_token_id.has_value() && probe.logits_row_probe_supported) {
         struct DecodeStep {
           std::size_t step = 0;
@@ -2626,6 +2680,7 @@ int cmd_inference_run(const Options& opts) {
         extra << "  ],\n";
         if (!decode_steps.empty()) {
           const auto& final_step = decode_steps.back();
+          top_level_generated_token_ids = final_step.generated_token_history_token_ids;
           extra << "  \"final_decode_state\": {\n"
                 << "    \"state_kind\": \"" << json_escape(final_step.state_kind) << "\",\n"
                 << "    \"transition_kind\": \"" << json_escape(final_step.transition_kind)
@@ -2759,8 +2814,42 @@ int cmd_inference_run(const Options& opts) {
               << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
               << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n";
       }
+      if (generated_tokens == 1 && probe.selected_token_id.has_value()) {
+        top_level_generated_token_ids = {*probe.selected_token_id};
+      }
+      std::vector<std::string> top_level_generated_token_pieces;
+      std::string top_level_generated_text_preview;
+      if (companions.has_tokenizer && !top_level_generated_token_ids.empty()) {
+        top_level_generated_token_pieces =
+            lookup_tokenizer_token_pieces(companions.tokenizer_path, top_level_generated_token_ids);
+        top_level_generated_text_preview =
+            render_token_piece_preview(top_level_generated_token_pieces);
+      }
       extra << "  \"output\": \"" << json_escape(probe.stdout_text) << "\",\n"
-            << "  \"generated_tokens\": " << generated_tokens << ",\n";
+            << "  \"generated_token_ids\": [";
+      for (std::size_t j = 0; j < top_level_generated_token_ids.size(); ++j) {
+        if (j != 0) {
+          extra << ", ";
+        }
+        extra << top_level_generated_token_ids[j];
+      }
+      extra << "]";
+      if (!top_level_generated_token_pieces.empty()) {
+        extra << ",\n"
+              << "  \"generated_token_pieces\": [";
+        for (std::size_t j = 0; j < top_level_generated_token_pieces.size(); ++j) {
+          if (j != 0) {
+            extra << ", ";
+          }
+          extra << "\"" << json_escape(top_level_generated_token_pieces[j]) << "\"";
+        }
+        extra << "],\n"
+              << "  \"generated_text_preview\": \""
+              << json_escape(top_level_generated_text_preview) << "\",\n";
+      } else {
+        extra << ",\n";
+      }
+      extra << "  \"generated_tokens\": " << generated_tokens << ",\n";
     } else {
       extra << ",\n";
       extra << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"

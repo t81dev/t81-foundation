@@ -1226,6 +1226,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(ai_result.stdout_text, "\"rhs\": \"model.layers.0.self_attn.k_proj.weight\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output\": \"<tensor#1>\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_ids\": ["));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_tokens\": 1"));
 
     std::error_code ignore_ec;
@@ -1352,6 +1353,9 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"state_seed_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_window_seed_sha256\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"final_decode_state\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_pieces\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_text_preview\": "));
 
     std::error_code ignore_ec;
     fs::remove_all(model_dir, ignore_ec);

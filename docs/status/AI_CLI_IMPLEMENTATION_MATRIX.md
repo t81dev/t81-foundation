@@ -154,6 +154,10 @@ Key observations from the current implementation:
       intentionally instead of pretending confidence held, surfaced as
       `stability_recovery_exhausted`, `weak_steps`, and
       `termination_reason: "stability_recovery_exhausted"`
+    - when a companion tokenizer is present, the top-level payload now also
+      emits `generated_token_ids`, `generated_token_pieces`, and a compact
+      `generated_text_preview`, so bounded native decode output is easier to
+      inspect than raw token ids alone
     - the hidden-state class now also conditions the bounded sample width for
       later decode steps, surfaced as `sample_window_kind` and
       `sample_window_used`
