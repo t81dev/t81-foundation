@@ -66,6 +66,10 @@ Readiness example coverage today:
   `architecture_state_deep_feedback_state_transition.v1`,
   `architecture_state_deep_feedback_window.v1`, and
   `architecture_state_deep_feedback_projection.v1`
+- when that deeper fourth-step architecture-state mode is actually reached, the
+  top-level confidence envelope now upgrades to
+  `bounded_deep_architecture_state_probe.v1` and reports
+  `architecture_state_deep_feedback_used: true`
 - the top-level payload now also emits a compact `forward_state_summary`, so
   callers can see max generation depth and carried-state usage without walking
   the full trace

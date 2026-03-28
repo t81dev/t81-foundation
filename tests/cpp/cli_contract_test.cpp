@@ -1578,6 +1578,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"architecture_state_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"confidence_envelope\": \"bounded_deep_architecture_state_probe.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"deep_feedback_used\": true"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"architecture_state_deep_feedback_used\": true"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"feedback_steps\": 2"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"transition_kind\": \"architecture_state_feedback_state_transition.v1\""));

@@ -3365,6 +3365,7 @@ int cmd_inference_run(const Options& opts) {
         std::string final_architecture_state_class;
         double max_architecture_state_confidence = 0.0;
         std::size_t architecture_state_feedback_steps = 0;
+        bool architecture_state_deep_feedback_used = false;
         final_architecture_state_stability_kind = "unclassified";
         for (const auto& step : decode_steps) {
           max_forward_state_generation =
@@ -3407,6 +3408,9 @@ int cmd_inference_run(const Options& opts) {
           if (step.transition_kind == "architecture_state_feedback_state_transition.v1" ||
               step.transition_kind == "architecture_state_deep_feedback_state_transition.v1") {
             ++architecture_state_feedback_steps;
+          }
+          if (step.transition_kind == "architecture_state_deep_feedback_state_transition.v1") {
+            architecture_state_deep_feedback_used = true;
           }
           if (step.transition_kind.find("forward_state_feedback_state_transition.v1") !=
                   std::string::npos ||
@@ -3461,9 +3465,11 @@ int cmd_inference_run(const Options& opts) {
         }
         generated_tokens = decode_steps.size();
         const bool guarded_artifact_caution = bounded_decode_health_kind == "guarded";
-        confidence_envelope = architecture_state_supported
-                                  ? "bounded_architecture_state_probe.v1"
-                                  : "bounded_native_probe.v1";
+        confidence_envelope =
+            architecture_state_deep_feedback_used
+                ? "bounded_deep_architecture_state_probe.v1"
+                : architecture_state_supported ? "bounded_architecture_state_probe.v1"
+                                               : "bounded_native_probe.v1";
         const std::string decode_trace_detail_policy =
             bounded_decode_health_kind == "degraded"
                 ? "summary_only_on_degraded.v1"
@@ -3547,6 +3553,8 @@ int cmd_inference_run(const Options& opts) {
               << "    \"max_confidence_score\": " << max_architecture_state_confidence << ",\n"
               << "    \"final_stability_kind\": \""
               << json_escape(final_architecture_state_stability_kind) << "\",\n"
+              << "    \"deep_feedback_used\": "
+              << (architecture_state_deep_feedback_used ? "true" : "false") << ",\n"
               << "    \"feedback_steps\": " << architecture_state_feedback_steps << ",\n"
               << "    \"summary\": \"native probes carried a bounded combined architecture state across hidden-tensor, q/k, and forward-state evidence through "
               << architecture_state_feedback_steps
@@ -3579,6 +3587,8 @@ int cmd_inference_run(const Options& opts) {
               << "\",\n"
               << "    \"architecture_state_supported\": "
               << (architecture_state_supported ? "true" : "false") << ",\n"
+              << "    \"architecture_state_deep_feedback_used\": "
+              << (architecture_state_deep_feedback_used ? "true" : "false") << ",\n"
               << "    \"architecture_state_stability_kind\": \""
               << json_escape(final_architecture_state_stability_kind) << "\",\n"
               << "    \"architecture_state_guardrail_triggered\": "
@@ -3609,6 +3619,8 @@ int cmd_inference_run(const Options& opts) {
               << "\",\n"
               << "    \"architecture_state_supported\": "
               << (architecture_state_supported ? "true" : "false") << ",\n"
+              << "    \"architecture_state_deep_feedback_used\": "
+              << (architecture_state_deep_feedback_used ? "true" : "false") << ",\n"
               << "    \"architecture_state_stability_kind\": \""
               << json_escape(final_architecture_state_stability_kind) << "\",\n"
               << "    \"architecture_state_guardrail_triggered\": "
@@ -4386,6 +4398,10 @@ int cmd_inference_run(const Options& opts) {
             << "\",\n"
             << "    \"architecture_state_supported\": "
             << (architecture_state_supported ? "true" : "false") << ",\n"
+            << "    \"architecture_state_deep_feedback_used\": "
+            << (confidence_envelope == "bounded_deep_architecture_state_probe.v1" ? "true"
+                                                                                   : "false")
+            << ",\n"
             << "    \"architecture_state_stability_kind\": \""
             << json_escape(final_architecture_state_stability_kind) << "\",\n"
             << "    \"architecture_state_guardrail_triggered\": "
@@ -4472,6 +4488,7 @@ int cmd_inference_run(const Options& opts) {
             << "    \"kind\": \"ready\",\n"
             << "    \"confidence_envelope\": \"bounded_native_probe.v1\",\n"
             << "    \"architecture_state_supported\": false,\n"
+            << "    \"architecture_state_deep_feedback_used\": false,\n"
             << "    \"architecture_state_stability_kind\": \"not_applicable_single_probe.v1\",\n"
             << "    \"architecture_state_guardrail_triggered\": false,\n"
             << "    \"candidate_selection_evidence_policy\": \"not_applicable_single_probe.v1\",\n"
