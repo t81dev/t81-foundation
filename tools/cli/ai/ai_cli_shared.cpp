@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -71,6 +72,13 @@ std::string sha3_hex_bytes(std::span<const std::uint8_t> bytes) {
 std::string sha3_hex_text(std::string_view text) {
   const auto* begin = reinterpret_cast<const std::uint8_t*>(text.data());
   return sha3_hex_bytes(std::span<const std::uint8_t>(begin, text.size()));
+}
+
+std::string tensor_signature_sha256(const t81::T729DynamicTensor& tensor) {
+  std::ostringstream out(std::ios::binary);
+  tensor.serialize(out);
+  const std::string bytes = out.str();
+  return sha3_hex_text(bytes);
 }
 
 std::string fingerprint_file(const fs::path& path) {
@@ -446,6 +454,15 @@ struct NativeProbeResult {
   std::string projection_carry_mode_kind = "balanced_context_projection.v1";
   std::string hidden_state_class;
   std::string hidden_state_class_signature_sha256;
+  bool intermediate_tensor_export_supported = false;
+  std::optional<int> hidden_tensor_handle;
+  std::size_t hidden_tensor_rank = 0;
+  std::size_t hidden_tensor_elements = 0;
+  std::string hidden_tensor_signature_sha256;
+  std::vector<int> hidden_tensor_shape;
+  bool hidden_tensor_import_used = false;
+  bool hidden_tensor_blend_used = false;
+  std::optional<t81::T729DynamicTensor> hidden_tensor;
   std::string selection_policy_kind = "max_score.v1";
   double confidence_score = 0.0;
   double logits_margin = 0.0;
@@ -651,6 +668,18 @@ struct NativeDecodeState {
   std::vector<int> hidden_projection_row_ids;
   std::vector<double> hidden_projection_scores;
   std::string hidden_projection_signature_sha256;
+  std::string forward_state_kind = "unavailable";
+  std::vector<int> forward_state_row_ids;
+  std::vector<double> forward_state_scores;
+  std::string forward_state_signature_sha256;
+  std::size_t forward_state_generation = 0;
+  std::string forward_state_class;
+  std::string forward_state_class_signature_sha256;
+  std::string hidden_tensor_signature_sha256;
+  std::size_t hidden_tensor_rank = 0;
+  std::size_t hidden_tensor_elements = 0;
+  std::vector<int> hidden_tensor_shape;
+  std::optional<t81::T729DynamicTensor> carried_hidden_tensor;
   std::string projection_carry_mode_kind = "balanced_context_projection.v1";
   std::string hidden_state_class;
   std::string hidden_state_class_signature_sha256;
@@ -675,6 +704,28 @@ std::vector<int> decode_context_history(const NativeDecodeState& state, std::siz
   return recent_context_history(context, max_tokens, state.prompt_anchor_token_id);
 }
 
+std::vector<int> merged_state_input_rows(const std::vector<int>& forward_state_row_ids,
+                                         const std::vector<int>& hidden_projection_row_ids,
+                                         std::size_t max_rows) {
+  std::vector<int> merged;
+  merged.reserve(std::min<std::size_t>(max_rows,
+                                       forward_state_row_ids.size() +
+                                           hidden_projection_row_ids.size()));
+  auto append_unique = [&](const std::vector<int>& rows) {
+    for (int row : rows) {
+      if (merged.size() >= max_rows) {
+        break;
+      }
+      if (std::find(merged.begin(), merged.end(), row) == merged.end()) {
+        merged.push_back(row);
+      }
+    }
+  };
+  append_unique(forward_state_row_ids);
+  append_unique(hidden_projection_row_ids);
+  return merged;
+}
+
 std::string prefixed_history_digest(std::string_view prefix, const std::vector<int>& token_history) {
   std::ostringstream seed_text;
   seed_text << prefix << "|";
@@ -693,6 +744,148 @@ std::string decode_state_seed_digest(const NativeDecodeState& state) {
 
 std::string candidate_window_seed_digest(const NativeDecodeState& state) {
   return prefixed_history_digest("candidate-window", combined_decode_history(state));
+}
+
+std::vector<int> state_input_rows_for_state(const NativeDecodeState& state) {
+  const std::size_t max_rows = std::max<std::size_t>(state.forward_state_row_ids.size(),
+                                                     state.hidden_projection_row_ids.size());
+  return merged_state_input_rows(state.forward_state_row_ids, state.hidden_projection_row_ids,
+                                 max_rows);
+}
+
+std::string state_input_seed_digest(const NativeDecodeState& state) {
+  return prefixed_history_digest("state-input", state_input_rows_for_state(state));
+}
+
+std::size_t forward_state_row_cap(std::string_view projection_carry_mode_kind) {
+  if (projection_carry_mode_kind == "compact_context_projection.v1") {
+    return 2;
+  }
+  if (projection_carry_mode_kind == "balanced_context_projection.v1") {
+    return 3;
+  }
+  if (projection_carry_mode_kind == "wide_context_projection.v1") {
+    return 4;
+  }
+  if (projection_carry_mode_kind == "history_heavy_projection.v1") {
+    return 4;
+  }
+  return 3;
+}
+
+void rank_and_trim_forward_state(NativeDecodeState& state, std::size_t row_cap) {
+  if (state.forward_state_row_ids.empty() ||
+      state.forward_state_row_ids.size() != state.forward_state_scores.size()) {
+    return;
+  }
+
+  struct Entry {
+    int row_id = 0;
+    double score = 0.0;
+  };
+
+  std::vector<Entry> entries;
+  entries.reserve(state.forward_state_row_ids.size());
+  for (std::size_t i = 0; i < state.forward_state_row_ids.size(); ++i) {
+    entries.push_back({state.forward_state_row_ids[i], state.forward_state_scores[i]});
+  }
+
+  std::sort(entries.begin(), entries.end(), [](const Entry& lhs, const Entry& rhs) {
+    if (lhs.score != rhs.score) {
+      return lhs.score > rhs.score;
+    }
+    return lhs.row_id < rhs.row_id;
+  });
+  if (entries.size() > row_cap) {
+    entries.resize(row_cap);
+  }
+
+  state.forward_state_row_ids.clear();
+  state.forward_state_scores.clear();
+  state.forward_state_row_ids.reserve(entries.size());
+  state.forward_state_scores.reserve(entries.size());
+  for (const auto& entry : entries) {
+    state.forward_state_row_ids.push_back(entry.row_id);
+    state.forward_state_scores.push_back(entry.score);
+  }
+}
+
+void refresh_forward_state(NativeDecodeState& state) {
+  const std::vector<int> previous_forward_state_row_ids = state.forward_state_row_ids;
+  const std::vector<double> previous_forward_state_scores = state.forward_state_scores;
+  const std::string previous_forward_state_signature = state.forward_state_signature_sha256;
+  const std::string previous_forward_state_class = state.forward_state_class;
+  const std::size_t previous_forward_state_generation = state.forward_state_generation;
+  state.forward_state_kind = "unavailable";
+  state.forward_state_row_ids.clear();
+  state.forward_state_scores.clear();
+  state.forward_state_signature_sha256.clear();
+  state.forward_state_generation = 0;
+  state.forward_state_class.clear();
+  state.forward_state_class_signature_sha256.clear();
+  if (state.hidden_projection_row_ids.empty() ||
+      state.hidden_projection_row_ids.size() != state.hidden_projection_scores.size()) {
+    return;
+  }
+
+  state.forward_state_kind = "projection_carried_forward_state.v1";
+  state.forward_state_row_ids = state.hidden_projection_row_ids;
+  state.forward_state_scores = state.hidden_projection_scores;
+  state.forward_state_generation =
+      previous_forward_state_signature.empty() ? 0 : (previous_forward_state_generation + 1);
+  const std::size_t row_cap = forward_state_row_cap(state.projection_carry_mode_kind);
+  for (std::size_t i = 0;
+       i < previous_forward_state_row_ids.size() &&
+       state.forward_state_row_ids.size() < row_cap;
+       ++i) {
+    const int row_id = previous_forward_state_row_ids[i];
+    const auto existing =
+        std::find(state.forward_state_row_ids.begin(), state.forward_state_row_ids.end(), row_id);
+    if (existing != state.forward_state_row_ids.end()) {
+      continue;
+    }
+    state.forward_state_row_ids.push_back(row_id);
+    const double previous_score =
+        i < previous_forward_state_scores.size() ? previous_forward_state_scores[i] : 0.0;
+    state.forward_state_scores.push_back(previous_score * 0.75);
+  }
+  rank_and_trim_forward_state(state, row_cap);
+
+  std::ostringstream text;
+  text << state.forward_state_kind << "|" << state.hidden_state_class << "|"
+       << state.projection_carry_mode_kind << "|";
+  for (std::size_t i = 0; i < state.forward_state_row_ids.size(); ++i) {
+    if (i != 0) {
+      text << ";";
+    }
+    text << state.forward_state_row_ids[i] << ":";
+    if (i < state.forward_state_scores.size()) {
+      text << state.forward_state_scores[i];
+    }
+  }
+  if (!state.generated_token_history.empty()) {
+    text << "|last=" << state.generated_token_history.back();
+  }
+  if (!previous_forward_state_signature.empty()) {
+    text << "|prev_sig=" << previous_forward_state_signature;
+  }
+  if (!previous_forward_state_class.empty()) {
+    text << "|prev_class=" << previous_forward_state_class;
+  }
+  text << "|gen=" << state.forward_state_generation;
+  state.forward_state_signature_sha256 = sha3_hex_text(text.str());
+
+  double peak = 0.0;
+  for (double score : state.forward_state_scores) {
+    peak = std::max(peak, score);
+  }
+  const std::string density_band =
+      state.forward_state_row_ids.size() <= 1 ? "compact" : "wide";
+  const std::string energy_band = peak >= 9.0 ? "strong" : (peak >= 6.0 ? "steady" : "weak");
+  state.forward_state_class =
+      energy_band + "_" + density_band + "_" + state.projection_carry_mode_kind;
+  state.forward_state_class_signature_sha256 =
+      sha3_hex_text(state.forward_state_class + "|" + state.forward_state_signature_sha256);
 }
 
 std::string sampled_logits_digest(const std::vector<int>& token_ids,
@@ -717,6 +910,9 @@ std::string class_conditioned_candidate_basis(std::string_view hidden_state_clas
 }
 
 std::string stability_conditioned_candidate_basis(const NativeDecodeState& state) {
+  if (state.forward_state_generation >= 1) {
+    return "forward_state_history_feedback_window.v1";
+  }
   const bool recovery =
       state.stability_kind == "fragile" || state.stability_kind == "ambiguous" ||
       (state.stability_kind == "steady" && state.logits_margin <= 0.5);
@@ -783,8 +979,12 @@ bool hidden_state_class_is(std::string_view hidden_state_class, std::string_view
 }
 
 bool stability_requires_recovery(const NativeDecodeState& state) {
+  const bool strong_forward_state =
+      state.forward_state_class.find("strong_") == 0 &&
+      !state.forward_state_signature_sha256.empty();
   return state.stability_kind == "fragile" || state.stability_kind == "ambiguous" ||
-         (state.stability_kind == "steady" && state.logits_margin <= 0.5);
+         (state.stability_kind == "steady" && state.logits_margin <= 0.5 &&
+          !strong_forward_state);
 }
 
 bool stability_should_terminate_decode(const NativeDecodeState& state,
@@ -923,6 +1123,9 @@ std::size_t stability_conditioned_sample_window(const NativeDecodeState& state,
   if (recovery) {
     return std::min<std::size_t>(cap, std::max<std::size_t>(base, 6));
   }
+  if (state.forward_state_generation >= 1) {
+    return std::min<std::size_t>(cap, std::max<std::size_t>(base, 6));
+  }
   if (state.stability_kind == "steady") {
     return std::min<std::size_t>(cap, std::max<std::size_t>(base, 5));
   }
@@ -933,6 +1136,9 @@ std::size_t stability_conditioned_sample_window(const NativeDecodeState& state,
 }
 
 std::string stability_conditioned_selection_policy(const NativeDecodeState& state) {
+  if (state.forward_state_generation >= 1) {
+    return "prefer_tail_nonnegative_else_max.v1";
+  }
   const bool recovery = stability_requires_recovery(state);
   if (recovery) {
     return "max_score.v1";
@@ -941,6 +1147,9 @@ std::string stability_conditioned_selection_policy(const NativeDecodeState& stat
 }
 
 std::string stability_conditioned_decode_mode(const NativeDecodeState& state) {
+  if (state.forward_state_generation >= 1) {
+    return "forward_state_history_projection.v1";
+  }
   const bool recovery = stability_requires_recovery(state);
   if (recovery) {
     return "stability_recovery_projection.v1";
@@ -953,8 +1162,14 @@ std::string stability_conditioned_decode_mode(const NativeDecodeState& state) {
 
 std::size_t stability_conditioned_context_window(const NativeDecodeState& state) {
   const std::size_t base = class_conditioned_context_window(state.hidden_state_class);
+  if (state.forward_state_generation >= 1) {
+    return std::max<std::size_t>(base, 5);
+  }
   const bool recovery = stability_requires_recovery(state);
   if (recovery) {
+    return std::max<std::size_t>(base, 4);
+  }
+  if (state.forward_state_generation >= 1) {
     return std::max<std::size_t>(base, 4);
   }
   if (state.stability_kind == "steady") {
@@ -964,6 +1179,9 @@ std::size_t stability_conditioned_context_window(const NativeDecodeState& state)
 }
 
 std::string stability_conditioned_carry_probe_layout(const NativeDecodeState& state) {
+  if (state.forward_state_generation >= 1) {
+    return "reverse_contiguous_window.v1";
+  }
   const bool recovery = stability_requires_recovery(state);
   if (recovery) {
     return "reverse_contiguous_window.v1";
@@ -987,14 +1205,38 @@ std::string stability_conditioned_carry_probe_layout(const NativeDecodeState& st
 }
 
 std::string stability_conditioned_transition_kind(const NativeDecodeState& state) {
+  if (state.forward_state_generation >= 1) {
+    return "forward_state_history_feedback_state_transition.v1";
+  }
   const bool recovery = stability_requires_recovery(state);
   if (recovery) {
     return "stability_recovery_state_transition.v1";
+  }
+  if (!state.forward_state_class.empty()) {
+    return "forward_state_feedback_state_transition.v1";
   }
   if (state.stability_kind == "steady") {
     return "stability_aware_state_transition.v1";
   }
   return "selected_candidate_feedback_state_transition.v1";
+}
+
+std::size_t forward_state_keep(const NativeDecodeState& state, std::size_t available) {
+  if (available == 0) {
+    return 0;
+  }
+  std::size_t keep = available;
+  if (state.forward_state_class.find("compact") != std::string_view::npos) {
+    keep = 1;
+  } else if (state.forward_state_class.find("strong") != std::string_view::npos) {
+    keep = std::min<std::size_t>(2, available);
+  }
+  if (state.forward_state_generation >= 2) {
+    keep = std::min<std::size_t>(std::max<std::size_t>(keep, 3), available);
+  } else if (state.forward_state_generation >= 1) {
+    keep = std::min<std::size_t>(std::max<std::size_t>(keep, 3), available);
+  }
+  return keep;
 }
 
 std::size_t projection_carry_mode_window_offset(std::string_view projection_carry_mode_kind) {
@@ -1078,6 +1320,48 @@ void apply_projection_carry_mode(NativeProbeResult& result) {
 }
 
 std::size_t next_decode_window_start(const NativeDecodeState& state, std::size_t vocab_size) {
+  if (!state.hidden_tensor_signature_sha256.empty()) {
+    const std::size_t base =
+        digest_seed_window_start(state.hidden_tensor_signature_sha256, vocab_size);
+    std::size_t content_offset = state.hidden_tensor_rank + state.hidden_tensor_elements +
+                                 state.forward_state_generation;
+    if (!state.projection_carry_mode_kind.empty()) {
+      return (base + content_offset +
+              projection_carry_mode_window_offset(state.projection_carry_mode_kind)) %
+             vocab_size;
+    }
+    return (base + content_offset) % vocab_size;
+  }
+  const auto state_input_rows = state_input_rows_for_state(state);
+  if (!state_input_rows.empty()) {
+    const std::size_t base = digest_seed_window_start(state_input_seed_digest(state), vocab_size);
+    std::size_t content_offset = 0;
+    if (!state_input_rows.empty()) {
+      content_offset += static_cast<std::size_t>(state_input_rows.front());
+    }
+    if (!state.forward_state_scores.empty()) {
+      content_offset += static_cast<std::size_t>(std::llround(state.forward_state_scores.front()));
+    }
+    content_offset += state_input_rows.size();
+    content_offset += state.forward_state_generation;
+    if (!state.projection_carry_mode_kind.empty()) {
+      return (base + content_offset +
+              projection_carry_mode_window_offset(state.projection_carry_mode_kind)) %
+             vocab_size;
+    }
+    return (base + content_offset) % vocab_size;
+  }
+  if (!state.forward_state_signature_sha256.empty()) {
+    const std::size_t base =
+        digest_seed_window_start(state.forward_state_signature_sha256, vocab_size);
+    std::size_t content_offset = state.forward_state_generation;
+    if (!state.projection_carry_mode_kind.empty()) {
+      return (base + content_offset +
+              projection_carry_mode_window_offset(state.projection_carry_mode_kind)) %
+             vocab_size;
+    }
+    return (base + content_offset) % vocab_size;
+  }
   if (!state.hidden_state_class_signature_sha256.empty()) {
     const std::size_t base = class_conditioned_window_start(state, vocab_size);
     if (!state.projection_carry_mode_kind.empty()) {
@@ -1760,6 +2044,8 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
                                           std::nullopt,
                                       const std::vector<int>& context_token_history = {},
                                       const std::vector<int>& hidden_carry_context_rows = {},
+                                      const std::optional<t81::T729DynamicTensor>& carried_hidden_tensor =
+                                          std::nullopt,
                                       const std::optional<std::size_t> sample_window_override =
                                           std::nullopt,
                                       std::string_view selection_policy_override = {},
@@ -1938,10 +2224,17 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
            << "  let attn0: Tensor = std.tensor.attention(q0, k0, v0);\n"
            << "  let lhs1: i32 = std.tensor.load(\"" << result.lhs_tensor_layer1 << "\");\n"
            << "  let rhs1: i32 = std.tensor.load(\"" << result.rhs_tensor_layer1 << "\");\n"
-           << "  let val1_w: i32 = std.tensor.load(\"" << result.value_tensor_layer1 << "\");\n"
-           << "  let q1: Tensor = std.tensor.matmul(attn0, lhs1);\n"
-           << "  let k1: Tensor = std.tensor.matmul(attn0, rhs1);\n"
-           << "  let v1: Tensor = std.tensor.matmul(attn0, val1_w);\n"
+           << "  let val1_w: i32 = std.tensor.load(\"" << result.value_tensor_layer1 << "\");\n";
+    if (carried_hidden_tensor.has_value()) {
+      source << "  let carried_hidden: Tensor = std.tensor.from_list([0]);\n"
+             << "  let layer1_input: Tensor = std.tensor.vec_add(attn0, carried_hidden);\n";
+    } else {
+      source << "  let layer1_input: Tensor = attn0;\n";
+    }
+    source
+           << "  let q1: Tensor = std.tensor.matmul(layer1_input, lhs1);\n"
+           << "  let k1: Tensor = std.tensor.matmul(layer1_input, rhs1);\n"
+           << "  let v1: Tensor = std.tensor.matmul(layer1_input, val1_w);\n"
            << "  let attn1: Tensor = std.tensor.attention(q1, k1, v1);\n"
            << "  let embed_result = emb;\n"
            << "  let attn_result0 = attn0;\n"
@@ -1962,6 +2255,8 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
                << ": T81Float = std.tnn.accum(carry_row" << i << ", attn1);\n"
                << "  print(carry_score" << i << ");\n";
       }
+      source << "  let attn1_export: Tensor = std.tensor.attention(q1, k1, v1);\n"
+             << "  let _export_keepalive = attn1_export;\n";
       source << "  return 0;\n"
              << "}\n";
     } else {
@@ -1985,6 +2280,16 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
     result.trap = "compile_failure";
     return result;
   }
+  if (carried_hidden_tensor.has_value()) {
+    if (!program->tensor_pool.empty()) {
+      program->tensor_pool.back() = *carried_hidden_tensor;
+      result.hidden_tensor_import_used = true;
+      result.hidden_tensor_blend_used = true;
+    } else {
+      result.trap = "intermediate_tensor_import_patch_failure";
+      return result;
+    }
+  }
 
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(*program);
@@ -2001,6 +2306,23 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
   }
 
   populate_sampled_logits(result);
+  if (result.logits_row_probe_supported) {
+    for (std::size_t i = vm->state().tensors.size(); i > 0; --i) {
+      const std::size_t tensor_index = i - 1;
+      if (!vm->state().tensors[tensor_index].has_value()) {
+        continue;
+      }
+      const auto& tensor = *vm->state().tensors[tensor_index];
+      result.intermediate_tensor_export_supported = true;
+      result.hidden_tensor_handle = static_cast<int>(tensor_index + 1);
+      result.hidden_tensor_rank = static_cast<std::size_t>(tensor.rank());
+      result.hidden_tensor_elements = tensor.size();
+      result.hidden_tensor_shape = tensor.shape();
+      result.hidden_tensor_signature_sha256 = tensor_signature_sha256(tensor);
+      result.hidden_tensor = tensor;
+      break;
+    }
+  }
   result.ok = true;
   return result;
 }
@@ -2212,10 +2534,12 @@ int cmd_inference_run(const Options& opts) {
     }
     if (!probe.sampled_token_ids.empty() &&
         probe.sampled_token_ids.size() == probe.sampled_token_scores.size()) {
-      std::size_t generated_tokens = 1;
-      std::string termination_reason = "single_probe_only";
-      std::string bounded_decode_health_kind = "healthy";
-      std::vector<int> top_level_generated_token_ids;
+        std::size_t generated_tokens = 1;
+        std::string termination_reason = "single_probe_only";
+        std::string bounded_decode_health_kind = "healthy";
+        bool guarded_bounded_decode = false;
+        std::string decode_probe_failure_trap;
+        std::vector<int> top_level_generated_token_ids;
       if (probe.selected_token_id.has_value() && probe.logits_row_probe_supported) {
         struct DecodeStep {
           std::size_t step = 0;
@@ -2238,6 +2562,8 @@ int cmd_inference_run(const Options& opts) {
           std::vector<int> combined_history_token_ids;
           std::vector<int> context_history_token_ids;
           std::vector<int> consumed_hidden_projection_row_ids;
+          std::vector<int> consumed_forward_state_row_ids;
+          std::vector<int> consumed_state_input_row_ids;
           std::optional<int> seed_token_id;
           int selected_token_id = 0;
           double selected_score = 0.0;
@@ -2248,6 +2574,18 @@ int cmd_inference_run(const Options& opts) {
           std::vector<int> hidden_projection_row_ids;
           std::vector<double> hidden_projection_scores;
           std::string hidden_projection_signature_sha256;
+          std::string forward_state_kind;
+          std::vector<int> forward_state_row_ids;
+          std::vector<double> forward_state_scores;
+          std::string forward_state_signature_sha256;
+          std::size_t forward_state_generation = 0;
+          std::string forward_state_class;
+          std::string forward_state_class_signature_sha256;
+          std::string hidden_tensor_signature_sha256;
+          std::size_t hidden_tensor_rank = 0;
+          std::size_t hidden_tensor_elements = 0;
+          bool hidden_tensor_import_used = false;
+          bool hidden_tensor_blend_used = false;
           std::string projection_carry_mode_kind;
           std::string hidden_state_class;
           std::string hidden_state_class_signature_sha256;
@@ -2283,6 +2621,12 @@ int cmd_inference_run(const Options& opts) {
         decode_state.projection_carry_mode_kind = probe.projection_carry_mode_kind;
         decode_state.hidden_state_class = probe.hidden_state_class;
         decode_state.hidden_state_class_signature_sha256 = probe.hidden_state_class_signature_sha256;
+        decode_state.hidden_tensor_signature_sha256 = probe.hidden_tensor_signature_sha256;
+        decode_state.hidden_tensor_rank = probe.hidden_tensor_rank;
+        decode_state.hidden_tensor_elements = probe.hidden_tensor_elements;
+        decode_state.hidden_tensor_shape = probe.hidden_tensor_shape;
+        decode_state.carried_hidden_tensor = probe.hidden_tensor;
+        refresh_forward_state(decode_state);
         decode_state.selection_policy_kind = probe.selection_policy_kind;
         decode_state.confidence_score = probe.confidence_score;
         decode_state.logits_margin = probe.logits_margin;
@@ -2312,6 +2656,8 @@ int cmd_inference_run(const Options& opts) {
                                 step0_combined_history,
                                 step0_context,
                                 {},
+                                {},
+                                {},
                                 decode_state.seed_token_id,
                                 *probe.selected_token_id,
                                 probe.selected_token_score.value_or(0.0),
@@ -2322,6 +2668,18 @@ int cmd_inference_run(const Options& opts) {
                                 decode_state.hidden_projection_row_ids,
                                 decode_state.hidden_projection_scores,
                                 decode_state.hidden_projection_signature_sha256,
+                                decode_state.forward_state_kind,
+                                decode_state.forward_state_row_ids,
+                                decode_state.forward_state_scores,
+                                decode_state.forward_state_signature_sha256,
+                                decode_state.forward_state_generation,
+                                decode_state.forward_state_class,
+                                decode_state.forward_state_class_signature_sha256,
+                                decode_state.hidden_tensor_signature_sha256,
+                                decode_state.hidden_tensor_rank,
+                                decode_state.hidden_tensor_elements,
+                                probe.hidden_tensor_import_used,
+                                probe.hidden_tensor_blend_used,
                                 decode_state.projection_carry_mode_kind,
                                 decode_state.hidden_state_class,
                                 decode_state.hidden_state_class_signature_sha256,
@@ -2355,9 +2713,18 @@ int cmd_inference_run(const Options& opts) {
               stability_conditioned_carry_probe_layout(decode_state);
           std::vector<int> consumed_hidden_projection_row_ids =
               decode_state.hidden_projection_row_ids;
+          std::vector<int> consumed_forward_state_row_ids =
+              decode_state.forward_state_row_ids;
           const std::size_t hidden_projection_keep = class_conditioned_hidden_projection_keep(
               decode_state.hidden_state_class, consumed_hidden_projection_row_ids.size());
           consumed_hidden_projection_row_ids.resize(hidden_projection_keep);
+          consumed_forward_state_row_ids.resize(std::min<std::size_t>(
+              forward_state_keep(decode_state, consumed_forward_state_row_ids.size()),
+              consumed_forward_state_row_ids.size()));
+          const std::vector<int> consumed_state_input_row_ids = merged_state_input_rows(
+              consumed_forward_state_row_ids, consumed_hidden_projection_row_ids,
+              std::max<std::size_t>(consumed_forward_state_row_ids.size(),
+                                    consumed_hidden_projection_row_ids.size()));
           decode_state.seed_token_id =
               static_cast<int>(next_decode_window_start(decode_state, probe.logits_vocab_size));
           const auto decode_context = decode_context_history(decode_state, context_window_used);
@@ -2367,7 +2734,8 @@ int cmd_inference_run(const Options& opts) {
                                        : std::nullopt,
               *decode_state.seed_token_id, decode_state.generated_token_history.back(),
               decode_context,
-              consumed_hidden_projection_row_ids,
+              consumed_state_input_row_ids,
+              decode_state.carried_hidden_tensor,
               stability_conditioned_sample_window(decode_state, probe.logits_vocab_size),
               stability_conditioned_selection_policy(decode_state),
               carry_probe_layout_kind,
@@ -2377,6 +2745,7 @@ int cmd_inference_run(const Options& opts) {
           if (!decode_probe.ok || !decode_probe.selected_token_id.has_value() ||
               !decode_probe.selected_token_score.has_value()) {
             termination_reason = "decode_probe_unavailable";
+            decode_probe_failure_trap = decode_probe.trap;
             break;
           }
           decode_state.input_token_id = decode_probe.token_index;
@@ -2395,6 +2764,13 @@ int cmd_inference_run(const Options& opts) {
           decode_state.hidden_state_class = decode_probe.hidden_state_class;
           decode_state.hidden_state_class_signature_sha256 =
               decode_probe.hidden_state_class_signature_sha256;
+          decode_state.hidden_tensor_signature_sha256 =
+              decode_probe.hidden_tensor_signature_sha256;
+          decode_state.hidden_tensor_rank = decode_probe.hidden_tensor_rank;
+          decode_state.hidden_tensor_elements = decode_probe.hidden_tensor_elements;
+          decode_state.hidden_tensor_shape = decode_probe.hidden_tensor_shape;
+          decode_state.carried_hidden_tensor = decode_probe.hidden_tensor;
+          refresh_forward_state(decode_state);
           decode_state.selection_policy_kind = decode_probe.selection_policy_kind;
           decode_state.confidence_score = decode_probe.confidence_score;
           decode_state.logits_margin = decode_probe.logits_margin;
@@ -2422,6 +2798,8 @@ int cmd_inference_run(const Options& opts) {
                combined_history,
                decode_probe.context_token_indices,
                consumed_hidden_projection_row_ids,
+               consumed_forward_state_row_ids,
+               consumed_state_input_row_ids,
                decode_probe.candidate_seed_token_id,
                *decode_probe.selected_token_id,
                *decode_probe.selected_token_score,
@@ -2432,6 +2810,18 @@ int cmd_inference_run(const Options& opts) {
                decode_state.hidden_projection_row_ids,
                decode_state.hidden_projection_scores,
                decode_state.hidden_projection_signature_sha256,
+               decode_state.forward_state_kind,
+               decode_state.forward_state_row_ids,
+               decode_state.forward_state_scores,
+               decode_state.forward_state_signature_sha256,
+               decode_state.forward_state_generation,
+               decode_state.forward_state_class,
+               decode_state.forward_state_class_signature_sha256,
+               decode_state.hidden_tensor_signature_sha256,
+               decode_state.hidden_tensor_rank,
+               decode_state.hidden_tensor_elements,
+               decode_probe.hidden_tensor_import_used,
+               decode_probe.hidden_tensor_blend_used,
                decode_state.projection_carry_mode_kind,
                decode_state.hidden_state_class,
                decode_state.hidden_state_class_signature_sha256,
@@ -2463,17 +2853,121 @@ int cmd_inference_run(const Options& opts) {
         if (!stability_recovery_exhausted && decode_steps.size() < decode_limit) {
           termination_reason = "decode_probe_unavailable";
         }
+        std::size_t forward_state_feedback_steps = 0;
+        std::size_t max_forward_state_generation = 0;
+        std::size_t final_forward_state_row_count = 0;
+        std::size_t final_consumed_forward_state_count = 0;
+        std::size_t max_consumed_forward_state_count = 0;
+        std::size_t max_state_input_row_count = 0;
+        std::size_t final_state_input_row_count = 0;
+        std::string final_state_input_signature_sha256;
+        bool intermediate_tensor_export_supported = false;
+        bool intermediate_tensor_import_used = false;
+        bool intermediate_tensor_blend_used = false;
+        std::size_t max_hidden_tensor_rank = 0;
+        std::size_t max_hidden_tensor_elements = 0;
+        std::string final_hidden_tensor_signature_sha256;
+        for (const auto& step : decode_steps) {
+          max_forward_state_generation =
+              std::max(max_forward_state_generation, step.forward_state_generation);
+          max_consumed_forward_state_count =
+              std::max(max_consumed_forward_state_count,
+                       step.consumed_forward_state_row_ids.size());
+          max_state_input_row_count =
+              std::max(max_state_input_row_count, step.consumed_state_input_row_ids.size());
+          intermediate_tensor_export_supported =
+              intermediate_tensor_export_supported || !step.hidden_tensor_signature_sha256.empty();
+          intermediate_tensor_import_used =
+              intermediate_tensor_import_used || step.hidden_tensor_import_used;
+          intermediate_tensor_blend_used =
+              intermediate_tensor_blend_used || step.hidden_tensor_blend_used;
+          max_hidden_tensor_rank =
+              std::max(max_hidden_tensor_rank, step.hidden_tensor_rank);
+          max_hidden_tensor_elements =
+              std::max(max_hidden_tensor_elements, step.hidden_tensor_elements);
+          if (step.transition_kind.find("forward_state_feedback_state_transition.v1") !=
+                  std::string::npos ||
+              step.transition_kind.find("forward_state_history_feedback_state_transition.v1") !=
+                  std::string::npos) {
+            ++forward_state_feedback_steps;
+          }
+        }
+        if (!decode_steps.empty()) {
+          final_forward_state_row_count = decode_steps.back().forward_state_row_ids.size();
+          final_consumed_forward_state_count =
+              decode_steps.back().consumed_forward_state_row_ids.size();
+          final_state_input_row_count = decode_steps.back().consumed_state_input_row_ids.size();
+          final_state_input_signature_sha256 = state_input_seed_digest(decode_state);
+          final_hidden_tensor_signature_sha256 =
+              decode_steps.back().hidden_tensor_signature_sha256;
+        }
+        const bool guarded_weak_nonrecovery =
+            !stability_recovery_exhausted && termination_reason != "decode_probe_unavailable" &&
+            recovery_steps.empty() && !weak_steps.empty();
         if (stability_recovery_exhausted) {
           bounded_decode_health_kind = "degraded";
           payload_status = "degraded";
         } else if (termination_reason == "decode_probe_unavailable") {
           bounded_decode_health_kind = "degraded";
           payload_status = "degraded";
-        } else if (!recovery_steps.empty()) {
+        } else if (!recovery_steps.empty() || guarded_weak_nonrecovery) {
           bounded_decode_health_kind = "guarded";
+          guarded_bounded_decode = true;
         }
         generated_tokens = decode_steps.size();
+        const bool guarded_artifact_caution = bounded_decode_health_kind == "guarded";
+        const std::string decode_trace_detail_policy =
+            bounded_decode_health_kind == "degraded"
+                ? "summary_only_on_degraded.v1"
+                : guarded_artifact_caution ? "full_evidence_with_guarded_caution.v1"
+                                           : "full_evidence.v1";
         extra << "  \"stateful_decode_supported\": false,\n"
+              << "  \"true_state_carry_supported\": "
+              << (intermediate_tensor_import_used ? "true" : "false") << ",\n"
+              << "  \"state_carry_limitations\": {\n"
+              << "    \"kind\": \""
+              << json_escape(intermediate_tensor_import_used
+                                 ? "bounded_intermediate_tensor_literal_import.v1"
+                                 : "derived_row_state_only.v1")
+              << "\",\n"
+              << "    \"intermediate_tensor_import_supported\": "
+              << (intermediate_tensor_import_used ? "true" : "false") << ",\n";
+        if (intermediate_tensor_import_used) {
+          extra << "    \"import_path\": \"compiled_tensor_literal_reimport.v1\",\n"
+                << "    \"import_compute_path\": \"attn0_plus_carried_hidden_blend.v1\",\n";
+        } else {
+          extra << "    \"missing_primitive\": \"intermediate_tensor_import.v1\",\n";
+        }
+        extra << "    \"summary\": \""
+              << json_escape(intermediate_tensor_import_used
+                                 ? "later decode steps imported a bounded carried hidden tensor through a compiled tensor-literal path and blended it with current attn0"
+                                 : "later decode steps carry derived row-based state and exported hidden-tensor signatures, but not imported intermediate tensors or KV-cache state")
+              << "\"\n"
+              << "  },\n"
+              << "  \"intermediate_tensor_export_supported\": "
+              << (intermediate_tensor_export_supported ? "true" : "false") << ",\n"
+              << "  \"intermediate_tensor_import_used\": "
+              << (intermediate_tensor_import_used ? "true" : "false") << ",\n"
+              << "  \"intermediate_tensor_blend_used\": "
+              << (intermediate_tensor_blend_used ? "true" : "false") << ",\n"
+              << "  \"hidden_tensor_summary\": {\n"
+              << "    \"kind\": \"vm_intermediate_tensor_export.v1\",\n"
+              << "    \"intermediate_tensor_export_supported\": "
+              << (intermediate_tensor_export_supported ? "true" : "false") << ",\n"
+              << "    \"intermediate_tensor_import_used\": "
+              << (intermediate_tensor_import_used ? "true" : "false") << ",\n"
+              << "    \"intermediate_tensor_blend_used\": "
+              << (intermediate_tensor_blend_used ? "true" : "false") << ",\n"
+              << "    \"max_rank\": " << max_hidden_tensor_rank << ",\n"
+              << "    \"max_elements\": " << max_hidden_tensor_elements << ",\n"
+              << "    \"final_hidden_tensor_signature_sha256\": \""
+              << final_hidden_tensor_signature_sha256 << "\",\n"
+              << "    \"summary\": \""
+              << json_escape(intermediate_tensor_export_supported
+                                 ? "native probes exported intermediate hidden-tensor evidence from live VM state"
+                                 : "native probes did not export intermediate hidden-tensor evidence")
+              << "\"\n"
+              << "  },\n"
               << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
               << "  \"stability_recovery_exhausted\": "
               << (stability_recovery_exhausted ? "true" : "false") << ",\n"
@@ -2507,7 +3001,9 @@ int cmd_inference_run(const Options& opts) {
                      bounded_decode_health_kind == "degraded"
                          ? "bounded decode terminated after repeated weak or unavailable steps"
                          : bounded_decode_health_kind == "guarded"
-                               ? "bounded decode completed with recovery on the control path"
+                               ? (!recovery_steps.empty()
+                                      ? "bounded decode completed with recovery on the control path"
+                                      : "bounded decode completed with weak evidence inside the guarded envelope")
                                : "bounded decode completed without recovery exhaustion")
               << "\"\n"
               << "  },\n"
@@ -2528,14 +3024,47 @@ int cmd_inference_run(const Options& opts) {
                      bounded_decode_health_kind == "degraded"
                          ? "bounded native inference is degraded and should be treated conservatively"
                          : bounded_decode_health_kind == "guarded"
-                               ? "bounded native inference completed with guarded confidence"
+                               ? (!recovery_steps.empty()
+                                      ? "bounded native inference completed with guarded confidence"
+                                      : "bounded native inference completed with guarded confidence after weak bounded evidence")
                                : "bounded native inference completed within its ready envelope")
+              << "\"\n"
+              << "  },\n"
+              << "  \"forward_state_summary\": {\n"
+              << "    \"kind\": \"evolving_projection_forward_state.v1\",\n"
+              << "    \"max_generation\": " << max_forward_state_generation << ",\n"
+              << "    \"feedback_steps\": " << forward_state_feedback_steps << ",\n"
+              << "    \"max_consumed_forward_state_count\": "
+              << max_consumed_forward_state_count << ",\n"
+              << "    \"max_state_input_row_count\": " << max_state_input_row_count << ",\n"
+              << "    \"final_forward_state_row_count\": " << final_forward_state_row_count
+              << ",\n"
+              << "    \"final_consumed_forward_state_count\": "
+              << final_consumed_forward_state_count << ",\n"
+              << "    \"summary\": \""
+              << json_escape("bounded decode carried forward-state through " +
+                             std::to_string(forward_state_feedback_steps) +
+                             " feedback steps and reached generation " +
+                             std::to_string(max_forward_state_generation))
+              << "\"\n"
+              << "  },\n"
+              << "  \"state_input_summary\": {\n"
+              << "    \"kind\": \"merged_forward_projection_state_input.v1\",\n"
+              << "    \"max_state_input_row_count\": " << max_state_input_row_count << ",\n"
+              << "    \"final_state_input_row_count\": " << final_state_input_row_count << ",\n"
+              << "    \"final_state_input_signature_sha256\": \""
+              << final_state_input_signature_sha256 << "\",\n"
+              << "    \"summary\": \""
+              << json_escape("bounded decode fed back up to " +
+                             std::to_string(max_state_input_row_count) +
+                             " carried state rows into later VM steps")
               << "\"\n"
               << "  },\n"
               << "  \"decode_trace_policy\": \""
               << json_escape(bounded_decode_health_kind == "degraded"
                                  ? "boundary_steps_only_on_degraded.v1"
-                                 : "full_trace.v1")
+                                 : guarded_artifact_caution ? "full_trace_with_guarded_caution.v1"
+                                                            : "full_trace.v1")
               << "\",\n";
         const bool truncate_decode_trace =
             bounded_decode_health_kind == "degraded" && decode_steps.size() > 2;
@@ -2543,13 +3072,17 @@ int cmd_inference_run(const Options& opts) {
         extra << "  \"decode_trace_truncated\": "
               << (truncate_decode_trace ? "true" : "false") << ",\n"
               << "  \"decode_trace_detail_policy\": \""
-              << json_escape(degrade_trace_detail ? "summary_only_on_degraded.v1"
-                                                 : "full_evidence.v1")
+              << json_escape(decode_trace_detail_policy)
               << "\",\n"
               << "  \"decode_trace_full_steps\": " << decode_steps.size() << ",\n"
               << "  \"decode_trace_exposed_steps\": "
               << (truncate_decode_trace ? 2 : decode_steps.size()) << ",\n"
-              << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n"
+              << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n";
+        if (!decode_probe_failure_trap.empty()) {
+          extra << "  \"decode_probe_failure_trap\": \""
+                << json_escape(decode_probe_failure_trap) << "\",\n";
+        }
+        extra
               << "  \"decode_trace\": [\n";
         std::vector<std::size_t> exposed_step_indexes;
         if (truncate_decode_trace) {
@@ -2591,8 +3124,7 @@ int cmd_inference_run(const Options& opts) {
           }
           extra << ",\n"
                 << "      \"evidence_visibility\": \""
-                << json_escape(degrade_trace_detail ? "summary_only_on_degraded.v1"
-                                                   : "full_evidence.v1")
+                << json_escape(decode_trace_detail_policy)
                 << "\",\n";
           if (degrade_trace_detail) {
             extra << "      \"prompt_token_history_count\": "
@@ -2605,7 +3137,11 @@ int cmd_inference_run(const Options& opts) {
                   << "      \"context_history_count\": "
                   << step.context_history_token_ids.size() << ",\n"
                   << "      \"consumed_hidden_projection_count\": "
-                  << step.consumed_hidden_projection_row_ids.size() << ",\n";
+                  << step.consumed_hidden_projection_row_ids.size() << ",\n"
+                  << "      \"consumed_forward_state_count\": "
+                  << step.consumed_forward_state_row_ids.size() << ",\n"
+                  << "      \"consumed_state_input_count\": "
+                  << step.consumed_state_input_row_ids.size() << ",\n";
           } else {
             extra << "      \"prompt_token_history_token_ids\": [";
             for (std::size_t j = 0; j < step.prompt_token_history_token_ids.size(); ++j) {
@@ -2647,6 +3183,22 @@ int cmd_inference_run(const Options& opts) {
               }
               extra << step.consumed_hidden_projection_row_ids[j];
             }
+            extra << "],\n"
+                  << "      \"consumed_forward_state_row_ids\": [";
+            for (std::size_t j = 0; j < step.consumed_forward_state_row_ids.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << step.consumed_forward_state_row_ids[j];
+            }
+            extra << "],\n"
+                  << "      \"consumed_state_input_row_ids\": [";
+            for (std::size_t j = 0; j < step.consumed_state_input_row_ids.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << step.consumed_state_input_row_ids[j];
+            }
             extra << "],\n";
           }
           extra
@@ -2659,7 +3211,9 @@ int cmd_inference_run(const Options& opts) {
           extra << ",\n";
           if (degrade_trace_detail) {
             extra << "      \"hidden_projection_count\": "
-                  << step.hidden_projection_row_ids.size() << ",\n";
+                  << step.hidden_projection_row_ids.size() << ",\n"
+                  << "      \"forward_state_count\": " << step.forward_state_row_ids.size()
+                  << ",\n";
           } else {
             extra << "      \"hidden_projection_row_ids\": [";
             for (std::size_t j = 0; j < step.hidden_projection_row_ids.size(); ++j) {
@@ -2676,11 +3230,48 @@ int cmd_inference_run(const Options& opts) {
               }
               extra << step.hidden_projection_scores[j];
             }
-            extra << "],\n";
+            extra << "],\n"
+                  << "      \"forward_state_kind\": \""
+                  << json_escape(step.forward_state_kind) << "\",\n"
+                  << "      \"forward_state_row_ids\": [";
+            for (std::size_t j = 0; j < step.forward_state_row_ids.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << step.forward_state_row_ids[j];
+            }
+            extra << "],\n"
+                  << "      \"forward_state_scores\": [";
+            for (std::size_t j = 0; j < step.forward_state_scores.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << step.forward_state_scores[j];
+            }
+            extra << "],\n"
+                  << "      \"forward_state_class\": \""
+                  << json_escape(step.forward_state_class) << "\",\n";
           }
           extra
                 << "      \"hidden_projection_signature_sha256\": \""
                 << step.hidden_projection_signature_sha256 << "\",\n"
+                << "      \"forward_state_kind\": \"" << json_escape(step.forward_state_kind)
+                << "\",\n"
+                << "      \"forward_state_signature_sha256\": \""
+                << step.forward_state_signature_sha256 << "\",\n"
+                << "      \"forward_state_generation\": " << step.forward_state_generation << ",\n"
+                << "      \"forward_state_class\": \"" << json_escape(step.forward_state_class)
+                << "\",\n"
+                << "      \"forward_state_class_signature_sha256\": \""
+                << step.forward_state_class_signature_sha256 << "\",\n"
+                << "      \"hidden_tensor_signature_sha256\": \""
+                << step.hidden_tensor_signature_sha256 << "\",\n"
+                << "      \"hidden_tensor_rank\": " << step.hidden_tensor_rank << ",\n"
+                << "      \"hidden_tensor_elements\": " << step.hidden_tensor_elements << ",\n"
+                << "      \"hidden_tensor_import_used\": "
+                << (step.hidden_tensor_import_used ? "true" : "false") << ",\n"
+                << "      \"hidden_tensor_blend_used\": "
+                << (step.hidden_tensor_blend_used ? "true" : "false") << ",\n"
                 << "      \"projection_carry_mode_kind\": \""
                 << json_escape(step.projection_carry_mode_kind) << "\",\n"
                 << "      \"hidden_state_class\": \"" << json_escape(step.hidden_state_class)
@@ -2771,8 +3362,7 @@ int cmd_inference_run(const Options& opts) {
           }
           extra << ",\n"
                 << "    \"evidence_visibility\": \""
-                << json_escape(degrade_trace_detail ? "summary_only_on_degraded.v1"
-                                                   : "full_evidence.v1")
+                << json_escape(decode_trace_detail_policy)
                 << "\",\n";
           if (degrade_trace_detail) {
             extra << "    \"prompt_token_history_count\": "
@@ -2782,7 +3372,11 @@ int cmd_inference_run(const Options& opts) {
                   << "    \"combined_history_count\": "
                   << final_step.combined_history_token_ids.size() << ",\n"
                   << "    \"consumed_hidden_projection_count\": "
-                  << final_step.consumed_hidden_projection_row_ids.size() << ",\n";
+                  << final_step.consumed_hidden_projection_row_ids.size() << ",\n"
+                  << "    \"consumed_forward_state_count\": "
+                  << final_step.consumed_forward_state_row_ids.size() << ",\n"
+                  << "    \"consumed_state_input_count\": "
+                  << final_step.consumed_state_input_row_ids.size() << ",\n";
           } else {
             extra << "    \"prompt_token_history_token_ids\": [";
             for (std::size_t j = 0; j < final_step.prompt_token_history_token_ids.size(); ++j) {
@@ -2816,6 +3410,22 @@ int cmd_inference_run(const Options& opts) {
               }
               extra << final_step.consumed_hidden_projection_row_ids[j];
             }
+            extra << "],\n"
+                  << "    \"consumed_forward_state_row_ids\": [";
+            for (std::size_t j = 0; j < final_step.consumed_forward_state_row_ids.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << final_step.consumed_forward_state_row_ids[j];
+            }
+            extra << "],\n"
+                  << "    \"consumed_state_input_row_ids\": [";
+            for (std::size_t j = 0; j < final_step.consumed_state_input_row_ids.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << final_step.consumed_state_input_row_ids[j];
+            }
             extra << "],\n";
           }
           extra
@@ -2826,7 +3436,9 @@ int cmd_inference_run(const Options& opts) {
                 << "    \"context_window_used\": " << final_step.context_window_used << ",\n";
           if (degrade_trace_detail) {
             extra << "    \"hidden_projection_count\": "
-                  << final_step.hidden_projection_row_ids.size() << ",\n";
+                  << final_step.hidden_projection_row_ids.size() << ",\n"
+                  << "    \"forward_state_count\": " << final_step.forward_state_row_ids.size()
+                  << ",\n";
           } else {
             extra << "    \"hidden_projection_row_ids\": [";
             for (std::size_t j = 0; j < final_step.hidden_projection_row_ids.size(); ++j) {
@@ -2843,11 +3455,49 @@ int cmd_inference_run(const Options& opts) {
               }
               extra << final_step.hidden_projection_scores[j];
             }
-            extra << "],\n";
+            extra << "],\n"
+                  << "    \"forward_state_kind\": \""
+                  << json_escape(final_step.forward_state_kind) << "\",\n"
+                  << "    \"forward_state_row_ids\": [";
+            for (std::size_t j = 0; j < final_step.forward_state_row_ids.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << final_step.forward_state_row_ids[j];
+            }
+            extra << "],\n"
+                  << "    \"forward_state_scores\": [";
+            for (std::size_t j = 0; j < final_step.forward_state_scores.size(); ++j) {
+              if (j != 0) {
+                extra << ", ";
+              }
+              extra << final_step.forward_state_scores[j];
+            }
+            extra << "],\n"
+                  << "    \"forward_state_class\": \""
+                  << json_escape(final_step.forward_state_class) << "\",\n";
           }
           extra
                 << "    \"hidden_projection_signature_sha256\": \""
                 << final_step.hidden_projection_signature_sha256 << "\",\n"
+                << "    \"forward_state_kind\": \""
+                << json_escape(final_step.forward_state_kind) << "\",\n"
+                << "    \"forward_state_signature_sha256\": \""
+                << final_step.forward_state_signature_sha256 << "\",\n"
+                << "    \"forward_state_generation\": " << final_step.forward_state_generation
+                << ",\n"
+                << "    \"forward_state_class\": \""
+                << json_escape(final_step.forward_state_class) << "\",\n"
+                << "    \"forward_state_class_signature_sha256\": \""
+                << final_step.forward_state_class_signature_sha256 << "\",\n"
+                << "    \"hidden_tensor_signature_sha256\": \""
+                << final_step.hidden_tensor_signature_sha256 << "\",\n"
+                << "    \"hidden_tensor_rank\": " << final_step.hidden_tensor_rank << ",\n"
+                << "    \"hidden_tensor_elements\": " << final_step.hidden_tensor_elements << ",\n"
+                << "    \"hidden_tensor_import_used\": "
+                << (final_step.hidden_tensor_import_used ? "true" : "false") << ",\n"
+                << "    \"hidden_tensor_blend_used\": "
+                << (final_step.hidden_tensor_blend_used ? "true" : "false") << ",\n"
                 << "    \"projection_carry_mode_kind\": \""
                 << json_escape(final_step.projection_carry_mode_kind) << "\",\n"
                 << "    \"hidden_state_class\": \""
@@ -2926,6 +3576,10 @@ int cmd_inference_run(const Options& opts) {
               << "    \"summary\": \"single native probe completed within its ready envelope\"\n"
               << "  },\n"
               << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n";
+        if (!decode_probe_failure_trap.empty()) {
+          extra << "  \"decode_probe_failure_trap\": \""
+                << json_escape(decode_probe_failure_trap) << "\",\n";
+        }
       }
       if (generated_tokens == 1 && probe.selected_token_id.has_value()) {
         top_level_generated_token_ids = {*probe.selected_token_id};
@@ -2936,6 +3590,7 @@ int cmd_inference_run(const Options& opts) {
       std::string output_policy = "verbatim_native_probe.v1";
       std::string output_summary = "raw VM probe output retained";
       std::string top_level_output = probe.stdout_text;
+      const bool guarded_artifact_caution = guarded_bounded_decode;
       const std::size_t window_end =
           probe.logits_sample_window == 0
               ? probe.logits_candidate_window_start
@@ -2949,8 +3604,11 @@ int cmd_inference_run(const Options& opts) {
             << (probe.tokenizer_seed_supported ? "true" : "false") << ",\n"
             << "    \"basis\": \"" << json_escape(probe.candidate_selection_basis) << "\",\n"
             << "    \"evidence_policy\": \""
-            << json_escape(suppress_candidate_window ? "summary_only_on_degraded.v1"
-                                                     : "full_evidence.v1")
+            << json_escape(suppress_candidate_window
+                               ? "summary_only_on_degraded.v1"
+                               : guarded_artifact_caution
+                                     ? "full_evidence_with_guarded_caution.v1"
+                                     : "full_evidence.v1")
             << "\",\n"
             << "    \"vocab_size\": " << probe.logits_vocab_size << ",\n"
             << "    \"prompt_token_history_count\": " << probe.prompt_token_ids.size() << ",\n"
@@ -2990,8 +3648,11 @@ int cmd_inference_run(const Options& opts) {
           sampled_logits_digest(probe.sampled_token_ids, probe.sampled_token_scores);
       const bool suppress_top_level_logits = payload_status == "degraded";
       extra << "  \"logits_evidence_policy\": \""
-            << json_escape(suppress_top_level_logits ? "summary_only_on_degraded.v1"
-                                                    : "full_evidence.v1")
+            << json_escape(suppress_top_level_logits
+                               ? "summary_only_on_degraded.v1"
+                               : guarded_artifact_caution
+                                     ? "full_evidence_with_guarded_caution.v1"
+                                     : "full_evidence.v1")
             << "\",\n"
             << "  \"sampled_logits_count\": " << probe.sampled_token_ids.size() << ",\n"
             << "  \"sampled_logits_signature_sha256\": \""
@@ -3016,6 +3677,9 @@ int cmd_inference_run(const Options& opts) {
         output_policy = "suppressed_on_degraded.v1";
         output_summary = "raw VM probe output suppressed because bounded decode degraded";
         top_level_output.clear();
+      } else if (guarded_artifact_caution) {
+        output_policy = "verbatim_with_guarded_caution.v1";
+        output_summary = "raw VM probe output retained with guarded caution";
       }
       if (companions.has_tokenizer && !top_level_generated_token_ids.empty()) {
         top_level_generated_token_pieces =
@@ -3023,6 +3687,8 @@ int cmd_inference_run(const Options& opts) {
         if (payload_status == "degraded" && !top_level_generated_token_pieces.empty()) {
           top_level_generated_token_pieces.resize(1);
           generated_preview_policy = "first_token_only_on_degraded.v1";
+        } else if (guarded_artifact_caution) {
+          generated_preview_policy = "full_sequence_with_guarded_caution.v1";
         }
         top_level_generated_text_preview = render_token_piece_preview(top_level_generated_token_pieces);
       }
@@ -3045,7 +3711,59 @@ int cmd_inference_run(const Options& opts) {
               << json_escape(generated_preview_policy) << "\",\n"
               << "    \"summary\": \"conservative evidence shaping applied because bounded decode degraded\"\n"
               << "  },\n";
+      } else if (guarded_artifact_caution) {
+        extra << "  \"guarded_artifact_summary\": {\n"
+              << "    \"candidate_selection_evidence_policy\": \""
+              << "full_evidence_with_guarded_caution.v1\",\n"
+              << "    \"logits_evidence_policy\": \""
+              << "full_evidence_with_guarded_caution.v1\",\n"
+              << "    \"decode_trace_detail_policy\": \""
+              << "full_evidence_with_guarded_caution.v1\",\n"
+              << "    \"output_policy\": \"" << json_escape(output_policy) << "\",\n"
+              << "    \"generated_preview_policy\": \""
+              << json_escape(generated_preview_policy) << "\",\n"
+              << "    \"summary\": \"guarded evidence retained with explicit caution because bounded decode stayed weak\"\n"
+              << "  },\n";
       }
+      extra << "  \"artifact_visibility\": {\n"
+            << "    \"kind\": \""
+            << json_escape(payload_status == "degraded"
+                               ? "degraded"
+                               : guarded_artifact_caution ? "guarded"
+                                                          : "ready")
+            << "\",\n"
+            << "    \"candidate_selection_evidence_policy\": \""
+            << json_escape(suppress_candidate_window
+                               ? "summary_only_on_degraded.v1"
+                               : guarded_artifact_caution
+                                     ? "full_evidence_with_guarded_caution.v1"
+                                     : "full_evidence.v1")
+            << "\",\n"
+            << "    \"logits_evidence_policy\": \""
+            << json_escape(suppress_top_level_logits
+                               ? "summary_only_on_degraded.v1"
+                               : guarded_artifact_caution
+                                     ? "full_evidence_with_guarded_caution.v1"
+                                     : "full_evidence.v1")
+            << "\",\n"
+            << "    \"decode_trace_detail_policy\": \""
+            << json_escape(payload_status == "degraded"
+                               ? "summary_only_on_degraded.v1"
+                               : guarded_artifact_caution
+                                     ? "full_evidence_with_guarded_caution.v1"
+                                     : "full_evidence.v1")
+            << "\",\n"
+            << "    \"output_policy\": \"" << json_escape(output_policy) << "\",\n"
+            << "    \"generated_preview_policy\": \"" << json_escape(generated_preview_policy)
+            << "\",\n"
+            << "    \"summary\": \""
+            << json_escape(payload_status == "degraded"
+                               ? "bounded decode evidence is summarized or suppressed"
+                               : guarded_artifact_caution
+                                     ? "bounded decode evidence is retained with explicit caution"
+                                     : "bounded decode evidence is fully retained")
+            << "\"\n"
+            << "  },\n";
       extra << "  \"output_policy\": \"" << json_escape(output_policy) << "\",\n"
             << "  \"output_summary\": \"" << json_escape(output_summary) << "\",\n"
             << "  \"output\": \"" << json_escape(top_level_output) << "\",\n"
@@ -3091,6 +3809,15 @@ int cmd_inference_run(const Options& opts) {
             << "    \"recovery_triggered\": false,\n"
             << "    \"stability_recovery_exhausted\": false,\n"
             << "    \"summary\": \"single native probe completed within its ready envelope\"\n"
+            << "  },\n"
+            << "  \"artifact_visibility\": {\n"
+            << "    \"kind\": \"ready\",\n"
+            << "    \"candidate_selection_evidence_policy\": \"not_applicable_single_probe.v1\",\n"
+            << "    \"logits_evidence_policy\": \"not_applicable_single_probe.v1\",\n"
+            << "    \"decode_trace_detail_policy\": \"not_applicable_single_probe.v1\",\n"
+            << "    \"output_policy\": \"verbatim_native_probe.v1\",\n"
+            << "    \"generated_preview_policy\": \"not_applicable_single_probe.v1\",\n"
+            << "    \"summary\": \"single native probe evidence is fully retained\"\n"
             << "  },\n"
             << "  \"termination_reason\": \"no_logits_row_probe\",\n"
             << "  \"output\": \"" << json_escape(probe.stdout_text) << "\",\n"

@@ -23,7 +23,8 @@ cmake --build build
 - `model-load-canonfs/` — tiny CanonFS-backed `--weights-model` example using a
   synthetic `.t81w`, a generated SafeTensors source plus `t81 weights import`,
   a tiny native `T3_K` GGUF quantize/import lane, a real downloaded tiny
-  Hugging Face model, one-command `ready` and degraded rerun scripts,
+  Hugging Face model, one-command `ready`, `guarded`, forward-state, and
+  `degraded` probe scripts,
   `canonfs put-file`, and allow/deny policy checks.
 - `tisc/` — sample precompiled `.tisc` binaries used for runtime/disasm/debug examples.
 - `system-integration/` — Comprehensive examples demonstrating the coalescence of T81Lang, TISC, HanoiVM, Axion, and CanonFS.

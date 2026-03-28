@@ -20,7 +20,7 @@ From the repo root:
 
 ```bash
 cmake -S . -B build -G Ninja -DT81_BUILD_EXAMPLES=ON
-cmake --build build --target t81 t81_make_demo_model t81_make_demo_safetensors t81_make_demo_float_safetensors
+cmake --build build --target t81 t81_make_demo_model t81_make_guarded_llama_demo t81_make_degraded_llama_demo t81_make_demo_safetensors t81_make_demo_float_safetensors
 ```
 
 ## Files
@@ -55,6 +55,7 @@ Expected result:
 
 - `status: "pass"`
 - `readiness.kind: "ready"`
+- `artifact_visibility.kind: "ready"`
 - `termination_reason: "no_logits_row_probe"`
 - `output: "<tensor#1>"`
 
@@ -63,6 +64,72 @@ The same path is also wrapped in:
 ```bash
 bash examples/model-load-canonfs/run_ready_ai_probe.sh
 ```
+
+## Guarded AI Probe Path
+
+This is the checked-in `guarded` example. It uses the real tiny Hugging Face
+Llama artifact and lands in the guarded envelope: bounded decode stays weak,
+but it does not exhaust into degraded mode.
+
+```bash
+bash examples/model-load-canonfs/run_guarded_ai_probe.sh
+```
+
+Expected result:
+
+- `status: "pass"`
+- `bounded_decode_health.kind: "guarded"`
+- `readiness.kind: "guarded"`
+- `decode_trace_policy: "full_trace_with_guarded_caution.v1"`
+- `output_policy: "verbatim_with_guarded_caution.v1"`
+- `weak_steps: [2]`
+- `termination_reason: "max_tokens_reached"`
+
+## Forward-State AI Probe Path
+
+This is the smallest checked-in multi-step forward-state example. It runs the
+same tiny synthetic Llama-shaped model for three decode steps and now proves a
+bounded carried hidden-tensor path, not just row-derived forward-state
+summaries. Later decode steps reimport a bounded hidden tensor through the
+compiled tensor-pool path and stay in the `ready` envelope.
+
+```bash
+MAX_TOKENS=3 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
+```
+
+Expected result:
+
+- `status: "pass"`
+- `readiness.kind: "ready"`
+- `generated_tokens: 3`
+- `true_state_carry_supported: true`
+- `state_carry_limitations.kind: "bounded_intermediate_tensor_literal_import.v1"`
+- `intermediate_tensor_import_used: true`
+- `intermediate_tensor_blend_used: true`
+- `hidden_tensor_import_used: true` on later decode steps
+- `forward_state_generation: 2`
+- `consumed_state_input_row_ids` is present on later decode steps
+- `forward_state_kind: "projection_carried_forward_state.v1"`
+- `forward_state_summary.kind: "evolving_projection_forward_state.v1"`
+
+## Degraded AI Probe Path
+
+This is the smallest one-command `degraded` rerun path. It uses a checked-in
+synthetic Llama-shaped helper with an intentionally undersized embedding table,
+so the decode probe becomes unavailable and the lane drops into the conservative
+degraded posture.
+
+```bash
+bash examples/model-load-canonfs/run_degraded_ai_probe.sh
+```
+
+Expected result:
+
+- `status: "degraded"`
+- `readiness.kind: "degraded"`
+- `artifact_visibility.kind: "degraded"`
+- `output_policy: "suppressed_on_degraded.v1"`
+- `termination_reason: "decode_probe_unavailable"`
 
 ## Real Weights Import Path
 

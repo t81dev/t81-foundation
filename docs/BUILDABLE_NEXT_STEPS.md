@@ -73,11 +73,24 @@ repo.
     and step `0` can now start with bounded prompt-token context when the
     tokenizer yields multiple prompt tokens. Multi-token prompts can also seed
     the initial candidate window from full prompt-token history, and the
-    bounded context window now preserves the original prompt anchor token, but
-    true state carry is still left to do. Repeated weak or recovery-grade
+    bounded context window now preserves the original prompt anchor token.
+    The lane now also exports real intermediate hidden-tensor evidence from
+    live VM state and reimports a bounded carried hidden tensor into later
+    decode probes through the compiled tensor-pool path and now blend that
+    carried tensor with the current `attn0` path, so bounded hidden
+    state carry is now real. Repeated weak or recovery-grade
     bounded decode steps now stop intentionally with
     `termination_reason: "stability_recovery_exhausted"` instead of silently
-    extending the trace.
+    extending the trace. Checked-in runnable examples now prove `ready`,
+    `guarded`, and `degraded`. The bounded decode state now also carries an
+    explicit `forward_state` object derived from the hidden projection.
+    That state now records `forward_state_generation`, persists a bounded slice
+    of prior carried rows with decay, and has a checked-in 3-step probe via
+    `examples/model-load-canonfs/run_forward_state_ai_probe.sh`.
+    That 3-step path now visibly shifts the third decode step into a
+    history-heavy forward-state mode. The remaining limitation is narrower
+    now: general KV-cache or arbitrary intermediate-tensor import is still
+    left to do.
 
 ## Pick one lane
 

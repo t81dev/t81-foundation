@@ -26,6 +26,80 @@ The biggest current gap is that `t81 ai inference run` is only partly real today
 - still scaffolded for the other backend modes, which continue to emit
   synthetic/reporting payloads
 
+Readiness example coverage today:
+
+- `ready`: proven by
+  [run_ready_ai_probe.sh](/Users/t81dev/Code/t81-foundation/examples/model-load-canonfs/run_ready_ai_probe.sh)
+- `guarded`: proven by
+  [run_guarded_ai_probe.sh](/Users/t81dev/Code/t81-foundation/examples/model-load-canonfs/run_guarded_ai_probe.sh)
+  using the real tiny Hugging Face Llama artifact, and now uses explicit
+  guarded-caution evidence policies instead of looking identical to `ready`
+- the bounded native lane now also emits a top-level `artifact_visibility`
+  block so callers can inspect evidence posture in one place
+- the simple `ready` single-probe lane now emits the same top-level
+  `artifact_visibility` shape, using `not_applicable_single_probe.v1`
+  markers where bounded-decode-specific evidence does not exist
+- the bounded native lane now also carries an explicit `forward_state`
+  object, derived from the bounded hidden projection and used on the later
+  decode transition path
+- that carried `forward_state` now also has its own class/signature and can
+  shape later decode transitions directly
+- the carried `forward_state` now also records generation depth and chains the
+  previous forward-state signature into later-step state evolution, so it is no
+  longer overwritten as a purely single-step snapshot
+- the carried `forward_state` now also persists bounded prior rows with decay,
+  ranks and trims them intentionally, and exposes a runnable 3-step evolution
+  path through
+  [run_forward_state_ai_probe.sh](/Users/t81dev/Code/t81-foundation/examples/model-load-canonfs/run_forward_state_ai_probe.sh)
+- that 3-step path now also has a visibly different third-step control mode:
+  `forward_state_history_feedback_state_transition.v1`,
+  `forward_state_history_projection.v1`, and
+  `prefer_tail_nonnegative_else_max.v1`
+- the top-level payload now also emits a compact `forward_state_summary`, so
+  callers can see max generation depth and carried-state usage without walking
+  the full trace
+- later decode steps now also expose the actual combined carried-state input
+  that was fed back into the VM through `consumed_state_input_row_ids`, rather
+  than only the forward-state and hidden-projection slices separately
+- the top-level payload now also emits a compact `state_input_summary`, so
+  callers can see how much combined carried state actually influenced later VM
+  steps without reading the full trace
+- that `state_input_summary` now also carries a final state-input signature, so
+  callers can distinguish the actual merged carried-state control input from
+  the forward-state summary alone
+- the native lane now also exports real intermediate hidden-tensor evidence
+  from live VM state:
+  - `intermediate_tensor_export_supported`
+  - `hidden_tensor_summary`
+  - per-step `hidden_tensor_signature_sha256`
+  - and later decode window seeding now prefers that hidden-tensor signature
+    before looser merged row-state digests
+- the bounded forward-state lane now also imports that carried hidden tensor
+  back into later decode probes through the compiled tensor-pool path:
+  - `true_state_carry_supported: true`
+  - `state_carry_limitations.kind:
+    "bounded_intermediate_tensor_literal_import.v1"`
+  - `state_carry_limitations.import_path:
+    "compiled_tensor_literal_reimport.v1"`
+  - `state_carry_limitations.import_compute_path:
+    "attn0_plus_carried_hidden_blend.v1"`
+  - per-step `hidden_tensor_import_used`
+  - per-step `hidden_tensor_blend_used`
+- the remaining limitation is narrower now: this is a bounded compiled-literal
+  carry path, not a general KV-cache or arbitrary intermediate-tensor import
+  primitive
+- the checked-in forward-state probe now proves that bounded hidden-tensor
+  carry is on the real compute path, not just the reporting path:
+  - later decode steps report `hidden_tensor_import_used: true`
+  - `forward_state_generation` reaches `2`
+  - `consumed_state_input_row_ids` shows the merged carried-state rows that
+    fed back into later VM steps
+- `degraded`: proven by
+  [run_degraded_ai_probe.sh](/Users/t81dev/Code/t81-foundation/examples/model-load-canonfs/run_degraded_ai_probe.sh)
+  using a checked-in synthetic fixture that forces `decode_probe_unavailable`,
+  and by
+  [run_real_hf_tiny_model.sh](/Users/t81dev/Code/t81-foundation/examples/model-load-canonfs/run_real_hf_tiny_model.sh)
+
 ## Classification
 
 - `real`: performs a concrete implemented operation with meaningful current value
@@ -187,6 +261,14 @@ Key observations from the current implementation:
     - the top-level payload now also emits `bounded_decode_health`, and the
       overall `status` can degrade from `pass` to `degraded` when bounded
       native decode exhausts repeated weak or unavailable recovery steps
+    - the carried `forward_state` is no longer just a freshly overwritten
+      snapshot:
+      later steps now persist a bounded slice of prior forward-state rows with
+      score decay, and the state records `forward_state_generation` so
+      multi-step runs can prove real carried-state evolution
+    - once that carried state is established, later decode steps can now shift
+      into an explicitly history-heavy forward-state mode with a distinct
+      transition kind, decode mode, carry layout, and selection policy
     - the hidden-state class now also conditions the bounded sample width for
       later decode steps, surfaced as `sample_window_kind` and
       `sample_window_used`
