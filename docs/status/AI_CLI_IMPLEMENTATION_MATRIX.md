@@ -39,6 +39,10 @@ Readiness example coverage today:
 - the simple `ready` single-probe lane now emits the same top-level
   `artifact_visibility` shape, using `not_applicable_single_probe.v1`
   markers where bounded-decode-specific evidence does not exist
+- when the bounded combined architecture state is active, `artifact_visibility`
+  now also carries the architecture-state `confidence_envelope`,
+  `architecture_state_stability_kind`, and
+  `architecture_state_guardrail_triggered` fields alongside `readiness`
 - the bounded native lane now also carries an explicit `forward_state`
   object, derived from the bounded hidden projection and used on the later
   decode transition path
@@ -85,6 +89,36 @@ Readiness example coverage today:
     "attn0_plus_carried_hidden_blend.v1"`
   - per-step `hidden_tensor_import_used`
   - per-step `hidden_tensor_blend_used`
+  - carried hidden tensors now evolve across steps and report
+    `hidden_tensor_carry_mode_kind:
+    "evolved_hidden_tensor_feedback.v1"`
+  - later decode transitions can now enter
+    `hidden_tensor_feedback_state_transition.v1` with
+    `candidate_basis_kind: "hidden_tensor_feedback_window.v1"`
+  - top-level `kv_state_summary` now exposes a bounded
+    `bounded_qk_tensor_state.v1` artifact derived from live `q1`/`k1`
+    tensor signatures
+  - top-level `architecture_state_summary` now exposes a bounded combined
+    `bounded_hidden_tensor_qk_forward_state.v1` artifact, and later decode
+    window seeding now prefers that combined architecture-state signature
+  - later decode transitions can now enter
+    `architecture_state_feedback_state_transition.v1` with
+    `candidate_basis_kind: "architecture_state_feedback_window.v1"` and
+    `decode_mode_kind: "architecture_state_feedback_projection.v1"`
+  - `architecture_state_summary` now also carries a compact confidence/stability
+    readout for that combined state
+  - per-step `decode_trace` and `final_decode_state` now also expose
+    `architecture_state_confidence_score` and
+    `architecture_state_stability_kind`, so callers can see the combined
+    architecture-state posture without inferring it from the generic probe
+    `stability` block
+  - that combined architecture-state stability is now also part of the
+    recovery/termination path for later bounded decode steps
+  - top-level `bounded_decode_health` and `readiness` now switch to
+    `confidence_envelope: "bounded_architecture_state_probe.v1"` when the
+    combined architecture state is active, and they surface
+    `architecture_state_guardrail_triggered` plus
+    `architecture_state_stability_kind`
 - the remaining limitation is narrower now: this is a bounded compiled-literal
   carry path, not a general KV-cache or arbitrary intermediate-tensor import
   primitive

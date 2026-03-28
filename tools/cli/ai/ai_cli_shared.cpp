@@ -462,6 +462,17 @@ struct NativeProbeResult {
   std::vector<int> hidden_tensor_shape;
   bool hidden_tensor_import_used = false;
   bool hidden_tensor_blend_used = false;
+  std::string hidden_tensor_carry_mode_kind = "current_only.v1";
+  std::string kv_state_kind = "unavailable";
+  std::string q_tensor_signature_sha256;
+  std::string k_tensor_signature_sha256;
+  std::size_t kv_tensor_rank = 0;
+  std::size_t kv_tensor_elements = 0;
+  std::string kv_state_signature_sha256;
+  std::string architecture_state_kind = "unavailable";
+  std::string architecture_state_signature_sha256;
+  std::string architecture_state_class;
+  std::string architecture_state_class_signature_sha256;
   std::optional<t81::T729DynamicTensor> hidden_tensor;
   std::string selection_policy_kind = "max_score.v1";
   double confidence_score = 0.0;
@@ -680,6 +691,17 @@ struct NativeDecodeState {
   std::size_t hidden_tensor_elements = 0;
   std::vector<int> hidden_tensor_shape;
   std::optional<t81::T729DynamicTensor> carried_hidden_tensor;
+  std::string hidden_tensor_carry_mode_kind = "current_only.v1";
+  std::string kv_state_kind = "unavailable";
+  std::string q_tensor_signature_sha256;
+  std::string k_tensor_signature_sha256;
+  std::size_t kv_tensor_rank = 0;
+  std::size_t kv_tensor_elements = 0;
+  std::string kv_state_signature_sha256;
+  std::string architecture_state_kind = "unavailable";
+  std::string architecture_state_signature_sha256;
+  std::string architecture_state_class;
+  std::string architecture_state_class_signature_sha256;
   std::string projection_carry_mode_kind = "balanced_context_projection.v1";
   std::string hidden_state_class;
   std::string hidden_state_class_signature_sha256;
@@ -744,6 +766,34 @@ std::string decode_state_seed_digest(const NativeDecodeState& state) {
 
 std::string candidate_window_seed_digest(const NativeDecodeState& state) {
   return prefixed_history_digest("candidate-window", combined_decode_history(state));
+}
+
+std::optional<t81::T729DynamicTensor> evolved_hidden_tensor(
+    const std::optional<t81::T729DynamicTensor>& previous,
+    const std::optional<t81::T729DynamicTensor>& current) {
+  if (!current.has_value()) {
+    return std::nullopt;
+  }
+  if (!previous.has_value()) {
+    return current;
+  }
+  if (previous->shape() != current->shape()) {
+    return current;
+  }
+
+  const auto prev_values = previous->snapshot_values();
+  const auto curr_values = current->snapshot_values();
+  if (prev_values.size() != curr_values.size()) {
+    return current;
+  }
+
+  std::vector<float> blended;
+  blended.reserve(curr_values.size());
+  for (std::size_t i = 0; i < curr_values.size(); ++i) {
+    blended.push_back(static_cast<float>(curr_values[i] * 0.75F + prev_values[i] * 0.25F));
+  }
+  return t81::T729DynamicTensor::from_host_float_data(
+      current->shape(), std::move(blended), current->numeric_class());
 }
 
 std::vector<int> state_input_rows_for_state(const NativeDecodeState& state) {
@@ -888,6 +938,41 @@ void refresh_forward_state(NativeDecodeState& state) {
       sha3_hex_text(state.forward_state_class + "|" + state.forward_state_signature_sha256);
 }
 
+void refresh_architecture_state(NativeDecodeState& state) {
+  state.architecture_state_kind = "unavailable";
+  state.architecture_state_signature_sha256.clear();
+  state.architecture_state_class.clear();
+  state.architecture_state_class_signature_sha256.clear();
+
+  const bool has_hidden_tensor = !state.hidden_tensor_signature_sha256.empty();
+  const bool has_kv_state = !state.kv_state_signature_sha256.empty();
+  const bool has_forward_state = !state.forward_state_signature_sha256.empty();
+  if (!has_hidden_tensor && !has_kv_state && !has_forward_state) {
+    return;
+  }
+
+  state.architecture_state_kind = "bounded_hidden_tensor_qk_forward_state.v1";
+  std::ostringstream text;
+  text << state.architecture_state_kind << "|"
+       << "hidden=" << state.hidden_tensor_signature_sha256 << "|"
+       << "kv=" << state.kv_state_signature_sha256 << "|"
+       << "forward=" << state.forward_state_signature_sha256 << "|"
+       << "hidden_mode=" << state.hidden_tensor_carry_mode_kind << "|"
+       << "projection_mode=" << state.projection_carry_mode_kind << "|"
+       << "hidden_class=" << state.hidden_state_class << "|"
+       << "forward_class=" << state.forward_state_class << "|"
+       << "gen=" << state.forward_state_generation;
+  state.architecture_state_signature_sha256 = sha3_hex_text(text.str());
+
+  const std::string tensor_band = has_hidden_tensor ? "tensor" : "row";
+  const std::string kv_band = has_kv_state ? "qk" : "nokv";
+  const std::string forward_band = has_forward_state ? "carried" : "fresh";
+  state.architecture_state_class =
+      tensor_band + "_" + kv_band + "_" + forward_band + "_" + state.hidden_tensor_carry_mode_kind;
+  state.architecture_state_class_signature_sha256 =
+      sha3_hex_text(state.architecture_state_class + "|" + state.architecture_state_signature_sha256);
+}
+
 std::string sampled_logits_digest(const std::vector<int>& token_ids,
                                   const std::vector<double>& token_scores) {
   std::ostringstream text;
@@ -910,6 +995,14 @@ std::string class_conditioned_candidate_basis(std::string_view hidden_state_clas
 }
 
 std::string stability_conditioned_candidate_basis(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return "architecture_state_feedback_window.v1";
+  }
+  if (state.hidden_tensor_carry_mode_kind == "evolved_hidden_tensor_feedback.v1" &&
+      state.forward_state_generation >= 1) {
+    return "hidden_tensor_feedback_window.v1";
+  }
   if (state.forward_state_generation >= 1) {
     return "forward_state_history_feedback_window.v1";
   }
@@ -978,7 +1071,17 @@ bool hidden_state_class_is(std::string_view hidden_state_class, std::string_view
   return hidden_state_class_has_prefix(hidden_state_class, prefix);
 }
 
+double architecture_state_confidence_score(const NativeDecodeState& state);
+std::string architecture_state_stability_kind(const NativeDecodeState& state);
+
 bool stability_requires_recovery(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    const std::string architecture_stability = architecture_state_stability_kind(state);
+    if (architecture_stability == "fragile" || architecture_stability == "ambiguous") {
+      return true;
+    }
+  }
   const bool strong_forward_state =
       state.forward_state_class.find("strong_") == 0 &&
       !state.forward_state_signature_sha256.empty();
@@ -989,6 +1092,16 @@ bool stability_requires_recovery(const NativeDecodeState& state) {
 
 bool stability_should_terminate_decode(const NativeDecodeState& state,
                                        std::size_t consecutive_recovery_steps) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    const std::string architecture_stability = architecture_state_stability_kind(state);
+    if (architecture_stability == "ambiguous" && consecutive_recovery_steps >= 1) {
+      return true;
+    }
+    if (architecture_stability == "fragile" && consecutive_recovery_steps >= 2) {
+      return true;
+    }
+  }
   if (state.stability_kind == "ambiguous" && consecutive_recovery_steps >= 1) {
     return true;
   }
@@ -1115,11 +1228,102 @@ std::size_t class_conditioned_hidden_projection_keep(std::string_view hidden_sta
   return std::min<std::size_t>(2, available);
 }
 
+double architecture_state_confidence_score(const NativeDecodeState& state) {
+  if (state.architecture_state_signature_sha256.empty()) {
+    return 0.0;
+  }
+  double score = state.confidence_score;
+  if (!state.hidden_tensor_signature_sha256.empty()) {
+    score += 0.4;
+  }
+  if (!state.kv_state_signature_sha256.empty()) {
+    score += 0.4;
+  }
+  if (!state.forward_state_signature_sha256.empty()) {
+    score += 0.4;
+  }
+  if (state.forward_state_generation >= 1) {
+    score += 0.2 * static_cast<double>(state.forward_state_generation);
+  }
+  return score;
+}
+
+std::string architecture_state_stability_kind(const NativeDecodeState& state) {
+  const double score = architecture_state_confidence_score(state);
+  if (score >= 2.2) {
+    return "strong";
+  }
+  if (score >= 1.2) {
+    return "steady";
+  }
+  if (score >= 0.5) {
+    return "fragile";
+  }
+  return "ambiguous";
+}
+
+std::size_t architecture_state_conditioned_sample_window(const NativeDecodeState& state,
+                                                         std::size_t base,
+                                                         std::size_t cap) {
+  const std::string stability = architecture_state_stability_kind(state);
+  if (stability == "strong") {
+    return std::min<std::size_t>(cap, std::max<std::size_t>(base, 7));
+  }
+  if (stability == "steady") {
+    return std::min<std::size_t>(cap, std::max<std::size_t>(base, 6));
+  }
+  if (stability == "fragile") {
+    return std::min<std::size_t>(cap, std::max<std::size_t>(base, 5));
+  }
+  return std::min<std::size_t>(cap, std::max<std::size_t>(base, 4));
+}
+
+std::size_t architecture_state_conditioned_context_window(const NativeDecodeState& state,
+                                                          std::size_t base) {
+  const std::string stability = architecture_state_stability_kind(state);
+  if (stability == "strong") {
+    return std::max<std::size_t>(base, 6);
+  }
+  if (stability == "steady") {
+    return std::max<std::size_t>(base, 5);
+  }
+  if (stability == "fragile") {
+    return std::max<std::size_t>(base, 4);
+  }
+  return std::max<std::size_t>(base, 3);
+}
+
+std::string architecture_state_conditioned_selection_policy(const NativeDecodeState& state) {
+  const std::string stability = architecture_state_stability_kind(state);
+  if (stability == "strong") {
+    return "prefer_middle_among_top3.v1";
+  }
+  if (stability == "steady") {
+    return "prefer_earliest_among_top2.v1";
+  }
+  return "max_score.v1";
+}
+
+std::string architecture_state_conditioned_carry_probe_layout(const NativeDecodeState& state) {
+  const std::string stability = architecture_state_stability_kind(state);
+  if (stability == "strong") {
+    return "centered_compact_window.v1";
+  }
+  if (stability == "steady") {
+    return "stride2_window.v1";
+  }
+  return "reverse_contiguous_window.v1";
+}
+
 std::size_t stability_conditioned_sample_window(const NativeDecodeState& state,
                                                 std::size_t vocab_size) {
   const std::size_t base = class_conditioned_sample_window(state.hidden_state_class, vocab_size);
   const std::size_t cap = std::min<std::size_t>(kLogitsSampleWindow, vocab_size);
   const bool recovery = stability_requires_recovery(state);
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return architecture_state_conditioned_sample_window(state, base, cap);
+  }
   if (recovery) {
     return std::min<std::size_t>(cap, std::max<std::size_t>(base, 6));
   }
@@ -1136,6 +1340,10 @@ std::size_t stability_conditioned_sample_window(const NativeDecodeState& state,
 }
 
 std::string stability_conditioned_selection_policy(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return architecture_state_conditioned_selection_policy(state);
+  }
   if (state.forward_state_generation >= 1) {
     return "prefer_tail_nonnegative_else_max.v1";
   }
@@ -1147,6 +1355,14 @@ std::string stability_conditioned_selection_policy(const NativeDecodeState& stat
 }
 
 std::string stability_conditioned_decode_mode(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return "architecture_state_feedback_projection.v1";
+  }
+  if (state.hidden_tensor_carry_mode_kind == "evolved_hidden_tensor_feedback.v1" &&
+      state.forward_state_generation >= 1) {
+    return "hidden_tensor_feedback_projection.v1";
+  }
   if (state.forward_state_generation >= 1) {
     return "forward_state_history_projection.v1";
   }
@@ -1162,6 +1378,14 @@ std::string stability_conditioned_decode_mode(const NativeDecodeState& state) {
 
 std::size_t stability_conditioned_context_window(const NativeDecodeState& state) {
   const std::size_t base = class_conditioned_context_window(state.hidden_state_class);
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return architecture_state_conditioned_context_window(state, base);
+  }
+  if (state.hidden_tensor_carry_mode_kind == "evolved_hidden_tensor_feedback.v1" &&
+      state.forward_state_generation >= 1) {
+    return std::max<std::size_t>(base, 6);
+  }
   if (state.forward_state_generation >= 1) {
     return std::max<std::size_t>(base, 5);
   }
@@ -1179,6 +1403,14 @@ std::size_t stability_conditioned_context_window(const NativeDecodeState& state)
 }
 
 std::string stability_conditioned_carry_probe_layout(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return architecture_state_conditioned_carry_probe_layout(state);
+  }
+  if (state.hidden_tensor_carry_mode_kind == "evolved_hidden_tensor_feedback.v1" &&
+      state.forward_state_generation >= 1) {
+    return "centered_compact_window.v1";
+  }
   if (state.forward_state_generation >= 1) {
     return "reverse_contiguous_window.v1";
   }
@@ -1205,6 +1437,14 @@ std::string stability_conditioned_carry_probe_layout(const NativeDecodeState& st
 }
 
 std::string stability_conditioned_transition_kind(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    return "architecture_state_feedback_state_transition.v1";
+  }
+  if (state.hidden_tensor_carry_mode_kind == "evolved_hidden_tensor_feedback.v1" &&
+      state.forward_state_generation >= 1) {
+    return "hidden_tensor_feedback_state_transition.v1";
+  }
   if (state.forward_state_generation >= 1) {
     return "forward_state_history_feedback_state_transition.v1";
   }
@@ -1320,6 +1560,28 @@ void apply_projection_carry_mode(NativeProbeResult& result) {
 }
 
 std::size_t next_decode_window_start(const NativeDecodeState& state, std::size_t vocab_size) {
+  if (!state.architecture_state_signature_sha256.empty()) {
+    const std::size_t base =
+        digest_seed_window_start(state.architecture_state_signature_sha256, vocab_size);
+    std::size_t content_offset = state.forward_state_generation + state.kv_tensor_rank +
+                                 state.hidden_tensor_rank + state.hidden_tensor_elements;
+    if (!state.architecture_state_class.empty()) {
+      content_offset += state.architecture_state_class.size();
+    }
+    return (base + content_offset) % vocab_size;
+  }
+  if (!state.kv_state_signature_sha256.empty()) {
+    const std::size_t base =
+        digest_seed_window_start(state.kv_state_signature_sha256, vocab_size);
+    std::size_t content_offset = state.kv_tensor_rank + state.kv_tensor_elements +
+                                 state.forward_state_generation;
+    if (!state.projection_carry_mode_kind.empty()) {
+      return (base + content_offset +
+              projection_carry_mode_window_offset(state.projection_carry_mode_kind)) %
+             vocab_size;
+    }
+    return (base + content_offset) % vocab_size;
+  }
   if (!state.hidden_tensor_signature_sha256.empty()) {
     const std::size_t base =
         digest_seed_window_start(state.hidden_tensor_signature_sha256, vocab_size);
@@ -2255,7 +2517,11 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
                << ": T81Float = std.tnn.accum(carry_row" << i << ", attn1);\n"
                << "  print(carry_score" << i << ");\n";
       }
-      source << "  let attn1_export: Tensor = std.tensor.attention(q1, k1, v1);\n"
+      source << "  let q1_export: Tensor = q1;\n"
+             << "  let k1_export: Tensor = k1;\n"
+             << "  let attn1_export: Tensor = std.tensor.attention(q1, k1, v1);\n"
+             << "  let _export_keepalive_q = q1_export;\n"
+             << "  let _export_keepalive_k = k1_export;\n"
              << "  let _export_keepalive = attn1_export;\n";
       source << "  return 0;\n"
              << "}\n";
@@ -2307,12 +2573,14 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
 
   populate_sampled_logits(result);
   if (result.logits_row_probe_supported) {
+    std::vector<const t81::T729DynamicTensor*> exported_tensors;
     for (std::size_t i = vm->state().tensors.size(); i > 0; --i) {
       const std::size_t tensor_index = i - 1;
       if (!vm->state().tensors[tensor_index].has_value()) {
         continue;
       }
       const auto& tensor = *vm->state().tensors[tensor_index];
+      exported_tensors.push_back(&tensor);
       result.intermediate_tensor_export_supported = true;
       result.hidden_tensor_handle = static_cast<int>(tensor_index + 1);
       result.hidden_tensor_rank = static_cast<std::size_t>(tensor.rank());
@@ -2320,7 +2588,24 @@ NativeProbeResult run_native_vm_probe(const std::shared_ptr<t81::weights::ModelF
       result.hidden_tensor_shape = tensor.shape();
       result.hidden_tensor_signature_sha256 = tensor_signature_sha256(tensor);
       result.hidden_tensor = tensor;
-      break;
+      if (exported_tensors.size() >= 3) {
+        break;
+      }
+    }
+    if (exported_tensors.size() >= 2) {
+      const auto& k_tensor = *exported_tensors[0];
+      const auto& q_tensor =
+          *exported_tensors[exported_tensors.size() >= 3 ? 2 : 1];
+      result.kv_state_kind = "bounded_qk_tensor_state.v1";
+      result.q_tensor_signature_sha256 = tensor_signature_sha256(q_tensor);
+      result.k_tensor_signature_sha256 = tensor_signature_sha256(k_tensor);
+      result.kv_tensor_rank = static_cast<std::size_t>(q_tensor.rank());
+      result.kv_tensor_elements = q_tensor.size();
+      result.kv_state_signature_sha256 =
+          sha3_hex_text(result.q_tensor_signature_sha256 + "|" +
+                        result.k_tensor_signature_sha256 + "|" +
+                        std::to_string(result.kv_tensor_rank) + "|" +
+                        std::to_string(result.kv_tensor_elements));
     }
   }
   result.ok = true;
@@ -2540,6 +2825,11 @@ int cmd_inference_run(const Options& opts) {
         bool guarded_bounded_decode = false;
         std::string decode_probe_failure_trap;
         std::vector<int> top_level_generated_token_ids;
+        std::string confidence_envelope = "bounded_native_probe.v1";
+        bool architecture_state_supported = false;
+        std::string final_architecture_state_stability_kind =
+            "not_applicable_single_probe.v1";
+        bool architecture_state_guardrail_triggered = false;
       if (probe.selected_token_id.has_value() && probe.logits_row_probe_supported) {
         struct DecodeStep {
           std::size_t step = 0;
@@ -2586,6 +2876,19 @@ int cmd_inference_run(const Options& opts) {
           std::size_t hidden_tensor_elements = 0;
           bool hidden_tensor_import_used = false;
           bool hidden_tensor_blend_used = false;
+          std::string hidden_tensor_carry_mode_kind;
+          std::string kv_state_kind;
+          std::string q_tensor_signature_sha256;
+          std::string k_tensor_signature_sha256;
+          std::size_t kv_tensor_rank = 0;
+          std::size_t kv_tensor_elements = 0;
+          std::string kv_state_signature_sha256;
+          std::string architecture_state_kind;
+          std::string architecture_state_signature_sha256;
+          std::string architecture_state_class;
+          std::string architecture_state_class_signature_sha256;
+          double architecture_state_confidence_score = 0.0;
+          std::string architecture_state_stability_kind;
           std::string projection_carry_mode_kind;
           std::string hidden_state_class;
           std::string hidden_state_class_signature_sha256;
@@ -2626,7 +2929,15 @@ int cmd_inference_run(const Options& opts) {
         decode_state.hidden_tensor_elements = probe.hidden_tensor_elements;
         decode_state.hidden_tensor_shape = probe.hidden_tensor_shape;
         decode_state.carried_hidden_tensor = probe.hidden_tensor;
+        decode_state.hidden_tensor_carry_mode_kind = "current_only.v1";
+        decode_state.kv_state_kind = probe.kv_state_kind;
+        decode_state.q_tensor_signature_sha256 = probe.q_tensor_signature_sha256;
+        decode_state.k_tensor_signature_sha256 = probe.k_tensor_signature_sha256;
+        decode_state.kv_tensor_rank = probe.kv_tensor_rank;
+        decode_state.kv_tensor_elements = probe.kv_tensor_elements;
+        decode_state.kv_state_signature_sha256 = probe.kv_state_signature_sha256;
         refresh_forward_state(decode_state);
+        refresh_architecture_state(decode_state);
         decode_state.selection_policy_kind = probe.selection_policy_kind;
         decode_state.confidence_score = probe.confidence_score;
         decode_state.logits_margin = probe.logits_margin;
@@ -2680,6 +2991,19 @@ int cmd_inference_run(const Options& opts) {
                                 decode_state.hidden_tensor_elements,
                                 probe.hidden_tensor_import_used,
                                 probe.hidden_tensor_blend_used,
+                                decode_state.hidden_tensor_carry_mode_kind,
+                                decode_state.kv_state_kind,
+                                decode_state.q_tensor_signature_sha256,
+                                decode_state.k_tensor_signature_sha256,
+                                decode_state.kv_tensor_rank,
+                                decode_state.kv_tensor_elements,
+                                decode_state.kv_state_signature_sha256,
+                                decode_state.architecture_state_kind,
+                                decode_state.architecture_state_signature_sha256,
+                                decode_state.architecture_state_class,
+                                decode_state.architecture_state_class_signature_sha256,
+                                architecture_state_confidence_score(decode_state),
+                                architecture_state_stability_kind(decode_state),
                                 decode_state.projection_carry_mode_kind,
                                 decode_state.hidden_state_class,
                                 decode_state.hidden_state_class_signature_sha256,
@@ -2764,13 +3088,38 @@ int cmd_inference_run(const Options& opts) {
           decode_state.hidden_state_class = decode_probe.hidden_state_class;
           decode_state.hidden_state_class_signature_sha256 =
               decode_probe.hidden_state_class_signature_sha256;
-          decode_state.hidden_tensor_signature_sha256 =
-              decode_probe.hidden_tensor_signature_sha256;
-          decode_state.hidden_tensor_rank = decode_probe.hidden_tensor_rank;
-          decode_state.hidden_tensor_elements = decode_probe.hidden_tensor_elements;
-          decode_state.hidden_tensor_shape = decode_probe.hidden_tensor_shape;
-          decode_state.carried_hidden_tensor = decode_probe.hidden_tensor;
+          const auto evolved_hidden = evolved_hidden_tensor(decode_state.carried_hidden_tensor,
+                                                            decode_probe.hidden_tensor);
+          decode_state.carried_hidden_tensor = evolved_hidden;
+          if (evolved_hidden.has_value()) {
+            decode_state.hidden_tensor_signature_sha256 =
+                tensor_signature_sha256(*evolved_hidden);
+            decode_state.hidden_tensor_rank =
+                static_cast<std::size_t>(evolved_hidden->rank());
+            decode_state.hidden_tensor_elements = evolved_hidden->size();
+            decode_state.hidden_tensor_shape = evolved_hidden->shape();
+            decode_state.hidden_tensor_carry_mode_kind =
+                decode_probe.hidden_tensor_import_used
+                    ? "evolved_hidden_tensor_feedback.v1"
+                    : "current_only.v1";
+          } else {
+            decode_state.hidden_tensor_signature_sha256.clear();
+            decode_state.hidden_tensor_rank = 0;
+            decode_state.hidden_tensor_elements = 0;
+            decode_state.hidden_tensor_shape.clear();
+            decode_state.hidden_tensor_carry_mode_kind = "unavailable";
+          }
+          decode_state.kv_state_kind = decode_probe.kv_state_kind;
+          decode_state.q_tensor_signature_sha256 =
+              decode_probe.q_tensor_signature_sha256;
+          decode_state.k_tensor_signature_sha256 =
+              decode_probe.k_tensor_signature_sha256;
+          decode_state.kv_tensor_rank = decode_probe.kv_tensor_rank;
+          decode_state.kv_tensor_elements = decode_probe.kv_tensor_elements;
+          decode_state.kv_state_signature_sha256 =
+              decode_probe.kv_state_signature_sha256;
           refresh_forward_state(decode_state);
+          refresh_architecture_state(decode_state);
           decode_state.selection_policy_kind = decode_probe.selection_policy_kind;
           decode_state.confidence_score = decode_probe.confidence_score;
           decode_state.logits_margin = decode_probe.logits_margin;
@@ -2822,6 +3171,19 @@ int cmd_inference_run(const Options& opts) {
                decode_state.hidden_tensor_elements,
                decode_probe.hidden_tensor_import_used,
                decode_probe.hidden_tensor_blend_used,
+               decode_state.hidden_tensor_carry_mode_kind,
+               decode_state.kv_state_kind,
+               decode_state.q_tensor_signature_sha256,
+               decode_state.k_tensor_signature_sha256,
+               decode_state.kv_tensor_rank,
+               decode_state.kv_tensor_elements,
+               decode_state.kv_state_signature_sha256,
+               decode_state.architecture_state_kind,
+               decode_state.architecture_state_signature_sha256,
+               decode_state.architecture_state_class,
+               decode_state.architecture_state_class_signature_sha256,
+               architecture_state_confidence_score(decode_state),
+               architecture_state_stability_kind(decode_state),
                decode_state.projection_carry_mode_kind,
                decode_state.hidden_state_class,
                decode_state.hidden_state_class_signature_sha256,
@@ -2867,6 +3229,14 @@ int cmd_inference_run(const Options& opts) {
         std::size_t max_hidden_tensor_rank = 0;
         std::size_t max_hidden_tensor_elements = 0;
         std::string final_hidden_tensor_signature_sha256;
+        bool kv_state_supported = false;
+        std::size_t max_kv_tensor_rank = 0;
+        std::size_t max_kv_tensor_elements = 0;
+        std::string final_kv_state_signature_sha256;
+        std::string final_architecture_state_signature_sha256;
+        std::string final_architecture_state_class;
+        double max_architecture_state_confidence = 0.0;
+        final_architecture_state_stability_kind = "unclassified";
         for (const auto& step : decode_steps) {
           max_forward_state_generation =
               std::max(max_forward_state_generation, step.forward_state_generation);
@@ -2885,6 +3255,18 @@ int cmd_inference_run(const Options& opts) {
               std::max(max_hidden_tensor_rank, step.hidden_tensor_rank);
           max_hidden_tensor_elements =
               std::max(max_hidden_tensor_elements, step.hidden_tensor_elements);
+          kv_state_supported = kv_state_supported || !step.kv_state_signature_sha256.empty();
+          max_kv_tensor_rank = std::max(max_kv_tensor_rank, step.kv_tensor_rank);
+          max_kv_tensor_elements = std::max(max_kv_tensor_elements, step.kv_tensor_elements);
+          architecture_state_supported =
+              architecture_state_supported || !step.architecture_state_signature_sha256.empty();
+          if (!step.architecture_state_signature_sha256.empty()) {
+            max_architecture_state_confidence =
+                std::max(max_architecture_state_confidence,
+                         step.architecture_state_confidence_score);
+            final_architecture_state_stability_kind =
+                step.architecture_state_stability_kind;
+          }
           if (step.transition_kind.find("forward_state_feedback_state_transition.v1") !=
                   std::string::npos ||
               step.transition_kind.find("forward_state_history_feedback_state_transition.v1") !=
@@ -2900,6 +3282,23 @@ int cmd_inference_run(const Options& opts) {
           final_state_input_signature_sha256 = state_input_seed_digest(decode_state);
           final_hidden_tensor_signature_sha256 =
               decode_steps.back().hidden_tensor_signature_sha256;
+          final_kv_state_signature_sha256 =
+              decode_steps.back().kv_state_signature_sha256;
+          final_architecture_state_signature_sha256 =
+              decode_steps.back().architecture_state_signature_sha256;
+          final_architecture_state_class = decode_steps.back().architecture_state_class;
+        }
+        bool architecture_state_guardrail_triggered = false;
+        if (bounded_decode_health_kind != "degraded" && architecture_state_supported) {
+          if (final_architecture_state_stability_kind == "ambiguous") {
+            bounded_decode_health_kind = "degraded";
+            payload_status = "degraded";
+            architecture_state_guardrail_triggered = true;
+          } else if (final_architecture_state_stability_kind == "fragile") {
+            bounded_decode_health_kind = "guarded";
+            guarded_bounded_decode = true;
+            architecture_state_guardrail_triggered = true;
+          }
         }
         const bool guarded_weak_nonrecovery =
             !stability_recovery_exhausted && termination_reason != "decode_probe_unavailable" &&
@@ -2914,8 +3313,14 @@ int cmd_inference_run(const Options& opts) {
           bounded_decode_health_kind = "guarded";
           guarded_bounded_decode = true;
         }
+        if (bounded_decode_health_kind == "degraded") {
+          guarded_bounded_decode = false;
+        }
         generated_tokens = decode_steps.size();
         const bool guarded_artifact_caution = bounded_decode_health_kind == "guarded";
+        confidence_envelope = architecture_state_supported
+                                  ? "bounded_architecture_state_probe.v1"
+                                  : "bounded_native_probe.v1";
         const std::string decode_trace_detail_policy =
             bounded_decode_health_kind == "degraded"
                 ? "summary_only_on_degraded.v1"
@@ -2958,6 +3363,11 @@ int cmd_inference_run(const Options& opts) {
               << (intermediate_tensor_import_used ? "true" : "false") << ",\n"
               << "    \"intermediate_tensor_blend_used\": "
               << (intermediate_tensor_blend_used ? "true" : "false") << ",\n"
+              << "    \"hidden_tensor_carry_mode_kind\": \""
+              << json_escape(decode_steps.empty()
+                                 ? "unavailable"
+                                 : decode_steps.back().hidden_tensor_carry_mode_kind)
+              << "\",\n"
               << "    \"max_rank\": " << max_hidden_tensor_rank << ",\n"
               << "    \"max_elements\": " << max_hidden_tensor_elements << ",\n"
               << "    \"final_hidden_tensor_signature_sha256\": \""
@@ -2967,6 +3377,27 @@ int cmd_inference_run(const Options& opts) {
                                  ? "native probes exported intermediate hidden-tensor evidence from live VM state"
                                  : "native probes did not export intermediate hidden-tensor evidence")
               << "\"\n"
+              << "  },\n"
+              << "  \"kv_state_summary\": {\n"
+              << "    \"kind\": \"bounded_qk_tensor_state.v1\",\n"
+              << "    \"supported\": " << (kv_state_supported ? "true" : "false") << ",\n"
+              << "    \"max_rank\": " << max_kv_tensor_rank << ",\n"
+              << "    \"max_elements\": " << max_kv_tensor_elements << ",\n"
+              << "    \"final_kv_state_signature_sha256\": \""
+              << final_kv_state_signature_sha256 << "\",\n"
+              << "    \"summary\": \"native probes exported bounded q/k tensor signatures for architecture-state carry\"\n"
+              << "  },\n"
+              << "  \"architecture_state_summary\": {\n"
+              << "    \"kind\": \"bounded_hidden_tensor_qk_forward_state.v1\",\n"
+              << "    \"supported\": " << (architecture_state_supported ? "true" : "false") << ",\n"
+              << "    \"final_architecture_state_signature_sha256\": \""
+              << final_architecture_state_signature_sha256 << "\",\n"
+              << "    \"final_architecture_state_class\": \""
+              << json_escape(final_architecture_state_class) << "\",\n"
+              << "    \"max_confidence_score\": " << max_architecture_state_confidence << ",\n"
+              << "    \"final_stability_kind\": \""
+              << json_escape(final_architecture_state_stability_kind) << "\",\n"
+              << "    \"summary\": \"native probes carried a bounded combined architecture state across hidden-tensor, q/k, and forward-state evidence\"\n"
               << "  },\n"
               << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
               << "  \"stability_recovery_exhausted\": "
@@ -2991,7 +3422,14 @@ int cmd_inference_run(const Options& opts) {
         extra << "],\n"
               << "  \"bounded_decode_health\": {\n"
               << "    \"kind\": \"" << json_escape(bounded_decode_health_kind) << "\",\n"
-              << "    \"confidence_envelope\": \"bounded_native_probe.v1\",\n"
+              << "    \"confidence_envelope\": \"" << json_escape(confidence_envelope)
+              << "\",\n"
+              << "    \"architecture_state_supported\": "
+              << (architecture_state_supported ? "true" : "false") << ",\n"
+              << "    \"architecture_state_stability_kind\": \""
+              << json_escape(final_architecture_state_stability_kind) << "\",\n"
+              << "    \"architecture_state_guardrail_triggered\": "
+              << (architecture_state_guardrail_triggered ? "true" : "false") << ",\n"
               << "    \"recovery_triggered\": "
               << (!recovery_steps.empty() ? "true" : "false") << ",\n"
               << "    \"stability_recovery_exhausted\": "
@@ -3014,7 +3452,14 @@ int cmd_inference_run(const Options& opts) {
                                  : bounded_decode_health_kind == "guarded" ? "guarded"
                                                                             : "ready")
               << "\",\n"
-              << "    \"confidence_envelope\": \"bounded_native_probe.v1\",\n"
+              << "    \"confidence_envelope\": \"" << json_escape(confidence_envelope)
+              << "\",\n"
+              << "    \"architecture_state_supported\": "
+              << (architecture_state_supported ? "true" : "false") << ",\n"
+              << "    \"architecture_state_stability_kind\": \""
+              << json_escape(final_architecture_state_stability_kind) << "\",\n"
+              << "    \"architecture_state_guardrail_triggered\": "
+              << (architecture_state_guardrail_triggered ? "true" : "false") << ",\n"
               << "    \"recovery_triggered\": "
               << (!recovery_steps.empty() ? "true" : "false") << ",\n"
               << "    \"stability_recovery_exhausted\": "
@@ -3272,6 +3717,30 @@ int cmd_inference_run(const Options& opts) {
                 << (step.hidden_tensor_import_used ? "true" : "false") << ",\n"
                 << "      \"hidden_tensor_blend_used\": "
                 << (step.hidden_tensor_blend_used ? "true" : "false") << ",\n"
+                << "      \"hidden_tensor_carry_mode_kind\": \""
+                << json_escape(step.hidden_tensor_carry_mode_kind) << "\",\n"
+                << "      \"kv_state_kind\": \"" << json_escape(step.kv_state_kind)
+                << "\",\n"
+                << "      \"q_tensor_signature_sha256\": \""
+                << step.q_tensor_signature_sha256 << "\",\n"
+                << "      \"k_tensor_signature_sha256\": \""
+                << step.k_tensor_signature_sha256 << "\",\n"
+                << "      \"kv_tensor_rank\": " << step.kv_tensor_rank << ",\n"
+                << "      \"kv_tensor_elements\": " << step.kv_tensor_elements << ",\n"
+                << "      \"kv_state_signature_sha256\": \""
+                << step.kv_state_signature_sha256 << "\",\n"
+                << "      \"architecture_state_kind\": \""
+                << json_escape(step.architecture_state_kind) << "\",\n"
+                << "      \"architecture_state_signature_sha256\": \""
+                << step.architecture_state_signature_sha256 << "\",\n"
+                << "      \"architecture_state_class\": \""
+                << json_escape(step.architecture_state_class) << "\",\n"
+                << "      \"architecture_state_class_signature_sha256\": \""
+                << step.architecture_state_class_signature_sha256 << "\",\n"
+                << "      \"architecture_state_confidence_score\": "
+                << step.architecture_state_confidence_score << ",\n"
+                << "      \"architecture_state_stability_kind\": \""
+                << json_escape(step.architecture_state_stability_kind) << "\",\n"
                 << "      \"projection_carry_mode_kind\": \""
                 << json_escape(step.projection_carry_mode_kind) << "\",\n"
                 << "      \"hidden_state_class\": \"" << json_escape(step.hidden_state_class)
@@ -3498,6 +3967,30 @@ int cmd_inference_run(const Options& opts) {
                 << (final_step.hidden_tensor_import_used ? "true" : "false") << ",\n"
                 << "    \"hidden_tensor_blend_used\": "
                 << (final_step.hidden_tensor_blend_used ? "true" : "false") << ",\n"
+                << "    \"hidden_tensor_carry_mode_kind\": \""
+                << json_escape(final_step.hidden_tensor_carry_mode_kind) << "\",\n"
+                << "    \"kv_state_kind\": \"" << json_escape(final_step.kv_state_kind)
+                << "\",\n"
+                << "    \"q_tensor_signature_sha256\": \""
+                << final_step.q_tensor_signature_sha256 << "\",\n"
+                << "    \"k_tensor_signature_sha256\": \""
+                << final_step.k_tensor_signature_sha256 << "\",\n"
+                << "    \"kv_tensor_rank\": " << final_step.kv_tensor_rank << ",\n"
+                << "    \"kv_tensor_elements\": " << final_step.kv_tensor_elements << ",\n"
+                << "    \"kv_state_signature_sha256\": \""
+                << final_step.kv_state_signature_sha256 << "\",\n"
+                << "    \"architecture_state_kind\": \""
+                << json_escape(final_step.architecture_state_kind) << "\",\n"
+                << "    \"architecture_state_signature_sha256\": \""
+                << final_step.architecture_state_signature_sha256 << "\",\n"
+                << "    \"architecture_state_class\": \""
+                << json_escape(final_step.architecture_state_class) << "\",\n"
+                << "    \"architecture_state_class_signature_sha256\": \""
+                << final_step.architecture_state_class_signature_sha256 << "\",\n"
+                << "    \"architecture_state_confidence_score\": "
+                << final_step.architecture_state_confidence_score << ",\n"
+                << "    \"architecture_state_stability_kind\": \""
+                << json_escape(final_step.architecture_state_stability_kind) << "\",\n"
                 << "    \"projection_carry_mode_kind\": \""
                 << json_escape(final_step.projection_carry_mode_kind) << "\",\n"
                 << "    \"hidden_state_class\": \""
@@ -3732,6 +4225,14 @@ int cmd_inference_run(const Options& opts) {
                                : guarded_artifact_caution ? "guarded"
                                                           : "ready")
             << "\",\n"
+            << "    \"confidence_envelope\": \"" << json_escape(confidence_envelope)
+            << "\",\n"
+            << "    \"architecture_state_supported\": "
+            << (architecture_state_supported ? "true" : "false") << ",\n"
+            << "    \"architecture_state_stability_kind\": \""
+            << json_escape(final_architecture_state_stability_kind) << "\",\n"
+            << "    \"architecture_state_guardrail_triggered\": "
+            << (architecture_state_guardrail_triggered ? "true" : "false") << ",\n"
             << "    \"candidate_selection_evidence_policy\": \""
             << json_escape(suppress_candidate_window
                                ? "summary_only_on_degraded.v1"
@@ -3812,6 +4313,10 @@ int cmd_inference_run(const Options& opts) {
             << "  },\n"
             << "  \"artifact_visibility\": {\n"
             << "    \"kind\": \"ready\",\n"
+            << "    \"confidence_envelope\": \"bounded_native_probe.v1\",\n"
+            << "    \"architecture_state_supported\": false,\n"
+            << "    \"architecture_state_stability_kind\": \"not_applicable_single_probe.v1\",\n"
+            << "    \"architecture_state_guardrail_triggered\": false,\n"
             << "    \"candidate_selection_evidence_policy\": \"not_applicable_single_probe.v1\",\n"
             << "    \"logits_evidence_policy\": \"not_applicable_single_probe.v1\",\n"
             << "    \"decode_trace_detail_policy\": \"not_applicable_single_probe.v1\",\n"

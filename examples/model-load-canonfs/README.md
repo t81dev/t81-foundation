@@ -91,7 +91,8 @@ This is the smallest checked-in multi-step forward-state example. It runs the
 same tiny synthetic Llama-shaped model for three decode steps and now proves a
 bounded carried hidden-tensor path, not just row-derived forward-state
 summaries. Later decode steps reimport a bounded hidden tensor through the
-compiled tensor-pool path and stay in the `ready` envelope.
+compiled tensor-pool path, expose bounded q/k signature state, and now carry a
+combined bounded architecture-state object through the `ready` envelope.
 
 ```bash
 MAX_TOKENS=3 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
@@ -106,6 +107,25 @@ Expected result:
 - `state_carry_limitations.kind: "bounded_intermediate_tensor_literal_import.v1"`
 - `intermediate_tensor_import_used: true`
 - `intermediate_tensor_blend_used: true`
+- `architecture_state_summary.kind: "bounded_hidden_tensor_qk_forward_state.v1"`
+- `final_architecture_state_signature_sha256: ...`
+- `architecture_state_summary.max_confidence_score: ...`
+- later steps and `final_decode_state` now expose
+  `architecture_state_confidence_score` and
+  `architecture_state_stability_kind`
+- top-level `bounded_decode_health` / `readiness` switch to
+  `confidence_envelope: "bounded_architecture_state_probe.v1"` for this lane
+- top-level `artifact_visibility` now carries the same
+  `confidence_envelope`, `architecture_state_stability_kind`, and
+  `architecture_state_guardrail_triggered` fields
+- later decode enters `architecture_state_feedback_state_transition.v1`
+- `hidden_tensor_carry_mode_kind: "evolved_hidden_tensor_feedback.v1"`
+- `kv_state_summary.kind: "bounded_qk_tensor_state.v1"`
+- `final_kv_state_signature_sha256` is present
+- architecture-state stability now also participates in bounded recovery
+  decisions
+- later steps can report
+  `transition_kind: "hidden_tensor_feedback_state_transition.v1"`
 - `hidden_tensor_import_used: true` on later decode steps
 - `forward_state_generation: 2`
 - `consumed_state_input_row_ids` is present on later decode steps
