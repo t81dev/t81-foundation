@@ -427,6 +427,31 @@ uint64_t resolve_safetensors_data_offset(uint64_t file_size,
   throw std::runtime_error("SafeTensors: data range out of bounds");
 }
 
+std::pair<uint64_t, uint64_t> resolve_safetensors_offset_and_length(const JsonValue& tensor_entry) {
+  const auto offsets_it = tensor_entry.object_value.find("data_offsets");
+  if (offsets_it == tensor_entry.object_value.end() || offsets_it->second.array_value.empty()) {
+    throw std::runtime_error("SafeTensors: missing data_offsets");
+  }
+
+  const auto& offsets = offsets_it->second.array_value;
+  const uint64_t offset = json_to_uint(offsets[0]);
+
+  if (const auto lengths_it = tensor_entry.object_value.find("data_lengths");
+      lengths_it != tensor_entry.object_value.end() && !lengths_it->second.array_value.empty()) {
+    return {offset, json_to_uint(lengths_it->second.array_value[0])};
+  }
+
+  if (offsets.size() >= 2) {
+    const uint64_t end = json_to_uint(offsets[1]);
+    if (end < offset) {
+      throw std::runtime_error("SafeTensors: invalid data_offsets range");
+    }
+    return {offset, end - offset};
+  }
+
+  throw std::runtime_error("SafeTensors: missing data_lengths or end offset");
+}
+
 std::vector<float> read_safetensors_tensor_f32(const std::vector<uint8_t>& buffer,
                                                uint64_t header_len,
                                                const std::string& key,
@@ -512,17 +537,7 @@ ModelFile load_native_ternary_safetensors_impl(const std::filesystem::path& path
     auto shape = json_to_shape(shape_it->second);
     uint64_t count = product_of(shape);
 
-    auto offsets_it = value.object_value.find("data_offsets");
-    auto lengths_it = value.object_value.find("data_lengths");
-    if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) {
-      throw std::runtime_error("SafeTensors: missing offsets/lengths");
-    }
-    if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) {
-      throw std::runtime_error("SafeTensors: empty offset/length arrays");
-    }
-
-    uint64_t offset = json_to_uint(offsets_it->second.array_value[0]);
-    uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
+    const auto [offset, length] = resolve_safetensors_offset_and_length(value);
     NativeTensor native;
     if (dtype.string_value == "I8") {
       if (length != count) {
@@ -614,12 +629,13 @@ ModelFile build_from_header(const JsonValue& root, const std::vector<uint8_t>& b
     auto shape = json_to_shape(shape_it->second);
     uint64_t count = product_of(shape);
 
-    auto offsets_it = value.object_value.find("data_offsets");
-    auto lengths_it = value.object_value.find("data_lengths");
-    if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) continue;
-    if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) continue;
-    uint64_t offset = json_to_uint(offsets_it->second.array_value[0]);
-    uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
+    uint64_t offset = 0;
+    uint64_t length = 0;
+    try {
+      std::tie(offset, length) = resolve_safetensors_offset_and_length(value);
+    } catch (const std::exception&) {
+      continue;
+    }
     if (offset + length > buffer.size()) throw std::runtime_error("tensor data out of bounds");
 
     std::span<const int8_t> raw(reinterpret_cast<const int8_t*>(buffer.data() + offset),
@@ -968,17 +984,17 @@ std::vector<QuantTensorInfo> parse_safetensors_header(const std::vector<uint8_t>
     if (dtype_it == value.object_value.end() || !dtype_it->second.is_string) continue;
     auto shape_it = value.object_value.find("shape");
     if (shape_it == value.object_value.end()) continue;
-    auto offsets_it = value.object_value.find("data_offsets");
-    auto lengths_it = value.object_value.find("data_lengths");
-    if (offsets_it == value.object_value.end() || lengths_it == value.object_value.end()) continue;
-    if (offsets_it->second.array_value.empty() || lengths_it->second.array_value.empty()) continue;
     QuantTensorInfo info;
     info.name = key;
     info.dtype = dtype_it->second.string_value;
     info.shape = json_to_shape(shape_it->second);
-    info.data_offset = json_to_uint(offsets_it->second.array_value[0]);
-    uint64_t length = json_to_uint(lengths_it->second.array_value[0]);
-    info.data_size = length - info.data_offset;
+    uint64_t length = 0;
+    try {
+      std::tie(info.data_offset, length) = resolve_safetensors_offset_and_length(value);
+    } catch (const std::exception&) {
+      continue;
+    }
+    info.data_size = length;
     tensors.push_back(info);
   }
   return tensors;

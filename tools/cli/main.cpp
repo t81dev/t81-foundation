@@ -4021,6 +4021,8 @@ int run_canonfs_command(const Args& args) {
         return 1;
       }
       positional.push_back(args.command_args[i]);
+    } else if (action == "snapshot-diff" && positional.size() < 2) {
+      positional.push_back(token);
     } else if (!token.empty() && token[0] == '-') {
       error("canonfs: unknown option '" + token + "'. Run 't81 help canonfs'.");
       return 1;
@@ -6713,6 +6715,8 @@ const char* ir_opcode_name(t81::tisc::ir::Opcode op) {
       return "STRJOIN";
     case Opcode::WEIGHTS_LOAD:
       return "WEIGHTS_LOAD";
+    case Opcode::TTRANSPOSE:
+      return "TTRANSPOSE";
     case Opcode::TGET:
       return "TGET";
     case Opcode::TNEW:

@@ -60,6 +60,25 @@ void write_f32_safetensors_file(const fs::path& path,
             static_cast<std::streamsize>(values.size() * sizeof(float)));
 }
 
+void write_standard_f32_safetensors_file(const fs::path& path,
+                                         const std::string& metadata_json,
+                                         const std::vector<float>& values,
+                                         const std::string& tensor_name = "weight",
+                                         const std::string& shape_json = "[2,2]") {
+  const uint64_t data_end = static_cast<uint64_t>(values.size() * sizeof(float));
+  const std::string header =
+      "{\"__metadata__\":" + metadata_json +
+      ",\"" + tensor_name + "\":{\"dtype\":\"F32\",\"shape\":" + shape_json + ",\"data_offsets\":[0," +
+      std::to_string(data_end) + "]}}";
+
+  std::ofstream out(path, std::ios::binary);
+  assert(out.good());
+  write_le64(out, header.size());
+  out.write(header.data(), static_cast<std::streamsize>(header.size()));
+  out.write(reinterpret_cast<const char*>(values.data()),
+            static_cast<std::streamsize>(values.size() * sizeof(float)));
+}
+
 struct F32TensorFixture {
   std::string name;
   std::string shape_json = "[2,2]";
@@ -132,6 +151,13 @@ int main() {
   const auto generic_quantized = t81::weights::load_safetensors(generic_float_path);
   assert(generic_quantized.format == "SafeTensors(float-quantized; profile=native-dense-v1)");
   assert(generic_quantized.native.contains("weight"));
+
+  const fs::path standard_float_path = make_temp_path("t81-f32-standard-layout");
+  write_standard_f32_safetensors_file(standard_float_path, "{\"format\":\"pt\"}",
+                                      {-2.0f, -0.1f, 0.2f, 3.0f});
+  const auto standard_quantized = t81::weights::load_safetensors(standard_float_path);
+  assert(standard_quantized.format == "SafeTensors(float-quantized; profile=native-dense-v1)");
+  assert(standard_quantized.native.contains("weight"));
 
   const fs::path invalid_llama_profile_path = make_temp_path("t81-f32-invalid-llama");
   write_f32_safetensors_file(invalid_llama_profile_path,
@@ -223,6 +249,7 @@ int main() {
   fs::remove(bitnet_path);
   fs::remove(float_path);
   fs::remove(generic_float_path);
+  fs::remove(standard_float_path);
   fs::remove(invalid_llama_profile_path);
   fs::remove(invalid_llama_shape_path);
   fs::remove(invalid_llama_metadata_path);

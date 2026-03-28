@@ -961,6 +961,42 @@ void test_std_tensor_matmul_alias_lowers_to_tmatmul() {
             << std::endl;
 }
 
+void test_std_tensor_transpose_alias_lowers_to_ttranspose() {
+  std::string source = R"(
+        fn main() -> i32 {
+            let a: i32 = std.tensor.load("mat_a");
+            let b: Tensor = std.tensor.transpose(a);
+            let _ = b;
+            return 0;
+        }
+    )";
+  Lexer lexer(source);
+  Parser parser(lexer);
+  auto stmts = parser.parse();
+  EXPECT(!parser.had_error(), "parser failed for std.tensor.transpose alias fixture");
+
+  SemanticAnalyzer analyzer(stmts);
+  analyzer.analyze();
+  EXPECT(!analyzer.had_error(), "semantic analyzer failed for std.tensor.transpose alias fixture");
+
+  IRGenerator generator;
+  generator.attach_semantic_analyzer(&analyzer);
+  auto program = generator.generate(stmts);
+  const auto& instructions = program.instructions();
+  EXPECT(!instructions.empty(), "std.tensor.transpose alias fixture produced no IR");
+
+  bool has_ttranspose = false;
+  for (const auto& inst : instructions) {
+    if (inst.opcode == Opcode::TTRANSPOSE) {
+      has_ttranspose = true;
+      break;
+    }
+  }
+  EXPECT(has_ttranspose, "std.tensor.transpose(a) should lower to TTRANSPOSE");
+  std::cout << "IRGeneratorTest test_std_tensor_transpose_alias_lowers_to_ttranspose passed!"
+            << std::endl;
+}
+
 void test_std_tensor_vec_add_alias_lowers_to_tvecadd() {
   std::string source = R"(
         fn main() -> i32 {
@@ -1267,6 +1303,7 @@ int main() {
   test_std_runtime_handle_aliases_lower_to_deterministic_tokens();
   test_std_tensor_from_list_alias_lowers_vector_literal_to_tensor_handle();
   test_std_tensor_matmul_alias_lowers_to_tmatmul();
+  test_std_tensor_transpose_alias_lowers_to_ttranspose();
   test_std_tensor_vec_add_alias_lowers_to_tvecadd();
   test_std_bytes_aliases_lower_to_string_opcodes();
   test_oversized_integer_literal_lowers_to_bigint_handle();

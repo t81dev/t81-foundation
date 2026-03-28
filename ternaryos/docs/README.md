@@ -390,6 +390,15 @@ What it is not yet:
 To boot the current AArch64 QEMU/EDK2 kernel lane under QEMU and drop into the
 Axion serial shell:
 
+macOS prerequisites:
+
+```sh
+brew install llvm lld qemu
+cmake -S . -B build -G Ninja
+```
+
+Run these commands from the repo root, not from inside `build/`.
+
 ```sh
 cmake --build build --target t81_ternaryos_qemu_slice6_shell
 ```
@@ -420,6 +429,13 @@ To exercise the CanonFS operator actions against a persistent store image:
 
 Notes:
 
+- if CMake reports that `t81_ternaryos_qemu_slice6_shell` cannot boot because
+  EFI prerequisites are missing, install Homebrew `llvm` and `lld`, then
+  re-run configure so `T81_LLVM_CLANG` and `T81_LLD_LINK` are refreshed in the
+  build cache
+- if the slice6 artifact builder fails during `hdiutil create` or `hdiutil attach`
+  with `Device not configured`, retry outside sandboxed execution; macOS disk-image
+  operations may be blocked even when the repo itself is healthy
 - the launcher defaults to `tcg` because it is more reliable than `hvf` on the
   current EL0 scheduler and shell handoff path
 - override the accelerator explicitly with `T81_QEMU_ACCEL=hvf` if you want to
@@ -756,6 +772,11 @@ To boot-probe the staged ARM guest image under the real Axion QEMU developer lan
 ```sh
 cmake --build build --target t81_ternaryos_qemu_armv8_guest_probe
 ```
+
+Notes:
+
+- the slice6 ARMv8 probe now defaults to `T81_QEMU_ACCEL=tcg` for reliability
+- set `T81_QEMU_ACCEL=hvf` if you explicitly want the Apple Hypervisor lane
 
 Outputs:
 

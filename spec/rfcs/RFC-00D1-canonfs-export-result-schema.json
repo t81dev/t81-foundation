@@ -112,7 +112,8 @@
         },
         "code": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Stable export error code. Current seed examples include canonfs-export-target-failure, canonfs-export-unsafe-target-path, canonfs-export-invalid-source-ref, canonfs-export-missing-object, canonfs-export-invalid-manifest, canonfs-export-storage-failure, canonfs-policy-denied, and canonfs-export-failure."
         }
       }
     }

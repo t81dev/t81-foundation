@@ -12,6 +12,12 @@ set -euo pipefail
 # <arm-image>          Path to the QEMU slice6 raw disk image (.img).
 # <output-dir>         Directory for log files and extracted artefacts.
 # [boot-wait-seconds]  How long to let QEMU run before killing it (default: 8).
+#
+# Environment overrides:
+#   T81_QEMU_BIN    Path to qemu-system-aarch64
+#   T81_EDK2_CODE   Path to edk2-aarch64-code.fd
+#   T81_EDK2_VARS   Path to edk2-arm-vars.fd template
+#   T81_QEMU_ACCEL  Accelerator to use: hvf or tcg
 
 if [[ $# -lt 2 || $# -gt 3 ]]; then
   echo "usage: $0 <arm-image> <output-dir> [boot-wait-seconds]" >&2
@@ -22,9 +28,9 @@ arm_image=$1
 output_dir=$2
 boot_wait=${3:-8}
 
-qemu_bin=/opt/homebrew/bin/qemu-system-aarch64
-edk2_code=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
-edk2_vars_template=/opt/homebrew/share/qemu/edk2-arm-vars.fd
+qemu_bin=${T81_QEMU_BIN:-/opt/homebrew/bin/qemu-system-aarch64}
+edk2_code=${T81_EDK2_CODE:-/opt/homebrew/share/qemu/edk2-aarch64-code.fd}
+edk2_vars_template=${T81_EDK2_VARS:-/opt/homebrew/share/qemu/edk2-arm-vars.fd}
 
 for path in "$qemu_bin" "$edk2_code" "$edk2_vars_template" "$arm_image"; do
   if [[ ! -e "$path" ]]; then
@@ -59,10 +65,18 @@ cleanup() {
 }
 trap cleanup EXIT
 
+accel=${T81_QEMU_ACCEL:-tcg}
+machine_arg="virt,gic-version=3"
+cpu_arg="cortex-a57"
+if [[ "$accel" == "hvf" ]]; then
+  machine_arg="virt,accel=hvf"
+  cpu_arg="host"
+fi
+
 "$qemu_bin" \
   -nodefaults \
-  -machine virt,accel=hvf \
-  -cpu host \
+  -machine "$machine_arg" \
+  -cpu "$cpu_arg" \
   -smp 1 \
   -m 512 \
   -nographic \
@@ -119,6 +133,7 @@ fi
 /bin/cat > "$summary_file" <<EOF
 probe_image=$probe_image
 boot_wait_seconds=$boot_wait
+accel=$accel
 serial_log=$serial_log
 serial_bytes=$serial_bytes
 efi_marker_seen=$efi_seen

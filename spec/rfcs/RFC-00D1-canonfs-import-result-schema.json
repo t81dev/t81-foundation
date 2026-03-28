@@ -112,7 +112,8 @@
         },
         "code": {
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "description": "Stable import error code. Current seed examples include canonfs-import-missing-source, canonfs-import-unsupported-source, canonfs-import-normalization-failure, canonfs-import-storage-failure, canonfs-policy-denied, and canonfs-import-failure."
         }
       }
     }

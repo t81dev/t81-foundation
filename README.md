@@ -59,6 +59,8 @@ As of March 2026, T81 is usable today as a:
 - Docker-delivered demo/runtime environment
 - Python-integrated execution environment
 - QEMU guest with interactive shell and CanonFS-backed runtime surfaces
+- CanonFS interchange seed with import/export CLI, schema artifacts,
+  provenance records, and contract-tested JSON surfaces
 
 Still experimental:
 
@@ -107,6 +109,16 @@ This is the core T81 workflow today:
 - run under Axion policy
 - produce deterministic execution evidence
 - keep execution tied to content-addressed inputs
+
+The current RFC-00D1 seed is stable enough to build examples and adjacent
+tooling against at the JSON contract level:
+
+- `t81.canonfs-import.v1`
+- `t81.canonfs-export.v1`
+- `t81.canonfs-import-provenance.v1`
+- `t81.canonfs-export-provenance.v1`
+- `t81.canonfs-interchange-manifest.v1`
+- `host-file` / `host-directory`
 
 ### QEMU boot demo (most "OS-like" experience)
 
@@ -167,6 +179,7 @@ Full benchmarks and methodology → [`benchmarks/results/`](benchmarks/results/)
 | **T81VM**       | Deterministic interpreter + Axion hooks      | Stable      |
 | **Axion**       | Fail-closed policy engine (APL)              | Stable      |
 | **CanonFS**     | Immutable, hash-addressed storage            | Stable      |
+| **RFC-00D1 seed** | CanonFS import/export + schema contract    | Stable seed |
 | **T81Lang**     | System language → `agent`/`behavior` model   | Stable      |
 | **DPE**         | Deterministic parallel executor              | Stable      |
 | Bare-metal      | Native boot (no host OS)                     | 🚧 Alpha    |

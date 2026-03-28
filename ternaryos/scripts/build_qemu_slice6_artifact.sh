@@ -38,6 +38,7 @@ hdiutil_bin=/usr/bin/hdiutil
 diskutil_bin=/usr/sbin/diskutil
 newfs_msdos_bin=/sbin/newfs_msdos
 shasum_bin=/usr/bin/shasum
+hdiutil_hint="If this fails under a sandboxed runner, retry outside the sandbox; macOS hdiutil create/attach may report 'Device not configured' when disk-image operations are restricted."
 
 for path in "$hdiutil_bin" "$diskutil_bin" "$newfs_msdos_bin" "$shasum_bin"; do
   if [[ ! -x "$path" ]]; then
@@ -81,8 +82,16 @@ cleanup() {
 }
 trap cleanup EXIT
 
-"$hdiutil_bin" create -quiet -size 64m -layout GPTSPUD -partitionType EFI "$temp_dmg"
-attach_output=$("$hdiutil_bin" attach -nomount "$temp_dmg")
+if ! "$hdiutil_bin" create -quiet -size 64m -layout GPTSPUD -partitionType EFI "$temp_dmg"; then
+  echo "failed to create temporary slice6 disk image: $temp_dmg" >&2
+  echo "$hdiutil_hint" >&2
+  exit 1
+fi
+if ! attach_output=$("$hdiutil_bin" attach -nomount "$temp_dmg"); then
+  echo "failed to attach temporary slice6 disk image: $temp_dmg" >&2
+  echo "$hdiutil_hint" >&2
+  exit 1
+fi
 dev=$(printf '%s\n' "$attach_output" | /usr/bin/awk '/GUID_partition_scheme/{print $1; exit}')
 mount_dev=$(printf '%s\n' "$attach_output" | /usr/bin/awk '/EFI/{print $1; exit}')
 if [[ -z "$dev" || -z "$mount_dev" ]]; then
@@ -91,7 +100,11 @@ if [[ -z "$dev" || -z "$mount_dev" ]]; then
 fi
 
 "$newfs_msdos_bin" -F 32 -v SLICE6GUEST "$mount_dev" >/dev/null
-"$diskutil_bin" mount "$mount_dev" >/dev/null
+if ! "$diskutil_bin" mount "$mount_dev" >/dev/null; then
+  echo "failed to mount slice6 EFI image device: $mount_dev" >&2
+  echo "$hdiutil_hint" >&2
+  exit 1
+fi
 mount_point=$("$diskutil_bin" info "$mount_dev" | /usr/bin/awk -F': *' '/Mount Point/ {print $2}')
 if [[ -z "$mount_point" || ! -d "$mount_point" ]]; then
   echo "failed to resolve mount point for $mount_dev" >&2
@@ -103,7 +116,11 @@ fi
 "$hdiutil_bin" detach "$dev" >/dev/null
 dev=""
 
-"$hdiutil_bin" convert -quiet "$temp_dmg" -format UFBI -o "$temp_raw"
+if ! "$hdiutil_bin" convert -quiet "$temp_dmg" -format UFBI -o "$temp_raw"; then
+  echo "failed to convert temporary slice6 disk image to raw format" >&2
+  echo "$hdiutil_hint" >&2
+  exit 1
+fi
 /bin/mv "${temp_raw}.dmg" "$image_path"
 current_size=$(/usr/bin/stat -f '%z' "$image_path")
 padded_size=$(( ((current_size + 511) / 512) * 512 ))

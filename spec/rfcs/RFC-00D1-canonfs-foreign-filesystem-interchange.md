@@ -4,7 +4,7 @@
 **Type:** standards-track
 **Applies-To:** CanonFS import/export tooling, foreign filesystem interchange boundary, provenance and manifesting rules
 **Created:** 2026-03-26
-**Updated:** 2026-03-26
+**Updated:** 2026-03-28
 **Author:** @t81dev
 **Discussion:** initial scope draft
 
@@ -34,6 +34,37 @@ alongside this RFC:
 - `RFC-00D1-canonfs-interchange-manifest-schema.json`
 - `RFC-00D1-canonfs-import-provenance-schema.json`
 - `RFC-00D1-canonfs-export-provenance-schema.json`
+
+### 1.1 Partial Promotion Note
+
+This RFC remains `draft` overall.
+
+However, the repo now has enough implementation and test weight to treat a
+narrow seed surface as stable enough to build against while the broader RFC is
+still under active review.
+
+Stable seed surfaces today:
+
+- `canonfs import` and `canonfs export` as real CLI interchange operations
+- the `t81.canonfs-import.v1` and `t81.canonfs-export.v1` JSON result schemas
+- the `t81.canonfs-import-provenance.v1` and
+  `t81.canonfs-export-provenance.v1` provenance record schemas
+- the `t81.canonfs-interchange-manifest.v1` directory manifest schema
+- mandatory v1 source and target kinds of `host-file` and `host-directory`
+- policy-profile names `permissive`, `import-only`, `export-only`, and
+  `deny-all`
+
+These seed surfaces are stable enough for contributor-facing examples, contract
+tests, and adjacent tooling.
+
+Still draft inside RFC-00D1:
+
+- whether bundle or archive export is part of v1
+- whether symlink handling is in or out for v1
+- whether text output is a required co-equal surface beside JSON
+- how Axion evidence linkage is promoted beyond the current provenance/result
+  schemas
+- whether RFC-scoped schema artifacts move into a broader stable schema catalog
 
 ## 2. Motivation
 
@@ -312,6 +343,15 @@ message: <string>
 code: <stable short code>
 ```
 
+Current seed codes used by the CLI/core implementation include:
+
+- `canonfs-import-missing-source`
+- `canonfs-import-unsupported-source`
+- `canonfs-import-normalization-failure`
+- `canonfs-import-storage-failure`
+- `canonfs-policy-denied`
+- `canonfs-import-failure`
+
 ## 7. Export Contract
 
 ### 7.1 Export Meaning
@@ -480,6 +520,17 @@ source_object: <optional canonfs ref>
 message: <string>
 code: <stable short code>
 ```
+
+Current seed codes used by the CLI/core implementation include:
+
+- `canonfs-export-target-failure`
+- `canonfs-export-unsafe-target-path`
+- `canonfs-export-invalid-source-ref`
+- `canonfs-export-missing-object`
+- `canonfs-export-invalid-manifest`
+- `canonfs-export-storage-failure`
+- `canonfs-policy-denied`
+- `canonfs-export-failure`
 
 ## 8. Round-Trip Semantics
 
@@ -717,6 +768,15 @@ settle:
 - whether a compact text projection ships alongside the JSON result schemas
 - whether the RFC-scoped schema files should be promoted into a stable shared
   schema catalog
+
+Promotion blocker summary:
+
+- Keep the currently implemented JSON seed surfaces stable while deciding the
+  deferred v1 questions above.
+- Do not widen mandatory source/target kinds until the existing host-file and
+  host-directory lane stops moving.
+- Keep policy, schema, CLI, and example behavior aligned so promotion is based
+  on a boring contract rather than an aspirational one.
 
 ## 17. References
 

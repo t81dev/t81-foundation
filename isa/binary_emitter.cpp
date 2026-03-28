@@ -309,6 +309,8 @@ Opcode map_opcode(const ir::Instruction& instr) {
       return Opcode::MetaRefine;
     case O::TMATMUL:
       return Opcode::TMatMul;
+    case O::TTRANSPOSE:
+      return Opcode::TTranspose;
     case O::TVECADD:
       return Opcode::TVecAdd;
     case O::TTENDOT:

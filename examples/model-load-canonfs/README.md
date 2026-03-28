@@ -1,0 +1,290 @@
+# CanonFS Model Load Example
+
+This is the smallest contributor-facing example of the CanonFS-backed
+`--weights-model` lane.
+
+It shows how to:
+
+- create a tiny `.t81w` model fixture
+- create a tiny SafeTensors source artifact
+- convert that source artifact with `t81 weights import`
+- create a tiny float SafeTensors source artifact for T3_K GGUF
+- download and import a real tiny Hugging Face model
+- store it in CanonFS
+- run a program that loads model tensors by name
+- verify the allow and deny policy paths
+
+## Build
+
+From the repo root:
+
+```bash
+cmake -S . -B build -G Ninja -DT81_BUILD_EXAMPLES=ON
+cmake --build build --target t81 t81_make_demo_model t81_make_demo_safetensors t81_make_demo_float_safetensors
+```
+
+## Files
+
+- `make_demo_model.cpp` builds a tiny `.t81w` containing `mat_a` and `mat_b`
+- `make_demo_safetensors.cpp` builds a tiny `.safetensors` source file with the
+  same tensor names
+- `make_demo_float_safetensors.cpp` builds a tiny float SafeTensors source file
+  for the T3_K GGUF quantize/import lane
+- [03_matmul_weights.t81](/Users/t81dev/Code/t81-foundation/tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81)
+  loads those tensors via `std.tensor.load(...)`
+
+## Real Weights Import Path
+
+This is the smallest source-format example in the repo. It uses a generated
+SafeTensors file, converts it to `.t81w` through the real CLI, and then follows
+the same CanonFS-backed model load flow as the section below.
+
+```bash
+tmp_root="$(mktemp -d)"
+source_path="$tmp_root/demo-model.safetensors"
+model_path="$tmp_root/demo-model.t81w"
+
+build/t81_make_demo_safetensors "$source_path"
+build/t81 weights import "$source_path" -o "$model_path"
+```
+
+Expected result:
+
+- the helper reports `tensors=mat_a,mat_b`
+- `t81 weights import` prints model info and saves a `.t81w`
+
+After that, continue with the CanonFS flow below using `model_path="$model_path"`.
+
+## Tiny T3_K GGUF Path
+
+This is the smallest in-repo happy path for the GGUF lane.
+
+```bash
+tmp_root="$(mktemp -d)"
+float_source="$tmp_root/demo-model-f32.safetensors"
+gguf_path="$tmp_root/demo-model.t3k.gguf"
+model_path="$tmp_root/demo-model-from-gguf.t81w"
+
+build/t81_make_demo_float_safetensors "$float_source"
+build/t81 weights quantize "$float_source" --to-gguf "$gguf_path"
+build/t81 weights import "$gguf_path" --format gguf -o "$model_path"
+```
+
+Expected result:
+
+- the helper reports `arch=llama`
+- `t81 weights quantize` reports `Success! T3_K GGUF created`
+- `t81 weights import` prints GGUF model info and saves a `.t81w`
+
+This lane avoids the bridge-gated non-`T3_K` GGUF path by generating a tiny
+native `T3_K` GGUF in-repo.
+
+## Run
+
+From the repo root:
+
+```bash
+tmp_root="$(mktemp -d)"
+canon_root="$tmp_root/.t81_canonfs"
+model_path="$tmp_root/demo-model.t81w"
+allow_policy="$tmp_root/allow.apl"
+deny_policy="$tmp_root/deny.apl"
+
+mkdir -p "$canon_root"
+
+helper_output="$(build/t81_make_demo_model "$model_path")"
+printf '%s\n' "$helper_output"
+model_checksum="$(printf '%s\n' "$helper_output" | sed -n 's/^sha3-512=//p')"
+model_hash="$(build/t81 canonfs put-file "$model_path" --canonfs-root "$canon_root")"
+model_hash="${model_hash//$'\n'/}"
+```
+
+Use the emitted `sha3-512=` checksum in the allow policy:
+
+```bash
+cat > "$allow_policy" <<'EOF'
+(policy
+  (tier 1)
+  (allowed-ternary-model-hashes ["sha3-512:MODEL_CHECKSUM"]))
+EOF
+
+perl -0pi -e "s/MODEL_CHECKSUM/$model_checksum/g" "$allow_policy"
+
+cat > "$deny_policy" <<'EOF'
+(policy
+  (tier 1)
+  (allowed-ternary-model-hashes ["sha3-512:cafebabe"]))
+EOF
+```
+
+Now run the CanonFS-backed model load path:
+
+```bash
+export T81_CANONFS_ROOT="$canon_root"
+
+build/t81 code run \
+  tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 \
+  --weights-model "$model_hash"
+```
+
+Expected result:
+
+- compilation succeeds
+- output includes `<tensor#1>`
+- the program terminates normally
+
+Allow path:
+
+```bash
+build/t81 code run \
+  tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 \
+  --weights-model "$model_hash" \
+  --policy "$allow_policy"
+```
+
+Expected result:
+
+- output includes `<tensor#1>`
+- the program terminates normally
+
+Deny path:
+
+```bash
+build/t81 code run \
+  tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 \
+  --weights-model "$model_hash" \
+  --policy "$deny_policy"
+```
+
+Expected result:
+
+- execution traps with `SecurityFault`
+- no `<tensor#1>` is printed
+
+## Real Hugging Face Tiny Model Path
+
+This is the smallest real external model flow currently validated in the repo.
+
+One-command runner:
+
+```bash
+examples/model-load-canonfs/run_real_hf_tiny_model.sh
+```
+
+The script reuses the existing tiny model under `models/tiny-random-llama/` if
+present and only falls back to `hf download` when the files are missing.
+
+Prerequisite:
+
+- Hugging Face CLI installed as `hf`
+  If it is not on `PATH`, use:
+  `/Users/t81dev/Library/Python/3.14/bin/hf`
+
+Download the model:
+
+```bash
+mkdir -p models
+
+/Users/t81dev/Library/Python/3.14/bin/hf download \
+  hf-internal-testing/tiny-random-LlamaForCausalLM \
+  config.json tokenizer.json model.safetensors \
+  --local-dir models/tiny-random-llama
+```
+
+Import it into `.t81w`:
+
+```bash
+build/t81 weights import \
+  models/tiny-random-llama/model.safetensors \
+  -o /tmp/tiny-random-llama.t81w
+```
+
+Expected result:
+
+- the import succeeds
+- output reports `Model contains 21 tensors`
+- output format is `SafeTensors(float-quantized; profile=native-dense-v1)`
+
+Register it in CanonFS and run a real tensor operation under policy:
+
+```bash
+tmp_root="$(mktemp -d)"
+canon_root="$tmp_root/.t81_canonfs"
+program_path="$tmp_root/matmul_real_tensor.t81"
+allow_policy="$tmp_root/allow.apl"
+deny_policy="$tmp_root/deny.apl"
+
+mkdir -p "$canon_root"
+
+model_hash="$(build/t81 canonfs put-file /tmp/tiny-random-llama.t81w --canonfs-root "$canon_root")"
+model_hash="${model_hash//$'\n'/}"
+model_checksum="$(build/t81 weights info /tmp/tiny-random-llama.t81w --json | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"checksum_sha3_512\"])')"
+
+cat > "$program_path" <<'EOF'
+fn main() -> i32 {
+  let q: i32 = std.tensor.load("model.layers.0.self_attn.q_proj.weight");
+  let k: i32 = std.tensor.load("model.layers.0.self_attn.k_proj.weight");
+  let out: Tensor = std.tensor.matmul(q, k);
+  let _ = out;
+  print(q);
+  return 0;
+}
+EOF
+
+cat > "$allow_policy" <<EOF
+(policy
+  (tier 1)
+  (allowed-ternary-model-hashes ["sha3-512:$model_checksum"]))
+EOF
+
+cat > "$deny_policy" <<'EOF'
+(policy
+  (tier 1)
+  (allowed-ternary-model-hashes ["sha3-512:cafebabe"]))
+EOF
+
+export T81_CANONFS_ROOT="$canon_root"
+```
+
+Allow path:
+
+```bash
+build/t81 code run \
+  "$program_path" \
+  --weights-model "$model_hash" \
+  --policy "$allow_policy"
+```
+
+Expected result:
+
+- output includes `<tensor#1>`
+- the program terminates normally
+
+Deny path:
+
+```bash
+build/t81 code run \
+  "$program_path" \
+  --weights-model "$model_hash" \
+  --policy "$deny_policy"
+```
+
+Expected result:
+
+- execution traps with `SecurityFault`
+- exit code is non-zero
+
+## Notes
+
+- This example proves the current accepted RFC-0025 / RFC-00D1-adjacent lane:
+  CanonFS-backed model identity plus policy-gated loading.
+- It is intentionally tiny. It now covers both:
+  a synthetic `.t81w` helper path and a real `t81 weights import` path from a
+  generated SafeTensors source file.
+- It also covers a native `T3_K` GGUF path via
+  `weights quantize ... --to-gguf` followed by `weights import --format gguf`.
+- It now also covers a real downloaded Hugging Face SafeTensors model through
+  CanonFS registration and governed execution.
+- The next larger step after this example is:
+  importing a real GGUF or larger SafeTensors artifact, followed by the same
+  `canonfs put-file` and `code run --weights-model <sha3-256:...>` path.

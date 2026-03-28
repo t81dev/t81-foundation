@@ -57,6 +57,32 @@ std::string json_array_of_strings(const std::vector<std::string>& values, int in
   return out.str();
 }
 
+struct ErrorClassification {
+  std::string_view kind;
+  std::string_view code;
+};
+
+ErrorClassification classify_import_error(std::string_view error_message) {
+  if (error_message.rfind("policy denied", 0) == 0) {
+    return {"policy-failure", "canonfs-policy-denied"};
+  }
+  if (error_message.rfind("input path does not exist", 0) == 0) {
+    return {"source-failure", "canonfs-import-missing-source"};
+  }
+  if (error_message.rfind("unsupported import source", 0) == 0) {
+    return {"source-failure", "canonfs-import-unsupported-source"};
+  }
+  if (error_message.find("symlinks are not supported") != std::string_view::npos) {
+    return {"normalization-failure", "canonfs-import-normalization-failure"};
+  }
+  if (error_message.rfind("failed to write import manifest", 0) == 0 ||
+      error_message.rfind("failed to write import provenance", 0) == 0 ||
+      error_message.find("failed to write CanonFS object") != std::string_view::npos) {
+    return {"source-failure", "canonfs-import-storage-failure"};
+  }
+  return {"source-failure", "canonfs-import-failure"};
+}
+
 std::string json_array_of_error_objects(const std::vector<std::string>& errors, int indent = 2) {
   std::ostringstream out;
   const std::string indent_text(static_cast<std::size_t>(indent), ' ');
@@ -64,8 +90,9 @@ std::string json_array_of_error_objects(const std::vector<std::string>& errors, 
   if (!errors.empty()) {
     out << "\n";
     for (std::size_t i = 0; i < errors.size(); ++i) {
-      out << indent_text << "{\"kind\": \"source-failure\", \"message\": \""
-          << escape_json_text(errors[i]) << "\", \"code\": \"canonfs-import-failure\"}";
+      const auto classification = classify_import_error(errors[i]);
+      out << indent_text << "{\"kind\": \"" << classification.kind << "\", \"message\": \""
+          << escape_json_text(errors[i]) << "\", \"code\": \"" << classification.code << "\"}";
       if (i + 1 < errors.size()) {
         out << ",";
       }
@@ -76,6 +103,35 @@ std::string json_array_of_error_objects(const std::vector<std::string>& errors, 
   return out.str();
 }
 
+ErrorClassification classify_export_error(std::string_view error_message) {
+  if (error_message.rfind("policy denied", 0) == 0) {
+    return {"policy-failure", "canonfs-policy-denied"};
+  }
+  if (error_message.rfind("unsafe export path", 0) == 0) {
+    return {"target-failure", "canonfs-export-unsafe-target-path"};
+  }
+  if (error_message.rfind("could not create export directory", 0) == 0 ||
+      error_message.rfind("could not open output file", 0) == 0 ||
+      error_message.rfind("failed writing output file", 0) == 0) {
+    return {"target-failure", "canonfs-export-target-failure"};
+  }
+  if (error_message.rfind("canonical hash must start with sha3-256:", 0) == 0 ||
+      error_message.rfind("invalid CanonFS hash:", 0) == 0) {
+    return {"materialization-failure", "canonfs-export-invalid-source-ref"};
+  }
+  if (error_message.rfind("object not found:", 0) == 0) {
+    return {"materialization-failure", "canonfs-export-missing-object"};
+  }
+  if (error_message.rfind("invalid interchange manifest:", 0) == 0) {
+    return {"materialization-failure", "canonfs-export-invalid-manifest"};
+  }
+  if (error_message.rfind("failed to write export provenance", 0) == 0 ||
+      error_message.find("failed to write CanonFS object") != std::string_view::npos) {
+    return {"materialization-failure", "canonfs-export-storage-failure"};
+  }
+  return {"materialization-failure", "canonfs-export-failure"};
+}
+
 std::string json_array_of_export_error_objects(const std::vector<std::string>& errors,
                                                int indent = 2) {
   std::ostringstream out;
@@ -84,8 +140,9 @@ std::string json_array_of_export_error_objects(const std::vector<std::string>& e
   if (!errors.empty()) {
     out << "\n";
     for (std::size_t i = 0; i < errors.size(); ++i) {
-      out << indent_text << "{\"kind\": \"materialization-failure\", \"message\": \""
-          << escape_json_text(errors[i]) << "\", \"code\": \"canonfs-export-failure\"}";
+      const auto classification = classify_export_error(errors[i]);
+      out << indent_text << "{\"kind\": \"" << classification.kind << "\", \"message\": \""
+          << escape_json_text(errors[i]) << "\", \"code\": \"" << classification.code << "\"}";
       if (i + 1 < errors.size()) {
         out << ",";
       }

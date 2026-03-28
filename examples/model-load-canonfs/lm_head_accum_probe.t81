@@ -1,0 +1,29 @@
+@ternary_inference
+@tier(2)
+fn main() -> i32 {
+  let table: i32 = std.tensor.load("model.embed_tokens.weight");
+  let tok: i32 = 0;
+  let emb: Tensor = std.tnn.embed(table, tok);
+
+  let q0w: i32 = std.tensor.load("model.layers.0.self_attn.q_proj.weight");
+  let k0w: i32 = std.tensor.load("model.layers.0.self_attn.k_proj.weight");
+  let v0w: i32 = std.tensor.load("model.layers.0.self_attn.v_proj.weight");
+  let q0: Tensor = std.tensor.matmul(emb, q0w);
+  let k0: Tensor = std.tensor.matmul(emb, k0w);
+  let v0: Tensor = std.tensor.matmul(emb, v0w);
+  let attn0: Tensor = std.tensor.attention(q0, k0, v0);
+
+  let q1w: i32 = std.tensor.load("model.layers.1.self_attn.q_proj.weight");
+  let k1w: i32 = std.tensor.load("model.layers.1.self_attn.k_proj.weight");
+  let v1w: i32 = std.tensor.load("model.layers.1.self_attn.v_proj.weight");
+  let q1: Tensor = std.tensor.matmul(attn0, q1w);
+  let k1: Tensor = std.tensor.matmul(attn0, k1w);
+  let v1: Tensor = std.tensor.matmul(attn0, v1w);
+  let attn1: Tensor = std.tensor.attention(q1, k1, v1);
+
+  let lm_head: i32 = std.tensor.load("lm_head.weight");
+  let row0: Tensor = std.tnn.embed(lm_head, 0);
+  let score0: T81Float = std.tnn.accum(row0, attn1);
+  print(score0);
+  return 0;
+}

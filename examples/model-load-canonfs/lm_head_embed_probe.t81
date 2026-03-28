@@ -1,0 +1,9 @@
+@ternary_inference
+@tier(2)
+fn main() -> i32 {
+  let lm_head: i32 = std.tensor.load("lm_head.weight");
+  let row0: Tensor = std.tnn.embed(lm_head, 0);
+  let _ = row0;
+  print(lm_head);
+  return 0;
+}

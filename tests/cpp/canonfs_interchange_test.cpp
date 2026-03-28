@@ -74,6 +74,49 @@ int main() {
               "import result should validate")) {
     return 1;
   }
+  if (!expect(import_result.find("\"kind\": \"policy-failure\"") != std::string::npos,
+              "import result should classify policy denials")) {
+    return 1;
+  }
+  if (!expect(import_result.find("\"code\": \"canonfs-policy-denied\"") != std::string::npos,
+              "import result should emit policy denial code")) {
+    return 1;
+  }
+
+  const std::string import_normalization_failure = render_import_result(
+      "error", "host-directory", "/tmp/input-tree", {}, "", "", {}, {},
+      {"symlinks are not supported by canonfs import v1: nested/link"}, "denied", "permissive");
+  if (!expect(validate_import_result_document(import_normalization_failure, error_message),
+              "import normalization failure result should validate")) {
+    return 1;
+  }
+  if (!expect(import_normalization_failure.find("\"kind\": \"normalization-failure\"") !=
+                  std::string::npos,
+              "import result should classify normalization failures")) {
+    return 1;
+  }
+  if (!expect(import_normalization_failure.find(
+                  "\"code\": \"canonfs-import-normalization-failure\"") != std::string::npos,
+              "import result should emit normalization failure code")) {
+    return 1;
+  }
+
+  const std::string import_missing_source = render_import_result(
+      "error", "host-file", "/tmp/missing-input.bin", {}, "", "", {}, {},
+      {"input path does not exist: /tmp/missing-input.bin"}, "denied", "permissive");
+  if (!expect(validate_import_result_document(import_missing_source, error_message),
+              "import missing source result should validate")) {
+    return 1;
+  }
+  if (!expect(import_missing_source.find("\"kind\": \"source-failure\"") != std::string::npos,
+              "import result should classify missing source as source failure")) {
+    return 1;
+  }
+  if (!expect(import_missing_source.find("\"code\": \"canonfs-import-missing-source\"") !=
+                  std::string::npos,
+              "import result should emit missing source code")) {
+    return 1;
+  }
 
   const std::string export_result =
       render_export_result("ok", {"sha3-256:abc123", "sha3-256:def456"}, "host-directory",
@@ -81,6 +124,59 @@ int main() {
                            {"a.txt", "nested/b.txt"}, {}, {}, "allowed", "permissive");
   if (!expect(validate_export_result_document(export_result, error_message),
               "export result should validate")) {
+    return 1;
+  }
+
+  const std::string export_target_failure = render_export_result(
+      "error", {"sha3-256:abc123"}, "host-file", "/tmp/output-tree", "sha3-256:prov003", "",
+      {}, {}, {"could not open output file: /tmp/output-tree"}, "allowed", "permissive");
+  if (!expect(validate_export_result_document(export_target_failure, error_message),
+              "export target failure result should validate")) {
+    return 1;
+  }
+  if (!expect(export_target_failure.find("\"kind\": \"target-failure\"") != std::string::npos,
+              "export result should classify target failures")) {
+    return 1;
+  }
+  if (!expect(export_target_failure.find("\"code\": \"canonfs-export-target-failure\"") !=
+                  std::string::npos,
+              "export result should emit target failure code")) {
+    return 1;
+  }
+
+  const std::string export_unsafe_path = render_export_result(
+      "error", {"sha3-256:abc123"}, "host-directory", "/tmp/output-tree", "sha3-256:prov004",
+      "sha3-256:manifest004", {}, {},
+      {"unsafe export path in manifest: ../escape.txt"}, "allowed", "permissive");
+  if (!expect(validate_export_result_document(export_unsafe_path, error_message),
+              "export unsafe path result should validate")) {
+    return 1;
+  }
+  if (!expect(export_unsafe_path.find("\"kind\": \"target-failure\"") != std::string::npos,
+              "export result should classify unsafe export path as target failure")) {
+    return 1;
+  }
+  if (!expect(export_unsafe_path.find("\"code\": \"canonfs-export-unsafe-target-path\"") !=
+                  std::string::npos,
+              "export result should emit unsafe target path code")) {
+    return 1;
+  }
+
+  const std::string export_missing_object = render_export_result(
+      "error", {"sha3-256:missing"}, "host-file", "/tmp/out.bin", "sha3-256:prov005", "", {}, {},
+      {"object not found: sha3-256:missing"}, "denied", "permissive");
+  if (!expect(validate_export_result_document(export_missing_object, error_message),
+              "export missing object result should validate")) {
+    return 1;
+  }
+  if (!expect(export_missing_object.find("\"kind\": \"materialization-failure\"") !=
+                  std::string::npos,
+              "export result should classify missing object as materialization failure")) {
+    return 1;
+  }
+  if (!expect(export_missing_object.find("\"code\": \"canonfs-export-missing-object\"") !=
+                  std::string::npos,
+              "export result should emit missing object code")) {
     return 1;
   }
 
@@ -175,6 +271,13 @@ int main() {
     if (!expect(denied_export.policy_result == "denied", "policy-denied export result mismatch")) {
       return 1;
     }
+    if (!expect(!denied_export.errors.empty(), "policy-denied export should record an error")) {
+      return 1;
+    }
+    if (!expect(denied_export.errors.front().find("policy denied export:") == 0,
+                "policy-denied export error should identify the export denial")) {
+      return 1;
+    }
 
     t81::canonfs::ImportOptions denied_import_options;
     denied_import_options.canonfs_root = import_options.canonfs_root;
@@ -187,6 +290,16 @@ int main() {
     }
     if (!expect(denied_import.policy_profile == "export-only",
                 "export-only profile import policy profile mismatch")) {
+      return 1;
+    }
+
+    const auto missing_import = t81::canonfs::import_path(root / "missing.txt", import_options);
+    if (!expect(!missing_import.ok(), "missing input import should fail")) return 1;
+    if (!expect(!missing_import.errors.empty(), "missing input import should record an error")) {
+      return 1;
+    }
+    if (!expect(missing_import.errors.front().find("input path does not exist:") == 0,
+                "missing input import error should identify the missing path")) {
       return 1;
     }
 
@@ -203,6 +316,17 @@ int main() {
     }
     if (!expect(import_only_export.policy_profile == "import-only",
                 "import-only profile export policy profile mismatch")) {
+      return 1;
+    }
+
+    const auto missing_export =
+        t81::canonfs::export_ref("sha3-256:missing", root / "missing-out.txt", export_options);
+    if (!expect(!missing_export.ok(), "missing object export should fail")) return 1;
+    if (!expect(!missing_export.errors.empty(), "missing object export should record an error")) {
+      return 1;
+    }
+    if (!expect(missing_export.errors.front().find("object not found: sha3-256:missing") == 0,
+                "missing object export should identify the missing CanonFS object")) {
       return 1;
     }
 

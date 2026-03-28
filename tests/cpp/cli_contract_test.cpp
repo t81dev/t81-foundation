@@ -832,6 +832,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(import_missing_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(
+        contains(import_missing_result.stdout_text, "\"kind\": \"source-failure\""));
+    T81_TEST_CHECK(
+        contains(import_missing_result.stdout_text, "\"code\": \"canonfs-import-missing-source\""));
 
     const auto export_missing_result = run_cli(
         t81_bin, {"canonfs", "export", "sha3-256:11111111111111111111111111111111111111111111",
@@ -840,6 +844,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(export_missing_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(export_missing_result.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(
+        contains(export_missing_result.stdout_text, "\"kind\": \"materialization-failure\""));
+    T81_TEST_CHECK(
+        contains(export_missing_result.stdout_text, "\"code\": \"canonfs-export-invalid-source-ref\""));
 
     const fs::path import_tree = make_temp_path("t81-cli-contract-tree", "");
     fs::create_directories(import_tree / "nested", ignore_ec);
@@ -896,6 +904,10 @@ int main(int argc, char* argv[]) {
         contains(malformed_export_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "\"status\": \"error\""));
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "invalid interchange manifest"));
+    T81_TEST_CHECK(
+        contains(malformed_export_result.stdout_text, "\"kind\": \"materialization-failure\""));
+    T81_TEST_CHECK(
+        contains(malformed_export_result.stdout_text, "\"code\": \"canonfs-export-invalid-manifest\""));
 
     const fs::path canonfs_policy = make_temp_path("t81-cli-contract-canonfs-policy", ".apl");
     {
@@ -913,6 +925,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"policy_profile\": \"permissive\""));
     T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(
+        contains(import_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
+    T81_TEST_CHECK(
+        contains(import_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
 
     const auto export_policy_deny_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
@@ -925,6 +941,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"policy_profile\": \"permissive\""));
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(
+        contains(export_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
+    T81_TEST_CHECK(
+        contains(export_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
 
     const auto import_profile_deny_result = run_cli(
         t81_bin,
@@ -1133,7 +1153,7 @@ int main(int argc, char* argv[]) {
       std::ofstream out(allow_policy);
       T81_TEST_CHECK(static_cast<bool>(out));
       out << "(policy\n"
-             "  (tier 1)\n"
+             "  (tier 2)\n"
              "  (allowed-ternary-model-hashes [\"sha3-512:"
           << loaded_model.checksum << "\"]))\n";
     }
@@ -1141,7 +1161,7 @@ int main(int argc, char* argv[]) {
       std::ofstream out(deny_policy);
       T81_TEST_CHECK(static_cast<bool>(out));
       out << "(policy\n"
-             "  (tier 1)\n"
+             "  (tier 2)\n"
              "  (allowed-ternary-model-hashes [\"sha3-512:cafebabe\"]))\n";
     }
 
@@ -1168,6 +1188,173 @@ int main(int argc, char* argv[]) {
     fs::remove(allow_policy, ignore_ec);
     fs::remove(deny_policy, ignore_ec);
     fs::remove_all(canonfs_root, ignore_ec);
+  }
+
+  {
+    const fs::path model_path = make_temp_path("t81-cli-ai-inference-model", ".t81w");
+    t81::weights::NativeModel model;
+
+    t81::weights::NativeTensor q_proj;
+    q_proj.shape = {2, 2};
+    q_proj.trits = 4;
+    q_proj.data = {40};
+    model["model.layers.0.self_attn.q_proj.weight"] = q_proj;
+
+    t81::weights::NativeTensor k_proj;
+    k_proj.shape = {2, 2};
+    k_proj.trits = 4;
+    k_proj.data = {67};
+    model["model.layers.0.self_attn.k_proj.weight"] = k_proj;
+
+    t81::weights::save_t81w(model, model_path);
+
+    const auto ai_result =
+        run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-demo", "--model-file",
+                          model_path.string(), "--mode", "strict_deterministic", "--prompt",
+                          "hello"});
+
+    T81_TEST_CHECK(ai_result.exit_code == 0);
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"schema\": \"t81.ai.inference-run.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"selected_backend\": \"t81_reference_vm\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"execution_kind\": \"real_vm_native_probe\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"architecture_profile\": \"unknown\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"probe_kind\": \"llama_qk_projection\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"has_config_json\": false"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"has_tokenizer_json\": false"));
+    T81_TEST_CHECK(
+        contains(ai_result.stdout_text, "\"lhs\": \"model.layers.0.self_attn.q_proj.weight\""));
+    T81_TEST_CHECK(
+        contains(ai_result.stdout_text, "\"rhs\": \"model.layers.0.self_attn.k_proj.weight\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output\": \"<tensor#1>\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_tokens\": 1"));
+
+    std::error_code ignore_ec;
+    fs::remove(model_path, ignore_ec);
+  }
+
+  {
+    const fs::path model_dir = make_temp_path("t81-cli-ai-inference-llama-model-dir", "");
+    fs::create_directories(model_dir);
+    const fs::path model_path = model_dir / "contract-llama-demo.t81w";
+    const fs::path tokenizer_path = model_dir / "tokenizer.json";
+    t81::weights::NativeModel model;
+
+    const auto make_tensor = [](std::initializer_list<std::uint32_t> shape) {
+      t81::weights::NativeTensor tensor;
+      tensor.shape.assign(shape.begin(), shape.end());
+      std::size_t element_count = 1;
+      for (std::uint32_t dim : tensor.shape) {
+        element_count *= static_cast<std::size_t>(dim);
+      }
+      tensor.trits = static_cast<std::uint64_t>(element_count);
+      tensor.data.assign((element_count + 47u) / 48u, 0u);
+      return tensor;
+    };
+
+    model["model.embed_tokens.weight"] = make_tensor({32, 16});
+    model["model.norm.weight"] = make_tensor({16});
+    model["model.layers.0.self_attn.q_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.0.self_attn.k_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.0.self_attn.v_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.0.self_attn.o_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.0.mlp.gate_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.0.mlp.up_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.0.mlp.down_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.1.self_attn.q_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.1.self_attn.k_proj.weight"] = make_tensor({16, 16});
+    model["model.layers.1.self_attn.v_proj.weight"] = make_tensor({16, 16});
+    model["lm_head.weight"] = make_tensor({64, 16});
+
+    t81::weights::save_t81w(model, model_path);
+    {
+      std::ofstream out(tokenizer_path);
+      out << R"({
+  "model": {
+    "type": "BPE",
+    "vocab": {
+      "greet": 7,
+      "hello": 11,
+      "world": 12,
+      "▁greet": 17,
+      "▁hello": 21
+    }
+  }
+}
+)";
+    }
+
+    const auto ai_result =
+        run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-llama-demo",
+                          "--model-file", model_path.string(), "--mode", "strict_deterministic",
+                          "--prompt", "greet hello", "--max-tokens", "2"});
+
+    T81_TEST_CHECK(ai_result.exit_code == 0);
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"architecture_profile\": \"llama-dense-v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text,
+                            "\"probe_kind\": \"llama_two_layer_attention_row_logits_sample\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"logits_row_probe_supported\": true"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"logits_sample_window\": 8"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"mode\": \"tokenizer_prompt_history\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"tokenizer_seed_supported\": true"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text,
+                            "\"basis\": \"tokenizer_prompt_history_contiguous_window.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"vocab_size\": 64"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"prompt_token_history_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"prompt_token_history_count\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"seed_token_id\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"window_start\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"window_end\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"window_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sampled_logits\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"selected_candidate\": {\"token_id\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"stateful_decode_supported\": false"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"requested_max_tokens\": 2"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"stability_recovery_exhausted\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"recovery_triggered\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"recovery_steps\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"weak_steps\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"termination_reason\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_trace\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"step\": 0"));
+    T81_TEST_CHECK(
+        contains(ai_result.stdout_text, "\"state_kind\": \"prompt_history_bounded_context.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"transition_kind\": "));
+    T81_TEST_CHECK(contains(
+        ai_result.stdout_text,
+        "\"window_selection_kind\": \"hidden_state_class_projection_mode_conditioned_window_seed.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_basis_kind\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sample_window_kind\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"selection_policy_kind\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"decode_mode_kind\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"next_window_start\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sample_window_used\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_window_used\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"input_token_id\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_anchor_token_id\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_token_history_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"combined_history_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_history_window\": 3"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"context_history_token_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"consumed_hidden_projection_row_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"seed_token_id\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_row_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_scores\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_projection_signature_sha256\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"projection_carry_mode_kind\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_state_class\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_state_class_signature_sha256\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"state_rationale\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"stability\": {"));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_row_ids\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_scores\": ["));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"hidden_carry_signature_sha256\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"carry_probe_layout_kind\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"state_seed_sha256\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_window_seed_sha256\": "));
+    T81_TEST_CHECK(contains(ai_result.stdout_text, "\"final_decode_state\": {"));
+
+    std::error_code ignore_ec;
+    fs::remove_all(model_dir, ignore_ec);
   }
 
   {

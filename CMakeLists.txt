@@ -757,6 +757,7 @@ if(T81_ENABLE_TERNARYOS)
   set(T81_TERNARYOS_ARMV8_GUEST_ARTIFACT_DEPS t81_ternaryos_demo)
   find_program(T81_LLVM_CLANG NAMES clang PATHS /opt/homebrew/opt/llvm/bin NO_DEFAULT_PATH)
   find_program(T81_LLD_LINK NAMES lld-link PATHS /opt/homebrew/bin /opt/homebrew/opt/lld/bin NO_DEFAULT_PATH)
+  set(T81_TERNARYOS_QEMU_SLICE6_EFI_AVAILABLE OFF)
   if(T81_LLVM_CLANG)
     set(T81_TERNARYOS_EFI_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64.obj)
     set(T81_TERNARYOS_X86_64_EFI_SHIM_OBJ ${CMAKE_BINARY_DIR}/ternaryos/virtualbox/BOOTX64_shim.obj)
@@ -1244,6 +1245,7 @@ if(T81_ENABLE_TERNARYOS)
       DEPENDS ${T81_TERNARYOS_QEMU_SLICE6_PROC_STUB_OBJ})
 
     if(T81_LLD_LINK)
+      set(T81_TERNARYOS_QEMU_SLICE6_EFI_AVAILABLE ON)
       add_custom_command(
         OUTPUT ${T81_TERNARYOS_X86_64_EFI}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/virtualbox
@@ -1449,7 +1451,17 @@ if(T81_ENABLE_TERNARYOS)
                 ${T81_TERNARYOS_X86_64_EFI_SHIM_OBJ})
       add_custom_target(t81_ternaryos_qemu_x86_64_efi
         DEPENDS ${T81_TERNARYOS_QEMU_X86_EFI})
+    else()
+      message(WARNING
+        "[t81] QEMU/EFI guest targets are disabled because lld-link was not found. "
+        "Install Homebrew lld and re-run CMake. "
+        "Expected path examples: /opt/homebrew/bin/lld-link or /opt/homebrew/opt/lld/bin/lld-link")
     endif()
+  else()
+    message(WARNING
+      "[t81] QEMU/EFI guest targets are disabled because Homebrew clang was not found. "
+      "Install Homebrew llvm and re-run CMake. "
+      "Expected path example: /opt/homebrew/opt/llvm/bin/clang")
   endif()
 
   add_custom_target(t81_ternaryos_virtualbox_guest_artifact
@@ -1557,14 +1569,23 @@ if(T81_ENABLE_TERNARYOS)
     USES_TERMINAL)
 
   # ── Slice 6: QEMU AArch64 EDK2 disk image + probe ─────────────────────────
-  add_custom_target(t81_ternaryos_qemu_slice6_dev_artifact
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
-    COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/build_qemu_slice6_artifact.sh
-            ${CMAKE_BINARY_DIR}
-            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
-    DEPENDS t81_ternaryos_qemu_slice6_efi
-    USES_TERMINAL)
+  if(T81_TERNARYOS_QEMU_SLICE6_EFI_AVAILABLE)
+    add_custom_target(t81_ternaryos_qemu_slice6_dev_artifact
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      COMMAND /bin/zsh
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/build_qemu_slice6_artifact.sh
+              ${CMAKE_BINARY_DIR}
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6
+      DEPENDS t81_ternaryos_qemu_slice6_efi
+      USES_TERMINAL)
+  else()
+    add_custom_target(t81_ternaryos_qemu_slice6_dev_artifact
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Cannot build t81_ternaryos_qemu_slice6_dev_artifact."
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Missing EFI prerequisites from configure time: Homebrew llvm clang and/or lld-link."
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Install them, then re-run: cmake -S . -B build -G Ninja"
+      COMMAND ${CMAKE_COMMAND} -E false
+      USES_TERMINAL)
+  endif()
 
   add_custom_target(t81_ternaryos_qemu_armv8_slice6_probe
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_slice6_probe
@@ -1576,21 +1597,39 @@ if(T81_ENABLE_TERNARYOS)
     DEPENDS t81_ternaryos_qemu_slice6_dev_artifact
     USES_TERMINAL)
 
-  add_custom_target(t81_ternaryos_qemu_slice6_shell
-    COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_slice6_shell.sh
-            ${CMAKE_BINARY_DIR}
-    DEPENDS t81_ternaryos_qemu_slice6_efi
-    USES_TERMINAL)
+  if(T81_TERNARYOS_QEMU_SLICE6_EFI_AVAILABLE)
+    add_custom_target(t81_ternaryos_qemu_slice6_shell
+      COMMAND /bin/zsh
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/run_qemu_slice6_shell.sh
+              ${CMAKE_BINARY_DIR}
+      DEPENDS t81_ternaryos_qemu_slice6_efi
+      USES_TERMINAL)
+  else()
+    add_custom_target(t81_ternaryos_qemu_slice6_shell
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Cannot boot t81_ternaryos_qemu_slice6_shell."
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Missing EFI prerequisites from configure time: Homebrew llvm clang and/or lld-link."
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Install them, then re-run: cmake -S . -B build -G Ninja"
+      COMMAND ${CMAKE_COMMAND} -E false
+      USES_TERMINAL)
+  endif()
 
-  add_custom_target(t81_ternaryos_qemu_slice6_shell_smoke
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6_shell_smoke
-    COMMAND /bin/zsh
-            ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/verify_qemu_slice6_shell.sh
-            ${CMAKE_BINARY_DIR}
-            ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6_shell_smoke
-    DEPENDS t81_ternaryos_qemu_slice6_efi
-    USES_TERMINAL)
+  if(T81_TERNARYOS_QEMU_SLICE6_EFI_AVAILABLE)
+    add_custom_target(t81_ternaryos_qemu_slice6_shell_smoke
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6_shell_smoke
+      COMMAND /bin/zsh
+              ${CMAKE_CURRENT_SOURCE_DIR}/ternaryos/scripts/verify_qemu_slice6_shell.sh
+              ${CMAKE_BINARY_DIR}
+              ${CMAKE_BINARY_DIR}/ternaryos/qemu_slice6_shell_smoke
+      DEPENDS t81_ternaryos_qemu_slice6_efi
+      USES_TERMINAL)
+  else()
+    add_custom_target(t81_ternaryos_qemu_slice6_shell_smoke
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Cannot run t81_ternaryos_qemu_slice6_shell_smoke."
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Missing EFI prerequisites from configure time: Homebrew llvm clang and/or lld-link."
+      COMMAND ${CMAKE_COMMAND} -E echo "[t81] Install them, then re-run: cmake -S . -B build -G Ninja"
+      COMMAND ${CMAKE_COMMAND} -E false
+      USES_TERMINAL)
+  endif()
 
   add_custom_target(t81_ternaryos_qemu_armv8_guest_probe_blocked_fixture
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/ternaryos/qemu_armv8_guest_blocked_fixture
@@ -1860,6 +1899,19 @@ target_link_libraries(t81_tensor_ops PRIVATE t81_core)
 
 add_executable(t81_ir_roundtrip examples/ir_roundtrip.cpp)
 target_link_libraries(t81_ir_roundtrip PRIVATE t81_core)
+
+add_executable(t81_make_demo_model examples/model-load-canonfs/make_demo_model.cpp)
+target_link_libraries(t81_make_demo_model PRIVATE t81_tool_model t81_core)
+
+add_executable(t81_make_demo_safetensors examples/model-load-canonfs/make_demo_safetensors.cpp)
+target_link_libraries(t81_make_demo_safetensors PRIVATE t81_core)
+
+add_executable(t81_make_demo_float_safetensors
+               examples/model-load-canonfs/make_demo_float_safetensors.cpp)
+target_link_libraries(t81_make_demo_float_safetensors PRIVATE t81_core)
+
+add_executable(t81_make_demo_gguf examples/model-load-canonfs/make_demo_gguf.cpp)
+target_link_libraries(t81_make_demo_gguf PRIVATE t81_core)
 
 add_executable(axion_demo examples/axion_demo.cpp)
 target_link_libraries(axion_demo PRIVATE t81_core t81_axion)

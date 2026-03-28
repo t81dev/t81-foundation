@@ -13,6 +13,7 @@
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/canonfs/interchange.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
+#include "t81/canonfs/interchange_policy.hpp"
 #include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/frontend/ir_generator.hpp"
@@ -521,12 +522,6 @@ struct CanonFsPolicyCheck {
   std::string reason = "allow";
 };
 
-std::optional<t81::axion::Policy> load_axion_policy(const fs::path& policy_path,
-                                                    std::string& error_message);
-CanonFsPolicyCheck evaluate_canonfs_policy(const std::optional<t81::axion::Policy>& policy,
-                                           std::string_view canonical_ref,
-                                           std::string_view syscall_name);
-
 std::string render_import_result(std::string_view status, std::string_view source_kind,
                                  std::string_view source_ref,
                                  const std::vector<std::string>& imported_objects,
@@ -571,42 +566,6 @@ bool emit_validated_json_document(std::string_view text,
   }
   std::cout << text;
   return true;
-}
-
-std::optional<t81::axion::Policy> load_axion_policy(const fs::path& policy_path,
-                                                    std::string& error_message) {
-  std::ifstream in(policy_path);
-  if (!in) {
-    error_message = "could not open policy file: " + policy_path.string();
-    return std::nullopt;
-  }
-  std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
-  auto parsed = t81::axion::parse_policy(content);
-  if (!parsed) {
-    error_message = "policy parse failed: " + parsed.error();
-    return std::nullopt;
-  }
-  return parsed.value();
-}
-
-CanonFsPolicyCheck evaluate_canonfs_policy(const std::optional<t81::axion::Policy>& policy,
-                                           std::string_view canonical_ref,
-                                           std::string_view syscall_name) {
-  if (!policy) {
-    return CanonFsPolicyCheck{};
-  }
-  t81::axion::PolicyEngine engine(*policy);
-  t81::axion::SyscallContext ctx;
-  ctx.caller = "t81 canonfs";
-  ctx.syscall = std::string(syscall_name);
-  ctx.payload = std::string(canonical_ref);
-  ctx.next_opcode = t81::tisc::Opcode::TLoadHash;
-  ctx.current_tier = 1;
-  const auto verdict = engine.evaluate(ctx);
-  return CanonFsPolicyCheck{
-      .allowed = verdict.kind != t81::axion::VerdictKind::Deny,
-      .reason = verdict.reason.empty() ? "allow" : verdict.reason,
-  };
 }
 
 std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& root,
@@ -1634,7 +1593,7 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
   std::optional<t81::axion::Policy> policy;
   if (policy_path) {
     std::string policy_error;
-    policy = load_axion_policy(*policy_path, policy_error);
+    policy = t81::canonfs::load_interchange_axion_policy(*policy_path, policy_error);
     if (!policy) {
       const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
       if (as_json) {
@@ -1650,13 +1609,7 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
       }
       return 1;
     }
-    options.policy_evaluator = [&policy](
-                                   std::string_view canonical_ref, std::string_view operation,
-                                   std::string_view) -> t81::canonfs::InterchangePolicyDecision {
-      const auto verdict = evaluate_canonfs_policy(policy, canonical_ref, operation);
-      return t81::canonfs::InterchangePolicyDecision{.allowed = verdict.allowed,
-                                                     .reason = verdict.reason};
-    };
+    options.policy_evaluator = t81::canonfs::make_axion_interchange_policy_evaluator(policy);
   }
 
   const auto outcome = t81::canonfs::import_path(input, options);
@@ -2053,7 +2006,7 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
   std::optional<t81::axion::Policy> policy;
   if (policy_path) {
     std::string policy_error;
-    policy = load_axion_policy(*policy_path, policy_error);
+    policy = t81::canonfs::load_interchange_axion_policy(*policy_path, policy_error);
     if (!policy) {
       if (as_json) {
         const auto json = render_export_result(
@@ -2070,14 +2023,7 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
       return 1;
     }
     options.policy_evaluator =
-        [&policy](std::string_view canonical_ref, std::string_view operation,
-                  std::string_view path) -> t81::canonfs::InterchangePolicyDecision {
-      const auto verdict = evaluate_canonfs_policy(policy, canonical_ref, operation);
-      return t81::canonfs::InterchangePolicyDecision{
-          .allowed = verdict.allowed,
-          .reason = verdict.reason.empty() ? std::string(path) : verdict.reason,
-      };
-    };
+        t81::canonfs::make_axion_interchange_policy_evaluator(policy, true);
   }
   const auto outcome = t81::canonfs::export_ref(canonical_hash, output_path, options);
   if (as_json) {

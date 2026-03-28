@@ -34,13 +34,23 @@ Success looks like:
 - import/export semantics are stable enough for non-authors to build against
 - policy and provenance are real, not placeholder-shaped
 - interchange behavior is documented in a small number of obvious files
+- the stable seed contract is named explicitly so examples, tests, and tooling
+  can depend on it without pretending the whole RFC is finished
 
 Recommended work:
 
 - deepen policy-profile semantics
 - add more negative/edge-case tests
 - clarify which RFC-00D1 surfaces are draft vs implementation detail
-- consider promoting parts of RFC-00D1 when the contract stops moving
+- keep the current stable seed explicit:
+  `canonfs import` / `canonfs export`,
+  `t81.canonfs-import.v1`,
+  `t81.canonfs-export.v1`,
+  provenance/manifest schemas,
+  `host-file` / `host-directory`,
+  and current policy-profile names
+- consider promoting more of RFC-00D1 only after the deferred v1 questions stop
+  moving
 
 ## Phase 3: Pick one narrow new subsystem and keep it narrow
 

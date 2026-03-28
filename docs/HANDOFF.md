@@ -19,11 +19,17 @@ T81 is a deterministic, policy-gated runtime for auditable AI inference, built o
   - schema artifacts
   - validation tooling
   - basic policy-profile support
+  - stable-enough seed contract:
+    `t81.canonfs-import.v1`, `t81.canonfs-export.v1`,
+    `t81.canonfs-import-provenance.v1`,
+    `t81.canonfs-export-provenance.v1`,
+    `t81.canonfs-interchange-manifest.v1`,
+    `host-file` / `host-directory`, and the current policy-profile names
 
 ## What is still draft or in motion
 
 - RFC-00D0: base-81-aware TCP/IP stack
-- RFC-00D1: CanonFS foreign file system interchange remains draft even though there is implementation seed work
+- RFC-00D1: CanonFS foreign file system interchange remains draft overall, but the current v1 JSON seed contract is now stable enough for examples, tests, and adjacent tooling
 - Broader bare-metal / TernaryOS ambitions are real but not yet the easiest public adoption path
 - Some repo narratives still over-emphasize the long-horizon OS story relative to the current runtime value
 
@@ -60,6 +66,13 @@ When in doubt, prefer these in order:
 - Contributing guide: [CONTRIBUTING.md](/Users/t81dev/Code/t81-foundation/CONTRIBUTING.md)
 - Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](/Users/t81dev/Code/t81-foundation/docs/BUILDABLE_NEXT_STEPS.md)
 - Contributor-facing roadmap: [docs/ROADMAP.md](/Users/t81dev/Code/t81-foundation/docs/ROADMAP.md)
+- AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md)
+
+The short version:
+
+- `Now`: RFC-00D1 hardening plus CI/portability boringness
+- `Next`: RFC-00D1 contract promotion review plus runtime-first docs cleanup
+- `Later`: RFC-00D0 resolver prototype, kept narrow
 
 ## If you only have 30 minutes
 

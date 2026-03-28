@@ -1274,6 +1274,20 @@ std::any IRGenerator::visit(const CallExpr& expr) {
       record_result(&expr, dest);
       return {};
     }
+    if (func_name == "Tensor.transpose") {
+      if (expr.arguments.size() != 1) {
+        throw std::runtime_error("Tensor.transpose expects one argument.");
+      }
+      expr.arguments[0]->accept(*this);
+      auto src = ensure_expr_result(expr.arguments[0].get());
+      auto dest = allocate_typed_register(tisc::ir::PrimitiveKind::Integer);
+      tisc::ir::Instruction instr;
+      instr.opcode = tisc::ir::Opcode::TTRANSPOSE;
+      instr.operands = {dest.reg, src.reg};
+      emit(instr);
+      record_result(&expr, dest);
+      return {};
+    }
     // RFC-0026 AI-M6: Tensor.attention(q, k, v) → ATTN dest, q, PACK(k, v)
     if (func_name == "Tensor.attention") {
       if (expr.arguments.size() != 3) {

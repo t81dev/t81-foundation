@@ -191,6 +191,7 @@ inline constexpr BuiltinDef kBuiltinTable[] = {
   {"std.tensor.load",         "weights.load",       1, Type::Kind::I32,    {},  {2},   true,  BuiltinIRClass::Custom,  kNoOpcode,                  {}, true,  true  },
   {"std.tensor.from_list",    "Tensor.from_list",   1, Type::Kind::Tensor, {},  {},    false, BuiltinIRClass::Copy,    kNoOpcode,                  {}, false, false },
   {"std.tensor.matmul",       "Tensor.matmul",      2, Type::Kind::Tensor, {},  {2},   true,  BuiltinIRClass::Direct,  tisc::ir::Opcode::TMATMUL,  {}, false, false },
+  {"std.tensor.transpose",    "Tensor.transpose",   1, Type::Kind::Tensor, {},  {2},   true,  BuiltinIRClass::Direct,  tisc::ir::Opcode::TTRANSPOSE,{}, false, false },
   {"std.tensor.vec_add",      "Tensor.vec_add",     2, Type::Kind::Tensor, {},  {},    false, BuiltinIRClass::Direct,  tisc::ir::Opcode::TVECADD,  {}, false, false },
   {"std.tensor.attention",    "Tensor.attention",   3, Type::Kind::Tensor, {},  {},    false, BuiltinIRClass::Custom,  kNoOpcode,                  {}, false, true  },
   {"std.tensor.qmatmul",      "Tensor.qmatmul",     3, Type::Kind::Tensor, {},  {},    false, BuiltinIRClass::Custom,  kNoOpcode,                  {}, false, true  },

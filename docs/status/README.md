@@ -46,6 +46,7 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 ### Alignment Truth
 
 - `IMPLEMENTATION_MATRIX.md` — spec authority, implementation maturity, promotion state, drift risk, last review date per subsystem
+- `AI_CLI_IMPLEMENTATION_MATRIX.md` — concrete reality check for `t81 ai ...`; distinguishes real surfaces from scaffolded or stubbed inference commands
 
 ### Risk and Decisions
 

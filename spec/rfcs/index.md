@@ -111,7 +111,7 @@ Auxiliary note:
 | RFC-00CE | Supervisor Fault-Group Acknowledgement | accepted | Activates reserved KernelCall ordinal 17 in the freestanding bridge and proves supervisor recovery moves from pending to acknowledged after thread-level drain |
 | RFC-00CF | Slice6 CanonFS Operator Actions | draft | Narrow operator-shell surface over existing CanonFS/runtime machinery; treat follow-on shell command work as implementation unless it freezes a new stable contract |
 | RFC-00D0 | Base-81-Aware TCP/IP Stack | draft | Initial architectural direction for standards-compatible TCP/IP with base-81 identity, representation, and observability layers |
-| RFC-00D1 | CanonFS Foreign File System Interchange | draft | Defines CanonFS import/export as a governed interchange boundary with provenance, normalization, and explicit round-trip limits; initial companion JSON schemas for import/export/manifests/provenance are now present |
+| RFC-00D1 | CanonFS Foreign File System Interchange | draft | Defines CanonFS import/export as a governed interchange boundary with provenance, normalization, and explicit round-trip limits; a narrow seed contract is now stable enough to build against: `canonfs import` / `canonfs export`, the v1 import/export/provenance/manifest JSON schemas, `host-file` / `host-directory`, and the current policy-profile names |
 
 ## Series Planning
 
