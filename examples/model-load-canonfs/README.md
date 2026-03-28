@@ -93,6 +93,8 @@ bounded carried hidden-tensor path, not just row-derived forward-state
 summaries. Later decode steps reimport a bounded hidden tensor through the
 compiled tensor-pool path, expose bounded q/k signature state, and now carry a
 combined bounded architecture-state object through the `ready` envelope.
+The fourth decode step now takes a deeper architecture-state-led control path
+instead of reusing the same mode as step three.
 
 ```bash
 MAX_TOKENS=4 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh

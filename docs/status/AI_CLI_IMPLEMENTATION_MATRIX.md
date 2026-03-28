@@ -61,6 +61,11 @@ Readiness example coverage today:
   `forward_state_history_feedback_state_transition.v1`,
   `forward_state_history_projection.v1`, and
   `prefer_tail_nonnegative_else_max.v1`
+- that fourth-step continuation now also has its own deeper architecture-state
+  control mode instead of repeating step 3 unchanged:
+  `architecture_state_deep_feedback_state_transition.v1`,
+  `architecture_state_deep_feedback_window.v1`, and
+  `architecture_state_deep_feedback_projection.v1`
 - the top-level payload now also emits a compact `forward_state_summary`, so
   callers can see max generation depth and carried-state usage without walking
   the full trace

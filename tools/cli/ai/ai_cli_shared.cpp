@@ -1036,6 +1036,10 @@ std::string class_conditioned_candidate_basis(std::string_view hidden_state_clas
 
 std::string stability_conditioned_candidate_basis(const NativeDecodeState& state) {
   if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 2) {
+    return "architecture_state_deep_feedback_window.v1";
+  }
+  if (!state.architecture_state_signature_sha256.empty() &&
       state.forward_state_generation >= 1) {
     return "architecture_state_feedback_window.v1";
   }
@@ -1324,6 +1328,14 @@ std::size_t architecture_state_conditioned_sample_window(const NativeDecodeState
                                                          std::size_t base,
                                                          std::size_t cap) {
   const std::string stability = architecture_state_stability_kind(state);
+  if (state.forward_state_generation >= 2) {
+    if (stability == "strong") {
+      return std::min<std::size_t>(cap, std::max<std::size_t>(base, 8));
+    }
+    if (stability == "steady") {
+      return std::min<std::size_t>(cap, std::max<std::size_t>(base, 7));
+    }
+  }
   if (stability == "strong") {
     return std::min<std::size_t>(cap, std::max<std::size_t>(base, 7));
   }
@@ -1339,6 +1351,14 @@ std::size_t architecture_state_conditioned_sample_window(const NativeDecodeState
 std::size_t architecture_state_conditioned_context_window(const NativeDecodeState& state,
                                                           std::size_t base) {
   const std::string stability = architecture_state_stability_kind(state);
+  if (state.forward_state_generation >= 2) {
+    if (stability == "strong") {
+      return std::max<std::size_t>(base, 7);
+    }
+    if (stability == "steady") {
+      return std::max<std::size_t>(base, 6);
+    }
+  }
   if (stability == "strong") {
     return std::max<std::size_t>(base, 6);
   }
@@ -1353,6 +1373,11 @@ std::size_t architecture_state_conditioned_context_window(const NativeDecodeStat
 
 std::string architecture_state_conditioned_selection_policy(const NativeDecodeState& state) {
   const std::string stability = architecture_state_stability_kind(state);
+  if (state.forward_state_generation >= 2) {
+    if (stability == "strong" || stability == "steady") {
+      return "prefer_tail_among_top3.v1";
+    }
+  }
   if (stability == "strong") {
     return "prefer_middle_among_top3.v1";
   }
@@ -1364,6 +1389,11 @@ std::string architecture_state_conditioned_selection_policy(const NativeDecodeSt
 
 std::string architecture_state_conditioned_carry_probe_layout(const NativeDecodeState& state) {
   const std::string stability = architecture_state_stability_kind(state);
+  if (state.forward_state_generation >= 2) {
+    if (stability == "strong" || stability == "steady") {
+      return "reverse_contiguous_window.v1";
+    }
+  }
   if (stability == "strong") {
     return "centered_compact_window.v1";
   }
@@ -1413,6 +1443,10 @@ std::string stability_conditioned_selection_policy(const NativeDecodeState& stat
 }
 
 std::string stability_conditioned_decode_mode(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 2) {
+    return "architecture_state_deep_feedback_projection.v1";
+  }
   if (!state.architecture_state_signature_sha256.empty() &&
       state.forward_state_generation >= 1) {
     return "architecture_state_feedback_projection.v1";
@@ -1495,6 +1529,10 @@ std::string stability_conditioned_carry_probe_layout(const NativeDecodeState& st
 }
 
 std::string stability_conditioned_transition_kind(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 2) {
+    return "architecture_state_deep_feedback_state_transition.v1";
+  }
   if (!state.architecture_state_signature_sha256.empty() &&
       state.forward_state_generation >= 1) {
     return "architecture_state_feedback_state_transition.v1";
@@ -1821,6 +1859,23 @@ void apply_selection_policy(NativeProbeResult& result) {
     order.resize(keep);
     std::sort(order.begin(), order.end());
     const std::size_t selected_index = order[order.size() / 2];
+    result.selected_token_id = result.sampled_token_ids[selected_index];
+    result.selected_token_score = result.sampled_token_scores[selected_index];
+    return;
+  }
+
+  if (result.selection_policy_kind == "prefer_tail_among_top3.v1") {
+    std::vector<std::size_t> order(result.sampled_token_scores.size());
+    for (std::size_t i = 0; i < order.size(); ++i) {
+      order[i] = i;
+    }
+    std::stable_sort(order.begin(), order.end(), [&](std::size_t a, std::size_t b) {
+      return result.sampled_token_scores[a] > result.sampled_token_scores[b];
+    });
+    const std::size_t keep = std::min<std::size_t>(3, order.size());
+    order.resize(keep);
+    std::sort(order.begin(), order.end());
+    const std::size_t selected_index = order.back();
     result.selected_token_id = result.sampled_token_ids[selected_index];
     result.selected_token_score = result.sampled_token_scores[selected_index];
     return;
@@ -3349,7 +3404,8 @@ int cmd_inference_run(const Options& opts) {
             final_architecture_state_stability_kind =
                 step.architecture_state_stability_kind;
           }
-          if (step.transition_kind == "architecture_state_feedback_state_transition.v1") {
+          if (step.transition_kind == "architecture_state_feedback_state_transition.v1" ||
+              step.transition_kind == "architecture_state_deep_feedback_state_transition.v1") {
             ++architecture_state_feedback_steps;
           }
           if (step.transition_kind.find("forward_state_feedback_state_transition.v1") !=

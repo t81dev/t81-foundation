@@ -1582,9 +1582,15 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"transition_kind\": \"architecture_state_feedback_state_transition.v1\""));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"transition_kind\": \"architecture_state_deep_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"candidate_basis_kind\": \"architecture_state_deep_feedback_window.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"decode_mode_kind\": \"architecture_state_feedback_projection.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"decode_mode_kind\": \"architecture_state_deep_feedback_projection.v1\""));
 
     const fs::path degraded_model_path = model_dir / "contract-degraded-demo.t81w";
     const fs::path degraded_tokenizer_path = model_dir / "tokenizer.json";
