@@ -1497,6 +1497,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kind\": \"bounded_qk_tensor_state.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
+                            "\"kv_state_carry_mode_kind\": \"architecture_state_evolved_qk_signature.v1\""));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kind\": \"bounded_hidden_tensor_qk_forward_state.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kind\": \"bounded_intermediate_tensor_literal_import.v1\""));
@@ -1507,13 +1509,17 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"intermediate_tensor_blend_used\": true"));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"hidden_tensor_carry_mode_kind\": \"evolved_hidden_tensor_feedback.v1\""));
+                            "\"hidden_tensor_carry_mode_kind\": \"architecture_state_evolved_hidden_tensor_feedback.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kv_state_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_hidden_tensor_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_kv_state_signature_sha256\": \""));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
+                            "\"final_kv_state_carry_mode_kind\": \"architecture_state_evolved_qk_signature.v1\""));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
+                            "\"feedback_steps\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_architecture_state_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,

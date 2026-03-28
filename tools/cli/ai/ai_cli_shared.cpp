@@ -469,6 +469,7 @@ struct NativeProbeResult {
   std::size_t kv_tensor_rank = 0;
   std::size_t kv_tensor_elements = 0;
   std::string kv_state_signature_sha256;
+  std::string kv_state_carry_mode_kind = "current_qk_window.v1";
   std::string architecture_state_kind = "unavailable";
   std::string architecture_state_signature_sha256;
   std::string architecture_state_class;
@@ -698,6 +699,7 @@ struct NativeDecodeState {
   std::size_t kv_tensor_rank = 0;
   std::size_t kv_tensor_elements = 0;
   std::string kv_state_signature_sha256;
+  std::string kv_state_carry_mode_kind = "current_qk_window.v1";
   std::string architecture_state_kind = "unavailable";
   std::string architecture_state_signature_sha256;
   std::string architecture_state_class;
@@ -770,7 +772,8 @@ std::string candidate_window_seed_digest(const NativeDecodeState& state) {
 
 std::optional<t81::T729DynamicTensor> evolved_hidden_tensor(
     const std::optional<t81::T729DynamicTensor>& previous,
-    const std::optional<t81::T729DynamicTensor>& current) {
+    const std::optional<t81::T729DynamicTensor>& current,
+    float current_weight = 0.75F, float previous_weight = 0.25F) {
   if (!current.has_value()) {
     return std::nullopt;
   }
@@ -790,7 +793,8 @@ std::optional<t81::T729DynamicTensor> evolved_hidden_tensor(
   std::vector<float> blended;
   blended.reserve(curr_values.size());
   for (std::size_t i = 0; i < curr_values.size(); ++i) {
-    blended.push_back(static_cast<float>(curr_values[i] * 0.75F + prev_values[i] * 0.25F));
+    blended.push_back(static_cast<float>(curr_values[i] * current_weight +
+                                         prev_values[i] * previous_weight));
   }
   return t81::T729DynamicTensor::from_host_float_data(
       current->shape(), std::move(blended), current->numeric_class());
@@ -938,6 +942,40 @@ void refresh_forward_state(NativeDecodeState& state) {
       sha3_hex_text(state.forward_state_class + "|" + state.forward_state_signature_sha256);
 }
 
+void refresh_kv_state(NativeDecodeState& state) {
+  const std::string previous_signature = state.kv_state_signature_sha256;
+  const bool has_current_qk = !state.q_tensor_signature_sha256.empty() &&
+                              !state.k_tensor_signature_sha256.empty();
+  if (!has_current_qk) {
+    state.kv_state_kind = "unavailable";
+    state.kv_state_signature_sha256.clear();
+    state.kv_state_carry_mode_kind = "unavailable";
+    return;
+  }
+
+  std::ostringstream text;
+  if (!previous_signature.empty()) {
+    text << "prev=" << previous_signature << "|";
+  }
+  text << "q=" << state.q_tensor_signature_sha256 << "|"
+       << "k=" << state.k_tensor_signature_sha256 << "|"
+       << "layout=" << state.carry_probe_layout_kind << "|"
+       << "gen=" << state.forward_state_generation;
+
+  if (!previous_signature.empty()) {
+    state.kv_state_carry_mode_kind =
+        (!state.architecture_state_signature_sha256.empty() &&
+         state.forward_state_generation >= 1)
+            ? "architecture_state_evolved_qk_signature.v1"
+            : "evolved_qk_signature.v1";
+  } else {
+    state.kv_state_carry_mode_kind = "current_qk_window.v1";
+  }
+  state.kv_state_kind = "bounded_qk_tensor_state.v1";
+  state.kv_state_signature_sha256 =
+      sha3_hex_text(state.kv_state_carry_mode_kind + "|" + text.str());
+}
+
 void refresh_architecture_state(NativeDecodeState& state) {
   state.architecture_state_kind = "unavailable";
   state.architecture_state_signature_sha256.clear();
@@ -956,6 +994,7 @@ void refresh_architecture_state(NativeDecodeState& state) {
   text << state.architecture_state_kind << "|"
        << "hidden=" << state.hidden_tensor_signature_sha256 << "|"
        << "kv=" << state.kv_state_signature_sha256 << "|"
+       << "kv_mode=" << state.kv_state_carry_mode_kind << "|"
        << "forward=" << state.forward_state_signature_sha256 << "|"
        << "hidden_mode=" << state.hidden_tensor_carry_mode_kind << "|"
        << "projection_mode=" << state.projection_carry_mode_kind << "|"
@@ -968,7 +1007,8 @@ void refresh_architecture_state(NativeDecodeState& state) {
   const std::string kv_band = has_kv_state ? "qk" : "nokv";
   const std::string forward_band = has_forward_state ? "carried" : "fresh";
   state.architecture_state_class =
-      tensor_band + "_" + kv_band + "_" + forward_band + "_" + state.hidden_tensor_carry_mode_kind;
+      tensor_band + "_" + kv_band + "_" + forward_band + "_" +
+      state.hidden_tensor_carry_mode_kind + "_" + state.kv_state_carry_mode_kind;
   state.architecture_state_class_signature_sha256 =
       sha3_hex_text(state.architecture_state_class + "|" + state.architecture_state_signature_sha256);
 }
@@ -1260,6 +1300,24 @@ std::string architecture_state_stability_kind(const NativeDecodeState& state) {
     return "fragile";
   }
   return "ambiguous";
+}
+
+std::pair<float, float> hidden_tensor_mix_weights(const NativeDecodeState& state) {
+  if (!state.architecture_state_signature_sha256.empty() &&
+      state.forward_state_generation >= 1) {
+    const std::string stability = architecture_state_stability_kind(state);
+    if (stability == "strong") {
+      return {0.60F, 0.40F};
+    }
+    if (stability == "steady") {
+      return {0.70F, 0.30F};
+    }
+    if (stability == "fragile") {
+      return {0.85F, 0.15F};
+    }
+    return {0.90F, 0.10F};
+  }
+  return {0.75F, 0.25F};
 }
 
 std::size_t architecture_state_conditioned_sample_window(const NativeDecodeState& state,
@@ -2883,6 +2941,7 @@ int cmd_inference_run(const Options& opts) {
           std::size_t kv_tensor_rank = 0;
           std::size_t kv_tensor_elements = 0;
           std::string kv_state_signature_sha256;
+          std::string kv_state_carry_mode_kind;
           std::string architecture_state_kind;
           std::string architecture_state_signature_sha256;
           std::string architecture_state_class;
@@ -2936,6 +2995,7 @@ int cmd_inference_run(const Options& opts) {
         decode_state.kv_tensor_rank = probe.kv_tensor_rank;
         decode_state.kv_tensor_elements = probe.kv_tensor_elements;
         decode_state.kv_state_signature_sha256 = probe.kv_state_signature_sha256;
+        refresh_kv_state(decode_state);
         refresh_forward_state(decode_state);
         refresh_architecture_state(decode_state);
         decode_state.selection_policy_kind = probe.selection_policy_kind;
@@ -2998,6 +3058,7 @@ int cmd_inference_run(const Options& opts) {
                                 decode_state.kv_tensor_rank,
                                 decode_state.kv_tensor_elements,
                                 decode_state.kv_state_signature_sha256,
+                                decode_state.kv_state_carry_mode_kind,
                                 decode_state.architecture_state_kind,
                                 decode_state.architecture_state_signature_sha256,
                                 decode_state.architecture_state_class,
@@ -3088,8 +3149,13 @@ int cmd_inference_run(const Options& opts) {
           decode_state.hidden_state_class = decode_probe.hidden_state_class;
           decode_state.hidden_state_class_signature_sha256 =
               decode_probe.hidden_state_class_signature_sha256;
-          const auto evolved_hidden = evolved_hidden_tensor(decode_state.carried_hidden_tensor,
-                                                            decode_probe.hidden_tensor);
+          const auto [hidden_current_weight, hidden_previous_weight] =
+              hidden_tensor_mix_weights(decode_state);
+          const auto evolved_hidden =
+              evolved_hidden_tensor(decode_state.carried_hidden_tensor,
+                                    decode_probe.hidden_tensor,
+                                    hidden_current_weight,
+                                    hidden_previous_weight);
           decode_state.carried_hidden_tensor = evolved_hidden;
           if (evolved_hidden.has_value()) {
             decode_state.hidden_tensor_signature_sha256 =
@@ -3100,7 +3166,9 @@ int cmd_inference_run(const Options& opts) {
             decode_state.hidden_tensor_shape = evolved_hidden->shape();
             decode_state.hidden_tensor_carry_mode_kind =
                 decode_probe.hidden_tensor_import_used
-                    ? "evolved_hidden_tensor_feedback.v1"
+                    ? (transition_kind == "architecture_state_feedback_state_transition.v1"
+                           ? "architecture_state_evolved_hidden_tensor_feedback.v1"
+                           : "evolved_hidden_tensor_feedback.v1")
                     : "current_only.v1";
           } else {
             decode_state.hidden_tensor_signature_sha256.clear();
@@ -3118,6 +3186,7 @@ int cmd_inference_run(const Options& opts) {
           decode_state.kv_tensor_elements = decode_probe.kv_tensor_elements;
           decode_state.kv_state_signature_sha256 =
               decode_probe.kv_state_signature_sha256;
+          refresh_kv_state(decode_state);
           refresh_forward_state(decode_state);
           refresh_architecture_state(decode_state);
           decode_state.selection_policy_kind = decode_probe.selection_policy_kind;
@@ -3178,6 +3247,7 @@ int cmd_inference_run(const Options& opts) {
                decode_state.kv_tensor_rank,
                decode_state.kv_tensor_elements,
                decode_state.kv_state_signature_sha256,
+               decode_state.kv_state_carry_mode_kind,
                decode_state.architecture_state_kind,
                decode_state.architecture_state_signature_sha256,
                decode_state.architecture_state_class,
@@ -3233,6 +3303,8 @@ int cmd_inference_run(const Options& opts) {
         std::size_t max_kv_tensor_rank = 0;
         std::size_t max_kv_tensor_elements = 0;
         std::string final_kv_state_signature_sha256;
+        std::string final_kv_state_carry_mode_kind = "unavailable";
+        std::size_t kv_feedback_steps = 0;
         std::string final_architecture_state_signature_sha256;
         std::string final_architecture_state_class;
         double max_architecture_state_confidence = 0.0;
@@ -3258,6 +3330,10 @@ int cmd_inference_run(const Options& opts) {
           kv_state_supported = kv_state_supported || !step.kv_state_signature_sha256.empty();
           max_kv_tensor_rank = std::max(max_kv_tensor_rank, step.kv_tensor_rank);
           max_kv_tensor_elements = std::max(max_kv_tensor_elements, step.kv_tensor_elements);
+          if (step.kv_state_carry_mode_kind != "current_qk_window.v1" &&
+              step.kv_state_carry_mode_kind != "unavailable") {
+            ++kv_feedback_steps;
+          }
           architecture_state_supported =
               architecture_state_supported || !step.architecture_state_signature_sha256.empty();
           if (!step.architecture_state_signature_sha256.empty()) {
@@ -3284,6 +3360,8 @@ int cmd_inference_run(const Options& opts) {
               decode_steps.back().hidden_tensor_signature_sha256;
           final_kv_state_signature_sha256 =
               decode_steps.back().kv_state_signature_sha256;
+          final_kv_state_carry_mode_kind =
+              decode_steps.back().kv_state_carry_mode_kind;
           final_architecture_state_signature_sha256 =
               decode_steps.back().architecture_state_signature_sha256;
           final_architecture_state_class = decode_steps.back().architecture_state_class;
@@ -3385,7 +3463,11 @@ int cmd_inference_run(const Options& opts) {
               << "    \"max_elements\": " << max_kv_tensor_elements << ",\n"
               << "    \"final_kv_state_signature_sha256\": \""
               << final_kv_state_signature_sha256 << "\",\n"
-              << "    \"summary\": \"native probes exported bounded q/k tensor signatures for architecture-state carry\"\n"
+              << "    \"final_kv_state_carry_mode_kind\": \""
+              << json_escape(final_kv_state_carry_mode_kind) << "\",\n"
+              << "    \"feedback_steps\": " << kv_feedback_steps << ",\n"
+              << "    \"summary\": \"native probes exported bounded q/k tensor signatures and carried them forward across "
+              << kv_feedback_steps << " feedback steps for architecture-state carry\"\n"
               << "  },\n"
               << "  \"architecture_state_summary\": {\n"
               << "    \"kind\": \"bounded_hidden_tensor_qk_forward_state.v1\",\n"
@@ -3729,6 +3811,8 @@ int cmd_inference_run(const Options& opts) {
                 << "      \"kv_tensor_elements\": " << step.kv_tensor_elements << ",\n"
                 << "      \"kv_state_signature_sha256\": \""
                 << step.kv_state_signature_sha256 << "\",\n"
+                << "      \"kv_state_carry_mode_kind\": \""
+                << json_escape(step.kv_state_carry_mode_kind) << "\",\n"
                 << "      \"architecture_state_kind\": \""
                 << json_escape(step.architecture_state_kind) << "\",\n"
                 << "      \"architecture_state_signature_sha256\": \""
@@ -3979,6 +4063,8 @@ int cmd_inference_run(const Options& opts) {
                 << "    \"kv_tensor_elements\": " << final_step.kv_tensor_elements << ",\n"
                 << "    \"kv_state_signature_sha256\": \""
                 << final_step.kv_state_signature_sha256 << "\",\n"
+                << "    \"kv_state_carry_mode_kind\": \""
+                << json_escape(final_step.kv_state_carry_mode_kind) << "\",\n"
                 << "    \"architecture_state_kind\": \""
                 << json_escape(final_step.architecture_state_kind) << "\",\n"
                 << "    \"architecture_state_signature_sha256\": \""

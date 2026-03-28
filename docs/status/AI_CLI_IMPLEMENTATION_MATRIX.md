@@ -119,6 +119,16 @@ Readiness example coverage today:
     combined architecture state is active, and they surface
     `architecture_state_guardrail_triggered` plus
     `architecture_state_stability_kind`
+  - when combined architecture state is active, hidden-tensor carry evolution
+    is now architecture-state-conditioned instead of using the old fixed
+    75/25 blend, and the carry mode reports
+    `architecture_state_evolved_hidden_tensor_feedback.v1`
+  - bounded Q/K state now also evolves across steps, with
+    `kv_state_carry_mode_kind:
+    "architecture_state_evolved_qk_signature.v1"` on the architecture-state-led
+    path, and that evolved KV signature feeds the combined architecture state
+  - top-level `kv_state_summary` now also reports `feedback_steps`, so the
+    bounded Q/K carry depth is visible without reading the full decode trace
 - the remaining limitation is narrower now: this is a bounded compiled-literal
   carry path, not a general KV-cache or arbitrary intermediate-tensor import
   primitive

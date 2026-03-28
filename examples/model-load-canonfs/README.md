@@ -122,8 +122,15 @@ Expected result:
 - `hidden_tensor_carry_mode_kind: "evolved_hidden_tensor_feedback.v1"`
 - `kv_state_summary.kind: "bounded_qk_tensor_state.v1"`
 - `final_kv_state_signature_sha256` is present
+- `kv_state_summary.feedback_steps: ...`
 - architecture-state stability now also participates in bounded recovery
   decisions
+- later carried hidden-tensor evolution reports
+  `hidden_tensor_carry_mode_kind:
+  "architecture_state_evolved_hidden_tensor_feedback.v1"`
+- later carried Q/K state reports
+  `kv_state_carry_mode_kind:
+  "architecture_state_evolved_qk_signature.v1"`
 - later steps can report
   `transition_kind: "hidden_tensor_feedback_state_transition.v1"`
 - `hidden_tensor_import_used: true` on later decode steps
