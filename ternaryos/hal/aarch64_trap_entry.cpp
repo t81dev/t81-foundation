@@ -10,7 +10,8 @@
 #include "aarch64_trap_entry.hpp"
 #include "../kernel/kernel_main.hpp"
 
-#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
 extern "C" char axion_exception_vector_base[];
 #endif
 
@@ -41,7 +42,8 @@ void axion_kernel_install_exception_vectors() noexcept {
   // Only execute on bare-metal AArch64 targets (QEMU / real hardware).
   // Excluded on macOS/Apple Silicon: the host OS runs at EL0 and VBAR_EL1
   // is privileged; attempting to write it would fault immediately.
-#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   // axion_exception_vector_base is the symbol defined by the .balign 2048 /
   // .global directive in aarch64_exception_vectors.S.  Writing its address
   // into VBAR_EL1 installs the Axion exception vector table.
@@ -55,7 +57,8 @@ void axion_kernel_install_exception_vectors() noexcept {
 
 }  // namespace t81::ternaryos::hal
 
-#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__)
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(__MACH__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
 extern "C" void axion_kernel_handle_svc_trap_aarch64(
     const t81::ternaryos::hal::AArch64TrapFrame* frame) noexcept {
   t81::ternaryos::hal::axion_kernel_handle_svc_trap_aarch64(frame);

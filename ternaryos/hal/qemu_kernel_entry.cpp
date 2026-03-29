@@ -21,7 +21,8 @@ static uint32_t s_timer_period_counts = t81::ternaryos::hal::kQemuDefaultTimerPe
 
 // ── ARM generic timer MMIO helpers ───────────────────────────────────────────
 
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
 
 static inline void arm_timer_start(uint32_t tval) noexcept {
   __asm__ volatile("msr cntp_tval_el0, %0\n\t"
@@ -200,7 +201,8 @@ bool qemu_hardware_init(const QemuProfile& profile, uint32_t timer_period_counts
   arm_timer_start(timer_period_counts);
   pl011_puts(kQemuVirtPl011Base, "[axion] ARM timer armed\n");
 
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   return true;
 #else
   return false;
