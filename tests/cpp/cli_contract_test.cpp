@@ -1575,8 +1575,10 @@ int main(int argc, char* argv[]) {
                             "\"bounded_horizon_utilization\": 1"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"bounded_horizon_reached\": true"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"termination_reason\": \"deep_architecture_state_horizon_reached\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"termination_reason\": "
+                 "\"deep_architecture_state_horizon_reached\""));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"hidden_tensor_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
@@ -1587,8 +1589,10 @@ int main(int argc, char* argv[]) {
                             "\"feedback_steps\": 4"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"architecture_state_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"confidence_envelope\": \"bounded_deep_architecture_state_probe.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"confidence_envelope\": "
+                 "\"bounded_deep_architecture_state_probe.v1\""));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"deep_feedback_used\": true"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
@@ -1599,18 +1603,29 @@ int main(int argc, char* argv[]) {
                             "\"architecture_state_deep_feedback_used\": true"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"feedback_steps\": 2"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"transition_kind\": \"architecture_state_feedback_state_transition.v1\""));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"transition_kind\": \"architecture_state_deep_feedback_state_transition.v1\""));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"candidate_basis_kind\": \"architecture_state_deep_feedback_window.v1\""));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"decode_mode_kind\": \"architecture_state_feedback_projection.v1\""));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"decode_mode_kind\": \"architecture_state_deep_feedback_projection.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"transition_kind\": "
+                 "\"architecture_state_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"transition_kind\": "
+                 "\"architecture_state_deep_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"candidate_basis_kind\": "
+                 "\"architecture_state_deep_feedback_window.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"decode_mode_kind\": "
+                 "\"architecture_state_feedback_projection.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text,
+                 "\"decode_mode_kind\": "
+                 "\"architecture_state_deep_feedback_projection.v1\""));
 
     const fs::path degraded_model_path = model_dir / "contract-degraded-demo.t81w";
     const fs::path degraded_tokenizer_path = model_dir / "tokenizer.json";
@@ -1646,11 +1661,11 @@ int main(int argc, char* argv[]) {
 )";
     }
 
-    const auto degraded_ai_result =
-        run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-degraded-demo",
-                          "--model-file", degraded_model_path.string(), "--mode",
-                          "strict_deterministic", "--prompt", "greet hello", "--max-tokens",
-                          "2"});
+    const auto degraded_ai_result = run_cli(
+        t81_bin,
+        {"ai",        "inference",             "run",    "--model", "contract-degraded-demo",
+         "--model-file", degraded_model_path.string(), "--mode",   "strict_deterministic",
+         "--prompt",  "greet hello",          "--max-tokens", "2"});
 
     T81_TEST_CHECK(degraded_ai_result.exit_code == 0);
     T81_TEST_CHECK(contains(degraded_ai_result.stdout_text, "\"bounded_decode_health\": {"));

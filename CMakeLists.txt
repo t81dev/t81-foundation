@@ -1956,11 +1956,11 @@ option(T81_ENABLE_AI_EXPERIMENTS "Build the experimental AI CLI compatibility su
 
 # RFC-0032 Phase 5 (C-07) — promoted AI CLI tool (no sleep_for / no llama.cpp)
 add_executable(t81_ai_cli tools/cli/ai/t81_ai_cli.cpp tools/cli/ai/ai_cli_shared.cpp)
-target_link_libraries(t81_ai_cli PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+target_link_libraries(t81_ai_cli PRIVATE t81_tool_cli t81_vm t81_axion t81_math_quantization t81_core)
 
 if(T81_ENABLE_AI_EXPERIMENTS)
   add_executable(t81_ai tools/cli/ai/t81_ai_cli.cpp tools/cli/ai/ai_cli_shared.cpp)
-  target_link_libraries(t81_ai PRIVATE t81_vm t81_axion t81_math_quantization t81_core)
+  target_link_libraries(t81_ai PRIVATE t81_tool_cli t81_vm t81_axion t81_math_quantization t81_core)
   set(AI_EXP_DIR "${CMAKE_BINARY_DIR}/experiments")
   set_target_properties(t81_ai PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${AI_EXP_DIR}/ai/ux_tools")
