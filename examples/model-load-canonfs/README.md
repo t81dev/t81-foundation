@@ -100,6 +100,7 @@ When that happens, the top-level readiness/health envelope upgrades to
 At the current bounded 4-step ceiling, the run now ends with
 `termination_reason: "deep_architecture_state_horizon_reached"`.
 The payload also reports `bounded_horizon_steps: 4`.
+It now also reports `bounded_horizon_reached: true`.
 
 ```bash
 MAX_TOKENS=4 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
