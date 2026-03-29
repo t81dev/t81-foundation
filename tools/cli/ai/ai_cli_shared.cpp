@@ -3576,6 +3576,12 @@ int cmd_inference_run(const Options& opts) {
                       ? 0
                       : (kBoundedDecodeTraceSteps - generated_tokens))
               << ",\n"
+              << "  \"bounded_horizon_utilization\": "
+              << (kBoundedDecodeTraceSteps == 0
+                      ? 0.0
+                      : static_cast<double>(generated_tokens) /
+                            static_cast<double>(kBoundedDecodeTraceSteps))
+              << ",\n"
               << "  \"bounded_horizon_reached\": "
               << ((termination_reason == "deep_architecture_state_horizon_reached" ||
                    termination_reason == "max_tokens_reached")

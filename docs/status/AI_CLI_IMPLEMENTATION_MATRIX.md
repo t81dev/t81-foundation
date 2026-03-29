@@ -82,6 +82,8 @@ Readiness example coverage today:
   at that current ceiling
 - and now also reports `bounded_horizon_remaining`, so callers can see whether
   a bounded run stopped at the ceiling or with room still left
+- and now also reports `bounded_horizon_utilization`, so callers can treat the
+  current bounded horizon as an explicit normalized depth signal
 - the top-level payload now also emits a compact `forward_state_summary`, so
   callers can see max generation depth and carried-state usage without walking
   the full trace

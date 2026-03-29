@@ -1572,6 +1572,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"bounded_horizon_remaining\": 0"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"bounded_horizon_utilization\": 1"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"bounded_horizon_reached\": true"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"termination_reason\": \"deep_architecture_state_horizon_reached\""));
