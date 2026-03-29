@@ -73,6 +73,8 @@ Readiness example coverage today:
 - when a run reaches that bounded deep architecture-state horizon and stops at
   the current 4-step ceiling, `termination_reason` now reports
   `deep_architecture_state_horizon_reached`
+- the payload now also exposes that ceiling directly as
+  `bounded_horizon_steps: 4`
 - the top-level payload now also emits a compact `forward_state_summary`, so
   callers can see max generation depth and carried-state usage without walking
   the full trace

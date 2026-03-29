@@ -3566,6 +3566,7 @@ int cmd_inference_run(const Options& opts) {
               << " architecture-state-led feedback steps\"\n"
               << "  },\n"
               << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
+              << "  \"bounded_horizon_steps\": " << kBoundedDecodeTraceSteps << ",\n"
               << "  \"stability_recovery_exhausted\": "
               << (stability_recovery_exhausted ? "true" : "false") << ",\n"
               << "  \"recovery_triggered\": "
