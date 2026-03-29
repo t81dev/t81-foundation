@@ -80,6 +80,8 @@ Readiness example coverage today:
   `bounded_horizon_steps: 4`
 - and reports `bounded_horizon_reached: true` when a bounded run actually stops
   at that current ceiling
+- and now also reports `bounded_horizon_remaining`, so callers can see whether
+  a bounded run stopped at the ceiling or with room still left
 - the top-level payload now also emits a compact `forward_state_summary`, so
   callers can see max generation depth and carried-state usage without walking
   the full trace

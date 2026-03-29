@@ -101,6 +101,7 @@ At the current bounded 4-step ceiling, the run now ends with
 `termination_reason: "deep_architecture_state_horizon_reached"`.
 The payload also reports `bounded_horizon_steps: 4`.
 It now also reports `bounded_horizon_reached: true`.
+It also reports `bounded_horizon_remaining: 0`.
 It also reports `architecture_state_summary.deep_feedback_steps: 1`.
 
 ```bash
