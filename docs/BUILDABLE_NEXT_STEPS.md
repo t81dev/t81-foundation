@@ -57,40 +57,36 @@ repo.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
 10. Review RFC-00D1 for partial contract promotion after behavior stops moving.
-11. Replace synthetic `t81 ai inference run` payload generation with one real native execution lane.
+11. Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
     Current state:
-    the strict deterministic `t81_reference_vm` lane is now real and runs a
-    bounded native Llama-shaped probe with tokenizer-aware candidate
-    selection, row-wise logits scoring, and a bounded decode trace with
-    `--max-tokens` support, `termination_reason`, `final_decode_state`, and an
-    explicit bounded native decode-state shape. That decode trace now
-    separates decode-state carry from candidate-window seeding so the payload
-    is clearer about what is true state versus current heuristic selection, and
-    later candidate windows are now seeded from a model-computed carry
-    signature taken from the real logits sample.
-    Later trace steps now use the previously selected/generated token as the
-    actual embed input and can blend a bounded recent token-history context,
-    and step `0` can now start with bounded prompt-token context when the
-    tokenizer yields multiple prompt tokens. Multi-token prompts can also seed
-    the initial candidate window from full prompt-token history, and the
-    bounded context window now preserves the original prompt anchor token.
-    The lane now also exports real intermediate hidden-tensor evidence from
-    live VM state and reimports a bounded carried hidden tensor into later
-    decode probes through the compiled tensor-pool path and now blend that
-    carried tensor with the current `attn0` path, so bounded hidden
-    state carry is now real. Repeated weak or recovery-grade
-    bounded decode steps now stop intentionally with
-    `termination_reason: "stability_recovery_exhausted"` instead of silently
-    extending the trace. Checked-in runnable examples now prove `ready`,
-    `guarded`, and `degraded`. The bounded decode state now also carries an
-    explicit `forward_state` object derived from the hidden projection.
-    That state now records `forward_state_generation`, persists a bounded slice
-    of prior carried rows with decay, and has a checked-in 3-step probe via
-    `examples/model-load-canonfs/run_forward_state_ai_probe.sh`.
-    That 3-step path now visibly shifts the third decode step into a
-    history-heavy forward-state mode. The remaining limitation is narrower
-    now: general KV-cache or arbitrary intermediate-tensor import is still
-    left to do.
+    the strict deterministic `t81_reference_vm` lane is already real. It now
+    runs a bounded native Llama-shaped probe with tokenizer-aware candidate
+    selection, row-wise logits scoring, explicit readiness posture, checked-in
+    `ready` / `guarded` / `degraded` examples, and a bounded decode path with
+    real carried hidden-tensor, q/k, forward-state, and combined
+    architecture-state evidence. That lane now reaches a bounded 4-step
+    horizon, has a distinct deep fourth-step architecture-state mode, and
+    emits explicit horizon metadata such as `bounded_horizon_steps`,
+    `bounded_horizon_remaining`, `bounded_horizon_utilization`, and
+    `termination_reason: "deep_architecture_state_horizon_reached"`.
+    This means the old “replace the synthetic payload” task is effectively
+    complete for the strict deterministic reference-VM path.
+    What is still left is broader reuse beyond this bounded probe lane.
+
+    Remaining implementation plan:
+    1. Extract the current bounded hidden/qk/forward/architecture-state carry
+       logic out of CLI-shaped glue and into a reusable runtime module.
+    2. Replace the current bounded compiled-literal tensor carry path with a
+       more general intermediate-state object that can be reused across longer
+       decode horizons.
+    3. Extend the current bounded 4-step horizon only after the carried-state
+       object is reusable, and prove that step 5+ still changes control-path
+       behavior instead of only lengthening the trace.
+    4. Promote the bounded decode lane from probe-shaped execution to a true
+       greedy decode path for one narrow architecture, still starting with
+       `t81_reference_vm`.
+    5. Only after that, make `benchmark run` and `policy test` consume the same
+       real native execution path instead of their current scaffolded behavior.
 
 ## Pick one lane
 

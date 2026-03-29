@@ -1,6 +1,6 @@
 # AI CLI Implementation Matrix
 
-Last Updated: 2026-03-28
+Last Updated: 2026-03-29
 Authority: `tools/cli/ai/ai_cli_shared.cpp`, `tools/cli/main.cpp`, related tests and examples
 
 This document answers one narrow question:
@@ -251,10 +251,11 @@ Key observations from the current implementation:
   - `stateful_decode_supported: false`
   - `requested_max_tokens`
   - `termination_reason`
-  - `decode_trace` for the current bounded three-step history-feedback trace
+  - `decode_trace` for the current bounded four-step carried-state lane
     - later steps now use the previously selected/generated token as the actual
       `std.tnn.embed(...)` input while still choosing candidate windows from
-      prompt-plus-history feedback
+      prompt-plus-history feedback, then hidden-tensor/qk/forward-state
+      feedback, and finally combined architecture-state feedback
     - when tokenizer matching yields more than one prompt token, step `0` now
       starts with bounded prompt-token context instead of an empty context set,
       and the initial candidate window can be prompt-history seeded
@@ -346,6 +347,20 @@ Key observations from the current implementation:
     - once that carried state is established, later decode steps can now shift
       into an explicitly history-heavy forward-state mode with a distinct
       transition kind, decode mode, carry layout, and selection policy
+    - the bounded lane now reaches a checked-in four-step horizon, and later
+      steps can escalate from forward-state feedback into
+      `architecture_state_feedback_state_transition.v1` and then a deeper
+      fourth-step `architecture_state_deep_feedback_state_transition.v1`
+    - when that deeper fourth-step mode is reached, the top-level envelope now
+      upgrades to `bounded_deep_architecture_state_probe.v1`, and the payload
+      reports:
+      `architecture_state_deep_feedback_used`,
+      `architecture_state_summary.deep_feedback_steps`,
+      `bounded_horizon_steps`,
+      `bounded_horizon_remaining`,
+      `bounded_horizon_utilization`,
+      `bounded_horizon_reached`, and
+      `termination_reason: "deep_architecture_state_horizon_reached"`
     - the hidden-state class now also conditions the bounded sample width for
       later decode steps, surfaced as `sample_window_kind` and
       `sample_window_used`
@@ -403,26 +418,40 @@ This means the missing work is not "invent inference." The missing work is the h
 
 ## Missing For True Native Inference
 
-The current repo does not yet provide a complete native `t81 ai` experience equivalent to "load a model and chat with it" through the T81-native path.
+The current repo now has a real bounded native inference lane for the strict
+deterministic reference-VM path, but it still does not provide a complete
+native `t81 ai` experience equivalent to "load a model and chat with it"
+through a broadly reusable T81-native runtime path.
 
 Still missing:
 
-- tokenizer integration beyond exact-token / merge-aware normalized-subword seed lookup for at least one supported architecture
-- promotion from narrow tokenizer-seeded windows to real prompt tokenization and decode
-- architecture-specific forward-pass orchestration beyond the current bounded probe
-- promotion of the current bounded candidate-feedback trace into a true decode loop and sampler wired to the native runtime
-- promotion of `t81 ai inference run` from a bounded architecture probe to full architecture execution
-- real benchmark and policy-test execution derived from that same lane
+- extraction of the current hidden/qk/forward/architecture-state carry logic
+  out of CLI-shaped glue into a reusable runtime module
+- promotion from the current bounded compiled-literal carry path to a more
+  general intermediate-state object that can be reused beyond the current
+  bounded 4-step horizon
+- extension beyond the current bounded horizon only after that reusable state
+  object exists and still changes the control path meaningfully at later steps
+- promotion of the current bounded architecture-state lane from a probe-shaped
+  decode path into a true greedy decode/runtime path for one narrow
+  architecture
+- real benchmark and policy-test execution derived from that same reusable
+  native execution path
+- a broader interactive inference UX beyond the current bounded native probe
 
 ## Recommended Next Milestone
 
 The smallest honest next milestone is:
 
-1. wire `t81 ai inference run` to one real backend
-2. start with `t81_reference_vm`
-3. support one narrow architecture first, likely tiny Llama
-4. widen tokenizer support from narrow exact-token / whitespace-token seed lookup to real prompt tokenization
-5. widen the bounded decode lane into a true state-carrying greedy decode path
-6. make `benchmark run` and `policy test` consume the same execution path
+1. extract the current bounded carry logic into a reusable runtime-state module
+2. replace the current bounded compiled-literal tensor carry path with a more
+   general intermediate-state object
+3. keep `t81_reference_vm` and one narrow architecture first, likely tiny
+   Llama
+4. extend beyond the current bounded 4-step horizon only after that reusable
+   state object is in place
+5. widen the bounded decode lane into a true greedy decode/runtime path
+6. make `benchmark run` and `policy test` consume that same execution path
 
-That would promote `t81 ai` from "partly scaffolded orchestration shell" to "real native inference entry point."
+That would promote `t81 ai` from "bounded native reference lane" to "reusable
+native inference runtime entry point."

@@ -1,6 +1,6 @@
 # /docs/status — Control Surface
 
-Last Updated: 2026-03-26
+Last Updated: 2026-03-29
 Authority: `/spec` > `docs/architecture/OVERVIEW.md` > `/docs` > `/book`
 
 This directory is a cockpit, not an archive.
@@ -73,6 +73,7 @@ Narrative documents, temporal plans, and time-bound reports live in `docs/record
 - `CI_GATE_STATUS.md` — required gates, informational gates, known failures, benchmark guardrail, flaky-test inventory
 - `DEPENDENCY_HEALTH.md` — dependency versions, upgrade policy, CVE tracking, determinism impact
 - `TASKS.md` — active implementation tasks (C2 close, stdlib fixture suites)
+- `AI_CLI_MILESTONE_EVIDENCE.md` — current bounded native AI inference milestone snapshot, runnable proof points, and remaining gap
 
 ---
 
@@ -110,7 +111,6 @@ or absorbed into the documents above:
 | AUDIT_REMEDIATION_CROSSWALK.md | placeholder — `records/` |
 | GOVERNANCE_BOUNDARIES_CLARIFICATION.md | placeholder — `records/` |
 | JIT_EQUIVALENCE_GAP.md | placeholder — `records/` |
-| AI_CLI_MILESTONE_EVIDENCE.md | milestone complete — `records/` |
 | CI_WORKFLOW_CONFIRMATION.md | lightweight freshness-governed workflow marker; detailed gate state lives in `CI_GATE_STATUS.md` |
 | RFC_0026_RESIDUAL_EXCEPTIONS.md | point-in-time analysis — `records/status-history/` |
 | RFC_TRIAGE_MATRIX.md | triage complete; live status in `spec/rfcs/index.md` — `records/status-history/` |
