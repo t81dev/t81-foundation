@@ -1588,6 +1588,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"deep_feedback_used\": true"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"deep_feedback_steps\": 1"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"architecture_state_deep_feedback_used\": true"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"feedback_steps\": 2"));
