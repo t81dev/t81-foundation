@@ -114,11 +114,11 @@ Concrete work:
 
 Key files:
 
-- [interchange_ops.hpp](/Users/t81dev/Code/t81-foundation/include/t81/canonfs/interchange_ops.hpp)
-- [canonfs_interchange_ops.cpp](/Users/t81dev/Code/t81-foundation/fs/canonfs_interchange_ops.cpp)
-- [driver.cpp](/Users/t81dev/Code/t81-foundation/tools/cli/driver.cpp)
-- [canonfs_interchange_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/canonfs_interchange_test.cpp)
-- [cli_contract_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/cli_contract_test.cpp)
+- [interchange_ops.hpp](../include/t81/canonfs/interchange_ops.hpp)
+- [canonfs_interchange_ops.cpp](../fs/canonfs_interchange_ops.cpp)
+- [driver.cpp](../tools/cli/driver.cpp)
+- [canonfs_interchange_test.cpp](../tests/cpp/canonfs_interchange_test.cpp)
+- [cli_contract_test.cpp](../tests/cpp/cli_contract_test.cpp)
 
 Definition of done:
 
@@ -141,9 +141,9 @@ Concrete work:
 
 Key files:
 
-- [RFC-00D1-canonfs-foreign-filesystem-interchange.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
-- [spec/rfcs/index.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/index.md)
-- [docs/HANDOFF.md](/Users/t81dev/Code/t81-foundation/docs/HANDOFF.md)
+- [RFC-00D1-canonfs-foreign-filesystem-interchange.md](../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
+- [spec/rfcs/index.md](../spec/rfcs/index.md)
+- [docs/HANDOFF.md](HANDOFF.md)
 
 Definition of done:
 
@@ -152,8 +152,8 @@ Definition of done:
 
 Suggested first read:
 
-- [RFC-00D1-canonfs-foreign-filesystem-interchange.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
-- [docs/HANDOFF.md](/Users/t81dev/Code/t81-foundation/docs/HANDOFF.md)
+- [RFC-00D1-canonfs-foreign-filesystem-interchange.md](../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
+- [docs/HANDOFF.md](HANDOFF.md)
 
 ## 3. RFC-00D0 resolver prototype
 
@@ -170,8 +170,8 @@ Concrete work:
 
 Key files:
 
-- [RFC-00D0-base81-aware-tcp-ip-stack.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md)
-- [spec/rfcs/index.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/index.md)
+- [RFC-00D0-base81-aware-tcp-ip-stack.md](../spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md)
+- [spec/rfcs/index.md](../spec/rfcs/index.md)
 - likely new code under `fs/`, `tools/`, or a future `net/` module
 
 Definition of done:
@@ -182,8 +182,8 @@ Definition of done:
 
 Suggested first read:
 
-- [RFC-00D0-base81-aware-tcp-ip-stack.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md)
-- [spec/rfcs/index.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/index.md)
+- [RFC-00D0-base81-aware-tcp-ip-stack.md](../spec/rfcs/RFC-00D0-base81-aware-tcp-ip-stack.md)
+- [spec/rfcs/index.md](../spec/rfcs/index.md)
 
 ## 4. Public-story cleanup
 
@@ -199,10 +199,10 @@ Concrete work:
 
 Key files:
 
-- [README.md](/Users/t81dev/Code/t81-foundation/README.md)
-- [docs/README.md](/Users/t81dev/Code/t81-foundation/docs/README.md)
-- [docs/HANDOFF.md](/Users/t81dev/Code/t81-foundation/docs/HANDOFF.md)
-- [docs/ROADMAP.md](/Users/t81dev/Code/t81-foundation/docs/ROADMAP.md)
+- [README.md](../README.md)
+- [docs/README.md](README.md)
+- [docs/HANDOFF.md](HANDOFF.md)
+- [docs/ROADMAP.md](ROADMAP.md)
 
 Definition of done:
 
@@ -223,9 +223,9 @@ Concrete work:
 
 Key files:
 
-- [CMakeLists.txt](/Users/t81dev/Code/t81-foundation/CMakeLists.txt)
-- [.github/workflows/ci.yml](/Users/t81dev/Code/t81-foundation/.github/workflows/ci.yml)
-- [.github/workflows/qemu-boot-x86.yml](/Users/t81dev/Code/t81-foundation/.github/workflows/qemu-boot-x86.yml)
+- [CMakeLists.txt](../CMakeLists.txt)
+- [.github/workflows/ci.yml](../.github/workflows/ci.yml)
+- [.github/workflows/qemu-boot-x86.yml](../.github/workflows/qemu-boot-x86.yml)
 
 Definition of done:
 

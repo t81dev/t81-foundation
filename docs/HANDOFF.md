@@ -60,13 +60,13 @@ When in doubt, prefer these in order:
 
 ## Current best entry points
 
-- Public overview: [README.md](/Users/t81dev/Code/t81-foundation/README.md)
-- RFC catalog: [spec/rfcs/index.md](/Users/t81dev/Code/t81-foundation/spec/rfcs/index.md)
-- Documentation index: [docs/README.md](/Users/t81dev/Code/t81-foundation/docs/README.md)
-- Contributing guide: [CONTRIBUTING.md](/Users/t81dev/Code/t81-foundation/CONTRIBUTING.md)
-- Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](/Users/t81dev/Code/t81-foundation/docs/BUILDABLE_NEXT_STEPS.md)
-- Contributor-facing roadmap: [docs/ROADMAP.md](/Users/t81dev/Code/t81-foundation/docs/ROADMAP.md)
-- AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](/Users/t81dev/Code/t81-foundation/docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md)
+- Public overview: [README.md](../README.md)
+- RFC catalog: [spec/rfcs/index.md](../spec/rfcs/index.md)
+- Documentation index: [docs/README.md](README.md)
+- Contributing guide: [CONTRIBUTING.md](../CONTRIBUTING.md)
+- Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](BUILDABLE_NEXT_STEPS.md)
+- Contributor-facing roadmap: [docs/ROADMAP.md](ROADMAP.md)
+- AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](status/AI_CLI_IMPLEMENTATION_MATRIX.md)
 
 The short version:
 
@@ -76,8 +76,8 @@ The short version:
 
 ## If you only have 30 minutes
 
-1. Read [README.md](/Users/t81dev/Code/t81-foundation/README.md) through `Choose your path`.
-2. Skim [docs/BUILDABLE_NEXT_STEPS.md](/Users/t81dev/Code/t81-foundation/docs/BUILDABLE_NEXT_STEPS.md) and pick one lane.
+1. Read [README.md](../README.md) through `Choose your path`.
+2. Skim [docs/BUILDABLE_NEXT_STEPS.md](BUILDABLE_NEXT_STEPS.md) and pick one lane.
 3. Read the matching RFC before touching code.
 4. Run the narrowest local verification for that lane before changing anything broad.
 
