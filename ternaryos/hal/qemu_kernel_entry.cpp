@@ -279,7 +279,8 @@ void qemu_kernel_run_loop(kernel::KernelRuntimeState& state, uint32_t timer_peri
     }
 
     // Bare-metal: yield to next IRQ.  Hosted: tight loop (bounded by max_steps).
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
     if (run_forever) {
       __asm__ volatile("wfi");
     }

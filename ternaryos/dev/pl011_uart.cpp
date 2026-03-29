@@ -11,7 +11,8 @@ namespace t81::ternaryos::dev {
 
 // ── MMIO helpers (bare-metal only) ──────────────────────────────────────────
 
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
 
 static inline void mmio_write32(uint64_t addr, uint32_t val) noexcept {
   *reinterpret_cast<volatile uint32_t*>(addr) = val;
@@ -43,7 +44,8 @@ static FILE* pl011_host_sink_ = nullptr;
 // ── Hosted sink ──────────────────────────────────────────────────────────────
 
 void pl011_set_host_sink(FILE* sink) noexcept {
-#if !defined(__aarch64__) || defined(__APPLE__)
+#if !defined(__aarch64__) || defined(__APPLE__) || \
+    defined(T81_TERNARYOS_HOSTED_BUILD)
   pl011_host_sink_ = sink;
 #else
   (void)sink;
@@ -53,7 +55,8 @@ void pl011_set_host_sink(FILE* sink) noexcept {
 // ── Driver API ───────────────────────────────────────────────────────────────
 
 void pl011_init(uint64_t base) noexcept {
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   // Disable UART while reconfiguring.
   mmio_write32(base + kPl011RegCR, 0);
 
@@ -77,7 +80,8 @@ void pl011_init(uint64_t base) noexcept {
 }
 
 void pl011_putchar(uint64_t base, char c) noexcept {
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   // Spin until there is room in the TX FIFO.
   while (tx_fifo_full(base)) {
     __asm__ volatile("yield");
@@ -100,7 +104,8 @@ void pl011_puts(uint64_t base, const char* s) noexcept {
 }
 
 void pl011_flush(uint64_t base) noexcept {
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   // Spin until TX FIFO is empty.
   while (!tx_fifo_empty(base)) {
     __asm__ volatile("yield");
@@ -112,7 +117,8 @@ void pl011_flush(uint64_t base) noexcept {
 }
 
 bool pl011_rx_ready(uint64_t base) noexcept {
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   return (mmio_read32(base + kPl011RegFR) & kPl011FrRXFE) == 0;
 #else
   (void)base;
@@ -121,7 +127,8 @@ bool pl011_rx_ready(uint64_t base) noexcept {
 }
 
 int pl011_getchar(uint64_t base) noexcept {
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD)
   if (!pl011_rx_ready(base)) return -1;
   return static_cast<int>(mmio_read32(base + kPl011RegDR) & 0xFFu);
 #else
