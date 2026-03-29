@@ -73,6 +73,8 @@ Readiness example coverage today:
 - `architecture_state_summary` now also reports `deep_feedback_steps`, so
   callers can distinguish “deep mode happened once” from future longer-horizon
   runs without parsing the trace
+- `architecture_state_summary.utilization` now normalizes deep feedback depth
+  against total architecture-state feedback depth
 - when a run reaches that bounded deep architecture-state horizon and stops at
   the current 4-step ceiling, `termination_reason` now reports
   `deep_architecture_state_horizon_reached`

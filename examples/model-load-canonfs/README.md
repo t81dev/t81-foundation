@@ -104,6 +104,7 @@ It now also reports `bounded_horizon_reached: true`.
 It also reports `bounded_horizon_remaining: 0`.
 It now also reports `bounded_horizon_utilization: 1`.
 It also reports `architecture_state_summary.deep_feedback_steps: 1`.
+It now also reports `architecture_state_summary.utilization: 0.5`.
 
 ```bash
 MAX_TOKENS=4 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh

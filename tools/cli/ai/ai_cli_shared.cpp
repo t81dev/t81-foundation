@@ -3564,6 +3564,12 @@ int cmd_inference_run(const Options& opts) {
               << (architecture_state_deep_feedback_used ? "true" : "false") << ",\n"
               << "    \"deep_feedback_steps\": " << architecture_state_deep_feedback_steps
               << ",\n"
+              << "    \"utilization\": "
+              << (architecture_state_feedback_steps == 0
+                      ? 0.0
+                      : static_cast<double>(architecture_state_deep_feedback_steps) /
+                            static_cast<double>(architecture_state_feedback_steps))
+              << ",\n"
               << "    \"feedback_steps\": " << architecture_state_feedback_steps << ",\n"
               << "    \"summary\": \"native probes carried a bounded combined architecture state across hidden-tensor, q/k, and forward-state evidence through "
               << architecture_state_feedback_steps
