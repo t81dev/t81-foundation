@@ -1323,6 +1323,7 @@ KernelAuditSummaryView make_audit_summary_view(const KernelRuntimeState& state) 
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
       .last_service_transition_sequence = latest_service_transition.sequence,
+      .recent_events = {},
   };
   for (const auto& record : state.audit_log) {
     view.recent_events.push_back(record);
@@ -1344,6 +1345,7 @@ KernelDeviceSummaryView make_device_summary_view(const KernelRuntimeState& state
       .last_service_transition_id = latest_service_transition.service_id,
       .last_service_transition_kind = latest_service_transition.kind,
       .last_service_transition_sequence = latest_service_transition.sequence,
+      .devices = {},
   };
   if (state.device_arbitration) {
     for (const auto& device : state.device_arbitration->devices) {

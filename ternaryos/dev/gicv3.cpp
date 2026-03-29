@@ -3,7 +3,7 @@
 // ARM GICv3 minimal driver.
 //
 // Bare-metal path: volatile 32-bit MMIO + AArch64 system register MSR/MRS.
-// Hosted path: all hardware access compiled out (safe for unit tests on macOS).
+// Hosted path: all hardware access compiled out (safe for unit tests on macOS/Linux).
 
 #include "gicv3.hpp"
 
@@ -11,7 +11,8 @@ namespace t81::ternaryos::dev {
 
 // ── Hardware access helpers ──────────────────────────────────────────────────
 
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(__aarch64__) && !defined(__APPLE__) && \
+    !defined(T81_TERNARYOS_HOSTED_BUILD) && !defined(_MSC_VER)
 
 static inline void gicd_write32(uint64_t base, uint64_t off,
                                 uint32_t val) noexcept {
