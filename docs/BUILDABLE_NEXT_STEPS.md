@@ -198,7 +198,7 @@ Key files:
 - [README.md](../README.md)
 - [docs/README.md](README.md)
 - [docs/HANDOFF.md](HANDOFF.md)
-- [docs/ROADMAP.md](ROADMAP.md)
+- [docs/status/ROADMAP.md](status/ROADMAP.md)
 
 Definition of done:
 

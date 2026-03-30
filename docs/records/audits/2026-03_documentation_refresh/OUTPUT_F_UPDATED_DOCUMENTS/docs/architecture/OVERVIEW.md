@@ -1,7 +1,7 @@
 # T81 Architecture Overview
 
-Status: Active  
-Last Verified (UTC): 2026-02-26  
+Status: Active
+Last Verified (UTC): 2026-02-26
 Maturity: Mixed (`Frozen` core, `Experimental` periphery)
 
 > **Architecture File Style Guide**

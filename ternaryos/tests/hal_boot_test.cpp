@@ -8917,6 +8917,7 @@ static void test_kernel_abi_wire_blocks() {
       .supervisor_id = 89,
       .address_space_id = 97,
       .target_process_group_id = 101,
+      .thread_label = "test-label",
       .process_group_owned_page_count = 3,
       .process_group_pending_fault_count = 1,
       .runtime_boot_critical_address_space_count = 2,
