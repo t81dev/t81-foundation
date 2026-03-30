@@ -423,10 +423,10 @@ deterministic reference-VM path, but it still does not provide a complete
 native `t81 ai` experience equivalent to "load a model and chat with it"
 through a broadly reusable T81-native runtime path.
 
+The bounded state logic (hidden/QK/forward/architecture carry) has now been successfully extracted out of the CLI glue into a foundational reusable module (`t81::vm::DecodeState`).
+
 Still missing:
 
-- extraction of the current hidden/qk/forward/architecture-state carry logic
-  out of CLI-shaped glue into a reusable runtime module
 - promotion from the current bounded compiled-literal carry path to a more
   general intermediate-state object that can be reused beyond the current
   bounded 4-step horizon
@@ -443,7 +443,7 @@ Still missing:
 
 The smallest honest next milestone is:
 
-1. extract the current bounded carry logic into a reusable runtime-state module
+1. (DONE) extract the current bounded carry logic into a reusable runtime-state module (`t81::vm::DecodeState`)
 2. replace the current bounded compiled-literal tensor carry path with a more
    general intermediate-state object
 3. keep `t81_reference_vm` and one narrow architecture first, likely tiny

@@ -57,7 +57,7 @@ repo.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
 10. Review RFC-00D1 for partial contract promotion after behavior stops moving.
-11. Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
+11. (DONE) Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
     Current state:
     the strict deterministic `t81_reference_vm` lane is already real. It now
     runs a bounded native Llama-shaped probe with tokenizer-aware candidate
@@ -74,8 +74,8 @@ repo.
     What is still left is broader reuse beyond this bounded probe lane.
 
     Remaining implementation plan:
-    1. Extract the current bounded hidden/qk/forward/architecture-state carry
-       logic out of CLI-shaped glue and into a reusable runtime module.
+    1. (DONE) Extract the current bounded hidden/qk/forward/architecture-state carry
+       logic out of CLI-shaped glue and into a reusable runtime module (`t81::vm::DecodeState`).
     2. Replace the current bounded compiled-literal tensor carry path with a
        more general intermediate-state object that can be reused across longer
        decode horizons.

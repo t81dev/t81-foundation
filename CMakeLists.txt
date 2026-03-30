@@ -354,6 +354,7 @@ add_library(t81_vm STATIC
   vm/ffi_dispatcher.cpp
   # RFC-0032 Phase 4 — promoted AI VM backend adapter (C-02)
   vm/ai_backend/backend_adapter.cpp
+  vm/decode_state.cpp
   ffi/ffi_dispatcher.cpp
 )
 target_include_directories(t81_vm PUBLIC
@@ -1849,6 +1850,15 @@ target_include_directories(t81_tool_cli PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+add_library(t81_decode STATIC
+  vm/decoder.cpp
+)
+target_link_libraries(t81_decode PUBLIC t81_tool_cli t81_vm t81_tool_model)
+target_include_directories(t81_decode PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
 # TUI library — built only when T81_BUILD_TUI=ON
 if(T81_BUILD_TUI)
   add_library(t81_tui STATIC
@@ -2224,6 +2234,9 @@ if(T81_BUILD_TESTS)
 
   add_executable(t81_weights_load_test tests/cpp/weights_load_test.cpp)
   target_link_libraries(t81_weights_load_test PRIVATE t81_vm t81_core t81_tool_model)
+  add_executable(t81_vm_decoder_test tests/cpp/vm_decoder_test.cpp)
+  target_link_libraries(t81_vm_decoder_test PRIVATE t81_decode t81_vm t81_core t81_tool_model)
+  add_test(NAME t81_vm_decoder_test COMMAND t81_vm_decoder_test)
   add_executable(t81_safetensors_import_test tests/cpp/safetensors_import_test.cpp)
   target_link_libraries(t81_safetensors_import_test PRIVATE t81_tool_model t81_core)
   add_executable(t81_native_weights_metrics_test tests/cpp/native_weights_metrics_test.cpp)
