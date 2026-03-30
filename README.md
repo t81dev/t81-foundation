@@ -169,6 +169,9 @@ T81 prioritizes **verifiability, determinism, and governance** over broad compat
 
 For deeper technical mapping (Natural Language Space → Code Entity Space), see the [Project Overview](docs/index.md) and [Glossary](docs/glossary.md) in the DeepWiki.
 
+## Long-term direction
+T81 is being developed toward a computing model where cognition becomes a first-class software substrate. Instead of treating model weights as opaque blobs invoked by external runtimes, T81 treats them as governed artifacts: provenance-bound, policy-mediated, and executable within bounded cognitive tiers. The long-term aim is not only deterministic inference, but an operating environment where cognitive software can be stored, invoked, composed, and governed with the same rigor that conventional systems apply to code and processes.
+
 ## License
 
 Apache 2.0
