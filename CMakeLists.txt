@@ -210,6 +210,7 @@ add_library(t81_experimental STATIC
   experimental/tiers/cog/tier4/tier4_loop.cpp
   experimental/distributed/distributed.cpp
   experimental/tiers/cog/tier5/infinite.cpp
+  experimental/tiers/cog/tier6/distributed_monad.cpp
 )
 target_link_libraries(t81_experimental PUBLIC t81_core)
 target_compile_features(t81_experimental PUBLIC ${T81_CXX_STD_FEATURE})
@@ -2380,6 +2381,9 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_ethics_test PRIVATE t81_core t81_axion)
   add_test(NAME t81_ethics_test COMMAND t81_ethics_test)
 
+  add_executable(t81_tier6_test tests/cpp/tier6_test.cpp)
+  target_link_libraries(t81_tier6_test PRIVATE t81_core t81_experimental t81_tracing)
+
   add_executable(t81_ethics_invariants_test tests/cpp/test_ethics_invariants.cpp)
   target_link_libraries(t81_ethics_invariants_test PRIVATE t81_core t81_axion)
   add_test(NAME t81_ethics_invariants_test COMMAND t81_ethics_invariants_test)
@@ -3301,6 +3305,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     canonfs_axion_trace_test
     t81_tier4_test
     t81_tier5_test
+    t81_tier6_test
     t81_infinite_opcodes_test
     t81_tier4_vm_test
     t81_tier4_distributed_test
