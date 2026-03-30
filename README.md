@@ -1,10 +1,10 @@
-# T81 — Ternary-Native Runtime for Governed, Deterministic AI Inference
+# T81 Foundation — Ternary-Native Runtime for Governed, Deterministic AI Inference
 
 <p align="center">
-  <img src="docs/assets/banner.png" alt="T81 — Ternary OS for Auditable AI" width="100%">
+  <img src="docs/assets/banner.png" alt="T81 — Ternary-Native Runtime for Governed AI" width="100%">
 </p>
 
-Bit-exact reproducibility • Pre-side-effect policy enforcement • Ternary-weight inference • Immutable, hash-verified artifacts
+**Bit-exact reproducibility • Pre-side-effect policy enforcement • Ternary-weight inference • Immutable, hash-verified artifacts**
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
@@ -16,73 +16,73 @@ Bit-exact reproducibility • Pre-side-effect policy enforcement • Ternary-wei
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/t81dev/t81-foundation)
 
-## What T81 is
+## What is T81
 
-T81 is a **deterministic, policy-gated runtime for auditable AI inference**.
+T81 is a **ternary-native runtime** designed for **governed, deterministic AI inference**. It solves critical challenges in agentic and model-driven systems by guaranteeing bit-exact reproducibility and enforcing safety/ethics policies *before* any side effects occur.
 
-It is built around four ideas:
+Built on balanced ternary logic, T81 eliminates conventional binary floating-point drift. Identical inputs produce bit-identical outputs across verified platforms (currently Linux x86_64 and macOS ARM64).
 
-- **Deterministic execution** with bit-identical traces on governed platforms
-- **Policy enforcement before side effects** via the Axion policy engine
-- **Immutable, content-addressed artifacts** via CanonFS
-- **Ternary-native execution paths** for efficient, reproducible inference work
+### Architectural Pillars
 
-In longer form, T81 is also an in-progress guest OS and bare-metal kernel effort.
-But the most useful way to understand it today is as a runtime you can use to:
+1. **Deterministic Execution** — Bit-identical traces guaranteed within the Deterministic Core Profile (DCP).
+2. **Policy Enforcement** — The **Axion** governance engine mediates all operations and enforces rules pre-dispatch.
+3. **Immutable Artifacts** — **CanonFS** provides content-addressed, hash-verified storage for models, code, and audit evidence.
+4. **Ternary-Native Paths** — Efficient inference via ternary-weight dot products (conditional ±1 additions instead of FP multiplies).
 
-- run governed inference workloads
-- prove which artifacts executed
-- reproduce results across verified environments
-- keep policy and evidence attached to execution from the start
+T81 also serves as the foundation for an in-progress bare-metal kernel and guest OS (TernaryOS), but its primary usable form today is as a governed runtime for auditable inference.
 
-Determinism claims in this README are bounded by the
-[Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md),
-which defines the verified platforms, toolchains, and excluded host-dependent
-surfaces for those guarantees.
+## Core Subsystems & Maturity (March 2026)
 
-## Why it exists
+| Subsystem     | Role                                              | Maturity     |
+|---------------|---------------------------------------------------|--------------|
+| **TISC ISA**  | Frozen ternary instruction set (v1.9.0)           | **Frozen**   |
+| **T81VM**     | Deterministic interpreter with Axion hooks        | **Stable**   |
+| **Axion**     | Governance kernel mediating dispatch              | **Stable**   |
+| **CanonFS**   | Immutable, hash-verified storage backend          | **Stable**   |
+| **T81Lang**   | High-level language frontend for ternary logic    | **Stable**   |
 
-T81 is aimed at three recurring problems in agentic and model-driven systems:
+The **Deterministic Core Profile (DCP)** (TISC ISA, core VM, and data types) is a **Verified Deterministic Surface**. Experimental areas (e.g., Cognitive Tiers, full Hanoi VM) sit outside the DCP.
 
-- identical inputs producing different outputs across platforms
-- weak evidence about which weights and artifacts actually ran
-- policy enforcement that happens after execution rather than before it
+## Execution Workflow
 
-The project’s position is simple:
+T81 ties immutable inputs to deterministic outcomes through a policy-gated pipeline:
 
-> If something cannot be reproduced, governed, and audited, it should not be trusted to act.
+```mermaid
+sequenceDiagram
+    participant Host
+    participant CFS as "CanonFS"
+    participant VM as "T81VM"
+    participant AX as "Axion"
 
-## What works today
+    Host->>CFS: Import model/code (canonfs import)
+    CFS-->>Host: CanonHash81
+    Host->>VM: Run with weights hash + policy
+    loop Instruction Cycle
+        VM->>AX: eval_axion_call(insn)
+        AX-->>VM: Verdict (Allow/Deny)
+        alt Allow
+            VM->>VM: Execute TISC Opcode
+        else Deny
+            VM->>VM: Trap (SecurityFault)
+        end
+    end
+    VM-->>Host: Deterministic Result + Audit Trace
+```
 
-As of March 2026, T81 is usable today as a:
+## Why Ternary?
 
-- CLI runtime
-- Docker-delivered demo/runtime environment
-- Python-integrated execution environment
-- QEMU guest with interactive shell and CanonFS-backed runtime surfaces
-- CanonFS interchange seed with import/export CLI, schema artifacts,
-  provenance records, and contract-tested JSON surfaces
+Balanced ternary delivers structural advantages for verifiable inference:
 
-Still experimental:
+- **Multiplication-free dot products** — Conditional additions yield significant energy/throughput gains.
+- **Zero floating-point drift** — Truncation-only rounding ensures bit-exact **CanonHash81** traces.
+- **Constant-time negation** — Simple digit flip (~10× faster than binary integer negation in benchmarks).
+- **Trit-level policy interception** — Axion can gate individual operations before side effects.
 
-- bare-metal/native hardware bring-up
-- broader OS/userland ambitions beyond the current guest/runtime path
-- real ternary hardware targets, which do not exist yet
+See full benchmarks in [`benchmarks/results/`](benchmarks/results/).
 
-No native ternary hardware exists today. T81’s ternary execution model runs on conventional binary CPUs.
+## Quick Start
 
-## Choose your path
-
-- **Try it in 60 seconds:** use Docker and get a working demo plus REPL
-- **Use the runtime locally:** install the CLI and run T81 code, policies, and CanonFS flows
-- **See the OS direction:** boot the QEMU demo and interact with the `t81>` shell
-- **Inspect the architecture:** read the [RFC catalog](spec/rfcs/index.md), [handoff guide](docs/HANDOFF.md), and subsystem docs
-
-If you want the shortest serious maintainer path, read [docs/HANDOFF.md](docs/HANDOFF.md) and then pick a task from [docs/BUILDABLE_NEXT_STEPS.md](docs/BUILDABLE_NEXT_STEPS.md).
-
-## Quick start
-
-### Docker (easiest, ~60 seconds)
+### Docker (easiest — ~60 seconds)
 
 ```bash
 docker run --rm -it ghcr.io/t81dev/t81-foundation demo
@@ -90,110 +90,56 @@ docker run --rm -it ghcr.io/t81dev/t81-foundation demo
 
 Runs hello-world → ternary demo → determinism check → interactive REPL.
 
-### One-line install (macOS/Linux)
+### Native Build (Linux/macOS)
 
 ```bash
-curl -fsSL https://github.com/t81dev/t81-foundation/releases/latest/download/install.sh | sh
-t81 repl
+git clone https://github.com/t81dev/t81-foundation.git
+cd t81-foundation
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
 ```
 
-### End-to-end runtime example
+Key CMake flags:
+- `T81_STRICT_DETERMINISTIC_FLOAT=ON` (default) — Enforces bit-exact float paths.
+- `T81_HYBRID_MLP=OFF` — Keeps pure ternary invariants (requires Axion approval if enabled).
+
+### Python Integration
 
 ```bash
+pip install .
+```
+
+### First-Run Examples
+
+```bash
+# Compile and run T81Lang
+t81 code build examples/hello_world.t81 -o hello.tisc
+t81 vm run hello.tisc
+
+# CanonFS + governed inference
 t81 canonfs import model.t81w --json
 t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl --trace
 ```
 
-This is the core T81 workflow today:
-
-- import immutable artifacts into CanonFS
-- run under Axion policy
-- produce deterministic execution evidence
-- keep execution tied to content-addressed inputs
-
-The current RFC-00D1 seed is stable enough to build examples and adjacent
-tooling against at the JSON contract level:
-
-- `t81.canonfs-import.v1`
-- `t81.canonfs-export.v1`
-- `t81.canonfs-import-provenance.v1`
-- `t81.canonfs-export-provenance.v1`
-- `t81.canonfs-interchange-manifest.v1`
-- `host-file` / `host-directory`
-
-### QEMU boot demo (most "OS-like" experience)
+### QEMU Boot Demo (OS-like experience)
 
 ```bash
-# Ubuntu 24.04 deps
-sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools cmake ninja-build clang-18 lld-18
+# Install deps (Ubuntu example)
+sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools
 
 git clone https://github.com/t81dev/t81-foundation.git && cd t81-foundation
 ./drivers/qemu/scripts/boot_demo.sh
 ```
-Watch: EFI → Axion kernel → `t81>` prompt.  
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/t81dev/t81-foundation/main/docs/assets/boot.gif" 
-       alt="T81 QEMU AArch64 boot sequence — live t81> shell demo" 
-       width="95%" style="border:1px solid #ddd; border-radius:8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-  <br><small>Current boot progress: EFI → bare-metal EL1 → policy engine → CanonFS mount → interactive t81> prompt</small>
-</p>
+At the `t81>` prompt: `status`, `policy`, `help`.
 
-<br><small>Interactive replay: <a href="https://github.com/t81dev/t81-foundation/blob/main/drivers/qemu/t81-boot.cast">t81-boot.cast (asciinema)</a></small>
-
-At the `t81>` prompt try:
-
-```text
-status    # kernel & governance state
-policy    # active rules
-help
-```
-
-If you want the quickest accurate mental model, start with the runtime and treat the QEMU/bare-metal work as the longer-term systems direction.
-
-## Why ternary? Key technical advantages
-
-Balanced ternary enables several structural improvements for verifiable inference:
-
-1. **Multiplication-free dot products**  
-   Ternary weights → conditional ±1 adds instead of FP multiplies  
-   → Potential 15–60× energy reduction and large throughput gains vs FP16/FP32 (aligned with BitNet-style results; measured in software emulation)
-
-2. **Zero floating-point drift**  
-   Truncation-only rounding, symmetric around zero  
-   → Bit-exact **CanonHash81** traces across Linux x86_64 + macOS ARM64 (CI-verified)
-
-3. **Constant-time negation**  
-   Simple digit flip (+1 ↔ −1) vs binary carry chains  
-   → Measured ~46.9 G-ops/s (PackedCell) — ~10× faster than optimized 64-bit integer negation on same hardware
-
-4. **Trit-level policy interception**  
-   TISC ISA is ternary-native → Axion kernel can gate individual operations before side effects
-
-Full benchmarks and methodology → [`benchmarks/results/`](benchmarks/results/)
-
-## Architecture at a glance
-
-| Component       | Purpose                                      | Status      |
-|-----------------|----------------------------------------------|-------------|
-| **TISC ISA**    | Frozen ternary instruction set               | ❄️ Frozen v1.9.0 |
-| **T81VM**       | Deterministic interpreter + Axion hooks      | Stable      |
-| **Axion**       | Fail-closed policy engine (APL)              | Stable      |
-| **CanonFS**     | Immutable, hash-addressed storage            | Stable      |
-| **RFC-00D1 seed** | CanonFS import/export + schema contract    | Stable seed |
-| **T81Lang**     | System language → `agent`/`behavior` model   | Stable      |
-| **DPE**         | Deterministic parallel executor              | Stable      |
-| Bare-metal      | Native boot (no host OS)                     | 🚧 Alpha    |
-
-See detailed diagram and component breakdown in [Architecture →](#architecture)
-
-## Example: T81Lang + Policy
+## T81Lang + Policy Example
 
 ```t81
 agent Inference {
   behavior run(prompt: String) -> Tensor {
-    // model call gated by Axion
-    return Model.forward(prompt);
+    return Model.forward(prompt);  // gated by Axion
   }
 }
 ```
@@ -204,32 +150,24 @@ allow infer if model.hash in approved_models;
 deny infer reason "unapproved-model";
 ```
 
-```bash
-t81 code run inference.t81 --policy secure_model.apl --weights-model model.t81w --trace
-```
+## Project Status & Governance
 
-## Status & maturity (v1.9.5)
+As of March 2026, the T81 core is stable and governed by a monthly C2 review cadence. Active risks, implementation matrix, and decision logs are tracked in [`docs/status/`](docs/status/).
 
-| Surface                  | Maturity    | Notes                                      |
-|--------------------------|-------------|--------------------------------------------|
-| TISC ISA & core types    | ❄️ Frozen   | No breaking changes in v1.x                |
-| Deterministic VM         | Stable      | Bit-identical traces on x86_64 + ARM64     |
-| Axion policy & audit     | Stable      | Fail-closed, CanonFS-anchored              |
-| Ternary inference opcodes| Stable      | TWMATMUL, TATTN, TQUANT, etc.              |
-| QEMU boot (AArch64/x86)  | Complete    | EFI → kernel → interactive shell           |
-| Bare-metal target        | Alpha       | In progress                                |
-| Cognitive tiers / userland| Beta       | Experimental                               |
+- **Determinism claims** are bounded by the [Deterministic Core Profile](docs/status/SYSTEM_STATUS.md) and verified via CI gates.
+- See the full [Project Roadmap & Governance Status](docs/status/ROADMAP.md) and [Getting Started & Installation](docs/user-guide/quickstart/INSTALL.md) for details.
 
-404/404 tests passing • Determinism CI gate active
+## What T81 is Not (Yet)
 
-## What T81 is **not** (yet)
-
-- Drop-in replacement for Linux/macOS
-- Optimized for legacy/binary software
-- GUI-first or general-purpose desktop OS
-- Running on real ternary hardware (none exists)
+- A drop-in replacement for general-purpose OSes
+- Optimized for legacy binary software
+- Dependent on real ternary hardware (emulated on conventional CPUs)
 
 T81 prioritizes **verifiability, determinism, and governance** over broad compatibility.
+
+## Architecture Overview
+
+For deeper technical mapping (Natural Language Space → Code Entity Space), see the [Project Overview](docs/index.md) and [Glossary](docs/glossary.md) in the DeepWiki.
 
 ## License
 
@@ -237,5 +175,4 @@ Apache 2.0
 
 ---
 
-Thanks for checking it out.  
-Early feedback, issues, and contributors are very welcome.
+Thanks for checking out T81. Early feedback, issues, and contributors are welcome!
