@@ -20,7 +20,7 @@
 
 T81 is a **ternary-native runtime** designed for **governed, deterministic AI inference**. It solves critical challenges in agentic and model-driven systems by guaranteeing bit-exact reproducibility and enforcing safety/ethics policies *before* any side effects occur.
 
-Built on balanced ternary logic, T81 eliminates conventional binary floating-point drift. Identical inputs produce bit-identical outputs across verified platforms (currently Linux x86_64 and macOS ARM64).
+Built on balanced ternary logic, T81 eliminates conventional binary floating-point drift. Identical inputs produce bit-identical outputs within the Deterministic Core Profile (DCP) across verified platforms (currently Linux x86_64 and macOS ARM64).
 
 ### Architectural Pillars
 
@@ -152,7 +152,7 @@ deny infer reason "unapproved-model";
 
 ## Project Status & Governance
 
-As of March 2026, the T81 core is stable and governed by a monthly C2 review cadence. Active risks, implementation matrix, and decision logs are tracked in [`docs/status/`](docs/status/).
+As of March 2026, The T81 deterministic core (ISA, VM, data types) is stable and governed by a monthly C2 review cadence. Active risks, implementation matrix, and decision logs are tracked in [`docs/status/`](docs/status/).
 
 - **Determinism claims** are bounded by the [Deterministic Core Profile](docs/status/SYSTEM_STATUS.md) and verified via CI gates.
 - See the full [Project Roadmap & Governance Status](docs/status/ROADMAP.md) and [Getting Started & Installation](docs/user-guide/quickstart/INSTALL.md) for details.
