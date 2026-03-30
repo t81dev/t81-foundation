@@ -245,3 +245,5 @@ Essas vantagens se combinam em domínios em que **reprodutibilidade**, **inferê
 ## Licença
 
 Licença Apache 2.0.
+
+> All determinism claims in this README are bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

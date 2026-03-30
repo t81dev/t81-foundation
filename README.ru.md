@@ -245,3 +245,5 @@ ctest --test-dir build --output-on-failure
 ## Лицензия
 
 Лицензия Apache 2.0.
+
+> All determinism claims in this README are bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

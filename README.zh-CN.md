@@ -245,3 +245,5 @@ IEEE 754 浮点数存在破坏可重复性的平台特定舍入模式、结合�
 ## 许可证
 
 Apache 许可证 2.0。
+
+> All determinism claims in this README are bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).

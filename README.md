@@ -239,3 +239,5 @@ Apache 2.0
 
 Thanks for checking it out.  
 Early feedback, issues, and contributors are very welcome.
+
+> All determinism claims in this README are bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
