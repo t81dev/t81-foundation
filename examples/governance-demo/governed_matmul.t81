@@ -1,0 +1,16 @@
+// File: examples/governance-demo/governed_matmul.t81
+// Purpose: Minimal governed native inference operation
+
+fn main() -> i32 {
+  // 1. Policy is evaluated here deterministically by the Axion Kernel
+  // 2. Tensors are loaded directly into bounded reference VM registers
+  let a: i32 = std.tensor.load("mat_a");
+  let b: i32 = std.tensor.load("mat_b");
+
+  // 3. Inference execution passes through strict policy validation
+  let c: Tensor = std.tensor.matmul(a, b);
+  let _ = c;
+
+  print("SUCCESS: Native Tensor Matmul Executed.");
+  return 0;
+}

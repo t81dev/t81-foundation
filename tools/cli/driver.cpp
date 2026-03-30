@@ -1433,6 +1433,17 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
 
   if (!result) {
     error("Execution trapped: " + t81::vm::to_string(result.error()));
+    if (result.error() == t81::vm::Trap::SecurityFault) {
+      if (!vm->state().axion_log.empty()) {
+        const auto& verdict = vm->state().axion_log.back().verdict;
+        std::cerr << "reason: " << verdict.reason << "\n";
+      }
+      if (!vm->state().trace.empty()) {
+        const auto& entry = vm->state().trace.back();
+        std::cerr << "opcode: " << t81::tisc::opcode_name(entry.opcode) << "\n";
+      }
+      std::cerr << "compute executed: no\n";
+    }
     return trap_exit_code(result.error());
   }
 

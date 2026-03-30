@@ -1,0 +1,30 @@
+==========================================================
+ T81 Deterministic AI Governance Demo
+==========================================================
+
+[1/3] Building synthetic .t81w model artifact...
+  ↳ Model compiled deterministically.
+  ↳ Artifact Hash: sha3-512:434343c05c0139631ce2d0d693ac8ab3e5323f62feb804969b7a5333bcb66df736649597da6152e4cc0fde95ebae82dec095c8496db65e066ee6326d034955ac
+
+[2/3] Executing Model with ALLOW policy...
+  ↳ Policy requires exactly the correct model hash.
+----------------------------------------------------------
+Compilation successful → /tmp/t81-governed_matmul-11326359014963869095.tisc
+SUCCESS: Native Tensor Matmul Executed.
+----------------------------------------------------------
+
+[3/3] Executing Model with DENY policy...
+  ↳ Policy explicitly forbids this model hash (e.g. untrusted supply chain).
+----------------------------------------------------------
+Compilation successful → /tmp/t81-governed_matmul-14636596660978650331.tisc
+error: Execution trapped: SecurityFault
+reason: WLOAD denied (allowed-ternary-model-hashes mismatch checksum=sha3-512:434343c05c0139631ce2d0d693ac8ab3e5323f62feb804969b7a5333bcb66df736649597da6152e4cc0fde95ebae82dec095c8496db65e066ee6326d034955ac)
+opcode: TMatMul
+compute executed: no
+----------------------------------------------------------
+  ↳ Failed with exit code: 13
+  ↳ Wait... how is that possible?
+    The execution was blocked deep inside the VM interpreter loop
+    BEFORE the QMATMUL side effect could happen.
+    It isn't an external wrapper; it's a natively governed runtime.
+==========================================================
