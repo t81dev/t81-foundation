@@ -170,7 +170,7 @@ For someone discovering the project, the best reading order is:
 
 1. `README.md` for the current public story and first-run paths,
 2. `docs/HANDOFF.md` for what is mature, what is draft, and how to approach the codebase,
-3. `docs/ROADMAP.md` for the current sequencing of work,
+3. `docs/status/ROADMAP.md` for the current sequencing of work,
 4. `docs/BUILDABLE_NEXT_STEPS.md` for bounded contributor lanes,
 5. RFC-00D1 for the best current example of a draft architecture turning into code,
 6. RFC-00D0 for the networking direction that remains design-led.

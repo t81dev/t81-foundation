@@ -65,7 +65,7 @@ When in doubt, prefer these in order:
 - Documentation index: [docs/README.md](README.md)
 - Contributing guide: [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](BUILDABLE_NEXT_STEPS.md)
-- Contributor-facing roadmap: [docs/ROADMAP.md](ROADMAP.md)
+- Contributor-facing roadmap: [docs/status/ROADMAP.md](status/ROADMAP.md)
 - AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](status/AI_CLI_IMPLEMENTATION_MATRIX.md)
 
 The short version:
