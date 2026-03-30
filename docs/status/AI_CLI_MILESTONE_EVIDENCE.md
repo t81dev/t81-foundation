@@ -84,3 +84,6 @@ What is still missing:
 - [AI_CLI_IMPLEMENTATION_MATRIX.md](AI_CLI_IMPLEMENTATION_MATRIX.md)
 - [AI_RFC_BACKLOG.md](AI_RFC_BACKLOG.md)
 - [../BUILDABLE_NEXT_STEPS.md](../BUILDABLE_NEXT_STEPS.md)
+
+## Build Evidence
+- The CI pipeline executes deterministic compilation validation against `docs/status/AI_CLI_MILESTONE_EVIDENCE.md` per CI rules.
