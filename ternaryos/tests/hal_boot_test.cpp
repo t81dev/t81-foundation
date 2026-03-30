@@ -11,32 +11,32 @@
 //   [AC-6] fire_simulated_interrupt reaches the registered handler.
 //   [AC-7] ternaryos_hosted_boot(true) succeeds end-to-end.
 
+#include "../dev/hosted_block_dev.hpp"
+#include "../hal/aarch64_trap_entry.hpp"
 #include "../hal/hal.hpp"
 #include "../hal/hal_c_abi.h"
 #include "../hal/virtualbox_guest_devices.hpp"
 #include "../hal/virtualbox_platform.hpp"
-#include "../kernel/kernel_main.hpp"
-#include "../kernel/kernel_executable.hpp"
 #include "../kernel/kernel_abi_wire.hpp"
+#include "../kernel/kernel_executable.hpp"
+#include "../kernel/kernel_main.hpp"
 #include "../kernel/kernel_trap_shim.hpp"
-#include "../hal/aarch64_trap_entry.hpp"
-#include "../dev/hosted_block_dev.hpp"
 #include "../mmu/page_table.hpp"
 
 #include <algorithm>
 #include <atomic>
 #include <cassert>
-#include <cstdlib>
 #include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <memory>
 #include <string>
 
 // Declared in hosted_stub.cpp
 namespace t81::ternaryos::hal {
-int  ternaryos_hosted_boot(bool ethics_required);
+int ternaryos_hosted_boot(bool ethics_required);
 void fire_simulated_interrupt(InterruptSource source, uint64_t payload);
-}
+}  // namespace t81::ternaryos::hal
 
 using namespace t81::ternaryos::hal;
 using namespace t81::ternaryos::ipc;
@@ -77,8 +77,7 @@ static bool canon_ref_matches(const std::optional<t81::canonfs::CanonRef>& actua
   return actual.has_value() && actual->hash.h.bytes == expected.hash.h.bytes;
 }
 
-static t81::canonfs::CanonRef executable_ref_for(
-    const KernelThreadSpawnDescriptor& descriptor) {
+static t81::canonfs::CanonRef executable_ref_for(const KernelThreadSpawnDescriptor& descriptor) {
   auto block = axion_kernel_encode_executable_block(descriptor);
   assert(block.has_value());
   return t81::canonfs::CanonRef{block->hash()};
@@ -96,15 +95,15 @@ static t81::canonfs::CanonBlock executable_block_for(
 static BootContext make_valid_ctx(bool ethics = false) {
   BootContext ctx;
   ctx.memory_map.push_back(MemoryRegion{
-    .base_phys  = 0x100000ULL,
-    .size_bytes = 64ULL * 1024 * 1024,
-    .writable   = true,
-    .executable = false,
+      .base_phys = 0x100000ULL,
+      .size_bytes = 64ULL * 1024 * 1024,
+      .writable = true,
+      .executable = false,
   });
-  ctx.kernel_load_address  = 0x100000ULL;
-  ctx.stack_top            = 0x200000ULL;
+  ctx.kernel_load_address = 0x100000ULL;
+  ctx.stack_top = 0x200000ULL;
   ctx.ethics_boot_required = ethics;
-  ctx.platform_id          = "test";
+  ctx.platform_id = "test";
   return ctx;
 }
 
@@ -113,14 +112,14 @@ static BootContext make_valid_ctx(bool ethics = false) {
 static void test_valid_context_no_ethics() {
   std::printf("\n[AC-4] Valid context, ethics disabled\n");
   auto ctx = make_valid_ctx(/*ethics=*/false);
-  int  rc  = hal_main(ctx);
+  int rc = hal_main(ctx);
   check(rc == 0, "hal_main returns 0");
 }
 
 static void test_valid_context_with_ethics() {
   std::printf("\n[AC-1] Valid context, ethics enabled\n");
   auto ctx = make_valid_ctx(/*ethics=*/true);
-  int  rc  = hal_main(ctx);
+  int rc = hal_main(ctx);
   check(rc == 0, "hal_main returns 0 with ethics gate");
 }
 
@@ -128,7 +127,7 @@ static void test_empty_memory_map() {
   std::printf("\n[AC-2] Empty memory map\n");
   BootContext ctx;
   ctx.ethics_boot_required = false;
-  ctx.platform_id          = "test";
+  ctx.platform_id = "test";
   int rc = hal_main(ctx);
   check(rc != 0, "hal_main returns non-zero for empty memory map");
 }
@@ -137,13 +136,13 @@ static void test_no_writable_region() {
   std::printf("\n[AC-3] No writable region\n");
   BootContext ctx;
   ctx.memory_map.push_back(MemoryRegion{
-    .base_phys  = 0x100000ULL,
-    .size_bytes = 64ULL * 1024 * 1024,
-    .writable   = false,   // read-only
-    .executable = true,
+      .base_phys = 0x100000ULL,
+      .size_bytes = 64ULL * 1024 * 1024,
+      .writable = false,  // read-only
+      .executable = true,
   });
   ctx.ethics_boot_required = false;
-  ctx.platform_id          = "test";
+  ctx.platform_id = "test";
   int rc = hal_main(ctx);
   check(rc != 0, "hal_main returns non-zero for no writable region");
 }
@@ -151,7 +150,7 @@ static void test_no_writable_region() {
 static void test_interrupt_registration_and_dispatch() {
   std::printf("\n[AC-5 / AC-6] Interrupt registration and dispatch\n");
 
-  std::atomic<int>      call_count{0};
+  std::atomic<int> call_count{0};
   std::atomic<uint64_t> last_payload{0};
 
   register_interrupt_handler(InterruptSource::Storage, [&](const HardwareInterrupt& irq) {
@@ -162,7 +161,7 @@ static void test_interrupt_registration_and_dispatch() {
   fire_simulated_interrupt(InterruptSource::Storage, 0xDEAD'BEEF);
   fire_simulated_interrupt(InterruptSource::Storage, 0xCAFE'BABE);
 
-  check(call_count.load() == 2,         "handler called twice");
+  check(call_count.load() == 2, "handler called twice");
   check(last_payload.load() == 0xCAFE'BABE, "last payload matches");
 }
 
@@ -171,9 +170,8 @@ static void test_unknown_interrupt_fallback() {
 
   std::atomic<bool> unknown_fired{false};
 
-  register_interrupt_handler(InterruptSource::Unknown, [&](const HardwareInterrupt&) {
-    unknown_fired = true;
-  });
+  register_interrupt_handler(InterruptSource::Unknown,
+                             [&](const HardwareInterrupt&) { unknown_fired = true; });
 
   // Keyboard is not explicitly registered — should fall back to Unknown.
   fire_simulated_interrupt(InterruptSource::Keyboard, 0x41 /*'A'*/);
@@ -264,8 +262,8 @@ static void test_virtualbox_device_map_defaults() {
 
   check(devices.size() == 5, "first-target profile exposes 5 primary devices");
   check(devices[0].name == std::string("ioapic"), "device[0] is ioapic");
-  check(devices[1].name == std::string("hpet"),   "device[1] is hpet");
-  check(devices[2].name == std::string("ahci"),   "device[2] is ahci");
+  check(devices[1].name == std::string("hpet"), "device[1] is hpet");
+  check(devices[2].name == std::string("ahci"), "device[2] is ahci");
   check(devices[3].name == std::string("e1000") || devices[3].name == std::string("vmsvga"),
         "remaining devices include e1000/vmsvga");
 
@@ -323,10 +321,8 @@ static void test_virtualbox_timer_tick_scaffold() {
 
   VBoxProfile bad = profile;
   bad.timer = static_cast<VBoxTimerModel>(0);
-  check(!dispatch_virtualbox_timer_tick(bad, 1, 1000),
-        "dispatch rejects unsupported timer model");
-  check(!make_virtualbox_timer_tick(profile, 1, 0).has_value(),
-        "timer tick rejects zero period");
+  check(!dispatch_virtualbox_timer_tick(bad, 1, 1000), "dispatch rejects unsupported timer model");
+  check(!make_virtualbox_timer_tick(profile, 1, 0).has_value(), "timer tick rejects zero period");
 }
 
 static void test_virtualbox_storage_binding() {
@@ -377,8 +373,7 @@ static void test_virtualbox_guest_bootstrap() {
     check(guest->boot_context.platform_id.find("virtualbox-x86_64:") == 0,
           "guest bootstrap produces a VirtualBox boot context");
     check(guest->device_map.size() == 5, "guest bootstrap carries the VirtualBox device map");
-    check(guest->storage.binding_name == "virtualbox-ahci",
-          "guest bootstrap binds AHCI storage");
+    check(guest->storage.binding_name == "virtualbox-ahci", "guest bootstrap binds AHCI storage");
     check(guest->storage.device->info().total_blocks == 18,
           "guest bootstrap storage exposes backing block count");
     check(guest->network.binding_name == "virtualbox-e1000",
@@ -405,11 +400,10 @@ static void test_virtualbox_network_binding() {
   check(binding.has_value(), "create_virtualbox_network_binding returns a device");
   if (binding) {
     check(binding->binding_name == "virtualbox-e1000", "binding name identifies E1000 path");
-    check(binding->device->device_id() == "vbox-e1000", "bound network device id matches E1000 adapter");
+    check(binding->device->device_id() == "vbox-e1000",
+          "bound network device id matches E1000 adapter");
     auto pkt = t81::ternaryos::dev::TernaryEthernetPacket::build(
-        {0x01, 0x02, 0x03, 0x04, 0x05, 0x06},
-        binding->device->e1000_info().mac,
-        0x0081,
+        {0x01, 0x02, 0x03, 0x04, 0x05, 0x06}, binding->device->e1000_info().mac, 0x0081,
         {1, 0, -1});
     check(pkt.has_value(), "network binding can build a ternary packet");
     auto frame = pkt ? binding->device->send_packet(*pkt) : std::nullopt;
@@ -421,8 +415,7 @@ static void test_virtualbox_network_binding() {
   pcnet.network = VBoxNetwork::PcNet;
   check(validate_virtualbox_network_binding(pcnet).has_value(),
         "PCNet profile rejected until a VirtualBox PCNet adapter exists");
-  check(!create_virtualbox_network_binding(pcnet).has_value(),
-        "PCNet binding is not created yet");
+  check(!create_virtualbox_network_binding(pcnet).has_value(), "PCNet binding is not created yet");
 }
 
 static void test_virtualbox_display_binding() {
@@ -449,8 +442,7 @@ static void test_virtualbox_display_binding() {
   vga.display = VBoxDisplay::Vga;
   check(validate_virtualbox_display_binding(vga).has_value(),
         "VGA profile rejected until a VirtualBox VGA adapter exists");
-  check(!create_virtualbox_display_binding(vga).has_value(),
-        "VGA binding is not created yet");
+  check(!create_virtualbox_display_binding(vga).has_value(), "VGA binding is not created yet");
 }
 
 static void test_kernel_runtime_bootstrap() {
@@ -474,8 +466,7 @@ static void test_kernel_runtime_bootstrap() {
     check(state->ipc_bus.pending(KernelRuntimeState::kKernelTid) == 0,
           "kernel IPC inbox starts empty");
     check(state->process_group_count() == 1, "kernel runtime starts with one kernel process group");
-    check(state->address_space_count() == 1,
-          "kernel runtime starts with one kernel address space");
+    check(state->address_space_count() == 1, "kernel runtime starts with one kernel address space");
     const auto* kernel_runtime = state->find_thread_runtime(KernelRuntimeState::kKernelTid);
     check(kernel_runtime != nullptr, "kernel thread runtime state exists");
     if (kernel_runtime) {
@@ -510,15 +501,15 @@ static void test_kernel_fault_reporting() {
                      {.readable = true, .writable = false, .executable = false}),
         "readonly mapping succeeds for kernel fault reporting");
 
-  const auto read_ok =
-      axion_kernel_check_access(*state, mapped_tva, mmu::MmuAccessMode::Read);
-  check(read_ok.phys_addr.has_value(), "kernel access report returns physical address for valid read");
+  const auto read_ok = axion_kernel_check_access(*state, mapped_tva, mmu::MmuAccessMode::Read);
+  check(read_ok.phys_addr.has_value(),
+        "kernel access report returns physical address for valid read");
   check(!read_ok.fault.has_value(), "kernel access report omits fault on valid read");
   check(state->fault_count() == 0, "valid read does not grow the kernel fault log");
 
-  const auto write_fault =
-      axion_kernel_check_access(*state, mapped_tva, mmu::MmuAccessMode::Write);
-  check(!write_fault.phys_addr.has_value(), "kernel access report suppresses physical address on denied write");
+  const auto write_fault = axion_kernel_check_access(*state, mapped_tva, mmu::MmuAccessMode::Write);
+  check(!write_fault.phys_addr.has_value(),
+        "kernel access report suppresses physical address on denied write");
   check(write_fault.fault.has_value(), "kernel access report emits a fault record on denied write");
   if (write_fault.fault) {
     check(write_fault.fault->platform_id == "test", "fault record preserves platform id");
@@ -541,8 +532,7 @@ static void test_kernel_fault_reporting() {
   check(state->fault_count() == 2, "unmapped access is recorded in the kernel fault log");
 
   const auto invalid_fault =
-      axion_kernel_check_access(*state, mmu::kMaxTva + 1,
-                                mmu::MmuAccessMode::Execute);
+      axion_kernel_check_access(*state, mmu::kMaxTva + 1, mmu::MmuAccessMode::Execute);
   check(invalid_fault.fault.has_value(), "kernel access report emits fault for invalid TVA");
   if (invalid_fault.fault) {
     check(invalid_fault.fault->fault == mmu::MmuFault::InvalidTva,
@@ -565,8 +555,7 @@ static void test_kernel_device_arbitration() {
     return;
   }
 
-  check(state->has_device_arbitration(),
-        "VirtualBox runtime installs device arbitration state");
+  check(state->has_device_arbitration(), "VirtualBox runtime installs device arbitration state");
   if (!state->device_arbitration) {
     return;
   }
@@ -575,16 +564,12 @@ static void test_kernel_device_arbitration() {
         "device arbitration preserves the first-target profile summary");
   check(state->device_arbitration->devices.size() == 5,
         "device arbitration tracks the five primary VirtualBox devices");
-  check(state->device_arbitration->has_storage,
-        "device arbitration exposes storage ownership");
-  check(state->device_arbitration->has_network,
-        "device arbitration exposes network ownership");
-  check(state->device_arbitration->has_display,
-        "device arbitration exposes display ownership");
+  check(state->device_arbitration->has_storage, "device arbitration exposes storage ownership");
+  check(state->device_arbitration->has_network, "device arbitration exposes network ownership");
+  check(state->device_arbitration->has_display, "device arbitration exposes display ownership");
   check(state->device_arbitration->devices[2].name == "ahci",
         "device arbitration preserves AHCI ordering");
-  check(state->device_arbitration->devices[2].irq == 19,
-        "device arbitration preserves AHCI IRQ");
+  check(state->device_arbitration->devices[2].irq == 19, "device arbitration preserves AHCI IRQ");
   check(state->device_arbitration->devices[3].name == "e1000",
         "device arbitration preserves E1000 ordering");
   check(state->device_arbitration->devices[4].name == "vmsvga",
@@ -645,11 +630,13 @@ static void test_kernel_runtime_scheduler_and_ipc() {
 
   check(axion_kernel_tick(*state), "first kernel tick dispatches the first runnable thread");
   check(state->scheduler.current_tid() == *tid_a, "runtime tick makes thread A current");
-  check(state->cpu_context.registers[0] == 10, "runtime CPU context restores thread A register state");
+  check(state->cpu_context.registers[0] == 10,
+        "runtime CPU context restores thread A register state");
 
   check(axion_kernel_tick(*state), "second kernel tick switches to thread B");
   check(state->scheduler.current_tid() == *tid_b, "runtime tick advances to thread B");
-  check(state->cpu_context.registers[0] == 20, "runtime CPU context restores thread B register state");
+  check(state->cpu_context.registers[0] == 20,
+        "runtime CPU context restores thread B register state");
 
   t81::ternaryos::ipc::CanonMessage msg;
   msg.sender = *tid_a;
@@ -708,16 +695,14 @@ static void test_kernel_loop_and_active_device_arbitration() {
   check(state->counters.loop_iterations == 2, "second kernel step increments loop iterations");
   check(state->scheduler.current_tid() == *tid_b, "second kernel step selects thread B");
 
-  check(axion_kernel_claim_device(*state, "ahci", *tid_a),
-        "first thread claims AHCI device");
+  check(axion_kernel_claim_device(*state, "ahci", *tid_a), "first thread claims AHCI device");
   check(!axion_kernel_claim_device(*state, "ahci", *tid_b),
         "second thread cannot steal claimed AHCI device");
   check(axion_kernel_claim_device(*state, "ahci", *tid_a),
         "same owner can idempotently re-claim AHCI device");
   check(axion_kernel_release_device(*state, "ahci", *tid_b) == false,
         "non-owner cannot release AHCI device");
-  check(axion_kernel_release_device(*state, "ahci", *tid_a),
-        "owner releases AHCI device");
+  check(axion_kernel_release_device(*state, "ahci", *tid_a), "owner releases AHCI device");
   check(axion_kernel_claim_device(*state, "ahci", *tid_b),
         "second thread can claim AHCI after release");
 
@@ -754,7 +739,8 @@ static void test_kernel_loop_fault_delivery() {
   check(state->pending_fault_count() == 2, "pending fault queue tracks both faults");
   check(state->counters.faults_recorded == 2, "runtime counts recorded faults");
 
-  check(!axion_kernel_step(*state), "kernel step can deliver pending fault without runnable threads");
+  check(!axion_kernel_step(*state),
+        "kernel step can deliver pending fault without runnable threads");
   check(state->counters.loop_iterations == 1, "fault-delivery step increments loop count");
   check(state->pending_fault_count() == 1, "first loop step drains one pending fault");
   check(state->counters.faults_delivered == 1, "runtime counts delivered faults");
@@ -790,21 +776,19 @@ static void test_kernel_interrupt_event_delivery() {
     return;
   }
 
-  check(axion_kernel_record_interrupt(
-            *state,
-            HardwareInterrupt{
-                .source = InterruptSource::Timer,
-                .timestamp_ns = 100,
-                .payload = 11,
-            }),
+  check(axion_kernel_record_interrupt(*state,
+                                      HardwareInterrupt{
+                                          .source = InterruptSource::Timer,
+                                          .timestamp_ns = 100,
+                                          .payload = 11,
+                                      }),
         "kernel records first interrupt event");
-  check(axion_kernel_record_interrupt(
-            *state,
-            HardwareInterrupt{
-                .source = InterruptSource::Storage,
-                .timestamp_ns = 200,
-                .payload = 22,
-            }),
+  check(axion_kernel_record_interrupt(*state,
+                                      HardwareInterrupt{
+                                          .source = InterruptSource::Storage,
+                                          .timestamp_ns = 200,
+                                          .payload = 22,
+                                      }),
         "kernel records second interrupt event");
   check(state->pending_interrupt_count() == 2,
         "pending interrupt queue tracks both recorded interrupts");
@@ -812,8 +796,7 @@ static void test_kernel_interrupt_event_delivery() {
         "interrupt queue retains pending high-water mark");
   check(state->pending_interrupts.front().source == InterruptSource::Timer,
         "interrupt queue head starts with timer source");
-  check(state->counters.interrupts_recorded == 2,
-        "runtime counts recorded interrupts");
+  check(state->counters.interrupts_recorded == 2, "runtime counts recorded interrupts");
   check(state->counters.interrupt_sources_recorded.timer == 1,
         "runtime counts one recorded timer interrupt");
   check(state->counters.interrupt_sources_recorded.storage == 1,
@@ -831,10 +814,8 @@ static void test_kernel_interrupt_event_delivery() {
   }
 
   check(axion_kernel_step(*state), "interrupt step delivers the first pending interrupt");
-  check(state->pending_interrupt_count() == 1,
-        "interrupt step drains one pending interrupt");
-  check(state->counters.interrupts_delivered == 1,
-        "runtime counts first delivered interrupt");
+  check(state->pending_interrupt_count() == 1, "interrupt step drains one pending interrupt");
+  check(state->counters.interrupts_delivered == 1, "runtime counts first delivered interrupt");
   check(state->counters.interrupt_sources_delivered.timer == 1,
         "runtime counts one delivered timer interrupt");
   check(state->last_delivered_interrupt.has_value(),
@@ -871,8 +852,7 @@ static void test_kernel_interrupt_event_delivery() {
   check(axion_kernel_step(*state), "next interrupt step delivers the remaining pending interrupt");
   check(state->pending_interrupt_count() == 0,
         "second interrupt step drains the remaining pending interrupt");
-  check(state->counters.interrupts_delivered == 2,
-        "runtime counts both delivered interrupts");
+  check(state->counters.interrupts_delivered == 2, "runtime counts both delivered interrupts");
   check(state->counters.interrupt_sources_delivered.storage == 1,
         "runtime counts one delivered storage interrupt");
   check(state->last_delivered_interrupt.has_value(),
@@ -896,8 +876,7 @@ static void test_kernel_interrupt_event_delivery() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_status.status == KernelServiceStatus::Ok,
         "runtime status succeeds after interrupt delivery");
-  check(runtime_status.runtime.has_value(),
-        "runtime status returns interrupt delivery details");
+  check(runtime_status.runtime.has_value(), "runtime status returns interrupt delivery details");
   if (runtime_status.runtime) {
     check(runtime_status.runtime->pending_interrupt_count == 0,
           "runtime status reports no pending interrupts after delivery");
@@ -945,24 +924,22 @@ static void test_kernel_interrupt_event_delivery() {
       check(*runtime_status.runtime->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "runtime status tracks interrupt delivery as latest interrupt audit kind");
-      check(*runtime_status.runtime->last_interrupt_audit_source ==
-                InterruptSource::Storage,
+      check(*runtime_status.runtime->last_interrupt_audit_source == InterruptSource::Storage,
             "runtime status tracks delivered interrupt source as latest interrupt audit source");
       check(*runtime_status.runtime->last_interrupt_audit_interrupt_sequence == 2,
             "runtime status tracks delivered interrupt sequence as latest interrupt audit target");
       check(*runtime_status.runtime->last_interrupt_audit_payload == 22,
             "runtime status tracks delivered interrupt payload as latest interrupt audit payload");
       check(*runtime_status.runtime->last_interrupt_audit_timestamp_ns == 200,
-            "runtime status tracks delivered interrupt timestamp as latest interrupt audit timestamp");
+            "runtime status tracks delivered interrupt timestamp as latest interrupt audit "
+            "timestamp");
     }
     if (runtime_status.runtime->last_recorded_interrupt) {
-      check(runtime_status.runtime->last_recorded_interrupt->source ==
-                InterruptSource::Storage,
+      check(runtime_status.runtime->last_recorded_interrupt->source == InterruptSource::Storage,
             "runtime status retains the latest recorded interrupt source");
     }
     if (runtime_status.runtime->last_delivered_interrupt) {
-      check(runtime_status.runtime->last_delivered_interrupt->source ==
-                InterruptSource::Storage,
+      check(runtime_status.runtime->last_delivered_interrupt->source == InterruptSource::Storage,
             "runtime status retains the latest delivered interrupt source");
       check(runtime_status.runtime->last_delivered_interrupt->delivered_audit_sequence ==
                 *runtime_status.runtime->last_interrupt_audit_sequence,
@@ -1026,15 +1003,15 @@ static void test_kernel_interrupt_event_delivery() {
       check(*fault_summary.fault_summary->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "fault summary tracks interrupt delivery as latest interrupt audit kind");
-      check(*fault_summary.fault_summary->last_interrupt_audit_source ==
-                InterruptSource::Storage,
+      check(*fault_summary.fault_summary->last_interrupt_audit_source == InterruptSource::Storage,
             "fault summary tracks delivered interrupt source as latest interrupt audit source");
       check(*fault_summary.fault_summary->last_interrupt_audit_interrupt_sequence == 2,
             "fault summary tracks delivered interrupt sequence as latest interrupt audit target");
       check(*fault_summary.fault_summary->last_interrupt_audit_payload == 22,
             "fault summary tracks delivered interrupt payload as latest interrupt audit payload");
-      check(*fault_summary.fault_summary->last_interrupt_audit_timestamp_ns == 200,
-            "fault summary tracks delivered interrupt timestamp as latest interrupt audit timestamp");
+      check(
+          *fault_summary.fault_summary->last_interrupt_audit_timestamp_ns == 200,
+          "fault summary tracks delivered interrupt timestamp as latest interrupt audit timestamp");
     }
   }
 
@@ -1042,8 +1019,7 @@ static void test_kernel_interrupt_event_delivery() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::AuditSummary});
   check(audit_summary.status == KernelServiceStatus::Ok,
         "audit summary succeeds after interrupt delivery");
-  check(audit_summary.audit_summary.has_value(),
-        "audit summary returns interrupt audit details");
+  check(audit_summary.audit_summary.has_value(), "audit summary returns interrupt audit details");
   if (audit_summary.audit_summary) {
     check(audit_summary.audit_summary->pending_interrupt_count == 0,
           "audit summary reports no pending interrupts after delivery");
@@ -1085,15 +1061,15 @@ static void test_kernel_interrupt_event_delivery() {
       check(*audit_summary.audit_summary->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "audit summary tracks interrupt delivery as latest interrupt audit kind");
-      check(*audit_summary.audit_summary->last_interrupt_audit_source ==
-                InterruptSource::Storage,
+      check(*audit_summary.audit_summary->last_interrupt_audit_source == InterruptSource::Storage,
             "audit summary tracks delivered interrupt source as latest interrupt audit source");
       check(*audit_summary.audit_summary->last_interrupt_audit_interrupt_sequence == 2,
             "audit summary tracks delivered interrupt sequence as latest interrupt audit target");
       check(*audit_summary.audit_summary->last_interrupt_audit_payload == 22,
             "audit summary tracks delivered interrupt payload as latest interrupt audit payload");
-      check(*audit_summary.audit_summary->last_interrupt_audit_timestamp_ns == 200,
-            "audit summary tracks delivered interrupt timestamp as latest interrupt audit timestamp");
+      check(
+          *audit_summary.audit_summary->last_interrupt_audit_timestamp_ns == 200,
+          "audit summary tracks delivered interrupt timestamp as latest interrupt audit timestamp");
     }
     check(audit_summary.audit_summary->last_recorded_interrupt.has_value(),
           "audit summary retains the latest recorded interrupt");
@@ -1109,29 +1085,28 @@ static void test_kernel_interrupt_event_delivery() {
       check(audit_summary.audit_summary->recent_events.back().kind ==
                 KernelAuditEventKind::InterruptDelivered,
             "audit summary records interrupt delivery as the latest audit event");
-    if (audit_summary.audit_summary->last_interrupt_audit_sequence) {
-      check(*audit_summary.audit_summary->last_interrupt_audit_sequence ==
-                audit_summary.audit_summary->recent_events.back().sequence,
-            "audit summary retains audit sequence of the latest interrupt delivery");
-      if (audit_summary.audit_summary->last_delivered_interrupt) {
-        check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
-                  *audit_summary.audit_summary->last_interrupt_audit_sequence,
-              "audit summary retains latest delivered interrupt delivery audit sequence");
-        check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
-                  *audit_summary.audit_summary->last_delivered_interrupt_audit_sequence,
-              "audit summary retains stable delivered interrupt audit sequence");
+      if (audit_summary.audit_summary->last_interrupt_audit_sequence) {
+        check(*audit_summary.audit_summary->last_interrupt_audit_sequence ==
+                  audit_summary.audit_summary->recent_events.back().sequence,
+              "audit summary retains audit sequence of the latest interrupt delivery");
+        if (audit_summary.audit_summary->last_delivered_interrupt) {
+          check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
+                    *audit_summary.audit_summary->last_interrupt_audit_sequence,
+                "audit summary retains latest delivered interrupt delivery audit sequence");
+          check(audit_summary.audit_summary->last_delivered_interrupt->delivered_audit_sequence ==
+                    *audit_summary.audit_summary->last_delivered_interrupt_audit_sequence,
+                "audit summary retains stable delivered interrupt audit sequence");
+        }
       }
-    }
     }
   }
 
-  check(axion_kernel_record_interrupt(
-            *state,
-            HardwareInterrupt{
-                .source = InterruptSource::Keyboard,
-                .timestamp_ns = 250,
-                .payload = 55,
-            }),
+  check(axion_kernel_record_interrupt(*state,
+                                      HardwareInterrupt{
+                                          .source = InterruptSource::Keyboard,
+                                          .timestamp_ns = 250,
+                                          .payload = 55,
+                                      }),
         "kernel records post-delivery interrupt event");
   auto post_record_runtime = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
@@ -1145,7 +1120,8 @@ static void test_kernel_interrupt_event_delivery() {
     check(post_record_runtime.runtime->last_interrupt_audit_source.has_value(),
           "runtime status retains latest interrupt audit source after post-delivery intake");
     check(post_record_runtime.runtime->last_interrupt_audit_interrupt_sequence.has_value(),
-          "runtime status retains latest interrupt audit interrupt sequence after post-delivery intake");
+          "runtime status retains latest interrupt audit interrupt sequence after post-delivery "
+          "intake");
     check(post_record_runtime.runtime->last_interrupt_audit_payload.has_value(),
           "runtime status retains latest interrupt audit payload after post-delivery intake");
     check(post_record_runtime.runtime->last_interrupt_audit_timestamp_ns.has_value(),
@@ -1154,8 +1130,7 @@ static void test_kernel_interrupt_event_delivery() {
       check(*post_record_runtime.runtime->last_interrupt_audit_kind ==
                 KernelAuditEventKind::InterruptRecorded,
             "runtime status flips latest interrupt audit kind to intake after new interrupt");
-      check(*post_record_runtime.runtime->last_interrupt_audit_source ==
-                InterruptSource::Keyboard,
+      check(*post_record_runtime.runtime->last_interrupt_audit_source == InterruptSource::Keyboard,
             "runtime status flips latest interrupt audit source to the new interrupt");
       check(*post_record_runtime.runtime->last_interrupt_audit_interrupt_sequence == 3,
             "runtime status flips latest interrupt audit target to the new interrupt");
@@ -1177,28 +1152,25 @@ static void test_kernel_interrupt_event_delivery() {
   auto queued_state = axion_kernel_bootstrap(ctx);
   check(queued_state.has_value(), "kernel bootstrap succeeds for queued interrupt visibility");
   if (queued_state) {
-    check(axion_kernel_record_interrupt(
-              *queued_state,
-              HardwareInterrupt{
-                  .source = InterruptSource::Keyboard,
-                  .timestamp_ns = 300,
-                  .payload = 33,
-              }),
+    check(axion_kernel_record_interrupt(*queued_state,
+                                        HardwareInterrupt{
+                                            .source = InterruptSource::Keyboard,
+                                            .timestamp_ns = 300,
+                                            .payload = 33,
+                                        }),
           "queued interrupt visibility records first interrupt");
-    check(axion_kernel_record_interrupt(
-              *queued_state,
-              HardwareInterrupt{
-                  .source = InterruptSource::Network,
-                  .timestamp_ns = 400,
-                  .payload = 44,
-              }),
+    check(axion_kernel_record_interrupt(*queued_state,
+                                        HardwareInterrupt{
+                                            .source = InterruptSource::Network,
+                                            .timestamp_ns = 400,
+                                            .payload = 44,
+                                        }),
           "queued interrupt visibility records second interrupt");
     auto queued_runtime = axion_kernel_service_request(
         *queued_state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
     check(queued_runtime.status == KernelServiceStatus::Ok,
           "runtime status succeeds with queued interrupts");
-    check(queued_runtime.runtime.has_value(),
-          "runtime status returns queued interrupt visibility");
+    check(queued_runtime.runtime.has_value(), "runtime status returns queued interrupt visibility");
     if (queued_runtime.runtime) {
       check(queued_runtime.runtime->pending_interrupt_count == 2,
             "runtime status reports queued interrupt count before delivery");
@@ -1215,8 +1187,7 @@ static void test_kernel_interrupt_event_delivery() {
       check(queued_runtime.runtime->next_pending_interrupt.has_value(),
             "runtime status exposes next pending interrupt before delivery");
       if (queued_runtime.runtime->next_pending_interrupt) {
-        check(queued_runtime.runtime->next_pending_interrupt->source ==
-                  InterruptSource::Keyboard,
+        check(queued_runtime.runtime->next_pending_interrupt->source == InterruptSource::Keyboard,
               "runtime status preserves FIFO head interrupt source");
         check(queued_runtime.runtime->next_pending_interrupt->sequence == 1,
               "runtime status preserves FIFO head interrupt sequence");
@@ -1226,8 +1197,7 @@ static void test_kernel_interrupt_event_delivery() {
       check(queued_runtime.runtime->last_pending_interrupt.has_value(),
             "runtime status exposes tail pending interrupt before delivery");
       if (queued_runtime.runtime->last_pending_interrupt) {
-        check(queued_runtime.runtime->last_pending_interrupt->source ==
-                  InterruptSource::Network,
+        check(queued_runtime.runtime->last_pending_interrupt->source == InterruptSource::Network,
               "runtime status preserves FIFO tail interrupt source");
         check(queued_runtime.runtime->last_pending_interrupt->sequence == 2,
               "runtime status preserves FIFO tail interrupt sequence");
@@ -1238,8 +1208,7 @@ static void test_kernel_interrupt_event_delivery() {
       check(queued_runtime.runtime->last_recorded_interrupt.has_value(),
             "runtime status retains latest recorded interrupt before delivery");
       if (queued_runtime.runtime->last_recorded_interrupt) {
-        check(queued_runtime.runtime->last_recorded_interrupt->source ==
-                  InterruptSource::Network,
+        check(queued_runtime.runtime->last_recorded_interrupt->source == InterruptSource::Network,
               "runtime status preserves latest recorded interrupt before delivery");
         check(queued_runtime.runtime->last_recorded_interrupt->recorded_audit_sequence ==
                   *queued_runtime.runtime->last_recorded_interrupt_audit_sequence,
@@ -1267,7 +1236,8 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_fault_summary.fault_summary->last_pending_interrupt->source ==
                   InterruptSource::Network,
               "fault summary preserves FIFO tail interrupt source");
-        check(queued_fault_summary.fault_summary->last_pending_interrupt->recorded_audit_sequence != 0,
+        check(queued_fault_summary.fault_summary->last_pending_interrupt->recorded_audit_sequence !=
+                  0,
               "fault summary preserves FIFO tail interrupt intake audit sequence");
       }
     }
@@ -1308,10 +1278,13 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->next_pending_interrupt->source ==
                   InterruptSource::Keyboard,
               "audit summary preserves FIFO head interrupt source");
-        check(queued_audit_summary.audit_summary->next_pending_interrupt->recorded_audit_sequence != 0,
+        check(queued_audit_summary.audit_summary->next_pending_interrupt->recorded_audit_sequence !=
+                  0,
               "audit summary preserves FIFO head interrupt intake audit sequence");
-        check(queued_audit_summary.audit_summary->next_pending_interrupt->delivered_audit_sequence == 0,
-              "audit summary preserves FIFO head interrupt as not yet delivered");
+        check(
+            queued_audit_summary.audit_summary->next_pending_interrupt->delivered_audit_sequence ==
+                0,
+            "audit summary preserves FIFO head interrupt as not yet delivered");
       }
       check(queued_audit_summary.audit_summary->last_pending_interrupt.has_value(),
             "audit summary exposes tail pending interrupt before delivery");
@@ -1322,8 +1295,10 @@ static void test_kernel_interrupt_event_delivery() {
         check(queued_audit_summary.audit_summary->last_pending_interrupt->recorded_audit_sequence ==
                   *queued_audit_summary.audit_summary->last_recorded_interrupt_audit_sequence,
               "audit summary preserves FIFO tail interrupt intake audit sequence");
-        check(queued_audit_summary.audit_summary->last_pending_interrupt->delivered_audit_sequence == 0,
-              "audit summary preserves FIFO tail interrupt as not yet delivered");
+        check(
+            queued_audit_summary.audit_summary->last_pending_interrupt->delivered_audit_sequence ==
+                0,
+            "audit summary preserves FIFO tail interrupt as not yet delivered");
       }
       check(queued_audit_summary.audit_summary->recent_events.size() == 2,
             "audit summary retains interrupt intake audit events before delivery");
@@ -1334,7 +1309,8 @@ static void test_kernel_interrupt_event_delivery() {
         if (queued_audit_summary.audit_summary->last_interrupt_audit_kind) {
           check(*queued_audit_summary.audit_summary->last_interrupt_audit_kind ==
                     KernelAuditEventKind::InterruptRecorded,
-                "audit summary tracks interrupt intake as latest interrupt audit kind before delivery");
+                "audit summary tracks interrupt intake as latest interrupt audit kind before "
+                "delivery");
           check(*queued_audit_summary.audit_summary->last_interrupt_audit_source ==
                     InterruptSource::Network,
                 "audit summary tracks latest interrupt source before delivery");
@@ -1385,8 +1361,7 @@ static void test_kernel_timer_interrupt_preemption() {
 
   check(state->counters.timer_interrupts_handled == 0,
         "no timer interrupts handled before first delivery");
-  check(state->counters.timer_preempts == 0,
-        "no timer-driven preemptions before first delivery");
+  check(state->counters.timer_preempts == 0, "no timer-driven preemptions before first delivery");
   check(state->counters.device_interrupts_handled == 0,
         "no device interrupts handled before first delivery");
   check(!state->last_timer_preempt_cycle.has_value(),
@@ -1395,29 +1370,25 @@ static void test_kernel_timer_interrupt_preemption() {
         "no timer preempt sequence retained before first delivery");
 
   // Record one Timer interrupt and one Storage interrupt.
-  check(axion_kernel_record_interrupt(
-            *state,
-            HardwareInterrupt{
-                .source = InterruptSource::Timer,
-                .timestamp_ns = 1000000,
-                .payload = 1,
-            }),
+  check(axion_kernel_record_interrupt(*state,
+                                      HardwareInterrupt{
+                                          .source = InterruptSource::Timer,
+                                          .timestamp_ns = 1000000,
+                                          .payload = 1,
+                                      }),
         "timer preemption test records timer interrupt");
-  check(axion_kernel_record_interrupt(
-            *state,
-            HardwareInterrupt{
-                .source = InterruptSource::Storage,
-                .timestamp_ns = 2000000,
-                .payload = 7,
-            }),
+  check(axion_kernel_record_interrupt(*state,
+                                      HardwareInterrupt{
+                                          .source = InterruptSource::Storage,
+                                          .timestamp_ns = 2000000,
+                                          .payload = 7,
+                                      }),
         "timer preemption test records storage interrupt");
 
   // Deliver the Timer interrupt — should force a scheduler preemption.
   const uint64_t ticks_before = state->counters.scheduler_ticks;
-  check(axion_kernel_step(*state),
-        "timer interrupt step delivers the timer interrupt");
-  check(state->counters.interrupts_delivered == 1,
-        "timer step delivers one interrupt");
+  check(axion_kernel_step(*state), "timer interrupt step delivers the timer interrupt");
+  check(state->counters.interrupts_delivered == 1, "timer step delivers one interrupt");
   check(state->counters.interrupt_sources_delivered.timer == 1,
         "timer step delivers the timer interrupt source");
   check(state->counters.timer_interrupts_handled == 1,
@@ -1442,10 +1413,8 @@ static void test_kernel_timer_interrupt_preemption() {
   // Deliver the Storage interrupt — should NOT force a scheduler preemption.
   const uint64_t preempts_before = state->counters.timer_preempts;
   const uint64_t ticks_before2 = state->counters.scheduler_ticks;
-  check(axion_kernel_step(*state),
-        "storage interrupt step delivers the storage interrupt");
-  check(state->counters.interrupts_delivered == 2,
-        "storage step delivers second interrupt");
+  check(axion_kernel_step(*state), "storage interrupt step delivers the storage interrupt");
+  check(state->counters.interrupts_delivered == 2, "storage step delivers second interrupt");
   check(state->counters.interrupt_sources_delivered.storage == 1,
         "storage step delivers the storage interrupt source");
   check(state->counters.device_interrupts_handled == 1,
@@ -1460,8 +1429,7 @@ static void test_kernel_timer_interrupt_preemption() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_status.status == KernelServiceStatus::Ok,
         "runtime status succeeds after timer preemption");
-  check(runtime_status.runtime.has_value(),
-        "runtime status returns timer preemption details");
+  check(runtime_status.runtime.has_value(), "runtime status returns timer preemption details");
   if (runtime_status.runtime) {
     check(runtime_status.runtime->timer_interrupts_handled == 1,
           "runtime status reports timer_interrupts_handled == 1");
@@ -1507,22 +1475,20 @@ static void test_kernel_executable_section_load() {
   const uint64_t entry_pc = mmu::kPageSize;  // = 59049, VPN=1, offset=0
 
   const KernelThreadSpawnDescriptor exec_descriptor{
-      .pc       = static_cast<std::size_t>(entry_pc),
-      .sp       = 0,
+      .pc = static_cast<std::size_t>(entry_pc),
+      .sp = 0,
       .register0 = 777,
-      .label    = "section-load-entry",
+      .label = "section-load-entry",
   };
-  const auto exec_ref   = executable_ref_for(exec_descriptor);
+  const auto exec_ref = executable_ref_for(exec_descriptor);
   const auto exec_block = executable_block_for(exec_descriptor);
 
   // Register the CanonExec object.
-  auto reg_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind            = KernelCallKind::RegisterExecutableObject,
-          .object_ref      = exec_ref,
-          .spawn_descriptor = exec_descriptor,
-      });
+  auto reg_result = axion_kernel_call(*state, KernelCallRequest{
+                                                  .kind = KernelCallKind::RegisterExecutableObject,
+                                                  .object_ref = exec_ref,
+                                                  .spawn_descriptor = exec_descriptor,
+                                              });
   check(reg_result.status == KernelCallStatus::Ok,
         "section-load test: executable registration returns Ok");
   check(reg_result.executable_registered,
@@ -1537,12 +1503,11 @@ static void test_kernel_executable_section_load() {
         "section-load test: entry TVA is not yet mapped before spawn");
 
   // SpawnThreadFromExecutableObject — triggers section loader.
-  auto spawn_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = exec_ref,
-      });
+  auto spawn_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+                                    .object_ref = exec_ref,
+                                });
   check(spawn_result.status == KernelCallStatus::Ok,
         "section-load test: spawn-from-executable returns Ok");
   check(spawn_result.rejection == KernelCallRejection::None,
@@ -1556,10 +1521,8 @@ static void test_kernel_executable_section_load() {
   }
 
   // ── Spawned thread has the correct PC ──────────────────────────────────────
-  const auto* spawned_ctx =
-      state->scheduler.run_queue().find(*spawn_result.spawned_tid);
-  check(spawned_ctx != nullptr,
-        "section-load test: spawned thread appears in scheduler");
+  const auto* spawned_ctx = state->scheduler.run_queue().find(*spawn_result.spawned_tid);
+  check(spawned_ctx != nullptr, "section-load test: spawned thread appears in scheduler");
   if (spawned_ctx) {
     check(spawned_ctx->pc == static_cast<std::size_t>(entry_pc),
           "section-load test: spawned PC equals entry TVA");
@@ -1594,26 +1557,22 @@ static void test_kernel_executable_section_load() {
         break;
       }
     }
-    check(bytes_match,
-          "section-load test: physical page contains the CanonExec block bytes");
+    check(bytes_match, "section-load test: physical page contains the CanonExec block bytes");
   }
 
   // ── Re-spawn the same executable — already-mapped path ────────────────────
-  auto respawn_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = exec_ref,
-      });
+  auto respawn_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+                                    .object_ref = exec_ref,
+                                });
   check(respawn_result.status == KernelCallStatus::Ok,
         "section-load test: re-spawn of same executable returns Ok");
   check(respawn_result.spawned_tid.has_value(),
         "section-load test: re-spawn returns a second spawned TID");
   if (respawn_result.spawned_tid) {
-    const auto* respawned_ctx =
-        state->scheduler.run_queue().find(*respawn_result.spawned_tid);
-    check(respawned_ctx != nullptr,
-          "section-load test: re-spawned thread appears in scheduler");
+    const auto* respawned_ctx = state->scheduler.run_queue().find(*respawn_result.spawned_tid);
+    check(respawned_ctx != nullptr, "section-load test: re-spawned thread appears in scheduler");
     if (respawned_ctx) {
       check(respawned_ctx->pc == static_cast<std::size_t>(entry_pc),
             "section-load test: re-spawned PC equals entry TVA on already-mapped path");
@@ -1625,7 +1584,8 @@ static void test_kernel_executable_section_load() {
 }
 
 static void test_kernel_blocking_ipc() {
-  std::printf("\n[AC-22i] RFC-00B6 §5.3.2 / RFC-00B5 §3.6: blocking IPC receive parks thread; SendMessage wakes it\n");
+  std::printf("\n[AC-22i] RFC-00B6 §5.3.2 / RFC-00B5 §3.6: blocking IPC receive parks thread; "
+              "SendMessage wakes it\n");
 
   auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
@@ -1643,18 +1603,16 @@ static void test_kernel_blocking_ipc() {
   sender_ctx.registers[0] = 20;
 
   auto receiver_tid = axion_kernel_spawn_thread(*state, receiver_ctx);
-  auto sender_tid   = axion_kernel_spawn_thread(*state, sender_ctx);
+  auto sender_tid = axion_kernel_spawn_thread(*state, sender_ctx);
   check(receiver_tid.has_value(), "blocking IPC: receiver thread spawns");
-  check(sender_tid.has_value(),   "blocking IPC: sender thread spawns");
+  check(sender_tid.has_value(), "blocking IPC: sender thread spawns");
   if (!receiver_tid || !sender_tid) {
     return;
   }
 
   // ── Pre-condition: no blocking state yet ────────────────────────────────────
-  check(state->counters.ipc_blocks == 0,
-        "blocking IPC: ipc_blocks zero before any blocking call");
-  check(state->counters.ipc_wakes == 0,
-        "blocking IPC: ipc_wakes zero before any wake");
+  check(state->counters.ipc_blocks == 0, "blocking IPC: ipc_blocks zero before any blocking call");
+  check(state->counters.ipc_wakes == 0, "blocking IPC: ipc_wakes zero before any wake");
   check(state->ipc_blocked_tids.empty(),
         "blocking IPC: ipc_blocked_tids empty before any blocking call");
   check(state->scheduler.run_queue().sleeping_count() == 0,
@@ -1665,23 +1623,20 @@ static void test_kernel_blocking_ipc() {
   check(state->scheduler.current_tid() == *receiver_tid,
         "blocking IPC: receiver is the current thread");
 
-  auto block_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::BlockOnIpcReceive});
+  auto block_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::BlockOnIpcReceive});
   check(block_result.status == KernelCallStatus::Ok,
         "blocking IPC: BlockOnIpcReceive returns Ok on empty inbox");
   check(block_result.rejection == KernelCallRejection::None,
         "blocking IPC: BlockOnIpcReceive clears rejection on park");
-  check(block_result.action_performed,
-        "blocking IPC: BlockOnIpcReceive reports action performed");
+  check(block_result.action_performed, "blocking IPC: BlockOnIpcReceive reports action performed");
   check(block_result.thread_sleeping,
         "blocking IPC: BlockOnIpcReceive sets thread_sleeping when parked");
   check(!block_result.message.has_value(),
         "blocking IPC: BlockOnIpcReceive does not deliver a message on park");
 
   // ── Receiver must now be Sleeping; sender should be current ─────────────────
-  check(state->counters.ipc_blocks == 1,
-        "blocking IPC: ipc_blocks incremented after parking");
+  check(state->counters.ipc_blocks == 1, "blocking IPC: ipc_blocks incremented after parking");
   check(state->ipc_blocked_tids.count(*receiver_tid) > 0,
         "blocking IPC: receiver_tid recorded in ipc_blocked_tids");
   check(state->scheduler.run_queue().sleeping_count() == 1,
@@ -1695,22 +1650,20 @@ static void test_kernel_blocking_ipc() {
   payload_block.trytes[0] = 99;
   const t81::canonfs::CanonRef payload_ref{payload_block.hash()};
 
-  auto send_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind    = KernelCallKind::SendMessage,
-          .ipc_dst = receiver_tid,
-          .message = CanonMessage{
-              .sender  = *sender_tid,
-              .ref     = payload_ref,
-              .payload = 0xBEEF,
-              .tag     = "ipc-test",
-          },
-      });
+  auto send_result = axion_kernel_call(*state, KernelCallRequest{
+                                                   .kind = KernelCallKind::SendMessage,
+                                                   .ipc_dst = receiver_tid,
+                                                   .message =
+                                                       CanonMessage{
+                                                           .sender = *sender_tid,
+                                                           .ref = payload_ref,
+                                                           .payload = 0xBEEF,
+                                                           .tag = "ipc-test",
+                                                       },
+                                               });
   check(send_result.status == KernelCallStatus::Ok,
         "blocking IPC: SendMessage to sleeping receiver returns Ok");
-  check(send_result.action_performed,
-        "blocking IPC: SendMessage reports action performed");
+  check(send_result.action_performed, "blocking IPC: SendMessage reports action performed");
 
   // ── Receiver must now be awake ───────────────────────────────────────────────
   check(state->counters.ipc_wakes == 1,
@@ -1725,20 +1678,17 @@ static void test_kernel_blocking_ipc() {
   check(state->scheduler.current_tid() == *receiver_tid,
         "blocking IPC: receiver is current after tick");
 
-  auto recv_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  auto recv_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
   check(recv_result.status == KernelCallStatus::Ok,
         "blocking IPC: ReceiveMessage on woken receiver returns Ok");
-  check(recv_result.message.has_value(),
-        "blocking IPC: ReceiveMessage delivers the sent message");
+  check(recv_result.message.has_value(), "blocking IPC: ReceiveMessage delivers the sent message");
   if (recv_result.message) {
     check(recv_result.message->sender == *sender_tid,
           "blocking IPC: received message preserves sender TID");
     check(recv_result.message->payload == 0xBEEF,
           "blocking IPC: received message preserves payload");
-    check(recv_result.message->tag == "ipc-test",
-          "blocking IPC: received message preserves tag");
+    check(recv_result.message->tag == "ipc-test", "blocking IPC: received message preserves tag");
     check(recv_result.message->ref.hash == payload_ref.hash,
           "blocking IPC: received message preserves CanonRef");
   }
@@ -1750,18 +1700,17 @@ static void test_kernel_blocking_ipc() {
         "blocking IPC fast-path: receiver still current");
   // Sender must be current to send — tick back to sender first.
   check(axion_kernel_tick(*state), "blocking IPC fast-path: tick to sender");
-  auto prefill_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind    = KernelCallKind::SendMessage,
-          .ipc_dst = receiver_tid,
-          .message = CanonMessage{
-              .sender  = *sender_tid,
-              .ref     = payload_ref,
-              .payload = 0xCAFE,
-              .tag     = "prefill",
-          },
-      });
+  auto prefill_result = axion_kernel_call(*state, KernelCallRequest{
+                                                      .kind = KernelCallKind::SendMessage,
+                                                      .ipc_dst = receiver_tid,
+                                                      .message =
+                                                          CanonMessage{
+                                                              .sender = *sender_tid,
+                                                              .ref = payload_ref,
+                                                              .payload = 0xCAFE,
+                                                              .tag = "prefill",
+                                                          },
+                                                  });
   check(prefill_result.status == KernelCallStatus::Ok,
         "blocking IPC fast-path: prefill send returns Ok");
   // Receiver was already awake so no wake should be issued.
@@ -1770,15 +1719,13 @@ static void test_kernel_blocking_ipc() {
 
   // Tick to receiver.
   check(axion_kernel_tick(*state), "blocking IPC fast-path: tick to receiver");
-  auto fast_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::BlockOnIpcReceive});
+  auto fast_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::BlockOnIpcReceive});
   check(fast_result.status == KernelCallStatus::Ok,
         "blocking IPC fast-path: BlockOnIpcReceive returns Ok with pending message");
   check(!fast_result.thread_sleeping,
         "blocking IPC fast-path: thread_sleeping is false when message was ready");
-  check(fast_result.message.has_value(),
-        "blocking IPC fast-path: message delivered immediately");
+  check(fast_result.message.has_value(), "blocking IPC fast-path: message delivered immediately");
   if (fast_result.message) {
     check(fast_result.message->payload == 0xCAFE,
           "blocking IPC fast-path: fast-path message preserves payload");
@@ -1789,8 +1736,7 @@ static void test_kernel_blocking_ipc() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_status.status == KernelServiceStatus::Ok,
         "blocking IPC: runtime status query succeeds");
-  check(runtime_status.runtime.has_value(),
-        "blocking IPC: runtime status view is present");
+  check(runtime_status.runtime.has_value(), "blocking IPC: runtime status view is present");
   if (runtime_status.runtime) {
     check(runtime_status.runtime->ipc_blocks == 1,
           "blocking IPC: runtime status reports ipc_blocks == 1");
@@ -1802,9 +1748,8 @@ static void test_kernel_blocking_ipc() {
 }
 
 static void test_kernel_device_wake_interrupt() {
-  std::printf(
-      "\n[AC-22j] RFC-00B5 §3.3: WaitForDevice parks thread; Storage/Network "
-      "interrupt wakes it\n");
+  std::printf("\n[AC-22j] RFC-00B5 §3.3: WaitForDevice parks thread; Storage/Network "
+              "interrupt wakes it\n");
 
   auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
@@ -1818,44 +1763,38 @@ static void test_kernel_device_wake_interrupt() {
   other_ctx.label = "other-thread";
 
   auto waiter_tid = axion_kernel_spawn_thread(*state, waiter_ctx);
-  auto other_tid  = axion_kernel_spawn_thread(*state, other_ctx);
+  auto other_tid = axion_kernel_spawn_thread(*state, other_ctx);
   check(waiter_tid.has_value(), "device wake: waiter thread spawns");
-  check(other_tid.has_value(),  "device wake: other thread spawns");
+  check(other_tid.has_value(), "device wake: other thread spawns");
   if (!waiter_tid || !other_tid) return;
 
   // Pre-condition counters.
-  check(state->counters.device_wakes == 0,
-        "device wake: device_wakes zero before any wait");
-  check(state->device_waiting_tids.empty() ||
-        [&]() {
-          for (auto& [k,s] : state->device_waiting_tids) if (!s.empty()) return false;
-          return true;
-        }(),
-        "device wake: no device-waiting threads before WaitForDevice");
+  check(state->counters.device_wakes == 0, "device wake: device_wakes zero before any wait");
+  check(
+      state->device_waiting_tids.empty() ||
+          [&]() {
+            for (auto& [k, s] : state->device_waiting_tids)
+              if (!s.empty()) return false;
+            return true;
+          }(),
+      "device wake: no device-waiting threads before WaitForDevice");
 
   // ── Tick to waiter; call WaitForDevice(Storage) ──────────────────────────
   check(axion_kernel_tick(*state), "device wake: tick makes waiter current");
-  check(state->scheduler.current_tid() == *waiter_tid,
-        "device wake: waiter is current thread");
+  check(state->scheduler.current_tid() == *waiter_tid, "device wake: waiter is current thread");
 
-  auto wait_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind          = KernelCallKind::WaitForDevice,
-          .device_source = InterruptSource::Storage,
-      });
-  check(wait_result.status == KernelCallStatus::Ok,
-        "device wake: WaitForDevice returns Ok");
-  check(wait_result.action_performed,
-        "device wake: WaitForDevice reports action performed");
-  check(wait_result.thread_sleeping,
-        "device wake: WaitForDevice sets thread_sleeping");
+  auto wait_result = axion_kernel_call(*state, KernelCallRequest{
+                                                   .kind = KernelCallKind::WaitForDevice,
+                                                   .device_source = InterruptSource::Storage,
+                                               });
+  check(wait_result.status == KernelCallStatus::Ok, "device wake: WaitForDevice returns Ok");
+  check(wait_result.action_performed, "device wake: WaitForDevice reports action performed");
+  check(wait_result.thread_sleeping, "device wake: WaitForDevice sets thread_sleeping");
 
   // Waiter must now be sleeping.
-  const uint8_t storage_key =
-      static_cast<uint8_t>(InterruptSource::Storage);
+  const uint8_t storage_key = static_cast<uint8_t>(InterruptSource::Storage);
   check(state->device_waiting_tids.count(storage_key) > 0 &&
-        state->device_waiting_tids.at(storage_key).count(*waiter_tid) > 0,
+            state->device_waiting_tids.at(storage_key).count(*waiter_tid) > 0,
         "device wake: waiter recorded in device_waiting_tids[Storage]");
   check(state->scheduler.run_queue().sleeping_count() == 1,
         "device wake: scheduler shows one sleeping thread");
@@ -1864,14 +1803,13 @@ static void test_kernel_device_wake_interrupt() {
 
   // ── Fire a Storage interrupt ──────────────────────────────────────────────
   HardwareInterrupt storage_irq{
-      .source       = InterruptSource::Storage,
+      .source = InterruptSource::Storage,
       .timestamp_ns = 1000,
-      .payload      = 0xAB,
+      .payload = 0xAB,
   };
   check(axion_kernel_record_interrupt(*state, storage_irq),
         "device wake: Storage interrupt recorded");
-  check(state->pending_interrupts.size() == 1,
-        "device wake: one interrupt pending after record");
+  check(state->pending_interrupts.size() == 1, "device wake: one interrupt pending after record");
 
   check(axion_kernel_deliver_pending_interrupt(*state),
         "device wake: deliver_pending_interrupt returns true");
@@ -1886,12 +1824,10 @@ static void test_kernel_device_wake_interrupt() {
 
   // ── Tick to waiter; ReceiveMessage gets the synthetic device-wake message ─
   check(axion_kernel_tick(*state), "device wake: tick switches to waiter");
-  check(state->scheduler.current_tid() == *waiter_tid,
-        "device wake: waiter is current after tick");
+  check(state->scheduler.current_tid() == *waiter_tid, "device wake: waiter is current after tick");
 
-  auto recv_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  auto recv_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
   check(recv_result.status == KernelCallStatus::Ok,
         "device wake: ReceiveMessage on woken waiter returns Ok");
   check(recv_result.message.has_value(),
@@ -1899,8 +1835,7 @@ static void test_kernel_device_wake_interrupt() {
   if (recv_result.message) {
     check(recv_result.message->sender == KernelRuntimeState::kKernelTid,
           "device wake: message sender is kKernelTid");
-    check(recv_result.message->tag == "device-wake",
-          "device wake: message tag is 'device-wake'");
+    check(recv_result.message->tag == "device-wake", "device wake: message tag is 'device-wake'");
     check(recv_result.message->payload == state->last_delivered_interrupt->sequence,
           "device wake: message payload == interrupt sequence");
   }
@@ -1921,27 +1856,23 @@ static void test_kernel_device_wake_interrupt() {
   check(state->scheduler.current_tid() == *net_waiter_tid,
         "device wake (net): net-waiter is current");
 
-  auto net_wait = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind          = KernelCallKind::WaitForDevice,
-          .device_source = InterruptSource::Network,
-      });
+  auto net_wait = axion_kernel_call(*state, KernelCallRequest{
+                                                .kind = KernelCallKind::WaitForDevice,
+                                                .device_source = InterruptSource::Network,
+                                            });
   check(net_wait.status == KernelCallStatus::Ok,
         "device wake (net): WaitForDevice(Network) returns Ok");
-  check(net_wait.thread_sleeping,
-        "device wake (net): WaitForDevice(Network) parks thread");
+  check(net_wait.thread_sleeping, "device wake (net): WaitForDevice(Network) parks thread");
 
-  const uint8_t network_key =
-      static_cast<uint8_t>(InterruptSource::Network);
+  const uint8_t network_key = static_cast<uint8_t>(InterruptSource::Network);
   check(state->device_waiting_tids.count(network_key) > 0 &&
-        state->device_waiting_tids.at(network_key).count(*net_waiter_tid) > 0,
+            state->device_waiting_tids.at(network_key).count(*net_waiter_tid) > 0,
         "device wake (net): net-waiter in device_waiting_tids[Network]");
 
   HardwareInterrupt net_irq{
-      .source       = InterruptSource::Network,
+      .source = InterruptSource::Network,
       .timestamp_ns = 2000,
-      .payload      = 0xCD,
+      .payload = 0xCD,
   };
   check(axion_kernel_record_interrupt(*state, net_irq),
         "device wake (net): Network interrupt recorded");
@@ -1955,9 +1886,9 @@ static void test_kernel_device_wake_interrupt() {
   // ── Keyboard interrupt does NOT wake waiting threads (accounting only) ────
   const uint64_t wakes_before_keyboard = state->counters.device_wakes;
   HardwareInterrupt kbd_irq{
-      .source       = InterruptSource::Keyboard,
+      .source = InterruptSource::Keyboard,
       .timestamp_ns = 3000,
-      .payload      = 0x41,
+      .payload = 0x41,
   };
   check(axion_kernel_record_interrupt(*state, kbd_irq),
         "device wake (kbd): Keyboard interrupt recorded");
@@ -1971,8 +1902,7 @@ static void test_kernel_device_wake_interrupt() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(status_result.status == KernelServiceStatus::Ok,
         "device wake: runtime status query succeeds");
-  check(status_result.runtime.has_value(),
-        "device wake: runtime status view present");
+  check(status_result.runtime.has_value(), "device wake: runtime status view present");
   if (status_result.runtime) {
     check(status_result.runtime->device_wakes == 2,
           "device wake: runtime status reports device_wakes == 2");
@@ -1982,7 +1912,8 @@ static void test_kernel_device_wake_interrupt() {
 }
 
 static void test_kernel_syscall_trap_wiring() {
-  std::printf("\n[AC-22k] RFC-00B6 §5.2 / RFC-00B0 §3.4.2: SVC trap shim routes wire block through axion_kernel_call_wire_tva\n");
+  std::printf("\n[AC-22k] RFC-00B6 §5.2 / RFC-00B0 §3.4.2: SVC trap shim routes wire block through "
+              "axion_kernel_call_wire_tva\n");
 
   // Bootstrap a kernel with one running thread — the shim needs a current
   // scheduler thread so resolve_current_caller_address_space() can locate the
@@ -1999,104 +1930,88 @@ static void test_kernel_syscall_trap_wiring() {
   if (!caller_tid) return;
 
   check(axion_kernel_tick(*state), "trap wiring: tick makes caller current");
-  check(state->scheduler.current_tid() == *caller_tid,
-        "trap wiring: caller is the running thread");
+  check(state->scheduler.current_tid() == *caller_tid, "trap wiring: caller is the running thread");
 
   // Resolve caller address space (needed to write wire blocks into TVA pages).
   const auto* caller_runtime = state->find_thread_runtime(*caller_tid);
   const auto caller_as =
-      caller_runtime
-          ? state->find_process_group_address_space(caller_runtime->process_group_id)
-          : std::nullopt;
+      caller_runtime ? state->find_process_group_address_space(caller_runtime->process_group_id)
+                     : std::nullopt;
   check(caller_as.has_value(), "trap wiring: caller address space resolves");
   if (!caller_as) return;
 
   // Map two pages: request (read) + response (write).
-  const uint64_t req_tva  = t81::ternaryos::mmu::tva_from_vpn_offset(200, 0);
+  const uint64_t req_tva = t81::ternaryos::mmu::tva_from_vpn_offset(200, 0);
   const uint64_t resp_tva = t81::ternaryos::mmu::tva_from_vpn_offset(201, 0);
-  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator,
-                                     req_tva, *caller_as,
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, req_tva, *caller_as,
                                      {.readable = true, .writable = true, .executable = false}),
         "trap wiring: request TVA page mapped");
-  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator,
-                                     resp_tva, *caller_as,
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, resp_tva, *caller_as,
                                      {.readable = true, .writable = true, .executable = false}),
         "trap wiring: response TVA page mapped");
 
   // Write a Yield wire request into the request page.
-  const auto yield_req = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::Yield});
-  check(axion_kernel_write_address_space_bytes(
-            *state, *caller_as, req_tva,
-            reinterpret_cast<const std::byte*>(&yield_req), sizeof(yield_req)),
+  const auto yield_req =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(axion_kernel_write_address_space_bytes(*state, *caller_as, req_tva,
+                                               reinterpret_cast<const std::byte*>(&yield_req),
+                                               sizeof(yield_req)),
         "trap wiring: Yield wire request written into request TVA");
 
   // ── Nominal SVC dispatch (svc_imm == 0) ─────────────────────────────────
-  const auto trap_result_1 =
-      axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
-          .request_tva  = req_tva,
-          .response_tva = resp_tva,
-          .svc_imm      = 0,
-      });
-  check(trap_result_1.dispatched,
-        "trap wiring: svc_imm=0 trap is dispatched");
-  check(!trap_result_1.svc_imm_rejected,
-        "trap wiring: svc_imm=0 trap is not rejected");
-  check(trap_result_1.trap_sequence == 1,
-        "trap wiring: first dispatch has trap_sequence == 1");
+  const auto trap_result_1 = axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
+                                                                      .request_tva = req_tva,
+                                                                      .response_tva = resp_tva,
+                                                                      .svc_imm = 0,
+                                                                  });
+  check(trap_result_1.dispatched, "trap wiring: svc_imm=0 trap is dispatched");
+  check(!trap_result_1.svc_imm_rejected, "trap wiring: svc_imm=0 trap is not rejected");
+  check(trap_result_1.trap_sequence == 1, "trap wiring: first dispatch has trap_sequence == 1");
   check(state->counters.syscall_trap_dispatches == 1,
         "trap wiring: syscall_trap_dispatches counter incremented to 1");
 
   // Read back the response and verify the Yield returned Ok.
   KernelCallWireResponseBlock resp_block;
-  check(axion_kernel_read_address_space_bytes(
-            *state, *caller_as, resp_tva,
-            reinterpret_cast<std::byte*>(&resp_block), sizeof(resp_block)),
+  check(axion_kernel_read_address_space_bytes(*state, *caller_as, resp_tva,
+                                              reinterpret_cast<std::byte*>(&resp_block),
+                                              sizeof(resp_block)),
         "trap wiring: response wire block read back from response TVA");
   check(axion_kernel_validate_wire_response_block(resp_block),
         "trap wiring: response wire block has valid magic/version");
   const auto decoded = axion_kernel_decode_wire_response(resp_block);
   check(decoded.has_value(), "trap wiring: response wire block decodes");
   if (decoded) {
-    check(decoded->status == KernelCallStatus::Ok,
-          "trap wiring: Yield via SVC trap returns Ok");
+    check(decoded->status == KernelCallStatus::Ok, "trap wiring: Yield via SVC trap returns Ok");
     // Single-thread kernel: Yield is accepted (Ok) but no switch occurs.
     check(!decoded->yielded || state->scheduler.current_tid() == *caller_tid,
           "trap wiring: Yield via SVC trap in single-thread kernel leaves caller running");
   }
 
   // ── svc_imm != 0 rejection ───────────────────────────────────────────────
-  const auto trap_result_2 =
-      axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
-          .request_tva  = req_tva,
-          .response_tva = resp_tva,
-          .svc_imm      = 7,
-      });
-  check(!trap_result_2.dispatched,
-        "trap wiring: svc_imm=7 trap is not dispatched");
-  check(trap_result_2.svc_imm_rejected,
-        "trap wiring: svc_imm=7 trap is rejected");
-  check(trap_result_2.trap_sequence == 0,
-        "trap wiring: rejected trap has trap_sequence == 0");
+  const auto trap_result_2 = axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
+                                                                      .request_tva = req_tva,
+                                                                      .response_tva = resp_tva,
+                                                                      .svc_imm = 7,
+                                                                  });
+  check(!trap_result_2.dispatched, "trap wiring: svc_imm=7 trap is not dispatched");
+  check(trap_result_2.svc_imm_rejected, "trap wiring: svc_imm=7 trap is rejected");
+  check(trap_result_2.trap_sequence == 0, "trap wiring: rejected trap has trap_sequence == 0");
   check(state->counters.syscall_trap_dispatches == 1,
         "trap wiring: svc_imm rejection does not increment dispatches counter");
 
   // ── A second valid dispatch increments the sequence ──────────────────────
   // Re-write the request (Yield consumed the yield credit; re-use the same block).
-  check(axion_kernel_write_address_space_bytes(
-            *state, *caller_as, req_tva,
-            reinterpret_cast<const std::byte*>(&yield_req), sizeof(yield_req)),
+  check(axion_kernel_write_address_space_bytes(*state, *caller_as, req_tva,
+                                               reinterpret_cast<const std::byte*>(&yield_req),
+                                               sizeof(yield_req)),
         "trap wiring: second Yield wire request written");
-  const auto trap_result_3 =
-      axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
-          .request_tva  = req_tva,
-          .response_tva = resp_tva,
-          .svc_imm      = 0,
-      });
-  check(trap_result_3.dispatched,
-        "trap wiring: second svc_imm=0 trap is dispatched");
-  check(trap_result_3.trap_sequence == 2,
-        "trap wiring: second dispatch has trap_sequence == 2");
+  const auto trap_result_3 = axion_kernel_handle_svc_trap(*state, SvcTrapFrame{
+                                                                      .request_tva = req_tva,
+                                                                      .response_tva = resp_tva,
+                                                                      .svc_imm = 0,
+                                                                  });
+  check(trap_result_3.dispatched, "trap wiring: second svc_imm=0 trap is dispatched");
+  check(trap_result_3.trap_sequence == 2, "trap wiring: second dispatch has trap_sequence == 2");
   check(state->counters.syscall_trap_dispatches == 2,
         "trap wiring: syscall_trap_dispatches counter incremented to 2");
 
@@ -2105,8 +2020,7 @@ static void test_kernel_syscall_trap_wiring() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(status_result.status == KernelServiceStatus::Ok,
         "trap wiring: runtime status query succeeds");
-  check(status_result.runtime.has_value(),
-        "trap wiring: runtime status view is present");
+  check(status_result.runtime.has_value(), "trap wiring: runtime status view is present");
   if (status_result.runtime) {
     check(status_result.runtime->syscall_trap_dispatches == 2,
           "trap wiring: runtime view exposes syscall_trap_dispatches == 2");
@@ -2114,7 +2028,8 @@ static void test_kernel_syscall_trap_wiring() {
 }
 
 static void test_kernel_user_space_isolation() {
-  std::printf("\n[AC-22l] RFC-00B1 §3.1 / RFC-00B6 §5.7: user address space cannot access kernel TVA range\n");
+  std::printf("\n[AC-22l] RFC-00B1 §3.1 / RFC-00B6 §5.7: user address space cannot access kernel "
+              "TVA range\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -2132,10 +2047,9 @@ static void test_kernel_user_space_isolation() {
   check(axion_kernel_tick(*state), "user-space isolation: tick makes user thread current");
 
   const auto* user_runtime = state->find_thread_runtime(*user_tid);
-  const auto user_as =
-      user_runtime
-          ? state->find_process_group_address_space(user_runtime->process_group_id)
-          : std::nullopt;
+  const auto user_as = user_runtime
+                           ? state->find_process_group_address_space(user_runtime->process_group_id)
+                           : std::nullopt;
   check(user_as.has_value(), "user-space isolation: user address space resolves");
   if (!user_as) return;
 
@@ -2148,8 +2062,7 @@ static void test_kernel_user_space_isolation() {
   }
 
   // Verify the kernel address space IS kernel_owned.
-  const auto* kernel_as_state =
-      state->find_address_space(KernelRuntimeState::kKernelAddressSpace);
+  const auto* kernel_as_state = state->find_address_space(KernelRuntimeState::kKernelAddressSpace);
   check(kernel_as_state != nullptr, "user-space isolation: kernel AS state found");
   if (kernel_as_state) {
     check(kernel_as_state->kernel_owned,
@@ -2157,11 +2070,10 @@ static void test_kernel_user_space_isolation() {
   }
 
   // ── tva_in_user_space / tva_in_kernel_space helpers ──────────────────────
-  const uint64_t user_tva   = mmu::tva_from_vpn_offset(100, 0);  // VPN 100 — user space
+  const uint64_t user_tva = mmu::tva_from_vpn_offset(100, 0);  // VPN 100 — user space
   const uint64_t kernel_tva = mmu::tva_from_vpn_offset(mmu::kKernelSpaceVpnBase, 0);
 
-  check(mmu::tva_in_user_space(user_tva),
-        "user-space isolation: VPN 100 is in user space");
+  check(mmu::tva_in_user_space(user_tva), "user-space isolation: VPN 100 is in user space");
   check(!mmu::tva_in_kernel_space(user_tva),
         "user-space isolation: VPN 100 is not in kernel space");
   check(mmu::tva_in_kernel_space(kernel_tva),
@@ -2171,8 +2083,8 @@ static void test_kernel_user_space_isolation() {
 
   // ── User AS span validation rejects kernel-space TVA ─────────────────────
   // Map a kernel-space page under the kernel AS (kernel is permitted).
-  check(mmu::mmu_map(state->page_table, state->allocator,
-                     kernel_tva, KernelRuntimeState::kKernelAddressSpace,
+  check(mmu::mmu_map(state->page_table, state->allocator, kernel_tva,
+                     KernelRuntimeState::kKernelAddressSpace,
                      {.readable = true, .writable = true, .executable = false}),
         "user-space isolation: kernel AS can map a kernel-space TVA");
 
@@ -2180,36 +2092,32 @@ static void test_kernel_user_space_isolation() {
   // mmu_map will fail since the VPN is already mapped, so we instead
   // update the owner_pid directly via a second map on a different kernel VPN.
   const uint64_t kernel_tva2 = mmu::tva_from_vpn_offset(mmu::kKernelSpaceVpnBase + 1, 0);
-  check(mmu::mmu_map(state->page_table, state->allocator,
-                     kernel_tva2, *user_as,
+  check(mmu::mmu_map(state->page_table, state->allocator, kernel_tva2, *user_as,
                      {.readable = true, .writable = true, .executable = false}),
         "user-space isolation: map kernel-space VPN with user owner_pid succeeds at MMU level");
 
   // Now validate: user AS span into the kernel-mapped page should be rejected.
-  check(!axion_kernel_validate_address_space_span(
-            *state, *user_as, kernel_tva2, 1, mmu::MmuAccessMode::Write),
+  check(!axion_kernel_validate_address_space_span(*state, *user_as, kernel_tva2, 1,
+                                                  mmu::MmuAccessMode::Write),
         "user-space isolation: validate_address_space_span rejects user AS at kernel TVA");
 
   // ── Write/read into kernel-space TVA from user AS is rejected ────────────
   const uint64_t rejections_before = state->counters.kernel_space_rejections;
   const std::byte dummy{0xAB};
-  check(!axion_kernel_write_address_space_bytes(
-            *state, *user_as, kernel_tva2, &dummy, 1),
+  check(!axion_kernel_write_address_space_bytes(*state, *user_as, kernel_tva2, &dummy, 1),
         "user-space isolation: write_address_space_bytes rejects user AS at kernel TVA");
   check(state->counters.kernel_space_rejections == rejections_before + 1,
         "user-space isolation: kernel_space_rejections incremented after write rejection");
 
   // ── User AS span succeeds for user-space TVA ─────────────────────────────
   const uint64_t user_tva2 = mmu::tva_from_vpn_offset(300, 0);
-  check(mmu::mmu_map(state->page_table, state->allocator,
-                     user_tva2, *user_as,
+  check(mmu::mmu_map(state->page_table, state->allocator, user_tva2, *user_as,
                      {.readable = true, .writable = true, .executable = false}),
         "user-space isolation: user AS maps user-space TVA");
-  check(axion_kernel_validate_address_space_span(
-            *state, *user_as, user_tva2, 1, mmu::MmuAccessMode::Write),
+  check(axion_kernel_validate_address_space_span(*state, *user_as, user_tva2, 1,
+                                                 mmu::MmuAccessMode::Write),
         "user-space isolation: validate_address_space_span accepts user AS at user TVA");
-  check(axion_kernel_write_address_space_bytes(
-            *state, *user_as, user_tva2, &dummy, 1),
+  check(axion_kernel_write_address_space_bytes(*state, *user_as, user_tva2, &dummy, 1),
         "user-space isolation: write_address_space_bytes accepts user AS at user TVA");
   check(state->counters.kernel_space_rejections == rejections_before + 1,
         "user-space isolation: kernel_space_rejections unchanged after user-space write");
@@ -2217,8 +2125,7 @@ static void test_kernel_user_space_isolation() {
   // ── wire-TVA path rejects kernel-space request_tva from user caller ───────
   // Map a user-space response page.
   const uint64_t resp_tva = mmu::tva_from_vpn_offset(301, 0);
-  check(mmu::mmu_map(state->page_table, state->allocator,
-                     resp_tva, *user_as,
+  check(mmu::mmu_map(state->page_table, state->allocator, resp_tva, *user_as,
                      {.readable = true, .writable = true, .executable = false}),
         "user-space isolation: user AS maps response TVA");
 
@@ -2227,9 +2134,9 @@ static void test_kernel_user_space_isolation() {
   // Either way the response must not be Ok.
   axion_kernel_call_wire_tva(*state, kernel_tva, resp_tva);
   KernelCallWireResponseBlock wire_resp_block;
-  if (axion_kernel_read_address_space_bytes(
-          *state, *user_as, resp_tva,
-          reinterpret_cast<std::byte*>(&wire_resp_block), sizeof(wire_resp_block)) &&
+  if (axion_kernel_read_address_space_bytes(*state, *user_as, resp_tva,
+                                            reinterpret_cast<std::byte*>(&wire_resp_block),
+                                            sizeof(wire_resp_block)) &&
       axion_kernel_validate_wire_response_block(wire_resp_block)) {
     const auto decoded_err = axion_kernel_decode_wire_response(wire_resp_block);
     check(decoded_err.has_value(),
@@ -2250,8 +2157,7 @@ static void test_kernel_user_space_isolation() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(status.status == KernelServiceStatus::Ok,
         "user-space isolation: runtime status query succeeds");
-  check(status.runtime.has_value(),
-        "user-space isolation: runtime status view present");
+  check(status.runtime.has_value(), "user-space isolation: runtime status view present");
   if (status.runtime) {
     check(status.runtime->kernel_space_rejections >= 1,
           "user-space isolation: runtime view exposes kernel_space_rejections >= 1");
@@ -2259,7 +2165,8 @@ static void test_kernel_user_space_isolation() {
 }
 
 static void test_kernel_aarch64_trap_entry() {
-  std::printf("\n[AC-22n] RFC-00B6 §5.2 / AArch64: exception vector table struct layout and SVC bridge\n");
+  std::printf(
+      "\n[AC-22n] RFC-00B6 §5.2 / AArch64: exception vector table struct layout and SVC bridge\n");
 
   namespace hal = t81::ternaryos::hal;
 
@@ -2268,8 +2175,7 @@ static void test_kernel_aarch64_trap_entry() {
   // and confirm the layout in both debug and release builds.
   check(sizeof(hal::AArch64TrapFrame) == 35 * 8,
         "aarch64-trap-entry: AArch64TrapFrame is 35 * 8 = 280 bytes");
-  check(offsetof(hal::AArch64TrapFrame, x) == 0,
-        "aarch64-trap-entry: x array starts at offset 0");
+  check(offsetof(hal::AArch64TrapFrame, x) == 0, "aarch64-trap-entry: x array starts at offset 0");
   check(offsetof(hal::AArch64TrapFrame, x[30]) == 30 * 8,
         "aarch64-trap-entry: x[30] (lr) is at offset 30 * 8 = 240");
   check(offsetof(hal::AArch64TrapFrame, sp_el0) == 31 * 8,
@@ -2299,22 +2205,20 @@ static void test_kernel_aarch64_trap_entry() {
 
   // ── SvcTrapFrame bridge ───────────────────────────────────────────────────
   hal::AArch64TrapFrame raw{};
-  raw.x[0]    = 0xAA00000000001000ULL;  // request_tva
-  raw.x[1]    = 0xAA00000000002000ULL;  // response_tva
-  raw.esr_el1 = 0x56000000u;           // SVC #0
+  raw.x[0] = 0xAA00000000001000ULL;  // request_tva
+  raw.x[1] = 0xAA00000000002000ULL;  // response_tva
+  raw.esr_el1 = 0x56000000u;         // SVC #0
 
   auto svc_frame0 = hal::axion_kernel_svc_frame_from_aarch64(raw);
   check(svc_frame0.request_tva == 0xAA00000000001000ULL,
         "aarch64-trap-entry: bridge maps x0 to request_tva");
   check(svc_frame0.response_tva == 0xAA00000000002000ULL,
         "aarch64-trap-entry: bridge maps x1 to response_tva");
-  check(svc_frame0.svc_imm == 0,
-        "aarch64-trap-entry: bridge extracts SVC #0 from ESR");
+  check(svc_frame0.svc_imm == 0, "aarch64-trap-entry: bridge extracts SVC #0 from ESR");
 
   raw.esr_el1 = 0x56000007u;  // SVC #7
   auto svc_frame7 = hal::axion_kernel_svc_frame_from_aarch64(raw);
-  check(svc_frame7.svc_imm == 7,
-        "aarch64-trap-entry: bridge extracts SVC #7 from ESR");
+  check(svc_frame7.svc_imm == 7, "aarch64-trap-entry: bridge extracts SVC #7 from ESR");
 
   // ── axion_kernel_install_exception_vectors() ─────────────────────────────
   // On the host this is a documented no-op; calling it must not crash.
@@ -2349,8 +2253,8 @@ static void test_kernel_aarch64_trap_entry() {
 
   // SVC #7 uses the rejection path — dispatch counter must not advance.
   hal::AArch64TrapFrame reject_frame{};
-  reject_frame.x[0]    = 0;
-  reject_frame.x[1]    = 0;
+  reject_frame.x[0] = 0;
+  reject_frame.x[1] = 0;
   reject_frame.esr_el1 = 0x56000007u;  // SVC #7
   hal::axion_kernel_handle_svc_trap_aarch64(&reject_frame);
   check(state->counters.syscall_trap_dispatches == dispatches_before,
@@ -2362,7 +2266,8 @@ static void test_kernel_aarch64_trap_entry() {
 }
 
 static void test_kernel_canonfs_fetch_spawn() {
-  std::printf("\n[AC-22m] RFC-00B2 §3.1: SpawnThreadFromExecutableObject fetches CanonExec from CanonFS without prior registration\n");
+  std::printf("\n[AC-22m] RFC-00B2 §3.1: SpawnThreadFromExecutableObject fetches CanonExec from "
+              "CanonFS without prior registration\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -2384,12 +2289,12 @@ static void test_kernel_canonfs_fetch_spawn() {
   // No RegisterExecutableObject call — Slice 7 should let Spawn fetch on demand.
   const uint64_t entry_pc = mmu::tva_from_vpn_offset(5, 0);  // VPN 5, offset 0
   const KernelThreadSpawnDescriptor fetch_descriptor{
-      .pc        = static_cast<std::size_t>(entry_pc),
-      .sp        = 0,
+      .pc = static_cast<std::size_t>(entry_pc),
+      .sp = 0,
       .register0 = 555,
-      .label     = "canonfs-fetch-entry",
+      .label = "canonfs-fetch-entry",
   };
-  const auto fetch_ref   = executable_ref_for(fetch_descriptor);
+  const auto fetch_ref = executable_ref_for(fetch_descriptor);
   const auto fetch_block = executable_block_for(fetch_descriptor);
 
   // Write the block to the driver before binding it to the kernel.
@@ -2398,9 +2303,9 @@ static void test_kernel_canonfs_fetch_spawn() {
   if (!driver) return;
   {
     const auto block_bytes = fetch_block.to_bytes();
-    auto write_result = driver->write_object(
-        t81::canonfs::ObjectType::CanonExec,
-        std::span<const std::byte>(block_bytes.data(), block_bytes.size()));
+    auto write_result =
+        driver->write_object(t81::canonfs::ObjectType::CanonExec,
+                             std::span<const std::byte>(block_bytes.data(), block_bytes.size()));
     check(write_result.has_value(),
           "canonfs-fetch-spawn: write_object succeeds on in-memory driver");
     if (!write_result) return;
@@ -2416,20 +2321,17 @@ static void test_kernel_canonfs_fetch_spawn() {
   const std::size_t pages_before = state->page_table.size();
   const uint64_t fetch_spawns_before = state->counters.canonfs_fetch_spawns;
 
-  auto spawn_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = fetch_ref,
-      });
+  auto spawn_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+                                    .object_ref = fetch_ref,
+                                });
   check(spawn_result.status == KernelCallStatus::Ok,
         "canonfs-fetch-spawn: spawn returns Ok without prior registration");
   check(spawn_result.rejection == KernelCallRejection::None,
         "canonfs-fetch-spawn: spawn clears rejection");
-  check(spawn_result.action_performed,
-        "canonfs-fetch-spawn: spawn reports action performed");
-  check(spawn_result.spawned_tid.has_value(),
-        "canonfs-fetch-spawn: spawn returns a spawned TID");
+  check(spawn_result.action_performed, "canonfs-fetch-spawn: spawn reports action performed");
+  check(spawn_result.spawned_tid.has_value(), "canonfs-fetch-spawn: spawn returns a spawned TID");
   if (!spawn_result.spawned_tid) return;
 
   // Counter must have advanced by exactly one.
@@ -2443,10 +2345,8 @@ static void test_kernel_canonfs_fetch_spawn() {
         "canonfs-fetch-spawn: entry TVA translates after spawn");
 
   // Spawned thread has the correct PC.
-  const auto* spawned_ctx =
-      state->scheduler.run_queue().find(*spawn_result.spawned_tid);
-  check(spawned_ctx != nullptr,
-        "canonfs-fetch-spawn: spawned thread appears in scheduler");
+  const auto* spawned_ctx = state->scheduler.run_queue().find(*spawn_result.spawned_tid);
+  check(spawned_ctx != nullptr, "canonfs-fetch-spawn: spawned thread appears in scheduler");
   if (spawned_ctx) {
     check(spawned_ctx->pc == static_cast<std::size_t>(entry_pc),
           "canonfs-fetch-spawn: spawned PC equals entry TVA");
@@ -2456,16 +2356,14 @@ static void test_kernel_canonfs_fetch_spawn() {
 
   // ── Re-spawn the same ref — already-mapped page reused, counter advances ──
   const std::size_t pages_after_first = state->page_table.size();
-  auto respawn_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = fetch_ref,
-      });
+  auto respawn_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+                                    .object_ref = fetch_ref,
+                                });
   check(respawn_result.status == KernelCallStatus::Ok,
         "canonfs-fetch-spawn: re-spawn from CanonFS returns Ok");
-  check(respawn_result.spawned_tid.has_value(),
-        "canonfs-fetch-spawn: re-spawn returns a TID");
+  check(respawn_result.spawned_tid.has_value(), "canonfs-fetch-spawn: re-spawn returns a TID");
   check(state->counters.canonfs_fetch_spawns == fetch_spawns_before + 2,
         "canonfs-fetch-spawn: canonfs_fetch_spawns reaches 2 after second fetch");
   // Section loader reuses the already-mapped page — no new page allocated.
@@ -2473,16 +2371,15 @@ static void test_kernel_canonfs_fetch_spawn() {
         "canonfs-fetch-spawn: re-spawn reuses existing mapped page");
 
   // ── Spawn a CanonRef not present in CanonFS — must fail cleanly ───────────
-  const KernelThreadSpawnDescriptor missing_descriptor{
-      .pc = mmu::tva_from_vpn_offset(99, 0), .label = "missing-entry"};
+  const KernelThreadSpawnDescriptor missing_descriptor{.pc = mmu::tva_from_vpn_offset(99, 0),
+                                                       .label = "missing-entry"};
   const auto missing_ref = executable_ref_for(missing_descriptor);
 
-  auto missing_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind       = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = missing_ref,
-      });
+  auto missing_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+                                    .object_ref = missing_ref,
+                                });
   check(missing_result.status != KernelCallStatus::Ok,
         "canonfs-fetch-spawn: spawn with unknown CanonRef fails");
   check(missing_result.rejection == KernelCallRejection::MissingExecutableRegistration,
@@ -2496,8 +2393,7 @@ static void test_kernel_canonfs_fetch_spawn() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(status.status == KernelServiceStatus::Ok,
         "canonfs-fetch-spawn: runtime status query succeeds");
-  check(status.runtime.has_value(),
-        "canonfs-fetch-spawn: runtime status view present");
+  check(status.runtime.has_value(), "canonfs-fetch-spawn: runtime status view present");
   if (status.runtime) {
     check(status.runtime->canonfs_fetch_spawns == fetch_spawns_before + 2,
           "canonfs-fetch-spawn: runtime view exposes canonfs_fetch_spawns == 2");
@@ -2505,13 +2401,14 @@ static void test_kernel_canonfs_fetch_spawn() {
 }
 
 static void test_kernel_pager_service_abi() {
-  std::printf("\n[AC-22o] RFC-00B7 §3.2: RequestPageMapping ABI — PagerService thread supplies a page mapping\n");
+  std::printf("\n[AC-22o] RFC-00B7 §3.2: RequestPageMapping ABI — PagerService thread supplies a "
+              "page mapping\n");
 
-  namespace mmu    = t81::ternaryos::mmu;
-  namespace sched  = t81::ternaryos::sched;
+  namespace mmu = t81::ternaryos::mmu;
+  namespace sched = t81::ternaryos::sched;
   namespace kernel = t81::ternaryos::kernel;
 
-  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
   check(state.has_value(), "pager-service: kernel bootstrap succeeds");
   if (!state) {
@@ -2520,7 +2417,7 @@ static void test_kernel_pager_service_abi() {
 
   // ── Spawn victim thread (will hit an unmapped fault) ──────────────────────
   sched::TiscContext victim_ctx;
-  victim_ctx.label        = "victim";
+  victim_ctx.label = "victim";
   victim_ctx.registers[0] = 300;
   auto victim_tid = axion_kernel_spawn_thread(*state, victim_ctx);
   check(victim_tid.has_value(), "pager-service: victim thread spawns");
@@ -2541,7 +2438,7 @@ static void test_kernel_pager_service_abi() {
 
   // ── Spawn pager-service thread ─────────────────────────────────────────────
   sched::TiscContext svc_ctx;
-  svc_ctx.label        = "pager-svc";
+  svc_ctx.label = "pager-svc";
   svc_ctx.registers[0] = 301;
   auto svc_tid = axion_kernel_spawn_thread(*state, svc_ctx);
   check(svc_tid.has_value(), "pager-service: service thread spawns");
@@ -2557,21 +2454,17 @@ static void test_kernel_pager_service_abi() {
 
   // ── Grant PagerService capability to the service process group ────────────
   check(axion_kernel_grant_process_group_capability(
-            *state,
-            svc_pg_id,
-            std::nullopt,
-            std::nullopt,
-            kernel::KernelCapabilityRecord{
-                .kind = kernel::KernelCapabilityKind::PagerService}),
+            *state, svc_pg_id, std::nullopt, std::nullopt,
+            kernel::KernelCapabilityRecord{.kind = kernel::KernelCapabilityKind::PagerService}),
         "pager-service: PagerService capability granted to service group");
 
   // ── Trigger an unmapped read fault in the victim address space ────────────
   const auto fault_tva = mmu::tva_from_vpn_offset(71, 0);
   state->pending_faults.push_back(kernel::KernelFaultRecord{
       .platform_id = state->platform_id,
-      .tva         = fault_tva,
+      .tva = fault_tva,
       .access_mode = mmu::MmuAccessMode::Read,
-      .fault       = mmu::MmuFault::Unmapped,
+      .fault = mmu::MmuFault::Unmapped,
       .subject_tid = *victim_tid,
   });
 
@@ -2608,7 +2501,7 @@ static void test_kernel_pager_service_abi() {
   // After quarantine, scheduler should advance to svc thread.
   // Verify rejection with a third (non-PagerService) thread.
   sched::TiscContext noperm_ctx;
-  noperm_ctx.label        = "no-perm";
+  noperm_ctx.label = "no-perm";
   noperm_ctx.registers[0] = 302;
   auto noperm_tid = axion_kernel_spawn_thread(*state, noperm_ctx);
   check(noperm_tid.has_value(), "pager-service: no-perm thread spawns");
@@ -2616,20 +2509,18 @@ static void test_kernel_pager_service_abi() {
   // Call from the current thread (svc thread is current after victim quarantine).
   // First verify that RequestPageMapping without address_space_id returns InvalidRequest.
   auto no_as_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::RequestPageMapping});
+      *state, kernel::KernelCallRequest{.kind = kernel::KernelCallKind::RequestPageMapping});
   check(no_as_result.status == kernel::KernelCallStatus::InvalidRequest,
         "pager-service: RequestPageMapping without address_space_id returns InvalidRequest");
   check(no_as_result.rejection == kernel::KernelCallRejection::MissingAddressSpace,
         "pager-service: RequestPageMapping without address_space_id → MissingAddressSpace");
 
   // Non-existent address space → NotFound
-  auto bad_as_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind             = kernel::KernelCallKind::RequestPageMapping,
-          .address_space_id = static_cast<kernel::AddressSpaceId>(9999),
-      });
+  auto bad_as_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::RequestPageMapping,
+                                    .address_space_id = static_cast<kernel::AddressSpaceId>(9999),
+                                });
   check(bad_as_result.status == kernel::KernelCallStatus::NotFound,
         "pager-service: RequestPageMapping with nonexistent AS → NotFound");
   check(bad_as_result.rejection == kernel::KernelCallRejection::MissingAddressSpace,
@@ -2639,30 +2530,26 @@ static void test_kernel_pager_service_abi() {
   const auto svc_as_id = state->find_process_group_address_space(svc_pg_id);
   check(svc_as_id.has_value(), "pager-service: service address space resolved for rejection test");
   if (svc_as_id) {
-    auto not_needed_result = axion_kernel_call(
-        *state,
-        kernel::KernelCallRequest{
-            .kind             = kernel::KernelCallKind::RequestPageMapping,
-            .address_space_id = *svc_as_id,
-        });
+    auto not_needed_result =
+        axion_kernel_call(*state, kernel::KernelCallRequest{
+                                      .kind = kernel::KernelCallKind::RequestPageMapping,
+                                      .address_space_id = *svc_as_id,
+                                  });
     check(not_needed_result.status == kernel::KernelCallStatus::InvalidRequest,
           "pager-service: RequestPageMapping on non-pager-needed AS → InvalidRequest");
-    check(not_needed_result.rejection ==
-              kernel::KernelCallRejection::AddressSpaceNotPagerNeeded,
+    check(not_needed_result.rejection == kernel::KernelCallRejection::AddressSpaceNotPagerNeeded,
           "pager-service: RequestPageMapping on non-pager-needed AS → AddressSpaceNotPagerNeeded");
   }
 
   // ── Success path: svc thread (current) supplies the page mapping ──────────
-  auto map_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind             = kernel::KernelCallKind::RequestPageMapping,
-          .address_space_id = *victim_as_id,
-      });
+  auto map_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::RequestPageMapping,
+                                    .address_space_id = *victim_as_id,
+                                });
   check(map_result.status == kernel::KernelCallStatus::Ok,
         "pager-service: RequestPageMapping returns Ok");
-  check(map_result.action_performed,
-        "pager-service: RequestPageMapping sets action_performed");
+  check(map_result.action_performed, "pager-service: RequestPageMapping sets action_performed");
   check(map_result.pager_mapping_supplied,
         "pager-service: RequestPageMapping sets pager_mapping_supplied");
   check(map_result.address_space_id == *victim_as_id,
@@ -2671,8 +2558,8 @@ static void test_kernel_pager_service_abi() {
         "pager-service: pager_service_mappings advances to 1 after first mapping");
 
   // TVA should now be mapped
-  const auto translation = mmu::mmu_translate_checked(
-      state->page_table, fault_tva, mmu::MmuAccessMode::Read);
+  const auto translation =
+      mmu::mmu_translate_checked(state->page_table, fault_tva, mmu::MmuAccessMode::Read);
   check(translation.fault == mmu::MmuFault::None,
         "pager-service: fault TVA is mapped after RequestPageMapping");
 
@@ -2688,16 +2575,14 @@ static void test_kernel_pager_service_abi() {
         "pager-service: victim address space pager_needed cleared after resolution");
 
   // ── Second call on same (now-resolved) AS → AddressSpaceNotPagerNeeded ───
-  auto second_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind             = kernel::KernelCallKind::RequestPageMapping,
-          .address_space_id = *victim_as_id,
-      });
+  auto second_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::RequestPageMapping,
+                                    .address_space_id = *victim_as_id,
+                                });
   check(second_result.status == kernel::KernelCallStatus::InvalidRequest,
         "pager-service: second RequestPageMapping on resolved AS → InvalidRequest");
-  check(second_result.rejection ==
-            kernel::KernelCallRejection::AddressSpaceNotPagerNeeded,
+  check(second_result.rejection == kernel::KernelCallRejection::AddressSpaceNotPagerNeeded,
         "pager-service: second RequestPageMapping on resolved AS → AddressSpaceNotPagerNeeded");
   // Counter must not advance for the rejected call
   check(state->counters.pager_service_mappings == 1,
@@ -2717,13 +2602,14 @@ static void test_kernel_pager_service_abi() {
 }
 
 static void test_kernel_wait_for_pager_handoff() {
-  std::printf("\n[AC-22p] RFC-00B7 §3.3: WaitForPagerHandoff parks PagerService thread; handoff dispatch wakes it\n");
+  std::printf("\n[AC-22p] RFC-00B7 §3.3: WaitForPagerHandoff parks PagerService thread; handoff "
+              "dispatch wakes it\n");
 
-  namespace mmu    = t81::ternaryos::mmu;
-  namespace sched  = t81::ternaryos::sched;
+  namespace mmu = t81::ternaryos::mmu;
+  namespace sched = t81::ternaryos::sched;
   namespace kernel = t81::ternaryos::kernel;
 
-  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
   check(state.has_value(), "wait-for-pager-handoff: kernel bootstrap succeeds");
   if (!state) {
@@ -2732,7 +2618,7 @@ static void test_kernel_wait_for_pager_handoff() {
 
   // ── Spawn victim thread ──────────────────────────────────────────────────
   sched::TiscContext victim_ctx;
-  victim_ctx.label        = "handoff-victim";
+  victim_ctx.label = "handoff-victim";
   victim_ctx.registers[0] = 400;
   auto victim_tid = axion_kernel_spawn_thread(*state, victim_ctx);
   check(victim_tid.has_value(), "wait-for-pager-handoff: victim thread spawns");
@@ -2752,7 +2638,7 @@ static void test_kernel_wait_for_pager_handoff() {
 
   // ── Spawn pager-service thread ────────────────────────────────────────────
   sched::TiscContext svc_ctx;
-  svc_ctx.label        = "handoff-svc";
+  svc_ctx.label = "handoff-svc";
   svc_ctx.registers[0] = 401;
   auto svc_tid = axion_kernel_spawn_thread(*state, svc_ctx);
   check(svc_tid.has_value(), "wait-for-pager-handoff: service thread spawns");
@@ -2767,12 +2653,8 @@ static void test_kernel_wait_for_pager_handoff() {
 
   // Grant PagerService capability
   check(axion_kernel_grant_process_group_capability(
-            *state,
-            svc_pg_id,
-            std::nullopt,
-            std::nullopt,
-            kernel::KernelCapabilityRecord{
-                .kind = kernel::KernelCapabilityKind::PagerService}),
+            *state, svc_pg_id, std::nullopt, std::nullopt,
+            kernel::KernelCapabilityRecord{.kind = kernel::KernelCapabilityKind::PagerService}),
         "wait-for-pager-handoff: PagerService capability granted");
 
   // ── Rejection: WaitForPagerHandoff without PagerService capability ────────
@@ -2785,8 +2667,7 @@ static void test_kernel_wait_for_pager_handoff() {
   check(state->scheduler.current_tid() == *victim_tid,
         "wait-for-pager-handoff: victim thread is current for rejection test");
   auto no_cap_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::WaitForPagerHandoff});
+      *state, kernel::KernelCallRequest{.kind = kernel::KernelCallKind::WaitForPagerHandoff});
   check(no_cap_result.status == kernel::KernelCallStatus::CapabilityDenied,
         "wait-for-pager-handoff: WaitForPagerHandoff without PagerService → CapabilityDenied");
   check(no_cap_result.rejection == kernel::KernelCallRejection::MissingCapability,
@@ -2800,8 +2681,7 @@ static void test_kernel_wait_for_pager_handoff() {
         "wait-for-pager-handoff: service thread is current for park call");
 
   auto park_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::WaitForPagerHandoff});
+      *state, kernel::KernelCallRequest{.kind = kernel::KernelCallKind::WaitForPagerHandoff});
   check(park_result.status == kernel::KernelCallStatus::Ok,
         "wait-for-pager-handoff: WaitForPagerHandoff returns Ok");
   check(park_result.thread_sleeping,
@@ -2817,8 +2697,7 @@ static void test_kernel_wait_for_pager_handoff() {
   {
     const auto sv = axion_kernel_service_request(
         *state,
-        kernel::KernelServiceRequest{
-            .kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+        kernel::KernelServiceRequest{.kind = kernel::KernelServiceRequestKind::RuntimeStatus});
     check(sv.status == kernel::KernelServiceStatus::Ok,
           "wait-for-pager-handoff: runtime status query succeeds while thread parked");
     if (sv.runtime) {
@@ -2833,9 +2712,9 @@ static void test_kernel_wait_for_pager_handoff() {
   const auto fault_tva = mmu::tva_from_vpn_offset(81, 0);
   state->pending_faults.push_back(kernel::KernelFaultRecord{
       .platform_id = state->platform_id,
-      .tva         = fault_tva,
+      .tva = fault_tva,
       .access_mode = mmu::MmuAccessMode::Read,
-      .fault       = mmu::MmuFault::Unmapped,
+      .fault = mmu::MmuFault::Unmapped,
       .subject_tid = *victim_tid,
   });
 
@@ -2859,8 +2738,7 @@ static void test_kernel_wait_for_pager_handoff() {
 
   // svc_tid is now current; call ReceiveMessage to read the handoff notification
   auto recv_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::ReceiveMessage});
+      *state, kernel::KernelCallRequest{.kind = kernel::KernelCallKind::ReceiveMessage});
   check(recv_result.status == kernel::KernelCallStatus::Ok,
         "wait-for-pager-handoff: svc thread receives pager-handoff-wake IPC");
   check(recv_result.message.has_value(),
@@ -2874,16 +2752,14 @@ static void test_kernel_wait_for_pager_handoff() {
 
   // ── svc thread calls RequestPageMapping using the IPC-delivered AS id ─────
   const auto notified_as_id =
-      recv_result.message
-          ? static_cast<kernel::AddressSpaceId>(recv_result.message->payload)
-          : *victim_as_id;
+      recv_result.message ? static_cast<kernel::AddressSpaceId>(recv_result.message->payload)
+                          : *victim_as_id;
 
-  auto map_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind             = kernel::KernelCallKind::RequestPageMapping,
-          .address_space_id = notified_as_id,
-      });
+  auto map_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::RequestPageMapping,
+                                    .address_space_id = notified_as_id,
+                                });
   check(map_result.status == kernel::KernelCallStatus::Ok,
         "wait-for-pager-handoff: RequestPageMapping succeeds after wake");
   check(map_result.pager_mapping_supplied,
@@ -2905,8 +2781,7 @@ static void test_kernel_wait_for_pager_handoff() {
   {
     const auto sv = axion_kernel_service_request(
         *state,
-        kernel::KernelServiceRequest{
-            .kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+        kernel::KernelServiceRequest{.kind = kernel::KernelServiceRequestKind::RuntimeStatus});
     check(sv.status == kernel::KernelServiceStatus::Ok,
           "wait-for-pager-handoff: final runtime status query succeeds");
     if (sv.runtime) {
@@ -2921,13 +2796,14 @@ static void test_kernel_wait_for_pager_handoff() {
 }
 
 static void test_kernel_resume_page_faulted_thread() {
-  std::printf("\n[AC-22q] RFC-00B7 §3.4: ResumePageFaultedThread un-quarantines victim thread after TVA is mapped\n");
+  std::printf("\n[AC-22q] RFC-00B7 §3.4: ResumePageFaultedThread un-quarantines victim thread "
+              "after TVA is mapped\n");
 
-  namespace mmu    = t81::ternaryos::mmu;
-  namespace sched  = t81::ternaryos::sched;
+  namespace mmu = t81::ternaryos::mmu;
+  namespace sched = t81::ternaryos::sched;
   namespace kernel = t81::ternaryos::kernel;
 
-  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
   check(state.has_value(), "resume-pager-faulted: kernel bootstrap succeeds");
   if (!state) {
@@ -2936,7 +2812,7 @@ static void test_kernel_resume_page_faulted_thread() {
 
   // ── Spawn victim thread ───────────────────────────────────────────────────
   sched::TiscContext victim_ctx;
-  victim_ctx.label        = "victim";
+  victim_ctx.label = "victim";
   victim_ctx.registers[0] = 400;
   auto victim_tid = axion_kernel_spawn_thread(*state, victim_ctx);
   check(victim_tid.has_value(), "resume-pager-faulted: victim thread spawns");
@@ -2957,7 +2833,7 @@ static void test_kernel_resume_page_faulted_thread() {
 
   // ── Spawn pager-service thread ────────────────────────────────────────────
   sched::TiscContext svc_ctx;
-  svc_ctx.label        = "pager-svc";
+  svc_ctx.label = "pager-svc";
   svc_ctx.registers[0] = 401;
   auto svc_tid = axion_kernel_spawn_thread(*state, svc_ctx);
   check(svc_tid.has_value(), "resume-pager-faulted: service thread spawns");
@@ -2973,21 +2849,17 @@ static void test_kernel_resume_page_faulted_thread() {
 
   // Grant PagerService capability to the service process group.
   check(axion_kernel_grant_process_group_capability(
-            *state,
-            svc_pg_id,
-            std::nullopt,
-            std::nullopt,
-            kernel::KernelCapabilityRecord{
-                .kind = kernel::KernelCapabilityKind::PagerService}),
+            *state, svc_pg_id, std::nullopt, std::nullopt,
+            kernel::KernelCapabilityRecord{.kind = kernel::KernelCapabilityKind::PagerService}),
         "resume-pager-faulted: PagerService capability granted");
 
   // ── Inject an Unmapped fault for the victim thread ────────────────────────
   const auto fault_tva = mmu::tva_from_vpn_offset(91, 0);
   state->pending_faults.push_back(kernel::KernelFaultRecord{
       .platform_id = state->platform_id,
-      .tva         = fault_tva,
+      .tva = fault_tva,
       .access_mode = mmu::MmuAccessMode::Read,
-      .fault       = mmu::MmuFault::Unmapped,
+      .fault = mmu::MmuFault::Unmapped,
       .subject_tid = *victim_tid,
   });
 
@@ -3007,32 +2879,29 @@ static void test_kernel_resume_page_faulted_thread() {
   // Advance scheduler to svc thread (victim is quarantined).
   (void)axion_kernel_step(*state);
   auto no_tid_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{.kind = kernel::KernelCallKind::ResumePageFaultedThread});
+      *state, kernel::KernelCallRequest{.kind = kernel::KernelCallKind::ResumePageFaultedThread});
   check(no_tid_result.status == kernel::KernelCallStatus::InvalidRequest,
         "resume-pager-faulted: ResumePageFaultedThread without target_tid → InvalidRequest");
   check(no_tid_result.rejection == kernel::KernelCallRejection::MissingTargetThread,
         "resume-pager-faulted: ResumePageFaultedThread without target_tid → MissingTargetThread");
 
   // ── Rejection: nonexistent target_tid ────────────────────────────────────
-  auto bad_tid_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
-          .target_tid = static_cast<sched::Tid>(9999),
-      });
+  auto bad_tid_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::ResumePageFaultedThread,
+                                    .target_tid = static_cast<sched::Tid>(9999),
+                                });
   check(bad_tid_result.status == kernel::KernelCallStatus::NotFound,
         "resume-pager-faulted: ResumePageFaultedThread with nonexistent tid → NotFound");
   check(bad_tid_result.rejection == kernel::KernelCallRejection::MissingTargetThread,
         "resume-pager-faulted: ResumePageFaultedThread with nonexistent tid → MissingTargetThread");
 
   // ── Rejection: TVA not yet mapped (RequestPageMapping not called yet) ─────
-  auto not_mapped_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
-          .target_tid = *victim_tid,
-      });
+  auto not_mapped_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::ResumePageFaultedThread,
+                                    .target_tid = *victim_tid,
+                                });
   check(not_mapped_result.status == kernel::KernelCallStatus::InvalidRequest,
         "resume-pager-faulted: ResumePageFaultedThread before mapping → InvalidRequest");
   check(not_mapped_result.rejection == kernel::KernelCallRejection::PagerFaultNotResolved,
@@ -3046,32 +2915,30 @@ static void test_kernel_resume_page_faulted_thread() {
         "resume-pager-faulted: victim remains quarantined after rejected resume");
 
   // ── Map the TVA via RequestPageMapping ────────────────────────────────────
-  auto map_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind             = kernel::KernelCallKind::RequestPageMapping,
-          .address_space_id = *victim_as_id,
-      });
+  auto map_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::RequestPageMapping,
+                                    .address_space_id = *victim_as_id,
+                                });
   check(map_result.status == kernel::KernelCallStatus::Ok,
         "resume-pager-faulted: RequestPageMapping succeeds");
   check(map_result.pager_mapping_supplied,
         "resume-pager-faulted: pager_mapping_supplied set after RequestPageMapping");
 
   // TVA should be mapped now.
-  const auto translation = mmu::mmu_translate_checked(
-      state->page_table, fault_tva, mmu::MmuAccessMode::Read);
+  const auto translation =
+      mmu::mmu_translate_checked(state->page_table, fault_tva, mmu::MmuAccessMode::Read);
   check(translation.fault == mmu::MmuFault::None,
         "resume-pager-faulted: fault TVA is mapped after RequestPageMapping");
 
   // ── Success path: ResumePageFaultedThread un-quarantines victim ───────────
   const auto resumptions_before = state->counters.pager_service_resumptions;
-  const auto recoveries_before  = state->counters.thread_fault_recoveries;
-  auto resume_result = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
-          .target_tid = *victim_tid,
-      });
+  const auto recoveries_before = state->counters.thread_fault_recoveries;
+  auto resume_result =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::ResumePageFaultedThread,
+                                    .target_tid = *victim_tid,
+                                });
   check(resume_result.status == kernel::KernelCallStatus::Ok,
         "resume-pager-faulted: ResumePageFaultedThread returns Ok");
   check(resume_result.action_performed,
@@ -3097,14 +2964,14 @@ static void test_kernel_resume_page_faulted_thread() {
         "resume-pager-faulted: thread_fault_acknowledgements advances");
 
   // ── Second ResumePageFaultedThread on non-quarantined thread → TargetNotQuarantined ──
-  auto second_resume = axion_kernel_call(
-      *state,
-      kernel::KernelCallRequest{
-          .kind       = kernel::KernelCallKind::ResumePageFaultedThread,
-          .target_tid = *victim_tid,
-      });
+  auto second_resume =
+      axion_kernel_call(*state, kernel::KernelCallRequest{
+                                    .kind = kernel::KernelCallKind::ResumePageFaultedThread,
+                                    .target_tid = *victim_tid,
+                                });
   check(second_resume.status == kernel::KernelCallStatus::InvalidRequest,
-        "resume-pager-faulted: second ResumePageFaultedThread on non-quarantined thread → InvalidRequest");
+        "resume-pager-faulted: second ResumePageFaultedThread on non-quarantined thread → "
+        "InvalidRequest");
   check(second_resume.rejection == kernel::KernelCallRejection::TargetNotQuarantined,
         "resume-pager-faulted: second ResumePageFaultedThread → TargetNotQuarantined");
   check(!second_resume.pager_thread_resumed,
@@ -3118,8 +2985,7 @@ static void test_kernel_resume_page_faulted_thread() {
   {
     const auto sv = axion_kernel_service_request(
         *state,
-        kernel::KernelServiceRequest{
-            .kind = kernel::KernelServiceRequestKind::RuntimeStatus});
+        kernel::KernelServiceRequest{.kind = kernel::KernelServiceRequestKind::RuntimeStatus});
     check(sv.status == kernel::KernelServiceStatus::Ok,
           "resume-pager-faulted: runtime status query succeeds");
     if (sv.runtime) {
@@ -3132,7 +2998,8 @@ static void test_kernel_resume_page_faulted_thread() {
 }
 
 static void test_kernel_el0_svc_roundtrip() {
-  std::printf("\n[AC-22r] RFC-00B6 §5.2 / RFC-00B5 §3.6: EL0→EL1 SVC roundtrip through AArch64 bridge with non-kernel-owned user thread\n");
+  std::printf("\n[AC-22r] RFC-00B6 §5.2 / RFC-00B5 §3.6: EL0→EL1 SVC roundtrip through AArch64 "
+              "bridge with non-kernel-owned user thread\n");
 
   // This test proves the full AArch64 SVC entry chain for a genuine user
   // thread (kernel_owned == false, address space not kKernelAddressSpace):
@@ -3168,8 +3035,7 @@ static void test_kernel_el0_svc_roundtrip() {
   // Tick so the user thread becomes the current scheduler thread.  The SVC
   // dispatch path calls resolve_current_caller_address_space() which reads
   // state.scheduler.current_tid() to locate the caller's address space.
-  check(axion_kernel_tick(*state),
-        "el0-svc-roundtrip: user thread becomes current via tick");
+  check(axion_kernel_tick(*state), "el0-svc-roundtrip: user thread becomes current via tick");
   check(state->scheduler.current_tid() == *user_tid,
         "el0-svc-roundtrip: user thread is the running thread");
 
@@ -3184,15 +3050,13 @@ static void test_kernel_el0_svc_roundtrip() {
   // ── Map request + response pages in user address space ──────────────────
   // Use VPNs below kKernelSpaceVpnBase so the kernel-space guard in
   // axion_kernel_call_wire_tva() does not trigger.
-  const uint64_t req_tva  = mmu::tva_from_vpn_offset(200, 0);
+  const uint64_t req_tva = mmu::tva_from_vpn_offset(200, 0);
   const uint64_t resp_tva = mmu::tva_from_vpn_offset(201, 0);
 
-  check(mmu::mmu_map(state->page_table, state->allocator,
-                     req_tva, *user_as,
+  check(mmu::mmu_map(state->page_table, state->allocator, req_tva, *user_as,
                      {.readable = true, .writable = true, .executable = false}),
         "el0-svc-roundtrip: request TVA page mapped");
-  check(mmu::mmu_map(state->page_table, state->allocator,
-                     resp_tva, *user_as,
+  check(mmu::mmu_map(state->page_table, state->allocator, resp_tva, *user_as,
                      {.readable = true, .writable = true, .executable = false}),
         "el0-svc-roundtrip: response TVA page mapped");
 
@@ -3205,19 +3069,19 @@ static void test_kernel_el0_svc_roundtrip() {
   check(true, "el0-svc-roundtrip: install_exception_vectors() callable (no-op on host)");
 
   // ── Dispatch 1: Yield via SVC #0 through AArch64 bridge ─────────────────
-  const auto yield_req = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::Yield});
-  check(axion_kernel_write_address_space_bytes(
-            *state, *user_as, req_tva,
-            reinterpret_cast<const std::byte*>(&yield_req), sizeof(yield_req)),
+  const auto yield_req =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(axion_kernel_write_address_space_bytes(*state, *user_as, req_tva,
+                                               reinterpret_cast<const std::byte*>(&yield_req),
+                                               sizeof(yield_req)),
         "el0-svc-roundtrip: Yield wire request written into request TVA");
 
   // Build an AArch64TrapFrame for SVC #0 with x0 = req_tva, x1 = resp_tva.
   // ESR_EL1: EC = 0x15 (bits [31:26]), ISS = svc_imm (bits [15:0])
   //   SVC #0 → esr_el1 = 0x56000000  (EC=0x15, IL=1, ISS=0)
   hal::AArch64TrapFrame frame1{};
-  frame1.x[0]    = req_tva;
-  frame1.x[1]    = resp_tva;
+  frame1.x[0] = req_tva;
+  frame1.x[1] = resp_tva;
   frame1.esr_el1 = 0x56000000u;  // SVC #0
 
   const uint64_t dispatches_before = state->counters.syscall_trap_dispatches;
@@ -3227,15 +3091,13 @@ static void test_kernel_el0_svc_roundtrip() {
 
   // Read back and decode the wire response.
   KernelCallWireResponseBlock resp1{};
-  check(axion_kernel_read_address_space_bytes(
-            *state, *user_as, resp_tva,
-            reinterpret_cast<std::byte*>(&resp1), sizeof(resp1)),
+  check(axion_kernel_read_address_space_bytes(*state, *user_as, resp_tva,
+                                              reinterpret_cast<std::byte*>(&resp1), sizeof(resp1)),
         "el0-svc-roundtrip: Yield response wire block readable from resp TVA");
   check(axion_kernel_validate_wire_response_block(resp1),
         "el0-svc-roundtrip: Yield response wire block has valid magic/version");
   const auto yield_decoded = axion_kernel_decode_wire_response(resp1);
-  check(yield_decoded.has_value(),
-        "el0-svc-roundtrip: Yield response wire block decodes");
+  check(yield_decoded.has_value(), "el0-svc-roundtrip: Yield response wire block decodes");
   if (yield_decoded) {
     check(yield_decoded->status == KernelCallStatus::Ok,
           "el0-svc-roundtrip: Yield via AArch64 bridge returns Ok");
@@ -3244,14 +3106,14 @@ static void test_kernel_el0_svc_roundtrip() {
   // ── Dispatch 2: GetThreadIdentity via SVC #0 through AArch64 bridge ──────
   const auto identity_req = axion_kernel_encode_wire_request(
       KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
-  check(axion_kernel_write_address_space_bytes(
-            *state, *user_as, req_tva,
-            reinterpret_cast<const std::byte*>(&identity_req), sizeof(identity_req)),
+  check(axion_kernel_write_address_space_bytes(*state, *user_as, req_tva,
+                                               reinterpret_cast<const std::byte*>(&identity_req),
+                                               sizeof(identity_req)),
         "el0-svc-roundtrip: GetThreadIdentity wire request written into request TVA");
 
   hal::AArch64TrapFrame frame2{};
-  frame2.x[0]    = req_tva;
-  frame2.x[1]    = resp_tva;
+  frame2.x[0] = req_tva;
+  frame2.x[1] = resp_tva;
   frame2.esr_el1 = 0x56000000u;  // SVC #0
 
   hal::axion_kernel_handle_svc_trap_aarch64(&frame2);
@@ -3259,15 +3121,13 @@ static void test_kernel_el0_svc_roundtrip() {
         "el0-svc-roundtrip: GetThreadIdentity via AArch64 bridge increments dispatch counter to 2");
 
   KernelCallWireResponseBlock resp2{};
-  check(axion_kernel_read_address_space_bytes(
-            *state, *user_as, resp_tva,
-            reinterpret_cast<std::byte*>(&resp2), sizeof(resp2)),
+  check(axion_kernel_read_address_space_bytes(*state, *user_as, resp_tva,
+                                              reinterpret_cast<std::byte*>(&resp2), sizeof(resp2)),
         "el0-svc-roundtrip: GetThreadIdentity response wire block readable");
   check(axion_kernel_validate_wire_response_block(resp2),
         "el0-svc-roundtrip: GetThreadIdentity response has valid magic/version");
   const auto identity_decoded = axion_kernel_decode_wire_response(resp2);
-  check(identity_decoded.has_value(),
-        "el0-svc-roundtrip: GetThreadIdentity response decodes");
+  check(identity_decoded.has_value(), "el0-svc-roundtrip: GetThreadIdentity response decodes");
   if (identity_decoded) {
     check(identity_decoded->status == KernelCallStatus::Ok,
           "el0-svc-roundtrip: GetThreadIdentity via AArch64 bridge returns Ok");
@@ -3280,8 +3140,8 @@ static void test_kernel_el0_svc_roundtrip() {
   // axion_kernel_call_wire_tva(); the dispatch counter must not advance.
   const uint64_t dispatches_at_rejection = state->counters.syscall_trap_dispatches;
   hal::AArch64TrapFrame frame_svc7{};
-  frame_svc7.x[0]    = req_tva;
-  frame_svc7.x[1]    = resp_tva;
+  frame_svc7.x[0] = req_tva;
+  frame_svc7.x[1] = resp_tva;
   frame_svc7.esr_el1 = 0x56000007u;  // SVC #7
   hal::axion_kernel_handle_svc_trap_aarch64(&frame_svc7);
   check(state->counters.syscall_trap_dispatches == dispatches_at_rejection,
@@ -3290,8 +3150,8 @@ static void test_kernel_el0_svc_roundtrip() {
   // ── Disarm and verify graceful no-op ─────────────────────────────────────
   hal::axion_kernel_set_kernel_state_for_trap_dispatch(nullptr);
   hal::AArch64TrapFrame frame_after{};
-  frame_after.x[0]    = req_tva;
-  frame_after.x[1]    = resp_tva;
+  frame_after.x[0] = req_tva;
+  frame_after.x[1] = resp_tva;
   frame_after.esr_el1 = 0x56000000u;
   hal::axion_kernel_handle_svc_trap_aarch64(&frame_after);
   check(state->counters.syscall_trap_dispatches == dispatches_at_rejection,
@@ -3303,8 +3163,7 @@ static void test_kernel_el0_svc_roundtrip() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(status_result.status == KernelServiceStatus::Ok,
         "el0-svc-roundtrip: runtime status query succeeds");
-  check(status_result.runtime.has_value(),
-        "el0-svc-roundtrip: runtime status view present");
+  check(status_result.runtime.has_value(), "el0-svc-roundtrip: runtime status view present");
   if (status_result.runtime) {
     check(status_result.runtime->syscall_trap_dispatches == 2,
           "el0-svc-roundtrip: runtime view exposes syscall_trap_dispatches == 2");
@@ -3349,38 +3208,29 @@ static void test_kernel_pager_fault_state() {
 
   const auto pager_group_id = pager_runtime->process_group_id;
   const auto policy_group_id = policy_runtime->process_group_id;
-  const auto pager_address_space_id =
-      state->find_process_group_address_space(pager_group_id);
-  const auto policy_address_space_id =
-      state->find_process_group_address_space(policy_group_id);
-  check(pager_address_space_id.has_value(),
-        "pager-fault group resolves to an address space");
-  check(policy_address_space_id.has_value(),
-        "policy-fault group resolves to an address space");
+  const auto pager_address_space_id = state->find_process_group_address_space(pager_group_id);
+  const auto policy_address_space_id = state->find_process_group_address_space(policy_group_id);
+  check(pager_address_space_id.has_value(), "pager-fault group resolves to an address space");
+  check(policy_address_space_id.has_value(), "policy-fault group resolves to an address space");
   if (!pager_address_space_id || !policy_address_space_id) {
     return;
   }
 
   const auto readonly_tva = mmu::tva_from_vpn_offset(62, 0);
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     readonly_tva,
-                     *policy_address_space_id,
+  check(mmu::mmu_map(state->page_table, state->allocator, readonly_tva, *policy_address_space_id,
                      {.readable = true, .writable = false, .executable = false}),
         "policy-fault address space accepts a readonly mapping");
 
   check(axion_kernel_step(*state), "pager fault-state step dispatches pager thread");
-  check(state->scheduler.current_tid() == *pager_tid,
-        "pager-fault thread becomes current first");
-  auto pager_fault = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(61, 0), mmu::MmuAccessMode::Read);
+  check(state->scheduler.current_tid() == *pager_tid, "pager-fault thread becomes current first");
+  auto pager_fault =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(61, 0), mmu::MmuAccessMode::Read);
   check(pager_fault.fault.has_value(), "unmapped read records a pager-eligible fault");
   check(axion_kernel_step(*state), "pager fault-state step delivers pager-needed fault");
   check(state->scheduler.current_tid() == *policy_tid,
         "policy thread becomes current after pager thread quarantine");
 
-  auto policy_fault =
-      axion_kernel_check_access(*state, readonly_tva, mmu::MmuAccessMode::Write);
+  auto policy_fault = axion_kernel_check_access(*state, readonly_tva, mmu::MmuAccessMode::Write);
   check(policy_fault.fault.has_value(), "readonly write records a policy fault");
   check(axion_kernel_step(*state), "pager fault-state step delivers policy fault");
 
@@ -3388,8 +3238,7 @@ static void test_kernel_pager_fault_state() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
   check(runtime_status.status == KernelServiceStatus::Ok,
         "runtime status succeeds after mixed fault classification");
-  check(runtime_status.runtime.has_value(),
-        "runtime status returns pager fault-state view");
+  check(runtime_status.runtime.has_value(), "runtime status returns pager fault-state view");
   if (runtime_status.runtime) {
     check(runtime_status.runtime->pager_needed_address_space_count == 1,
           "runtime status reports one pager-needed address space");
@@ -3401,18 +3250,16 @@ static void test_kernel_pager_fault_state() {
           "runtime status starts with idle pager worker");
     check(runtime_status.runtime->pager_eligible_faults == 1,
           "runtime status counts one pager-eligible fault");
-    check(runtime_status.runtime->policy_faults == 1,
-          "runtime status counts one policy fault");
+    check(runtime_status.runtime->policy_faults == 1, "runtime status counts one policy fault");
     check(runtime_status.runtime->pager_handoffs_dispatched == 0,
           "runtime status starts with zero dispatched pager handoffs");
   }
 
-  auto pager_group_status = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = pager_group_id,
-      });
+  auto pager_group_status =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = pager_group_id,
+                                           });
   check(pager_group_status.status == KernelServiceStatus::FaultedGroup,
         "pager-needed process group remains faulted until acknowledgement");
   check(pager_group_status.process_group.has_value(),
@@ -3433,18 +3280,16 @@ static void test_kernel_pager_fault_state() {
     check(pager_group_status.process_group->last_pager_fault.has_value(),
           "pager-needed process group view exposes the last pager fault");
     if (pager_group_status.process_group->last_pager_fault) {
-      check(pager_group_status.process_group->last_pager_fault->fault ==
-                mmu::MmuFault::Unmapped,
+      check(pager_group_status.process_group->last_pager_fault->fault == mmu::MmuFault::Unmapped,
             "pager-needed process group view preserves unmapped classification");
     }
   }
 
-  auto policy_group_status = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = policy_group_id,
-      });
+  auto policy_group_status =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = policy_group_id,
+                                           });
   check(policy_group_status.status == KernelServiceStatus::FaultedGroup,
         "policy-fault process group also enters the fault boundary");
   check(policy_group_status.process_group.has_value(),
@@ -3466,27 +3311,23 @@ static void test_kernel_pager_fault_state() {
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
   check(fault_summary.status == KernelServiceStatus::Ok,
         "fault summary succeeds after mixed fault classification");
-  check(fault_summary.fault_summary.has_value(),
-        "fault summary returns mixed fault-state detail");
+  check(fault_summary.fault_summary.has_value(), "fault summary returns mixed fault-state detail");
   if (fault_summary.fault_summary) {
     check(fault_summary.fault_summary->pager_eligible_faults == 1,
           "fault summary counts one pager-eligible fault");
-    check(fault_summary.fault_summary->policy_faults == 1,
-          "fault summary counts one policy fault");
+    check(fault_summary.fault_summary->policy_faults == 1, "fault summary counts one policy fault");
     check(fault_summary.fault_summary->pager_needed_address_spaces == 1,
           "fault summary reports one pager-needed address space");
     check(fault_summary.fault_summary->pending_pager_handoffs == 1,
           "fault summary reports one pending pager handoff before dispatch");
     check(fault_summary.fault_summary->pager_handoffs_dispatched == 0,
           "fault summary starts with zero dispatched pager handoffs");
-    check(fault_summary.fault_summary->last_pager_address_space_id ==
-              pager_address_space_id,
+    check(fault_summary.fault_summary->last_pager_address_space_id == pager_address_space_id,
           "fault summary tracks the latest pager-needed address space");
     check(fault_summary.fault_summary->last_pager_fault.has_value(),
           "fault summary exposes the latest pager-needed fault");
     if (fault_summary.fault_summary->last_pager_fault) {
-      check(fault_summary.fault_summary->last_pager_fault->fault ==
-                mmu::MmuFault::Unmapped,
+      check(fault_summary.fault_summary->last_pager_fault->fault == mmu::MmuFault::Unmapped,
             "fault summary preserves unmapped pager-needed classification");
     }
     check(fault_summary.fault_summary->last_delivered_fault.has_value(),
@@ -3528,12 +3369,11 @@ static void test_kernel_pager_fault_state() {
           "runtime status counts one handoff received by pager worker");
   }
 
-  auto pager_group_after_handoff = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = pager_group_id,
-      });
+  auto pager_group_after_handoff =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = pager_group_id,
+                                           });
   check(pager_group_after_handoff.process_group.has_value(),
         "pager-needed process group view remains available after handoff");
   if (pager_group_after_handoff.process_group) {
@@ -3603,9 +3443,7 @@ static void test_kernel_pager_fault_state() {
           "runtime status counts one coalesced pager fault");
   }
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     mmu::tva_from_vpn_offset(61, 0),
+  check(mmu::mmu_map(state->page_table, state->allocator, mmu::tva_from_vpn_offset(61, 0),
                      *pager_address_space_id),
         "pager-needed address space accepts a mapping for the missing page");
   (void)axion_kernel_step(*state);
@@ -3636,12 +3474,11 @@ static void test_kernel_pager_fault_state() {
           "runtime status retains coalesced pager fault count after resolution");
   }
 
-  auto pager_group_after_resolution = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = pager_group_id,
-      });
+  auto pager_group_after_resolution =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = pager_group_id,
+                                           });
   check(pager_group_after_resolution.process_group.has_value(),
         "pager-needed process group view remains available after resolution");
   if (pager_group_after_resolution.process_group) {
@@ -3716,10 +3553,7 @@ static void test_kernel_pager_fault_state() {
           "runtime status reports pending handoff in repeat cycle");
   }
   (void)axion_kernel_step(*state);
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     repeat_tva,
-                     *pager_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, repeat_tva, *pager_address_space_id),
         "same address space accepts a second missing-page mapping");
   (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
@@ -3777,10 +3611,8 @@ static void test_kernel_pager_worker_backlog() {
 
   const auto first_group_id = first_runtime->process_group_id;
   const auto second_group_id = second_runtime->process_group_id;
-  const auto first_address_space_id =
-      state->find_process_group_address_space(first_group_id);
-  const auto second_address_space_id =
-      state->find_process_group_address_space(second_group_id);
+  const auto first_address_space_id = state->find_process_group_address_space(first_group_id);
+  const auto second_address_space_id = state->find_process_group_address_space(second_group_id);
   check(first_address_space_id.has_value(),
         "first backlog process group resolves to an address space");
   check(second_address_space_id.has_value(),
@@ -3838,20 +3670,17 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary queues one work item after first backlog dispatch");
     check(fault_after_first_dispatch.fault_summary->pager_worker_inbox_high_watermark == 1,
           "fault summary records one-item worker inbox watermark initially");
-    check(fault_after_first_dispatch.fault_summary
-              ->pager_worker_next_queued_address_space_id ==
+    check(fault_after_first_dispatch.fault_summary->pager_worker_next_queued_address_space_id ==
               first_address_space_id,
           "fault summary tracks the first queued pager-worker address space");
-    check(fault_after_first_dispatch.fault_summary
-              ->pager_worker_next_queued_handoff_sequence == 1,
+    check(fault_after_first_dispatch.fault_summary->pager_worker_next_queued_handoff_sequence == 1,
           "fault summary tracks the first queued pager-worker handoff ordinal");
-    check(fault_after_first_dispatch.fault_summary
-              ->pager_worker_last_received_address_space_id ==
+    check(fault_after_first_dispatch.fault_summary->pager_worker_last_received_address_space_id ==
               first_address_space_id,
           "fault summary tracks the first received pager-worker address space");
-    check(fault_after_first_dispatch.fault_summary
-              ->pager_worker_last_received_handoff_sequence == 1,
-          "fault summary tracks the first received pager-worker handoff ordinal");
+    check(
+        fault_after_first_dispatch.fault_summary->pager_worker_last_received_handoff_sequence == 1,
+        "fault summary tracks the first received pager-worker handoff ordinal");
     check(fault_after_first_dispatch.fault_summary->last_pager_handoff.has_value(),
           "fault summary exposes first backlog handoff");
     if (fault_after_first_dispatch.fault_summary->last_pager_handoff) {
@@ -3875,30 +3704,23 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status exposes two queued worker items under backlog");
     check(runtime_after_second_dispatch.runtime->pager_worker_inbox_high_watermark == 2,
           "runtime status records worker inbox high watermark under backlog");
-    check(runtime_after_second_dispatch.runtime
-              ->pager_worker_next_queued_address_space_id ==
+    check(runtime_after_second_dispatch.runtime->pager_worker_next_queued_address_space_id ==
               first_address_space_id,
           "runtime status tracks the next queued pager-worker address before activation");
-    check(runtime_after_second_dispatch.runtime
-              ->pager_worker_next_queued_handoff_sequence == 1,
+    check(runtime_after_second_dispatch.runtime->pager_worker_next_queued_handoff_sequence == 1,
           "runtime status tracks the next queued pager-worker handoff ordinal before activation");
     check(runtime_after_second_dispatch.runtime->pager_handoffs_dispatched == 2,
           "runtime status counts two dispatched pager handoffs under backlog");
     check(runtime_after_second_dispatch.runtime->pager_worker_handoffs_received == 2,
           "runtime status counts two handoffs received by the worker under backlog");
-    check(runtime_after_second_dispatch.runtime
-              ->pager_worker_last_received_address_space_id ==
+    check(runtime_after_second_dispatch.runtime->pager_worker_last_received_address_space_id ==
               second_address_space_id,
           "runtime status tracks the last received pager-worker address under backlog");
-    check(runtime_after_second_dispatch.runtime
-              ->pager_worker_last_received_handoff_sequence == 2,
+    check(runtime_after_second_dispatch.runtime->pager_worker_last_received_handoff_sequence == 2,
           "runtime status tracks the last received pager-worker handoff ordinal");
   }
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     second_tva,
-                     *second_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, second_tva, *second_address_space_id),
         "second backlog address space accepts its mapping before activation");
   (void)axion_kernel_step(*state);
   auto runtime_after_first_activation = axion_kernel_service_request(
@@ -3914,23 +3736,22 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status exposes no active handoff after ready-bypass resolution");
     check(runtime_after_first_activation.runtime->pager_worker_inbox_count == 1,
           "runtime status leaves one queued stalled item after ready-bypass resolution");
-    check(runtime_after_first_activation.runtime
-              ->pager_worker_next_queued_address_space_id ==
+    check(runtime_after_first_activation.runtime->pager_worker_next_queued_address_space_id ==
               first_address_space_id,
           "runtime status keeps the stalled original item at the queue head after ready bypass");
-    check(runtime_after_first_activation.runtime
-              ->pager_worker_next_queued_handoff_sequence == 1,
-          "runtime status keeps the stalled original handoff ordinal at the queue head after ready bypass");
+    check(runtime_after_first_activation.runtime->pager_worker_next_queued_handoff_sequence == 1,
+          "runtime status keeps the stalled original handoff ordinal at the queue head after ready "
+          "bypass");
     check(runtime_after_first_activation.runtime->pager_worker_activations == 1,
           "runtime status counts one worker activation after ready bypass");
     check(runtime_after_first_activation.runtime->pager_worker_ready_bypass_activations == 1,
           "runtime status counts one ready-bypass activation");
+    check(
+        runtime_after_first_activation.runtime
+                ->pager_worker_last_ready_bypass_blocked_address_space_id == first_address_space_id,
+        "runtime status tracks the blocked FIFO head used for ready bypass");
     check(runtime_after_first_activation.runtime
-              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
-              first_address_space_id,
-          "runtime status tracks the blocked FIFO head used for ready bypass");
-    check(runtime_after_first_activation.runtime
-              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+                  ->pager_worker_last_ready_bypass_promoted_address_space_id ==
               second_address_space_id,
           "runtime status tracks the promoted ready queued address space");
     check(runtime_after_first_activation.runtime->pager_worker_last_ready_bypass_cycle == 1,
@@ -3950,19 +3771,23 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status reports no live ready backlog after ready-bypass resolution");
     check(runtime_after_first_activation.runtime->pager_worker_ready_backlog_high_watermark == 0,
           "runtime status leaves ready-backlog watermark clear when bypass avoids the stall");
-    check(!runtime_after_first_activation.runtime->pager_worker_last_stalled_address_space_id.has_value(),
+    check(!runtime_after_first_activation.runtime->pager_worker_last_stalled_address_space_id
+               .has_value(),
           "runtime status records no stalled active address space under ready bypass");
     check(!runtime_after_first_activation.runtime->pager_worker_last_stall_cycle.has_value(),
           "runtime status records no stall ordinal under ready bypass");
-    check(!runtime_after_first_activation.runtime
-                ->pager_worker_last_ready_backlog_address_space_id.has_value(),
+    check(!runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_address_space_id
+               .has_value(),
           "runtime status records no blocked ready queued address under ready bypass");
-    check(!runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_cycle.has_value(),
-          "runtime status records no blocked-ready stall ordinal under ready bypass");
-    check(!runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_count.has_value(),
-          "runtime status records no blocked-ready depth under ready bypass");
-    check(runtime_after_first_activation.runtime->pager_resolutions == 1,
-          "runtime status resolves the promoted ready address space immediately under ready bypass");
+    check(
+        !runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_cycle.has_value(),
+        "runtime status records no blocked-ready stall ordinal under ready bypass");
+    check(
+        !runtime_after_first_activation.runtime->pager_worker_last_ready_backlog_count.has_value(),
+        "runtime status records no blocked-ready depth under ready bypass");
+    check(
+        runtime_after_first_activation.runtime->pager_resolutions == 1,
+        "runtime status resolves the promoted ready address space immediately under ready bypass");
   }
 
   auto fault_after_first_resolution = axion_kernel_service_request(
@@ -3972,21 +3797,21 @@ static void test_kernel_pager_worker_backlog() {
   if (fault_after_first_resolution.fault_summary) {
     check(fault_after_first_resolution.fault_summary->pager_resolutions == 1,
           "fault summary counts the first ready-bypass resolution");
+    check(
+        fault_after_first_resolution.fault_summary->pager_worker_last_completed_address_space_id ==
+            second_address_space_id,
+        "fault summary tracks the promoted ready address space as the first completion");
     check(fault_after_first_resolution.fault_summary
-              ->pager_worker_last_completed_address_space_id ==
-              second_address_space_id,
-          "fault summary tracks the promoted ready address space as the first completion");
-    check(fault_after_first_resolution.fault_summary
-              ->pager_worker_last_completed_resolution_sequence == 1,
+                  ->pager_worker_last_completed_resolution_sequence == 1,
           "fault summary tracks the first completed pager-worker resolution ordinal");
     check(fault_after_first_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
           "fault summary counts one ready-bypass activation");
+    check(
+        fault_after_first_resolution.fault_summary
+                ->pager_worker_last_ready_bypass_blocked_address_space_id == first_address_space_id,
+        "fault summary tracks the blocked FIFO head used for ready bypass");
     check(fault_after_first_resolution.fault_summary
-              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
-              first_address_space_id,
-          "fault summary tracks the blocked FIFO head used for ready bypass");
-    check(fault_after_first_resolution.fault_summary
-              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+                  ->pager_worker_last_ready_bypass_promoted_address_space_id ==
               second_address_space_id,
           "fault summary tracks the promoted ready address space");
     check(fault_after_first_resolution.fault_summary->pager_worker_last_ready_bypass_cycle == 1,
@@ -4000,10 +3825,7 @@ static void test_kernel_pager_worker_backlog() {
     }
   }
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     first_tva,
-                     *first_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, first_tva, *first_address_space_id),
         "first backlog address space accepts its mapping before final resolution");
 
   (void)axion_kernel_step(*state);
@@ -4016,14 +3838,19 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status resolves the remaining stalled address space on its activation step");
     check(!runtime_after_second_activation.runtime->pager_worker_busy,
           "runtime status returns worker to idle after second activation step");
-    check(!runtime_after_second_activation.runtime->pager_worker_active_address_space_id.has_value(),
-          "runtime status clears active worker address after second activation step");
-    check(!runtime_after_second_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
-          "runtime status clears active worker handoff ordinal after second activation step");
-    check(!runtime_after_second_activation.runtime->pager_worker_next_queued_address_space_id.has_value(),
+    check(
+        !runtime_after_second_activation.runtime->pager_worker_active_address_space_id.has_value(),
+        "runtime status clears active worker address after second activation step");
+    check(
+        !runtime_after_second_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
+        "runtime status clears active worker handoff ordinal after second activation step");
+    check(!runtime_after_second_activation.runtime->pager_worker_next_queued_address_space_id
+               .has_value(),
           "runtime status clears next queued pager-worker address after second activation step");
-    check(!runtime_after_second_activation.runtime->pager_worker_next_queued_handoff_sequence.has_value(),
-          "runtime status clears next queued pager-worker handoff ordinal after second activation step");
+    check(!runtime_after_second_activation.runtime->pager_worker_next_queued_handoff_sequence
+               .has_value(),
+          "runtime status clears next queued pager-worker handoff ordinal after second activation "
+          "step");
     check(runtime_after_second_activation.runtime->pager_worker_inbox_count == 0,
           "runtime status drains the worker inbox by the second activation");
     check(runtime_after_second_activation.runtime->pager_worker_activations == 2,
@@ -4045,11 +3872,14 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status counts two pager resolutions after backlog drain");
     check(!runtime_after_second_resolution.runtime->pager_worker_busy,
           "runtime status reports idle worker after backlog drain");
-    check(!runtime_after_second_resolution.runtime->pager_worker_active_handoff_sequence.has_value(),
-          "runtime status retains no active handoff ordinal after backlog drain");
-    check(!runtime_after_second_resolution.runtime->pager_worker_next_queued_address_space_id.has_value(),
+    check(
+        !runtime_after_second_resolution.runtime->pager_worker_active_handoff_sequence.has_value(),
+        "runtime status retains no active handoff ordinal after backlog drain");
+    check(!runtime_after_second_resolution.runtime->pager_worker_next_queued_address_space_id
+               .has_value(),
           "runtime status retains no queued pager-worker address after backlog drain");
-    check(!runtime_after_second_resolution.runtime->pager_worker_next_queued_handoff_sequence.has_value(),
+    check(!runtime_after_second_resolution.runtime->pager_worker_next_queued_handoff_sequence
+               .has_value(),
           "runtime status retains no queued pager-worker handoff ordinal after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_inbox_count == 0,
           "runtime status leaves no queued work after backlog drain");
@@ -4076,33 +3906,34 @@ static void test_kernel_pager_worker_backlog() {
           "runtime status clears current ready-backlog depth after backlog drain");
     check(runtime_after_second_resolution.runtime->pager_worker_ready_backlog_high_watermark == 0,
           "runtime status retains zero ready-backlog high watermark after ready-bypass drain");
-    check(!runtime_after_second_resolution.runtime->pager_worker_last_stalled_address_space_id.has_value(),
+    check(!runtime_after_second_resolution.runtime->pager_worker_last_stalled_address_space_id
+               .has_value(),
           "runtime status retains no stalled active address after ready-bypass drain");
     check(!runtime_after_second_resolution.runtime->pager_worker_last_stall_cycle.has_value(),
           "runtime status retains no stall ordinal after ready-bypass drain");
-    check(!runtime_after_second_resolution.runtime
-                ->pager_worker_last_ready_backlog_address_space_id.has_value(),
+    check(!runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_address_space_id
+               .has_value(),
           "runtime status retains no blocked ready queued address after ready-bypass drain");
-    check(!runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_cycle.has_value(),
-          "runtime status retains no blocked-ready stall ordinal after ready-bypass drain");
-    check(!runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_count.has_value(),
-          "runtime status retains no blocked-ready depth after ready-bypass drain");
+    check(
+        !runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_cycle.has_value(),
+        "runtime status retains no blocked-ready stall ordinal after ready-bypass drain");
+    check(
+        !runtime_after_second_resolution.runtime->pager_worker_last_ready_backlog_count.has_value(),
+        "runtime status retains no blocked-ready depth after ready-bypass drain");
     check(runtime_after_second_resolution.runtime->pager_worker_resolutions_completed == 2,
           "runtime status counts two completed worker resolutions after backlog drain");
-    check(runtime_after_second_resolution.runtime
-              ->pager_worker_last_received_address_space_id ==
+    check(runtime_after_second_resolution.runtime->pager_worker_last_received_address_space_id ==
               second_address_space_id,
           "runtime status retains the last received pager-worker address after backlog drain");
-    check(runtime_after_second_resolution.runtime
-              ->pager_worker_last_received_handoff_sequence == 2,
+    check(runtime_after_second_resolution.runtime->pager_worker_last_received_handoff_sequence == 2,
           "runtime status retains the last received pager-worker handoff ordinal");
-    check(runtime_after_second_resolution.runtime
-              ->pager_worker_last_completed_address_space_id ==
+    check(runtime_after_second_resolution.runtime->pager_worker_last_completed_address_space_id ==
               first_address_space_id,
           "runtime status retains the last completed pager-worker address after backlog drain");
-    check(runtime_after_second_resolution.runtime
-              ->pager_worker_last_completed_resolution_sequence == 2,
-          "runtime status retains the last completed pager-worker resolution ordinal");
+    check(
+        runtime_after_second_resolution.runtime->pager_worker_last_completed_resolution_sequence ==
+            2,
+        "runtime status retains the last completed pager-worker resolution ordinal");
   }
 
   auto fault_after_second_resolution = axion_kernel_service_request(
@@ -4125,9 +3956,10 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary counts two worker activations after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
           "fault summary retains one ready-bypass activation after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
-              first_address_space_id,
-          "fault summary retains the last activated address space after backlog drain");
+    check(
+        fault_after_second_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
+            first_address_space_id,
+        "fault summary retains the last activated address space after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_last_activation_cycle == 2,
           "fault summary retains the last activation ordinal after backlog drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_stall_cycles == 0,
@@ -4138,50 +3970,52 @@ static void test_kernel_pager_worker_backlog() {
           "fault summary counts zero ready-backlog stall cycles after ready-bypass drain");
     check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_count == 0,
           "fault summary clears current ready-backlog depth after backlog drain");
-    check(fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_high_watermark == 0,
-          "fault summary retains zero ready-backlog high watermark after ready-bypass drain");
-    check(!fault_after_second_resolution.fault_summary->pager_worker_active_handoff_sequence.has_value(),
+    check(
+        fault_after_second_resolution.fault_summary->pager_worker_ready_backlog_high_watermark == 0,
+        "fault summary retains zero ready-backlog high watermark after ready-bypass drain");
+    check(!fault_after_second_resolution.fault_summary->pager_worker_active_handoff_sequence
+               .has_value(),
           "fault summary retains no active handoff ordinal after backlog drain");
-    check(!fault_after_second_resolution.fault_summary
-                ->pager_worker_next_queued_address_space_id.has_value(),
+    check(!fault_after_second_resolution.fault_summary->pager_worker_next_queued_address_space_id
+               .has_value(),
           "fault summary retains no queued pager-worker address after backlog drain");
-    check(!fault_after_second_resolution.fault_summary
-                ->pager_worker_next_queued_handoff_sequence.has_value(),
+    check(!fault_after_second_resolution.fault_summary->pager_worker_next_queued_handoff_sequence
+               .has_value(),
           "fault summary retains no queued pager-worker handoff ordinal after backlog drain");
-    check(!fault_after_second_resolution.fault_summary
-                ->pager_worker_last_stalled_address_space_id.has_value(),
+    check(!fault_after_second_resolution.fault_summary->pager_worker_last_stalled_address_space_id
+               .has_value(),
           "fault summary retains no stalled active address after ready-bypass drain");
     check(!fault_after_second_resolution.fault_summary->pager_worker_last_stall_cycle.has_value(),
           "fault summary retains no stall ordinal after ready-bypass drain");
     check(!fault_after_second_resolution.fault_summary
-                ->pager_worker_last_ready_backlog_address_space_id.has_value(),
+               ->pager_worker_last_ready_backlog_address_space_id.has_value(),
           "fault summary retains no blocked ready queued address after ready-bypass drain");
-    check(!fault_after_second_resolution.fault_summary
-                ->pager_worker_last_ready_backlog_cycle.has_value(),
+    check(!fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_cycle
+               .has_value(),
           "fault summary retains no blocked-ready stall ordinal after ready-bypass drain");
-    check(!fault_after_second_resolution.fault_summary
-                ->pager_worker_last_ready_backlog_count.has_value(),
+    check(!fault_after_second_resolution.fault_summary->pager_worker_last_ready_backlog_count
+               .has_value(),
           "fault summary retains no blocked-ready depth after ready-bypass drain");
+    check(
+        fault_after_second_resolution.fault_summary->pager_worker_last_received_address_space_id ==
+            second_address_space_id,
+        "fault summary retains the last received pager-worker address after backlog drain");
+    check(
+        fault_after_second_resolution.fault_summary->pager_worker_last_received_handoff_sequence ==
+            2,
+        "fault summary retains the last received pager-worker handoff ordinal");
+    check(
+        fault_after_second_resolution.fault_summary->pager_worker_last_completed_address_space_id ==
+            first_address_space_id,
+        "fault summary retains the last completed pager-worker address after backlog drain");
     check(fault_after_second_resolution.fault_summary
-              ->pager_worker_last_received_address_space_id ==
-              second_address_space_id,
-          "fault summary retains the last received pager-worker address after backlog drain");
-    check(fault_after_second_resolution.fault_summary
-              ->pager_worker_last_received_handoff_sequence == 2,
-          "fault summary retains the last received pager-worker handoff ordinal");
-    check(fault_after_second_resolution.fault_summary
-              ->pager_worker_last_completed_address_space_id ==
-              first_address_space_id,
-          "fault summary retains the last completed pager-worker address after backlog drain");
-    check(fault_after_second_resolution.fault_summary
-              ->pager_worker_last_completed_resolution_sequence == 2,
+                  ->pager_worker_last_completed_resolution_sequence == 2,
           "fault summary retains the last completed pager-worker resolution ordinal");
   }
 }
 
 static void test_kernel_pager_worker_ready_bypass_cap() {
-  std::printf(
-      "\n[AC-22d] Axion pager worker caps repeated ready bypass for one blocked head\n");
+  std::printf("\n[AC-22d] Axion pager worker caps repeated ready bypass for one blocked head\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -4230,14 +4064,11 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
       state->find_process_group_address_space(second_runtime->process_group_id);
   const auto third_address_space_id =
       state->find_process_group_address_space(third_runtime->process_group_id);
-  check(first_address_space_id.has_value(),
-        "first cap process group resolves to an address space");
+  check(first_address_space_id.has_value(), "first cap process group resolves to an address space");
   check(second_address_space_id.has_value(),
         "second cap process group resolves to an address space");
-  check(third_address_space_id.has_value(),
-        "third cap process group resolves to an address space");
-  if (!first_address_space_id || !second_address_space_id ||
-      !third_address_space_id) {
+  check(third_address_space_id.has_value(), "third cap process group resolves to an address space");
+  if (!first_address_space_id || !second_address_space_id || !third_address_space_id) {
     return;
   }
 
@@ -4274,15 +4105,9 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     second_tva,
-                     *second_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, second_tva, *second_address_space_id),
         "second cap address space accepts its mapping before first activation");
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     third_tva,
-                     *third_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, third_tva, *third_address_space_id),
         "third cap address space accepts its mapping before first activation");
 
   (void)axion_kernel_step(*state);
@@ -4297,18 +4122,17 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status counts one ready-bypass activation before cap");
     check(runtime_after_first_bypass.runtime->pager_worker_ready_bypass_deferrals == 0,
           "runtime status starts with zero ready-bypass deferrals");
+    check(
+        runtime_after_first_bypass.runtime
+                ->pager_worker_last_ready_bypass_blocked_address_space_id == first_address_space_id,
+        "runtime status tracks the blocked head used for the first bypass");
     check(runtime_after_first_bypass.runtime
-              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
-              first_address_space_id,
-          "runtime status tracks the blocked head used for the first bypass");
-    check(runtime_after_first_bypass.runtime
-              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+                  ->pager_worker_last_ready_bypass_promoted_address_space_id ==
               second_address_space_id,
           "runtime status tracks the promoted ready item used for the first bypass");
     check(runtime_after_first_bypass.runtime->pager_worker_inbox_count == 2,
           "runtime status retains the blocked head and third item after first bypass");
-    check(runtime_after_first_bypass.runtime
-              ->pager_worker_next_queued_address_space_id ==
+    check(runtime_after_first_bypass.runtime->pager_worker_next_queued_address_space_id ==
               first_address_space_id,
           "runtime status keeps the blocked head at the queue front after first bypass");
   }
@@ -4321,27 +4145,24 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   if (runtime_after_capped_activation.runtime) {
     check(!runtime_after_capped_activation.runtime->pager_worker_busy,
           "runtime status keeps the worker idle once repeated bypass is capped");
-    check(!runtime_after_capped_activation.runtime->pager_worker_active_address_space_id.has_value(),
-          "runtime status clears active work when the cap defers activation");
-    check(!runtime_after_capped_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
-          "runtime status clears active handoff provenance when the cap parks the worker");
+    check(
+        !runtime_after_capped_activation.runtime->pager_worker_active_address_space_id.has_value(),
+        "runtime status clears active work when the cap defers activation");
+    check(
+        !runtime_after_capped_activation.runtime->pager_worker_active_handoff_sequence.has_value(),
+        "runtime status clears active handoff provenance when the cap parks the worker");
     check(runtime_after_capped_activation.runtime->pager_worker_inbox_count == 2,
           "runtime status leaves both the blocked head and third item queued under the cap");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_next_queued_address_space_id ==
+    check(runtime_after_capped_activation.runtime->pager_worker_next_queued_address_space_id ==
               first_address_space_id,
           "runtime status keeps the blocked head at the queue front when the cap parks the worker");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_next_queued_handoff_sequence == 1,
+    check(runtime_after_capped_activation.runtime->pager_worker_next_queued_handoff_sequence == 1,
           "runtime status preserves the blocked head handoff ordinal at the queue front under cap");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_ready_backlog_count == 0,
+    check(runtime_after_capped_activation.runtime->pager_worker_ready_backlog_count == 0,
           "runtime status reports no ready-behind-active backlog while the worker remains parked");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_parked_ready_count == 1,
+    check(runtime_after_capped_activation.runtime->pager_worker_parked_ready_count == 1,
           "runtime status reports one ready item behind the parked blocked head");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_parked_ready_high_watermark == 1,
+    check(runtime_after_capped_activation.runtime->pager_worker_parked_ready_high_watermark == 1,
           "runtime status raises parked-ready backlog watermark on first parked cycle");
     check(runtime_after_capped_activation.runtime->pager_resolutions == 1,
           "runtime status does not resolve additional work while the blocked head remains parked");
@@ -4359,33 +4180,37 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(runtime_after_capped_activation.runtime->pager_worker_ready_bypass_deferrals == 1,
           "runtime status counts one ready-bypass deferral after the cap fires");
     check(runtime_after_capped_activation.runtime
-              ->pager_worker_last_ready_bypass_deferred_blocked_address_space_id ==
+                  ->pager_worker_last_ready_bypass_deferred_blocked_address_space_id ==
               first_address_space_id,
           "runtime status tracks the blocked head for the deferred bypass");
     check(runtime_after_capped_activation.runtime
-              ->pager_worker_last_ready_bypass_deferred_ready_address_space_id ==
+                  ->pager_worker_last_ready_bypass_deferred_ready_address_space_id ==
               third_address_space_id,
           "runtime status tracks the still-ready queued item deferred by the cap");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_last_ready_bypass_deferred_cycle == 1,
-          "runtime status tracks the first ready-bypass deferral ordinal");
+    check(
+        runtime_after_capped_activation.runtime->pager_worker_last_ready_bypass_deferred_cycle == 1,
+        "runtime status tracks the first ready-bypass deferral ordinal");
     check(runtime_after_capped_activation.runtime->pager_worker_parked_cycles == 1,
           "runtime status counts one parked worker cycle after the cap fires");
-    check(runtime_after_capped_activation.runtime->pager_worker_parked_resumptions == 0,
-          "runtime status does not count a parked resumption before the blocked head becomes ready");
+    check(
+        runtime_after_capped_activation.runtime->pager_worker_parked_resumptions == 0,
+        "runtime status does not count a parked resumption before the blocked head becomes ready");
     check(runtime_after_capped_activation.runtime->pager_worker_parked_resolved_heads == 0,
           "runtime status does not count a parked-head resolution before the blocked head resumes");
-    check(!runtime_after_capped_activation.runtime->pager_worker_last_parked_resumed_ready_count.has_value(),
+    check(!runtime_after_capped_activation.runtime->pager_worker_last_parked_resumed_ready_count
+               .has_value(),
           "runtime status has no resumed ready-backlog count before the blocked head resumes");
     check(!runtime_after_capped_activation.runtime
                ->pager_worker_last_parked_resolved_address_space_id.has_value(),
           "runtime status has no parked-head resolution address before the blocked head resumes");
-    check(!runtime_after_capped_activation.runtime
-               ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
-          "runtime status has no parked-head remaining inbox count before the blocked head resumes");
+    check(
+        !runtime_after_capped_activation.runtime
+             ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
+        "runtime status has no parked-head remaining inbox count before the blocked head resumes");
     check(!runtime_after_capped_activation.runtime
                ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
-          "runtime status has no resumed blocked-head handoff ordinal before the blocked head resumes");
+          "runtime status has no resumed blocked-head handoff ordinal before the blocked head "
+          "resumes");
     check(!runtime_after_capped_activation.runtime
                ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
           "runtime status has no resumed trailing ready item before the blocked head resumes");
@@ -4393,13 +4218,12 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
                ->pager_worker_last_parked_resumed_ready_handoff_sequence.has_value(),
           "runtime status has no resumed trailing ready ordinal before the blocked head resumes");
     check(runtime_after_capped_activation.runtime
-              ->pager_worker_last_parked_blocked_address_space_id ==
-              first_address_space_id,
+                  ->pager_worker_last_parked_blocked_address_space_id == first_address_space_id,
           "runtime status tracks the blocked head for the parked cycle");
-    check(runtime_after_capped_activation.runtime
-              ->pager_worker_last_parked_ready_address_space_id ==
-              third_address_space_id,
-          "runtime status tracks the ready queued item behind the parked head");
+    check(
+        runtime_after_capped_activation.runtime->pager_worker_last_parked_ready_address_space_id ==
+            third_address_space_id,
+        "runtime status tracks the ready queued item behind the parked head");
     check(runtime_after_capped_activation.runtime->pager_worker_last_parked_cycle == 1,
           "runtime status tracks the first parked worker cycle ordinal");
     check(runtime_after_capped_activation.runtime->pager_worker_last_parked_ready_count == 1,
@@ -4421,12 +4245,10 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary reports idle worker while the blocked head is parked");
     check(fault_after_capped_deferral.fault_summary->pager_worker_inbox_count == 2,
           "fault summary retains both queued items while the blocked head is parked");
-    check(fault_after_capped_deferral.fault_summary
-              ->pager_worker_next_queued_address_space_id ==
+    check(fault_after_capped_deferral.fault_summary->pager_worker_next_queued_address_space_id ==
               first_address_space_id,
           "fault summary keeps the blocked head at the queue front while parked");
-    check(fault_after_capped_deferral.fault_summary
-              ->pager_worker_ready_bypass_deferrals == 1,
+    check(fault_after_capped_deferral.fault_summary->pager_worker_ready_bypass_deferrals == 1,
           "fault summary counts one ready-bypass deferral after the cap parks the worker");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_cycles == 1,
           "fault summary counts one parked worker cycle after the cap parks the worker");
@@ -4434,7 +4256,8 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary does not count a parked resumption while the head is still parked");
     check(fault_after_capped_deferral.fault_summary->pager_worker_parked_resolved_heads == 0,
           "fault summary does not count a parked-head resolution while the head is still parked");
-    check(!fault_after_capped_deferral.fault_summary->pager_worker_last_parked_resumed_ready_count.has_value(),
+    check(!fault_after_capped_deferral.fault_summary->pager_worker_last_parked_resumed_ready_count
+               .has_value(),
           "fault summary has no resumed ready-backlog count while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary
                ->pager_worker_last_parked_resolved_address_space_id.has_value(),
@@ -4442,9 +4265,10 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
     check(!fault_after_capped_deferral.fault_summary
                ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
           "fault summary has no parked-head remaining inbox count while the head is still parked");
-    check(!fault_after_capped_deferral.fault_summary
-               ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
-          "fault summary has no resumed blocked-head handoff ordinal while the head is still parked");
+    check(
+        !fault_after_capped_deferral.fault_summary
+             ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
+        "fault summary has no resumed blocked-head handoff ordinal while the head is still parked");
     check(!fault_after_capped_deferral.fault_summary
                ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
           "fault summary has no resumed trailing ready item while the head is still parked");
@@ -4481,17 +4305,20 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status still reports no parked resumption on repeated parked cycles");
     check(runtime_after_second_park.runtime->pager_worker_parked_resolved_heads == 0,
           "runtime status still reports no parked-head resolution on repeated parked cycles");
-    check(!runtime_after_second_park.runtime->pager_worker_last_parked_resumed_ready_count.has_value(),
+    check(!runtime_after_second_park.runtime->pager_worker_last_parked_resumed_ready_count
+               .has_value(),
           "runtime status still has no resumed ready-backlog count on repeated parked cycles");
-    check(!runtime_after_second_park.runtime
-               ->pager_worker_last_parked_resolved_address_space_id.has_value(),
+    check(!runtime_after_second_park.runtime->pager_worker_last_parked_resolved_address_space_id
+               .has_value(),
           "runtime status still has no parked-head resolution address on repeated parked cycles");
-    check(!runtime_after_second_park.runtime
-               ->pager_worker_last_parked_resolved_remaining_inbox_count.has_value(),
-          "runtime status still has no parked-head remaining inbox count on repeated parked cycles");
-    check(!runtime_after_second_park.runtime
-               ->pager_worker_last_parked_resumed_handoff_sequence.has_value(),
-          "runtime status still has no resumed blocked-head handoff ordinal on repeated parked cycles");
+    check(
+        !runtime_after_second_park.runtime->pager_worker_last_parked_resolved_remaining_inbox_count
+             .has_value(),
+        "runtime status still has no parked-head remaining inbox count on repeated parked cycles");
+    check(!runtime_after_second_park.runtime->pager_worker_last_parked_resumed_handoff_sequence
+               .has_value(),
+          "runtime status still has no resumed blocked-head handoff ordinal on repeated parked "
+          "cycles");
     check(!runtime_after_second_park.runtime
                ->pager_worker_last_parked_resumed_ready_address_space_id.has_value(),
           "runtime status still has no resumed trailing ready item on repeated parked cycles");
@@ -4514,10 +4341,7 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status keeps one ready queued item behind the parked head");
   }
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     first_tva,
-                     *first_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, first_tva, *first_address_space_id),
         "first cap address space accepts its mapping before draining the blocked head");
 
   (void)axion_kernel_step(*state);
@@ -4536,46 +4360,51 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "runtime status counts one parked resumption when the blocked head becomes ready");
     check(runtime_after_head_resolution.runtime->pager_worker_parked_resolved_heads == 1,
           "runtime status counts one parked-head resolution after the resumed head drains");
-    check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resumed_address_space_id ==
-              first_address_space_id,
-          "runtime status tracks the blocked head resumed from parked state");
-    check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resumed_handoff_sequence == 1,
-          "runtime status tracks the resumed blocked-head handoff ordinal");
+    check(
+        runtime_after_head_resolution.runtime->pager_worker_last_parked_resumed_address_space_id ==
+            first_address_space_id,
+        "runtime status tracks the blocked head resumed from parked state");
+    check(
+        runtime_after_head_resolution.runtime->pager_worker_last_parked_resumed_handoff_sequence ==
+            1,
+        "runtime status tracks the resumed blocked-head handoff ordinal");
     check(runtime_after_head_resolution.runtime->pager_worker_last_parked_resumption_cycle == 1,
           "runtime status tracks the first parked resumption ordinal");
     check(runtime_after_head_resolution.runtime->pager_worker_last_parked_resumed_ready_count == 1,
           "runtime status tracks one ready item still queued behind the resumed head");
+    check(
+        runtime_after_head_resolution.runtime
+                ->pager_worker_last_parked_resumed_ready_address_space_id == third_address_space_id,
+        "runtime status tracks the trailing ready item still queued behind the resumed head");
     check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resumed_ready_address_space_id ==
-              third_address_space_id,
-          "runtime status tracks the trailing ready item still queued behind the resumed head");
-    check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resumed_ready_handoff_sequence == 3,
+                  ->pager_worker_last_parked_resumed_ready_handoff_sequence == 3,
           "runtime status tracks the trailing ready item handoff ordinal at parked resumption");
+    check(
+        runtime_after_head_resolution.runtime->pager_worker_last_parked_resolved_address_space_id ==
+            first_address_space_id,
+        "runtime status tracks the blocked head as the parked-resolved address");
+    check(
+        runtime_after_head_resolution.runtime->pager_worker_last_parked_resolved_handoff_sequence ==
+            1,
+        "runtime status tracks the resumed blocked-head handoff ordinal at parked resolution");
     check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resolved_address_space_id ==
-              first_address_space_id,
-          "runtime status tracks the blocked head as the parked-resolved address");
-    check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resolved_handoff_sequence == 1,
-          "runtime status tracks the resumed blocked-head handoff ordinal at parked resolution");
-    check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resolved_resolution_sequence == 2,
+                  ->pager_worker_last_parked_resolved_resolution_sequence == 2,
           "runtime status tracks the blocked head resolution ordinal after parked resumption");
     check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resolved_remaining_inbox_count == 1,
+                  ->pager_worker_last_parked_resolved_remaining_inbox_count == 1,
           "runtime status tracks one queued item remaining after the parked head resolves");
     check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resolved_remaining_address_space_id ==
+                  ->pager_worker_last_parked_resolved_remaining_address_space_id ==
               third_address_space_id,
           "runtime status tracks the queued item remaining after the parked head resolves");
+    check(
+        runtime_after_head_resolution.runtime
+                ->pager_worker_last_parked_resolved_remaining_handoff_sequence == 3,
+        "runtime status tracks the remaining queued item handoff ordinal after parked resolution");
     check(runtime_after_head_resolution.runtime
-              ->pager_worker_last_parked_resolved_remaining_handoff_sequence == 3,
-          "runtime status tracks the remaining queued item handoff ordinal after parked resolution");
-    check(runtime_after_head_resolution.runtime->pager_worker_parked_resolution_follow_on_activations == 0,
-          "runtime status does not record a parked-resolution follow-on activation until the next step");
+                  ->pager_worker_parked_resolution_follow_on_activations == 0,
+          "runtime status does not record a parked-resolution follow-on activation until the next "
+          "step");
   }
 
   (void)axion_kernel_step(*state);
@@ -4584,29 +4413,33 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   check(runtime_after_follow_on_activation.runtime.has_value(),
         "runtime status exposes parked-resolution follow-on activation");
   if (runtime_after_follow_on_activation.runtime) {
-    check(runtime_after_follow_on_activation.runtime->pager_worker_parked_resolution_follow_on_activations == 1,
+    check(runtime_after_follow_on_activation.runtime
+                  ->pager_worker_parked_resolution_follow_on_activations == 1,
           "runtime status counts one parked-resolution follow-on activation");
     check(runtime_after_follow_on_activation.runtime
-              ->pager_worker_last_parked_resolution_follow_on_address_space_id ==
+                  ->pager_worker_last_parked_resolution_follow_on_address_space_id ==
               third_address_space_id,
           "runtime status tracks the queued item activated after parked resolution");
     check(runtime_after_follow_on_activation.runtime
-              ->pager_worker_last_parked_resolution_follow_on_handoff_sequence == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_handoff_sequence == 3,
           "runtime status tracks the queued item handoff ordinal after parked resolution");
     check(runtime_after_follow_on_activation.runtime
-              ->pager_worker_last_parked_resolution_follow_on_activation_cycle == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_activation_cycle == 3,
           "runtime status tracks the follow-on activation ordinal after parked resolution");
-    check(runtime_after_follow_on_activation.runtime->pager_worker_parked_resolution_follow_on_resolutions == 1,
-          "runtime status counts one parked-resolution follow-on resolution once the queued item drains");
     check(runtime_after_follow_on_activation.runtime
-              ->pager_worker_last_parked_resolution_follow_on_resolved_address_space_id ==
+                  ->pager_worker_parked_resolution_follow_on_resolutions == 1,
+          "runtime status counts one parked-resolution follow-on resolution once the queued item "
+          "drains");
+    check(runtime_after_follow_on_activation.runtime
+                  ->pager_worker_last_parked_resolution_follow_on_resolved_address_space_id ==
               third_address_space_id,
-          "runtime status tracks the queued item as the parked-resolution follow-on resolved address");
+          "runtime status tracks the queued item as the parked-resolution follow-on resolved "
+          "address");
     check(runtime_after_follow_on_activation.runtime
-              ->pager_worker_last_parked_resolution_follow_on_resolved_handoff_sequence == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_resolved_handoff_sequence == 3,
           "runtime status tracks the queued item handoff ordinal at follow-on resolution");
     check(runtime_after_follow_on_activation.runtime
-              ->pager_worker_last_parked_resolution_follow_on_resolution_sequence == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_resolution_sequence == 3,
           "runtime status tracks the follow-on resolution ordinal");
   }
 
@@ -4618,29 +4451,32 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
   if (fault_after_final_resolution.fault_summary) {
     check(fault_after_final_resolution.fault_summary->pager_resolutions == 3,
           "fault summary counts all three pager resolutions under the capped policy");
-    check(fault_after_final_resolution.fault_summary->pager_worker_parked_resolution_follow_on_activations == 1,
+    check(fault_after_final_resolution.fault_summary
+                  ->pager_worker_parked_resolution_follow_on_activations == 1,
           "fault summary retains one parked-resolution follow-on activation");
-    check(fault_after_final_resolution.fault_summary->pager_worker_parked_resolution_follow_on_resolutions == 1,
+    check(fault_after_final_resolution.fault_summary
+                  ->pager_worker_parked_resolution_follow_on_resolutions == 1,
           "fault summary retains one parked-resolution follow-on resolution");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolution_follow_on_address_space_id ==
+                  ->pager_worker_last_parked_resolution_follow_on_address_space_id ==
               third_address_space_id,
           "fault summary retains the queued item activated after parked resolution");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolution_follow_on_handoff_sequence == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_handoff_sequence == 3,
           "fault summary retains the queued item handoff ordinal after parked resolution");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolution_follow_on_activation_cycle == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_activation_cycle == 3,
           "fault summary retains the follow-on activation ordinal after parked resolution");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolution_follow_on_resolved_address_space_id ==
+                  ->pager_worker_last_parked_resolution_follow_on_resolved_address_space_id ==
               third_address_space_id,
-          "fault summary retains the queued item as the parked-resolution follow-on resolved address");
+          "fault summary retains the queued item as the parked-resolution follow-on resolved "
+          "address");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolution_follow_on_resolved_handoff_sequence == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_resolved_handoff_sequence == 3,
           "fault summary retains the queued item handoff ordinal at follow-on resolution");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolution_follow_on_resolution_sequence == 3,
+                  ->pager_worker_last_parked_resolution_follow_on_resolution_sequence == 3,
           "fault summary retains the follow-on resolution ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_ready_bypass_activations == 1,
           "fault summary retains one ready-bypass activation under the capped policy");
@@ -4656,77 +4492,80 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
           "fault summary clears live parked-ready backlog after the parked head drains");
     check(fault_after_final_resolution.fault_summary->pager_worker_parked_ready_high_watermark == 1,
           "fault summary retains parked-ready backlog watermark after drain");
+    check(
+        fault_after_final_resolution.fault_summary
+                ->pager_worker_last_ready_bypass_blocked_address_space_id == first_address_space_id,
+        "fault summary retains the blocked head used for the ready bypass");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_ready_bypass_blocked_address_space_id ==
-              first_address_space_id,
-          "fault summary retains the blocked head used for the ready bypass");
-    check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_ready_bypass_promoted_address_space_id ==
+                  ->pager_worker_last_ready_bypass_promoted_address_space_id ==
               second_address_space_id,
           "fault summary retains the promoted ready item used for the bypass");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_ready_bypass_deferred_blocked_address_space_id ==
+                  ->pager_worker_last_ready_bypass_deferred_blocked_address_space_id ==
               first_address_space_id,
           "fault summary retains the blocked head used for the deferral");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_ready_bypass_deferred_ready_address_space_id ==
+                  ->pager_worker_last_ready_bypass_deferred_ready_address_space_id ==
               third_address_space_id,
           "fault summary retains the deferred third ready item");
-    check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_blocked_address_space_id ==
-              first_address_space_id,
+    check(fault_after_final_resolution.fault_summary
+                  ->pager_worker_last_parked_blocked_address_space_id == first_address_space_id,
           "fault summary retains the blocked head for the latest parked cycle");
-    check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_ready_address_space_id ==
-              third_address_space_id,
+    check(fault_after_final_resolution.fault_summary
+                  ->pager_worker_last_parked_ready_address_space_id == third_address_space_id,
           "fault summary retains the ready item for the latest parked cycle");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_cycle == 2,
           "fault summary retains the latest parked cycle ordinal");
     check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_ready_count == 1,
           "fault summary retains one ready item behind the parked head");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resumed_address_space_id ==
-              first_address_space_id,
+                  ->pager_worker_last_parked_resumed_address_space_id == first_address_space_id,
           "fault summary retains the blocked head resumed from parked state");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resumed_handoff_sequence == 1,
+                  ->pager_worker_last_parked_resumed_handoff_sequence == 1,
           "fault summary retains the resumed blocked-head handoff ordinal");
-    check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumption_cycle == 1,
-          "fault summary retains the parked resumption ordinal");
-    check(fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumed_ready_count == 1,
-          "fault summary retains one ready item queued behind the resumed head");
+    check(
+        fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumption_cycle == 1,
+        "fault summary retains the parked resumption ordinal");
+    check(
+        fault_after_final_resolution.fault_summary->pager_worker_last_parked_resumed_ready_count ==
+            1,
+        "fault summary retains one ready item queued behind the resumed head");
+    check(
+        fault_after_final_resolution.fault_summary
+                ->pager_worker_last_parked_resumed_ready_address_space_id == third_address_space_id,
+        "fault summary retains the trailing ready item behind the resumed head");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resumed_ready_address_space_id ==
-              third_address_space_id,
-          "fault summary retains the trailing ready item behind the resumed head");
-    check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resumed_ready_handoff_sequence == 3,
+                  ->pager_worker_last_parked_resumed_ready_handoff_sequence == 3,
           "fault summary retains the trailing ready item handoff ordinal at parked resumption");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolved_address_space_id ==
-              first_address_space_id,
+                  ->pager_worker_last_parked_resolved_address_space_id == first_address_space_id,
           "fault summary retains the blocked head as the parked-resolved address");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolved_handoff_sequence == 1,
+                  ->pager_worker_last_parked_resolved_handoff_sequence == 1,
           "fault summary retains the resumed blocked-head handoff ordinal at parked resolution");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolved_resolution_sequence == 2,
+                  ->pager_worker_last_parked_resolved_resolution_sequence == 2,
           "fault summary retains the blocked head resolution ordinal after parked resumption");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolved_remaining_inbox_count == 1,
+                  ->pager_worker_last_parked_resolved_remaining_inbox_count == 1,
           "fault summary retains one queued item remaining after the parked head resolves");
     check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolved_remaining_address_space_id ==
+                  ->pager_worker_last_parked_resolved_remaining_address_space_id ==
               third_address_space_id,
           "fault summary retains the queued item remaining after the parked head resolves");
-    check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_parked_resolved_remaining_handoff_sequence == 3,
-          "fault summary retains the remaining queued item handoff ordinal after parked resolution");
-    check(fault_after_final_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
-              third_address_space_id,
-          "fault summary retains the third item as the final activation after the head drains");
-    check(fault_after_final_resolution.fault_summary
-              ->pager_worker_last_completed_address_space_id ==
-              third_address_space_id,
-          "fault summary retains the third item as the final completion after the head drains");
+    check(
+        fault_after_final_resolution.fault_summary
+                ->pager_worker_last_parked_resolved_remaining_handoff_sequence == 3,
+        "fault summary retains the remaining queued item handoff ordinal after parked resolution");
+    check(
+        fault_after_final_resolution.fault_summary->pager_worker_last_activated_address_space_id ==
+            third_address_space_id,
+        "fault summary retains the third item as the final activation after the head drains");
+    check(
+        fault_after_final_resolution.fault_summary->pager_worker_last_completed_address_space_id ==
+            third_address_space_id,
+        "fault summary retains the third item as the final completion after the head drains");
     check(fault_after_final_resolution.fault_summary->pager_worker_stall_cycles == 0,
           "fault summary retains zero stalls under the parked capped policy");
     check(fault_after_final_resolution.fault_summary->pager_worker_backlog_blocked_cycles == 0,
@@ -4737,8 +4576,7 @@ static void test_kernel_pager_worker_ready_bypass_cap() {
 }
 
 static void test_kernel_pager_worker_terminal_parked_head() {
-  std::printf(
-      "\n[AC-22e] Axion pager worker terminalizes an unresolved parked head\n");
+  std::printf("\n[AC-22e] Axion pager worker terminalizes an unresolved parked head\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -4793,8 +4631,7 @@ static void test_kernel_pager_worker_terminal_parked_head() {
         "second terminal process group resolves to an address space");
   check(third_address_space_id.has_value(),
         "third terminal process group resolves to an address space");
-  if (!first_address_space_id || !second_address_space_id ||
-      !third_address_space_id) {
+  if (!first_address_space_id || !second_address_space_id || !third_address_space_id) {
     return;
   }
 
@@ -4830,15 +4667,9 @@ static void test_kernel_pager_worker_terminal_parked_head() {
   (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     second_tva,
-                     *second_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, second_tva, *second_address_space_id),
         "second terminal address space accepts its mapping before bypass");
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     third_tva,
-                     *third_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, third_tva, *third_address_space_id),
         "third terminal address space accepts its mapping before terminal policy");
 
   (void)axion_kernel_step(*state);
@@ -4854,18 +4685,22 @@ static void test_kernel_pager_worker_terminal_parked_head() {
     check(!runtime_after_terminal.runtime->pager_worker_busy,
           "runtime status keeps the worker idle after terminalizing the blocked head");
     check(runtime_after_terminal.runtime->pager_resolutions == 1,
-          "runtime status resolves only the promoted ready item before terminalizing the blocked head");
+          "runtime status resolves only the promoted ready item before terminalizing the blocked "
+          "head");
     check(runtime_after_terminal.runtime->pager_needed_address_space_count == 2,
-          "runtime status keeps the terminal head and trailing ready item pager-needed before final drain");
+          "runtime status keeps the terminal head and trailing ready item pager-needed before "
+          "final drain");
     check(runtime_after_terminal.runtime->pager_terminal_address_space_count == 1,
           "runtime status counts one terminal pager address space");
     check(runtime_after_terminal.runtime->pager_worker_inbox_count == 1,
           "runtime status removes the terminal head from the pager-worker inbox");
     check(runtime_after_terminal.runtime->pager_worker_next_queued_address_space_id ==
               third_address_space_id,
-          "runtime status leaves the trailing ready item at the queue front after terminalizing the head");
+          "runtime status leaves the trailing ready item at the queue front after terminalizing "
+          "the head");
     check(runtime_after_terminal.runtime->pager_worker_next_queued_handoff_sequence == 3,
-          "runtime status preserves the trailing ready item handoff ordinal after terminalizing the head");
+          "runtime status preserves the trailing ready item handoff ordinal after terminalizing "
+          "the head");
     check(runtime_after_terminal.runtime->pager_worker_parked_cycles == 3,
           "runtime status counts three parked cycles before the terminal rule fires");
     check(runtime_after_terminal.runtime->pager_worker_ready_bypass_deferrals == 1,
@@ -4895,15 +4730,13 @@ static void test_kernel_pager_worker_terminal_parked_head() {
     check(fault_after_terminal.fault_summary->pager_worker_last_terminal_address_space_id ==
               first_address_space_id,
           "fault summary retains the terminalized blocked head");
-    check(fault_after_terminal.fault_summary->pager_worker_last_terminal_handoff_sequence ==
-              1,
+    check(fault_after_terminal.fault_summary->pager_worker_last_terminal_handoff_sequence == 1,
           "fault summary retains the blocked-head handoff ordinal at terminalization");
     check(fault_after_terminal.fault_summary->pager_worker_last_terminal_cycle == 1,
           "fault summary retains the terminal failure ordinal");
   }
 
-  check(axion_kernel_set_address_space_boot_critical(
-            *state, *first_address_space_id, true),
+  check(axion_kernel_set_address_space_boot_critical(*state, *first_address_space_id, true),
         "kernel can mark a terminalized head boot-critical for reporting");
   auto runtime_after_boot_block = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
@@ -4917,7 +4750,8 @@ static void test_kernel_pager_worker_terminal_parked_head() {
     check(runtime_after_boot_block.runtime->boot_critical_terminal_count == 1,
           "runtime status reports one boot-critical terminal head");
     check(!runtime_after_boot_block.runtime->boot_progress_pending,
-          "runtime status clears boot progress pending when only terminal boot-critical state remains");
+          "runtime status clears boot progress pending when only terminal boot-critical state "
+          "remains");
     check(runtime_after_boot_block.runtime->boot_progress_blocked,
           "runtime status reports boot progress blocked for a terminal boot-critical head");
   }
@@ -4929,14 +4763,13 @@ static void test_kernel_pager_worker_terminal_parked_head() {
   if (fault_after_boot_block.fault_summary) {
     check(fault_after_boot_block.fault_summary->boot_critical_address_spaces == 1,
           "fault summary counts one boot-critical address space in blocked state");
-    check(fault_after_boot_block.fault_summary
-              ->boot_critical_pager_needed_address_spaces == 0,
+    check(fault_after_boot_block.fault_summary->boot_critical_pager_needed_address_spaces == 0,
           "fault summary reports no pending boot progress once the head is terminal");
-    check(fault_after_boot_block.fault_summary
-              ->boot_critical_terminal_address_spaces == 1,
+    check(fault_after_boot_block.fault_summary->boot_critical_terminal_address_spaces == 1,
           "fault summary reports one boot-critical terminal head");
     check(!fault_after_boot_block.fault_summary->boot_progress_pending,
-          "fault summary clears boot progress pending when only terminal boot-critical state remains");
+          "fault summary clears boot progress pending when only terminal boot-critical state "
+          "remains");
     check(fault_after_boot_block.fault_summary->boot_progress_blocked,
           "fault summary reports boot progress blocked for a terminal boot-critical head");
   }
@@ -4952,15 +4785,13 @@ static void test_kernel_pager_worker_terminal_parked_head() {
     check(runtime_after_trailing_resolution.runtime->pager_terminal_address_space_count == 1,
           "runtime status retains the terminal address space after the trailing item drains");
     check(runtime_after_trailing_resolution.runtime->pager_needed_address_space_count == 1,
-          "runtime status leaves only the terminal address space pager-needed after the trailing item drains");
+          "runtime status leaves only the terminal address space pager-needed after the trailing "
+          "item drains");
     check(runtime_after_trailing_resolution.runtime->pager_worker_inbox_count == 0,
           "runtime status drains the worker inbox after the trailing item resolves");
   }
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     first_tva,
-                     *first_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, first_tva, *first_address_space_id),
         "terminalized head still accepts a later mapping");
   (void)axion_kernel_step(*state);
   auto runtime_after_terminal_mapping = axion_kernel_service_request(
@@ -4974,14 +4805,14 @@ static void test_kernel_pager_worker_terminal_parked_head() {
           "runtime status retains one terminal address space after a later mapping");
     check(runtime_after_terminal_mapping.runtime->pager_worker_terminal_failures == 1,
           "runtime status retains one terminal failure after a later mapping");
-    check(runtime_after_terminal_mapping.runtime->pager_worker_inbox_count == 0,
-          "runtime status keeps the worker inbox empty after the terminalized head is mapped later");
+    check(
+        runtime_after_terminal_mapping.runtime->pager_worker_inbox_count == 0,
+        "runtime status keeps the worker inbox empty after the terminalized head is mapped later");
   }
 }
 
 static void test_kernel_boot_critical_pager_resolution() {
-  std::printf(
-      "\n[AC-22f] Axion kernel auto-resolves boot-critical pager work\n");
+  std::printf("\n[AC-22f] Axion kernel auto-resolves boot-critical pager work\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -5036,13 +4867,11 @@ static void test_kernel_boot_critical_pager_resolution() {
         "second boot-critical process group resolves to an address space");
   check(third_address_space_id.has_value(),
         "third boot-critical process group resolves to an address space");
-  if (!first_address_space_id || !second_address_space_id ||
-      !third_address_space_id) {
+  if (!first_address_space_id || !second_address_space_id || !third_address_space_id) {
     return;
   }
 
-  check(axion_kernel_set_address_space_boot_critical(
-            *state, *first_address_space_id, true),
+  check(axion_kernel_set_address_space_boot_critical(*state, *first_address_space_id, true),
         "kernel marks the blocked head address space boot-critical");
 
   const auto first_tva = mmu::tva_from_vpn_offset(93, 0);
@@ -5077,15 +4906,9 @@ static void test_kernel_boot_critical_pager_resolution() {
   (void)axion_kernel_step(*state);
   (void)axion_kernel_step(*state);
 
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     second_tva,
-                     *second_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, second_tva, *second_address_space_id),
         "second boot-critical address space accepts its mapping before worker activation");
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     third_tva,
-                     *third_address_space_id),
+  check(mmu::mmu_map(state->page_table, state->allocator, third_tva, *third_address_space_id),
         "third boot-critical address space accepts its mapping before worker activation");
 
   auto runtime_before_boot_critical_resolution = axion_kernel_service_request(
@@ -5093,14 +4916,11 @@ static void test_kernel_boot_critical_pager_resolution() {
   check(runtime_before_boot_critical_resolution.runtime.has_value(),
         "runtime status exposes pending boot-critical progress before auto-resolution");
   if (runtime_before_boot_critical_resolution.runtime) {
-    check(runtime_before_boot_critical_resolution.runtime
-              ->boot_critical_address_space_count == 1,
+    check(runtime_before_boot_critical_resolution.runtime->boot_critical_address_space_count == 1,
           "runtime status counts one boot-critical address space before auto-resolution");
-    check(runtime_before_boot_critical_resolution.runtime
-              ->boot_critical_pager_needed_count == 1,
+    check(runtime_before_boot_critical_resolution.runtime->boot_critical_pager_needed_count == 1,
           "runtime status reports one pending boot-critical address space before auto-resolution");
-    check(runtime_before_boot_critical_resolution.runtime
-              ->boot_critical_terminal_count == 0,
+    check(runtime_before_boot_critical_resolution.runtime->boot_critical_terminal_count == 0,
           "runtime status reports no boot-critical terminal state before auto-resolution");
     check(runtime_before_boot_critical_resolution.runtime->boot_progress_pending,
           "runtime status reports boot progress pending before auto-resolution");
@@ -5114,14 +4934,11 @@ static void test_kernel_boot_critical_pager_resolution() {
   check(runtime_after_boot_critical_resolution.runtime.has_value(),
         "runtime status exposes boot-critical auto-resolution");
   if (runtime_after_boot_critical_resolution.runtime) {
-    check(runtime_after_boot_critical_resolution.runtime
-              ->boot_critical_address_space_count == 1,
+    check(runtime_after_boot_critical_resolution.runtime->boot_critical_address_space_count == 1,
           "runtime status counts one boot-critical address space");
-    check(runtime_after_boot_critical_resolution.runtime
-              ->boot_critical_pager_needed_count == 0,
+    check(runtime_after_boot_critical_resolution.runtime->boot_critical_pager_needed_count == 0,
           "runtime status clears pending boot progress after boot-critical resolution");
-    check(runtime_after_boot_critical_resolution.runtime
-              ->boot_critical_terminal_count == 0,
+    check(runtime_after_boot_critical_resolution.runtime->boot_critical_terminal_count == 0,
           "runtime status reports no boot-critical terminal state after boot-critical resolution");
     check(!runtime_after_boot_critical_resolution.runtime->boot_progress_pending,
           "runtime status clears boot progress pending after boot-critical resolution");
@@ -5129,31 +4946,27 @@ static void test_kernel_boot_critical_pager_resolution() {
           "runtime status keeps boot progress unblocked after boot-critical resolution");
     check(runtime_after_boot_critical_resolution.runtime->pager_resolutions == 1,
           "runtime status resolves the boot-critical blocked head first");
-    check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_ready_bypass_activations == 0,
-          "runtime status does not ready-bypass the boot-critical blocked head");
-    check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_terminal_failures == 0,
+    check(
+        runtime_after_boot_critical_resolution.runtime->pager_worker_ready_bypass_activations == 0,
+        "runtime status does not ready-bypass the boot-critical blocked head");
+    check(runtime_after_boot_critical_resolution.runtime->pager_worker_terminal_failures == 0,
           "runtime status does not terminalize the boot-critical blocked head");
+    check(
+        runtime_after_boot_critical_resolution.runtime->pager_worker_boot_critical_resolutions == 1,
+        "runtime status counts one boot-critical pager resolution");
     check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_boot_critical_resolutions == 1,
-          "runtime status counts one boot-critical pager resolution");
-    check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_last_boot_critical_address_space_id ==
-              first_address_space_id,
+                  ->pager_worker_last_boot_critical_address_space_id == first_address_space_id,
           "runtime status tracks the boot-critical resolved address space");
     check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_last_boot_critical_handoff_sequence == 1,
+                  ->pager_worker_last_boot_critical_handoff_sequence == 1,
           "runtime status tracks the boot-critical handoff ordinal");
     check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_last_boot_critical_resolution_sequence == 1,
+                  ->pager_worker_last_boot_critical_resolution_sequence == 1,
           "runtime status tracks the boot-critical resolution ordinal");
     check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_last_completed_address_space_id ==
-              first_address_space_id,
+                  ->pager_worker_last_completed_address_space_id == first_address_space_id,
           "runtime status completes the boot-critical blocked head first");
-    check(runtime_after_boot_critical_resolution.runtime
-              ->pager_worker_inbox_count == 2,
+    check(runtime_after_boot_critical_resolution.runtime->pager_worker_inbox_count == 2,
           "runtime status leaves the remaining queued work after boot-critical resolution");
   }
 
@@ -5162,31 +4975,30 @@ static void test_kernel_boot_critical_pager_resolution() {
   check(fault_after_boot_critical_resolution.fault_summary.has_value(),
         "fault summary exposes boot-critical auto-resolution");
   if (fault_after_boot_critical_resolution.fault_summary) {
-    check(fault_after_boot_critical_resolution.fault_summary
-              ->boot_critical_address_spaces == 1,
+    check(fault_after_boot_critical_resolution.fault_summary->boot_critical_address_spaces == 1,
           "fault summary counts one boot-critical address space");
     check(fault_after_boot_critical_resolution.fault_summary
-              ->boot_critical_pager_needed_address_spaces == 0,
+                  ->boot_critical_pager_needed_address_spaces == 0,
           "fault summary clears pending boot progress after boot-critical resolution");
-    check(fault_after_boot_critical_resolution.fault_summary
-              ->boot_critical_terminal_address_spaces == 0,
-          "fault summary reports no boot-critical terminal state after boot-critical resolution");
+    check(
+        fault_after_boot_critical_resolution.fault_summary->boot_critical_terminal_address_spaces ==
+            0,
+        "fault summary reports no boot-critical terminal state after boot-critical resolution");
     check(!fault_after_boot_critical_resolution.fault_summary->boot_progress_pending,
           "fault summary clears boot progress pending after boot-critical resolution");
     check(!fault_after_boot_critical_resolution.fault_summary->boot_progress_blocked,
           "fault summary keeps boot progress unblocked after boot-critical resolution");
     check(fault_after_boot_critical_resolution.fault_summary
-              ->pager_worker_boot_critical_resolutions == 1,
+                  ->pager_worker_boot_critical_resolutions == 1,
           "fault summary counts one boot-critical pager resolution");
     check(fault_after_boot_critical_resolution.fault_summary
-              ->pager_worker_last_boot_critical_address_space_id ==
-              first_address_space_id,
+                  ->pager_worker_last_boot_critical_address_space_id == first_address_space_id,
           "fault summary tracks the boot-critical resolved address space");
     check(fault_after_boot_critical_resolution.fault_summary
-              ->pager_worker_last_boot_critical_handoff_sequence == 1,
+                  ->pager_worker_last_boot_critical_handoff_sequence == 1,
           "fault summary tracks the boot-critical handoff ordinal");
     check(fault_after_boot_critical_resolution.fault_summary
-              ->pager_worker_last_boot_critical_resolution_sequence == 1,
+                  ->pager_worker_last_boot_critical_resolution_sequence == 1,
           "fault summary tracks the boot-critical resolution ordinal");
   }
 }
@@ -5221,8 +5033,8 @@ static void test_kernel_fault_process_boundary() {
   check(axion_kernel_step(*state), "first kernel step dispatches thread A");
   check(state->scheduler.current_tid() == *tid_a, "thread A is current before access fault");
 
-  const auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(27, 0), mmu::MmuAccessMode::Read);
+  const auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(27, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "unmapped read records a fault for the running thread");
   if (fault_report.fault) {
     check(fault_report.fault->subject_tid == *tid_a,
@@ -5234,8 +5046,7 @@ static void test_kernel_fault_process_boundary() {
   check(state->pending_fault_count() == 0, "delivered fault drains from pending queue");
   check(state->counters.faults_routed_to_threads == 1,
         "runtime counts faults routed to thread boundary");
-  check(state->counters.thread_quarantines == 1,
-        "runtime counts quarantined faulting threads");
+  check(state->counters.thread_quarantines == 1, "runtime counts quarantined faulting threads");
   check(state->scheduler.current_tid() == *tid_b,
         "scheduler advances to thread B after quarantining thread A");
 
@@ -5288,8 +5099,8 @@ static void test_kernel_fault_acknowledgement_and_recovery() {
 
   check(axion_kernel_step(*state), "first recovery step dispatches thread A");
   check(state->scheduler.current_tid() == *tid_a, "thread A is current before recovery fault");
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(33, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(33, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "recovery path records a thread fault");
   check(axion_kernel_step(*state), "second recovery step delivers and quarantines thread A");
 
@@ -5305,8 +5116,7 @@ static void test_kernel_fault_acknowledgement_and_recovery() {
 
   check(!axion_kernel_ack_thread_fault(*state, *tid_b),
         "non-faulting thread cannot acknowledge an empty fault inbox");
-  check(axion_kernel_ack_thread_fault(*state, *tid_a),
-        "faulting thread acknowledgement succeeds");
+  check(axion_kernel_ack_thread_fault(*state, *tid_a), "faulting thread acknowledgement succeeds");
   check(state->counters.thread_fault_acknowledgements == 1,
         "runtime counts fault acknowledgements");
   check(state->counters.thread_fault_recoveries == 0,
@@ -5332,7 +5142,8 @@ static void test_kernel_fault_acknowledgement_and_recovery() {
 }
 
 static void test_kernel_process_group_fault_gate() {
-  std::printf("\n[AC-25] Axion kernel process-group fault gate requires explicit group acknowledgement\n");
+  std::printf(
+      "\n[AC-25] Axion kernel process-group fault gate requires explicit group acknowledgement\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -5384,8 +5195,8 @@ static void test_kernel_process_group_fault_gate() {
   check(axion_kernel_step(*state), "first group step dispatches the leader");
   check(state->scheduler.current_tid() == *leader_tid, "leader is current before group fault");
 
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(39, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(39, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "group fault records for running leader");
   check(axion_kernel_step(*state), "second group step delivers the fault");
 
@@ -5408,8 +5219,7 @@ static void test_kernel_process_group_fault_gate() {
   check(faulted_group->blocked, "faulted process group enters blocked state");
   check(faulted_group->acknowledgement_pending,
         "faulted process group requires explicit acknowledgement");
-  check(faulted_group->pending_fault_count == 1,
-        "faulted process group counts one pending fault");
+  check(faulted_group->pending_fault_count == 1, "faulted process group counts one pending fault");
   check(state->counters.process_group_fault_entries == 1,
         "runtime counts process-group fault entries");
 
@@ -5418,8 +5228,7 @@ static void test_kernel_process_group_fault_gate() {
   check(axion_kernel_ack_thread_fault(*state, *leader_tid),
         "faulting thread acknowledgement drains its thread inbox");
   leader_runtime = state->find_thread_runtime(*leader_tid);
-  check(leader_runtime->quarantined,
-        "thread remains quarantined until its group is acknowledged");
+  check(leader_runtime->quarantined, "thread remains quarantined until its group is acknowledged");
   check(!axion_kernel_ack_process_group_fault(*state, outsider_runtime->process_group_id),
         "unfaulted process group cannot be acknowledged");
   check(axion_kernel_ack_process_group_fault(*state, group_id),
@@ -5483,8 +5292,8 @@ static void test_kernel_process_group_audit_log() {
   const auto group_id = runtime->process_group_id;
 
   check(axion_kernel_step(*state), "audit step dispatches the faulting thread");
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(45, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(45, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "audit path records a fault");
   check(axion_kernel_step(*state), "audit step delivers the fault");
   check(axion_kernel_ack_thread_fault(*state, *tid),
@@ -5493,8 +5302,7 @@ static void test_kernel_process_group_audit_log() {
         "group acknowledgement succeeds for audit test");
 
   check(state->audit_count() >= 6, "audit log records the expected governance events");
-  check(state->counters.audit_events_recorded >= 6,
-        "runtime counts recorded audit events");
+  check(state->counters.audit_events_recorded >= 6, "runtime counts recorded audit events");
   check(state->last_audit_event.has_value(), "runtime exposes the latest audit event");
 
   std::vector<KernelAuditEventKind> observed;
@@ -5505,8 +5313,7 @@ static void test_kernel_process_group_audit_log() {
   }
   check(observed.size() >= 6, "audit log exposes at least six relevant events");
   if (observed.size() >= 7) {
-    check(observed[0] == KernelAuditEventKind::FaultDelivered,
-          "audit event[0] is fault delivered");
+    check(observed[0] == KernelAuditEventKind::FaultDelivered, "audit event[0] is fault delivered");
     check(observed[1] == KernelAuditEventKind::ProcessGroupFaultEntered,
           "audit event[1] is process-group fault entry");
     check(observed[2] == KernelAuditEventKind::SupervisorFaultNotified,
@@ -5529,7 +5336,8 @@ static void test_kernel_process_group_audit_log() {
 }
 
 static void test_kernel_supervisor_fault_boundary() {
-  std::printf("\n[AC-27] Axion kernel assigns deterministic supervisor ownership to process groups\n");
+  std::printf(
+      "\n[AC-27] Axion kernel assigns deterministic supervisor ownership to process groups\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -5604,8 +5412,8 @@ static void test_kernel_supervisor_fault_boundary() {
   check(axion_kernel_step(*state), "supervisor boundary step dispatches leader");
   check(state->scheduler.current_tid() == *leader_tid, "leader runs before supervisor fault");
 
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(51, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(51, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "supervisor boundary records leader fault");
   check(axion_kernel_step(*state), "supervisor boundary delivers the leader fault");
 
@@ -5615,8 +5423,7 @@ static void test_kernel_supervisor_fault_boundary() {
         "faulted group is queued exactly once for its supervisor");
   check(supervisor_a_state->pending_groups.front() == group_a,
         "supervisor pending queue records the owning process group");
-  check(supervisor_b_state->pending_groups.empty(),
-        "unrelated supervisor remains unaffected");
+  check(supervisor_b_state->pending_groups.empty(), "unrelated supervisor remains unaffected");
   check(state->counters.supervisor_fault_notifications == 1,
         "runtime counts one supervisor fault notification");
 }
@@ -5655,13 +5462,12 @@ static void test_kernel_supervisor_acknowledgement_flow() {
   }
 
   check(axion_kernel_step(*state), "supervisor ack step dispatches the worker");
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(57, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(57, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "supervisor ack path records a fault");
   check(axion_kernel_step(*state), "supervisor ack step delivers the fault");
 
-  check(!axion_kernel_ack_supervisor_group_fault(*state,
-                                                 KernelRuntimeState::kKernelSupervisor,
+  check(!axion_kernel_ack_supervisor_group_fault(*state, KernelRuntimeState::kKernelSupervisor,
                                                  group_id),
         "wrong supervisor cannot acknowledge a foreign process group");
   check(!axion_kernel_ack_supervisor_group_fault(*state, *supervisor_id, group_id),
@@ -5686,8 +5492,7 @@ static void test_kernel_supervisor_acknowledgement_flow() {
 
   check(supervisor_state->pending_groups.empty(),
         "supervisor pending queue drains after acknowledgement");
-  check(supervisor_state->acknowledgements == 1,
-        "supervisor acknowledgement counter increments");
+  check(supervisor_state->acknowledgements == 1, "supervisor acknowledgement counter increments");
   check(state->counters.supervisor_acknowledgements == 1,
         "runtime counts supervisor acknowledgements");
   check(!group_state->faulted, "group fault state clears after supervisor acknowledgement");
@@ -5701,8 +5506,7 @@ static void test_kernel_supervisor_acknowledgement_flow() {
   }
   check(observed.size() >= 8, "audit log records supervisor-facing events");
   if (observed.size() >= 8) {
-    check(observed[0] == KernelAuditEventKind::FaultDelivered,
-          "audit event[0] is fault delivered");
+    check(observed[0] == KernelAuditEventKind::FaultDelivered, "audit event[0] is fault delivered");
     check(observed[1] == KernelAuditEventKind::ProcessGroupFaultEntered,
           "audit event[1] is process-group fault entry");
     check(observed[2] == KernelAuditEventKind::SupervisorFaultNotified,
@@ -5732,8 +5536,7 @@ static void test_kernel_service_runtime_views() {
 
   auto runtime_result = axion_kernel_service_request(
       *hosted_state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
-  check(runtime_result.status == KernelServiceStatus::Ok,
-        "runtime status request succeeds");
+  check(runtime_result.status == KernelServiceStatus::Ok, "runtime status request succeeds");
   check(runtime_result.rejection == KernelServiceRequestRejection::None,
         "successful runtime status clears request rejection");
   check(runtime_result.runtime.has_value(), "runtime status view is returned");
@@ -5758,8 +5561,7 @@ static void test_kernel_service_runtime_views() {
       *hosted_state, KernelServiceRequest{.kind = KernelServiceRequestKind::DeviceSummary});
   check(hosted_device_result.status == KernelServiceStatus::NoDeviceArbitration,
         "hosted generic context reports no device arbitration");
-  check(hosted_device_result.rejection ==
-            KernelServiceRequestRejection::MissingDeviceArbitration,
+  check(hosted_device_result.rejection == KernelServiceRequestRejection::MissingDeviceArbitration,
         "hosted generic device summary reports MissingDeviceArbitration rejection");
 
   auto vbox_ctx = make_virtualbox_boot_context(VBoxBootSpec{});
@@ -5781,12 +5583,9 @@ static void test_kernel_service_runtime_views() {
           "device summary reports arbitration present");
     check(device_result.device_summary->device_count == 5,
           "device summary reports five supported devices");
-    check(device_result.device_summary->has_storage,
-          "device summary reports storage");
-    check(device_result.device_summary->has_network,
-          "device summary reports network");
-    check(device_result.device_summary->has_display,
-          "device summary reports display");
+    check(device_result.device_summary->has_storage, "device summary reports storage");
+    check(device_result.device_summary->has_network, "device summary reports network");
+    check(device_result.device_summary->has_display, "device summary reports display");
     check(device_result.device_summary->claimed_device_count == 0,
           "device summary starts with zero claimed devices");
     check(device_result.device_summary->service_lifecycle_transitions == 0,
@@ -5797,8 +5596,7 @@ static void test_kernel_service_runtime_views() {
 
   auto fault_result = axion_kernel_service_request(
       *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::FaultSummary});
-  check(fault_result.status == KernelServiceStatus::Ok,
-        "fault summary request succeeds");
+  check(fault_result.status == KernelServiceStatus::Ok, "fault summary request succeeds");
   check(fault_result.rejection == KernelServiceRequestRejection::None,
         "successful fault summary clears request rejection");
   check(fault_result.fault_summary.has_value(), "fault summary view is returned");
@@ -5821,8 +5619,7 @@ static void test_kernel_service_runtime_views() {
 
   auto audit_result = axion_kernel_service_request(
       *vbox_state, KernelServiceRequest{.kind = KernelServiceRequestKind::AuditSummary});
-  check(audit_result.status == KernelServiceStatus::Ok,
-        "audit summary request succeeds");
+  check(audit_result.status == KernelServiceStatus::Ok, "audit summary request succeeds");
   check(audit_result.rejection == KernelServiceRequestRejection::None,
         "successful audit summary clears request rejection");
   check(audit_result.audit_summary.has_value(), "audit summary view is returned");
@@ -5874,24 +5671,19 @@ static void test_kernel_service_group_fault_visibility() {
   }
   const auto faulted_group_id = faulted_runtime->process_group_id;
   const auto healthy_group_id = healthy_runtime->process_group_id;
-  const auto faulted_address_space_id =
-      state->find_process_group_address_space(faulted_group_id);
-  check(faulted_address_space_id.has_value(),
-        "faulted group resolves to an address space");
+  const auto faulted_address_space_id = state->find_process_group_address_space(faulted_group_id);
+  check(faulted_address_space_id.has_value(), "faulted group resolves to an address space");
   if (!faulted_address_space_id) {
     return;
   }
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     mmu::tva_from_vpn_offset(92, 0),
+  check(mmu::mmu_map(state->page_table, state->allocator, mmu::tva_from_vpn_offset(92, 0),
                      *faulted_address_space_id),
         "faulted group address space accepts an owned mapping");
-  auto healthy_before = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = healthy_group_id,
-      });
+  auto healthy_before =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = healthy_group_id,
+                                           });
   check(healthy_before.status == KernelServiceStatus::Ok,
         "healthy group request is OK before any fault");
   check(healthy_before.process_group.has_value(), "healthy group view is returned");
@@ -5901,17 +5693,16 @@ static void test_kernel_service_group_fault_visibility() {
 
   check(axion_kernel_step(*state), "service fault visibility dispatches faulted thread");
   check(state->scheduler.current_tid() == *faulted_tid, "faulted thread runs first");
-  auto access_result = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(63, 0), mmu::MmuAccessMode::Read);
+  auto access_result =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(63, 0), mmu::MmuAccessMode::Read);
   check(access_result.fault.has_value(), "faulted thread records MMU fault");
   check(axion_kernel_step(*state), "service fault visibility delivers the fault");
 
-  auto faulted_group = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = faulted_group_id,
-      });
+  auto faulted_group =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = faulted_group_id,
+                                           });
   check(faulted_group.status == KernelServiceStatus::FaultedGroup,
         "faulted group request returns FaultedGroup status");
   check(faulted_group.rejection == KernelServiceRequestRejection::None,
@@ -5922,8 +5713,7 @@ static void test_kernel_service_group_fault_visibility() {
           "faulted group view reports address-space ownership");
     check(faulted_group.process_group->owned_page_count == 1,
           "faulted group view reports one owned mapped page");
-    check(faulted_group.process_group->member_count == 1,
-          "faulted group view reports one member");
+    check(faulted_group.process_group->member_count == 1, "faulted group view reports one member");
     check(faulted_group.process_group->quarantined_thread_count == 1,
           "faulted group view reports one quarantined thread");
     check(faulted_group.process_group->faulted, "faulted group view reports faulted");
@@ -5940,14 +5730,12 @@ static void test_kernel_service_group_fault_visibility() {
           "faulted group view reports supervisor ownership");
   }
 
-  auto healthy_after = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = healthy_group_id,
-      });
-  check(healthy_after.status == KernelServiceStatus::Ok,
-        "unaffected group request remains OK");
+  auto healthy_after =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = healthy_group_id,
+                                           });
+  check(healthy_after.status == KernelServiceStatus::Ok, "unaffected group request remains OK");
   check(healthy_after.process_group.has_value(), "healthy group view remains available");
   if (healthy_after.process_group) {
     check(healthy_after.process_group->owned_page_count == 0,
@@ -5962,14 +5750,12 @@ static void test_kernel_service_group_fault_visibility() {
   if (!supervisor_id) {
     return;
   }
-  auto supervisor_result = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorStatus,
-          .supervisor_id = *supervisor_id,
-      });
-  check(supervisor_result.status == KernelServiceStatus::Ok,
-        "supervisor status request succeeds");
+  auto supervisor_result =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::SupervisorStatus,
+                                               .supervisor_id = *supervisor_id,
+                                           });
+  check(supervisor_result.status == KernelServiceStatus::Ok, "supervisor status request succeeds");
   check(supervisor_result.rejection == KernelServiceRequestRejection::None,
         "successful supervisor status clears request rejection");
   check(supervisor_result.supervisor.has_value(), "supervisor status view is returned");
@@ -5986,72 +5772,62 @@ static void test_kernel_service_group_fault_visibility() {
           "supervisor view reports the faulted group as last pending");
   }
 
-  auto denied_runtime = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::RuntimeStatus,
-          .requesting_process_group_id = faulted_group_id,
-      });
+  auto denied_runtime =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::RuntimeStatus,
+                                               .requesting_process_group_id = faulted_group_id,
+                                           });
   check(denied_runtime.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot request runtime status");
-  check(denied_runtime.rejection ==
-            KernelServiceRequestRejection::FaultedRequestingGroup,
+  check(denied_runtime.rejection == KernelServiceRequestRejection::FaultedRequestingGroup,
         "faulted runtime request reports FaultedRequestingGroup rejection");
 
-  auto denied_faults = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::FaultSummary,
-          .requesting_process_group_id = faulted_group_id,
-      });
+  auto denied_faults =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::FaultSummary,
+                                               .requesting_process_group_id = faulted_group_id,
+                                           });
   check(denied_faults.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot request fault summary");
-  check(denied_faults.rejection ==
-            KernelServiceRequestRejection::FaultedRequestingGroup,
+  check(denied_faults.rejection == KernelServiceRequestRejection::FaultedRequestingGroup,
         "faulted fault-summary request reports FaultedRequestingGroup rejection");
 
-  auto denied_audit = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::AuditSummary,
-          .requesting_process_group_id = faulted_group_id,
-      });
+  auto denied_audit =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::AuditSummary,
+                                               .requesting_process_group_id = faulted_group_id,
+                                           });
   check(denied_audit.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot request audit summary");
-  check(denied_audit.rejection ==
-            KernelServiceRequestRejection::FaultedRequestingGroup,
+  check(denied_audit.rejection == KernelServiceRequestRejection::FaultedRequestingGroup,
         "faulted audit request reports FaultedRequestingGroup rejection");
 
-  auto healthy_runtime_result = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::RuntimeStatus,
-          .requesting_process_group_id = healthy_group_id,
-      });
+  auto healthy_runtime_result =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::RuntimeStatus,
+                                               .requesting_process_group_id = healthy_group_id,
+                                           });
   check(healthy_runtime_result.status == KernelServiceStatus::Ok,
         "healthy group can request runtime status");
   check(healthy_runtime_result.rejection == KernelServiceRequestRejection::None,
         "healthy runtime request clears request rejection");
 
-  auto healthy_faults = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::FaultSummary,
-          .requesting_process_group_id = healthy_group_id,
-      });
+  auto healthy_faults =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::FaultSummary,
+                                               .requesting_process_group_id = healthy_group_id,
+                                           });
   check(healthy_faults.status == KernelServiceStatus::Ok,
         "healthy group can request fault summary");
   check(healthy_faults.rejection == KernelServiceRequestRejection::None,
         "healthy fault-summary request clears request rejection");
-  check(healthy_faults.fault_summary.has_value(),
-        "healthy group receives fault summary view");
+  check(healthy_faults.fault_summary.has_value(), "healthy group receives fault summary view");
   if (healthy_faults.fault_summary) {
     check(healthy_faults.fault_summary->recorded_faults == 1,
           "fault summary reports one recorded fault");
     check(healthy_faults.fault_summary->pending_faults == 0,
           "fault summary reports no pending faults after delivery");
-    check(healthy_faults.fault_summary->audit_events >= 4,
-          "fault summary reports audit count");
+    check(healthy_faults.fault_summary->audit_events >= 4, "fault summary reports audit count");
     check(healthy_faults.fault_summary->last_audit_event.has_value(),
           "fault summary reports last audit event");
     if (healthy_faults.fault_summary->last_audit_event) {
@@ -6065,43 +5841,39 @@ static void test_kernel_service_group_fault_visibility() {
           "fault summary has no service transition metadata in a pure fault flow");
   }
 
-  auto missing_group = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = 999999,
-      });
+  auto missing_group =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = 999999,
+                                           });
   check(missing_group.status == KernelServiceStatus::NotFound,
         "missing process group returns NotFound");
   check(missing_group.rejection == KernelServiceRequestRejection::MissingProcessGroup,
         "missing process group reports MissingProcessGroup rejection");
 
-  auto missing_requester = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::RuntimeStatus,
-          .requesting_process_group_id = 999999,
-      });
+  auto missing_requester =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::RuntimeStatus,
+                                               .requesting_process_group_id = 999999,
+                                           });
   check(missing_requester.status == KernelServiceStatus::NotFound,
         "missing requesting process group returns NotFound");
-  check(missing_requester.rejection ==
-            KernelServiceRequestRejection::MissingRequestingGroup,
+  check(missing_requester.rejection == KernelServiceRequestRejection::MissingRequestingGroup,
         "missing requesting process group reports MissingRequestingGroup rejection");
 
-  auto missing_supervisor_request = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorStatus,
-      });
+  auto missing_supervisor_request =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::SupervisorStatus,
+                                           });
   check(missing_supervisor_request.status == KernelServiceStatus::InvalidRequest,
         "missing supervisor request returns InvalidRequest");
-  check(missing_supervisor_request.rejection ==
-            KernelServiceRequestRejection::MissingSupervisor,
+  check(missing_supervisor_request.rejection == KernelServiceRequestRejection::MissingSupervisor,
         "missing supervisor request reports MissingSupervisor rejection");
 }
 
 static void test_kernel_service_fault_ack_action() {
-  std::printf("\n[AC-31] Axion kernel service contract supports supervisor fault acknowledgement\n");
+  std::printf(
+      "\n[AC-31] Axion kernel service contract supports supervisor fault acknowledgement\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -6135,61 +5907,55 @@ static void test_kernel_service_fault_ack_action() {
 
   check(axion_kernel_step(*state), "service action dispatches worker thread");
   check(state->scheduler.current_tid() == *worker_tid, "worker thread runs first");
-  auto access_result = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(71, 0), mmu::MmuAccessMode::Read);
+  auto access_result =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(71, 0), mmu::MmuAccessMode::Read);
   check(access_result.fault.has_value(), "worker thread records MMU fault");
   check(axion_kernel_step(*state), "service action delivers the fault");
 
   auto premature_action = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .process_group_id = group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+                  .process_group_id = group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(premature_action.status == KernelServiceStatus::InvalidRequest,
         "service action rejects supervisor acknowledgement before thread inbox drain");
-  check(premature_action.rejection ==
-            KernelServiceActionRejection::SupervisorGatePendingThreadFault,
-        "premature supervisor acknowledgement reports pending-thread-fault rejection");
+  check(
+      premature_action.rejection == KernelServiceActionRejection::SupervisorGatePendingThreadFault,
+      "premature supervisor acknowledgement reports pending-thread-fault rejection");
 
   check(axion_kernel_ack_thread_fault(*state, *worker_tid),
         "thread-local acknowledgement drains the worker inbox");
 
   auto missing_supervisor = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .process_group_id = group_id,
-          .supervisor_id = 999999,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+                  .process_group_id = group_id,
+                  .supervisor_id = 999999,
+              });
   check(missing_supervisor.status == KernelServiceStatus::NotFound,
         "service action returns NotFound for missing supervisor");
-  check(missing_supervisor.rejection ==
-            KernelServiceActionRejection::MissingSupervisor,
+  check(missing_supervisor.rejection == KernelServiceActionRejection::MissingSupervisor,
         "missing supervisor reports MissingSupervisor rejection");
 
   auto missing_requester = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .requesting_process_group_id = 999999,
-          .process_group_id = group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+                  .requesting_process_group_id = 999999,
+                  .process_group_id = group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(missing_requester.status == KernelServiceStatus::NotFound,
         "service action returns NotFound for missing requesting group");
-  check(missing_requester.rejection ==
-            KernelServiceActionRejection::MissingRequestingGroup,
+  check(missing_requester.rejection == KernelServiceActionRejection::MissingRequestingGroup,
         "missing requester reports MissingRequestingGroup rejection");
 
   auto ack_action = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .process_group_id = group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+                  .process_group_id = group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(ack_action.status == KernelServiceStatus::Ok,
         "service action acknowledges the supervisor fault gate");
   check(ack_action.rejection == KernelServiceActionRejection::None,
@@ -6204,8 +5970,7 @@ static void test_kernel_service_fault_ack_action() {
     check(!ack_action.process_group->blocked, "updated group view is no longer blocked");
     check(!ack_action.process_group->acknowledgement_pending,
           "updated group view clears acknowledgement pending");
-    check(ack_action.process_group->recoveries == 1,
-          "updated group view reports one recovery");
+    check(ack_action.process_group->recoveries == 1, "updated group view reports one recovery");
   }
 
   if (ack_action.supervisor) {
@@ -6219,18 +5984,17 @@ static void test_kernel_service_fault_ack_action() {
     check(ack_action.fault_summary->last_audit_event.has_value(),
           "updated fault summary reports a last audit event");
     if (ack_action.fault_summary->last_audit_event) {
-      check(ack_action.fault_summary->last_audit_event->kind ==
-                KernelAuditEventKind::ThreadRecovered,
-            "service action drives recovery as the last audit event");
+      check(
+          ack_action.fault_summary->last_audit_event->kind == KernelAuditEventKind::ThreadRecovered,
+          "service action drives recovery as the last audit event");
     }
   }
 
-  auto post_action_group = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ProcessGroupStatus,
-          .process_group_id = group_id,
-      });
+  auto post_action_group =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ProcessGroupStatus,
+                                               .process_group_id = group_id,
+                                           });
   check(post_action_group.status == KernelServiceStatus::Ok,
         "group request returns Ok after service acknowledgement");
 }
@@ -6270,23 +6034,21 @@ static void test_kernel_service_supervisor_recovery_status() {
 
   check(axion_kernel_step(*state), "recovery status dispatches worker thread");
   check(state->scheduler.current_tid() == *worker_tid, "worker runs before fault");
-  auto access_result = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(181, 0), mmu::MmuAccessMode::Read);
+  auto access_result =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(181, 0), mmu::MmuAccessMode::Read);
   check(access_result.fault.has_value(), "worker records MMU fault for recovery status");
   check(axion_kernel_step(*state), "recovery status delivers fault to runtime");
 
   auto pre_ack = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+                  .supervisor_id = *supervisor_id,
+              });
   check(pre_ack.status == KernelServiceStatus::Ok,
         "supervisor recovery status succeeds before acknowledgement");
   check(pre_ack.rejection == KernelServiceRequestRejection::None,
         "successful supervisor recovery request clears request rejection");
-  check(pre_ack.supervisor_recovery.has_value(),
-        "supervisor recovery status view is returned");
+  check(pre_ack.supervisor_recovery.has_value(), "supervisor recovery status view is returned");
   if (pre_ack.supervisor_recovery) {
     check(pre_ack.supervisor_recovery->pending_group_count == 1,
           "recovery status shows one pending group before acknowledgement");
@@ -6316,12 +6078,11 @@ static void test_kernel_service_supervisor_recovery_status() {
         "thread-local acknowledgement drains inbox before supervisor recovery");
 
   auto ack_action = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
-          .process_group_id = group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::AcknowledgeSupervisorFaultGroup,
+                  .process_group_id = group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(ack_action.status == KernelServiceStatus::Ok,
         "supervisor recovery action succeeds after thread acknowledgement");
   check(ack_action.supervisor_recovery.has_value(),
@@ -6344,11 +6105,10 @@ static void test_kernel_service_supervisor_recovery_status() {
   }
 
   auto post_ack = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+                  .supervisor_id = *supervisor_id,
+              });
   check(post_ack.status == KernelServiceStatus::Ok,
         "supervisor recovery status succeeds after recovery");
   check(post_ack.rejection == KernelServiceRequestRejection::None,
@@ -6413,15 +6173,13 @@ static void test_kernel_service_device_actions() {
   const auto owner_group = owner_runtime->process_group_id;
   const auto contender_group = contender_runtime->process_group_id;
 
-  auto preclaim = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ClaimDevice,
-          .requesting_process_group_id = owner_group,
-          .device_name = std::string{"ahci"},
-      });
-  check(preclaim.status == KernelServiceStatus::Ok,
-        "healthy owner group can claim a device");
+  auto preclaim =
+      axion_kernel_service_action(*state, KernelServiceAction{
+                                              .kind = KernelServiceActionKind::ClaimDevice,
+                                              .requesting_process_group_id = owner_group,
+                                              .device_name = std::string{"ahci"},
+                                          });
+  check(preclaim.status == KernelServiceStatus::Ok, "healthy owner group can claim a device");
   check(preclaim.rejection == KernelServiceActionRejection::None,
         "successful claim clears rejection reason");
   check(preclaim.action_performed, "claim action reports work performed");
@@ -6431,13 +6189,12 @@ static void test_kernel_service_device_actions() {
           "device summary reports one claimed device after claim");
   }
 
-  auto conflicting_claim = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ClaimDevice,
-          .requesting_process_group_id = contender_group,
-          .device_name = std::string{"ahci"},
-      });
+  auto conflicting_claim =
+      axion_kernel_service_action(*state, KernelServiceAction{
+                                              .kind = KernelServiceActionKind::ClaimDevice,
+                                              .requesting_process_group_id = contender_group,
+                                              .device_name = std::string{"ahci"},
+                                          });
   check(conflicting_claim.status == KernelServiceStatus::InvalidRequest,
         "another healthy group cannot steal a claimed device");
   check(conflicting_claim.rejection == KernelServiceActionRejection::DeviceConflict,
@@ -6447,46 +6204,40 @@ static void test_kernel_service_device_actions() {
   check(axion_kernel_step(*state), "device action path dispatches contender thread");
   check(state->scheduler.current_tid() == *contender_tid,
         "contender thread becomes current before fault");
-  auto fault_result = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(211, 0), mmu::MmuAccessMode::Read);
+  auto fault_result =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(211, 0), mmu::MmuAccessMode::Read);
   check(fault_result.fault.has_value(), "contender thread records MMU fault");
   check(axion_kernel_step(*state), "device action path delivers contender fault");
 
-  auto faulted_claim = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ClaimDevice,
-          .requesting_process_group_id = contender_group,
-          .device_name = std::string{"e1000"},
-      });
+  auto faulted_claim =
+      axion_kernel_service_action(*state, KernelServiceAction{
+                                              .kind = KernelServiceActionKind::ClaimDevice,
+                                              .requesting_process_group_id = contender_group,
+                                              .device_name = std::string{"e1000"},
+                                          });
   check(faulted_claim.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot claim a device through the service boundary");
-  check(faulted_claim.rejection ==
-            KernelServiceActionRejection::FaultedRequestingGroup,
+  check(faulted_claim.rejection == KernelServiceActionRejection::FaultedRequestingGroup,
         "faulted claim reports FaultedRequestingGroup rejection");
 
-  auto bad_release = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ReleaseDevice,
-          .requesting_process_group_id = contender_group,
-          .device_name = std::string{"ahci"},
-      });
+  auto bad_release =
+      axion_kernel_service_action(*state, KernelServiceAction{
+                                              .kind = KernelServiceActionKind::ReleaseDevice,
+                                              .requesting_process_group_id = contender_group,
+                                              .device_name = std::string{"ahci"},
+                                          });
   check(bad_release.status == KernelServiceStatus::FaultedGroup,
         "faulted group cannot release a device through the service boundary");
-  check(bad_release.rejection ==
-            KernelServiceActionRejection::FaultedRequestingGroup,
+  check(bad_release.rejection == KernelServiceActionRejection::FaultedRequestingGroup,
         "faulted release reports FaultedRequestingGroup rejection");
 
-  auto release = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ReleaseDevice,
-          .requesting_process_group_id = owner_group,
-          .device_name = std::string{"ahci"},
-      });
-  check(release.status == KernelServiceStatus::Ok,
-        "owning healthy group can release a device");
+  auto release =
+      axion_kernel_service_action(*state, KernelServiceAction{
+                                              .kind = KernelServiceActionKind::ReleaseDevice,
+                                              .requesting_process_group_id = owner_group,
+                                              .device_name = std::string{"ahci"},
+                                          });
+  check(release.status == KernelServiceStatus::Ok, "owning healthy group can release a device");
   check(release.rejection == KernelServiceActionRejection::None,
         "successful release clears rejection reason");
   check(release.action_performed, "release action reports work performed");
@@ -6497,8 +6248,7 @@ static void test_kernel_service_device_actions() {
   }
 
   auto hosted_state = axion_kernel_bootstrap(make_valid_ctx(/*ethics=*/false));
-  check(hosted_state.has_value(),
-        "generic hosted runtime bootstraps without device arbitration");
+  check(hosted_state.has_value(), "generic hosted runtime bootstraps without device arbitration");
   if (!hosted_state.has_value()) {
     return;
   }
@@ -6512,27 +6262,25 @@ static void test_kernel_service_device_actions() {
     return;
   }
   const auto* hosted_runtime = hosted_state->find_thread_runtime(*hosted_thread);
-  check(hosted_runtime != nullptr,
-        "generic hosted runtime exposes requester thread runtime state");
+  check(hosted_runtime != nullptr, "generic hosted runtime exposes requester thread runtime state");
   if (hosted_runtime == nullptr) {
     return;
   }
   auto missing_arbitration = axion_kernel_service_action(
-      *hosted_state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ClaimDevice,
-          .requesting_process_group_id = hosted_runtime->process_group_id,
-          .device_name = std::string{"ahci"},
-      });
+      *hosted_state, KernelServiceAction{
+                         .kind = KernelServiceActionKind::ClaimDevice,
+                         .requesting_process_group_id = hosted_runtime->process_group_id,
+                         .device_name = std::string{"ahci"},
+                     });
   check(missing_arbitration.status == KernelServiceStatus::NoDeviceArbitration,
         "hosted generic runtime reports missing device arbitration");
-  check(missing_arbitration.rejection ==
-            KernelServiceActionRejection::MissingDeviceArbitration,
+  check(missing_arbitration.rejection == KernelServiceActionRejection::MissingDeviceArbitration,
         "missing device arbitration reports explicit rejection");
 }
 
 static void test_kernel_service_diagnostic_details() {
-  std::printf("\n[AC-34] Axion kernel service contract exposes stable audit and device detail views\n");
+  std::printf(
+      "\n[AC-34] Axion kernel service contract exposes stable audit and device detail views\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -6570,38 +6318,33 @@ static void test_kernel_service_diagnostic_details() {
   }
 
   auto claim = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ClaimDevice,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .device_name = std::string{"ahci"},
-      });
-  check(claim.status == KernelServiceStatus::Ok,
-        "diagnostic owner can claim ahci");
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::ClaimDevice,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .device_name = std::string{"ahci"},
+              });
+  check(claim.status == KernelServiceStatus::Ok, "diagnostic owner can claim ahci");
 
   check(axion_kernel_step(*state), "diagnostic loop dispatches owner");
   check(axion_kernel_step(*state), "diagnostic loop dispatches faulted thread");
   check(state->scheduler.current_tid() == *faulted_tid,
         "diagnostic faulted thread becomes current");
-  auto fault = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(251, 0), mmu::MmuAccessMode::Read);
+  auto fault =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(251, 0), mmu::MmuAccessMode::Read);
   check(fault.fault.has_value(), "diagnostic fault is recorded");
   check(axion_kernel_step(*state), "diagnostic loop delivers fault");
 
   auto audit = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::AuditSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
-  check(audit.status == KernelServiceStatus::Ok,
-        "healthy group can request audit summary");
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::AuditSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
+  check(audit.status == KernelServiceStatus::Ok, "healthy group can request audit summary");
   check(audit.rejection == KernelServiceRequestRejection::None,
         "successful audit detail clears request rejection");
   check(audit.audit_summary.has_value(), "audit summary detail is returned");
   if (audit.audit_summary) {
-    check(audit.audit_summary->fault_deliveries == 1,
-          "audit summary reports one fault delivery");
+    check(audit.audit_summary->fault_deliveries == 1, "audit summary reports one fault delivery");
     check(audit.audit_summary->thread_quarantines == 1,
           "audit summary reports one thread quarantine");
     check(audit.audit_summary->process_group_fault_entries == 1,
@@ -6611,8 +6354,7 @@ static void test_kernel_service_diagnostic_details() {
     check(audit.audit_summary->recent_events.size() >= 4,
           "audit summary exposes recent audit events");
     if (audit.audit_summary->recent_events.size() >= 4) {
-      check(audit.audit_summary->recent_events[0].kind ==
-                KernelAuditEventKind::FaultDelivered,
+      check(audit.audit_summary->recent_events[0].kind == KernelAuditEventKind::FaultDelivered,
             "audit summary starts with fault delivery");
       check(audit.audit_summary->recent_events[1].kind ==
                 KernelAuditEventKind::ProcessGroupFaultEntered,
@@ -6620,18 +6362,16 @@ static void test_kernel_service_diagnostic_details() {
       check(audit.audit_summary->recent_events[2].kind ==
                 KernelAuditEventKind::SupervisorFaultNotified,
             "audit summary reports supervisor notification");
-      check(audit.audit_summary->recent_events[3].kind ==
-                KernelAuditEventKind::ThreadQuarantined,
+      check(audit.audit_summary->recent_events[3].kind == KernelAuditEventKind::ThreadQuarantined,
             "audit summary reports thread quarantine");
     }
   }
 
   auto devices = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::DeviceSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::DeviceSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(devices.status == KernelServiceStatus::Ok,
         "healthy group can request detailed device summary");
   check(devices.rejection == KernelServiceRequestRejection::None,
@@ -6651,8 +6391,7 @@ static void test_kernel_service_diagnostic_details() {
       } else if (device.name == "e1000") {
         saw_unclaimed_e1000 = true;
         check(!device.claimed, "device summary keeps e1000 unclaimed");
-        check(!device.owner_tid.has_value(),
-              "device summary keeps unclaimed e1000 owner empty");
+        check(!device.owner_tid.has_value(), "device summary keeps unclaimed e1000 owner empty");
       }
     }
     check(saw_claimed_ahci, "device summary includes claimed ahci");
@@ -6686,54 +6425,46 @@ static void test_kernel_service_runtime_layer() {
     return;
   }
 
-  const auto supervisor_id =
-      state->find_process_group_supervisor(owner_runtime->process_group_id);
+  const auto supervisor_id = state->find_process_group_supervisor(owner_runtime->process_group_id);
   check(supervisor_id.has_value(), "service owner group resolves to a supervisor");
   if (!supervisor_id) {
     return;
   }
   const auto owner_address_space_id =
       state->find_process_group_address_space(owner_runtime->process_group_id);
-  check(owner_address_space_id.has_value(),
-        "service owner group resolves to an address space");
+  check(owner_address_space_id.has_value(), "service owner group resolves to an address space");
   if (!owner_address_space_id) {
     return;
   }
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     mmu::tva_from_vpn_offset(104, 0),
+  check(mmu::mmu_map(state->page_table, state->allocator, mmu::tva_from_vpn_offset(104, 0),
                      *owner_address_space_id),
         "service owner address space accepts an owned mapping");
 
   auto register_service = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::RegisterService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_name = std::string{"svc.alpha"},
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 90,
-              .sp = 270,
-              .register0 = 909,
-              .label = "svc-alpha-entry",
-          },
-      });
-  check(register_service.status == KernelServiceStatus::Ok,
-        "healthy group can register a service");
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::RegisterService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_name = std::string{"svc.alpha"},
+                  .spawn_descriptor =
+                      KernelThreadSpawnDescriptor{
+                          .pc = 90,
+                          .sp = 270,
+                          .register0 = 909,
+                          .label = "svc-alpha-entry",
+                      },
+              });
+  check(register_service.status == KernelServiceStatus::Ok, "healthy group can register a service");
   check(register_service.rejection == KernelServiceActionRejection::None,
         "successful service registration clears rejection");
-  check(register_service.action_performed,
-        "service registration reports work performed");
-  check(register_service.service.has_value(),
-        "service registration returns service status");
+  check(register_service.action_performed, "service registration reports work performed");
+  check(register_service.service.has_value(), "service registration returns service status");
   check(register_service.supervisor_services.has_value(),
         "service registration returns supervisor inventory");
 
   std::optional<ServiceId> service_id{};
   if (register_service.service) {
     service_id = register_service.service->id;
-    check(register_service.service->name == "svc.alpha",
-          "registered service preserves name");
+    check(register_service.service->name == "svc.alpha", "registered service preserves name");
     check(register_service.service->supervisor_id == *supervisor_id,
           "registered service preserves supervisor");
     check(register_service.service->process_group_id == owner_runtime->process_group_id,
@@ -6742,10 +6473,8 @@ static void test_kernel_service_runtime_layer() {
           "registered service preserves backing address space");
     check(register_service.service->owned_page_count == 1,
           "registered service reports one owned mapped page");
-    check(register_service.service->registered,
-          "registered service reports registered state");
-    check(!register_service.service->blocked,
-          "registered service starts unblocked");
+    check(register_service.service->registered, "registered service reports registered state");
+    check(!register_service.service->blocked, "registered service starts unblocked");
     check(register_service.service->has_entry_descriptor,
           "registered service reports stored entry-descriptor presence");
     check(register_service.service->entry_descriptor.has_value(),
@@ -6782,9 +6511,9 @@ static void test_kernel_service_runtime_layer() {
     check(register_service.supervisor_services->services.front().last_transition_kind ==
               KernelAuditEventKind::ServiceRegistered,
           "supervisor inventory entry tracks registration as the latest lifecycle event");
-    check(register_service.supervisor_services->services.front()
-              .last_transition_sequence.has_value(),
-          "supervisor inventory entry exposes the registration audit sequence");
+    check(
+        register_service.supervisor_services->services.front().last_transition_sequence.has_value(),
+        "supervisor inventory entry exposes the registration audit sequence");
     check(register_service.supervisor_services->blocked_service_count == 0,
           "supervisor inventory starts with zero blocked services");
     check(register_service.supervisor_services->service_lifecycle_transitions == 1,
@@ -6798,12 +6527,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory starts with zero service requests");
   }
   auto supervisor_status_after_register = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(supervisor_status_after_register.status == KernelServiceStatus::Ok,
         "healthy group can request supervisor status after service registration");
   check(supervisor_status_after_register.rejection == KernelServiceRequestRejection::None,
@@ -6832,26 +6560,23 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto duplicate_service = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::RegisterService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_name = std::string{"svc.beta"},
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::RegisterService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_name = std::string{"svc.beta"},
+              });
   check(duplicate_service.status == KernelServiceStatus::InvalidRequest,
         "duplicate service registration is rejected");
   check(duplicate_service.rejection == KernelServiceActionRejection::DuplicateService,
         "duplicate service registration reports duplicate service rejection");
 
   auto service_view = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ServiceStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
-  check(service_view.status == KernelServiceStatus::Ok,
-        "healthy group can request service status");
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::ServiceStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
+  check(service_view.status == KernelServiceStatus::Ok, "healthy group can request service status");
   check(service_view.rejection == KernelServiceRequestRejection::None,
         "healthy service request clears rejection");
   check(service_view.service.has_value(), "service status request returns service view");
@@ -6890,40 +6615,34 @@ static void test_kernel_service_runtime_layer() {
           "healthy service view reports zero coalesced pager faults");
     check(service_view.service->primary_tid == *owner_tid,
           "service view exposes primary group thread");
-    check(!service_view.service->faulted_group,
-          "healthy service view reports non-faulted group");
+    check(!service_view.service->faulted_group, "healthy service view reports non-faulted group");
     check(!service_view.service->suspended,
           "healthy service view reports non-suspended lifecycle state");
     check(service_view.service->quarantined_thread_count == 0,
           "healthy service view reports zero quarantined threads");
     check(service_view.service->pending_fault_count == 0,
           "healthy service view reports zero pending group faults");
-    check(service_view.service->requests >= 1,
-          "service view tracks request count");
+    check(service_view.service->requests >= 1, "service view tracks request count");
     check(service_view.service->rejected_requests == 0,
           "healthy service request does not increment rejected count");
-    check(service_view.service->last_transition_kind ==
-              KernelAuditEventKind::ServiceRegistered,
+    check(service_view.service->last_transition_kind == KernelAuditEventKind::ServiceRegistered,
           "freshly registered service view tracks registration as the latest lifecycle event");
     check(service_view.service->last_transition_sequence.has_value(),
           "freshly registered service view exposes the registration audit sequence");
   }
 
   auto suspend_service = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::SuspendService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::SuspendService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(suspend_service.status == KernelServiceStatus::Ok,
         "healthy owner group can suspend its service");
   check(suspend_service.rejection == KernelServiceActionRejection::None,
         "successful suspend clears rejection");
-  check(suspend_service.action_performed,
-        "service suspend reports work performed");
-  check(suspend_service.service.has_value(),
-        "service suspend returns service status");
+  check(suspend_service.action_performed, "service suspend reports work performed");
+  check(suspend_service.service.has_value(), "service suspend returns service status");
   check(suspend_service.supervisor_services.has_value(),
         "service suspend returns supervisor inventory");
   if (suspend_service.service) {
@@ -6950,34 +6669,29 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto duplicate_suspend = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::SuspendService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::SuspendService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(duplicate_suspend.status == KernelServiceStatus::InvalidRequest,
         "duplicate suspend is rejected");
-  check(duplicate_suspend.rejection ==
-            KernelServiceActionRejection::ServiceAlreadySuspended,
+  check(duplicate_suspend.rejection == KernelServiceActionRejection::ServiceAlreadySuspended,
         "duplicate suspend reports already-suspended rejection");
 
   auto resume_service = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ResumeService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::ResumeService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(resume_service.status == KernelServiceStatus::Ok,
         "healthy owner group can resume its service");
   check(resume_service.rejection == KernelServiceActionRejection::None,
         "successful resume clears rejection");
-  check(resume_service.action_performed,
-        "service resume reports work performed");
+  check(resume_service.action_performed, "service resume reports work performed");
   if (resume_service.service) {
-    check(!resume_service.service->suspended,
-          "resumed service clears suspended lifecycle state");
+    check(!resume_service.service->suspended, "resumed service clears suspended lifecycle state");
   }
   if (resume_service.supervisor_services) {
     check(resume_service.supervisor_services->suspended_service_count == 0,
@@ -6990,25 +6704,22 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto duplicate_resume = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ResumeService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::ResumeService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(duplicate_resume.status == KernelServiceStatus::InvalidRequest,
         "duplicate resume is rejected");
-  check(duplicate_resume.rejection ==
-            KernelServiceActionRejection::ServiceNotSuspended,
+  check(duplicate_resume.rejection == KernelServiceActionRejection::ServiceNotSuspended,
         "duplicate resume reports not-suspended rejection");
 
   t81::ternaryos::sched::TiscContext supervisor_peer_ctx;
   supervisor_peer_ctx.label = "service-supervisor-peer";
   supervisor_peer_ctx.registers[0] = 1203;
-  auto supervisor_peer_tid = axion_kernel_spawn_thread_under_supervisor(
-      *state, supervisor_peer_ctx, *supervisor_id);
-  check(supervisor_peer_tid.has_value(),
-        "supervisor peer thread spawns under existing supervisor");
+  auto supervisor_peer_tid =
+      axion_kernel_spawn_thread_under_supervisor(*state, supervisor_peer_ctx, *supervisor_id);
+  check(supervisor_peer_tid.has_value(), "supervisor peer thread spawns under existing supervisor");
   if (!supervisor_peer_tid) {
     return;
   }
@@ -7026,16 +6737,14 @@ static void test_kernel_service_runtime_layer() {
   if (!peer_supervisor_id) {
     return;
   }
-  check(*peer_supervisor_id == *supervisor_id,
-        "supervisor peer group shares the same supervisor");
+  check(*peer_supervisor_id == *supervisor_id, "supervisor peer group shares the same supervisor");
 
   auto supervisor_suspend = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::SuspendService,
-          .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::SuspendService,
+                  .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(supervisor_suspend.status == KernelServiceStatus::Ok,
         "same-supervisor peer group can suspend a managed service");
   check(supervisor_suspend.rejection == KernelServiceActionRejection::None,
@@ -7060,25 +6769,22 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto foreign_resume = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ResumeService,
-          .requesting_process_group_id = foreign_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::ResumeService,
+                  .requesting_process_group_id = foreign_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(foreign_resume.status == KernelServiceStatus::InvalidRequest,
         "foreign supervisor group cannot resume another supervisor's service");
-  check(foreign_resume.rejection ==
-            KernelServiceActionRejection::ServiceSupervisorMismatch,
+  check(foreign_resume.rejection == KernelServiceActionRejection::ServiceSupervisorMismatch,
         "foreign supervisor resume reports supervisor mismatch");
 
   auto supervisor_resume = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::ResumeService,
-          .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::ResumeService,
+                  .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(supervisor_resume.status == KernelServiceStatus::Ok,
         "same-supervisor peer group can resume a managed service");
   check(supervisor_resume.rejection == KernelServiceActionRejection::None,
@@ -7089,19 +6795,17 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto mark_unhealthy = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::MarkServiceUnhealthy,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::MarkServiceUnhealthy,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(mark_unhealthy.status == KernelServiceStatus::Ok,
         "healthy owner group can mark its service unhealthy");
   check(mark_unhealthy.rejection == KernelServiceActionRejection::None,
         "mark-unhealthy clears rejection");
   if (mark_unhealthy.service) {
-    check(mark_unhealthy.service->unhealthy,
-          "service view exposes unhealthy lifecycle state");
+    check(mark_unhealthy.service->unhealthy, "service view exposes unhealthy lifecycle state");
     check(!mark_unhealthy.service->faulted_group,
           "service unhealthy transition does not imply a faulted group");
   }
@@ -7121,59 +6825,51 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto unhealthy_request = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ServiceStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::ServiceStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(unhealthy_request.status == KernelServiceStatus::ServiceUnavailable,
         "unhealthy service request is rejected as unavailable");
   check(unhealthy_request.rejection == KernelServiceRequestRejection::UnhealthyService,
         "unhealthy service request reports explicit unhealthy rejection");
 
   auto duplicate_unhealthy = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::MarkServiceUnhealthy,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::MarkServiceUnhealthy,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(duplicate_unhealthy.status == KernelServiceStatus::InvalidRequest,
         "duplicate unhealthy transition is rejected");
-  check(duplicate_unhealthy.rejection ==
-            KernelServiceActionRejection::ServiceAlreadyUnhealthy,
+  check(duplicate_unhealthy.rejection == KernelServiceActionRejection::ServiceAlreadyUnhealthy,
         "duplicate unhealthy transition reports already-unhealthy rejection");
 
   auto foreign_health = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::MarkServiceHealthy,
-          .requesting_process_group_id = foreign_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::MarkServiceHealthy,
+                  .requesting_process_group_id = foreign_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(foreign_health.status == KernelServiceStatus::InvalidRequest,
         "foreign supervisor group cannot heal another supervisor's service");
-  check(foreign_health.rejection ==
-            KernelServiceActionRejection::ServiceSupervisorMismatch,
+  check(foreign_health.rejection == KernelServiceActionRejection::ServiceSupervisorMismatch,
         "foreign health transition reports supervisor mismatch");
 
   auto peer_health = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::MarkServiceHealthy,
-          .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::MarkServiceHealthy,
+                  .requesting_process_group_id = supervisor_peer_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(peer_health.status == KernelServiceStatus::Ok,
         "same-supervisor peer group can heal a managed service");
   check(peer_health.rejection == KernelServiceActionRejection::None,
         "same-supervisor heal clears rejection");
   if (peer_health.service) {
-    check(!peer_health.service->unhealthy,
-          "same-supervisor heal clears unhealthy lifecycle state");
-    check(peer_health.service->last_transition_kind ==
-              KernelAuditEventKind::ServiceMarkedHealthy,
+    check(!peer_health.service->unhealthy, "same-supervisor heal clears unhealthy lifecycle state");
+    check(peer_health.service->last_transition_kind == KernelAuditEventKind::ServiceMarkedHealthy,
           "service view tracks heal as the latest lifecycle event");
     check(peer_health.service->last_transition_sequence.has_value(),
           "service view exposes the latest lifecycle audit sequence after heal");
@@ -7195,12 +6891,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory exposes the latest lifecycle audit sequence");
   }
   auto supervisor_status_after_heal = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(supervisor_status_after_heal.status == KernelServiceStatus::Ok,
         "healthy group can request supervisor status after service heal");
   check(supervisor_status_after_heal.rejection == KernelServiceRequestRejection::None,
@@ -7224,12 +6919,11 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto recovery_status_after_heal = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(recovery_status_after_heal.status == KernelServiceStatus::Ok,
         "healthy group can request supervisor recovery status after service heal");
   check(recovery_status_after_heal.rejection == KernelServiceRequestRejection::None,
@@ -7248,16 +6942,16 @@ static void test_kernel_service_runtime_layer() {
     check(recovery_status_after_heal.supervisor_recovery->last_service_transition_kind ==
               KernelAuditEventKind::ServiceMarkedHealthy,
           "recovery status tracks heal as the latest service lifecycle event");
-    check(recovery_status_after_heal.supervisor_recovery->last_service_transition_sequence.has_value(),
+    check(recovery_status_after_heal.supervisor_recovery->last_service_transition_sequence
+              .has_value(),
           "recovery status exposes the latest service lifecycle audit sequence after heal");
   }
 
   auto fault_summary_after_heal = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::FaultSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::FaultSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(fault_summary_after_heal.status == KernelServiceStatus::Ok,
         "healthy group can request fault summary after service heal");
   check(fault_summary_after_heal.rejection == KernelServiceRequestRejection::None,
@@ -7277,11 +6971,10 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto runtime_status_after_heal = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::RuntimeStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::RuntimeStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(runtime_status_after_heal.status == KernelServiceStatus::Ok,
         "healthy group can request runtime status after service heal");
   check(runtime_status_after_heal.rejection == KernelServiceRequestRejection::None,
@@ -7309,11 +7002,10 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto device_summary_after_heal = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::DeviceSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::DeviceSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(device_summary_after_heal.status == KernelServiceStatus::Ok,
         "healthy group can request device summary after service heal");
   check(device_summary_after_heal.rejection == KernelServiceRequestRejection::None,
@@ -7333,17 +7025,15 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto audit_summary = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::AuditSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::AuditSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(audit_summary.status == KernelServiceStatus::Ok,
         "healthy group can request audit summary after service lifecycle actions");
   check(audit_summary.rejection == KernelServiceRequestRejection::None,
         "audit summary request clears rejection");
-  check(audit_summary.audit_summary.has_value(),
-        "audit summary request returns audit detail");
+  check(audit_summary.audit_summary.has_value(), "audit summary request returns audit detail");
   if (audit_summary.audit_summary) {
     std::vector<KernelAuditEventKind> service_lifecycle_events;
     for (const auto& entry : audit_summary.audit_summary->recent_events) {
@@ -7360,8 +7050,9 @@ static void test_kernel_service_runtime_layer() {
           break;
       }
     }
-    check(service_lifecycle_events.size() == 7,
-          "audit summary captures seven successful service lifecycle transitions before unregister");
+    check(
+        service_lifecycle_events.size() == 7,
+        "audit summary captures seven successful service lifecycle transitions before unregister");
     check(audit_summary.audit_summary->service_lifecycle_transitions == 7,
           "audit summary aggregates service lifecycle transitions before unregister");
     check(audit_summary.audit_summary->last_service_transition_id == service_id,
@@ -7382,8 +7073,7 @@ static void test_kernel_service_runtime_layer() {
             "audit summary records same-supervisor suspension");
       check(service_lifecycle_events[4] == KernelAuditEventKind::ServiceResumed,
             "audit summary records same-supervisor resume");
-      check(service_lifecycle_events[5] ==
-                KernelAuditEventKind::ServiceMarkedUnhealthy,
+      check(service_lifecycle_events[5] == KernelAuditEventKind::ServiceMarkedUnhealthy,
             "audit summary records unhealthy transition");
       check(service_lifecycle_events[6] == KernelAuditEventKind::ServiceMarkedHealthy,
             "audit summary records healthy transition");
@@ -7391,23 +7081,21 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto duplicate_healthy = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::MarkServiceHealthy,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::MarkServiceHealthy,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(duplicate_healthy.status == KernelServiceStatus::InvalidRequest,
         "duplicate healthy transition is rejected");
-  check(duplicate_healthy.rejection ==
-            KernelServiceActionRejection::ServiceAlreadyHealthy,
+  check(duplicate_healthy.rejection == KernelServiceActionRejection::ServiceAlreadyHealthy,
         "duplicate healthy transition reports already-healthy rejection");
 
   t81::ternaryos::sched::TiscContext fault_ctx;
   fault_ctx.label = "service-faulted";
   fault_ctx.registers[0] = 1202;
-  auto fault_tid = axion_kernel_spawn_thread_in_group(
-      *state, fault_ctx, owner_runtime->process_group_id);
+  auto fault_tid =
+      axion_kernel_spawn_thread_in_group(*state, fault_ctx, owner_runtime->process_group_id);
   check(fault_tid.has_value(), "service fault thread spawns in same group");
   if (!fault_tid) {
     return;
@@ -7419,28 +7107,26 @@ static void test_kernel_service_runtime_layer() {
   check(axion_kernel_step(*state), "service runtime dispatches sibling fault thread");
   check(state->scheduler.current_tid() == *fault_tid,
         "service runtime fault thread becomes current");
-  auto fault = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(401, 0), mmu::MmuAccessMode::Read);
+  auto fault =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(401, 0), mmu::MmuAccessMode::Read);
   check(fault.fault.has_value(), "service runtime records sibling fault");
   check(axion_kernel_step(*state), "service runtime delivers sibling fault");
 
-  auto blocked_service = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ServiceStatus,
-          .service_id = *service_id,
-      });
+  auto blocked_service =
+      axion_kernel_service_request(*state, KernelServiceRequest{
+                                               .kind = KernelServiceRequestKind::ServiceStatus,
+                                               .service_id = *service_id,
+                                           });
   check(blocked_service.status == KernelServiceStatus::FaultedGroup,
         "blocked service request is rejected deterministically");
   check(blocked_service.rejection == KernelServiceRequestRejection::FaultedRequestingGroup,
         "blocked service request reports faulted-group rejection");
 
   auto supervisor_inventory = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorServiceInventory,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorServiceInventory,
+                  .supervisor_id = *supervisor_id,
+              });
   check(supervisor_inventory.status == KernelServiceStatus::Ok,
         "supervisor inventory request succeeds");
   check(supervisor_inventory.rejection == KernelServiceRequestRejection::None,
@@ -7488,12 +7174,11 @@ static void test_kernel_service_runtime_layer() {
           "blocked supervisor inventory entry retains the latest lifecycle audit sequence");
   }
 
-  auto bad_unregister = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::UnregisterService,
-          .service_id = *service_id,
-      });
+  auto bad_unregister =
+      axion_kernel_service_action(*state, KernelServiceAction{
+                                              .kind = KernelServiceActionKind::UnregisterService,
+                                              .service_id = *service_id,
+                                          });
   check(bad_unregister.status == KernelServiceStatus::InvalidRequest,
         "missing-group unregister path is rejected");
   check(bad_unregister.rejection == KernelServiceActionRejection::MissingRequestingGroup,
@@ -7506,29 +7191,24 @@ static void test_kernel_service_runtime_layer() {
         "service runtime supervisor acknowledgement completes recovery gate");
 
   auto unregister_service = axion_kernel_service_action(
-      *state,
-      KernelServiceAction{
-          .kind = KernelServiceActionKind::UnregisterService,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceAction{
+                  .kind = KernelServiceActionKind::UnregisterService,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(unregister_service.status == KernelServiceStatus::Ok,
         "healthy owner group can unregister its service");
   check(unregister_service.rejection == KernelServiceActionRejection::None,
         "successful unregister clears rejection");
-  check(unregister_service.action_performed,
-        "service unregister reports work performed");
-  check(unregister_service.service.has_value(),
-        "service unregister returns final service status");
+  check(unregister_service.action_performed, "service unregister reports work performed");
+  check(unregister_service.service.has_value(), "service unregister returns final service status");
   check(unregister_service.supervisor_services.has_value(),
         "service unregister returns final supervisor inventory");
   if (unregister_service.service) {
     check(!unregister_service.service->registered,
           "unregistered service reports unregistered state");
-    check(!unregister_service.service->blocked,
-          "unregistered service is no longer blocked");
-    check(!unregister_service.service->suspended,
-          "unregistered service is no longer suspended");
+    check(!unregister_service.service->blocked, "unregistered service is no longer blocked");
+    check(!unregister_service.service->suspended, "unregistered service is no longer suspended");
     check(unregister_service.service->state_transitions >= 2,
           "unregistered service increments lifecycle transitions");
     check(unregister_service.service->last_transition_kind ==
@@ -7555,12 +7235,11 @@ static void test_kernel_service_runtime_layer() {
           "supervisor inventory retains the latest lifecycle audit sequence after unregister");
   }
   auto supervisor_status_after_unregister = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(supervisor_status_after_unregister.status == KernelServiceStatus::Ok,
         "healthy group can request supervisor status after unregister");
   check(supervisor_status_after_unregister.rejection == KernelServiceRequestRejection::None,
@@ -7577,16 +7256,16 @@ static void test_kernel_service_runtime_layer() {
     check(supervisor_status_after_unregister.supervisor->last_service_transition_kind ==
               KernelAuditEventKind::ServiceUnregistered,
           "supervisor status tracks unregister as the latest lifecycle event");
-    check(supervisor_status_after_unregister.supervisor->last_service_transition_sequence.has_value(),
-          "supervisor status retains the latest lifecycle audit sequence after unregister");
+    check(
+        supervisor_status_after_unregister.supervisor->last_service_transition_sequence.has_value(),
+        "supervisor status retains the latest lifecycle audit sequence after unregister");
   }
   auto recovery_status_after_unregister = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *supervisor_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorRecoveryStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .supervisor_id = *supervisor_id,
+              });
   check(recovery_status_after_unregister.status == KernelServiceStatus::Ok,
         "healthy group can request supervisor recovery status after unregister");
   check(recovery_status_after_unregister.rejection == KernelServiceRequestRejection::None,
@@ -7609,11 +7288,10 @@ static void test_kernel_service_runtime_layer() {
           "recovery status retains the latest service lifecycle audit sequence after unregister");
   }
   auto fault_summary_after_unregister = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::FaultSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::FaultSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(fault_summary_after_unregister.status == KernelServiceStatus::Ok,
         "healthy group can request fault summary after unregister");
   check(fault_summary_after_unregister.rejection == KernelServiceRequestRejection::None,
@@ -7628,15 +7306,15 @@ static void test_kernel_service_runtime_layer() {
     check(fault_summary_after_unregister.fault_summary->last_service_transition_kind ==
               KernelAuditEventKind::ServiceUnregistered,
           "fault summary tracks unregister as the latest service lifecycle event");
-    check(fault_summary_after_unregister.fault_summary->last_service_transition_sequence.has_value(),
-          "fault summary retains the latest service lifecycle audit sequence after unregister");
+    check(
+        fault_summary_after_unregister.fault_summary->last_service_transition_sequence.has_value(),
+        "fault summary retains the latest service lifecycle audit sequence after unregister");
   }
   auto runtime_status_after_unregister = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::RuntimeStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::RuntimeStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(runtime_status_after_unregister.status == KernelServiceStatus::Ok,
         "healthy group can request runtime status after unregister");
   check(runtime_status_after_unregister.rejection == KernelServiceRequestRejection::None,
@@ -7657,11 +7335,10 @@ static void test_kernel_service_runtime_layer() {
           "runtime status retains the latest service lifecycle audit sequence after unregister");
   }
   auto audit_summary_after_unregister = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::AuditSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::AuditSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(audit_summary_after_unregister.status == KernelServiceStatus::Ok,
         "healthy group can request audit summary after unregister");
   check(audit_summary_after_unregister.rejection == KernelServiceRequestRejection::None,
@@ -7676,16 +7353,15 @@ static void test_kernel_service_runtime_layer() {
     check(audit_summary_after_unregister.audit_summary->last_service_transition_kind ==
               KernelAuditEventKind::ServiceUnregistered,
           "audit summary tracks unregister as the latest service lifecycle event");
-    check(audit_summary_after_unregister.audit_summary->last_service_transition_sequence
-              .has_value(),
-          "audit summary retains the latest service lifecycle audit sequence after unregister");
+    check(
+        audit_summary_after_unregister.audit_summary->last_service_transition_sequence.has_value(),
+        "audit summary retains the latest service lifecycle audit sequence after unregister");
   }
   auto device_summary_after_unregister = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::DeviceSummary,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::DeviceSummary,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+              });
   check(device_summary_after_unregister.status == KernelServiceStatus::Ok,
         "healthy group can request device summary after unregister");
   check(device_summary_after_unregister.rejection == KernelServiceRequestRejection::None,
@@ -7711,12 +7387,11 @@ static void test_kernel_service_runtime_layer() {
   }
 
   auto missing_service_view = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::ServiceStatus,
-          .requesting_process_group_id = owner_runtime->process_group_id,
-          .service_id = *service_id,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::ServiceStatus,
+                  .requesting_process_group_id = owner_runtime->process_group_id,
+                  .service_id = *service_id,
+              });
   check(missing_service_view.status == KernelServiceStatus::NotFound,
         "service status rejects unregistered service");
   check(missing_service_view.rejection == KernelServiceRequestRejection::MissingService,
@@ -7748,21 +7423,17 @@ static void test_kernel_minimal_abi_calls() {
   if (!runtime_a) {
     return;
   }
-  const auto address_space_a =
-      state->find_process_group_address_space(runtime_a->process_group_id);
+  const auto address_space_a = state->find_process_group_address_space(runtime_a->process_group_id);
   check(address_space_a.has_value(), "minimal ABI resolves thread A address space");
   if (!address_space_a) {
     return;
   }
-  const auto supervisor_a =
-      state->find_process_group_supervisor(runtime_a->process_group_id);
+  const auto supervisor_a = state->find_process_group_supervisor(runtime_a->process_group_id);
   check(supervisor_a.has_value(), "minimal ABI resolves thread A supervisor");
   if (!supervisor_a) {
     return;
   }
-  check(mmu::mmu_map(state->page_table,
-                     state->allocator,
-                     mmu::tva_from_vpn_offset(141, 0),
+  check(mmu::mmu_map(state->page_table, state->allocator, mmu::tva_from_vpn_offset(141, 0),
                      *address_space_a),
         "minimal ABI maps one owned page for thread A process group");
 
@@ -7781,62 +7452,48 @@ static void test_kernel_minimal_abi_calls() {
   msg.ref.hash.h.bytes.fill(0x4D);
   msg.payload = 729;
   msg.tag = "abi-msg";
-  auto send_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SendMessage,
-          .ipc_dst = *tid_b,
-          .message = msg,
-      });
-  check(send_result.status == KernelCallStatus::Ok,
-        "minimal ABI send returns Ok");
-  check(send_result.rejection == KernelCallRejection::None,
-        "minimal ABI send clears rejection");
+  auto send_result = axion_kernel_call(*state, KernelCallRequest{
+                                                   .kind = KernelCallKind::SendMessage,
+                                                   .ipc_dst = *tid_b,
+                                                   .message = msg,
+                                               });
+  check(send_result.status == KernelCallStatus::Ok, "minimal ABI send returns Ok");
+  check(send_result.rejection == KernelCallRejection::None, "minimal ABI send clears rejection");
   check(send_result.action_performed, "minimal ABI send reports work performed");
   check(state->ipc_bus.pending(*tid_b) == 1, "minimal ABI send queues one message for thread B");
 
-  auto yield_result =
-      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::Yield});
-  check(yield_result.status == KernelCallStatus::Ok,
-        "minimal ABI yield returns Ok");
+  auto yield_result = axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::Yield});
+  check(yield_result.status == KernelCallStatus::Ok, "minimal ABI yield returns Ok");
   check(yield_result.yielded, "minimal ABI yield reports scheduler progress");
-  check(state->scheduler.current_tid() == *tid_b,
-        "minimal ABI yield switches to thread B");
+  check(state->scheduler.current_tid() == *tid_b, "minimal ABI yield switches to thread B");
 
   auto receive_result =
       axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
-  check(receive_result.status == KernelCallStatus::Ok,
-        "minimal ABI receive returns Ok");
+  check(receive_result.status == KernelCallStatus::Ok, "minimal ABI receive returns Ok");
   check(receive_result.rejection == KernelCallRejection::None,
         "minimal ABI receive clears rejection");
-  check(receive_result.message.has_value(),
-        "minimal ABI receive returns a message");
+  check(receive_result.message.has_value(), "minimal ABI receive returns a message");
   if (receive_result.message) {
-    check(receive_result.message->sender == *tid_a,
-          "minimal ABI receive preserves sender tid");
-    check(receive_result.message->payload == 729,
-          "minimal ABI receive preserves payload");
-    check(receive_result.message->tag == "abi-msg",
-          "minimal ABI receive preserves tag");
+    check(receive_result.message->sender == *tid_a, "minimal ABI receive preserves sender tid");
+    check(receive_result.message->payload == 729, "minimal ABI receive preserves payload");
+    check(receive_result.message->tag == "abi-msg", "minimal ABI receive preserves tag");
   }
 
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(44, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(44, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "minimal ABI path records an unmapped fault");
-  check(axion_kernel_step(*state), "minimal ABI fault step delivers the fault and continues runtime");
+  check(axion_kernel_step(*state),
+        "minimal ABI fault step delivers the fault and continues runtime");
   check(state->scheduler.current_tid() == *tid_a,
         "thread A becomes current while thread B is quarantined");
 
-  auto read_fault = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::ReadFaultInbox,
-          .target_tid = *tid_b,
-      });
+  auto read_fault = axion_kernel_call(*state, KernelCallRequest{
+                                                  .kind = KernelCallKind::ReadFaultInbox,
+                                                  .target_tid = *tid_b,
+                                              });
   check(read_fault.status == KernelCallStatus::Ok,
         "minimal ABI can read a sibling fault inbox within the same process group");
-  check(read_fault.fault.has_value(),
-        "minimal ABI fault read returns a fault record");
+  check(read_fault.fault.has_value(), "minimal ABI fault read returns a fault record");
   if (read_fault.fault) {
     check(read_fault.fault->subject_tid == *tid_b,
           "minimal ABI fault read preserves the faulting tid");
@@ -7844,23 +7501,17 @@ static void test_kernel_minimal_abi_calls() {
           "minimal ABI fault read preserves fault classification");
   }
 
-  auto ack_fault = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::AcknowledgeThreadFault,
-          .target_tid = *tid_b,
-      });
-  check(ack_fault.status == KernelCallStatus::Ok,
-        "minimal ABI fault acknowledgement returns Ok");
-  check(ack_fault.action_performed,
-        "minimal ABI fault acknowledgement reports work performed");
+  auto ack_fault = axion_kernel_call(*state, KernelCallRequest{
+                                                 .kind = KernelCallKind::AcknowledgeThreadFault,
+                                                 .target_tid = *tid_b,
+                                             });
+  check(ack_fault.status == KernelCallStatus::Ok, "minimal ABI fault acknowledgement returns Ok");
+  check(ack_fault.action_performed, "minimal ABI fault acknowledgement reports work performed");
 
-  auto read_fault_again = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::ReadFaultInbox,
-          .target_tid = *tid_b,
-      });
+  auto read_fault_again = axion_kernel_call(*state, KernelCallRequest{
+                                                        .kind = KernelCallKind::ReadFaultInbox,
+                                                        .target_tid = *tid_b,
+                                                    });
   check(read_fault_again.status == KernelCallStatus::RetryLater,
         "minimal ABI fault read reports empty inbox after acknowledgement");
   check(read_fault_again.rejection == KernelCallRejection::FaultInboxEmpty,
@@ -7868,24 +7519,21 @@ static void test_kernel_minimal_abi_calls() {
   check(axion_kernel_ack_process_group_fault(*state, runtime_a->process_group_id),
         "minimal ABI can clear the process-group fault gate before capability denial checks");
 
-  auto queried_caps = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
+  auto queried_caps =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
   check(queried_caps.status == KernelCallStatus::Ok,
         "minimal ABI can query caller process-group capabilities");
   check(!queried_caps.capabilities.empty(),
         "minimal ABI capability query returns default capabilities");
-  check(std::all_of(queried_caps.capabilities.begin(),
-                    queried_caps.capabilities.end(),
+  check(std::all_of(queried_caps.capabilities.begin(), queried_caps.capabilities.end(),
                     [](const auto& capability) { return capability.record_id != 0; }),
         "minimal ABI capability query returns kernel-issued record ids");
-  check(std::any_of(queried_caps.capabilities.begin(),
-                    queried_caps.capabilities.end(),
+  check(std::any_of(queried_caps.capabilities.begin(), queried_caps.capabilities.end(),
                     [](const auto& capability) {
                       return capability.kind == KernelCapabilityKind::IpcSend;
                     }),
         "minimal ABI capability query includes IPC send by default");
-  check(std::all_of(queried_caps.capabilities.begin(),
-                    queried_caps.capabilities.end(),
+  check(std::all_of(queried_caps.capabilities.begin(), queried_caps.capabilities.end(),
                     [](const auto& capability) {
                       return capability.kernel_seeded &&
                              !capability.delegated_by_process_group_id.has_value() &&
@@ -7893,22 +7541,18 @@ static void test_kernel_minimal_abi_calls() {
                     }),
         "minimal ABI default capabilities are marked as kernel-seeded");
   const auto ipc_send_record = std::find_if(
-      queried_caps.capabilities.begin(),
-      queried_caps.capabilities.end(),
-      [](const auto& capability) {
-        return capability.kind == KernelCapabilityKind::IpcSend;
-      });
+      queried_caps.capabilities.begin(), queried_caps.capabilities.end(),
+      [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcSend; });
   check(ipc_send_record != queried_caps.capabilities.end(),
         "minimal ABI locates the issued IPC send capability record");
   if (ipc_send_record == queried_caps.capabilities.end()) {
     return;
   }
   auto queried_ipc_send_record = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityRecord,
-          .capability = KernelCapabilityRecord{.record_id = ipc_send_record->record_id},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryCapabilityRecord,
+                  .capability = KernelCapabilityRecord{.record_id = ipc_send_record->record_id},
+              });
   check(queried_ipc_send_record.status == KernelCallStatus::Ok,
         "minimal ABI can query a capability by record id");
   check(queried_ipc_send_record.capabilities.size() == 1,
@@ -7916,74 +7560,61 @@ static void test_kernel_minimal_abi_calls() {
   check(queried_ipc_send_record.capabilities.front().record_id == ipc_send_record->record_id,
         "minimal ABI capability-record query returns the requested record id");
 
-  check(axion_kernel_revoke_process_group_capability(
-            *state,
-            runtime_a->process_group_id,
-            ipc_send_record->record_id,
-            KernelCapabilityKind::IpcSend),
+  check(axion_kernel_revoke_process_group_capability(*state, runtime_a->process_group_id,
+                                                     ipc_send_record->record_id,
+                                                     KernelCapabilityKind::IpcSend),
         "minimal ABI can revoke a process-group capability through kernel helpers");
-  auto denied_send = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SendMessage,
-          .ipc_dst = *tid_b,
-          .message = msg,
-      });
+  auto denied_send = axion_kernel_call(*state, KernelCallRequest{
+                                                   .kind = KernelCallKind::SendMessage,
+                                                   .ipc_dst = *tid_b,
+                                                   .message = msg,
+                                               });
   check(denied_send.status == KernelCallStatus::CapabilityDenied,
         "minimal ABI denies send without IPC capability");
   check(denied_send.rejection == KernelCallRejection::MissingCapability,
         "minimal ABI capability denial is explicit");
 
-  auto queried_after_revoke = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
+  auto queried_after_revoke =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
   check(queried_after_revoke.status == KernelCallStatus::Ok,
         "minimal ABI capability query still succeeds after revocation");
-  check(std::none_of(queried_after_revoke.capabilities.begin(),
-                     queried_after_revoke.capabilities.end(),
-                     [](const auto& capability) {
-                       return capability.kind == KernelCapabilityKind::IpcSend;
-                     }),
-        "minimal ABI capability query reflects revocation");
+  check(
+      std::none_of(
+          queried_after_revoke.capabilities.begin(), queried_after_revoke.capabilities.end(),
+          [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcSend; }),
+      "minimal ABI capability query reflects revocation");
 
   check(axion_kernel_grant_process_group_capability(
-            *state,
-            runtime_a->process_group_id,
-            std::nullopt,
-            std::nullopt,
+            *state, runtime_a->process_group_id, std::nullopt, std::nullopt,
             KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend}),
         "minimal ABI can re-grant a revoked process-group capability");
-  auto queried_after_grant = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
-  check(std::any_of(queried_after_grant.capabilities.begin(),
-                    queried_after_grant.capabilities.end(),
-                    [](const auto& capability) {
-                      return capability.kind == KernelCapabilityKind::IpcSend;
-                    }),
-        "minimal ABI capability query reflects re-grant");
-  check(std::any_of(queried_after_grant.capabilities.begin(),
-                    queried_after_grant.capabilities.end(),
-                    [](const auto& capability) {
-                      return capability.kind == KernelCapabilityKind::IpcSend &&
-                             capability.record_id != 0;
-                    }),
+  auto queried_after_grant =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::QueryCapabilities});
+  check(
+      std::any_of(
+          queried_after_grant.capabilities.begin(), queried_after_grant.capabilities.end(),
+          [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcSend; }),
+      "minimal ABI capability query reflects re-grant");
+  check(std::any_of(
+            queried_after_grant.capabilities.begin(), queried_after_grant.capabilities.end(),
+            [](const auto& capability) {
+              return capability.kind == KernelCapabilityKind::IpcSend && capability.record_id != 0;
+            }),
         "minimal ABI re-granted capability carries a kernel-issued record id");
 
-  auto restored_send = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SendMessage,
-          .ipc_dst = *tid_b,
-          .message = msg,
-      });
+  auto restored_send = axion_kernel_call(*state, KernelCallRequest{
+                                                     .kind = KernelCallKind::SendMessage,
+                                                     .ipc_dst = *tid_b,
+                                                     .message = msg,
+                                                 });
   check(restored_send.status == KernelCallStatus::Ok,
         "minimal ABI send succeeds again after re-grant");
 
-  auto memory_status = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryProcessGroupMemory,
-          .process_group_id = runtime_a->process_group_id,
-      });
+  auto memory_status =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryProcessGroupMemory,
+                                    .process_group_id = runtime_a->process_group_id,
+                                });
   check(memory_status.status == KernelCallStatus::Ok,
         "minimal ABI process-group memory query returns Ok");
   check(memory_status.target_process_group_id == runtime_a->process_group_id,
@@ -7996,19 +7627,17 @@ static void test_kernel_minimal_abi_calls() {
         "minimal ABI memory query reports no pending process-group faults after recovery");
   check(!memory_status.process_group_faulted,
         "minimal ABI memory query reports recovered non-faulted state");
-  check(!memory_status.process_group_blocked,
-        "minimal ABI memory query reports unblocked state");
+  check(!memory_status.process_group_blocked, "minimal ABI memory query reports unblocked state");
   check(!memory_status.process_group_acknowledgement_pending,
         "minimal ABI memory query reports no pending group acknowledgement");
   check(!memory_status.address_space_boot_critical,
         "minimal ABI memory query reports non-boot-critical address space by default");
 
-  auto enable_boot_critical = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .boot_critical = true,
-      });
+  auto enable_boot_critical =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetAddressSpaceBootCritical,
+                                    .boot_critical = true,
+                                });
   check(enable_boot_critical.status == KernelCallStatus::Ok,
         "minimal ABI can enable boot-critical status for the caller-derived address space");
   check(enable_boot_critical.action_performed,
@@ -8029,19 +7658,18 @@ static void test_kernel_minimal_abi_calls() {
           "runtime status reflects one boot-critical address space after ABI toggle");
   }
 
-  auto implicit_runtime_supervisor = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::QueryRuntimeStatus});
+  auto implicit_runtime_supervisor =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::QueryRuntimeStatus});
   check(implicit_runtime_supervisor.status == KernelCallStatus::Ok,
         "minimal ABI runtime status query derives the caller supervisor");
   check(implicit_runtime_supervisor.supervisor_id == supervisor_a,
         "minimal ABI runtime status query returns the caller supervisor");
 
-  auto runtime_status_abi = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryRuntimeStatus,
-          .supervisor_id = *supervisor_a,
-      });
+  auto runtime_status_abi =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryRuntimeStatus,
+                                    .supervisor_id = *supervisor_a,
+                                });
   check(runtime_status_abi.status == KernelCallStatus::Ok,
         "minimal ABI runtime status query returns Ok");
   check(runtime_status_abi.runtime_boot_critical_address_space_count == 1,
@@ -8049,34 +7677,31 @@ static void test_kernel_minimal_abi_calls() {
   check(runtime_status_abi.runtime_mapped_pages == 1,
         "minimal ABI runtime status reports one mapped page");
 
-  auto memory_status_after_enable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryProcessGroupMemory,
-          .process_group_id = runtime_a->process_group_id,
-      });
+  auto memory_status_after_enable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryProcessGroupMemory,
+                                    .process_group_id = runtime_a->process_group_id,
+                                });
   check(memory_status_after_enable.status == KernelCallStatus::Ok,
         "minimal ABI memory query still succeeds after boot-critical toggle");
   check(memory_status_after_enable.address_space_boot_critical,
         "minimal ABI memory query reflects enabled boot-critical state");
 
-  auto disable_boot_critical = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .boot_critical = false,
-      });
+  auto disable_boot_critical =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetAddressSpaceBootCritical,
+                                    .boot_critical = false,
+                                });
   check(disable_boot_critical.status == KernelCallStatus::Ok,
         "minimal ABI can disable boot-critical status for the caller-derived address space");
   check(!disable_boot_critical.address_space_boot_critical,
         "minimal ABI boot-critical toggle returns disabled state");
 
-  auto implicit_boot_critical_target = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .boot_critical = true,
-      });
+  auto implicit_boot_critical_target =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetAddressSpaceBootCritical,
+                                    .boot_critical = true,
+                                });
   check(implicit_boot_critical_target.status == KernelCallStatus::Ok,
         "minimal ABI boot-critical toggle derives the caller address space when omitted");
   check(implicit_boot_critical_target.address_space_id == address_space_a,
@@ -8084,27 +7709,24 @@ static void test_kernel_minimal_abi_calls() {
   check(implicit_boot_critical_target.address_space_boot_critical,
         "minimal ABI implicit boot-critical toggle enables boot-critical state");
 
-  auto clear_implicit_boot_critical_target = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .boot_critical = false,
-      });
+  auto clear_implicit_boot_critical_target =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetAddressSpaceBootCritical,
+                                    .boot_critical = false,
+                                });
   check(clear_implicit_boot_critical_target.status == KernelCallStatus::Ok,
         "minimal ABI can clear implicitly targeted boot-critical state");
   check(!clear_implicit_boot_critical_target.address_space_boot_critical,
         "minimal ABI implicit boot-critical clear returns disabled state");
 
-  auto missing_boot_critical_value = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .address_space_id = *address_space_a,
-      });
+  auto missing_boot_critical_value =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetAddressSpaceBootCritical,
+                                    .address_space_id = *address_space_a,
+                                });
   check(missing_boot_critical_value.status == KernelCallStatus::InvalidRequest,
         "minimal ABI boot-critical toggle rejects a missing boot-critical value");
-  check(missing_boot_critical_value.rejection ==
-            KernelCallRejection::MissingBootCriticalValue,
+  check(missing_boot_critical_value.rejection == KernelCallRejection::MissingBootCriticalValue,
         "minimal ABI boot-critical toggle reports MissingBootCriticalValue explicitly");
 
   t81::ternaryos::sched::TiscContext outsider;
@@ -8121,30 +7743,26 @@ static void test_kernel_minimal_abi_calls() {
   }
   const auto outsider_address_space =
       state->find_process_group_address_space(outsider_runtime->process_group_id);
-  check(outsider_address_space.has_value(),
-        "minimal ABI resolves outsider address space");
+  check(outsider_address_space.has_value(), "minimal ABI resolves outsider address space");
   if (!outsider_address_space) {
     return;
   }
 
-  auto foreign_boot_critical_target = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SetAddressSpaceBootCritical,
-          .address_space_id = *outsider_address_space,
-          .boot_critical = true,
-      });
+  auto foreign_boot_critical_target =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetAddressSpaceBootCritical,
+                                    .address_space_id = *outsider_address_space,
+                                    .boot_critical = true,
+                                });
   check(foreign_boot_critical_target.status == KernelCallStatus::PolicyDenied,
         "minimal ABI boot-critical toggle rejects a foreign address space");
   check(foreign_boot_critical_target.rejection == KernelCallRejection::ForeignAddressSpace,
         "minimal ABI boot-critical toggle reports ForeignAddressSpace for foreign ownership");
 
-  auto fault_summary_abi = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryFaultSummary,
-          .supervisor_id = *supervisor_a,
-      });
+  auto fault_summary_abi = axion_kernel_call(*state, KernelCallRequest{
+                                                         .kind = KernelCallKind::QueryFaultSummary,
+                                                         .supervisor_id = *supervisor_a,
+                                                     });
   check(fault_summary_abi.status == KernelCallStatus::Ok,
         "minimal ABI fault summary query returns Ok");
   check(fault_summary_abi.fault_summary_recorded_faults == 1,
@@ -8223,30 +7841,27 @@ static void test_kernel_capability_management_abi() {
   check(state->scheduler.current_tid() == *leader_tid,
         "leader thread is current for capability management calls");
 
-  const auto sibling_start_caps = axion_kernel_list_process_group_capabilities(
-      *state, sibling_runtime->process_group_id);
+  const auto sibling_start_caps =
+      axion_kernel_list_process_group_capabilities(*state, sibling_runtime->process_group_id);
   const auto sibling_ipc_receive = std::find_if(
-      sibling_start_caps.begin(),
-      sibling_start_caps.end(),
-      [](const auto& capability) {
-        return capability.kind == KernelCapabilityKind::IpcReceive;
-      });
+      sibling_start_caps.begin(), sibling_start_caps.end(),
+      [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcReceive; });
   check(sibling_ipc_receive != sibling_start_caps.end(),
         "same-supervisor setup exposes the issued IPC receive capability record");
   if (sibling_ipc_receive == sibling_start_caps.end()) {
     return;
   }
 
-  auto revoke_same_supervisor = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .record_id = sibling_ipc_receive->record_id,
-              .kind = KernelCapabilityKind::IpcReceive,
-          },
-      });
+  auto revoke_same_supervisor =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RevokeCapability,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability =
+                                        KernelCapabilityRecord{
+                                            .record_id = sibling_ipc_receive->record_id,
+                                            .kind = KernelCapabilityKind::IpcReceive,
+                                        },
+                                });
   check(revoke_same_supervisor.status == KernelCallStatus::Ok,
         "same-supervisor capability revoke returns Ok");
   check(revoke_same_supervisor.action_performed,
@@ -8259,12 +7874,11 @@ static void test_kernel_capability_management_abi() {
         "same-supervisor revoke result reflects removed capability");
 
   auto grant_same_supervisor = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::GrantCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::GrantCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(grant_same_supervisor.status == KernelCallStatus::Ok,
         "same-supervisor capability grant returns Ok");
   check(std::any_of(grant_same_supervisor.capabilities.begin(),
@@ -8280,12 +7894,9 @@ static void test_kernel_capability_management_abi() {
                              capability.record_id != 0;
                     }),
         "same-supervisor grant result includes a kernel-issued record id");
-  const auto granted_sibling_ipc_receive =
-      std::find_if(grant_same_supervisor.capabilities.begin(),
-                   grant_same_supervisor.capabilities.end(),
-                   [](const auto& capability) {
-                     return capability.kind == KernelCapabilityKind::IpcReceive;
-                   });
+  const auto granted_sibling_ipc_receive = std::find_if(
+      grant_same_supervisor.capabilities.begin(), grant_same_supervisor.capabilities.end(),
+      [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcReceive; });
   check(granted_sibling_ipc_receive != grant_same_supervisor.capabilities.end(),
         "same-supervisor grant result exposes the restored IPC receive record");
   if (granted_sibling_ipc_receive != grant_same_supervisor.capabilities.end()) {
@@ -8298,28 +7909,26 @@ static void test_kernel_capability_management_abi() {
           "same-supervisor grant result records the delegating supervisor");
   }
 
-  auto invalid_grant_record_id = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::GrantCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .record_id = 999999,
-              .kind = KernelCapabilityKind::IpcReceive,
-          },
-      });
+  auto invalid_grant_record_id =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::GrantCapability,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability =
+                                        KernelCapabilityRecord{
+                                            .record_id = 999999,
+                                            .kind = KernelCapabilityKind::IpcReceive,
+                                        },
+                                });
   check(invalid_grant_record_id.status == KernelCallStatus::InvalidRequest,
         "same-supervisor capability grant rejects caller-supplied record ids");
-  check(invalid_grant_record_id.rejection ==
-            KernelCallRejection::InvalidCapabilityRecordId,
+  check(invalid_grant_record_id.rejection == KernelCallRejection::InvalidCapabilityRecordId,
         "same-supervisor capability grant reports InvalidCapabilityRecordId");
 
-  auto query_same_supervisor = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-      });
+  auto query_same_supervisor =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilities,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                });
   check(query_same_supervisor.status == KernelCallStatus::Ok,
         "same-supervisor capability query returns Ok");
   check(std::any_of(query_same_supervisor.capabilities.begin(),
@@ -8332,26 +7941,25 @@ static void test_kernel_capability_management_abi() {
                     query_same_supervisor.capabilities.end(),
                     [](const auto& capability) { return capability.record_id != 0; }),
         "same-supervisor capability query returns kernel-issued record ids");
-  check(std::any_of(query_same_supervisor.capabilities.begin(),
-                    query_same_supervisor.capabilities.end(),
-                    [&](const auto& capability) {
-                      return capability.kind == KernelCapabilityKind::IpcReceive &&
-                             !capability.kernel_seeded &&
-                             capability.delegated_by_process_group_id ==
-                                 leader_runtime->process_group_id &&
-                             capability.delegated_by_supervisor_id == leader_supervisor;
-                    }),
+  check(std::any_of(
+            query_same_supervisor.capabilities.begin(), query_same_supervisor.capabilities.end(),
+            [&](const auto& capability) {
+              return capability.kind == KernelCapabilityKind::IpcReceive &&
+                     !capability.kernel_seeded &&
+                     capability.delegated_by_process_group_id == leader_runtime->process_group_id &&
+                     capability.delegated_by_supervisor_id == leader_supervisor;
+            }),
         "same-supervisor capability query preserves delegation provenance");
   auto query_same_supervisor_delegated = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryDelegatedCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryDelegatedCapabilities,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
   check(query_same_supervisor_delegated.status == KernelCallStatus::Ok,
         "same-supervisor delegated-capability query returns Ok");
   check(query_same_supervisor_delegated.capabilities.size() == 1,
@@ -8359,30 +7967,29 @@ static void test_kernel_capability_management_abi() {
   check(query_same_supervisor_delegated.capabilities.front().record_id ==
             granted_sibling_ipc_receive->record_id,
         "same-supervisor delegated-capability query returns the delegated record id");
-  auto query_revoked_same_supervisor_record = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityRecord,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .record_id = sibling_ipc_receive->record_id,
-          },
-      });
+  auto query_revoked_same_supervisor_record =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilityRecord,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability =
+                                        KernelCapabilityRecord{
+                                            .record_id = sibling_ipc_receive->record_id,
+                                        },
+                                });
   check(query_revoked_same_supervisor_record.status == KernelCallStatus::NotFound,
         "same-supervisor capability-record query reports revoked records as missing");
-  check(query_revoked_same_supervisor_record.rejection ==
-            KernelCallRejection::MissingCapability,
+  check(query_revoked_same_supervisor_record.rejection == KernelCallRejection::MissingCapability,
         "same-supervisor capability-record query reports MissingCapability for revoked records");
 
-  auto query_same_supervisor_record = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityRecord,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .record_id = granted_sibling_ipc_receive->record_id,
-          },
-      });
+  auto query_same_supervisor_record =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilityRecord,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability =
+                                        KernelCapabilityRecord{
+                                            .record_id = granted_sibling_ipc_receive->record_id,
+                                        },
+                                });
   check(query_same_supervisor_record.status == KernelCallStatus::Ok,
         "same-supervisor capability-record query returns Ok");
   check(query_same_supervisor_record.capabilities.size() == 1,
@@ -8397,26 +8004,23 @@ static void test_kernel_capability_management_abi() {
             leader_supervisor,
         "same-supervisor capability-record query returns the delegating supervisor");
 
-  auto same_supervisor_memory = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryProcessGroupMemory,
-          .process_group_id = sibling_runtime->process_group_id,
-      });
+  auto same_supervisor_memory =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryProcessGroupMemory,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                });
   check(same_supervisor_memory.status == KernelCallStatus::Ok,
         "same-supervisor process-group memory query returns Ok");
-  check(same_supervisor_memory.target_process_group_id ==
-            sibling_runtime->process_group_id,
+  check(same_supervisor_memory.target_process_group_id == sibling_runtime->process_group_id,
         "same-supervisor process-group memory query returns the sibling group id");
   check(same_supervisor_memory.address_space_id.has_value(),
         "same-supervisor process-group memory query returns an address space");
 
-  auto abi_supervisor_inventory = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
-          .process_group_id = sibling_runtime->process_group_id,
-      });
+  auto abi_supervisor_inventory =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                });
   check(abi_supervisor_inventory.status == KernelCallStatus::Ok,
         "same-supervisor capability inventory ABI query returns Ok");
   check(abi_supervisor_inventory.supervisor_id == leader_supervisor,
@@ -8448,18 +8052,17 @@ static void test_kernel_capability_management_abi() {
   check(!abi_supervisor_inventory.supervisor_capability_transition_history.back().kernel_seeded,
         "capability inventory ABI history marks delegated grants as non-kernel-seeded");
   check(abi_supervisor_inventory.supervisor_capability_transition_history.back()
-            .delegated_by_process_group_id == leader_runtime->process_group_id,
+                .delegated_by_process_group_id == leader_runtime->process_group_id,
         "capability inventory ABI history preserves the delegating process group");
   check(abi_supervisor_inventory.supervisor_capability_transition_history.back()
-            .delegated_by_supervisor_id == leader_supervisor,
+                .delegated_by_supervisor_id == leader_supervisor,
         "capability inventory ABI history preserves the delegating supervisor");
-  auto abi_transition_history = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .process_group_id = sibling_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-      });
+  auto abi_transition_history =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .supervisor_id = *leader_supervisor,
+                                });
   check(abi_transition_history.status == KernelCallStatus::Ok,
         "capability transition history ABI query returns Ok");
   check(abi_transition_history.supervisor_capability_transition_history.size() == 2,
@@ -8479,8 +8082,7 @@ static void test_kernel_capability_management_abi() {
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
           .process_group_id = sibling_runtime->process_group_id,
           .supervisor_id = *leader_supervisor,
-          .capability =
-              KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
+          .capability = KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
       });
   check(abi_granted_record_history.status == KernelCallStatus::Ok,
         "capability transition history can filter by granted capability record id");
@@ -8493,19 +8095,18 @@ static void test_kernel_capability_management_abi() {
             KernelAuditEventKind::CapabilityGranted,
         "capability transition history record filter preserves the grant transition kind");
   check(abi_granted_record_history.supervisor_capability_transition_history.front()
-            .delegated_by_process_group_id == leader_runtime->process_group_id,
+                .delegated_by_process_group_id == leader_runtime->process_group_id,
         "capability transition history record filter preserves delegating process group");
   check(abi_granted_record_history.supervisor_capability_transition_history.front()
-            .delegated_by_supervisor_id == leader_supervisor,
+                .delegated_by_supervisor_id == leader_supervisor,
         "capability transition history record filter preserves delegating supervisor");
   auto abi_revoked_record_history = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .process_group_id = sibling_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-          .capability = KernelCapabilityRecord{.record_id = sibling_ipc_receive->record_id},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .supervisor_id = *leader_supervisor,
+                  .capability = KernelCapabilityRecord{.record_id = sibling_ipc_receive->record_id},
+              });
   check(abi_revoked_record_history.status == KernelCallStatus::Ok,
         "capability transition history can filter by revoked capability record id");
   check(abi_revoked_record_history.supervisor_capability_transition_history.size() == 1,
@@ -8526,11 +8127,10 @@ static void test_kernel_capability_management_abi() {
                     abi_supervisor_inventory.capabilities.end(),
                     [](const auto& capability) { return capability.record_id != 0; }),
         "capability inventory ABI returns kernel-issued record ids");
-  auto abi_delegation_summary = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorDelegationSummary,
-      });
+  auto abi_delegation_summary =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorDelegationSummary,
+                                });
   check(abi_delegation_summary.status == KernelCallStatus::Ok,
         "supervisor delegation summary ABI query returns Ok");
   check(abi_delegation_summary.supervisor_id == leader_supervisor,
@@ -8544,24 +8144,23 @@ static void test_kernel_capability_management_abi() {
   check(abi_delegation_summary.supervisor_delegation_entries.size() == 1,
         "supervisor delegation summary returns one entry");
   if (!abi_delegation_summary.supervisor_delegation_entries.empty()) {
-    check(abi_delegation_summary.supervisor_delegation_entries.front()
-              .target_process_group_id == sibling_runtime->process_group_id,
+    check(abi_delegation_summary.supervisor_delegation_entries.front().target_process_group_id ==
+              sibling_runtime->process_group_id,
           "supervisor delegation summary entry targets the sibling process group");
     check(abi_delegation_summary.supervisor_delegation_entries.front()
-              .delegated_by_process_group_id == leader_runtime->process_group_id,
+                  .delegated_by_process_group_id == leader_runtime->process_group_id,
           "supervisor delegation summary entry records the delegating process group");
-    check(abi_delegation_summary.supervisor_delegation_entries.front()
-              .delegated_capability_count == 1,
+    check(abi_delegation_summary.supervisor_delegation_entries.front().delegated_capability_count ==
+              1,
           "supervisor delegation summary entry counts one delegated capability");
   }
 
   auto supervisor_inventory = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorCapabilityInventory,
-          .requesting_process_group_id = leader_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorCapabilityInventory,
+                  .requesting_process_group_id = leader_runtime->process_group_id,
+                  .supervisor_id = *leader_supervisor,
+              });
   check(supervisor_inventory.status == KernelServiceStatus::Ok,
         "supervisor inventory request succeeds after capability transitions");
   check(supervisor_inventory.supervisor_capabilities.has_value(),
@@ -8585,55 +8184,48 @@ static void test_kernel_capability_management_abi() {
     check(supervisor_inventory.supervisor_capabilities->last_capability_transition_sequence
               .has_value(),
           "supervisor inventory exposes the last capability transition sequence");
-    check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.size() ==
-              2,
+    check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.size() == 2,
           "supervisor inventory exposes the recent capability transition history");
     check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.front()
-              .record_id == sibling_ipc_receive->record_id,
+                  .record_id == sibling_ipc_receive->record_id,
           "supervisor inventory history preserves the revoked capability record id");
     check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
-              .record_id == granted_sibling_ipc_receive->record_id,
+                  .record_id == granted_sibling_ipc_receive->record_id,
           "supervisor inventory history preserves the granted capability record id");
     check(!supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
                .kernel_seeded,
           "supervisor inventory history marks delegated grants as non-kernel-seeded");
     check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
-              .delegated_by_process_group_id == leader_runtime->process_group_id,
+                  .delegated_by_process_group_id == leader_runtime->process_group_id,
           "supervisor inventory history preserves the delegating process group");
     check(supervisor_inventory.supervisor_capabilities->recent_capability_transitions.back()
-              .delegated_by_supervisor_id == leader_supervisor,
+                  .delegated_by_supervisor_id == leader_supervisor,
           "supervisor inventory history preserves the delegating supervisor");
     const auto sibling_entry = std::find_if(
         supervisor_inventory.supervisor_capabilities->process_groups.begin(),
-        supervisor_inventory.supervisor_capabilities->process_groups.end(),
-        [&](const auto& entry) {
+        supervisor_inventory.supervisor_capabilities->process_groups.end(), [&](const auto& entry) {
           return entry.process_group_id == sibling_runtime->process_group_id;
         });
-    check(sibling_entry !=
-              supervisor_inventory.supervisor_capabilities->process_groups.end(),
+    check(sibling_entry != supervisor_inventory.supervisor_capabilities->process_groups.end(),
           "capability inventory includes the sibling process group");
-    if (sibling_entry !=
-        supervisor_inventory.supervisor_capabilities->process_groups.end()) {
-      check(std::any_of(sibling_entry->capabilities.begin(),
-                        sibling_entry->capabilities.end(),
+    if (sibling_entry != supervisor_inventory.supervisor_capabilities->process_groups.end()) {
+      check(std::any_of(sibling_entry->capabilities.begin(), sibling_entry->capabilities.end(),
                         [&](const auto& capability) {
                           return capability.kind == KernelCapabilityKind::IpcReceive &&
                                  !capability.kernel_seeded &&
                                  capability.delegated_by_process_group_id ==
                                      leader_runtime->process_group_id &&
-                                 capability.delegated_by_supervisor_id ==
-                                     leader_supervisor;
+                                 capability.delegated_by_supervisor_id == leader_supervisor;
                         }),
             "capability inventory reflects the restored sibling capability provenance");
     }
   }
   auto supervisor_delegation_summary = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorDelegationSummary,
-          .requesting_process_group_id = leader_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorDelegationSummary,
+                  .requesting_process_group_id = leader_runtime->process_group_id,
+                  .supervisor_id = *leader_supervisor,
+              });
   check(supervisor_delegation_summary.status == KernelServiceStatus::Ok,
         "supervisor delegation summary request succeeds");
   check(supervisor_delegation_summary.supervisor_delegations.has_value(),
@@ -8643,101 +8235,91 @@ static void test_kernel_capability_management_abi() {
           "service delegation summary reports both managed process groups");
     check(supervisor_delegation_summary.supervisor_delegations->delegation_entry_count == 1,
           "service delegation summary reports one delegated entry");
-    check(supervisor_delegation_summary.supervisor_delegations->delegated_capability_count ==
-              1,
+    check(supervisor_delegation_summary.supervisor_delegations->delegated_capability_count == 1,
           "service delegation summary reports one delegated capability");
   }
 
   auto revoke_foreign_group = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = outsider_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeCapability,
+                  .process_group_id = outsider_runtime->process_group_id,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(revoke_foreign_group.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability revoke is denied");
   check(revoke_foreign_group.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor revoke reports supervisor mismatch");
 
-  auto query_foreign_group = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilities,
-          .process_group_id = outsider_runtime->process_group_id,
-      });
+  auto query_foreign_group =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilities,
+                                    .process_group_id = outsider_runtime->process_group_id,
+                                });
   check(query_foreign_group.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability query is denied");
   check(query_foreign_group.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability query reports supervisor mismatch");
-  auto query_foreign_record = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityRecord,
-          .process_group_id = outsider_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.record_id = 1},
-      });
+  auto query_foreign_record =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilityRecord,
+                                    .process_group_id = outsider_runtime->process_group_id,
+                                    .capability = KernelCapabilityRecord{.record_id = 1},
+                                });
   check(query_foreign_record.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability-record query is denied");
   check(query_foreign_record.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability-record query reports supervisor mismatch");
-  auto query_missing_delegation_scope = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryDelegatedCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{},
-      });
+  auto query_missing_delegation_scope =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryDelegatedCapabilities,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability = KernelCapabilityRecord{},
+                                });
   check(query_missing_delegation_scope.status == KernelCallStatus::InvalidRequest,
         "delegated-capability query rejects a missing delegation scope");
-  check(query_missing_delegation_scope.rejection ==
-            KernelCallRejection::MissingDelegationScope,
+  check(query_missing_delegation_scope.rejection == KernelCallRejection::MissingDelegationScope,
         "delegated-capability query reports MissingDelegationScope");
 
-  auto query_foreign_memory = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryProcessGroupMemory,
-          .process_group_id = outsider_runtime->process_group_id,
-      });
+  auto query_foreign_memory =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryProcessGroupMemory,
+                                    .process_group_id = outsider_runtime->process_group_id,
+                                });
   check(query_foreign_memory.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor process-group memory query is denied");
   check(query_foreign_memory.rejection == KernelCallRejection::ForeignSupervisorScope,
         "foreign-supervisor process-group memory query reports foreign supervisor scope");
 
-  auto query_foreign_inventory = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
-          .process_group_id = outsider_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-      });
+  auto query_foreign_inventory =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorCapabilityInventory,
+                                    .process_group_id = outsider_runtime->process_group_id,
+                                    .supervisor_id = *leader_supervisor,
+                                });
   check(query_foreign_inventory.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability inventory ABI query is denied");
   check(query_foreign_inventory.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability inventory ABI query reports supervisor mismatch");
-  auto query_foreign_transition_history = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .process_group_id = outsider_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-      });
+  auto query_foreign_transition_history =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+                                    .process_group_id = outsider_runtime->process_group_id,
+                                    .supervisor_id = *leader_supervisor,
+                                });
   check(query_foreign_transition_history.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability transition history query is denied");
-  check(query_foreign_transition_history.rejection ==
-            KernelCallRejection::SupervisorMismatch,
+  check(query_foreign_transition_history.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign-supervisor capability transition history query reports supervisor mismatch");
   auto query_foreign_delegated = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryDelegatedCapabilities,
-          .process_group_id = outsider_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryDelegatedCapabilities,
+                  .process_group_id = outsider_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
   check(query_foreign_delegated.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor delegated-capability query is denied");
   check(query_foreign_delegated.rejection == KernelCallRejection::SupervisorMismatch,
@@ -8748,36 +8330,32 @@ static void test_kernel_capability_management_abi() {
           .kind = KernelCallKind::QueryCapabilityTransitionHistory,
           .process_group_id = outsider_runtime->process_group_id,
           .supervisor_id = *leader_supervisor,
-          .capability =
-              KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
+          .capability = KernelCapabilityRecord{.record_id = granted_sibling_ipc_receive->record_id},
       });
   check(query_foreign_record_history.status == KernelCallStatus::PolicyDenied,
         "foreign-supervisor capability transition history record filter is denied");
-  check(query_foreign_record_history.rejection ==
-            KernelCallRejection::SupervisorMismatch,
-        "foreign-supervisor capability transition history record filter reports supervisor mismatch");
+  check(
+      query_foreign_record_history.rejection == KernelCallRejection::SupervisorMismatch,
+      "foreign-supervisor capability transition history record filter reports supervisor mismatch");
 
-  auto outsider_caps = axion_kernel_list_process_group_capabilities(
-      *state, outsider_runtime->process_group_id);
-  check(std::any_of(outsider_caps.begin(),
-                    outsider_caps.end(),
+  auto outsider_caps =
+      axion_kernel_list_process_group_capabilities(*state, outsider_runtime->process_group_id);
+  check(std::any_of(outsider_caps.begin(), outsider_caps.end(),
                     [](const auto& capability) {
                       return capability.kind == KernelCapabilityKind::IpcReceive;
                     }),
         "foreign-supervisor denial leaves outsider capabilities unchanged");
 
   auto denied_foreign_inventory = axion_kernel_service_request(
-      *state,
-      KernelServiceRequest{
-          .kind = KernelServiceRequestKind::SupervisorCapabilityInventory,
-          .requesting_process_group_id = leader_runtime->process_group_id,
-          .supervisor_id = *state->find_process_group_supervisor(
-              outsider_runtime->process_group_id),
-      });
+      *state, KernelServiceRequest{
+                  .kind = KernelServiceRequestKind::SupervisorCapabilityInventory,
+                  .requesting_process_group_id = leader_runtime->process_group_id,
+                  .supervisor_id =
+                      *state->find_process_group_supervisor(outsider_runtime->process_group_id),
+              });
   check(denied_foreign_inventory.status == KernelServiceStatus::InvalidRequest,
         "capability inventory denies cross-supervisor requests");
-  check(denied_foreign_inventory.rejection ==
-            KernelServiceRequestRejection::MissingSupervisor,
+  check(denied_foreign_inventory.rejection == KernelServiceRequestRejection::MissingSupervisor,
         "cross-supervisor capability inventory reports supervisor mismatch via request rejection");
 
   std::vector<KernelAuditEventKind> capability_events;
@@ -8817,28 +8395,31 @@ static void test_kernel_abi_wire_blocks() {
       .capability_transition_sequence = 37,
       .boot_critical = true,
       .ipc_dst = 41,
-      .message = t81::ternaryos::ipc::CanonMessage{
-          .sender = 43,
-          .ref = request_ref,
-          .payload = 47,
-          .tag = "wire-send",
-      },
-      .capability = KernelCapabilityRecord{
-          .record_id = 53,
-          .kind = KernelCapabilityKind::IpcSend,
-          .process_group_scope = 59,
-          .kernel_seeded = false,
-          .delegated_by_process_group_id = 61,
-          .delegated_by_supervisor_id = 67,
-      },
-      .spawn_descriptor = KernelThreadSpawnDescriptor{
-          .pc = 73,
-          .sp = 79,
-          .register0 = 83,
-          .halted = true,
-          .active = false,
-          .label = "wire-spawn",
-      },
+      .message =
+          t81::ternaryos::ipc::CanonMessage{
+              .sender = 43,
+              .ref = request_ref,
+              .payload = 47,
+              .tag = "wire-send",
+          },
+      .capability =
+          KernelCapabilityRecord{
+              .record_id = 53,
+              .kind = KernelCapabilityKind::IpcSend,
+              .process_group_scope = 59,
+              .kernel_seeded = false,
+              .delegated_by_process_group_id = 61,
+              .delegated_by_supervisor_id = 67,
+          },
+      .spawn_descriptor =
+          KernelThreadSpawnDescriptor{
+              .pc = 73,
+              .sp = 79,
+              .register0 = 83,
+              .halted = true,
+              .active = false,
+              .label = "wire-spawn",
+          },
       .service_id = 71,
       .service_name = "wire-service",
   };
@@ -8849,8 +8430,7 @@ static void test_kernel_abi_wire_blocks() {
   const auto decoded_request = axion_kernel_decode_wire_request(request_block);
   check(decoded_request.has_value(), "kernel ABI wire request block decodes");
   if (decoded_request) {
-    check(decoded_request->kind == request.kind,
-          "kernel ABI wire request preserves call kind");
+    check(decoded_request->kind == request.kind, "kernel ABI wire request preserves call kind");
     check(decoded_request->ipc_dst == request.ipc_dst,
           "kernel ABI wire request preserves IPC destination");
     check(decoded_request->message.has_value() &&
@@ -8871,17 +8451,13 @@ static void test_kernel_abi_wire_blocks() {
             "kernel ABI wire request preserves spawn pc");
       check(decoded_request->spawn_descriptor->sp == request.spawn_descriptor->sp,
             "kernel ABI wire request preserves spawn sp");
-      check(decoded_request->spawn_descriptor->register0 ==
-                request.spawn_descriptor->register0,
+      check(decoded_request->spawn_descriptor->register0 == request.spawn_descriptor->register0,
             "kernel ABI wire request preserves spawn register0");
-      check(decoded_request->spawn_descriptor->halted ==
-                request.spawn_descriptor->halted,
+      check(decoded_request->spawn_descriptor->halted == request.spawn_descriptor->halted,
             "kernel ABI wire request preserves spawn halted state");
-      check(decoded_request->spawn_descriptor->active ==
-                request.spawn_descriptor->active,
+      check(decoded_request->spawn_descriptor->active == request.spawn_descriptor->active,
             "kernel ABI wire request preserves spawn active state");
-      check(decoded_request->spawn_descriptor->label ==
-                request.spawn_descriptor->label,
+      check(decoded_request->spawn_descriptor->label == request.spawn_descriptor->label,
             "kernel ABI wire request preserves spawn label");
     }
     check(decoded_request->service_name == request.service_name,
@@ -8896,27 +8472,29 @@ static void test_kernel_abi_wire_blocks() {
       .caller_tid = 73,
       .caller_process_group_id = 79,
       .message = request.message,
-      .capabilities = {
-          KernelCapabilityRecord{
-              .record_id = 61,
-              .kind = KernelCapabilityKind::IpcReceive,
-              .kernel_seeded = false,
-              .delegated_by_process_group_id = 67,
-              .delegated_by_supervisor_id = 71,
+      .capabilities =
+          {
+              KernelCapabilityRecord{
+                  .record_id = 61,
+                  .kind = KernelCapabilityKind::IpcReceive,
+                  .kernel_seeded = false,
+                  .delegated_by_process_group_id = 67,
+                  .delegated_by_supervisor_id = 71,
+              },
+              KernelCapabilityRecord{
+                  .record_id = 73,
+                  .kind = KernelCapabilityKind::FaultObserve,
+                  .process_group_scope = 79,
+                  .kernel_seeded = true,
+              },
           },
-          KernelCapabilityRecord{
-              .record_id = 73,
-              .kind = KernelCapabilityKind::FaultObserve,
-              .process_group_scope = 79,
-              .kernel_seeded = true,
-          },
-      },
       .service_id = 83,
       .service_name = "wire-service-response",
       .service_registered = true,
       .supervisor_id = 89,
       .address_space_id = 97,
       .target_process_group_id = 101,
+      .thread_label = "test_thread_label",
       .process_group_owned_page_count = 3,
       .process_group_pending_fault_count = 1,
       .runtime_boot_critical_address_space_count = 2,
@@ -8950,8 +8528,7 @@ static void test_kernel_abi_wire_blocks() {
   const auto decoded_response = axion_kernel_decode_wire_response(response_block);
   check(decoded_response.has_value(), "kernel ABI wire response block decodes");
   if (decoded_response) {
-    check(decoded_response->status == response.status,
-          "kernel ABI wire response preserves status");
+    check(decoded_response->status == response.status, "kernel ABI wire response preserves status");
     check(decoded_response->caller_tid == response.caller_tid,
           "kernel ABI wire response preserves caller tid");
     check(decoded_response->message.has_value() &&
@@ -9005,8 +8582,7 @@ static void test_kernel_abi_wire_call_boundary() {
   }
 
   check(axion_kernel_tick(*state), "wire ABI dispatches thread A");
-  check(state->scheduler.current_tid() == *tid_a,
-        "wire ABI sets thread A current before send");
+  check(state->scheduler.current_tid() == *tid_a, "wire ABI sets thread A current before send");
 
   const auto identity_request = axion_kernel_encode_wire_request(
       KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
@@ -9016,8 +8592,7 @@ static void test_kernel_abi_wire_call_boundary() {
   const auto decoded_identity = axion_kernel_decode_wire_response(identity_response);
   check(decoded_identity.has_value(), "wire ABI identity response decodes");
   if (decoded_identity) {
-    check(decoded_identity->status == KernelCallStatus::Ok,
-          "wire ABI identity returns Ok");
+    check(decoded_identity->status == KernelCallStatus::Ok, "wire ABI identity returns Ok");
     check(decoded_identity->caller_tid == *tid_a,
           "wire ABI identity returns the running caller tid");
     check(decoded_identity->caller_process_group_id.has_value(),
@@ -9033,8 +8608,7 @@ static void test_kernel_abi_wire_call_boundary() {
   KernelCallWireResponseBlock thread_state_response;
   check(axion_kernel_call_wire(*state, &thread_state_request, &thread_state_response),
         "wire ABI call boundary accepts a thread-state request block");
-  const auto decoded_thread_state =
-      axion_kernel_decode_wire_response(thread_state_response);
+  const auto decoded_thread_state = axion_kernel_decode_wire_response(thread_state_response);
   check(decoded_thread_state.has_value(), "wire ABI thread-state response decodes");
   if (decoded_thread_state) {
     check(decoded_thread_state->status == KernelCallStatus::Ok,
@@ -9047,41 +8621,34 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI thread-state query reports running state");
   }
 
-  const auto spawn_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadInCallerGroup,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
+  const auto spawn_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SpawnThreadInCallerGroup,
+      .spawn_descriptor =
+          KernelThreadSpawnDescriptor{
               .pc = 12,
               .sp = 24,
               .register0 = 333,
               .label = "wire-group-spawn",
           },
-      });
+  });
   KernelCallWireResponseBlock spawn_response;
   check(axion_kernel_call_wire(*state, &spawn_request, &spawn_response),
         "wire ABI call boundary accepts a spawn-thread request block");
   const auto decoded_spawn = axion_kernel_decode_wire_response(spawn_response);
   check(decoded_spawn.has_value(), "wire ABI spawn response decodes");
   if (decoded_spawn) {
-    check(decoded_spawn->status == KernelCallStatus::Ok,
-          "wire ABI spawn returns Ok");
-    check(decoded_spawn->action_performed,
-          "wire ABI spawn reports work performed");
-    check(decoded_spawn->spawned_tid.has_value(),
-          "wire ABI spawn returns a spawned tid");
+    check(decoded_spawn->status == KernelCallStatus::Ok, "wire ABI spawn returns Ok");
+    check(decoded_spawn->action_performed, "wire ABI spawn reports work performed");
+    check(decoded_spawn->spawned_tid.has_value(), "wire ABI spawn returns a spawned tid");
     check(decoded_spawn->spawned_tid &&
               state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
           "wire ABI spawn creates the returned thread");
     if (decoded_spawn->spawned_tid) {
-      const auto* spawned_context =
-          state->scheduler.run_queue().find(*decoded_spawn->spawned_tid);
-      check(spawned_context != nullptr,
-            "wire ABI spawn preserves the requested scheduler context");
+      const auto* spawned_context = state->scheduler.run_queue().find(*decoded_spawn->spawned_tid);
+      check(spawned_context != nullptr, "wire ABI spawn preserves the requested scheduler context");
       if (spawned_context) {
-        check(spawned_context->pc == 12,
-              "wire ABI spawn applies the requested pc");
-        check(spawned_context->sp == 24,
-              "wire ABI spawn applies the requested sp");
+        check(spawned_context->pc == 12, "wire ABI spawn applies the requested pc");
+        check(spawned_context->sp == 24, "wire ABI spawn applies the requested sp");
         check(spawned_context->registers[0] == 333,
               "wire ABI spawn applies the requested register0");
         check(spawned_context->label == "wire-group-spawn",
@@ -9091,10 +8658,10 @@ static void test_kernel_abi_wire_call_boundary() {
   }
 
   if (decoded_identity && decoded_identity->supervisor_id) {
-    const auto supervisor_spawn_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-            .spawn_descriptor = KernelThreadSpawnDescriptor{
+    const auto supervisor_spawn_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+        .spawn_descriptor =
+            KernelThreadSpawnDescriptor{
                 .pc = 36,
                 .sp = 72,
                 .register0 = 444,
@@ -9102,11 +8669,9 @@ static void test_kernel_abi_wire_call_boundary() {
                 .active = false,
                 .label = "wire-supervisor-spawn",
             },
-        });
+    });
     KernelCallWireResponseBlock supervisor_spawn_response;
-    check(axion_kernel_call_wire(*state,
-                                 &supervisor_spawn_request,
-                                 &supervisor_spawn_response),
+    check(axion_kernel_call_wire(*state, &supervisor_spawn_request, &supervisor_spawn_response),
           "wire ABI call boundary accepts a supervisor-scoped spawn request");
     const auto decoded_supervisor_spawn =
         axion_kernel_decode_wire_response(supervisor_spawn_response);
@@ -9147,22 +8712,21 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
-  const auto register_entry_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterThreadEntryDescriptor,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
+  const auto register_entry_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterThreadEntryDescriptor,
+      .spawn_descriptor =
+          KernelThreadSpawnDescriptor{
               .pc = 15,
               .sp = 45,
               .register0 = 515,
               .label = "wire-entry-label",
           },
-          .service_name = "wire-entry",
-      });
+      .service_name = "wire-entry",
+  });
   KernelCallWireResponseBlock register_entry_response;
   check(axion_kernel_call_wire(*state, &register_entry_request, &register_entry_response),
         "wire ABI call boundary accepts an entry registration request");
-  const auto decoded_register_entry =
-      axion_kernel_decode_wire_response(register_entry_response);
+  const auto decoded_register_entry = axion_kernel_decode_wire_response(register_entry_response);
   check(decoded_register_entry.has_value(), "wire ABI entry registration response decodes");
   if (decoded_register_entry) {
     check(decoded_register_entry->status == KernelCallStatus::Ok,
@@ -9171,11 +8735,10 @@ static void test_kernel_abi_wire_call_boundary() {
           "wire ABI entry registration reports work performed");
   }
 
-  const auto spawn_from_entry_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
-          .service_name = "wire-entry",
-      });
+  const auto spawn_from_entry_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
+      .service_name = "wire-entry",
+  });
   KernelCallWireResponseBlock spawn_from_entry_response;
   check(axion_kernel_call_wire(*state, &spawn_from_entry_request, &spawn_from_entry_response),
         "wire ABI call boundary accepts a named-entry spawn request");
@@ -9190,13 +8753,10 @@ static void test_kernel_abi_wire_call_boundary() {
     if (decoded_spawn_from_entry->spawned_tid) {
       const auto* spawned_context =
           state->scheduler.run_queue().find(*decoded_spawn_from_entry->spawned_tid);
-      check(spawned_context != nullptr,
-            "wire ABI named-entry spawn creates the returned thread");
+      check(spawned_context != nullptr, "wire ABI named-entry spawn creates the returned thread");
       if (spawned_context) {
-        check(spawned_context->pc == 15,
-              "wire ABI named-entry spawn applies the registered pc");
-        check(spawned_context->sp == 45,
-              "wire ABI named-entry spawn applies the registered sp");
+        check(spawned_context->pc == 15, "wire ABI named-entry spawn applies the registered pc");
+        check(spawned_context->sp == 45, "wire ABI named-entry spawn applies the registered sp");
         check(spawned_context->registers[0] == 515,
               "wire ABI named-entry spawn applies the registered register0");
         check(spawned_context->label == "wire-entry-label",
@@ -9212,16 +8772,13 @@ static void test_kernel_abi_wire_call_boundary() {
       .label = "wire-executable-entry",
   };
   const auto wire_executable_ref = executable_ref_for(wire_executable_descriptor);
-  const auto register_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = wire_executable_ref,
-          .spawn_descriptor = wire_executable_descriptor,
-      });
+  const auto register_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterExecutableObject,
+      .object_ref = wire_executable_ref,
+      .spawn_descriptor = wire_executable_descriptor,
+  });
   KernelCallWireResponseBlock register_executable_response;
-  check(axion_kernel_call_wire(*state,
-                               &register_executable_request,
-                               &register_executable_response),
+  check(axion_kernel_call_wire(*state, &register_executable_request, &register_executable_response),
         "wire ABI call boundary accepts an executable registration request");
   const auto decoded_register_executable =
       axion_kernel_decode_wire_response(register_executable_response);
@@ -9251,20 +8808,16 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
-  const auto query_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryExecutableObject,
-          .object_ref = wire_executable_ref,
-      });
+  const auto query_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::QueryExecutableObject,
+      .object_ref = wire_executable_ref,
+  });
   KernelCallWireResponseBlock query_executable_response;
-  check(axion_kernel_call_wire(*state,
-                               &query_executable_request,
-                               &query_executable_response),
+  check(axion_kernel_call_wire(*state, &query_executable_request, &query_executable_response),
         "wire ABI call boundary accepts an executable query request");
   const auto decoded_query_executable =
       axion_kernel_decode_wire_response(query_executable_response);
-  check(decoded_query_executable.has_value(),
-        "wire ABI executable query response decodes");
+  check(decoded_query_executable.has_value(), "wire ABI executable query response decodes");
   if (decoded_query_executable) {
     check(decoded_query_executable->status == KernelCallStatus::Ok,
           "wire ABI executable query returns Ok");
@@ -9281,20 +8834,17 @@ static void test_kernel_abi_wire_call_boundary() {
             "wire ABI executable query preserves sp");
       check(decoded_query_executable->executable_entry_descriptor->register0 == 616,
             "wire ABI executable query preserves register0");
-      check(decoded_query_executable->executable_entry_descriptor->label ==
-                "wire-executable-entry",
+      check(decoded_query_executable->executable_entry_descriptor->label == "wire-executable-entry",
             "wire ABI executable query preserves label");
     }
   }
 
-  const auto spawn_from_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = wire_executable_ref,
-      });
+  const auto spawn_from_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+      .object_ref = wire_executable_ref,
+  });
   KernelCallWireResponseBlock spawn_from_executable_response;
-  check(axion_kernel_call_wire(*state,
-                               &spawn_from_executable_request,
+  check(axion_kernel_call_wire(*state, &spawn_from_executable_request,
                                &spawn_from_executable_response),
         "wire ABI call boundary accepts an executable-object spawn request");
   const auto decoded_spawn_from_executable =
@@ -9330,16 +8880,13 @@ static void test_kernel_abi_wire_call_boundary() {
     }
   }
 
-  const auto register_service_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterService,
-          .object_ref = wire_executable_ref,
-          .service_name = "wire.svc.exec",
-      });
+  const auto register_service_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterService,
+      .object_ref = wire_executable_ref,
+      .service_name = "wire.svc.exec",
+  });
   KernelCallWireResponseBlock register_service_response;
-  check(axion_kernel_call_wire(*state,
-                               &register_service_request,
-                               &register_service_response),
+  check(axion_kernel_call_wire(*state, &register_service_request, &register_service_response),
         "wire ABI call boundary accepts a service registration with entry descriptor");
   const auto decoded_register_service =
       axion_kernel_decode_wire_response(register_service_response);
@@ -9363,20 +8910,18 @@ static void test_kernel_abi_wire_call_boundary() {
             "wire ABI service registration entry descriptor preserves sp");
       check(decoded_register_service->service_entry_descriptor->register0 == 616,
             "wire ABI service registration entry descriptor preserves register0");
-      check(decoded_register_service->service_entry_descriptor->label ==
-                "wire-executable-entry",
+      check(decoded_register_service->service_entry_descriptor->label == "wire-executable-entry",
             "wire ABI service registration entry descriptor preserves label");
     }
   }
 
   if (decoded_register_service && decoded_register_service->service_id) {
-    const auto query_supervisor_services_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
+    const auto query_supervisor_services_request =
+        axion_kernel_encode_wire_request(KernelCallRequest{
             .kind = KernelCallKind::QuerySupervisorServiceInventory,
         });
     KernelCallWireResponseBlock query_supervisor_services_response;
-    check(axion_kernel_call_wire(*state,
-                                 &query_supervisor_services_request,
+    check(axion_kernel_call_wire(*state, &query_supervisor_services_request,
                                  &query_supervisor_services_response),
           "wire ABI call boundary accepts a supervisor service-inventory request");
     const auto decoded_query_supervisor_services =
@@ -9391,8 +8936,7 @@ static void test_kernel_abi_wire_call_boundary() {
       check(decoded_query_supervisor_services->supervisor_services.size() == 1,
             "wire ABI supervisor service-inventory returns one service entry");
       if (!decoded_query_supervisor_services->supervisor_services.empty()) {
-        const auto& service_entry =
-            decoded_query_supervisor_services->supervisor_services.front();
+        const auto& service_entry = decoded_query_supervisor_services->supervisor_services.front();
         check(service_entry.id == *decoded_register_service->service_id,
               "wire ABI supervisor service-inventory preserves service id");
         check(service_entry.name == "wire.svc.exec",
@@ -9414,20 +8958,15 @@ static void test_kernel_abi_wire_call_boundary() {
       }
     }
 
-    const auto query_service_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::QueryServiceStatus,
-            .service_id = *decoded_register_service->service_id,
-        });
+    const auto query_service_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::QueryServiceStatus,
+        .service_id = *decoded_register_service->service_id,
+    });
     KernelCallWireResponseBlock query_service_response;
-    check(axion_kernel_call_wire(*state,
-                                 &query_service_request,
-                                 &query_service_response),
+    check(axion_kernel_call_wire(*state, &query_service_request, &query_service_response),
           "wire ABI call boundary accepts a service-status query request");
-    const auto decoded_query_service =
-        axion_kernel_decode_wire_response(query_service_response);
-    check(decoded_query_service.has_value(),
-          "wire ABI service-status query response decodes");
+    const auto decoded_query_service = axion_kernel_decode_wire_response(query_service_response);
+    check(decoded_query_service.has_value(), "wire ABI service-status query response decodes");
     if (decoded_query_service) {
       check(decoded_query_service->status == KernelCallStatus::Ok,
             "wire ABI service-status query returns Ok");
@@ -9444,39 +8983,32 @@ static void test_kernel_abi_wire_call_boundary() {
               "wire ABI service-status query entry descriptor preserves sp");
         check(decoded_query_service->service_entry_descriptor->register0 == 616,
               "wire ABI service-status query entry descriptor preserves register0");
-        check(decoded_query_service->service_entry_descriptor->label ==
-                  "wire-executable-entry",
+        check(decoded_query_service->service_entry_descriptor->label == "wire-executable-entry",
               "wire ABI service-status query entry descriptor preserves label");
       }
     }
 
-    const auto mark_unhealthy_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::MarkServiceUnhealthy,
-            .service_id = *decoded_register_service->service_id,
-        });
+    const auto mark_unhealthy_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::MarkServiceUnhealthy,
+        .service_id = *decoded_register_service->service_id,
+    });
     KernelCallWireResponseBlock mark_unhealthy_response;
-    check(axion_kernel_call_wire(*state,
-                                 &mark_unhealthy_request,
-                                 &mark_unhealthy_response),
+    check(axion_kernel_call_wire(*state, &mark_unhealthy_request, &mark_unhealthy_response),
           "wire ABI call boundary accepts a mark-unhealthy request");
-    const auto decoded_mark_unhealthy =
-        axion_kernel_decode_wire_response(mark_unhealthy_response);
-    check(decoded_mark_unhealthy.has_value(),
-          "wire ABI mark-unhealthy response decodes");
+    const auto decoded_mark_unhealthy = axion_kernel_decode_wire_response(mark_unhealthy_response);
+    check(decoded_mark_unhealthy.has_value(), "wire ABI mark-unhealthy response decodes");
     if (decoded_mark_unhealthy) {
       check(decoded_mark_unhealthy->status == KernelCallStatus::Ok,
             "wire ABI mark-unhealthy returns Ok");
     }
 
-    const auto query_supervisor_service_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
+    const auto query_supervisor_service_request =
+        axion_kernel_encode_wire_request(KernelCallRequest{
             .kind = KernelCallKind::QuerySupervisorServiceStatus,
             .service_id = *decoded_register_service->service_id,
         });
     KernelCallWireResponseBlock query_supervisor_service_response;
-    check(axion_kernel_call_wire(*state,
-                                 &query_supervisor_service_request,
+    check(axion_kernel_call_wire(*state, &query_supervisor_service_request,
                                  &query_supervisor_service_response),
           "wire ABI call boundary accepts a supervisor service-status request");
     const auto decoded_query_supervisor_service =
@@ -9494,20 +9026,16 @@ static void test_kernel_abi_wire_call_boundary() {
             "wire ABI supervisor service-status preserves entry-descriptor presence");
     }
 
-    const auto spawn_for_service_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::SpawnThreadForService,
-            .service_id = *decoded_register_service->service_id,
-        });
+    const auto spawn_for_service_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::SpawnThreadForService,
+        .service_id = *decoded_register_service->service_id,
+    });
     KernelCallWireResponseBlock spawn_for_service_response;
-    check(axion_kernel_call_wire(*state,
-                                 &spawn_for_service_request,
-                                 &spawn_for_service_response),
+    check(axion_kernel_call_wire(*state, &spawn_for_service_request, &spawn_for_service_response),
           "wire ABI call boundary accepts a service-owned spawn request");
     const auto decoded_spawn_for_service =
         axion_kernel_decode_wire_response(spawn_for_service_response);
-    check(decoded_spawn_for_service.has_value(),
-          "wire ABI service-owned spawn response decodes");
+    check(decoded_spawn_for_service.has_value(), "wire ABI service-owned spawn response decodes");
     if (decoded_spawn_for_service) {
       check(decoded_spawn_for_service->status == KernelCallStatus::Ok,
             "wire ABI service-owned spawn returns Ok");
@@ -9535,17 +9063,17 @@ static void test_kernel_abi_wire_call_boundary() {
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x31);
 
-  KernelCallWireRequestBlock send_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SendMessage,
-          .ipc_dst = *tid_b,
-          .message = t81::ternaryos::ipc::CanonMessage{
+  KernelCallWireRequestBlock send_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SendMessage,
+      .ipc_dst = *tid_b,
+      .message =
+          t81::ternaryos::ipc::CanonMessage{
               .sender = 0,
               .ref = send_ref,
               .payload = 913,
               .tag = "wire-call-send",
           },
-      });
+  });
   KernelCallWireResponseBlock send_response;
   check(axion_kernel_call_wire(*state, &send_request, &send_response),
         "wire ABI call boundary accepts a valid send request block");
@@ -9554,67 +9082,56 @@ static void test_kernel_abi_wire_call_boundary() {
   const auto decoded_send = axion_kernel_decode_wire_response(send_response);
   check(decoded_send.has_value(), "wire ABI send response decodes");
   if (decoded_send) {
-    check(decoded_send->status == KernelCallStatus::Ok,
-          "wire ABI send returns Ok");
-    check(decoded_send->action_performed,
-          "wire ABI send reports work performed");
+    check(decoded_send->status == KernelCallStatus::Ok, "wire ABI send returns Ok");
+    check(decoded_send->action_performed, "wire ABI send reports work performed");
   }
 
-  const auto yield_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::Yield});
+  const auto yield_request =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::Yield});
   KernelCallWireResponseBlock yield_response;
   check(axion_kernel_call_wire(*state, &yield_request, &yield_response),
         "wire ABI call boundary accepts a yield request block");
   const auto decoded_yield = axion_kernel_decode_wire_response(yield_response);
   check(decoded_yield.has_value(), "wire ABI yield response decodes");
   if (decoded_yield) {
-    check(decoded_yield->status == KernelCallStatus::Ok,
-          "wire ABI yield returns Ok");
+    check(decoded_yield->status == KernelCallStatus::Ok, "wire ABI yield returns Ok");
     check(decoded_yield->yielded, "wire ABI yield reports scheduler progress");
   }
-  check(state->scheduler.current_tid() == *tid_b,
-        "wire ABI yield advances to thread B");
+  check(state->scheduler.current_tid() == *tid_b, "wire ABI yield advances to thread B");
 
-  const auto receive_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  const auto receive_request =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
   KernelCallWireResponseBlock receive_response;
   check(axion_kernel_call_wire(*state, &receive_request, &receive_response),
         "wire ABI call boundary accepts a receive request block");
   const auto decoded_receive = axion_kernel_decode_wire_response(receive_response);
   check(decoded_receive.has_value(), "wire ABI receive response decodes");
   if (decoded_receive) {
-    check(decoded_receive->status == KernelCallStatus::Ok,
-          "wire ABI receive returns Ok");
-    check(decoded_receive->message.has_value(),
-          "wire ABI receive returns a message");
+    check(decoded_receive->status == KernelCallStatus::Ok, "wire ABI receive returns Ok");
+    check(decoded_receive->message.has_value(), "wire ABI receive returns a message");
     check(decoded_receive->message && decoded_receive->message->sender == *tid_a,
           "wire ABI receive preserves sender tid");
     check(decoded_receive->message && decoded_receive->message->payload == 913,
           "wire ABI receive preserves payload");
-    check(decoded_receive->message &&
-              decoded_receive->message->tag == "wire-call-send",
+    check(decoded_receive->message && decoded_receive->message->tag == "wire-call-send",
           "wire ABI receive preserves tag");
   }
 
-  const auto exit_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::ExitThread});
+  const auto exit_request =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::ExitThread});
   KernelCallWireResponseBlock exit_response;
   check(axion_kernel_call_wire(*state, &exit_request, &exit_response),
         "wire ABI call boundary accepts an exit-thread request block");
   const auto decoded_exit = axion_kernel_decode_wire_response(exit_response);
   check(decoded_exit.has_value(), "wire ABI exit response decodes");
   if (decoded_exit) {
-    check(decoded_exit->status == KernelCallStatus::Ok,
-          "wire ABI exit returns Ok");
-    check(decoded_exit->action_performed,
-          "wire ABI exit reports work performed");
-    check(decoded_exit->thread_exited,
-          "wire ABI exit reports thread exit");
+    check(decoded_exit->status == KernelCallStatus::Ok, "wire ABI exit returns Ok");
+    check(decoded_exit->action_performed, "wire ABI exit reports work performed");
+    check(decoded_exit->thread_exited, "wire ABI exit reports thread exit");
   }
   check(state->find_thread_runtime(*tid_b) == nullptr,
         "wire ABI exit removes the exited thread runtime");
-  check(!state->ipc_bus.is_registered(*tid_b),
-        "wire ABI exit deregisters the exited thread inbox");
+  check(!state->ipc_bus.is_registered(*tid_b), "wire ABI exit deregisters the exited thread inbox");
   check(state->scheduler.current_tid() != *tid_b,
         "wire ABI exit advances away from the exited thread");
   check(state->find_thread_runtime(state->scheduler.current_tid()) != nullptr,
@@ -9637,7 +9154,8 @@ static void test_kernel_abi_wire_call_boundary() {
 }
 
 static void test_kernel_abi_wire_byte_boundary() {
-  std::printf("\n[AC-21j] Axion wire ABI byte boundary validates raw request and response blocks\n");
+  std::printf(
+      "\n[AC-21j] Axion wire ABI byte boundary validates raw request and response blocks\n");
 
   auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
@@ -9663,54 +9181,42 @@ static void test_kernel_abi_wire_byte_boundary() {
 
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x32);
-  const auto send_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SendMessage,
-          .ipc_dst = *tid_b,
-          .message = t81::ternaryos::ipc::CanonMessage{
+  const auto send_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SendMessage,
+      .ipc_dst = *tid_b,
+      .message =
+          t81::ternaryos::ipc::CanonMessage{
               .sender = 0,
               .ref = send_ref,
               .payload = 271,
               .tag = "wire-byte-send",
           },
-      });
+  });
 
   KernelCallWireResponseBlock send_response;
-  check(axion_kernel_call_wire_bytes(*state,
-                                     &send_request,
-                                     sizeof(send_request),
-                                     &send_response,
+  check(axion_kernel_call_wire_bytes(*state, &send_request, sizeof(send_request), &send_response,
                                      sizeof(send_response)),
         "wire ABI byte boundary accepts a full request block");
   const auto decoded_send = axion_kernel_decode_wire_response(send_response);
   check(decoded_send.has_value(), "wire ABI byte boundary send response decodes");
   if (decoded_send) {
-    check(decoded_send->status == KernelCallStatus::Ok,
-          "wire ABI byte boundary send returns Ok");
+    check(decoded_send->status == KernelCallStatus::Ok, "wire ABI byte boundary send returns Ok");
   }
 
   KernelCallWireResponseBlock short_request_response;
-  check(axion_kernel_call_wire_bytes(*state,
-                                     &send_request,
-                                     sizeof(KernelCallWireHeader),
-                                     &short_request_response,
-                                     sizeof(short_request_response)),
+  check(axion_kernel_call_wire_bytes(*state, &send_request, sizeof(KernelCallWireHeader),
+                                     &short_request_response, sizeof(short_request_response)),
         "wire ABI byte boundary returns a response for short request buffers");
-  const auto decoded_short_request =
-      axion_kernel_decode_wire_response(short_request_response);
-  check(decoded_short_request.has_value(),
-        "wire ABI byte boundary short-request response decodes");
+  const auto decoded_short_request = axion_kernel_decode_wire_response(short_request_response);
+  check(decoded_short_request.has_value(), "wire ABI byte boundary short-request response decodes");
   if (decoded_short_request) {
     check(decoded_short_request->status == KernelCallStatus::InvalidRequest,
           "wire ABI byte boundary short request returns InvalidRequest");
   }
 
   std::array<std::byte, sizeof(KernelCallWireResponseBlock) - 1> short_response_buffer{};
-  check(!axion_kernel_call_wire_bytes(*state,
-                                      &send_request,
-                                      sizeof(send_request),
-                                      short_response_buffer.data(),
-                                      short_response_buffer.size()),
+  check(!axion_kernel_call_wire_bytes(*state, &send_request, sizeof(send_request),
+                                      short_response_buffer.data(), short_response_buffer.size()),
         "wire ABI byte boundary rejects short response buffers");
 }
 
@@ -9742,11 +9248,8 @@ static void test_kernel_call_c_bridge() {
   const auto identity_request = axion_kernel_encode_wire_request(
       KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
   KernelCallWireResponseBlock identity_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &identity_request,
-                                sizeof(identity_request),
-                                &identity_response,
-                                sizeof(identity_response)) == 0,
+  check(ternaryos_kernel_call_c(&*state, &identity_request, sizeof(identity_request),
+                                &identity_response, sizeof(identity_response)) == 0,
         "C kernel-call bridge accepts a thread-identity request");
   const auto decoded_identity = axion_kernel_decode_wire_response(identity_response);
   check(decoded_identity.has_value(), "C kernel-call bridge identity response decodes");
@@ -9766,14 +9269,10 @@ static void test_kernel_call_c_bridge() {
   const auto thread_state_request = axion_kernel_encode_wire_request(
       KernelCallRequest{.kind = KernelCallKind::QueryThreadExecutionState});
   KernelCallWireResponseBlock thread_state_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &thread_state_request,
-                                sizeof(thread_state_request),
-                                &thread_state_response,
-                                sizeof(thread_state_response)) == 0,
+  check(ternaryos_kernel_call_c(&*state, &thread_state_request, sizeof(thread_state_request),
+                                &thread_state_response, sizeof(thread_state_response)) == 0,
         "C kernel-call bridge accepts a thread-state request");
-  const auto decoded_thread_state =
-      axion_kernel_decode_wire_response(thread_state_response);
+  const auto decoded_thread_state = axion_kernel_decode_wire_response(thread_state_response);
   check(decoded_thread_state.has_value(), "C kernel-call bridge thread-state response decodes");
   if (decoded_thread_state) {
     check(decoded_thread_state->status == KernelCallStatus::Ok,
@@ -9786,45 +9285,37 @@ static void test_kernel_call_c_bridge() {
           "C kernel-call bridge thread-state query reports running state");
   }
 
-  const auto spawn_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadInCallerGroup,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
+  const auto spawn_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SpawnThreadInCallerGroup,
+      .spawn_descriptor =
+          KernelThreadSpawnDescriptor{
               .pc = 18,
               .sp = 54,
               .register0 = 515,
               .label = "c-group-spawn",
           },
-      });
+  });
   KernelCallWireResponseBlock spawn_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &spawn_request,
-                                sizeof(spawn_request),
-                                &spawn_response,
+  check(ternaryos_kernel_call_c(&*state, &spawn_request, sizeof(spawn_request), &spawn_response,
                                 sizeof(spawn_response)) == 0,
         "C kernel-call bridge accepts a spawn-thread request");
   const auto decoded_spawn = axion_kernel_decode_wire_response(spawn_response);
   check(decoded_spawn.has_value(), "C kernel-call bridge spawn response decodes");
   if (decoded_spawn) {
-    check(decoded_spawn->status == KernelCallStatus::Ok,
-          "C kernel-call bridge spawn returns Ok");
-    check(decoded_spawn->action_performed,
-          "C kernel-call bridge spawn reports work performed");
+    check(decoded_spawn->status == KernelCallStatus::Ok, "C kernel-call bridge spawn returns Ok");
+    check(decoded_spawn->action_performed, "C kernel-call bridge spawn reports work performed");
     check(decoded_spawn->spawned_tid.has_value(),
           "C kernel-call bridge spawn returns a spawned tid");
     check(decoded_spawn->spawned_tid &&
               state->find_thread_runtime(*decoded_spawn->spawned_tid) != nullptr,
           "C kernel-call bridge spawn creates the returned thread");
     if (decoded_spawn->spawned_tid) {
-      const auto* spawned_context =
-          state->scheduler.run_queue().find(*decoded_spawn->spawned_tid);
+      const auto* spawned_context = state->scheduler.run_queue().find(*decoded_spawn->spawned_tid);
       check(spawned_context != nullptr,
             "C kernel-call bridge spawn preserves the requested scheduler context");
       if (spawned_context) {
-        check(spawned_context->pc == 18,
-              "C kernel-call bridge spawn applies the requested pc");
-        check(spawned_context->sp == 54,
-              "C kernel-call bridge spawn applies the requested sp");
+        check(spawned_context->pc == 18, "C kernel-call bridge spawn applies the requested pc");
+        check(spawned_context->sp == 54, "C kernel-call bridge spawn applies the requested sp");
         check(spawned_context->registers[0] == 515,
               "C kernel-call bridge spawn applies the requested register0");
         check(spawned_context->label == "c-group-spawn",
@@ -9834,10 +9325,10 @@ static void test_kernel_call_c_bridge() {
   }
 
   if (decoded_identity && decoded_identity->supervisor_id) {
-    const auto supervisor_spawn_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-            .spawn_descriptor = KernelThreadSpawnDescriptor{
+    const auto supervisor_spawn_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+        .spawn_descriptor =
+            KernelThreadSpawnDescriptor{
                 .pc = 63,
                 .sp = 126,
                 .register0 = 616,
@@ -9845,12 +9336,10 @@ static void test_kernel_call_c_bridge() {
                 .active = false,
                 .label = "c-supervisor-spawn",
             },
-        });
+    });
     KernelCallWireResponseBlock supervisor_spawn_response;
-    check(ternaryos_kernel_call_c(&*state,
-                                  &supervisor_spawn_request,
-                                  sizeof(supervisor_spawn_request),
-                                  &supervisor_spawn_response,
+    check(ternaryos_kernel_call_c(&*state, &supervisor_spawn_request,
+                                  sizeof(supervisor_spawn_request), &supervisor_spawn_response,
                                   sizeof(supervisor_spawn_response)) == 0,
           "C kernel-call bridge accepts a supervisor-scoped spawn request");
     const auto decoded_supervisor_spawn =
@@ -9872,8 +9361,8 @@ static void test_kernel_call_c_bridge() {
       if (decoded_supervisor_spawn->spawned_tid) {
         const auto* spawned_context =
             state->scheduler.run_queue().find(*decoded_supervisor_spawn->spawned_tid);
-        check(spawned_context != nullptr,
-              "C kernel-call bridge supervisor-scoped spawn preserves the requested scheduler context");
+        check(spawned_context != nullptr, "C kernel-call bridge supervisor-scoped spawn preserves "
+                                          "the requested scheduler context");
         if (spawned_context) {
           check(spawned_context->pc == 63,
                 "C kernel-call bridge supervisor-scoped spawn applies the requested pc");
@@ -9892,44 +9381,37 @@ static void test_kernel_call_c_bridge() {
     }
   }
 
-  const auto register_entry_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterThreadEntryDescriptor,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
+  const auto register_entry_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterThreadEntryDescriptor,
+      .spawn_descriptor =
+          KernelThreadSpawnDescriptor{
               .pc = 21,
               .sp = 63,
               .register0 = 717,
               .label = "c-entry-label",
           },
-          .service_name = "c-entry",
-      });
+      .service_name = "c-entry",
+  });
   KernelCallWireResponseBlock register_entry_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &register_entry_request,
-                                sizeof(register_entry_request),
-                                &register_entry_response,
-                                sizeof(register_entry_response)) == 0,
+  check(ternaryos_kernel_call_c(&*state, &register_entry_request, sizeof(register_entry_request),
+                                &register_entry_response, sizeof(register_entry_response)) == 0,
         "C kernel-call bridge accepts an entry registration request");
-  const auto decoded_register_entry =
-      axion_kernel_decode_wire_response(register_entry_response);
+  const auto decoded_register_entry = axion_kernel_decode_wire_response(register_entry_response);
   check(decoded_register_entry.has_value(), "C kernel-call bridge entry registration decodes");
   if (decoded_register_entry) {
     check(decoded_register_entry->status == KernelCallStatus::Ok,
           "C kernel-call bridge entry registration returns Ok");
   }
 
-  const auto spawn_from_entry_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
-          .service_name = "c-entry",
-      });
+  const auto spawn_from_entry_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
+      .service_name = "c-entry",
+  });
   KernelCallWireResponseBlock spawn_from_entry_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &spawn_from_entry_request,
-                                sizeof(spawn_from_entry_request),
-                                &spawn_from_entry_response,
-                                sizeof(spawn_from_entry_response)) == 0,
-        "C kernel-call bridge accepts a named-entry spawn request");
+  check(
+      ternaryos_kernel_call_c(&*state, &spawn_from_entry_request, sizeof(spawn_from_entry_request),
+                              &spawn_from_entry_response, sizeof(spawn_from_entry_response)) == 0,
+      "C kernel-call bridge accepts a named-entry spawn request");
   const auto decoded_spawn_from_entry =
       axion_kernel_decode_wire_response(spawn_from_entry_response);
   check(decoded_spawn_from_entry.has_value(), "C kernel-call bridge named-entry spawn decodes");
@@ -9963,17 +9445,14 @@ static void test_kernel_call_c_bridge() {
       .label = "c-executable-entry",
   };
   const auto c_executable_ref = executable_ref_for(c_executable_descriptor);
-  const auto register_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = c_executable_ref,
-          .spawn_descriptor = c_executable_descriptor,
-      });
+  const auto register_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterExecutableObject,
+      .object_ref = c_executable_ref,
+      .spawn_descriptor = c_executable_descriptor,
+  });
   KernelCallWireResponseBlock register_executable_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &register_executable_request,
-                                sizeof(register_executable_request),
-                                &register_executable_response,
+  check(ternaryos_kernel_call_c(&*state, &register_executable_request,
+                                sizeof(register_executable_request), &register_executable_response,
                                 sizeof(register_executable_response)) == 0,
         "C kernel-call bridge accepts an executable registration request");
   const auto decoded_register_executable =
@@ -9996,24 +9475,20 @@ static void test_kernel_call_c_bridge() {
             "C kernel-call bridge executable registration preserves sp");
       check(decoded_register_executable->executable_entry_descriptor->register0 == 818,
             "C kernel-call bridge executable registration preserves register0");
-      check(decoded_register_executable->executable_entry_descriptor->label ==
-                "c-executable-entry",
+      check(decoded_register_executable->executable_entry_descriptor->label == "c-executable-entry",
             "C kernel-call bridge executable registration preserves label");
     }
   }
 
-  const auto query_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryExecutableObject,
-          .object_ref = c_executable_ref,
-      });
+  const auto query_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::QueryExecutableObject,
+      .object_ref = c_executable_ref,
+  });
   KernelCallWireResponseBlock query_executable_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &query_executable_request,
-                                sizeof(query_executable_request),
-                                &query_executable_response,
-                                sizeof(query_executable_response)) == 0,
-        "C kernel-call bridge accepts an executable query request");
+  check(
+      ternaryos_kernel_call_c(&*state, &query_executable_request, sizeof(query_executable_request),
+                              &query_executable_response, sizeof(query_executable_response)) == 0,
+      "C kernel-call bridge accepts an executable query request");
   const auto decoded_query_executable =
       axion_kernel_decode_wire_response(query_executable_response);
   check(decoded_query_executable.has_value(),
@@ -10034,23 +9509,19 @@ static void test_kernel_call_c_bridge() {
             "C kernel-call bridge executable query preserves sp");
       check(decoded_query_executable->executable_entry_descriptor->register0 == 818,
             "C kernel-call bridge executable query preserves register0");
-      check(decoded_query_executable->executable_entry_descriptor->label ==
-                "c-executable-entry",
+      check(decoded_query_executable->executable_entry_descriptor->label == "c-executable-entry",
             "C kernel-call bridge executable query preserves label");
     }
   }
 
-  const auto spawn_from_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = c_executable_ref,
-      });
+  const auto spawn_from_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+      .object_ref = c_executable_ref,
+  });
   KernelCallWireResponseBlock spawn_from_executable_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &spawn_from_executable_request,
-                                sizeof(spawn_from_executable_request),
-                                &spawn_from_executable_response,
-                                sizeof(spawn_from_executable_response)) == 0,
+  check(ternaryos_kernel_call_c(
+            &*state, &spawn_from_executable_request, sizeof(spawn_from_executable_request),
+            &spawn_from_executable_response, sizeof(spawn_from_executable_response)) == 0,
         "C kernel-call bridge accepts an executable-object spawn request");
   const auto decoded_spawn_from_executable =
       axion_kernel_decode_wire_response(spawn_from_executable_response);
@@ -10085,19 +9556,16 @@ static void test_kernel_call_c_bridge() {
     }
   }
 
-  const auto register_service_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterService,
-          .object_ref = c_executable_ref,
-          .service_name = "c.svc.exec",
-      });
+  const auto register_service_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterService,
+      .object_ref = c_executable_ref,
+      .service_name = "c.svc.exec",
+  });
   KernelCallWireResponseBlock register_service_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &register_service_request,
-                                sizeof(register_service_request),
-                                &register_service_response,
-                                sizeof(register_service_response)) == 0,
-        "C kernel-call bridge accepts a service registration with entry descriptor");
+  check(
+      ternaryos_kernel_call_c(&*state, &register_service_request, sizeof(register_service_request),
+                              &register_service_response, sizeof(register_service_response)) == 0,
+      "C kernel-call bridge accepts a service registration with entry descriptor");
   const auto decoded_register_service =
       axion_kernel_decode_wire_response(register_service_response);
   check(decoded_register_service.has_value(),
@@ -10120,20 +9588,18 @@ static void test_kernel_call_c_bridge() {
             "C kernel-call bridge service registration entry descriptor preserves sp");
       check(decoded_register_service->service_entry_descriptor->register0 == 818,
             "C kernel-call bridge service registration entry descriptor preserves register0");
-      check(decoded_register_service->service_entry_descriptor->label ==
-                "c-executable-entry",
+      check(decoded_register_service->service_entry_descriptor->label == "c-executable-entry",
             "C kernel-call bridge service registration entry descriptor preserves label");
     }
   }
 
   if (decoded_register_service && decoded_register_service->service_id) {
-    const auto query_supervisor_services_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
+    const auto query_supervisor_services_request =
+        axion_kernel_encode_wire_request(KernelCallRequest{
             .kind = KernelCallKind::QuerySupervisorServiceInventory,
         });
     KernelCallWireResponseBlock query_supervisor_services_response;
-    check(ternaryos_kernel_call_c(&*state,
-                                  &query_supervisor_services_request,
+    check(ternaryos_kernel_call_c(&*state, &query_supervisor_services_request,
                                   sizeof(query_supervisor_services_request),
                                   &query_supervisor_services_response,
                                   sizeof(query_supervisor_services_response)) == 0,
@@ -10150,8 +9616,7 @@ static void test_kernel_call_c_bridge() {
       check(decoded_query_supervisor_services->supervisor_services.size() == 1,
             "C kernel-call bridge supervisor service-inventory returns one service entry");
       if (!decoded_query_supervisor_services->supervisor_services.empty()) {
-        const auto& service_entry =
-            decoded_query_supervisor_services->supervisor_services.front();
+        const auto& service_entry = decoded_query_supervisor_services->supervisor_services.front();
         check(service_entry.id == *decoded_register_service->service_id,
               "C kernel-call bridge supervisor service-inventory preserves service id");
         check(service_entry.name == "c.svc.exec",
@@ -10166,29 +9631,25 @@ static void test_kernel_call_c_bridge() {
           check(service_entry.entry_descriptor->sp == 72,
                 "C kernel-call bridge supervisor service-inventory entry descriptor preserves sp");
           check(service_entry.entry_descriptor->register0 == 818,
-                "C kernel-call bridge supervisor service-inventory entry descriptor preserves register0");
-          check(service_entry.entry_descriptor->label == "c-executable-entry",
-                "C kernel-call bridge supervisor service-inventory entry descriptor preserves label");
+                "C kernel-call bridge supervisor service-inventory entry descriptor preserves "
+                "register0");
+          check(
+              service_entry.entry_descriptor->label == "c-executable-entry",
+              "C kernel-call bridge supervisor service-inventory entry descriptor preserves label");
         }
       }
     }
 
-    const auto query_service_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::QueryServiceStatus,
-            .service_id = *decoded_register_service->service_id,
-        });
+    const auto query_service_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::QueryServiceStatus,
+        .service_id = *decoded_register_service->service_id,
+    });
     KernelCallWireResponseBlock query_service_response;
-    check(ternaryos_kernel_call_c(&*state,
-                                  &query_service_request,
-                                  sizeof(query_service_request),
-                                  &query_service_response,
-                                  sizeof(query_service_response)) == 0,
+    check(ternaryos_kernel_call_c(&*state, &query_service_request, sizeof(query_service_request),
+                                  &query_service_response, sizeof(query_service_response)) == 0,
           "C kernel-call bridge accepts a service-status query request");
-    const auto decoded_query_service =
-        axion_kernel_decode_wire_response(query_service_response);
-    check(decoded_query_service.has_value(),
-          "C kernel-call bridge service-status query decodes");
+    const auto decoded_query_service = axion_kernel_decode_wire_response(query_service_response);
+    check(decoded_query_service.has_value(), "C kernel-call bridge service-status query decodes");
     if (decoded_query_service) {
       check(decoded_query_service->status == KernelCallStatus::Ok,
             "C kernel-call bridge service-status query returns Ok");
@@ -10205,26 +9666,20 @@ static void test_kernel_call_c_bridge() {
               "C kernel-call bridge service-status query entry descriptor preserves sp");
         check(decoded_query_service->service_entry_descriptor->register0 == 818,
               "C kernel-call bridge service-status query entry descriptor preserves register0");
-        check(decoded_query_service->service_entry_descriptor->label ==
-                  "c-executable-entry",
+        check(decoded_query_service->service_entry_descriptor->label == "c-executable-entry",
               "C kernel-call bridge service-status query entry descriptor preserves label");
       }
     }
 
-    const auto mark_unhealthy_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::MarkServiceUnhealthy,
-            .service_id = *decoded_register_service->service_id,
-        });
+    const auto mark_unhealthy_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::MarkServiceUnhealthy,
+        .service_id = *decoded_register_service->service_id,
+    });
     KernelCallWireResponseBlock mark_unhealthy_response;
-    check(ternaryos_kernel_call_c(&*state,
-                                  &mark_unhealthy_request,
-                                  sizeof(mark_unhealthy_request),
-                                  &mark_unhealthy_response,
-                                  sizeof(mark_unhealthy_response)) == 0,
+    check(ternaryos_kernel_call_c(&*state, &mark_unhealthy_request, sizeof(mark_unhealthy_request),
+                                  &mark_unhealthy_response, sizeof(mark_unhealthy_response)) == 0,
           "C kernel-call bridge accepts a mark-unhealthy request");
-    const auto decoded_mark_unhealthy =
-        axion_kernel_decode_wire_response(mark_unhealthy_response);
+    const auto decoded_mark_unhealthy = axion_kernel_decode_wire_response(mark_unhealthy_response);
     check(decoded_mark_unhealthy.has_value(),
           "C kernel-call bridge mark-unhealthy response decodes");
     if (decoded_mark_unhealthy) {
@@ -10232,17 +9687,15 @@ static void test_kernel_call_c_bridge() {
             "C kernel-call bridge mark-unhealthy returns Ok");
     }
 
-    const auto query_supervisor_service_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
+    const auto query_supervisor_service_request =
+        axion_kernel_encode_wire_request(KernelCallRequest{
             .kind = KernelCallKind::QuerySupervisorServiceStatus,
             .service_id = *decoded_register_service->service_id,
         });
     KernelCallWireResponseBlock query_supervisor_service_response;
-    check(ternaryos_kernel_call_c(&*state,
-                                  &query_supervisor_service_request,
-                                  sizeof(query_supervisor_service_request),
-                                  &query_supervisor_service_response,
-                                  sizeof(query_supervisor_service_response)) == 0,
+    check(ternaryos_kernel_call_c(
+              &*state, &query_supervisor_service_request, sizeof(query_supervisor_service_request),
+              &query_supervisor_service_response, sizeof(query_supervisor_service_response)) == 0,
           "C kernel-call bridge accepts a supervisor service-status request");
     const auto decoded_query_supervisor_service =
         axion_kernel_decode_wire_response(query_supervisor_service_response);
@@ -10259,16 +9712,13 @@ static void test_kernel_call_c_bridge() {
             "C kernel-call bridge supervisor service-status preserves entry-descriptor presence");
     }
 
-    const auto spawn_for_service_request = axion_kernel_encode_wire_request(
-        KernelCallRequest{
-            .kind = KernelCallKind::SpawnThreadForService,
-            .service_id = *decoded_register_service->service_id,
-        });
+    const auto spawn_for_service_request = axion_kernel_encode_wire_request(KernelCallRequest{
+        .kind = KernelCallKind::SpawnThreadForService,
+        .service_id = *decoded_register_service->service_id,
+    });
     KernelCallWireResponseBlock spawn_for_service_response;
-    check(ternaryos_kernel_call_c(&*state,
-                                  &spawn_for_service_request,
-                                  sizeof(spawn_for_service_request),
-                                  &spawn_for_service_response,
+    check(ternaryos_kernel_call_c(&*state, &spawn_for_service_request,
+                                  sizeof(spawn_for_service_request), &spawn_for_service_response,
                                   sizeof(spawn_for_service_response)) == 0,
           "C kernel-call bridge accepts a service-owned spawn request");
     const auto decoded_spawn_for_service =
@@ -10301,83 +9751,65 @@ static void test_kernel_call_c_bridge() {
 
   t81::canonfs::CanonRef send_ref;
   send_ref.hash.h.bytes.fill(0x33);
-  const auto send_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::SendMessage,
-          .ipc_dst = *receiver_tid,
-          .message = t81::ternaryos::ipc::CanonMessage{
+  const auto send_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::SendMessage,
+      .ipc_dst = *receiver_tid,
+      .message =
+          t81::ternaryos::ipc::CanonMessage{
               .sender = 0,
               .ref = send_ref,
               .payload = 451,
               .tag = "c-kernel-call",
           },
-      });
+  });
   KernelCallWireResponseBlock send_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &send_request,
-                                sizeof(send_request),
-                                &send_response,
+  check(ternaryos_kernel_call_c(&*state, &send_request, sizeof(send_request), &send_response,
                                 sizeof(send_response)) == 0,
         "C kernel-call bridge accepts a valid wire request");
   const auto decoded_send = axion_kernel_decode_wire_response(send_response);
   check(decoded_send.has_value(), "C kernel-call bridge response decodes");
   if (decoded_send) {
-    check(decoded_send->status == KernelCallStatus::Ok,
-          "C kernel-call bridge returns Ok for send");
+    check(decoded_send->status == KernelCallStatus::Ok, "C kernel-call bridge returns Ok for send");
   }
 
-  const auto yield_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::Yield});
+  const auto yield_request =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::Yield});
   KernelCallWireResponseBlock yield_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &yield_request,
-                                sizeof(yield_request),
-                                &yield_response,
+  check(ternaryos_kernel_call_c(&*state, &yield_request, sizeof(yield_request), &yield_response,
                                 sizeof(yield_response)) == 0,
         "C kernel-call bridge accepts a yield request");
   check(state->scheduler.current_tid() == *receiver_tid,
         "C kernel-call bridge yield advances to receiver");
 
-  const auto receive_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  const auto receive_request =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
   KernelCallWireResponseBlock receive_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &receive_request,
-                                sizeof(receive_request),
-                                &receive_response,
-                                sizeof(receive_response)) == 0,
+  check(ternaryos_kernel_call_c(&*state, &receive_request, sizeof(receive_request),
+                                &receive_response, sizeof(receive_response)) == 0,
         "C kernel-call bridge accepts a receive request");
   const auto decoded_receive = axion_kernel_decode_wire_response(receive_response);
   check(decoded_receive.has_value(), "C kernel-call bridge receive response decodes");
   if (decoded_receive) {
     check(decoded_receive->status == KernelCallStatus::Ok,
           "C kernel-call bridge receive returns Ok");
-    check(decoded_receive->message.has_value() &&
-              decoded_receive->message->payload == 451,
+    check(decoded_receive->message.has_value() && decoded_receive->message->payload == 451,
           "C kernel-call bridge preserves payload");
-    check(decoded_receive->message &&
-              decoded_receive->message->tag == "c-kernel-call",
+    check(decoded_receive->message && decoded_receive->message->tag == "c-kernel-call",
           "C kernel-call bridge preserves tag");
   }
 
-  const auto exit_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{.kind = KernelCallKind::ExitThread});
+  const auto exit_request =
+      axion_kernel_encode_wire_request(KernelCallRequest{.kind = KernelCallKind::ExitThread});
   KernelCallWireResponseBlock exit_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &exit_request,
-                                sizeof(exit_request),
-                                &exit_response,
+  check(ternaryos_kernel_call_c(&*state, &exit_request, sizeof(exit_request), &exit_response,
                                 sizeof(exit_response)) == 0,
         "C kernel-call bridge accepts an exit-thread request");
   const auto decoded_exit = axion_kernel_decode_wire_response(exit_response);
   check(decoded_exit.has_value(), "C kernel-call bridge exit response decodes");
   if (decoded_exit) {
-    check(decoded_exit->status == KernelCallStatus::Ok,
-          "C kernel-call bridge exit returns Ok");
-    check(decoded_exit->action_performed,
-          "C kernel-call bridge exit reports work performed");
-    check(decoded_exit->thread_exited,
-          "C kernel-call bridge exit reports thread exit");
+    check(decoded_exit->status == KernelCallStatus::Ok, "C kernel-call bridge exit returns Ok");
+    check(decoded_exit->action_performed, "C kernel-call bridge exit reports work performed");
+    check(decoded_exit->thread_exited, "C kernel-call bridge exit reports thread exit");
   }
   check(state->find_thread_runtime(*receiver_tid) == nullptr,
         "C kernel-call bridge exit removes the exited thread runtime");
@@ -10389,32 +9821,21 @@ static void test_kernel_call_c_bridge() {
         "C kernel-call bridge exit leaves a valid runnable thread current");
 
   KernelCallWireResponseBlock short_request_response;
-  check(ternaryos_kernel_call_c(&*state,
-                                &send_request,
-                                sizeof(KernelCallWireHeader),
-                                &short_request_response,
-                                sizeof(short_request_response)) == 0,
+  check(ternaryos_kernel_call_c(&*state, &send_request, sizeof(KernelCallWireHeader),
+                                &short_request_response, sizeof(short_request_response)) == 0,
         "C kernel-call bridge returns InvalidRequest for short request buffers");
-  const auto decoded_short_request =
-      axion_kernel_decode_wire_response(short_request_response);
-  check(decoded_short_request.has_value(),
-        "C kernel-call bridge short-request response decodes");
+  const auto decoded_short_request = axion_kernel_decode_wire_response(short_request_response);
+  check(decoded_short_request.has_value(), "C kernel-call bridge short-request response decodes");
   if (decoded_short_request) {
     check(decoded_short_request->status == KernelCallStatus::InvalidRequest,
           "C kernel-call bridge short request returns InvalidRequest");
   }
 
   std::array<std::byte, sizeof(KernelCallWireResponseBlock) - 1> short_response_buffer{};
-  check(ternaryos_kernel_call_c(&*state,
-                                &send_request,
-                                sizeof(send_request),
-                                short_response_buffer.data(),
-                                short_response_buffer.size()) != 0,
+  check(ternaryos_kernel_call_c(&*state, &send_request, sizeof(send_request),
+                                short_response_buffer.data(), short_response_buffer.size()) != 0,
         "C kernel-call bridge rejects short response buffers");
-  check(ternaryos_kernel_call_c(nullptr,
-                                &send_request,
-                                sizeof(send_request),
-                                &send_response,
+  check(ternaryos_kernel_call_c(nullptr, &send_request, sizeof(send_request), &send_response,
                                 sizeof(send_response)) != 0,
         "C kernel-call bridge rejects null kernel state");
 }
@@ -10443,54 +9864,38 @@ static void test_kernel_call_tva_c_bridge() {
 
   const auto* caller_runtime = state->find_thread_runtime(*caller_tid);
   const auto caller_address_space =
-      caller_runtime
-          ? state->find_process_group_address_space(caller_runtime->process_group_id)
-          : std::nullopt;
-  check(caller_address_space.has_value(),
-        "TVA kernel-call bridge resolves caller address space");
+      caller_runtime ? state->find_process_group_address_space(caller_runtime->process_group_id)
+                     : std::nullopt;
+  check(caller_address_space.has_value(), "TVA kernel-call bridge resolves caller address space");
   if (!caller_address_space) {
     return;
   }
 
   const uint64_t request_tva = t81::ternaryos::mmu::tva_from_vpn_offset(81, 0);
   const uint64_t response_tva = t81::ternaryos::mmu::tva_from_vpn_offset(82, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            request_tva,
-            *caller_address_space,
-            {.readable = true, .writable = true, .executable = false}),
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, request_tva,
+                                     *caller_address_space,
+                                     {.readable = true, .writable = true, .executable = false}),
         "TVA kernel-call bridge maps request page");
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            response_tva,
-            *caller_address_space,
-            {.readable = true, .writable = true, .executable = false}),
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, response_tva,
+                                     *caller_address_space,
+                                     {.readable = true, .writable = true, .executable = false}),
         "TVA kernel-call bridge maps response page");
 
   const auto request_block = axion_kernel_encode_wire_request(
       KernelCallRequest{.kind = KernelCallKind::QueryThreadExecutionState});
-  check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            request_tva,
-            reinterpret_cast<const std::byte*>(&request_block),
-            sizeof(request_block)),
+  check(axion_kernel_write_address_space_bytes(*state, *caller_address_space, request_tva,
+                                               reinterpret_cast<const std::byte*>(&request_block),
+                                               sizeof(request_block)),
         "TVA kernel-call bridge writes request block into mapped memory");
 
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    request_tva,
-                                    response_tva) == 0,
+  check(ternaryos_kernel_call_tva_c(&*state, request_tva, response_tva) == 0,
         "TVA kernel-call bridge dispatches mapped request and response blocks");
 
   KernelCallWireResponseBlock response_block;
-  check(axion_kernel_read_address_space_bytes(
-            *state,
-            *caller_address_space,
-            response_tva,
-            reinterpret_cast<std::byte*>(&response_block),
-            sizeof(response_block)),
+  check(axion_kernel_read_address_space_bytes(*state, *caller_address_space, response_tva,
+                                              reinterpret_cast<std::byte*>(&response_block),
+                                              sizeof(response_block)),
         "TVA kernel-call bridge reads response block from mapped memory");
   const auto decoded_response = axion_kernel_decode_wire_response(response_block);
   check(decoded_response.has_value(), "TVA kernel-call bridge response decodes");
@@ -10501,8 +9906,7 @@ static void test_kernel_call_tva_c_bridge() {
           "TVA kernel-call bridge query returns the running tid");
     check(decoded_response->thread_register0 == 1301,
           "TVA kernel-call bridge query returns register0");
-    check(decoded_response->thread_running,
-          "TVA kernel-call bridge query reports running state");
+    check(decoded_response->thread_running, "TVA kernel-call bridge query reports running state");
   }
 
   const auto executable_descriptor = KernelThreadSpawnDescriptor{
@@ -10514,48 +9918,32 @@ static void test_kernel_call_tva_c_bridge() {
   const auto executable_block = executable_block_for(executable_descriptor);
   const auto executable_ref = t81::canonfs::CanonRef{executable_block.hash()};
   const uint64_t executable_tva = t81::ternaryos::mmu::tva_from_vpn_offset(87, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            executable_tva,
-            *caller_address_space,
-            {.readable = true, .writable = true, .executable = false}),
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, executable_tva,
+                                     *caller_address_space,
+                                     {.readable = true, .writable = true, .executable = false}),
         "TVA kernel-call bridge maps executable image page");
   const auto executable_bytes = executable_block.to_bytes();
-  check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            executable_tva,
-            executable_bytes.data(),
-            executable_bytes.size()),
+  check(axion_kernel_write_address_space_bytes(*state, *caller_address_space, executable_tva,
+                                               executable_bytes.data(), executable_bytes.size()),
         "TVA kernel-call bridge writes executable image into mapped memory");
 
-  const auto register_executable_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObjectFromTva,
-          .object_tva = executable_tva,
-          .object_ref = executable_ref,
-      });
+  const auto register_executable_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterExecutableObjectFromTva,
+      .object_tva = executable_tva,
+      .object_ref = executable_ref,
+  });
   check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            request_tva,
+            *state, *caller_address_space, request_tva,
             reinterpret_cast<const std::byte*>(&register_executable_request),
             sizeof(register_executable_request)),
         "TVA kernel-call bridge writes executable registration request block");
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    request_tva,
-                                    response_tva) == 0,
+  check(ternaryos_kernel_call_tva_c(&*state, request_tva, response_tva) == 0,
         "TVA kernel-call bridge registers executable objects from mapped memory");
-  check(axion_kernel_read_address_space_bytes(
-            *state,
-            *caller_address_space,
-            response_tva,
-            reinterpret_cast<std::byte*>(&response_block),
-            sizeof(response_block)),
+  check(axion_kernel_read_address_space_bytes(*state, *caller_address_space, response_tva,
+                                              reinterpret_cast<std::byte*>(&response_block),
+                                              sizeof(response_block)),
         "TVA kernel-call bridge reads executable registration response block");
-  const auto decoded_register_executable =
-      axion_kernel_decode_wire_response(response_block);
+  const auto decoded_register_executable = axion_kernel_decode_wire_response(response_block);
   check(decoded_register_executable.has_value(),
         "TVA kernel-call bridge executable registration response decodes");
   if (decoded_register_executable) {
@@ -10574,9 +9962,9 @@ static void test_kernel_call_tva_c_bridge() {
             "TVA kernel-call bridge executable registration preserves sp");
       check(decoded_register_executable->executable_entry_descriptor->register0 == 1201,
             "TVA kernel-call bridge executable registration preserves register0");
-      check(decoded_register_executable->executable_entry_descriptor->label ==
-                "tva-executable-entry",
-            "TVA kernel-call bridge executable registration preserves label");
+      check(
+          decoded_register_executable->executable_entry_descriptor->label == "tva-executable-entry",
+          "TVA kernel-call bridge executable registration preserves label");
     }
   }
 
@@ -10586,53 +9974,34 @@ static void test_kernel_call_tva_c_bridge() {
       .register0 = 2201,
       .label = "tva-published-entry",
   };
-  const auto published_executable_block =
-      executable_block_for(published_executable_descriptor);
-  const auto published_executable_ref =
-      t81::canonfs::CanonRef{published_executable_block.hash()};
-  const uint64_t published_executable_tva =
-      t81::ternaryos::mmu::tva_from_vpn_offset(88, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            published_executable_tva,
-            *caller_address_space,
-            {.readable = true, .writable = true, .executable = false}),
+  const auto published_executable_block = executable_block_for(published_executable_descriptor);
+  const auto published_executable_ref = t81::canonfs::CanonRef{published_executable_block.hash()};
+  const uint64_t published_executable_tva = t81::ternaryos::mmu::tva_from_vpn_offset(88, 0);
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, published_executable_tva,
+                                     *caller_address_space,
+                                     {.readable = true, .writable = true, .executable = false}),
         "TVA kernel-call bridge maps published executable image page");
   const auto published_executable_bytes = published_executable_block.to_bytes();
   check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            published_executable_tva,
-            published_executable_bytes.data(),
-            published_executable_bytes.size()),
+            *state, *caller_address_space, published_executable_tva,
+            published_executable_bytes.data(), published_executable_bytes.size()),
         "TVA kernel-call bridge writes published executable image into mapped memory");
-  const auto publish_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::PublishExecutableObjectFromTva,
-          .object_tva = published_executable_tva,
-          .object_ref = published_executable_ref,
-      });
-  check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            request_tva,
-            reinterpret_cast<const std::byte*>(&publish_request),
-            sizeof(publish_request)),
+  const auto publish_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::PublishExecutableObjectFromTva,
+      .object_tva = published_executable_tva,
+      .object_ref = published_executable_ref,
+  });
+  check(axion_kernel_write_address_space_bytes(*state, *caller_address_space, request_tva,
+                                               reinterpret_cast<const std::byte*>(&publish_request),
+                                               sizeof(publish_request)),
         "TVA kernel-call bridge writes executable publish request block");
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    request_tva,
-                                    response_tva) == 0,
+  check(ternaryos_kernel_call_tva_c(&*state, request_tva, response_tva) == 0,
         "TVA kernel-call bridge publishes executable objects from mapped memory");
-  check(axion_kernel_read_address_space_bytes(
-            *state,
-            *caller_address_space,
-            response_tva,
-            reinterpret_cast<std::byte*>(&response_block),
-            sizeof(response_block)),
+  check(axion_kernel_read_address_space_bytes(*state, *caller_address_space, response_tva,
+                                              reinterpret_cast<std::byte*>(&response_block),
+                                              sizeof(response_block)),
         "TVA kernel-call bridge reads executable publish response block");
-  const auto decoded_publish_executable =
-      axion_kernel_decode_wire_response(response_block);
+  const auto decoded_publish_executable = axion_kernel_decode_wire_response(response_block);
   check(decoded_publish_executable.has_value(),
         "TVA kernel-call bridge executable publish response decodes");
   if (decoded_publish_executable) {
@@ -10641,31 +10010,22 @@ static void test_kernel_call_tva_c_bridge() {
     check(decoded_publish_executable->executable_published,
           "TVA kernel-call bridge executable publish reports published state");
   }
-  const auto register_published_request = axion_kernel_encode_wire_request(
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = published_executable_ref,
-      });
+  const auto register_published_request = axion_kernel_encode_wire_request(KernelCallRequest{
+      .kind = KernelCallKind::RegisterExecutableObject,
+      .object_ref = published_executable_ref,
+  });
   check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            request_tva,
+            *state, *caller_address_space, request_tva,
             reinterpret_cast<const std::byte*>(&register_published_request),
             sizeof(register_published_request)),
         "TVA kernel-call bridge writes published-executable registration request block");
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    request_tva,
-                                    response_tva) == 0,
+  check(ternaryos_kernel_call_tva_c(&*state, request_tva, response_tva) == 0,
         "TVA kernel-call bridge registers executables from the published repository");
-  check(axion_kernel_read_address_space_bytes(
-            *state,
-            *caller_address_space,
-            response_tva,
-            reinterpret_cast<std::byte*>(&response_block),
-            sizeof(response_block)),
+  check(axion_kernel_read_address_space_bytes(*state, *caller_address_space, response_tva,
+                                              reinterpret_cast<std::byte*>(&response_block),
+                                              sizeof(response_block)),
         "TVA kernel-call bridge reads published-executable registration response block");
-  const auto decoded_register_published =
-      axion_kernel_decode_wire_response(response_block);
+  const auto decoded_register_published = axion_kernel_decode_wire_response(response_block);
   check(decoded_register_published.has_value(),
         "TVA kernel-call bridge published-executable registration response decodes");
   if (decoded_register_published) {
@@ -10682,43 +10042,28 @@ static void test_kernel_call_tva_c_bridge() {
             "TVA kernel-call bridge published-executable registration preserves sp");
       check(decoded_register_published->executable_entry_descriptor->register0 == 2201,
             "TVA kernel-call bridge published-executable registration preserves register0");
-      check(decoded_register_published->executable_entry_descriptor->label ==
-                "tva-published-entry",
+      check(decoded_register_published->executable_entry_descriptor->label == "tva-published-entry",
             "TVA kernel-call bridge published-executable registration preserves label");
     }
   }
 
-  const uint64_t unmapped_response_tva =
-      t81::ternaryos::mmu::tva_from_vpn_offset(83, 0);
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    request_tva,
-                                    unmapped_response_tva) != 0,
+  const uint64_t unmapped_response_tva = t81::ternaryos::mmu::tva_from_vpn_offset(83, 0);
+  check(ternaryos_kernel_call_tva_c(&*state, request_tva, unmapped_response_tva) != 0,
         "TVA kernel-call bridge rejects unmapped response pages");
-  const uint64_t unreadable_request_tva =
-      t81::ternaryos::mmu::tva_from_vpn_offset(85, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            unreadable_request_tva,
-            *caller_address_space,
-            {.readable = false, .writable = true, .executable = false}),
+  const uint64_t unreadable_request_tva = t81::ternaryos::mmu::tva_from_vpn_offset(85, 0);
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, unreadable_request_tva,
+                                     *caller_address_space,
+                                     {.readable = false, .writable = true, .executable = false}),
         "TVA kernel-call bridge maps unreadable request page");
   check(axion_kernel_write_address_space_bytes(
-            *state,
-            *caller_address_space,
-            unreadable_request_tva,
-            reinterpret_cast<const std::byte*>(&request_block),
-            sizeof(request_block)),
+            *state, *caller_address_space, unreadable_request_tva,
+            reinterpret_cast<const std::byte*>(&request_block), sizeof(request_block)),
         "TVA kernel-call bridge can seed unreadable request storage through kernel ownership");
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    unreadable_request_tva,
-                                    response_tva) == 0,
+  check(ternaryos_kernel_call_tva_c(&*state, unreadable_request_tva, response_tva) == 0,
         "TVA kernel-call bridge returns a structured response for unreadable request pages");
   KernelCallWireResponseBlock unreadable_response_block;
   check(axion_kernel_read_address_space_bytes(
-            *state,
-            *caller_address_space,
-            response_tva,
+            *state, *caller_address_space, response_tva,
             reinterpret_cast<std::byte*>(&unreadable_response_block),
             sizeof(unreadable_response_block)),
         "TVA kernel-call bridge reads unreadable-request response block");
@@ -10729,8 +10074,7 @@ static void test_kernel_call_tva_c_bridge() {
   if (decoded_unreadable_response) {
     check(decoded_unreadable_response->status == KernelCallStatus::InvalidRequest,
           "TVA kernel-call bridge unreadable request reports InvalidRequest");
-    check(decoded_unreadable_response->rejection ==
-              KernelCallRejection::InvalidAddressSpaceSpan,
+    check(decoded_unreadable_response->rejection == KernelCallRejection::InvalidAddressSpaceSpan,
           "TVA kernel-call bridge unreadable request reports InvalidAddressSpaceSpan");
     check(decoded_unreadable_response->fault.has_value(),
           "TVA kernel-call bridge unreadable request returns a fault record");
@@ -10743,18 +10087,12 @@ static void test_kernel_call_tva_c_bridge() {
     }
   }
 
-  const uint64_t readonly_response_tva =
-      t81::ternaryos::mmu::tva_from_vpn_offset(86, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            readonly_response_tva,
-            *caller_address_space,
-            {.readable = true, .writable = false, .executable = false}),
+  const uint64_t readonly_response_tva = t81::ternaryos::mmu::tva_from_vpn_offset(86, 0);
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, readonly_response_tva,
+                                     *caller_address_space,
+                                     {.readable = true, .writable = false, .executable = false}),
         "TVA kernel-call bridge maps read-only response page");
-  check(ternaryos_kernel_call_tva_c(&*state,
-                                    request_tva,
-                                    readonly_response_tva) != 0,
+  check(ternaryos_kernel_call_tva_c(&*state, request_tva, readonly_response_tva) != 0,
         "TVA kernel-call bridge rejects non-writable response pages");
 
   t81::ternaryos::sched::TiscContext outsider_ctx;
@@ -10770,31 +10108,21 @@ static void test_kernel_call_tva_c_bridge() {
     check(outsider_address_space.has_value(),
           "TVA kernel-call bridge resolves outsider address space");
     if (outsider_address_space) {
-      check(t81::ternaryos::mmu::mmu_map(
-                state->page_table,
-                state->allocator,
-                t81::ternaryos::mmu::tva_from_vpn_offset(84, 0),
-                *outsider_address_space,
-                {.readable = true, .writable = true, .executable = false}),
+      check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator,
+                                         t81::ternaryos::mmu::tva_from_vpn_offset(84, 0),
+                                         *outsider_address_space,
+                                         {.readable = true, .writable = true, .executable = false}),
             "TVA kernel-call bridge maps outsider request page");
-      const auto foreign_request_tva =
-          t81::ternaryos::mmu::tva_from_vpn_offset(84, 0);
+      const auto foreign_request_tva = t81::ternaryos::mmu::tva_from_vpn_offset(84, 0);
       check(axion_kernel_write_address_space_bytes(
-                *state,
-                *outsider_address_space,
-                foreign_request_tva,
-                reinterpret_cast<const std::byte*>(&request_block),
-                sizeof(request_block)),
+                *state, *outsider_address_space, foreign_request_tva,
+                reinterpret_cast<const std::byte*>(&request_block), sizeof(request_block)),
             "TVA kernel-call bridge writes request block into outsider memory");
-      check(ternaryos_kernel_call_tva_c(&*state,
-                                        foreign_request_tva,
-                                        response_tva) == 0,
+      check(ternaryos_kernel_call_tva_c(&*state, foreign_request_tva, response_tva) == 0,
             "TVA kernel-call bridge returns a structured response for foreign request pages");
       KernelCallWireResponseBlock foreign_response_block;
       check(axion_kernel_read_address_space_bytes(
-                *state,
-                *caller_address_space,
-                response_tva,
+                *state, *caller_address_space, response_tva,
                 reinterpret_cast<std::byte*>(&foreign_response_block),
                 sizeof(foreign_response_block)),
             "TVA kernel-call bridge reads foreign-request response block");
@@ -10805,8 +10133,7 @@ static void test_kernel_call_tva_c_bridge() {
       if (decoded_foreign_response) {
         check(decoded_foreign_response->status == KernelCallStatus::InvalidRequest,
               "TVA kernel-call bridge foreign request reports InvalidRequest");
-        check(decoded_foreign_response->rejection ==
-                  KernelCallRejection::InvalidAddressSpaceSpan,
+        check(decoded_foreign_response->rejection == KernelCallRejection::InvalidAddressSpaceSpan,
               "TVA kernel-call bridge foreign request reports InvalidAddressSpaceSpan");
         check(decoded_foreign_response->fault.has_value(),
               "TVA kernel-call bridge foreign request returns a fault record");
@@ -10820,9 +10147,7 @@ static void test_kernel_call_tva_c_bridge() {
       }
     }
   }
-  check(ternaryos_kernel_call_tva_c(nullptr,
-                                    request_tva,
-                                    response_tva) != 0,
+  check(ternaryos_kernel_call_tva_c(nullptr, request_tva, response_tva) != 0,
         "TVA kernel-call bridge rejects null kernel state");
 }
 
@@ -10853,18 +10178,14 @@ static void test_kernel_execution_abi_calls() {
   check(state->scheduler.current_tid() == *tid_a,
         "execution ABI makes thread A current before identity query");
 
-  auto identity = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
-  check(identity.status == KernelCallStatus::Ok,
-        "execution ABI identity returns Ok");
-  check(identity.rejection == KernelCallRejection::None,
-        "execution ABI identity clears rejection");
-  check(identity.caller_tid == tid_a,
-        "execution ABI identity returns caller tid");
+  auto identity =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+  check(identity.status == KernelCallStatus::Ok, "execution ABI identity returns Ok");
+  check(identity.rejection == KernelCallRejection::None, "execution ABI identity clears rejection");
+  check(identity.caller_tid == tid_a, "execution ABI identity returns caller tid");
   check(identity.caller_process_group_id.has_value(),
         "execution ABI identity returns caller process group");
-  check(identity.supervisor_id.has_value(),
-        "execution ABI identity returns caller supervisor");
+  check(identity.supervisor_id.has_value(), "execution ABI identity returns caller supervisor");
   check(identity.address_space_id.has_value(),
         "execution ABI identity returns caller address space");
 
@@ -10874,50 +10195,40 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI thread-state query returns Ok");
   check(self_execution.rejection == KernelCallRejection::None,
         "execution ABI thread-state query clears rejection");
-  check(self_execution.queried_tid == tid_a,
-        "execution ABI thread-state query returns caller tid");
+  check(self_execution.queried_tid == tid_a, "execution ABI thread-state query returns caller tid");
   check(self_execution.thread_register0 == 1101,
         "execution ABI thread-state query returns register0");
   check(self_execution.thread_running,
         "execution ABI thread-state query reports the current thread as running");
 
-  auto spawn_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadInCallerGroup,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 27,
-              .sp = 81,
-              .register0 = 404,
-              .label = "abi-spawn-in-group",
-          },
-      });
-  check(spawn_result.status == KernelCallStatus::Ok,
-        "execution ABI spawn returns Ok");
+  auto spawn_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadInCallerGroup,
+                                    .spawn_descriptor =
+                                        KernelThreadSpawnDescriptor{
+                                            .pc = 27,
+                                            .sp = 81,
+                                            .register0 = 404,
+                                            .label = "abi-spawn-in-group",
+                                        },
+                                });
+  check(spawn_result.status == KernelCallStatus::Ok, "execution ABI spawn returns Ok");
   check(spawn_result.rejection == KernelCallRejection::None,
         "execution ABI spawn clears rejection");
-  check(spawn_result.action_performed,
-        "execution ABI spawn reports work performed");
-  check(spawn_result.spawned_tid.has_value(),
-        "execution ABI spawn returns a spawned tid");
+  check(spawn_result.action_performed, "execution ABI spawn reports work performed");
+  check(spawn_result.spawned_tid.has_value(), "execution ABI spawn returns a spawned tid");
   if (spawn_result.spawned_tid) {
     auto* spawned_runtime = state->find_thread_runtime(*spawn_result.spawned_tid);
-    check(spawned_runtime != nullptr,
-          "execution ABI spawn creates thread runtime");
-    check(spawned_runtime &&
-              spawned_runtime->process_group_id == *identity.caller_process_group_id,
+    check(spawned_runtime != nullptr, "execution ABI spawn creates thread runtime");
+    check(spawned_runtime && spawned_runtime->process_group_id == *identity.caller_process_group_id,
           "execution ABI spawn keeps the new thread in the caller process group");
     check(state->ipc_bus.is_registered(*spawn_result.spawned_tid),
           "execution ABI spawn registers the new thread inbox");
-    const auto* spawned_context =
-        state->scheduler.run_queue().find(*spawn_result.spawned_tid);
-    check(spawned_context != nullptr,
-          "execution ABI spawn preserves a scheduler context");
+    const auto* spawned_context = state->scheduler.run_queue().find(*spawn_result.spawned_tid);
+    check(spawned_context != nullptr, "execution ABI spawn preserves a scheduler context");
     if (spawned_context) {
-      check(spawned_context->pc == 27,
-            "execution ABI spawn applies the requested pc");
-      check(spawned_context->sp == 81,
-            "execution ABI spawn applies the requested sp");
+      check(spawned_context->pc == 27, "execution ABI spawn applies the requested pc");
+      check(spawned_context->sp == 81, "execution ABI spawn applies the requested sp");
       check(spawned_context->registers[0] == 404,
             "execution ABI spawn applies the requested register0");
       check(spawned_context->label == "abi-spawn-in-group",
@@ -10925,43 +10236,38 @@ static void test_kernel_execution_abi_calls() {
     }
   }
 
-  auto register_entry = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterThreadEntryDescriptor,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 31,
-              .sp = 93,
-              .register0 = 606,
-              .label = "abi-entry-label",
-          },
-          .service_name = "abi-entry",
-      });
+  auto register_entry =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterThreadEntryDescriptor,
+                                    .spawn_descriptor =
+                                        KernelThreadSpawnDescriptor{
+                                            .pc = 31,
+                                            .sp = 93,
+                                            .register0 = 606,
+                                            .label = "abi-entry-label",
+                                        },
+                                    .service_name = "abi-entry",
+                                });
   check(register_entry.status == KernelCallStatus::Ok,
         "execution ABI entry registration returns Ok");
-  check(register_entry.action_performed,
-        "execution ABI entry registration reports work performed");
+  check(register_entry.action_performed, "execution ABI entry registration reports work performed");
 
-  auto spawn_from_entry = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
-          .service_name = "abi-entry",
-      });
+  auto spawn_from_entry =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromEntryDescriptor,
+                                    .service_name = "abi-entry",
+                                });
   check(spawn_from_entry.status == KernelCallStatus::Ok,
         "execution ABI named-entry spawn returns Ok");
   check(spawn_from_entry.spawned_tid.has_value(),
         "execution ABI named-entry spawn returns a spawned tid");
   if (spawn_from_entry.spawned_tid) {
-    const auto* spawned_context =
-        state->scheduler.run_queue().find(*spawn_from_entry.spawned_tid);
+    const auto* spawned_context = state->scheduler.run_queue().find(*spawn_from_entry.spawned_tid);
     check(spawned_context != nullptr,
           "execution ABI named-entry spawn preserves a scheduler context");
     if (spawned_context) {
-      check(spawned_context->pc == 31,
-            "execution ABI named-entry spawn applies the registered pc");
-      check(spawned_context->sp == 93,
-            "execution ABI named-entry spawn applies the registered sp");
+      check(spawned_context->pc == 31, "execution ABI named-entry spawn applies the registered pc");
+      check(spawned_context->sp == 93, "execution ABI named-entry spawn applies the registered sp");
       check(spawned_context->registers[0] == 606,
             "execution ABI named-entry spawn applies the registered register0");
       check(spawned_context->label == "abi-entry-label",
@@ -10976,13 +10282,12 @@ static void test_kernel_execution_abi_calls() {
       .label = "abi-executable-entry",
   };
   const auto executable_ref = executable_ref_for(executable_descriptor);
-  auto register_executable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = executable_ref,
-          .spawn_descriptor = executable_descriptor,
-      });
+  auto register_executable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObject,
+                                    .object_ref = executable_ref,
+                                    .spawn_descriptor = executable_descriptor,
+                                });
   check(register_executable.status == KernelCallStatus::Ok,
         "execution ABI executable registration returns Ok");
   check(register_executable.rejection == KernelCallRejection::None,
@@ -11002,17 +10307,15 @@ static void test_kernel_execution_abi_calls() {
           "execution ABI executable registration preserves sp");
     check(register_executable.executable_entry_descriptor->register0 == 707,
           "execution ABI executable registration preserves register0");
-    check(register_executable.executable_entry_descriptor->label ==
-              "abi-executable-entry",
+    check(register_executable.executable_entry_descriptor->label == "abi-executable-entry",
           "execution ABI executable registration preserves label");
   }
 
-  auto query_executable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryExecutableObject,
-          .object_ref = executable_ref,
-      });
+  auto query_executable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryExecutableObject,
+                                    .object_ref = executable_ref,
+                                });
   check(query_executable.status == KernelCallStatus::Ok,
         "execution ABI executable query returns Ok");
   check(query_executable.rejection == KernelCallRejection::None,
@@ -11030,17 +10333,15 @@ static void test_kernel_execution_abi_calls() {
           "execution ABI executable query preserves sp");
     check(query_executable.executable_entry_descriptor->register0 == 707,
           "execution ABI executable query preserves register0");
-    check(query_executable.executable_entry_descriptor->label ==
-              "abi-executable-entry",
+    check(query_executable.executable_entry_descriptor->label == "abi-executable-entry",
           "execution ABI executable query preserves label");
   }
 
-  auto spawn_from_executable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadFromExecutableObject,
-          .object_ref = executable_ref,
-      });
+  auto spawn_from_executable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadFromExecutableObject,
+                                    .object_ref = executable_ref,
+                                });
   check(spawn_from_executable.status == KernelCallStatus::Ok,
         "execution ABI executable-object spawn returns Ok");
   check(spawn_from_executable.rejection == KernelCallRejection::None,
@@ -11068,17 +10369,17 @@ static void test_kernel_execution_abi_calls() {
     }
   }
 
-  auto missing_executable_ref = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 1,
-              .sp = 2,
-              .register0 = 3,
-              .label = "missing-ref",
-          },
-      });
+  auto missing_executable_ref =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObject,
+                                    .spawn_descriptor =
+                                        KernelThreadSpawnDescriptor{
+                                            .pc = 1,
+                                            .sp = 2,
+                                            .register0 = 3,
+                                            .label = "missing-ref",
+                                        },
+                                });
   check(missing_executable_ref.status == KernelCallStatus::InvalidRequest,
         "execution ABI executable registration rejects missing object refs");
   check(missing_executable_ref.rejection == KernelCallRejection::MissingExecutableRef,
@@ -11086,44 +10387,35 @@ static void test_kernel_execution_abi_calls() {
 
   auto forged_executable_ref = executable_ref;
   forged_executable_ref.hash.h.bytes[0] ^= 0x01u;
-  auto forged_registration = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = forged_executable_ref,
-          .spawn_descriptor = executable_descriptor,
-      });
+  auto forged_registration =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObject,
+                                    .object_ref = forged_executable_ref,
+                                    .spawn_descriptor = executable_descriptor,
+                                });
   check(forged_registration.status == KernelCallStatus::InvalidRequest,
         "execution ABI executable registration rejects forged object refs");
-  check(forged_registration.rejection ==
-            KernelCallRejection::InvalidExecutableObject,
+  check(forged_registration.rejection == KernelCallRejection::InvalidExecutableObject,
         "execution ABI forged executable ref reports executable validation failure");
 
   const auto executable_block = executable_block_for(executable_descriptor);
   const auto executable_image_tva = t81::ternaryos::mmu::tva_from_vpn_offset(91, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            executable_image_tva,
-            *identity.address_space_id,
-            {.readable = true, .writable = true, .executable = false}),
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, executable_image_tva,
+                                     *identity.address_space_id,
+                                     {.readable = true, .writable = true, .executable = false}),
         "execution ABI maps executable image page");
   const auto executable_bytes = executable_block.to_bytes();
-  check(axion_kernel_write_address_space_bytes(
-            *state,
-            *identity.address_space_id,
-            executable_image_tva,
-            executable_bytes.data(),
-            executable_bytes.size()),
+  check(axion_kernel_write_address_space_bytes(*state, *identity.address_space_id,
+                                               executable_image_tva, executable_bytes.data(),
+                                               executable_bytes.size()),
         "execution ABI writes executable image into mapped memory");
   const auto executable_ref_from_tva = t81::canonfs::CanonRef{executable_block.hash()};
-  auto register_executable_from_tva = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObjectFromTva,
-          .object_tva = executable_image_tva,
-          .object_ref = executable_ref_from_tva,
-      });
+  auto register_executable_from_tva =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObjectFromTva,
+                                    .object_tva = executable_image_tva,
+                                    .object_ref = executable_ref_from_tva,
+                                });
   check(register_executable_from_tva.status == KernelCallStatus::Ok,
         "execution ABI executable registration from TVA returns Ok");
   check(register_executable_from_tva.executable_registered,
@@ -11138,50 +10430,38 @@ static void test_kernel_execution_abi_calls() {
       .register0 = 4242,
       .label = "published-executable-entry",
   };
-  const auto published_executable_block =
-      executable_block_for(published_executable_descriptor);
-  const auto published_executable_ref =
-      t81::canonfs::CanonRef{published_executable_block.hash()};
-  const auto published_executable_tva =
-      t81::ternaryos::mmu::tva_from_vpn_offset(92, 0);
-  check(t81::ternaryos::mmu::mmu_map(
-            state->page_table,
-            state->allocator,
-            published_executable_tva,
-            *identity.address_space_id,
-            {.readable = true, .writable = true, .executable = false}),
+  const auto published_executable_block = executable_block_for(published_executable_descriptor);
+  const auto published_executable_ref = t81::canonfs::CanonRef{published_executable_block.hash()};
+  const auto published_executable_tva = t81::ternaryos::mmu::tva_from_vpn_offset(92, 0);
+  check(t81::ternaryos::mmu::mmu_map(state->page_table, state->allocator, published_executable_tva,
+                                     *identity.address_space_id,
+                                     {.readable = true, .writable = true, .executable = false}),
         "execution ABI maps published executable image page");
   const auto published_executable_bytes = published_executable_block.to_bytes();
   check(axion_kernel_write_address_space_bytes(
-            *state,
-            *identity.address_space_id,
-            published_executable_tva,
-            published_executable_bytes.data(),
-            published_executable_bytes.size()),
+            *state, *identity.address_space_id, published_executable_tva,
+            published_executable_bytes.data(), published_executable_bytes.size()),
         "execution ABI writes published executable image into mapped memory");
-  auto publish_executable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::PublishExecutableObjectFromTva,
-          .object_tva = published_executable_tva,
-          .object_ref = published_executable_ref,
-      });
+  auto publish_executable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                                    .object_tva = published_executable_tva,
+                                    .object_ref = published_executable_ref,
+                                });
   check(publish_executable.status == KernelCallStatus::Ok,
         "execution ABI executable publish from TVA returns Ok");
   check(publish_executable.executable_published,
         "execution ABI executable publish from TVA reports published state");
-  auto register_published_executable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = published_executable_ref,
-      });
+  auto register_published_executable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObject,
+                                    .object_ref = published_executable_ref,
+                                });
   check(register_published_executable.status == KernelCallStatus::Ok,
         "execution ABI executable registration from published repository returns Ok");
   check(register_published_executable.executable_registered,
         "execution ABI executable registration from published repository reports executable state");
-  check(canon_ref_matches(register_published_executable.object_ref,
-                          published_executable_ref),
+  check(canon_ref_matches(register_published_executable.object_ref, published_executable_ref),
         "execution ABI executable registration from published repository preserves object ref");
   check(register_published_executable.executable_entry_descriptor.has_value(),
         "execution ABI executable registration from published repository exposes descriptor");
@@ -11197,8 +10477,7 @@ static void test_kernel_execution_abi_calls() {
           "execution ABI executable registration from published repository preserves label");
   }
 
-  constexpr const char* kPublishedExecStorePath =
-      "/tmp/axion-published-executable-store-test.blk";
+  constexpr const char* kPublishedExecStorePath = "/tmp/axion-published-executable-store-test.blk";
   std::remove(kPublishedExecStorePath);
 
   auto publishing_state = axion_kernel_bootstrap(ctx);
@@ -11208,9 +10487,9 @@ static void test_kernel_execution_abi_calls() {
     auto external_store =
         std::make_unique<t81::ternaryos::dev::HostedBlockDev>(128, "published-exec-store");
     external_store->set_backing_file(kPublishedExecStorePath);
-    check(axion_kernel_bind_published_executable_store(*publishing_state,
-                                                       std::move(external_store)),
-          "execution ABI can bind an external published-executable store");
+    check(
+        axion_kernel_bind_published_executable_store(*publishing_state, std::move(external_store)),
+        "execution ABI can bind an external published-executable store");
     // axion_kernel_bootstrap always sets published_executable_canonfs to an
     // in-memory fallback driver.  Clear it here so this test exercises the
     // block-device persistence path (HostedBlockDev → backing file on disk).
@@ -11219,8 +10498,7 @@ static void test_kernel_execution_abi_calls() {
     t81::ternaryos::sched::TiscContext publishing_thread;
     publishing_thread.registers[0] = 9101;
     auto publishing_tid = axion_kernel_spawn_thread(*publishing_state, publishing_thread);
-    check(publishing_tid.has_value(),
-          "execution ABI publisher kernel spawns a caller thread");
+    check(publishing_tid.has_value(), "execution ABI publisher kernel spawns a caller thread");
     if (publishing_tid) {
       check(axion_kernel_tick(*publishing_state),
             "execution ABI publisher kernel dispatches the caller thread");
@@ -11235,41 +10513,31 @@ static void test_kernel_execution_abi_calls() {
             .register0 = 5151,
             .label = "external-published-entry",
         };
-        const auto external_published_block =
-            executable_block_for(external_published_descriptor);
-        const auto external_published_ref =
-            t81::canonfs::CanonRef{external_published_block.hash()};
-        const auto external_published_tva =
-            t81::ternaryos::mmu::tva_from_vpn_offset(123, 0);
+        const auto external_published_block = executable_block_for(external_published_descriptor);
+        const auto external_published_ref = t81::canonfs::CanonRef{external_published_block.hash()};
+        const auto external_published_tva = t81::ternaryos::mmu::tva_from_vpn_offset(123, 0);
         check(t81::ternaryos::mmu::mmu_map(
-                  publishing_state->page_table,
-                  publishing_state->allocator,
-                  external_published_tva,
+                  publishing_state->page_table, publishing_state->allocator, external_published_tva,
                   *publishing_identity.address_space_id,
                   {.readable = true, .writable = true, .executable = false}),
               "execution ABI publisher kernel maps external published executable page");
         const auto external_published_bytes = external_published_block.to_bytes();
         check(axion_kernel_write_address_space_bytes(
-                  *publishing_state,
-                  *publishing_identity.address_space_id,
-                  external_published_tva,
-                  external_published_bytes.data(),
-                  external_published_bytes.size()),
+                  *publishing_state, *publishing_identity.address_space_id, external_published_tva,
+                  external_published_bytes.data(), external_published_bytes.size()),
               "execution ABI publisher kernel writes external published executable image");
         auto external_publish_result = axion_kernel_call(
-            *publishing_state,
-            KernelCallRequest{
-                .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                .object_tva = external_published_tva,
-                .object_ref = external_published_ref,
-            });
+            *publishing_state, KernelCallRequest{
+                                   .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                                   .object_tva = external_published_tva,
+                                   .object_ref = external_published_ref,
+                               });
         check(external_publish_result.status == KernelCallStatus::Ok,
               "execution ABI publishes executable objects into an external store");
         check(external_publish_result.executable_published,
               "execution ABI external-store publish reports published state");
 
-        auto reloaded_store =
-            t81::ternaryos::dev::HostedBlockDev::load(kPublishedExecStorePath);
+        auto reloaded_store = t81::ternaryos::dev::HostedBlockDev::load(kPublishedExecStorePath);
         check(reloaded_store.has_value(),
               "execution ABI can reload the external published-executable store");
 
@@ -11293,17 +10561,15 @@ static void test_kernel_execution_abi_calls() {
             check(axion_kernel_tick(*registration_state),
                   "execution ABI registration kernel dispatches the caller thread");
             auto external_register_result = axion_kernel_call(
-                *registration_state,
-                KernelCallRequest{
-                    .kind = KernelCallKind::RegisterExecutableObject,
-                    .object_ref = external_published_ref,
-                });
+                *registration_state, KernelCallRequest{
+                                         .kind = KernelCallKind::RegisterExecutableObject,
+                                         .object_ref = external_published_ref,
+                                     });
             check(external_register_result.status == KernelCallStatus::Ok,
                   "execution ABI can register an executable from reloaded external storage");
             check(external_register_result.executable_registered,
                   "execution ABI external-store registration reports executable state");
-            check(canon_ref_matches(external_register_result.object_ref,
-                                    external_published_ref),
+            check(canon_ref_matches(external_register_result.object_ref, external_published_ref),
                   "execution ABI external-store registration preserves object ref");
             check(external_register_result.executable_entry_descriptor.has_value(),
                   "execution ABI external-store registration exposes descriptor");
@@ -11325,8 +10591,7 @@ static void test_kernel_execution_abi_calls() {
   }
   std::remove(kPublishedExecStorePath);
 
-  const auto canonfs_root =
-      std::filesystem::temp_directory_path() / "axion-exec-canonfs-test";
+  const auto canonfs_root = std::filesystem::temp_directory_path() / "axion-exec-canonfs-test";
   {
     std::error_code ec;
     std::filesystem::remove_all(canonfs_root, ec);
@@ -11337,22 +10602,18 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI can bootstrap a CanonFS publisher kernel");
   if (canonfs_publishing_state) {
     check(axion_kernel_bind_published_executable_canonfs(
-              *canonfs_publishing_state,
-              t81::canonfs::make_persistent_driver(canonfs_root)),
+              *canonfs_publishing_state, t81::canonfs::make_persistent_driver(canonfs_root)),
           "execution ABI can bind a persistent CanonFS executable source");
 
     t81::ternaryos::sched::TiscContext canonfs_thread;
     canonfs_thread.registers[0] = 9103;
-    auto canonfs_tid =
-        axion_kernel_spawn_thread(*canonfs_publishing_state, canonfs_thread);
-    check(canonfs_tid.has_value(),
-          "execution ABI CanonFS publisher kernel spawns a caller thread");
+    auto canonfs_tid = axion_kernel_spawn_thread(*canonfs_publishing_state, canonfs_thread);
+    check(canonfs_tid.has_value(), "execution ABI CanonFS publisher kernel spawns a caller thread");
     if (canonfs_tid) {
       check(axion_kernel_tick(*canonfs_publishing_state),
             "execution ABI CanonFS publisher kernel dispatches the caller thread");
       auto canonfs_identity = axion_kernel_call(
-          *canonfs_publishing_state,
-          KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+          *canonfs_publishing_state, KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
       check(canonfs_identity.status == KernelCallStatus::Ok,
             "execution ABI CanonFS publisher identity query returns Ok");
       if (canonfs_identity.address_space_id) {
@@ -11364,30 +10625,23 @@ static void test_kernel_execution_abi_calls() {
         };
         const auto canonfs_block = executable_block_for(canonfs_descriptor);
         const auto canonfs_ref = t81::canonfs::CanonRef{canonfs_block.hash()};
-        const auto canonfs_tva =
-            t81::ternaryos::mmu::tva_from_vpn_offset(124, 0);
+        const auto canonfs_tva = t81::ternaryos::mmu::tva_from_vpn_offset(124, 0);
         check(t81::ternaryos::mmu::mmu_map(
-                  canonfs_publishing_state->page_table,
-                  canonfs_publishing_state->allocator,
-                  canonfs_tva,
-                  *canonfs_identity.address_space_id,
+                  canonfs_publishing_state->page_table, canonfs_publishing_state->allocator,
+                  canonfs_tva, *canonfs_identity.address_space_id,
                   {.readable = true, .writable = true, .executable = false}),
               "execution ABI CanonFS publisher kernel maps executable image page");
         const auto canonfs_bytes = canonfs_block.to_bytes();
         check(axion_kernel_write_address_space_bytes(
-                  *canonfs_publishing_state,
-                  *canonfs_identity.address_space_id,
-                  canonfs_tva,
-                  canonfs_bytes.data(),
-                  canonfs_bytes.size()),
+                  *canonfs_publishing_state, *canonfs_identity.address_space_id, canonfs_tva,
+                  canonfs_bytes.data(), canonfs_bytes.size()),
               "execution ABI CanonFS publisher kernel writes executable image");
         auto canonfs_publish_result = axion_kernel_call(
-            *canonfs_publishing_state,
-            KernelCallRequest{
-                .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                .object_tva = canonfs_tva,
-                .object_ref = canonfs_ref,
-            });
+            *canonfs_publishing_state, KernelCallRequest{
+                                           .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                                           .object_tva = canonfs_tva,
+                                           .object_ref = canonfs_ref,
+                                       });
         check(canonfs_publish_result.status == KernelCallStatus::Ok,
               "execution ABI publishes executable objects into persistent CanonFS");
         check(canonfs_publish_result.executable_published,
@@ -11397,26 +10651,25 @@ static void test_kernel_execution_abi_calls() {
         check(canonfs_registration_state.has_value(),
               "execution ABI can bootstrap a CanonFS registration kernel");
         if (canonfs_registration_state) {
-          check(axion_kernel_bind_published_executable_canonfs(
-                    *canonfs_registration_state,
-                    t81::canonfs::make_persistent_driver(canonfs_root)),
-                "execution ABI can bind a reloaded persistent CanonFS executable source");
+          check(
+              axion_kernel_bind_published_executable_canonfs(
+                  *canonfs_registration_state, t81::canonfs::make_persistent_driver(canonfs_root)),
+              "execution ABI can bind a reloaded persistent CanonFS executable source");
 
           t81::ternaryos::sched::TiscContext canonfs_registration_thread;
           canonfs_registration_thread.registers[0] = 9104;
-          auto canonfs_registration_tid = axion_kernel_spawn_thread(
-              *canonfs_registration_state, canonfs_registration_thread);
+          auto canonfs_registration_tid =
+              axion_kernel_spawn_thread(*canonfs_registration_state, canonfs_registration_thread);
           check(canonfs_registration_tid.has_value(),
                 "execution ABI CanonFS registration kernel spawns a caller thread");
           if (canonfs_registration_tid) {
             check(axion_kernel_tick(*canonfs_registration_state),
                   "execution ABI CanonFS registration kernel dispatches the caller thread");
             auto canonfs_register_result = axion_kernel_call(
-                *canonfs_registration_state,
-                KernelCallRequest{
-                    .kind = KernelCallKind::RegisterExecutableObject,
-                    .object_ref = canonfs_ref,
-                });
+                *canonfs_registration_state, KernelCallRequest{
+                                                 .kind = KernelCallKind::RegisterExecutableObject,
+                                                 .object_ref = canonfs_ref,
+                                             });
             check(canonfs_register_result.status == KernelCallStatus::Ok,
                   "execution ABI can register an executable directly from persistent CanonFS");
             check(canonfs_register_result.executable_registered,
@@ -11430,9 +10683,8 @@ static void test_kernel_execution_abi_calls() {
                     "execution ABI CanonFS registration preserves pc");
               check(canonfs_register_result.executable_entry_descriptor->sp == 323,
                     "execution ABI CanonFS registration preserves sp");
-              check(
-                  canonfs_register_result.executable_entry_descriptor->register0 == 6161,
-                  "execution ABI CanonFS registration preserves register0");
+              check(canonfs_register_result.executable_entry_descriptor->register0 == 6161,
+                    "execution ABI CanonFS registration preserves register0");
               check(canonfs_register_result.executable_entry_descriptor->label ==
                         "canonfs-published-entry",
                     "execution ABI CanonFS registration preserves label");
@@ -11468,9 +10720,9 @@ static void test_kernel_execution_abi_calls() {
     if (canonfs_env_tid) {
       check(axion_kernel_tick(*canonfs_env_publishing_state),
             "execution ABI CanonFS-env publisher kernel dispatches the caller thread");
-      auto canonfs_env_identity = axion_kernel_call(
-          *canonfs_env_publishing_state,
-          KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
+      auto canonfs_env_identity =
+          axion_kernel_call(*canonfs_env_publishing_state,
+                            KernelCallRequest{.kind = KernelCallKind::GetThreadIdentity});
       check(canonfs_env_identity.status == KernelCallStatus::Ok,
             "execution ABI CanonFS-env publisher identity query returns Ok");
       if (canonfs_env_identity.address_space_id) {
@@ -11482,30 +10734,24 @@ static void test_kernel_execution_abi_calls() {
         };
         const auto canonfs_env_block = executable_block_for(canonfs_env_descriptor);
         const auto canonfs_env_ref = t81::canonfs::CanonRef{canonfs_env_block.hash()};
-        const auto canonfs_env_tva =
-            t81::ternaryos::mmu::tva_from_vpn_offset(125, 0);
+        const auto canonfs_env_tva = t81::ternaryos::mmu::tva_from_vpn_offset(125, 0);
         check(t81::ternaryos::mmu::mmu_map(
-                  canonfs_env_publishing_state->page_table,
-                  canonfs_env_publishing_state->allocator,
-                  canonfs_env_tva,
-                  *canonfs_env_identity.address_space_id,
+                  canonfs_env_publishing_state->page_table, canonfs_env_publishing_state->allocator,
+                  canonfs_env_tva, *canonfs_env_identity.address_space_id,
                   {.readable = true, .writable = true, .executable = false}),
               "execution ABI CanonFS-env publisher kernel maps executable image page");
         const auto canonfs_env_bytes = canonfs_env_block.to_bytes();
         check(axion_kernel_write_address_space_bytes(
-                  *canonfs_env_publishing_state,
-                  *canonfs_env_identity.address_space_id,
-                  canonfs_env_tva,
-                  canonfs_env_bytes.data(),
-                  canonfs_env_bytes.size()),
+                  *canonfs_env_publishing_state, *canonfs_env_identity.address_space_id,
+                  canonfs_env_tva, canonfs_env_bytes.data(), canonfs_env_bytes.size()),
               "execution ABI CanonFS-env publisher kernel writes executable image");
-        auto canonfs_env_publish_result = axion_kernel_call(
-            *canonfs_env_publishing_state,
-            KernelCallRequest{
-                .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                .object_tva = canonfs_env_tva,
-                .object_ref = canonfs_env_ref,
-            });
+        auto canonfs_env_publish_result =
+            axion_kernel_call(*canonfs_env_publishing_state,
+                              KernelCallRequest{
+                                  .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                                  .object_tva = canonfs_env_tva,
+                                  .object_ref = canonfs_env_ref,
+                              });
         check(canonfs_env_publish_result.status == KernelCallStatus::Ok,
               "execution ABI publishes executable objects into env-configured CanonFS");
         check(canonfs_env_publish_result.executable_published,
@@ -11524,12 +10770,12 @@ static void test_kernel_execution_abi_calls() {
           if (canonfs_env_registration_tid) {
             check(axion_kernel_tick(*canonfs_env_registration_state),
                   "execution ABI CanonFS-env registration kernel dispatches the caller thread");
-            auto canonfs_env_register_result = axion_kernel_call(
-                *canonfs_env_registration_state,
-                KernelCallRequest{
-                    .kind = KernelCallKind::RegisterExecutableObject,
-                    .object_ref = canonfs_env_ref,
-                });
+            auto canonfs_env_register_result =
+                axion_kernel_call(*canonfs_env_registration_state,
+                                  KernelCallRequest{
+                                      .kind = KernelCallKind::RegisterExecutableObject,
+                                      .object_ref = canonfs_env_ref,
+                                  });
             check(canonfs_env_register_result.status == KernelCallStatus::Ok,
                   "execution ABI can register an executable from env-configured CanonFS");
             check(canonfs_env_register_result.executable_registered,
@@ -11543,9 +10789,8 @@ static void test_kernel_execution_abi_calls() {
                     "execution ABI CanonFS-env registration preserves pc");
               check(canonfs_env_register_result.executable_entry_descriptor->sp == 343,
                     "execution ABI CanonFS-env registration preserves sp");
-              check(
-                  canonfs_env_register_result.executable_entry_descriptor->register0 == 7171,
-                  "execution ABI CanonFS-env registration preserves register0");
+              check(canonfs_env_register_result.executable_entry_descriptor->register0 == 7171,
+                    "execution ABI CanonFS-env registration preserves register0");
               check(canonfs_env_register_result.executable_entry_descriptor->label ==
                         "canonfs-env-entry",
                     "execution ABI CanonFS-env registration preserves label");
@@ -11561,8 +10806,7 @@ static void test_kernel_execution_abi_calls() {
     std::filesystem::remove_all(canonfs_env_root, ec);
   }
 
-  constexpr const char* kVboxExecStorePath =
-      "/tmp/axion-vbox-executable-store-test.blk";
+  constexpr const char* kVboxExecStorePath = "/tmp/axion-vbox-executable-store-test.blk";
   std::remove(kVboxExecStorePath);
   {
     VBoxBootSpec spec;
@@ -11576,9 +10820,9 @@ static void test_kernel_execution_abi_calls() {
       check(vbox_state.has_value(),
             "execution ABI can bootstrap a kernel from VirtualBox guest boot context");
       if (vbox_state) {
-        check(axion_kernel_bind_published_executable_store_from_virtualbox_guest(
-                  *vbox_state, *guest),
-              "execution ABI can adopt VirtualBox guest storage as the executable store");
+        check(
+            axion_kernel_bind_published_executable_store_from_virtualbox_guest(*vbox_state, *guest),
+            "execution ABI can adopt VirtualBox guest storage as the executable store");
         // Clear the CanonFS fallback (set by axion_kernel_bootstrap) so this
         // test exercises the block-device reload path through HostedBlockDev.
         vbox_state->published_executable_canonfs = nullptr;
@@ -11604,73 +10848,68 @@ static void test_kernel_execution_abi_calls() {
             };
             const auto vbox_block = executable_block_for(vbox_descriptor);
             const auto vbox_ref = t81::canonfs::CanonRef{vbox_block.hash()};
-            const auto vbox_tva =
-                t81::ternaryos::mmu::tva_from_vpn_offset(126, 0);
+            const auto vbox_tva = t81::ternaryos::mmu::tva_from_vpn_offset(126, 0);
             check(t81::ternaryos::mmu::mmu_map(
-                      vbox_state->page_table,
-                      vbox_state->allocator,
-                      vbox_tva,
+                      vbox_state->page_table, vbox_state->allocator, vbox_tva,
                       *vbox_identity.address_space_id,
                       {.readable = true, .writable = true, .executable = false}),
                   "execution ABI VirtualBox executable-store kernel maps executable image page");
             const auto vbox_bytes = vbox_block.to_bytes();
-            check(axion_kernel_write_address_space_bytes(
-                      *vbox_state,
-                      *vbox_identity.address_space_id,
-                      vbox_tva,
-                      vbox_bytes.data(),
-                      vbox_bytes.size()),
+            check(axion_kernel_write_address_space_bytes(*vbox_state,
+                                                         *vbox_identity.address_space_id, vbox_tva,
+                                                         vbox_bytes.data(), vbox_bytes.size()),
                   "execution ABI VirtualBox executable-store kernel writes executable image");
             auto vbox_publish_result = axion_kernel_call(
-                *vbox_state,
-                KernelCallRequest{
-                    .kind = KernelCallKind::PublishExecutableObjectFromTva,
-                    .object_tva = vbox_tva,
-                    .object_ref = vbox_ref,
-                });
+                *vbox_state, KernelCallRequest{
+                                 .kind = KernelCallKind::PublishExecutableObjectFromTva,
+                                 .object_tva = vbox_tva,
+                                 .object_ref = vbox_ref,
+                             });
             check(vbox_publish_result.status == KernelCallStatus::Ok,
                   "execution ABI publishes executable objects through VirtualBox guest storage");
             check(vbox_publish_result.executable_published,
                   "execution ABI VirtualBox guest-storage publish reports published state");
 
-            auto loaded_backing =
-                t81::ternaryos::dev::HostedBlockDev::load(kVboxExecStorePath);
+            auto loaded_backing = t81::ternaryos::dev::HostedBlockDev::load(kVboxExecStorePath);
             check(loaded_backing.has_value(),
                   "execution ABI can reload the VirtualBox executable-store backing image");
             if (loaded_backing) {
               VBoxBootSpec reload_spec;
               auto reload_guest = bootstrap_virtualbox_guest(reload_spec, *loaded_backing);
-              check(reload_guest.has_value(),
-                    "execution ABI can bootstrap a fresh VirtualBox guest over the reloaded store image");
+              check(reload_guest.has_value(), "execution ABI can bootstrap a fresh VirtualBox "
+                                              "guest over the reloaded store image");
               if (reload_guest) {
                 auto reload_state = axion_kernel_bootstrap(reload_guest->boot_context);
-                check(reload_state.has_value(),
-                      "execution ABI can bootstrap a fresh kernel from the reloaded VirtualBox guest");
+                check(reload_state.has_value(), "execution ABI can bootstrap a fresh kernel from "
+                                                "the reloaded VirtualBox guest");
                 if (reload_state) {
                   check(axion_kernel_bind_published_executable_store_from_virtualbox_guest(
                             *reload_state, *reload_guest),
-                        "execution ABI can adopt reloaded VirtualBox guest storage as the executable store");
+                        "execution ABI can adopt reloaded VirtualBox guest storage as the "
+                        "executable store");
                   t81::ternaryos::sched::TiscContext reload_thread;
                   reload_thread.registers[0] = 9108;
-                  auto reload_tid =
-                      axion_kernel_spawn_thread(*reload_state, reload_thread);
-                  check(reload_tid.has_value(),
-                        "execution ABI fresh VirtualBox executable-store kernel spawns a caller thread");
+                  auto reload_tid = axion_kernel_spawn_thread(*reload_state, reload_thread);
+                  check(reload_tid.has_value(), "execution ABI fresh VirtualBox executable-store "
+                                                "kernel spawns a caller thread");
                   if (reload_tid) {
                     check(axion_kernel_tick(*reload_state),
-                          "execution ABI fresh VirtualBox executable-store kernel dispatches the caller thread");
+                          "execution ABI fresh VirtualBox executable-store kernel dispatches the "
+                          "caller thread");
                     auto reload_register_result = axion_kernel_call(
-                        *reload_state,
-                        KernelCallRequest{
-                            .kind = KernelCallKind::RegisterExecutableObject,
-                            .object_ref = vbox_ref,
-                        });
+                        *reload_state, KernelCallRequest{
+                                           .kind = KernelCallKind::RegisterExecutableObject,
+                                           .object_ref = vbox_ref,
+                                       });
                     check(reload_register_result.status == KernelCallStatus::Ok,
-                          "execution ABI can register an executable from reloaded VirtualBox guest storage");
+                          "execution ABI can register an executable from reloaded VirtualBox guest "
+                          "storage");
                     check(reload_register_result.executable_registered,
-                          "execution ABI VirtualBox guest-storage registration reports executable state");
-                    check(canon_ref_matches(reload_register_result.object_ref, vbox_ref),
-                          "execution ABI VirtualBox guest-storage registration preserves object ref");
+                          "execution ABI VirtualBox guest-storage registration reports executable "
+                          "state");
+                    check(
+                        canon_ref_matches(reload_register_result.object_ref, vbox_ref),
+                        "execution ABI VirtualBox guest-storage registration preserves object ref");
                     check(reload_register_result.executable_entry_descriptor.has_value(),
                           "execution ABI VirtualBox guest-storage registration exposes descriptor");
                     if (reload_register_result.executable_entry_descriptor) {
@@ -11678,9 +10917,9 @@ static void test_kernel_execution_abi_calls() {
                             "execution ABI VirtualBox guest-storage registration preserves pc");
                       check(reload_register_result.executable_entry_descriptor->sp == 363,
                             "execution ABI VirtualBox guest-storage registration preserves sp");
-                      check(
-                          reload_register_result.executable_entry_descriptor->register0 == 8181,
-                          "execution ABI VirtualBox guest-storage registration preserves register0");
+                      check(reload_register_result.executable_entry_descriptor->register0 == 8181,
+                            "execution ABI VirtualBox guest-storage registration preserves "
+                            "register0");
                       check(reload_register_result.executable_entry_descriptor->label ==
                                 "vbox-store-entry",
                             "execution ABI VirtualBox guest-storage registration preserves label");
@@ -11696,45 +10935,41 @@ static void test_kernel_execution_abi_calls() {
   }
   std::remove(kVboxExecStorePath);
 
-  auto missing_executable_image_tva = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObjectFromTva,
-          .object_ref = executable_ref_from_tva,
-      });
+  auto missing_executable_image_tva =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObjectFromTva,
+                                    .object_ref = executable_ref_from_tva,
+                                });
   check(missing_executable_image_tva.status == KernelCallStatus::InvalidRequest,
         "execution ABI executable registration from TVA rejects missing image TVAs");
-  check(missing_executable_image_tva.rejection ==
-            KernelCallRejection::MissingExecutableImageTva,
+  check(missing_executable_image_tva.rejection == KernelCallRejection::MissingExecutableImageTva,
         "execution ABI missing executable image TVA reports the correct rejection");
 
   t81::canonfs::CanonRef missing_registration_ref;
   missing_registration_ref.hash.h.bytes.fill(0x47);
-  auto missing_registration = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryExecutableObject,
-          .object_ref = missing_registration_ref,
-      });
+  auto missing_registration =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryExecutableObject,
+                                    .object_ref = missing_registration_ref,
+                                });
   check(missing_registration.status == KernelCallStatus::NotFound,
         "execution ABI executable query rejects missing registrations");
-  check(missing_registration.rejection ==
-            KernelCallRejection::MissingExecutableRegistration,
+  check(missing_registration.rejection == KernelCallRejection::MissingExecutableRegistration,
         "execution ABI missing executable registration reports the correct rejection");
 
-  auto supervisor_spawn = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-          .spawn_descriptor = KernelThreadSpawnDescriptor{
-              .pc = 45,
-              .sp = 108,
-              .register0 = 505,
-              .halted = true,
-              .active = false,
-              .label = "abi-supervisor-spawn",
-          },
-      });
+  auto supervisor_spawn =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+                                    .spawn_descriptor =
+                                        KernelThreadSpawnDescriptor{
+                                            .pc = 45,
+                                            .sp = 108,
+                                            .register0 = 505,
+                                            .halted = true,
+                                            .active = false,
+                                            .label = "abi-supervisor-spawn",
+                                        },
+                                });
   check(supervisor_spawn.status == KernelCallStatus::Ok,
         "execution ABI same-supervisor spawn returns Ok");
   check(supervisor_spawn.rejection == KernelCallRejection::None,
@@ -11747,8 +10982,7 @@ static void test_kernel_execution_abi_calls() {
         "execution ABI same-supervisor spawn returns a spawned tid");
   if (supervisor_spawn.spawned_tid) {
     auto* spawned_runtime = state->find_thread_runtime(*supervisor_spawn.spawned_tid);
-    check(spawned_runtime != nullptr,
-          "execution ABI same-supervisor spawn creates thread runtime");
+    check(spawned_runtime != nullptr, "execution ABI same-supervisor spawn creates thread runtime");
     if (spawned_runtime) {
       check(spawned_runtime->process_group_id != *identity.caller_process_group_id,
             "execution ABI same-supervisor spawn creates a distinct process group");
@@ -11756,8 +10990,7 @@ static void test_kernel_execution_abi_calls() {
                 identity.supervisor_id,
             "execution ABI same-supervisor spawn keeps the requested supervisor");
     }
-    const auto* spawned_context =
-        state->scheduler.run_queue().find(*supervisor_spawn.spawned_tid);
+    const auto* spawned_context = state->scheduler.run_queue().find(*supervisor_spawn.spawned_tid);
     check(spawned_context != nullptr,
           "execution ABI same-supervisor spawn preserves a scheduler context");
     if (spawned_context) {
@@ -11774,12 +11007,11 @@ static void test_kernel_execution_abi_calls() {
       check(spawned_context->label == "abi-supervisor-spawn",
             "execution ABI same-supervisor spawn applies the requested label");
     }
-    auto supervisor_query = axion_kernel_call(
-        *state,
-        KernelCallRequest{
-            .kind = KernelCallKind::QueryThreadExecutionState,
-            .target_tid = supervisor_spawn.spawned_tid,
-        });
+    auto supervisor_query =
+        axion_kernel_call(*state, KernelCallRequest{
+                                      .kind = KernelCallKind::QueryThreadExecutionState,
+                                      .target_tid = supervisor_spawn.spawned_tid,
+                                  });
     check(supervisor_query.status == KernelCallStatus::Ok,
           "execution ABI same-supervisor thread-state query returns Ok");
     check(supervisor_query.queried_tid == supervisor_spawn.spawned_tid,
@@ -11794,29 +11026,25 @@ static void test_kernel_execution_abi_calls() {
   check(outsider_tid.has_value(), "execution ABI spawns outsider thread");
   if (outsider_tid) {
     auto* outsider_runtime = state->find_thread_runtime(*outsider_tid);
-    auto outsider_supervisor = outsider_runtime
-                                   ? state->find_process_group_supervisor(
-                                         outsider_runtime->process_group_id)
-                                   : std::nullopt;
-    check(outsider_supervisor.has_value(),
-          "execution ABI resolves outsider supervisor");
+    auto outsider_supervisor =
+        outsider_runtime ? state->find_process_group_supervisor(outsider_runtime->process_group_id)
+                         : std::nullopt;
+    check(outsider_supervisor.has_value(), "execution ABI resolves outsider supervisor");
     if (outsider_supervisor) {
-      auto denied_query = axion_kernel_call(
-          *state,
-          KernelCallRequest{
-              .kind = KernelCallKind::QueryThreadExecutionState,
-              .target_tid = outsider_tid,
-          });
+      auto denied_query =
+          axion_kernel_call(*state, KernelCallRequest{
+                                        .kind = KernelCallKind::QueryThreadExecutionState,
+                                        .target_tid = outsider_tid,
+                                    });
       check(denied_query.status == KernelCallStatus::PolicyDenied,
             "execution ABI denies foreign-supervisor thread-state query");
       check(denied_query.rejection == KernelCallRejection::ForeignSupervisorScope,
             "execution ABI foreign-supervisor thread-state query reports foreign scope");
-      auto denied_spawn = axion_kernel_call(
-          *state,
-          KernelCallRequest{
-              .kind = KernelCallKind::SpawnThreadUnderSupervisor,
-              .supervisor_id = outsider_supervisor,
-          });
+      auto denied_spawn =
+          axion_kernel_call(*state, KernelCallRequest{
+                                        .kind = KernelCallKind::SpawnThreadUnderSupervisor,
+                                        .supervisor_id = outsider_supervisor,
+                                    });
       check(denied_spawn.status == KernelCallStatus::PolicyDenied,
             "execution ABI denies foreign-supervisor spawn");
       check(denied_spawn.rejection == KernelCallRejection::SupervisorMismatch,
@@ -11824,20 +11052,15 @@ static void test_kernel_execution_abi_calls() {
     }
   }
 
-  auto exit_result = axion_kernel_call(
-      *state, KernelCallRequest{.kind = KernelCallKind::ExitThread});
-  check(exit_result.status == KernelCallStatus::Ok,
-        "execution ABI exit returns Ok");
-  check(exit_result.rejection == KernelCallRejection::None,
-        "execution ABI exit clears rejection");
-  check(exit_result.action_performed,
-        "execution ABI exit reports work performed");
-  check(exit_result.thread_exited,
-        "execution ABI exit reports thread exit");
+  auto exit_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::ExitThread});
+  check(exit_result.status == KernelCallStatus::Ok, "execution ABI exit returns Ok");
+  check(exit_result.rejection == KernelCallRejection::None, "execution ABI exit clears rejection");
+  check(exit_result.action_performed, "execution ABI exit reports work performed");
+  check(exit_result.thread_exited, "execution ABI exit reports thread exit");
   check(state->find_thread_runtime(*tid_a) == nullptr,
         "execution ABI removes exited thread runtime");
-  check(!state->ipc_bus.is_registered(*tid_a),
-        "execution ABI deregisters exited thread inbox");
+  check(!state->ipc_bus.is_registered(*tid_a), "execution ABI deregisters exited thread inbox");
   check(state->scheduler.current_tid() == *tid_b,
         "execution ABI advances to the remaining runnable thread");
 }
@@ -11871,11 +11094,8 @@ static void test_kernel_c_lifecycle_bridge() {
   KernelCallWireResponseBlock runtime_response;
   const auto runtime_request = axion_kernel_encode_wire_request(
       KernelCallRequest{.kind = KernelCallKind::QueryRuntimeStatus});
-  check(ternaryos_kernel_call_c(kernel_state,
-                                &runtime_request,
-                                sizeof(runtime_request),
-                                &runtime_response,
-                                sizeof(runtime_response)) == 0,
+  check(ternaryos_kernel_call_c(kernel_state, &runtime_request, sizeof(runtime_request),
+                                &runtime_response, sizeof(runtime_response)) == 0,
         "C kernel lifecycle handle can service a wire runtime request");
   const auto decoded_runtime = axion_kernel_decode_wire_response(runtime_response);
   check(decoded_runtime.has_value(), "C kernel lifecycle runtime response decodes");
@@ -11932,31 +11152,24 @@ static void test_kernel_service_abi_calls() {
       .register0 = 808,
       .label = "svc-abi-entry",
   };
-  const auto service_executable_ref =
-      executable_ref_for(service_executable_descriptor);
-  auto register_executable = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterExecutableObject,
-          .object_ref = service_executable_ref,
-          .spawn_descriptor = service_executable_descriptor,
-      });
+  const auto service_executable_ref = executable_ref_for(service_executable_descriptor);
+  auto register_executable =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RegisterExecutableObject,
+                                    .object_ref = service_executable_ref,
+                                    .spawn_descriptor = service_executable_descriptor,
+                                });
   check(register_executable.status == KernelCallStatus::Ok,
         "service ABI executable registration returns Ok");
 
-  auto register_service = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RegisterService,
-          .object_ref = service_executable_ref,
-          .service_name = std::string{"svc.abi"},
-      });
-  check(register_service.status == KernelCallStatus::Ok,
-        "service ABI register returns Ok");
-  check(register_service.action_performed,
-        "service ABI register reports work performed");
-  check(register_service.service_id.has_value(),
-        "service ABI register returns a service id");
+  auto register_service = axion_kernel_call(*state, KernelCallRequest{
+                                                        .kind = KernelCallKind::RegisterService,
+                                                        .object_ref = service_executable_ref,
+                                                        .service_name = std::string{"svc.abi"},
+                                                    });
+  check(register_service.status == KernelCallStatus::Ok, "service ABI register returns Ok");
+  check(register_service.action_performed, "service ABI register reports work performed");
+  check(register_service.service_id.has_value(), "service ABI register returns a service id");
   check(register_service.service_name == std::optional<std::string>{"svc.abi"},
         "service ABI register returns the registered name");
   check(register_service.service_registered,
@@ -11983,12 +11196,11 @@ static void test_kernel_service_abi_calls() {
     return;
   }
 
-  auto spawn_for_service = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SpawnThreadForService,
-          .service_id = *register_service.service_id,
-      });
+  auto spawn_for_service =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SpawnThreadForService,
+                                    .service_id = *register_service.service_id,
+                                });
   check(spawn_for_service.status == KernelCallStatus::Ok,
         "service ABI spawn-for-service returns Ok");
   check(canon_ref_matches(spawn_for_service.object_ref, service_executable_ref),
@@ -11996,15 +11208,11 @@ static void test_kernel_service_abi_calls() {
   check(spawn_for_service.spawned_tid.has_value(),
         "service ABI spawn-for-service returns a spawned tid");
   if (spawn_for_service.spawned_tid) {
-    const auto* spawned_context =
-        state->scheduler.run_queue().find(*spawn_for_service.spawned_tid);
-    check(spawned_context != nullptr,
-          "service ABI spawn-for-service creates the returned thread");
+    const auto* spawned_context = state->scheduler.run_queue().find(*spawn_for_service.spawned_tid);
+    check(spawned_context != nullptr, "service ABI spawn-for-service creates the returned thread");
     if (spawned_context) {
-      check(spawned_context->pc == 57,
-            "service ABI spawn-for-service applies the registered pc");
-      check(spawned_context->sp == 171,
-            "service ABI spawn-for-service applies the registered sp");
+      check(spawned_context->pc == 57, "service ABI spawn-for-service applies the registered pc");
+      check(spawned_context->sp == 171, "service ABI spawn-for-service applies the registered sp");
       check(spawned_context->registers[0] == 808,
             "service ABI spawn-for-service applies the registered register0");
       check(spawned_context->label == "svc-abi-entry",
@@ -12012,36 +11220,29 @@ static void test_kernel_service_abi_calls() {
     }
   }
 
-  auto query_service = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryServiceStatus,
-          .service_id = *register_service.service_id,
-      });
-  check(query_service.status == KernelCallStatus::Ok,
-        "service ABI query returns Ok");
+  auto query_service = axion_kernel_call(*state, KernelCallRequest{
+                                                     .kind = KernelCallKind::QueryServiceStatus,
+                                                     .service_id = *register_service.service_id,
+                                                 });
+  check(query_service.status == KernelCallStatus::Ok, "service ABI query returns Ok");
   check(query_service.service_id == register_service.service_id,
         "service ABI query returns the same service id");
   check(query_service.service_name == std::optional<std::string>{"svc.abi"},
         "service ABI query returns the registered name");
-  check(query_service.service_registered,
-        "service ABI query reports registered service state");
+  check(query_service.service_registered, "service ABI query reports registered service state");
   check(canon_ref_matches(query_service.object_ref, service_executable_ref),
         "service ABI query preserves executable object ref");
   check(query_service.service_has_entry_descriptor,
         "service ABI query reports stored service entry-descriptor presence");
   check(query_service.service_entry_descriptor.has_value(),
         "service ABI query exposes stored service entry descriptor");
-  check(!query_service.service_suspended,
-        "service ABI query reports non-suspended service state");
-  check(!query_service.service_unhealthy,
-        "service ABI query reports healthy service state");
+  check(!query_service.service_suspended, "service ABI query reports non-suspended service state");
+  check(!query_service.service_unhealthy, "service ABI query reports healthy service state");
 
-  auto query_supervisor_services = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorServiceInventory,
-      });
+  auto query_supervisor_services =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorServiceInventory,
+                                });
   check(query_supervisor_services.status == KernelCallStatus::Ok,
         "service ABI supervisor inventory query returns Ok");
   check(query_supervisor_services.supervisor_service_count == 1,
@@ -12072,106 +11273,84 @@ static void test_kernel_service_abi_calls() {
     }
   }
 
-  auto suspend_service = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SuspendService,
-          .service_id = *register_service.service_id,
-      });
-  check(suspend_service.status == KernelCallStatus::Ok,
-        "service ABI suspend returns Ok");
-  check(suspend_service.action_performed,
-        "service ABI suspend reports work performed");
-  check(suspend_service.service_suspended,
-        "service ABI suspend reports suspended service state");
+  auto suspend_service = axion_kernel_call(*state, KernelCallRequest{
+                                                       .kind = KernelCallKind::SuspendService,
+                                                       .service_id = *register_service.service_id,
+                                                   });
+  check(suspend_service.status == KernelCallStatus::Ok, "service ABI suspend returns Ok");
+  check(suspend_service.action_performed, "service ABI suspend reports work performed");
+  check(suspend_service.service_suspended, "service ABI suspend reports suspended service state");
 
-  auto duplicate_suspend = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::SuspendService,
-          .service_id = *register_service.service_id,
-      });
+  auto duplicate_suspend = axion_kernel_call(*state, KernelCallRequest{
+                                                         .kind = KernelCallKind::SuspendService,
+                                                         .service_id = *register_service.service_id,
+                                                     });
   check(duplicate_suspend.status == KernelCallStatus::InvalidRequest,
         "service ABI duplicate suspend is rejected");
   check(duplicate_suspend.rejection == KernelCallRejection::ServiceActionRejected,
         "service ABI duplicate suspend reports deterministic action rejection");
 
-  auto resume_service = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::ResumeService,
-          .service_id = *register_service.service_id,
-      });
-  check(resume_service.status == KernelCallStatus::Ok,
-        "service ABI resume returns Ok");
-  check(resume_service.action_performed,
-        "service ABI resume reports work performed");
-  check(!resume_service.service_suspended,
-        "service ABI resume clears suspended service state");
+  auto resume_service = axion_kernel_call(*state, KernelCallRequest{
+                                                      .kind = KernelCallKind::ResumeService,
+                                                      .service_id = *register_service.service_id,
+                                                  });
+  check(resume_service.status == KernelCallStatus::Ok, "service ABI resume returns Ok");
+  check(resume_service.action_performed, "service ABI resume reports work performed");
+  check(!resume_service.service_suspended, "service ABI resume clears suspended service state");
 
-  auto duplicate_resume = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::ResumeService,
-          .service_id = *register_service.service_id,
-      });
+  auto duplicate_resume = axion_kernel_call(*state, KernelCallRequest{
+                                                        .kind = KernelCallKind::ResumeService,
+                                                        .service_id = *register_service.service_id,
+                                                    });
   check(duplicate_resume.status == KernelCallStatus::InvalidRequest,
         "service ABI duplicate resume is rejected");
   check(duplicate_resume.rejection == KernelCallRejection::ServiceActionRejected,
         "service ABI duplicate resume reports deterministic action rejection");
 
-  auto query_service_after_resume = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryServiceStatus,
-          .service_id = *register_service.service_id,
-      });
+  auto query_service_after_resume =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryServiceStatus,
+                                    .service_id = *register_service.service_id,
+                                });
   check(query_service_after_resume.status == KernelCallStatus::Ok,
         "service ABI query after resume returns Ok");
   check(!query_service_after_resume.service_suspended,
         "service ABI query after resume reports non-suspended service state");
 
-  auto mark_unhealthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::MarkServiceUnhealthy,
-          .service_id = *register_service.service_id,
-      });
-  check(mark_unhealthy.status == KernelCallStatus::Ok,
-        "service ABI mark-unhealthy returns Ok");
-  check(mark_unhealthy.action_performed,
-        "service ABI mark-unhealthy reports work performed");
+  auto mark_unhealthy = axion_kernel_call(*state, KernelCallRequest{
+                                                      .kind = KernelCallKind::MarkServiceUnhealthy,
+                                                      .service_id = *register_service.service_id,
+                                                  });
+  check(mark_unhealthy.status == KernelCallStatus::Ok, "service ABI mark-unhealthy returns Ok");
+  check(mark_unhealthy.action_performed, "service ABI mark-unhealthy reports work performed");
   check(mark_unhealthy.service_unhealthy,
         "service ABI mark-unhealthy reports unhealthy service state");
 
-  auto duplicate_unhealthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::MarkServiceUnhealthy,
-          .service_id = *register_service.service_id,
-      });
+  auto duplicate_unhealthy =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::MarkServiceUnhealthy,
+                                    .service_id = *register_service.service_id,
+                                });
   check(duplicate_unhealthy.status == KernelCallStatus::InvalidRequest,
         "service ABI duplicate unhealthy transition is rejected");
   check(duplicate_unhealthy.rejection == KernelCallRejection::ServiceActionRejected,
         "service ABI duplicate unhealthy transition reports deterministic action rejection");
 
-  auto query_service_unhealthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryServiceStatus,
-          .service_id = *register_service.service_id,
-      });
+  auto query_service_unhealthy =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryServiceStatus,
+                                    .service_id = *register_service.service_id,
+                                });
   check(query_service_unhealthy.status == KernelCallStatus::RetryLater,
         "service ABI query reports retry-later for unhealthy service");
   check(query_service_unhealthy.rejection == KernelCallRejection::ServiceRequestRejected,
         "service ABI unhealthy query reports deterministic request rejection");
 
-  auto query_supervisor_service_unhealthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorServiceStatus,
-          .service_id = *register_service.service_id,
-      });
+  auto query_supervisor_service_unhealthy =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorServiceStatus,
+                                    .service_id = *register_service.service_id,
+                                });
   check(query_supervisor_service_unhealthy.status == KernelCallStatus::Ok,
         "supervisor service-status ABI query can inspect an unhealthy managed service");
   check(query_supervisor_service_unhealthy.service_id == register_service.service_id,
@@ -12183,36 +11362,28 @@ static void test_kernel_service_abi_calls() {
   check(query_supervisor_service_unhealthy.service_has_entry_descriptor,
         "supervisor service-status ABI query preserves entry-descriptor presence");
 
-  auto mark_healthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::MarkServiceHealthy,
-          .service_id = *register_service.service_id,
-      });
-  check(mark_healthy.status == KernelCallStatus::Ok,
-        "service ABI mark-healthy returns Ok");
-  check(mark_healthy.action_performed,
-        "service ABI mark-healthy reports work performed");
-  check(!mark_healthy.service_unhealthy,
-        "service ABI mark-healthy clears unhealthy service state");
+  auto mark_healthy = axion_kernel_call(*state, KernelCallRequest{
+                                                    .kind = KernelCallKind::MarkServiceHealthy,
+                                                    .service_id = *register_service.service_id,
+                                                });
+  check(mark_healthy.status == KernelCallStatus::Ok, "service ABI mark-healthy returns Ok");
+  check(mark_healthy.action_performed, "service ABI mark-healthy reports work performed");
+  check(!mark_healthy.service_unhealthy, "service ABI mark-healthy clears unhealthy service state");
 
-  auto duplicate_healthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::MarkServiceHealthy,
-          .service_id = *register_service.service_id,
-      });
+  auto duplicate_healthy = axion_kernel_call(*state, KernelCallRequest{
+                                                         .kind = KernelCallKind::MarkServiceHealthy,
+                                                         .service_id = *register_service.service_id,
+                                                     });
   check(duplicate_healthy.status == KernelCallStatus::InvalidRequest,
         "service ABI duplicate healthy transition is rejected");
   check(duplicate_healthy.rejection == KernelCallRejection::ServiceActionRejected,
         "service ABI duplicate healthy transition reports deterministic action rejection");
 
-  auto query_service_healthy = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryServiceStatus,
-          .service_id = *register_service.service_id,
-      });
+  auto query_service_healthy =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryServiceStatus,
+                                    .service_id = *register_service.service_id,
+                                });
   check(query_service_healthy.status == KernelCallStatus::Ok,
         "service ABI query returns Ok after heal");
   check(!query_service_healthy.service_unhealthy,
@@ -12220,17 +11391,14 @@ static void test_kernel_service_abi_calls() {
 
   auto yield_to_foreign =
       axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::Yield});
-  check(yield_to_foreign.status == KernelCallStatus::Ok,
-        "service ABI yield to foreign returns Ok");
+  check(yield_to_foreign.status == KernelCallStatus::Ok, "service ABI yield to foreign returns Ok");
   check(state->scheduler.current_tid() == *foreign_tid,
         "foreign thread becomes current before foreign service query");
 
-  auto foreign_query = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryServiceStatus,
-          .service_id = *register_service.service_id,
-      });
+  auto foreign_query = axion_kernel_call(*state, KernelCallRequest{
+                                                     .kind = KernelCallKind::QueryServiceStatus,
+                                                     .service_id = *register_service.service_id,
+                                                 });
   check(foreign_query.status == KernelCallStatus::InvalidRequest,
         "foreign supervisor service query is rejected");
   check(foreign_query.rejection == KernelCallRejection::ServiceRequestRejected,
@@ -12240,22 +11408,19 @@ static void test_kernel_service_abi_calls() {
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorServiceStatus,
-          .supervisor_id =
-              state->find_process_group_supervisor(owner_runtime->process_group_id),
+          .supervisor_id = state->find_process_group_supervisor(owner_runtime->process_group_id),
           .service_id = *register_service.service_id,
       });
   check(foreign_supervisor_service_query.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor managed-service query is rejected");
-  check(foreign_supervisor_service_query.rejection ==
-            KernelCallRejection::ForeignSupervisorScope,
+  check(foreign_supervisor_service_query.rejection == KernelCallRejection::ForeignSupervisorScope,
         "foreign supervisor managed-service query reports deterministic request rejection");
 
   auto foreign_inventory_query = axion_kernel_call(
       *state,
       KernelCallRequest{
           .kind = KernelCallKind::QuerySupervisorServiceInventory,
-          .supervisor_id =
-              state->find_process_group_supervisor(owner_runtime->process_group_id),
+          .supervisor_id = state->find_process_group_supervisor(owner_runtime->process_group_id),
       });
   check(foreign_inventory_query.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor service inventory query is denied");
@@ -12301,8 +11466,8 @@ static void test_kernel_capability_transition_sequence_revoke_abi() {
     return;
   }
 
-  const auto sibling_tid = axion_kernel_spawn_thread_in_group(
-      *state, sibling_thread, leader_runtime->process_group_id);
+  const auto sibling_tid =
+      axion_kernel_spawn_thread_in_group(*state, sibling_thread, leader_runtime->process_group_id);
   check(sibling_tid.has_value(), "transition-sequence revoke spawns sibling thread");
   if (!sibling_tid) {
     return;
@@ -12330,32 +11495,29 @@ static void test_kernel_capability_transition_sequence_revoke_abi() {
         "leader thread is current for transition-sequence revoke calls");
 
   auto initial_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(initial_revoke.status == KernelCallStatus::Ok,
         "transition-sequence setup can revoke the sibling IPC receive capability");
 
   auto grant = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::GrantCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::GrantCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(grant.status == KernelCallStatus::Ok,
         "transition-sequence setup can re-grant the sibling IPC receive capability");
 
-  auto history = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilityTransitionHistory,
-          .process_group_id = sibling_runtime->process_group_id,
-          .supervisor_id = *leader_supervisor,
-      });
+  auto history =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilityTransitionHistory,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .supervisor_id = *leader_supervisor,
+                                });
   check(history.status == KernelCallStatus::Ok,
         "transition-sequence revoke can query capability transition history");
   check(history.supervisor_capability_transition_history.size() == 2,
@@ -12368,45 +11530,39 @@ static void test_kernel_capability_transition_sequence_revoke_abi() {
         "transition-sequence revoke uses the latest grant transition");
 
   auto revoke_by_sequence = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability_transition_sequence = grant_transition.sequence,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
-  check(revoke_by_sequence.status == KernelCallStatus::Ok,
-        "transition-sequence revoke returns Ok");
-  check(revoke_by_sequence.action_performed,
-        "transition-sequence revoke reports work performed");
-  check(std::none_of(revoke_by_sequence.capabilities.begin(),
-                     revoke_by_sequence.capabilities.end(),
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability_transition_sequence = grant_transition.sequence,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
+  check(revoke_by_sequence.status == KernelCallStatus::Ok, "transition-sequence revoke returns Ok");
+  check(revoke_by_sequence.action_performed, "transition-sequence revoke reports work performed");
+  check(std::none_of(revoke_by_sequence.capabilities.begin(), revoke_by_sequence.capabilities.end(),
                      [](const auto& capability) {
                        return capability.kind == KernelCapabilityKind::IpcReceive;
                      }),
         "transition-sequence revoke removes the granted capability");
 
   auto missing_transition = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability_transition_sequence = grant_transition.sequence + 1000,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability_transition_sequence = grant_transition.sequence + 1000,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(missing_transition.status == KernelCallStatus::NotFound,
         "transition-sequence revoke rejects unknown transition sequences");
   check(missing_transition.rejection == KernelCallRejection::MissingCapabilityTransition,
         "transition-sequence revoke reports MissingCapabilityTransition");
 
   auto foreign_sequence_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = outsider_runtime->process_group_id,
-          .capability_transition_sequence = grant_transition.sequence,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeCapability,
+                  .process_group_id = outsider_runtime->process_group_id,
+                  .capability_transition_sequence = grant_transition.sequence,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(foreign_sequence_revoke.status == KernelCallStatus::PolicyDenied,
         "foreign transition-sequence revoke is denied");
   check(foreign_sequence_revoke.rejection == KernelCallRejection::SupervisorMismatch,
@@ -12414,8 +11570,7 @@ static void test_kernel_capability_transition_sequence_revoke_abi() {
 }
 
 static void test_kernel_capability_delegation_bulk_revoke_abi() {
-  std::printf(
-      "\n[AC-21g] Axion capability revocation can target delegated provenance in bulk\n");
+  std::printf("\n[AC-21g] Axion capability revocation can target delegated provenance in bulk\n");
 
   auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
@@ -12478,16 +11633,14 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
   check(state->scheduler.current_tid() == *leader_tid,
         "leader thread is current for delegated bulk revoke calls");
 
-  const auto initial_caps = axion_kernel_list_process_group_capabilities(
-      *state, sibling_runtime->process_group_id);
-  const auto initial_ipc_send =
-      std::find_if(initial_caps.begin(), initial_caps.end(), [](const auto& capability) {
-        return capability.kind == KernelCapabilityKind::IpcSend;
-      });
-  const auto initial_ipc_receive =
-      std::find_if(initial_caps.begin(), initial_caps.end(), [](const auto& capability) {
-        return capability.kind == KernelCapabilityKind::IpcReceive;
-      });
+  const auto initial_caps =
+      axion_kernel_list_process_group_capabilities(*state, sibling_runtime->process_group_id);
+  const auto initial_ipc_send = std::find_if(
+      initial_caps.begin(), initial_caps.end(),
+      [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcSend; });
+  const auto initial_ipc_receive = std::find_if(
+      initial_caps.begin(), initial_caps.end(),
+      [](const auto& capability) { return capability.kind == KernelCapabilityKind::IpcReceive; });
   check(initial_ipc_send != initial_caps.end(),
         "delegated bulk revoke setup exposes the initial IPC send record");
   check(initial_ipc_receive != initial_caps.end(),
@@ -12496,60 +11649,56 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
     return;
   }
 
-  auto revoke_ipc_send = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .record_id = initial_ipc_send->record_id,
-              .kind = KernelCapabilityKind::IpcSend,
-          },
-      });
+  auto revoke_ipc_send =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RevokeCapability,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability =
+                                        KernelCapabilityRecord{
+                                            .record_id = initial_ipc_send->record_id,
+                                            .kind = KernelCapabilityKind::IpcSend,
+                                        },
+                                });
   check(revoke_ipc_send.status == KernelCallStatus::Ok,
         "delegated bulk revoke setup can revoke IPC send");
-  auto revoke_ipc_receive = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .record_id = initial_ipc_receive->record_id,
-              .kind = KernelCapabilityKind::IpcReceive,
-          },
-      });
+  auto revoke_ipc_receive =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RevokeCapability,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability =
+                                        KernelCapabilityRecord{
+                                            .record_id = initial_ipc_receive->record_id,
+                                            .kind = KernelCapabilityKind::IpcReceive,
+                                        },
+                                });
   check(revoke_ipc_receive.status == KernelCallStatus::Ok,
         "delegated bulk revoke setup can revoke IPC receive");
 
   auto grant_ipc_send = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::GrantCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::GrantCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcSend},
+              });
   check(grant_ipc_send.status == KernelCallStatus::Ok,
         "delegated bulk revoke setup can re-grant IPC send");
   auto grant_ipc_receive = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::GrantCapability,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::GrantCapability,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability = KernelCapabilityRecord{.kind = KernelCapabilityKind::IpcReceive},
+              });
   check(grant_ipc_receive.status == KernelCallStatus::Ok,
         "delegated bulk revoke setup can re-grant IPC receive");
 
-  auto query_delegated = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-      });
+  auto query_delegated =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryCapabilities,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                });
   check(query_delegated.status == KernelCallStatus::Ok,
         "delegated bulk revoke can query sibling capabilities before bulk revoke");
-  check(std::count_if(query_delegated.capabilities.begin(),
-                      query_delegated.capabilities.end(),
+  check(std::count_if(query_delegated.capabilities.begin(), query_delegated.capabilities.end(),
                       [&](const auto& capability) {
                         return !capability.kernel_seeded &&
                                capability.delegated_by_process_group_id ==
@@ -12558,25 +11707,24 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
                       }) == 2,
         "delegated bulk revoke setup creates two delegated sibling capabilities");
   auto query_delegated_only = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryDelegatedCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryDelegatedCapabilities,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
   check(query_delegated_only.status == KernelCallStatus::Ok,
         "delegated bulk revoke can query delegated capabilities directly");
   check(query_delegated_only.capabilities.size() == 2,
         "delegated-capability query returns the two delegated sibling capabilities");
-  auto delegation_summary_before_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorDelegationSummary,
-          .supervisor_id = *leader_supervisor,
-      });
+  auto delegation_summary_before_revoke =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorDelegationSummary,
+                                    .supervisor_id = *leader_supervisor,
+                                });
   check(delegation_summary_before_revoke.status == KernelCallStatus::Ok,
         "delegated bulk revoke can query supervisor delegation summary before bulk revoke");
   check(delegation_summary_before_revoke.supervisor_delegation_entry_count == 1,
@@ -12584,72 +11732,63 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
   check(delegation_summary_before_revoke.supervisor_delegated_capability_count == 2,
         "delegation summary reports two delegated capabilities before bulk revoke");
 
-  auto missing_scope = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeDelegatedCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{},
-      });
+  auto missing_scope =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::RevokeDelegatedCapabilities,
+                                    .process_group_id = sibling_runtime->process_group_id,
+                                    .capability = KernelCapabilityRecord{},
+                                });
   check(missing_scope.status == KernelCallStatus::InvalidRequest,
         "delegated bulk revoke rejects a missing delegation scope");
   check(missing_scope.rejection == KernelCallRejection::MissingDelegationScope,
         "delegated bulk revoke reports MissingDelegationScope");
 
   auto bulk_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeDelegatedCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
-  check(bulk_revoke.status == KernelCallStatus::Ok,
-        "delegated bulk revoke returns Ok");
-  check(bulk_revoke.action_performed,
-        "delegated bulk revoke reports work performed");
-  check(std::none_of(bulk_revoke.capabilities.begin(),
-                     bulk_revoke.capabilities.end(),
-                     [](const auto& capability) {
-                       return !capability.kernel_seeded;
-                     }),
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeDelegatedCapabilities,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
+  check(bulk_revoke.status == KernelCallStatus::Ok, "delegated bulk revoke returns Ok");
+  check(bulk_revoke.action_performed, "delegated bulk revoke reports work performed");
+  check(std::none_of(bulk_revoke.capabilities.begin(), bulk_revoke.capabilities.end(),
+                     [](const auto& capability) { return !capability.kernel_seeded; }),
         "delegated bulk revoke removes delegated capabilities from the target group");
-  check(std::any_of(bulk_revoke.capabilities.begin(),
-                    bulk_revoke.capabilities.end(),
+  check(std::any_of(bulk_revoke.capabilities.begin(), bulk_revoke.capabilities.end(),
                     [](const auto& capability) {
                       return capability.kernel_seeded &&
                              capability.kind == KernelCapabilityKind::Yield;
                     }),
         "delegated bulk revoke preserves kernel-seeded capabilities");
-  check(std::none_of(bulk_revoke.capabilities.begin(),
-                     bulk_revoke.capabilities.end(),
+  check(std::none_of(bulk_revoke.capabilities.begin(), bulk_revoke.capabilities.end(),
                      [](const auto& capability) {
                        return capability.kind == KernelCapabilityKind::IpcSend ||
                               capability.kind == KernelCapabilityKind::IpcReceive;
                      }),
         "delegated bulk revoke removes both delegated IPC capabilities");
   auto query_delegated_after_bulk_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryDelegatedCapabilities,
-          .process_group_id = sibling_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryDelegatedCapabilities,
+                  .process_group_id = sibling_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
   check(query_delegated_after_bulk_revoke.status == KernelCallStatus::Ok,
         "delegated-capability query still succeeds after bulk revoke");
   check(query_delegated_after_bulk_revoke.capabilities.empty(),
         "delegated-capability query returns no delegated capabilities after bulk revoke");
-  auto delegation_summary_after_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorDelegationSummary,
-          .supervisor_id = *leader_supervisor,
-      });
+  auto delegation_summary_after_revoke =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorDelegationSummary,
+                                    .supervisor_id = *leader_supervisor,
+                                });
   check(delegation_summary_after_revoke.status == KernelCallStatus::Ok,
         "delegation summary query still succeeds after bulk revoke");
   check(delegation_summary_after_revoke.supervisor_delegation_entry_count == 0,
@@ -12658,29 +11797,29 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
         "delegation summary has no delegated capabilities after bulk revoke");
 
   auto foreign_bulk_revoke = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::RevokeDelegatedCapabilities,
-          .process_group_id = outsider_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::RevokeDelegatedCapabilities,
+                  .process_group_id = outsider_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
   check(foreign_bulk_revoke.status == KernelCallStatus::PolicyDenied,
         "foreign delegated bulk revoke is denied");
   check(foreign_bulk_revoke.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign delegated bulk revoke reports supervisor mismatch");
   auto foreign_delegated_query = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryDelegatedCapabilities,
-          .process_group_id = outsider_runtime->process_group_id,
-          .capability = KernelCapabilityRecord{
-              .delegated_by_process_group_id = leader_runtime->process_group_id,
-              .delegated_by_supervisor_id = leader_supervisor,
-          },
-      });
+      *state, KernelCallRequest{
+                  .kind = KernelCallKind::QueryDelegatedCapabilities,
+                  .process_group_id = outsider_runtime->process_group_id,
+                  .capability =
+                      KernelCapabilityRecord{
+                          .delegated_by_process_group_id = leader_runtime->process_group_id,
+                          .delegated_by_supervisor_id = leader_supervisor,
+                      },
+              });
   check(foreign_delegated_query.status == KernelCallStatus::PolicyDenied,
         "foreign delegated-capability query is denied");
   check(foreign_delegated_query.rejection == KernelCallRejection::SupervisorMismatch,
@@ -12688,8 +11827,7 @@ static void test_kernel_capability_delegation_bulk_revoke_abi() {
 }
 
 static void test_kernel_supervisor_recovery_abi_calls() {
-  std::printf(
-      "\n[AC-21e] Axion supervisor recovery is reachable through kernel-call ABI\n");
+  std::printf("\n[AC-21e] Axion supervisor recovery is reachable through kernel-call ABI\n");
 
   namespace mmu = t81::ternaryos::mmu;
 
@@ -12722,8 +11860,7 @@ static void test_kernel_supervisor_recovery_abi_calls() {
 
   t81::ternaryos::sched::TiscContext peer;
   peer.registers[0] = 919;
-  auto peer_tid =
-      axion_kernel_spawn_thread_under_supervisor(*state, peer, *owner_supervisor);
+  auto peer_tid = axion_kernel_spawn_thread_under_supervisor(*state, peer, *owner_supervisor);
   check(peer_tid.has_value(), "supervisor recovery ABI spawns same-supervisor peer");
   if (!peer_tid) {
     return;
@@ -12747,8 +11884,8 @@ static void test_kernel_supervisor_recovery_abi_calls() {
   check(state->scheduler.current_tid() == *owner_tid,
         "owner thread is current before fault injection");
 
-  auto fault_report = axion_kernel_check_access(
-      *state, mmu::tva_from_vpn_offset(203, 0), mmu::MmuAccessMode::Read);
+  auto fault_report =
+      axion_kernel_check_access(*state, mmu::tva_from_vpn_offset(203, 0), mmu::MmuAccessMode::Read);
   check(fault_report.fault.has_value(), "supervisor recovery ABI records a fault");
   check(axion_kernel_step(*state), "supervisor recovery ABI delivers the fault");
   check(state->scheduler.current_tid() == *peer_tid,
@@ -12757,11 +11894,10 @@ static void test_kernel_supervisor_recovery_abi_calls() {
   check(axion_kernel_ack_thread_fault(*state, *owner_tid),
         "thread fault acknowledgement drains the owner inbox before supervisor recovery");
 
-  auto recovery_status_before_ack = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
-      });
+  auto recovery_status_before_ack =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
+                                });
   check(recovery_status_before_ack.status == KernelCallStatus::Ok,
         "supervisor recovery ABI status query returns Ok before acknowledgement");
   check(recovery_status_before_ack.supervisor_id == owner_supervisor,
@@ -12775,11 +11911,10 @@ static void test_kernel_supervisor_recovery_abi_calls() {
   check(!recovery_status_before_ack.supervisor_last_acknowledged_group.has_value(),
         "supervisor recovery ABI status has no last acknowledged group before recovery");
 
-  auto supervisor_status_before_ack = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorStatus,
-      });
+  auto supervisor_status_before_ack =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorStatus,
+                                });
   check(supervisor_status_before_ack.status == KernelCallStatus::Ok,
         "supervisor status ABI query returns Ok before acknowledgement");
   check(supervisor_status_before_ack.supervisor_id == owner_supervisor,
@@ -12792,17 +11927,16 @@ static void test_kernel_supervisor_recovery_abi_calls() {
         "supervisor status ABI reports one pending group before recovery");
   check(supervisor_status_before_ack.supervisor_fault_notifications == 1,
         "supervisor status ABI reports one fault notification before recovery");
-  check(supervisor_status_before_ack.supervisor_last_pending_group ==
-            owner_runtime->process_group_id,
-        "supervisor status ABI tracks the pending faulted group");
+  check(
+      supervisor_status_before_ack.supervisor_last_pending_group == owner_runtime->process_group_id,
+      "supervisor status ABI tracks the pending faulted group");
 
-  auto recover_group = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
-          .process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *owner_supervisor,
-      });
+  auto recover_group =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
+                                    .process_group_id = owner_runtime->process_group_id,
+                                    .supervisor_id = *owner_supervisor,
+                                });
   check(recover_group.status == KernelCallStatus::Ok,
         "supervisor recovery ABI acknowledgement returns Ok");
   check(recover_group.action_performed,
@@ -12822,11 +11956,10 @@ static void test_kernel_supervisor_recovery_abi_calls() {
   check(!recovered_owner->quarantined,
         "supervisor recovery ABI recovers the quarantined owner thread");
 
-  auto recovery_status_after_ack = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
-      });
+  auto recovery_status_after_ack =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
+                                });
   check(recovery_status_after_ack.status == KernelCallStatus::Ok,
         "supervisor recovery ABI status query returns Ok after acknowledgement");
   check(recovery_status_after_ack.supervisor_pending_group_count == 0,
@@ -12844,11 +11977,10 @@ static void test_kernel_supervisor_recovery_abi_calls() {
                 owner_runtime->process_group_id,
         "supervisor recovery ABI status tracks the last recovered group");
 
-  auto supervisor_status_after_ack = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorStatus,
-      });
+  auto supervisor_status_after_ack =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorStatus,
+                                });
   check(supervisor_status_after_ack.status == KernelCallStatus::Ok,
         "supervisor status ABI query returns Ok after acknowledgement");
   check(supervisor_status_after_ack.supervisor_managed_faulted_group_count == 0,
@@ -12858,64 +11990,58 @@ static void test_kernel_supervisor_recovery_abi_calls() {
   check(supervisor_status_after_ack.supervisor_acknowledgements == 1,
         "supervisor status ABI reports one acknowledgement after recovery");
 
-  for (int attempt = 0; attempt < 4 && state->scheduler.current_tid() != *foreign_tid;
-       ++attempt) {
+  for (int attempt = 0; attempt < 4 && state->scheduler.current_tid() != *foreign_tid; ++attempt) {
     check(axion_kernel_tick(*state), "supervisor recovery ABI advances to foreign thread");
   }
   check(state->scheduler.current_tid() == *foreign_tid,
         "foreign thread becomes current before foreign recovery attempt");
 
-  auto foreign_recovery = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
-          .process_group_id = owner_runtime->process_group_id,
-          .supervisor_id = *owner_supervisor,
-      });
+  auto foreign_recovery =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::AcknowledgeSupervisorFaultGroup,
+                                    .process_group_id = owner_runtime->process_group_id,
+                                    .supervisor_id = *owner_supervisor,
+                                });
   check(foreign_recovery.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor recovery ABI call is denied");
   check(foreign_recovery.rejection == KernelCallRejection::SupervisorMismatch,
         "foreign supervisor recovery ABI reports supervisor mismatch");
 
-  auto foreign_recovery_status = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
-          .supervisor_id = *owner_supervisor,
-      });
+  auto foreign_recovery_status =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorRecoveryStatus,
+                                    .supervisor_id = *owner_supervisor,
+                                });
   check(foreign_recovery_status.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor recovery ABI status query is denied");
   check(foreign_recovery_status.rejection == KernelCallRejection::ForeignSupervisorScope,
         "foreign supervisor recovery ABI status query reports foreign supervisor scope");
 
-  auto foreign_supervisor_status = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QuerySupervisorStatus,
-          .supervisor_id = *owner_supervisor,
-      });
+  auto foreign_supervisor_status =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QuerySupervisorStatus,
+                                    .supervisor_id = *owner_supervisor,
+                                });
   check(foreign_supervisor_status.status == KernelCallStatus::PolicyDenied,
         "foreign supervisor status ABI query is denied");
   check(foreign_supervisor_status.rejection == KernelCallRejection::ForeignSupervisorScope,
         "foreign supervisor status ABI query reports foreign supervisor scope");
 
-  auto foreign_runtime_summary = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryRuntimeStatus,
-          .supervisor_id = *owner_supervisor,
-      });
+  auto foreign_runtime_summary =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryRuntimeStatus,
+                                    .supervisor_id = *owner_supervisor,
+                                });
   check(foreign_runtime_summary.status == KernelCallStatus::PolicyDenied,
         "foreign runtime summary ABI query is denied");
   check(foreign_runtime_summary.rejection == KernelCallRejection::ForeignSupervisorScope,
         "foreign runtime summary ABI query reports foreign supervisor scope");
 
-  auto foreign_fault_summary = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind = KernelCallKind::QueryFaultSummary,
-          .supervisor_id = *owner_supervisor,
-      });
+  auto foreign_fault_summary =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryFaultSummary,
+                                    .supervisor_id = *owner_supervisor,
+                                });
   check(foreign_fault_summary.status == KernelCallStatus::PolicyDenied,
         "foreign fault summary ABI query is denied");
   check(foreign_fault_summary.rejection == KernelCallRejection::ForeignSupervisorScope,
@@ -12923,9 +12049,8 @@ static void test_kernel_supervisor_recovery_abi_calls() {
 }
 
 static void test_kernel_keyboard_device_wake() {
-  std::printf(
-      "\n[AC-22v] RFC-00B5 §3.3 / Slice 26: WaitForDevice(Keyboard) parks "
-      "thread; Keyboard interrupt wakes it\n");
+  std::printf("\n[AC-22v] RFC-00B5 §3.3 / Slice 26: WaitForDevice(Keyboard) parks "
+              "thread; Keyboard interrupt wakes it\n");
 
   auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
@@ -12939,37 +12064,31 @@ static void test_kernel_keyboard_device_wake() {
   other_ctx.label = "other-thread";
 
   auto kbd_waiter_tid = axion_kernel_spawn_thread(*state, kbd_waiter_ctx);
-  auto other_tid      = axion_kernel_spawn_thread(*state, other_ctx);
+  auto other_tid = axion_kernel_spawn_thread(*state, other_ctx);
   check(kbd_waiter_tid.has_value(), "kbd wake: kbd-waiter thread spawns");
-  check(other_tid.has_value(),      "kbd wake: other thread spawns");
+  check(other_tid.has_value(), "kbd wake: other thread spawns");
   if (!kbd_waiter_tid || !other_tid) return;
 
   // Pre-condition: no wakes, no keyboard_wakes.
-  check(state->counters.device_wakes == 0,   "kbd wake: device_wakes zero before wait");
+  check(state->counters.device_wakes == 0, "kbd wake: device_wakes zero before wait");
   check(state->counters.keyboard_wakes == 0, "kbd wake: keyboard_wakes zero before wait");
 
   // Tick to kbd-waiter and call WaitForDevice(Keyboard).
   check(axion_kernel_tick(*state), "kbd wake: tick makes kbd-waiter current");
-  check(state->scheduler.current_tid() == *kbd_waiter_tid,
-        "kbd wake: kbd-waiter is current");
+  check(state->scheduler.current_tid() == *kbd_waiter_tid, "kbd wake: kbd-waiter is current");
 
-  auto wait_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind          = KernelCallKind::WaitForDevice,
-          .device_source = InterruptSource::Keyboard,
-      });
-  check(wait_result.status == KernelCallStatus::Ok,
-        "kbd wake: WaitForDevice(Keyboard) returns Ok");
-  check(wait_result.action_performed,
-        "kbd wake: WaitForDevice(Keyboard) reports action performed");
-  check(wait_result.thread_sleeping,
-        "kbd wake: WaitForDevice(Keyboard) sets thread_sleeping");
+  auto wait_result = axion_kernel_call(*state, KernelCallRequest{
+                                                   .kind = KernelCallKind::WaitForDevice,
+                                                   .device_source = InterruptSource::Keyboard,
+                                               });
+  check(wait_result.status == KernelCallStatus::Ok, "kbd wake: WaitForDevice(Keyboard) returns Ok");
+  check(wait_result.action_performed, "kbd wake: WaitForDevice(Keyboard) reports action performed");
+  check(wait_result.thread_sleeping, "kbd wake: WaitForDevice(Keyboard) sets thread_sleeping");
 
   // kbd-waiter must be parked in device_waiting_tids[Keyboard].
   const uint8_t kbd_key = static_cast<uint8_t>(InterruptSource::Keyboard);
   check(state->device_waiting_tids.count(kbd_key) > 0 &&
-        state->device_waiting_tids.at(kbd_key).count(*kbd_waiter_tid) > 0,
+            state->device_waiting_tids.at(kbd_key).count(*kbd_waiter_tid) > 0,
         "kbd wake: waiter recorded in device_waiting_tids[Keyboard]");
   check(state->scheduler.run_queue().sleeping_count() == 1,
         "kbd wake: scheduler shows one sleeping thread");
@@ -12978,14 +12097,12 @@ static void test_kernel_keyboard_device_wake() {
 
   // Fire and deliver a Keyboard interrupt.
   HardwareInterrupt kbd_irq{
-      .source       = InterruptSource::Keyboard,
+      .source = InterruptSource::Keyboard,
       .timestamp_ns = 5000,
-      .payload      = 0x41,  // 'A' scancode
+      .payload = 0x41,  // 'A' scancode
   };
-  check(axion_kernel_record_interrupt(*state, kbd_irq),
-        "kbd wake: Keyboard interrupt recorded");
-  check(state->pending_interrupts.size() == 1,
-        "kbd wake: one interrupt pending after record");
+  check(axion_kernel_record_interrupt(*state, kbd_irq), "kbd wake: Keyboard interrupt recorded");
+  check(state->pending_interrupts.size() == 1, "kbd wake: one interrupt pending after record");
 
   check(axion_kernel_deliver_pending_interrupt(*state),
         "kbd wake: deliver_pending_interrupt returns true");
@@ -13005,9 +12122,8 @@ static void test_kernel_keyboard_device_wake() {
   check(state->scheduler.current_tid() == *kbd_waiter_tid,
         "kbd wake: kbd-waiter is current after tick");
 
-  auto recv_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
+  auto recv_result =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::ReceiveMessage});
   check(recv_result.status == KernelCallStatus::Ok,
         "kbd wake: ReceiveMessage on woken waiter returns Ok");
   check(recv_result.message.has_value(),
@@ -13015,8 +12131,7 @@ static void test_kernel_keyboard_device_wake() {
   if (recv_result.message) {
     check(recv_result.message->sender == KernelRuntimeState::kKernelTid,
           "kbd wake: message sender is kKernelTid");
-    check(recv_result.message->tag == "device-wake",
-          "kbd wake: message tag is 'device-wake'");
+    check(recv_result.message->tag == "device-wake", "kbd wake: message tag is 'device-wake'");
     check(recv_result.message->payload == state->last_delivered_interrupt->sequence,
           "kbd wake: message payload == interrupt sequence");
   }
@@ -13025,9 +12140,9 @@ static void test_kernel_keyboard_device_wake() {
   const uint64_t wakes_before_second = state->counters.device_wakes;
   const uint64_t kbd_wakes_before_second = state->counters.keyboard_wakes;
   HardwareInterrupt kbd_irq2{
-      .source       = InterruptSource::Keyboard,
+      .source = InterruptSource::Keyboard,
       .timestamp_ns = 6000,
-      .payload      = 0x42,  // 'B' scancode
+      .payload = 0x42,  // 'B' scancode
   };
   check(axion_kernel_record_interrupt(*state, kbd_irq2),
         "kbd wake: second Keyboard interrupt recorded");
@@ -13041,10 +12156,8 @@ static void test_kernel_keyboard_device_wake() {
   // Runtime status view must expose keyboard_wakes.
   auto status_result = axion_kernel_service_request(
       *state, KernelServiceRequest{.kind = KernelServiceRequestKind::RuntimeStatus});
-  check(status_result.status == KernelServiceStatus::Ok,
-        "kbd wake: runtime status query succeeds");
-  check(status_result.runtime.has_value(),
-        "kbd wake: runtime status view present");
+  check(status_result.status == KernelServiceStatus::Ok, "kbd wake: runtime status query succeeds");
+  check(status_result.runtime.has_value(), "kbd wake: runtime status view present");
   if (status_result.runtime) {
     check(status_result.runtime->device_wakes == 1,
           "kbd wake: runtime status reports device_wakes == 1");
@@ -13077,68 +12190,58 @@ static void test_kernel_keyboard_device_wake() {
 //  12. Runtime status view exposes all three policy counters.
 // ─────────────────────────────────────────────────────────────────────────────
 static void test_kernel_interrupt_policy() {
-  std::printf(
-      "\n[AC-22w] RFC-00B5 §3.7 / Slice 27: interrupt policy gate "
-      "(rate-limit + quarantine)\n");
+  std::printf("\n[AC-22w] RFC-00B5 §3.7 / Slice 27: interrupt policy gate "
+              "(rate-limit + quarantine)\n");
 
-  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
   check(state.has_value(), "policy: kernel bootstrap succeeds");
   if (!state) return;
 
   // ── 1. Default: no policy configured, counters at zero ───────────────────
-  check(state->counters.interrupts_policy_allowed     == 0, "policy: allowed zero at start");
+  check(state->counters.interrupts_policy_allowed == 0, "policy: allowed zero at start");
   check(state->counters.interrupts_policy_quarantined == 0, "policy: quarantined zero at start");
-  check(state->counters.interrupts_policy_denied      == 0, "policy: denied zero at start");
+  check(state->counters.interrupts_policy_denied == 0, "policy: denied zero at start");
 
   // ── 2. SetInterruptPolicy(Storage, max=2, window=100) ────────────────────
-  auto set_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind                             = KernelCallKind::SetInterruptPolicy,
-          .interrupt_policy_source          = InterruptSource::Storage,
-          .interrupt_policy_max_per_window  = 2u,
-          .interrupt_policy_window_size     = 100u,
-      });
-  check(set_result.status == KernelCallStatus::Ok,
-        "policy: SetInterruptPolicy returns Ok");
+  auto set_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::SetInterruptPolicy,
+                                    .interrupt_policy_source = InterruptSource::Storage,
+                                    .interrupt_policy_max_per_window = 2u,
+                                    .interrupt_policy_window_size = 100u,
+                                });
+  check(set_result.status == KernelCallStatus::Ok, "policy: SetInterruptPolicy returns Ok");
   check(set_result.interrupt_policy_set,
         "policy: SetInterruptPolicy sets interrupt_policy_set flag");
 
   // ── 3. First Storage interrupt → Allow ──────────────────────────────────
-  HardwareInterrupt stor1{
-      .source = InterruptSource::Storage, .timestamp_ns = 1000, .payload = 1};
+  HardwareInterrupt stor1{.source = InterruptSource::Storage, .timestamp_ns = 1000, .payload = 1};
   check(axion_kernel_record_interrupt(*state, stor1), "policy: stor1 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor1 delivered");
-  check(state->counters.interrupts_policy_allowed == 1,
-        "policy: stor1 allowed — counter=1");
-  check(state->counters.interrupts_policy_quarantined == 0,
-        "policy: no quarantine after stor1");
+  check(state->counters.interrupts_policy_allowed == 1, "policy: stor1 allowed — counter=1");
+  check(state->counters.interrupts_policy_quarantined == 0, "policy: no quarantine after stor1");
   check(state->last_interrupt_policy_verdict.has_value() &&
-        *state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Allow,
+            *state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Allow,
         "policy: last verdict = Allow after stor1");
   check(state->last_interrupt_policy_source.has_value() &&
-        *state->last_interrupt_policy_source == InterruptSource::Storage,
+            *state->last_interrupt_policy_source == InterruptSource::Storage,
         "policy: last policy source = Storage after stor1");
 
   // ── Second Storage interrupt → Allow ────────────────────────────────────
-  HardwareInterrupt stor2{
-      .source = InterruptSource::Storage, .timestamp_ns = 2000, .payload = 2};
+  HardwareInterrupt stor2{.source = InterruptSource::Storage, .timestamp_ns = 2000, .payload = 2};
   check(axion_kernel_record_interrupt(*state, stor2), "policy: stor2 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor2 delivered");
-  check(state->counters.interrupts_policy_allowed == 2,
-        "policy: stor2 allowed — counter=2");
+  check(state->counters.interrupts_policy_allowed == 2, "policy: stor2 allowed — counter=2");
 
   // ── 4. Third Storage interrupt in same window → Quarantine ───────────────
   const uint64_t device_wakes_before = state->counters.device_wakes;
-  HardwareInterrupt stor3{
-      .source = InterruptSource::Storage, .timestamp_ns = 3000, .payload = 3};
+  HardwareInterrupt stor3{.source = InterruptSource::Storage, .timestamp_ns = 3000, .payload = 3};
   check(axion_kernel_record_interrupt(*state, stor3), "policy: stor3 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor3 delivered call ok");
   check(state->counters.interrupts_policy_quarantined == 1,
         "policy: stor3 triggers quarantine counter=1");
-  check(state->counters.interrupts_policy_allowed == 2,
-        "policy: allowed still 2 after quarantine");
+  check(state->counters.interrupts_policy_allowed == 2, "policy: allowed still 2 after quarantine");
   check(*state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Quarantine,
         "policy: last verdict = Quarantine after stor3");
   // Interrupt was dropped — device_wakes must be unchanged.
@@ -13147,39 +12250,34 @@ static void test_kernel_interrupt_policy() {
   // Storage source is now quarantined.
   const uint8_t stor_key = static_cast<uint8_t>(InterruptSource::Storage);
   check(state->interrupt_policy.count(stor_key) > 0 &&
-        state->interrupt_policy.at(stor_key).quarantined,
+            state->interrupt_policy.at(stor_key).quarantined,
         "policy: interrupt_policy[Storage].quarantined == true after stor3");
 
   // ── 5. Fourth Storage interrupt → Deny ───────────────────────────────────
-  HardwareInterrupt stor4{
-      .source = InterruptSource::Storage, .timestamp_ns = 4000, .payload = 4};
+  HardwareInterrupt stor4{.source = InterruptSource::Storage, .timestamp_ns = 4000, .payload = 4};
   check(axion_kernel_record_interrupt(*state, stor4), "policy: stor4 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor4 delivered call ok");
-  check(state->counters.interrupts_policy_denied == 1,
-        "policy: stor4 denied counter=1");
+  check(state->counters.interrupts_policy_denied == 1, "policy: stor4 denied counter=1");
   check(*state->last_interrupt_policy_verdict == InterruptPolicyVerdict::Deny,
         "policy: last verdict = Deny after stor4");
   check(state->counters.device_wakes == device_wakes_before,
         "policy: device_wakes still unchanged after denied interrupt");
 
   // ── 6. ClearInterruptQuarantine(Storage) ─────────────────────────────────
-  auto clr_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind                    = KernelCallKind::ClearInterruptQuarantine,
-          .interrupt_policy_source = InterruptSource::Storage,
-      });
-  check(clr_result.status == KernelCallStatus::Ok,
-        "policy: ClearInterruptQuarantine returns Ok");
+  auto clr_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::ClearInterruptQuarantine,
+                                    .interrupt_policy_source = InterruptSource::Storage,
+                                });
+  check(clr_result.status == KernelCallStatus::Ok, "policy: ClearInterruptQuarantine returns Ok");
   check(clr_result.interrupt_quarantine_cleared,
         "policy: ClearInterruptQuarantine sets interrupt_quarantine_cleared flag");
   check(state->interrupt_policy.count(stor_key) > 0 &&
-        !state->interrupt_policy.at(stor_key).quarantined,
+            !state->interrupt_policy.at(stor_key).quarantined,
         "policy: interrupt_policy[Storage].quarantined == false after clear");
 
   // ── 7. Fifth Storage interrupt after clearance → Allow ───────────────────
-  HardwareInterrupt stor5{
-      .source = InterruptSource::Storage, .timestamp_ns = 5000, .payload = 5};
+  HardwareInterrupt stor5{.source = InterruptSource::Storage, .timestamp_ns = 5000, .payload = 5};
   check(axion_kernel_record_interrupt(*state, stor5), "policy: stor5 recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: stor5 delivered");
   check(state->counters.interrupts_policy_allowed == 3,
@@ -13188,27 +12286,24 @@ static void test_kernel_interrupt_policy() {
         "policy: last verdict = Allow after quarantine cleared");
 
   // ── 8. QueryInterruptPolicy(Storage) ─────────────────────────────────────
-  auto qry_result = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind                    = KernelCallKind::QueryInterruptPolicy,
-          .interrupt_policy_source = InterruptSource::Storage,
-      });
-  check(qry_result.status == KernelCallStatus::Ok,
-        "policy: QueryInterruptPolicy returns Ok");
+  auto qry_result =
+      axion_kernel_call(*state, KernelCallRequest{
+                                    .kind = KernelCallKind::QueryInterruptPolicy,
+                                    .interrupt_policy_source = InterruptSource::Storage,
+                                });
+  check(qry_result.status == KernelCallStatus::Ok, "policy: QueryInterruptPolicy returns Ok");
   check(!qry_result.interrupt_source_quarantined,
         "policy: QueryInterruptPolicy: Storage not quarantined after clear");
   check(qry_result.interrupt_policy_max_per_window.has_value() &&
-        *qry_result.interrupt_policy_max_per_window == 2u,
+            *qry_result.interrupt_policy_max_per_window == 2u,
         "policy: QueryInterruptPolicy: max_per_window == 2");
   check(qry_result.interrupt_policy_window_size.has_value() &&
-        *qry_result.interrupt_policy_window_size == 100u,
+            *qry_result.interrupt_policy_window_size == 100u,
         "policy: QueryInterruptPolicy: window_size == 100");
 
   // ── 9. Timer/Network unaffected by Storage policy ────────────────────────
   const uint64_t allowed_before = state->counters.interrupts_policy_allowed;
-  HardwareInterrupt tmr{
-      .source = InterruptSource::Timer, .timestamp_ns = 6000, .payload = 0};
+  HardwareInterrupt tmr{.source = InterruptSource::Timer, .timestamp_ns = 6000, .payload = 0};
   check(axion_kernel_record_interrupt(*state, tmr), "policy: timer recorded");
   check(axion_kernel_deliver_pending_interrupt(*state), "policy: timer delivered");
   check(state->counters.interrupts_policy_allowed == allowed_before + 1,
@@ -13217,49 +12312,45 @@ static void test_kernel_interrupt_policy() {
         "policy: last policy source = Timer after timer interrupt");
 
   // ── 10. Missing source → rejection ───────────────────────────────────────
-  auto bad_set = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::SetInterruptPolicy});
+  auto bad_set =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::SetInterruptPolicy});
   check(bad_set.status == KernelCallStatus::InvalidRequest,
         "policy: SetInterruptPolicy without source → InvalidRequest");
   check(bad_set.rejection == KernelCallRejection::MissingInterruptPolicySource,
         "policy: SetInterruptPolicy without source → MissingInterruptPolicySource");
 
   auto bad_clr = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::ClearInterruptQuarantine});
+      *state, KernelCallRequest{.kind = KernelCallKind::ClearInterruptQuarantine});
   check(bad_clr.status == KernelCallStatus::InvalidRequest,
         "policy: ClearInterruptQuarantine without source → InvalidRequest");
   check(bad_clr.rejection == KernelCallRejection::MissingInterruptPolicySource,
         "policy: ClearInterruptQuarantine without source → MissingInterruptPolicySource");
 
-  auto bad_qry = axion_kernel_call(
-      *state,
-      KernelCallRequest{.kind = KernelCallKind::QueryInterruptPolicy});
+  auto bad_qry =
+      axion_kernel_call(*state, KernelCallRequest{.kind = KernelCallKind::QueryInterruptPolicy});
   check(bad_qry.status == KernelCallStatus::InvalidRequest,
         "policy: QueryInterruptPolicy without source → InvalidRequest");
   check(bad_qry.rejection == KernelCallRejection::MissingInterruptPolicySource,
         "policy: QueryInterruptPolicy without source → MissingInterruptPolicySource");
 
   // ── 11. ClearInterruptQuarantine on non-quarantined source → rejection ────
-  auto dup_clr = axion_kernel_call(
-      *state,
-      KernelCallRequest{
-          .kind                    = KernelCallKind::ClearInterruptQuarantine,
-          .interrupt_policy_source = InterruptSource::Network,
-      });
+  auto dup_clr = axion_kernel_call(*state, KernelCallRequest{
+                                               .kind = KernelCallKind::ClearInterruptQuarantine,
+                                               .interrupt_policy_source = InterruptSource::Network,
+                                           });
   check(dup_clr.status == KernelCallStatus::InvalidRequest,
         "policy: ClearInterruptQuarantine on non-quarantined source → InvalidRequest");
-  check(dup_clr.rejection == KernelCallRejection::InterruptSourceNotQuarantined,
-        "policy: ClearInterruptQuarantine on non-quarantined source → InterruptSourceNotQuarantined");
+  check(
+      dup_clr.rejection == KernelCallRejection::InterruptSourceNotQuarantined,
+      "policy: ClearInterruptQuarantine on non-quarantined source → InterruptSourceNotQuarantined");
 
   // ── 12. Runtime status view exposes all policy counters ──────────────────
   const auto view = make_runtime_view(*state);
-  check(view.interrupts_policy_allowed     == state->counters.interrupts_policy_allowed,
+  check(view.interrupts_policy_allowed == state->counters.interrupts_policy_allowed,
         "policy: view.interrupts_policy_allowed matches state");
   check(view.interrupts_policy_quarantined == state->counters.interrupts_policy_quarantined,
         "policy: view.interrupts_policy_quarantined matches state");
-  check(view.interrupts_policy_denied      == state->counters.interrupts_policy_denied,
+  check(view.interrupts_policy_denied == state->counters.interrupts_policy_denied,
         "policy: view.interrupts_policy_denied matches state");
   check(view.last_interrupt_policy_verdict_raw.has_value(),
         "policy: view.last_interrupt_policy_verdict_raw is populated");
@@ -13286,7 +12377,7 @@ static void test_kernel_unhandled_interrupt_governance() {
   std::printf("\n[AC-22x] RFC-00B5 §3.5 / Slice 28: unhandled interrupt "
               "governance — UnhandledInterruptDropped audit event\n");
 
-  auto ctx   = make_valid_ctx(/*ethics=*/false);
+  auto ctx = make_valid_ctx(/*ethics=*/false);
   auto state = axion_kernel_bootstrap(ctx);
   check(state.has_value(), "unhandled-irq: kernel bootstrap succeeds");
   if (!state) return;
@@ -13295,10 +12386,9 @@ static void test_kernel_unhandled_interrupt_governance() {
 
   // Register the unhandled-interrupt callback — mimics what qemu_kernel_run_loop
   // does in production.
-  register_unhandled_interrupt_callback(
-      [&state](const HardwareInterrupt& hw) {
-        axion_kernel_record_unhandled_interrupt(*state, hw);
-      });
+  register_unhandled_interrupt_callback([&state](const HardwareInterrupt& hw) {
+    axion_kernel_record_unhandled_interrupt(*state, hw);
+  });
 
   // Register Network with a null handler so that dispatch_interrupt() skips
   // the Unknown fallback (which may be registered from an earlier test) and
@@ -13317,8 +12407,7 @@ static void test_kernel_unhandled_interrupt_governance() {
         "unhandled-irq: interrupts_recorded unchanged (not a normal record)");
   check(state->last_interrupt_audit_kind.has_value(),
         "unhandled-irq: last_interrupt_audit_kind populated");
-  check(state->last_interrupt_audit_kind ==
-            KernelAuditEventKind::UnhandledInterruptDropped,
+  check(state->last_interrupt_audit_kind == KernelAuditEventKind::UnhandledInterruptDropped,
         "unhandled-irq: audit kind == UnhandledInterruptDropped");
   check(state->last_interrupt_audit_source.has_value(),
         "unhandled-irq: last_interrupt_audit_source populated");
