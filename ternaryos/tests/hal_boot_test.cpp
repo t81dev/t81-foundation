@@ -8942,6 +8942,7 @@ static void test_kernel_abi_wire_blocks() {
       .supervisor_delegation_process_group_count = 2,
       .supervisor_delegation_entry_count = 1,
       .supervisor_delegated_capability_count = 1,
+      .thread_label = "test-thread",
   };
 
   const auto response_block = axion_kernel_encode_wire_response(response);
