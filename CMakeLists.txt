@@ -1913,6 +1913,9 @@ target_link_libraries(t81_ir_roundtrip PRIVATE t81_core)
 add_executable(t81_make_demo_model examples/model-load-canonfs/make_demo_model.cpp)
 target_link_libraries(t81_make_demo_model PRIVATE t81_tool_model t81_core)
 
+add_executable(t81_make_demo_model_gov examples/governance-demo/make_demo_model_gov.cpp)
+target_link_libraries(t81_make_demo_model_gov PRIVATE t81_tool_model t81_core)
+
 add_executable(t81_make_guarded_llama_demo
                examples/model-load-canonfs/make_guarded_llama_demo.cpp)
 target_link_libraries(t81_make_guarded_llama_demo PRIVATE t81_tool_model t81_core)
