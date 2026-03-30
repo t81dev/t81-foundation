@@ -11,11 +11,10 @@ namespace t81::ternaryos::dev {
 
 // ── Hardware access helpers ──────────────────────────────────────────────────
 
-#if defined(__aarch64__) && !defined(__APPLE__) && \
-    !defined(T81_TERNARYOS_HOSTED_BUILD) && !defined(_MSC_VER)
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(T81_TERNARYOS_HOSTED_BUILD) && \
+    !defined(_MSC_VER)
 
-static inline void gicd_write32(uint64_t base, uint64_t off,
-                                uint32_t val) noexcept {
+static inline void gicd_write32(uint64_t base, uint64_t off, uint32_t val) noexcept {
   *reinterpret_cast<volatile uint32_t*>(base + off) = val;
 }
 
@@ -23,8 +22,7 @@ static inline uint32_t gicd_read32(uint64_t base, uint64_t off) noexcept {
   return *reinterpret_cast<const volatile uint32_t*>(base + off);
 }
 
-static inline void gicd_write64(uint64_t base, uint64_t off,
-                                uint64_t val) noexcept {
+static inline void gicd_write64(uint64_t base, uint64_t off, uint64_t val) noexcept {
   *reinterpret_cast<volatile uint64_t*>(base + off) = val;
 }
 
@@ -39,20 +37,20 @@ static inline void gicd_wait_rwp(uint64_t dist_base) noexcept {
 
 static inline void icc_sre_el1_write(uint64_t val) noexcept {
   __asm__ volatile("msr icc_sre_el1, %0\n\t"
-                   "isb"
-                   :: "r"(val) : "memory");
+                   "isb" ::"r"(val)
+                   : "memory");
 }
 
 static inline void icc_pmr_el1_write(uint64_t val) noexcept {
   __asm__ volatile("msr icc_pmr_el1, %0\n\t"
-                   "isb"
-                   :: "r"(val) : "memory");
+                   "isb" ::"r"(val)
+                   : "memory");
 }
 
 static inline void icc_igrpen1_el1_write(uint64_t val) noexcept {
   __asm__ volatile("msr icc_igrpen1_el1, %0\n\t"
-                   "isb"
-                   :: "r"(val) : "memory");
+                   "isb" ::"r"(val)
+                   : "memory");
 }
 
 static inline uint64_t icc_iar1_el1_read() noexcept {
@@ -62,7 +60,7 @@ static inline uint64_t icc_iar1_el1_read() noexcept {
 }
 
 static inline void icc_eoir1_el1_write(uint64_t val) noexcept {
-  __asm__ volatile("msr icc_eoir1_el1, %0" :: "r"(val) : "memory");
+  __asm__ volatile("msr icc_eoir1_el1, %0" ::"r"(val) : "memory");
 }
 
 #else  // hosted build — all hardware access is a no-op
@@ -75,9 +73,7 @@ static inline void gicd_wait_rwp(uint64_t) noexcept {}
 static inline void icc_sre_el1_write(uint64_t) noexcept {}
 static inline void icc_pmr_el1_write(uint64_t) noexcept {}
 static inline void icc_igrpen1_el1_write(uint64_t) noexcept {}
-static inline uint64_t icc_iar1_el1_read() noexcept {
-  return kGicSpuriousIntid;
-}
+static inline uint64_t icc_iar1_el1_read() noexcept { return kGicSpuriousIntid; }
 static inline void icc_eoir1_el1_write(uint64_t) noexcept {}
 
 #endif
@@ -87,27 +83,25 @@ static inline void icc_eoir1_el1_write(uint64_t) noexcept {}
 /// GICD_IGROUPR[n]: each register covers 32 consecutive INTIDs.
 static void set_intid_group1(uint64_t dist_base, uint32_t intid) noexcept {
   const uint32_t reg_idx = intid / 32u;
-  const uint32_t bit     = 1u << (intid % 32u);
-  const uint64_t off     = kGicdIgrouprN + reg_idx * 4u;
-  const uint32_t cur     = gicd_read32(dist_base, off);
+  const uint32_t bit = 1u << (intid % 32u);
+  const uint64_t off = kGicdIgrouprN + reg_idx * 4u;
+  const uint32_t cur = gicd_read32(dist_base, off);
   gicd_write32(dist_base, off, cur | bit);
 }
 
 /// GICD_ISENABLER[n] / GICD_ICENABLER[n].
-static void set_intid_enable(uint64_t dist_base, uint32_t intid,
-                              bool enable) noexcept {
+static void set_intid_enable(uint64_t dist_base, uint32_t intid, bool enable) noexcept {
   const uint32_t reg_idx = intid / 32u;
-  const uint32_t bit     = 1u << (intid % 32u);
+  const uint32_t bit = 1u << (intid % 32u);
   const uint64_t base_off = enable ? kGicdIsenabler0 : kGicdIcenabler0;
   gicd_write32(dist_base, base_off + reg_idx * 4u, bit);
 }
 
 /// GICD_IPRIORITYR[n]: one byte per INTID, packed 4-per-word.
-static void set_intid_priority(uint64_t dist_base, uint32_t intid,
-                                uint8_t priority) noexcept {
-  const uint32_t reg_idx  = intid / 4u;
+static void set_intid_priority(uint64_t dist_base, uint32_t intid, uint8_t priority) noexcept {
+  const uint32_t reg_idx = intid / 4u;
   const uint32_t byte_off = intid % 4u;
-  const uint64_t off      = kGicdIpriorityrN + reg_idx * 4u;
+  const uint64_t off = kGicdIpriorityrN + reg_idx * 4u;
   uint32_t cur = gicd_read32(dist_base, off);
   cur &= ~(0xFFu << (byte_off * 8u));
   cur |= (static_cast<uint32_t>(priority) << (byte_off * 8u));
@@ -133,7 +127,10 @@ void gicv3_init(uint64_t dist_base, uint64_t redist_base) noexcept {
     if (!(gicd_read32(redist_base, kGicrWaker) & kGicrWakerChildrenAsleep)) {
       break;
     }
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(T81_TERNARYOS_HOSTED_BUILD) && \
+    !defined(_MSC_VER)
     __asm__ volatile("isb");
+#endif
   }
 
   // 3. Set all SGIs (0..15) and PPIs (16..31) in the SGI frame to Group 1 NS.
@@ -164,14 +161,12 @@ void gicv3_disable_spi(uint64_t dist_base, uint32_t intid) noexcept {
   set_intid_enable(dist_base, intid, false);
 }
 
-void gicv3_set_priority(uint64_t dist_base, uint32_t intid,
-                        uint8_t priority) noexcept {
+void gicv3_set_priority(uint64_t dist_base, uint32_t intid, uint8_t priority) noexcept {
   if (intid > kGicMaxIntid) return;
   set_intid_priority(dist_base, intid, priority);
 }
 
-void gicv3_route_spi(uint64_t dist_base, uint32_t intid,
-                     uint8_t aff0) noexcept {
+void gicv3_route_spi(uint64_t dist_base, uint32_t intid, uint8_t aff0) noexcept {
   if (intid < 32u || intid > kGicMaxIntid) return;
   // GICD_IROUTER: 64-bit, Aff0 in bits [7:0], IRM=0 (route to specific CPU).
   const uint64_t off = kGicdIrouterN + (intid - 32u) * 8u;
@@ -182,9 +177,7 @@ uint32_t gicv3_acknowledge() noexcept {
   return static_cast<uint32_t>(icc_iar1_el1_read() & 0xFFFFFFu);
 }
 
-void gicv3_eoi(uint32_t intid) noexcept {
-  icc_eoir1_el1_write(static_cast<uint64_t>(intid));
-}
+void gicv3_eoi(uint32_t intid) noexcept { icc_eoir1_el1_write(static_cast<uint64_t>(intid)); }
 
 void gicv3_enable_ppi(uint64_t redist_base, uint32_t intid) noexcept {
   if (intid < 16u || intid > 31u) return;
