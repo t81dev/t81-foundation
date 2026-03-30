@@ -133,7 +133,9 @@ void gicv3_init(uint64_t dist_base, uint64_t redist_base) noexcept {
     if (!(gicd_read32(redist_base, kGicrWaker) & kGicrWakerChildrenAsleep)) {
       break;
     }
+#if defined(__aarch64__) && !defined(__APPLE__) && !defined(T81_TERNARYOS_HOSTED_BUILD) && !defined(_MSC_VER)
     __asm__ volatile("isb");
+#endif
   }
 
   // 3. Set all SGIs (0..15) and PPIs (16..31) in the SGI frame to Group 1 NS.
