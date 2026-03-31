@@ -1,9 +1,0 @@
-// Demonstrates deterministic handle usage without runtime weight-loading intrinsics.
-fn main() -> i32 {
-    let encoder_handle: i32 = 1;
-    let decoder_handle: i32 = 2;
-    let another_encoder_handle: i32 = 1;
-
-    let stable: i32 = encoder_handle + decoder_handle + another_encoder_handle;
-    return stable;
-}
