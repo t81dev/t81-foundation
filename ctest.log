@@ -1,0 +1,951 @@
+Test project /app/build
+        Start   1: t81_ternaryos_hal_boot_test
+        Start   2: t81_ternaryos_page_alloc_test
+        Start   3: t81_ternaryos_context_switch_test
+        Start   4: t81_ternaryos_mmu_test
+  1/409 Test   #2: t81_ternaryos_page_alloc_test ..................................   Passed    0.00 sec
+        Start   5: t81_ternaryos_scheduler_test
+  2/409 Test   #3: t81_ternaryos_context_switch_test ..............................   Passed    0.01 sec
+        Start   6: t81_ternaryos_ipc_test
+  3/409 Test   #4: t81_ternaryos_mmu_test .........................................   Passed    0.01 sec
+        Start   7: t81_ternaryos_device_driver_test
+  4/409 Test   #5: t81_ternaryos_scheduler_test ...................................   Passed    0.01 sec
+        Start   8: t81_ternaryos_shell_session_test
+  5/409 Test   #6: t81_ternaryos_ipc_test .........................................   Passed    0.01 sec
+        Start   9: t81_ternaryos_user_env_test
+  6/409 Test   #9: t81_ternaryos_user_env_test ....................................   Passed    0.01 sec
+        Start  10: t81_axion_userenv_include_surface_test
+  7/409 Test   #7: t81_ternaryos_device_driver_test ...............................   Passed    0.02 sec
+        Start  11: t81_ternaryos_epoch_submission_test
+  8/409 Test  #10: t81_axion_userenv_include_surface_test .........................   Passed    0.01 sec
+        Start  12: t81_ternaryos_epoch_policy_test
+  9/409 Test  #12: t81_ternaryos_epoch_policy_test ................................   Passed    0.01 sec
+        Start  13: t81_ternaryos_epoch_syscall_test
+ 10/409 Test  #11: t81_ternaryos_epoch_submission_test ............................   Passed    0.02 sec
+        Start  14: t81_ternaryos_epoch_timeout_test
+ 11/409 Test  #13: t81_ternaryos_epoch_syscall_test ...............................   Passed    0.01 sec
+        Start  15: t81_ternaryos_epoch_audit_test
+ 12/409 Test   #1: t81_ternaryos_hal_boot_test ....................................   Passed    0.07 sec
+        Start  16: t81_ternaryos_epoch_history_test
+ 13/409 Test  #14: t81_ternaryos_epoch_timeout_test ...............................   Passed    0.01 sec
+        Start  17: t81_ternaryos_device_arbitration_syscall_test
+ 14/409 Test  #15: t81_ternaryos_epoch_audit_test .................................   Passed    0.02 sec
+        Start  18: t81_dpe_task_graph_test
+ 15/409 Test  #16: t81_ternaryos_epoch_history_test ...............................   Passed    0.01 sec
+        Start  19: t81_dpe_task_runner_test
+ 16/409 Test  #17: t81_ternaryos_device_arbitration_syscall_test ..................   Passed    0.01 sec
+        Start  20: t81_dpe_epoch_commit_test
+ 17/409 Test  #18: t81_dpe_task_graph_test ........................................   Passed    0.01 sec
+        Start  21: t81_dpe_epoch_dag_test
+ 18/409 Test  #19: t81_dpe_task_runner_test .......................................   Passed    0.01 sec
+        Start  22: t81_dpe_epoch_parallel_test
+ 19/409 Test  #20: t81_dpe_epoch_commit_test ......................................   Passed    0.01 sec
+        Start  23: t81_dpe_thread_pool_test
+ 20/409 Test  #21: t81_dpe_epoch_dag_test .........................................   Passed    0.01 sec
+        Start  24: t81_dpe_float_reduction_test
+ 21/409 Test  #22: t81_dpe_epoch_parallel_test ....................................   Passed    0.01 sec
+        Start  25: t81_dpe_include_surface_test
+ 22/409 Test  #23: t81_dpe_thread_pool_test .......................................   Passed    0.01 sec
+        Start  26: tui_snapshot_test
+ 23/409 Test  #25: t81_dpe_include_surface_test ...................................   Passed    0.01 sec
+        Start  27: t81_test_axion_opcodes
+ 24/409 Test  #24: t81_dpe_float_reduction_test ...................................   Passed    0.01 sec
+        Start  28: t81_test_axion_m6_canonical_reason
+ 25/409 Test  #28: t81_test_axion_m6_canonical_reason .............................   Passed    0.00 sec
+        Start  29: t81_vm_neural_opcodes_test
+ 26/409 Test  #27: t81_test_axion_opcodes .........................................   Passed    0.01 sec
+        Start  30: test_bitwise
+ 27/409 Test  #26: tui_snapshot_test ..............................................   Passed    0.01 sec
+        Start  31: t81_vm_resource_monitoring_test
+ 28/409 Test  #29: t81_vm_neural_opcodes_test .....................................   Passed    0.01 sec
+        Start  32: t81_vm_decoder_test
+ 29/409 Test  #30: test_bitwise ...................................................   Passed    0.01 sec
+        Start  33: t81_tritwise_backend_equivalence_test
+ 30/409 Test  #31: t81_vm_resource_monitoring_test ................................   Passed    0.01 sec
+        Start  34: t81lang_surface_gate_test
+ 31/409 Test  #33: t81_tritwise_backend_equivalence_test ..........................   Passed    0.01 sec
+        Start  35: t81lang_conformance_edge_semantics_test
+ 32/409 Test  #34: t81lang_surface_gate_test ......................................   Passed    0.01 sec
+        Start  36: t81_ethics_test
+ 33/409 Test  #32: t81_vm_decoder_test ............................................   Passed    0.02 sec
+        Start  37: t81_ethics_invariants_test
+ 34/409 Test  #35: t81lang_conformance_edge_semantics_test ........................   Passed    0.01 sec
+        Start  38: test_resource_monitoring
+ 35/409 Test  #36: t81_ethics_test ................................................   Passed    0.01 sec
+        Start  39: test_tier3_opcodes
+ 36/409 Test  #37: t81_ethics_invariants_test .....................................   Passed    0.01 sec
+        Start  40: vm_bounds_trace_test
+ 37/409 Test   #8: t81_ternaryos_shell_session_test ...............................   Passed    0.12 sec
+        Start  41: t81_parser_regression_audit_test
+ 38/409 Test  #39: test_tier3_opcodes .............................................   Passed    0.01 sec
+        Start  42: t81_frontend_parser_appendix_coverage_test
+ 39/409 Test  #40: vm_bounds_trace_test ...........................................   Passed    0.01 sec
+        Start  43: t81_ir_snapshot_audit_test
+ 40/409 Test  #41: t81_parser_regression_audit_test ...............................   Passed    0.01 sec
+        Start  44: t81_semantic_analyzer_stage3_rules_test
+ 41/409 Test  #38: test_resource_monitoring .......................................   Passed    0.02 sec
+        Start  45: vm_reflection_tier2_test
+ 42/409 Test  #42: t81_frontend_parser_appendix_coverage_test .....................   Passed    0.01 sec
+        Start  46: reflective_evidence_replay_test
+ 43/409 Test  #44: t81_semantic_analyzer_stage3_rules_test ........................   Passed    0.00 sec
+        Start  47: axion_ai_hooks_test
+ 44/409 Test  #46: reflective_evidence_replay_test ................................   Passed    0.00 sec
+        Start  48: backend_adapter_test
+ 45/409 Test  #43: t81_ir_snapshot_audit_test .....................................   Passed    0.01 sec
+        Start  49: t81_determinism_evidence_test
+ 46/409 Test  #45: vm_reflection_tier2_test .......................................   Passed    0.01 sec
+        Start  50: t81_float_deterministic_test
+ 47/409 Test  #47: axion_ai_hooks_test ............................................   Passed    0.01 sec
+        Start  51: t81_bigint_float_conversion_test
+ 48/409 Test  #48: backend_adapter_test ...........................................   Passed    0.01 sec
+        Start  52: debug_matrix_crash
+ 49/409 Test  #49: t81_determinism_evidence_test ..................................   Passed    0.01 sec
+        Start  53: t81_float_test
+ 50/409 Test  #50: t81_float_deterministic_test ...................................   Passed    0.01 sec
+        Start  54: t81_float_properties_test
+ 51/409 Test  #51: t81_bigint_float_conversion_test ...............................   Passed    0.01 sec
+        Start  55: t81_t81int_to_binary_test
+ 52/409 Test  #53: t81_float_test .................................................   Passed    0.01 sec
+        Start  56: t81_division_test
+ 53/409 Test  #55: t81_t81int_to_binary_test ......................................   Passed    0.01 sec
+        Start  57: t81_t81int_test
+ 54/409 Test  #56: t81_division_test ..............................................   Passed    0.01 sec
+        Start  58: t81_t81int_overflow_test
+ 55/409 Test  #57: t81_t81int_test ................................................   Passed    0.00 sec
+        Start  59: t81_t81int_generic_div_test
+ 56/409 Test  #58: t81_t81int_overflow_test .......................................   Passed    0.00 sec
+        Start  60: t81_int_sign_trit_test
+ 57/409 Test  #59: t81_t81int_generic_div_test ....................................   Passed    0.00 sec
+        Start  61: t81_bigint_test
+ 58/409 Test  #60: t81_int_sign_trit_test .........................................   Passed    0.00 sec
+        Start  62: t81_fraction_test
+ 59/409 Test  #61: t81_bigint_test ................................................   Passed    0.00 sec
+        Start  63: t81_bigint_properties_test
+ 60/409 Test  #62: t81_fraction_test ..............................................   Passed    0.01 sec
+        Start  64: t81_prob_properties_test
+ 61/409 Test  #64: t81_prob_properties_test .......................................   Passed    0.02 sec
+        Start  65: t81_t81int_properties_test
+ 62/409 Test  #52: debug_matrix_crash .............................................   Passed    0.05 sec
+        Start  66: t81_bigint_division_edge_properties_test
+ 63/409 Test  #54: t81_float_properties_test ......................................   Passed    0.08 sec
+        Start  67: t81_bigint_division_semantics_test
+ 64/409 Test  #67: t81_bigint_division_semantics_test .............................   Passed    0.01 sec
+        Start  68: t81_bigint_gcd_divmod_property_test
+ 65/409 Test  #63: t81_bigint_properties_test .....................................   Passed    0.09 sec
+        Start  69: t81_bigint_modular_inverse_test
+ 66/409 Test  #65: t81_t81int_properties_test .....................................   Passed    0.08 sec
+        Start  70: fuzz_bigint_libfuzzer
+ 67/409 Test  #69: t81_bigint_modular_inverse_test ................................   Passed    0.01 sec
+        Start  71: t81_fraction_properties_test
+ 68/409 Test  #66: t81_bigint_division_edge_properties_test .......................   Passed    0.11 sec
+        Start  72: t81_core_numeric_compat_test
+ 69/409 Test  #68: t81_bigint_gcd_divmod_property_test ............................   Passed    0.08 sec
+        Start  73: t81_core_bigint_compat_properties_test
+ 70/409 Test  #72: t81_core_numeric_compat_test ...................................   Passed    0.01 sec
+        Start  74: t81_core_fraction_compat_properties_test
+ 71/409 Test  #74: t81_core_fraction_compat_properties_test .......................   Passed    0.13 sec
+        Start  75: t81_v1_canonical_numeric_contract_test
+ 72/409 Test  #75: t81_v1_canonical_numeric_contract_test .........................   Passed    0.00 sec
+        Start  76: t81_complex_test
+ 73/409 Test  #76: t81_complex_test ...............................................   Passed    0.01 sec
+        Start  77: t81_prob_test
+ 74/409 Test  #77: t81_prob_test ..................................................   Passed    0.01 sec
+        Start  78: t81_symbol_test
+ 75/409 Test  #78: t81_symbol_test ................................................   Passed    0.00 sec
+        Start  79: t81_string_test
+ 76/409 Test  #79: t81_string_test ................................................   Passed    0.00 sec
+        Start  80: t81_qutrit_test
+ 77/409 Test  #80: t81_qutrit_test ................................................   Passed    0.01 sec
+        Start  81: t81_fixed_test
+ 78/409 Test  #81: t81_fixed_test .................................................   Passed    0.00 sec
+        Start  82: t81_uint_test
+ 79/409 Test  #82: t81_uint_test ..................................................   Passed    0.00 sec
+        Start  83: t81_list_test
+ 80/409 Test  #83: t81_list_test ..................................................   Passed    0.00 sec
+        Start  84: t81_map_test
+ 81/409 Test  #84: t81_map_test ...................................................   Passed    0.00 sec
+        Start  85: t81_set_test
+ 82/409 Test  #85: t81_set_test ...................................................   Passed    0.00 sec
+        Start  86: t81_vector_test
+ 83/409 Test  #86: t81_vector_test ................................................   Passed    0.00 sec
+        Start  87: t81_matrix_test
+ 84/409 Test  #87: t81_matrix_test ................................................   Passed    0.07 sec
+        Start  88: t81_matrix_singular_test
+ 85/409 Test  #73: t81_core_bigint_compat_properties_test .........................   Passed    0.28 sec
+        Start  89: t81_maybe_test
+ 86/409 Test  #88: t81_matrix_singular_test .......................................   Passed    0.01 sec
+        Start  90: t81_result_test
+ 87/409 Test  #89: t81_maybe_test .................................................   Passed    0.01 sec
+        Start  91: t81_quaternion_test
+ 88/409 Test  #90: t81_result_test ................................................   Passed    0.00 sec
+        Start  92: t81_time_test
+ 89/409 Test  #91: t81_quaternion_test ............................................   Passed    0.01 sec
+        Start  93: t81_bytes_test
+ 90/409 Test  #92: t81_time_test ..................................................   Passed    0.01 sec
+        Start  94: t81_tree_test
+ 91/409 Test  #93: t81_bytes_test .................................................   Passed    0.00 sec
+        Start  95: t81_tensor_transpose_test
+ 92/409 Test  #94: t81_tree_test ..................................................   Passed    0.01 sec
+        Start  96: t81_core_improvements_test
+ 93/409 Test  #96: t81_core_improvements_test .....................................   Passed    0.01 sec
+        Start  97: t81_core_features_test
+ 94/409 Test  #71: t81_fraction_properties_test ...................................   Passed    0.72 sec
+        Start  98: t81_tensor_slice_test
+ 95/409 Test  #95: t81_tensor_transpose_test ......................................   Passed    0.43 sec
+        Start  99: t81_tensor_reshape_test
+ 96/409 Test  #97: t81_core_features_test .........................................   Passed    0.69 sec
+        Start 100: t81_tensor_loader_test
+ 97/409 Test  #98: t81_tensor_slice_test ..........................................   Passed    0.48 sec
+        Start 101: t81_canonfs_io_test
+ 98/409 Test #101: t81_canonfs_io_test ............................................   Passed    0.01 sec
+        Start 102: canonfs_persistent_driver_test
+ 99/409 Test #102: canonfs_persistent_driver_test .................................   Passed    0.01 sec
+        Start 103: canonfs_identity_contract_test
+100/409 Test #103: canonfs_identity_contract_test .................................   Passed    0.01 sec
+        Start 104: canonfs_read_verify_test
+101/409 Test #104: canonfs_read_verify_test .......................................   Passed    0.01 sec
+        Start 105: canonfs_read_verify_env_contract_test
+102/409 Test #105: canonfs_read_verify_env_contract_test ..........................   Passed    0.01 sec
+        Start 106: canonfs_integrity_matrix_test
+103/409 Test #106: canonfs_integrity_matrix_test ..................................   Passed    0.01 sec
+        Start 107: t81_vm_canonfs_root_env_contract_test
+104/409 Test #107: t81_vm_canonfs_root_env_contract_test ..........................   Passed    0.01 sec
+        Start 108: t81_ir_encoding_test
+105/409 Test #108: t81_ir_encoding_test ...........................................   Passed    0.00 sec
+        Start 109: t81_isa_encoding_test
+106/409 Test #109: t81_isa_encoding_test ..........................................   Passed    0.00 sec
+        Start 110: t81_hash_stub_test
+107/409 Test #110: t81_hash_stub_test .............................................   Passed    0.00 sec
+        Start 111: t81_sha3_test
+108/409 Test #111: t81_sha3_test ..................................................   Passed    0.00 sec
+        Start 112: t81_axion_stub_test
+109/409 Test #112: t81_axion_stub_test ............................................   Passed    0.00 sec
+        Start 113: t81_codec_base243_test
+110/409 Test #113: t81_codec_base243_test .........................................   Passed    0.00 sec
+        Start 114: t81_codec_base81_test
+111/409 Test #114: t81_codec_base81_test ..........................................   Passed    0.00 sec
+        Start 115: t81_trit_packing_test
+112/409 Test #115: t81_trit_packing_test ..........................................   Passed    0.00 sec
+        Start 116: t81_packed_trit_vector_test
+113/409 Test #116: t81_packed_trit_vector_test ....................................   Passed    0.01 sec
+        Start 117: t81_phase2c_truth_table_test
+114/409 Test #117: t81_phase2c_truth_table_test ...................................   Passed    0.01 sec
+        Start 118: t81_packed_trit_vector_stress_test
+115/409 Test #118: t81_packed_trit_vector_stress_test .............................   Passed    0.00 sec
+        Start 119: t81_base81_balanced_test
+116/409 Test #119: t81_base81_balanced_test .......................................   Passed    0.00 sec
+        Start 120: t81_base81_packed_test
+117/409 Test #120: t81_base81_packed_test .........................................   Passed    0.00 sec
+        Start 121: t81_metadata_test
+118/409 Test #121: t81_metadata_test ..............................................   Passed    0.00 sec
+        Start 122: t81_isa_base81_view_test
+119/409 Test #122: t81_isa_base81_view_test .......................................   Passed    0.00 sec
+        Start 123: setun_bridge_test
+120/409 Test #123: setun_bridge_test ..............................................   Passed    0.00 sec
+        Start 124: tisc_opcode_matrix_test
+121/409 Test #124: tisc_opcode_matrix_test ........................................   Passed    0.00 sec
+        Start 125: t81lang_conformance_baseline_test
+122/409 Test #125: t81lang_conformance_baseline_test ..............................   Passed    0.01 sec
+        Start 126: t81_numeric_format_test
+123/409 Test #126: t81_numeric_format_test ........................................   Passed    0.00 sec
+        Start 127: axion_recursion_guardrails_test
+124/409 Test #127: axion_recursion_guardrails_test ................................   Passed    0.01 sec
+        Start 128: t81_tensor_shape_test
+125/409 Test #128: t81_tensor_shape_test ..........................................   Passed    0.00 sec
+        Start 129: t81_tensor_serialization_canonical_fixed_test
+126/409 Test #100: t81_tensor_loader_test .........................................   Passed    0.47 sec
+        Start 130: t81_tensor_native_decode_test
+127/409 Test  #99: t81_tensor_reshape_test ........................................   Passed    0.83 sec
+        Start 131: t81_ternary_arith_test
+128/409 Test #131: t81_ternary_arith_test .........................................   Passed    0.00 sec
+        Start 132: t81_tensor_matmul_test
+129/409 Test #130: t81_tensor_native_decode_test ..................................   Passed    0.18 sec
+        Start 133: t81_tensor_reduce_test
+130/409 Test #129: t81_tensor_serialization_canonical_fixed_test ..................   Passed    0.33 sec
+        Start 134: t81_tensor_broadcast_test
+131/409 Test  #70: fuzz_bigint_libfuzzer ..........................................   Passed    2.09 sec
+        Start 135: t81_entropy_test
+132/409 Test #132: t81_tensor_matmul_test .........................................   Passed    0.49 sec
+        Start 136: t81_expected_test
+133/409 Test #135: t81_entropy_test ...............................................   Passed    0.01 sec
+        Start 137: t81_tensor_elementwise_test
+134/409 Test #136: t81_expected_test ..............................................   Passed    0.00 sec
+        Start 138: t81_tensor_ternary_test
+135/409 Test #134: t81_tensor_broadcast_test ......................................   Passed    0.78 sec
+        Start 139: t81_t729_tensor_test
+136/409 Test #139: t81_t729_tensor_test ...........................................   Passed    0.01 sec
+        Start 140: t81_symbolic_algebra_test
+137/409 Test #133: t81_tensor_reduce_test .........................................   Passed    0.93 sec
+        Start 141: t81_semantic_graph_test
+138/409 Test #141: t81_semantic_graph_test ........................................   Passed    0.00 sec
+        Start 142: t81_neural_primitives_test
+139/409 Test #142: t81_neural_primitives_test .....................................   Passed    0.01 sec
+        Start 143: t81_frontend_neural_test
+140/409 Test #143: t81_frontend_neural_test .......................................   Passed    0.00 sec
+        Start 144: t81_c_api_bigint_test
+141/409 Test #144: t81_c_api_bigint_test ..........................................   Passed    0.01 sec
+        Start 145: t81_tensor_unary_test
+142/409 Test #138: t81_tensor_ternary_test ........................................   Passed    0.74 sec
+        Start 146: t81_hanoi_integration_test
+143/409 Test #146: t81_hanoi_integration_test .....................................   Passed    0.00 sec
+        Start 147: t81_hanoi_command_surface_test
+144/409 Test #147: t81_hanoi_command_surface_test .................................   Passed    0.00 sec
+        Start 148: t81_vm_load_store_test
+145/409 Test #148: t81_vm_load_store_test .........................................   Passed    0.01 sec
+        Start 149: t81_vm_illegal_test
+146/409 Test #149: t81_vm_illegal_test ............................................   Passed    0.01 sec
+        Start 150: t81_vm_bounds_test
+147/409 Test #150: t81_vm_bounds_test .............................................   Passed    0.01 sec
+        Start 151: t81_vm_tensor_test
+148/409 Test #140: t81_symbolic_algebra_test ......................................   Passed    0.54 sec
+        Start 152: t81_vm_tloadhash_conformance_test
+149/409 Test #152: t81_vm_tloadhash_conformance_test ..............................   Passed    0.01 sec
+        Start 153: t81_vm_tloadhash_custom_driver_test
+150/409 Test #153: t81_vm_tloadhash_custom_driver_test ............................   Passed    0.01 sec
+        Start 154: t81_vm_tloadhash_canonical_fixed_test
+151/409 Test #154: t81_vm_tloadhash_canonical_fixed_test ..........................   Passed    0.19 sec
+        Start 155: t81_vm_tloadhash_decodefault_determinism_matrix_test
+152/409 Test #155: t81_vm_tloadhash_decodefault_determinism_matrix_test ...........   Passed    0.01 sec
+        Start 156: t81_vm_ai_phase1_attention_conformance_test
+153/409 Test #137: t81_tensor_elementwise_test ....................................   Passed    2.07 sec
+        Start 157: t81_vm_ai_phase1_embed_conformance_test
+154/409 Test #157: t81_vm_ai_phase1_embed_conformance_test ........................   Passed    0.42 sec
+        Start 158: t81_vm_ai_phase1_qmatmul_conformance_test
+155/409 Test #145: t81_tensor_unary_test ..........................................   Passed    1.95 sec
+        Start 159: t81_vm_ai_phase1_shared_helper_parity_test
+156/409 Test #158: t81_vm_ai_phase1_qmatmul_conformance_test ......................   Passed    0.90 sec
+        Start 160: t81_vm_ai_phase1_wload_conformance_test
+157/409 Test #160: t81_vm_ai_phase1_wload_conformance_test ........................   Passed    0.26 sec
+        Start 161: t81_vm_ai_phase1_gather_conformance_test
+158/409 Test #161: t81_vm_ai_phase1_gather_conformance_test .......................   Passed    0.41 sec
+        Start 162: t81_vm_ai_phase1_scatter_conformance_test
+159/409 Test #162: t81_vm_ai_phase1_scatter_conformance_test ......................   Passed    0.17 sec
+        Start 163: t81_vm_ai_phase1_wload_canonfs_audit_test
+160/409 Test #159: t81_vm_ai_phase1_shared_helper_parity_test .....................   Passed    1.75 sec
+        Start 164: t81_vm_ai_phase1_scatter_aliasing_test
+161/409 Test #151: t81_vm_tensor_test .............................................   Passed    3.74 sec
+        Start 165: t81_vm_ai_phase1_gather_axis1_test
+162/409 Test #164: t81_vm_ai_phase1_scatter_aliasing_test .........................   Passed    0.34 sec
+        Start 166: t81_lang_ai_m6_annotation_lowering_test
+163/409 Test #163: t81_vm_ai_phase1_wload_canonfs_audit_test ......................   Passed    0.52 sec
+        Start 167: t81_vm_tensor_shape_faults_test
+164/409 Test #165: t81_vm_ai_phase1_gather_axis1_test .............................   Passed    0.73 sec
+        Start 168: t81_vm_tisc_v04_extensions_test
+165/409 Test #156: t81_vm_ai_phase1_attention_conformance_test ....................   Passed    4.10 sec
+        Start 169: t81_vm_tensor_get_set_conformance_test
+166/409 Test #166: t81_lang_ai_m6_annotation_lowering_test ........................   Passed    1.55 sec
+        Start 170: t81_vm_tensor_helper_predicates_test
+167/409 Test #167: t81_vm_tensor_shape_faults_test ................................   Passed    2.20 sec
+        Start 171: t81_vm_tensor_provenance_trace_test
+168/409 Test #171: t81_vm_tensor_provenance_trace_test ............................   Passed    0.16 sec
+        Start 172: t81_vm_predispatch_policy_deny_logging_test
+169/409 Test #172: t81_vm_predispatch_policy_deny_logging_test ....................   Passed    0.01 sec
+        Start 173: t81_vm_ai_predispatch_deny_audit_test
+170/409 Test #173: t81_vm_ai_predispatch_deny_audit_test ..........................   Passed    0.01 sec
+        Start 174: t81_vm_fault_test
+171/409 Test #174: t81_vm_fault_test ..............................................   Passed    0.01 sec
+        Start 175: t81_vm_deterministic_fault_test
+172/409 Test #175: t81_vm_deterministic_fault_test ................................   Passed    0.01 sec
+        Start 176: t81_vm_fault_family_determinism_matrix_test
+173/409 Test #176: t81_vm_fault_family_determinism_matrix_test ....................   Passed    0.34 sec
+        Start 177: t81_vm_memory_test
+174/409 Test #177: t81_vm_memory_test .............................................   Passed    0.01 sec
+        Start 178: t81_axion_log_determinism_test
+175/409 Test #178: t81_axion_log_determinism_test .................................   Passed    0.01 sec
+        Start 179: t81_reflection_non_interference_test
+176/409 Test #179: t81_reflection_non_interference_test ...........................   Passed    0.01 sec
+        Start 180: t81_canonfs_driver_test
+177/409 Test #180: t81_canonfs_driver_test ........................................   Passed    0.00 sec
+        Start 181: canonfs_interchange_test
+178/409 Test #181: canonfs_interchange_test .......................................   Passed    0.01 sec
+        Start 182: t81_canonfs_rs_repair_test
+179/409 Test #182: t81_canonfs_rs_repair_test .....................................   Passed    0.00 sec
+        Start 183: t81_canonhash81_reference_vectors_test
+180/409 Test #183: t81_canonhash81_reference_vectors_test .........................   Passed    0.00 sec
+        Start 184: t81_weights_load_test
+181/409 Test #184: t81_weights_load_test ..........................................   Passed    0.01 sec
+        Start 185: t81_safetensors_import_test
+182/409 Test #185: t81_safetensors_import_test ....................................   Passed    0.01 sec
+        Start 186: t81_native_weights_metrics_test
+183/409 Test #186: t81_native_weights_metrics_test ................................   Passed    0.01 sec
+        Start 187: t81_vm_trace_test
+184/409 Test #187: t81_vm_trace_test ..............................................   Passed    0.01 sec
+        Start 188: t81_vm_determinism_property_test
+185/409 Test #188: t81_vm_determinism_property_test ...............................   Passed    0.03 sec
+        Start 189: t81_vm_state_transition_invariants_test
+186/409 Test #189: t81_vm_state_transition_invariants_test ........................   Passed    0.01 sec
+        Start 190: t81_vm_state_transition_conformance_matrix_test
+187/409 Test #168: t81_vm_tisc_v04_extensions_test ................................   Passed    2.60 sec
+        Start 191: t81_vm_workload_determinism_tiers_test
+188/409 Test #191: t81_vm_workload_determinism_tiers_test .........................   Passed    0.47 sec
+        Start 192: t81_vm_mixed_workload_conformance_matrix_test
+189/409 Test #170: t81_vm_tensor_helper_predicates_test ...........................   Passed    2.28 sec
+        Start 193: t81_vm_policy_parse_fail_closed_test
+190/409 Test #193: t81_vm_policy_parse_fail_closed_test ...........................   Passed    0.01 sec
+        Start 194: t81_vm_axreport_policy_deny_fail_closed_test
+191/409 Test #194: t81_vm_axreport_policy_deny_fail_closed_test ...................   Passed    0.01 sec
+        Start 195: t81_vm_system_registers_deterministic_test
+192/409 Test #195: t81_vm_system_registers_deterministic_test .....................   Passed    0.01 sec
+        Start 196: t81_vm_stubbed_opcode_fail_closed_test
+193/409 Test #196: t81_vm_stubbed_opcode_fail_closed_test .........................   Passed    0.01 sec
+        Start 197: vm_extended_ops_test
+194/409 Test #197: vm_extended_ops_test ...........................................   Passed    0.01 sec
+        Start 198: llama_kernels_test
+195/409 Test #169: t81_vm_tensor_get_set_conformance_test .........................   Passed    3.55 sec
+        Start 199: t81_vm_jump_flags_test
+196/409 Test #199: t81_vm_jump_flags_test .........................................   Passed    0.01 sec
+        Start 200: t81_vm_float_fraction_ops_test
+197/409 Test #200: t81_vm_float_fraction_ops_test .................................   Passed    0.01 sec
+        Start 201: t81_vm_literal_pool_extension_test
+198/409 Test #201: t81_vm_literal_pool_extension_test .............................   Passed    0.01 sec
+        Start 202: t81_vm_neg_jumps_test
+199/409 Test #202: t81_vm_neg_jumps_test ..........................................   Passed    0.01 sec
+        Start 203: t81_vm_print_test
+200/409 Test #203: t81_vm_print_test ..............................................   Passed    0.01 sec
+        Start 204: t81_limb_bohemian_add_test
+201/409 Test #204: t81_limb_bohemian_add_test .....................................   Passed    0.01 sec
+        Start 205: t81_limb_bohemian_mul_test
+202/409 Test #205: t81_limb_bohemian_mul_test .....................................   Passed    0.07 sec
+        Start 206: t81_limb_booth_mul_test
+203/409 Test #206: t81_limb_booth_mul_test ........................................   Passed    0.06 sec
+        Start 207: t81_limb_mul_wide_high_test
+204/409 Test #207: t81_limb_mul_wide_high_test ....................................   Passed    0.03 sec
+        Start 208: t81_limb_add_test
+205/409 Test #208: t81_limb_add_test ..............................................   Passed    0.03 sec
+        Start 209: t81_native_arith_test
+206/409 Test #209: t81_native_arith_test ..........................................   Passed    0.01 sec
+        Start 210: t81_native_conversion_test
+207/409 Test #210: t81_native_conversion_test .....................................   Passed    0.00 sec
+        Start 211: t81_simd_add_helpers_test
+208/409 Test #211: t81_simd_add_helpers_test ......................................   Passed    0.00 sec
+        Start 212: t81_native_property_test
+209/409 Test #212: t81_native_property_test .......................................   Passed    0.02 sec
+        Start 213: t81_bigint_v1_baseline_test
+210/409 Test #192: t81_vm_mixed_workload_conformance_matrix_test ..................   Passed    0.85 sec
+        Start 214: t81_limb54_add_test
+211/409 Test #214: t81_limb54_add_test ............................................   Passed    0.02 sec
+        Start 215: t81_limb54_booth_mul_test
+212/409 Test #213: t81_bigint_v1_baseline_test ....................................   Passed    0.12 sec
+        Start 216: t81_frontend_lexer_test
+213/409 Test #216: t81_frontend_lexer_test ........................................   Passed    0.00 sec
+        Start 217: t81_frontend_parser_test
+214/409 Test #217: t81_frontend_parser_test .......................................   Passed    0.00 sec
+        Start 218: t81_spec_compliance_test
+215/409 Test #215: t81_limb54_booth_mul_test ......................................   Passed    0.04 sec
+        Start 219: tisc_semantic_equivalence_test
+216/409 Test #218: t81_spec_compliance_test .......................................   Passed    0.01 sec
+        Start 220: tisc_opcode_family_semantics_test
+217/409 Test #219: tisc_semantic_equivalence_test .................................   Passed    0.01 sec
+        Start 221: t81_frontend_expression_features_test
+218/409 Test #220: tisc_opcode_family_semantics_test ..............................   Passed    0.01 sec
+        Start 222: t81_frontend_parser_generics_test
+219/409 Test #222: t81_frontend_parser_generics_test ..............................   Passed    0.01 sec
+        Start 223: t81_frontend_parser_recovery_test
+220/409 Test #223: t81_frontend_parser_recovery_test ..............................   Passed    0.00 sec
+        Start 224: t81_frontend_parser_legacy_rejection_test
+221/409 Test #224: t81_frontend_parser_legacy_rejection_test ......................   Passed    0.00 sec
+        Start 225: t81_frontend_ir_generator_test
+222/409 Test #221: t81_frontend_expression_features_test ..........................   Passed    0.18 sec
+        Start 226: t81_frontend_logical_lowering_test
+223/409 Test #226: t81_frontend_logical_lowering_test .............................   Passed    0.01 sec
+        Start 227: t81_semantic_analyzer_option_result_test
+224/409 Test #227: t81_semantic_analyzer_option_result_test .......................   Passed    0.01 sec
+        Start 228: test_std_option_result
+225/409 Test #228: test_std_option_result .........................................   Passed    0.00 sec
+        Start 229: t81_semantic_analyzer_match_test
+226/409 Test #229: t81_semantic_analyzer_match_test ...............................   Passed    0.01 sec
+        Start 230: t81_semantic_analyzer_generic_test
+227/409 Test #230: t81_semantic_analyzer_generic_test .............................   Passed    0.00 sec
+        Start 231: t81_semantic_analyzer_indexing_test
+228/409 Test #231: t81_semantic_analyzer_indexing_test ............................   Passed    0.00 sec
+        Start 232: t81_semantic_analyzer_vector_literal_test
+229/409 Test #232: t81_semantic_analyzer_vector_literal_test ......................   Passed    0.00 sec
+        Start 233: t81_semantic_analyzer_equality_test
+230/409 Test #233: t81_semantic_analyzer_equality_test ............................   Passed    0.00 sec
+        Start 234: t81_semantic_analyzer_loop_test
+231/409 Test #234: t81_semantic_analyzer_loop_test ................................   Passed    0.00 sec
+        Start 235: t81_semantic_analyzer_numeric_test
+232/409 Test #235: t81_semantic_analyzer_numeric_test .............................   Passed    0.00 sec
+        Start 236: t81_semantic_analyzer_diagnostic_location_test
+233/409 Test #236: t81_semantic_analyzer_diagnostic_location_test .................   Passed    0.00 sec
+        Start 237: t81_semantic_analyzer_cascade_suppression_test
+234/409 Test #237: t81_semantic_analyzer_cascade_suppression_test .................   Passed    0.00 sec
+        Start 238: t81_semantic_analyzer_diagnostic_precision_test
+235/409 Test #238: t81_semantic_analyzer_diagnostic_precision_test ................   Passed    0.00 sec
+        Start 239: t81_isa_binary_emitter_test
+236/409 Test #239: t81_isa_binary_emitter_test ....................................   Passed    0.00 sec
+        Start 240: t81_isa_type_alias_io_test
+237/409 Test #240: t81_isa_type_alias_io_test .....................................   Passed    0.00 sec
+        Start 241: t81_isa_binary_io_determinism_test
+238/409 Test #241: t81_isa_binary_io_determinism_test .............................   Passed    0.01 sec
+        Start 242: t81_isa_binary_metadata_roundtrip_property_test
+239/409 Test #198: llama_kernels_test .............................................   Passed    1.62 sec
+        Start 243: e2e_option_result_test
+240/409 Test #243: e2e_option_result_test .........................................   Passed    0.01 sec
+        Start 244: e2e_option_result_function_test
+241/409 Test #244: e2e_option_result_function_test ................................   Passed    0.01 sec
+        Start 245: e2e_option_type_test
+242/409 Test #245: e2e_option_type_test ...........................................   Passed    0.01 sec
+        Start 246: e2e_match_expression_test
+243/409 Test #246: e2e_match_expression_test ......................................   Passed    0.01 sec
+        Start 247: e2e_loop_statement_test
+244/409 Test #247: e2e_loop_statement_test ........................................   Passed    0.01 sec
+        Start 248: e2e_advanced_features_test
+245/409 Test #225: t81_frontend_ir_generator_test .................................   Passed    0.90 sec
+        Start 249: e2e_print_runtime_test
+246/409 Test #249: e2e_print_runtime_test .........................................   Passed    0.01 sec
+        Start 250: e2e_compile_determinism_test
+247/409 Test #250: e2e_compile_determinism_test ...................................   Passed    0.03 sec
+        Start 251: e2e_match_metadata_determinism_test
+248/409 Test #251: e2e_match_metadata_determinism_test ............................   Passed    0.01 sec
+        Start 252: e2e_ast_ir_canonical_determinism_test
+249/409 Test #252: e2e_ast_ir_canonical_determinism_test ..........................   Passed    0.02 sec
+        Start 253: e2e_enum_metadata_determinism_test
+250/409 Test #253: e2e_enum_metadata_determinism_test .............................   Passed    0.01 sec
+        Start 254: cli_e2e_test
+251/409 Test #254: cli_e2e_test ...................................................   Passed    0.01 sec
+        Start 255: t81_cli_check_test
+252/409 Test #255: t81_cli_check_test .............................................   Passed    0.22 sec
+        Start 256: t81_cli_pipeline_test
+253/409 Test #256: t81_cli_pipeline_test ..........................................   Passed    0.01 sec
+        Start 257: t81_cli_disasm_test
+254/409 Test #257: t81_cli_disasm_test ............................................   Passed    0.01 sec
+        Start 258: t81_cli_debugger_test
+255/409 Test #258: t81_cli_debugger_test ..........................................   Passed    0.01 sec
+        Start 259: t81_cli_option_result_test
+256/409 Test #259: t81_cli_option_result_test .....................................   Passed    0.01 sec
+        Start 260: t81_cli_diagnostic_context_test
+257/409 Test #260: t81_cli_diagnostic_context_test ................................   Passed    0.01 sec
+        Start 261: t81_cli_trace_export_test
+258/409 Test #261: t81_cli_trace_export_test ......................................   Passed    0.01 sec
+        Start 262: cli_canonize_tensor_test
+259/409 Test #262: cli_canonize_tensor_test .......................................   Passed    0.01 sec
+        Start 263: axion_heap_compaction_trace_test
+260/409 Test #263: axion_heap_compaction_trace_test ...............................   Passed    0.01 sec
+        Start 264: axion_policy_gc_trace_test
+261/409 Test #264: axion_policy_gc_trace_test .....................................   Passed    0.01 sec
+        Start 265: axion_policy_match_guard_test
+262/409 Test #265: axion_policy_match_guard_test ..................................   Passed    0.01 sec
+        Start 266: axion_policy_segment_event_test
+263/409 Test #266: axion_policy_segment_event_test ................................   Passed    0.01 sec
+        Start 267: axion_policy_invariants_test
+264/409 Test #267: axion_policy_invariants_test ...................................   Passed    0.01 sec
+        Start 268: axion_policy_allow_deny_determinism_test
+265/409 Test #268: axion_policy_allow_deny_determinism_test .......................   Passed    0.01 sec
+        Start 269: axion_policy_conformance_matrix_test
+266/409 Test #269: axion_policy_conformance_matrix_test ...........................   Passed    0.01 sec
+        Start 270: axion_loop_metadata_test
+267/409 Test #270: axion_loop_metadata_test .......................................   Passed    0.01 sec
+        Start 271: axion_match_metadata_test
+268/409 Test #271: axion_match_metadata_test ......................................   Passed    0.01 sec
+        Start 272: axion_enum_guard_test
+269/409 Test #272: axion_enum_guard_test ..........................................   Passed    0.01 sec
+        Start 273: axion_nested_guard_test
+270/409 Test #273: axion_nested_guard_test ........................................   Passed    0.01 sec
+        Start 274: axion_instruction_counter_test
+271/409 Test #274: axion_instruction_counter_test .................................   Passed    0.01 sec
+        Start 275: canonfs_axion_trace_test
+272/409 Test #275: canonfs_axion_trace_test .......................................   Passed    0.01 sec
+        Start 276: t81_tier4_test
+273/409 Test #276: t81_tier4_test .................................................   Passed    0.01 sec
+        Start 277: t81_tier5_test
+274/409 Test #277: t81_tier5_test .................................................   Passed    0.01 sec
+        Start 278: t81_infinite_opcodes_test
+275/409 Test #278: t81_infinite_opcodes_test ......................................   Passed    0.01 sec
+        Start 279: t81_tier4_vm_test
+276/409 Test #279: t81_tier4_vm_test ..............................................   Passed    0.01 sec
+        Start 280: t81_tier4_distributed_test
+277/409 Test #280: t81_tier4_distributed_test .....................................   Passed    0.01 sec
+        Start 281: t81_jit_test
+278/409 Test #281: t81_jit_test ...................................................   Passed    0.01 sec
+        Start 282: jit_trace_equivalence_test
+279/409 Test #248: e2e_advanced_features_test .....................................   Passed    1.44 sec
+        Start 283: jit_repro_oracle_test
+280/409 Test #283: jit_repro_oracle_test ..........................................   Passed    1.08 sec
+        Start 284: jit_canonfs_cache_test
+281/409 Test #190: t81_vm_state_transition_conformance_matrix_test ................   Passed    5.64 sec
+        Start 285: vm_gc_safepoint_test
+282/409 Test #285: vm_gc_safepoint_test ...........................................   Passed    0.01 sec
+        Start 286: agent_constructs_test
+283/409 Test #286: agent_constructs_test ..........................................   Passed    0.00 sec
+        Start 287: axion_agent_invoke_policy_test
+284/409 Test #287: axion_agent_invoke_policy_test .................................   Passed    0.00 sec
+        Start 288: t81lang_foreign_ffi_test
+285/409 Test #288: t81lang_foreign_ffi_test .......................................   Passed    0.00 sec
+        Start 289: vm_ffi_bridge_test
+286/409 Test #289: vm_ffi_bridge_test .............................................   Passed    0.01 sec
+        Start 290: tnn_stdlib_test
+287/409 Test #290: tnn_stdlib_test ................................................   Passed    0.00 sec
+        Start 291: lattice_crypto_test
+288/409 Test #284: jit_canonfs_cache_test .........................................   Passed    1.15 sec
+        Start 292: ntru_kem_test
+289/409 Test #291: lattice_crypto_test ............................................   Passed    1.44 sec
+        Start 293: jit_tensor_trace_equivalence_test
+290/409 Test #292: ntru_kem_test ..................................................   Passed    3.59 sec
+        Start 294: vm_jit_per_instruction_policy_test
+291/409 Test #294: vm_jit_per_instruction_policy_test .............................   Passed    0.00 sec
+        Start 295: e2e_axion_trace_test
+292/409 Test #295: e2e_axion_trace_test ...........................................   Passed    0.00 sec
+        Start 296: axion_policy_bytecode_test
+293/409 Test #296: axion_policy_bytecode_test .....................................   Passed    0.00 sec
+        Start 297: axion_hybrid_mlp_policy_test
+294/409 Test #297: axion_hybrid_mlp_policy_test ...................................   Passed    0.00 sec
+        Start 298: test_bigint_multilimb_ext
+295/409 Test #298: test_bigint_multilimb_ext ......................................   Passed    0.00 sec
+        Start 299: test_bigint_robust_features
+296/409 Test #299: test_bigint_robust_features ....................................   Passed    0.00 sec
+        Start 300: t81_bigint_v1_perf
+297/409 Test #300: t81_bigint_v1_perf .............................................   Passed    0.00 sec
+        Start 301: bigint_perf_guardrail_test
+298/409 Test #301: bigint_perf_guardrail_test .....................................   Passed    0.67 sec
+        Start 302: t81_bigint_allocation_pathology_test
+299/409 Test #302: t81_bigint_allocation_pathology_test ...........................   Passed    0.00 sec
+        Start 303: t81_bigint_allocation_guardrail_test
+300/409 Test #303: t81_bigint_allocation_guardrail_test ...........................   Passed    1.55 sec
+        Start 304: t81_vm_tier_promotion_test
+301/409 Test #304: t81_vm_tier_promotion_test .....................................   Passed    0.01 sec
+        Start 305: test_T81Tensor_transpose
+302/409 Test #305: test_T81Tensor_transpose .......................................   Passed    0.00 sec
+        Start 306: performance_advancements_test
+303/409 Test #306: performance_advancements_test ..................................   Passed    0.00 sec
+        Start 307: t81_distributed_tensor_test
+304/409 Test #307: t81_distributed_tensor_test ....................................   Passed    0.00 sec
+        Start 308: tensor_backend_parity_test
+305/409 Test #242: t81_isa_binary_metadata_roundtrip_property_test ................   Passed   18.80 sec
+        Start 309: t81_cli_model_resolution_test
+306/409 Test #309: t81_cli_model_resolution_test ..................................   Passed    0.01 sec
+        Start 310: t81_vm_rfc0034_ternary_native_test
+307/409 Test #310: t81_vm_rfc0034_ternary_native_test .............................   Passed    2.66 sec
+        Start 311: t81_vm_rfc0040_swar_test
+308/409 Test #308: tensor_backend_parity_test .....................................   Passed   11.62 sec
+        Start 312: t81_simd_api_test
+309/409 Test #312: t81_simd_api_test ..............................................   Passed    0.00 sec
+        Start 313: t81_arithmetic_backend_equivalence_test
+310/409 Test #313: t81_arithmetic_backend_equivalence_test ........................   Passed    0.07 sec
+        Start 314: t81_base81_simd_test
+311/409 Test #314: t81_base81_simd_test ...........................................   Passed    0.00 sec
+        Start 315: t81_cli_repro_hash_test
+312/409 Test #315: t81_cli_repro_hash_test ........................................   Passed    0.68 sec
+        Start 316: t81_cli_contract_test_runner
+313/409 Test #311: t81_vm_rfc0040_swar_test .......................................   Passed    1.83 sec
+        Start 317: t81_cli_stress_test_runner
+314/409 Test #317: t81_cli_stress_test_runner .....................................   Passed    2.35 sec
+        Start 318: t81_cli_stdlib_fixtures_test
+315/409 Test #318: t81_cli_stdlib_fixtures_test ...................................   Passed    4.00 sec
+        Start 319: cli_std_collections_determinism_test
+316/409 Test #319: cli_std_collections_determinism_test ...........................   Passed    0.52 sec
+        Start 320: t81_legacy_core_numeric_include_policy_test
+317/409 Test #320: t81_legacy_core_numeric_include_policy_test ....................   Passed    0.57 sec
+        Start 321: t81_legacy_core_numeric_type_usage_policy_test
+318/409 Test #321: t81_legacy_core_numeric_type_usage_policy_test .................   Passed    0.57 sec
+        Start 322: t81_legacy_v1_numeric_include_policy_test
+319/409 Test #322: t81_legacy_v1_numeric_include_policy_test ......................   Passed    0.42 sec
+        Start 323: t81_core_numeric_wrapper_thinness_policy_test
+320/409 Test #323: t81_core_numeric_wrapper_thinness_policy_test ..................   Passed    0.41 sec
+        Start 324: t81_v1_canonical_numeric_alias_usage_policy_test
+321/409 Test #324: t81_v1_canonical_numeric_alias_usage_policy_test ...............   Passed    0.46 sec
+        Start 325: t81_graph_test
+322/409 Test #325: t81_graph_test .................................................   Passed    0.09 sec
+        Start 326: t81_graph_components_test
+323/409 Test #326: t81_graph_components_test ......................................   Passed    0.00 sec
+        Start 327: t81_graph_shortest_path_test
+324/409 Test #327: t81_graph_shortest_path_test ...................................   Passed    0.00 sec
+        Start 328: t81_graph_large_test
+325/409 Test #328: t81_graph_large_test ...........................................   Passed    0.04 sec
+        Start 329: t81_map_regression_test
+326/409 Test #329: t81_map_regression_test ........................................   Passed    0.00 sec
+        Start 330: t81_polynomial_test
+327/409 Test #330: t81_polynomial_test ............................................   Passed    0.00 sec
+        Start 331: t81_agent_test
+328/409 Test #331: t81_agent_test .................................................   Passed    0.00 sec
+        Start 332: t81_agent_neural_test
+329/409 Test #332: t81_agent_neural_test ..........................................   Passed    0.22 sec
+        Start 333: t81_stream_test
+330/409 Test #333: t81_stream_test ................................................   Passed    0.00 sec
+        Start 334: t81_promise_test
+331/409 Test #334: t81_promise_test ...............................................   Passed    0.00 sec
+        Start 335: t81_thread_test
+332/409 Test #335: t81_thread_test ................................................   Passed    0.00 sec
+        Start 336: t81_network_test
+333/409 Test #336: t81_network_test ...............................................   Passed    0.01 sec
+        Start 337: t81_discovery_test
+334/409 Test #337: t81_discovery_test .............................................   Passed    0.01 sec
+        Start 338: t81_category_test
+335/409 Test #338: t81_category_test ..............................................   Passed    0.00 sec
+        Start 339: t81_proof_test
+336/409 Test #339: t81_proof_test .................................................   Passed    0.00 sec
+        Start 340: t81_tensor_slice_static_test
+337/409 Test #340: t81_tensor_slice_static_test ...................................   Passed    0.00 sec
+        Start 341: t81_tensor_concat_static_test
+338/409 Test #341: t81_tensor_concat_static_test ..................................   Passed    0.00 sec
+        Start 342: t81_tensor_permute_static_test
+339/409 Test #342: t81_tensor_permute_static_test .................................   Passed    0.00 sec
+        Start 343: t81_tensor_pad_static_test
+340/409 Test #343: t81_tensor_pad_static_test .....................................   Passed    0.00 sec
+        Start 344: t81_tensor_activations_static_test
+341/409 Test #344: t81_tensor_activations_static_test .............................   Passed    0.00 sec
+        Start 345: t81_tensor_softmax_static_test
+342/409 Test #345: t81_tensor_softmax_static_test .................................   Passed    0.00 sec
+        Start 346: t81_graph_pagerank_convergence_test
+343/409 Test #346: t81_graph_pagerank_convergence_test ............................   Passed    0.78 sec
+        Start 347: t81_graph_bfs_test
+344/409 Test #347: t81_graph_bfs_test .............................................   Passed    0.00 sec
+        Start 348: t81_float_rounding_test
+345/409 Test #348: t81_float_rounding_test ........................................   Passed    0.00 sec
+        Start 349: t81_float_clamp_test
+346/409 Test #349: t81_float_clamp_test ...........................................   Passed    0.00 sec
+        Start 350: t81_int_pow_test
+347/409 Test #350: t81_int_pow_test ...............................................   Passed    0.00 sec
+        Start 351: t81_int_gcd_lcm_test
+348/409 Test #351: t81_int_gcd_lcm_test ...........................................   Passed    0.00 sec
+        Start 352: t81_int_shift_test
+349/409 Test #352: t81_int_shift_test .............................................   Passed    0.00 sec
+        Start 353: t81_std_test
+350/409 Test #353: t81_std_test ...................................................   Passed    0.01 sec
+        Start 354: t81_symbolic_vm_test
+351/409 Test #354: t81_symbolic_vm_test ...........................................   Passed    0.00 sec
+        Start 355: tier1_rewrite_confluence_test
+352/409 Test #355: tier1_rewrite_confluence_test ..................................   Passed    0.00 sec
+        Start 356: t81_cog_symbolic_graph_include_surface_test
+353/409 Test #356: t81_cog_symbolic_graph_include_surface_test ....................   Passed    0.00 sec
+        Start 357: test_t81float_scientific
+354/409 Test #357: test_t81float_scientific .......................................   Passed    0.00 sec
+        Start 358: test_symbol_type
+355/409 Test #358: test_symbol_type ...............................................   Passed    0.00 sec
+        Start 359: test_dynamic_vector
+356/409 Test #359: test_dynamic_vector ............................................   Passed    0.00 sec
+        Start 360: test_concurrency
+357/409 Test #360: test_concurrency ...............................................   Passed    0.00 sec
+        Start 361: test_collections_scaffold
+358/409 Test #361: test_collections_scaffold ......................................   Passed    0.01 sec
+        Start 362: test_bigint_demotion
+359/409 Test #362: test_bigint_demotion ...........................................   Passed    0.00 sec
+        Start 363: t81_graph_algorithms_test
+360/409 Test #363: t81_graph_algorithms_test ......................................   Passed    0.00 sec
+        Start 364: t81_determinism_codec_test
+361/409 Test #364: t81_determinism_codec_test .....................................   Passed    0.00 sec
+        Start 365: t81_determinism_primitives_test
+362/409 Test #365: t81_determinism_primitives_test ................................   Passed    0.00 sec
+        Start 366: t81_determinism_float_test
+363/409 Test #366: t81_determinism_float_test .....................................   Passed    0.04 sec
+        Start 367: t81_determinism_containers_test
+364/409 Test #367: t81_determinism_containers_test ................................   Passed    0.00 sec
+        Start 368: t81_determinism_math_test
+365/409 Test #368: t81_determinism_math_test ......................................   Passed    0.01 sec
+        Start 369: t81_determinism_vector_test
+366/409 Test #369: t81_determinism_vector_test ....................................   Passed    0.00 sec
+        Start 370: t81_determinism_new_types_test
+367/409 Test #370: t81_determinism_new_types_test .................................   Passed    0.00 sec
+        Start 371: test_deterministic_float_boundaries
+368/409 Test #371: test_deterministic_float_boundaries ............................   Passed    0.01 sec
+        Start 372: test_t81float_soft_math
+369/409 Test #372: test_t81float_soft_math ........................................   Passed    6.27 sec
+        Start 373: test_map_determinism
+370/409 Test #373: test_map_determinism ...........................................   Passed    0.00 sec
+        Start 374: test_t81lang_traceability_enforcement
+371/409 Test #374: test_t81lang_traceability_enforcement ..........................   Passed    0.01 sec
+        Start 375: test_axion_evidence_loop_closure_corrected
+372/409 Test #375: test_axion_evidence_loop_closure_corrected .....................   Passed    0.00 sec
+        Start 376: test_swar
+373/409 Test #376: test_swar ......................................................   Passed    0.00 sec
+        Start 377: spec_conformance_ai_attn-determinism
+374/409 Test #377: spec_conformance_ai_attn-determinism ...........................   Passed    0.01 sec
+        Start 378: spec_conformance_ai_embed-bounds-check
+375/409 Test #378: spec_conformance_ai_embed-bounds-check .........................   Passed    0.01 sec
+        Start 379: spec_conformance_ai_qmatmul-scale-order
+376/409 Test #379: spec_conformance_ai_qmatmul-scale-order ........................   Passed    0.01 sec
+        Start 380: spec_conformance_ai_tact-quarantine-gate
+377/409 Test #380: spec_conformance_ai_tact-quarantine-gate .......................   Passed    0.01 sec
+        Start 381: spec_conformance_ai_tact-step-determinism
+378/409 Test #381: spec_conformance_ai_tact-step-determinism ......................   Passed    0.01 sec
+        Start 382: spec_conformance_ai_tattn-ternary-qk
+379/409 Test #382: spec_conformance_ai_tattn-ternary-qk ...........................   Passed    0.01 sec
+        Start 383: spec_conformance_ai_tquant-determinism
+380/409 Test #383: spec_conformance_ai_tquant-determinism .........................   Passed    0.01 sec
+        Start 384: spec_conformance_ai_twembed-bounds
+381/409 Test #384: spec_conformance_ai_twembed-bounds .............................   Passed    0.01 sec
+        Start 385: spec_conformance_ai_twmatmul-exact
+382/409 Test #385: spec_conformance_ai_twmatmul-exact .............................   Passed    0.01 sec
+        Start 386: spec_conformance_axion-kernel_metadata-determinism
+383/409 Test #386: spec_conformance_axion-kernel_metadata-determinism .............   Passed    0.01 sec
+        Start 387: spec_conformance_axion-kernel_policy-deny-requires-reason
+384/409 Test #387: spec_conformance_axion-kernel_policy-deny-requires-reason ......   Passed    0.01 sec
+        Start 388: spec_conformance_axion-kernel_policy-enforcement-allow-deny
+385/409 Test #388: spec_conformance_axion-kernel_policy-enforcement-allow-deny ....   Passed    0.01 sec
+        Start 389: spec_conformance_axion-kernel_segment-trace-strings
+386/409 Test #389: spec_conformance_axion-kernel_segment-trace-strings ............   Passed    0.01 sec
+        Start 390: spec_conformance_axion-kernel_tier-supervision-invariant
+387/409 Test #390: spec_conformance_axion-kernel_tier-supervision-invariant .......   Passed    0.01 sec
+        Start 391: spec_conformance_cognitive-tiers_tier-annotation-enforcement
+388/409 Test #391: spec_conformance_cognitive-tiers_tier-annotation-enforcement ...   Passed    0.14 sec
+        Start 392: spec_conformance_t81-data-types_canonical-encoding
+389/409 Test #392: spec_conformance_t81-data-types_canonical-encoding .............   Passed    0.01 sec
+        Start 393: spec_conformance_t81-data-types_canonical-ordering
+390/409 Test #393: spec_conformance_t81-data-types_canonical-ordering .............   Passed    1.02 sec
+        Start 394: spec_conformance_t81-data-types_type-kind-completeness
+391/409 Test #394: spec_conformance_t81-data-types_type-kind-completeness .........   Passed    0.22 sec
+        Start 395: spec_conformance_t81-data-types_widening-binary-interop
+392/409 Test #395: spec_conformance_t81-data-types_widening-binary-interop ........   Passed    0.01 sec
+        Start 396: spec_conformance_t81-data-types_widening-order
+393/409 Test #396: spec_conformance_t81-data-types_widening-order .................   Passed    0.01 sec
+        Start 397: spec_conformance_t81-data-types_widening-upper-chain
+394/409 Test #397: spec_conformance_t81-data-types_widening-upper-chain ...........   Passed    0.01 sec
+        Start 398: spec_conformance_t81vm_axion-log-completeness
+395/409 Test #398: spec_conformance_t81vm_axion-log-completeness ..................   Passed    0.01 sec
+        Start 399: spec_conformance_t81vm_determinism-profile
+396/409 Test #399: spec_conformance_t81vm_determinism-profile .....................   Passed    0.01 sec
+        Start 400: spec_conformance_tisc_arithmetic-determinism
+397/409 Test #400: spec_conformance_tisc_arithmetic-determinism ...................   Passed    0.01 sec
+        Start 401: spec_conformance_tisc_bitwise-determinism
+398/409 Test #401: spec_conformance_tisc_bitwise-determinism ......................   Passed    0.01 sec
+        Start 402: spec_conformance_tisc_bitwise-shift-masking
+399/409 Test #402: spec_conformance_tisc_bitwise-shift-masking ....................   Passed    0.01 sec
+        Start 403: spec_conformance_tisc_bounds-fault-contract
+400/409 Test #403: spec_conformance_tisc_bounds-fault-contract ....................   Passed    0.34 sec
+        Start 404: spec_conformance_tisc_comparison-total-order
+401/409 Test #404: spec_conformance_tisc_comparison-total-order ...................   Passed    0.01 sec
+        Start 405: spec_conformance_tisc_conversion-determinism
+402/409 Test #405: spec_conformance_tisc_conversion-determinism ...................   Passed    0.01 sec
+        Start 406: spec_conformance_tisc_division-truncation
+403/409 Test #406: spec_conformance_tisc_division-truncation ......................   Passed    0.01 sec
+        Start 407: spec_conformance_tisc_fraction-normalization
+404/409 Test #407: spec_conformance_tisc_fraction-normalization ...................   Passed    0.01 sec
+        Start 408: spec_conformance_tisc_ternary-logic-canonical
+405/409 Test #408: spec_conformance_tisc_ternary-logic-canonical ..................   Passed    0.01 sec
+        Start 409: spec_conformance_tisc_tier-restriction
+406/409 Test #409: spec_conformance_tisc_tier-restriction .........................   Passed    0.01 sec
+407/409 Test #293: jit_tensor_trace_equivalence_test ..............................   Passed   47.68 sec
+408/409 Test #282: jit_trace_equivalence_test .....................................   Passed   73.82 sec
+409/409 Test #316: t81_cli_contract_test_runner ...................................***Failed   93.29 sec
+[cli] /app/build/t81 help compile
+[cli] /app/build/t81 code check /tmp/t81-cli-contract-invalid-11404284289523312298.t81
+[cli] /app/build/t81 --help
+[cli] /app/build/t81 help advanced
+[cli] /app/build/t81 help benchmark
+[cli] /app/build/t81 bench
+[cli] /app/build/t81 model info x
+[cli] /app/build/t81 help labs
+[cli] /app/build/t81 help canonfs
+[cli] /app/build/t81 canonfs snapshot-diff ../bad ../bad --json
+[cli] /app/build/t81 help determinism
+[cli] /app/build/t81 help vm
+[cli] /app/build/t81 help vm trace
+[cli] /app/build/t81 help determinism verify-run
+[cli] /app/build/t81 help determinism explain
+[cli] /app/build/t81 help axion snapshot-diff
+[cli] /app/build/t81 help trace summary
+[cli] /app/build/t81 env paths --json
+[cli] /app/build/t81 env toolchain --json
+[cli] /app/build/t81 env diag --json
+[cli] /app/build/t81 help tisc
+[cli] /app/build/t81 help ir
+[cli] /app/build/t81 help code profile
+[cli] /app/build/t81 env doctor toolchain --json
+[cli] /app/build/t81 env paths --json
+[cli] /app/build/t81 env doctor --json
+[cli] /app/build/t81 code test --json --list
+[cli] /app/build/t81 canonfs snapshot --json
+[cli] /app/build/t81 env clean --build-dir /tmp/t81-cli-contract-clean-outside-13522991578150094354 --json
+[cli] /app/build/t81 env clean --build-dir /tmp/t81-cli-contract-clean-outside-13522991578150094354 --force --json
+[cli] /app/build/t81 axion optimize --tier nope --json
+[cli] /app/build/t81 code build /tmp/t81-cli-contract-11399785772378363255.t81 -o /tmp/t81-cli-contract-10824798441130337838.tisc
+[cli] /app/build/t81 code run /tmp/t81-cli-contract-10824798441130337838.tisc -o /tmp/t81-cli-contract-4219957447064079848.trace
+[cli] /app/build/t81 trace replay /tmp/t81-cli-contract-10824798441130337838.tisc /tmp/t81-cli-contract-4219957447064079848.trace --json
+[cli] /app/build/t81 trace replay /tmp/t81-cli-contract-10824798441130337838.tisc /tmp/t81-cli-contract-missing-34859165250511127.trace --json
+[cli] /app/build/t81 trace diff /tmp/t81-cli-contract-4219957447064079848.trace /tmp/t81-cli-contract-10342503995154587072.trace-extra --no-color
+[cli] /app/build/t81 determinism trace-hash /tmp/t81-cli-contract-4219957447064079848.trace --json
+[cli] /app/build/t81 trace show /tmp/t81-cli-contract-4219957447064079848.trace --no-color
+[cli] /app/build/t81 trace summary /tmp/t81-cli-contract-4219957447064079848.trace --json
+[cli] /app/build/t81 trace canonicalize /tmp/t81-cli-contract-4219957447064079848.trace -o /tmp/t81-cli-contract-10342503995154587072.trace-extra
+[cli] /app/build/t81 determinism diff-trace /tmp/t81-cli-contract-4219957447064079848.trace /tmp/t81-cli-contract-4219957447064079848.trace --json
+[cli] /app/build/t81 determinism verify-run /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 determinism certify /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 determinism explain /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 vm trace /tmp/t81-cli-contract-10824798441130337838.tisc --out /tmp/t81-cli-contract-10342503995154587072.trace-extra
+[cli] /app/build/t81 vm trace /tmp/t81-cli-contract-10824798441130337838.tisc -o /tmp/t81-cli-contract-10342503995154587072.trace-extra
+[cli] /app/build/t81 vm step /tmp/t81-cli-contract-10824798441130337838.tisc --count 2 --json
+[cli] /app/build/t81 vm until /tmp/t81-cli-contract-10824798441130337838.tisc --pc 0 --steps 1 --json
+[cli] /app/build/t81 vm regs /tmp/t81-cli-contract-10824798441130337838.tisc --steps 2 --json
+[cli] /app/build/t81 vm stack /tmp/t81-cli-contract-10824798441130337838.tisc --steps 2 --json
+[cli] /app/build/t81 vm mem /tmp/t81-cli-contract-10824798441130337838.tisc --addr 0 --steps 2 --json
+[cli] /app/build/t81 vm state /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 vm profile /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 tisc validate /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 tisc decode /tmp/t81-cli-contract-10824798441130337838.tisc -o /tmp/t81-cli-contract-18127379476336302666.base81 --json
+[cli] /app/build/t81 ir show /tmp/t81-cli-contract-11399785772378363255.t81
+[cli] /app/build/t81 ir export /tmp/t81-cli-contract-11399785772378363255.t81 --json
+[cli] /app/build/t81 lang validate /tmp/t81-cli-contract-11399785772378363255.t81 --json
+[cli] /app/build/t81 policy test /tmp/t81-cli-contract-16473330438532817277.apl --model-hash sha3-256:test-hash --json
+[cli] /app/build/t81 policy test /tmp/t81-cli-policy-deny-14755487977080538066.apl --model-hash sha3-256:test-hash --json
+[cli] /app/build/t81 axion explain /tmp/t81-cli-contract-16473330438532817277.apl --json
+[cli] /app/build/t81 axion status --json
+[cli] /app/build/t81 axion log --tail 1 --json
+[cli] /app/build/t81 axion optimize --tier 2 --json
+[cli] /app/build/t81 axion snapshot --json
+[cli] /app/build/t81 axion snapshot-diff XdI4HR×t8Cμ−utKXAK5fvqnωτ=Jrn0>jv2H>-GNτ XdI4HR×t8Cμ−utKXAK5fvqnωτ=Jrn0>jv2H>-GNτ --json
+[cli] /app/build/t81 axion audit --json
+[cli] /app/build/t81 help weights verify
+[cli] /app/build/t81 help lang
+[cli] /app/build/t81 lang export /tmp/t81-cli-contract-11399785772378363255.t81 --json
+[cli] /app/build/t81 code profile /tmp/t81-cli-contract-11399785772378363255.t81 --json
+[cli] /app/build/t81 help tensor hash
+[cli] /app/build/t81 policy validate /tmp/t81-cli-contract-16473330438532817277.apl --json
+[cli] /app/build/t81 policy validate /tmp/t81-cli-policy-invalid-3479023266327041894.apl --json
+[cli] /app/build/t81 policy run /tmp/t81-cli-policy-invalid-3479023266327041894.apl --json
+[cli] /app/build/t81 determinism baseline /tmp/t81-cli-contract-baseline-6422890836679870824 --source-dir /tmp/t81-cli-contract-source-13685356922280123263 --json
+[cli] /app/build/t81 determinism verify /tmp/t81-cli-contract-baseline-6422890836679870824 --json
+[cli] /app/build/t81 determinism compare-run /tmp/t81-cli-contract-10824798441130337838.tisc --json
+[cli] /app/build/t81 determinism bisect /tmp/t81-cli-contract-baseline-6422890836679870824 --json
+[cli] /app/build/t81 canonfs put-file /tmp/t81-cli-contract-7867172615980750423.txt
+[cli] /app/build/t81 canonfs stat sha3-256:1f61μ−τlPdΓvf−-ωVkOS∞μwlsin≥30Oλtz∞aZ÷Γv --json
+[cli] /app/build/t81 canonfs ls --json
+[cli] /app/build/t81 canonfs verify sha3-256:1f61μ−τlPdΓvf−-ωVkOS∞μwlsin≥30Oλtz∞aZ÷Γv --json
+[cli] /app/build/t81 canonfs import /tmp/t81-cli-contract-7867172615980750423.txt --json
+[cli] /app/build/t81 canonfs export sha3-256:1f61μ−τlPdΓvf−-ωVkOS∞μwlsin≥30Oλtz∞aZ÷Γv --out /tmp/t81-cli-contract-18393848956250497950.imported --json
+[cli] /app/build/t81 canonfs import /tmp/t81-cli-contract-missing-import-6783864590450684291.txt --json
+[cli] /app/build/t81 canonfs export sha3-256:11111111111111111111111111111111111111111111 --out /tmp/t81-cli-contract-18393848956250497950.imported --json
+[cli] /app/build/t81 canonfs import /tmp/t81-cli-contract-tree-11777330130194092583 --json
+[cli] /app/build/t81 canonfs export sha3-256:1w≈TC×aIIλAEzA∞f÷0VτMxsλ≈X×k≥fRqExxdZmvfm --out /tmp/t81-cli-contract-tree-export-4909167088891139563 --json
+[cli] /app/build/t81 canonfs put-file /tmp/t81-cli-contract-bad-manifest-2509137270190418016.json
+[cli] /app/build/t81 canonfs export sha3-256:20Wσh1azT<c7F1s=G>6<rvaωTaCDRckUtRHkdo<em --out /tmp/t81-cli-contract-bad-export-3167904112016851796 --json
+[cli] /app/build/t81 canonfs import /tmp/t81-cli-contract-7867172615980750423.txt --policy /tmp/t81-cli-contract-canonfs-policy-2179168984682224493.apl --json
+[cli] /app/build/t81 canonfs export sha3-256:1f61μ−τlPdΓvf−-ωVkOS∞μwlsin≥30Oλtz∞aZ÷Γv --policy /tmp/t81-cli-contract-canonfs-policy-2179168984682224493.apl --out /tmp/t81-cli-contract-18393848956250497950.imported --json
+[cli] /app/build/t81 canonfs import /tmp/t81-cli-contract-7867172615980750423.txt --policy-profile export-only --json
+[cli] /app/build/t81 canonfs export sha3-256:1f61μ−τlPdΓvf−-ωVkOS∞μwlsin≥30Oλtz∞aZ÷Γv --policy-profile import-only --out /tmp/t81-cli-contract-18393848956250497950.imported --json
+[cli] /app/build/t81 canonfs import /tmp/t81-cli-contract-7867172615980750423.txt --policy-profile bogus --json
+[cli] /app/build/t81 canonfs get sha3-256:1f61μ−τlPdΓvf−-ωVkOS∞μwlsin≥30Oλtz∞aZ÷Γv --out /tmp/t81-cli-contract-8747431707771830810.restored --json
+[cli] /app/build/t81 canonfs snapshot --json
+[cli] /app/build/t81 canonfs put-file /tmp/t81-cli-contract-4890507226804030145.txt2
+[cli] /app/build/t81 canonfs snapshot --json
+[cli] /app/build/t81 canonfs snapshot-diff 4v-NBπP<σdj>÷Ul=Nπ1e3bvZf-XVpUΓ6u÷gJ1>Iqz ÷Xgmpu÷TlfRAq1lqO=FμO9cVzZτWcBwSHKlDFarC --json
+[cli] /app/build/t81 canonfs fsck --json
+[cli] /app/build/t81 canonfs snapshot --canonfs-root /tmp/t81-cli-contract-canonfs-symlink-3898200775045666608 --json
+[cli] /app/build/t81 canonfs repair --canonfs-root /tmp/t81-cli-contract-canonfs-repair-15089755075952324256 --dry-run --json
+[cli] /app/build/t81 canonfs repair --canonfs-root /tmp/t81-cli-contract-canonfs-repair-15089755075952324256 --json
+[cli] /app/build/t81 canonfs snapshot --canonfs-root /tmp/t81-cli-contract-canonfs-rollback-7284029336527743970 --json
+[cli] /app/build/t81 canonfs rollback --canonfs-root /tmp/t81-cli-contract-canonfs-rollback-7284029336527743970 --to lJDσi2σjQovxo5>×l3wWkh6ZT≥89≥WjμFλXVpπ≤ω --json
+[cli] /app/build/t81 canonfs put-file /tmp/t81-cli-contract-model-10151492817906837334.t81w --canonfs-root /tmp/t81-cli-contract-model-canonfs-1927356399551622073
+[cli] /app/build/t81 code run /app/tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model sha3-256:33osi÷2−>30C=OXπkNEu3HrXwTσwDE6QUvμVby≠lB
+[cli] /app/build/t81 code run /app/tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model sha3-256:33osi÷2−>30C=OXπkNEu3HrXwTσwDE6QUvμVby≠lB --policy /tmp/t81-cli-contract-model-allow-14519414513845458307.apl
+[cli] /app/build/t81 code run /app/tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model sha3-256:33osi÷2−>30C=OXπkNEu3HrXwTσwDE6QUvμVby≠lB --policy /tmp/t81-cli-contract-model-deny-2307571633867876604.apl
+[cli] /app/build/t81 ai inference run --model contract-demo --model-file /tmp/t81-cli-ai-inference-model-7827988439126793341.t81w --mode strict_deterministic --prompt hello
+[cli] /app/build/t81 ai inference run --model contract-llama-demo --model-file /tmp/t81-cli-ai-inference-llama-model-dir-15174793142371590843/contract-llama-demo.t81w --mode strict_deterministic --prompt greet hello --max-tokens 2
+[cli] /app/build/t81 ai inference run --model contract-forward-state-demo --model-file /tmp/t81-cli-ai-inference-llama-model-dir-15174793142371590843/contract-forward-state-demo.t81w --mode strict_deterministic --prompt greet_hello --max-tokens 1
+[cli] /app/build/t81 ai inference run --model contract-forward-state-demo --model-file /tmp/t81-cli-ai-inference-llama-model-dir-15174793142371590843/contract-forward-state-demo.t81w --mode strict_deterministic --prompt greet_hello --max-tokens 2
+[cli] /app/build/t81 ai inference run --model contract-forward-state-demo --model-file /tmp/t81-cli-ai-inference-llama-model-dir-15174793142371590843/contract-forward-state-demo.t81w --mode strict_deterministic --prompt greet_hello --max-tokens 3
+[cli] /app/build/t81 ai inference run --model contract-forward-state-demo --model-file /tmp/t81-cli-ai-inference-llama-model-dir-15174793142371590843/contract-forward-state-demo.t81w --mode strict_deterministic --prompt greet_hello --max-tokens 4
+[cli] /app/build/t81 ai inference run --model contract-degraded-demo --model-file /tmp/t81-cli-ai-inference-llama-model-dir-15174793142371590843/contract-degraded-demo.t81w --mode strict_deterministic --prompt greet hello --max-tokens 2
+[cli] /app/build/t81 internal memory-stats /app/examples/hello_world.t81
+test check failed: (memory_stats_result.exit_code == 0) at /app/tests/cpp/cli_contract_test.cpp:1694
+
+
+99% tests passed, 1 tests failed out of 409
+
+Label Time Summary:
+spec_conformance    =   1.92 sec*proc (33 tests)
+
+Total Test time (real) = 127.75 sec
+
+The following tests FAILED:
+	316 - t81_cli_contract_test_runner (Failed)
+Errors while running CTest

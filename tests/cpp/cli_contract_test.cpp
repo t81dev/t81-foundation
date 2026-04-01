@@ -1688,7 +1688,7 @@ int main(int argc, char* argv[]) {
 
   {
     const fs::path hello_world =
-        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
+        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "core-language" / "hello_world.t81";
     const auto memory_stats_result =
         run_cli(t81_bin, {"internal", "memory-stats", hello_world.string()});
     T81_TEST_CHECK(memory_stats_result.exit_code == 0);
@@ -1723,7 +1723,7 @@ int main(int argc, char* argv[]) {
 
   {
     const fs::path hello_world =
-        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "hello_world.t81";
+        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "core-language" / "hello_world.t81";
 
     const auto llvm_result = run_cli(t81_bin, {"llvm", "compile", hello_world.string()});
     T81_TEST_CHECK(!contains(llvm_result.stderr_text, "Multiple input files not supported"));
