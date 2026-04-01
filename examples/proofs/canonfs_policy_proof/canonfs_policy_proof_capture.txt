@@ -1,0 +1,32 @@
+T81 CanonFS + Axion Proof
+
+This demonstrates:
+- immutable artifact identity
+- deterministic execution
+- pre-execution policy enforcement (no compute on deny)
+
+$ build/t81 canonfs import demo.t81w --json
+status: ok
+canon_hash: sha3-256:33osi÷2−>30C=OXπkNEu3HrXwTσwDE6QUvμVby≠lB
+provenance_schema: t81.canonfs-import-provenance.v1
+
+$ build/t81 code run tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model <CANON_HASH> --policy allow.apl
+Compilation successful
+<tensor#1>
+Program terminated normally (30 axion event(s))
+status: ok
+
+$ build/t81 code run tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model <CANON_HASH> --policy allow.apl
+Compilation successful
+<tensor#1>
+Program terminated normally (30 axion event(s))
+deterministic_replay: yes
+status: ok
+
+$ build/t81 code run tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81 --weights-model <CANON_HASH> --policy deny.apl
+trap: SecurityFault
+opcode: TMatMul
+compute_executed: no
+status: error
+reason: policy_denied
+exit_code: 13

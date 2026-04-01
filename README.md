@@ -1,10 +1,10 @@
-# T81 Foundation — Ternary-Native Runtime for Governed, Deterministic AI Inference
+# T81 Foundation — Governed Runtime for Immutable, Deterministic Execution
 
 <p align="center">
   <img src="docs/assets/banner.png" alt="T81 — Ternary-Native Runtime for Governed AI" width="100%">
 </p>
 
-**Bit-exact reproducibility • Pre-side-effect policy enforcement • Ternary-weight inference • Immutable, hash-verified artifacts**
+**Immutable, hash-verified artifacts • Pre-side-effect policy enforcement • Bit-exact reproducibility • Ternary-native execution**
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
@@ -18,18 +18,59 @@
 
 ## What is T81
 
-T81 is a **ternary-native runtime** designed for **governed, deterministic AI inference**. It solves critical challenges in agentic and model-driven systems by guaranteeing bit-exact reproducibility and enforcing safety/ethics policies *before* any side effects occur.
+T81 is a runtime where code and model artifacts can be allowed or denied before they run.
 
-Built on balanced ternary logic, T81 eliminates conventional binary floating-point drift. Identical inputs produce bit-identical outputs within the Deterministic Core Profile (DCP) across verified platforms (currently Linux x86_64 and macOS ARM64).
+Store artifacts as immutable hashes, apply allow/deny policy before execution or materialization, and emit deterministic, audit-ready output on verified platforms. T81 can be used today without requiring ternary hardware or OS adoption.
+
+Policies are evaluated deterministically and enforced before execution or materialization begins. Governance does not rely on runtime heuristics, anomaly scoring, or after-the-fact monitoring. T81 can be adopted incrementally via CanonFS + policy enforcement without requiring full stack adoption.
+
+## Why This Matters
+
+- Verify model provenance before execution
+- Enforce allow/deny policies on models and code
+- Produce reproducible, audit-ready execution traces
+- Prevent untrusted artifacts from running
+
+## When to Use T81
+
+- Run code or model artifacts only after policy approval
+- Keep artifacts hash-addressed and provenance-linked
+- Reproduce execution results and audit what happened
+
+## Real-World Use Cases
+
+- Verify model provenance before execution
+- Enforce allowlists for AI models in production
+- Generate reproducible audit logs for compliance
+- Block untrusted artifacts in CI/CD pipelines
+
+## Performance Characteristics
+
+General arithmetic is slower than conventional binary runtimes today. That is
+expected: T81 currently runs ternary-native semantics through emulated paths,
+and it prioritizes determinism and governance over raw throughput.
+
+Where T81 does have structural advantages, they come from the representation
+itself rather than from pretending to be a general high-speed numeric runtime:
+
+- negation and sign-aware transforms are unusually cheap in ternary form
+- packed/canonical forms make artifact identity and replay workflows simpler
+- reproducibility is a built-in property of the runtime, not an optional mode
+- policy enforcement can block execution before side effects occur
+
+When performance matters most, T81 is usually not the first choice for generic
+high-throughput arithmetic. When guarantees matter most, T81 is designed to
+trade speed for governed execution, reproducible results, and audit-ready
+artifacts.
 
 ### Architectural Pillars
 
-1. **Deterministic Execution** — Bit-identical traces guaranteed within the Deterministic Core Profile (DCP).
-2. **Policy Enforcement** — The **Axion** governance engine mediates all operations and enforces rules pre-dispatch.
-3. **Immutable Artifacts** — **CanonFS** provides content-addressed, hash-verified storage for models, code, and audit evidence.
+1. **Immutable Artifacts** — **CanonFS** provides content-addressed, hash-verified storage for models, code, and audit evidence.
+2. **Policy Enforcement** — **Axion** mediates operations and enforces rules pre-dispatch.
+3. **Deterministic Execution** — Bit-identical traces are guaranteed within the Deterministic Core Profile (DCP).
 4. **Ternary-Native Paths** — Efficient inference via ternary-weight dot products (conditional ±1 additions instead of FP multiplies).
 
-T81 also serves as the foundation for an in-progress bare-metal kernel and guest OS (TernaryOS), but its primary usable form today is as a governed runtime for auditable inference.
+T81 also has an in-progress bare-metal and guest OS direction, but the usable form today is the governed runtime.
 
 ## Core Subsystems & Maturity (March 2026)
 
@@ -84,8 +125,10 @@ See full benchmarks in [`benchmarks/results/`](benchmarks/results/).
 
 ### 30-Second Proof: CanonFS + Axion
 
-If you want the fastest possible proof that T81 can store an immutable artifact
- and deny a governed action, run this from the repo root after building:
+This shows that an artifact can be stored immutably and execution can be
+denied before it runs.
+
+Run this from the repo root after building:
 
 ```bash
 tmp_root="$(mktemp -d)"
@@ -97,9 +140,11 @@ canon_root="$tmp_root/.t81_canonfs"
   --canonfs-root "$canon_root" \
   --json
 
+canon_hash="<imported_objects[0] from step 1>"
+
 # 2. Export the same artifact back out by CanonFS hash
 ./build/t81 canonfs export \
-  'sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX' \
+  "$canon_hash" \
   --canonfs-root "$canon_root" \
   --out "$tmp_root/restored.t81w" \
   --json
@@ -114,14 +159,25 @@ canon_root="$tmp_root/.t81_canonfs"
 
 What you should see:
 
-- Step 1 returns `schema: "t81.canonfs-import.v1"` and `status: "ok"`
-- Step 2 returns `schema: "t81.canonfs-export.v1"` and `status: "ok"`
-- Step 3 returns `status: "error"` with:
-  - `kind: "policy-failure"`
-  - `code: "canonfs-policy-denied"`
-  - `reason: "policy_denied"`
+- Step 1 returns `status: "ok"`
+- Step 2 returns `status: "ok"`
+- Step 3 returns `status: "error"` with `kind: "policy-failure"` and `reason: "policy_denied"`
 
-That is the shortest real demo path for the current CanonFS + Axion surface.
+## What Just Happened
+
+- The artifact was stored as a hash-addressed CanonFS object.
+- Import and export were both subject to Axion policy approval.
+- The checked-in denying policy blocked the import before storage-side effects for that run.
+- The JSON output shape and success/failure results are deterministic and reproducible.
+
+## 60-Second Proof
+
+See: [`examples/proofs/canonfs_policy_proof/`](examples/proofs/canonfs_policy_proof/)
+
+This shows:
+- artifact import -> hash identity
+- allowed execution -> deterministic output
+- denied execution -> no computation occurs
 
 ### Docker (easiest — ~60 seconds)
 
