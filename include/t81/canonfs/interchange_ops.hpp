@@ -1,5 +1,7 @@
 #pragma once
 
+#include "t81/canonfs/interchange.hpp"
+
 #include <filesystem>
 #include <functional>
 #include <optional>
@@ -45,7 +47,7 @@ struct ImportOutcome {
   std::string manifest_ref;
   std::vector<std::string> imported_paths;
   std::vector<std::string> warnings;
-  std::vector<std::string> errors;
+  std::vector<interchange::Issue> errors;
   std::string policy_result;
   std::string policy_profile;
 
@@ -61,7 +63,7 @@ struct ExportOutcome {
   std::string manifest_ref;
   std::vector<std::string> materialized_paths;
   std::vector<std::string> warnings;
-  std::vector<std::string> errors;
+  std::vector<interchange::Issue> errors;
   std::string policy_result;
   std::string policy_profile;
 

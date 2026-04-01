@@ -8,21 +8,18 @@ Use this board when deciding what to do next.
 
 ### Now
 
-- RFC-00D1 hardening:
-  tighten CanonFS interchange denial reasons, provenance reporting, and
-  negative-path coverage before expanding the subsystem
-- RFC-00D1 CLI/schema alignment:
-  keep `canonfs import` / `canonfs export` JSON, exit codes, and docs aligned
-  with the core interchange contract
+- RFC-00D1 contract promotion review:
+  treat the current CanonFS interchange JSON/schema/reason surface as a real
+  v1 contract candidate and write down what is stable versus still draft
+- RFC-00D1 policy-profile depth:
+  keep improving policy-profile docs/examples and any remaining profile-shaped
+  denial clarity without broadening interchange format scope
 - CI and portability boringness:
   remove concrete toolchain/setup footguns, especially in build, demo, and
   smoke-test paths contributors are likely to try early
 
 ### Next
 
-- RFC-00D1 contract promotion review:
-  separate stable v1 interchange contract from draft implementation choices and
-  write promotion blockers down explicitly
 - Public-story cleanup:
   keep the runtime-first story, handoff docs, and contributor roadmap aligned
   with the strongest usable surfaces
@@ -51,7 +48,7 @@ repo.
 3. Add RFC-00D1 CLI contract coverage for failure cases and JSON error shapes.
 4. Keep interchange JSON payloads, schema IDs, and docs aligned.
 5. Add or refresh one golden CanonFS interchange example under `examples/`.
-   Current seed example: `examples/canonfs-interchange/`.
+   Current seed example: `examples/storage-and-canonfs/canonfs-interchange/`.
 6. Move reusable interchange behavior out of CLI-only code where practical.
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
@@ -100,6 +97,31 @@ repo.
        narrow architecture, or another equally narrow follow-on decode mode.
     2. Keep `benchmark run` and `policy test` out of scope for this lane until
        their current scaffolded behavior is explicitly being replaced.
+
+12. (DONE) Harden the CanonFS interchange contract surface.
+    Current state:
+    the RFC-00D1 CanonFS interchange lane now emits explicit structured error
+    reasons from core import/export operations, carries those same reasons
+    through the CLI JSON surface, and validates the resulting contract shapes in
+    both dedicated interchange tests and the existing CLI contract slice.
+    It also now has:
+    - explicit stable `reason` values in interchange error objects
+    - deterministic `kind` / `code` mapping derived from those reasons
+    - aligned `canonfs import` / `canonfs export` JSON rendering in core and CLI
+    - provenance/schema fields made explicit in result documents
+    - negative coverage for malformed manifest, invalid schema, missing source,
+      missing object, policy denial, and hash mismatch
+    - a checked-in golden example at
+      `examples/storage-and-canonfs/canonfs-interchange/`
+
+    The practical result is that CanonFS interchange is now much closer to a
+    contributor-facing contract surface than an implementation detail.
+
+    If this lane is revisited next, the highest-value work is:
+    1. review which RFC-00D1 interchange fields and schemas are stable enough
+       to promote explicitly as v1 contract surface
+    2. tighten policy-profile docs/examples rather than adding new interchange
+       formats or broader subsystem scope
 
 ## Pick one lane
 

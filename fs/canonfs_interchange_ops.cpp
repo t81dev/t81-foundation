@@ -16,6 +16,12 @@ namespace fs = std::filesystem;
 
 namespace {
 
+using Issue = t81::canonfs::interchange::Issue;
+
+Issue make_issue(std::string_view reason, std::string message) {
+  return Issue{std::string(reason), std::move(message)};
+}
+
 bool is_symlink_path(const fs::path& path) {
   std::error_code ec;
   return fs::is_symlink(fs::symlink_status(path, ec));
@@ -93,11 +99,11 @@ struct CanonFsObjectInfo {
 };
 
 bool load_canonfs_object(const fs::path& canonfs_root, std::string_view prefixed_hash,
-                         std::vector<std::byte>& bytes, CanonFsObjectInfo& info,
-                         std::string& error_message) {
+                         std::vector<std::byte>& bytes, CanonFsObjectInfo& info, Issue& issue) {
   constexpr std::string_view prefix = "sha3-256:";
   if (prefixed_hash.rfind(prefix, 0) != 0 || prefixed_hash.size() <= prefix.size()) {
-    error_message = "canonical hash must start with sha3-256:";
+    issue = make_issue("invalid_source_ref",
+                       "canonical hash must start with sha3-256: " + std::string(prefixed_hash));
     return false;
   }
   const std::string bare_hash(prefixed_hash.substr(prefix.size()));
@@ -106,16 +112,37 @@ bool load_canonfs_object(const fs::path& canonfs_root, std::string_view prefixed
   try {
     hash.h = t81::hash::CanonHash81::from_string(bare_hash);
   } catch (const std::exception&) {
-    error_message = "invalid CanonFS hash: " + std::string(prefixed_hash);
+    issue = make_issue("invalid_source_ref", "invalid CanonFS hash: " + std::string(prefixed_hash));
     return false;
   }
   t81::canonfs::CanonRef ref{hash};
   auto read_res = driver->read_object_bytes(ref);
   if (!read_res) {
-    error_message = "object not found: " + std::string(prefixed_hash);
+    switch (read_res.error()) {
+      case t81::canonfs::Error::NotFound:
+        issue = make_issue("missing_object", "object not found: " + std::string(prefixed_hash));
+        break;
+      case t81::canonfs::Error::DecodeError:
+        issue =
+            make_issue("hash_mismatch",
+                       "object hash mismatch: expected " + std::string(prefixed_hash) +
+                           ", stored block failed CanonFS read verification");
+        break;
+      default:
+        issue = make_issue("missing_object", "object not found: " + std::string(prefixed_hash));
+        break;
+    }
     return false;
   }
   bytes = std::move(read_res.value());
+  const std::string actual_ref =
+      canonfs_ref_from_bytes(std::span<const std::byte>(bytes.data(), bytes.size()));
+  if (actual_ref != prefixed_hash) {
+    issue = make_issue("hash_mismatch",
+                       "object hash mismatch: expected " + std::string(prefixed_hash) + ", got " +
+                           actual_ref);
+    return false;
+  }
   info.hash = std::string(prefixed_hash);
   info.size_bytes = bytes.size();
   return true;
@@ -176,11 +203,13 @@ bool allow_by_policy(t81::canonfs::InterchangePolicyProfile profile,
 bool collect_import_entries(
     const fs::path& input, std::vector<t81::canonfs::interchange::Entry>& entries,
     std::vector<std::string>& imported_objects, std::vector<std::string>& imported_paths,
-    std::vector<std::string>& warnings, std::vector<std::string>& errors,
+    std::vector<std::string>& warnings, std::vector<Issue>& errors,
     const fs::path& canonfs_root, t81::canonfs::InterchangePolicyProfile policy_profile,
     const t81::canonfs::InterchangePolicyEvaluator& policy_evaluator, bool& saw_policy_denial) {
   if (is_symlink_path(input)) {
-    errors.push_back("symlinks are not supported by canonfs import v1: " + input.string());
+    errors.push_back(make_issue("symlink_not_supported",
+                                "symlinks are not supported by canonfs import v1: " +
+                                    input.string()));
     return false;
   }
   if (fs::is_regular_file(input)) {
@@ -190,15 +219,16 @@ bool collect_import_entries(
     std::string policy_reason;
     if (!allow_by_policy(policy_profile, policy_evaluator, object_ref, "canonfs.import",
                          input.filename().generic_string(), saw_policy_denial, policy_reason)) {
-      errors.push_back("policy denied import of " + input.filename().generic_string() + ": " +
-                       policy_reason);
+      errors.push_back(make_issue("policy_denied",
+                                  "policy denied import of " +
+                                      input.filename().generic_string() + ": " + policy_reason));
       return false;
     }
     std::string write_error;
     const auto write_ref = write_canonfs_raw_object(
         canonfs_root, std::span<const std::byte>(bytes.data(), bytes.size()), write_error);
     if (!write_ref) {
-      errors.push_back(write_error);
+      errors.push_back(make_issue("storage_write_failed", write_error));
       return false;
     }
     t81::canonfs::interchange::Entry entry;
@@ -211,7 +241,8 @@ bool collect_import_entries(
     return true;
   }
   if (!fs::is_directory(input)) {
-    errors.push_back("unsupported import source: " + input.string());
+    errors.push_back(
+        make_issue("unsupported_source_kind", "unsupported import source: " + input.string()));
     return false;
   }
   for (auto it = fs::recursive_directory_iterator(input); it != fs::recursive_directory_iterator();
@@ -219,7 +250,9 @@ bool collect_import_entries(
     const fs::path path = it->path();
     const fs::path rel = fs::relative(path, input);
     if (is_symlink_path(path)) {
-      errors.push_back("symlinks are not supported by canonfs import v1: " + rel.generic_string());
+      errors.push_back(make_issue("symlink_not_supported",
+                                  "symlinks are not supported by canonfs import v1: " +
+                                      rel.generic_string()));
       if (it->is_directory()) {
         it.disable_recursion_pending();
       }
@@ -238,14 +271,17 @@ bool collect_import_entries(
     std::string policy_reason;
     if (!allow_by_policy(policy_profile, policy_evaluator, object_ref, "canonfs.import",
                          rel.generic_string(), saw_policy_denial, policy_reason)) {
-      errors.push_back("policy denied import of " + rel.generic_string() + ": " + policy_reason);
+      errors.push_back(make_issue("policy_denied", "policy denied import of " +
+                                                       rel.generic_string() + ": " +
+                                                       policy_reason));
       continue;
     }
     std::string write_error;
     const auto write_ref = write_canonfs_raw_object(
         canonfs_root, std::span<const std::byte>(bytes.data(), bytes.size()), write_error);
     if (!write_ref) {
-      errors.push_back(rel.generic_string() + ": " + write_error);
+      errors.push_back(make_issue("storage_write_failed",
+                                  rel.generic_string() + ": " + write_error));
       continue;
     }
     t81::canonfs::interchange::Entry entry;
@@ -305,8 +341,9 @@ ImportOutcome import_path(const fs::path& input, const ImportOptions& options) {
   outcome.source_ref = input.string();
   if (!fs::exists(input)) {
     outcome.status = "error";
-    outcome.errors.push_back("input path does not exist: " + input.string());
-    outcome.policy_result = "denied";
+    outcome.errors.push_back(
+        make_issue("missing_source", "input path does not exist: " + input.string()));
+    outcome.policy_result = "allowed";
     return outcome;
   }
 
@@ -324,7 +361,9 @@ ImportOutcome import_path(const fs::path& input, const ImportOptions& options) {
     if (!write_validated_canonfs_json_object(options.canonfs_root, "import manifest", manifest_text,
                                              t81::canonfs::interchange::validate_manifest_document,
                                              manifest_error, &manifest_result)) {
-      outcome.errors.push_back("failed to write import manifest: " + manifest_error);
+      outcome.errors.push_back(
+          make_issue("manifest_write_failed",
+                     "failed to write import manifest: " + manifest_error));
     } else {
       outcome.manifest_ref = *manifest_result;
     }
@@ -339,7 +378,9 @@ ImportOutcome import_path(const fs::path& input, const ImportOptions& options) {
           options.canonfs_root, "import provenance", provenance_text,
           t81::canonfs::interchange::validate_import_provenance_document, provenance_error,
           &provenance_result)) {
-    outcome.errors.push_back("failed to write import provenance: " + provenance_error);
+    outcome.errors.push_back(make_issue("provenance_write_failed",
+                                        "failed to write import provenance: " +
+                                            provenance_error));
   } else {
     outcome.provenance_ref = *provenance_result;
   }
@@ -360,12 +401,12 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
 
   std::vector<std::byte> bytes;
   CanonFsObjectInfo info;
-  std::string error_message;
-  if (!load_canonfs_object(options.canonfs_root, canonical_hash, bytes, info, error_message)) {
+  Issue load_issue;
+  if (!load_canonfs_object(options.canonfs_root, canonical_hash, bytes, info, load_issue)) {
     outcome.status = "error";
     outcome.source_objects = {canonical_hash};
-    outcome.errors.push_back(error_message);
-    outcome.policy_result = "denied";
+    outcome.errors.push_back(load_issue);
+    outcome.policy_result = "allowed";
     return outcome;
   }
 
@@ -374,6 +415,7 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
   std::string manifest_error;
   const std::string payload_text = bytes_to_string(bytes);
   const bool is_manifest_document = t81::canonfs::interchange::is_manifest_document(payload_text);
+  const bool has_schema_field = payload_text.find("\"schema\"") != std::string::npos;
   if (t81::canonfs::interchange::parse_manifest(payload_text, manifest, manifest_error)) {
     outcome.target_kind = "host-directory";
     outcome.manifest_ref = canonical_hash;
@@ -381,84 +423,106 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
     std::error_code ec;
     fs::create_directories(output_path, ec);
     if (ec) {
-      outcome.errors.push_back("could not create export directory: " + output_path.string());
+      outcome.errors.push_back(make_issue("target_directory_create_failed",
+                                          "could not create export directory: " +
+                                              output_path.string()));
     } else {
       for (const auto& entry : manifest.entries) {
         outcome.source_objects.push_back(entry.object_ref);
         std::string policy_reason;
         if (!allow_by_policy(options.policy_profile, options.policy_evaluator, entry.object_ref,
                              "canonfs.export", entry.path, saw_policy_denial, policy_reason)) {
-          outcome.errors.push_back("policy denied export of " + entry.path + ": " + policy_reason);
+          outcome.errors.push_back(make_issue("policy_denied",
+                                              "policy denied export of " + entry.path + ": " +
+                                                  policy_reason));
           continue;
         }
         const fs::path relative_path(entry.path);
         if (!is_safe_relative_export_path(relative_path)) {
-          outcome.errors.push_back("unsafe export path in manifest: " + entry.path);
+          outcome.errors.push_back(
+              make_issue("unsafe_target_path", "unsafe export path in manifest: " + entry.path));
           continue;
         }
         std::vector<std::byte> entry_bytes;
         CanonFsObjectInfo entry_info;
-        std::string entry_error;
+        Issue entry_issue;
         if (!load_canonfs_object(options.canonfs_root, entry.object_ref, entry_bytes, entry_info,
-                                 entry_error)) {
-          outcome.errors.push_back(entry.path + ": " + entry_error);
+                                 entry_issue)) {
+          outcome.errors.push_back(make_issue(entry_issue.reason,
+                                              entry.path + ": " + entry_issue.message));
           continue;
         }
         const fs::path target_file = output_path / relative_path;
         fs::create_directories(target_file.parent_path(), ec);
         if (ec) {
-          outcome.errors.push_back("could not create export directory: " +
-                                   target_file.parent_path().string());
+          outcome.errors.push_back(make_issue("target_directory_create_failed",
+                                              "could not create export directory: " +
+                                                  target_file.parent_path().string()));
           continue;
         }
         std::ofstream out(target_file, std::ios::binary | std::ios::trunc);
         if (!out) {
-          outcome.errors.push_back("could not open output file: " + target_file.string());
+          outcome.errors.push_back(make_issue("target_open_failed",
+                                              "could not open output file: " +
+                                                  target_file.string()));
           continue;
         }
         for (std::byte b : entry_bytes) {
           out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
         }
         if (!out.good()) {
-          outcome.errors.push_back("failed writing output file: " + target_file.string());
+          outcome.errors.push_back(make_issue("target_write_failed",
+                                              "failed writing output file: " +
+                                                  target_file.string()));
           continue;
         }
         outcome.materialized_paths.push_back(entry.path);
       }
     }
-  } else if (!is_manifest_document) {
+  } else if (!is_manifest_document && !has_schema_field) {
     outcome.source_objects.push_back(canonical_hash);
     std::string policy_reason;
     if (!allow_by_policy(options.policy_profile, options.policy_evaluator, canonical_hash,
                          "canonfs.export", output_path.filename().generic_string(),
                          saw_policy_denial, policy_reason)) {
-      outcome.errors.push_back("policy denied export: " + policy_reason);
+      outcome.errors.push_back(
+          make_issue("policy_denied", "policy denied export: " + policy_reason));
     }
     std::error_code ec;
     if (!output_path.parent_path().empty() && outcome.errors.empty()) {
       fs::create_directories(output_path.parent_path(), ec);
     }
     if (ec) {
-      outcome.errors.push_back("could not create export directory: " +
-                               output_path.parent_path().string());
+      outcome.errors.push_back(make_issue("target_directory_create_failed",
+                                          "could not create export directory: " +
+                                              output_path.parent_path().string()));
     } else if (outcome.errors.empty()) {
       std::ofstream out(output_path, std::ios::binary | std::ios::trunc);
       if (!out) {
-        outcome.errors.push_back("could not open output file: " + output_path.string());
+        outcome.errors.push_back(make_issue("target_open_failed",
+                                            "could not open output file: " +
+                                                output_path.string()));
       } else {
         for (std::byte b : bytes) {
           out.put(static_cast<char>(std::to_integer<unsigned char>(b)));
         }
         if (!out.good()) {
-          outcome.errors.push_back("failed writing output file: " + output_path.string());
+          outcome.errors.push_back(make_issue("target_write_failed",
+                                              "failed writing output file: " +
+                                                  output_path.string()));
         } else {
           outcome.materialized_paths.push_back(output_path.filename().generic_string());
         }
       }
     }
+  } else if (has_schema_field && !is_manifest_document) {
+    outcome.source_objects.push_back(canonical_hash);
+    outcome.errors.push_back(
+        make_issue("invalid_schema", "invalid interchange schema for export source object"));
   } else {
     outcome.source_objects.push_back(canonical_hash);
-    outcome.errors.push_back("invalid interchange manifest: " + manifest_error);
+    outcome.errors.push_back(
+        make_issue("malformed_manifest", "invalid interchange manifest: " + manifest_error));
   }
 
   const auto provenance_text = t81::canonfs::interchange::render_export_provenance(
@@ -470,7 +534,9 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
           options.canonfs_root, "export provenance", provenance_text,
           t81::canonfs::interchange::validate_export_provenance_document, provenance_error,
           &provenance_result)) {
-    outcome.errors.push_back("failed to write export provenance: " + provenance_error);
+    outcome.errors.push_back(make_issue("provenance_write_failed",
+                                        "failed to write export provenance: " +
+                                            provenance_error));
   } else {
     outcome.provenance_ref = *provenance_result;
   }

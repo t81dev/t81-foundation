@@ -62,87 +62,108 @@ struct ErrorClassification {
   std::string_view code;
 };
 
-ErrorClassification classify_import_error(std::string_view error_message) {
-  if (error_message.rfind("policy denied", 0) == 0) {
-    return {"policy-failure", "canonfs-policy-denied"};
+std::optional<ErrorClassification> classify_import_reason(std::string_view reason) {
+  if (reason == "policy_denied") {
+    return ErrorClassification{"policy-failure", "canonfs-policy-denied"};
   }
-  if (error_message.rfind("input path does not exist", 0) == 0) {
-    return {"source-failure", "canonfs-import-missing-source"};
+  if (reason == "missing_source") {
+    return ErrorClassification{"source-failure", "canonfs-import-missing-source"};
   }
-  if (error_message.rfind("unsupported import source", 0) == 0) {
-    return {"source-failure", "canonfs-import-unsupported-source"};
+  if (reason == "unsupported_source_kind") {
+    return ErrorClassification{"source-failure", "canonfs-import-unsupported-source-kind"};
   }
-  if (error_message.find("symlinks are not supported") != std::string_view::npos) {
-    return {"normalization-failure", "canonfs-import-normalization-failure"};
+  if (reason == "symlink_not_supported") {
+    return ErrorClassification{"normalization-failure",
+                               "canonfs-import-symlink-not-supported"};
   }
-  if (error_message.rfind("failed to write import manifest", 0) == 0 ||
-      error_message.rfind("failed to write import provenance", 0) == 0 ||
-      error_message.find("failed to write CanonFS object") != std::string_view::npos) {
-    return {"source-failure", "canonfs-import-storage-failure"};
+  if (reason == "invalid_policy_profile") {
+    return ErrorClassification{"source-failure", "canonfs-import-invalid-policy-profile"};
   }
-  return {"source-failure", "canonfs-import-failure"};
+  if (reason == "invalid_policy_document") {
+    return ErrorClassification{"source-failure", "canonfs-import-invalid-policy-document"};
+  }
+  if (reason == "manifest_write_failed") {
+    return ErrorClassification{"source-failure", "canonfs-import-manifest-write-failed"};
+  }
+  if (reason == "provenance_write_failed") {
+    return ErrorClassification{"source-failure", "canonfs-import-provenance-write-failed"};
+  }
+  if (reason == "storage_write_failed") {
+    return ErrorClassification{"source-failure", "canonfs-import-storage-write-failed"};
+  }
+  return std::nullopt;
 }
 
-std::string json_array_of_error_objects(const std::vector<std::string>& errors, int indent = 2) {
+std::optional<ErrorClassification> classify_export_reason(std::string_view reason) {
+  if (reason == "policy_denied") {
+    return ErrorClassification{"policy-failure", "canonfs-policy-denied"};
+  }
+  if (reason == "unsafe_target_path") {
+    return ErrorClassification{"target-failure", "canonfs-export-unsafe-target-path"};
+  }
+  if (reason == "target_directory_create_failed") {
+    return ErrorClassification{"target-failure",
+                               "canonfs-export-target-directory-create-failed"};
+  }
+  if (reason == "target_open_failed") {
+    return ErrorClassification{"target-failure", "canonfs-export-target-open-failed"};
+  }
+  if (reason == "target_write_failed") {
+    return ErrorClassification{"target-failure", "canonfs-export-target-write-failed"};
+  }
+  if (reason == "invalid_source_ref") {
+    return ErrorClassification{"materialization-failure", "canonfs-export-invalid-source-ref"};
+  }
+  if (reason == "missing_object") {
+    return ErrorClassification{"materialization-failure", "canonfs-export-missing-object"};
+  }
+  if (reason == "hash_mismatch") {
+    return ErrorClassification{"materialization-failure", "canonfs-export-hash-mismatch"};
+  }
+  if (reason == "invalid_schema") {
+    return ErrorClassification{"materialization-failure", "canonfs-export-invalid-schema"};
+  }
+  if (reason == "malformed_manifest") {
+    return ErrorClassification{"materialization-failure", "canonfs-export-malformed-manifest"};
+  }
+  if (reason == "invalid_policy_profile") {
+    return ErrorClassification{"materialization-failure",
+                               "canonfs-export-invalid-policy-profile"};
+  }
+  if (reason == "invalid_policy_document") {
+    return ErrorClassification{"materialization-failure",
+                               "canonfs-export-invalid-policy-document"};
+  }
+  if (reason == "provenance_write_failed") {
+    return ErrorClassification{"materialization-failure",
+                               "canonfs-export-provenance-write-failed"};
+  }
+  return std::nullopt;
+}
+
+ErrorClassification classify_reason(std::string_view reason, bool is_export) {
+  const auto classification =
+      is_export ? classify_export_reason(reason) : classify_import_reason(reason);
+  if (classification.has_value()) {
+    return *classification;
+  }
+  return is_export
+             ? ErrorClassification{"materialization-failure", "canonfs-export-failure"}
+             : ErrorClassification{"source-failure", "canonfs-import-failure"};
+}
+
+std::string json_array_of_error_objects(const std::vector<t81::canonfs::interchange::Issue>& errors,
+                                        bool is_export, int indent = 2) {
   std::ostringstream out;
   const std::string indent_text(static_cast<std::size_t>(indent), ' ');
   out << "[";
   if (!errors.empty()) {
     out << "\n";
     for (std::size_t i = 0; i < errors.size(); ++i) {
-      const auto classification = classify_import_error(errors[i]);
+      const auto classification = classify_reason(errors[i].reason, is_export);
       out << indent_text << "{\"kind\": \"" << classification.kind << "\", \"message\": \""
-          << escape_json_text(errors[i]) << "\", \"code\": \"" << classification.code << "\"}";
-      if (i + 1 < errors.size()) {
-        out << ",";
-      }
-      out << "\n";
-    }
-  }
-  out << std::string(static_cast<std::size_t>(std::max(0, indent - 2)), ' ') << "]";
-  return out.str();
-}
-
-ErrorClassification classify_export_error(std::string_view error_message) {
-  if (error_message.rfind("policy denied", 0) == 0) {
-    return {"policy-failure", "canonfs-policy-denied"};
-  }
-  if (error_message.rfind("unsafe export path", 0) == 0) {
-    return {"target-failure", "canonfs-export-unsafe-target-path"};
-  }
-  if (error_message.rfind("could not create export directory", 0) == 0 ||
-      error_message.rfind("could not open output file", 0) == 0 ||
-      error_message.rfind("failed writing output file", 0) == 0) {
-    return {"target-failure", "canonfs-export-target-failure"};
-  }
-  if (error_message.rfind("canonical hash must start with sha3-256:", 0) == 0 ||
-      error_message.rfind("invalid CanonFS hash:", 0) == 0) {
-    return {"materialization-failure", "canonfs-export-invalid-source-ref"};
-  }
-  if (error_message.rfind("object not found:", 0) == 0) {
-    return {"materialization-failure", "canonfs-export-missing-object"};
-  }
-  if (error_message.rfind("invalid interchange manifest:", 0) == 0) {
-    return {"materialization-failure", "canonfs-export-invalid-manifest"};
-  }
-  if (error_message.rfind("failed to write export provenance", 0) == 0 ||
-      error_message.find("failed to write CanonFS object") != std::string_view::npos) {
-    return {"materialization-failure", "canonfs-export-storage-failure"};
-  }
-  return {"materialization-failure", "canonfs-export-failure"};
-}
-
-std::string json_array_of_export_error_objects(const std::vector<std::string>& errors,
-                                               int indent = 2) {
-  std::ostringstream out;
-  const std::string indent_text(static_cast<std::size_t>(indent), ' ');
-  out << "[";
-  if (!errors.empty()) {
-    out << "\n";
-    for (std::size_t i = 0; i < errors.size(); ++i) {
-      const auto classification = classify_export_error(errors[i]);
-      out << indent_text << "{\"kind\": \"" << classification.kind << "\", \"message\": \""
-          << escape_json_text(errors[i]) << "\", \"code\": \"" << classification.code << "\"}";
+          << escape_json_text(errors[i].message) << "\", \"code\": \"" << classification.code
+          << "\", \"reason\": \"" << escape_json_text(errors[i].reason) << "\"}";
       if (i + 1 < errors.size()) {
         out << ",";
       }
@@ -388,6 +409,7 @@ bool validate_string_array(std::string_view text, std::string_view key,
 }
 
 bool validate_error_objects_array(std::string_view text, std::string_view key,
+                                  bool is_export,
                                   std::initializer_list<std::string_view> allowed_kinds,
                                   std::string& error_message) {
   const auto array = extract_json_array_field(text, key);
@@ -410,12 +432,20 @@ bool validate_error_objects_array(std::string_view text, std::string_view key,
     const auto kind = extract_json_string_field(object_text, "kind");
     const auto message = extract_json_string_field(object_text, "message");
     const auto code = extract_json_string_field(object_text, "code");
-    if (!kind || !message || !code || message->empty() || code->empty()) {
+    const auto reason = extract_json_string_field(object_text, "reason");
+    if (!kind || !message || !code || !reason || message->empty() || code->empty() ||
+        reason->empty()) {
       error_message = std::string("error object missing required fields: ") + std::string(key);
       return false;
     }
     if (!is_one_of(*kind, allowed_kinds)) {
       error_message = std::string("error object has invalid kind in field: ") + std::string(key);
+      return false;
+    }
+    const auto classification = classify_reason(*reason, is_export);
+    if (*kind != classification.kind || *code != classification.code) {
+      error_message =
+          std::string("error object code/kind mismatch for reason in field: ") + std::string(key);
       return false;
     }
     cursor = object_end + 1;
@@ -556,7 +586,7 @@ std::string render_import_result(std::string_view status, std::string_view sourc
                                  std::string_view provenance_ref, std::string_view manifest_ref,
                                  const std::vector<std::string>& imported_paths,
                                  const std::vector<std::string>& warnings,
-                                 const std::vector<std::string>& errors,
+                                 const std::vector<Issue>& errors,
                                  std::string_view policy_result, std::string_view policy_profile) {
   std::ostringstream out;
   out << "{\n"
@@ -565,8 +595,15 @@ std::string render_import_result(std::string_view status, std::string_view sourc
       << "  \"source_kind\": \"" << escape_json_text(source_kind) << "\",\n"
       << "  \"source_ref\": \"" << escape_json_text(source_ref) << "\",\n"
       << "  \"imported_objects\": " << json_array_of_strings(imported_objects, 4) << ",\n"
+      << "  \"provenance_schema\": \"t81.canonfs-import-provenance.v1\",\n"
       << "  \"provenance_ref\": \"" << escape_json_text(provenance_ref) << "\",\n"
-      << "  \"manifest_ref\": ";
+      << "  \"manifest_schema\": ";
+  if (manifest_ref.empty()) {
+    out << "null,\n";
+  } else {
+    out << "\"" << kManifestSchema << "\",\n";
+  }
+  out << "  \"manifest_ref\": ";
   if (manifest_ref.empty()) {
     out << "null,\n";
   } else {
@@ -574,7 +611,7 @@ std::string render_import_result(std::string_view status, std::string_view sourc
   }
   out << "  \"imported_paths\": " << json_array_of_strings(imported_paths, 4) << ",\n"
       << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
-      << "  \"errors\": " << json_array_of_error_objects(errors, 4) << ",\n"
+      << "  \"errors\": " << json_array_of_error_objects(errors, false, 4) << ",\n"
       << "  \"policy_result\": \"" << escape_json_text(policy_result) << "\",\n"
       << "  \"policy_profile\": ";
   if (policy_profile.empty()) {
@@ -597,7 +634,7 @@ std::string render_export_result(std::string_view status,
                                  std::string_view provenance_ref, std::string_view manifest_ref,
                                  const std::vector<std::string>& materialized_paths,
                                  const std::vector<std::string>& warnings,
-                                 const std::vector<std::string>& errors,
+                                 const std::vector<Issue>& errors,
                                  std::string_view policy_result, std::string_view policy_profile) {
   std::ostringstream out;
   out << "{\n"
@@ -606,8 +643,15 @@ std::string render_export_result(std::string_view status,
       << "  \"source_objects\": " << json_array_of_strings(source_objects, 4) << ",\n"
       << "  \"target_kind\": \"" << escape_json_text(target_kind) << "\",\n"
       << "  \"target_ref\": \"" << escape_json_text(target_ref) << "\",\n"
+      << "  \"provenance_schema\": \"t81.canonfs-export-provenance.v1\",\n"
       << "  \"provenance_ref\": \"" << escape_json_text(provenance_ref) << "\",\n"
-      << "  \"manifest_ref\": ";
+      << "  \"manifest_schema\": ";
+  if (manifest_ref.empty()) {
+    out << "null,\n";
+  } else {
+    out << "\"" << kManifestSchema << "\",\n";
+  }
+  out << "  \"manifest_ref\": ";
   if (manifest_ref.empty()) {
     out << "null,\n";
   } else {
@@ -615,7 +659,7 @@ std::string render_export_result(std::string_view status,
   }
   out << "  \"materialized_paths\": " << json_array_of_strings(materialized_paths, 4) << ",\n"
       << "  \"warnings\": " << json_array_of_strings(warnings, 4) << ",\n"
-      << "  \"errors\": " << json_array_of_export_error_objects(errors, 4) << ",\n"
+      << "  \"errors\": " << json_array_of_error_objects(errors, true, 4) << ",\n"
       << "  \"policy_result\": \"" << escape_json_text(policy_result) << "\",\n"
       << "  \"policy_profile\": ";
   if (policy_profile.empty()) {
@@ -731,7 +775,9 @@ bool validate_import_result_document(std::string_view text, std::string& error_m
   const auto status = extract_json_string_field(text, "status");
   const auto source_kind = extract_json_string_field(text, "source_kind");
   const auto source_ref = extract_json_string_field(text, "source_ref");
+  const auto provenance_schema = extract_json_string_field(text, "provenance_schema");
   const auto provenance_ref = extract_json_string_field(text, "provenance_ref");
+  const auto manifest_schema = extract_json_string_field(text, "manifest_schema");
   const auto policy_result = extract_json_string_field(text, "policy_result");
   const auto policy_profile = extract_json_string_field(text, "policy_profile");
   const auto timestamps = extract_json_string_field(text, "timestamps");
@@ -753,8 +799,17 @@ bool validate_import_result_document(std::string_view text, std::string& error_m
     error_message = "invalid import result source_ref";
     return false;
   }
+  if (!provenance_schema || *provenance_schema != "t81.canonfs-import-provenance.v1") {
+    error_message = "invalid import result provenance_schema";
+    return false;
+  }
   if (!provenance_ref) {
     error_message = "missing import result provenance_ref";
+    return false;
+  }
+  if ((*status == "ok" || *status == "partial") &&
+      (!is_valid_canonfs_ref(*provenance_ref))) {
+    error_message = "invalid import result provenance_ref";
     return false;
   }
   if (!provenance_ref->empty() && !is_valid_canonfs_ref(*provenance_ref)) {
@@ -767,8 +822,17 @@ bool validate_import_result_document(std::string_view text, std::string& error_m
   }
   if (!is_json_null_field(text, "policy_profile") &&
       (!policy_profile ||
-       !is_one_of(*policy_profile, {"permissive", "import-only", "export-only", "deny-all"}))) {
+      !is_one_of(*policy_profile, {"permissive", "import-only", "export-only", "deny-all"}))) {
     error_message = "invalid import result policy_profile";
+    return false;
+  }
+  if (is_json_null_field(text, "manifest_ref") != is_json_null_field(text, "manifest_schema")) {
+    error_message = "import result manifest schema/ref mismatch";
+    return false;
+  }
+  if (!is_json_null_field(text, "manifest_schema") &&
+      (!manifest_schema || *manifest_schema != kManifestSchema)) {
+    error_message = "invalid import result manifest_schema";
     return false;
   }
   if (!timestamps || !ownership || !mode_hint) {
@@ -778,7 +842,7 @@ bool validate_import_result_document(std::string_view text, std::string& error_m
   if (!validate_string_array(text, "imported_objects", false, true, error_message) ||
       !validate_string_array(text, "warnings", false, false, error_message) ||
       !validate_string_array(text, "imported_paths", false, false, error_message) ||
-      !validate_error_objects_array(text, "errors",
+      !validate_error_objects_array(text, "errors", false,
                                     {"source-failure", "normalization-failure", "policy-failure"},
                                     error_message)) {
     return false;
@@ -798,7 +862,9 @@ bool validate_export_result_document(std::string_view text, std::string& error_m
   const auto status = extract_json_string_field(text, "status");
   const auto target_kind = extract_json_string_field(text, "target_kind");
   const auto target_ref = extract_json_string_field(text, "target_ref");
+  const auto provenance_schema = extract_json_string_field(text, "provenance_schema");
   const auto provenance_ref = extract_json_string_field(text, "provenance_ref");
+  const auto manifest_schema = extract_json_string_field(text, "manifest_schema");
   const auto policy_result = extract_json_string_field(text, "policy_result");
   const auto policy_profile = extract_json_string_field(text, "policy_profile");
   const auto timestamps = extract_json_string_field(text, "timestamps");
@@ -820,8 +886,17 @@ bool validate_export_result_document(std::string_view text, std::string& error_m
     error_message = "invalid export result target_ref";
     return false;
   }
+  if (!provenance_schema || *provenance_schema != "t81.canonfs-export-provenance.v1") {
+    error_message = "invalid export result provenance_schema";
+    return false;
+  }
   if (!provenance_ref) {
     error_message = "missing export result provenance_ref";
+    return false;
+  }
+  if ((*status == "ok" || *status == "partial") &&
+      (!is_valid_canonfs_ref(*provenance_ref))) {
+    error_message = "invalid export result provenance_ref";
     return false;
   }
   if (!provenance_ref->empty() && !is_valid_canonfs_ref(*provenance_ref)) {
@@ -838,6 +913,15 @@ bool validate_export_result_document(std::string_view text, std::string& error_m
     error_message = "invalid export result policy_profile";
     return false;
   }
+  if (is_json_null_field(text, "manifest_ref") != is_json_null_field(text, "manifest_schema")) {
+    error_message = "export result manifest schema/ref mismatch";
+    return false;
+  }
+  if (!is_json_null_field(text, "manifest_schema") &&
+      (!manifest_schema || *manifest_schema != kManifestSchema)) {
+    error_message = "invalid export result manifest_schema";
+    return false;
+  }
   if (!timestamps || !ownership || !mode_hint) {
     error_message = "missing export materialization summary fields";
     return false;
@@ -845,7 +929,7 @@ bool validate_export_result_document(std::string_view text, std::string& error_m
   if (!validate_string_array(text, "source_objects", false, true, error_message) ||
       !validate_string_array(text, "warnings", false, false, error_message) ||
       !validate_string_array(text, "materialized_paths", false, false, error_message) ||
-      !validate_error_objects_array(text, "errors",
+      !validate_error_objects_array(text, "errors", true,
                                     {"materialization-failure", "target-failure", "policy-failure"},
                                     error_message)) {
     return false;

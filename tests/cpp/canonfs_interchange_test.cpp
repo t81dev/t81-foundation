@@ -17,6 +17,10 @@ bool expect(bool condition, const char* message) {
   return true;
 }
 
+t81::canonfs::interchange::Issue issue(std::string_view reason, std::string_view message) {
+  return t81::canonfs::interchange::Issue{std::string(reason), std::string(message)};
+}
+
 }  // namespace
 
 int main() {
@@ -69,7 +73,8 @@ int main() {
   const std::string import_result = render_import_result(
       "partial", "host-directory", "/tmp/input-tree", {"sha3-256:abc123"}, "sha3-256:prov001",
       "sha3-256:manifest001", {"a.txt"}, {},
-      {"policy denied import of nested/b.txt: hash not allowed"}, "partial", "permissive");
+      {issue("policy_denied", "policy denied import of nested/b.txt: hash not allowed")},
+      "partial", "permissive");
   if (!expect(validate_import_result_document(import_result, error_message),
               "import result should validate")) {
     return 1;
@@ -82,10 +87,16 @@ int main() {
               "import result should emit policy denial code")) {
     return 1;
   }
+  if (!expect(import_result.find("\"reason\": \"policy_denied\"") != std::string::npos,
+              "import result should emit explicit reason")) {
+    return 1;
+  }
 
   const std::string import_normalization_failure = render_import_result(
       "error", "host-directory", "/tmp/input-tree", {}, "", "", {}, {},
-      {"symlinks are not supported by canonfs import v1: nested/link"}, "denied", "permissive");
+      {issue("symlink_not_supported",
+             "symlinks are not supported by canonfs import v1: nested/link")},
+      "denied", "permissive");
   if (!expect(validate_import_result_document(import_normalization_failure, error_message),
               "import normalization failure result should validate")) {
     return 1;
@@ -96,14 +107,15 @@ int main() {
     return 1;
   }
   if (!expect(import_normalization_failure.find(
-                  "\"code\": \"canonfs-import-normalization-failure\"") != std::string::npos,
+                  "\"code\": \"canonfs-import-symlink-not-supported\"") != std::string::npos,
               "import result should emit normalization failure code")) {
     return 1;
   }
 
   const std::string import_missing_source = render_import_result(
       "error", "host-file", "/tmp/missing-input.bin", {}, "", "", {}, {},
-      {"input path does not exist: /tmp/missing-input.bin"}, "denied", "permissive");
+      {issue("missing_source", "input path does not exist: /tmp/missing-input.bin")}, "allowed",
+      "permissive");
   if (!expect(validate_import_result_document(import_missing_source, error_message),
               "import missing source result should validate")) {
     return 1;
@@ -129,7 +141,8 @@ int main() {
 
   const std::string export_target_failure = render_export_result(
       "error", {"sha3-256:abc123"}, "host-file", "/tmp/output-tree", "sha3-256:prov003", "",
-      {}, {}, {"could not open output file: /tmp/output-tree"}, "allowed", "permissive");
+      {}, {}, {issue("target_open_failed", "could not open output file: /tmp/output-tree")},
+      "allowed", "permissive");
   if (!expect(validate_export_result_document(export_target_failure, error_message),
               "export target failure result should validate")) {
     return 1;
@@ -138,7 +151,7 @@ int main() {
               "export result should classify target failures")) {
     return 1;
   }
-  if (!expect(export_target_failure.find("\"code\": \"canonfs-export-target-failure\"") !=
+  if (!expect(export_target_failure.find("\"code\": \"canonfs-export-target-open-failed\"") !=
                   std::string::npos,
               "export result should emit target failure code")) {
     return 1;
@@ -147,7 +160,8 @@ int main() {
   const std::string export_unsafe_path = render_export_result(
       "error", {"sha3-256:abc123"}, "host-directory", "/tmp/output-tree", "sha3-256:prov004",
       "sha3-256:manifest004", {}, {},
-      {"unsafe export path in manifest: ../escape.txt"}, "allowed", "permissive");
+      {issue("unsafe_target_path", "unsafe export path in manifest: ../escape.txt")}, "allowed",
+      "permissive");
   if (!expect(validate_export_result_document(export_unsafe_path, error_message),
               "export unsafe path result should validate")) {
     return 1;
@@ -164,7 +178,7 @@ int main() {
 
   const std::string export_missing_object = render_export_result(
       "error", {"sha3-256:missing"}, "host-file", "/tmp/out.bin", "sha3-256:prov005", "", {}, {},
-      {"object not found: sha3-256:missing"}, "denied", "permissive");
+      {issue("missing_object", "object not found: sha3-256:missing")}, "allowed", "permissive");
   if (!expect(validate_export_result_document(export_missing_object, error_message),
               "export missing object result should validate")) {
     return 1;
@@ -177,6 +191,34 @@ int main() {
   if (!expect(export_missing_object.find("\"code\": \"canonfs-export-missing-object\"") !=
                   std::string::npos,
               "export result should emit missing object code")) {
+    return 1;
+  }
+
+  const std::string export_invalid_schema = render_export_result(
+      "error", {"sha3-256:weird"}, "host-file", "/tmp/out.bin", "", "", {}, {},
+      {issue("invalid_schema", "invalid interchange schema for export source object")}, "allowed",
+      "permissive");
+  if (!expect(validate_export_result_document(export_invalid_schema, error_message),
+              "export invalid schema result should validate")) {
+    return 1;
+  }
+  if (!expect(export_invalid_schema.find("\"code\": \"canonfs-export-invalid-schema\"") !=
+                  std::string::npos,
+              "export invalid schema should emit explicit code")) {
+    return 1;
+  }
+
+  const std::string export_hash_mismatch = render_export_result(
+      "error", {"sha3-256:weird"}, "host-file", "/tmp/out.bin", "", "", {}, {},
+      {issue("hash_mismatch", "object hash mismatch: expected sha3-256:weird, got sha3-256:other")},
+      "allowed", "permissive");
+  if (!expect(validate_export_result_document(export_hash_mismatch, error_message),
+              "export hash mismatch result should validate")) {
+    return 1;
+  }
+  if (!expect(export_hash_mismatch.find("\"code\": \"canonfs-export-hash-mismatch\"") !=
+                  std::string::npos,
+              "export hash mismatch should emit explicit code")) {
     return 1;
   }
 
@@ -201,9 +243,12 @@ int main() {
       "  \"source_objects\": [\"sha3-256:abc123\"],\n"
       "  \"target_kind\": \"host-file\",\n"
       "  \"target_ref\": \"/tmp/out.bin\",\n"
+      "  \"provenance_schema\": \"t81.canonfs-export-provenance.v1\",\n"
       "  \"provenance_ref\": \"sha3-256:prov002\",\n"
+      "  \"manifest_schema\": null,\n"
       "  \"warnings\": [],\n"
-      "  \"errors\": [{\"kind\": \"wrong-kind\", \"message\": \"bad\", \"code\": \"x\"}],\n"
+      "  \"errors\": [{\"kind\": \"wrong-kind\", \"message\": \"bad\", \"code\": \"x\", "
+      "\"reason\": \"bad_reason\"}],\n"
       "  \"policy_result\": \"allowed\",\n"
       "  \"policy_profile\": \"permissive\",\n"
       "  \"materialization_summary\": {\n"
@@ -214,6 +259,31 @@ int main() {
       "}\n";
   if (!expect(!validate_export_result_document(invalid_export_result, error_message),
               "invalid export result should fail validation")) {
+    return 1;
+  }
+
+  const std::string missing_provenance_import_result =
+      "{\n"
+      "  \"schema\": \"t81.canonfs-import.v1\",\n"
+      "  \"status\": \"ok\",\n"
+      "  \"source_kind\": \"host-file\",\n"
+      "  \"source_ref\": \"/tmp/input.bin\",\n"
+      "  \"imported_objects\": [\"sha3-256:abc123\"],\n"
+      "  \"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\",\n"
+      "  \"manifest_ref\": \"sha3-256:manifest001\",\n"
+      "  \"imported_paths\": [\"input.bin\"],\n"
+      "  \"warnings\": [],\n"
+      "  \"errors\": [],\n"
+      "  \"policy_result\": \"allowed\",\n"
+      "  \"policy_profile\": \"permissive\",\n"
+      "  \"normalization_summary\": {\n"
+      "    \"timestamps\": \"provenance-only\",\n"
+      "    \"ownership\": \"provenance-only\",\n"
+      "    \"mode_hint\": \"preserved\"\n"
+      "  }\n"
+      "}\n";
+  if (!expect(!validate_import_result_document(missing_provenance_import_result, error_message),
+              "import result missing provenance should fail validation")) {
     return 1;
   }
 
@@ -274,10 +344,15 @@ int main() {
     if (!expect(!denied_export.errors.empty(), "policy-denied export should record an error")) {
       return 1;
     }
-    if (!expect(denied_export.errors.front().find("policy denied export:") == 0,
+    if (!expect(denied_export.errors.front().reason == "policy_denied",
+                "policy-denied export should record explicit reason")) {
+      return 1;
+    }
+    if (!expect(denied_export.errors.front().message.find("policy denied export:") == 0,
                 "policy-denied export error should identify the export denial")) {
       return 1;
     }
+    export_options.policy_evaluator = {};
 
     t81::canonfs::ImportOptions denied_import_options;
     denied_import_options.canonfs_root = import_options.canonfs_root;
@@ -298,7 +373,11 @@ int main() {
     if (!expect(!missing_import.errors.empty(), "missing input import should record an error")) {
       return 1;
     }
-    if (!expect(missing_import.errors.front().find("input path does not exist:") == 0,
+    if (!expect(missing_import.errors.front().reason == "missing_source",
+                "missing input import should record explicit reason")) {
+      return 1;
+    }
+    if (!expect(missing_import.errors.front().message.find("input path does not exist:") == 0,
                 "missing input import error should identify the missing path")) {
       return 1;
     }
@@ -325,8 +404,59 @@ int main() {
     if (!expect(!missing_export.errors.empty(), "missing object export should record an error")) {
       return 1;
     }
-    if (!expect(missing_export.errors.front().find("object not found: sha3-256:missing") == 0,
+    if (!expect(missing_export.errors.front().reason == "missing_object",
+                "missing object export should record explicit reason")) {
+      return 1;
+    }
+    if (!expect(missing_export.errors.front().message.find("object not found: sha3-256:missing") ==
+                    0,
                 "missing object export should identify the missing CanonFS object")) {
+      return 1;
+    }
+
+    const fs::path object_path =
+        import_options.canonfs_root / "objects" /
+        (import_outcome.imported_objects.front().substr(std::string("sha3-256:").size()) + ".blk");
+    const fs::path other_source = root / "other-payload.txt";
+    {
+      std::ofstream out(other_source);
+      out << "canonfs-other-payload";
+    }
+    const auto other_import = t81::canonfs::import_path(other_source, import_options);
+    if (!expect(other_import.ok(), "other CanonFS object import should succeed")) return 1;
+    const fs::path other_object_path =
+        import_options.canonfs_root / "objects" /
+        (other_import.imported_objects.front().substr(std::string("sha3-256:").size()) + ".blk");
+    fs::copy_file(other_object_path, object_path, fs::copy_options::overwrite_existing, ec);
+    if (!expect(!ec, "tampered object copy should succeed")) return 1;
+    const auto tampered_export =
+        t81::canonfs::export_ref(import_outcome.imported_objects.front(), root / "tampered.txt",
+                                 export_options);
+    if (!expect(!tampered_export.ok(), "tampered object export should fail")) return 1;
+    if (!expect(!tampered_export.errors.empty(), "tampered export should record an error")) {
+      return 1;
+    }
+    if (!expect(tampered_export.errors.front().reason == "hash_mismatch",
+                "tampered export should report hash mismatch")) {
+      return 1;
+    }
+
+    const fs::path example_root = fs::absolute(fs::path(__FILE__)).parent_path().parent_path().parent_path();
+    const fs::path golden_input =
+        example_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
+    const auto golden_import = t81::canonfs::import_path(golden_input, import_options);
+    if (!expect(golden_import.ok(), "golden example import should succeed")) return 1;
+    if (!expect(!golden_import.manifest_ref.empty(), "golden example should emit manifest")) {
+      return 1;
+    }
+    const fs::path golden_out = root / "golden-export";
+    const auto golden_export =
+        t81::canonfs::export_ref(golden_import.manifest_ref, golden_out, export_options);
+    if (!expect(golden_export.ok(), "golden example export should succeed")) return 1;
+    std::ifstream golden_alpha(golden_out / "alpha.txt");
+    std::string golden_alpha_text;
+    std::getline(golden_alpha, golden_alpha_text);
+    if (!expect(golden_alpha_text == "alpha", "golden example alpha payload mismatch")) {
       return 1;
     }
 

@@ -817,6 +817,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(import_file_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(import_file_result.stdout_text, "\"source_kind\": \"host-file\""));
+    T81_TEST_CHECK(contains(import_file_result.stdout_text,
+                            "\"provenance_schema\": \"t81.canonfs-import-provenance.v1\""));
+    T81_TEST_CHECK(contains(import_file_result.stdout_text,
+                            "\"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\""));
     const auto imported_file_ref =
         extract_json_string(import_file_result.stdout_text, "manifest_ref");
     T81_TEST_CHECK(imported_file_ref.has_value());
@@ -828,6 +832,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(export_file_result.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(export_file_result.stdout_text, "\"target_kind\": \"host-file\""));
+    T81_TEST_CHECK(contains(export_file_result.stdout_text,
+                            "\"provenance_schema\": \"t81.canonfs-export-provenance.v1\""));
     T81_TEST_CHECK(read_file(imported_file_restore) == "canonfs-contract");
 
     const fs::path missing_import_path = make_temp_path("t81-cli-contract-missing-import", ".txt");
@@ -840,6 +846,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"kind\": \"source-failure\""));
     T81_TEST_CHECK(
         contains(import_missing_result.stdout_text, "\"code\": \"canonfs-import-missing-source\""));
+    T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"reason\": \"missing_source\""));
 
     const auto export_missing_result = run_cli(
         t81_bin, {"canonfs", "export", "sha3-256:11111111111111111111111111111111111111111111",
@@ -852,6 +859,8 @@ int main(int argc, char* argv[]) {
         contains(export_missing_result.stdout_text, "\"kind\": \"materialization-failure\""));
     T81_TEST_CHECK(contains(export_missing_result.stdout_text,
                             "\"code\": \"canonfs-export-invalid-source-ref\""));
+    T81_TEST_CHECK(
+        contains(export_missing_result.stdout_text, "\"reason\": \"invalid_source_ref\""));
 
     const fs::path import_tree = make_temp_path("t81-cli-contract-tree", "");
     fs::create_directories(import_tree / "nested", ignore_ec);
@@ -911,7 +920,78 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(malformed_export_result.stdout_text, "\"kind\": \"materialization-failure\""));
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text,
-                            "\"code\": \"canonfs-export-invalid-manifest\""));
+                            "\"code\": \"canonfs-export-malformed-manifest\""));
+    T81_TEST_CHECK(
+        contains(malformed_export_result.stdout_text, "\"reason\": \"malformed_manifest\""));
+
+    const fs::path invalid_schema_object = make_temp_path("t81-cli-contract-bad-schema", ".json");
+    {
+      std::ofstream out(invalid_schema_object);
+      out << "{\n"
+             "  \"schema\": \"t81.canonfs-unknown.v1\",\n"
+             "  \"payload\": \"not-a-manifest\"\n"
+             "}\n";
+    }
+    const auto invalid_schema_put =
+        run_cli(t81_bin, {"canonfs", "put-file", invalid_schema_object.string()});
+    T81_TEST_CHECK(invalid_schema_put.exit_code == 0);
+    std::string invalid_schema_hash = invalid_schema_put.stdout_text;
+    while (!invalid_schema_hash.empty() &&
+           std::isspace(static_cast<unsigned char>(invalid_schema_hash.back()))) {
+      invalid_schema_hash.pop_back();
+    }
+    const auto invalid_schema_export = run_cli(
+        t81_bin, {"canonfs", "export", invalid_schema_hash, "--out",
+                  make_temp_path("t81-cli-contract-invalid-schema-out", ".bin").string(), "--json"});
+    T81_TEST_CHECK(invalid_schema_export.exit_code != 0);
+    T81_TEST_CHECK(contains(invalid_schema_export.stdout_text,
+                            "\"code\": \"canonfs-export-invalid-schema\""));
+    T81_TEST_CHECK(
+        contains(invalid_schema_export.stdout_text, "\"reason\": \"invalid_schema\""));
+
+    const fs::path tampered_root = make_temp_path("t81-cli-contract-tampered-root", "");
+    fs::create_directories(tampered_root, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+    const auto tampered_put = run_cli(
+        t81_bin, {"canonfs", "put-file", payload.string(), "--canonfs-root", tampered_root.string()});
+    T81_TEST_CHECK(tampered_put.exit_code == 0);
+    std::string tampered_hash = tampered_put.stdout_text;
+    while (!tampered_hash.empty() &&
+           std::isspace(static_cast<unsigned char>(tampered_hash.back()))) {
+      tampered_hash.pop_back();
+    }
+    const fs::path tampered_object =
+        tampered_root / "objects" /
+        (tampered_hash.substr(std::string("sha3-256:").size()) + ".blk");
+    const fs::path tampered_source_two = make_temp_path("t81-cli-contract-tampered-other", ".txt");
+    {
+      std::ofstream out(tampered_source_two);
+      out << "tampered-cli-contract-object-two";
+    }
+    const auto tampered_put_two =
+        run_cli(t81_bin, {"canonfs", "put-file", tampered_source_two.string(), "--canonfs-root",
+                          tampered_root.string()});
+    T81_TEST_CHECK(tampered_put_two.exit_code == 0);
+    std::string tampered_hash_two = tampered_put_two.stdout_text;
+    while (!tampered_hash_two.empty() &&
+           std::isspace(static_cast<unsigned char>(tampered_hash_two.back()))) {
+      tampered_hash_two.pop_back();
+    }
+    const fs::path tampered_object_two =
+        tampered_root / "objects" /
+        (tampered_hash_two.substr(std::string("sha3-256:").size()) + ".blk");
+    fs::copy_file(tampered_object_two, tampered_object, fs::copy_options::overwrite_existing,
+                  ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+    const auto tampered_export_result = run_cli(
+        t81_bin, {"canonfs", "export", tampered_hash, "--canonfs-root", tampered_root.string(),
+                  "--out", make_temp_path("t81-cli-contract-tampered-out", ".bin").string(),
+                  "--json"});
+    T81_TEST_CHECK(tampered_export_result.exit_code != 0);
+    T81_TEST_CHECK(contains(tampered_export_result.stdout_text,
+                            "\"code\": \"canonfs-export-hash-mismatch\""));
+    T81_TEST_CHECK(
+        contains(tampered_export_result.stdout_text, "\"reason\": \"hash_mismatch\""));
 
     const fs::path canonfs_policy = make_temp_path("t81-cli-contract-canonfs-policy", ".apl");
     {
@@ -932,6 +1012,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
+    T81_TEST_CHECK(
+        contains(import_policy_deny_result.stdout_text, "\"reason\": \"policy_denied\""));
 
     const auto export_policy_deny_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
@@ -947,6 +1029,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
+    T81_TEST_CHECK(
+        contains(export_policy_deny_result.stdout_text, "\"reason\": \"policy_denied\""));
 
     const auto import_profile_deny_result = run_cli(
         t81_bin,
@@ -978,6 +1062,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(invalid_profile_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(invalid_profile_result.stdout_text, "invalid policy profile"));
+    T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
+                            "\"code\": \"canonfs-import-invalid-policy-profile\""));
+    T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
+                            "\"reason\": \"invalid_policy_profile\""));
 
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");
     const auto get_result =
@@ -1098,6 +1186,8 @@ int main(int argc, char* argv[]) {
 #endif
     fs::remove(payload, ignore_ec);
     fs::remove(canonfs_policy, ignore_ec);
+    fs::remove(invalid_schema_object, ignore_ec);
+    fs::remove(tampered_source_two, ignore_ec);
     fs::remove(malformed_manifest, ignore_ec);
     fs::remove(imported_file_restore, ignore_ec);
     fs::remove(restored, ignore_ec);
@@ -1106,6 +1196,7 @@ int main(int argc, char* argv[]) {
     fs::remove_all(import_tree, ignore_ec);
     fs::remove_all(export_tree, ignore_ec);
     fs::remove_all(malformed_export_target, ignore_ec);
+    fs::remove_all(tampered_root, ignore_ec);
     fs::remove_all(symlink_root, ignore_ec);
     fs::remove_all(repair_root, ignore_ec);
     fs::remove_all(rollback_root, ignore_ec);

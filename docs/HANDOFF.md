@@ -24,6 +24,8 @@ T81 is a deterministic, policy-gated runtime for auditable AI inference, built o
     `t81.canonfs-import-provenance.v1`,
     `t81.canonfs-export-provenance.v1`,
     `t81.canonfs-interchange-manifest.v1`,
+    explicit interchange error `reason` / `kind` / `code`,
+    explicit `provenance_schema` / `manifest_schema` result fields,
     `host-file` / `host-directory`, and the current policy-profile names
 
 ## What is still draft or in motion
@@ -70,8 +72,8 @@ When in doubt, prefer these in order:
 
 The short version:
 
-- `Now`: RFC-00D1 hardening plus CI/portability boringness
-- `Next`: RFC-00D1 contract promotion review plus runtime-first docs cleanup
+- `Now`: RFC-00D1 contract promotion review plus CI/portability boringness
+- `Next`: RFC-00D1 policy-profile depth plus runtime-first docs cleanup
 - `Later`: RFC-00D0 resolver prototype, kept narrow
 
 ## If you only have 30 minutes

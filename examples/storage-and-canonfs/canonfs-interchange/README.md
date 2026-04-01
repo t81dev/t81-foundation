@@ -20,7 +20,7 @@ canon_root="$tmp_root/.t81_canonfs"
 export_root="$tmp_root/exported"
 
 build/t81 canonfs import \
-  examples/canonfs-interchange/input \
+  examples/storage-and-canonfs/canonfs-interchange/input \
   --canonfs-root "$canon_root" \
   --json
 ```
@@ -66,7 +66,7 @@ policy file:
 
 ```bash
 build/t81 canonfs import \
-  examples/canonfs-interchange/input \
+  examples/storage-and-canonfs/canonfs-interchange/input \
   --canonfs-root "$canon_root" \
   --policy-profile export-only \
   --json
@@ -84,3 +84,5 @@ Expected shape:
 - This example is intentionally file-based and small.
 - It is meant to match the current RFC-00D1 CLI seed and contract tests, not to
   demonstrate every future interchange feature.
+- The round-trip for this directory is exercised directly by
+  `canonfs_interchange_test`.

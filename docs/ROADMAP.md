@@ -46,6 +46,8 @@ Recommended work:
   `canonfs import` / `canonfs export`,
   `t81.canonfs-import.v1`,
   `t81.canonfs-export.v1`,
+  structured interchange `reason` / `kind` / `code`,
+  explicit `provenance_schema` / `manifest_schema` result fields,
   provenance/manifest schemas,
   `host-file` / `host-directory`,
   and current policy-profile names

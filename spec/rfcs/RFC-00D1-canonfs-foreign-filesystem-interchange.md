@@ -4,7 +4,7 @@
 **Type:** standards-track
 **Applies-To:** CanonFS import/export tooling, foreign filesystem interchange boundary, provenance and manifesting rules
 **Created:** 2026-03-26
-**Updated:** 2026-03-28
+**Updated:** 2026-04-01
 **Author:** @t81dev
 **Discussion:** initial scope draft
 
@@ -47,9 +47,13 @@ Stable seed surfaces today:
 
 - `canonfs import` and `canonfs export` as real CLI interchange operations
 - the `t81.canonfs-import.v1` and `t81.canonfs-export.v1` JSON result schemas
+- structured interchange error entries with stable `kind`, `code`, `reason`,
+  and `message` fields
 - the `t81.canonfs-import-provenance.v1` and
   `t81.canonfs-export-provenance.v1` provenance record schemas
 - the `t81.canonfs-interchange-manifest.v1` directory manifest schema
+- explicit result-document linkage fields `provenance_schema` and
+  `manifest_schema`
 - mandatory v1 source and target kinds of `host-file` and `host-directory`
 - policy-profile names `permissive`, `import-only`, `export-only`, and
   `deny-all`
@@ -239,7 +243,7 @@ Illustrative import result shape:
 
 ```text
 schema: t81.canonfs-import.v1
-source_kind: host-path
+source_kind: host-file
 source_ref: /tmp/model.bin
 imported_objects:
   - canonfs:K81A2M4...
@@ -270,12 +274,14 @@ Optional fields:
 
 ```text
 manifest_ref: <canonfs ref>
+manifest_schema: t81.canonfs-interchange-manifest.v1 | null
 imported_paths: <array of source-relative paths>
 warnings: <array of strings>
 errors: <array of structured error entries>
 policy_result: allowed | denied | partial
 policy_profile: permissive | import-only | export-only | deny-all
 normalization_summary: <object>
+provenance_schema: t81.canonfs-import-provenance.v1
 ```
 
 Illustrative JSON document:
@@ -288,7 +294,9 @@ Illustrative JSON document:
   "source_ref": "/tmp/model.bin",
   "imported_objects": ["canonfs:K81A2M4..."],
   "provenance_ref": "canonfs:P81R7...",
+  "provenance_schema": "t81.canonfs-import-provenance.v1",
   "manifest_ref": "canonfs:M81F2...",
+  "manifest_schema": "t81.canonfs-interchange-manifest.v1",
   "imported_paths": ["model.bin"],
   "warnings": [],
   "errors": [],
@@ -322,8 +330,15 @@ Field rules:
 - `provenance_ref`
   - required
   - identifies the CanonFS-side provenance record for the import
+- `provenance_schema`
+  - required when `provenance_ref` is present
+  - current stable value: `t81.canonfs-import-provenance.v1`
 - `manifest_ref`
   - optional but strongly preferred for multi-object imports
+- `manifest_schema`
+  - optional
+  - current stable value when `manifest_ref` is present:
+    `t81.canonfs-interchange-manifest.v1`
 - `errors`
   - optional structured entries describing failures or skipped units
 - `normalization_summary`
@@ -341,16 +356,33 @@ kind: source-failure | normalization-failure | policy-failure
 path: <optional source-relative path>
 message: <string>
 code: <stable short code>
+reason: <stable machine-readable denial reason>
 ```
 
 Current seed codes used by the CLI/core implementation include:
 
 - `canonfs-import-missing-source`
-- `canonfs-import-unsupported-source`
-- `canonfs-import-normalization-failure`
-- `canonfs-import-storage-failure`
+- `canonfs-import-unsupported-source-kind`
+- `canonfs-import-symlink-not-supported`
+- `canonfs-import-storage-write-failed`
+- `canonfs-import-manifest-write-failed`
+- `canonfs-import-provenance-write-failed`
+- `canonfs-import-invalid-policy-profile`
+- `canonfs-import-invalid-policy-document`
 - `canonfs-policy-denied`
 - `canonfs-import-failure`
+
+Current seed reasons used by the CLI/core implementation include:
+
+- `missing_source`
+- `unsupported_source_kind`
+- `symlink_not_supported`
+- `storage_write_failed`
+- `manifest_write_failed`
+- `provenance_write_failed`
+- `invalid_policy_profile`
+- `invalid_policy_document`
+- `policy_denied`
 
 ## 7. Export Contract
 
@@ -421,7 +453,7 @@ Illustrative export result shape:
 schema: t81.canonfs-export.v1
 source_objects:
   - canonfs:K81A2M4...
-target_kind: host-path
+target_kind: host-file
 target_ref: /tmp/exported-model.bin
 provenance_ref: canonfs:E81X3...
 status: ok
@@ -450,12 +482,14 @@ Optional fields:
 
 ```text
 manifest_ref: <canonfs ref>
+manifest_schema: t81.canonfs-interchange-manifest.v1 | null
 materialized_paths: <array of target-relative paths>
 warnings: <array of strings>
 errors: <array of structured error entries>
 policy_result: allowed | denied | partial
 policy_profile: permissive | import-only | export-only | deny-all
 materialization_summary: <object>
+provenance_schema: t81.canonfs-export-provenance.v1
 ```
 
 Illustrative JSON document:
@@ -468,7 +502,9 @@ Illustrative JSON document:
   "target_kind": "host-file",
   "target_ref": "/tmp/exported-model.bin",
   "provenance_ref": "canonfs:E81X3...",
+  "provenance_schema": "t81.canonfs-export-provenance.v1",
   "manifest_ref": "canonfs:X81M8...",
+  "manifest_schema": "t81.canonfs-interchange-manifest.v1",
   "materialized_paths": ["exported-model.bin"],
   "warnings": [],
   "errors": [],
@@ -501,8 +537,15 @@ Field rules:
 - `provenance_ref`
   - required
   - identifies the CanonFS-side provenance record for the export
+- `provenance_schema`
+  - required when `provenance_ref` is present
+  - current stable value: `t81.canonfs-export-provenance.v1`
 - `materialized_paths`
   - optional summary of created or updated target-relative paths
+- `manifest_schema`
+  - optional
+  - current stable value when `manifest_ref` is present:
+    `t81.canonfs-interchange-manifest.v1`
 - `materialization_summary`
   - optional summary of metadata restoration or synthesis decisions
 
@@ -519,18 +562,41 @@ path: <optional target-relative path>
 source_object: <optional canonfs ref>
 message: <string>
 code: <stable short code>
+reason: <stable machine-readable denial reason>
 ```
 
 Current seed codes used by the CLI/core implementation include:
 
-- `canonfs-export-target-failure`
+- `canonfs-export-target-directory-create-failed`
+- `canonfs-export-target-open-failed`
+- `canonfs-export-target-write-failed`
 - `canonfs-export-unsafe-target-path`
 - `canonfs-export-invalid-source-ref`
 - `canonfs-export-missing-object`
-- `canonfs-export-invalid-manifest`
-- `canonfs-export-storage-failure`
+- `canonfs-export-hash-mismatch`
+- `canonfs-export-invalid-schema`
+- `canonfs-export-malformed-manifest`
+- `canonfs-export-provenance-write-failed`
+- `canonfs-export-invalid-policy-profile`
+- `canonfs-export-invalid-policy-document`
 - `canonfs-policy-denied`
 - `canonfs-export-failure`
+
+Current seed reasons used by the CLI/core implementation include:
+
+- `target_directory_create_failed`
+- `target_open_failed`
+- `target_write_failed`
+- `unsafe_target_path`
+- `invalid_source_ref`
+- `missing_object`
+- `hash_mismatch`
+- `invalid_schema`
+- `malformed_manifest`
+- `provenance_write_failed`
+- `invalid_policy_profile`
+- `invalid_policy_document`
+- `policy_denied`
 
 ## 8. Round-Trip Semantics
 
