@@ -135,7 +135,7 @@ def main() -> int:
         )
 
         # policy run
-        policy_file = repo_root / "examples/system_integration.apl"
+        policy_file = repo_root / "examples/systems-and-agents/system_integration.apl"
         if policy_file.exists():
             check_object_schema(
                 ["policy", "run", str(policy_file), "--json"],
@@ -143,7 +143,9 @@ def main() -> int:
                 "policy run --json",
             )
         else:
-            failures.append("policy run --json: missing examples/system_integration.apl")
+            failures.append(
+                "policy run --json: missing examples/systems-and-agents/system_integration.apl"
+            )
 
         # weights info (error-path contract for schema stability)
         check_object_schema(

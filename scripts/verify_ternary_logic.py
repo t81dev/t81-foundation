@@ -26,8 +26,8 @@ def main():
     t81_bin = os.path.join(repo_root, "build", "t81")
 
     tests = [
-        os.path.join(repo_root, "examples", "ternary_verification.t81"),
-        os.path.join(repo_root, "examples", "bigint_fraction_verification.t81")
+        os.path.join(repo_root, "examples", "core-language", "ternary_verification.t81"),
+        os.path.join(repo_root, "examples", "core-language", "bigint_fraction_verification.t81")
     ]
 
     if not os.path.exists(t81_bin):

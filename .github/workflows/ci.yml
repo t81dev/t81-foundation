@@ -387,6 +387,7 @@ jobs:
             /tooling/**
             /lang/**
             /examples/**
+            /src/**
             /tools/**
             /tests/**
             /scripts/**

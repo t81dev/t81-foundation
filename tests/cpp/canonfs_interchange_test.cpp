@@ -34,7 +34,17 @@ t81::canonfs::interchange::Issue issue(std::string_view reason, std::string_view
 int main() {
   using namespace t81::canonfs::interchange;
   const std::filesystem::path cwd = std::filesystem::current_path();
-  const std::filesystem::path repo_root = cwd.filename() == "build" ? cwd.parent_path() : cwd;
+  auto repo_root = cwd;
+  const auto golden_import_path =
+      std::filesystem::path("examples") / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
+      "import-success.output.json";
+  while (!repo_root.empty() && !std::filesystem::exists(repo_root / golden_import_path)) {
+    const auto parent = repo_root.parent_path();
+    if (parent == repo_root) {
+      break;
+    }
+    repo_root = parent;
+  }
 
   {
     const auto permissive =
@@ -172,9 +182,7 @@ int main() {
   }
 
   {
-    const auto golden_import = read_file(
-        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
-        "import-success.output.json");
+    const auto golden_import = read_file(repo_root / golden_import_path);
     if (!expect(!golden_import.empty(), "golden import example should exist")) {
       return 1;
     }
