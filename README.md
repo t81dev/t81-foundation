@@ -154,7 +154,7 @@ deny infer reason "unapproved-model";
 
 As of March 2026, The T81 deterministic core (ISA, VM, data types) is stable and governed by a monthly C2 review cadence. Active risks, implementation matrix, and decision logs are tracked in [`docs/status/`](docs/status/).
 
-- **Determinism claims** are bounded by the [Deterministic Core Profile](docs/status/SYSTEM_STATUS.md) and verified via CI gates.
+- **Determinism claims** are bounded by the [Deterministic Core Profile](docs/status/SYSTEM_STATUS.md) and the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md), verified via CI gates.
 - See the full [Project Roadmap & Governance Status](docs/status/ROADMAP.md) and [Getting Started & Installation](docs/user-guide/quickstart/INSTALL.md) for details.
 
 ## What T81 is Not (Yet)
@@ -167,7 +167,7 @@ T81 prioritizes **verifiability, determinism, and governance** over broad compat
 
 ## Architecture Overview
 
-For deeper technical mapping (Natural Language Space → Code Entity Space), see the [Project Overview](docs/index.md) and [Glossary](docs/glossary.md) in the DeepWiki.
+For deeper technical mapping (Natural Language Space → Code Entity Space), see the [Project Overview](docs/index.md) in the DeepWiki.
 
 ## Long-term direction
 

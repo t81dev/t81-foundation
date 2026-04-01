@@ -29,9 +29,9 @@ The biggest current gap is that `t81 ai inference run` is only partly real today
 Readiness example coverage today:
 
 - `ready`: proven by
-  [run_ready_ai_probe.sh](../../examples/model-load-canonfs/run_ready_ai_probe.sh)
+  [run_ready_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_ready_ai_probe.sh)
 - `guarded`: proven by
-  [run_guarded_ai_probe.sh](../../examples/model-load-canonfs/run_guarded_ai_probe.sh)
+  [run_guarded_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_guarded_ai_probe.sh)
   using the real tiny Hugging Face Llama artifact, and now uses explicit
   guarded-caution evidence policies instead of looking identical to `ready`
 - the bounded native lane now also emits a top-level `artifact_visibility`
@@ -54,7 +54,7 @@ Readiness example coverage today:
 - the carried `forward_state` now also persists bounded prior rows with decay,
   ranks and trims them intentionally, and exposes a runnable 4-step evolution
   path through
-  [run_forward_state_ai_probe.sh](../../examples/model-load-canonfs/run_forward_state_ai_probe.sh)
+  [run_forward_state_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_forward_state_ai_probe.sh)
 - that forward-state path now also has visibly different later control modes,
   including an architecture-state-led fourth-step continuation beyond the
   earlier 3-step ceiling:
@@ -172,10 +172,10 @@ Readiness example coverage today:
   - `consumed_state_input_row_ids` shows the merged carried-state rows that
     fed back into later VM steps
 - `degraded`: proven by
-  [run_degraded_ai_probe.sh](../../examples/model-load-canonfs/run_degraded_ai_probe.sh)
+  [run_degraded_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_degraded_ai_probe.sh)
   using a checked-in synthetic fixture that forces `decode_probe_unavailable`,
   and by
-  [run_real_hf_tiny_model.sh](../../examples/model-load-canonfs/run_real_hf_tiny_model.sh)
+  [run_real_hf_tiny_model.sh](../../examples/ai-and-inference/model-load-canonfs/run_real_hf_tiny_model.sh)
 
 ## Classification
 

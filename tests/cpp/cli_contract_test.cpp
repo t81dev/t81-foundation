@@ -102,8 +102,7 @@ CommandResult run_cli_with_timeout(const fs::path& bin_path, const std::vector<s
 }
 
 CommandResult run_cli_in_dir(const fs::path& bin_path, const std::vector<std::string>& args,
-                             const std::optional<fs::path>& workdir,
-                             std::chrono::seconds timeout) {
+                             const std::optional<fs::path>& workdir, std::chrono::seconds timeout) {
   const fs::path out_path = make_temp_path("t81-cli-contract", ".out");
   const fs::path err_path = make_temp_path("t81-cli-contract", ".err");
   std::vector<std::string> argv_storage;
@@ -838,8 +837,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(import_missing_result.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"status\": \"error\""));
-    T81_TEST_CHECK(
-        contains(import_missing_result.stdout_text, "\"kind\": \"source-failure\""));
+    T81_TEST_CHECK(contains(import_missing_result.stdout_text, "\"kind\": \"source-failure\""));
     T81_TEST_CHECK(
         contains(import_missing_result.stdout_text, "\"code\": \"canonfs-import-missing-source\""));
 
@@ -852,8 +850,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(export_missing_result.stdout_text, "\"status\": \"error\""));
     T81_TEST_CHECK(
         contains(export_missing_result.stdout_text, "\"kind\": \"materialization-failure\""));
-    T81_TEST_CHECK(
-        contains(export_missing_result.stdout_text, "\"code\": \"canonfs-export-invalid-source-ref\""));
+    T81_TEST_CHECK(contains(export_missing_result.stdout_text,
+                            "\"code\": \"canonfs-export-invalid-source-ref\""));
 
     const fs::path import_tree = make_temp_path("t81-cli-contract-tree", "");
     fs::create_directories(import_tree / "nested", ignore_ec);
@@ -912,8 +910,8 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(malformed_export_result.stdout_text, "invalid interchange manifest"));
     T81_TEST_CHECK(
         contains(malformed_export_result.stdout_text, "\"kind\": \"materialization-failure\""));
-    T81_TEST_CHECK(
-        contains(malformed_export_result.stdout_text, "\"code\": \"canonfs-export-invalid-manifest\""));
+    T81_TEST_CHECK(contains(malformed_export_result.stdout_text,
+                            "\"code\": \"canonfs-export-invalid-manifest\""));
 
     const fs::path canonfs_policy = make_temp_path("t81-cli-contract-canonfs-policy", ".apl");
     {
@@ -931,8 +929,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"policy_profile\": \"permissive\""));
     T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"status\": \"error\""));
-    T81_TEST_CHECK(
-        contains(import_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
+    T81_TEST_CHECK(contains(import_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
 
@@ -947,8 +944,7 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"policy_profile\": \"permissive\""));
     T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"status\": \"error\""));
-    T81_TEST_CHECK(
-        contains(export_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
+    T81_TEST_CHECK(contains(export_policy_deny_result.stdout_text, "\"kind\": \"policy-failure\""));
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
 
@@ -1214,10 +1210,9 @@ int main(int argc, char* argv[]) {
 
     t81::weights::save_t81w(model, model_path);
 
-    const auto ai_result =
-        run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-demo", "--model-file",
-                          model_path.string(), "--mode", "strict_deterministic", "--prompt",
-                          "hello"});
+    const auto ai_result = run_cli(
+        t81_bin, {"ai", "inference", "run", "--model", "contract-demo", "--model-file",
+                  model_path.string(), "--mode", "strict_deterministic", "--prompt", "hello"});
 
     T81_TEST_CHECK(ai_result.exit_code == 0);
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"schema\": \"t81.ai.inference-run.v1\""));
@@ -1230,10 +1225,11 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"readiness\": {"));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"artifact_visibility\": {"));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"kind\": \"ready\""));
-    T81_TEST_CHECK(contains(ai_result.stdout_text,
-                            "\"candidate_selection_evidence_policy\": \"not_applicable_single_probe.v1\""));
-    T81_TEST_CHECK(contains(ai_result.stdout_text,
-                            "\"output_policy\": \"verbatim_native_probe.v1\""));
+    T81_TEST_CHECK(
+        contains(ai_result.stdout_text,
+                 "\"candidate_selection_evidence_policy\": \"not_applicable_single_probe.v1\""));
+    T81_TEST_CHECK(
+        contains(ai_result.stdout_text, "\"output_policy\": \"verbatim_native_probe.v1\""));
     T81_TEST_CHECK(
         contains(ai_result.stdout_text, "\"lhs\": \"model.layers.0.self_attn.q_proj.weight\""));
     T81_TEST_CHECK(
@@ -1342,9 +1338,9 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(ai_result.stdout_text, "\"state_kind\": \"prompt_history_bounded_context.v1\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"transition_kind\": "));
-    T81_TEST_CHECK(contains(
-        ai_result.stdout_text,
-        "\"window_selection_kind\": \"hidden_state_class_projection_mode_conditioned_window_seed.v1\""));
+    T81_TEST_CHECK(contains(ai_result.stdout_text,
+                            "\"window_selection_kind\": "
+                            "\"hidden_state_class_projection_mode_conditioned_window_seed.v1\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"candidate_basis_kind\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"sample_window_kind\": "));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"selection_policy_kind\": "));
@@ -1387,8 +1383,7 @@ int main(int argc, char* argv[]) {
     const auto bounded_ready_ai_result =
         run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-forward-state-demo",
                           "--model-file", forward_state_model_path.string(), "--mode",
-                          "strict_deterministic", "--prompt", "greet_hello", "--max-tokens",
-                          "1"});
+                          "strict_deterministic", "--prompt", "greet_hello", "--max-tokens", "1"});
 
     T81_TEST_CHECK(bounded_ready_ai_result.exit_code == 0);
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"bounded_decode_health\": {"));
@@ -1403,10 +1398,13 @@ int main(int argc, char* argv[]) {
                             "\"confidence_envelope\": \"bounded_architecture_state_probe.v1\""));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"kind\": \"ready\""));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"forward_state_kind\": "));
-    T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"forward_state_signature_sha256\": "));
-    T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"forward_state_generation\": 0"));
+    T81_TEST_CHECK(
+        contains(bounded_ready_ai_result.stdout_text, "\"forward_state_signature_sha256\": "));
+    T81_TEST_CHECK(
+        contains(bounded_ready_ai_result.stdout_text, "\"forward_state_generation\": 0"));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"forward_state_class\": "));
-    T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text, "\"forward_state_class_signature_sha256\": "));
+    T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text,
+                            "\"forward_state_class_signature_sha256\": "));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text,
                             "\"output_policy\": \"verbatim_native_probe.v1\""));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text,
@@ -1417,13 +1415,13 @@ int main(int argc, char* argv[]) {
     const auto forward_state_ai_result =
         run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-forward-state-demo",
                           "--model-file", forward_state_model_path.string(), "--mode",
-                          "strict_deterministic", "--prompt", "greet_hello", "--max-tokens",
-                          "2"});
+                          "strict_deterministic", "--prompt", "greet_hello", "--max-tokens", "2"});
 
     T81_TEST_CHECK(forward_state_ai_result.exit_code == 0);
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"readiness\": {"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"bounded_decode_health\": {"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"true_state_carry_supported\": true"));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"true_state_carry_supported\": true"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"state_carry_limitations\": {"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"kind\": \"bounded_intermediate_tensor_literal_import.v1\""));
@@ -1433,71 +1431,73 @@ int main(int argc, char* argv[]) {
                             "\"import_path\": \"compiled_tensor_literal_reimport.v1\""));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"intermediate_tensor_export_supported\": true"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"intermediate_tensor_import_used\": true"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"intermediate_tensor_blend_used\": true"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"hidden_tensor_carry_mode_kind\": \"evolved_hidden_tensor_feedback.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"intermediate_tensor_import_used\": true"));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"intermediate_tensor_blend_used\": true"));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text,
+                 "\"hidden_tensor_carry_mode_kind\": \"evolved_hidden_tensor_feedback.v1\""));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"hidden_tensor_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"kind\": \"vm_intermediate_tensor_export.v1\""));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"hidden_tensor_signature_sha256\": \""));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"hidden_tensor_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"generated_tokens\": "));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"termination_reason\": "));
+    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"termination_reason\": "));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"recovery_steps\": ["));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"weak_steps\": ["));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"decode_trace_detail_policy\": "));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"decode_trace_detail_policy\": "));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"artifact_visibility\": {"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"status\": "));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"forward_state_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"max_consumed_forward_state_count\": "));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"max_consumed_forward_state_count\": "));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"state_input_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"max_state_input_row_count\": "));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"max_state_input_row_count\": "));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"kv_state_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"kind\": \"bounded_qk_tensor_state.v1\""));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"kv_state_signature_sha256\": \""));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
-                            "\"architecture_state_summary\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"kind\": \"bounded_qk_tensor_state.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"kv_state_signature_sha256\": \""));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"architecture_state_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"kind\": \"bounded_hidden_tensor_qk_forward_state.v1\""));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"architecture_state_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"forward_state_kind\": \"projection_carried_forward_state.v1\""));
-    T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"forward_state_generation\": 1"));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text, "\"forward_state_generation\": 1"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"forward_state_class\": "));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text,
                             "\"transition_kind\": \"forward_state_feedback_state_transition.v1\""));
 
-    const auto forward_state_three_step_result =
-        run_cli_with_timeout(t81_bin,
-                             {"ai", "inference", "run", "--model", "contract-forward-state-demo",
-                              "--model-file", forward_state_model_path.string(), "--mode",
-                              "strict_deterministic", "--prompt", "greet_hello", "--max-tokens",
-                              "3"},
-                             std::chrono::seconds(60));
+    const auto forward_state_three_step_result = run_cli_with_timeout(
+        t81_bin,
+        {"ai", "inference", "run", "--model", "contract-forward-state-demo", "--model-file",
+         forward_state_model_path.string(), "--mode", "strict_deterministic", "--prompt",
+         "greet_hello", "--max-tokens", "3"},
+        std::chrono::seconds(60));
 
     T81_TEST_CHECK(forward_state_three_step_result.exit_code == 0);
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text, "\"generated_tokens\": "));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"forward_state_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"state_input_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"kv_state_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"architecture_state_summary\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"forward_state_summary\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"state_input_summary\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"kv_state_summary\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"architecture_state_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kind\": \"bounded_qk_tensor_state.v1\""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"kv_state_carry_mode_kind\": \"architecture_state_evolved_qk_signature.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text,
+                 "\"kv_state_carry_mode_kind\": \"architecture_state_evolved_qk_signature.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"kind\": \"bounded_hidden_tensor_qk_forward_state.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
@@ -1509,27 +1509,26 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"intermediate_tensor_blend_used\": true"));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"hidden_tensor_carry_mode_kind\": \"architecture_state_evolved_hidden_tensor_feedback.v1\""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"hidden_tensor_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"kv_state_signature_sha256\": \""));
+                            "\"hidden_tensor_carry_mode_kind\": "
+                            "\"architecture_state_evolved_hidden_tensor_feedback.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"hidden_tensor_summary\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"kv_state_signature_sha256\": \""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_hidden_tensor_signature_sha256\": \""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"feedback_steps\": "));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text, "\"feedback_steps\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_kv_state_signature_sha256\": \""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"final_kv_state_carry_mode_kind\": \"architecture_state_evolved_qk_signature.v1\""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"feedback_steps\": "));
+    T81_TEST_CHECK(contains(
+        forward_state_three_step_result.stdout_text,
+        "\"final_kv_state_carry_mode_kind\": \"architecture_state_evolved_qk_signature.v1\""));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text, "\"feedback_steps\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"final_architecture_state_signature_sha256\": \""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"architecture_state_class\": \""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"feedback_steps\": "));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"architecture_state_class\": \""));
+    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text, "\"feedback_steps\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"architecture_state_confidence_score\": "));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
@@ -1538,14 +1537,15 @@ int main(int argc, char* argv[]) {
                             "\"confidence_envelope\": \"bounded_architecture_state_probe.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"architecture_state_guardrail_triggered\": "));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"artifact_visibility\": {"));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"max_confidence_score\": "));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"final_stability_kind\": \""));
-    T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
-                            "\"transition_kind\": \"architecture_state_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"artifact_visibility\": {"));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"max_confidence_score\": "));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text, "\"final_stability_kind\": \""));
+    T81_TEST_CHECK(
+        contains(forward_state_three_step_result.stdout_text,
+                 "\"transition_kind\": \"architecture_state_feedback_state_transition.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
@@ -1555,77 +1555,63 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(forward_state_three_step_result.stdout_text,
                             "\"transition_kind\": \"forward_state_feedback_state_transition.v1\""));
 
-    const auto forward_state_four_step_result =
-        run_cli_with_timeout(t81_bin,
-                             {"ai", "inference", "run", "--model", "contract-forward-state-demo",
-                              "--model-file", forward_state_model_path.string(), "--mode",
-                              "strict_deterministic", "--prompt", "greet_hello", "--max-tokens",
-                              "4"},
-                             std::chrono::seconds(60));
+    const auto forward_state_four_step_result = run_cli_with_timeout(
+        t81_bin,
+        {"ai", "inference", "run", "--model", "contract-forward-state-demo", "--model-file",
+         forward_state_model_path.string(), "--mode", "strict_deterministic", "--prompt",
+         "greet_hello", "--max-tokens", "4"},
+        std::chrono::seconds(60));
 
     T81_TEST_CHECK(forward_state_four_step_result.exit_code == 0);
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"generated_tokens\": 4"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"decode_trace_full_steps\": 4"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"bounded_horizon_steps\": 4"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"bounded_horizon_remaining\": 0"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"bounded_horizon_utilization\": 1"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"bounded_horizon_reached\": true"));
     T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"termination_reason\": "
-                 "\"deep_architecture_state_horizon_reached\""));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"hidden_tensor_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"feedback_steps\": 3"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"kv_state_summary\": {"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"feedback_steps\": 4"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"architecture_state_summary\": {"));
+        contains(forward_state_four_step_result.stdout_text, "\"decode_trace_full_steps\": 4"));
     T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"confidence_envelope\": "
-                 "\"bounded_deep_architecture_state_probe.v1\""));
+        contains(forward_state_four_step_result.stdout_text, "\"bounded_horizon_steps\": 4"));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"bounded_horizon_remaining\": 0"));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"bounded_horizon_utilization\": 1"));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"bounded_horizon_reached\": true"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"deep_feedback_used\": true"));
+                            "\"termination_reason\": "
+                            "\"deep_architecture_state_horizon_reached\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"hidden_tensor_summary\": {"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"feedback_steps\": 3"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"kv_state_summary\": {"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"feedback_steps\": 4"));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"architecture_state_summary\": {"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"deep_feedback_steps\": 1"));
-    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"utilization\": 0.5"));
+                            "\"confidence_envelope\": "
+                            "\"bounded_deep_architecture_state_probe.v1\""));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"deep_feedback_used\": true"));
+    T81_TEST_CHECK(
+        contains(forward_state_four_step_result.stdout_text, "\"deep_feedback_steps\": 1"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"utilization\": 0.5"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
                             "\"architecture_state_deep_feedback_used\": true"));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text, "\"feedback_steps\": 2"));
     T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
-                            "\"feedback_steps\": 2"));
-    T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"transition_kind\": "
-                 "\"architecture_state_feedback_state_transition.v1\""));
-    T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"transition_kind\": "
-                 "\"architecture_state_deep_feedback_state_transition.v1\""));
-    T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
-    T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"candidate_basis_kind\": "
-                 "\"architecture_state_deep_feedback_window.v1\""));
-    T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"decode_mode_kind\": "
-                 "\"architecture_state_feedback_projection.v1\""));
-    T81_TEST_CHECK(
-        contains(forward_state_four_step_result.stdout_text,
-                 "\"decode_mode_kind\": "
-                 "\"architecture_state_deep_feedback_projection.v1\""));
+                            "\"transition_kind\": "
+                            "\"architecture_state_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"transition_kind\": "
+                            "\"architecture_state_deep_feedback_state_transition.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"candidate_basis_kind\": \"architecture_state_feedback_window.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"candidate_basis_kind\": "
+                            "\"architecture_state_deep_feedback_window.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"decode_mode_kind\": "
+                            "\"architecture_state_feedback_projection.v1\""));
+    T81_TEST_CHECK(contains(forward_state_four_step_result.stdout_text,
+                            "\"decode_mode_kind\": "
+                            "\"architecture_state_deep_feedback_projection.v1\""));
 
     const fs::path degraded_model_path = model_dir / "contract-degraded-demo.t81w";
     const fs::path degraded_tokenizer_path = model_dir / "tokenizer.json";
@@ -1661,11 +1647,10 @@ int main(int argc, char* argv[]) {
 )";
     }
 
-    const auto degraded_ai_result = run_cli(
-        t81_bin,
-        {"ai",        "inference",             "run",    "--model", "contract-degraded-demo",
-         "--model-file", degraded_model_path.string(), "--mode",   "strict_deterministic",
-         "--prompt",  "greet hello",          "--max-tokens", "2"});
+    const auto degraded_ai_result =
+        run_cli(t81_bin, {"ai", "inference", "run", "--model", "contract-degraded-demo",
+                          "--model-file", degraded_model_path.string(), "--mode",
+                          "strict_deterministic", "--prompt", "greet hello", "--max-tokens", "2"});
 
     T81_TEST_CHECK(degraded_ai_result.exit_code == 0);
     T81_TEST_CHECK(contains(degraded_ai_result.stdout_text, "\"bounded_decode_health\": {"));
@@ -1687,8 +1672,8 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    const fs::path hello_world =
-        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "core-language" / "hello_world.t81";
+    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path() / "examples" /
+                                 "core-language" / "hello_world.t81";
     const auto memory_stats_result =
         run_cli(t81_bin, {"internal", "memory-stats", hello_world.string()});
     T81_TEST_CHECK(memory_stats_result.exit_code == 0);
@@ -1722,8 +1707,8 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    const fs::path hello_world =
-        fs::absolute(t81_bin).parent_path().parent_path() / "examples" / "core-language" / "hello_world.t81";
+    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path() / "examples" /
+                                 "core-language" / "hello_world.t81";
 
     const auto llvm_result = run_cli(t81_bin, {"llvm", "compile", hello_world.string()});
     T81_TEST_CHECK(!contains(llvm_result.stderr_text, "Multiple input files not supported"));

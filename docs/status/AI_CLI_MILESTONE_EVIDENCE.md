@@ -33,13 +33,13 @@ What is real today:
 Checked-in proof points:
 
 - `ready`:
-  [run_ready_ai_probe.sh](../../examples/model-load-canonfs/run_ready_ai_probe.sh)
+  [run_ready_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_ready_ai_probe.sh)
 - `guarded`:
-  [run_guarded_ai_probe.sh](../../examples/model-load-canonfs/run_guarded_ai_probe.sh)
+  [run_guarded_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_guarded_ai_probe.sh)
 - `degraded`:
-  [run_degraded_ai_probe.sh](../../examples/model-load-canonfs/run_degraded_ai_probe.sh)
+  [run_degraded_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_degraded_ai_probe.sh)
 - bounded forward/architecture-state lane:
-  [run_forward_state_ai_probe.sh](../../examples/model-load-canonfs/run_forward_state_ai_probe.sh)
+  [run_forward_state_ai_probe.sh](../../examples/ai-and-inference/model-load-canonfs/run_forward_state_ai_probe.sh)
 
 The current bounded forward-state probe demonstrates:
 
