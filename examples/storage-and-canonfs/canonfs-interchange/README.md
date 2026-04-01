@@ -3,7 +3,8 @@
 This is the smallest golden RFC-00D1 example in the repo.
 
 It shows a real host directory import into CanonFS, a real export back out to a
-host directory, and one explicit policy-profile denial.
+host directory, and the built-in policy-profile surface that currently ships as
+the narrow v1 candidate contract.
 
 ## Files
 
@@ -76,8 +77,32 @@ Expected shape:
 
 - status: `error`
 - policy result: `denied`
+- policy profile: `export-only`
 - error kind: `policy-failure`
 - error code: `canonfs-policy-denied`
+- error reason: `policy_denied`
+
+## Built-In Policy Profiles
+
+The current built-in profiles are intentionally narrow and deterministic:
+
+- `permissive`
+  allow import and export unless an explicit policy document/evaluator denies the request
+- `import-only`
+  allow `canonfs import` and deny `canonfs export` before host materialization
+- `export-only`
+  allow `canonfs export` and deny `canonfs import` before CanonFS storage writes
+- `deny-all`
+  deny both `canonfs import` and `canonfs export`
+
+The current profile surface is about pre-side-effect admission control, not rich
+content policy. In other words:
+
+- profile denial happens before CanonFS import writes or export materialization
+- JSON result documents still record `policy_result`, `policy_profile`, and a
+  structured error with `kind`, `code`, `reason`, and `message`
+- richer policy semantics can still be added later through policy documents
+  without widening the built-in profile names
 
 ## Notes
 

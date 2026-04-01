@@ -18,6 +18,13 @@ enum class InterchangePolicyProfile {
   DenyAll,
 };
 
+struct InterchangePolicyProfileInfo {
+  std::string_view name;
+  bool allows_import = false;
+  bool allows_export = false;
+  std::string_view summary;
+};
+
 struct InterchangePolicyDecision {
   bool allowed = true;
   std::string reason = "allow";
@@ -71,6 +78,8 @@ struct ExportOutcome {
 };
 
 [[nodiscard]] std::string_view interchange_policy_profile_name(InterchangePolicyProfile profile);
+[[nodiscard]] InterchangePolicyProfileInfo interchange_policy_profile_info(
+    InterchangePolicyProfile profile);
 [[nodiscard]] std::optional<InterchangePolicyProfile> parse_interchange_policy_profile(
     std::string_view profile_name);
 

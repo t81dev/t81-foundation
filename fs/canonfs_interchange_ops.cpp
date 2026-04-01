@@ -317,6 +317,25 @@ std::string_view interchange_policy_profile_name(InterchangePolicyProfile profil
   return "permissive";
 }
 
+InterchangePolicyProfileInfo interchange_policy_profile_info(InterchangePolicyProfile profile) {
+  switch (profile) {
+    case InterchangePolicyProfile::Permissive:
+      return {"permissive", true, true,
+              "allow import and export unless an explicit policy evaluator denies the request"};
+    case InterchangePolicyProfile::ImportOnly:
+      return {"import-only", true, false,
+              "allow canonfs import and deny canonfs export before materialization"};
+    case InterchangePolicyProfile::ExportOnly:
+      return {"export-only", false, true,
+              "allow canonfs export and deny canonfs import before storage writes"};
+    case InterchangePolicyProfile::DenyAll:
+      return {"deny-all", false, false,
+              "deny canonfs import and export before CanonFS or host-side materialization"};
+  }
+  return {"permissive", true, true,
+          "allow import and export unless an explicit policy evaluator denies the request"};
+}
+
 std::optional<InterchangePolicyProfile> parse_interchange_policy_profile(
     std::string_view profile_name) {
   if (profile_name == "permissive") {

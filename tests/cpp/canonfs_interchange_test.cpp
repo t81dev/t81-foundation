@@ -26,6 +26,52 @@ t81::canonfs::interchange::Issue issue(std::string_view reason, std::string_view
 int main() {
   using namespace t81::canonfs::interchange;
 
+  {
+    const auto permissive =
+        t81::canonfs::interchange_policy_profile_info(
+            t81::canonfs::InterchangePolicyProfile::Permissive);
+    if (!expect(permissive.name == "permissive", "permissive profile name mismatch")) {
+      return 1;
+    }
+    if (!expect(permissive.allows_import && permissive.allows_export,
+                "permissive profile should allow import and export")) {
+      return 1;
+    }
+
+    const auto import_only =
+        t81::canonfs::interchange_policy_profile_info(
+            t81::canonfs::InterchangePolicyProfile::ImportOnly);
+    if (!expect(import_only.name == "import-only", "import-only profile name mismatch")) {
+      return 1;
+    }
+    if (!expect(import_only.allows_import && !import_only.allows_export,
+                "import-only profile should allow import and deny export")) {
+      return 1;
+    }
+
+    const auto export_only =
+        t81::canonfs::interchange_policy_profile_info(
+            t81::canonfs::InterchangePolicyProfile::ExportOnly);
+    if (!expect(export_only.name == "export-only", "export-only profile name mismatch")) {
+      return 1;
+    }
+    if (!expect(!export_only.allows_import && export_only.allows_export,
+                "export-only profile should deny import and allow export")) {
+      return 1;
+    }
+
+    const auto deny_all =
+        t81::canonfs::interchange_policy_profile_info(
+            t81::canonfs::InterchangePolicyProfile::DenyAll);
+    if (!expect(deny_all.name == "deny-all", "deny-all profile name mismatch")) {
+      return 1;
+    }
+    if (!expect(!deny_all.allows_import && !deny_all.allows_export,
+                "deny-all profile should deny import and export")) {
+      return 1;
+    }
+  }
+
   const std::vector<Entry> entries = {
       Entry{"a.txt", "sha3-256:abc123", 12},
       Entry{"nested/b.txt", "sha3-256:def456", 34},
@@ -395,6 +441,59 @@ int main() {
     }
     if (!expect(import_only_export.policy_profile == "import-only",
                 "import-only profile export policy profile mismatch")) {
+      return 1;
+    }
+    if (!expect(!import_only_export.errors.empty(),
+                "import-only profile should record a denial error")) {
+      return 1;
+    }
+    if (!expect(import_only_export.errors.front().reason == "policy_denied",
+                "import-only profile should report policy_denied")) {
+      return 1;
+    }
+
+    t81::canonfs::ImportOptions deny_all_import_options;
+    deny_all_import_options.canonfs_root = import_options.canonfs_root;
+    deny_all_import_options.policy_profile = t81::canonfs::InterchangePolicyProfile::DenyAll;
+    const auto deny_all_import = t81::canonfs::import_path(source, deny_all_import_options);
+    if (!expect(!deny_all_import.ok(), "deny-all profile should deny import")) return 1;
+    if (!expect(deny_all_import.policy_result == "denied",
+                "deny-all profile import result mismatch")) {
+      return 1;
+    }
+    if (!expect(deny_all_import.policy_profile == "deny-all",
+                "deny-all profile import policy profile mismatch")) {
+      return 1;
+    }
+    if (!expect(!deny_all_import.errors.empty(),
+                "deny-all profile import should record an error")) {
+      return 1;
+    }
+    if (!expect(deny_all_import.errors.front().reason == "policy_denied",
+                "deny-all profile import should report policy_denied")) {
+      return 1;
+    }
+
+    t81::canonfs::ExportOptions deny_all_export_options;
+    deny_all_export_options.canonfs_root = import_options.canonfs_root;
+    deny_all_export_options.policy_profile = t81::canonfs::InterchangePolicyProfile::DenyAll;
+    const auto deny_all_export = t81::canonfs::export_ref(
+        import_outcome.imported_objects.front(), root / "deny-all-denied.txt", deny_all_export_options);
+    if (!expect(!deny_all_export.ok(), "deny-all profile should deny export")) return 1;
+    if (!expect(deny_all_export.policy_result == "denied",
+                "deny-all profile export result mismatch")) {
+      return 1;
+    }
+    if (!expect(deny_all_export.policy_profile == "deny-all",
+                "deny-all profile export policy profile mismatch")) {
+      return 1;
+    }
+    if (!expect(!deny_all_export.errors.empty(),
+                "deny-all profile export should record an error")) {
+      return 1;
+    }
+    if (!expect(deny_all_export.errors.front().reason == "policy_denied",
+                "deny-all profile export should report policy_denied")) {
       return 1;
     }
 

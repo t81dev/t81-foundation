@@ -70,6 +70,50 @@ Still draft inside RFC-00D1:
   schemas
 - whether RFC-scoped schema artifacts move into a broader stable schema catalog
 
+### 1.2 Current v1 Candidate Contract
+
+The current review posture is:
+
+- treat the implemented JSON interchange surface as the v1 candidate contract
+- keep the broader RFC in `draft` until the deferred v1 questions above stop
+  moving
+- avoid broadening source kinds, target kinds, or interchange formats during
+  this promotion review
+
+The current v1 candidate contract includes:
+
+- CLI operations:
+  `canonfs import` and `canonfs export`
+- result schemas:
+  `t81.canonfs-import.v1` and `t81.canonfs-export.v1`
+- provenance schemas:
+  `t81.canonfs-import-provenance.v1` and
+  `t81.canonfs-export-provenance.v1`
+- manifest schema:
+  `t81.canonfs-interchange-manifest.v1`
+- required source and target kinds:
+  `host-file` and `host-directory`
+- required top-level result fields:
+  `schema`, `status`, source/target kind and ref fields, object/ref arrays,
+  `provenance_ref`, `policy_result`, `policy_profile`
+- stable linkage fields:
+  `provenance_schema` and `manifest_schema`
+- stable structured error entry fields:
+  `kind`, `code`, `reason`, `message`
+- current policy-profile names:
+  `permissive`, `import-only`, `export-only`, `deny-all`
+
+The current promotion blockers are:
+
+- decide whether the RFC-scoped schema artifacts remain the stable contract
+  location or move into a broader shared schema catalog
+- decide whether text output is part of the promoted contract or remains a
+  convenience projection over JSON
+- decide whether symlink handling is explicitly out of v1 or promoted later as
+  a bounded extension
+- keep policy-profile semantics narrow and documented before adding richer
+  interchange formats or transport surfaces
+
 ## 2. Motivation
 
 CanonFS already serves as the project's canonical storage identity layer. But a

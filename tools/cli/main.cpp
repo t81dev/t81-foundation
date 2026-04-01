@@ -61,6 +61,7 @@
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/canonfs/interchange_ops.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
@@ -728,7 +729,16 @@ Actions:
                                                  Export a CanonFS object or interchange manifest
 
 Policy profiles:
-  permissive | import-only | export-only | deny-all
+)";
+  for (t81::canonfs::InterchangePolicyProfile profile :
+       {t81::canonfs::InterchangePolicyProfile::Permissive,
+        t81::canonfs::InterchangePolicyProfile::ImportOnly,
+        t81::canonfs::InterchangePolicyProfile::ExportOnly,
+        t81::canonfs::InterchangePolicyProfile::DenyAll}) {
+    const auto info = t81::canonfs::interchange_policy_profile_info(profile);
+    std::cerr << "  " << info.name << "  " << info.summary << "\n";
+  }
+  std::cerr << R"(
   stat <sha3-256:hash> [--json] [--canonfs-root <path>]
   verify <sha3-256:hash> [--json] [--canonfs-root <path>]
   snapshot [--json] [--canonfs-root <path>]

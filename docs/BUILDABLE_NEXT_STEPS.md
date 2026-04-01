@@ -8,18 +8,19 @@ Use this board when deciding what to do next.
 
 ### Now
 
-- RFC-00D1 contract promotion review:
-  treat the current CanonFS interchange JSON/schema/reason surface as a real
-  v1 contract candidate and write down what is stable versus still draft
 - RFC-00D1 policy-profile depth:
-  keep improving policy-profile docs/examples and any remaining profile-shaped
-  denial clarity without broadening interchange format scope
+  build on the now-documented built-in profile surface by improving policy
+  documents, examples, and any remaining profile-shaped denial clarity without
+  broadening interchange format scope
 - CI and portability boringness:
   remove concrete toolchain/setup footguns, especially in build, demo, and
   smoke-test paths contributors are likely to try early
 
 ### Next
 
+- RFC-00D1 contract promotion follow-through:
+  keep the current v1 candidate surface explicit in docs/examples and only
+  promote more once the remaining RFC-scoped blockers actually stop moving
 - Public-story cleanup:
   keep the runtime-first story, handoff docs, and contributor roadmap aligned
   with the strongest usable surfaces
@@ -53,7 +54,23 @@ repo.
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
-10. Review RFC-00D1 for partial contract promotion after behavior stops moving.
+10. (DONE) Review RFC-00D1 for partial contract promotion after behavior stops moving.
+    Current state:
+    RFC-00D1 now explicitly names the current CanonFS interchange v1 candidate
+    contract instead of leaving contributors to infer it from code and tests.
+    The RFC now calls out:
+    - the stable CLI operations, schema ids, source/target kinds, and
+      policy-profile names
+    - the stable structured error entry fields `kind`, `code`, `reason`, and
+      `message`
+    - the explicit result linkage fields `provenance_schema` and
+      `manifest_schema`
+    - the remaining promotion blockers that still keep the broader RFC in
+      `draft`
+
+    The practical result is that a contributor can now tell which interchange
+    fields are the current v1 candidate surface and which questions are still
+    intentionally deferred.
 11. (DONE) Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
     Current state:
     the strict deterministic `t81_reference_vm` lane is already real. It now
@@ -123,6 +140,30 @@ repo.
     2. tighten policy-profile docs/examples rather than adding new interchange
        formats or broader subsystem scope
 
+13. (DONE) Make the built-in RFC-00D1 policy-profile surface explicit.
+    Current state:
+    the four shipped built-in interchange policy profiles now have a reusable
+    core description, user-visible CLI help text, example coverage, and direct
+    core plus CLI tests. The repo now says plainly what `permissive`,
+    `import-only`, `export-only`, and `deny-all` do instead of leaving those
+    semantics implicit in code and denials.
+
+    It now has:
+    - reusable core profile metadata for name, import/export allowance, and
+      summary
+    - `t81 canonfs` help text that explains the built-in profiles directly
+    - golden-example docs covering the current narrow profile semantics
+    - direct tests for all four built-in profiles, including `deny-all`
+
+    The practical result is that the built-in profile surface is now a real,
+    contributor-facing contract instead of maintainer memory.
+
+    If this lane is revisited next, the highest-value work is:
+    1. add one or two small policy-document examples that show how explicit
+       policy files extend or override the built-in profiles
+    2. keep policy denial reporting explicit without expanding interchange
+       formats or adding new built-in profile families
+
 ## Pick one lane
 
 - If you want the best chance of shipping code quickly, start with RFC-00D1.
@@ -141,21 +182,24 @@ Why this matters:
 
 Concrete work:
 
-- replace the current narrow built-in profiles with richer interchange policy decisions
-- add explicit policy-profile docs and examples
+- add one or two small policy-document examples that build on the current
+  built-in profiles
+- keep explicit policy-profile docs and examples aligned with CLI/core behavior
 - extend import/export denial reasons and provenance details
 
 Key files:
 
 - [interchange_ops.hpp](../include/t81/canonfs/interchange_ops.hpp)
 - [canonfs_interchange_ops.cpp](../fs/canonfs_interchange_ops.cpp)
+- [examples/storage-and-canonfs/canonfs-interchange/README.md](../examples/storage-and-canonfs/canonfs-interchange/README.md)
 - [driver.cpp](../tools/cli/driver.cpp)
 - [canonfs_interchange_test.cpp](../tests/cpp/canonfs_interchange_test.cpp)
 - [cli_contract_test.cpp](../tests/cpp/cli_contract_test.cpp)
 
 Definition of done:
 
-- policy behavior is more expressive than allow/deny-by-profile
+- a contributor can understand the built-in profiles and at least one policy
+  document example without reading the implementation
 - tests cover new denial/reporting cases
 - CLI and core API remain aligned
 - schema artifacts and emitted JSON stay aligned
