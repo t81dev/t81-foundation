@@ -1,0 +1,7 @@
+{
+  "operation": "canonfs import",
+  "source_ref": "examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w",
+  "canonfs_root": "build/canonfs-v1-contract-root",
+  "json": true,
+  "policy_profile": "permissive"
+}

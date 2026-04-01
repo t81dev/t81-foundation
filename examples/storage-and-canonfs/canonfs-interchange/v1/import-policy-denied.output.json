@@ -1,0 +1,23 @@
+{
+  "schema": "t81.canonfs-import.v1",
+  "status": "error",
+  "source_kind": "host-file",
+  "source_ref": "examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w",
+  "imported_objects": [  ],
+  "provenance_schema": "t81.canonfs-import-provenance.v1",
+  "provenance_ref": "sha3-256:4jvQPENΓLuoVmxIctqμtσRh5cμiCKO÷Qu≤mNoo=Zw",
+  "manifest_schema": null,
+  "manifest_ref": null,
+  "imported_paths": [  ],
+  "warnings": [  ],
+  "errors": [
+    {"kind": "policy-failure", "message": "policy denied import of model.t81w: TLOADHASH denied (allowed-tensor-hashes empty)", "code": "canonfs-policy-denied", "reason": "policy_denied"}
+  ],
+  "policy_result": "denied",
+  "policy_profile": "permissive",
+  "normalization_summary": {
+    "timestamps": "provenance-only",
+    "ownership": "provenance-only",
+    "mode_hint": "preserved"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "operation": "canonfs export",
+  "source_object": "sha3-256:1W÷r≈QiCFNI3Sμw×7JSKo≤71∞iEEbFVh4<MMTnKLb",
+  "source_json": "examples/storage-and-canonfs/canonfs-interchange/v1/invalid-schema.json",
+  "target_ref": "build/canonfs-v1-contract-export/invalid-schema.bin",
+  "canonfs_root": "build/canonfs-v1-contract-root",
+  "json": true,
+  "policy_profile": "permissive"
+}

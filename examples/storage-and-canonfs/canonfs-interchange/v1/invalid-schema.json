@@ -1,0 +1,4 @@
+{
+  "schema": "t81.canonfs-invalid-example.v1",
+  "payload": "not-a-manifest"
+}

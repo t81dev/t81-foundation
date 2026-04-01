@@ -1,0 +1,8 @@
+{
+  "operation": "canonfs export",
+  "source_object": "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX",
+  "target_ref": "build/canonfs-v1-contract-export/model.t81w",
+  "canonfs_root": "build/canonfs-v1-contract-root",
+  "json": true,
+  "policy_profile": "permissive"
+}

@@ -17,6 +17,14 @@ bool expect(bool condition, const char* message) {
   return true;
 }
 
+std::string read_file(const std::filesystem::path& path) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    return {};
+  }
+  return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+}
+
 t81::canonfs::interchange::Issue issue(std::string_view reason, std::string_view message) {
   return t81::canonfs::interchange::Issue{std::string(reason), std::string(message)};
 }
@@ -25,6 +33,8 @@ t81::canonfs::interchange::Issue issue(std::string_view reason, std::string_view
 
 int main() {
   using namespace t81::canonfs::interchange;
+  const std::filesystem::path cwd = std::filesystem::current_path();
+  const std::filesystem::path repo_root = cwd.filename() == "build" ? cwd.parent_path() : cwd;
 
   {
     const auto permissive =
@@ -68,6 +78,130 @@ int main() {
     }
     if (!expect(!deny_all.allows_import && !deny_all.allows_export,
                 "deny-all profile should deny import and export")) {
+      return 1;
+    }
+  }
+
+  {
+    struct ImportReasonCase {
+      const char* reason;
+      const char* code;
+      const char* kind;
+    };
+    const std::vector<ImportReasonCase> import_reason_cases = {
+        {"policy_denied", "canonfs-policy-denied", "policy-failure"},
+        {"missing_source", "canonfs-import-missing-source", "source-failure"},
+        {"unsupported_source_kind", "canonfs-import-unsupported-source-kind", "source-failure"},
+        {"symlink_not_supported", "canonfs-import-symlink-not-supported",
+         "normalization-failure"},
+        {"invalid_policy_profile", "canonfs-import-invalid-policy-profile", "source-failure"},
+        {"invalid_policy_document", "canonfs-import-invalid-policy-document", "source-failure"},
+        {"manifest_write_failed", "canonfs-import-manifest-write-failed", "source-failure"},
+        {"provenance_write_failed", "canonfs-import-provenance-write-failed", "source-failure"},
+        {"storage_write_failed", "canonfs-import-storage-write-failed", "source-failure"},
+    };
+    for (const auto& reason_case : import_reason_cases) {
+      const std::string rendered = render_import_result(
+          "error", "host-file", "fixture.bin", {}, "", "", {}, {},
+          {issue(reason_case.reason, std::string("fixture: ") + reason_case.reason)}, "denied",
+          "permissive");
+      if (!expect(rendered.find(std::string("\"reason\": \"") + reason_case.reason + "\"") !=
+                      std::string::npos,
+                  "import reason should be rendered explicitly")) {
+        return 1;
+      }
+      if (!expect(rendered.find(std::string("\"code\": \"") + reason_case.code + "\"") !=
+                      std::string::npos,
+                  "import reason should map to stable code")) {
+        return 1;
+      }
+      if (!expect(rendered.find(std::string("\"kind\": \"") + reason_case.kind + "\"") !=
+                      std::string::npos,
+                  "import reason should map to stable kind")) {
+        return 1;
+      }
+    }
+
+    struct ExportReasonCase {
+      const char* reason;
+      const char* code;
+      const char* kind;
+    };
+    const std::vector<ExportReasonCase> export_reason_cases = {
+        {"policy_denied", "canonfs-policy-denied", "policy-failure"},
+        {"unsafe_target_path", "canonfs-export-unsafe-target-path", "target-failure"},
+        {"target_directory_create_failed",
+         "canonfs-export-target-directory-create-failed", "target-failure"},
+        {"target_open_failed", "canonfs-export-target-open-failed", "target-failure"},
+        {"target_write_failed", "canonfs-export-target-write-failed", "target-failure"},
+        {"invalid_source_ref", "canonfs-export-invalid-source-ref",
+         "materialization-failure"},
+        {"missing_object", "canonfs-export-missing-object", "materialization-failure"},
+        {"hash_mismatch", "canonfs-export-hash-mismatch", "materialization-failure"},
+        {"invalid_schema", "canonfs-export-invalid-schema", "materialization-failure"},
+        {"malformed_manifest", "canonfs-export-malformed-manifest",
+         "materialization-failure"},
+        {"invalid_policy_profile", "canonfs-export-invalid-policy-profile",
+         "materialization-failure"},
+        {"invalid_policy_document", "canonfs-export-invalid-policy-document",
+         "materialization-failure"},
+        {"provenance_write_failed", "canonfs-export-provenance-write-failed",
+         "materialization-failure"},
+    };
+    for (const auto& reason_case : export_reason_cases) {
+      const std::string rendered = render_export_result(
+          "error", {"sha3-256:fixture"}, "host-file", "fixture.out", "", "", {}, {},
+          {issue(reason_case.reason, std::string("fixture: ") + reason_case.reason)}, "denied",
+          "permissive");
+      if (!expect(rendered.find(std::string("\"reason\": \"") + reason_case.reason + "\"") !=
+                      std::string::npos,
+                  "export reason should be rendered explicitly")) {
+        return 1;
+      }
+      if (!expect(rendered.find(std::string("\"code\": \"") + reason_case.code + "\"") !=
+                      std::string::npos,
+                  "export reason should map to stable code")) {
+        return 1;
+      }
+      if (!expect(rendered.find(std::string("\"kind\": \"") + reason_case.kind + "\"") !=
+                      std::string::npos,
+                  "export reason should map to stable kind")) {
+        return 1;
+      }
+    }
+  }
+
+  {
+    const auto golden_import = read_file(
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
+        "import-success.output.json");
+    if (!expect(!golden_import.empty(), "golden import example should exist")) {
+      return 1;
+    }
+    const std::string rendered_import = render_import_result(
+        "ok", "host-file", "examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w",
+        {"sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX"},
+        "sha3-256:2mV0l=Du6τLtRW>c>>NπclXlOO><b7lsxbd≠fzJr×",
+        "sha3-256:3f-Nj>4≈MτV<t9πσa6b≤du9R×wVEτl÷GULP2ghΓFω", {"model.t81w"}, {}, {}, "allowed",
+        "permissive");
+    if (!expect(rendered_import == golden_import,
+                "rendered import example should match golden output byte-for-byte")) {
+      return 1;
+    }
+
+    const auto golden_export = read_file(
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "v1" /
+        "export-success.output.json");
+    if (!expect(!golden_export.empty(), "golden export example should exist")) {
+      return 1;
+    }
+    const std::string rendered_export = render_export_result(
+        "ok", {"sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX"}, "host-file",
+        "build/canonfs-v1-contract-export/model.t81w",
+        "sha3-256:2nFSqKW=σ3μlmgTU61cvgp÷≤WnG=×≥RAoHwI2IW≠X", "", {"model.t81w"}, {}, {},
+        "allowed", "permissive");
+    if (!expect(rendered_export == golden_export,
+                "rendered export example should match golden output byte-for-byte")) {
       return 1;
     }
   }

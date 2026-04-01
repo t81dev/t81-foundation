@@ -1,0 +1,25 @@
+{
+  "schema": "t81.canonfs-import.v1",
+  "status": "ok",
+  "source_kind": "host-file",
+  "source_ref": "examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w",
+  "imported_objects": [
+    "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX"
+  ],
+  "provenance_schema": "t81.canonfs-import-provenance.v1",
+  "provenance_ref": "sha3-256:2mV0l=Du6τLtRW>c>>NπclXlOO><b7lsxbd≠fzJr×",
+  "manifest_schema": "t81.canonfs-interchange-manifest.v1",
+  "manifest_ref": "sha3-256:3f-Nj>4≈MτV<t9πσa6b≤du9R×wVEτl÷GULP2ghΓFω",
+  "imported_paths": [
+    "model.t81w"
+  ],
+  "warnings": [  ],
+  "errors": [  ],
+  "policy_result": "allowed",
+  "policy_profile": "permissive",
+  "normalization_summary": {
+    "timestamps": "provenance-only",
+    "ownership": "provenance-only",
+    "mode_hint": "preserved"
+  }
+}

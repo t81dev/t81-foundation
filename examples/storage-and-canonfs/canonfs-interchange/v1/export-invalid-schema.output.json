@@ -1,0 +1,25 @@
+{
+  "schema": "t81.canonfs-export.v1",
+  "status": "error",
+  "source_objects": [
+    "sha3-256:1W÷r≈QiCFNI3Sμw×7JSKo≤71∞iEEbFVh4<MMTnKLb"
+  ],
+  "target_kind": "host-file",
+  "target_ref": "build/canonfs-v1-contract-export/invalid-schema.bin",
+  "provenance_schema": "t81.canonfs-export-provenance.v1",
+  "provenance_ref": "sha3-256:≥MaMVΓ9pxNSBUUZf≥τpy1KMe64ansωσkjσEπ61iF",
+  "manifest_schema": null,
+  "manifest_ref": null,
+  "materialized_paths": [  ],
+  "warnings": [  ],
+  "errors": [
+    {"kind": "materialization-failure", "message": "invalid interchange schema for export source object", "code": "canonfs-export-invalid-schema", "reason": "invalid_schema"}
+  ],
+  "policy_result": "allowed",
+  "policy_profile": "permissive",
+  "materialization_summary": {
+    "timestamps": "not-restored",
+    "ownership": "synthesized",
+    "mode_hint": "preserved"
+  }
+}

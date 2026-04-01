@@ -6,10 +6,16 @@ It shows a real host directory import into CanonFS, a real export back out to a
 host directory, and the built-in policy-profile surface that currently ships as
 the narrow v1 candidate contract.
 
+If you want the single frozen v1 contract fixture set, start in:
+
+- `examples/storage-and-canonfs/canonfs-interchange/v1/`
+
 ## Files
 
 - `input/alpha.txt`
 - `input/nested/beta.txt`
+- `policy-deny-all.apl`
+- `policy-allow-example-inputs.apl`
 
 ## Run
 
@@ -103,6 +109,61 @@ content policy. In other words:
   structured error with `kind`, `code`, `reason`, and `message`
 - richer policy semantics can still be added later through policy documents
   without widening the built-in profile names
+
+## Policy Document Examples
+
+This example directory also includes two small Axion policy files that work
+with the current CanonFS interchange lane:
+
+- `policy-deny-all.apl`
+  denies CanonFS import/export through policy evaluation even when the built-in
+  profile is still `permissive`
+- `policy-allow-example-inputs.apl`
+  allows only the two checked-in example input objects by hash
+
+Validate them directly:
+
+```bash
+build/t81 policy validate \
+  examples/storage-and-canonfs/canonfs-interchange/policy-deny-all.apl \
+  --json
+
+build/t81 policy validate \
+  examples/storage-and-canonfs/canonfs-interchange/policy-allow-example-inputs.apl \
+  --json
+```
+
+Policy denial through a checked-in file:
+
+```bash
+build/t81 canonfs import \
+  examples/storage-and-canonfs/canonfs-interchange/input \
+  --canonfs-root "$canon_root" \
+  --policy examples/storage-and-canonfs/canonfs-interchange/policy-deny-all.apl \
+  --json
+```
+
+Expected shape:
+
+- status: `error`
+- policy result: `denied`
+- error reason: `policy_denied`
+
+Policy allowlist using the checked-in example input hashes:
+
+```bash
+build/t81 canonfs import \
+  examples/storage-and-canonfs/canonfs-interchange/input \
+  --canonfs-root "$canon_root" \
+  --policy examples/storage-and-canonfs/canonfs-interchange/policy-allow-example-inputs.apl \
+  --json
+```
+
+Expected shape:
+
+- status: `ok`
+- policy profile: `permissive`
+- import/export stay allowed because the policy file admits the example hashes
 
 ## Notes
 

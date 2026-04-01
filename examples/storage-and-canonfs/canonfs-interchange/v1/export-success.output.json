@@ -1,0 +1,25 @@
+{
+  "schema": "t81.canonfs-export.v1",
+  "status": "ok",
+  "source_objects": [
+    "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX"
+  ],
+  "target_kind": "host-file",
+  "target_ref": "build/canonfs-v1-contract-export/model.t81w",
+  "provenance_schema": "t81.canonfs-export-provenance.v1",
+  "provenance_ref": "sha3-256:2nFSqKW=σ3μlmgTU61cvgp÷≤WnG=×≥RAoHwI2IW≠X",
+  "manifest_schema": null,
+  "manifest_ref": null,
+  "materialized_paths": [
+    "model.t81w"
+  ],
+  "warnings": [  ],
+  "errors": [  ],
+  "policy_result": "allowed",
+  "policy_profile": "permissive",
+  "materialization_summary": {
+    "timestamps": "not-restored",
+    "ownership": "synthesized",
+    "mode_hint": "preserved"
+  }
+}

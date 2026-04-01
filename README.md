@@ -82,6 +82,47 @@ See full benchmarks in [`benchmarks/results/`](benchmarks/results/).
 
 ## Quick Start
 
+### 30-Second Proof: CanonFS + Axion
+
+If you want the fastest possible proof that T81 can store an immutable artifact
+ and deny a governed action, run this from the repo root after building:
+
+```bash
+tmp_root="$(mktemp -d)"
+canon_root="$tmp_root/.t81_canonfs"
+
+# 1. Import one artifact into CanonFS
+./build/t81 canonfs import \
+  examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w \
+  --canonfs-root "$canon_root" \
+  --json
+
+# 2. Export the same artifact back out by CanonFS hash
+./build/t81 canonfs export \
+  'sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX' \
+  --canonfs-root "$canon_root" \
+  --out "$tmp_root/restored.t81w" \
+  --json
+
+# 3. Try the same import under a checked-in denying policy
+./build/t81 canonfs import \
+  examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w \
+  --canonfs-root "$canon_root" \
+  --policy examples/storage-and-canonfs/canonfs-interchange/v1/policy-deny-all.apl \
+  --json
+```
+
+What you should see:
+
+- Step 1 returns `schema: "t81.canonfs-import.v1"` and `status: "ok"`
+- Step 2 returns `schema: "t81.canonfs-export.v1"` and `status: "ok"`
+- Step 3 returns `status: "error"` with:
+  - `kind: "policy-failure"`
+  - `code: "canonfs-policy-denied"`
+  - `reason: "policy_denied"`
+
+That is the shortest real demo path for the current CanonFS + Axion surface.
+
 ### Docker (easiest — ~60 seconds)
 
 ```bash

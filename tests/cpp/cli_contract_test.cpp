@@ -1098,6 +1098,141 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
                             "\"reason\": \"invalid_policy_profile\""));
 
+    const fs::path example_input_dir =
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
+    const fs::path example_deny_policy =
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
+        "policy-deny-all.apl";
+    const fs::path example_allow_policy =
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
+        "policy-allow-example-inputs.apl";
+    T81_TEST_CHECK(fs::exists(example_input_dir));
+    T81_TEST_CHECK(fs::exists(example_deny_policy));
+    T81_TEST_CHECK(fs::exists(example_allow_policy));
+
+    const auto validate_deny_example =
+        run_cli(t81_bin, {"policy", "validate", example_deny_policy.string(), "--json"});
+    T81_TEST_CHECK(validate_deny_example.exit_code == 0);
+    T81_TEST_CHECK(contains(validate_deny_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(contains(validate_deny_example.stdout_text, "\"valid\": true"));
+
+    const auto validate_allow_example =
+        run_cli(t81_bin, {"policy", "validate", example_allow_policy.string(), "--json"});
+    T81_TEST_CHECK(validate_allow_example.exit_code == 0);
+    T81_TEST_CHECK(contains(validate_allow_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(contains(validate_allow_example.stdout_text, "\"valid\": true"));
+
+    const fs::path example_canon_root = make_temp_path("t81-cli-canonfs-example-root", "");
+    const auto example_policy_deny_import = run_cli(
+        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                  example_canon_root.string(), "--policy", example_deny_policy.string(), "--json"});
+    T81_TEST_CHECK(example_policy_deny_import.exit_code != 0);
+    T81_TEST_CHECK(contains(example_policy_deny_import.stdout_text,
+                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(contains(example_policy_deny_import.stdout_text,
+                            "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(example_policy_deny_import.stdout_text,
+                            "\"reason\": \"policy_denied\""));
+
+    const auto example_policy_allow_import = run_cli(
+        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                  example_canon_root.string(), "--policy", example_allow_policy.string(), "--json"});
+    T81_TEST_CHECK(example_policy_allow_import.exit_code == 0);
+    T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text,
+                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text, "\"status\": \"ok\""));
+    const auto example_manifest_ref =
+        extract_json_string(example_policy_allow_import.stdout_text, "manifest_ref");
+    T81_TEST_CHECK(example_manifest_ref.has_value());
+
+    const fs::path example_export_root = make_temp_path("t81-cli-canonfs-example-export", "");
+    const auto example_policy_allow_export = run_cli(
+        t81_bin, {"canonfs", "export", *example_manifest_ref, "--canonfs-root",
+                  example_canon_root.string(), "--policy", example_allow_policy.string(), "--out",
+                  example_export_root.string(), "--json"});
+    T81_TEST_CHECK(example_policy_allow_export.exit_code == 0);
+    T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text,
+                            "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text, "\"status\": \"ok\""));
+    T81_TEST_CHECK(fs::exists(example_export_root / "alpha.txt"));
+    T81_TEST_CHECK(fs::exists(example_export_root / "nested" / "beta.txt"));
+
+    const fs::path contract_root = repo_root / "build" / "canonfs-v1-contract-root";
+    const fs::path contract_export_dir = repo_root / "build" / "canonfs-v1-contract-export";
+    std::error_code contract_ec;
+    fs::remove_all(contract_root, contract_ec);
+    contract_ec.clear();
+    fs::remove_all(contract_export_dir, contract_ec);
+    contract_ec.clear();
+    fs::create_directories(contract_export_dir, contract_ec);
+    T81_TEST_CHECK(!contract_ec);
+
+    const fs::path v1_dir =
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "v1";
+    const fs::path v1_model = v1_dir / "model.t81w";
+    const fs::path v1_invalid_schema = v1_dir / "invalid-schema.json";
+    const fs::path v1_policy = v1_dir / "policy-deny-all.apl";
+    const fs::path v1_import_output = v1_dir / "import-success.output.json";
+    const fs::path v1_export_output = v1_dir / "export-success.output.json";
+    const fs::path v1_missing_output = v1_dir / "export-missing-object.output.json";
+    const fs::path v1_invalid_schema_output = v1_dir / "export-invalid-schema.output.json";
+    const fs::path v1_policy_deny_output = v1_dir / "import-policy-denied.output.json";
+    T81_TEST_CHECK(fs::exists(v1_model));
+    T81_TEST_CHECK(fs::exists(v1_invalid_schema));
+    T81_TEST_CHECK(fs::exists(v1_policy));
+
+    const auto v1_import_result = run_cli_in_dir(
+        t81_bin,
+        {"canonfs", "import", "examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w",
+         "--canonfs-root", "build/canonfs-v1-contract-root", "--json"},
+        repo_root);
+    T81_TEST_CHECK(v1_import_result.exit_code == 0);
+    T81_TEST_CHECK(read_file(v1_import_output) == v1_import_result.stdout_text);
+
+    const auto v1_export_result = run_cli_in_dir(
+        t81_bin,
+        {"canonfs", "export", "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX",
+         "--canonfs-root", "build/canonfs-v1-contract-root", "--out",
+         "build/canonfs-v1-contract-export/model.t81w", "--json"},
+        repo_root);
+    T81_TEST_CHECK(v1_export_result.exit_code == 0);
+    T81_TEST_CHECK(read_file(v1_export_output) == v1_export_result.stdout_text);
+
+    const auto v1_missing_object_result = run_cli_in_dir(
+        t81_bin,
+        {"canonfs", "export", "sha3-256:missing", "--canonfs-root",
+         "build/canonfs-v1-contract-root", "--out",
+         "build/canonfs-v1-contract-export/missing.bin", "--json"},
+        repo_root);
+    T81_TEST_CHECK(v1_missing_object_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(v1_missing_output) == v1_missing_object_result.stdout_text);
+
+    const auto v1_put_invalid_schema = run_cli_in_dir(
+        t81_bin,
+        {"canonfs", "put-file",
+         "examples/storage-and-canonfs/canonfs-interchange/v1/invalid-schema.json",
+         "--canonfs-root", "build/canonfs-v1-contract-root"},
+        repo_root);
+    T81_TEST_CHECK(v1_put_invalid_schema.exit_code == 0);
+
+    const auto v1_invalid_schema_result = run_cli_in_dir(
+        t81_bin,
+        {"canonfs", "export", "sha3-256:1W÷r≈QiCFNI3Sμw×7JSKo≤71∞iEEbFVh4<MMTnKLb",
+         "--canonfs-root", "build/canonfs-v1-contract-root", "--out",
+         "build/canonfs-v1-contract-export/invalid-schema.bin", "--json"},
+        repo_root);
+    T81_TEST_CHECK(v1_invalid_schema_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(v1_invalid_schema_output) == v1_invalid_schema_result.stdout_text);
+
+    const auto v1_policy_denied_result = run_cli_in_dir(
+        t81_bin,
+        {"canonfs", "import", "examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w",
+         "--canonfs-root", "build/canonfs-v1-contract-root", "--policy",
+         "examples/storage-and-canonfs/canonfs-interchange/v1/policy-deny-all.apl", "--json"},
+        repo_root);
+    T81_TEST_CHECK(v1_policy_denied_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(v1_policy_deny_output) == v1_policy_denied_result.stdout_text);
+
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");
     const auto get_result =
         run_cli(t81_bin, {"canonfs", "get", hash, "--out", restored.string(), "--json"});

@@ -1,0 +1,8 @@
+{
+  "operation": "canonfs export",
+  "source_object": "sha3-256:missing",
+  "target_ref": "build/canonfs-v1-contract-export/missing.bin",
+  "canonfs_root": "build/canonfs-v1-contract-root",
+  "json": true,
+  "policy_profile": "permissive"
+}
