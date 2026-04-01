@@ -1901,63 +1901,63 @@ if(T81_BUILD_TUI)
 endif()
 
 if(T81_BUILD_EXAMPLES)
-add_executable(t81_demo examples/demo.cpp)
+add_executable(t81_demo examples/compiler-and-ffi/demo.cpp)
 target_link_libraries(t81_demo PRIVATE t81_core)
 
-add_executable(t81_tensor_ops examples/tensor_ops.cpp)
+add_executable(t81_tensor_ops examples/ai-and-inference/tensor_ops.cpp)
 target_link_libraries(t81_tensor_ops PRIVATE t81_core)
 
-add_executable(t81_ir_roundtrip examples/ir_roundtrip.cpp)
+add_executable(t81_ir_roundtrip examples/compiler-and-ffi/ir_roundtrip.cpp)
 target_link_libraries(t81_ir_roundtrip PRIVATE t81_core)
 
-add_executable(t81_make_demo_model examples/model-load-canonfs/make_demo_model.cpp)
+add_executable(t81_make_demo_model examples/ai-and-inference/model-load-canonfs/make_demo_model.cpp)
 target_link_libraries(t81_make_demo_model PRIVATE t81_tool_model t81_core)
 
-add_executable(t81_make_demo_model_gov examples/governance-demo/make_demo_model_gov.cpp)
+add_executable(t81_make_demo_model_gov examples/governance/governance-demo/make_demo_model_gov.cpp)
 target_link_libraries(t81_make_demo_model_gov PRIVATE t81_tool_model t81_core)
 
 add_executable(t81_make_guarded_llama_demo
-               examples/model-load-canonfs/make_guarded_llama_demo.cpp)
+               examples/ai-and-inference/model-load-canonfs/make_guarded_llama_demo.cpp)
 target_link_libraries(t81_make_guarded_llama_demo PRIVATE t81_tool_model t81_core)
 
 add_executable(t81_make_degraded_llama_demo
-               examples/model-load-canonfs/make_degraded_llama_demo.cpp)
+               examples/ai-and-inference/model-load-canonfs/make_degraded_llama_demo.cpp)
 target_link_libraries(t81_make_degraded_llama_demo PRIVATE t81_tool_model t81_core)
 
-add_executable(t81_make_demo_safetensors examples/model-load-canonfs/make_demo_safetensors.cpp)
+add_executable(t81_make_demo_safetensors examples/ai-and-inference/model-load-canonfs/make_demo_safetensors.cpp)
 target_link_libraries(t81_make_demo_safetensors PRIVATE t81_core)
 
 add_executable(t81_make_demo_float_safetensors
-               examples/model-load-canonfs/make_demo_float_safetensors.cpp)
+               examples/ai-and-inference/model-load-canonfs/make_demo_float_safetensors.cpp)
 target_link_libraries(t81_make_demo_float_safetensors PRIVATE t81_core)
 
-add_executable(t81_make_demo_gguf examples/model-load-canonfs/make_demo_gguf.cpp)
+add_executable(t81_make_demo_gguf examples/ai-and-inference/model-load-canonfs/make_demo_gguf.cpp)
 target_link_libraries(t81_make_demo_gguf PRIVATE t81_core)
 
-add_executable(axion_demo examples/axion_demo.cpp)
+add_executable(axion_demo examples/governance/axion_demo.cpp)
 target_link_libraries(axion_demo PRIVATE t81_core t81_axion)
 
-add_executable(axion_guard_trace examples/axion_guard_trace.cpp)
+add_executable(axion_guard_trace examples/governance/axion_guard_trace.cpp)
 target_link_libraries(axion_guard_trace PRIVATE t81_tool_cli t81_vm)
 
-add_executable(axion_policy_trace examples/axion_policy_trace.cpp)
+add_executable(axion_policy_trace examples/governance/axion_policy_trace.cpp)
 target_link_libraries(axion_policy_trace PRIVATE t81_tool_cli t81_vm)
 
-add_executable(axion_policy_runner examples/axion_policy_runner.cpp)
+add_executable(axion_policy_runner examples/governance/axion_policy_runner.cpp)
 target_link_libraries(axion_policy_runner PRIVATE t81_tool_cli t81_vm)
 
-add_executable(llama32_demo examples/llama32_demo.cpp)
+add_executable(llama32_demo examples/ai-and-inference/ai-integration/llama32_demo.cpp)
 target_link_libraries(llama32_demo PRIVATE t81_tool_cli t81_vm)
 
 if(T81_ENABLE_LLAMA_CPP)
-add_executable(llama_cpp_governed_demo examples/llama_cpp_governed_demo.cpp)
+add_executable(llama_cpp_governed_demo examples/ai-and-inference/ai-integration/llama_cpp_governed_demo.cpp)
 target_link_libraries(llama_cpp_governed_demo PRIVATE t81_llama_adapter)
 endif()
 
-add_executable(canonfs_trace_demo examples/canonfs_trace_demo.cpp)
+add_executable(canonfs_trace_demo examples/storage-and-canonfs/canonfs_trace_demo.cpp)
 target_link_libraries(canonfs_trace_demo PRIVATE t81_core t81_axion)
 
-add_executable(complex_demo examples/complex_demo.cpp)
+add_executable(complex_demo examples/compiler-and-ffi/complex_demo.cpp)
 target_link_libraries(complex_demo PRIVATE t81_core asio)
 if(WIN32)
   target_link_libraries(complex_demo PRIVATE ws2_32 mswsock)
