@@ -241,7 +241,7 @@ The following are not part of this v1 contract:
 
 The canonical byte-for-byte example fixtures for this contract live in:
 
-- [examples/storage-and-canonfs/canonfs-interchange/v1/](/Users/t81dev/Code/t81-foundation/examples/storage-and-canonfs/canonfs-interchange/v1)
+- [examples/storage-and-canonfs/canonfs-interchange/v1/](../../examples/storage-and-canonfs/canonfs-interchange/v1/)
 
 Those fixtures include:
 
