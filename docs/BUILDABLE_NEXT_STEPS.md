@@ -71,29 +71,44 @@ repo.
     `termination_reason: "deep_architecture_state_horizon_reached"`.
     This means the old “replace the synthetic payload” task is effectively
     complete for the strict deterministic reference-VM path.
-    What is still left is broader reuse beyond this bounded probe lane.
+    It also now has:
+    - a minimal public runtime decode surface (`t81::vm::Decoder`)
+    - explicit public decode-state transition helpers
+    - a public native probe API plus shared request builders
+    - CLI convergence onto the same public probe/runtime path
+    - direct decoder/public-probe tests plus the existing CLI contract slice
 
-    Remaining implementation plan:
-    1. (DONE) Extract the current bounded hidden/qk/forward/architecture-state carry
-       logic out of CLI-shaped glue and into a reusable runtime module (`t81::vm::DecodeState`).
-    2. Replace the current bounded compiled-literal tensor carry path with a
-       more general intermediate-state object that can be reused across longer
-       decode horizons.
-    3. Extend the current bounded 4-step horizon only after the carried-state
-       object is reusable, and prove that step 5+ still changes control-path
-       behavior instead of only lengthening the trace.
-    4. Promote the bounded decode lane from probe-shaped execution to a true
-       greedy decode path for one narrow architecture, still starting with
-       `t81_reference_vm`.
-    5. Only after that, make `benchmark run` and `policy test` consume the same
-       real native execution path instead of their current scaffolded behavior.
+    The practical result is that the old extraction/convergence task is done
+    enough that it should not stay on the active board unless a new concrete
+    consumer appears.
+
+    Additional progress now completed on this lane:
+    1. (DONE) Promote the carried hidden/qk/forward/architecture-state handoff
+       from compiled-literal tensor patching to a reusable
+       intermediate-state object in the public VM path.
+    2. (DONE) Add another non-CLI consumer of the public decode/probe path by
+       exercising the shared request-builder and intermediate-state handoff
+       directly in VM-side tests, alongside the public `Decoder`.
+
+    3. (DONE) Add a narrow true greedy decode runtime path for the single
+       supported `llama-dense-v1` architecture, reusing the public
+       decode/probe surfaces and `IntermediateDecodeState` continuation
+       contract rather than creating a parallel stack.
+
+    If this lane is revisited later, the next worthwhile work is:
+    1. Only after that, consider step-5-plus decode horizons for the same
+       narrow architecture, or another equally narrow follow-on decode mode.
+    2. Keep `benchmark run` and `policy test` out of scope for this lane until
+       their current scaffolded behavior is explicitly being replaced.
 
 ## Pick one lane
 
 - If you want the best chance of shipping code quickly, start with RFC-00D1.
 - If you want design work more than code, start with RFC-00D0.
 - If you want project leverage more than subsystem depth, start with public-story cleanup or CI boringness work.
-- If you want the highest-value AI product step, start with the `t81 ai` implementation matrix and replace one scaffolded inference command with a real execution path.
+- If you want the highest-value AI product step later, start from a concrete new
+  consumer of the public `t81::vm` decode/probe path rather than reopening the
+  just-finished CLI extraction work.
 
 ## 1. RFC-00D1 policy-profile depth
 

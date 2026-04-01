@@ -10,8 +10,39 @@
 
 namespace t81::vm {
 
+enum class DecoderMode {
+  BoundedProbe,
+  NarrowGreedyLlamaDenseV1,
+};
+
 struct DecoderInput {
   std::string prompt;
+};
+
+struct ModelCompanionFiles {
+  bool has_config = false;
+  bool has_tokenizer = false;
+  std::filesystem::path config_path;
+  std::filesystem::path tokenizer_path;
+};
+
+struct NativeProbeRequest {
+  std::shared_ptr<t81::weights::ModelFile> model;
+  std::string architecture_profile;
+  std::string prompt;
+  std::optional<std::filesystem::path> tokenizer_path;
+  std::optional<int> candidate_window_seed;
+  std::optional<int> input_token_override;
+  std::vector<int> context_token_history;
+  std::vector<int> hidden_carry_context_rows;
+  std::optional<IntermediateDecodeState> intermediate_state;
+  std::optional<std::size_t> sample_window_override;
+  std::string selection_policy_override;
+  std::string carry_probe_layout_override;
+  std::string candidate_mode_override;
+  std::string candidate_basis_override;
+  std::optional<bool> tokenizer_seed_supported_override;
+  bool greedy_full_vocab = false;
 };
 
 struct StateTransition {
@@ -36,6 +67,7 @@ struct StateTransition {
   std::size_t hidden_tensor_elements = 0;
   std::vector<int> hidden_tensor_shape;
   std::optional<t81::T729DynamicTensor> carried_hidden_tensor;
+  std::optional<IntermediateDecodeState> intermediate_state;
   std::string hidden_tensor_carry_mode_kind = "unavailable";
   std::string kv_state_kind;
   std::string q_tensor_signature_sha256;
@@ -61,6 +93,36 @@ struct DecoderStepResult {
   DecodeProbe probe;
 };
 
+std::string detect_architecture_profile(const t81::weights::ModelFile& model);
+ModelCompanionFiles find_model_companion_files(const std::filesystem::path& model_path);
+NativeProbeRequest make_initial_probe_request(
+    const std::shared_ptr<t81::weights::ModelFile>& model,
+    std::string_view architecture_profile,
+    std::string_view prompt,
+    std::optional<std::filesystem::path> tokenizer_path = std::nullopt);
+NativeProbeRequest make_initial_greedy_probe_request(
+    const std::shared_ptr<t81::weights::ModelFile>& model,
+    std::string_view architecture_profile,
+    std::string_view prompt,
+    std::optional<std::filesystem::path> tokenizer_path = std::nullopt);
+NativeProbeRequest make_decode_probe_request(
+    const std::shared_ptr<t81::weights::ModelFile>& model,
+    std::string_view architecture_profile,
+    std::string_view prompt,
+    const DecodeState& state,
+    std::size_t logits_vocab_size,
+    std::optional<std::filesystem::path> tokenizer_path = std::nullopt,
+    std::optional<bool> tokenizer_seed_supported_override = std::nullopt);
+NativeProbeRequest make_greedy_decode_probe_request(
+    const std::shared_ptr<t81::weights::ModelFile>& model,
+    std::string_view architecture_profile,
+    std::string_view prompt,
+    const DecodeState& state,
+    std::size_t logits_vocab_size,
+    std::optional<std::filesystem::path> tokenizer_path = std::nullopt,
+    std::optional<bool> tokenizer_seed_supported_override = std::nullopt);
+DecodeProbe run_native_vm_probe(const NativeProbeRequest& request);
+
 StateTransition derive_initial_transition(const DecodeProbe& probe);
 StateTransition derive_probe_transition(const DecodeState& state,
                                         const DecodeProbe& probe,
@@ -76,11 +138,14 @@ public:
   void reset();
 
   DecoderStepResult step(const DecoderInput& input = {});
+  DecoderStepResult greedy_step(const DecoderInput& input = {});
 
   const DecodeState& state() const { return state_; }
   bool has_model() const { return static_cast<bool>(model_); }
   bool terminated() const { return terminated_; }
   std::string_view termination_reason() const { return termination_reason_; }
+  DecoderMode mode() const { return mode_; }
+  bool supports_narrow_greedy_decode() const;
 
 private:
   enum class DecodePhase {
@@ -89,12 +154,15 @@ private:
     Terminated,
   };
 
+  DecoderStepResult step_impl(DecoderMode mode, const DecoderInput& input);
+
   std::shared_ptr<t81::weights::ModelFile> model_;
   std::string architecture_profile_;
   std::string prompt_;
   DecodeConfig config_;
   DecodeState state_;
   DecodePhase phase_ = DecodePhase::Initialization;
+  DecoderMode mode_ = DecoderMode::BoundedProbe;
   std::size_t steps_emitted_ = 0;
   std::size_t consecutive_recovery_steps_ = 0;
   std::size_t logits_vocab_size_ = 0;

@@ -171,6 +171,101 @@ std::vector<int> decode_context_history(const DecodeState& state, std::size_t ma
   return recent_context_history(context, max_tokens, state.prompt_anchor_token_id);
 }
 
+std::optional<IntermediateDecodeState> capture_intermediate_state(const DecodeState& state) {
+  const bool has_hidden_tensor = state.carried_hidden_tensor.has_value();
+  const bool has_hidden_summary = !state.hidden_tensor_signature_sha256.empty();
+  const bool has_forward_state = !state.forward_state_signature_sha256.empty();
+  const bool has_kv_state = !state.kv_state_signature_sha256.empty();
+  const bool has_architecture_state = !state.architecture_state_signature_sha256.empty();
+  if (!has_hidden_tensor && !has_hidden_summary && !has_forward_state && !has_kv_state &&
+      !has_architecture_state) {
+    return std::nullopt;
+  }
+
+  IntermediateDecodeState intermediate;
+  intermediate.hidden_carry_row_ids = state.hidden_carry_row_ids;
+  intermediate.hidden_carry_scores = state.hidden_carry_scores;
+  intermediate.hidden_carry_signature_sha256 = state.hidden_carry_signature_sha256;
+  intermediate.carry_probe_layout_kind = state.carry_probe_layout_kind;
+  intermediate.hidden_projection_row_ids = state.hidden_projection_row_ids;
+  intermediate.hidden_projection_scores = state.hidden_projection_scores;
+  intermediate.hidden_projection_signature_sha256 = state.hidden_projection_signature_sha256;
+  intermediate.projection_carry_mode_kind = state.projection_carry_mode_kind;
+  intermediate.hidden_state_class = state.hidden_state_class;
+  intermediate.hidden_state_class_signature_sha256 = state.hidden_state_class_signature_sha256;
+  intermediate.hidden_tensor_signature_sha256 = state.hidden_tensor_signature_sha256;
+  intermediate.hidden_tensor_rank = state.hidden_tensor_rank;
+  intermediate.hidden_tensor_elements = state.hidden_tensor_elements;
+  intermediate.hidden_tensor_shape = state.hidden_tensor_shape;
+  intermediate.hidden_tensor = state.carried_hidden_tensor;
+  intermediate.hidden_tensor_carry_mode_kind = state.hidden_tensor_carry_mode_kind;
+  intermediate.forward_state_kind = state.forward_state_kind;
+  intermediate.forward_state_row_ids = state.forward_state_row_ids;
+  intermediate.forward_state_scores = state.forward_state_scores;
+  intermediate.forward_state_signature_sha256 = state.forward_state_signature_sha256;
+  intermediate.forward_state_generation = state.forward_state_generation;
+  intermediate.forward_state_class = state.forward_state_class;
+  intermediate.forward_state_class_signature_sha256 =
+      state.forward_state_class_signature_sha256;
+  intermediate.kv_state_kind = state.kv_state_kind;
+  intermediate.q_tensor_signature_sha256 = state.q_tensor_signature_sha256;
+  intermediate.k_tensor_signature_sha256 = state.k_tensor_signature_sha256;
+  intermediate.kv_tensor_rank = state.kv_tensor_rank;
+  intermediate.kv_tensor_elements = state.kv_tensor_elements;
+  intermediate.kv_state_signature_sha256 = state.kv_state_signature_sha256;
+  intermediate.kv_state_carry_mode_kind = state.kv_state_carry_mode_kind;
+  intermediate.architecture_state_kind = state.architecture_state_kind;
+  intermediate.architecture_state_signature_sha256 =
+      state.architecture_state_signature_sha256;
+  intermediate.architecture_state_class = state.architecture_state_class;
+  intermediate.architecture_state_class_signature_sha256 =
+      state.architecture_state_class_signature_sha256;
+  return intermediate;
+}
+
+void apply_intermediate_state(DecodeState& state, const IntermediateDecodeState& intermediate_state) {
+  state.hidden_carry_row_ids = intermediate_state.hidden_carry_row_ids;
+  state.hidden_carry_scores = intermediate_state.hidden_carry_scores;
+  state.hidden_carry_signature_sha256 = intermediate_state.hidden_carry_signature_sha256;
+  state.carry_probe_layout_kind = intermediate_state.carry_probe_layout_kind;
+  state.hidden_projection_row_ids = intermediate_state.hidden_projection_row_ids;
+  state.hidden_projection_scores = intermediate_state.hidden_projection_scores;
+  state.hidden_projection_signature_sha256 =
+      intermediate_state.hidden_projection_signature_sha256;
+  state.projection_carry_mode_kind = intermediate_state.projection_carry_mode_kind;
+  state.hidden_state_class = intermediate_state.hidden_state_class;
+  state.hidden_state_class_signature_sha256 =
+      intermediate_state.hidden_state_class_signature_sha256;
+  state.hidden_tensor_signature_sha256 = intermediate_state.hidden_tensor_signature_sha256;
+  state.hidden_tensor_rank = intermediate_state.hidden_tensor_rank;
+  state.hidden_tensor_elements = intermediate_state.hidden_tensor_elements;
+  state.hidden_tensor_shape = intermediate_state.hidden_tensor_shape;
+  state.carried_hidden_tensor = intermediate_state.hidden_tensor;
+  state.hidden_tensor_carry_mode_kind = intermediate_state.hidden_tensor_carry_mode_kind;
+  state.forward_state_kind = intermediate_state.forward_state_kind;
+  state.forward_state_row_ids = intermediate_state.forward_state_row_ids;
+  state.forward_state_scores = intermediate_state.forward_state_scores;
+  state.forward_state_signature_sha256 = intermediate_state.forward_state_signature_sha256;
+  state.forward_state_generation = intermediate_state.forward_state_generation;
+  state.forward_state_class = intermediate_state.forward_state_class;
+  state.forward_state_class_signature_sha256 =
+      intermediate_state.forward_state_class_signature_sha256;
+  state.kv_state_kind = intermediate_state.kv_state_kind;
+  state.q_tensor_signature_sha256 = intermediate_state.q_tensor_signature_sha256;
+  state.k_tensor_signature_sha256 = intermediate_state.k_tensor_signature_sha256;
+  state.kv_tensor_rank = intermediate_state.kv_tensor_rank;
+  state.kv_tensor_elements = intermediate_state.kv_tensor_elements;
+  state.kv_state_signature_sha256 = intermediate_state.kv_state_signature_sha256;
+  state.kv_state_carry_mode_kind = intermediate_state.kv_state_carry_mode_kind;
+  state.architecture_state_kind = intermediate_state.architecture_state_kind;
+  state.architecture_state_signature_sha256 =
+      intermediate_state.architecture_state_signature_sha256;
+  state.architecture_state_class = intermediate_state.architecture_state_class;
+  state.architecture_state_class_signature_sha256 =
+      intermediate_state.architecture_state_class_signature_sha256;
+  state.intermediate_state = intermediate_state;
+}
+
 std::vector<int> merged_state_input_rows(const std::vector<int>& forward_state_row_ids,
                                          const std::vector<int>& hidden_projection_row_ids,
                                          std::size_t max_rows) {

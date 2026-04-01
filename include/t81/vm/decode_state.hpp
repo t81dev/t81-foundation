@@ -17,6 +17,43 @@ struct DecodeConfig {
     std::size_t decode_context_history_window = 3;
 };
 
+struct IntermediateDecodeState {
+    std::vector<int> hidden_carry_row_ids;
+    std::vector<double> hidden_carry_scores;
+    std::string hidden_carry_signature_sha256;
+    std::string carry_probe_layout_kind = "contiguous_forward_window.v1";
+    std::vector<int> hidden_projection_row_ids;
+    std::vector<double> hidden_projection_scores;
+    std::string hidden_projection_signature_sha256;
+    std::string projection_carry_mode_kind = "balanced_context_projection.v1";
+    std::string hidden_state_class;
+    std::string hidden_state_class_signature_sha256;
+    std::string hidden_tensor_signature_sha256;
+    std::size_t hidden_tensor_rank = 0;
+    std::size_t hidden_tensor_elements = 0;
+    std::vector<int> hidden_tensor_shape;
+    std::optional<t81::T729DynamicTensor> hidden_tensor;
+    std::string hidden_tensor_carry_mode_kind = "current_only.v1";
+    std::string forward_state_kind = "unavailable";
+    std::vector<int> forward_state_row_ids;
+    std::vector<double> forward_state_scores;
+    std::string forward_state_signature_sha256;
+    std::size_t forward_state_generation = 0;
+    std::string forward_state_class;
+    std::string forward_state_class_signature_sha256;
+    std::string kv_state_kind = "unavailable";
+    std::string q_tensor_signature_sha256;
+    std::string k_tensor_signature_sha256;
+    std::size_t kv_tensor_rank = 0;
+    std::size_t kv_tensor_elements = 0;
+    std::string kv_state_signature_sha256;
+    std::string kv_state_carry_mode_kind = "current_qk_window.v1";
+    std::string architecture_state_kind = "unavailable";
+    std::string architecture_state_signature_sha256;
+    std::string architecture_state_class;
+    std::string architecture_state_class_signature_sha256;
+};
+
 struct DecodeProbe {
     bool ok = false;
     std::string stdout_text;
@@ -74,6 +111,7 @@ struct DecodeProbe {
     std::string architecture_state_class;
     std::string architecture_state_class_signature_sha256;
     std::optional<t81::T729DynamicTensor> hidden_tensor;
+    std::optional<IntermediateDecodeState> intermediate_state;
     std::string selection_policy_kind = "max_score.v1";
     double confidence_score = 0.0;
     double logits_margin = 0.0;
@@ -126,6 +164,7 @@ public:
     std::size_t hidden_tensor_elements = 0;
     std::vector<int> hidden_tensor_shape;
     std::optional<t81::T729DynamicTensor> carried_hidden_tensor;
+    std::optional<IntermediateDecodeState> intermediate_state;
     std::string hidden_tensor_carry_mode_kind = "current_only.v1";
     std::string kv_state_kind = "unavailable";
     std::string q_tensor_signature_sha256;
@@ -202,6 +241,9 @@ void populate_hidden_projection(DecodeProbe& result);
 
 
 inline constexpr std::string_view kDecodeStateKind = "prompt_history_bounded_context.v1";
+
+std::optional<IntermediateDecodeState> capture_intermediate_state(const DecodeState& state);
+void apply_intermediate_state(DecodeState& state, const IntermediateDecodeState& intermediate_state);
 
 std::vector<int> combined_decode_history(const DecodeState& state);
 std::vector<int> decode_context_history(const DecodeState& state, std::size_t max_tokens);
