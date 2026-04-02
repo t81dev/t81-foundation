@@ -28,6 +28,7 @@ Recommended work:
 - continue tightening README and docs entry points
 - reduce duplicated roadmap/status material
 - keep handoff documents current
+- keep contributor-facing examples and smoke paths aligned with the docs that point to them
 
 ## Phase 2: Harden the CanonFS interchange lane
 
@@ -87,6 +88,7 @@ Recommended work:
 - keep workflow drift low
 - keep portable helper patterns centralized
 - avoid reintroducing ad hoc platform-specific builtins or checkout gaps
+- make contributor/demo scripts fail fast on missing host tools instead of failing deep in the run
 
 ## What not to do next
 

@@ -3,6 +3,21 @@
 This directory is the canonical documentation surface below `/spec` and
 `docs/architecture/OVERVIEW.md`.
 
+## Start Here
+
+If you only want the shortest current contributor path, read these first:
+
+- [Maintainer Handoff](HANDOFF.md)
+- [Contributor Roadmap](ROADMAP.md)
+- [Buildable Next Steps](BUILDABLE_NEXT_STEPS.md)
+
+Those three files describe the current engineering posture more directly than
+the broader documentation tree:
+
+- the bounded AI OS-object family is a protected subsystem
+- RFC-00D1 CanonFS interchange is the best current draft-to-code bridge
+- portability, CI boringness, and contributor-path clarity are active work, not cleanup after the fact
+
 ## Canonical Entry Points
 
 - [Architecture Overview](architecture/OVERVIEW.md)
