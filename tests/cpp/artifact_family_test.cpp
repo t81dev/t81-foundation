@@ -108,6 +108,45 @@ int main() {
   const std::string bundle = render_artifact(classify_bundle_schema(), bundle_fields);
   validation_error.clear();
   T81_TEST_CHECK(validate_artifact(classify_bundle_schema(), bundle, validation_error));
+  T81_TEST_CHECK(validation_error.empty());
+
+  // Consumer flow starts from the bundle and should fail closed before any
+  // deeper dereference if the canonical refs are malformed.
+  const std::string malformed_bundle_record_ref =
+      "{\n"
+      "  \"schema\": \"t81.ai.task.classify-fixed.bundle.v1\",\n"
+      "  \"source_result_ref\": \"" +
+      result_ref +
+      "\",\n"
+      "  \"source_provenance_ref\": \"" + provenance_ref +
+      "\",\n"
+      "  \"action_ref\": \"" + action_ref +
+      "\",\n"
+      "  \"record_ref\": \"not-a-canonfs-ref\"\n"
+      "}\n";
+  validation_error.clear();
+  T81_TEST_CHECK(
+      !validate_artifact(classify_bundle_schema(), malformed_bundle_record_ref, validation_error));
+  T81_TEST_CHECK(contains(validation_error, "invalid CanonFS ref in field \"record_ref\""));
+
+  const std::string malformed_bundle_action_ref =
+      "{\n"
+      "  \"schema\": \"t81.ai.task.classify-fixed.bundle.v1\",\n"
+      "  \"source_result_ref\": \"" +
+      result_ref +
+      "\",\n"
+      "  \"source_provenance_ref\": \"" + provenance_ref +
+      "\",\n"
+      "  \"action_ref\": \"not-a-canonfs-ref\",\n"
+      "  \"record_ref\": \"" +
+      record_ref + "\"\n"
+      "}\n";
+  validation_error.clear();
+  T81_TEST_CHECK(
+      !validate_artifact(classify_bundle_schema(), malformed_bundle_action_ref, validation_error));
+  T81_TEST_CHECK(contains(validation_error, "invalid CanonFS ref in field \"action_ref\""));
+
+  T81_TEST_CHECK(!validate_artifact(assess_record_schema(), bundle, validation_error));
   T81_TEST_CHECK(next_inspect_field_for_schema(classify_record_schema()) == "selected_rule_set");
   T81_TEST_CHECK(next_inspect_field_for_schema(classify_bundle_schema()) == "record_ref");
 
