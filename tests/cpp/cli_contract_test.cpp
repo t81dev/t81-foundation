@@ -917,6 +917,28 @@ int main(int argc, char* argv[]) {
                             "\"provenance_schema\": \"t81.canonfs-export-provenance.v1\""));
     T81_TEST_CHECK(read_file(imported_file_restore) == "canonfs-contract");
 
+    const fs::path export_file_blocked_target = make_temp_path("t81-cli-contract-blocked-out", "");
+    fs::create_directories(export_file_blocked_target, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+    const auto export_target_open_failed = run_cli(
+        t81_bin, {"canonfs", "export", hash, "--out", export_file_blocked_target.string(), "--json"});
+    T81_TEST_CHECK(export_target_open_failed.exit_code != 0);
+    T81_TEST_CHECK(
+        contains(export_target_open_failed.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(contains(export_target_open_failed.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(
+        contains(export_target_open_failed.stdout_text, "\"kind\": \"target-failure\""));
+    T81_TEST_CHECK(contains(export_target_open_failed.stdout_text,
+                            "\"code\": \"canonfs-export-target-open-failed\""));
+    T81_TEST_CHECK(
+        contains(export_target_open_failed.stdout_text, "\"reason\": \"target_open_failed\""));
+    T81_TEST_CHECK(appears_in_order(
+        export_target_open_failed.stdout_text,
+        {"\"kind\": \"target-failure\"",
+         "\"message\": \"could not open output file: ",
+         "\"code\": \"canonfs-export-target-open-failed\"",
+         "\"reason\": \"target_open_failed\""}));
+
     const fs::path missing_import_path = make_temp_path("t81-cli-contract-missing-import", ".txt");
     const auto import_missing_result =
         run_cli(t81_bin, {"canonfs", "import", missing_import_path.string(), "--json"});
