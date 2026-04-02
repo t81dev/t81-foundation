@@ -1386,9 +1386,16 @@ int main(int argc, char* argv[]) {
                             "\"provenance_schema\": \"t81.canonfs-export-provenance.v1\""));
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
                             "\"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "\"materialized_paths\": ["));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "\"alpha.txt\""));
     T81_TEST_CHECK(
         contains(example_alpha_only_export.stdout_text, "\"reason\": \"policy_denied\""));
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "nested/beta.txt"));
+    T81_TEST_CHECK(
+        appears_in_order(example_alpha_only_export.stdout_text,
+                         {"\"kind\": \"policy-failure\"", "\"message\": ",
+                          "\"code\": \"canonfs-policy-denied\"",
+                          "\"reason\": \"policy_denied\""}));
     T81_TEST_CHECK(fs::exists(example_alpha_only_export_root / "alpha.txt"));
     T81_TEST_CHECK(!fs::exists(example_alpha_only_export_root / "nested" / "beta.txt"));
 

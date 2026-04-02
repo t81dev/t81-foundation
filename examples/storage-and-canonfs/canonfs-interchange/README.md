@@ -286,8 +286,11 @@ Expected shape:
 - provenance schema: `t81.canonfs-export-provenance.v1`
 - manifest schema: `t81.canonfs-interchange-manifest.v1`
 - `materialized_paths` includes `alpha.txt`
+- `materialized_paths` does not include `nested/beta.txt`
 - `errors[0].reason`: `policy_denied`
 - `errors[0].message` mentions `nested/beta.txt`
+- `errors[0]` is emitted in stable field order:
+  `kind`, `message`, `code`, `reason`
 
 ## Target-Side Export Failure
 
