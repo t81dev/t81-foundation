@@ -65,6 +65,11 @@ Recommended work:
 
 Primary goal: avoid broad new architectural spread.
 
+Hardware/interposer acceleration remains external to T81's current stable
+runtime surface; if convergence is revisited later, it should happen only
+through a narrow experimental backend seam after the current runtime and
+RFC-00D1 lanes are stable.
+
 Best candidate today:
 
 - RFC-00D0 service descriptor and resolution prototype before full TCP/IP breadth

@@ -43,6 +43,9 @@ T81 is a deterministic, policy-gated runtime for auditable computation, built on
   operation-level admission controls, and explicit policy files further narrow
   within the admitted operation instead of replacing the profile surface
 - Broader bare-metal / TernaryOS ambitions are real but not yet the easiest public adoption path
+- Related ternary acceleration efforts such as `t81dev/ternary-fabric` should
+  currently be treated as parallel tracks, not as part of T81's stable
+  runtime/build-against surface
 - Some repo narratives still over-emphasize the long-horizon OS story relative to the current runtime value
 
 ## What should not be casually rewritten
@@ -87,6 +90,8 @@ accuracy over adding a fourth composition.
 - Contributor-facing roadmap: [docs/ROADMAP.md](ROADMAP.md)
 - Bounded family status: [docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 - AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](status/AI_CLI_IMPLEMENTATION_MATRIX.md)
+- Strategic convergence note:
+  [docs/status/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md](status/TERNARY_FABRIC_STRATEGIC_CONVERGENCE_NOTE.md)
 
 The short version:
 
