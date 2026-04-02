@@ -801,7 +801,7 @@ Examples:
   t81 artifact store-bundle --schema t81.ai.task.assess-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
   t81 artifact write-store-record --schema t81.ai.task.route-fixed.path-selection-record.v1 --field route=A --field selected_action=write_route_a_marker --field selected_path=routes/a.target --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
   t81 artifact store-bundle --schema t81.ai.task.route-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
-  t81 artifact write-store-record --schema t81.ai.task.classify-fixed.rule-selection-record.v1 --field label=POSITIVE --field selected_rule_set=rulesets/positive.ruleset --field rule_set_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
+  t81 artifact write-store-record --schema t81.ai.task.classify-fixed.rule-selection-record.v1 --field label=POSITIVE --field selected_rule_set=positive-default --field rule_set_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
   t81 artifact store-bundle --schema t81.ai.task.classify-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
   t81 artifact validate-record record.json --schema t81.ai.task.assess-fixed.host-action-record.v1
   t81 artifact store-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --file record.json --canonfs-root .t81_canonfs
@@ -1473,7 +1473,7 @@ Commands:
   ir <action> [args]                    IR inspection for frontend lowering
   tier   <action> [args]                Cognitive tier inspection and gating
   tensor <action> [args]                Tensor artifact canonicalization and inspection
-  ai     <action> [args]                AI model, inference, quantization, and workflow tools
+  ai     <action> [args]                Bounded AI tasks, model inspection, and partial inference tools
   weights <action> [args]               Model weights import, inspect, and verify
   policy <action> [args]                Axion policy compile, validate, and test
   axion <action> [args]                 Axion governor and policy-facing operations
@@ -9031,7 +9031,7 @@ commands=(
   'ir:IR inspection for frontend lowering'
   'tier:cognitive tier inspection and gating'
   'tensor:tensor artifact tools'
-  'ai:AI model, inference, quantization, and workflow tools'
+  'ai:Bounded AI tasks, model inspection, and partial inference tools'
   'weights:model weight tools'
   'policy:Axion policy tools'
   'axion:Axion governor tools'

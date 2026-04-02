@@ -448,7 +448,7 @@ int main(int argc, char* argv[]) {
                 "source_result_ref=" + result_ref_value, "--field",
                 "source_provenance_ref=" + provenance_ref_value, "--field", "label=POSITIVE",
                 "--field", "termination_reason=single_step_max_score", "--field",
-                "selected_rule_set=rulesets/positive.ruleset", "--field",
+                "selected_rule_set=positive-default", "--field",
                 "rule_set_ref=" + action_ref_value, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(classify_write_store.exit_code == 0);
   const std::string classify_record_ref = extract_record_ref(classify_write_store.stdout_text);
@@ -459,7 +459,7 @@ int main(int argc, char* argv[]) {
                         "t81.ai.task.classify-fixed.rule-selection-record.v1", "--field",
                         "selected_rule_set", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(classify_record_read.exit_code == 0);
-  T81_TEST_CHECK(classify_record_read.stdout_text == "rulesets/positive.ruleset\n");
+  T81_TEST_CHECK(classify_record_read.stdout_text == "positive-default\n");
 
   const auto classify_bundle_store = run_cli(
       t81_bin,
@@ -585,7 +585,7 @@ int main(int argc, char* argv[]) {
                         "source_result_ref=" + result_ref_value, "--field",
                         "source_provenance_ref=" + provenance_ref_value, "--field",
                         "label=POSITIVE", "--field", "termination_reason=single_step_max_score",
-                        "--field", "selected_rule_set=rulesets/positive.ruleset", "--field",
+                        "--field", "selected_rule_set=positive-default", "--field",
                         "rule_set_ref=not-a-canonfs-ref", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(malformed_write_store.exit_code != 0);
   T81_TEST_CHECK(

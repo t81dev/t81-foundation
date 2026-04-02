@@ -71,10 +71,10 @@ termination_reason="$(build/t81 ai task read-field "$result_path" --field termin
 
 case "$label" in
   POSITIVE)
-    selected_rule_set="rulesets/positive.ruleset"
+    selected_rule_set="positive-default"
     ;;
   NEGATIVE)
-    selected_rule_set="rulesets/negative.ruleset"
+    selected_rule_set="negative-default"
     ;;
   *)
     echo "error: unsupported classify-fixed label in stored artifact: $label" >&2
@@ -82,8 +82,7 @@ case "$label" in
     ;;
 esac
 
-rule_set_path="$tmp_root/$selected_rule_set"
-mkdir -p "$(dirname "$rule_set_path")"
+rule_set_path="$tmp_root/$selected_rule_set.ruleset"
 cat > "$rule_set_path" <<EOF
 label=$label
 selected_rule_set=$selected_rule_set

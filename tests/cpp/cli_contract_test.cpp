@@ -2508,7 +2508,7 @@ int main(int argc, char* argv[]) {
     {
       std::ofstream out(ruleset_path);
       out << "label=POSITIVE\n"
-          << "selected_rule_set=rulesets/positive.ruleset\n"
+          << "selected_rule_set=positive-default\n"
           << "source_result_ref=" << *result_ref << "\n";
     }
     const auto action_ref_result = run_cli(t81_bin, {"canonfs", "put-file", ruleset_path.string(),
@@ -2526,7 +2526,7 @@ int main(int argc, char* argv[]) {
                           "source_result_ref=" + *result_ref, "--field",
                           "source_provenance_ref=" + *provenance_ref, "--field", "label=POSITIVE",
                           "--field", "termination_reason=single_step_max_score", "--field",
-                          "selected_rule_set=rulesets/positive.ruleset", "--field",
+                          "selected_rule_set=positive-default", "--field",
                           "rule_set_ref=" + action_ref, "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(write_store_result.exit_code == 0);
     T81_TEST_CHECK(contains(write_store_result.stdout_text,

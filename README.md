@@ -214,12 +214,12 @@ pip install .
 t81 code build examples/core-language/hello_world.t81 -o hello.tisc
 t81 vm run hello.tisc
 
-# CanonFS + governed inference
+# CanonFS + policy-gated execution example
 t81 canonfs import model.t81w --json
 t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl --trace
 ```
 
-Current canonical AI OS-object example:
+Current canonical bounded AI OS-object example:
 
 ```bash
 bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
@@ -234,13 +234,13 @@ links:
 - the typed downstream record
 - the host action artifact
 
-Second bounded composition using the same object model:
+Second admitted bounded composition using the same object model:
 
 ```bash
 bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
 ```
 
-Third bounded composition using the same object model:
+Third admitted bounded composition using the same object model:
 
 ```bash
 bash examples/ai-and-inference/model-load-canonfs/run_classify_fixed_rule_selection.sh
@@ -251,6 +251,9 @@ Short explanation:
 
 Current bounded composition catalog:
 - [AI OS-Object Chain Catalog](docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md)
+
+Maintainer-facing bounded family status:
+- [Bounded AI OS-Object Family Status](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 
 Portable smoke path for the same chain:
 - `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`
