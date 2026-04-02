@@ -266,7 +266,100 @@ If deeper convergence is revisited later, it should occur only through a narrow
 experimental backend seam behind the runtime, not by merging current repo
 identities or stable public interfaces.
 
-## 11. What This RFC Does Not Permit
+## 11. Determinism / Safety Considerations
+
+This RFC exists partly to prevent architecture drift from weakening the
+project's strongest safety and determinism properties.
+
+In planning terms, any work justified through RFC-00D2 must continue to
+preserve:
+
+- deterministic execution as a cross-layer property rather than an optional
+  runtime mode,
+- policy enforcement before side effects rather than after-the-fact logging,
+- CanonFS-backed immutable provenance rather than host-local convenience
+  identity,
+- and bounded, typed output objects rather than opaque logs or ad hoc payloads.
+
+The main risk this RFC is trying to reduce is not implementation failure. It is
+architectural overreach:
+
+- building layers out of order,
+- broadening public claims faster than proof,
+- or importing conceptually related systems that weaken the runtime-first
+  control/evidence posture.
+
+## 12. Compatibility
+
+RFC-00D2 defines planning compatibility, not a new binary or wire
+compatibility promise.
+
+This RFC is intended to be compatible with the current repo posture:
+
+- RFC-00D1 remains the best practical draft-to-code lane,
+- RFC-00D0 remains design-led,
+- the bounded AI OS-object family remains protected and narrow,
+- and current public headers and CLI surfaces remain unchanged.
+
+Accordingly, RFC-00D2 should not trigger:
+
+- schema migrations,
+- CLI contract changes,
+- public header changes,
+- or reinterpretation of draft RFCs as already-promoted runtime surfaces.
+
+## 13. Implementation Plan
+
+RFC-00D2 should guide implementation indirectly through planning and review.
+
+Near-term implementation posture:
+
+1. keep RFC-00D1 as the primary build-against draft lane,
+2. keep newcomer clarity and contributor-path boringness active,
+3. keep the bounded AI OS-object family stable rather than broader,
+4. use RFC-00D2 as a filter when evaluating future subsystem proposals.
+
+Medium-term use of RFC-00D2:
+
+- place proposed work into one of the target layers before implementation,
+- reject work that skips ahead into later layers without a current proof
+  surface,
+- and only revisit broader AI runtime or system-layer work once earlier layers
+  are boring enough to carry more weight.
+
+This RFC intentionally has no direct code-milestone checklist because its role
+is sequencing discipline, not subsystem authorization.
+
+## 14. Open Questions
+
+The main open questions are about sequencing and boundary pressure, not about
+the existence of the target architecture itself.
+
+Open questions include:
+
+- when the AI runtime layer is broad enough to deserve a less-qualified
+  external label,
+- what the narrowest future experimental backend seam should look like if
+  hardware acceleration is revisited,
+- how much of the current system layer should remain design-led versus being
+  promoted into contributor-facing build lanes,
+- and what evidence threshold should be required before any broader DAIOS
+  framing is used outside architecture/planning documents.
+
+## 15. Acceptance Criteria
+
+This RFC is ready to move beyond `draft` when all of the following are true:
+
+- contributors can point to RFC-00D2 to explain the target DAIOS layers without
+  confusing them for the current implementation state,
+- maintainer-facing planning docs use RFC-00D2 consistently as a sequencing map
+  rather than as permission for broader implementation scope,
+- new work proposals can be evaluated against the layer and sequencing rules
+  without relying on unwritten maintainer memory,
+- and RFC-00D2 is not creating contract drift with RFC-00D1, RFC-00D0, or the
+  bounded-family governance documents.
+
+## 16. What This RFC Does Not Permit
 
 This RFC must not be used as justification for:
 
@@ -275,8 +368,6 @@ This RFC must not be used as justification for:
 - importing interposer, scheduler, FPGA, or MLIR stacks into current stable
   T81 surfaces,
 - or replacing the current runtime-first adoption wedge with an OS-first story.
-
-## 12. Acceptance Signal
 
 This RFC is successful if it helps contributors do all of the following:
 
@@ -289,7 +380,7 @@ This RFC is successful if it helps contributors do all of the following:
   - deterministic runtime stability,
   - bounded-family boringness.
 
-## 13. Implementation Posture
+## 17. Implementation Posture
 
 The intended posture after this RFC is added is:
 
