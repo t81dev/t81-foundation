@@ -22,6 +22,10 @@ artifact helper surfaces.
 The admission gate for any future family member is defined in
 [AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md](./AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md).
 
+The narrow external-consumption contract for the current canonical bundle is
+defined in
+[AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md](./AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md).
+
 Confirmed invariant:
 
 - for identical task, model, policy, and input, the current chains keep the
