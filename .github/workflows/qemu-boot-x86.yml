@@ -23,7 +23,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Install dependencies
         run: |
@@ -105,7 +105,7 @@ jobs:
         run: |
           OVMF_CODE=$(find /usr/share/OVMF -name 'OVMF_CODE*.fd' | sort | head -1)
           OVMF_VARS_SRC=$(find /usr/share/OVMF -name 'OVMF_VARS*.fd' | sort | head -1)
-          OVMF_VARS=$(mktemp --suffix=.fd)
+          OVMF_VARS=$(mktemp "${TMPDIR:-/tmp}/t81-qemu-x86-ovmf-vars.XXXXXX.fd")
           cp "$OVMF_VARS_SRC" "$OVMF_VARS"
 
           timeout 40 qemu-system-x86_64 \
@@ -152,7 +152,7 @@ jobs:
         run: cp serial_x86.log drivers/qemu/sample-boot-log-x86.txt
 
       - name: Upload serial log artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: qemu-x86-serial-log
           path: serial_x86.log

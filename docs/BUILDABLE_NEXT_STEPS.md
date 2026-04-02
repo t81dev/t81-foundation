@@ -68,6 +68,9 @@ repo.
    `docs/HANDOFF.md`, `docs/ROADMAP.md`, and top-level contributor/demo entry
    points that still make new contributors reconstruct the active lanes.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
+   In practice, prefer reducing drift in duplicated contributor/demo lanes
+   (for example, matching pinned actions and portable temp-file handling across
+   QEMU boot workflows) over broad workflow merges.
 10. Keep public claims aligned with the validated bounded AI OS-object family.
     Current reference:
     `docs/explanation/DETERMINISTIC_AI_OS_OBJECT_SUBSTRATE_REFERENCE_MEMO.md`
