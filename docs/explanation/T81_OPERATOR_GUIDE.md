@@ -18,6 +18,44 @@ Use T81 today as three practical systems:
 If you understand those three, you understand the strongest current usable
 value in the repo.
 
+## What This System Actually Is
+
+T81 is a governed execution pipeline where:
+
+- execution is allowed or denied before it runs
+- results are stored as canonical objects
+- completed work is consumed from a stable bundle, not reconstructed from logs
+
+The system is not centered on model outputs.
+
+It is centered on:
+
+- controlled execution
+- canonical artifact chains
+- and bundle-first consumption
+
+## How This Differs From Typical AI Systems
+
+Typical systems:
+
+- run models first, evaluate later
+- emit logs or responses
+- reconstruct meaning from execution traces
+
+T81:
+
+- evaluates policy before execution
+- produces canonical object chains
+- treats the bundle as the final, authoritative object
+
+This shifts the system from:
+
+- "generate and observe"
+
+to:
+
+- "approve, execute, and preserve"
+
 ## 1. Governed CanonFS Interchange
 
 Use this when you want to:
@@ -95,6 +133,17 @@ Use this surface when the main question is:
 Use this when you want to start from the final object and consume the chain
 safely.
 
+The bundle is the system boundary.
+
+It is the only object required to:
+
+- verify what happened
+- trace how it happened
+- safely consume the result
+
+Consumers should not reconstruct execution from logs or intermediate state.
+They should begin from the bundle and follow canonical references.
+
 Start here:
 
 - [Bundle consumption contract](../reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md)
@@ -170,10 +219,10 @@ That sequence teaches:
 
 ## One-Line Operating Rule
 
-Use T81 today as:
+Use T81 today as a system that:
 
-- a governed artifact interchange system
-- a bounded deterministic AI object-chain system
-- and a bundle-first canonical object consumption system
+- controls what is allowed to execute
+- produces canonical object chains instead of transient outputs
+- and exposes completed work through bundle-first consumption
 
 That is the clearest current truth of the repo.
