@@ -262,6 +262,7 @@ Key files:
 - [interchange_ops.hpp](../include/t81/canonfs/interchange_ops.hpp)
 - [canonfs_interchange_ops.cpp](../fs/canonfs_interchange_ops.cpp)
 - [examples/storage-and-canonfs/canonfs-interchange/README.md](../examples/storage-and-canonfs/canonfs-interchange/README.md)
+- [examples/storage-and-canonfs/canonfs-interchange/v1/README.md](../examples/storage-and-canonfs/canonfs-interchange/v1/README.md)
 - [driver.cpp](../tools/cli/driver.cpp)
 - [canonfs_interchange_test.cpp](../tests/cpp/canonfs_interchange_test.cpp)
 - [cli_contract_test.cpp](../tests/cpp/cli_contract_test.cpp)

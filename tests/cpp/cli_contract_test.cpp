@@ -1285,6 +1285,14 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(example_policy_allow_import.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text, "\"status\": \"ok\""));
+    T81_TEST_CHECK(
+        contains(example_policy_allow_import.stdout_text, "\"policy_result\": \"allowed\""));
+    T81_TEST_CHECK(
+        contains(example_policy_allow_import.stdout_text, "\"policy_profile\": \"permissive\""));
+    T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text,
+                            "\"provenance_schema\": \"t81.canonfs-import-provenance.v1\""));
+    T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text,
+                            "\"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\""));
     const auto example_manifest_ref =
         extract_json_string(example_policy_allow_import.stdout_text, "manifest_ref");
     T81_TEST_CHECK(example_manifest_ref.has_value());
@@ -1298,6 +1306,14 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(example_policy_allow_export.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text, "\"status\": \"ok\""));
+    T81_TEST_CHECK(
+        contains(example_policy_allow_export.stdout_text, "\"policy_result\": \"allowed\""));
+    T81_TEST_CHECK(
+        contains(example_policy_allow_export.stdout_text, "\"policy_profile\": \"permissive\""));
+    T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text,
+                            "\"provenance_schema\": \"t81.canonfs-export-provenance.v1\""));
+    T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text,
+                            "\"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\""));
     T81_TEST_CHECK(fs::exists(example_export_root / "alpha.txt"));
     T81_TEST_CHECK(fs::exists(example_export_root / "nested" / "beta.txt"));
 
@@ -1313,6 +1329,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "\"status\": \"partial\""));
     T81_TEST_CHECK(
         contains(example_alpha_only_import.stdout_text, "\"policy_result\": \"partial\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_import.stdout_text, "\"policy_profile\": \"permissive\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
+                            "\"provenance_schema\": \"t81.canonfs-import-provenance.v1\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
+                            "\"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\""));
     T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "\"alpha.txt\""));
     T81_TEST_CHECK(
         contains(example_alpha_only_import.stdout_text, "\"reason\": \"policy_denied\""));
@@ -1338,6 +1360,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "\"status\": \"partial\""));
     T81_TEST_CHECK(
         contains(example_alpha_only_export.stdout_text, "\"policy_result\": \"partial\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_export.stdout_text, "\"policy_profile\": \"permissive\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
+                            "\"provenance_schema\": \"t81.canonfs-export-provenance.v1\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
+                            "\"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\""));
     T81_TEST_CHECK(
         contains(example_alpha_only_export.stdout_text, "\"reason\": \"policy_denied\""));
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "nested/beta.txt"));

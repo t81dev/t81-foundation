@@ -111,6 +111,11 @@ The current v1 candidate contract includes:
   `kind`, `code`, `reason`, `message`
 - current policy-profile names:
   `permissive`, `import-only`, `export-only`, `deny-all`
+- current policy model:
+  built-in policy profiles act as narrow operation-level admission controls,
+  while an explicit policy document may further narrow the admitted operation
+  and produce `ok`, `partial`, or `error` without introducing new profile
+  names
 
 The current promotion blockers are:
 
@@ -127,6 +132,8 @@ The operational reading for contributors is:
 
 - treat the JSON/result/provenance/manifest surface listed above as the current
   build-against boundary
+- treat the built-in profile names plus conjunctive explicit-policy narrowing
+  as the current policy behavior boundary
 - treat bundle/archive export, symlink posture, text-output contract status,
   and broader schema-catalog questions as explicitly unresolved
 - prefer tightening docs, examples, tests, and error clarity over expanding the
@@ -818,6 +825,15 @@ concrete v1 document surfaces:
 These schema artifacts are intentionally narrow. They freeze the current JSON
 shape used by the RFC-00D1 CLI seed without claiming that policy integration or
 Axion evidence linkage is finished.
+
+The contributor-facing reading should therefore stay narrow as well:
+
+- use this RFC section plus the checked-in example at
+  `examples/storage-and-canonfs/canonfs-interchange/README.md` to understand
+  the current build-against boundary
+- use the frozen fixture set at
+  `examples/storage-and-canonfs/canonfs-interchange/v1/` when exact JSON output
+  matters
 
 ## 13. Open Questions
 

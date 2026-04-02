@@ -10,6 +10,37 @@ If you want the single frozen v1 contract fixture set, start in:
 
 - `examples/storage-and-canonfs/canonfs-interchange/v1/`
 
+For the current build-against boundary, pair this example with:
+
+- `spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md`
+- `examples/storage-and-canonfs/canonfs-interchange/v1/README.md`
+
+## Current Build-Against Boundary
+
+The current RFC-00D1 v1 candidate surface is intentionally narrow.
+
+Treat the following as stable enough to build against today:
+
+- `canonfs import`
+- `canonfs export`
+- `t81.canonfs-import.v1`
+- `t81.canonfs-export.v1`
+- `t81.canonfs-import-provenance.v1`
+- `t81.canonfs-export-provenance.v1`
+- `t81.canonfs-interchange-manifest.v1`
+- source/target kinds `host-file` and `host-directory`
+- result linkage fields `provenance_schema` and `manifest_schema`
+- stable structured error fields `kind`, `message`, `code`, `reason`
+- built-in policy profiles `permissive`, `import-only`, `export-only`,
+  `deny-all`
+
+Still explicitly deferred from full v1 promotion:
+
+- symlink posture
+- archive/bundle export
+- text output as a co-equal contract
+- schema-catalog relocation beyond the RFC-local schema artifacts
+
 ## Files
 
 - `input/alpha.txt`
@@ -38,7 +69,10 @@ Expected shape:
 - schema: `t81.canonfs-import.v1`
 - source kind: `host-directory`
 - status: `ok`
+- policy result: `allowed`
 - policy profile: `permissive`
+- provenance schema: `t81.canonfs-import-provenance.v1`
+- manifest schema: `t81.canonfs-interchange-manifest.v1`
 - `manifest_ref` populated
 
 Export the returned `manifest_ref` back to a host directory:
@@ -58,6 +92,10 @@ Expected shape:
 - schema: `t81.canonfs-export.v1`
 - target kind: `host-directory`
 - status: `ok`
+- policy result: `allowed`
+- policy profile: `permissive`
+- provenance schema: `t81.canonfs-export-provenance.v1`
+- manifest schema: `t81.canonfs-interchange-manifest.v1`
 - `materialized_paths` includes `alpha.txt` and `nested/beta.txt`
 
 You can verify the exported payloads directly:
@@ -167,6 +205,9 @@ Expected shape:
 
 - status: `partial`
 - policy result: `partial`
+- policy profile: `permissive`
+- provenance schema: `t81.canonfs-import-provenance.v1`
+- manifest schema: `t81.canonfs-interchange-manifest.v1`
 - `imported_paths` includes `alpha.txt`
 - `errors[0].reason`: `policy_denied`
 - `errors[0].message` mentions `nested/beta.txt`
@@ -220,6 +261,9 @@ Expected shape:
 
 - status: `partial`
 - policy result: `partial`
+- policy profile: `permissive`
+- provenance schema: `t81.canonfs-export-provenance.v1`
+- manifest schema: `t81.canonfs-interchange-manifest.v1`
 - `materialized_paths` includes `alpha.txt`
 - `errors[0].reason`: `policy_denied`
 - `errors[0].message` mentions `nested/beta.txt`

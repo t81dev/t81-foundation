@@ -56,6 +56,8 @@ Recommended work:
   provenance/manifest schemas,
   `host-file` / `host-directory`,
   and current policy-profile names
+- keep the golden example plus frozen `v1/` fixture set aligned with the same
+  build-against boundary
 - consider promoting more of RFC-00D1 only after the deferred v1 questions stop
   moving
 

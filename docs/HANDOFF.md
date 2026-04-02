@@ -26,7 +26,9 @@ T81 is a deterministic, policy-gated runtime for auditable computation, built on
     `t81.canonfs-interchange-manifest.v1`,
     explicit interchange error `reason` / `kind` / `code`,
     explicit `provenance_schema` / `manifest_schema` result fields,
-    `host-file` / `host-directory`, and the current policy-profile names
+    `host-file` / `host-directory`, the current policy-profile names,
+    and the frozen fixture set under
+    `examples/storage-and-canonfs/canonfs-interchange/v1/`
 
 ## What is still draft or in motion
 
@@ -37,6 +39,9 @@ T81 is a deterministic, policy-gated runtime for auditable computation, built on
   current JSON/result/provenance/manifest seed contract, but do not assume that
   text output, symlink posture, archive/bundle export, or schema-catalog
   promotion questions are already settled
+- RFC-00D1 policy behavior should also be read narrowly: built-in profiles are
+  operation-level admission controls, and explicit policy files further narrow
+  within the admitted operation instead of replacing the profile surface
 - Broader bare-metal / TernaryOS ambitions are real but not yet the easiest public adoption path
 - Some repo narratives still over-emphasize the long-horizon OS story relative to the current runtime value
 
