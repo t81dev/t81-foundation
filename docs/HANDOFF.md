@@ -65,6 +65,13 @@ When in doubt, prefer these in order:
 4. Narrow and harden working surfaces before expanding scope.
 5. Keep draft work explicitly draft until the boundary is truly stable.
 
+## Current phase
+
+The bounded AI OS-object family is now a protected subsystem, not an exploratory
+lane. Treat `assess-fixed`, `route-fixed`, and `classify-fixed` as the current
+reference family and prefer stability, guardrails, portability, and claim
+accuracy over adding a fourth composition.
+
 ## Current best entry points
 
 - Public overview: [README.md](../README.md)

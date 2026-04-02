@@ -10,6 +10,10 @@ Move T81 from "ambitious and credible" toward "pick-up-able and extensible by ne
 
 Primary goal: make the runtime story clearer than the long-horizon OS story.
 
+Current posture: the bounded AI OS-object family is now a protected subsystem,
+so this phase should favor stabilization and truthful framing over additional
+family breadth.
+
 Success looks like:
 
 - a newcomer can tell what T81 is in under a minute
