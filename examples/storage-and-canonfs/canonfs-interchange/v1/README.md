@@ -5,6 +5,9 @@ This directory is the canonical RFC-00D1 v1 contract fixture set.
 The JSON files here are meant to be read as frozen examples of the current
 CanonFS interchange contract, not as a new interchange request format.
 
+This fixture set is the current build-against seed for RFC-00D1, not proof that
+the entire RFC has been promoted out of `draft`.
+
 For each case:
 
 - `*.request.json` describes the CLI invocation in a stable, machine-readable
