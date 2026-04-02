@@ -6,6 +6,18 @@ These are the best next tasks for a contributor who wants to ship something real
 
 Use this board when deciding what to do next.
 
+Before starting a new lane, run it through
+`spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md`:
+
+- Which DAIOS target layer does this strengthen?
+- Is that layer materially real today or still planned?
+- Does this strengthen a current proof surface, or skip ahead into a broader
+  layer?
+- Does it preserve determinism, policy-before-side-effects, and immutable
+  provenance?
+
+If those answers are unclear, narrow the work before starting it.
+
 ### Now
 
 - RFC-00D1 policy-profile depth:
@@ -15,9 +27,6 @@ Use this board when deciding what to do next.
 - CI and portability boringness:
   remove concrete toolchain/setup footguns, especially in build, demo, and
   smoke-test paths contributors are likely to try early
-- Contributor-path trimming:
-  keep the maintainer and contributor entry docs short, current, and aligned
-  with the protected bounded family plus the current RFC-00D1 seed contract
 
 ### Next
 
@@ -27,7 +36,7 @@ Use this board when deciding what to do next.
 - Public-story cleanup:
   keep the runtime-first story, handoff docs, and contributor roadmap aligned
   with the strongest usable surfaces
-- Bounded family stabilization:
+- Bounded family       stabilization:
   keep the admitted AI OS-object family baseline, identity invariant,
   admission gate, negative-path enforcement, and maintainer status note
   aligned; do not add a fourth composition unless there is a concrete need
@@ -64,13 +73,7 @@ repo.
 6. Move reusable interchange behavior out of CLI-only code where practical.
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
-   Current likely targets:
-   `docs/HANDOFF.md`, `docs/ROADMAP.md`, and top-level contributor/demo entry
-   points that still make new contributors reconstruct the active lanes.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
-   In practice, prefer reducing drift in duplicated contributor/demo lanes
-   (for example, matching pinned actions and portable temp-file handling across
-   QEMU boot workflows) over broad workflow merges.
 10. Keep public claims aligned with the validated bounded AI OS-object family.
     Current reference:
     `docs/explanation/DETERMINISTIC_AI_OS_OBJECT_SUBSTRATE_REFERENCE_MEMO.md`
@@ -212,27 +215,6 @@ repo.
     2. keep policy denial reporting explicit without expanding interchange
        formats or adding new built-in profile families
 
-16. (DONE) Tighten the current RFC-00D1 contributor-facing contract path.
-    Current state:
-    the CanonFS interchange lane now has:
-    - tighter CLI contract coverage for failure-case JSON error shapes
-    - checked-in example docs that explicitly match the current structured
-      error contract
-    - one more target-side export failure pinned in the CLI contract slice
-    - reusable preflight error construction moved out of CLI-only glue
-
-    The practical result is that the current import/export seed contract is
-    easier to build against without reconstructing it from `driver.cpp`.
-
-17. (DONE) Remove the highest-friction QEMU/demo portability footguns.
-    Current state:
-    the contributor-facing demo and onboarding scripts now use more portable
-    timeout and temp-file handling, and the top-level QEMU demo dependency line
-    matches the script requirements more closely.
-
-    The practical result is that macOS/Linux contributors are less likely to
-    hit avoidable shell-tooling failures before they reach the actual runtime.
-
 ## Pick one lane
 
 - If you want the best chance of shipping code quickly, start with RFC-00D1.
@@ -262,7 +244,6 @@ Key files:
 - [interchange_ops.hpp](../include/t81/canonfs/interchange_ops.hpp)
 - [canonfs_interchange_ops.cpp](../fs/canonfs_interchange_ops.cpp)
 - [examples/storage-and-canonfs/canonfs-interchange/README.md](../examples/storage-and-canonfs/canonfs-interchange/README.md)
-- [examples/storage-and-canonfs/canonfs-interchange/v1/README.md](../examples/storage-and-canonfs/canonfs-interchange/v1/README.md)
 - [driver.cpp](../tools/cli/driver.cpp)
 - [canonfs_interchange_test.cpp](../tests/cpp/canonfs_interchange_test.cpp)
 - [cli_contract_test.cpp](../tests/cpp/cli_contract_test.cpp)

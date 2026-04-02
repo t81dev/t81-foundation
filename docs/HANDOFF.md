@@ -83,6 +83,17 @@ lane. Treat `assess-fixed`, `route-fixed`, and `classify-fixed` as the current
 reference family and prefer stability, guardrails, portability, and claim
 accuracy over adding a fourth composition.
 
+## Proposal filter
+
+Before starting a new lane, run it through RFC-00D2:
+
+1. Which DAIOS target layer does this strengthen?
+2. Is that layer materially real today or still planned?
+3. Does this strengthen a current proof surface, or skip ahead into a broader layer?
+4. Does it preserve determinism, policy-before-side-effects, and immutable provenance?
+
+If those answers are weak, narrow the work before building it.
+
 ## Current best entry points
 
 - Public overview: [README.md](../README.md)
