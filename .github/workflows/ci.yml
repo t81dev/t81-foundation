@@ -590,13 +590,15 @@ jobs:
             --t81-bin build/t81 \
             --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
 
-      - name: Verify AI OS-object invariant tests are present in CTest
+      - name: Verify AI OS-object invariant and denial tests are present in CTest
         shell: bash
         run: |
           set -eo pipefail
           ctest --test-dir build -N 2>&1 | tee -a .github/logs/build-and-test.log
           ctest --test-dir build -N | grep -F "t81_ai_task_assess_fixed_composition_test_runner" >/dev/null
           ctest --test-dir build -N | grep -F "t81_ai_task_route_fixed_composition_test_runner" >/dev/null
+          ctest --test-dir build -N | grep -F "artifact_validate_record_test_runner" >/dev/null
+          ctest --test-dir build -N | grep -F "t81_ai_task_framework_test_runner" >/dev/null
 
       - name: Test
         shell: bash

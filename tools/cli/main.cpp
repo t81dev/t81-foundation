@@ -2545,6 +2545,22 @@ int run_artifact_command(const Args& args) {
       "action_ref",
       "record_ref",
   }};
+  auto validate_canonfs_ref_field = [&](std::string_view artifact_text, std::string_view field_name,
+                                        std::string& validation_error) {
+    const auto value = extract_json_string_field(artifact_text, field_name);
+    if (!value || value->empty()) {
+      validation_error = "missing required field \"" + std::string(field_name) + "\"";
+      return false;
+    }
+    t81::canonfs::CanonRef ignored_ref;
+    std::string ref_error;
+    if (!parse_canonical_hash_local(*value, ignored_ref, ref_error)) {
+      validation_error =
+          "invalid CanonFS ref in field \"" + std::string(field_name) + "\": " + ref_error;
+      return false;
+    }
+    return true;
+  };
   auto is_supported_field = [&](std::string_view schema, std::string_view field) {
     if (schema == kAssessActionRecordSchema) {
       return field == "schema" || field == "decision" || field == "reason_code" ||
@@ -2674,6 +2690,11 @@ int run_artifact_command(const Args& args) {
           return false;
         }
       }
+      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error)) {
+        return false;
+      }
       return true;
     }
     if (schema == kRouteActionRecordSchema) {
@@ -2683,6 +2704,11 @@ int run_artifact_command(const Args& args) {
           validation_error = "missing required field \"" + std::string(required_field) + "\"";
           return false;
         }
+      }
+      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error)) {
+        return false;
       }
       return true;
     }
@@ -2694,6 +2720,12 @@ int run_artifact_command(const Args& args) {
           return false;
         }
       }
+      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "record_ref", validation_error)) {
+        return false;
+      }
       return true;
     }
     if (schema == kRouteBundleSchema) {
@@ -2703,6 +2735,12 @@ int run_artifact_command(const Args& args) {
           validation_error = "missing required field \"" + std::string(required_field) + "\"";
           return false;
         }
+      }
+      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "record_ref", validation_error)) {
+        return false;
       }
       return true;
     }
@@ -2714,6 +2752,11 @@ int run_artifact_command(const Args& args) {
           return false;
         }
       }
+      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "rule_set_ref", validation_error)) {
+        return false;
+      }
       return true;
     }
     if (schema == kClassifyBundleSchema) {
@@ -2723,6 +2766,12 @@ int run_artifact_command(const Args& args) {
           validation_error = "missing required field \"" + std::string(required_field) + "\"";
           return false;
         }
+      }
+      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error) ||
+          !validate_canonfs_ref_field(artifact_text, "record_ref", validation_error)) {
+        return false;
       }
       return true;
     }
