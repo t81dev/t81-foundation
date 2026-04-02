@@ -61,6 +61,15 @@ Stable seed surfaces today:
 These seed surfaces are stable enough for contributor-facing examples, contract
 tests, and adjacent tooling.
 
+This is intentionally narrower than full RFC promotion. In practical terms:
+
+- contributors may build examples, tests, and adjacent tooling against this
+  seed surface now
+- contributors should not infer that deferred v1 questions have already been
+  decided just because the JSON/result surface is stable enough to use
+- any work in this lane should preserve the current seed contract before
+  broadening source kinds, target kinds, text surfaces, or metadata promises
+
 Still draft inside RFC-00D1:
 
 - whether bundle or archive export is part of v1
@@ -113,6 +122,15 @@ The current promotion blockers are:
   a bounded extension
 - keep policy-profile semantics narrow and documented before adding richer
   interchange formats or transport surfaces
+
+The operational reading for contributors is:
+
+- treat the JSON/result/provenance/manifest surface listed above as the current
+  build-against boundary
+- treat bundle/archive export, symlink posture, text-output contract status,
+  and broader schema-catalog questions as explicitly unresolved
+- prefer tightening docs, examples, tests, and error clarity over expanding the
+  interchange surface while those blockers remain open
 
 ## 2. Motivation
 

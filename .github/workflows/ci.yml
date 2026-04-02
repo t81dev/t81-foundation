@@ -217,6 +217,87 @@ jobs:
           echo "Public header root check passed."
 
   ############################################################################
+  # JOB: deterministic-profile-enforcement
+  # Consolidated from deterministic-profile-enforcement.yml. Keep the
+  # deterministic-profile-specific static/file checks as a first-class CI lane
+  # while avoiding a duplicate standalone workflow and duplicate test rebuilds.
+  # The matching runtime tests already run in the main build-and-test matrix.
+  ############################################################################
+  deterministic-profile-enforcement:
+    name: " product / deterministic profile enforcement "
+    needs: [spec-and-docs, build-and-test]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Check for undefined deterministic macros
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "Checking for undefined deterministic macros..."
+          if grep -r "T81_DETERMINISTIC_.*_AVAILABLE" include/; then
+            echo "Found undefined deterministic macros"
+            exit 1
+          fi
+          echo "No undefined deterministic macros found"
+
+      - name: Verify deterministic boundary documentation markers
+        shell: bash
+        run: |
+          set -euo pipefail
+          docs=(
+            "docs/status/AUDIT_REMEDIATION_CROSSWALK.md"
+            "docs/status/T81LANG_TRACEABILITY_MATRIX.md"
+            "docs/status/JIT_EQUIVALENCE_GAP.md"
+            "docs/status/GOVERNANCE_BOUNDARIES_CLARIFICATION.md"
+            "docs/records/status-history/AXION_STATUS.md"
+          )
+
+          for doc in "${docs[@]}"; do
+            test -f "$doc" || { echo "Missing deterministic-profile status marker: $doc"; exit 1; }
+            echo "Found $doc"
+          done
+
+      - name: Check for removed non-compiling test references
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -f tests/cpp/test_axion_evidence_loop_closure.cpp
+          echo "Non-compiling legacy test reference is absent."
+
+      - name: Verify deterministic-profile test files exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          test_files=(
+            "tests/cpp/test_deterministic_float_boundaries.cpp"
+            "tests/cpp/test_map_determinism.cpp"
+            "tests/cpp/test_t81lang_traceability_enforcement.cpp"
+            "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp"
+          )
+
+          for file in "${test_files[@]}"; do
+            test -f "$file" || { echo "Missing deterministic-profile test file: $file"; exit 1; }
+            echo "Found $file"
+          done
+
+      - name: Verify deterministic iterator implementation marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "deterministic_iterator" include/t81/types/T81Map.hpp
+          echo "Deterministic iterator marker present."
+
+      - name: Check T81Float deterministic guard marker
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "not available in current dmath implementation" include/t81/types/T81Float.hpp
+          echo "T81Float deterministic guard marker present."
+
+  ############################################################################
   # JOB: governance-metrics
   ############################################################################
   governance-metrics:

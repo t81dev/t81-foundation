@@ -10,6 +10,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 - Architecture coherence gate also asserts the phase-1 VM/shared AI helper parity regression target.
 - Numeric policy checks: legacy include/type usage and wrapper-thinness guards
 - Benchmark guards: `check_simd_regression.py`, `check_vm_workload_benchmark_regression.py`
+- Benchmark runner bootstrap helper: `build_benchmark_runner.sh`
 - CLI docs parity guard: `check_cli_docs_parity.py`
 - CLI docs smoke guard: `check_cli_docs_smoke.py`
 - CLI JSON contract guard: `check_cli_json_contracts.py`
@@ -69,6 +70,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 ## Local invocation examples
 ```bash
 python3 scripts/ci/check_architecture_targets.py
+bash scripts/ci/build_benchmark_runner.sh
 python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
 python3 scripts/ci/check_cli_docs_parity.py --t81-bin build/t81 --manual docs/user-guide/reference/cli-user-manual.md
 python3 scripts/ci/check_cli_docs_smoke.py --manual docs/user-guide/reference/cli-user-manual.md --cwd . --timeout-sec 20

@@ -94,6 +94,6 @@
   No `vmulq_f32` — the ternary constraint eliminates all multiplies. AArch64 only.
 - **Hybrid MLP:** attention=ternary NEON, MLP projections=FP32 BLAS-style loop.
 - All benchmarks compiled with `-O3 -march=native`, mean of 2 repetitions.
-- Results committed automatically by the `inference-bench` CI workflow.
+- Results committed automatically by the scheduled/manual `inference-bench` CI workflow.
 
 For the VM packed-trit dispatch path see `BM_NativeWeightsExecution.cpp`.

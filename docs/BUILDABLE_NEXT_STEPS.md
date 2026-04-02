@@ -158,9 +158,28 @@ repo.
     The practical result is that the built-in profile surface is now a real,
     contributor-facing contract instead of maintainer memory.
 
+    Additional progress now completed on this lane:
+    1. (DONE) Add a small checked-in policy-document example that shows how an
+       explicit policy file can narrow an otherwise allowed built-in profile
+       into a real `partial` import/export result.
+
+       Current state:
+       the CanonFS interchange example now includes an `alpha`-only checked-in
+       policy file plus CLI contract coverage that demonstrates:
+       - built-in profiles and explicit policy files are conjunctive rather
+         than competing control planes
+       - directory import can succeed as `partial` when one path is admitted
+         and another is denied by policy
+       - directory export can likewise materialize a subset of manifest entries
+         while still emitting explicit `policy_denied` evidence
+
+       The practical result is that a contributor can now learn the current
+       `ok` / `partial` / `error` interchange posture from checked-in examples
+       instead of inferring it from implementation details.
+
     If this lane is revisited next, the highest-value work is:
-    1. add one or two small policy-document examples that show how explicit
-       policy files extend or override the built-in profiles
+    1. add one more equally small policy-document example only if it clarifies a
+       distinct policy-file interaction beyond the new partial-result case
     2. keep policy denial reporting explicit without expanding interchange
        formats or adding new built-in profile families
 
@@ -183,7 +202,8 @@ Why this matters:
 Concrete work:
 
 - add one or two small policy-document examples that build on the current
-  built-in profiles
+  built-in profiles, with at least one checked-in example now covering a real
+  `partial` import/export result
 - keep explicit policy-profile docs and examples aligned with CLI/core behavior
 - extend import/export denial reasons and provenance details
 
@@ -199,7 +219,8 @@ Key files:
 Definition of done:
 
 - a contributor can understand the built-in profiles and at least one policy
-  document example without reading the implementation
+  document example, including a real `partial` result, without reading the
+  implementation
 - tests cover new denial/reporting cases
 - CLI and core API remain aligned
 - schema artifacts and emitted JSON stay aligned
@@ -316,17 +337,18 @@ Current workflow audit:
   architecture-specific boot capture lanes, and `python-wheels.yml` /
   `release.yml` as packaging lanes.
 - First safe consolidation candidate:
-  fold `deterministic-profile-enforcement.yml` into a named job inside
-  `ci.yml`. It runs on the same push / pull_request cadence as the main CI
-  lane and overlaps with deterministic contract enforcement already represented
-  there.
+  (DONE) fold `deterministic-profile-enforcement.yml` into a named job inside
+  `ci.yml`.
+
+  Current state:
+  the deterministic-profile static/file checks now live in the main CI
+  workflow as `product / deterministic profile enforcement`, while the
+  duplicate standalone workflow and duplicate rebuild/test path are gone.
 - Second safe consolidation candidate:
-  review whether `runtime-contract.yml` should remain standalone or become a
-  narrow `ci.yml` job. Its trigger shape mirrors the main CI path, so the bar
-  for staying separate should be a materially different ownership or failure
-  policy.
+  (DONE) review whether `runtime-contract.yml` should remain standalone or
+  become a narrow `ci.yml` job.
 - Third safe consolidation candidate:
-  reduce benchmark workflow duplication across `bench.yml`,
+  (IN PROGRESS) reduce benchmark workflow duplication across `bench.yml`,
   `benchmark_packed_trit_vector.yml`, `inference-bench.yml`, and
   `repro-ledger.yml` by centralizing shared benchmark setup and keeping only one
   PR-sensitive regression gate. The rest should stay manual or scheduled unless
@@ -334,7 +356,35 @@ Current workflow audit:
 
 Recommended order:
 
-1. Consolidate deterministic-profile enforcement into `ci.yml`.
-2. Decide whether runtime-contract remains a standalone contract lane.
-3. Centralize shared benchmark workflow setup before merging or deleting any
+1. (DONE) Consolidate deterministic-profile enforcement into `ci.yml`.
+2. (DONE) Keep `runtime-contract.yml` standalone for now.
+   Current state:
+   this lane has materially different coupling from the main CI path:
+   - it checks out the external `t81-vm` repository rather than only this repo
+   - it enforces cross-repo contract/tag/pin alignment, not just in-repo build
+     or test behavior
+   - it carries a distinct `workflow_dispatch` approval input for intentional
+     contract-marker drift (`allow_contract_change`)
+   - its nightly cadence and approval semantics are part of the contract lane,
+     not just generic CI repetition
+
+   The practical result is that folding it into `ci.yml` right now would mix a
+   cross-repo approval gate into the main integration lane without obviously
+   reducing maintainer load.
+3. (IN PROGRESS) Centralize shared benchmark workflow setup before merging or deleting any
    benchmark workflows.
+   Current state:
+   the benchmark-specific workflows now share a reusable benchmark-runner
+   bootstrap helper under `scripts/ci/`, so the remaining work is no longer
+   basic CMake duplication. The next decision is which single PR-sensitive
+   benchmark regression gate should remain prominent once workflow purposes are
+   compared side by side.
+   Additional progress now completed:
+   - `bench.yml` remains the primary benchmark-sensitive lane because it owns
+     the current VM workload guardrail
+   - `benchmark_packed_trit_vector.yml` has been narrowed to scheduled/manual
+     specialist coverage instead of remaining a second push / pull_request
+     benchmark workflow
+   - `inference-bench.yml` has been narrowed to scheduled/manual plus release
+     publishing because it refreshes a benchmark report rather than protecting a
+     single narrow PR regression contract

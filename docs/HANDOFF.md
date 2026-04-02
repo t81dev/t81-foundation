@@ -33,6 +33,10 @@ T81 is a deterministic, policy-gated runtime for auditable AI inference, built o
 - RFC-00D0: base-81-aware TCP/IP stack
 - RFC-00D1: CanonFS foreign file system interchange remains draft overall, but the current v1 JSON seed contract is now stable enough for examples, tests, and adjacent tooling
 - RFC-00D1 now explicitly names its current v1 candidate contract surface and promotion blockers, so contributors do not need to reconstruct that boundary from implementation details
+- RFC-00D1 "stable enough to build against" should be read narrowly: use the
+  current JSON/result/provenance/manifest seed contract, but do not assume that
+  text output, symlink posture, archive/bundle export, or schema-catalog
+  promotion questions are already settled
 - Broader bare-metal / TernaryOS ambitions are real but not yet the easiest public adoption path
 - Some repo narratives still over-emphasize the long-horizon OS story relative to the current runtime value
 

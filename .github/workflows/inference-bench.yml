@@ -2,25 +2,22 @@
 #
 # Reproducible Inference Benchmark — T81 ternary vs FP32/FP16/Int8/NEON
 #
-# Runs BM_InferenceComparison on every qualifying push to main and on release
-# tags.  Parses JSON output and commits inference_comparison.md so results
-# are always in sync with the code that produced them.
+# Runs BM_InferenceComparison on a scheduled/manual cadence and on release
+# tags. Parses JSON output and commits inference_comparison.md so the published
+# comparison stays fresh without acting as a second push-sensitive benchmark
+# lane.
 #
 # Trigger:
-#   - push to main (filter: benchmarks/BM_InferenceComparison.cpp or tensor headers)
+#   - weekly schedule
 #   - any v*.*.* release tag
 #   - workflow_dispatch
 
 name: Inference Benchmark
 
 on:
+  schedule:
+    - cron: "0 8 * * 3"
   push:
-    branches: [main]
-    paths:
-      - 'benchmarks/BM_InferenceComparison.cpp'
-      - 'include/t81/tensor/ternary_native.hpp'
-      - 'include/t81/tensor.hpp'
-      - 'src/tensor/**'
     tags:
       - 'v*.*.*'
   workflow_dispatch:
@@ -50,17 +47,9 @@ jobs:
           sudo apt-get install -y ninja-build
 
       - name: Configure CMake
-        run: >
-          cmake -S . -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
-          -DT81_BUILD_BENCHMARKS=ON
-          -DT81_BUILD_TESTS=OFF
-          -DT81_BUILD_EXAMPLES=OFF
-          -DT81_BUILD_FUZZ_TESTS=OFF
-          -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG"
-
-      - name: Build benchmark runner
-        run: cmake --build build --target benchmark_runner --parallel
+        env:
+          T81_BENCH_CXX_FLAGS: -O3 -march=native -DNDEBUG
+        run: bash scripts/ci/build_benchmark_runner.sh
 
       # Run each family separately to avoid the combined-run timeout that
       # occurs when Google Benchmark accumulates many Repetitions(2) suites.

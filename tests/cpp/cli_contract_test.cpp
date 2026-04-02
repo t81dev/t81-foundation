@@ -1106,15 +1106,26 @@ int main(int argc, char* argv[]) {
     const fs::path example_allow_policy =
         repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
         "policy-allow-example-inputs.apl";
+    const fs::path example_alpha_only_policy =
+        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
+        "policy-allow-alpha-only.apl";
     T81_TEST_CHECK(fs::exists(example_input_dir));
     T81_TEST_CHECK(fs::exists(example_deny_policy));
     T81_TEST_CHECK(fs::exists(example_allow_policy));
+    T81_TEST_CHECK(fs::exists(example_alpha_only_policy));
 
     const auto validate_deny_example =
         run_cli(t81_bin, {"policy", "validate", example_deny_policy.string(), "--json"});
     T81_TEST_CHECK(validate_deny_example.exit_code == 0);
     T81_TEST_CHECK(contains(validate_deny_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
     T81_TEST_CHECK(contains(validate_deny_example.stdout_text, "\"valid\": true"));
+
+    const auto validate_alpha_only_example =
+        run_cli(t81_bin, {"policy", "validate", example_alpha_only_policy.string(), "--json"});
+    T81_TEST_CHECK(validate_alpha_only_example.exit_code == 0);
+    T81_TEST_CHECK(contains(validate_alpha_only_example.stdout_text,
+                            "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(contains(validate_alpha_only_example.stdout_text, "\"valid\": true"));
 
     const auto validate_allow_example =
         run_cli(t81_bin, {"policy", "validate", example_allow_policy.string(), "--json"});
@@ -1156,6 +1167,50 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text, "\"status\": \"ok\""));
     T81_TEST_CHECK(fs::exists(example_export_root / "alpha.txt"));
     T81_TEST_CHECK(fs::exists(example_export_root / "nested" / "beta.txt"));
+
+    const fs::path example_alpha_only_root =
+        make_temp_path("t81-cli-canonfs-example-alpha-root", "");
+    const auto example_alpha_only_import = run_cli(
+        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                  example_alpha_only_root.string(), "--policy",
+                  example_alpha_only_policy.string(), "--json"});
+    T81_TEST_CHECK(example_alpha_only_import.exit_code == 0);
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
+                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "\"status\": \"partial\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
+                            "\"policy_result\": \"partial\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "\"alpha.txt\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
+                            "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "nested/beta.txt"));
+
+    const auto example_full_import_for_partial_export = run_cli(
+        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                  example_alpha_only_root.string(), "--json"});
+    T81_TEST_CHECK(example_full_import_for_partial_export.exit_code == 0);
+    const auto example_full_manifest_ref =
+        extract_json_string(example_full_import_for_partial_export.stdout_text, "manifest_ref");
+    T81_TEST_CHECK(example_full_manifest_ref.has_value());
+
+    const fs::path example_alpha_only_export_root =
+        make_temp_path("t81-cli-canonfs-example-alpha-export", "");
+    const auto example_alpha_only_export = run_cli(
+        t81_bin, {"canonfs", "export", *example_full_manifest_ref, "--canonfs-root",
+                  example_alpha_only_root.string(), "--policy",
+                  example_alpha_only_policy.string(), "--out",
+                  example_alpha_only_export_root.string(), "--json"});
+    T81_TEST_CHECK(example_alpha_only_export.exit_code == 0);
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
+                            "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "\"status\": \"partial\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
+                            "\"policy_result\": \"partial\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
+                            "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "nested/beta.txt"));
+    T81_TEST_CHECK(fs::exists(example_alpha_only_export_root / "alpha.txt"));
+    T81_TEST_CHECK(!fs::exists(example_alpha_only_export_root / "nested" / "beta.txt"));
 
     const fs::path contract_root = repo_root / "build" / "canonfs-v1-contract-root";
     const fs::path contract_export_dir = repo_root / "build" / "canonfs-v1-contract-export";

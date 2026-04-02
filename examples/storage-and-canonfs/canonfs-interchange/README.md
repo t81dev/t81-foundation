@@ -14,6 +14,7 @@ If you want the single frozen v1 contract fixture set, start in:
 
 - `input/alpha.txt`
 - `input/nested/beta.txt`
+- `policy-allow-alpha-only.apl`
 - `policy-deny-all.apl`
 - `policy-allow-example-inputs.apl`
 
@@ -110,11 +111,23 @@ content policy. In other words:
 - richer policy semantics can still be added later through policy documents
   without widening the built-in profile names
 
+Built-in profiles and explicit policy files are conjunctive:
+
+- the built-in profile decides whether `canonfs import` or `canonfs export`
+  is allowed at all
+- an explicit policy file can further narrow which CanonFS objects are admitted
+  within that allowed operation
+- the result can therefore be `ok`, `error`, or `partial` without adding new
+  profile names
+
 ## Policy Document Examples
 
 This example directory also includes two small Axion policy files that work
 with the current CanonFS interchange lane:
 
+- `policy-allow-alpha-only.apl`
+  allows only `input/alpha.txt`, which makes the checked-in directory import and
+  export paths return `partial` instead of all-or-nothing
 - `policy-deny-all.apl`
   denies CanonFS import/export through policy evaluation even when the built-in
   profile is still `permissive`
@@ -125,6 +138,10 @@ Validate them directly:
 
 ```bash
 build/t81 policy validate \
+  examples/storage-and-canonfs/canonfs-interchange/policy-allow-alpha-only.apl \
+  --json
+
+build/t81 policy validate \
   examples/storage-and-canonfs/canonfs-interchange/policy-deny-all.apl \
   --json
 
@@ -132,6 +149,24 @@ build/t81 policy validate \
   examples/storage-and-canonfs/canonfs-interchange/policy-allow-example-inputs.apl \
   --json
 ```
+
+Partial import using the checked-in alpha-only policy:
+
+```bash
+build/t81 canonfs import \
+  examples/storage-and-canonfs/canonfs-interchange/input \
+  --canonfs-root "$canon_root" \
+  --policy examples/storage-and-canonfs/canonfs-interchange/policy-allow-alpha-only.apl \
+  --json
+```
+
+Expected shape:
+
+- status: `partial`
+- policy result: `partial`
+- `imported_paths` includes `alpha.txt`
+- `errors[0].reason`: `policy_denied`
+- `errors[0].message` mentions `nested/beta.txt`
 
 Policy denial through a checked-in file:
 
@@ -164,6 +199,27 @@ Expected shape:
 - status: `ok`
 - policy profile: `permissive`
 - import/export stay allowed because the policy file admits the example hashes
+
+You can also see the same narrowing effect on export by first importing the
+directory under the permissive default, then exporting the returned
+`manifest_ref` with the alpha-only policy:
+
+```bash
+build/t81 canonfs export \
+  "$manifest_ref" \
+  --canonfs-root "$canon_root" \
+  --policy examples/storage-and-canonfs/canonfs-interchange/policy-allow-alpha-only.apl \
+  --out "$export_root" \
+  --json
+```
+
+Expected shape:
+
+- status: `partial`
+- policy result: `partial`
+- `materialized_paths` includes `alpha.txt`
+- `errors[0].reason`: `policy_denied`
+- `errors[0].message` mentions `nested/beta.txt`
 
 ## Notes
 

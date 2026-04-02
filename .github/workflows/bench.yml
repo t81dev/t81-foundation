@@ -43,17 +43,9 @@ jobs:
           fi
 
       - name: Configure CMake
-        run: >
-          cmake -S . -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
-          -DT81_BUILD_BENCHMARKS=ON
-          -DT81_BUILD_TESTS=OFF
-          -DT81_BUILD_EXAMPLES=OFF
-          -DT81_BUILD_FUZZ_TESTS=OFF
-          -DCMAKE_CXX_FLAGS="-O3 -march=native -DNDEBUG"
-
-      - name: Build benchmark runner
-        run: cmake --build build --target benchmark_runner --parallel
+        env:
+          T81_BENCH_CXX_FLAGS: -O3 -march=native -DNDEBUG
+        run: bash scripts/ci/build_benchmark_runner.sh
 
       - name: Run badge benchmark slice
         run: |

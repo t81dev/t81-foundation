@@ -1,10 +1,8 @@
 name: PackedTritVector Regression Check
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  schedule:
+    - cron: "0 7 * * 2"
   workflow_dispatch:
 
 permissions:
@@ -24,15 +22,9 @@ jobs:
           sudo apt-get install -y build-essential cmake ninja-build python3
 
       - name: Configure CMake
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DT81_BUILD_BENCHMARKS=ON \
-            -DT81_BUILD_TESTS=OFF \
-            -DCMAKE_CXX_FLAGS="-mavx2 -mfma"
-
-      - name: Build benchmark runner
-        run: cmake --build build --target benchmark_runner --parallel
+        env:
+          T81_BENCH_CXX_FLAGS: -mavx2 -mfma
+        run: bash scripts/ci/build_benchmark_runner.sh
 
       - name: Run benchmarks
         run: |

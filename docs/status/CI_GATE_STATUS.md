@@ -64,7 +64,7 @@ tracked here and must be addressed unless explicitly deferred.
 | `static analysis / clang-tidy` | `ci.yml` | success ✅ | |
 | `fuzzing / frontend` | `ci.yml` | success ✅ | Frontend fuzz harness |
 | `formal verification / ternary logic` | `ci.yml` | success ✅ | |
-| `benchmark / linux-x86_64` | `bench.yml` | success ✅ | |
+| `benchmark / linux-x86_64` | `bench.yml` | success ✅ | Primary benchmark-sensitive lane for benchmark/runtime-path changes |
 | `benchmark / vm workload gate` | `bench.yml` | success ✅ | Guardrail: VM workload dispatch/native ratio |
 | `cxx-std / linux-x86_64 / clang / ON` | `ci.yml` | success ✅ | C++23 feature set |
 | `cxx-std / linux-x86_64 / clang / OFF` | `ci.yml` | success ✅ | C++20 feature set |
@@ -73,6 +73,7 @@ tracked here and must be addressed unless explicitly deferred.
 | `contract-sync` | `runtime-contract.yml` | success ✅ | Runtime contract alignment |
 | `format / clang-format` | `format.yml` | success ✅ | |
 | `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
+| `product / deterministic profile enforcement` | `ci.yml` | success ✅ | Consolidated deterministic-profile static/file checks |
 | `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
 | `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
 
@@ -80,8 +81,8 @@ tracked here and must be addressed unless explicitly deferred.
 
 - **Current head is documentation-only, but required contexts are still running** —
   `Format Check` and `runtime-contract` have already completed successfully on `069963ea`,
-  while `T81 Foundation CI`, `CodeQL`, `Cross-Platform Determinism Verification`, and
-  `Deterministic Core Profile Enforcement` remain in progress at the time of this update.
+  while `T81 Foundation CI`, `CodeQL`, and `Cross-Platform Determinism Verification`
+  remain in progress at the time of this update.
 - **Recent CI work has been dominated by portability closure rather than product regressions** —
   the main fixes since 2026-03-22 have been Windows/MSVC, Windows/clang-cl, Linux/ARM64,
   and QEMU workflow hardening. Treat new portability failures as immediate-fix items.
