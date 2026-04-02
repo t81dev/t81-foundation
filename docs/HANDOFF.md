@@ -34,6 +34,9 @@ T81 is a deterministic, policy-gated runtime for auditable computation, built on
 
 - RFC-00D0: base-81-aware TCP/IP stack
 - RFC-00D1: CanonFS foreign file system interchange remains draft overall, but the current v1 JSON seed contract is now stable enough for examples, tests, and adjacent tooling
+- RFC-00D2: DAIOS target architecture and sequencing is now documented as a
+  draft architecture note; use it to place future work in the right layer, not
+  to justify widening current implementation scope
 - RFC-00D1 now explicitly names its current v1 candidate contract surface and promotion blockers, so contributors do not need to reconstruct that boundary from implementation details
 - RFC-00D1 "stable enough to build against" should be read narrowly: use the
   current JSON/result/provenance/manifest seed contract, but do not assume that
@@ -88,6 +91,8 @@ accuracy over adding a fourth composition.
 - Contributing guide: [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](BUILDABLE_NEXT_STEPS.md)
 - Contributor-facing roadmap: [docs/ROADMAP.md](ROADMAP.md)
+- DAIOS target architecture:
+  [spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md](../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)
 - Bounded family status: [docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 - AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](status/AI_CLI_IMPLEMENTATION_MATRIX.md)
 - Strategic convergence note:

@@ -112,6 +112,7 @@ Auxiliary note:
 | RFC-00CF | Slice6 CanonFS Operator Actions | draft | Narrow operator-shell surface over existing CanonFS/runtime machinery; treat follow-on shell command work as implementation unless it freezes a new stable contract |
 | RFC-00D0 | Base-81-Aware TCP/IP Stack | draft | Initial architectural direction for standards-compatible TCP/IP with base-81 identity, representation, and observability layers |
 | RFC-00D1 | CanonFS Foreign File System Interchange | draft | Defines CanonFS import/export as a governed interchange boundary with provenance, normalization, and explicit round-trip limits; RFC remains draft overall, but a narrow seed contract is now stable enough to build against: `canonfs import` / `canonfs export`, the v1 import/export/provenance/manifest JSON schemas, `host-file` / `host-directory`, and the current policy-profile names. Deferred questions still include symlink posture, archive/bundle export, text-output contract status, and schema-catalog promotion. |
+| RFC-00D2 | DAIOS Target Architecture and Sequencing | draft | Informational planning RFC that defines the target DAIOS layers and sequencing rule while explicitly preserving the current runtime-first posture: architecture ahead, implementation behind proof. It does not promote new APIs or authorize broad subsystem expansion. |
 
 ## Series Planning
 

@@ -6,6 +6,10 @@ This is the short roadmap for someone trying to build T81 forward without first 
 
 Move T81 from "ambitious and credible" toward "pick-up-able and extensible by new contributors" without weakening its determinism, governance, or provenance posture.
 
+Use [RFC-00D2](../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)
+as the target-architecture map, not as permission to widen implementation
+scope ahead of proof.
+
 ## Phase 1: Make the current value obvious
 
 Primary goal: make the runtime story clearer than the long-horizon OS story.
