@@ -1123,6 +1123,9 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(import_profile_deny_result.stdout_text, "\"policy_profile\": \"export-only\""));
     T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(contains(import_profile_deny_result.stdout_text,
+                            "policy-profile export-only denies canonfs.import before CanonFS "
+                            "storage writes"));
 
     const auto export_profile_deny_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy-profile", "import-only", "--out",
@@ -1135,6 +1138,9 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(export_profile_deny_result.stdout_text, "\"policy_profile\": \"import-only\""));
     T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text,
+                            "policy-profile import-only denies canonfs.export before host-side "
+                            "materialization"));
 
     const auto deny_all_import_result = run_cli(
         t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "deny-all", "--json"});
@@ -1144,6 +1150,9 @@ int main(int argc, char* argv[]) {
         contains(deny_all_import_result.stdout_text, "\"policy_profile\": \"deny-all\""));
     T81_TEST_CHECK(contains(deny_all_import_result.stdout_text, "\"status\": \"error\""));
     T81_TEST_CHECK(contains(deny_all_import_result.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(deny_all_import_result.stdout_text,
+                            "policy-profile deny-all denies canonfs.import before CanonFS "
+                            "storage writes"));
 
     const auto deny_all_export_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy-profile", "deny-all", "--out",
@@ -1154,6 +1163,9 @@ int main(int argc, char* argv[]) {
         contains(deny_all_export_result.stdout_text, "\"policy_profile\": \"deny-all\""));
     T81_TEST_CHECK(contains(deny_all_export_result.stdout_text, "\"status\": \"error\""));
     T81_TEST_CHECK(contains(deny_all_export_result.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(deny_all_export_result.stdout_text,
+                            "policy-profile deny-all denies canonfs.export before host-side "
+                            "materialization"));
 
     const auto invalid_profile_result = run_cli(
         t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "bogus", "--json"});

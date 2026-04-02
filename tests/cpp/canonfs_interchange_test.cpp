@@ -555,6 +555,17 @@ int main() {
                 "export-only profile import policy profile mismatch")) {
       return 1;
     }
+    if (!expect(!denied_import.errors.empty(),
+                "export-only profile import should record an error")) {
+      return 1;
+    }
+    if (!expect(
+            denied_import.errors.front().message.find(
+                "policy-profile export-only denies canonfs.import before CanonFS storage writes") !=
+                std::string::npos,
+            "export-only profile import should report explicit storage-side denial")) {
+      return 1;
+    }
 
     const auto missing_import = t81::canonfs::import_path(root / "missing.txt", import_options);
     if (!expect(!missing_import.ok(), "missing input import should fail")) return 1;
@@ -593,6 +604,12 @@ int main() {
                 "import-only profile should report policy_denied")) {
       return 1;
     }
+    if (!expect(import_only_export.errors.front().message.find(
+                    "policy-profile import-only denies canonfs.export before host-side "
+                    "materialization") != std::string::npos,
+                "import-only profile export should report explicit materialization denial")) {
+      return 1;
+    }
 
     t81::canonfs::ImportOptions deny_all_import_options;
     deny_all_import_options.canonfs_root = import_options.canonfs_root;
@@ -613,6 +630,13 @@ int main() {
     }
     if (!expect(deny_all_import.errors.front().reason == "policy_denied",
                 "deny-all profile import should report policy_denied")) {
+      return 1;
+    }
+    if (!expect(
+            deny_all_import.errors.front().message.find(
+                "policy-profile deny-all denies canonfs.import before CanonFS storage writes") !=
+                std::string::npos,
+            "deny-all profile import should report explicit storage-side denial")) {
       return 1;
     }
 
@@ -636,6 +660,12 @@ int main() {
     }
     if (!expect(deny_all_export.errors.front().reason == "policy_denied",
                 "deny-all profile export should report policy_denied")) {
+      return 1;
+    }
+    if (!expect(deny_all_export.errors.front().message.find(
+                    "policy-profile deny-all denies canonfs.export before host-side "
+                    "materialization") != std::string::npos,
+                "deny-all profile export should report explicit materialization denial")) {
       return 1;
     }
 

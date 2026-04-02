@@ -172,20 +172,27 @@ bool allow_by_policy(t81::canonfs::InterchangePolicyProfile profile,
     case t81::canonfs::InterchangePolicyProfile::ImportOnly:
       if (is_export) {
         saw_policy_denial = true;
-        reason = "policy-profile import-only denies canonfs.export";
+        reason = "policy-profile import-only denies canonfs.export before host-side materialization";
         return false;
       }
       break;
     case t81::canonfs::InterchangePolicyProfile::ExportOnly:
       if (is_import) {
         saw_policy_denial = true;
-        reason = "policy-profile export-only denies canonfs.import";
+        reason = "policy-profile export-only denies canonfs.import before CanonFS storage writes";
         return false;
       }
       break;
     case t81::canonfs::InterchangePolicyProfile::DenyAll:
       saw_policy_denial = true;
-      reason = "policy-profile deny-all denies " + std::string(operation);
+      if (is_import) {
+        reason = "policy-profile deny-all denies canonfs.import before CanonFS storage writes";
+      } else if (is_export) {
+        reason =
+            "policy-profile deny-all denies canonfs.export before host-side materialization";
+      } else {
+        reason = "policy-profile deny-all denies " + std::string(operation);
+      }
       return false;
   }
   if (!evaluator) {
