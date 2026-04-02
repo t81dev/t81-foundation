@@ -26,6 +26,12 @@ REQUIRED_CTEST_RUNNERS = [
     "artifact_family_test_runner",
 ]
 
+BASELINE_CTEST_REGEX = (
+    "t81_ai_task_(assess|route|classify)_fixed_composition_test_runner|"
+    "artifact_validate_record_test_runner|"
+    "artifact_family_test_runner"
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -40,6 +46,11 @@ def parse_args() -> argparse.Namespace:
         "--build-dir",
         default="build",
         help="Path to the CMake build directory (default: build).",
+    )
+    parser.add_argument(
+        "--run-tests",
+        action="store_true",
+        help="Also run the stable baseline CTest slice after presence checks pass.",
     )
     return parser.parse_args()
 
@@ -86,6 +97,24 @@ def main() -> int:
     print("Required CTest runners present:")
     for name in REQUIRED_CTEST_RUNNERS:
         print(f"  - {name}")
+
+    if args.run_tests:
+        print("Running stable baseline CTest slice...")
+        run_result = subprocess.run(
+            [
+                "ctest",
+                "--test-dir",
+                str(build_dir),
+                "--output-on-failure",
+                "-R",
+                BASELINE_CTEST_REGEX,
+            ],
+            check=False,
+            text=True,
+        )
+        if run_result.returncode != 0:
+            print("Stable baseline compliance failed: baseline test slice did not pass.", file=sys.stderr)
+            return run_result.returncode
     return 0
 
 

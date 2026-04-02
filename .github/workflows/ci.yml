@@ -598,6 +598,16 @@ jobs:
             --repo-root . \
             --build-dir build 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Run stable baseline compliance tests (single matrix lane)
+        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          python3 scripts/ci/check_stable_baseline_compliance.py \
+            --repo-root . \
+            --build-dir build \
+            --run-tests 2>&1 | tee -a .github/logs/build-and-test.log
+
       - name: Test
         shell: bash
         run: |
