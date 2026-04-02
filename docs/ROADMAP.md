@@ -116,4 +116,9 @@ Prefer work that does one of these:
 - turns draft work into something another engineer can finish
 - removes project dependence on one maintainer’s memory
 
+When RFC-00D2 applies, prefer work that strengthens an earlier materially real
+layer over work that jumps ahead into a later planned layer. If a task cannot
+name its target layer and current proof surface clearly, narrow it before
+starting.
+
 De-prioritize work that mainly adds conceptual breadth without making the existing system easier to use or extend.
