@@ -1004,6 +1004,12 @@ int main(int argc, char* argv[]) {
                             "\"code\": \"canonfs-export-malformed-manifest\""));
     T81_TEST_CHECK(
         contains(malformed_export_result.stdout_text, "\"reason\": \"malformed_manifest\""));
+    T81_TEST_CHECK(appears_in_order(
+        malformed_export_result.stdout_text,
+        {"\"kind\": \"materialization-failure\"",
+         "\"message\": \"invalid interchange manifest",
+         "\"code\": \"canonfs-export-malformed-manifest\"",
+         "\"reason\": \"malformed_manifest\""}));
 
     const fs::path invalid_schema_object = make_temp_path("t81-cli-contract-bad-schema", ".json");
     {
@@ -1029,6 +1035,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(invalid_schema_export.stdout_text, "\"code\": \"canonfs-export-invalid-schema\""));
     T81_TEST_CHECK(contains(invalid_schema_export.stdout_text, "\"reason\": \"invalid_schema\""));
+    T81_TEST_CHECK(appears_in_order(
+        invalid_schema_export.stdout_text,
+        {"\"kind\": \"materialization-failure\"",
+         "\"message\": \"invalid interchange schema for export source object",
+         "\"code\": \"canonfs-export-invalid-schema\"",
+         "\"reason\": \"invalid_schema\""}));
 
     const fs::path tampered_root = make_temp_path("t81-cli-contract-tampered-root", "");
     fs::create_directories(tampered_root, ignore_ec);
@@ -1094,6 +1106,12 @@ int main(int argc, char* argv[]) {
         contains(import_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(appears_in_order(
+        import_policy_deny_result.stdout_text,
+        {"\"kind\": \"policy-failure\"",
+         "\"message\": \"policy denied import of ",
+         "\"code\": \"canonfs-policy-denied\"",
+         "\"reason\": \"policy_denied\""}));
 
     const auto export_policy_deny_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
@@ -1111,6 +1129,12 @@ int main(int argc, char* argv[]) {
         contains(export_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(appears_in_order(
+        export_policy_deny_result.stdout_text,
+        {"\"kind\": \"policy-failure\"",
+         "\"message\": \"policy denied export",
+         "\"code\": \"canonfs-policy-denied\"",
+         "\"reason\": \"policy_denied\""}));
 
     const auto import_profile_deny_result = run_cli(
         t81_bin,
@@ -1177,6 +1201,12 @@ int main(int argc, char* argv[]) {
                             "\"code\": \"canonfs-import-invalid-policy-profile\""));
     T81_TEST_CHECK(
         contains(invalid_profile_result.stdout_text, "\"reason\": \"invalid_policy_profile\""));
+    T81_TEST_CHECK(appears_in_order(
+        invalid_profile_result.stdout_text,
+        {"\"kind\": \"source-failure\"",
+         "\"message\": \"invalid policy profile",
+         "\"code\": \"canonfs-import-invalid-policy-profile\"",
+         "\"reason\": \"invalid_policy_profile\""}));
 
     const fs::path example_input_dir =
         repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
