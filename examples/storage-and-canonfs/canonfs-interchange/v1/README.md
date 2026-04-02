@@ -19,6 +19,20 @@ The current seed boundary here is intentionally narrow:
 - the built-in `permissive` policy profile recorded in the result
 - structured error entries with `kind`, `message`, `code`, and `reason`
 
+The policy reading here is intentionally narrow too:
+
+- the built-in profile decides whether the operation is admitted at all
+- an explicit policy file may further narrow that admitted operation
+- the result still records the built-in `policy_profile`
+- the result may therefore be `ok` or `error` here without introducing new
+  built-in profile names
+
+These frozen fixtures cover the smallest current `host-file` seed.
+For the broader checked-in `host-directory` example, including `partial`
+results under explicit policy narrowing, pair this fixture set with:
+
+- `examples/storage-and-canonfs/canonfs-interchange/README.md`
+
 This fixture set demonstrates the current seed contract. It does not settle
 deferred RFC-00D1 questions such as symlink posture, archive/bundle export, or
 text output as a co-equal contract.
