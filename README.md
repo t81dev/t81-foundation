@@ -30,6 +30,7 @@ Policies are evaluated deterministically and enforced before execution or materi
 - Enforce allow/deny policies on models and code
 - Produce reproducible, audit-ready execution traces
 - Prevent untrusted artifacts from running
+- Consume completed bounded AI decision chains through canonical bundle objects
 
 ## When to Use T81
 
@@ -43,6 +44,7 @@ Policies are evaluated deterministically and enforced before execution or materi
 - Enforce allowlists for AI models in production
 - Generate reproducible audit logs for compliance
 - Block untrusted artifacts in CI/CD pipelines
+- Hand off canonical decision bundles to downstream consumers without relying on logs alone
 
 ## Performance Characteristics
 
@@ -71,6 +73,25 @@ artifacts.
 4. **Ternary-Native Paths** — Efficient inference via ternary-weight dot products (conditional ±1 additions instead of FP multiplies).
 
 T81 also has an in-progress bare-metal and guest OS direction, but the usable form today is the governed runtime.
+
+## Best Current Build-Against Surfaces
+
+If you want the clearest contributor-facing surfaces in the repo today, start
+here:
+
+- RFC-00D1 CanonFS interchange seed:
+  [examples/storage-and-canonfs/canonfs-interchange/README.md](examples/storage-and-canonfs/canonfs-interchange/README.md)
+- RFC-00D1 current draft contract:
+  [RFC-00D1-canonfs-foreign-filesystem-interchange.md](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
+- bounded AI OS-object family status:
+  [BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
+- canonical bundle consumption contract:
+  [AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md](docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md)
+- canonical bundle `.v1` versioning boundary:
+  [AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md](docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
+
+These are narrower and more buildable than the repo's longer-horizon OS and
+hardware directions.
 
 ## Core Subsystems & Maturity (March 2026)
 
@@ -111,6 +132,9 @@ sequenceDiagram
 ```
 
 ## Why Ternary?
+
+This is part of the longer-term systems direction, not the main reason a new
+contributor should pick up T81 today.
 
 Balanced ternary delivers structural advantages for verifiable inference:
 
@@ -257,6 +281,19 @@ Maintainer-facing bounded family status:
 
 Portable smoke path for the same chain:
 - `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`
+
+The bounded family is now a protected subsystem. Treat these examples as the
+current admitted family:
+
+- `assess-fixed`
+- `route-fixed`
+- `classify-fixed`
+
+If you want the bundle-first external-consumer path for that family, start
+with:
+
+- [AI OS-Object Bundle Consumption Contract](docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md)
+- [AI OS-Object Bundle Versioning Boundary](docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
 
 ### QEMU Boot Demo (OS-like experience)
 
