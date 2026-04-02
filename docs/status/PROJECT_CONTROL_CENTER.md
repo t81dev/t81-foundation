@@ -1,9 +1,9 @@
 # Project Control Center
 
 Status: Active
-Last Updated: 2026-03-26
+Last Updated: 2026-04-01
 Owner: @t81dev
-Version: 1.9.1
+Version: 1.10.0
 
 This is the dashboard. One page. If you need detail, follow a cross-reference.
 
@@ -11,7 +11,7 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 ## Phase
 
-**Handoff Hardening / RFC-00D1 Consolidation** — core release surface remains active; the highest-value work is currently CI boringness, newcomer legibility, and turning RFC-00D1 into the clearest finishable lane for another engineer.
+**Handoff Hardening / RFC-00D1 Contract Clarification** — core release surface remains active; the highest-value work is currently keeping `main` boring, keeping status and handoff docs trustworthy, and preserving RFC-00D1 as a narrow finishable draft-to-code lane.
 
 ---
 
@@ -27,10 +27,10 @@ This is the dashboard. One page. If you need detail, follow a cross-reference.
 
 | Dimension | Status |
 | :--- | :--- |
-| Overall | Green / Watch — core posture is healthy, but `main` is still under active CI observation on the latest documentation and portability churn fixes |
+| Overall | Green / Watch — core posture is healthy, with the main watch items now being portability churn and status/control-surface freshness rather than missing subsystem implementation |
 | Release Readiness | **GO** for the shipped deterministic core profile; newer lanes remain governed by DCP / non-DCP / experimental boundaries and active CI evidence |
-| Current Main | `069963ea` — `AGENTS.md` refined; handoff/docs surface tightened; required CI contexts in progress |
-| Open Blockers | No confirmed product blocker on current head; active concern is keeping required contexts boring across Windows, ARM64, and control-surface changes |
+| Current Main | Rolling `main` — see GitHub for exact SHA/run state; this page is the control summary, not the per-commit audit |
+| Open Blockers | No confirmed product blocker on current head; active concern is keeping portability-sensitive lanes and status/control docs boring and current |
 | Frozen Core | Intact — AgentInvoke added as freeze exception (RFC-0015, §5.16) |
 | Determinism Registry | Verified surfaces remain the only source of DCP-strength deterministic claims |
 | Structural Integrity | Green — conformance, freeze, and determinism enforcement remain the governing release criteria |
@@ -95,9 +95,9 @@ Full register: `ACTIVE_RISKS.md`
 
 | Item | Owner | Target |
 | :--- | :--- | :--- |
-| CI-04 — Windows / ARM64 portability churn closure | @t81dev | 2026-03-31 |
-| DOC-02 — handoff / status control-surface coherence | @t81dev | 2026-03-31 |
-| RFC-00D1-H1 — CanonFS interchange hardening (examples + error semantics) | @t81dev | 2026-04-05 |
+| CI-04 — Windows / ARM64 portability churn closure | @t81dev | 2026-04-15 |
+| DOC-02 — handoff / status control-surface coherence refresh | @t81dev | 2026-04-05 |
+| RFC-00D1-H2 — seed-contract clarification and remaining negative-path review | @t81dev | 2026-04-12 |
 
 Full backlog: `HARDENING_BACKLOG.md`
 
@@ -115,10 +115,10 @@ Full boundary: `EXTENSION_PROFILE.md`
 
 ## Next Decision Points
 
-1. **Now** — Clear required CI contexts on `069963ea` and keep `main` boring after the recent documentation + portability update sequence
-2. **2026-03-31** — Keep handoff and status documents aligned through the next governance/status refresh window
-3. **2026-04-05** — Tighten RFC-00D1 CanonFS interchange examples, negative-path behavior, and error semantics so a new engineer can finish the lane without maintainer memory
-4. **Next after RFC-00D1 hardening** — Narrow RFC-00D0 into a resolver/descriptor prototype before any broader TCP/IP implementation work
+1. **Now** — Keep `main` boring on the current workflow set, with particular attention to Windows, ARM64, and required-context stability
+2. **2026-04-05** — Finish refreshing `/docs/status` so the control pages match the current CI and RFC posture
+3. **2026-04-12** — Review any remaining RFC-00D1 negative-path or contract ambiguities without widening source kinds, target kinds, or interchange formats
+4. **Next after RFC-00D1 follow-through** — Narrow RFC-00D0 into a resolver/descriptor prototype before any broader TCP/IP implementation work
 
 ---
 

@@ -1,7 +1,7 @@
 # System Status
 
 Status: Active
-Last Updated: 2026-03-26
+Last Updated: 2026-04-01
 Owner: Status / Governance
 
 ## Purpose
@@ -34,6 +34,19 @@ status boundaries.
 - Determinism overclaim risk outside registry-backed verified surfaces.
 - CI portability churn across Windows and ARM64 lanes.
 - Governance and handoff maintenance risk if control-surface docs are not refreshed alongside code.
+
+## Operational Notes (2026-04-01)
+
+- **Status docs refreshed to match the current repo shape** — stale March snapshot language,
+  dead control references, and benchmark-lane drift are being removed so `/docs/status`
+  stays usable as an active control surface rather than a historical note set.
+- **RFC-00D1 remains the clearest draft-to-code bridge, but with a narrower claim** —
+  the current CanonFS interchange JSON/result/provenance/policy-profile seed is stable
+  enough to build against, while the broader RFC remains draft and still excludes wider
+  format/symlink/archive decisions.
+- **CI posture is now simpler** — deterministic-profile enforcement is consolidated into
+  `ci.yml`, `runtime-contract.yml` remains a distinct cross-repo contract lane, and
+  `bench.yml` is the single push-sensitive benchmark workflow.
 
 ## Operational Notes (2026-03-26)
 
@@ -109,7 +122,7 @@ status boundaries.
 
 - `docs/status/PROJECT_CONTROL_CENTER.md`
 - `docs/status/IMPLEMENTATION_MATRIX.md`
-- `docs/status/AXION_PARTIAL_COVERAGE_ALIGNMENT_2026-03.md`
+- `docs/status/ACTIVE_RISKS.md`
 - `docs/status/T81LANG_PROMOTION_GATE.md`
 - `docs/governance/DETERMINISM_SURFACE_REGISTRY.md`
 - `docs/product/DETERMINISTIC_CORE_PROFILE.md`

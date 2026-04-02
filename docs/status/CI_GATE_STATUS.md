@@ -1,17 +1,17 @@
 # CI Gate Status
 
 Status: Active
-Last Updated: 2026-03-26
+Last Updated: 2026-04-01
 Owner: @t81dev
-Reference Candidate: `069963ea` (origin/main, 2026-03-26)
-Current Main Head: `069963ea` — AGENTS guidance refined; handoff docs updated in the immediately prior push (`5e8a2d6e`)
+Reference Mode: Rolling operational status page
+Current Main Head: Track current `main` in GitHub; do not treat this page as a single-SHA release snapshot
 
 ## Purpose
 
-Provide a standing, day-to-day view of CI gate health across all workflows:
+Provide a standing, day-to-day view of CI gate health across the current workflow set:
 required gates, informational gates, known failures, flaky-test inventory, and
-the benchmark guardrail signal. This document is not release-specific; it tracks
-the health of the CI surface as a whole.
+the benchmark guardrail signal. This document is not release-specific and should
+avoid pinning itself to one transient SHA unless a dated incident is being recorded.
 
 For release-specific gate evidence against a candidate SHA, see
 `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`.
@@ -21,10 +21,10 @@ For release-specific gate evidence against a candidate SHA, see
 These contexts must be `completed` + `success` on any candidate SHA before a
 GO decision can be stamped.
 
-| Context | Workflow | Required | Last Known Status |
+| Context | Workflow | Required | Current Expectation |
 | :--- | :--- | :--- | :--- |
-| `quality gate / required` | `ci.yml` | **Yes** | in progress ⏳ (`069963ea`) |
-| `Analyze (cpp)` | `codeql.yml` | **Yes** | in progress ⏳ (`069963ea`) |
+| `quality gate / required` | `ci.yml` | **Yes** | Must complete `success` on candidate `main` SHAs |
+| `Analyze (cpp)` | `codeql.yml` | **Yes** | Must complete `success` on candidate `main` SHAs |
 
 Verification command:
 
@@ -40,49 +40,73 @@ gh api repos/t81dev/t81-foundation/commits/<sha>/check-runs
 These run on every push/PR but are not branch-protection blocking. Failures are
 tracked here and must be addressed unless explicitly deferred.
 
-| Gate | Workflow | Last Known Status | Notes |
+| Gate | Workflow | Expected Role | Notes |
 | :--- | :--- | :--- | :--- |
-| `gate / t81lang cross-arch bit-identity` | `ci.yml` | success ✅ | T81Lang compiler output bit-identical across x86_64 and arm64 |
-| `gate / t3k cross-arch bit-identity` | `ci.yml` | success ✅ | T3K workload bit-identical across architectures |
-| `gate / tritwise-determinism / no-simd` | `ci.yml` | success ✅ | Tritwise ops deterministic without SIMD |
-| `gate / tritwise-determinism / avx2-asan` | `ci.yml` | success ✅ | Tritwise ops deterministic with AVX2 + ASAN |
-| `gate / determinism repeatability / linux-x86_64 / clang` | `ci.yml` | unknown ⏳ | Same-machine bit-identity for VM workload signatures; new gate added in PR #448 |
-| `gate / determinism slice / linux-x86_64 / clang` | `ci.yml` | success ✅ | Full determinism slice on Linux/x86_64/clang |
-| `gate / axion epoch determinism / linux-x86_64 / clang` | `ci.yml` | success ✅ | Experimental TernaryOS + DPE lane proving pooled-vs-unbounded kernel scheduler/audit parity |
-| `cross-compile / linux-armv9 / gcc (informational)` | `ci.yml` | unknown ⏳ | ARMv9 cross-compile build; new gate added in PR #448; `continue-on-error: true` |
-| `experimental architectures / group anchor` | `ci.yml` | skipped (nightly only) | Schedule-only anchor job for nightly experimental gates |
-| `experimental / oneapi sycl sanity` | `ci.yml` | skipped (nightly only) | Intel oneAPI SYCL hello-world compile check; `continue-on-error: true` |
-| `experimental / ascend cann sanity` | `ci.yml` | skipped (nightly only) | Ascend CANN toolchain check; requires `T81_ENABLE_ASCEND_CI == '1'`; `continue-on-error: true` |
-| `build / macos-x86_64 / gcc` | `ci.yml` | success ✅ | |
-| `build / macos-arm64 / clang` | `ci.yml` | success ✅ | |
-| `build / linux-x86_64 / gcc` | `ci.yml` | success ✅ | |
-| `build / linux-x86_64 / clang` | `ci.yml` | success ✅ | |
-| `build / linux-arm64 / clang` | `ci.yml` | success ✅ | |
-| `build / windows-x86_64 / msvc` | `ci.yml` | unknown ⏳ | Sparse checkout now includes `benchmarks/` and `spec/`; awaiting first clean run post-PR #448 |
-| `build / windows-x86_64 / clang-cl` | `ci.yml` | unknown ⏳ | Sparse checkout now includes `benchmarks/` and `spec/`; awaiting first clean run post-PR #448 |
-| `build / sanitizers` | `ci.yml` | success ✅ | ASAN + UBSAN build |
-| `static analysis / clang-tidy` | `ci.yml` | success ✅ | |
-| `fuzzing / frontend` | `ci.yml` | success ✅ | Frontend fuzz harness |
-| `formal verification / ternary logic` | `ci.yml` | success ✅ | |
-| `benchmark / linux-x86_64` | `bench.yml` | success ✅ | Primary benchmark-sensitive lane for benchmark/runtime-path changes |
-| `benchmark / vm workload gate` | `bench.yml` | success ✅ | Guardrail: VM workload dispatch/native ratio |
-| `cxx-std / linux-x86_64 / clang / ON` | `ci.yml` | success ✅ | C++23 feature set |
-| `cxx-std / linux-x86_64 / clang / OFF` | `ci.yml` | success ✅ | C++20 feature set |
-| `governance-metrics` | `ci.yml` | success ✅ | Determinism claim registry check |
-| `lint / spec & docs` | `ci.yml` | success ✅ | Markdown links + spec structure |
-| `contract-sync` | `runtime-contract.yml` | success ✅ | Runtime contract alignment |
-| `format / clang-format` | `format.yml` | success ✅ | |
-| `architecture / invariants (informational)` | `ci.yml` | success ✅ | |
-| `product / deterministic profile enforcement` | `ci.yml` | success ✅ | Consolidated deterministic-profile static/file checks |
-| `product / dcp integrity (informational)` | `ci.yml` | success ✅ | |
-| `build` (GitHub Pages / Jekyll) | `documentation.yml` | **failure ⚠️** | **Mitigating** — root `_config.yml` third_party exclusion patch queued; awaiting next run |
+| `gate / t81lang cross-arch bit-identity` | `ci.yml` | Push/PR informational | T81Lang compiler output bit-identical across x86_64 and arm64 |
+| `gate / t3k cross-arch bit-identity` | `ci.yml` | Push/PR informational | T3K workload bit-identical across architectures |
+| `gate / tritwise-determinism / no-simd` | `ci.yml` | Push/PR informational | Tritwise ops deterministic without SIMD |
+| `gate / tritwise-determinism / avx2-asan` | `ci.yml` | Push/PR informational | Tritwise ops deterministic with AVX2 + ASAN |
+| `gate / determinism repeatability / linux-x86_64 / clang` | `ci.yml` | Push/PR informational | Same-machine bit-identity for VM workload signatures |
+| `gate / determinism slice / linux-x86_64 / clang` | `ci.yml` | Push/PR informational | Full determinism slice on Linux/x86_64/clang |
+| `gate / axion epoch determinism / linux-x86_64 / clang` | `ci.yml` | Push/PR informational | Experimental TernaryOS + DPE parity lane |
+| `cross-compile / linux-armv9 / gcc (informational)` | `ci.yml` | Push/PR informational | ARMv9 cross-compile build; `continue-on-error: true` |
+| `experimental architectures / group anchor` | `ci.yml` | Scheduled informational | Anchor job for nightly experimental gates |
+| `experimental / oneapi sycl sanity` | `ci.yml` | Scheduled informational | Intel oneAPI SYCL compile check; `continue-on-error: true` |
+| `experimental / ascend cann sanity` | `ci.yml` | Scheduled informational | Ascend CANN toolchain check; opt-in via `T81_ENABLE_ASCEND_CI` |
+| `build / macos-x86_64 / gcc` | `ci.yml` | Push/PR informational | Standard build lane |
+| `build / macos-arm64 / clang` | `ci.yml` | Push/PR informational | Standard build lane |
+| `build / linux-x86_64 / gcc` | `ci.yml` | Push/PR informational | Standard build lane |
+| `build / linux-x86_64 / clang` | `ci.yml` | Push/PR informational | Standard build lane |
+| `build / linux-arm64 / clang` | `ci.yml` | Push/PR informational | Standard build lane |
+| `build / windows-x86_64 / msvc` | `ci.yml` | Push/PR informational | Watch closely; portability-sensitive lane |
+| `build / windows-x86_64 / clang-cl` | `ci.yml` | Push/PR informational | Watch closely; portability-sensitive lane |
+| `build / sanitizers` | `ci.yml` | Push/PR informational | ASAN + UBSAN build |
+| `static analysis / clang-tidy` | `ci.yml` | Push/PR informational | |
+| `fuzzing / frontend` | `ci.yml` | Push/PR informational | Frontend fuzz harness |
+| `formal verification / ternary logic` | `ci.yml` | Push/PR informational | |
+| `benchmark / linux-x86_64` | `bench.yml` | Primary push-sensitive benchmark lane | Main benchmark-sensitive workflow |
+| `benchmark / vm workload gate` | `bench.yml` | Primary push-sensitive benchmark lane | Guardrail: VM workload dispatch/native ratio |
+| `cxx-std / linux-x86_64 / clang / ON` | `ci.yml` | Push/PR informational | C++23 feature set |
+| `cxx-std / linux-x86_64 / clang / OFF` | `ci.yml` | Push/PR informational | C++20 feature set |
+| `governance-metrics` | `ci.yml` | Push/PR informational | Determinism claim registry check |
+| `lint / spec & docs` | `ci.yml` | Push/PR informational | Markdown links + spec structure |
+| `contract-sync` | `runtime-contract.yml` | Cross-repo contract lane | Kept standalone because it validates `t81-vm` alignment and has manual-approval semantics |
+| `format / clang-format` | `format.yml` | Push/PR informational | |
+| `architecture / invariants (informational)` | `ci.yml` | Push/PR informational | |
+| `product / deterministic profile enforcement` | `ci.yml` | Push/PR informational | Consolidated deterministic-profile static/file checks |
+| `product / dcp integrity (informational)` | `ci.yml` | Push/PR informational | |
+| `build` (GitHub Pages / Jekyll) | `documentation.yml` | Documentation-only informational | Keep non-blocking unless release policy changes |
 
-## Operational Notes (2026-03-26)
+## Benchmark Workflow Split
 
-- **Current head is documentation-only, but required contexts are still running** —
-  `Format Check` and `runtime-contract` have already completed successfully on `069963ea`,
+| Workflow | Role | Trigger Posture |
+| :--- | :--- | :--- |
+| `bench.yml` | Main benchmark-sensitive lane | Push/PR |
+| `benchmark_packed_trit_vector.yml` | Specialist packed-trit benchmark lane | Scheduled + manual |
+| `inference-bench.yml` | Specialist inference/reporting benchmark lane | Scheduled + manual + release tags |
+| `repro-ledger.yml` | Long-running reproducibility ledger | Scheduled |
+
+## Operational Notes (2026-04-01)
+
+- **This page is now a rolling status page instead of a frozen SHA snapshot** —
+  use GitHub for exact per-run state, and use this document for workflow purpose,
+  required-vs-informational classification, and known control concerns.
+- **Deterministic-profile enforcement is now part of `ci.yml`** — the old standalone
+  workflow has been folded into the consolidated CI surface as
+  `product / deterministic profile enforcement`.
+- **Benchmark lanes are intentionally split by role** — `bench.yml` is the only
+  push-sensitive benchmark workflow, while packed-trit, inference, and repro-ledger
+  lanes are now specialist scheduled/manual workflows.
+- **`runtime-contract.yml` remains standalone on purpose** — it enforces cross-repo
+  runtime contract alignment and supports a manual approval path for intentional
+  marker changes, so it should not be treated as duplicate in-repo CI.
+
+## Operational Notes (2026-03-26, historical snapshot)
+
+- **Historical note from the 2026-03-26 update window** —
+  `Format Check` and `runtime-contract` had already completed successfully on `069963ea`,
   while `T81 Foundation CI`, `CodeQL`, and `Cross-Platform Determinism Verification`
-  remain in progress at the time of this update.
+  were still in progress at the time of that update.
 - **Recent CI work has been dominated by portability closure rather than product regressions** —
   the main fixes since 2026-03-22 have been Windows/MSVC, Windows/clang-cl, Linux/ARM64,
   and QEMU workflow hardening. Treat new portability failures as immediate-fix items.
@@ -213,7 +237,7 @@ tracked here and must be addressed unless explicitly deferred.
 
 **Variability note:** Benchmark results are sensitive to runner environment.
 If two consecutive runs on identical environments diverge by >5%, revisit the
-guardrail threshold. See `R-06` in `docs/status/ACTIVE_RISKS.md`.
+guardrail threshold. See `R-09` in `docs/status/ACTIVE_RISKS.md`.
 
 ## Flaky Test Inventory
 
@@ -273,8 +297,8 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 
 - Update this document when any gate transitions from pass to failure (or vice
   versa) on `main`.
-- Refresh the reference candidate SHA and known-failure entries at each release
-  packet cycle.
+- Refresh workflow-purpose notes and known-failure entries whenever the CI
+  topology or control posture changes materially.
 - Benchmark guardrail and stdlib baseline gates reviewed at C2 month-close.
 
 ## Cross-References
@@ -282,7 +306,7 @@ module surface of `lang/stdlib/std/` matches the declared baseline.
 - `docs/records/audits/RELEASE_READINESS_PACKET_2026-03.md`
 - `docs/records/audits/RECENT_COMMIT_AUDIT_2026-03-05.md`
 - `docs/status/DECISION_LOG.md` (DEC-005 — Jekyll deferred)
-- `docs/status/ACTIVE_RISKS.md` (`R-06` — benchmark variability; `R-07` — Jekyll)
+- `docs/status/ACTIVE_RISKS.md` (`R-07` — portability churn; `R-09` — benchmark variability)
 - `.github/workflows/ci.yml`
 - `.github/workflows/codeql.yml`
 - `.github/workflows/bench.yml`
