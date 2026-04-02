@@ -147,6 +147,7 @@ They should begin from the bundle and follow canonical references.
 Start here:
 
 - [Bundle consumption contract](../reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md)
+- [Bundle integration matrix](../reference/AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md)
 - [Bundle versioning boundary](../reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
 - [Stable baseline contract](../reference/STABLE_BASELINE_CONTRACT.md)
 
