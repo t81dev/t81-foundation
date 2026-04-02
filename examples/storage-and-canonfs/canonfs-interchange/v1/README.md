@@ -8,6 +8,21 @@ CanonFS interchange contract, not as a new interchange request format.
 This fixture set is the current build-against seed for RFC-00D1, not proof that
 the entire RFC has been promoted out of `draft`.
 
+The current seed boundary here is intentionally narrow:
+
+- `canonfs import` / `canonfs export`
+- `t81.canonfs-import.v1` / `t81.canonfs-export.v1`
+- `t81.canonfs-import-provenance.v1` /
+  `t81.canonfs-export-provenance.v1`
+- `t81.canonfs-interchange-manifest.v1`
+- `host-file`
+- the built-in `permissive` policy profile recorded in the result
+- structured error entries with `kind`, `message`, `code`, and `reason`
+
+This fixture set demonstrates the current seed contract. It does not settle
+deferred RFC-00D1 questions such as symlink posture, archive/bundle export, or
+text output as a co-equal contract.
+
 For each case:
 
 - `*.request.json` describes the CLI invocation in a stable, machine-readable
@@ -29,6 +44,10 @@ These files are compared byte-for-byte in the contract tests.
   `invalid_schema`
 - `import-policy-denied.*`
   import through a checked-in policy file that denies the request
+- `export-policy-denied.*`
+  export through that same checked-in policy file and emit a structured
+  `policy_denied` error while the recorded built-in profile remains
+  `permissive`
 
 ## Inputs
 
@@ -37,4 +56,4 @@ These files are compared byte-for-byte in the contract tests.
 - `invalid-schema.json`
   JSON input used for the `invalid_schema` failure case
 - `policy-deny-all.apl`
-  Axion policy input used for the policy-denial case
+  Axion policy input used for the policy-denial cases

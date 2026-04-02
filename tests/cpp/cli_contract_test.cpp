@@ -1412,6 +1412,7 @@ int main(int argc, char* argv[]) {
     const fs::path v1_missing_output = v1_dir / "export-missing-object.output.json";
     const fs::path v1_invalid_schema_output = v1_dir / "export-invalid-schema.output.json";
     const fs::path v1_policy_deny_output = v1_dir / "import-policy-denied.output.json";
+    const fs::path v1_export_policy_deny_output = v1_dir / "export-policy-denied.output.json";
     T81_TEST_CHECK(fs::exists(v1_model));
     T81_TEST_CHECK(fs::exists(v1_invalid_schema));
     T81_TEST_CHECK(fs::exists(v1_policy));
@@ -1467,6 +1468,17 @@ int main(int argc, char* argv[]) {
         repo_root);
     T81_TEST_CHECK(v1_policy_denied_result.exit_code != 0);
     T81_TEST_CHECK(read_file(v1_policy_deny_output) == v1_policy_denied_result.stdout_text);
+
+    const auto v1_export_policy_denied_result =
+        run_cli_in_dir(t81_bin,
+                       {"canonfs", "export", "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX",
+                        "--canonfs-root", "build/canonfs-v1-contract-root", "--policy",
+                        "examples/storage-and-canonfs/canonfs-interchange/v1/policy-deny-all.apl",
+                        "--out", "build/canonfs-v1-contract-export/denied-model.t81w", "--json"},
+                       repo_root);
+    T81_TEST_CHECK(v1_export_policy_denied_result.exit_code != 0);
+    T81_TEST_CHECK(read_file(v1_export_policy_deny_output) ==
+                   v1_export_policy_denied_result.stdout_text);
 
     const fs::path restored = make_temp_path("t81-cli-contract", ".restored");
     const auto get_result =

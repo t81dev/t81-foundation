@@ -1,0 +1,9 @@
+{
+  "operation": "canonfs export",
+  "source_object": "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX",
+  "target_ref": "build/canonfs-v1-contract-export/denied-model.t81w",
+  "canonfs_root": "build/canonfs-v1-contract-root",
+  "policy_document": "examples/storage-and-canonfs/canonfs-interchange/v1/policy-deny-all.apl",
+  "json": true,
+  "policy_profile": "permissive"
+}
