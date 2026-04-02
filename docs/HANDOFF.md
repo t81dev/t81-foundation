@@ -86,7 +86,7 @@ accuracy over adding a fourth composition.
 The short version:
 
 - `Now`: RFC-00D1 policy-profile depth plus CI/portability boringness
-- `Next`: RFC-00D1 contract-promotion follow-through plus runtime-first docs cleanup
+- `Next`: runtime-first docs cleanup plus narrow RFC-00D1 contract-promotion follow-through
 - `Later`: RFC-00D0 resolver prototype, kept narrow
 
 ## If you only have 30 minutes
@@ -98,10 +98,10 @@ The short version:
 
 ## Highest-leverage next tasks
 
-1. Finish making the public story match the actual usable runtime.
-2. Promote one or two narrow draft surfaces from “interesting” to “obviously finishable.”
+1. Keep contributor/demo paths boring across Linux and macOS.
+2. Finish making the public story match the actual usable runtime.
 3. Continue reducing CLI-local logic in favor of reusable core modules.
-4. Keep CI boring and green; do not let portability debt accumulate.
+4. Promote one or two narrow draft surfaces from “interesting” to “obviously finishable.”
 5. Tighten the line between accepted, draft, and experimental surfaces in docs and code.
 
 ## Suggested owner mindset

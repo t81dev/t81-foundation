@@ -12,18 +12,24 @@ if [ ! -f "$DEMO_BIN" ]; then
     exit 1
 fi
 
+RUN1_OUT="$(mktemp "${TMPDIR:-/tmp}/t81-llama-demo-run1.XXXXXX.txt")"
+RUN2_OUT="$(mktemp "${TMPDIR:-/tmp}/t81-llama-demo-run2.XXXXXX.txt")"
+TRACE1_OUT="$(mktemp "${TMPDIR:-/tmp}/t81-llama-trace1.XXXXXX.txt")"
+TRACE2_OUT="$(mktemp "${TMPDIR:-/tmp}/t81-llama-trace2.XXXXXX.txt")"
+trap 'rm -f "$RUN1_OUT" "$RUN2_OUT" "$TRACE1_OUT" "$TRACE2_OUT"' EXIT
+
 echo "--- Step 1: Running Llama-3.2-1B Demo and capturing Axion Trace ---"
-$DEMO_BIN > demo_output_run1.txt
+$DEMO_BIN > "$RUN1_OUT"
 
 echo "--- Step 2: Extracting Axion trace for comparison ---"
-grep "\[Axion\]" demo_output_run1.txt > trace_run1.txt
+grep "\[Axion\]" "$RUN1_OUT" > "$TRACE1_OUT"
 
 echo "--- Step 3: Running second pass to verify determinism ---"
-$DEMO_BIN > demo_output_run2.txt
-grep "\[Axion\]" demo_output_run2.txt > trace_run2.txt
+$DEMO_BIN > "$RUN2_OUT"
+grep "\[Axion\]" "$RUN2_OUT" > "$TRACE2_OUT"
 
 echo "--- Step 4: Comparing traces ---"
-if diff trace_run1.txt trace_run2.txt; then
+if diff "$TRACE1_OUT" "$TRACE2_OUT"; then
     echo "SUCCESS: Axion traces are bit-identical and reproducible!"
 else
     echo "FAILURE: Axion traces differ between runs!"
@@ -31,14 +37,11 @@ else
 fi
 
 echo "--- Step 5: Verifying policy enforcement ---"
-if grep -q "SUCCESS: Llama-3.2-1B block inference complete" demo_output_run1.txt; then
+if grep -q "SUCCESS: Llama-3.2-1B block inference complete" "$RUN1_OUT"; then
     echo "SUCCESS: Policy enforced and inference succeeded."
 else
     echo "FAILURE: Inference did not complete successfully."
     exit 1
 fi
-
-# Cleanup
-rm demo_output_run1.txt demo_output_run2.txt trace_run1.txt trace_run2.txt
 
 echo "--- Llama-3.2-1B Deterministic Story is REPRODUCIBLE and SHAREABLE ---"

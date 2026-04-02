@@ -262,7 +262,7 @@ Portable smoke path for the same chain:
 
 ```bash
 # Install deps (Ubuntu example)
-sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools
+sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools parted
 
 git clone https://github.com/t81dev/t81-foundation.git && cd t81-foundation
 ./drivers/qemu/scripts/boot_demo.sh

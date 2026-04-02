@@ -7,6 +7,10 @@ echo "=== Team Onboarding Verification Checklist ==="
 
 ONBOARDING_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PRODUCTION_DIR="$(dirname "$ONBOARDING_DIR")"
+TMP_BASE="${TMPDIR:-/tmp}"
+LAUNCH_LOG="$TMP_BASE/t81-launch-test.log"
+VERIFY_LOG="$TMP_BASE/t81-verification-test.log"
+MONITOR_LOG="$TMP_BASE/t81-monitor-test.log"
 
 # Colors
 GREEN='\033[0;32m'
@@ -29,6 +33,20 @@ checklist=(
     "Troubleshooting:Resolve common issues"
     "Documentation:Access key documentation"
 )
+
+resolve_timeout_cmd() {
+    if command -v timeout &> /dev/null; then
+        echo "timeout"
+        return
+    fi
+    if command -v gtimeout &> /dev/null; then
+        echo "gtimeout"
+        return
+    fi
+    echo ""
+}
+
+TIMEOUT_CMD="$(resolve_timeout_cmd)"
 
 # Function to check QEMU installation
 check_qemu() {
@@ -110,8 +128,13 @@ check_production_scripts() {
 # Function to test basic launch
 test_basic_launch() {
     echo "Testing basic launch (10 second timeout)..."
-    
-    timeout 10 "$PRODUCTION_DIR/scripts/launch_production.sh" > /tmp/launch_test.log 2>&1 &
+
+    if [ -z "$TIMEOUT_CMD" ]; then
+        echo -e "${RED}❌${NC} Missing timeout command (install coreutils on macOS)"
+        return 1
+    fi
+
+    "$TIMEOUT_CMD" 10 "$PRODUCTION_DIR/scripts/launch_production.sh" > "$LAUNCH_LOG" 2>&1 &
     LAUNCH_PID=$!
     
     sleep 3
@@ -120,17 +143,17 @@ test_basic_launch() {
         kill $LAUNCH_PID 2>/dev/null || true
         wait $LAUNCH_PID 2>/dev/null || true
         
-        if grep -q "qemu-system-aarch64" /tmp/launch_test.log; then
+        if grep -q "qemu-system-aarch64" "$LAUNCH_LOG"; then
             echo -e "${GREEN}✅${NC} Basic launch test passed"
             return 0
         else
             echo -e "${RED}❌${NC} QEMU did not start properly"
-            echo "Check /tmp/launch_test.log for details"
+            echo "Check $LAUNCH_LOG for details"
             return 1
         fi
     else
         echo -e "${RED}❌${NC} Launch failed immediately"
-        echo "Check /tmp/launch_test.log for details"
+        echo "Check $LAUNCH_LOG for details"
         return 1
     fi
 }
@@ -138,13 +161,13 @@ test_basic_launch() {
 # Function to test verification suite
 test_verification_suite() {
     echo "Testing verification suite..."
-    
-    if "$PRODUCTION_DIR/scripts/verify_production.sh" > /tmp/verification_test.log 2>&1; then
+
+    if "$PRODUCTION_DIR/scripts/verify_production.sh" > "$VERIFY_LOG" 2>&1; then
         echo -e "${GREEN}✅${NC} Verification suite passed"
         return 0
     else
         echo -e "${RED}❌${NC} Verification suite failed"
-        echo "Check /tmp/verification_test.log for details"
+        echo "Check $VERIFY_LOG for details"
         return 1
     fi
 }
@@ -152,9 +175,18 @@ test_verification_suite() {
 # Function to test monitor connection
 test_monitor_connection() {
     echo "Testing monitor connection..."
-    
+
+    if [ -z "$TIMEOUT_CMD" ]; then
+        echo -e "${RED}❌${NC} Missing timeout command (install coreutils on macOS)"
+        return 1
+    fi
+    if ! command -v nc &> /dev/null; then
+        echo -e "${RED}❌${NC} Missing nc (netcat); required for monitor connectivity checks"
+        return 1
+    fi
+
     # Start QEMU with monitor
-    timeout 8 "$PRODUCTION_DIR/scripts/monitor_production.sh" > /tmp/monitor_test.log 2>&1 &
+    "$TIMEOUT_CMD" 8 "$PRODUCTION_DIR/scripts/monitor_production.sh" > "$MONITOR_LOG" 2>&1 &
     MONITOR_PID=$!
     
     sleep 3
@@ -171,7 +203,7 @@ test_monitor_connection() {
         return 0
     else
         echo -e "${RED}❌${NC} Monitor connection failed"
-        echo "Check /tmp/monitor_test.log for details"
+        echo "Check $MONITOR_LOG for details"
         
         # Cleanup
         kill $MONITOR_PID 2>/dev/null || true

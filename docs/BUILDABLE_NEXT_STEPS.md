@@ -15,6 +15,9 @@ Use this board when deciding what to do next.
 - CI and portability boringness:
   remove concrete toolchain/setup footguns, especially in build, demo, and
   smoke-test paths contributors are likely to try early
+- Contributor-path trimming:
+  keep the maintainer and contributor entry docs short, current, and aligned
+  with the protected bounded family plus the current RFC-00D1 seed contract
 
 ### Next
 
@@ -61,6 +64,9 @@ repo.
 6. Move reusable interchange behavior out of CLI-only code where practical.
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
+   Current likely targets:
+   `docs/HANDOFF.md`, `docs/ROADMAP.md`, and top-level contributor/demo entry
+   points that still make new contributors reconstruct the active lanes.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
 10. Keep public claims aligned with the validated bounded AI OS-object family.
     Current reference:
@@ -202,6 +208,27 @@ repo.
        distinct policy-file interaction beyond the new partial-result case
     2. keep policy denial reporting explicit without expanding interchange
        formats or adding new built-in profile families
+
+16. (DONE) Tighten the current RFC-00D1 contributor-facing contract path.
+    Current state:
+    the CanonFS interchange lane now has:
+    - tighter CLI contract coverage for failure-case JSON error shapes
+    - checked-in example docs that explicitly match the current structured
+      error contract
+    - one more target-side export failure pinned in the CLI contract slice
+    - reusable preflight error construction moved out of CLI-only glue
+
+    The practical result is that the current import/export seed contract is
+    easier to build against without reconstructing it from `driver.cpp`.
+
+17. (DONE) Remove the highest-friction QEMU/demo portability footguns.
+    Current state:
+    the contributor-facing demo and onboarding scripts now use more portable
+    timeout and temp-file handling, and the top-level QEMU demo dependency line
+    matches the script requirements more closely.
+
+    The practical result is that macOS/Linux contributors are less likely to
+    hit avoidable shell-tooling failures before they reach the actual runtime.
 
 ## Pick one lane
 

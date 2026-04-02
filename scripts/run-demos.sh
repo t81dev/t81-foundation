@@ -15,7 +15,7 @@ run_demo() {
   shift
   local extra_args=("$@")
   local out
-  out="$(mktemp --dry-run /tmp/$(basename "$src" .t81)-XXXXXX.tisc)" 2>/dev/null || out="/tmp/$(basename "$src" .t81).tisc"
+  out="$(mktemp "${TMPDIR:-/tmp}/$(basename "$src" .t81)-XXXXXX.tisc")"
   echo "=== Compiling ${src} ==="
   "${CLI}" compile "${src}" -o "${out}" "${extra_args[@]}"
   echo "=== Running ${out} ==="

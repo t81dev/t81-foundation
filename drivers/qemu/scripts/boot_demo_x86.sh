@@ -41,10 +41,28 @@ check_cmd() {
   command -v "$1" &>/dev/null || die "Missing: $1 — see script header for install instructions"
 }
 
+resolve_timeout_cmd() {
+  if command -v timeout &>/dev/null; then
+    echo "timeout"
+    return
+  fi
+  if command -v gtimeout &>/dev/null; then
+    echo "gtimeout"
+    return
+  fi
+  die "Missing: timeout (Linux) or gtimeout from coreutils (macOS) — the boot demo needs a bounded QEMU runtime"
+}
+
+make_temp_fd() {
+  mktemp "${TMPDIR:-/tmp}/t81-qemu-x86-demo.XXXXXX.fd"
+}
+
 check_cmd qemu-system-x86_64
 check_cmd mtools
 check_cmd cmake
 check_cmd parted
+check_cmd python3
+TIMEOUT_CMD="$(resolve_timeout_cmd)"
 
 # ── OVMF firmware detection ───────────────────────────────────────────────────
 find_ovmf_code() {
@@ -146,7 +164,7 @@ ok "Disk image: $(du -sh "$IMG" | cut -f1)"
 echo ""
 
 # ── Boot ──────────────────────────────────────────────────────────────────────
-VARS_TMP="$(mktemp --suffix=.fd)"
+VARS_TMP="$(make_temp_fd)"
 cp "$OVMF_VARS" "$VARS_TMP"
 trap 'rm -f "$VARS_TMP"' EXIT
 
@@ -154,7 +172,7 @@ info "Booting under QEMU x86_64 (timeout ${TIMEOUT}s — press Ctrl-A X to exit)
 echo ""
 echo "────────────────────────────────────────────────────────────────────────────────"
 
-timeout "$TIMEOUT" qemu-system-x86_64 \
+"$TIMEOUT_CMD" "$TIMEOUT" qemu-system-x86_64 \
   -machine q35 \
   -cpu qemu64 \
   -m 512M \
