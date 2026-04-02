@@ -12,6 +12,8 @@ Canonical runnable example:
   remains the normative contract.
 - The current bounded composition family built on this framework is listed in
   [AI_OS_OBJECT_CHAIN_CATALOG.md](AI_OS_OBJECT_CHAIN_CATALOG.md).
+- The admission gate for future bounded-family growth is defined in
+  [AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md](AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md).
 
 ## Shared Runner Responsibilities
 

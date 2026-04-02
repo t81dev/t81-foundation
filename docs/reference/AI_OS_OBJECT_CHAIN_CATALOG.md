@@ -19,6 +19,9 @@ They are not a workflow engine or a general orchestration layer. They are a
 small bounded family of reusable compositions built on the current AI task and
 artifact helper surfaces.
 
+The admission gate for any future family member is defined in
+[AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md](./AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md).
+
 Confirmed invariant:
 
 - for identical task, model, policy, and input, the current chains keep the
