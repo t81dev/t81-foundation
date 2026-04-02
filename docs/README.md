@@ -10,6 +10,7 @@ If you only want the shortest current contributor path, read these first:
 - [Maintainer Handoff](HANDOFF.md)
 - [Contributor Roadmap](ROADMAP.md)
 - [Buildable Next Steps](BUILDABLE_NEXT_STEPS.md)
+- [T81 Operator Guide](explanation/T81_OPERATOR_GUIDE.md)
 
 Those three files describe the current engineering posture more directly than
 the broader documentation tree:

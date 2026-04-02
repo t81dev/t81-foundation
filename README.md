@@ -93,6 +93,11 @@ here:
 These are narrower and more buildable than the repo's longer-horizon OS and
 hardware directions.
 
+If you want the shortest practical “how do I actually use this today?” guide,
+start here:
+
+- [T81 Operator Guide](docs/explanation/T81_OPERATOR_GUIDE.md)
+
 ## Core Subsystems & Maturity (March 2026)
 
 | Subsystem     | Role                                              | Maturity     |
