@@ -241,10 +241,10 @@ bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection
 ```
 
 Short explanation:
-- [First Deterministic AI OS-Object Chain](/Users/t81dev/Code/t81-foundation/docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md)
+- [First Deterministic AI OS-Object Chain](docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md)
 
 Current bounded composition catalog:
-- [AI OS-Object Chain Catalog](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md)
+- [AI OS-Object Chain Catalog](docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md)
 
 Portable smoke path for the same chain:
 - `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`

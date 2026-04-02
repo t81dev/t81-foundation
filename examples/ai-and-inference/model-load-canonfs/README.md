@@ -30,7 +30,7 @@ cmake --build build --target t81 t81_make_demo_model t81_make_answer_fixed_demo 
   same tensor names
 - `make_demo_float_safetensors.cpp` builds a tiny float SafeTensors source file
   for the T3_K GGUF quantize/import lane
-- [03_matmul_weights.t81](/Users/t81dev/Code/t81-foundation/tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81)
+- [03_matmul_weights.t81](../../../tests/fixtures/t81lang_std_tensor/03_matmul_weights.t81)
   loads those tensors via `std.tensor.load(...)`
 
 ## Healthy AI Probe Path
@@ -70,7 +70,7 @@ bash examples/ai-and-inference/model-load-canonfs/run_ready_ai_probe.sh
 This is the current canonical result-producing AI example in the repo.
 
 The current bounded composition family for this object model is listed in
-[AI OS-Object Chain Catalog](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
+[AI OS-Object Chain Catalog](../../../docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
 
 It shows one narrow governed chain:
 

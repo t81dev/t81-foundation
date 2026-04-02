@@ -20,7 +20,7 @@ exercises the same object flow without relying on POSIX shell behavior.
 
 For the current bounded family of reusable AI OS-object chains built on the
 same object model, see
-[AI_OS_OBJECT_CHAIN_CATALOG.md](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
+[AI_OS_OBJECT_CHAIN_CATALOG.md](../reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
 
 ## What Happens
 

@@ -5,7 +5,7 @@ T81.
 
 For the newcomer-facing explanation of the current canonical runnable chain,
 see
-[FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md](/Users/t81dev/Code/t81-foundation/docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md).
+[FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md](../explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md).
 
 These chains are:
 
@@ -60,11 +60,11 @@ Object roles:
 
 Canonical runnable example:
 
-- [run_assess_fixed_host_action.sh](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh)
+- [run_assess_fixed_host_action.sh](../../examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh)
 
 Portable proof path:
 
-- [ai_task_assess_fixed_composition_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/ai_task_assess_fixed_composition_test.cpp)
+- [ai_task_assess_fixed_composition_test.cpp](../../tests/cpp/ai_task_assess_fixed_composition_test.cpp)
   via `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`
 
 Canonical top-level object:
@@ -102,11 +102,11 @@ Object roles:
 
 Canonical runnable example:
 
-- [run_route_fixed_path_selection.sh](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh)
+- [run_route_fixed_path_selection.sh](../../examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh)
 
 Portable proof path:
 
-- [ai_task_route_fixed_composition_test.cpp](/Users/t81dev/Code/t81-foundation/tests/cpp/ai_task_route_fixed_composition_test.cpp)
+- [ai_task_route_fixed_composition_test.cpp](../../tests/cpp/ai_task_route_fixed_composition_test.cpp)
   via `./build/t81_ai_task_route_fixed_composition_test ./build/t81`
 
 Canonical top-level object:

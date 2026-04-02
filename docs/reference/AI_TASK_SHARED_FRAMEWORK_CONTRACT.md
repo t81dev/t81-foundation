@@ -5,13 +5,13 @@ This document defines the shared internal contract for deterministic governed AI
 Canonical runnable example:
 
 - For the current end-to-end example of this framework, see the `Assess-Fixed OS-Object Chain`
-  section in [examples/ai-and-inference/model-load-canonfs/README.md](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/README.md)
+  section in [examples/ai-and-inference/model-load-canonfs/README.md](../../examples/ai-and-inference/model-load-canonfs/README.md)
   and the companion script
-  [run_assess_fixed_host_action.sh](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh).
+  [run_assess_fixed_host_action.sh](../../examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh).
 - That example is the current canonical runnable chain for the framework, but this document
   remains the normative contract.
 - The current bounded composition family built on this framework is listed in
-  [AI_OS_OBJECT_CHAIN_CATALOG.md](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
+  [AI_OS_OBJECT_CHAIN_CATALOG.md](AI_OS_OBJECT_CHAIN_CATALOG.md).
 
 ## Shared Runner Responsibilities
 
@@ -177,7 +177,7 @@ CanonFS retrieval expectations:
 Current convergence point:
 
 - the current typed artifact helper surface converges in
-  [main.cpp](/Users/t81dev/Code/t81-foundation/tools/cli/main.cpp)
+  [main.cpp](../../tools/cli/main.cpp)
 - changes to helper behavior, help text, or supported schema names must remain aligned with:
   - `tests/cpp/cli_contract_test.cpp`
   - `tests/cpp/ai_task_assess_fixed_composition_test.cpp`

@@ -6,9 +6,9 @@ Canonical runnable example:
 
 - For the current end-to-end runnable example of the AI task framework, see the `Assess-Fixed
   OS-Object Chain` section in
-  [examples/ai-and-inference/model-load-canonfs/README.md](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/README.md)
+  [examples/ai-and-inference/model-load-canonfs/README.md](../../examples/ai-and-inference/model-load-canonfs/README.md)
   and the companion script
-  [run_assess_fixed_host_action.sh](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh).
+  [run_assess_fixed_host_action.sh](../../examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh).
 - That example shows the current full chain from AI task result to final bundle object; this
   document remains the normative contract for `answer_fixed.v1` itself.
 

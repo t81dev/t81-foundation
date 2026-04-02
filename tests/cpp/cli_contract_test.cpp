@@ -361,14 +361,17 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(result.exit_code == 0);
     T81_TEST_CHECK(contains(result.stdout_text, "Usage: t81 canonfs <action> [args]"));
     T81_TEST_CHECK(contains(result.stdout_text, "repair"));
-    T81_TEST_CHECK(contains(result.stdout_text,
-                            "permissive  allow import and export unless an explicit policy evaluator denies the request"));
-    T81_TEST_CHECK(contains(result.stdout_text,
-                            "import-only  allow canonfs import and deny canonfs export before materialization"));
-    T81_TEST_CHECK(contains(result.stdout_text,
-                            "export-only  allow canonfs export and deny canonfs import before storage writes"));
-    T81_TEST_CHECK(contains(result.stdout_text,
-                            "deny-all  deny canonfs import and export before CanonFS or host-side materialization"));
+    T81_TEST_CHECK(contains(result.stdout_text, "permissive  allow import and export unless an "
+                                                "explicit policy evaluator denies the request"));
+    T81_TEST_CHECK(contains(
+        result.stdout_text,
+        "import-only  allow canonfs import and deny canonfs export before materialization"));
+    T81_TEST_CHECK(contains(
+        result.stdout_text,
+        "export-only  allow canonfs export and deny canonfs import before storage writes"));
+    T81_TEST_CHECK(contains(
+        result.stdout_text,
+        "deny-all  deny canonfs import and export before CanonFS or host-side materialization"));
   }
 
   {
@@ -1018,20 +1021,20 @@ int main(int argc, char* argv[]) {
            std::isspace(static_cast<unsigned char>(invalid_schema_hash.back()))) {
       invalid_schema_hash.pop_back();
     }
-    const auto invalid_schema_export = run_cli(
-        t81_bin, {"canonfs", "export", invalid_schema_hash, "--out",
-                  make_temp_path("t81-cli-contract-invalid-schema-out", ".bin").string(), "--json"});
+    const auto invalid_schema_export =
+        run_cli(t81_bin,
+                {"canonfs", "export", invalid_schema_hash, "--out",
+                 make_temp_path("t81-cli-contract-invalid-schema-out", ".bin").string(), "--json"});
     T81_TEST_CHECK(invalid_schema_export.exit_code != 0);
-    T81_TEST_CHECK(contains(invalid_schema_export.stdout_text,
-                            "\"code\": \"canonfs-export-invalid-schema\""));
     T81_TEST_CHECK(
-        contains(invalid_schema_export.stdout_text, "\"reason\": \"invalid_schema\""));
+        contains(invalid_schema_export.stdout_text, "\"code\": \"canonfs-export-invalid-schema\""));
+    T81_TEST_CHECK(contains(invalid_schema_export.stdout_text, "\"reason\": \"invalid_schema\""));
 
     const fs::path tampered_root = make_temp_path("t81-cli-contract-tampered-root", "");
     fs::create_directories(tampered_root, ignore_ec);
     T81_TEST_CHECK(!ignore_ec);
-    const auto tampered_put = run_cli(
-        t81_bin, {"canonfs", "put-file", payload.string(), "--canonfs-root", tampered_root.string()});
+    const auto tampered_put = run_cli(t81_bin, {"canonfs", "put-file", payload.string(),
+                                                "--canonfs-root", tampered_root.string()});
     T81_TEST_CHECK(tampered_put.exit_code == 0);
     std::string tampered_hash = tampered_put.stdout_text;
     while (!tampered_hash.empty() &&
@@ -1062,14 +1065,13 @@ int main(int argc, char* argv[]) {
                   ignore_ec);
     T81_TEST_CHECK(!ignore_ec);
     const auto tampered_export_result = run_cli(
-        t81_bin, {"canonfs", "export", tampered_hash, "--canonfs-root", tampered_root.string(),
-                  "--out", make_temp_path("t81-cli-contract-tampered-out", ".bin").string(),
-                  "--json"});
+        t81_bin,
+        {"canonfs", "export", tampered_hash, "--canonfs-root", tampered_root.string(), "--out",
+         make_temp_path("t81-cli-contract-tampered-out", ".bin").string(), "--json"});
     T81_TEST_CHECK(tampered_export_result.exit_code != 0);
-    T81_TEST_CHECK(contains(tampered_export_result.stdout_text,
-                            "\"code\": \"canonfs-export-hash-mismatch\""));
     T81_TEST_CHECK(
-        contains(tampered_export_result.stdout_text, "\"reason\": \"hash_mismatch\""));
+        contains(tampered_export_result.stdout_text, "\"code\": \"canonfs-export-hash-mismatch\""));
+    T81_TEST_CHECK(contains(tampered_export_result.stdout_text, "\"reason\": \"hash_mismatch\""));
 
     const fs::path canonfs_policy = make_temp_path("t81-cli-contract-canonfs-policy", ".apl");
     {
@@ -1134,28 +1136,24 @@ int main(int argc, char* argv[]) {
         contains(export_profile_deny_result.stdout_text, "\"policy_profile\": \"import-only\""));
     T81_TEST_CHECK(contains(export_profile_deny_result.stdout_text, "\"status\": \"error\""));
 
-    const auto deny_all_import_result =
-        run_cli(t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "deny-all", "--json"});
+    const auto deny_all_import_result = run_cli(
+        t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "deny-all", "--json"});
     T81_TEST_CHECK(deny_all_import_result.exit_code != 0);
-    T81_TEST_CHECK(
-        contains(deny_all_import_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(deny_all_import_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(
         contains(deny_all_import_result.stdout_text, "\"policy_profile\": \"deny-all\""));
     T81_TEST_CHECK(contains(deny_all_import_result.stdout_text, "\"status\": \"error\""));
-    T81_TEST_CHECK(
-        contains(deny_all_import_result.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(deny_all_import_result.stdout_text, "\"reason\": \"policy_denied\""));
 
     const auto deny_all_export_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy-profile", "deny-all", "--out",
                           imported_file_restore.string(), "--json"});
     T81_TEST_CHECK(deny_all_export_result.exit_code != 0);
-    T81_TEST_CHECK(
-        contains(deny_all_export_result.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(contains(deny_all_export_result.stdout_text, "\"policy_result\": \"denied\""));
     T81_TEST_CHECK(
         contains(deny_all_export_result.stdout_text, "\"policy_profile\": \"deny-all\""));
     T81_TEST_CHECK(contains(deny_all_export_result.stdout_text, "\"status\": \"error\""));
-    T81_TEST_CHECK(
-        contains(deny_all_export_result.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(deny_all_export_result.stdout_text, "\"reason\": \"policy_denied\""));
 
     const auto invalid_profile_result = run_cli(
         t81_bin, {"canonfs", "import", payload.string(), "--policy-profile", "bogus", "--json"});
@@ -1165,20 +1163,18 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(invalid_profile_result.stdout_text, "invalid policy profile"));
     T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
                             "\"code\": \"canonfs-import-invalid-policy-profile\""));
-    T81_TEST_CHECK(contains(invalid_profile_result.stdout_text,
-                            "\"reason\": \"invalid_policy_profile\""));
+    T81_TEST_CHECK(
+        contains(invalid_profile_result.stdout_text, "\"reason\": \"invalid_policy_profile\""));
 
     const fs::path example_input_dir =
         repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
-    const fs::path example_deny_policy =
-        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
-        "policy-deny-all.apl";
-    const fs::path example_allow_policy =
-        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
-        "policy-allow-example-inputs.apl";
-    const fs::path example_alpha_only_policy =
-        repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" /
-        "policy-allow-alpha-only.apl";
+    const fs::path example_deny_policy = repo_root / "examples" / "storage-and-canonfs" /
+                                         "canonfs-interchange" / "policy-deny-all.apl";
+    const fs::path example_allow_policy = repo_root / "examples" / "storage-and-canonfs" /
+                                          "canonfs-interchange" / "policy-allow-example-inputs.apl";
+    const fs::path example_alpha_only_policy = repo_root / "examples" / "storage-and-canonfs" /
+                                               "canonfs-interchange" /
+                                               "policy-allow-alpha-only.apl";
     T81_TEST_CHECK(fs::exists(example_input_dir));
     T81_TEST_CHECK(fs::exists(example_deny_policy));
     T81_TEST_CHECK(fs::exists(example_allow_policy));
@@ -1187,7 +1183,8 @@ int main(int argc, char* argv[]) {
     const auto validate_deny_example =
         run_cli(t81_bin, {"policy", "validate", example_deny_policy.string(), "--json"});
     T81_TEST_CHECK(validate_deny_example.exit_code == 0);
-    T81_TEST_CHECK(contains(validate_deny_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(
+        contains(validate_deny_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
     T81_TEST_CHECK(contains(validate_deny_example.stdout_text, "\"valid\": true"));
 
     const auto validate_alpha_only_example =
@@ -1200,7 +1197,8 @@ int main(int argc, char* argv[]) {
     const auto validate_allow_example =
         run_cli(t81_bin, {"policy", "validate", example_allow_policy.string(), "--json"});
     T81_TEST_CHECK(validate_allow_example.exit_code == 0);
-    T81_TEST_CHECK(contains(validate_allow_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
+    T81_TEST_CHECK(
+        contains(validate_allow_example.stdout_text, "\"schema\": \"t81.policy-validate.v1\""));
     T81_TEST_CHECK(contains(validate_allow_example.stdout_text, "\"valid\": true"));
 
     const fs::path example_canon_root = make_temp_path("t81-cli-canonfs-example-root", "");
@@ -1208,56 +1206,57 @@ int main(int argc, char* argv[]) {
         t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
                   example_canon_root.string(), "--policy", example_deny_policy.string(), "--json"});
     T81_TEST_CHECK(example_policy_deny_import.exit_code != 0);
-    T81_TEST_CHECK(contains(example_policy_deny_import.stdout_text,
-                            "\"schema\": \"t81.canonfs-import.v1\""));
-    T81_TEST_CHECK(contains(example_policy_deny_import.stdout_text,
-                            "\"policy_result\": \"denied\""));
-    T81_TEST_CHECK(contains(example_policy_deny_import.stdout_text,
-                            "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_import.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_import.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_import.stdout_text, "\"reason\": \"policy_denied\""));
 
-    const auto example_policy_allow_import = run_cli(
-        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
-                  example_canon_root.string(), "--policy", example_allow_policy.string(), "--json"});
+    const auto example_policy_allow_import =
+        run_cli(t81_bin,
+                {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                 example_canon_root.string(), "--policy", example_allow_policy.string(), "--json"});
     T81_TEST_CHECK(example_policy_allow_import.exit_code == 0);
-    T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text,
-                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(example_policy_allow_import.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(example_policy_allow_import.stdout_text, "\"status\": \"ok\""));
     const auto example_manifest_ref =
         extract_json_string(example_policy_allow_import.stdout_text, "manifest_ref");
     T81_TEST_CHECK(example_manifest_ref.has_value());
 
     const fs::path example_export_root = make_temp_path("t81-cli-canonfs-example-export", "");
-    const auto example_policy_allow_export = run_cli(
-        t81_bin, {"canonfs", "export", *example_manifest_ref, "--canonfs-root",
-                  example_canon_root.string(), "--policy", example_allow_policy.string(), "--out",
-                  example_export_root.string(), "--json"});
+    const auto example_policy_allow_export =
+        run_cli(t81_bin, {"canonfs", "export", *example_manifest_ref, "--canonfs-root",
+                          example_canon_root.string(), "--policy", example_allow_policy.string(),
+                          "--out", example_export_root.string(), "--json"});
     T81_TEST_CHECK(example_policy_allow_export.exit_code == 0);
-    T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text,
-                            "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(example_policy_allow_export.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(example_policy_allow_export.stdout_text, "\"status\": \"ok\""));
     T81_TEST_CHECK(fs::exists(example_export_root / "alpha.txt"));
     T81_TEST_CHECK(fs::exists(example_export_root / "nested" / "beta.txt"));
 
     const fs::path example_alpha_only_root =
         make_temp_path("t81-cli-canonfs-example-alpha-root", "");
-    const auto example_alpha_only_import = run_cli(
-        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
-                  example_alpha_only_root.string(), "--policy",
-                  example_alpha_only_policy.string(), "--json"});
+    const auto example_alpha_only_import =
+        run_cli(t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                          example_alpha_only_root.string(), "--policy",
+                          example_alpha_only_policy.string(), "--json"});
     T81_TEST_CHECK(example_alpha_only_import.exit_code == 0);
-    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
-                            "\"schema\": \"t81.canonfs-import.v1\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_import.stdout_text, "\"schema\": \"t81.canonfs-import.v1\""));
     T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "\"status\": \"partial\""));
-    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
-                            "\"policy_result\": \"partial\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_import.stdout_text, "\"policy_result\": \"partial\""));
     T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "\"alpha.txt\""));
-    T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text,
-                            "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_import.stdout_text, "\"reason\": \"policy_denied\""));
     T81_TEST_CHECK(contains(example_alpha_only_import.stdout_text, "nested/beta.txt"));
 
-    const auto example_full_import_for_partial_export = run_cli(
-        t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
-                  example_alpha_only_root.string(), "--json"});
+    const auto example_full_import_for_partial_export =
+        run_cli(t81_bin, {"canonfs", "import", example_input_dir.string(), "--canonfs-root",
+                          example_alpha_only_root.string(), "--json"});
     T81_TEST_CHECK(example_full_import_for_partial_export.exit_code == 0);
     const auto example_full_manifest_ref =
         extract_json_string(example_full_import_for_partial_export.stdout_text, "manifest_ref");
@@ -1267,17 +1266,16 @@ int main(int argc, char* argv[]) {
         make_temp_path("t81-cli-canonfs-example-alpha-export", "");
     const auto example_alpha_only_export = run_cli(
         t81_bin, {"canonfs", "export", *example_full_manifest_ref, "--canonfs-root",
-                  example_alpha_only_root.string(), "--policy",
-                  example_alpha_only_policy.string(), "--out",
-                  example_alpha_only_export_root.string(), "--json"});
+                  example_alpha_only_root.string(), "--policy", example_alpha_only_policy.string(),
+                  "--out", example_alpha_only_export_root.string(), "--json"});
     T81_TEST_CHECK(example_alpha_only_export.exit_code == 0);
-    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
-                            "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_export.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "\"status\": \"partial\""));
-    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
-                            "\"policy_result\": \"partial\""));
-    T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text,
-                            "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_export.stdout_text, "\"policy_result\": \"partial\""));
+    T81_TEST_CHECK(
+        contains(example_alpha_only_export.stdout_text, "\"reason\": \"policy_denied\""));
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "nested/beta.txt"));
     T81_TEST_CHECK(fs::exists(example_alpha_only_export_root / "alpha.txt"));
     T81_TEST_CHECK(!fs::exists(example_alpha_only_export_root / "nested" / "beta.txt"));
@@ -1314,38 +1312,38 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(v1_import_result.exit_code == 0);
     T81_TEST_CHECK(read_file(v1_import_output) == v1_import_result.stdout_text);
 
-    const auto v1_export_result = run_cli_in_dir(
-        t81_bin,
-        {"canonfs", "export", "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX",
-         "--canonfs-root", "build/canonfs-v1-contract-root", "--out",
-         "build/canonfs-v1-contract-export/model.t81w", "--json"},
-        repo_root);
+    const auto v1_export_result =
+        run_cli_in_dir(t81_bin,
+                       {"canonfs", "export", "sha3-256:5AnZIω3JoaS7π≠5MG7K>cy3goOKHUEudxccikkcsX",
+                        "--canonfs-root", "build/canonfs-v1-contract-root", "--out",
+                        "build/canonfs-v1-contract-export/model.t81w", "--json"},
+                       repo_root);
     T81_TEST_CHECK(v1_export_result.exit_code == 0);
     T81_TEST_CHECK(read_file(v1_export_output) == v1_export_result.stdout_text);
 
-    const auto v1_missing_object_result = run_cli_in_dir(
-        t81_bin,
-        {"canonfs", "export", "sha3-256:missing", "--canonfs-root",
-         "build/canonfs-v1-contract-root", "--out",
-         "build/canonfs-v1-contract-export/missing.bin", "--json"},
-        repo_root);
+    const auto v1_missing_object_result =
+        run_cli_in_dir(t81_bin,
+                       {"canonfs", "export", "sha3-256:missing", "--canonfs-root",
+                        "build/canonfs-v1-contract-root", "--out",
+                        "build/canonfs-v1-contract-export/missing.bin", "--json"},
+                       repo_root);
     T81_TEST_CHECK(v1_missing_object_result.exit_code != 0);
     T81_TEST_CHECK(read_file(v1_missing_output) == v1_missing_object_result.stdout_text);
 
-    const auto v1_put_invalid_schema = run_cli_in_dir(
-        t81_bin,
-        {"canonfs", "put-file",
-         "examples/storage-and-canonfs/canonfs-interchange/v1/invalid-schema.json",
-         "--canonfs-root", "build/canonfs-v1-contract-root"},
-        repo_root);
+    const auto v1_put_invalid_schema =
+        run_cli_in_dir(t81_bin,
+                       {"canonfs", "put-file",
+                        "examples/storage-and-canonfs/canonfs-interchange/v1/invalid-schema.json",
+                        "--canonfs-root", "build/canonfs-v1-contract-root"},
+                       repo_root);
     T81_TEST_CHECK(v1_put_invalid_schema.exit_code == 0);
 
-    const auto v1_invalid_schema_result = run_cli_in_dir(
-        t81_bin,
-        {"canonfs", "export", "sha3-256:1W÷r≈QiCFNI3Sμw×7JSKo≤71∞iEEbFVh4<MMTnKLb",
-         "--canonfs-root", "build/canonfs-v1-contract-root", "--out",
-         "build/canonfs-v1-contract-export/invalid-schema.bin", "--json"},
-        repo_root);
+    const auto v1_invalid_schema_result =
+        run_cli_in_dir(t81_bin,
+                       {"canonfs", "export", "sha3-256:1W÷r≈QiCFNI3Sμw×7JSKo≤71∞iEEbFVh4<MMTnKLb",
+                        "--canonfs-root", "build/canonfs-v1-contract-root", "--out",
+                        "build/canonfs-v1-contract-export/invalid-schema.bin", "--json"},
+                       repo_root);
     T81_TEST_CHECK(v1_invalid_schema_result.exit_code != 0);
     T81_TEST_CHECK(read_file(v1_invalid_schema_output) == v1_invalid_schema_result.stdout_text);
 
@@ -1530,7 +1528,8 @@ int main(int argc, char* argv[]) {
     const fs::path tensor_fixture = fs::absolute(t81_bin).parent_path().parent_path() / "tests" /
                                     "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
     T81_TEST_CHECK(fs::exists(tensor_fixture));
-    const auto missing_weights_run_result = run_cli(t81_bin, {"code", "run", tensor_fixture.string()});
+    const auto missing_weights_run_result =
+        run_cli(t81_bin, {"code", "run", tensor_fixture.string()});
     const fs::path allow_policy = make_temp_path("t81-cli-contract-model-allow", ".apl");
     const fs::path deny_policy = make_temp_path("t81-cli-contract-model-deny", ".apl");
 
@@ -1562,27 +1561,29 @@ int main(int argc, char* argv[]) {
     unset_env("T81_CANONFS_ROOT");
 
     T81_TEST_CHECK(missing_weights_run_result.exit_code != 0);
-    T81_TEST_CHECK(appears_in_order(
-        missing_weights_run_result.stderr_text,
-        {"Compilation successful → ", "error: Execution trapped: DecodeFault",
-         "hint: tensor-backed programs often require --weights-model"}));
+    T81_TEST_CHECK(
+        appears_in_order(missing_weights_run_result.stderr_text,
+                         {"Compilation successful → ", "error: Execution trapped: DecodeFault",
+                          "hint: tensor-backed programs often require --weights-model"}));
     T81_TEST_CHECK(model_run_result.exit_code == 0);
     T81_TEST_CHECK(contains(model_run_result.stdout_text, "<tensor#1>"));
     T81_TEST_CHECK(contains(model_run_result.stderr_text, "result kind: tensor_handle"));
     T81_TEST_CHECK(contains(model_run_result.stderr_text,
                             "operation: tensor-backed execution completed under attached weights"));
-    T81_TEST_CHECK(contains(model_run_result.stderr_text,
-                            "next (progress): none on this path; the result remains a runtime tensor handle"));
-    T81_TEST_CHECK(contains(model_run_result.stderr_text,
-                            "next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events"));
+    T81_TEST_CHECK(
+        contains(model_run_result.stderr_text,
+                 "next (progress): none on this path; the result remains a runtime tensor handle"));
+    T81_TEST_CHECK(contains(
+        model_run_result.stderr_text,
+        "next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events"));
     T81_TEST_CHECK(allowed_model_run_result.exit_code == 0);
     T81_TEST_CHECK(contains(allowed_model_run_result.stdout_text, "<tensor#1>"));
     T81_TEST_CHECK(denied_model_run_result.exit_code != 0);
     T81_TEST_CHECK(contains(denied_model_run_result.stderr_text, "SecurityFault"));
-    T81_TEST_CHECK(appears_in_order(denied_model_run_result.stderr_text,
-                                    {"Compilation successful → ",
-                                     "error: Execution trapped: SecurityFault", "reason: ",
-                                     "opcode: TMatMul", "compute executed: no"}));
+    T81_TEST_CHECK(
+        appears_in_order(denied_model_run_result.stderr_text,
+                         {"Compilation successful → ", "error: Execution trapped: SecurityFault",
+                          "reason: ", "opcode: TMatMul", "compute executed: no"}));
     T81_TEST_CHECK(!contains(denied_model_run_result.stdout_text, "<tensor#1>"));
 
     fs::remove(model_path, ignore_ec);
@@ -1635,13 +1636,14 @@ int main(int argc, char* argv[]) {
         contains(ai_result.stdout_text, "\"rhs\": \"model.layers.0.self_attn.k_proj.weight\""));
     T81_TEST_CHECK(appears_in_order(
         ai_result.stdout_text,
-        {"\"result_summary\": ", "\"result_class\": \"tensor_handle\"",
-         "\"result_meaning\": ", "\"next_step_hint\": ",
-         "\"termination_reason\": \"no_logits_row_probe\"", "\"output_kind\": \"tensor_handle\"",
-         "\"output_preview\": \"<tensor#1>\"", "\"backend_selection_trace_sha256\": "}));
-    T81_TEST_CHECK(
-        contains(ai_result.stdout_text,
-                 "\"next_step_hint\": \"next (progress): none on this path; this run does not expose a richer bounded decode result. next (inspect): inspect output_summary for handle semantics\""));
+        {"\"result_summary\": ", "\"result_class\": \"tensor_handle\"", "\"result_meaning\": ",
+         "\"next_step_hint\": ", "\"termination_reason\": \"no_logits_row_probe\"",
+         "\"output_kind\": \"tensor_handle\"", "\"output_preview\": \"<tensor#1>\"",
+         "\"backend_selection_trace_sha256\": "}));
+    T81_TEST_CHECK(contains(ai_result.stdout_text,
+                            "\"next_step_hint\": \"next (progress): none on this path; this run "
+                            "does not expose a richer bounded decode result. next (inspect): "
+                            "inspect output_summary for handle semantics\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output\": \"<tensor#1>\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_tokens\": 1"));
 
@@ -1821,9 +1823,8 @@ int main(int argc, char* argv[]) {
         bounded_ready_ai_result.stdout_text,
         {"\"result_summary\": ", "\"result_class\": \"bounded_inference_text\"",
          "\"result_meaning\": ", "\"next_step_hint\": ",
-         "\"termination_reason\": \"max_tokens_reached\"",
-         "\"output_kind\": \"raw_vm_probe_text\"", "\"output_preview\": ",
-         "\"backend_selection_trace_sha256\": "}));
+         "\"termination_reason\": \"max_tokens_reached\"", "\"output_kind\": \"raw_vm_probe_text\"",
+         "\"output_preview\": ", "\"backend_selection_trace_sha256\": "}));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text,
                             "\"termination_reason\": \"max_tokens_reached\""));
 
@@ -1839,12 +1840,14 @@ int main(int argc, char* argv[]) {
         forward_state_ai_result.stdout_text,
         {"\"result_summary\": ", "\"result_class\": \"bounded_inference_text\"",
          "\"result_meaning\": ", "\"next_step_hint\": ",
-         "\"termination_reason\": \"max_tokens_reached\"",
-         "\"output_kind\": \"raw_vm_probe_text\"", "\"output_preview\": ",
-         "\"backend_selection_trace_sha256\": "}));
+         "\"termination_reason\": \"max_tokens_reached\"", "\"output_kind\": \"raw_vm_probe_text\"",
+         "\"output_preview\": ", "\"backend_selection_trace_sha256\": "}));
     T81_TEST_CHECK(
         contains(forward_state_ai_result.stdout_text,
-                 "\"next_step_hint\": \"next (progress): none on this path; this run does not expose a richer user-visible result beyond the tokenizer-only preview. next (inspect): inspect generated_preview_summary, then forward_state_summary or decode_trace for deeper evidence\""));
+                 "\"next_step_hint\": \"next (progress): none on this path; this run does not "
+                 "expose a richer user-visible result beyond the tokenizer-only preview. next "
+                 "(inspect): inspect generated_preview_summary, then forward_state_summary or "
+                 "decode_trace for deeper evidence\""));
     T81_TEST_CHECK(
         contains(forward_state_ai_result.stdout_text, "\"true_state_carry_supported\": true"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"state_carry_limitations\": {"));
@@ -2099,19 +2102,15 @@ int main(int argc, char* argv[]) {
   {
     const auto artifact_help = run_cli(t81_bin, {"help", "artifact"});
     T81_TEST_CHECK(artifact_help.exit_code == 0);
-    T81_TEST_CHECK(contains(artifact_help.stdout_text,
-                            "t81.ai.task.assess-fixed.host-action-record.v1"));
-    T81_TEST_CHECK(contains(artifact_help.stdout_text,
-                            "t81.ai.task.assess-fixed.bundle.v1"));
-    T81_TEST_CHECK(contains(artifact_help.stdout_text,
-                            "t81.ai.task.route-fixed.path-selection-record.v1"));
-    T81_TEST_CHECK(contains(artifact_help.stdout_text,
-                            "t81.ai.task.route-fixed.bundle.v1"));
+    T81_TEST_CHECK(
+        contains(artifact_help.stdout_text, "t81.ai.task.assess-fixed.host-action-record.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "t81.ai.task.assess-fixed.bundle.v1"));
+    T81_TEST_CHECK(
+        contains(artifact_help.stdout_text, "t81.ai.task.route-fixed.path-selection-record.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "t81.ai.task.route-fixed.bundle.v1"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text, "Canonical runnable example:"));
-    T81_TEST_CHECK(contains(artifact_help.stdout_text,
-                            "run_assess_fixed_host_action.sh"));
-    T81_TEST_CHECK(contains(artifact_help.stdout_text,
-                            "run_route_fixed_path_selection.sh"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "run_assess_fixed_host_action.sh"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "run_route_fixed_path_selection.sh"));
   }
 
   {
@@ -2133,7 +2132,9 @@ int main(int argc, char* argv[]) {
       std::ofstream out(allow_policy);
       out << "(policy\n"
              "  (tier 1)\n"
-             "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"])\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:"
+          << raw_model_hash
+          << "\"])\n"
              "  (require-axion-event (reason \"task:answer_fixed.v1\")))\n";
     }
 
@@ -2142,22 +2143,22 @@ int main(int argc, char* argv[]) {
       std::ofstream out(deny_policy);
       out << "(policy\n"
              "  (tier 1)\n"
-             "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"]))\n";
+             "  (allowed-ternary-model-hashes [\"sha3-512:"
+          << raw_model_hash << "\"]))\n";
     }
 
     const auto allow_result =
         run_cli(t81_bin, {"ai", "task", "answer-fixed", "--model", "answer-fixed-demo",
                           "--model-file", model_path.string(), "--policy", allow_policy.string(),
-                          "--canonfs-root", canonfs_root.string(), "--mode",
-                          "strict_deterministic", "--input", "greet hello"});
+                          "--canonfs-root", canonfs_root.string(), "--mode", "strict_deterministic",
+                          "--input", "greet hello"});
     T81_TEST_CHECK(allow_result.exit_code == 0);
-    T81_TEST_CHECK(contains(allow_result.stdout_text,
-                            "\"schema\": \"t81.ai.task-run.answer-fixed.v1\""));
+    T81_TEST_CHECK(
+        contains(allow_result.stdout_text, "\"schema\": \"t81.ai.task-run.answer-fixed.v1\""));
     T81_TEST_CHECK(appears_in_order(
         allow_result.stdout_text,
-        {"\"result_summary\": ", "\"result_class\": \"ai_task_result\"",
-         "\"result_meaning\": ", "\"next_step_hint\": ",
-         "\"termination_reason\": \"single_step_max_score\"",
+        {"\"result_summary\": ", "\"result_class\": \"ai_task_result\"", "\"result_meaning\": ",
+         "\"next_step_hint\": ", "\"termination_reason\": \"single_step_max_score\"",
          "\"output_kind\": \"canonical_task_answer\"", "\"output_preview\": \"YES\"",
          "\"result_ref\": ", "\"provenance_ref\": ", "\"policy_result\": \"allowed\""}));
     T81_TEST_CHECK(contains(allow_result.stdout_text, "\"answer\": \"YES\""));
@@ -2179,16 +2180,16 @@ int main(int argc, char* argv[]) {
     const auto provenance_artifact = run_cli(
         t81_bin, {"canonfs", "get", *provenance_ref, "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(provenance_artifact.exit_code == 0);
-    T81_TEST_CHECK(contains(provenance_artifact.stdout_text,
-                            "\"schema\": \"t81.ai.task.provenance.v1\""));
+    T81_TEST_CHECK(
+        contains(provenance_artifact.stdout_text, "\"schema\": \"t81.ai.task.provenance.v1\""));
     T81_TEST_CHECK(contains(provenance_artifact.stdout_text, "\"policy_result\": \"allowed\""));
     T81_TEST_CHECK(contains(provenance_artifact.stdout_text, "\"selected_token_id\": 42"));
 
     const auto deny_result =
         run_cli(t81_bin, {"ai", "task", "answer-fixed", "--model", "answer-fixed-demo",
                           "--model-file", model_path.string(), "--policy", deny_policy.string(),
-                          "--canonfs-root", canonfs_root.string(), "--mode",
-                          "strict_deterministic", "--input", "greet hello"});
+                          "--canonfs-root", canonfs_root.string(), "--mode", "strict_deterministic",
+                          "--input", "greet hello"});
     T81_TEST_CHECK(deny_result.exit_code == 13);
     T81_TEST_CHECK(contains(deny_result.stderr_text, "SecurityFault"));
     T81_TEST_CHECK(contains(deny_result.stderr_text,
@@ -2226,15 +2227,17 @@ int main(int argc, char* argv[]) {
       std::ofstream out(allow_policy);
       out << "(policy\n"
              "  (tier 1)\n"
-             "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"])\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:"
+          << raw_model_hash
+          << "\"])\n"
              "  (require-axion-event (reason \"task:assess_fixed.v1\")))\n";
     }
 
     const auto task_result =
         run_cli(t81_bin, {"ai", "task", "assess-fixed", "--model", "assess-fixed-demo",
                           "--model-file", model_path.string(), "--policy", allow_policy.string(),
-                          "--canonfs-root", canonfs_root.string(), "--mode",
-                          "strict_deterministic", "--input", "greet hello"});
+                          "--canonfs-root", canonfs_root.string(), "--mode", "strict_deterministic",
+                          "--input", "greet hello"});
     T81_TEST_CHECK(task_result.exit_code == 0);
     const auto result_ref = extract_json_string(task_result.stdout_text, "result_ref");
     const auto provenance_ref = extract_json_string(task_result.stdout_text, "provenance_ref");
@@ -2248,9 +2251,8 @@ int main(int argc, char* argv[]) {
           << "reason_code=GREETING_PAIR\n"
           << "source_result_ref=" << *result_ref << "\n";
     }
-    const auto action_ref_result =
-        run_cli(t81_bin, {"canonfs", "put-file", action_path.string(), "--canonfs-root",
-                          canonfs_root.string()});
+    const auto action_ref_result = run_cli(t81_bin, {"canonfs", "put-file", action_path.string(),
+                                                     "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(action_ref_result.exit_code == 0);
     std::string action_ref = action_ref_result.stdout_text;
     while (!action_ref.empty() && (action_ref.back() == '\n' || action_ref.back() == '\r')) {
@@ -2259,19 +2261,20 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(!action_ref.empty());
 
     const auto write_store_result =
-        run_cli(t81_bin, {"artifact", "write-store-record", "--schema",
-                          "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                          "source_result_ref=" + *result_ref, "--field",
-                          "source_provenance_ref=" + *provenance_ref, "--field",
-                          "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
-                          "termination_reason=single_step_max_score", "--field",
-                          "selected_action=write_allow_marker", "--field",
-                          "selected_path=actions/allow.marker", "--field",
-                          "action_ref=" + action_ref, "--canonfs-root",
-                          canonfs_root.string()});
+        run_cli(t81_bin, {"artifact",       "write-store-record",
+                          "--schema",       "t81.ai.task.assess-fixed.host-action-record.v1",
+                          "--field",        "source_result_ref=" + *result_ref,
+                          "--field",        "source_provenance_ref=" + *provenance_ref,
+                          "--field",        "decision=ALLOW",
+                          "--field",        "reason_code=GREETING_PAIR",
+                          "--field",        "termination_reason=single_step_max_score",
+                          "--field",        "selected_action=write_allow_marker",
+                          "--field",        "selected_path=actions/allow.marker",
+                          "--field",        "action_ref=" + action_ref,
+                          "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(write_store_result.exit_code == 0);
-    T81_TEST_CHECK(
-        contains(write_store_result.stdout_text, "\"schema\": \"t81.artifact.record-write-store.v1\""));
+    T81_TEST_CHECK(contains(write_store_result.stdout_text,
+                            "\"schema\": \"t81.artifact.record-write-store.v1\""));
     T81_TEST_CHECK(appears_in_order(
         write_store_result.stdout_text,
         {"\"result_summary\": ", "\"schema_id\": ", "\"validation_result\": \"pass\"",
@@ -2279,13 +2282,11 @@ int main(int argc, char* argv[]) {
     const auto record_ref = extract_json_string(write_store_result.stdout_text, "record_ref");
     T81_TEST_CHECK(record_ref.has_value());
 
-    const auto bundle_store_result =
-        run_cli(t81_bin, {"artifact", "store-bundle", "--schema",
-                          "t81.ai.task.assess-fixed.bundle.v1", "--field",
-                          "source_result_ref=" + *result_ref, "--field",
-                          "source_provenance_ref=" + *provenance_ref, "--field",
-                          "action_ref=" + action_ref, "--field", "record_ref=" + *record_ref,
-                          "--canonfs-root", canonfs_root.string()});
+    const auto bundle_store_result = run_cli(
+        t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
+                  "--field", "source_result_ref=" + *result_ref, "--field",
+                  "source_provenance_ref=" + *provenance_ref, "--field", "action_ref=" + action_ref,
+                  "--field", "record_ref=" + *record_ref, "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(bundle_store_result.exit_code == 0);
     T81_TEST_CHECK(
         contains(bundle_store_result.stdout_text, "\"schema\": \"t81.artifact.bundle-store.v1\""));
@@ -2296,11 +2297,11 @@ int main(int argc, char* argv[]) {
     const auto bundle_ref = extract_json_string(bundle_store_result.stdout_text, "bundle_ref");
     T81_TEST_CHECK(bundle_ref.has_value());
 
-    const auto bundle_artifact = run_cli(
-        t81_bin, {"canonfs", "get", *bundle_ref, "--canonfs-root", canonfs_root.string()});
+    const auto bundle_artifact =
+        run_cli(t81_bin, {"canonfs", "get", *bundle_ref, "--canonfs-root", canonfs_root.string()});
     T81_TEST_CHECK(bundle_artifact.exit_code == 0);
-    T81_TEST_CHECK(
-        contains(bundle_artifact.stdout_text, "\"schema\": \"t81.ai.task.assess-fixed.bundle.v1\""));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text,
+                            "\"schema\": \"t81.ai.task.assess-fixed.bundle.v1\""));
     T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"source_result_ref\": "));
     T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"source_provenance_ref\": "));
     T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"action_ref\": "));

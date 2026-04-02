@@ -153,20 +153,20 @@ int main(int argc, char* argv[]) {
     std::ofstream out(allow_policy);
     out << "(policy\n"
            "  (tier 1)\n"
-           "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"])\n"
+           "  (allowed-ternary-model-hashes [\"sha3-512:"
+        << raw_model_hash
+        << "\"])\n"
            "  (require-axion-event (reason \"task:assess_fixed.v1\")))\n";
   }
 
   const auto task_result = run_cli(
       t81_bin, {"ai", "task", "assess-fixed", "--model", "assess-fixed-demo", "--model-file",
                 model_path.string(), "--policy", allow_policy.string(), "--canonfs-root",
-                canonfs_root.string(), "--mode", "strict_deterministic", "--input",
-                "greet hello"});
+                canonfs_root.string(), "--mode", "strict_deterministic", "--input", "greet hello"});
   const auto repeat_task_result = run_cli(
       t81_bin, {"ai", "task", "assess-fixed", "--model", "assess-fixed-demo", "--model-file",
                 model_path.string(), "--policy", allow_policy.string(), "--canonfs-root",
-                canonfs_root.string(), "--mode", "strict_deterministic", "--input",
-                "greet hello"});
+                canonfs_root.string(), "--mode", "strict_deterministic", "--input", "greet hello"});
   T81_TEST_CHECK(task_result.exit_code == 0);
   T81_TEST_CHECK(repeat_task_result.exit_code == 0);
   const auto result_ref = extract_json_string(task_result.stdout_text, "result_ref");
@@ -181,11 +181,11 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(*result_ref == *repeat_result_ref);
   T81_TEST_CHECK(*provenance_ref == *repeat_provenance_ref);
 
-  const auto cross_root_task_result = run_cli(
-      t81_bin, {"ai", "task", "assess-fixed", "--model", "assess-fixed-demo", "--model-file",
-                model_path.string(), "--policy", allow_policy.string(), "--canonfs-root",
-                canonfs_root_alt.string(), "--mode", "strict_deterministic", "--input",
-                "greet hello"});
+  const auto cross_root_task_result =
+      run_cli(t81_bin, {"ai", "task", "assess-fixed", "--model", "assess-fixed-demo",
+                        "--model-file", model_path.string(), "--policy", allow_policy.string(),
+                        "--canonfs-root", canonfs_root_alt.string(), "--mode",
+                        "strict_deterministic", "--input", "greet hello"});
   T81_TEST_CHECK(cross_root_task_result.exit_code == 0);
   const auto cross_root_result_ref =
       extract_json_string(cross_root_task_result.stdout_text, "result_ref");
@@ -198,11 +198,11 @@ int main(int argc, char* argv[]) {
 
   const auto result_artifact =
       run_cli(t81_bin, {"canonfs", "get", *result_ref, "--canonfs-root", canonfs_root.string()});
-  const auto repeat_result_artifact = run_cli(t81_bin, {"canonfs", "get", *repeat_result_ref,
-                                                        "--canonfs-root", canonfs_root.string()});
-  const auto cross_root_result_artifact =
-      run_cli(t81_bin, {"canonfs", "get", *cross_root_result_ref, "--canonfs-root",
-                        canonfs_root_alt.string()});
+  const auto repeat_result_artifact = run_cli(
+      t81_bin, {"canonfs", "get", *repeat_result_ref, "--canonfs-root", canonfs_root.string()});
+  const auto cross_root_result_artifact = run_cli(
+      t81_bin,
+      {"canonfs", "get", *cross_root_result_ref, "--canonfs-root", canonfs_root_alt.string()});
   T81_TEST_CHECK(result_artifact.exit_code == 0);
   T81_TEST_CHECK(repeat_result_artifact.exit_code == 0);
   T81_TEST_CHECK(cross_root_result_artifact.exit_code == 0);
@@ -220,8 +220,8 @@ int main(int argc, char* argv[]) {
         << "source_result_ref=" << *result_ref << "\n";
   }
 
-  const auto action_ref =
-      run_cli(t81_bin, {"canonfs", "put-file", action_path.string(), "--canonfs-root", canonfs_root.string()});
+  const auto action_ref = run_cli(t81_bin, {"canonfs", "put-file", action_path.string(),
+                                            "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(action_ref.exit_code == 0);
   std::istringstream action_ref_stream(action_ref.stdout_text);
   std::string action_hash;
@@ -229,19 +229,20 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(!action_hash.empty());
 
   const auto write_store_result =
-      run_cli(t81_bin, {"artifact", "write-store-record", "--schema",
-                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                        "source_result_ref=" + *result_ref, "--field",
-                        "source_provenance_ref=" + *provenance_ref, "--field", "decision=ALLOW",
-                        "--field", "reason_code=GREETING_PAIR", "--field",
-                        "termination_reason=single_step_max_score", "--field",
-                        "selected_action=write_allow_marker", "--field",
-                        "selected_path=actions/allow.marker", "--field",
-                        "action_ref=" + action_hash, "--canonfs-root",
-                        canonfs_root.string()});
+      run_cli(t81_bin, {"artifact",       "write-store-record",
+                        "--schema",       "t81.ai.task.assess-fixed.host-action-record.v1",
+                        "--field",        "source_result_ref=" + *result_ref,
+                        "--field",        "source_provenance_ref=" + *provenance_ref,
+                        "--field",        "decision=ALLOW",
+                        "--field",        "reason_code=GREETING_PAIR",
+                        "--field",        "termination_reason=single_step_max_score",
+                        "--field",        "selected_action=write_allow_marker",
+                        "--field",        "selected_path=actions/allow.marker",
+                        "--field",        "action_ref=" + action_hash,
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(write_store_result.exit_code == 0);
-  T81_TEST_CHECK(
-      contains(write_store_result.stdout_text, "\"schema\": \"t81.artifact.record-write-store.v1\""));
+  T81_TEST_CHECK(contains(write_store_result.stdout_text,
+                          "\"schema\": \"t81.artifact.record-write-store.v1\""));
   T81_TEST_CHECK(contains(write_store_result.stdout_text, "\"validation_result\": \"pass\""));
   const auto stored_record_ref = extract_json_string(write_store_result.stdout_text, "record_ref");
   T81_TEST_CHECK(stored_record_ref.has_value());
@@ -251,26 +252,27 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(!record_hash.empty());
 
   const auto repeat_write_store_result =
-      run_cli(t81_bin, {"artifact", "write-store-record", "--schema",
-                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                        "source_result_ref=" + *result_ref, "--field",
-                        "source_provenance_ref=" + *provenance_ref, "--field", "decision=ALLOW",
-                        "--field", "reason_code=GREETING_PAIR", "--field",
-                        "termination_reason=single_step_max_score", "--field",
-                        "selected_action=write_allow_marker", "--field",
-                        "selected_path=actions/allow.marker", "--field",
-                        "action_ref=" + action_hash, "--canonfs-root",
-                        canonfs_root.string()});
+      run_cli(t81_bin, {"artifact",       "write-store-record",
+                        "--schema",       "t81.ai.task.assess-fixed.host-action-record.v1",
+                        "--field",        "source_result_ref=" + *result_ref,
+                        "--field",        "source_provenance_ref=" + *provenance_ref,
+                        "--field",        "decision=ALLOW",
+                        "--field",        "reason_code=GREETING_PAIR",
+                        "--field",        "termination_reason=single_step_max_score",
+                        "--field",        "selected_action=write_allow_marker",
+                        "--field",        "selected_path=actions/allow.marker",
+                        "--field",        "action_ref=" + action_hash,
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(repeat_write_store_result.exit_code == 0);
   const auto repeat_record_ref =
       extract_json_string(repeat_write_store_result.stdout_text, "record_ref");
   T81_TEST_CHECK(repeat_record_ref.has_value());
   T81_TEST_CHECK(*stored_record_ref == *repeat_record_ref);
 
-  const auto typed_record_field = run_cli(
-      t81_bin, {"artifact", "read-field", record_hash, "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "selected_action",
-                "--canonfs-root", canonfs_root.string()});
+  const auto typed_record_field =
+      run_cli(t81_bin, {"artifact", "read-field", record_hash, "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
+                        "selected_action", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(typed_record_field.exit_code == 0);
   T81_TEST_CHECK(typed_record_field.stdout_text == "write_allow_marker\n");
 
@@ -294,16 +296,17 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(action_hash == cross_root_action_hash);
 
   const auto cross_root_write_store_result =
-      run_cli(t81_bin, {"artifact", "write-store-record", "--schema",
-                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                        "source_result_ref=" + *cross_root_result_ref, "--field",
-                        "source_provenance_ref=" + *cross_root_provenance_ref, "--field",
-                        "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
-                        "termination_reason=single_step_max_score", "--field",
-                        "selected_action=write_allow_marker", "--field",
-                        "selected_path=actions/allow.marker", "--field",
-                        "action_ref=" + cross_root_action_hash, "--canonfs-root",
-                        canonfs_root_alt.string()});
+      run_cli(t81_bin, {"artifact",       "write-store-record",
+                        "--schema",       "t81.ai.task.assess-fixed.host-action-record.v1",
+                        "--field",        "source_result_ref=" + *cross_root_result_ref,
+                        "--field",        "source_provenance_ref=" + *cross_root_provenance_ref,
+                        "--field",        "decision=ALLOW",
+                        "--field",        "reason_code=GREETING_PAIR",
+                        "--field",        "termination_reason=single_step_max_score",
+                        "--field",        "selected_action=write_allow_marker",
+                        "--field",        "selected_path=actions/allow.marker",
+                        "--field",        "action_ref=" + cross_root_action_hash,
+                        "--canonfs-root", canonfs_root_alt.string()});
   T81_TEST_CHECK(cross_root_write_store_result.exit_code == 0);
   const auto cross_root_record_ref =
       extract_json_string(cross_root_write_store_result.stdout_text, "record_ref");
@@ -314,9 +317,9 @@ int main(int argc, char* argv[]) {
       run_cli(t81_bin, {"canonfs", "get", record_hash, "--canonfs-root", canonfs_root.string()});
   const auto repeat_record_artifact = run_cli(
       t81_bin, {"canonfs", "get", *repeat_record_ref, "--canonfs-root", canonfs_root.string()});
-  const auto cross_root_record_artifact =
-      run_cli(t81_bin, {"canonfs", "get", *cross_root_record_ref, "--canonfs-root",
-                        canonfs_root_alt.string()});
+  const auto cross_root_record_artifact = run_cli(
+      t81_bin,
+      {"canonfs", "get", *cross_root_record_ref, "--canonfs-root", canonfs_root_alt.string()});
   T81_TEST_CHECK(record_artifact.exit_code == 0);
   T81_TEST_CHECK(repeat_record_artifact.exit_code == 0);
   T81_TEST_CHECK(cross_root_record_artifact.exit_code == 0);
@@ -325,16 +328,16 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(contains(record_artifact.stdout_text,
                           "\"schema\": \"t81.ai.task.assess-fixed.host-action-record.v1\""));
   T81_TEST_CHECK(contains(record_artifact.stdout_text, "\"decision\": \"ALLOW\""));
-  T81_TEST_CHECK(contains(record_artifact.stdout_text, "\"selected_action\": \"write_allow_marker\""));
+  T81_TEST_CHECK(
+      contains(record_artifact.stdout_text, "\"selected_action\": \"write_allow_marker\""));
   T81_TEST_CHECK(contains(record_artifact.stdout_text, "\"action_ref\": "));
   T81_TEST_CHECK(contains(read_file(action_path), "decision=ALLOW"));
 
   const auto bundle_result = run_cli(
       t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
                 "--field", "source_result_ref=" + *result_ref, "--field",
-                "source_provenance_ref=" + *provenance_ref, "--field",
-                "action_ref=" + action_hash, "--field", "record_ref=" + record_hash,
-                "--canonfs-root", canonfs_root.string()});
+                "source_provenance_ref=" + *provenance_ref, "--field", "action_ref=" + action_hash,
+                "--field", "record_ref=" + record_hash, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(bundle_result.exit_code == 0);
   T81_TEST_CHECK(
       contains(bundle_result.stdout_text, "\"schema\": \"t81.artifact.bundle-store.v1\""));
@@ -345,41 +348,41 @@ int main(int argc, char* argv[]) {
   const auto repeat_bundle_result = run_cli(
       t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
                 "--field", "source_result_ref=" + *result_ref, "--field",
-                "source_provenance_ref=" + *provenance_ref, "--field",
-                "action_ref=" + action_hash, "--field", "record_ref=" + record_hash,
-                "--canonfs-root", canonfs_root.string()});
+                "source_provenance_ref=" + *provenance_ref, "--field", "action_ref=" + action_hash,
+                "--field", "record_ref=" + record_hash, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(repeat_bundle_result.exit_code == 0);
-  const auto repeat_bundle_ref = extract_json_string(repeat_bundle_result.stdout_text, "bundle_ref");
+  const auto repeat_bundle_ref =
+      extract_json_string(repeat_bundle_result.stdout_text, "bundle_ref");
   T81_TEST_CHECK(repeat_bundle_ref.has_value());
   T81_TEST_CHECK(*bundle_ref == *repeat_bundle_ref);
 
   const auto cross_root_bundle_result = run_cli(
-      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
-                "--field", "source_result_ref=" + *cross_root_result_ref, "--field",
-                "source_provenance_ref=" + *cross_root_provenance_ref, "--field",
-                "action_ref=" + cross_root_action_hash, "--field",
-                "record_ref=" + *cross_root_record_ref, "--canonfs-root",
-                canonfs_root_alt.string()});
+      t81_bin,
+      {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1", "--field",
+       "source_result_ref=" + *cross_root_result_ref, "--field",
+       "source_provenance_ref=" + *cross_root_provenance_ref, "--field",
+       "action_ref=" + cross_root_action_hash, "--field", "record_ref=" + *cross_root_record_ref,
+       "--canonfs-root", canonfs_root_alt.string()});
   T81_TEST_CHECK(cross_root_bundle_result.exit_code == 0);
   const auto cross_root_bundle_ref =
       extract_json_string(cross_root_bundle_result.stdout_text, "bundle_ref");
   T81_TEST_CHECK(cross_root_bundle_ref.has_value());
   T81_TEST_CHECK(*bundle_ref == *cross_root_bundle_ref);
 
-  const auto bundle_record_ref = run_cli(
-      t81_bin, {"artifact", "read-field", *bundle_ref, "--schema",
-                "t81.ai.task.assess-fixed.bundle.v1", "--field", "record_ref",
-                "--canonfs-root", canonfs_root.string()});
+  const auto bundle_record_ref =
+      run_cli(t81_bin, {"artifact", "read-field", *bundle_ref, "--schema",
+                        "t81.ai.task.assess-fixed.bundle.v1", "--field", "record_ref",
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(bundle_record_ref.exit_code == 0);
   T81_TEST_CHECK(bundle_record_ref.stdout_text == record_hash + "\n");
 
   const auto bundle_artifact =
       run_cli(t81_bin, {"canonfs", "get", *bundle_ref, "--canonfs-root", canonfs_root.string()});
-  const auto repeat_bundle_artifact =
-      run_cli(t81_bin, {"canonfs", "get", *repeat_bundle_ref, "--canonfs-root", canonfs_root.string()});
-  const auto cross_root_bundle_artifact =
-      run_cli(t81_bin, {"canonfs", "get", *cross_root_bundle_ref, "--canonfs-root",
-                        canonfs_root_alt.string()});
+  const auto repeat_bundle_artifact = run_cli(
+      t81_bin, {"canonfs", "get", *repeat_bundle_ref, "--canonfs-root", canonfs_root.string()});
+  const auto cross_root_bundle_artifact = run_cli(
+      t81_bin,
+      {"canonfs", "get", *cross_root_bundle_ref, "--canonfs-root", canonfs_root_alt.string()});
   T81_TEST_CHECK(bundle_artifact.exit_code == 0);
   T81_TEST_CHECK(repeat_bundle_artifact.exit_code == 0);
   T81_TEST_CHECK(cross_root_bundle_artifact.exit_code == 0);
