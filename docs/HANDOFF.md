@@ -4,7 +4,7 @@ This document is the shortest practical handoff for a new maintainer or serious 
 
 ## T81 in one paragraph
 
-T81 is a deterministic, policy-gated runtime for auditable AI inference, built on a ternary-native execution model, immutable CanonFS storage, and Axion policy enforcement. The project also includes an in-progress guest OS and bare-metal kernel direction, but the clearest usable value today is: governed execution, reproducible traces, content-addressed artifacts, and a spec-first architecture that treats determinism as a system property rather than a best-effort runtime flag.
+T81 is a deterministic, policy-gated runtime for auditable computation, built on a ternary-native execution model, immutable CanonFS storage, and Axion policy enforcement. The project also includes an in-progress guest OS and bare-metal kernel direction, but the clearest usable value today is: governed execution, reproducible traces, content-addressed artifacts, a small bounded AI OS-object family, and a spec-first architecture that treats determinism as a system property rather than a best-effort runtime flag.
 
 ## What is real today
 

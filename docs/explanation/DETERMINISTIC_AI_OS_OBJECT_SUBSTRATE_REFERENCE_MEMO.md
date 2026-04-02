@@ -10,11 +10,13 @@ Today that family includes:
 
 - `assess-fixed`
 - `route-fixed`
+- `classify-fixed`
 
-Both chains run through the same typed helper pipeline, and both explicitly
-satisfy the current Canonical Identity Invariant: for identical task, model,
-policy, and input, object identity at every validated layer is content-derived
-and independent of CanonFS root or execution location.
+All three admitted compositions run through the same typed helper pipeline, and
+the admitted family explicitly satisfies the current Canonical Identity
+Invariant: for identical task, model, policy, and input, object identity at
+every validated layer is content-derived and independent of CanonFS root or
+execution location.
 
 The relevant public and contract surfaces are aligned in:
 
@@ -64,6 +66,8 @@ Tested and enforced surfaces include:
   [ai_task_assess_fixed_composition_test.cpp](../../tests/cpp/ai_task_assess_fixed_composition_test.cpp)
 - the `route-fixed` composition proof in
   [ai_task_route_fixed_composition_test.cpp](../../tests/cpp/ai_task_route_fixed_composition_test.cpp)
+- the `classify-fixed` composition proof in
+  [ai_task_classify_fixed_composition_test.cpp](../../tests/cpp/ai_task_classify_fixed_composition_test.cpp)
 - the helper and CLI contract coverage in
   [cli_contract_test.cpp](../../tests/cpp/cli_contract_test.cpp)
 - required CI execution in
@@ -80,7 +84,7 @@ The current validated object model is explicit and narrow:
 
 The current pipeline is not just "AI execution."
 
-A bounded task such as `assess-fixed` or `route-fixed`:
+A bounded task such as `assess-fixed`, `route-fixed`, or `classify-fixed`:
 
 1. runs in the strict deterministic lane
 2. stores a canonical result artifact and a provenance artifact in CanonFS
@@ -109,8 +113,9 @@ The helpers involved remain narrow and typed:
 
 The strongest current proof is no longer just task-level repeatability.
 
-For both `assess-fixed` and `route-fixed`, the composition tests explicitly
-prove that identical task, model, policy, and input yield identical:
+For the admitted `assess-fixed`, `route-fixed`, and `classify-fixed`
+compositions, the composition tests explicitly prove that identical task,
+model, policy, and input yield identical:
 
 - `result_ref`
 - `provenance_ref`
@@ -172,7 +177,7 @@ Another likely misunderstanding is to treat the current family as evidence that
 any future composition automatically inherits the same invariant.
 
 The docs correctly do not make that claim; the invariant is explicitly limited
-to the currently validated `assess-fixed` and `route-fixed` chains.
+to the currently admitted and validated bounded family.
 
 ## Planning Ahead Without Breaking Discipline
 

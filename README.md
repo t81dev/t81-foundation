@@ -219,7 +219,7 @@ t81 canonfs import model.t81w --json
 t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl --trace
 ```
 
-Current canonical bounded AI OS-object example:
+Current admitted bounded AI OS-object family examples:
 
 ```bash
 bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
