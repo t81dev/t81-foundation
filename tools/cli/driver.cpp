@@ -539,41 +539,12 @@ struct CanonFsPolicyCheck {
   std::string reason = "allow";
 };
 
-std::string render_canonfs_import_result(
-    std::string_view status, std::string_view source_kind, std::string_view source_ref,
-    const std::vector<std::string>& imported_objects, std::string_view provenance_ref,
-    std::string_view manifest_ref, const std::vector<std::string>& imported_paths,
-    const std::vector<std::string>& warnings,
-    const std::vector<t81::canonfs::interchange::Issue>& errors, std::string_view policy_result,
-    std::string_view policy_profile) {
-  return t81::canonfs::interchange::render_import_result(
-      status, source_kind, source_ref, imported_objects, provenance_ref, manifest_ref,
-      imported_paths, warnings, errors, policy_result, policy_profile);
-}
-
-std::string render_canonfs_export_result(
-    std::string_view status, const std::vector<std::string>& source_objects,
-    std::string_view target_kind, std::string_view target_ref, std::string_view provenance_ref,
-    std::string_view manifest_ref, const std::vector<std::string>& materialized_paths,
-    const std::vector<std::string>& warnings,
-    const std::vector<t81::canonfs::interchange::Issue>& errors, std::string_view policy_result,
-    std::string_view policy_profile) {
-  return t81::canonfs::interchange::render_export_result(
-      status, source_objects, target_kind, target_ref, provenance_ref, manifest_ref,
-      materialized_paths, warnings, errors, policy_result, policy_profile);
-}
-
 bool validate_import_result_document(std::string_view text, std::string& error_message) {
   return t81::canonfs::interchange::validate_import_result_document(text, error_message);
 }
 
 bool validate_export_result_document(std::string_view text, std::string& error_message) {
   return t81::canonfs::interchange::validate_export_result_document(text, error_message);
-}
-
-t81::canonfs::interchange::Issue make_interchange_issue(std::string_view reason,
-                                                        std::string message) {
-  return t81::canonfs::interchange::Issue{std::string(reason), std::move(message)};
 }
 
 bool emit_validated_json_document(std::string_view text,
@@ -1627,9 +1598,12 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
           " (expected one of: permissive, import-only, export-only, deny-all)";
       const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
       if (as_json) {
-        const auto json = render_canonfs_import_result(
-            "error", source_kind, input.string(), {}, "", "", {}, {},
-            {make_interchange_issue("invalid_policy_profile", profile_error)}, "denied", "");
+        const auto outcome = t81::canonfs::make_import_preflight_error(
+            source_kind, input.string(), "invalid_policy_profile", profile_error);
+        const auto json = t81::canonfs::interchange::render_import_result(
+            outcome.status, outcome.source_kind, outcome.source_ref, outcome.imported_objects,
+            outcome.provenance_ref, outcome.manifest_ref, outcome.imported_paths, outcome.warnings,
+            outcome.errors, outcome.policy_result, outcome.policy_profile);
         if (!emit_validated_json_document(json, validate_import_result_document,
                                           "canonfs import: internal JSON validation failed: ")) {
           return 1;
@@ -1648,10 +1622,13 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
     if (!policy) {
       const std::string source_kind = fs::is_directory(input) ? "host-directory" : "host-file";
       if (as_json) {
-        const auto json = render_canonfs_import_result(
-            "error", source_kind, input.string(), {}, "", "", {}, {},
-            {make_interchange_issue("invalid_policy_document", policy_error)}, "denied",
-            std::string(t81::canonfs::interchange_policy_profile_name(options.policy_profile)));
+        const auto outcome = t81::canonfs::make_import_preflight_error(
+            source_kind, input.string(), "invalid_policy_document", policy_error,
+            t81::canonfs::interchange_policy_profile_name(options.policy_profile));
+        const auto json = t81::canonfs::interchange::render_import_result(
+            outcome.status, outcome.source_kind, outcome.source_ref, outcome.imported_objects,
+            outcome.provenance_ref, outcome.manifest_ref, outcome.imported_paths, outcome.warnings,
+            outcome.errors, outcome.policy_result, outcome.policy_profile);
         if (!emit_validated_json_document(json, validate_import_result_document,
                                           "canonfs import: internal JSON validation failed: ")) {
           return 1;
@@ -1666,7 +1643,7 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
 
   const auto outcome = t81::canonfs::import_path(input, options);
   if (as_json) {
-    const auto json = render_canonfs_import_result(
+    const auto json = t81::canonfs::interchange::render_import_result(
         outcome.status, outcome.source_kind, outcome.source_ref, outcome.imported_objects,
         outcome.provenance_ref, outcome.manifest_ref, outcome.imported_paths, outcome.warnings,
         outcome.errors, outcome.policy_result, outcome.policy_profile);
@@ -2045,12 +2022,13 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
           "invalid policy profile: " + *policy_profile +
           " (expected one of: permissive, import-only, export-only, deny-all)";
       if (as_json) {
-        const auto json =
-            render_canonfs_export_result("error", {canonical_hash}, "host-file",
-                                 output_path.string(), "",
-                                 "", {}, {},
-                                 {make_interchange_issue("invalid_policy_profile", profile_error)},
-                                 "denied", "");
+        const auto outcome = t81::canonfs::make_export_preflight_error(
+            canonical_hash, "host-file", output_path.string(), "invalid_policy_profile",
+            profile_error);
+        const auto json = t81::canonfs::interchange::render_export_result(
+            outcome.status, outcome.source_objects, outcome.target_kind, outcome.target_ref,
+            outcome.provenance_ref, outcome.manifest_ref, outcome.materialized_paths,
+            outcome.warnings, outcome.errors, outcome.policy_result, outcome.policy_profile);
         if (!emit_validated_json_document(json, validate_export_result_document,
                                           "canonfs export: internal JSON validation failed: ")) {
           return 1;
@@ -2068,10 +2046,13 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
     policy = t81::canonfs::load_interchange_axion_policy(*policy_path, policy_error);
     if (!policy) {
       if (as_json) {
-        const auto json = render_canonfs_export_result(
-            "error", {canonical_hash}, "host-file", output_path.string(), "", "", {}, {},
-            {make_interchange_issue("invalid_policy_document", policy_error)}, "denied",
-            std::string(t81::canonfs::interchange_policy_profile_name(options.policy_profile)));
+        const auto outcome = t81::canonfs::make_export_preflight_error(
+            canonical_hash, "host-file", output_path.string(), "invalid_policy_document",
+            policy_error, t81::canonfs::interchange_policy_profile_name(options.policy_profile));
+        const auto json = t81::canonfs::interchange::render_export_result(
+            outcome.status, outcome.source_objects, outcome.target_kind, outcome.target_ref,
+            outcome.provenance_ref, outcome.manifest_ref, outcome.materialized_paths,
+            outcome.warnings, outcome.errors, outcome.policy_result, outcome.policy_profile);
         if (!emit_validated_json_document(json, validate_export_result_document,
                                           "canonfs export: internal JSON validation failed: ")) {
           return 1;
@@ -2086,7 +2067,7 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
   }
   const auto outcome = t81::canonfs::export_ref(canonical_hash, output_path, options);
   if (as_json) {
-    const auto json = render_canonfs_export_result(
+    const auto json = t81::canonfs::interchange::render_export_result(
         outcome.status, outcome.source_objects, outcome.target_kind, outcome.target_ref,
         outcome.provenance_ref, outcome.manifest_ref, outcome.materialized_paths, outcome.warnings,
         outcome.errors, outcome.policy_result, outcome.policy_profile);

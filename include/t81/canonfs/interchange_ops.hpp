@@ -88,4 +88,13 @@ ExportOutcome export_ref(const std::string& canonical_hash,
                          const std::filesystem::path& output_path,
                          const ExportOptions& options = {});
 
+ImportOutcome make_import_preflight_error(std::string_view source_kind, std::string_view source_ref,
+                                          std::string_view reason, std::string message,
+                                          std::string_view policy_profile = "");
+ExportOutcome make_export_preflight_error(std::string_view canonical_hash,
+                                          std::string_view target_kind,
+                                          std::string_view target_ref, std::string_view reason,
+                                          std::string message,
+                                          std::string_view policy_profile = "");
+
 }  // namespace t81::canonfs

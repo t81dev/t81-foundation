@@ -574,4 +574,33 @@ ExportOutcome export_ref(const std::string& canonical_hash, const fs::path& outp
   return outcome;
 }
 
+ImportOutcome make_import_preflight_error(std::string_view source_kind, std::string_view source_ref,
+                                          std::string_view reason, std::string message,
+                                          std::string_view policy_profile) {
+  ImportOutcome outcome;
+  outcome.status = "error";
+  outcome.source_kind = std::string(source_kind);
+  outcome.source_ref = std::string(source_ref);
+  outcome.errors.push_back(make_issue(reason, std::move(message)));
+  outcome.policy_result = "denied";
+  outcome.policy_profile = std::string(policy_profile);
+  return outcome;
+}
+
+ExportOutcome make_export_preflight_error(std::string_view canonical_hash,
+                                          std::string_view target_kind,
+                                          std::string_view target_ref, std::string_view reason,
+                                          std::string message,
+                                          std::string_view policy_profile) {
+  ExportOutcome outcome;
+  outcome.status = "error";
+  outcome.source_objects.push_back(std::string(canonical_hash));
+  outcome.target_kind = std::string(target_kind);
+  outcome.target_ref = std::string(target_ref);
+  outcome.errors.push_back(make_issue(reason, std::move(message)));
+  outcome.policy_result = "denied";
+  outcome.policy_profile = std::string(policy_profile);
+  return outcome;
+}
+
 }  // namespace t81::canonfs
