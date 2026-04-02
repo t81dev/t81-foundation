@@ -833,7 +833,10 @@ The contributor-facing reading should therefore stay narrow as well:
   the current build-against boundary
 - use the frozen fixture set at
   `examples/storage-and-canonfs/canonfs-interchange/v1/` when exact JSON output
-  matters
+  matters; that fixture set currently freezes single-file import/export success,
+  missing-object and invalid-schema export failures, and checked-in
+  `policy_denied` cases on both import and export under the default
+  `permissive` profile
 
 ## 13. Open Questions
 
