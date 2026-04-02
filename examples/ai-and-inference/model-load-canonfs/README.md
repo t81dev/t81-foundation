@@ -131,6 +131,25 @@ it verifies the bundle schema, reads the typed host-action record,
 dereferences the canonical action artifact, and then materializes the selected
 host action under a separate executor output root.
 
+If you already have a `bundle_ref` and want a small normalized summary
+projection for the admitted family, run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh \
+  "<bundle_ref>" \
+  "<canonfs_root>"
+```
+
+That helper emits a stable text summary with:
+
+- `bundle_schema`
+- `family`
+- `record_ref`
+- `action_ref`
+- `source_result_ref`
+- `source_provenance_ref`
+- the family-specific typed record fields needed for downstream consumption
+
 ## Route-Fixed Path Selection Chain
 
 This is the second bounded composition using the same typed object pipeline.

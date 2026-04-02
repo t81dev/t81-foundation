@@ -159,6 +159,15 @@ bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_bundle_consume
 bash examples/ai-and-inference/model-load-canonfs/run_classify_fixed_bundle_consumer.sh
 ```
 
+If you already have a `bundle_ref` and want a small normalized projection
+instead of a full bundle artifact dump, run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh \
+  "<bundle_ref>" \
+  "<canonfs_root>"
+```
+
 What these prove:
 
 1. start from `bundle_ref`
@@ -215,6 +224,8 @@ That sequence teaches:
 - If you want to consume the final object instead of the intermediate model
   output:
   - run one of the `*_bundle_consumer.sh` scripts
+- If you want a compact, family-safe bundle summary:
+  - run `examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh`
 - If you want to know what is frozen:
   - read [STABLE_BASELINE_CONTRACT.md](../reference/STABLE_BASELINE_CONTRACT.md)
 
