@@ -85,6 +85,10 @@ lane. Treat `assess-fixed`, `route-fixed`, and `classify-fixed` as the current
 reference family and prefer stability, guardrails, portability, and claim
 accuracy over adding a fourth composition.
 
+The current stable baseline freeze document for that family is:
+
+- [docs/reference/STABLE_BASELINE_CONTRACT.md](reference/STABLE_BASELINE_CONTRACT.md)
+
 ## Proposal filter
 
 Before starting a new lane, run it through RFC-00D2:

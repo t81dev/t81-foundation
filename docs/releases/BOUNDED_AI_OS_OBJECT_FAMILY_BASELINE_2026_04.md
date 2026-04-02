@@ -6,6 +6,10 @@ deterministic AI OS-object family in T81.
 It is intended as a rollback and reference anchor, not as a claim of general
 system completeness.
 
+For the single-source freeze document that states what is actually frozen and
+excluded, see
+[STABLE_BASELINE_CONTRACT.md](../reference/STABLE_BASELINE_CONTRACT.md).
+
 ## Baseline Identifier
 
 - recommended tag: `baseline-bounded-ai-os-object-family-2026-04-02`
