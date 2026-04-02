@@ -1,16 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # team_onboarding_checklist.sh - Team Onboarding Verification Script
 
-set -e
+set -euo pipefail
 
 echo "=== Team Onboarding Verification Checklist ==="
 
 ONBOARDING_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PRODUCTION_DIR="$(dirname "$ONBOARDING_DIR")"
 TMP_BASE="${TMPDIR:-/tmp}"
-LAUNCH_LOG="$TMP_BASE/t81-launch-test.log"
-VERIFY_LOG="$TMP_BASE/t81-verification-test.log"
-MONITOR_LOG="$TMP_BASE/t81-monitor-test.log"
+LOG_DIR="${LOG_DIR:-$(mktemp -d "$TMP_BASE/t81-onboarding-logs.XXXXXX")}"
+LAUNCH_LOG="$LOG_DIR/launch.log"
+VERIFY_LOG="$LOG_DIR/verification.log"
+MONITOR_LOG="$LOG_DIR/monitor.log"
 
 # Colors
 GREEN='\033[0;32m'
@@ -47,6 +48,14 @@ resolve_timeout_cmd() {
 }
 
 TIMEOUT_CMD="$(resolve_timeout_cmd)"
+
+cleanup() {
+    if [[ -d "$LOG_DIR" ]]; then
+        rm -rf "$LOG_DIR"
+    fi
+}
+
+trap cleanup EXIT
 
 # Function to check QEMU installation
 check_qemu() {
@@ -139,9 +148,9 @@ test_basic_launch() {
     
     sleep 3
     
-    if kill -0 $LAUNCH_PID 2>/dev/null; then
-        kill $LAUNCH_PID 2>/dev/null || true
-        wait $LAUNCH_PID 2>/dev/null || true
+    if kill -0 "$LAUNCH_PID" 2>/dev/null; then
+        kill "$LAUNCH_PID" 2>/dev/null || true
+        wait "$LAUNCH_PID" 2>/dev/null || true
         
         if grep -q "qemu-system-aarch64" "$LAUNCH_LOG"; then
             echo -e "${GREEN}✅${NC} Basic launch test passed"
@@ -197,8 +206,8 @@ test_monitor_connection() {
         
         # Stop monitor
         echo "quit" | nc localhost 1234 2>/dev/null || true
-        kill $MONITOR_PID 2>/dev/null || true
-        wait $MONITOR_PID 2>/dev/null || true
+        kill "$MONITOR_PID" 2>/dev/null || true
+        wait "$MONITOR_PID" 2>/dev/null || true
         
         return 0
     else
@@ -206,8 +215,8 @@ test_monitor_connection() {
         echo "Check $MONITOR_LOG for details"
         
         # Cleanup
-        kill $MONITOR_PID 2>/dev/null || true
-        wait $MONITOR_PID 2>/dev/null || true
+        kill "$MONITOR_PID" 2>/dev/null || true
+        wait "$MONITOR_PID" 2>/dev/null || true
         
         return 1
     fi
@@ -237,6 +246,8 @@ check_documentation() {
 main() {
     echo "Team Onboarding Verification Checklist"
     echo "======================================"
+    echo ""
+    echo "Logs will be written under: $LOG_DIR"
     echo ""
     
     local passed=0
