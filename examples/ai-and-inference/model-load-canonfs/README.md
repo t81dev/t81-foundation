@@ -120,6 +120,17 @@ That script starts from the canonical bundle first, checks its schema, and only
 then follows `record_ref` and `action_ref` as described in
 [AI OS-Object Bundle Consumption Contract](../../../docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md).
 
+If you want one concrete integration example for that same bundle, run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action_executor_integration.sh
+```
+
+That script treats the bundle as the handoff object into a host-side executor:
+it verifies the bundle schema, reads the typed host-action record,
+dereferences the canonical action artifact, and then materializes the selected
+host action under a separate executor output root.
+
 ## Route-Fixed Path Selection Chain
 
 This is the second bounded composition using the same typed object pipeline.
