@@ -779,19 +779,24 @@ Actions:
 Supported schemas:
   t81.ai.task.assess-fixed.host-action-record.v1
   t81.ai.task.assess-fixed.bundle.v1
+  t81.ai.task.route-fixed.path-selection-record.v1
+  t81.ai.task.route-fixed.bundle.v1
 
 Canonical runnable example:
   See the `Assess-Fixed OS-Object Chain` section in
   examples/ai-and-inference/model-load-canonfs/README.md
   and the companion script
   examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
-  for the current end-to-end use of these typed artifact helpers in the full
-  assess-fixed chain.
+  for the current canonical end-to-end use of these typed artifact helpers.
+  A second bounded composition using the same object model is available in
+  examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
 
 Examples:
   t81 artifact write-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --out record.json --field decision=ALLOW --field reason_code=GREETING_PAIR --field selected_action=write_allow_marker --field selected_path=actions/allow.marker --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score
   t81 artifact write-store-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --field decision=ALLOW --field reason_code=GREETING_PAIR --field selected_action=write_allow_marker --field selected_path=actions/allow.marker --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
   t81 artifact store-bundle --schema t81.ai.task.assess-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
+  t81 artifact write-store-record --schema t81.ai.task.route-fixed.path-selection-record.v1 --field route=A --field selected_action=write_route_a_marker --field selected_path=routes/a.target --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
+  t81 artifact store-bundle --schema t81.ai.task.route-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
   t81 artifact validate-record record.json --schema t81.ai.task.assess-fixed.host-action-record.v1
   t81 artifact store-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --file record.json --canonfs-root .t81_canonfs
   t81 artifact validate-record sha3-256:... --schema t81.ai.task.assess-fixed.host-action-record.v1 --canonfs-root .t81_canonfs
@@ -2498,11 +2503,23 @@ int run_artifact_command(const Args& args) {
   constexpr std::string_view kAssessActionRecordSchema =
       "t81.ai.task.assess-fixed.host-action-record.v1";
   constexpr std::string_view kAssessBundleSchema = "t81.ai.task.assess-fixed.bundle.v1";
+  constexpr std::string_view kRouteActionRecordSchema =
+      "t81.ai.task.route-fixed.path-selection-record.v1";
+  constexpr std::string_view kRouteBundleSchema = "t81.ai.task.route-fixed.bundle.v1";
   constexpr std::array<std::string_view, 8> kRequiredFields{{
       "source_result_ref",
       "source_provenance_ref",
       "decision",
       "reason_code",
+      "termination_reason",
+      "selected_action",
+      "selected_path",
+      "action_ref",
+  }};
+  constexpr std::array<std::string_view, 7> kRouteRequiredFields{{
+      "source_result_ref",
+      "source_provenance_ref",
+      "route",
       "termination_reason",
       "selected_action",
       "selected_path",
@@ -2525,6 +2542,16 @@ int run_artifact_command(const Args& args) {
       return field == "schema" || field == "source_result_ref" ||
              field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
     }
+    if (schema == kRouteActionRecordSchema) {
+      return field == "schema" || field == "route" || field == "selected_action" ||
+             field == "selected_path" || field == "action_ref" ||
+             field == "source_result_ref" || field == "source_provenance_ref" ||
+             field == "termination_reason";
+    }
+    if (schema == kRouteBundleSchema) {
+      return field == "schema" || field == "source_result_ref" ||
+             field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
+    }
     return false;
   };
   auto render_record = [&](std::string_view schema, const std::map<std::string, std::string>& fields) {
@@ -2543,9 +2570,32 @@ int run_artifact_command(const Args& args) {
           << "}\n";
       return out.str();
     }
+    if (schema == kRouteActionRecordSchema) {
+      out << "{\n"
+          << "  \"schema\": \"" << kRouteActionRecordSchema << "\",\n"
+          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"route\": \"" << json_escape(fields.at("route")) << "\",\n"
+          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason")) << "\",\n"
+          << "  \"selected_action\": \"" << json_escape(fields.at("selected_action")) << "\",\n"
+          << "  \"selected_path\": \"" << json_escape(fields.at("selected_path")) << "\",\n"
+          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\"\n"
+          << "}\n";
+      return out.str();
+    }
     if (schema == kAssessBundleSchema) {
       out << "{\n"
           << "  \"schema\": \"" << kAssessBundleSchema << "\",\n"
+          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
+          << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
+          << "}\n";
+      return out.str();
+    }
+    if (schema == kRouteBundleSchema) {
+      out << "{\n"
+          << "  \"schema\": \"" << kRouteBundleSchema << "\",\n"
           << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
           << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
           << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
@@ -2572,6 +2622,16 @@ int run_artifact_command(const Args& args) {
       }
       return true;
     }
+    if (schema == kRouteActionRecordSchema) {
+      for (std::string_view required_field : kRouteRequiredFields) {
+        const auto value = extract_json_string_field(artifact_text, required_field);
+        if (!value || value->empty()) {
+          validation_error = "missing required field \"" + std::string(required_field) + "\"";
+          return false;
+        }
+      }
+      return true;
+    }
     if (schema == kAssessBundleSchema) {
       for (std::string_view required_field : kRequiredBundleFields) {
         const auto value = extract_json_string_field(artifact_text, required_field);
@@ -2582,9 +2642,21 @@ int run_artifact_command(const Args& args) {
       }
       return true;
     }
+    if (schema == kRouteBundleSchema) {
+      for (std::string_view required_field : kRequiredBundleFields) {
+        const auto value = extract_json_string_field(artifact_text, required_field);
+        if (!value || value->empty()) {
+          validation_error = "missing required field \"" + std::string(required_field) + "\"";
+          return false;
+        }
+      }
+      return true;
+    }
     validation_error =
-        "supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
-        "t81.ai.task.assess-fixed.bundle.v1";
+        "supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
+        "t81.ai.task.assess-fixed.bundle.v1, "
+        "t81.ai.task.route-fixed.path-selection-record.v1, or "
+        "t81.ai.task.route-fixed.bundle.v1";
     return false;
   };
   auto next_inspect_field_for_schema = [&](std::string_view schema) -> std::string_view {
@@ -2594,13 +2666,22 @@ int run_artifact_command(const Args& args) {
     if (schema == kAssessBundleSchema) {
       return "record_ref";
     }
+    if (schema == kRouteActionRecordSchema) {
+      return "selected_path";
+    }
+    if (schema == kRouteBundleSchema) {
+      return "record_ref";
+    }
     return "schema";
   };
   auto validate_supported_schema = [&](std::string_view subcommand_name, std::string_view schema_value) {
-    if (schema_value != kAssessActionRecordSchema && schema_value != kAssessBundleSchema) {
+    if (schema_value != kAssessActionRecordSchema && schema_value != kAssessBundleSchema &&
+        schema_value != kRouteActionRecordSchema && schema_value != kRouteBundleSchema) {
       error("artifact " + std::string(subcommand_name) +
-            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
-            "t81.ai.task.assess-fixed.bundle.v1");
+            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
+            "t81.ai.task.assess-fixed.bundle.v1, "
+            "t81.ai.task.route-fixed.path-selection-record.v1, or "
+            "t81.ai.task.route-fixed.bundle.v1");
       return false;
     }
     return true;
@@ -2757,14 +2838,21 @@ int run_artifact_command(const Args& args) {
   }
 
   if (subcommand == "write-record" || subcommand == "write-store-record") {
-    if (schema != kAssessActionRecordSchema) {
+    if (schema != kAssessActionRecordSchema && schema != kRouteActionRecordSchema) {
       error("artifact " + subcommand +
-            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1");
+            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
+            "t81.ai.task.route-fixed.path-selection-record.v1");
       return 1;
     }
     std::map<std::string, std::string> field_map;
-    if (!parse_field_map(subcommand, schema, field_assignments, kRequiredFields, field_map)) {
-      return 1;
+    if (schema == kAssessActionRecordSchema) {
+      if (!parse_field_map(subcommand, schema, field_assignments, kRequiredFields, field_map)) {
+        return 1;
+      }
+    } else {
+      if (!parse_field_map(subcommand, schema, field_assignments, kRouteRequiredFields, field_map)) {
+        return 1;
+      }
     }
     const std::string payload = render_record(schema, field_map);
     if (subcommand == "write-store-record") {
@@ -2796,8 +2884,9 @@ int run_artifact_command(const Args& args) {
   }
 
   if (subcommand == "store-bundle") {
-    if (schema != kAssessBundleSchema) {
-      error("artifact store-bundle supports only schema t81.ai.task.assess-fixed.bundle.v1");
+    if (schema != kAssessBundleSchema && schema != kRouteBundleSchema) {
+      error("artifact store-bundle supports only schema t81.ai.task.assess-fixed.bundle.v1 or "
+            "t81.ai.task.route-fixed.bundle.v1");
       return 1;
     }
     std::map<std::string, std::string> field_map;

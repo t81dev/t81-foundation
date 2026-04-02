@@ -234,8 +234,17 @@ links:
 - the typed downstream record
 - the host action artifact
 
+Second bounded composition using the same object model:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
+```
+
 Short explanation:
 - [First Deterministic AI OS-Object Chain](/Users/t81dev/Code/t81-foundation/docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md)
+
+Current bounded composition catalog:
+- [AI OS-Object Chain Catalog](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md)
 
 Portable smoke path for the same chain:
 - `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`

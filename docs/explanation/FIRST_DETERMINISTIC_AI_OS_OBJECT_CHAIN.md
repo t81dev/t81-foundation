@@ -18,6 +18,10 @@ Portable smoke path for the same chain:
 The shell script remains the human-readable demo. The compiled smoke path
 exercises the same object flow without relying on POSIX shell behavior.
 
+For the current bounded family of reusable AI OS-object chains built on the
+same object model, see
+[AI_OS_OBJECT_CHAIN_CATALOG.md](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
+
 ## What Happens
 
 The current `assess-fixed` chain is:
@@ -55,6 +59,44 @@ assess-fixed task
 The bundle is canonical because it is the smallest single object that points to
 the whole completed chain: result, provenance, host action, and downstream
 record.
+
+## Canonical Identity Invariant
+
+For the currently validated `assess-fixed` and `route-fixed` chains, object
+identity at every layer is a function only of:
+
+- task
+- model
+- policy
+- input
+
+For those two chains, the following objects keep the same content-addressed
+identity and bytes for identical task/model/policy/input:
+
+- task result artifact
+- provenance artifact
+- downstream record
+- final bundle artifact
+
+CanonFS root does not affect that identity.
+Execution location does not affect that identity.
+
+Within this object model:
+
+- result artifact: intermediate
+- provenance artifact: intermediate
+- downstream record: intermediate
+- bundle: canonical top-level object
+
+The following are not part of object identity for the validated chains:
+
+- storage location
+- temporary paths
+- runtime environment
+- execution-ordering artifacts
+
+This claim is limited to the currently validated `assess-fixed` and
+`route-fixed` compositions.
 
 ## Key Helper Surfaces
 

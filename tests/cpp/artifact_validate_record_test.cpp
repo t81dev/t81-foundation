@@ -242,7 +242,8 @@ int main(int argc, char* argv[]) {
                 "decision=ALLOW"});
   T81_TEST_CHECK(wrong_writer_schema.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_writer_schema.stderr_text,
-                          "supports only schema t81.ai.task.assess-fixed.host-action-record.v1"));
+                          "supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
+                          "t81.ai.task.route-fixed.path-selection-record.v1"));
 
   const auto put_ref =
       run_cli(t81_bin, {"canonfs", "put-file", valid_record.string(), "--canonfs-root", canonfs_root.string()});
@@ -395,6 +396,49 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(bundle_readback.exit_code == 0);
   T81_TEST_CHECK(bundle_readback.stdout_text == stored_ref + "\n");
 
+  const auto route_write_store = run_cli(
+      t81_bin, {"artifact", "write-store-record", "--schema",
+                "t81.ai.task.route-fixed.path-selection-record.v1", "--field",
+                "source_result_ref=sha3-256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "--field",
+                "source_provenance_ref=sha3-256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "--field", "route=A", "--field", "termination_reason=single_step_max_score",
+                "--field", "selected_action=write_route_a_target", "--field",
+                "selected_path=routes/a.target", "--field",
+                "action_ref=sha3-256:ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(route_write_store.exit_code == 0);
+  const std::string route_record_ref = extract_record_ref(route_write_store.stdout_text);
+  T81_TEST_CHECK(!route_record_ref.empty());
+
+  const auto route_record_read = run_cli(
+      t81_bin, {"artifact", "read-field", route_record_ref, "--schema",
+                "t81.ai.task.route-fixed.path-selection-record.v1", "--field", "selected_path",
+                "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(route_record_read.exit_code == 0);
+  T81_TEST_CHECK(route_record_read.stdout_text == "routes/a.target\n");
+
+  const auto route_bundle_store = run_cli(
+      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.route-fixed.bundle.v1",
+                "--field",
+                "source_result_ref=sha3-256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "--field",
+                "source_provenance_ref=sha3-256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                "--field",
+                "action_ref=sha3-256:ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "--field", "record_ref=" + route_record_ref, "--canonfs-root",
+                canonfs_root.string()});
+  T81_TEST_CHECK(route_bundle_store.exit_code == 0);
+  const std::string route_bundle_ref = extract_bundle_ref(route_bundle_store.stdout_text);
+  T81_TEST_CHECK(!route_bundle_ref.empty());
+
+  const auto route_bundle_read = run_cli(
+      t81_bin, {"artifact", "read-field", route_bundle_ref, "--schema",
+                "t81.ai.task.route-fixed.bundle.v1", "--field", "record_ref",
+                "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(route_bundle_read.exit_code == 0);
+  T81_TEST_CHECK(route_bundle_read.stdout_text == route_record_ref + "\n");
+
   const auto missing = run_cli(
       t81_bin, {"artifact", "validate-record", missing_field_record.string(), "--schema",
                 "t81.ai.task.assess-fixed.host-action-record.v1"});
@@ -468,7 +512,8 @@ int main(int argc, char* argv[]) {
                 "--field", "decision=ALLOW", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(wrong_write_store.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_write_store.stderr_text,
-                          "supports only schema t81.ai.task.assess-fixed.host-action-record.v1"));
+                          "supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
+                          "t81.ai.task.route-fixed.path-selection-record.v1"));
 
   const auto missing_bundle = run_cli(
       t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
@@ -487,7 +532,8 @@ int main(int argc, char* argv[]) {
                 "--field", "record_ref=" + stored_ref, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(wrong_bundle.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_bundle.stderr_text,
-                          "supports only schema t81.ai.task.assess-fixed.bundle.v1"));
+                          "supports only schema t81.ai.task.assess-fixed.bundle.v1 or "
+                          "t81.ai.task.route-fixed.bundle.v1"));
 
   return 0;
 }

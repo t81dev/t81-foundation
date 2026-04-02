@@ -20,7 +20,7 @@ From the repo root:
 
 ```bash
 cmake -S . -B build -G Ninja -DT81_BUILD_EXAMPLES=ON
-cmake --build build --target t81 t81_make_demo_model t81_make_guarded_llama_demo t81_make_degraded_llama_demo t81_make_demo_safetensors t81_make_demo_float_safetensors
+cmake --build build --target t81 t81_make_demo_model t81_make_answer_fixed_demo t81_make_classify_fixed_demo t81_make_route_fixed_demo t81_make_assess_fixed_demo t81_make_guarded_llama_demo t81_make_degraded_llama_demo t81_make_demo_safetensors t81_make_demo_float_safetensors
 ```
 
 ## Files
@@ -69,6 +69,9 @@ bash examples/ai-and-inference/model-load-canonfs/run_ready_ai_probe.sh
 
 This is the current canonical result-producing AI example in the repo.
 
+The current bounded composition family for this object model is listed in
+[AI OS-Object Chain Catalog](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
+
 It shows one narrow governed chain:
 
 1. `assess-fixed` runs in the strict deterministic lane
@@ -103,6 +106,33 @@ Expected end state:
 
 - the demo prints the stored bundle body with schema
   `t81.ai.task.assess-fixed.bundle.v1`
+- typed readback from the bundle returns refs such as `record_ref` and
+  `action_ref`
+
+## Route-Fixed Path Selection Chain
+
+This is the second bounded composition using the same typed object pipeline.
+
+It shows one narrow route-selection chain:
+
+1. `route-fixed` runs in the strict deterministic lane
+2. the AI task stores a canonical route artifact plus provenance
+3. a typed downstream path-selection record is created and stored
+4. a final bundle object is created and stored
+
+As in the assess-fixed chain, the important object is the final bundle rather
+than the intermediate task result or downstream record.
+
+Run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
+```
+
+Expected end state:
+
+- the demo prints the stored bundle body with schema
+  `t81.ai.task.route-fixed.bundle.v1`
 - typed readback from the bundle returns refs such as `record_ref` and
   `action_ref`
 

@@ -10,6 +10,8 @@ Canonical runnable example:
   [run_assess_fixed_host_action.sh](/Users/t81dev/Code/t81-foundation/examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh).
 - That example is the current canonical runnable chain for the framework, but this document
   remains the normative contract.
+- The current bounded composition family built on this framework is listed in
+  [AI_OS_OBJECT_CHAIN_CATALOG.md](/Users/t81dev/Code/t81-foundation/docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md).
 
 ## Shared Runner Responsibilities
 
@@ -92,14 +94,15 @@ Retrieval:
   - `t81 artifact store-bundle --schema <schema-id> --field key=value ... [--canonfs-root <path>]`
   - `t81 artifact read-field <file|sha3-256:hash> --schema <schema-id> --field <name> [--canonfs-root <path>]`
 
-## Assess-Fixed Bundle Contract
+## Current Bundle Contract Family
 
-The current downstream bundle family is intentionally narrow and exists only to persist the
-completed `assess_fixed.v1` host-action chain as one top-level CanonFS object.
+The current downstream bundle family is intentionally narrow and exists only to persist
+completed fixed-chain compositions as one top-level CanonFS object.
 
-Supported bundle schema:
+Supported bundle schemas:
 
 - `t81.ai.task.assess-fixed.bundle.v1`
+- `t81.ai.task.route-fixed.bundle.v1`
 
 Required fixed fields:
 
@@ -127,10 +130,10 @@ What the bundle represents:
 
 What the bundle must contain:
 
-- `source_result_ref`: CanonFS ref to the canonical `assess_fixed.v1` result artifact
+- `source_result_ref`: CanonFS ref to the canonical AI task result artifact for the chain
 - `source_provenance_ref`: CanonFS ref to the canonical AI task provenance artifact
-- `action_ref`: CanonFS ref to the non-AI host action artifact selected from the AI result
-- `record_ref`: CanonFS ref to the validated downstream record
+- `action_ref`: CanonFS ref to the non-AI action artifact selected from the AI result
+- `record_ref`: CanonFS ref to the validated downstream record for the chain
 
 What is intentionally out of scope:
 
@@ -145,7 +148,8 @@ What is intentionally out of scope:
 Supported helpers for the current downstream schema family:
 
 - `t81 artifact write-store-record`
-  - supports only `t81.ai.task.assess-fixed.host-action-record.v1`
+  - supports `t81.ai.task.assess-fixed.host-action-record.v1`
+  - supports `t81.ai.task.route-fixed.path-selection-record.v1`
   - writes, validates, and stores the fixed downstream record
 - `t81 artifact validate-record`
   - supports only the current fixed downstream record schema
@@ -153,7 +157,8 @@ Supported helpers for the current downstream schema family:
 - `t81 artifact store-record`
   - stores only validated supported downstream artifacts from file input
 - `t81 artifact store-bundle`
-  - supports only `t81.ai.task.assess-fixed.bundle.v1`
+  - supports `t81.ai.task.assess-fixed.bundle.v1`
+  - supports `t81.ai.task.route-fixed.bundle.v1`
   - validates fixed bundle fields and stores the canonical bundle JSON as a CanonFS raw block
 - `t81 artifact read-field`
   - supports only the current fixed downstream record and bundle schema family
@@ -167,6 +172,7 @@ CanonFS retrieval expectations:
 - typed scalar readback uses `t81 artifact read-field ... --schema <schema-id> --field <name>`
 - the top-level persisted object for the current assess-fixed chain is the bundle artifact, not the
   downstream record alone
+- the same object model is reused by the current `route-fixed` path-selection chain
 
 Current convergence point:
 
@@ -202,3 +208,5 @@ Current downstream schema family:
 
 - `t81.ai.task.assess-fixed.host-action-record.v1`
 - `t81.ai.task.assess-fixed.bundle.v1`
+- `t81.ai.task.route-fixed.path-selection-record.v1`
+- `t81.ai.task.route-fixed.bundle.v1`

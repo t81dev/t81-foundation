@@ -2103,9 +2103,15 @@ int main(int argc, char* argv[]) {
                             "t81.ai.task.assess-fixed.host-action-record.v1"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text,
                             "t81.ai.task.assess-fixed.bundle.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text,
+                            "t81.ai.task.route-fixed.path-selection-record.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text,
+                            "t81.ai.task.route-fixed.bundle.v1"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text, "Canonical runnable example:"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text,
                             "run_assess_fixed_host_action.sh"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text,
+                            "run_route_fixed_path_selection.sh"));
   }
 
   {
