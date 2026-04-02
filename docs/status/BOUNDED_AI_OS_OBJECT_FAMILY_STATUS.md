@@ -96,6 +96,23 @@ This family is not currently:
 - a generalized AI runtime surface
 - evidence that future compositions inherit the invariant automatically
 
+## Current Posture
+
+The next work on this family should be:
+
+- stabilization
+- misuse-path hardening
+- portability and CI boringness
+- keeping the baseline, invariant, admission gate, and catalog aligned
+
+The next work on this family should not be:
+
+- a fourth composition by default
+- a new helper family
+- rule execution in the composition layer
+- orchestration or workflow expansion
+- broader AI runtime claims
+
 ## Reference Surfaces
 
 - canonical chain explainer:

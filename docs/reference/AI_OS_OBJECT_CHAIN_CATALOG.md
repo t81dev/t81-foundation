@@ -164,6 +164,9 @@ Canonical top-level object:
 
 This catalog covers the current bounded reusable composition family only.
 
+The current posture for this family is stabilization and misuse-path hardening,
+not automatic growth to a fourth composition.
+
 It does not define:
 
 - a workflow engine
