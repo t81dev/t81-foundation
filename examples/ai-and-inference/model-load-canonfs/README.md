@@ -109,6 +109,17 @@ Expected end state:
 - typed readback from the bundle returns refs such as `record_ref` and
   `action_ref`
 
+If you want the smallest external-consumer-shaped example for that bundle,
+run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_bundle_consumer.sh
+```
+
+That script starts from the canonical bundle first, checks its schema, and only
+then follows `record_ref` and `action_ref` as described in
+[AI OS-Object Bundle Consumption Contract](../../../docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md).
+
 ## Route-Fixed Path Selection Chain
 
 This is the second bounded composition using the same typed object pipeline.
