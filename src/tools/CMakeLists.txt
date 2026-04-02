@@ -32,6 +32,7 @@ add_library(t81_tool_cli STATIC
   ${PROJECT_SOURCE_DIR}/tools/cli/driver.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/debugger.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/artifact_family.cpp
 )
 t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)

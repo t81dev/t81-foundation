@@ -59,6 +59,7 @@
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/cli/artifact_family.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/config.hpp"
@@ -2503,319 +2504,11 @@ bool write_canonfs_raw_block_local(const fs::path& canonfs_root, std::string_vie
 }
 
 int run_artifact_command(const Args& args) {
-  constexpr std::string_view kAssessActionRecordSchema =
-      "t81.ai.task.assess-fixed.host-action-record.v1";
-  constexpr std::string_view kAssessBundleSchema = "t81.ai.task.assess-fixed.bundle.v1";
-  constexpr std::string_view kRouteActionRecordSchema =
-      "t81.ai.task.route-fixed.path-selection-record.v1";
-  constexpr std::string_view kRouteBundleSchema = "t81.ai.task.route-fixed.bundle.v1";
-  constexpr std::string_view kClassifyActionRecordSchema =
-      "t81.ai.task.classify-fixed.rule-selection-record.v1";
-  constexpr std::string_view kClassifyBundleSchema = "t81.ai.task.classify-fixed.bundle.v1";
-  constexpr std::array<std::string_view, 8> kRequiredFields{{
-      "source_result_ref",
-      "source_provenance_ref",
-      "decision",
-      "reason_code",
-      "termination_reason",
-      "selected_action",
-      "selected_path",
-      "action_ref",
-  }};
-  constexpr std::array<std::string_view, 7> kRouteRequiredFields{{
-      "source_result_ref",
-      "source_provenance_ref",
-      "route",
-      "termination_reason",
-      "selected_action",
-      "selected_path",
-      "action_ref",
-  }};
-  constexpr std::array<std::string_view, 6> kClassifyRequiredFields{{
-      "source_result_ref",
-      "source_provenance_ref",
-      "label",
-      "termination_reason",
-      "selected_rule_set",
-      "rule_set_ref",
-  }};
-  constexpr std::array<std::string_view, 4> kRequiredBundleFields{{
-      "source_result_ref",
-      "source_provenance_ref",
-      "action_ref",
-      "record_ref",
-  }};
-  auto validate_canonfs_ref_field = [&](std::string_view artifact_text, std::string_view field_name,
-                                        std::string& validation_error) {
-    const auto value = extract_json_string_field(artifact_text, field_name);
-    if (!value || value->empty()) {
-      validation_error = "missing required field \"" + std::string(field_name) + "\"";
-      return false;
-    }
-    t81::canonfs::CanonRef ignored_ref;
-    std::string ref_error;
-    if (!parse_canonical_hash_local(*value, ignored_ref, ref_error)) {
-      validation_error =
-          "invalid CanonFS ref in field \"" + std::string(field_name) + "\": " + ref_error;
-      return false;
-    }
-    return true;
-  };
-  auto is_supported_field = [&](std::string_view schema, std::string_view field) {
-    if (schema == kAssessActionRecordSchema) {
-      return field == "schema" || field == "decision" || field == "reason_code" ||
-             field == "selected_action" || field == "selected_path" || field == "action_ref" ||
-             field == "source_result_ref" || field == "source_provenance_ref" ||
-             field == "termination_reason";
-    }
-    if (schema == kAssessBundleSchema) {
-      return field == "schema" || field == "source_result_ref" ||
-             field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
-    }
-    if (schema == kRouteActionRecordSchema) {
-      return field == "schema" || field == "route" || field == "selected_action" ||
-             field == "selected_path" || field == "action_ref" || field == "source_result_ref" ||
-             field == "source_provenance_ref" || field == "termination_reason";
-    }
-    if (schema == kRouteBundleSchema) {
-      return field == "schema" || field == "source_result_ref" ||
-             field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
-    }
-    if (schema == kClassifyActionRecordSchema) {
-      return field == "schema" || field == "label" || field == "selected_rule_set" ||
-             field == "rule_set_ref" || field == "source_result_ref" ||
-             field == "source_provenance_ref" || field == "termination_reason";
-    }
-    if (schema == kClassifyBundleSchema) {
-      return field == "schema" || field == "source_result_ref" ||
-             field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
-    }
-    return false;
-  };
-  auto render_record = [&](std::string_view schema,
-                           const std::map<std::string, std::string>& fields) {
-    std::ostringstream out;
-    if (schema == kAssessActionRecordSchema) {
-      out << "{\n"
-          << "  \"schema\": \"" << kAssessActionRecordSchema << "\",\n"
-          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
-          << "\",\n"
-          << "  \"decision\": \"" << json_escape(fields.at("decision")) << "\",\n"
-          << "  \"reason_code\": \"" << json_escape(fields.at("reason_code")) << "\",\n"
-          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason"))
-          << "\",\n"
-          << "  \"selected_action\": \"" << json_escape(fields.at("selected_action")) << "\",\n"
-          << "  \"selected_path\": \"" << json_escape(fields.at("selected_path")) << "\",\n"
-          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\"\n"
-          << "}\n";
-      return out.str();
-    }
-    if (schema == kRouteActionRecordSchema) {
-      out << "{\n"
-          << "  \"schema\": \"" << kRouteActionRecordSchema << "\",\n"
-          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
-          << "\",\n"
-          << "  \"route\": \"" << json_escape(fields.at("route")) << "\",\n"
-          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason"))
-          << "\",\n"
-          << "  \"selected_action\": \"" << json_escape(fields.at("selected_action")) << "\",\n"
-          << "  \"selected_path\": \"" << json_escape(fields.at("selected_path")) << "\",\n"
-          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\"\n"
-          << "}\n";
-      return out.str();
-    }
-    if (schema == kClassifyActionRecordSchema) {
-      out << "{\n"
-          << "  \"schema\": \"" << kClassifyActionRecordSchema << "\",\n"
-          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
-          << "\",\n"
-          << "  \"label\": \"" << json_escape(fields.at("label")) << "\",\n"
-          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason"))
-          << "\",\n"
-          << "  \"selected_rule_set\": \"" << json_escape(fields.at("selected_rule_set")) << "\",\n"
-          << "  \"rule_set_ref\": \"" << json_escape(fields.at("rule_set_ref")) << "\"\n"
-          << "}\n";
-      return out.str();
-    }
-    if (schema == kAssessBundleSchema) {
-      out << "{\n"
-          << "  \"schema\": \"" << kAssessBundleSchema << "\",\n"
-          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
-          << "\",\n"
-          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
-          << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
-          << "}\n";
-      return out.str();
-    }
-    if (schema == kRouteBundleSchema) {
-      out << "{\n"
-          << "  \"schema\": \"" << kRouteBundleSchema << "\",\n"
-          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
-          << "\",\n"
-          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
-          << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
-          << "}\n";
-      return out.str();
-    }
-    if (schema == kClassifyBundleSchema) {
-      out << "{\n"
-          << "  \"schema\": \"" << kClassifyBundleSchema << "\",\n"
-          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
-          << "\",\n"
-          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
-          << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
-          << "}\n";
-      return out.str();
-    }
-    return out.str();
-  };
-  auto validate_record = [&](std::string_view schema, std::string_view artifact_text,
-                             std::string& validation_error) {
-    const auto schema_field = extract_json_string_field(artifact_text, "schema");
-    if (!schema_field || *schema_field != schema) {
-      validation_error = "schema mismatch";
-      return false;
-    }
-    if (schema == kAssessActionRecordSchema) {
-      for (std::string_view required_field : kRequiredFields) {
-        const auto value = extract_json_string_field(artifact_text, required_field);
-        if (!value || value->empty()) {
-          validation_error = "missing required field \"" + std::string(required_field) + "\"";
-          return false;
-        }
-      }
-      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error)) {
-        return false;
-      }
-      return true;
-    }
-    if (schema == kRouteActionRecordSchema) {
-      for (std::string_view required_field : kRouteRequiredFields) {
-        const auto value = extract_json_string_field(artifact_text, required_field);
-        if (!value || value->empty()) {
-          validation_error = "missing required field \"" + std::string(required_field) + "\"";
-          return false;
-        }
-      }
-      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error)) {
-        return false;
-      }
-      return true;
-    }
-    if (schema == kAssessBundleSchema) {
-      for (std::string_view required_field : kRequiredBundleFields) {
-        const auto value = extract_json_string_field(artifact_text, required_field);
-        if (!value || value->empty()) {
-          validation_error = "missing required field \"" + std::string(required_field) + "\"";
-          return false;
-        }
-      }
-      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "record_ref", validation_error)) {
-        return false;
-      }
-      return true;
-    }
-    if (schema == kRouteBundleSchema) {
-      for (std::string_view required_field : kRequiredBundleFields) {
-        const auto value = extract_json_string_field(artifact_text, required_field);
-        if (!value || value->empty()) {
-          validation_error = "missing required field \"" + std::string(required_field) + "\"";
-          return false;
-        }
-      }
-      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "record_ref", validation_error)) {
-        return false;
-      }
-      return true;
-    }
-    if (schema == kClassifyActionRecordSchema) {
-      for (std::string_view required_field : kClassifyRequiredFields) {
-        const auto value = extract_json_string_field(artifact_text, required_field);
-        if (!value || value->empty()) {
-          validation_error = "missing required field \"" + std::string(required_field) + "\"";
-          return false;
-        }
-      }
-      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "rule_set_ref", validation_error)) {
-        return false;
-      }
-      return true;
-    }
-    if (schema == kClassifyBundleSchema) {
-      for (std::string_view required_field : kRequiredBundleFields) {
-        const auto value = extract_json_string_field(artifact_text, required_field);
-        if (!value || value->empty()) {
-          validation_error = "missing required field \"" + std::string(required_field) + "\"";
-          return false;
-        }
-      }
-      if (!validate_canonfs_ref_field(artifact_text, "source_result_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "source_provenance_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "action_ref", validation_error) ||
-          !validate_canonfs_ref_field(artifact_text, "record_ref", validation_error)) {
-        return false;
-      }
-      return true;
-    }
-    validation_error = "supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
-                       "t81.ai.task.assess-fixed.bundle.v1, "
-                       "t81.ai.task.route-fixed.path-selection-record.v1, or "
-                       "t81.ai.task.route-fixed.bundle.v1, "
-                       "t81.ai.task.classify-fixed.rule-selection-record.v1, or "
-                       "t81.ai.task.classify-fixed.bundle.v1";
-    return false;
-  };
-  auto next_inspect_field_for_schema = [&](std::string_view schema) -> std::string_view {
-    if (schema == kAssessActionRecordSchema) {
-      return "selected_action";
-    }
-    if (schema == kAssessBundleSchema) {
-      return "record_ref";
-    }
-    if (schema == kRouteActionRecordSchema) {
-      return "selected_path";
-    }
-    if (schema == kRouteBundleSchema) {
-      return "record_ref";
-    }
-    if (schema == kClassifyActionRecordSchema) {
-      return "selected_rule_set";
-    }
-    if (schema == kClassifyBundleSchema) {
-      return "record_ref";
-    }
-    return "schema";
-  };
   auto validate_supported_schema = [&](std::string_view subcommand_name,
                                        std::string_view schema_value) {
-    if (schema_value != kAssessActionRecordSchema && schema_value != kAssessBundleSchema &&
-        schema_value != kRouteActionRecordSchema && schema_value != kRouteBundleSchema &&
-        schema_value != kClassifyActionRecordSchema && schema_value != kClassifyBundleSchema) {
-      error("artifact " + std::string(subcommand_name) +
-            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
-            "t81.ai.task.assess-fixed.bundle.v1, "
-            "t81.ai.task.route-fixed.path-selection-record.v1, "
-            "t81.ai.task.route-fixed.bundle.v1, "
-            "t81.ai.task.classify-fixed.rule-selection-record.v1, or "
-            "t81.ai.task.classify-fixed.bundle.v1");
+    if (!t81::cli::artifact_family::is_supported_schema(schema_value)) {
+      error("artifact " + std::string(subcommand_name) + " " +
+            t81::cli::artifact_family::supported_schema_error_suffix());
       return false;
     }
     return true;
@@ -2826,7 +2519,7 @@ int run_artifact_command(const Args& args) {
                                      std::string_view ref_key, std::string_view schema_value,
                                      std::string_view payload, std::string_view subcommand_name) {
     std::string validation_error;
-    if (!validate_record(schema_value, payload, validation_error)) {
+    if (!t81::cli::artifact_family::validate_artifact(schema_value, payload, validation_error)) {
       error("artifact " + std::string(subcommand_name) + ": " + validation_error);
       return false;
     }
@@ -2844,7 +2537,8 @@ int run_artifact_command(const Args& args) {
               << "  \"" << ref_key << "\": \"" << stored_ref << "\",\n"
               << "  \"next_step_hint\": \"next (inspect): t81 artifact read-field " << stored_ref
               << " --schema " << schema_value << " --field "
-              << next_inspect_field_for_schema(schema_value) << " --canonfs-root <path>\",\n"
+              << t81::cli::artifact_family::next_inspect_field_for_schema(schema_value)
+              << " --canonfs-root <path>\",\n"
               << "  \"status\": \"pass\"\n"
               << "}\n";
     return true;
@@ -2862,7 +2556,7 @@ int run_artifact_command(const Args& args) {
       }
       const std::string key = assignment.substr(0, eq);
       const std::string value = assignment.substr(eq + 1);
-      if (!is_supported_field(schema_value, key) || key == "schema") {
+      if (!t81::cli::artifact_family::is_supported_field(schema_value, key) || key == "schema") {
         error("artifact " + std::string(subcommand_name) + ": unknown field \"" + key + "\"");
         return false;
       }
@@ -2957,7 +2651,8 @@ int run_artifact_command(const Args& args) {
     error("artifact read-field requires --field <name>");
     return 1;
   }
-  if (subcommand == "read-field" && !is_supported_field(schema, field)) {
+  if (subcommand == "read-field" &&
+      !t81::cli::artifact_family::is_supported_field(schema, field)) {
     error("artifact read-field supports only fixed downstream artifact fields");
     return 1;
   }
@@ -2971,31 +2666,20 @@ int run_artifact_command(const Args& args) {
   }
 
   if (subcommand == "write-record" || subcommand == "write-store-record") {
-    if (schema != kAssessActionRecordSchema && schema != kRouteActionRecordSchema &&
-        schema != kClassifyActionRecordSchema) {
-      error("artifact " + subcommand +
-            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
-            "t81.ai.task.route-fixed.path-selection-record.v1 or "
-            "t81.ai.task.classify-fixed.rule-selection-record.v1");
+    if (!t81::cli::artifact_family::is_record_schema(schema)) {
+      error("artifact " + subcommand + " supports only schema " +
+            std::string(t81::cli::artifact_family::assess_record_schema()) + " or " +
+            std::string(t81::cli::artifact_family::route_record_schema()) + " or " +
+            std::string(t81::cli::artifact_family::classify_record_schema()));
       return 1;
     }
     std::map<std::string, std::string> field_map;
-    if (schema == kAssessActionRecordSchema) {
-      if (!parse_field_map(subcommand, schema, field_assignments, kRequiredFields, field_map)) {
-        return 1;
-      }
-    } else if (schema == kRouteActionRecordSchema) {
-      if (!parse_field_map(subcommand, schema, field_assignments, kRouteRequiredFields,
-                           field_map)) {
-        return 1;
-      }
-    } else {
-      if (!parse_field_map(subcommand, schema, field_assignments, kClassifyRequiredFields,
-                           field_map)) {
-        return 1;
-      }
+    if (!parse_field_map(subcommand, schema, field_assignments,
+                         t81::cli::artifact_family::required_fields_for_schema(schema),
+                         field_map)) {
+      return 1;
     }
-    const std::string payload = render_record(schema, field_map);
+    const std::string payload = t81::cli::artifact_family::render_artifact(schema, field_map);
     if (subcommand == "write-store-record") {
       if (!write_and_store_payload(canonfs_root, "t81.artifact.record-write-store.v1",
                                    "validated downstream record written and stored in CanonFS",
@@ -3025,18 +2709,20 @@ int run_artifact_command(const Args& args) {
   }
 
   if (subcommand == "store-bundle") {
-    if (schema != kAssessBundleSchema && schema != kRouteBundleSchema &&
-        schema != kClassifyBundleSchema) {
-      error("artifact store-bundle supports only schema t81.ai.task.assess-fixed.bundle.v1, "
-            "t81.ai.task.route-fixed.bundle.v1, or "
-            "t81.ai.task.classify-fixed.bundle.v1");
+    if (!t81::cli::artifact_family::is_bundle_schema(schema)) {
+      error("artifact store-bundle supports only schema " +
+            std::string(t81::cli::artifact_family::assess_bundle_schema()) + ", " +
+            std::string(t81::cli::artifact_family::route_bundle_schema()) + ", or " +
+            std::string(t81::cli::artifact_family::classify_bundle_schema()));
       return 1;
     }
     std::map<std::string, std::string> field_map;
-    if (!parse_field_map(subcommand, schema, field_assignments, kRequiredBundleFields, field_map)) {
+    if (!parse_field_map(subcommand, schema, field_assignments,
+                         t81::cli::artifact_family::required_fields_for_schema(schema),
+                         field_map)) {
       return 1;
     }
-    const std::string payload = render_record(schema, field_map);
+    const std::string payload = t81::cli::artifact_family::render_artifact(schema, field_map);
     if (!write_and_store_payload(canonfs_root, "t81.artifact.bundle-store.v1",
                                  "validated downstream bundle stored in CanonFS", "bundle_ref",
                                  schema, payload, "store-bundle")) {
@@ -3053,7 +2739,7 @@ int run_artifact_command(const Args& args) {
   }
 
   std::string validation_error;
-  if (!validate_record(schema, artifact_text, validation_error)) {
+  if (!t81::cli::artifact_family::validate_artifact(schema, artifact_text, validation_error)) {
     error("artifact " + subcommand + ": " + validation_error);
     return 1;
   }
