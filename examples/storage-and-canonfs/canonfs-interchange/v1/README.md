@@ -16,8 +16,15 @@ The current seed boundary here is intentionally narrow:
   `t81.canonfs-export-provenance.v1`
 - `t81.canonfs-interchange-manifest.v1`
 - `host-file`
+- result linkage fields `provenance_schema` and `manifest_schema`
 - the built-in `permissive` policy profile recorded in the result
 - structured error entries with `kind`, `message`, `code`, and `reason`
+
+Within this frozen fixture set:
+
+- `provenance_schema` is always present in the result
+- `manifest_schema` is present and may be `null` when the current case does not
+  produce or depend on a directory manifest
 
 The policy reading here is intentionally narrow too:
 

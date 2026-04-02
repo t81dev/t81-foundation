@@ -58,6 +58,14 @@ Stable seed surfaces today:
 - policy-profile names `permissive`, `import-only`, `export-only`, and
   `deny-all`
 
+In the current emitted JSON surface, each structured error entry is written in
+stable field order as:
+
+- `kind`
+- `message`
+- `code`
+- `reason`
+
 These seed surfaces are stable enough for contributor-facing examples, contract
 tests, and adjacent tooling.
 
@@ -109,6 +117,8 @@ The current v1 candidate contract includes:
   `provenance_schema` and `manifest_schema`
 - stable structured error entry fields:
   `kind`, `code`, `reason`, `message`
+- stable structured error entry order in emitted JSON:
+  `kind`, `message`, `code`, `reason`
 - current policy-profile names:
   `permissive`, `import-only`, `export-only`, `deny-all`
 - current policy model:
