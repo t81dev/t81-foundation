@@ -32,7 +32,9 @@ If those answers are unclear, narrow the work before starting it.
 
 - RFC-00D1 contract promotion follow-through:
   keep the current v1 candidate surface explicit in docs/examples and only
-  promote more once the remaining RFC-scoped blockers actually stop moving
+  promote more once the remaining RFC-scoped blockers actually stop moving;
+  use `docs/reference/RFC_00D1_CONTRACT_REVIEW_CHECKLIST.md` when touching the
+  current build-against boundary
 - Public-story cleanup:
   keep the runtime-first story, handoff docs, and contributor roadmap aligned
   with the strongest usable surfaces

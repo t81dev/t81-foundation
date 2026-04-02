@@ -45,6 +45,8 @@ T81 is a deterministic, policy-gated runtime for auditable computation, built on
 - RFC-00D1 policy behavior should also be read narrowly: built-in profiles are
   operation-level admission controls, and explicit policy files further narrow
   within the admitted operation instead of replacing the profile surface
+- when changing that seed contract, review it against:
+  [docs/reference/RFC_00D1_CONTRACT_REVIEW_CHECKLIST.md](reference/RFC_00D1_CONTRACT_REVIEW_CHECKLIST.md)
 - Broader bare-metal / TernaryOS ambitions are real but not yet the easiest public adoption path
 - Related ternary acceleration efforts such as `t81dev/ternary-fabric` should
   currently be treated as parallel tracks, not as part of T81's stable
