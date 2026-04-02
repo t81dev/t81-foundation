@@ -1,7 +1,7 @@
 # First Deterministic AI OS-Object Chain
 
-This is the smallest current example of T81 acting like an AI operating-system
-primitive layer rather than just an AI runtime.
+This is the smallest current example of T81 acting like a governed AI
+OS-object substrate rather than only an AI runtime.
 
 The canonical runnable example is:
 
@@ -57,20 +57,20 @@ assess-fixed task
   top-level persisted object.
 
 The bundle is canonical because it is the smallest single object that points to
-the whole completed chain: result, provenance, host action, and downstream
-record.
+the whole completed chain: result, provenance, downstream record, and action
+identity.
 
 ## Canonical Identity Invariant
 
-For the currently validated `assess-fixed` and `route-fixed` chains, object
-identity at every layer is a function only of:
+For the currently validated `assess-fixed`, `route-fixed`, and
+`classify-fixed` chains, object identity at every layer is a function only of:
 
 - task
 - model
 - policy
 - input
 
-For those two chains, the following objects keep the same content-addressed
+For those chains, the following objects keep the same content-addressed
 identity and bytes for identical task/model/policy/input:
 
 - task result artifact
@@ -88,15 +88,7 @@ Within this object model:
 - downstream record: intermediate
 - bundle: canonical top-level object
 
-The following are not part of object identity for the validated chains:
-
-- storage location
-- temporary paths
-- runtime environment
-- execution-ordering artifacts
-
-This claim is limited to the currently validated `assess-fixed` and
-`route-fixed` compositions.
+This claim is limited to the currently validated bounded family.
 
 ## Key Helper Surfaces
 
@@ -109,7 +101,7 @@ The canonical example uses these typed surfaces:
 - `t81 artifact read-field`
 
 These helpers do not form a general workflow engine. They only support the
-current narrow typed chain.
+current narrow typed chain family.
 
 ## What This Is
 
