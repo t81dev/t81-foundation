@@ -73,6 +73,7 @@ When in doubt, prefer these in order:
 - Contributing guide: [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Buildable next tasks: [docs/BUILDABLE_NEXT_STEPS.md](BUILDABLE_NEXT_STEPS.md)
 - Contributor-facing roadmap: [docs/ROADMAP.md](ROADMAP.md)
+- Bounded family status: [docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 - AI CLI reality check: [docs/status/AI_CLI_IMPLEMENTATION_MATRIX.md](status/AI_CLI_IMPLEMENTATION_MATRIX.md)
 
 The short version:
