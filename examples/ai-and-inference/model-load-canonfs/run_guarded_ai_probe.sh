@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 cd "$repo_root"
 
 t81_bin="${T81_BIN:-$repo_root/build/t81}"
@@ -29,6 +29,15 @@ if [[ ! -f "$model_safetensors" ]]; then
     config.json tokenizer.json model.safetensors \
     --local-dir "$model_dir"
 fi
+
+echo "=========================================================="
+echo " T81 AI Guarded Probe "
+echo "=========================================================="
+echo "  ↳ Model: tiny-random-llama"
+echo "  ↳ Prompt: $prompt"
+echo "  ↳ Max tokens: $max_tokens"
+echo "  ↳ Expect: guarded inference output followed by full JSON evidence."
+echo ""
 
 exec "$t81_bin" ai inference run \
   --model tiny-random-llama \

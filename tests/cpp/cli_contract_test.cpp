@@ -180,6 +180,18 @@ bool contains(std::string_view text, std::string_view pattern) {
   return text.find(pattern) != std::string_view::npos;
 }
 
+bool appears_in_order(std::string_view text, std::initializer_list<std::string_view> patterns) {
+  std::size_t cursor = 0;
+  for (const auto pattern : patterns) {
+    const std::size_t pos = text.find(pattern, cursor);
+    if (pos == std::string_view::npos) {
+      return false;
+    }
+    cursor = pos + pattern.size();
+  }
+  return true;
+}
+
 bool contains_any(std::string_view text, const std::vector<std::string>& patterns) {
   for (const auto& pattern : patterns) {
     if (contains(text, pattern)) {
@@ -201,6 +213,64 @@ std::optional<std::string> extract_json_string(std::string_view text, std::strin
     return std::nullopt;
   }
   return std::string(text.substr(value_start, value_end - value_start));
+}
+
+void write_answer_fixed_demo_model(const fs::path& out_dir) {
+  std::error_code ec;
+  fs::create_directories(out_dir, ec);
+  T81_TEST_CHECK(!ec);
+
+  const fs::path model_path = out_dir / "answer-fixed-demo.t81w";
+  const fs::path tokenizer_path = out_dir / "tokenizer.json";
+
+  t81::weights::NativeModel model;
+  const auto make_tensor = [](std::initializer_list<std::uint32_t> shape, std::uint64_t seed) {
+    t81::weights::NativeTensor tensor;
+    tensor.shape.assign(shape.begin(), shape.end());
+    std::size_t element_count = 1;
+    for (std::uint32_t dim : tensor.shape) {
+      element_count *= static_cast<std::size_t>(dim);
+    }
+    tensor.trits = static_cast<std::uint64_t>(element_count);
+    tensor.data.resize((element_count + 47u) / 48u, 0u);
+    for (std::size_t i = 0; i < tensor.data.size(); ++i) {
+      tensor.data[i] = seed + static_cast<std::uint64_t>(i * 17u);
+    }
+    return tensor;
+  };
+
+  model["model.embed_tokens.weight"] = make_tensor({64, 16}, 11u);
+  model["model.norm.weight"] = make_tensor({16}, 23u);
+  model["model.layers.0.self_attn.q_proj.weight"] = make_tensor({16, 16}, 101u);
+  model["model.layers.0.self_attn.k_proj.weight"] = make_tensor({16, 16}, 211u);
+  model["model.layers.0.self_attn.v_proj.weight"] = make_tensor({16, 16}, 307u);
+  model["model.layers.0.self_attn.o_proj.weight"] = make_tensor({16, 16}, 401u);
+  model["model.layers.0.mlp.gate_proj.weight"] = make_tensor({16, 16}, 503u);
+  model["model.layers.0.mlp.up_proj.weight"] = make_tensor({16, 16}, 601u);
+  model["model.layers.0.mlp.down_proj.weight"] = make_tensor({16, 16}, 701u);
+  model["model.layers.1.self_attn.q_proj.weight"] = make_tensor({16, 16}, 809u);
+  model["model.layers.1.self_attn.k_proj.weight"] = make_tensor({16, 16}, 907u);
+  model["model.layers.1.self_attn.v_proj.weight"] = make_tensor({16, 16}, 1009u);
+  model["lm_head.weight"] = make_tensor({64, 16}, 2003u);
+  t81::weights::save_t81w(model, model_path);
+
+  std::ofstream out(tokenizer_path);
+  T81_TEST_CHECK(static_cast<bool>(out));
+  out << R"({
+  "model": {
+    "type": "BPE",
+    "vocab": {
+      "NO": 9,
+      "greet": 7,
+      "hello": 11,
+      "world": 12,
+      "▁greet": 17,
+      "▁hello": 21,
+      "YES": 42
+    }
+  }
+}
+)";
 }
 
 int main(int argc, char* argv[]) {
@@ -1460,6 +1530,7 @@ int main(int argc, char* argv[]) {
     const fs::path tensor_fixture = fs::absolute(t81_bin).parent_path().parent_path() / "tests" /
                                     "fixtures" / "t81lang_std_tensor" / "03_matmul_weights.t81";
     T81_TEST_CHECK(fs::exists(tensor_fixture));
+    const auto missing_weights_run_result = run_cli(t81_bin, {"code", "run", tensor_fixture.string()});
     const fs::path allow_policy = make_temp_path("t81-cli-contract-model-allow", ".apl");
     const fs::path deny_policy = make_temp_path("t81-cli-contract-model-deny", ".apl");
 
@@ -1490,12 +1561,28 @@ int main(int argc, char* argv[]) {
                           "--policy", deny_policy.string()});
     unset_env("T81_CANONFS_ROOT");
 
+    T81_TEST_CHECK(missing_weights_run_result.exit_code != 0);
+    T81_TEST_CHECK(appears_in_order(
+        missing_weights_run_result.stderr_text,
+        {"Compilation successful → ", "error: Execution trapped: DecodeFault",
+         "hint: tensor-backed programs often require --weights-model"}));
     T81_TEST_CHECK(model_run_result.exit_code == 0);
     T81_TEST_CHECK(contains(model_run_result.stdout_text, "<tensor#1>"));
+    T81_TEST_CHECK(contains(model_run_result.stderr_text, "result kind: tensor_handle"));
+    T81_TEST_CHECK(contains(model_run_result.stderr_text,
+                            "operation: tensor-backed execution completed under attached weights"));
+    T81_TEST_CHECK(contains(model_run_result.stderr_text,
+                            "next (progress): none on this path; the result remains a runtime tensor handle"));
+    T81_TEST_CHECK(contains(model_run_result.stderr_text,
+                            "next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events"));
     T81_TEST_CHECK(allowed_model_run_result.exit_code == 0);
     T81_TEST_CHECK(contains(allowed_model_run_result.stdout_text, "<tensor#1>"));
     T81_TEST_CHECK(denied_model_run_result.exit_code != 0);
     T81_TEST_CHECK(contains(denied_model_run_result.stderr_text, "SecurityFault"));
+    T81_TEST_CHECK(appears_in_order(denied_model_run_result.stderr_text,
+                                    {"Compilation successful → ",
+                                     "error: Execution trapped: SecurityFault", "reason: ",
+                                     "opcode: TMatMul", "compute executed: no"}));
     T81_TEST_CHECK(!contains(denied_model_run_result.stdout_text, "<tensor#1>"));
 
     fs::remove(model_path, ignore_ec);
@@ -1546,6 +1633,15 @@ int main(int argc, char* argv[]) {
         contains(ai_result.stdout_text, "\"lhs\": \"model.layers.0.self_attn.q_proj.weight\""));
     T81_TEST_CHECK(
         contains(ai_result.stdout_text, "\"rhs\": \"model.layers.0.self_attn.k_proj.weight\""));
+    T81_TEST_CHECK(appears_in_order(
+        ai_result.stdout_text,
+        {"\"result_summary\": ", "\"result_class\": \"tensor_handle\"",
+         "\"result_meaning\": ", "\"next_step_hint\": ",
+         "\"termination_reason\": \"no_logits_row_probe\"", "\"output_kind\": \"tensor_handle\"",
+         "\"output_preview\": \"<tensor#1>\"", "\"backend_selection_trace_sha256\": "}));
+    T81_TEST_CHECK(
+        contains(ai_result.stdout_text,
+                 "\"next_step_hint\": \"next (progress): none on this path; this run does not expose a richer bounded decode result. next (inspect): inspect output_summary for handle semantics\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"output\": \"<tensor#1>\""));
     T81_TEST_CHECK(contains(ai_result.stdout_text, "\"generated_tokens\": 1"));
 
@@ -1721,6 +1817,13 @@ int main(int argc, char* argv[]) {
                             "\"output_policy\": \"verbatim_native_probe.v1\""));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text,
                             "\"generated_preview_policy\": \"full_sequence.v1\""));
+    T81_TEST_CHECK(appears_in_order(
+        bounded_ready_ai_result.stdout_text,
+        {"\"result_summary\": ", "\"result_class\": \"bounded_inference_text\"",
+         "\"result_meaning\": ", "\"next_step_hint\": ",
+         "\"termination_reason\": \"max_tokens_reached\"",
+         "\"output_kind\": \"raw_vm_probe_text\"", "\"output_preview\": ",
+         "\"backend_selection_trace_sha256\": "}));
     T81_TEST_CHECK(contains(bounded_ready_ai_result.stdout_text,
                             "\"termination_reason\": \"max_tokens_reached\""));
 
@@ -1732,6 +1835,16 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(forward_state_ai_result.exit_code == 0);
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"readiness\": {"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"bounded_decode_health\": {"));
+    T81_TEST_CHECK(appears_in_order(
+        forward_state_ai_result.stdout_text,
+        {"\"result_summary\": ", "\"result_class\": \"bounded_inference_text\"",
+         "\"result_meaning\": ", "\"next_step_hint\": ",
+         "\"termination_reason\": \"max_tokens_reached\"",
+         "\"output_kind\": \"raw_vm_probe_text\"", "\"output_preview\": ",
+         "\"backend_selection_trace_sha256\": "}));
+    T81_TEST_CHECK(
+        contains(forward_state_ai_result.stdout_text,
+                 "\"next_step_hint\": \"next (progress): none on this path; this run does not expose a richer user-visible result beyond the tokenizer-only preview. next (inspect): inspect generated_preview_summary, then forward_state_summary or decode_trace for deeper evidence\""));
     T81_TEST_CHECK(
         contains(forward_state_ai_result.stdout_text, "\"true_state_carry_supported\": true"));
     T81_TEST_CHECK(contains(forward_state_ai_result.stdout_text, "\"state_carry_limitations\": {"));
@@ -1981,6 +2094,217 @@ int main(int argc, char* argv[]) {
 
     std::error_code ignore_ec;
     fs::remove_all(model_dir, ignore_ec);
+  }
+
+  {
+    const auto artifact_help = run_cli(t81_bin, {"help", "artifact"});
+    T81_TEST_CHECK(artifact_help.exit_code == 0);
+    T81_TEST_CHECK(contains(artifact_help.stdout_text,
+                            "t81.ai.task.assess-fixed.host-action-record.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text,
+                            "t81.ai.task.assess-fixed.bundle.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "Canonical runnable example:"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text,
+                            "run_assess_fixed_host_action.sh"));
+  }
+
+  {
+    const fs::path model_dir = make_temp_path("t81-cli-answer-fixed-model-dir", "");
+    write_answer_fixed_demo_model(model_dir);
+    const fs::path model_path = model_dir / "answer-fixed-demo.t81w";
+    const fs::path canonfs_root = make_temp_path("t81-cli-answer-fixed-canonfs", "");
+    fs::create_directories(canonfs_root);
+
+    const auto hash_result = run_cli(t81_bin, {"determinism", "hash", model_path.string()});
+    T81_TEST_CHECK(hash_result.exit_code == 0);
+    std::istringstream hash_stream(hash_result.stdout_text);
+    std::string raw_model_hash;
+    hash_stream >> raw_model_hash;
+    T81_TEST_CHECK(!raw_model_hash.empty());
+
+    const fs::path allow_policy = make_temp_path("t81-cli-answer-fixed-allow", ".apl");
+    {
+      std::ofstream out(allow_policy);
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"])\n"
+             "  (require-axion-event (reason \"task:answer_fixed.v1\")))\n";
+    }
+
+    const fs::path deny_policy = make_temp_path("t81-cli-answer-fixed-deny", ".apl");
+    {
+      std::ofstream out(deny_policy);
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"]))\n";
+    }
+
+    const auto allow_result =
+        run_cli(t81_bin, {"ai", "task", "answer-fixed", "--model", "answer-fixed-demo",
+                          "--model-file", model_path.string(), "--policy", allow_policy.string(),
+                          "--canonfs-root", canonfs_root.string(), "--mode",
+                          "strict_deterministic", "--input", "greet hello"});
+    T81_TEST_CHECK(allow_result.exit_code == 0);
+    T81_TEST_CHECK(contains(allow_result.stdout_text,
+                            "\"schema\": \"t81.ai.task-run.answer-fixed.v1\""));
+    T81_TEST_CHECK(appears_in_order(
+        allow_result.stdout_text,
+        {"\"result_summary\": ", "\"result_class\": \"ai_task_result\"",
+         "\"result_meaning\": ", "\"next_step_hint\": ",
+         "\"termination_reason\": \"single_step_max_score\"",
+         "\"output_kind\": \"canonical_task_answer\"", "\"output_preview\": \"YES\"",
+         "\"result_ref\": ", "\"provenance_ref\": ", "\"policy_result\": \"allowed\""}));
+    T81_TEST_CHECK(contains(allow_result.stdout_text, "\"answer\": \"YES\""));
+    T81_TEST_CHECK(contains(allow_result.stdout_text, "\"answer_token_ids\": [42]"));
+
+    const auto result_ref = extract_json_string(allow_result.stdout_text, "result_ref");
+    const auto provenance_ref = extract_json_string(allow_result.stdout_text, "provenance_ref");
+    T81_TEST_CHECK(result_ref.has_value());
+    T81_TEST_CHECK(provenance_ref.has_value());
+
+    const auto result_artifact =
+        run_cli(t81_bin, {"canonfs", "get", *result_ref, "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(result_artifact.exit_code == 0);
+    T81_TEST_CHECK(
+        contains(result_artifact.stdout_text, "\"schema\": \"t81.ai.task.answer-fixed.v1\""));
+    T81_TEST_CHECK(contains(result_artifact.stdout_text, "\"answer\": \"YES\""));
+    T81_TEST_CHECK(contains(result_artifact.stdout_text, "\"answer_token_ids\": [42]"));
+
+    const auto provenance_artifact = run_cli(
+        t81_bin, {"canonfs", "get", *provenance_ref, "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(provenance_artifact.exit_code == 0);
+    T81_TEST_CHECK(contains(provenance_artifact.stdout_text,
+                            "\"schema\": \"t81.ai.task.provenance.v1\""));
+    T81_TEST_CHECK(contains(provenance_artifact.stdout_text, "\"policy_result\": \"allowed\""));
+    T81_TEST_CHECK(contains(provenance_artifact.stdout_text, "\"selected_token_id\": 42"));
+
+    const auto deny_result =
+        run_cli(t81_bin, {"ai", "task", "answer-fixed", "--model", "answer-fixed-demo",
+                          "--model-file", model_path.string(), "--policy", deny_policy.string(),
+                          "--canonfs-root", canonfs_root.string(), "--mode",
+                          "strict_deterministic", "--input", "greet hello"});
+    T81_TEST_CHECK(deny_result.exit_code == 13);
+    T81_TEST_CHECK(contains(deny_result.stderr_text, "SecurityFault"));
+    T81_TEST_CHECK(contains(deny_result.stderr_text,
+                            "answer-fixed denied (policy is missing require-axion-event reason"));
+
+    std::error_code ignore_ec;
+    fs::remove(allow_policy, ignore_ec);
+    fs::remove(deny_policy, ignore_ec);
+    fs::remove_all(model_dir, ignore_ec);
+    fs::remove_all(canonfs_root, ignore_ec);
+  }
+
+  {
+    const fs::path model_dir = make_temp_path("t81-cli-assess-fixed-model-dir", "");
+    const fs::path canonfs_root = make_temp_path("t81-cli-assess-fixed-canonfs", "");
+    const fs::path action_dir = make_temp_path("t81-cli-assess-fixed-actions", "");
+    fs::create_directories(canonfs_root);
+    fs::create_directories(action_dir);
+
+    const fs::path builder = fs::absolute(t81_bin).parent_path() / "t81_make_assess_fixed_demo";
+    T81_TEST_CHECK(fs::exists(builder));
+    const auto build_result = run_cli(builder, {model_dir.string()});
+    T81_TEST_CHECK(build_result.exit_code == 0);
+
+    const fs::path model_path = model_dir / "assess-fixed-demo.t81w";
+    const auto hash_result = run_cli(t81_bin, {"determinism", "hash", model_path.string()});
+    T81_TEST_CHECK(hash_result.exit_code == 0);
+    std::istringstream hash_stream(hash_result.stdout_text);
+    std::string raw_model_hash;
+    hash_stream >> raw_model_hash;
+    T81_TEST_CHECK(!raw_model_hash.empty());
+
+    const fs::path allow_policy = make_temp_path("t81-cli-assess-fixed-allow", ".apl");
+    {
+      std::ofstream out(allow_policy);
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:" << raw_model_hash << "\"])\n"
+             "  (require-axion-event (reason \"task:assess_fixed.v1\")))\n";
+    }
+
+    const auto task_result =
+        run_cli(t81_bin, {"ai", "task", "assess-fixed", "--model", "assess-fixed-demo",
+                          "--model-file", model_path.string(), "--policy", allow_policy.string(),
+                          "--canonfs-root", canonfs_root.string(), "--mode",
+                          "strict_deterministic", "--input", "greet hello"});
+    T81_TEST_CHECK(task_result.exit_code == 0);
+    const auto result_ref = extract_json_string(task_result.stdout_text, "result_ref");
+    const auto provenance_ref = extract_json_string(task_result.stdout_text, "provenance_ref");
+    T81_TEST_CHECK(result_ref.has_value());
+    T81_TEST_CHECK(provenance_ref.has_value());
+
+    const fs::path action_path = action_dir / "allow.marker";
+    {
+      std::ofstream out(action_path);
+      out << "decision=ALLOW\n"
+          << "reason_code=GREETING_PAIR\n"
+          << "source_result_ref=" << *result_ref << "\n";
+    }
+    const auto action_ref_result =
+        run_cli(t81_bin, {"canonfs", "put-file", action_path.string(), "--canonfs-root",
+                          canonfs_root.string()});
+    T81_TEST_CHECK(action_ref_result.exit_code == 0);
+    std::string action_ref = action_ref_result.stdout_text;
+    while (!action_ref.empty() && (action_ref.back() == '\n' || action_ref.back() == '\r')) {
+      action_ref.pop_back();
+    }
+    T81_TEST_CHECK(!action_ref.empty());
+
+    const auto write_store_result =
+        run_cli(t81_bin, {"artifact", "write-store-record", "--schema",
+                          "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
+                          "source_result_ref=" + *result_ref, "--field",
+                          "source_provenance_ref=" + *provenance_ref, "--field",
+                          "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
+                          "termination_reason=single_step_max_score", "--field",
+                          "selected_action=write_allow_marker", "--field",
+                          "selected_path=actions/allow.marker", "--field",
+                          "action_ref=" + action_ref, "--canonfs-root",
+                          canonfs_root.string()});
+    T81_TEST_CHECK(write_store_result.exit_code == 0);
+    T81_TEST_CHECK(
+        contains(write_store_result.stdout_text, "\"schema\": \"t81.artifact.record-write-store.v1\""));
+    T81_TEST_CHECK(appears_in_order(
+        write_store_result.stdout_text,
+        {"\"result_summary\": ", "\"schema_id\": ", "\"validation_result\": \"pass\"",
+         "\"record_ref\": ", "\"next_step_hint\": ", "\"status\": \"pass\""}));
+    const auto record_ref = extract_json_string(write_store_result.stdout_text, "record_ref");
+    T81_TEST_CHECK(record_ref.has_value());
+
+    const auto bundle_store_result =
+        run_cli(t81_bin, {"artifact", "store-bundle", "--schema",
+                          "t81.ai.task.assess-fixed.bundle.v1", "--field",
+                          "source_result_ref=" + *result_ref, "--field",
+                          "source_provenance_ref=" + *provenance_ref, "--field",
+                          "action_ref=" + action_ref, "--field", "record_ref=" + *record_ref,
+                          "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(bundle_store_result.exit_code == 0);
+    T81_TEST_CHECK(
+        contains(bundle_store_result.stdout_text, "\"schema\": \"t81.artifact.bundle-store.v1\""));
+    T81_TEST_CHECK(appears_in_order(
+        bundle_store_result.stdout_text,
+        {"\"result_summary\": ", "\"schema_id\": ", "\"validation_result\": \"pass\"",
+         "\"bundle_ref\": ", "\"next_step_hint\": ", "\"status\": \"pass\""}));
+    const auto bundle_ref = extract_json_string(bundle_store_result.stdout_text, "bundle_ref");
+    T81_TEST_CHECK(bundle_ref.has_value());
+
+    const auto bundle_artifact = run_cli(
+        t81_bin, {"canonfs", "get", *bundle_ref, "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(bundle_artifact.exit_code == 0);
+    T81_TEST_CHECK(
+        contains(bundle_artifact.stdout_text, "\"schema\": \"t81.ai.task.assess-fixed.bundle.v1\""));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"source_result_ref\": "));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"source_provenance_ref\": "));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"action_ref\": "));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"record_ref\": "));
+
+    std::error_code ignore_ec;
+    fs::remove(allow_policy, ignore_ec);
+    fs::remove_all(model_dir, ignore_ec);
+    fs::remove_all(canonfs_root, ignore_ec);
+    fs::remove_all(action_dir, ignore_ec);
   }
 
   {

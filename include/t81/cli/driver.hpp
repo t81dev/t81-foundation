@@ -21,7 +21,8 @@ std::optional<t81::tisc::Program> build_program_from_source(
 
 int compile(const std::filesystem::path& input, const std::filesystem::path& output,
             const std::string& source_override = {}, const std::string& source_name = {},
-            std::shared_ptr<t81::weights::ModelFile> weights_model = nullptr);
+            std::shared_ptr<t81::weights::ModelFile> weights_model = nullptr,
+            bool announce_success = true);
 int run_tisc(const std::filesystem::path& path,
              const std::optional<std::filesystem::path>& policy_path = std::nullopt,
              bool trace_enabled = false,

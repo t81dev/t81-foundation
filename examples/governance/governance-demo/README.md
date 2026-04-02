@@ -16,7 +16,7 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 
 # Run the demo
-bash examples/governance-demo/run_governance_demo.sh
+bash examples/governance/governance-demo/run_governance_demo.sh
 ```
 
 ## Expected Output

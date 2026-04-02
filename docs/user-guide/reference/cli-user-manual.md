@@ -23,8 +23,8 @@ Show top-level help:
 Minimal compile/run flow:
 
 ```bash
-./build/t81 code check examples/hello_world.t81
-./build/t81 code build examples/hello_world.t81 -o hello.tisc
+./build/t81 code check examples/core-language/hello_world.t81
+./build/t81 code build examples/core-language/hello_world.t81 -o hello.tisc
 ./build/t81 code run hello.tisc
 ```
 

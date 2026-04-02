@@ -20,7 +20,7 @@ Depending on your background and goals, we recommend the following learning path
 *   **New Contributors & T81Lang Learners:**
     Start in `core-language/` to see basic syntax (`hello_world.t81`), native types (`data_types.t81`), and error handling (`option_result_match.t81`).
 *   **Safety & Governance Researchers:**
-    Dive into `governance/` to see the Axion Kernel in action. Start with `governance-demo/governed_matmul.t81` to understand how mathematical operations are policy-gated, then review the `.apl` (Axion Policy Language) traces.
+    Dive into `governance/` to see the Axion Kernel in action. Start with `governance/governance-demo/governed_matmul.t81` to understand how mathematical operations are policy-gated, then review the `.apl` (Axion Policy Language) traces. This path also needs a `--weights-model` runtime model or the demo script.
 *   **AI/ML & Systems Engineers:**
     Explore `ai-and-inference/` and `model-load-canonfs/`. These examples demonstrate how T81 securely parses external `.safetensors` or `.gguf` weights, probes layers immutably via CanonFS, and executes tensor operations deterministically.
 *   **Architects & Visionaries:**
@@ -29,7 +29,7 @@ Depending on your background and goals, we recommend the following learning path
 ## 🌟 Standout Demonstrations
 
 *   **The Governance Demo (`governance/governance-demo/`)** ✅
-    Proves our core thesis: computation can be dynamically policy-gated. Run `run_governance_demo.sh` to see an Axion policy dynamically allow or deny matrix multiplications based on semantic intent and resource thresholds.
+    Proves our core thesis: computation can be dynamically policy-gated. Run `bash examples/governance/governance-demo/run_governance_demo.sh` to see an Axion policy allow and deny the same weights-backed tensor program.
 *   **Model Loading via CanonFS (`ai-and-inference/model-load-canonfs/`)** ⚠️
     Demonstrates bridging the outside world into T81's immutable storage (CanonFS). Features scripts like `run_real_hf_tiny_model.sh` and tools that parse and probe real Hugging Face model weights deterministically.
 *   **LLaMA Bridge & AI Integration (`ai-and-inference/ai-integration/`)** ⚠️
@@ -54,7 +54,7 @@ Verify your environment and initialize your local CanonFS state:
 ### Running `.t81` Scripts
 To execute a standard T81 script via the VM:
 ```bash
-./build/t81 run examples/core-language/hello_world.t81
+./build/t81 code run examples/core-language/hello_world.t81
 ```
 
 ### Running C++ Host Integrations

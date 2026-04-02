@@ -1,6 +1,9 @@
 #include "ai_cli_shared.hpp"
 
+#include "t81/axion/policy.hpp"
 #include "t81/cli/driver.hpp"
+#include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/canon_types.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/math/quantization/ternary_codec.hpp"
 #include "t81/vm/decoder.hpp"
@@ -11,6 +14,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -37,6 +41,152 @@ constexpr std::string_view kFixedTimestamp = "1970-01-01T00:00:00Z";
 constexpr std::string_view kPolicyAllowReason = "AI_POLICY_ALLOW_MODEL_HASH_MATCH";
 constexpr std::size_t kBoundedDecodeTraceSteps = 4;
 constexpr std::size_t kDecodeContextHistoryWindow = 3;
+constexpr std::string_view kAnswerFixedTaskKind = "answer_fixed.v1";
+constexpr std::string_view kAnswerFixedResultSchema = "t81.ai.task.answer-fixed.v1";
+constexpr std::string_view kAnswerFixedProvenanceSchema = "t81.ai.task.provenance.v1";
+constexpr std::string_view kAnswerFixedTaskMarker = "task:answer_fixed.v1";
+constexpr std::string_view kClassifyFixedTaskKind = "classify_fixed.v1";
+constexpr std::string_view kClassifyFixedResultSchema = "t81.ai.task.classify-fixed.v1";
+constexpr std::string_view kClassifyFixedTaskMarker = "task:classify_fixed.v1";
+constexpr std::string_view kRouteFixedTaskKind = "route_fixed.v1";
+constexpr std::string_view kRouteFixedResultSchema = "t81.ai.task.route-fixed.v1";
+constexpr std::string_view kRouteFixedTaskMarker = "task:route_fixed.v1";
+constexpr std::string_view kAssessFixedTaskKind = "assess_fixed.v1";
+constexpr std::string_view kAssessFixedResultSchema = "t81.ai.task.assess-fixed.v1";
+constexpr std::string_view kAssessFixedTaskMarker = "task:assess_fixed.v1";
+
+struct FixedLabelVocabularyEntry {
+  int token_id = 0;
+  std::string_view value;
+};
+
+struct TaskMaterialization {
+  std::string artifact;
+  std::string output_preview;
+  std::string cli_fields_json;
+};
+
+struct FixedLabelTaskDescriptor;
+using TaskMaterializer = TaskMaterialization (*)(
+    const FixedLabelTaskDescriptor& descriptor, std::string_view input_hash,
+    std::string_view model_hash, int token_id, std::string_view termination_reason);
+
+struct FixedLabelTaskDescriptor {
+  std::string_view cli_name;
+  std::string_view task_kind;
+  std::string_view task_name;
+  std::string_view result_schema;
+  std::string_view task_marker;
+  std::string_view result_value_field;
+  std::string_view result_token_ids_field;
+  std::string_view result_summary;
+  std::string_view result_meaning;
+  std::string_view output_kind;
+  TaskMaterializer materialize = nullptr;
+  const FixedLabelVocabularyEntry* vocabulary = nullptr;
+  std::size_t vocabulary_size = 0;
+};
+
+struct AssessFixedVocabularyEntry {
+  int token_id = 0;
+  std::string_view decision;
+  std::string_view reason_code;
+};
+
+TaskMaterialization materialize_fixed_label_task(const FixedLabelTaskDescriptor& descriptor,
+                                                std::string_view input_hash,
+                                                std::string_view model_hash,
+                                                int token_id,
+                                                std::string_view termination_reason);
+TaskMaterialization materialize_assess_fixed_task(const FixedLabelTaskDescriptor& descriptor,
+                                                  std::string_view input_hash,
+                                                  std::string_view model_hash,
+                                                  int token_id,
+                                                  std::string_view termination_reason);
+
+constexpr std::array<FixedLabelVocabularyEntry, 2> kAnswerFixedVocabulary{{
+    {42, "YES"},
+    {9, "NO"},
+}};
+
+constexpr std::array<FixedLabelVocabularyEntry, 2> kClassifyFixedVocabulary{{
+    {42, "POSITIVE"},
+    {9, "NEGATIVE"},
+}};
+
+constexpr std::array<FixedLabelVocabularyEntry, 3> kRouteFixedVocabulary{{
+    {42, "A"},
+    {9, "B"},
+    {7, "C"},
+}};
+
+constexpr std::array<AssessFixedVocabularyEntry, 3> kAssessFixedVocabulary{{
+    {42, "ALLOW", "GREETING_PAIR"},
+    {9, "DENY", "WORLD_SEQUENCE"},
+    {7, "REVIEW", "PREFIX_ONLY"},
+}};
+
+constexpr FixedLabelTaskDescriptor kAnswerFixedDescriptor{
+    .cli_name = "answer-fixed",
+    .task_kind = kAnswerFixedTaskKind,
+    .task_name = "answer_fixed",
+    .result_schema = kAnswerFixedResultSchema,
+    .task_marker = kAnswerFixedTaskMarker,
+    .result_value_field = "answer",
+    .result_token_ids_field = "answer_token_ids",
+    .result_summary = "answer-fixed task completed and stored a canonical answer artifact",
+    .result_meaning = "produced a bounded, canonical answer artifact",
+    .output_kind = "canonical_task_answer",
+    .materialize = materialize_fixed_label_task,
+    .vocabulary = kAnswerFixedVocabulary.data(),
+    .vocabulary_size = kAnswerFixedVocabulary.size(),
+};
+
+constexpr FixedLabelTaskDescriptor kClassifyFixedDescriptor{
+    .cli_name = "classify-fixed",
+    .task_kind = kClassifyFixedTaskKind,
+    .task_name = "classify_fixed",
+    .result_schema = kClassifyFixedResultSchema,
+    .task_marker = kClassifyFixedTaskMarker,
+    .result_value_field = "label",
+    .result_token_ids_field = "label_token_ids",
+    .result_summary = "classify-fixed task completed and stored a canonical label artifact",
+    .result_meaning = "produced a bounded, canonical classification artifact",
+    .output_kind = "canonical_task_label",
+    .materialize = materialize_fixed_label_task,
+    .vocabulary = kClassifyFixedVocabulary.data(),
+    .vocabulary_size = kClassifyFixedVocabulary.size(),
+};
+
+constexpr FixedLabelTaskDescriptor kRouteFixedDescriptor{
+    .cli_name = "route-fixed",
+    .task_kind = kRouteFixedTaskKind,
+    .task_name = "route_fixed",
+    .result_schema = kRouteFixedResultSchema,
+    .task_marker = kRouteFixedTaskMarker,
+    .result_value_field = "route",
+    .result_token_ids_field = "route_token_ids",
+    .result_summary = "route-fixed task completed and stored a canonical route artifact",
+    .result_meaning = "produced a bounded, canonical route selection artifact",
+    .output_kind = "canonical_task_route",
+    .materialize = materialize_fixed_label_task,
+    .vocabulary = kRouteFixedVocabulary.data(),
+    .vocabulary_size = kRouteFixedVocabulary.size(),
+};
+
+constexpr FixedLabelTaskDescriptor kAssessFixedDescriptor{
+    .cli_name = "assess-fixed",
+    .task_kind = kAssessFixedTaskKind,
+    .task_name = "assess_fixed",
+    .result_schema = kAssessFixedResultSchema,
+    .task_marker = kAssessFixedTaskMarker,
+    .result_value_field = "decision",
+    .result_token_ids_field = "decision_token_ids",
+    .result_summary = "assess-fixed task completed and stored a canonical assessment artifact",
+    .result_meaning = "produced a bounded, canonical assessment artifact with fixed decision metadata",
+    .output_kind = "canonical_task_assessment",
+    .materialize = materialize_assess_fixed_task,
+};
 
 std::string json_escape(std::string_view text) {
   std::string out;
@@ -72,6 +222,28 @@ std::string sha3_hex_bytes(std::span<const std::uint8_t> bytes) {
 std::string sha3_hex_text(std::string_view text) {
   const auto* begin = reinterpret_cast<const std::uint8_t*>(text.data());
   return sha3_hex_bytes(std::span<const std::uint8_t>(begin, text.size()));
+}
+
+bool is_tensor_handle_output(std::string_view text) {
+  if (text.size() < 10) {
+    return false;
+  }
+  if (!text.starts_with("<tensor#") || text.back() != '>') {
+    return false;
+  }
+  for (std::size_t i = 8; i + 1 < text.size(); ++i) {
+    if (!std::isdigit(static_cast<unsigned char>(text[i]))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool all_unknown_token_pieces(const std::vector<std::string>& pieces) {
+  return !pieces.empty() &&
+         std::all_of(pieces.begin(), pieces.end(), [](const std::string& piece) {
+           return piece.rfind("<unk:", 0) == 0;
+         });
 }
 
 std::string fingerprint_file(const fs::path& path) {
@@ -118,6 +290,71 @@ bool write_text_file(const fs::path& path, std::string_view text, std::string& e
     return false;
   }
   return true;
+}
+
+std::string read_text_file_binary(const fs::path& path, std::string& error) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    error = "could not read " + path.string();
+    return {};
+  }
+  return std::string((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+}
+
+std::string normalize_task_input_text(std::string_view text) {
+  std::string normalized;
+  normalized.reserve(text.size());
+  for (std::size_t i = 0; i < text.size(); ++i) {
+    const char ch = text[i];
+    if (ch == '\r') {
+      if (i + 1 < text.size() && text[i + 1] == '\n') {
+        ++i;
+      }
+      normalized.push_back('\n');
+      continue;
+    }
+    normalized.push_back(ch);
+  }
+  while (!normalized.empty() &&
+         (normalized.back() == '\n' || normalized.back() == '\r')) {
+    normalized.pop_back();
+  }
+  return normalized;
+}
+
+std::string canon_sha3_256_ref(std::string_view text) {
+  const auto* begin = reinterpret_cast<const std::byte*>(text.data());
+  return "sha3-256:" +
+         t81::hash::hash_bytes(std::span<const std::byte>(begin, text.size())).to_string();
+}
+
+std::string full_sha3_512_file_hex(const fs::path& path, std::string& error) {
+  std::ifstream in(path, std::ios::binary);
+  if (!in) {
+    error = "could not read " + path.string();
+    return {};
+  }
+  std::vector<std::uint8_t> bytes((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  return sha3_hex_bytes(bytes);
+}
+
+fs::path resolve_canonfs_root(const std::optional<fs::path>& override_root) {
+  if (override_root) {
+    return fs::absolute(*override_root);
+  }
+  if (const char* env = std::getenv("T81_CANONFS_ROOT")) {
+    if (*env != '\0') {
+      return fs::absolute(fs::path(env));
+    }
+  }
+  return fs::absolute(fs::path(".t81_canonfs"));
+}
+
+int emit_security_fault(std::string_view reason) {
+  std::cerr << "error: Execution trapped: SecurityFault\n"
+            << "reason: " << reason << "\n"
+            << "compute executed: no\n";
+  return 13;
 }
 
 std::string detect_format(const fs::path& model_file, std::string requested_format) {
@@ -236,15 +473,19 @@ std::string backend_selection_json(const BackendSelection& sel) {
 struct Options {
   std::optional<fs::path> model_file;
   std::optional<fs::path> out;
+  std::optional<fs::path> policy_file;
+  std::optional<fs::path> canonfs_root;
   std::string model_id;
   std::string prompt;
   std::string format;
   std::string mode = "reproducible_nondeterministic";
   std::string event_type = "model_load";
   std::string seed = "0";
+  std::string input_text;
   std::string input_file;
   std::string output_file;
   std::string model_hash;
+  std::string field;
   int max_tokens = static_cast<int>(kBoundedDecodeTraceSteps);
   bool verbose = false;
 };
@@ -265,6 +506,18 @@ bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t sta
         return false;
       }
       opts.out = fs::absolute(fs::path(std::string(argv[++i])));
+    } else if (arg == "--policy") {
+      if (i + 1 >= argv.size()) {
+        error = "missing value for --policy";
+        return false;
+      }
+      opts.policy_file = fs::absolute(fs::path(std::string(argv[++i])));
+    } else if (arg == "--canonfs-root") {
+      if (i + 1 >= argv.size()) {
+        error = "missing value for --canonfs-root";
+        return false;
+      }
+      opts.canonfs_root = fs::absolute(fs::path(std::string(argv[++i])));
     } else if (arg == "--model") {
       if (i + 1 >= argv.size()) {
         error = "missing value for --model";
@@ -306,6 +559,12 @@ bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t sta
         error = "missing value for --input";
         return false;
       }
+      opts.input_text = std::string(argv[++i]);
+    } else if (arg == "--input-file") {
+      if (i + 1 >= argv.size()) {
+        error = "missing value for --input-file";
+        return false;
+      }
       opts.input_file = std::string(argv[++i]);
     } else if (arg == "--output") {
       if (i + 1 >= argv.size()) {
@@ -313,6 +572,12 @@ bool parse_named_args(const std::vector<std::string_view>& argv, std::size_t sta
         return false;
       }
       opts.output_file = std::string(argv[++i]);
+    } else if (arg == "--field") {
+      if (i + 1 >= argv.size()) {
+        error = "missing value for --field";
+        return false;
+      }
+      opts.field = std::string(argv[++i]);
     } else if (arg == "--max-tokens") {
       if (i + 1 >= argv.size()) {
         error = "missing value for --max-tokens";
@@ -411,6 +676,154 @@ std::optional<std::string> extract_json_object_field(std::string_view text,
     }
   }
   return std::nullopt;
+}
+
+std::optional<std::string> extract_json_string_field(std::string_view text,
+                                                     std::string_view field) {
+  const std::string needle = "\"" + std::string(field) + "\"";
+  const std::size_t field_pos = text.find(needle);
+  if (field_pos == std::string_view::npos) {
+    return std::nullopt;
+  }
+  const std::size_t colon_pos = text.find(':', field_pos + needle.size());
+  if (colon_pos == std::string_view::npos) {
+    return std::nullopt;
+  }
+  std::size_t value_pos = colon_pos + 1;
+  while (value_pos < text.size() &&
+         std::isspace(static_cast<unsigned char>(text[value_pos]))) {
+    ++value_pos;
+  }
+  if (value_pos >= text.size() || text[value_pos] != '"') {
+    return std::nullopt;
+  }
+  ++value_pos;
+  std::string value;
+  bool escaped = false;
+  for (std::size_t i = value_pos; i < text.size(); ++i) {
+    const char ch = text[i];
+    if (escaped) {
+      switch (ch) {
+        case 'n':
+          value.push_back('\n');
+          break;
+        case 'r':
+          value.push_back('\r');
+          break;
+        case 't':
+          value.push_back('\t');
+          break;
+        default:
+          value.push_back(ch);
+          break;
+      }
+      escaped = false;
+      continue;
+    }
+    if (ch == '\\') {
+      escaped = true;
+      continue;
+    }
+    if (ch == '"') {
+      return value;
+    }
+    value.push_back(ch);
+  }
+  return std::nullopt;
+}
+
+bool parse_prefixed_canon_ref(std::string_view prefixed_hash, t81::canonfs::CanonRef& ref) {
+  constexpr std::string_view prefix = "sha3-256:";
+  if (!prefixed_hash.starts_with(prefix)) {
+    return false;
+  }
+  try {
+    ref.hash.h = t81::hash::CanonHash81::from_string(std::string(prefixed_hash.substr(prefix.size())));
+    return true;
+  } catch (...) {
+    return false;
+  }
+}
+
+bool load_canonfs_raw_block_text(const fs::path& canonfs_root, std::string_view ref_text,
+                                 std::string& text, std::string& error) {
+  t81::canonfs::CanonRef ref;
+  if (!parse_prefixed_canon_ref(ref_text, ref)) {
+    error = "invalid CanonFS ref: " + std::string(ref_text);
+    return false;
+  }
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+  auto read_res = driver->read_object_bytes(ref);
+  if (!read_res) {
+    error = "canonfs object not found or failed verification";
+    return false;
+  }
+  text.clear();
+  text.reserve(read_res->size());
+  for (std::byte b : *read_res) {
+    text.push_back(static_cast<char>(std::to_integer<unsigned char>(b)));
+  }
+  return true;
+}
+
+bool is_supported_ai_task_result_schema(std::string_view schema) {
+  return schema == kAnswerFixedResultSchema || schema == kClassifyFixedResultSchema ||
+         schema == kRouteFixedResultSchema || schema == kAssessFixedResultSchema;
+}
+
+bool is_supported_ai_task_result_field(std::string_view field) {
+  return field == "schema" || field == "task" || field == "termination_reason" ||
+         field == "answer" || field == "label" || field == "route" || field == "decision" ||
+         field == "reason_code" || field == "input_hash" || field == "model_hash";
+}
+
+int cmd_task_read_field(const Options& opts, const std::vector<std::string>& positional) {
+  if (positional.size() != 1) {
+    std::cerr << "error: read-field requires exactly one artifact selector\n";
+    return 1;
+  }
+  if (opts.field.empty()) {
+    std::cerr << "error: read-field requires --field <name>\n";
+    return 1;
+  }
+  if (!is_supported_ai_task_result_field(opts.field)) {
+    std::cerr << "error: read-field supports only canonical AI task result fields\n";
+    return 1;
+  }
+
+  std::string artifact_text;
+  const std::string selector = positional.front();
+  if (selector.rfind("sha3-256:", 0) == 0) {
+    std::string read_error;
+    if (!load_canonfs_raw_block_text(resolve_canonfs_root(opts.canonfs_root), selector, artifact_text,
+                                     read_error)) {
+      std::cerr << "error: read-field: " << read_error << "\n";
+      return 1;
+    }
+  } else {
+    std::string read_error;
+    artifact_text = read_text_file_binary(fs::absolute(fs::path(selector)), read_error);
+    if (!read_error.empty()) {
+      std::cerr << "error: read-field: " << read_error << "\n";
+      return 1;
+    }
+  }
+
+  const auto schema = extract_json_string_field(artifact_text, "schema");
+  if (!schema || !is_supported_ai_task_result_schema(*schema)) {
+    std::cerr << "error: read-field supports only canonical AI task result artifacts\n";
+    return 1;
+  }
+
+  const auto value = extract_json_string_field(artifact_text, opts.field);
+  if (!value) {
+    std::cerr << "error: read-field: field \"" << opts.field
+              << "\" not present in canonical AI task result artifact\n";
+    return 1;
+  }
+
+  std::cout << *value << "\n";
+  return 0;
 }
 
 std::unordered_map<std::string, int> parse_vocab_map(std::string_view vocab_json) {
@@ -525,6 +938,387 @@ std::string render_token_piece_preview(const std::vector<std::string>& token_pie
   return preview;
 }
 
+std::string fixed_label_value_for_token(int token_id, const FixedLabelTaskDescriptor& descriptor) {
+  for (std::size_t i = 0; i < descriptor.vocabulary_size; ++i) {
+    const auto& entry = descriptor.vocabulary[i];
+    if (entry.token_id == token_id) {
+      return std::string(entry.value);
+    }
+  }
+  return "UNKNOWN";
+}
+
+bool policy_requires_task_marker(const t81::axion::Policy& policy, std::string_view marker) {
+  return std::any_of(policy.axion_event_requirements.begin(), policy.axion_event_requirements.end(),
+                     [marker](const t81::axion::Policy::AxionEventRequirement& req) {
+                       return req.reason == marker;
+                     });
+}
+
+bool policy_allows_single_model_hash(const t81::axion::Policy& policy, std::string_view model_hash) {
+  return policy.allowed_ternary_model_hashes.size() == 1 &&
+         policy.allowed_ternary_model_hashes.front() == model_hash;
+}
+
+std::string render_fixed_label_result_artifact(const FixedLabelTaskDescriptor& descriptor,
+                                               std::string_view input_hash,
+                                               std::string_view model_hash,
+                                               std::string_view value,
+                                               int token_id,
+                                               std::string_view termination_reason) {
+  std::ostringstream out;
+  out << "{\n"
+      << "  \"schema\": \"" << descriptor.result_schema << "\",\n"
+      << "  \"task\": \"" << descriptor.task_name << "\",\n"
+      << "  \"input_hash\": \"" << json_escape(input_hash) << "\",\n"
+      << "  \"model_hash\": \"" << json_escape(model_hash) << "\",\n"
+      << "  \"" << descriptor.result_value_field << "\": \"" << json_escape(value) << "\",\n"
+      << "  \"" << descriptor.result_token_ids_field << "\": [" << token_id << "],\n"
+      << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\"\n"
+      << "}\n";
+  return out.str();
+}
+
+TaskMaterialization materialize_fixed_label_task(const FixedLabelTaskDescriptor& descriptor,
+                                                std::string_view input_hash,
+                                                std::string_view model_hash,
+                                                int token_id,
+                                                std::string_view termination_reason) {
+  const std::string value = fixed_label_value_for_token(token_id, descriptor);
+  TaskMaterialization materialization;
+  materialization.output_preview = value;
+  materialization.artifact = render_fixed_label_result_artifact(
+      descriptor, input_hash, model_hash, value, token_id, termination_reason);
+  std::ostringstream cli;
+  cli << "  \"" << descriptor.result_value_field << "\": \"" << json_escape(value) << "\",\n"
+      << "  \"" << descriptor.result_token_ids_field << "\": [" << token_id << "],\n";
+  materialization.cli_fields_json = cli.str();
+  return materialization;
+}
+
+TaskMaterialization materialize_assess_fixed_task(const FixedLabelTaskDescriptor& descriptor,
+                                                  std::string_view input_hash,
+                                                  std::string_view model_hash,
+                                                  int token_id,
+                                                  std::string_view termination_reason) {
+  std::string decision = "UNKNOWN";
+  std::string reason_code = "UNMAPPED_TOKEN";
+  for (const auto& entry : kAssessFixedVocabulary) {
+    if (entry.token_id == token_id) {
+      decision = std::string(entry.decision);
+      reason_code = std::string(entry.reason_code);
+      break;
+    }
+  }
+
+  TaskMaterialization materialization;
+  materialization.output_preview = decision + ":" + reason_code;
+  std::ostringstream artifact;
+  artifact << "{\n"
+           << "  \"schema\": \"" << descriptor.result_schema << "\",\n"
+           << "  \"task\": \"" << descriptor.task_name << "\",\n"
+           << "  \"input_hash\": \"" << json_escape(input_hash) << "\",\n"
+           << "  \"model_hash\": \"" << json_escape(model_hash) << "\",\n"
+           << "  \"decision\": \"" << json_escape(decision) << "\",\n"
+           << "  \"reason_code\": \"" << json_escape(reason_code) << "\",\n"
+           << "  \"" << descriptor.result_token_ids_field << "\": [" << token_id << "],\n"
+           << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\"\n"
+           << "}\n";
+  materialization.artifact = artifact.str();
+
+  std::ostringstream cli;
+  cli << "  \"decision\": \"" << json_escape(decision) << "\",\n"
+      << "  \"reason_code\": \"" << json_escape(reason_code) << "\",\n"
+      << "  \"" << descriptor.result_token_ids_field << "\": [" << token_id << "],\n";
+  materialization.cli_fields_json = cli.str();
+  return materialization;
+}
+
+std::string render_task_provenance_artifact(
+    std::string_view task_name, std::string_view result_ref, std::string_view input_hash,
+    std::string_view model_hash, std::string_view policy_result, std::string_view policy_hash,
+    std::string_view termination_reason, const DecoderStepResult& step,
+    std::string_view selected_piece, std::string_view normalized_input) {
+  std::ostringstream out;
+  out << "{\n"
+      << "  \"schema\": \"" << kAnswerFixedProvenanceSchema << "\",\n"
+      << "  \"task\": \"" << json_escape(task_name) << "\",\n"
+      << "  \"result_ref\": \"" << json_escape(result_ref) << "\",\n"
+      << "  \"input_hash\": \"" << json_escape(input_hash) << "\",\n"
+      << "  \"model_hash\": \"" << json_escape(model_hash) << "\",\n"
+      << "  \"policy_result\": \"" << json_escape(policy_result) << "\",\n"
+      << "  \"policy_hash\": \"" << json_escape(policy_hash) << "\",\n"
+      << "  \"determinism_class\": \"strict_deterministic\",\n"
+      << "  \"backend\": \"t81_reference_vm\",\n"
+      << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n"
+      << "  \"execution_evidence\": {\n"
+      << "    \"input_normalized_sha3_256\": \"" << json_escape(input_hash) << "\",\n"
+      << "    \"input_preview\": \"" << json_escape(normalized_input) << "\",\n"
+      << "    \"step\": " << step.step << ",\n"
+      << "    \"transition_kind\": \"" << json_escape(step.transition_kind) << "\",\n"
+      << "    \"decode_mode_kind\": \"" << json_escape(step.decode_mode_kind) << "\",\n"
+      << "    \"selection_policy_kind\": \""
+      << json_escape(step.probe.selection_policy_kind) << "\",\n"
+      << "    \"candidate_selection_mode\": \""
+      << json_escape(step.probe.candidate_selection_mode) << "\",\n"
+      << "    \"candidate_selection_basis\": \""
+      << json_escape(step.probe.candidate_selection_basis) << "\",\n"
+      << "    \"selected_token_id\": ";
+  if (step.probe.selected_token_id.has_value()) {
+    out << *step.probe.selected_token_id;
+  } else {
+    out << "null";
+  }
+  out << ",\n"
+      << "    \"selected_token_piece\": \"" << json_escape(selected_piece) << "\",\n"
+      << "    \"sampled_token_ids\": [";
+  for (std::size_t i = 0; i < step.probe.sampled_token_ids.size(); ++i) {
+    if (i != 0) {
+      out << ", ";
+    }
+    out << step.probe.sampled_token_ids[i];
+  }
+  out << "],\n"
+      << "    \"sampled_token_scores\": [";
+  for (std::size_t i = 0; i < step.probe.sampled_token_scores.size(); ++i) {
+    if (i != 0) {
+      out << ", ";
+    }
+    out << step.probe.sampled_token_scores[i];
+  }
+  out << "],\n"
+      << "    \"prompt_token_history\": [";
+  for (std::size_t i = 0; i < step.probe.prompt_token_ids.size(); ++i) {
+    if (i != 0) {
+      out << ", ";
+    }
+    out << step.probe.prompt_token_ids[i];
+  }
+  out << "],\n"
+      << "    \"generated_token_history\": [";
+  for (std::size_t i = 0; i < step.transition.generated_token_history.size(); ++i) {
+    if (i != 0) {
+      out << ", ";
+    }
+    out << step.transition.generated_token_history[i];
+  }
+  out << "],\n"
+      << "    \"hidden_tensor_signature_sha256\": \""
+      << json_escape(step.transition.hidden_tensor_signature_sha256) << "\",\n"
+      << "    \"kv_state_signature_sha256\": \""
+      << json_escape(step.transition.kv_state_signature_sha256) << "\"\n"
+      << "  }\n"
+      << "}\n";
+  return out.str();
+}
+
+bool write_canonfs_raw_block(const fs::path& canonfs_root, std::string_view text, std::string& ref,
+                             std::string& error);
+
+bool artifact_has_required_contract_fields(std::string_view artifact) {
+  return artifact.find("\"schema\":") != std::string_view::npos &&
+         artifact.find("\"task\":") != std::string_view::npos &&
+         artifact.find("\"termination_reason\":") != std::string_view::npos;
+}
+
+int run_fixed_label_task(const FixedLabelTaskDescriptor& descriptor, const Options& opts) {
+  if (!opts.policy_file) {
+    std::cerr << "error: " << descriptor.cli_name << " requires --policy <file>\n";
+    return 1;
+  }
+  if (opts.mode != "strict_deterministic") {
+    std::cerr << "error: " << descriptor.cli_name << " requires --mode strict_deterministic\n";
+    return 1;
+  }
+  const bool has_inline_input = !opts.input_text.empty();
+  const bool has_file_input = !opts.input_file.empty();
+  if (has_inline_input == has_file_input) {
+    std::cerr << "error: " << descriptor.cli_name
+              << " requires exactly one of --input <text> or --input-file <path>\n";
+    return 1;
+  }
+
+  fs::path model_file;
+  std::string error;
+  if (!require_existing_model_file(opts.model_file, model_file, error)) {
+    std::cerr << "error: " << error << "\n";
+    return 1;
+  }
+  const BackendSelection sel = select_backend(detect_format(model_file, opts.format), opts.mode);
+  if (!sel.supported || sel.selected_backend != "t81_reference_vm" ||
+      sel.effective_determinism_class != "strict_deterministic") {
+    std::cerr << "error: " << descriptor.cli_name
+              << " supports only the strict deterministic t81_reference_vm lane\n";
+    return 1;
+  }
+
+  std::string normalized_input;
+  if (has_inline_input) {
+    normalized_input = normalize_task_input_text(opts.input_text);
+  } else {
+    std::string input_error;
+    normalized_input = normalize_task_input_text(
+        read_text_file_binary(fs::absolute(fs::path(opts.input_file)), input_error));
+    if (!input_error.empty()) {
+      std::cerr << "error: " << input_error << "\n";
+      return 1;
+    }
+  }
+
+  std::ifstream policy_in(*opts.policy_file);
+  if (!policy_in) {
+    std::cerr << "error: could not open policy file: " << opts.policy_file->string() << "\n";
+    return 1;
+  }
+  const std::string policy_text((std::istreambuf_iterator<char>(policy_in)),
+                                std::istreambuf_iterator<char>());
+  auto parsed_policy = t81::axion::parse_policy(policy_text);
+  if (!parsed_policy) {
+    std::cerr << "error: policy parse failed: " << parsed_policy.error() << "\n";
+    return 1;
+  }
+  const t81::axion::Policy policy = parsed_policy.value();
+
+  std::string model_hash_error;
+  const std::string model_hash = "sha3-512:" + full_sha3_512_file_hex(model_file, model_hash_error);
+  if (!model_hash_error.empty()) {
+    std::cerr << "error: " << model_hash_error << "\n";
+    return 1;
+  }
+  if (!policy_allows_single_model_hash(policy, model_hash)) {
+    return emit_security_fault(
+        std::string(descriptor.cli_name) +
+        " denied (policy must admit exactly one allowed-ternary-model-hashes entry matching model checksum=" +
+        model_hash + ")");
+  }
+  if (!policy_requires_task_marker(policy, descriptor.task_marker)) {
+    return emit_security_fault(
+        std::string(descriptor.cli_name) + " denied (policy is missing require-axion-event reason \"" +
+        std::string(descriptor.task_marker) + "\")");
+  }
+
+  const auto input_hash = canon_sha3_256_ref(normalized_input);
+  const auto policy_hash = canon_sha3_256_ref(policy_text);
+  const std::string task_prompt = normalized_input;
+
+  std::optional<fs::path> resolved_model_path;
+  auto model = t81::cli::load_weights_model(model_file.string(), &error, &resolved_model_path);
+  if (!model) {
+    std::cerr << "error: failed to load model for " << descriptor.cli_name << ": " << error << "\n";
+    return 1;
+  }
+  const std::string architecture_profile = t81::vm::detect_architecture_profile(*model);
+  if (architecture_profile != "llama-dense-v1") {
+    std::cerr << "error: " << descriptor.cli_name
+              << " supports only llama-dense-v1 narrow greedy decode\n";
+    return 1;
+  }
+  const auto companions = t81::vm::find_model_companion_files(
+      resolved_model_path.value_or(fs::absolute(model_file)));
+  const auto probe = t81::vm::run_native_vm_probe(t81::vm::make_initial_probe_request(
+      model, architecture_profile, task_prompt,
+      companions.has_tokenizer ? std::optional<fs::path>(companions.tokenizer_path)
+                               : std::nullopt));
+  if (!probe.ok || !probe.selected_token_id.has_value()) {
+    std::cerr << "error: " << descriptor.cli_name << " execution failed";
+    if (!probe.trap.empty()) {
+      std::cerr << ": " << probe.trap;
+    }
+    std::cerr << "\n";
+    return 1;
+  }
+
+  t81::vm::DecoderStepResult step;
+  step.ok = true;
+  step.step = 0;
+  step.transition_kind = "prompt_seed_to_bounded_decode_state.v1";
+  step.decode_mode_kind = "initial_probe_decode_mode.v1";
+  step.termination_reason = "single_step_max_score";
+  step.probe = probe;
+  step.transition = t81::vm::derive_initial_transition(probe);
+
+  std::string selected_piece = "<unk:" + std::to_string(*step.probe.selected_token_id) + ">";
+  if (companions.has_tokenizer) {
+    const auto pieces =
+        lookup_tokenizer_token_pieces(companions.tokenizer_path, {*step.probe.selected_token_id});
+    if (!pieces.empty()) {
+      selected_piece = pieces.front();
+    }
+  }
+  const std::string termination_reason = step.termination_reason;
+  if (descriptor.materialize == nullptr) {
+    std::cerr << "error: " << descriptor.cli_name << " is missing a task materializer\n";
+    return 1;
+  }
+  const TaskMaterialization materialization = descriptor.materialize(
+      descriptor, input_hash, model_hash, *step.probe.selected_token_id, termination_reason);
+  if (!artifact_has_required_contract_fields(materialization.artifact)) {
+    std::cerr << "error: " << descriptor.cli_name
+              << " produced an invalid result artifact contract\n";
+    return 1;
+  }
+  const fs::path canon_root = resolve_canonfs_root(opts.canonfs_root);
+  std::string result_ref;
+  std::string canon_error;
+  if (!write_canonfs_raw_block(canon_root, materialization.artifact, result_ref, canon_error)) {
+    std::cerr << "error: " << canon_error << "\n";
+    return 1;
+  }
+
+  const std::string provenance_artifact = render_task_provenance_artifact(
+      descriptor.task_name, result_ref, input_hash, model_hash, "allowed", policy_hash,
+      termination_reason, step, selected_piece, normalized_input);
+  std::string provenance_ref;
+  if (!write_canonfs_raw_block(canon_root, provenance_artifact, provenance_ref, canon_error)) {
+    std::cerr << "error: " << canon_error << "\n";
+    return 1;
+  }
+
+  const std::string next_step_hint =
+      "next (progress): t81 canonfs get " + result_ref +
+      " --out <path>. next (inspect): t81 canonfs get " + provenance_ref;
+  std::ostringstream out;
+  out << "{\n"
+      << "  \"schema\": \"t81.ai.task-run." << descriptor.cli_name << ".v1\",\n"
+      << "  \"task_kind\": \"" << descriptor.task_kind << "\",\n"
+      << "  \"model_id\": \"" << json_escape(opts.model_id.empty() ? model_file.stem().string()
+                                                                  : opts.model_id) << "\",\n"
+      << "  \"model_file\": \"" << json_escape(fs::absolute(model_file).string()) << "\",\n"
+      << "  \"model_hash\": \"" << json_escape(model_hash) << "\",\n"
+      << "  \"requested_mode\": \"strict_deterministic\",\n"
+      << "  \"selected_backend\": \"t81_reference_vm\",\n"
+      << "  \"result_summary\": \"" << json_escape(descriptor.result_summary) << "\",\n"
+      << "  \"result_class\": \"ai_task_result\",\n"
+      << "  \"result_meaning\": \"" << json_escape(descriptor.result_meaning) << "\",\n"
+      << "  \"next_step_hint\": \"" << json_escape(next_step_hint) << "\",\n"
+      << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n"
+      << "  \"output_kind\": \"" << descriptor.output_kind << "\",\n"
+      << "  \"output_preview\": \"" << json_escape(materialization.output_preview) << "\",\n"
+      << "  \"result_ref\": \"" << json_escape(result_ref) << "\",\n"
+      << "  \"provenance_ref\": \"" << json_escape(provenance_ref) << "\",\n"
+      << "  \"policy_result\": \"allowed\",\n"
+      << "  \"policy_hash\": \"" << json_escape(policy_hash) << "\",\n"
+      << "  \"input_hash\": \"" << json_escape(input_hash) << "\",\n"
+      << materialization.cli_fields_json
+      << "  \"status\": \"pass\"\n"
+      << "}\n";
+  return emit_or_write(out.str(), opts.out);
+}
+
+bool write_canonfs_raw_block(const fs::path& canonfs_root, std::string_view text, std::string& ref,
+                             std::string& error) {
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+  const auto* begin = reinterpret_cast<const std::byte*>(text.data());
+  auto write_res = driver->write_object(
+      t81::canonfs::ObjectType::RawBlock, std::span<const std::byte>(begin, text.size()));
+  if (!write_res) {
+    error = "failed to write CanonFS object";
+    return false;
+  }
+  ref = "sha3-256:" + write_res->hash.h.to_string();
+  return true;
+}
+
 int cmd_backend_capabilities() {
   std::cout
       << "{\n"
@@ -626,7 +1420,14 @@ int cmd_verify_hash(std::string_view model_hash) {
 std::string make_runtime_payload(std::string_view schema, std::string_view model_id,
                                  const fs::path& model_file, const BackendSelection& sel,
                                  std::string_view extra_lines,
-                                 std::string_view status = "pass") {
+                                 std::string_view status = "pass",
+                                 std::string_view result_summary = {},
+                                 std::string_view result_class = {},
+                                 std::string_view result_meaning = {},
+                                 std::string_view next_step_hint = {},
+                                 std::string_view termination_reason = {},
+                                 std::string_view output_kind = {},
+                                 std::string_view output_preview = {}) {
   const fs::path abs_model = fs::absolute(model_file);
   const std::string model_fingerprint = fingerprint_file(abs_model);
   const std::string trace_json = backend_selection_json(sel);
@@ -643,7 +1444,29 @@ std::string make_runtime_payload(std::string_view schema, std::string_view model
       << "  \"strict_core_eligible\": " << (sel.strict_core_eligible ? "true" : "false") << ",\n"
       << "  \"numeric_kernel_class\": \"" << json_escape(sel.numeric_kernel_class) << "\",\n"
       << "  \"effective_determinism_class\": \"" << json_escape(sel.effective_determinism_class)
-      << "\",\n"
+      << "\",\n";
+  if (!result_summary.empty()) {
+    out << "  \"result_summary\": \"" << json_escape(result_summary) << "\",\n";
+  }
+  if (!result_class.empty()) {
+    out << "  \"result_class\": \"" << json_escape(result_class) << "\",\n";
+  }
+  if (!result_meaning.empty()) {
+    out << "  \"result_meaning\": \"" << json_escape(result_meaning) << "\",\n";
+  }
+  if (!next_step_hint.empty()) {
+    out << "  \"next_step_hint\": \"" << json_escape(next_step_hint) << "\",\n";
+  }
+  if (!termination_reason.empty()) {
+    out << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n";
+  }
+  if (!output_kind.empty()) {
+    out << "  \"output_kind\": \"" << json_escape(output_kind) << "\",\n";
+  }
+  if (!output_preview.empty()) {
+    out << "  \"output_preview\": \"" << json_escape(output_preview) << "\",\n";
+  }
+  out
       << "  \"backend_selection_trace_sha256\": \"" << trace_sha << "\",\n"
       << extra_lines
       << "  \"status\": \"" << json_escape(status) << "\"\n"
@@ -666,6 +1489,13 @@ int cmd_inference_run(const Options& opts) {
   const std::string model_id = opts.model_id.empty() ? model_file.stem().string() : opts.model_id;
   const std::string prompt = opts.prompt.empty() ? "deterministic prompt" : opts.prompt;
   std::string payload_status = "pass";
+  std::string result_summary;
+  std::string result_class;
+  std::string result_meaning;
+  std::string next_step_hint;
+  std::string promoted_termination_reason;
+  std::string promoted_output_kind;
+  std::string promoted_output_preview;
   std::ostringstream extra;
   extra << "  \"prompt_sha256\": \"" << sha3_hex_text(prompt) << "\",\n";
 
@@ -1418,8 +2248,7 @@ int cmd_inference_run(const Options& opts) {
               << "\",\n"
               << "  \"decode_trace_full_steps\": " << decode_steps.size() << ",\n"
               << "  \"decode_trace_exposed_steps\": "
-              << (truncate_decode_trace ? 2 : decode_steps.size()) << ",\n"
-              << "  \"termination_reason\": \"" << json_escape(termination_reason) << "\",\n";
+              << (truncate_decode_trace ? 2 : decode_steps.size()) << ",\n";
         if (!decode_probe_failure_trap.empty()) {
           extra << "  \"decode_probe_failure_trap\": \""
                 << json_escape(decode_probe_failure_trap) << "\",\n";
@@ -1983,6 +2812,9 @@ int cmd_inference_run(const Options& opts) {
       std::string generated_preview_policy = "full_sequence.v1";
       std::string output_policy = "verbatim_native_probe.v1";
       std::string output_summary = "raw VM probe output retained";
+      std::string output_kind = "raw_vm_probe_text";
+      result_summary = "bounded native inference completed and retained probe evidence";
+      std::string generated_preview_summary;
       std::string top_level_output = probe.stdout_text;
       const bool guarded_artifact_caution = guarded_bounded_decode;
       const std::size_t window_end =
@@ -2075,6 +2907,13 @@ int cmd_inference_run(const Options& opts) {
         output_policy = "verbatim_with_guarded_caution.v1";
         output_summary = "raw VM probe output retained with guarded caution";
       }
+      if (is_tensor_handle_output(top_level_output)) {
+        output_kind = "tensor_handle";
+        output_summary =
+            "raw VM probe output retained; '<tensor#N>' is a VM tensor handle, not materialized tensor contents";
+        result_summary =
+            "bounded native inference completed; result is retained as a VM tensor handle";
+      }
       if (companions.has_tokenizer && !top_level_generated_token_ids.empty()) {
         top_level_generated_token_pieces =
             lookup_tokenizer_token_pieces(companions.tokenizer_path, top_level_generated_token_ids);
@@ -2085,6 +2924,40 @@ int cmd_inference_run(const Options& opts) {
           generated_preview_policy = "full_sequence_with_guarded_caution.v1";
         }
         top_level_generated_text_preview = render_token_piece_preview(top_level_generated_token_pieces);
+        if (all_unknown_token_pieces(top_level_generated_token_pieces)) {
+          generated_preview_summary =
+              "generated preview uses tokenizer evidence only; '<unk:N>' means no piece text was available for token N";
+        } else {
+          generated_preview_summary =
+              "generated preview renders tokenizer pieces for the selected token sequence";
+        }
+      }
+      promoted_termination_reason = termination_reason;
+      promoted_output_kind = output_kind;
+      if (!top_level_generated_text_preview.empty()) {
+        promoted_output_preview = top_level_generated_text_preview;
+      } else {
+        promoted_output_preview = top_level_output;
+      }
+      if (output_kind == "tensor_handle") {
+        result_class = "tensor_handle";
+        result_meaning =
+            "the result is an intermediate VM tensor handle rather than materialized tensor contents";
+        next_step_hint =
+            "next (progress): none on this path; the result remains a bounded VM tensor handle. next (inspect): inspect output_summary for handle semantics, then read decode_trace and final_decode_state below for the bounded evidence path";
+      } else if (!top_level_generated_text_preview.empty()) {
+        result_class = "bounded_inference_text";
+        result_meaning =
+            "the preview is a bounded tokenizer-backed text glimpse, while the full probe evidence remains below";
+        next_step_hint = all_unknown_token_pieces(top_level_generated_token_pieces)
+                             ? "next (progress): none on this path; this run does not expose a richer user-visible result beyond the tokenizer-only preview. next (inspect): inspect generated_preview_summary, then forward_state_summary or decode_trace for deeper evidence"
+                             : "next (progress): start with generated_text_preview for the bounded visible result; next (inspect): inspect forward_state_summary or decode_trace for deeper evidence";
+      } else {
+        result_class = "probe_output";
+        result_meaning =
+            "the result is retained bounded probe output rather than a separately materialized artifact";
+        next_step_hint =
+            "next (progress): none on this path; the result remains retained bounded probe output. next (inspect): start with output and artifact_visibility, then inspect decode_trace below if you need the full bounded evidence path";
       }
       if (payload_status == "degraded") {
         extra << "  \"degraded_artifact_summary\": {\n"
@@ -2194,12 +3067,29 @@ int cmd_inference_run(const Options& opts) {
         }
         extra << "],\n"
               << "  \"generated_text_preview\": \""
-              << json_escape(top_level_generated_text_preview) << "\",\n";
+              << json_escape(top_level_generated_text_preview) << "\",\n"
+              << "  \"generated_preview_summary\": \""
+              << json_escape(generated_preview_summary) << "\",\n";
       } else {
         extra << ",\n";
       }
       extra << "  \"generated_tokens\": " << generated_tokens << ",\n";
     } else {
+      const bool single_probe_tensor_handle = is_tensor_handle_output(probe.stdout_text);
+      result_summary = single_probe_tensor_handle
+                           ? "single native probe completed; result is retained as a VM tensor handle"
+                           : "single native probe completed and retained probe output";
+      result_class = single_probe_tensor_handle ? "tensor_handle" : "probe_output";
+      result_meaning = single_probe_tensor_handle
+                           ? "the result is an intermediate VM tensor handle rather than materialized tensor contents"
+                           : "the result is the retained output from one deterministic native probe";
+      next_step_hint = single_probe_tensor_handle
+                           ? "next (progress): none on this path; this run does not expose a richer bounded decode result. next (inspect): inspect output_summary for handle semantics"
+                           : "next (progress): none on this path; the result remains retained probe output. next (inspect): start with output for the retained probe result, then inspect tensor_probe if you need the exact native probe inputs";
+      promoted_termination_reason = "no_logits_row_probe";
+      promoted_output_kind =
+          single_probe_tensor_handle ? "tensor_handle" : "raw_vm_probe_text";
+      promoted_output_preview = probe.stdout_text;
       extra << ",\n";
       extra << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
             << "  \"bounded_decode_health\": {\n"
@@ -2230,24 +3120,54 @@ int cmd_inference_run(const Options& opts) {
             << "    \"generated_preview_policy\": \"not_applicable_single_probe.v1\",\n"
             << "    \"summary\": \"single native probe evidence is fully retained\"\n"
             << "  },\n"
-            << "  \"termination_reason\": \"no_logits_row_probe\",\n"
+            << "  \"output_summary\": \""
+            << json_escape(single_probe_tensor_handle
+                               ? "raw VM probe output retained; '<tensor#N>' is a VM tensor handle, not materialized tensor contents"
+                               : "raw VM probe output retained")
+            << "\",\n"
             << "  \"output\": \"" << json_escape(probe.stdout_text) << "\",\n"
             << "  \"generated_token_ids\": [],\n"
             << "  \"generated_tokens\": 1,\n";
     }
   } else {
     const std::string output = "deterministic:" + sha3_hex_text(prompt).substr(0, 16);
+    result_summary = "synthetic inference payload emitted";
+    result_class = "synthetic_output";
+    result_meaning = "the result is a deterministic placeholder payload rather than native VM probe evidence";
+    next_step_hint =
+        "use a real model file on the supported t81_reference_vm lane if you need native probe evidence instead of a synthetic payload";
+    promoted_termination_reason = "synthetic_payload";
+    promoted_output_kind = "synthetic_text";
+    promoted_output_preview = output;
     extra << "  \"execution_kind\": \"synthetic_payload\",\n"
           << "  \"requested_max_tokens\": " << opts.max_tokens << ",\n"
-          << "  \"termination_reason\": \"synthetic_payload\",\n"
           << "  \"output\": \"" << json_escape(output) << "\",\n"
           << "  \"generated_token_ids\": [],\n"
           << "  \"generated_tokens\": 4,\n";
   }
   return emit_or_write(
       make_runtime_payload("t81.ai.inference-run.v1", model_id, model_file, sel, extra.str(),
-                           payload_status),
+                           payload_status, result_summary, result_class, result_meaning,
+                           next_step_hint,
+                           promoted_termination_reason, promoted_output_kind,
+                           promoted_output_preview),
       opts.out);
+}
+
+int cmd_task_answer_fixed(const Options& opts) {
+  return run_fixed_label_task(kAnswerFixedDescriptor, opts);
+}
+
+int cmd_task_classify_fixed(const Options& opts) {
+  return run_fixed_label_task(kClassifyFixedDescriptor, opts);
+}
+
+int cmd_task_route_fixed(const Options& opts) {
+  return run_fixed_label_task(kRouteFixedDescriptor, opts);
+}
+
+int cmd_task_assess_fixed(const Options& opts) {
+  return run_fixed_label_task(kAssessFixedDescriptor, opts);
 }
 
 int cmd_quantization_inspect(const Options& opts) {
@@ -2452,6 +3372,11 @@ void print_usage(std::string_view prog) {
       << "  model inspect <model-file>\n"
       << "  verify determinism <model-file>\n"
       << "  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n"
+      << "  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
+      << "  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
+      << "  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
+      << "  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n"
+      << "  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n"
       << "  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n"
       << "  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n"
       << "  policy test --event-type <type> --model-file <path> --out <file>\n"
@@ -2524,6 +3449,42 @@ int run(std::string_view prog, const std::vector<std::string_view>& args) {
         return 1;
       }
       return cmd_inference_run(opts);
+    }
+  } else if (command == "task") {
+    if (args.size() >= 2 && args[1] == "answer-fixed") {
+      if (!parse_named_args(args, 2, opts, positional, error)) {
+        std::cerr << "error: " << error << "\n";
+        return 1;
+      }
+      return cmd_task_answer_fixed(opts);
+    }
+    if (args.size() >= 2 && args[1] == "classify-fixed") {
+      if (!parse_named_args(args, 2, opts, positional, error)) {
+        std::cerr << "error: " << error << "\n";
+        return 1;
+      }
+      return cmd_task_classify_fixed(opts);
+    }
+    if (args.size() >= 2 && args[1] == "route-fixed") {
+      if (!parse_named_args(args, 2, opts, positional, error)) {
+        std::cerr << "error: " << error << "\n";
+        return 1;
+      }
+      return cmd_task_route_fixed(opts);
+    }
+    if (args.size() >= 2 && args[1] == "assess-fixed") {
+      if (!parse_named_args(args, 2, opts, positional, error)) {
+        std::cerr << "error: " << error << "\n";
+        return 1;
+      }
+      return cmd_task_assess_fixed(opts);
+    }
+    if (args.size() >= 2 && args[1] == "read-field") {
+      if (!parse_named_args(args, 2, opts, positional, error)) {
+        std::cerr << "error: " << error << "\n";
+        return 1;
+      }
+      return cmd_task_read_field(opts, positional);
     }
   } else if (command == "quantization") {
     if (args.size() >= 2 && args[1] == "inspect") {

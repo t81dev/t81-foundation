@@ -62,8 +62,49 @@ Expected result:
 The same path is also wrapped in:
 
 ```bash
-bash examples/model-load-canonfs/run_ready_ai_probe.sh
+bash examples/ai-and-inference/model-load-canonfs/run_ready_ai_probe.sh
 ```
+
+## Assess-Fixed OS-Object Chain
+
+This is the current canonical result-producing AI example in the repo.
+
+It shows one narrow governed chain:
+
+1. `assess-fixed` runs in the strict deterministic lane
+2. the AI task stores a canonical result artifact plus provenance
+3. a typed downstream host-action record is created and stored
+4. a final bundle object is created and stored
+
+The important object for this chain is the final bundle, not the intermediate
+task result or downstream record.
+
+Run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
+```
+
+What the demo persists:
+
+- AI task result artifact
+- AI task provenance artifact
+- downstream host-action record
+- final bundle artifact
+
+Canonical object roles:
+
+- task result artifact: intermediate AI result for the assessed input
+- provenance artifact: execution and policy evidence for that AI result
+- downstream record: intermediate typed non-AI decision record
+- final bundle artifact: top-level persisted object for the whole assess-fixed chain
+
+Expected end state:
+
+- the demo prints the stored bundle body with schema
+  `t81.ai.task.assess-fixed.bundle.v1`
+- typed readback from the bundle returns refs such as `record_ref` and
+  `action_ref`
 
 ## Guarded AI Probe Path
 
@@ -72,7 +113,7 @@ Llama artifact and lands in the guarded envelope: bounded decode stays weak,
 but it does not exhaust into degraded mode.
 
 ```bash
-bash examples/model-load-canonfs/run_guarded_ai_probe.sh
+bash examples/ai-and-inference/model-load-canonfs/run_guarded_ai_probe.sh
 ```
 
 Expected result:
@@ -107,7 +148,7 @@ It also reports `architecture_state_summary.deep_feedback_steps: 1`.
 It now also reports `architecture_state_summary.utilization: 0.5`.
 
 ```bash
-MAX_TOKENS=4 bash examples/model-load-canonfs/run_forward_state_ai_probe.sh
+MAX_TOKENS=4 bash examples/ai-and-inference/model-load-canonfs/run_forward_state_ai_probe.sh
 ```
 
 Expected result:
@@ -161,7 +202,7 @@ so the decode probe becomes unavailable and the lane drops into the conservative
 degraded posture.
 
 ```bash
-bash examples/model-load-canonfs/run_degraded_ai_probe.sh
+bash examples/ai-and-inference/model-load-canonfs/run_degraded_ai_probe.sh
 ```
 
 Expected result:
@@ -307,7 +348,7 @@ This is the smallest real external model flow currently validated in the repo.
 One-command runner:
 
 ```bash
-examples/model-load-canonfs/run_real_hf_tiny_model.sh
+examples/ai-and-inference/model-load-canonfs/run_real_hf_tiny_model.sh
 ```
 
 The script reuses the existing tiny model under `models/tiny-random-llama/` if

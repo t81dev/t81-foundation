@@ -58,8 +58,8 @@ Try running the shipped native demo binaries to ensure the VM and Tensor layers 
 You can now use the `t81` CLI frontend to compile and run T81Lang code directly on the TISC ISA:
 
 ```bash
-./build/t81 code check examples/hello_world.t81
-./build/t81 code build examples/hello_world.t81 -o build/hello_world.tisc
+./build/t81 code check examples/core-language/hello_world.t81
+./build/t81 code build examples/core-language/hello_world.t81 -o build/hello_world.tisc
 ./build/t81 code run build/hello_world.tisc
 ```
 

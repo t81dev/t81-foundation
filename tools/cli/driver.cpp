@@ -248,6 +248,21 @@ std::string format_trace_entry(const t81::vm::TraceEntry& entry) {
   return oss.str();
 }
 
+bool is_tensor_handle_text(std::string_view text) {
+  if (text.size() < 10) {
+    return false;
+  }
+  if (!text.starts_with("<tensor#") || text.back() != '>') {
+    return false;
+  }
+  for (std::size_t i = 8; i + 1 < text.size(); ++i) {
+    if (!std::isdigit(static_cast<unsigned char>(text[i]))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void print_trace_summary(const t81::vm::State& state) {
   const auto& trace = state.trace;
   if (trace.empty()) {
@@ -487,6 +502,8 @@ bool load_weights_model_from_selector(std::string_view selector,
     const fs::path canonfs_root = discover_canonfs_root_for_weights();
     if (!load_canonfs_object(canonfs_root, text, bytes, info, error)) {
       error = "failed to load CanonFS weights object from " + canonfs_root.string() + ": " + error;
+      error += "\nhint: hash-based --weights-model selectors resolve through that CanonFS root; "
+               "set T81_CANONFS_ROOT or import the model into the same store first";
       return false;
     }
     try {
@@ -1091,7 +1108,7 @@ std::optional<t81::tisc::Program> build_program_from_source(
 
 int compile(const fs::path& input, const fs::path& output, const std::string& source_override,
             const std::string& source_name,
-            std::shared_ptr<t81::weights::ModelFile> weights_model) {
+            std::shared_ptr<t81::weights::ModelFile> weights_model, bool announce_success) {
   verbose("Compiling " + input.string() + " → " + output.string());
 
   std::string diag_name = source_name.empty() ? input.string() : source_name;
@@ -1119,7 +1136,9 @@ int compile(const fs::path& input, const fs::path& output, const std::string& so
   verbose("Writing " + output.string());
   t81::tisc::save_program(*program, output.string());
 
-  info("Compilation successful → " + output.string());
+  if (announce_success) {
+    info("Compilation successful → " + output.string());
+  }
   verbose(std::to_string(program->insns.size()) + " instructions emitted");
   return 0;
 }
@@ -1434,8 +1453,17 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
     std::cout << line << "\n";
   }
 
+  const bool printed_tensor_handle_only =
+      !vm->state().printed_output.empty() &&
+      std::all_of(vm->state().printed_output.begin(), vm->state().printed_output.end(),
+                  [](const std::string& line) { return is_tensor_handle_text(line); });
+
   if (!result) {
     error("Execution trapped: " + t81::vm::to_string(result.error()));
+    if (result.error() == t81::vm::Trap::DecodeFault && !weights_model) {
+      std::cerr << "hint: tensor-backed programs often require "
+                   "--weights-model <model.t81w|sha3-256:hash>\n";
+    }
     if (result.error() == t81::vm::Trap::SecurityFault) {
       if (!vm->state().axion_log.empty()) {
         const auto& verdict = vm->state().axion_log.back().verdict;
@@ -1473,6 +1501,14 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
            " axion event(s))");
     } else {
       info("Program terminated normally");
+    }
+    if (printed_tensor_handle_only) {
+      std::cerr << "result kind: tensor_handle\n";
+      std::cerr << "operation: tensor-backed execution completed under attached weights\n";
+      std::cerr << "note: output is a VM tensor handle, not materialized tensor contents; "
+                   "use --trace to inspect execution flow or a workflow that exports/materializes tensors\n";
+      std::cerr << "next (progress): none on this path; the result remains a runtime tensor handle\n";
+      std::cerr << "next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events\n";
     }
   }
   return 0;
@@ -1650,6 +1686,10 @@ int canonfs_import(const fs::path& input, const fs::path& canonfs_root,
     }
     if (!outcome.provenance_ref.empty()) {
       std::cout << "Provenance:  " << outcome.provenance_ref << "\n";
+    }
+    std::cout << "Result:      manifest/provenance refs are reusable handles for later export or audit\n";
+    if (!outcome.manifest_ref.empty()) {
+      std::cout << "Next (progress): t81 canonfs export <manifest-ref> --out <dir> to materialize the imported tree\n";
     }
   }
   return outcome.ok() ? 0 : 1;
@@ -2067,6 +2107,9 @@ int canonfs_export(const std::string& canonical_hash, const fs::path& output_pat
     if (!outcome.provenance_ref.empty()) {
       std::cout << "Provenance:  " << outcome.provenance_ref << "\n";
     }
+    std::cout << "Result:      CanonFS materialized host-visible files at the target path\n";
+    std::cout << "Next (progress): inspect the target path directly\n";
+    std::cout << "Next (inspect):  re-import it to compare imported paths or object identity\n";
   }
   return outcome.ok() ? 0 : 1;
 }

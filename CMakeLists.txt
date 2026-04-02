@@ -54,6 +54,19 @@ add_executable(t81_make_guarded_llama_demo
                examples/ai-and-inference/model-load-canonfs/make_guarded_llama_demo.cpp)
 target_link_libraries(t81_make_guarded_llama_demo PRIVATE t81_tool_model t81_core)
 
+add_executable(t81_make_answer_fixed_demo
+               examples/ai-and-inference/model-load-canonfs/make_answer_fixed_demo.cpp)
+target_link_libraries(t81_make_answer_fixed_demo PRIVATE t81_tool_model t81_core)
+add_executable(t81_make_classify_fixed_demo
+               examples/ai-and-inference/model-load-canonfs/make_classify_fixed_demo.cpp)
+target_link_libraries(t81_make_classify_fixed_demo PRIVATE t81_tool_model t81_core)
+add_executable(t81_make_route_fixed_demo
+               examples/ai-and-inference/model-load-canonfs/make_route_fixed_demo.cpp)
+target_link_libraries(t81_make_route_fixed_demo PRIVATE t81_tool_model t81_core)
+add_executable(t81_make_assess_fixed_demo
+               examples/ai-and-inference/model-load-canonfs/make_assess_fixed_demo.cpp)
+target_link_libraries(t81_make_assess_fixed_demo PRIVATE t81_tool_model t81_core)
+
 add_executable(t81_make_degraded_llama_demo
                examples/ai-and-inference/model-load-canonfs/make_degraded_llama_demo.cpp)
 target_link_libraries(t81_make_degraded_llama_demo PRIVATE t81_tool_model t81_core)
@@ -795,6 +808,39 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
     add_executable(t81_cli_contract_test tests/cpp/cli_contract_test.cpp)
     target_compile_features(t81_cli_contract_test PRIVATE ${T81_CXX_STD_FEATURE})
     target_link_libraries(t81_cli_contract_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_answer_fixed_test tests/cpp/ai_task_answer_fixed_test.cpp)
+    target_compile_features(t81_ai_task_answer_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_answer_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_classify_fixed_test tests/cpp/ai_task_classify_fixed_test.cpp)
+    target_compile_features(t81_ai_task_classify_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_classify_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_route_fixed_test tests/cpp/ai_task_route_fixed_test.cpp)
+    target_compile_features(t81_ai_task_route_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_route_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_assess_fixed_test tests/cpp/ai_task_assess_fixed_test.cpp)
+    target_compile_features(t81_ai_task_assess_fixed_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_assess_fixed_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_framework_test tests/cpp/ai_task_framework_test.cpp)
+    target_compile_features(t81_ai_task_framework_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_framework_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_assess_fixed_composition_test
+                   tests/cpp/ai_task_assess_fixed_composition_test.cpp)
+    target_compile_features(t81_ai_task_assess_fixed_composition_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_assess_fixed_composition_test PRIVATE t81_tool_model)
+
+    add_executable(t81_ai_task_read_field_test tests/cpp/ai_task_read_field_test.cpp)
+    target_compile_features(t81_ai_task_read_field_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(t81_ai_task_read_field_test PRIVATE t81_tool_model)
+
+    add_executable(artifact_validate_record_test tests/cpp/artifact_validate_record_test.cpp)
+    target_compile_features(artifact_validate_record_test PRIVATE ${T81_CXX_STD_FEATURE})
+    target_link_libraries(artifact_validate_record_test PRIVATE t81_tool_model)
   endif()
 
   # Skip on Windows because it relies on POSIX fork() and <sys/wait.h> which are unsupported.
@@ -1485,6 +1531,14 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   if(NOT WIN32)
     add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_answer_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_answer_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_classify_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_classify_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_route_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_route_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_assess_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_assess_fixed_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_framework_test_runner COMMAND $<TARGET_FILE:t81_ai_task_framework_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_assess_fixed_composition_test_runner COMMAND $<TARGET_FILE:t81_ai_task_assess_fixed_composition_test> $<TARGET_FILE:t81>)
+    add_test(NAME t81_ai_task_read_field_test_runner COMMAND $<TARGET_FILE:t81_ai_task_read_field_test> $<TARGET_FILE:t81>)
+    add_test(NAME artifact_validate_record_test_runner COMMAND $<TARGET_FILE:artifact_validate_record_test> $<TARGET_FILE:t81>)
   endif()
   if(NOT WIN32)
     add_test(NAME t81_cli_stress_test_runner COMMAND $<TARGET_FILE:t81_cli_stress_test> $<TARGET_FILE:t81>)

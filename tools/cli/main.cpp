@@ -553,7 +553,7 @@ Options:
   --version            Print formatter version identifier
 
 Examples:
-  t81 fmt examples/hello_world.t81
+  t81 fmt examples/core-language/hello_world.t81
   t81 fmt --check src/a.t81 src/b.t81
 )";
 }
@@ -654,8 +654,8 @@ Actions:
   repl                                Start interactive REPL
 
 Examples:
-  t81 code check examples/hello_world.t81
-  t81 code build examples/hello_world.t81 -o hello.tisc
+  t81 code check examples/core-language/hello_world.t81
+  t81 code build examples/core-language/hello_world.t81 -o hello.tisc
   t81 code run hello.tisc
 )";
 }
@@ -758,6 +758,47 @@ Examples:
 )";
 }
 
+void print_help_artifact() {
+  std::cerr << R"(
+Usage: t81 artifact <action> [args]
+
+Actions:
+  write-record --schema <schema-id> --out <file> --field key=value [--field key=value ...]
+                                     Write one fixed downstream record with canonical field ordering
+  write-store-record --schema <schema-id> --field key=value [--field key=value ...] [--canonfs-root <path>]
+                                     Write, validate, and store one fixed downstream record into CanonFS
+  store-bundle --schema <schema-id> --field key=value [--field key=value ...] [--canonfs-root <path>]
+                                     Validate and store one fixed downstream bundle into CanonFS
+  validate-record <file|sha3-256:hash> --schema <schema-id> [--canonfs-root <path>]
+                                     Validate a fixed downstream record against a supported schema
+  store-record --schema <schema-id> --file <path> [--canonfs-root <path>]
+                                     Validate and store one fixed downstream record into CanonFS
+  read-field <file|sha3-256:hash> --schema <schema-id> --field <name> [--canonfs-root <path>]
+                                     Read one scalar field from a validated fixed downstream artifact
+
+Supported schemas:
+  t81.ai.task.assess-fixed.host-action-record.v1
+  t81.ai.task.assess-fixed.bundle.v1
+
+Canonical runnable example:
+  See the `Assess-Fixed OS-Object Chain` section in
+  examples/ai-and-inference/model-load-canonfs/README.md
+  and the companion script
+  examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
+  for the current end-to-end use of these typed artifact helpers in the full
+  assess-fixed chain.
+
+Examples:
+  t81 artifact write-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --out record.json --field decision=ALLOW --field reason_code=GREETING_PAIR --field selected_action=write_allow_marker --field selected_path=actions/allow.marker --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score
+  t81 artifact write-store-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --field decision=ALLOW --field reason_code=GREETING_PAIR --field selected_action=write_allow_marker --field selected_path=actions/allow.marker --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
+  t81 artifact store-bundle --schema t81.ai.task.assess-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
+  t81 artifact validate-record record.json --schema t81.ai.task.assess-fixed.host-action-record.v1
+  t81 artifact store-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --file record.json --canonfs-root .t81_canonfs
+  t81 artifact validate-record sha3-256:... --schema t81.ai.task.assess-fixed.host-action-record.v1 --canonfs-root .t81_canonfs
+  t81 artifact read-field record.json --schema t81.ai.task.assess-fixed.host-action-record.v1 --field selected_action
+)";
+}
+
 void print_help_vm() {
   std::cerr << R"(
 Usage: t81 vm <action> [args]
@@ -829,9 +870,9 @@ Actions:
                                     Lower source to machine-readable IR JSON
 
 Examples:
-  t81 ir show examples/hello_world.t81
-  t81 ir validate examples/hello_world.t81 --json
-  t81 ir export examples/hello_world.t81 --json
+  t81 ir show examples/core-language/hello_world.t81
+  t81 ir validate examples/core-language/hello_world.t81 --json
+  t81 ir export examples/core-language/hello_world.t81 --json
 )";
 }
 
@@ -1109,6 +1150,7 @@ Advanced commands (supported expert workflows):
   trace <subcommand> [args]           Trace inspection, diff, replay, canonicalize, export
   determinism <action> [args]         Determinism verification and hashing
   canonfs <action> [args]             CanonFS inspection and snapshot tooling
+  artifact <action> [args]            Fixed-schema artifact validation helpers
   vm <action> [args]                  VM-focused run/debug/trace/state/profile entry points
   tisc <action> [args]                TISC artifact inspection, validation, encode/decode
   ir <action> [args]                  IR inspection and export for frontend lowering
@@ -1125,6 +1167,7 @@ Use:
   t81 help trace
   t81 help determinism
   t81 help canonfs
+  t81 help artifact
   t81 help vm
   t81 help tisc
   t81 help ir
@@ -1372,8 +1415,8 @@ Actions:
   show|dump|export|validate                IR lowering and export helpers
 
 Examples:
-  t81 lang build examples/hello_world.t81 -o build/hello.tisc
-  t81 lang validate examples/hello_world.t81 --json
+  t81 lang build examples/core-language/hello_world.t81 -o build/hello.tisc
+  t81 lang validate examples/core-language/hello_world.t81 --json
 )";
 }
 
@@ -1556,6 +1599,10 @@ bool print_help_topic(std::string_view topic, const char* prog) {
   }
   if (topic == "canonfs") {
     print_help_canonfs();
+    return true;
+  }
+  if (topic == "artifact") {
+    print_help_artifact();
     return true;
   }
   if (topic == "vm") {
@@ -2276,7 +2323,7 @@ Args parse_args(int argc, char* argv[]) {
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
           a.command == "man" || a.command == "feedback" || a.command == "c" ||
           a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-          a.command == "ai" ||
+          a.command == "ai" || a.command == "artifact" ||
           a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
@@ -2293,7 +2340,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
-                 a.command == "ai" ||
+                 a.command == "ai" || a.command == "artifact" ||
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
@@ -2314,7 +2361,7 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
-                 a.command == "ai" ||
+                 a.command == "ai" || a.command == "artifact" ||
                  a.command == "project" || a.command == "env" || a.command == "internal" ||
                  a.command == "completion" || a.command == "man" || a.command == "feedback" ||
                  a.command == "canonize-tensor" || a.command == "canonize-file" ||
@@ -2343,6 +2390,474 @@ std::shared_ptr<t81::weights::ModelFile> load_weights_model_optional(
     error(error_message);
   }
   return model;
+}
+
+std::optional<std::string> extract_json_string_field(std::string_view text,
+                                                     std::string_view field) {
+  const std::string needle = "\"" + std::string(field) + "\": \"";
+  const std::size_t start = text.find(needle);
+  if (start == std::string_view::npos) {
+    return std::nullopt;
+  }
+  const std::size_t value_start = start + needle.size();
+  std::string value;
+  bool escaped = false;
+  for (std::size_t i = value_start; i < text.size(); ++i) {
+    const char ch = text[i];
+    if (escaped) {
+      switch (ch) {
+        case 'n':
+          value.push_back('\n');
+          break;
+        case 'r':
+          value.push_back('\r');
+          break;
+        case 't':
+          value.push_back('\t');
+          break;
+        default:
+          value.push_back(ch);
+          break;
+      }
+      escaped = false;
+      continue;
+    }
+    if (ch == '\\') {
+      escaped = true;
+      continue;
+    }
+    if (ch == '"') {
+      return value;
+    }
+    value.push_back(ch);
+  }
+  return std::nullopt;
+}
+
+bool parse_canonical_hash_local(std::string_view prefixed_hash, t81::canonfs::CanonRef& ref,
+                                std::string& error_message) {
+  constexpr std::string_view prefix = "sha3-256:";
+  if (!prefixed_hash.starts_with(prefix)) {
+    error_message = "invalid canonical hash (expected sha3-256:...)";
+    return false;
+  }
+  try {
+    ref.hash.h = t81::hash::CanonHash81::from_string(std::string(prefixed_hash.substr(prefix.size())));
+  } catch (const std::exception& e) {
+    error_message = std::string("invalid canonical hash: ") + e.what();
+    return false;
+  }
+  return true;
+}
+
+bool load_artifact_text_from_selector(const fs::path& canonfs_root, std::string_view selector,
+                                      std::string& text, std::string& error_message) {
+  if (selector.rfind("sha3-256:", 0) == 0) {
+    t81::canonfs::CanonRef ref;
+    if (!parse_canonical_hash_local(selector, ref, error_message)) {
+      return false;
+    }
+    auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+    auto read_res = driver->read_object_bytes(ref);
+    if (!read_res) {
+      error_message = "canonfs object not found or failed verification";
+      return false;
+    }
+    text.clear();
+    text.reserve(read_res->size());
+    for (std::byte b : *read_res) {
+      text.push_back(static_cast<char>(std::to_integer<unsigned char>(b)));
+    }
+    return true;
+  }
+
+  std::ifstream in(fs::absolute(fs::path(selector)), std::ios::binary);
+  if (!in) {
+    error_message = "could not read " + fs::absolute(fs::path(selector)).string();
+    return false;
+  }
+  text.assign((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+  return true;
+}
+
+bool write_canonfs_raw_block_local(const fs::path& canonfs_root, std::string_view text,
+                                   std::string& ref_text, std::string& error_message) {
+  auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
+  const auto* begin = reinterpret_cast<const std::byte*>(text.data());
+  auto write_res = driver->write_object(
+      t81::canonfs::ObjectType::RawBlock, std::span<const std::byte>(begin, text.size()));
+  if (!write_res) {
+    error_message = "failed to write CanonFS object";
+    return false;
+  }
+  ref_text = "sha3-256:" + write_res->hash.h.to_string();
+  return true;
+}
+
+int run_artifact_command(const Args& args) {
+  constexpr std::string_view kAssessActionRecordSchema =
+      "t81.ai.task.assess-fixed.host-action-record.v1";
+  constexpr std::string_view kAssessBundleSchema = "t81.ai.task.assess-fixed.bundle.v1";
+  constexpr std::array<std::string_view, 8> kRequiredFields{{
+      "source_result_ref",
+      "source_provenance_ref",
+      "decision",
+      "reason_code",
+      "termination_reason",
+      "selected_action",
+      "selected_path",
+      "action_ref",
+  }};
+  constexpr std::array<std::string_view, 4> kRequiredBundleFields{{
+      "source_result_ref",
+      "source_provenance_ref",
+      "action_ref",
+      "record_ref",
+  }};
+  auto is_supported_field = [&](std::string_view schema, std::string_view field) {
+    if (schema == kAssessActionRecordSchema) {
+      return field == "schema" || field == "decision" || field == "reason_code" ||
+             field == "selected_action" || field == "selected_path" || field == "action_ref" ||
+             field == "source_result_ref" || field == "source_provenance_ref" ||
+             field == "termination_reason";
+    }
+    if (schema == kAssessBundleSchema) {
+      return field == "schema" || field == "source_result_ref" ||
+             field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
+    }
+    return false;
+  };
+  auto render_record = [&](std::string_view schema, const std::map<std::string, std::string>& fields) {
+    std::ostringstream out;
+    if (schema == kAssessActionRecordSchema) {
+      out << "{\n"
+          << "  \"schema\": \"" << kAssessActionRecordSchema << "\",\n"
+          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"decision\": \"" << json_escape(fields.at("decision")) << "\",\n"
+          << "  \"reason_code\": \"" << json_escape(fields.at("reason_code")) << "\",\n"
+          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason")) << "\",\n"
+          << "  \"selected_action\": \"" << json_escape(fields.at("selected_action")) << "\",\n"
+          << "  \"selected_path\": \"" << json_escape(fields.at("selected_path")) << "\",\n"
+          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\"\n"
+          << "}\n";
+      return out.str();
+    }
+    if (schema == kAssessBundleSchema) {
+      out << "{\n"
+          << "  \"schema\": \"" << kAssessBundleSchema << "\",\n"
+          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
+          << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
+          << "}\n";
+      return out.str();
+    }
+    return out.str();
+  };
+  auto validate_record = [&](std::string_view schema, std::string_view artifact_text,
+                             std::string& validation_error) {
+    const auto schema_field = extract_json_string_field(artifact_text, "schema");
+    if (!schema_field || *schema_field != schema) {
+      validation_error = "schema mismatch";
+      return false;
+    }
+    if (schema == kAssessActionRecordSchema) {
+      for (std::string_view required_field : kRequiredFields) {
+        const auto value = extract_json_string_field(artifact_text, required_field);
+        if (!value || value->empty()) {
+          validation_error = "missing required field \"" + std::string(required_field) + "\"";
+          return false;
+        }
+      }
+      return true;
+    }
+    if (schema == kAssessBundleSchema) {
+      for (std::string_view required_field : kRequiredBundleFields) {
+        const auto value = extract_json_string_field(artifact_text, required_field);
+        if (!value || value->empty()) {
+          validation_error = "missing required field \"" + std::string(required_field) + "\"";
+          return false;
+        }
+      }
+      return true;
+    }
+    validation_error =
+        "supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
+        "t81.ai.task.assess-fixed.bundle.v1";
+    return false;
+  };
+  auto next_inspect_field_for_schema = [&](std::string_view schema) -> std::string_view {
+    if (schema == kAssessActionRecordSchema) {
+      return "selected_action";
+    }
+    if (schema == kAssessBundleSchema) {
+      return "record_ref";
+    }
+    return "schema";
+  };
+  auto validate_supported_schema = [&](std::string_view subcommand_name, std::string_view schema_value) {
+    if (schema_value != kAssessActionRecordSchema && schema_value != kAssessBundleSchema) {
+      error("artifact " + std::string(subcommand_name) +
+            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
+            "t81.ai.task.assess-fixed.bundle.v1");
+      return false;
+    }
+    return true;
+  };
+
+  auto write_and_store_payload = [&](const fs::path& canonfs_root_path,
+                                     std::string_view summary_schema,
+                                     std::string_view summary_text, std::string_view ref_key,
+                                     std::string_view schema_value, std::string_view payload,
+                                     std::string_view subcommand_name) {
+    std::string validation_error;
+    if (!validate_record(schema_value, payload, validation_error)) {
+      error("artifact " + std::string(subcommand_name) + ": " + validation_error);
+      return false;
+    }
+    std::string stored_ref;
+    std::string store_error;
+    if (!write_canonfs_raw_block_local(canonfs_root_path, payload, stored_ref, store_error)) {
+      error("artifact " + std::string(subcommand_name) + ": " + store_error);
+      return false;
+    }
+    std::cout << "{\n"
+              << "  \"schema\": \"" << summary_schema << "\",\n"
+              << "  \"result_summary\": \"" << summary_text << "\",\n"
+              << "  \"schema_id\": \"" << schema_value << "\",\n"
+              << "  \"validation_result\": \"pass\",\n"
+              << "  \"" << ref_key << "\": \"" << stored_ref << "\",\n"
+              << "  \"next_step_hint\": \"next (inspect): t81 artifact read-field " << stored_ref
+              << " --schema " << schema_value << " --field "
+              << next_inspect_field_for_schema(schema_value) << " --canonfs-root <path>\",\n"
+              << "  \"status\": \"pass\"\n"
+              << "}\n";
+    return true;
+  };
+
+  auto parse_field_map = [&](std::string_view subcommand_name, std::string_view schema_value,
+                             const std::vector<std::string>& assignments,
+                             const auto& required_fields,
+                             std::map<std::string, std::string>& field_map) {
+    for (const std::string& assignment : assignments) {
+      const std::size_t eq = assignment.find('=');
+      if (eq == std::string::npos || eq == 0 || eq + 1 >= assignment.size()) {
+        error("artifact " + std::string(subcommand_name) + ": fields must use key=value");
+        return false;
+      }
+      const std::string key = assignment.substr(0, eq);
+      const std::string value = assignment.substr(eq + 1);
+      if (!is_supported_field(schema_value, key) || key == "schema") {
+        error("artifact " + std::string(subcommand_name) + ": unknown field \"" + key + "\"");
+        return false;
+      }
+      if (!field_map.emplace(key, value).second) {
+        error("artifact " + std::string(subcommand_name) + ": duplicate field \"" + key + "\"");
+        return false;
+      }
+    }
+    for (std::string_view required_field : required_fields) {
+      if (!field_map.contains(std::string(required_field))) {
+        error("artifact " + std::string(subcommand_name) + ": missing required field \"" +
+              std::string(required_field) + "\"");
+        return false;
+      }
+    }
+    return true;
+  };
+
+  if (!args.command_args.empty() &&
+      (args.command_args[0] == "-h" || args.command_args[0] == "--help")) {
+    return emit_help([&] { print_help_artifact(); });
+  }
+  if (args.command_args.empty()) {
+    error("artifact requires a subcommand. Run 't81 help artifact'.");
+    return 1;
+  }
+
+  const std::string subcommand = args.command_args[0];
+  if (subcommand != "write-record" && subcommand != "write-store-record" &&
+      subcommand != "store-bundle" && subcommand != "validate-record" && subcommand != "store-record" &&
+      subcommand != "read-field") {
+    error("Unknown artifact action: " + args.command_args[0] + ". Run 't81 help artifact'.");
+    return 1;
+  }
+
+  std::string selector;
+  std::string schema;
+  std::string field;
+  std::vector<std::string> field_assignments;
+  fs::path canonfs_root = discover_canonfs_root();
+  for (std::size_t i = 1; i < args.command_args.size(); ++i) {
+    const std::string_view arg = args.command_args[i];
+    if (arg == "--schema") {
+      if (i + 1 >= args.command_args.size()) {
+        error("artifact " + subcommand + ": missing value for --schema");
+        return 1;
+      }
+      schema = args.command_args[++i];
+    } else if (arg == "--field") {
+      if (i + 1 >= args.command_args.size()) {
+        error("artifact read-field: missing value for --field");
+        return 1;
+      }
+      field = args.command_args[++i];
+      if (subcommand == "write-record" || subcommand == "write-store-record" ||
+          subcommand == "store-bundle") {
+        field_assignments.push_back(field);
+      }
+    } else if (arg == "--file") {
+      if (i + 1 >= args.command_args.size()) {
+        error("artifact store-record: missing value for --file");
+        return 1;
+      }
+      selector = args.command_args[++i];
+    } else if (arg == "--canonfs-root") {
+      if (i + 1 >= args.command_args.size()) {
+        error("artifact " + subcommand + ": missing value for --canonfs-root");
+        return 1;
+      }
+      canonfs_root = fs::absolute(fs::path(args.command_args[++i]));
+    } else if (!arg.empty() && arg[0] == '-') {
+      error("artifact " + subcommand + ": unknown option: " + std::string(arg));
+      return 1;
+    } else if (selector.empty()) {
+      selector = std::string(arg);
+    } else {
+      error("artifact " + subcommand + " accepts exactly one file or CanonFS ref");
+      return 1;
+    }
+  }
+
+  if (subcommand != "write-record" && subcommand != "write-store-record" &&
+      subcommand != "store-bundle" && selector.empty()) {
+    error("artifact " + subcommand + " requires <file|sha3-256:hash>");
+    return 1;
+  }
+  if (schema.empty()) {
+    error("artifact " + subcommand + " requires --schema <schema-id>");
+    return 1;
+  }
+  if (subcommand == "read-field" && field.empty()) {
+    error("artifact read-field requires --field <name>");
+    return 1;
+  }
+  if (subcommand == "read-field" && !is_supported_field(schema, field)) {
+    error("artifact read-field supports only fixed downstream artifact fields");
+    return 1;
+  }
+  if (subcommand == "write-record" && !args.output) {
+    error("artifact write-record requires --out <file>");
+    return 1;
+  }
+  if (subcommand == "store-record" && selector.empty()) {
+    error("artifact store-record requires --file <path>");
+    return 1;
+  }
+
+  if (subcommand == "write-record" || subcommand == "write-store-record") {
+    if (schema != kAssessActionRecordSchema) {
+      error("artifact " + subcommand +
+            " supports only schema t81.ai.task.assess-fixed.host-action-record.v1");
+      return 1;
+    }
+    std::map<std::string, std::string> field_map;
+    if (!parse_field_map(subcommand, schema, field_assignments, kRequiredFields, field_map)) {
+      return 1;
+    }
+    const std::string payload = render_record(schema, field_map);
+    if (subcommand == "write-store-record") {
+      if (!write_and_store_payload(canonfs_root, "t81.artifact.record-write-store.v1",
+                                   "validated downstream record written and stored in CanonFS",
+                                   "record_ref", schema, payload, "write-store-record")) {
+        return 1;
+      }
+      return 0;
+    }
+    std::ofstream out(*args.output, std::ios::binary | std::ios::trunc);
+    if (!out) {
+      error("artifact write-record: could not write " + args.output->string());
+      return 1;
+    }
+    out << payload;
+    if (!out.good()) {
+      error("artifact write-record: could not write " + args.output->string());
+      return 1;
+    }
+    std::cout << "{\n"
+              << "  \"schema\": \"t81.artifact.record-write.v1\",\n"
+              << "  \"ok\": true,\n"
+              << "  \"record_schema\": \"" << schema << "\",\n"
+              << "  \"out\": \"" << args.output->string() << "\",\n"
+              << "  \"status\": \"pass\"\n"
+              << "}\n";
+    return 0;
+  }
+
+  if (subcommand == "store-bundle") {
+    if (schema != kAssessBundleSchema) {
+      error("artifact store-bundle supports only schema t81.ai.task.assess-fixed.bundle.v1");
+      return 1;
+    }
+    std::map<std::string, std::string> field_map;
+    if (!parse_field_map(subcommand, schema, field_assignments, kRequiredBundleFields, field_map)) {
+      return 1;
+    }
+    const std::string payload = render_record(schema, field_map);
+    if (!write_and_store_payload(canonfs_root, "t81.artifact.bundle-store.v1",
+                                 "validated downstream bundle stored in CanonFS", "bundle_ref",
+                                 schema, payload, "store-bundle")) {
+      return 1;
+    }
+    return 0;
+  }
+
+  std::string artifact_text;
+  std::string load_error;
+  if (!load_artifact_text_from_selector(canonfs_root, selector, artifact_text, load_error)) {
+    error("artifact " + subcommand + ": " + load_error);
+    return 1;
+  }
+
+  std::string validation_error;
+  if (!validate_record(schema, artifact_text, validation_error)) {
+    error("artifact " + subcommand + ": " + validation_error);
+    return 1;
+  }
+
+  if (subcommand == "store-record") {
+    if (!validate_supported_schema("store-record", schema)) {
+      return 1;
+    }
+    if (!write_and_store_payload(canonfs_root, "t81.artifact.record-store.v1",
+                                 "validated downstream record stored in CanonFS", "record_ref",
+                                 schema, artifact_text, "store-record")) {
+      return 1;
+    }
+    return 0;
+  }
+
+  if (subcommand == "read-field") {
+    const auto value = extract_json_string_field(artifact_text, field);
+    if (!value) {
+      error("artifact read-field: field \"" + field +
+            "\" not present in validated downstream record");
+      return 1;
+    }
+    std::cout << *value << "\n";
+    return 0;
+  }
+
+  std::cout << "{\n"
+            << "  \"schema\": \"t81.artifact.record-validation.v1\",\n"
+            << "  \"ok\": true,\n"
+            << "  \"record_schema\": \"" << schema << "\",\n"
+            << "  \"selector_kind\": \"" << (selector.rfind("sha3-256:", 0) == 0 ? "canonfs_ref" : "file")
+            << "\",\n"
+            << "  \"status\": \"pass\"\n"
+            << "}\n";
+  return 0;
 }
 
 int run_benchmark(const char* command_name, const Args& args) {
@@ -9241,9 +9756,10 @@ int main(int argc, char* argv[]) {
 
         if (!skip_compile) {
           temp.emplace(args.input.stem().string());
-          int rc = t81::cli::compile(args.input, temp->path, {}, {}, weights_model_ptr);
+          int rc = t81::cli::compile(args.input, temp->path, {}, {}, weights_model_ptr, false);
           if (rc != 0) return rc;
           tisc_path = temp->path;
+          std::cerr << "Compilation successful → " << tisc_path.string() << "\n";
         }
 
         return t81::cli::run_tisc(tisc_path, args.policy, args.trace, args.trace_output,
@@ -9320,6 +9836,9 @@ int main(int argc, char* argv[]) {
     } else if (args.command == "canonfs") {
       return run_canonfs_command(args);
 
+    } else if (args.command == "artifact") {
+      return run_artifact_command(args);
+
     } else if (args.command == "determinism") {
       return run_determinism_command(argv[0], args);
 
@@ -9328,18 +9847,26 @@ int main(int argc, char* argv[]) {
 
     } else if (args.command == "ai") {
       std::vector<std::string_view> ai_args;
-      ai_args.reserve(args.command_args.size() + (args.output ? 2U : 0U));
+      ai_args.reserve(args.command_args.size() + (args.output ? 2U : 0U) + (args.policy ? 2U : 0U));
       for (const auto& token : args.command_args) {
         ai_args.emplace_back(token);
       }
       std::string ai_output_flag;
       std::string ai_output_value;
+      std::string ai_policy_flag;
+      std::string ai_policy_value;
       if (args.output) {
         const std::string subcommand = args.command_args.empty() ? "" : args.command_args.front();
         ai_output_flag = (subcommand == "quantize") ? "--output" : "--out";
         ai_output_value = args.output->string();
         ai_args.emplace_back(ai_output_flag);
         ai_args.emplace_back(ai_output_value);
+      }
+      if (args.policy) {
+        ai_policy_flag = "--policy";
+        ai_policy_value = args.policy->string();
+        ai_args.emplace_back(ai_policy_flag);
+        ai_args.emplace_back(ai_policy_value);
       }
       return t81::cli::ai::run("t81 ai", ai_args);
 

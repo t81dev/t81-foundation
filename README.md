@@ -211,13 +211,34 @@ pip install .
 
 ```bash
 # Compile and run T81Lang
-t81 code build examples/hello_world.t81 -o hello.tisc
+t81 code build examples/core-language/hello_world.t81 -o hello.tisc
 t81 vm run hello.tisc
 
 # CanonFS + governed inference
 t81 canonfs import model.t81w --json
 t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl --trace
 ```
+
+Current canonical AI OS-object example:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
+```
+
+That example ends on a stored bundle object, not just an AI task result. The
+bundle is the top-level persisted object for the current assess-fixed chain and
+links:
+
+- the AI task result artifact
+- the AI task provenance artifact
+- the typed downstream record
+- the host action artifact
+
+Short explanation:
+- [First Deterministic AI OS-Object Chain](/Users/t81dev/Code/t81-foundation/docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md)
+
+Portable smoke path for the same chain:
+- `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`
 
 ### QEMU Boot Demo (OS-like experience)
 
