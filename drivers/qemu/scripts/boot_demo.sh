@@ -43,11 +43,29 @@ check_cmd() {
   command -v "$1" &>/dev/null || die "Missing: $1 — see script header for install instructions"
 }
 
+resolve_timeout_cmd() {
+  if command -v timeout &>/dev/null; then
+    echo "timeout"
+    return
+  fi
+  if command -v gtimeout &>/dev/null; then
+    echo "gtimeout"
+    return
+  fi
+  die "Missing: timeout (Linux) or gtimeout from coreutils (macOS) — the boot demo needs a bounded QEMU runtime"
+}
+
+make_temp_fd() {
+  mktemp "${TMPDIR:-/tmp}/t81-qemu-demo.XXXXXX.fd"
+}
+
 # ── Prerequisites ─────────────────────────────────────────────────────────────
 check_cmd qemu-system-aarch64
 check_cmd mtools
 check_cmd cmake
 check_cmd parted
+check_cmd python3
+TIMEOUT_CMD="$(resolve_timeout_cmd)"
 
 # ── EDK2 firmware detection ───────────────────────────────────────────────────
 find_edk2() {
@@ -156,7 +174,7 @@ ok "Disk image: $(du -sh "$IMG" | cut -f1)"
 echo ""
 
 # ── Boot ──────────────────────────────────────────────────────────────────────
-VARS_TMP="$(mktemp --suffix=.fd)"
+VARS_TMP="$(make_temp_fd)"
 cp "$EDK2_VARS" "$VARS_TMP"
 trap 'rm -f "$VARS_TMP"' EXIT
 
@@ -164,7 +182,7 @@ info "Booting under QEMU (timeout ${TIMEOUT}s — press Ctrl-A X to exit)…"
 echo ""
 echo "────────────────────────────────────────────────────────────────────────────────"
 
-timeout "$TIMEOUT" qemu-system-aarch64 \
+"$TIMEOUT_CMD" "$TIMEOUT" qemu-system-aarch64 \
   -machine virt \
   -cpu cortex-a57 \
   -m 512M \
