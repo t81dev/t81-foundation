@@ -1,14 +1,56 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # automated_verification.sh - Comprehensive TernaryOS Verification Suite
 
-set -e
+set -euo pipefail
 
 echo "=== TernaryOS Automated Verification Suite ==="
 
 QEMU_IMG="build/qemu_test_debug/qemu_slice6_guest.img"
-BIOS="/opt/homebrew/share/qemu/edk2-aarch64-code.fd"
-OUTPUT_DIR="/tmp/ternaryos_verification"
-MONITOR_PORT=1234
+OUTPUT_DIR="${OUTPUT_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/ternaryos_verification.XXXXXX")}"
+MONITOR_PORT="${MONITOR_PORT:-1234}"
+
+resolve_timeout_cmd() {
+    if command -v timeout >/dev/null 2>&1; then
+        echo "timeout"
+        return
+    fi
+    if command -v gtimeout >/dev/null 2>&1; then
+        echo "gtimeout"
+        return
+    fi
+    echo "Error: missing timeout command (install coreutils on macOS)." >&2
+    exit 1
+}
+
+find_edk2_code() {
+    local candidates=(
+        /usr/share/AAVMF/AAVMF_CODE.fd
+        /usr/share/qemu/edk2-aarch64-code.fd
+        /opt/homebrew/share/qemu/edk2-aarch64-code.fd
+        /usr/local/share/qemu/edk2-aarch64-code.fd
+    )
+    local f
+    for f in "${candidates[@]}"; do
+        if [[ -f "$f" ]]; then
+            echo "$f"
+            return
+        fi
+    done
+    echo "Error: EDK2 AArch64 firmware not found. Install qemu-efi-aarch64 (Linux) or qemu via Homebrew (macOS)." >&2
+    exit 1
+}
+
+if ! command -v qemu-system-aarch64 >/dev/null 2>&1; then
+    echo "Error: qemu-system-aarch64 not found. Install QEMU first." >&2
+    exit 1
+fi
+if ! command -v nc >/dev/null 2>&1; then
+    echo "Error: nc (netcat) not found. It is required for monitor-based verification." >&2
+    exit 1
+fi
+
+TIMEOUT_CMD="$(resolve_timeout_cmd)"
+BIOS="$(find_edk2_code)"
 
 if [ ! -f "$QEMU_IMG" ]; then
     echo "Error: QEMU image not found: $QEMU_IMG"
@@ -20,8 +62,10 @@ mkdir -p "$OUTPUT_DIR"
 rm -f "$OUTPUT_DIR"/*
 
 # Create fresh copy of the image
-cp "$QEMU_IMG" "/tmp/qemu_verification_test.img"
-QEMU_IMG="/tmp/qemu_verification_test.img"
+QEMU_IMG_COPY="$(mktemp "${TMPDIR:-/tmp}/qemu_verification_test.XXXXXX.img")"
+trap 'rm -f "$QEMU_IMG_COPY"' EXIT
+cp "$QEMU_IMG" "$QEMU_IMG_COPY"
+QEMU_IMG="$QEMU_IMG_COPY"
 
 echo "Starting comprehensive verification..."
 
@@ -41,7 +85,7 @@ run_verification_test() {
             ;;
         "memory_analysis")
             # First create a memory dump
-            timeout 8 qemu-system-aarch64 -machine virt \
+            "$TIMEOUT_CMD" 8 qemu-system-aarch64 -machine virt \
                 -bios "$BIOS" \
                 -drive file="$QEMU_IMG",format=raw,if=none,id=hd0 \
                 -device virtio-blk-device,drive=hd0 \
@@ -66,7 +110,7 @@ run_verification_test() {
             echo "Testing boot sequence with alternative methods..."
             
             # Test 1: QEMU with debug logging
-            timeout 8 qemu-system-aarch64 -machine virt \
+            "$TIMEOUT_CMD" 8 qemu-system-aarch64 -machine virt \
                 -bios "$BIOS" \
                 -drive file="$QEMU_IMG",format=raw,if=none,id=hd0 \
                 -device virtio-blk-device,drive=hd0 \
@@ -105,7 +149,7 @@ run_verification_test() {
         "hardware_test")
             echo "Testing hardware initialization..."
             
-            timeout 8 qemu-system-aarch64 -machine virt \
+            "$TIMEOUT_CMD" 8 qemu-system-aarch64 -machine virt \
                 -bios "$BIOS" \
                 -drive file="$QEMU_IMG",format=raw,if=none,id=hd0 \
                 -device virtio-blk-device,drive=hd0 \
@@ -147,7 +191,7 @@ run_verification_test() {
             echo "Running integration test..."
             
             # Test complete boot-to-shutdown cycle
-            timeout 10 qemu-system-aarch64 -machine virt \
+            "$TIMEOUT_CMD" 10 qemu-system-aarch64 -machine virt \
                 -bios "$BIOS" \
                 -drive file="$QEMU_IMG",format=raw,if=none,id=hd0 \
                 -device virtio-blk-device,drive=hd0 \

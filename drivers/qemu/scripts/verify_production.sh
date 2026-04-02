@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Production verification script for local deployment
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PRODUCTION_DIR="$(dirname "$SCRIPT_DIR")"
 BUILD_DIR="$PRODUCTION_DIR/build"
+OUTPUT_DIR="${OUTPUT_DIR:-${TMPDIR:-/tmp}/ternaryos_verification}"
 
 echo "=== Production Verification ==="
 
@@ -19,10 +20,10 @@ echo "✅ Build artifacts verified"
 
 # Run verification suite
 cd "$PRODUCTION_DIR/../"
-./experimental/ternaryos/automated_verification.sh
+"$PRODUCTION_DIR/scripts/automated_verification.sh"
 
 # Check results
-if grep -q "VERIFICATION SUCCESSFUL" /tmp/ternaryos_verification/verification_summary.txt; then
+if grep -q "VERIFICATION SUCCESSFUL" "$OUTPUT_DIR/verification_summary.txt"; then
     echo "✅ Production verification PASSED"
     exit 0
 else
