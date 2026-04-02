@@ -608,6 +608,14 @@ jobs:
             --build-dir build \
             --run-tests 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Run AI bundle consumer conformance checks (single matrix lane)
+        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          python3 scripts/ci/check_ai_bundle_consumer_conformance.py \
+            --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
+
       - name: Test
         shell: bash
         run: |
