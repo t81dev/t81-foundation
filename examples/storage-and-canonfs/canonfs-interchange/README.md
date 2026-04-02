@@ -86,6 +86,7 @@ Expected shape:
 - policy result: `denied`
 - policy profile: `export-only`
 - error kind: `policy-failure`
+- error message explains the denied operation
 - error code: `canonfs-policy-denied`
 - error reason: `policy_denied`
 
@@ -108,6 +109,8 @@ content policy. In other words:
 - profile denial happens before CanonFS import writes or export materialization
 - JSON result documents still record `policy_result`, `policy_profile`, and a
   structured error with `kind`, `code`, `reason`, and `message`
+- in the current v1 candidate surface, each error object is emitted in stable
+  field order as `kind`, `message`, `code`, `reason`
 - richer policy semantics can still be added later through policy documents
   without widening the built-in profile names
 
@@ -220,6 +223,32 @@ Expected shape:
 - `materialized_paths` includes `alpha.txt`
 - `errors[0].reason`: `policy_denied`
 - `errors[0].message` mentions `nested/beta.txt`
+
+## Target-Side Export Failure
+
+The current contract also distinguishes target-side export failures from source
+or policy failures. One small reproducible case is exporting a single-file
+CanonFS object to a path that already exists as a directory:
+
+```bash
+blocked_out="$tmp_root/already-a-directory"
+mkdir -p "$blocked_out"
+
+build/t81 canonfs export \
+  "$hash" \
+  --canonfs-root "$canon_root" \
+  --out "$blocked_out" \
+  --json
+```
+
+Expected shape:
+
+- schema: `t81.canonfs-export.v1`
+- status: `error`
+- error kind: `target-failure`
+- error message explains that the output file could not be opened
+- error code: `canonfs-export-target-open-failed`
+- error reason: `target_open_failed`
 
 ## Notes
 
