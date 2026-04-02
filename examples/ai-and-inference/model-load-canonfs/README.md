@@ -174,6 +174,16 @@ Expected end state:
 - typed readback from the bundle returns refs such as `record_ref` and
   `action_ref`
 
+If you want the same bundle-first consumer path for this family member, run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_classify_fixed_bundle_consumer.sh
+```
+
+That script starts from the canonical bundle first, checks its schema, and only
+then follows `record_ref` and `action_ref` to recover the typed rule-selection
+record.
+
 ## Guarded AI Probe Path
 
 This is the checked-in `guarded` example. It uses the real tiny Hugging Face
