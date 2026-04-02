@@ -2108,9 +2108,13 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(artifact_help.stdout_text, "t81.ai.task.route-fixed.path-selection-record.v1"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text, "t81.ai.task.route-fixed.bundle.v1"));
+    T81_TEST_CHECK(
+        contains(artifact_help.stdout_text, "t81.ai.task.classify-fixed.rule-selection-record.v1"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "t81.ai.task.classify-fixed.bundle.v1"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text, "Canonical runnable example:"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text, "run_assess_fixed_host_action.sh"));
     T81_TEST_CHECK(contains(artifact_help.stdout_text, "run_route_fixed_path_selection.sh"));
+    T81_TEST_CHECK(contains(artifact_help.stdout_text, "run_classify_fixed_rule_selection.sh"));
   }
 
   {
@@ -2456,6 +2460,114 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(result.stderr_text, "failed to parse Base81 view:"));
     std::error_code ignore_ec;
     fs::remove(invalid_base81, ignore_ec);
+  }
+
+  {
+    const fs::path model_dir = make_temp_path("t81-cli-classify-fixed-model-dir", "");
+    const fs::path canonfs_root = make_temp_path("t81-cli-classify-fixed-canonfs", "");
+    const fs::path ruleset_dir = make_temp_path("t81-cli-classify-fixed-rulesets", "");
+    fs::create_directories(canonfs_root);
+    fs::create_directories(ruleset_dir);
+
+    const fs::path builder = fs::absolute(t81_bin).parent_path() / "t81_make_classify_fixed_demo";
+    T81_TEST_CHECK(fs::exists(builder));
+    const auto build_result = run_cli(builder, {model_dir.string()});
+    T81_TEST_CHECK(build_result.exit_code == 0);
+
+    const fs::path model_path = model_dir / "classify-fixed-demo.t81w";
+    const auto hash_result = run_cli(t81_bin, {"determinism", "hash", model_path.string()});
+    T81_TEST_CHECK(hash_result.exit_code == 0);
+    std::istringstream hash_stream(hash_result.stdout_text);
+    std::string raw_model_hash;
+    hash_stream >> raw_model_hash;
+    T81_TEST_CHECK(!raw_model_hash.empty());
+
+    const fs::path allow_policy = make_temp_path("t81-cli-classify-fixed-allow", ".apl");
+    {
+      std::ofstream out(allow_policy);
+      out << "(policy\n"
+             "  (tier 1)\n"
+             "  (allowed-ternary-model-hashes [\"sha3-512:"
+          << raw_model_hash
+          << "\"])\n"
+             "  (require-axion-event (reason \"task:classify_fixed.v1\")))\n";
+    }
+
+    const auto task_result =
+        run_cli(t81_bin, {"ai", "task", "classify-fixed", "--model", "classify-fixed-demo",
+                          "--model-file", model_path.string(), "--policy", allow_policy.string(),
+                          "--canonfs-root", canonfs_root.string(), "--mode", "strict_deterministic",
+                          "--input", "greet hello"});
+    T81_TEST_CHECK(task_result.exit_code == 0);
+    const auto result_ref = extract_json_string(task_result.stdout_text, "result_ref");
+    const auto provenance_ref = extract_json_string(task_result.stdout_text, "provenance_ref");
+    T81_TEST_CHECK(result_ref.has_value());
+    T81_TEST_CHECK(provenance_ref.has_value());
+
+    const fs::path ruleset_path = ruleset_dir / "positive.ruleset";
+    {
+      std::ofstream out(ruleset_path);
+      out << "label=POSITIVE\n"
+          << "selected_rule_set=rulesets/positive.ruleset\n"
+          << "source_result_ref=" << *result_ref << "\n";
+    }
+    const auto action_ref_result = run_cli(t81_bin, {"canonfs", "put-file", ruleset_path.string(),
+                                                     "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(action_ref_result.exit_code == 0);
+    std::string action_ref = action_ref_result.stdout_text;
+    while (!action_ref.empty() && (action_ref.back() == '\n' || action_ref.back() == '\r')) {
+      action_ref.pop_back();
+    }
+    T81_TEST_CHECK(!action_ref.empty());
+
+    const auto write_store_result =
+        run_cli(t81_bin, {"artifact", "write-store-record", "--schema",
+                          "t81.ai.task.classify-fixed.rule-selection-record.v1", "--field",
+                          "source_result_ref=" + *result_ref, "--field",
+                          "source_provenance_ref=" + *provenance_ref, "--field", "label=POSITIVE",
+                          "--field", "termination_reason=single_step_max_score", "--field",
+                          "selected_rule_set=rulesets/positive.ruleset", "--field",
+                          "rule_set_ref=" + action_ref, "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(write_store_result.exit_code == 0);
+    T81_TEST_CHECK(contains(write_store_result.stdout_text,
+                            "\"schema\": \"t81.artifact.record-write-store.v1\""));
+    T81_TEST_CHECK(appears_in_order(
+        write_store_result.stdout_text,
+        {"\"result_summary\": ", "\"schema_id\": ", "\"validation_result\": \"pass\"",
+         "\"record_ref\": ", "\"next_step_hint\": ", "\"status\": \"pass\""}));
+    const auto record_ref = extract_json_string(write_store_result.stdout_text, "record_ref");
+    T81_TEST_CHECK(record_ref.has_value());
+
+    const auto bundle_store_result = run_cli(
+        t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.classify-fixed.bundle.v1",
+                  "--field", "source_result_ref=" + *result_ref, "--field",
+                  "source_provenance_ref=" + *provenance_ref, "--field", "action_ref=" + action_ref,
+                  "--field", "record_ref=" + *record_ref, "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(bundle_store_result.exit_code == 0);
+    T81_TEST_CHECK(
+        contains(bundle_store_result.stdout_text, "\"schema\": \"t81.artifact.bundle-store.v1\""));
+    T81_TEST_CHECK(appears_in_order(
+        bundle_store_result.stdout_text,
+        {"\"result_summary\": ", "\"schema_id\": ", "\"validation_result\": \"pass\"",
+         "\"bundle_ref\": ", "\"next_step_hint\": ", "\"status\": \"pass\""}));
+    const auto bundle_ref = extract_json_string(bundle_store_result.stdout_text, "bundle_ref");
+    T81_TEST_CHECK(bundle_ref.has_value());
+
+    const auto bundle_artifact =
+        run_cli(t81_bin, {"canonfs", "get", *bundle_ref, "--canonfs-root", canonfs_root.string()});
+    T81_TEST_CHECK(bundle_artifact.exit_code == 0);
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text,
+                            "\"schema\": \"t81.ai.task.classify-fixed.bundle.v1\""));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"source_result_ref\": "));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"source_provenance_ref\": "));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"action_ref\": "));
+    T81_TEST_CHECK(contains(bundle_artifact.stdout_text, "\"record_ref\": "));
+
+    std::error_code ignore_ec;
+    fs::remove(allow_policy, ignore_ec);
+    fs::remove_all(model_dir, ignore_ec);
+    fs::remove_all(canonfs_root, ignore_ec);
+    fs::remove_all(ruleset_dir, ignore_ec);
   }
 
   // Test pkg check functionality - the critical part that was failing

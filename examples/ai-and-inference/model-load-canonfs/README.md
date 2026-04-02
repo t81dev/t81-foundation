@@ -136,6 +136,33 @@ Expected end state:
 - typed readback from the bundle returns refs such as `record_ref` and
   `action_ref`
 
+## Classify-Fixed Rule Selection Chain
+
+This is the third bounded composition using the same typed object pipeline.
+
+It shows one narrow rule-selection chain:
+
+1. `classify-fixed` runs in the strict deterministic lane
+2. the AI task stores a canonical label artifact plus provenance
+3. a typed downstream rule-selection record is created and stored
+4. a final bundle object is created and stored
+
+As in the assess-fixed and route-fixed chains, the important object is the
+final bundle rather than the intermediate task result or downstream record.
+
+Run:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_classify_fixed_rule_selection.sh
+```
+
+Expected end state:
+
+- the demo prints the stored bundle body with schema
+  `t81.ai.task.classify-fixed.bundle.v1`
+- typed readback from the bundle returns refs such as `record_ref` and
+  `action_ref`
+
 ## Guarded AI Probe Path
 
 This is the checked-in `guarded` example. It uses the real tiny Hugging Face

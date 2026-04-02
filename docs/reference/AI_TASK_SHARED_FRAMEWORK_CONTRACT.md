@@ -103,6 +103,7 @@ Supported bundle schemas:
 
 - `t81.ai.task.assess-fixed.bundle.v1`
 - `t81.ai.task.route-fixed.bundle.v1`
+- `t81.ai.task.classify-fixed.bundle.v1`
 
 Required fixed fields:
 
@@ -121,12 +122,12 @@ Canonical field ordering:
 
 What the bundle represents:
 
-- one persisted summary object for the current `assess_fixed.v1` composition
+- one persisted summary object for one validated bounded composition
 - a narrow link object that ties together:
   - the stored AI task result artifact
   - the stored AI task provenance artifact
-  - the stored host action artifact
-  - the stored downstream decision record
+  - one stored non-AI action artifact selected from the AI result
+  - the stored downstream record
 
 What the bundle must contain:
 
@@ -150,6 +151,7 @@ Supported helpers for the current downstream schema family:
 - `t81 artifact write-store-record`
   - supports `t81.ai.task.assess-fixed.host-action-record.v1`
   - supports `t81.ai.task.route-fixed.path-selection-record.v1`
+  - supports `t81.ai.task.classify-fixed.rule-selection-record.v1`
   - writes, validates, and stores the fixed downstream record
 - `t81 artifact validate-record`
   - supports only the current fixed downstream record schema
@@ -159,6 +161,7 @@ Supported helpers for the current downstream schema family:
 - `t81 artifact store-bundle`
   - supports `t81.ai.task.assess-fixed.bundle.v1`
   - supports `t81.ai.task.route-fixed.bundle.v1`
+  - supports `t81.ai.task.classify-fixed.bundle.v1`
   - validates fixed bundle fields and stores the canonical bundle JSON as a CanonFS raw block
 - `t81 artifact read-field`
   - supports only the current fixed downstream record and bundle schema family
@@ -173,6 +176,7 @@ CanonFS retrieval expectations:
 - the top-level persisted object for the current assess-fixed chain is the bundle artifact, not the
   downstream record alone
 - the same object model is reused by the current `route-fixed` path-selection chain
+- the same object model is also reused by the current `classify-fixed` rule-selection chain
 
 Current convergence point:
 
@@ -181,6 +185,8 @@ Current convergence point:
 - changes to helper behavior, help text, or supported schema names must remain aligned with:
   - `tests/cpp/cli_contract_test.cpp`
   - `tests/cpp/ai_task_assess_fixed_composition_test.cpp`
+  - `tests/cpp/ai_task_route_fixed_composition_test.cpp`
+  - `tests/cpp/ai_task_classify_fixed_composition_test.cpp`
 - treat that convergence point as contract-sensitive, not as an incidental CLI convenience layer
 
 ## Guardrails
@@ -210,3 +216,5 @@ Current downstream schema family:
 - `t81.ai.task.assess-fixed.bundle.v1`
 - `t81.ai.task.route-fixed.path-selection-record.v1`
 - `t81.ai.task.route-fixed.bundle.v1`
+- `t81.ai.task.classify-fixed.rule-selection-record.v1`
+- `t81.ai.task.classify-fixed.bundle.v1`

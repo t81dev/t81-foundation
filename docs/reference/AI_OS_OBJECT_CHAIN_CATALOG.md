@@ -28,6 +28,8 @@ Confirmed invariant:
   the same content-addressed identity across different CanonFS roots
 - for the validated `route-fixed` chain, the canonical final bundle also keeps
   the same content-addressed identity across different CanonFS roots
+- for the validated `classify-fixed` chain, the canonical final bundle also
+  keeps the same content-addressed identity across different CanonFS roots
 
 ## Assess-Fixed Host Action Chain
 
@@ -112,6 +114,48 @@ Portable proof path:
 Canonical top-level object:
 
 - the stored bundle `t81.ai.task.route-fixed.bundle.v1`
+
+## Classify-Fixed Rule Selection Chain
+
+Purpose:
+
+- run one bounded governed classification task
+- turn the stored AI label result into one fixed downstream rule-set selection
+- persist the completed chain as one canonical bundle object
+
+Task schema/result family:
+
+- task: `classify_fixed.v1`
+- result artifact schema: `t81.ai.task.classify-fixed.v1`
+- provenance artifact schema: `t81.ai.task.provenance.v1`
+
+Downstream record schema:
+
+- `t81.ai.task.classify-fixed.rule-selection-record.v1`
+
+Final bundle schema:
+
+- `t81.ai.task.classify-fixed.bundle.v1`
+
+Object roles:
+
+- task result artifact: intermediate
+- provenance artifact: intermediate
+- downstream record: intermediate
+- final bundle artifact: canonical
+
+Canonical runnable example:
+
+- [run_classify_fixed_rule_selection.sh](../../examples/ai-and-inference/model-load-canonfs/run_classify_fixed_rule_selection.sh)
+
+Portable proof path:
+
+- [ai_task_classify_fixed_composition_test.cpp](../../tests/cpp/ai_task_classify_fixed_composition_test.cpp)
+  via `./build/t81_ai_task_classify_fixed_composition_test ./build/t81`
+
+Canonical top-level object:
+
+- the stored bundle `t81.ai.task.classify-fixed.bundle.v1`
 
 ## Boundary
 

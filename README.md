@@ -240,6 +240,12 @@ Second bounded composition using the same object model:
 bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
 ```
 
+Third bounded composition using the same object model:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/run_classify_fixed_rule_selection.sh
+```
+
 Short explanation:
 - [First Deterministic AI OS-Object Chain](docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md)
 

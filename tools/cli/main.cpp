@@ -55,9 +55,7 @@
 #include <io.h>
 #endif
 
-#include "vm/internal/memory_segments.hpp"
 #include "logging.hpp"
-#include "tools/cli/ai/ai_cli_shared.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
@@ -78,6 +76,8 @@
 #include "t81/tracing/canonhash.hpp"
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
+#include "tools/cli/ai/ai_cli_shared.hpp"
+#include "vm/internal/memory_segments.hpp"
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
 #endif
@@ -781,6 +781,8 @@ Supported schemas:
   t81.ai.task.assess-fixed.bundle.v1
   t81.ai.task.route-fixed.path-selection-record.v1
   t81.ai.task.route-fixed.bundle.v1
+  t81.ai.task.classify-fixed.rule-selection-record.v1
+  t81.ai.task.classify-fixed.bundle.v1
 
 Canonical runnable example:
   See the `Assess-Fixed OS-Object Chain` section in
@@ -788,8 +790,10 @@ Canonical runnable example:
   and the companion script
   examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
   for the current canonical end-to-end use of these typed artifact helpers.
-  A second bounded composition using the same object model is available in
+  Additional bounded compositions using the same object model are available in
   examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
+  and
+  examples/ai-and-inference/model-load-canonfs/run_classify_fixed_rule_selection.sh
 
 Examples:
   t81 artifact write-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --out record.json --field decision=ALLOW --field reason_code=GREETING_PAIR --field selected_action=write_allow_marker --field selected_path=actions/allow.marker --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score
@@ -797,6 +801,8 @@ Examples:
   t81 artifact store-bundle --schema t81.ai.task.assess-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
   t81 artifact write-store-record --schema t81.ai.task.route-fixed.path-selection-record.v1 --field route=A --field selected_action=write_route_a_marker --field selected_path=routes/a.target --field action_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
   t81 artifact store-bundle --schema t81.ai.task.route-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
+  t81 artifact write-store-record --schema t81.ai.task.classify-fixed.rule-selection-record.v1 --field label=POSITIVE --field selected_rule_set=rulesets/positive.ruleset --field rule_set_ref=sha3-256:... --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field termination_reason=single_step_max_score --canonfs-root .t81_canonfs
+  t81 artifact store-bundle --schema t81.ai.task.classify-fixed.bundle.v1 --field source_result_ref=sha3-256:... --field source_provenance_ref=sha3-256:... --field action_ref=sha3-256:... --field record_ref=sha3-256:... --canonfs-root .t81_canonfs
   t81 artifact validate-record record.json --schema t81.ai.task.assess-fixed.host-action-record.v1
   t81 artifact store-record --schema t81.ai.task.assess-fixed.host-action-record.v1 --file record.json --canonfs-root .t81_canonfs
   t81 artifact validate-record sha3-256:... --schema t81.ai.task.assess-fixed.host-action-record.v1 --canonfs-root .t81_canonfs
@@ -1442,9 +1448,7 @@ Examples:
 )";
 }
 
-void print_help_ai() {
-  t81::cli::ai::print_usage("t81 ai");
-}
+void print_help_ai() { t81::cli::ai::print_usage("t81 ai"); }
 
 void print_usage(const char* prog) {
   std::cerr << R"(T81 Foundation - Ternary-Native Computing Stack
@@ -2328,8 +2332,7 @@ Args parse_args(int argc, char* argv[]) {
           a.command == "env" || a.command == "internal" || a.command == "completion" ||
           a.command == "man" || a.command == "feedback" || a.command == "c" ||
           a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-          a.command == "ai" || a.command == "artifact" ||
-          a.command == "mlir") {
+          a.command == "ai" || a.command == "artifact" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         a.need_version = true;
@@ -2345,13 +2348,13 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
-                 a.command == "ai" || a.command == "artifact" ||
-                 a.command == "project" || a.command == "env" || a.command == "internal" ||
-                 a.command == "completion" || a.command == "man" || a.command == "feedback" ||
-                 a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" || a.command == "profile" ||
-                 a.command == "c" || a.command == "rust" || a.command == "python" ||
-                 a.command == "llvm" || a.command == "mlir") {
+                 a.command == "ai" || a.command == "artifact" || a.command == "project" ||
+                 a.command == "env" || a.command == "internal" || a.command == "completion" ||
+                 a.command == "man" || a.command == "feedback" || a.command == "canonize-tensor" ||
+                 a.command == "canonize-file" || a.command == "memory-stats" ||
+                 a.command == "tier" || a.command == "profile" || a.command == "c" ||
+                 a.command == "rust" || a.command == "python" || a.command == "llvm" ||
+                 a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         throw_usage_error("Unknown option: " + std::string(arg));
@@ -2366,13 +2369,12 @@ Args parse_args(int argc, char* argv[]) {
                  a.command == "ir" || a.command == "llama-run" || a.command == "test" ||
                  a.command == "doctor" || a.command == "fmt" || a.command == "code" ||
                  a.command == "lang" || a.command == "model" || a.command == "tensor" ||
-                 a.command == "ai" || a.command == "artifact" ||
-                 a.command == "project" || a.command == "env" || a.command == "internal" ||
-                 a.command == "completion" || a.command == "man" || a.command == "feedback" ||
-                 a.command == "canonize-tensor" || a.command == "canonize-file" ||
-                 a.command == "memory-stats" || a.command == "tier" || a.command == "c" ||
-                 a.command == "rust" || a.command == "python" || a.command == "llvm" ||
-                 a.command == "mlir") {
+                 a.command == "ai" || a.command == "artifact" || a.command == "project" ||
+                 a.command == "env" || a.command == "internal" || a.command == "completion" ||
+                 a.command == "man" || a.command == "feedback" || a.command == "canonize-tensor" ||
+                 a.command == "canonize-file" || a.command == "memory-stats" ||
+                 a.command == "tier" || a.command == "c" || a.command == "rust" ||
+                 a.command == "python" || a.command == "llvm" || a.command == "mlir") {
         a.command_args.emplace_back(argv[i]);
       } else {
         if (!a.input.empty()) {
@@ -2447,7 +2449,8 @@ bool parse_canonical_hash_local(std::string_view prefixed_hash, t81::canonfs::Ca
     return false;
   }
   try {
-    ref.hash.h = t81::hash::CanonHash81::from_string(std::string(prefixed_hash.substr(prefix.size())));
+    ref.hash.h =
+        t81::hash::CanonHash81::from_string(std::string(prefixed_hash.substr(prefix.size())));
   } catch (const std::exception& e) {
     error_message = std::string("invalid canonical hash: ") + e.what();
     return false;
@@ -2489,8 +2492,8 @@ bool write_canonfs_raw_block_local(const fs::path& canonfs_root, std::string_vie
                                    std::string& ref_text, std::string& error_message) {
   auto driver = t81::canonfs::make_persistent_driver(canonfs_root);
   const auto* begin = reinterpret_cast<const std::byte*>(text.data());
-  auto write_res = driver->write_object(
-      t81::canonfs::ObjectType::RawBlock, std::span<const std::byte>(begin, text.size()));
+  auto write_res = driver->write_object(t81::canonfs::ObjectType::RawBlock,
+                                        std::span<const std::byte>(begin, text.size()));
   if (!write_res) {
     error_message = "failed to write CanonFS object";
     return false;
@@ -2506,6 +2509,9 @@ int run_artifact_command(const Args& args) {
   constexpr std::string_view kRouteActionRecordSchema =
       "t81.ai.task.route-fixed.path-selection-record.v1";
   constexpr std::string_view kRouteBundleSchema = "t81.ai.task.route-fixed.bundle.v1";
+  constexpr std::string_view kClassifyActionRecordSchema =
+      "t81.ai.task.classify-fixed.rule-selection-record.v1";
+  constexpr std::string_view kClassifyBundleSchema = "t81.ai.task.classify-fixed.bundle.v1";
   constexpr std::array<std::string_view, 8> kRequiredFields{{
       "source_result_ref",
       "source_provenance_ref",
@@ -2524,6 +2530,14 @@ int run_artifact_command(const Args& args) {
       "selected_action",
       "selected_path",
       "action_ref",
+  }};
+  constexpr std::array<std::string_view, 6> kClassifyRequiredFields{{
+      "source_result_ref",
+      "source_provenance_ref",
+      "label",
+      "termination_reason",
+      "selected_rule_set",
+      "rule_set_ref",
   }};
   constexpr std::array<std::string_view, 4> kRequiredBundleFields{{
       "source_result_ref",
@@ -2544,26 +2558,37 @@ int run_artifact_command(const Args& args) {
     }
     if (schema == kRouteActionRecordSchema) {
       return field == "schema" || field == "route" || field == "selected_action" ||
-             field == "selected_path" || field == "action_ref" ||
-             field == "source_result_ref" || field == "source_provenance_ref" ||
-             field == "termination_reason";
+             field == "selected_path" || field == "action_ref" || field == "source_result_ref" ||
+             field == "source_provenance_ref" || field == "termination_reason";
     }
     if (schema == kRouteBundleSchema) {
       return field == "schema" || field == "source_result_ref" ||
              field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
     }
+    if (schema == kClassifyActionRecordSchema) {
+      return field == "schema" || field == "label" || field == "selected_rule_set" ||
+             field == "rule_set_ref" || field == "source_result_ref" ||
+             field == "source_provenance_ref" || field == "termination_reason";
+    }
+    if (schema == kClassifyBundleSchema) {
+      return field == "schema" || field == "source_result_ref" ||
+             field == "source_provenance_ref" || field == "action_ref" || field == "record_ref";
+    }
     return false;
   };
-  auto render_record = [&](std::string_view schema, const std::map<std::string, std::string>& fields) {
+  auto render_record = [&](std::string_view schema,
+                           const std::map<std::string, std::string>& fields) {
     std::ostringstream out;
     if (schema == kAssessActionRecordSchema) {
       out << "{\n"
           << "  \"schema\": \"" << kAssessActionRecordSchema << "\",\n"
           << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
+          << "\",\n"
           << "  \"decision\": \"" << json_escape(fields.at("decision")) << "\",\n"
           << "  \"reason_code\": \"" << json_escape(fields.at("reason_code")) << "\",\n"
-          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason")) << "\",\n"
+          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason"))
+          << "\",\n"
           << "  \"selected_action\": \"" << json_escape(fields.at("selected_action")) << "\",\n"
           << "  \"selected_path\": \"" << json_escape(fields.at("selected_path")) << "\",\n"
           << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\"\n"
@@ -2574,12 +2599,28 @@ int run_artifact_command(const Args& args) {
       out << "{\n"
           << "  \"schema\": \"" << kRouteActionRecordSchema << "\",\n"
           << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
+          << "\",\n"
           << "  \"route\": \"" << json_escape(fields.at("route")) << "\",\n"
-          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason")) << "\",\n"
+          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason"))
+          << "\",\n"
           << "  \"selected_action\": \"" << json_escape(fields.at("selected_action")) << "\",\n"
           << "  \"selected_path\": \"" << json_escape(fields.at("selected_path")) << "\",\n"
           << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\"\n"
+          << "}\n";
+      return out.str();
+    }
+    if (schema == kClassifyActionRecordSchema) {
+      out << "{\n"
+          << "  \"schema\": \"" << kClassifyActionRecordSchema << "\",\n"
+          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
+          << "\",\n"
+          << "  \"label\": \"" << json_escape(fields.at("label")) << "\",\n"
+          << "  \"termination_reason\": \"" << json_escape(fields.at("termination_reason"))
+          << "\",\n"
+          << "  \"selected_rule_set\": \"" << json_escape(fields.at("selected_rule_set")) << "\",\n"
+          << "  \"rule_set_ref\": \"" << json_escape(fields.at("rule_set_ref")) << "\"\n"
           << "}\n";
       return out.str();
     }
@@ -2587,7 +2628,8 @@ int run_artifact_command(const Args& args) {
       out << "{\n"
           << "  \"schema\": \"" << kAssessBundleSchema << "\",\n"
           << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
+          << "\",\n"
           << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
           << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
           << "}\n";
@@ -2597,7 +2639,19 @@ int run_artifact_command(const Args& args) {
       out << "{\n"
           << "  \"schema\": \"" << kRouteBundleSchema << "\",\n"
           << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
-          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
+          << "\",\n"
+          << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
+          << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
+          << "}\n";
+      return out.str();
+    }
+    if (schema == kClassifyBundleSchema) {
+      out << "{\n"
+          << "  \"schema\": \"" << kClassifyBundleSchema << "\",\n"
+          << "  \"source_result_ref\": \"" << json_escape(fields.at("source_result_ref")) << "\",\n"
+          << "  \"source_provenance_ref\": \"" << json_escape(fields.at("source_provenance_ref"))
+          << "\",\n"
           << "  \"action_ref\": \"" << json_escape(fields.at("action_ref")) << "\",\n"
           << "  \"record_ref\": \"" << json_escape(fields.at("record_ref")) << "\"\n"
           << "}\n";
@@ -2652,11 +2706,32 @@ int run_artifact_command(const Args& args) {
       }
       return true;
     }
-    validation_error =
-        "supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
-        "t81.ai.task.assess-fixed.bundle.v1, "
-        "t81.ai.task.route-fixed.path-selection-record.v1, or "
-        "t81.ai.task.route-fixed.bundle.v1";
+    if (schema == kClassifyActionRecordSchema) {
+      for (std::string_view required_field : kClassifyRequiredFields) {
+        const auto value = extract_json_string_field(artifact_text, required_field);
+        if (!value || value->empty()) {
+          validation_error = "missing required field \"" + std::string(required_field) + "\"";
+          return false;
+        }
+      }
+      return true;
+    }
+    if (schema == kClassifyBundleSchema) {
+      for (std::string_view required_field : kRequiredBundleFields) {
+        const auto value = extract_json_string_field(artifact_text, required_field);
+        if (!value || value->empty()) {
+          validation_error = "missing required field \"" + std::string(required_field) + "\"";
+          return false;
+        }
+      }
+      return true;
+    }
+    validation_error = "supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
+                       "t81.ai.task.assess-fixed.bundle.v1, "
+                       "t81.ai.task.route-fixed.path-selection-record.v1, or "
+                       "t81.ai.task.route-fixed.bundle.v1, "
+                       "t81.ai.task.classify-fixed.rule-selection-record.v1, or "
+                       "t81.ai.task.classify-fixed.bundle.v1";
     return false;
   };
   auto next_inspect_field_for_schema = [&](std::string_view schema) -> std::string_view {
@@ -2672,26 +2747,35 @@ int run_artifact_command(const Args& args) {
     if (schema == kRouteBundleSchema) {
       return "record_ref";
     }
+    if (schema == kClassifyActionRecordSchema) {
+      return "selected_rule_set";
+    }
+    if (schema == kClassifyBundleSchema) {
+      return "record_ref";
+    }
     return "schema";
   };
-  auto validate_supported_schema = [&](std::string_view subcommand_name, std::string_view schema_value) {
+  auto validate_supported_schema = [&](std::string_view subcommand_name,
+                                       std::string_view schema_value) {
     if (schema_value != kAssessActionRecordSchema && schema_value != kAssessBundleSchema &&
-        schema_value != kRouteActionRecordSchema && schema_value != kRouteBundleSchema) {
+        schema_value != kRouteActionRecordSchema && schema_value != kRouteBundleSchema &&
+        schema_value != kClassifyActionRecordSchema && schema_value != kClassifyBundleSchema) {
       error("artifact " + std::string(subcommand_name) +
             " supports only schema t81.ai.task.assess-fixed.host-action-record.v1, "
             "t81.ai.task.assess-fixed.bundle.v1, "
-            "t81.ai.task.route-fixed.path-selection-record.v1, or "
-            "t81.ai.task.route-fixed.bundle.v1");
+            "t81.ai.task.route-fixed.path-selection-record.v1, "
+            "t81.ai.task.route-fixed.bundle.v1, "
+            "t81.ai.task.classify-fixed.rule-selection-record.v1, or "
+            "t81.ai.task.classify-fixed.bundle.v1");
       return false;
     }
     return true;
   };
 
   auto write_and_store_payload = [&](const fs::path& canonfs_root_path,
-                                     std::string_view summary_schema,
-                                     std::string_view summary_text, std::string_view ref_key,
-                                     std::string_view schema_value, std::string_view payload,
-                                     std::string_view subcommand_name) {
+                                     std::string_view summary_schema, std::string_view summary_text,
+                                     std::string_view ref_key, std::string_view schema_value,
+                                     std::string_view payload, std::string_view subcommand_name) {
     std::string validation_error;
     if (!validate_record(schema_value, payload, validation_error)) {
       error("artifact " + std::string(subcommand_name) + ": " + validation_error);
@@ -2759,8 +2843,8 @@ int run_artifact_command(const Args& args) {
 
   const std::string subcommand = args.command_args[0];
   if (subcommand != "write-record" && subcommand != "write-store-record" &&
-      subcommand != "store-bundle" && subcommand != "validate-record" && subcommand != "store-record" &&
-      subcommand != "read-field") {
+      subcommand != "store-bundle" && subcommand != "validate-record" &&
+      subcommand != "store-record" && subcommand != "read-field") {
     error("Unknown artifact action: " + args.command_args[0] + ". Run 't81 help artifact'.");
     return 1;
   }
@@ -2838,10 +2922,12 @@ int run_artifact_command(const Args& args) {
   }
 
   if (subcommand == "write-record" || subcommand == "write-store-record") {
-    if (schema != kAssessActionRecordSchema && schema != kRouteActionRecordSchema) {
+    if (schema != kAssessActionRecordSchema && schema != kRouteActionRecordSchema &&
+        schema != kClassifyActionRecordSchema) {
       error("artifact " + subcommand +
             " supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
-            "t81.ai.task.route-fixed.path-selection-record.v1");
+            "t81.ai.task.route-fixed.path-selection-record.v1 or "
+            "t81.ai.task.classify-fixed.rule-selection-record.v1");
       return 1;
     }
     std::map<std::string, std::string> field_map;
@@ -2849,8 +2935,14 @@ int run_artifact_command(const Args& args) {
       if (!parse_field_map(subcommand, schema, field_assignments, kRequiredFields, field_map)) {
         return 1;
       }
+    } else if (schema == kRouteActionRecordSchema) {
+      if (!parse_field_map(subcommand, schema, field_assignments, kRouteRequiredFields,
+                           field_map)) {
+        return 1;
+      }
     } else {
-      if (!parse_field_map(subcommand, schema, field_assignments, kRouteRequiredFields, field_map)) {
+      if (!parse_field_map(subcommand, schema, field_assignments, kClassifyRequiredFields,
+                           field_map)) {
         return 1;
       }
     }
@@ -2884,9 +2976,11 @@ int run_artifact_command(const Args& args) {
   }
 
   if (subcommand == "store-bundle") {
-    if (schema != kAssessBundleSchema && schema != kRouteBundleSchema) {
-      error("artifact store-bundle supports only schema t81.ai.task.assess-fixed.bundle.v1 or "
-            "t81.ai.task.route-fixed.bundle.v1");
+    if (schema != kAssessBundleSchema && schema != kRouteBundleSchema &&
+        schema != kClassifyBundleSchema) {
+      error("artifact store-bundle supports only schema t81.ai.task.assess-fixed.bundle.v1, "
+            "t81.ai.task.route-fixed.bundle.v1, or "
+            "t81.ai.task.classify-fixed.bundle.v1");
       return 1;
     }
     std::map<std::string, std::string> field_map;
@@ -2942,8 +3036,8 @@ int run_artifact_command(const Args& args) {
             << "  \"schema\": \"t81.artifact.record-validation.v1\",\n"
             << "  \"ok\": true,\n"
             << "  \"record_schema\": \"" << schema << "\",\n"
-            << "  \"selector_kind\": \"" << (selector.rfind("sha3-256:", 0) == 0 ? "canonfs_ref" : "file")
-            << "\",\n"
+            << "  \"selector_kind\": \""
+            << (selector.rfind("sha3-256:", 0) == 0 ? "canonfs_ref" : "file") << "\",\n"
             << "  \"status\": \"pass\"\n"
             << "}\n";
   return 0;
@@ -3156,8 +3250,7 @@ int run_weights_import(const Args& args) {
   if (!fs::exists(opts.input)) {
     std::string resolution_error;
     auto resolved = t81::cli::resolve_repo_model_path(opts.input.string(),
-                                                      {".gguf", ".safetensors"},
-                                                      &resolution_error);
+                                                      {".gguf", ".safetensors"}, &resolution_error);
     if (!resolved) {
       error("weights import: " + resolution_error);
       return 1;
@@ -4298,8 +4391,9 @@ int run_axion(const Args& args) {
 
   if (sub == "optimize") {
     const auto previous_state = read_axion_state(canonfs_root);
-    const auto previous_snapshot = previous_state.active_snapshot ? previous_state.active_snapshot
-                                                                  : latest_snapshot_hash(canonfs_root);
+    const auto previous_snapshot = previous_state.active_snapshot
+                                       ? previous_state.active_snapshot
+                                       : latest_snapshot_hash(canonfs_root);
     if (!write_axion_state(target_tier)) {
       return 1;
     }
@@ -4327,8 +4421,7 @@ int run_axion(const Args& args) {
                 << "  \"status\": \"ok\",\n"
                 << "  \"action\": \"optimize\",\n"
                 << "  \"tier\": " << target_tier << ",\n"
-                << "  \"previous_snapshot\": "
-                << json_nullable_axion(previous_snapshot) << ",\n"
+                << "  \"previous_snapshot\": " << json_nullable_axion(previous_snapshot) << ",\n"
                 << "  \"active_snapshot\": ";
       if (snapshot_hash) {
         std::cout << "\"" << json_escape(*snapshot_hash) << "\",\n";
@@ -6434,7 +6527,8 @@ int run_profile_command(const Args& args) {
     }
     Args vm_args = args;
     vm_args.command = "vm";
-    vm_args.command_args = {"profile", temp_path.string(), "--display-program", args.input.string()};
+    vm_args.command_args = {"profile", temp_path.string(), "--display-program",
+                            args.input.string()};
     if (args.policy) {
       vm_args.command_args.push_back("--policy");
       vm_args.command_args.push_back(args.policy->string());
@@ -7532,7 +7626,6 @@ fs::path discover_repo_root() {
   return cwd;
 }
 
-
 std::optional<fs::path> discover_exe_path_internal() {
   std::error_code ec;
 #ifdef _WIN32
@@ -8374,8 +8467,7 @@ int run_test_command(const Args& args) {
     }
     if (summary.total >= 0 && summary.failed >= 0) {
       summary.failed += junit_errors;
-      summary.passed =
-          std::max(0, summary.total - summary.failed - std::max(0, summary.skipped));
+      summary.passed = std::max(0, summary.total - summary.failed - std::max(0, summary.skipped));
     }
     if (std::regex_search(xml, m, std::regex("time=\"([0-9]+(?:\\.[0-9]+)?)\"")) && m.size() == 2) {
       summary.duration_sec = std::atof(m[1].str().c_str());
@@ -8385,9 +8477,8 @@ int run_test_command(const Args& args) {
     not_run = summary.total;
   }
   const bool infrastructure_failure =
-      rc != 0 &&
-      (summary.total < 0 ||
-       ((summary.failed <= 0) && (summary.passed >= summary.total || summary.passed > 0)));
+      rc != 0 && (summary.total < 0 || ((summary.failed <= 0) &&
+                                        (summary.passed >= summary.total || summary.passed > 0)));
   if (infrastructure_failure) {
     if (summary.total < 0) {
       summary.total = 0;
@@ -8422,8 +8513,7 @@ int run_test_command(const Args& args) {
     std::cout << "  },\n";
     std::cout << "  \"stdout_bytes\": " << stdout_bytes << ",\n";
     std::cout << "  \"stderr_bytes\": " << stderr_bytes << ",\n";
-    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text")
-              << "\",\n";
+    std::cout << "  \"summary_source\": \"" << (used_junit ? "junit_xml" : "ctest_text") << "\",\n";
     std::cout << "  \"infrastructure_failure\": " << (infrastructure_failure ? "true" : "false")
               << "\n";
     std::cout << "}\n";
@@ -8435,8 +8525,7 @@ int run_test_command(const Args& args) {
   if (!g_flags.quiet) {
     std::ostringstream oss;
     oss << "test summary: total=" << summary.total << " passed=" << summary.passed
-        << " failed=" << summary.failed << " skipped=" << summary.skipped
-        << " not_run=" << not_run;
+        << " failed=" << summary.failed << " skipped=" << summary.skipped << " not_run=" << not_run;
     if (summary.duration_sec >= 0.0) {
       oss << " duration_sec=" << std::fixed << std::setprecision(3) << summary.duration_sec;
     }
@@ -9789,9 +9878,8 @@ int main(int argc, char* argv[]) {
 
     const auto ext = args.input.extension();
     auto weights_model_ptr = std::shared_ptr<t81::weights::ModelFile>{};
-    if (args.weights_model &&
-        (args.command == "compile" || args.command == "run" || args.command == "debug" ||
-         args.command == "repl")) {
+    if (args.weights_model && (args.command == "compile" || args.command == "run" ||
+                               args.command == "debug" || args.command == "repl")) {
       weights_model_ptr = load_weights_model_optional(args.weights_model);
       if (!weights_model_ptr) return 1;
     }

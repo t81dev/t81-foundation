@@ -154,13 +154,16 @@ int main(int argc, char* argv[]) {
     std::ofstream out(missing_field_record);
     out << "{\n"
            "  \"schema\": \"t81.ai.task.assess-fixed.host-action-record.v1\",\n"
-           "  \"source_result_ref\": \"sha3-256:111111111111111111111111111111111111111111111111111111111\",\n"
-           "  \"source_provenance_ref\": \"sha3-256:222222222222222222222222222222222222222222222222222222222\",\n"
+           "  \"source_result_ref\": "
+           "\"sha3-256:111111111111111111111111111111111111111111111111111111111\",\n"
+           "  \"source_provenance_ref\": "
+           "\"sha3-256:222222222222222222222222222222222222222222222222222222222\",\n"
            "  \"decision\": \"ALLOW\",\n"
            "  \"termination_reason\": \"single_step_max_score\",\n"
            "  \"selected_action\": \"write_allow_marker\",\n"
            "  \"selected_path\": \"actions/allow.marker\",\n"
-           "  \"action_ref\": \"sha3-256:333333333333333333333333333333333333333333333333333333333\"\n"
+           "  \"action_ref\": "
+           "\"sha3-256:333333333333333333333333333333333333333333333333333333333\"\n"
            "}\n";
   }
   {
@@ -172,24 +175,24 @@ int main(int argc, char* argv[]) {
            "}\n";
   }
 
-  const auto valid = run_cli(
-      t81_bin, {"artifact", "validate-record", valid_record.string(), "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1"});
+  const auto valid =
+      run_cli(t81_bin, {"artifact", "validate-record", valid_record.string(), "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1"});
   T81_TEST_CHECK(valid.exit_code == 0);
   T81_TEST_CHECK(contains(valid.stdout_text, "\"ok\": true"));
-  T81_TEST_CHECK(
-      contains(valid.stdout_text, "\"record_schema\": \"t81.ai.task.assess-fixed.host-action-record.v1\""));
+  T81_TEST_CHECK(contains(valid.stdout_text,
+                          "\"record_schema\": \"t81.ai.task.assess-fixed.host-action-record.v1\""));
   T81_TEST_CHECK(contains(valid.stdout_text, "\"selector_kind\": \"file\""));
 
-  const auto repeat = run_cli(
-      t81_bin, {"artifact", "validate-record", valid_record.string(), "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1"});
+  const auto repeat =
+      run_cli(t81_bin, {"artifact", "validate-record", valid_record.string(), "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1"});
   T81_TEST_CHECK(repeat.exit_code == 0);
   T81_TEST_CHECK(repeat.stdout_text == valid.stdout_text);
 
-  const auto read_decision = run_cli(
-      t81_bin, {"artifact", "read-field", valid_record.string(), "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "decision"});
+  const auto read_decision =
+      run_cli(t81_bin, {"artifact", "read-field", valid_record.string(), "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "decision"});
   T81_TEST_CHECK(read_decision.exit_code == 0);
   T81_TEST_CHECK(read_decision.stdout_text == "ALLOW\n");
 
@@ -206,71 +209,95 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(repeat_read.stdout_text == read_action.stdout_text);
 
   const auto missing_writer_field = run_cli(
-      t81_bin, {"artifact", "write-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--out",
-                make_temp_path("t81-artifact-missing", ".json").string(), "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field", "decision=ALLOW", "--field",
-                "termination_reason=single_step_max_score", "--field",
-                "selected_action=write_allow_marker", "--field",
-                "selected_path=actions/allow.marker", "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333"});
+      t81_bin,
+      {"artifact",
+       "write-record",
+       "--schema",
+       "t81.ai.task.assess-fixed.host-action-record.v1",
+       "--out",
+       make_temp_path("t81-artifact-missing", ".json").string(),
+       "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field",
+       "decision=ALLOW",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_allow_marker",
+       "--field",
+       "selected_path=actions/allow.marker",
+       "--field",
+       "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333"});
   T81_TEST_CHECK(missing_writer_field.exit_code != 0);
-  T81_TEST_CHECK(contains(missing_writer_field.stderr_text, "missing required field \"reason_code\""));
+  T81_TEST_CHECK(
+      contains(missing_writer_field.stderr_text, "missing required field \"reason_code\""));
 
   const auto unknown_writer_field = run_cli(
-      t81_bin, {"artifact", "write-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--out",
-                make_temp_path("t81-artifact-unknown", ".json").string(), "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field", "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
-                "termination_reason=single_step_max_score", "--field",
-                "selected_action=write_allow_marker", "--field",
-                "selected_path=actions/allow.marker", "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--field", "extra_field=unexpected"});
+      t81_bin,
+      {"artifact",
+       "write-record",
+       "--schema",
+       "t81.ai.task.assess-fixed.host-action-record.v1",
+       "--out",
+       make_temp_path("t81-artifact-unknown", ".json").string(),
+       "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field",
+       "decision=ALLOW",
+       "--field",
+       "reason_code=GREETING_PAIR",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_allow_marker",
+       "--field",
+       "selected_path=actions/allow.marker",
+       "--field",
+       "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--field",
+       "extra_field=unexpected"});
   T81_TEST_CHECK(unknown_writer_field.exit_code != 0);
   T81_TEST_CHECK(contains(unknown_writer_field.stderr_text, "unknown field \"extra_field\""));
 
-  const auto wrong_writer_schema = run_cli(
-      t81_bin, {"artifact", "write-record", "--schema", "t81.ai.task.answer-fixed.v1", "--out",
-                make_temp_path("t81-artifact-wrong-schema", ".json").string(), "--field",
-                "decision=ALLOW"});
+  const auto wrong_writer_schema =
+      run_cli(t81_bin, {"artifact", "write-record", "--schema", "t81.ai.task.answer-fixed.v1",
+                        "--out", make_temp_path("t81-artifact-wrong-schema", ".json").string(),
+                        "--field", "decision=ALLOW"});
   T81_TEST_CHECK(wrong_writer_schema.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_writer_schema.stderr_text,
                           "supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
-                          "t81.ai.task.route-fixed.path-selection-record.v1"));
+                          "t81.ai.task.route-fixed.path-selection-record.v1 or "
+                          "t81.ai.task.classify-fixed.rule-selection-record.v1"));
 
-  const auto put_ref =
-      run_cli(t81_bin, {"canonfs", "put-file", valid_record.string(), "--canonfs-root", canonfs_root.string()});
+  const auto put_ref = run_cli(t81_bin, {"canonfs", "put-file", valid_record.string(),
+                                         "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(put_ref.exit_code == 0);
   std::string ref_text = put_ref.stdout_text;
   while (!ref_text.empty() && (ref_text.back() == '\n' || ref_text.back() == '\r')) {
     ref_text.pop_back();
   }
-  const auto by_ref = run_cli(
-      t81_bin, {"artifact", "validate-record", ref_text, "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--canonfs-root",
-                canonfs_root.string()});
+  const auto by_ref = run_cli(t81_bin, {"artifact", "validate-record", ref_text, "--schema",
+                                        "t81.ai.task.assess-fixed.host-action-record.v1",
+                                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(by_ref.exit_code == 0);
   T81_TEST_CHECK(contains(by_ref.stdout_text, "\"selector_kind\": \"canonfs_ref\""));
 
-  const auto read_ref_field = run_cli(
-      t81_bin, {"artifact", "read-field", ref_text, "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "action_ref",
-                "--canonfs-root", canonfs_root.string()});
+  const auto read_ref_field =
+      run_cli(t81_bin, {"artifact", "read-field", ref_text, "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "action_ref",
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(read_ref_field.exit_code == 0);
   T81_TEST_CHECK(read_ref_field.stdout_text ==
                  "sha3-256:333333333333333333333333333333333333333333333333333333333\n");
 
-  const auto store_valid = run_cli(
-      t81_bin, {"artifact", "store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--file", valid_record.string(),
-                "--canonfs-root", canonfs_root.string()});
+  const auto store_valid =
+      run_cli(t81_bin, {"artifact", "store-record", "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--file",
+                        valid_record.string(), "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(store_valid.exit_code == 0);
   T81_TEST_CHECK(contains(store_valid.stdout_text, "\"schema\": \"t81.artifact.record-store.v1\""));
   T81_TEST_CHECK(contains(store_valid.stdout_text, "\"validation_result\": \"pass\""));
@@ -290,75 +317,98 @@ int main(int argc, char* argv[]) {
   const std::string stored_ref = extract_record_ref(store_valid.stdout_text);
   T81_TEST_CHECK(!stored_ref.empty());
 
-  const auto store_repeat = run_cli(
-      t81_bin, {"artifact", "store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--file", valid_record.string(),
-                "--canonfs-root", canonfs_root.string()});
+  const auto store_repeat =
+      run_cli(t81_bin, {"artifact", "store-record", "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--file",
+                        valid_record.string(), "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(store_repeat.exit_code == 0);
   T81_TEST_CHECK(extract_record_ref(store_repeat.stdout_text) == stored_ref);
 
   const auto write_store_valid = run_cli(
-      t81_bin, {"artifact", "write-store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field", "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
-                "termination_reason=single_step_max_score", "--field",
-                "selected_action=write_allow_marker", "--field",
-                "selected_path=actions/allow.marker", "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--canonfs-root", canonfs_root.string()});
+      t81_bin,
+      {"artifact",
+       "write-store-record",
+       "--schema",
+       "t81.ai.task.assess-fixed.host-action-record.v1",
+       "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field",
+       "decision=ALLOW",
+       "--field",
+       "reason_code=GREETING_PAIR",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_allow_marker",
+       "--field",
+       "selected_path=actions/allow.marker",
+       "--field",
+       "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--canonfs-root",
+       canonfs_root.string()});
   T81_TEST_CHECK(write_store_valid.exit_code == 0);
-  T81_TEST_CHECK(
-      contains(write_store_valid.stdout_text, "\"schema\": \"t81.artifact.record-write-store.v1\""));
+  T81_TEST_CHECK(contains(write_store_valid.stdout_text,
+                          "\"schema\": \"t81.artifact.record-write-store.v1\""));
   T81_TEST_CHECK(contains(write_store_valid.stdout_text, "\"validation_result\": \"pass\""));
   const std::string write_store_ref = extract_record_ref(write_store_valid.stdout_text);
   T81_TEST_CHECK(!write_store_ref.empty());
   T81_TEST_CHECK(write_store_ref == stored_ref);
 
   const auto write_store_repeat = run_cli(
-      t81_bin, {"artifact", "write-store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field", "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
-                "termination_reason=single_step_max_score", "--field",
-                "selected_action=write_allow_marker", "--field",
-                "selected_path=actions/allow.marker", "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--canonfs-root", canonfs_root.string()});
+      t81_bin,
+      {"artifact",
+       "write-store-record",
+       "--schema",
+       "t81.ai.task.assess-fixed.host-action-record.v1",
+       "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field",
+       "decision=ALLOW",
+       "--field",
+       "reason_code=GREETING_PAIR",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_allow_marker",
+       "--field",
+       "selected_path=actions/allow.marker",
+       "--field",
+       "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--canonfs-root",
+       canonfs_root.string()});
   T81_TEST_CHECK(write_store_repeat.exit_code == 0);
   T81_TEST_CHECK(extract_record_ref(write_store_repeat.stdout_text) == write_store_ref);
 
-  const auto stored_readback = run_cli(
-      t81_bin, {"artifact", "read-field", stored_ref, "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "selected_action",
-                "--canonfs-root", canonfs_root.string()});
+  const auto stored_readback =
+      run_cli(t81_bin, {"artifact", "read-field", stored_ref, "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
+                        "selected_action", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(stored_readback.exit_code == 0);
   T81_TEST_CHECK(stored_readback.stdout_text == "write_allow_marker\n");
 
-  const auto write_store_readback = run_cli(
-      t81_bin, {"artifact", "read-field", write_store_ref, "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "action_ref",
-                "--canonfs-root", canonfs_root.string()});
+  const auto write_store_readback =
+      run_cli(t81_bin, {"artifact", "read-field", write_store_ref, "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "action_ref",
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(write_store_readback.exit_code == 0);
   T81_TEST_CHECK(write_store_readback.stdout_text ==
                  "sha3-256:333333333333333333333333333333333333333333333333333333333\n");
 
   const auto bundle_store = run_cli(
-      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
-                "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--field", "record_ref=" + stored_ref, "--canonfs-root",
-                canonfs_root.string()});
+      t81_bin,
+      {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1", "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field", "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--field", "record_ref=" + stored_ref, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(bundle_store.exit_code == 0);
-  T81_TEST_CHECK(contains(bundle_store.stdout_text, "\"schema\": \"t81.artifact.bundle-store.v1\""));
+  T81_TEST_CHECK(
+      contains(bundle_store.stdout_text, "\"schema\": \"t81.artifact.bundle-store.v1\""));
   T81_TEST_CHECK(contains(bundle_store.stdout_text, "\"validation_result\": \"pass\""));
   const auto extract_bundle_ref = [&](const std::string& text) {
     const std::string needle = "\"bundle_ref\": \"";
@@ -377,77 +427,125 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(!bundle_ref.empty());
 
   const auto bundle_repeat = run_cli(
-      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
-                "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--field", "record_ref=" + stored_ref, "--canonfs-root",
-                canonfs_root.string()});
+      t81_bin,
+      {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1", "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field", "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--field", "record_ref=" + stored_ref, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(bundle_repeat.exit_code == 0);
   T81_TEST_CHECK(extract_bundle_ref(bundle_repeat.stdout_text) == bundle_ref);
 
-  const auto bundle_readback = run_cli(
-      t81_bin, {"artifact", "read-field", bundle_ref, "--schema",
-                "t81.ai.task.assess-fixed.bundle.v1", "--field", "record_ref",
-                "--canonfs-root", canonfs_root.string()});
+  const auto bundle_readback =
+      run_cli(t81_bin, {"artifact", "read-field", bundle_ref, "--schema",
+                        "t81.ai.task.assess-fixed.bundle.v1", "--field", "record_ref",
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(bundle_readback.exit_code == 0);
   T81_TEST_CHECK(bundle_readback.stdout_text == stored_ref + "\n");
 
   const auto route_write_store = run_cli(
-      t81_bin, {"artifact", "write-store-record", "--schema",
-                "t81.ai.task.route-fixed.path-selection-record.v1", "--field",
-                "source_result_ref=sha3-256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                "--field",
-                "source_provenance_ref=sha3-256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                "--field", "route=A", "--field", "termination_reason=single_step_max_score",
-                "--field", "selected_action=write_route_a_target", "--field",
-                "selected_path=routes/a.target", "--field",
-                "action_ref=sha3-256:ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-                "--canonfs-root", canonfs_root.string()});
+      t81_bin,
+      {"artifact",
+       "write-store-record",
+       "--schema",
+       "t81.ai.task.route-fixed.path-selection-record.v1",
+       "--field",
+       "source_result_ref=sha3-256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "--field",
+       "source_provenance_ref=sha3-256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+       "--field",
+       "route=A",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_route_a_target",
+       "--field",
+       "selected_path=routes/a.target",
+       "--field",
+       "action_ref=sha3-256:ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+       "--canonfs-root",
+       canonfs_root.string()});
   T81_TEST_CHECK(route_write_store.exit_code == 0);
   const std::string route_record_ref = extract_record_ref(route_write_store.stdout_text);
   T81_TEST_CHECK(!route_record_ref.empty());
 
-  const auto route_record_read = run_cli(
-      t81_bin, {"artifact", "read-field", route_record_ref, "--schema",
-                "t81.ai.task.route-fixed.path-selection-record.v1", "--field", "selected_path",
-                "--canonfs-root", canonfs_root.string()});
+  const auto route_record_read =
+      run_cli(t81_bin, {"artifact", "read-field", route_record_ref, "--schema",
+                        "t81.ai.task.route-fixed.path-selection-record.v1", "--field",
+                        "selected_path", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(route_record_read.exit_code == 0);
   T81_TEST_CHECK(route_record_read.stdout_text == "routes/a.target\n");
 
   const auto route_bundle_store = run_cli(
-      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.route-fixed.bundle.v1",
-                "--field",
-                "source_result_ref=sha3-256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                "--field",
-                "source_provenance_ref=sha3-256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                "--field",
-                "action_ref=sha3-256:ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-                "--field", "record_ref=" + route_record_ref, "--canonfs-root",
-                canonfs_root.string()});
+      t81_bin,
+      {"artifact", "store-bundle", "--schema", "t81.ai.task.route-fixed.bundle.v1", "--field",
+       "source_result_ref=sha3-256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+       "--field",
+       "source_provenance_ref=sha3-256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+       "--field", "action_ref=sha3-256:ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+       "--field", "record_ref=" + route_record_ref, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(route_bundle_store.exit_code == 0);
   const std::string route_bundle_ref = extract_bundle_ref(route_bundle_store.stdout_text);
   T81_TEST_CHECK(!route_bundle_ref.empty());
 
-  const auto route_bundle_read = run_cli(
-      t81_bin, {"artifact", "read-field", route_bundle_ref, "--schema",
-                "t81.ai.task.route-fixed.bundle.v1", "--field", "record_ref",
-                "--canonfs-root", canonfs_root.string()});
+  const auto route_bundle_read =
+      run_cli(t81_bin, {"artifact", "read-field", route_bundle_ref, "--schema",
+                        "t81.ai.task.route-fixed.bundle.v1", "--field", "record_ref",
+                        "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(route_bundle_read.exit_code == 0);
   T81_TEST_CHECK(route_bundle_read.stdout_text == route_record_ref + "\n");
 
-  const auto missing = run_cli(
-      t81_bin, {"artifact", "validate-record", missing_field_record.string(), "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1"});
+  const auto classify_write_store = run_cli(
+      t81_bin,
+      {"artifact", "write-store-record", "--schema",
+       "t81.ai.task.classify-fixed.rule-selection-record.v1", "--field",
+       "source_result_ref=sha3-256:ddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+       "--field",
+       "source_provenance_ref=sha3-256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+       "--field", "label=POSITIVE", "--field", "termination_reason=single_step_max_score",
+       "--field", "selected_rule_set=rulesets/positive.ruleset", "--field",
+       "rule_set_ref=sha3-256:fffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+       "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(classify_write_store.exit_code == 0);
+  const std::string classify_record_ref = extract_record_ref(classify_write_store.stdout_text);
+  T81_TEST_CHECK(!classify_record_ref.empty());
+
+  const auto classify_record_read =
+      run_cli(t81_bin, {"artifact", "read-field", classify_record_ref, "--schema",
+                        "t81.ai.task.classify-fixed.rule-selection-record.v1", "--field",
+                        "selected_rule_set", "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(classify_record_read.exit_code == 0);
+  T81_TEST_CHECK(classify_record_read.stdout_text == "rulesets/positive.ruleset\n");
+
+  const auto classify_bundle_store = run_cli(
+      t81_bin,
+      {"artifact", "store-bundle", "--schema", "t81.ai.task.classify-fixed.bundle.v1", "--field",
+       "source_result_ref=sha3-256:ddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+       "--field",
+       "source_provenance_ref=sha3-256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+       "--field", "action_ref=sha3-256:fffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+       "--field", "record_ref=" + classify_record_ref, "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(classify_bundle_store.exit_code == 0);
+  const std::string classify_bundle_ref = extract_bundle_ref(classify_bundle_store.stdout_text);
+  T81_TEST_CHECK(!classify_bundle_ref.empty());
+
+  const auto classify_bundle_read =
+      run_cli(t81_bin, {"artifact", "read-field", classify_bundle_ref, "--schema",
+                        "t81.ai.task.classify-fixed.bundle.v1", "--field", "record_ref",
+                        "--canonfs-root", canonfs_root.string()});
+  T81_TEST_CHECK(classify_bundle_read.exit_code == 0);
+  T81_TEST_CHECK(classify_bundle_read.stdout_text == classify_record_ref + "\n");
+
+  const auto missing =
+      run_cli(t81_bin, {"artifact", "validate-record", missing_field_record.string(), "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1"});
   T81_TEST_CHECK(missing.exit_code != 0);
   T81_TEST_CHECK(contains(missing.stderr_text, "missing required field \"reason_code\""));
 
-  const auto wrong = run_cli(
-      t81_bin, {"artifact", "validate-record", wrong_schema_record.string(), "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1"});
+  const auto wrong =
+      run_cli(t81_bin, {"artifact", "validate-record", wrong_schema_record.string(), "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1"});
   T81_TEST_CHECK(wrong.exit_code != 0);
   T81_TEST_CHECK(contains(wrong.stderr_text, "schema mismatch"));
 
@@ -457,83 +555,108 @@ int main(int argc, char* argv[]) {
   T81_TEST_CHECK(missing_read.exit_code != 0);
   T81_TEST_CHECK(contains(missing_read.stderr_text, "missing required field \"reason_code\""));
 
-  const auto wrong_read = run_cli(
-      t81_bin, {"artifact", "read-field", wrong_schema_record.string(), "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "decision"});
+  const auto wrong_read =
+      run_cli(t81_bin, {"artifact", "read-field", wrong_schema_record.string(), "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--field", "decision"});
   T81_TEST_CHECK(wrong_read.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_read.stderr_text, "schema mismatch"));
 
-  const auto invalid_store = run_cli(
-      t81_bin, {"artifact", "store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--file",
-                missing_field_record.string(), "--canonfs-root", canonfs_root.string()});
+  const auto invalid_store =
+      run_cli(t81_bin, {"artifact", "store-record", "--schema",
+                        "t81.ai.task.assess-fixed.host-action-record.v1", "--file",
+                        missing_field_record.string(), "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(invalid_store.exit_code != 0);
   T81_TEST_CHECK(contains(invalid_store.stderr_text, "missing required field \"reason_code\""));
 
-  const auto wrong_store = run_cli(
-      t81_bin, {"artifact", "store-record", "--schema",
-                "t81.ai.task.answer-fixed.v1", "--file", valid_record.string(), "--canonfs-root",
-                canonfs_root.string()});
+  const auto wrong_store =
+      run_cli(t81_bin, {"artifact", "store-record", "--schema", "t81.ai.task.answer-fixed.v1",
+                        "--file", valid_record.string(), "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(wrong_store.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_store.stderr_text, "schema mismatch"));
 
   const auto missing_write_store = run_cli(
-      t81_bin, {"artifact", "write-store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field", "decision=ALLOW", "--field",
-                "termination_reason=single_step_max_score", "--field",
-                "selected_action=write_allow_marker", "--field",
-                "selected_path=actions/allow.marker", "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--canonfs-root", canonfs_root.string()});
+      t81_bin,
+      {"artifact",
+       "write-store-record",
+       "--schema",
+       "t81.ai.task.assess-fixed.host-action-record.v1",
+       "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field",
+       "decision=ALLOW",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_allow_marker",
+       "--field",
+       "selected_path=actions/allow.marker",
+       "--field",
+       "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--canonfs-root",
+       canonfs_root.string()});
   T81_TEST_CHECK(missing_write_store.exit_code != 0);
-  T81_TEST_CHECK(contains(missing_write_store.stderr_text, "missing required field \"reason_code\""));
+  T81_TEST_CHECK(
+      contains(missing_write_store.stderr_text, "missing required field \"reason_code\""));
 
   const auto unknown_write_store = run_cli(
-      t81_bin, {"artifact", "write-store-record", "--schema",
-                "t81.ai.task.assess-fixed.host-action-record.v1", "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field", "decision=ALLOW", "--field", "reason_code=GREETING_PAIR", "--field",
-                "termination_reason=single_step_max_score", "--field",
-                "selected_action=write_allow_marker", "--field",
-                "selected_path=actions/allow.marker", "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--field", "extra_field=unexpected", "--canonfs-root", canonfs_root.string()});
+      t81_bin,
+      {"artifact",
+       "write-store-record",
+       "--schema",
+       "t81.ai.task.assess-fixed.host-action-record.v1",
+       "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field",
+       "decision=ALLOW",
+       "--field",
+       "reason_code=GREETING_PAIR",
+       "--field",
+       "termination_reason=single_step_max_score",
+       "--field",
+       "selected_action=write_allow_marker",
+       "--field",
+       "selected_path=actions/allow.marker",
+       "--field",
+       "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--field",
+       "extra_field=unexpected",
+       "--canonfs-root",
+       canonfs_root.string()});
   T81_TEST_CHECK(unknown_write_store.exit_code != 0);
   T81_TEST_CHECK(contains(unknown_write_store.stderr_text, "unknown field \"extra_field\""));
 
-  const auto wrong_write_store = run_cli(
-      t81_bin, {"artifact", "write-store-record", "--schema", "t81.ai.task.answer-fixed.v1",
-                "--field", "decision=ALLOW", "--canonfs-root", canonfs_root.string()});
+  const auto wrong_write_store =
+      run_cli(t81_bin, {"artifact", "write-store-record", "--schema", "t81.ai.task.answer-fixed.v1",
+                        "--field", "decision=ALLOW", "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(wrong_write_store.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_write_store.stderr_text,
                           "supports only schema t81.ai.task.assess-fixed.host-action-record.v1 or "
-                          "t81.ai.task.route-fixed.path-selection-record.v1"));
+                          "t81.ai.task.route-fixed.path-selection-record.v1 or "
+                          "t81.ai.task.classify-fixed.rule-selection-record.v1"));
 
   const auto missing_bundle = run_cli(
-      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1",
-                "--field",
-                "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
-                "--field",
-                "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
-                "--field",
-                "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
-                "--canonfs-root", canonfs_root.string()});
+      t81_bin,
+      {"artifact", "store-bundle", "--schema", "t81.ai.task.assess-fixed.bundle.v1", "--field",
+       "source_result_ref=sha3-256:111111111111111111111111111111111111111111111111111111111",
+       "--field",
+       "source_provenance_ref=sha3-256:222222222222222222222222222222222222222222222222222222222",
+       "--field", "action_ref=sha3-256:333333333333333333333333333333333333333333333333333333333",
+       "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(missing_bundle.exit_code != 0);
   T81_TEST_CHECK(contains(missing_bundle.stderr_text, "missing required field \"record_ref\""));
 
   const auto wrong_bundle = run_cli(
-      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.answer-fixed.v1",
-                "--field", "record_ref=" + stored_ref, "--canonfs-root", canonfs_root.string()});
+      t81_bin, {"artifact", "store-bundle", "--schema", "t81.ai.task.answer-fixed.v1", "--field",
+                "record_ref=" + stored_ref, "--canonfs-root", canonfs_root.string()});
   T81_TEST_CHECK(wrong_bundle.exit_code != 0);
   T81_TEST_CHECK(contains(wrong_bundle.stderr_text,
-                          "supports only schema t81.ai.task.assess-fixed.bundle.v1 or "
-                          "t81.ai.task.route-fixed.bundle.v1"));
+                          "supports only schema t81.ai.task.assess-fixed.bundle.v1, "
+                          "t81.ai.task.route-fixed.bundle.v1, or "
+                          "t81.ai.task.classify-fixed.bundle.v1"));
 
   return 0;
 }
