@@ -24,6 +24,10 @@ Use this board when deciding what to do next.
 - Public-story cleanup:
   keep the runtime-first story, handoff docs, and contributor roadmap aligned
   with the strongest usable surfaces
+- Claim discipline:
+  keep public and external-facing descriptions aligned with the currently
+  validated bounded family and the documented Canonical Identity Invariant;
+  use the deterministic AI OS-object reference memo to avoid overclaiming
 - AI CLI truth-in-labeling:
   keep `t81 ai ...`, `weights ...`, and `internal llama-run` documentation
   aligned with what currently executes versus what is still scaffolded
@@ -54,7 +58,12 @@ repo.
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
-10. (DONE) Review RFC-00D1 for partial contract promotion after behavior stops moving.
+10. Keep public claims aligned with the validated bounded AI OS-object family.
+    Current reference:
+    `docs/explanation/DETERMINISTIC_AI_OS_OBJECT_SUBSTRATE_REFERENCE_MEMO.md`
+    should be the standard check before broadening external language about
+    DAIOS, AI operating systems, or generalized deterministic AI claims.
+11. (DONE) Review RFC-00D1 for partial contract promotion after behavior stops moving.
     Current state:
     RFC-00D1 now explicitly names the current CanonFS interchange v1 candidate
     contract instead of leaving contributors to infer it from code and tests.
@@ -71,7 +80,7 @@ repo.
     The practical result is that a contributor can now tell which interchange
     fields are the current v1 candidate surface and which questions are still
     intentionally deferred.
-11. (DONE) Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
+12. (DONE) Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
     Current state:
     the strict deterministic `t81_reference_vm` lane is already real. It now
     runs a bounded native Llama-shaped probe with tokenizer-aware candidate
@@ -115,7 +124,7 @@ repo.
     2. Keep `benchmark run` and `policy test` out of scope for this lane until
        their current scaffolded behavior is explicitly being replaced.
 
-12. (DONE) Harden the CanonFS interchange contract surface.
+13. (DONE) Harden the CanonFS interchange contract surface.
     Current state:
     the RFC-00D1 CanonFS interchange lane now emits explicit structured error
     reasons from core import/export operations, carries those same reasons
@@ -140,7 +149,7 @@ repo.
     2. tighten policy-profile docs/examples rather than adding new interchange
        formats or broader subsystem scope
 
-13. (DONE) Make the built-in RFC-00D1 policy-profile surface explicit.
+14. (DONE) Make the built-in RFC-00D1 policy-profile surface explicit.
     Current state:
     the four shipped built-in interchange policy profiles now have a reusable
     core description, user-visible CLI help text, example coverage, and direct
