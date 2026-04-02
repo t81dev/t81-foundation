@@ -115,11 +115,16 @@ It does not yet freeze:
 - generalized consumer APIs
 - compatibility rules for future non-family bundle types
 
+The narrow `.v1` versioning boundary for the current family bundle is defined
+in
+[AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md](./AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md).
+
 ## Relationship To Existing Family Docs
 
 Use this document together with:
 
 - [AI_OS_OBJECT_CHAIN_CATALOG.md](./AI_OS_OBJECT_CHAIN_CATALOG.md)
+- [AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md](./AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
 - [AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md](./AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md)
 - [BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](../status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 
