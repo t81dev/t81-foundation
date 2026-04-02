@@ -228,6 +228,27 @@ Expected shape:
 - policy result: `denied`
 - error reason: `policy_denied`
 
+The same checked-in policy file can deny export under the default permissive
+profile once you already have a manifest or object ref:
+
+```bash
+build/t81 canonfs export \
+  "$manifest_ref" \
+  --canonfs-root "$canon_root" \
+  --policy examples/storage-and-canonfs/canonfs-interchange/policy-deny-all.apl \
+  --out "$export_root" \
+  --json
+```
+
+Expected shape:
+
+- status: `error`
+- policy result: `denied`
+- policy profile: `permissive`
+- error kind: `policy-failure`
+- error reason: `policy_denied`
+- error message explains the denied export
+
 Policy allowlist using the checked-in example input hashes:
 
 ```bash

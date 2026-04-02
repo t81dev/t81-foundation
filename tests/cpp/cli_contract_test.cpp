@@ -1317,6 +1317,26 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(fs::exists(example_export_root / "alpha.txt"));
     T81_TEST_CHECK(fs::exists(example_export_root / "nested" / "beta.txt"));
 
+    const fs::path example_policy_deny_export_root =
+        make_temp_path("t81-cli-canonfs-example-deny-export", "");
+    const auto example_policy_deny_export =
+        run_cli(t81_bin, {"canonfs", "export", *example_manifest_ref, "--canonfs-root",
+                          example_canon_root.string(), "--policy", example_deny_policy.string(),
+                          "--out", example_policy_deny_export_root.string(), "--json"});
+    T81_TEST_CHECK(example_policy_deny_export.exit_code != 0);
+    T81_TEST_CHECK(
+        contains(example_policy_deny_export.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_export.stdout_text, "\"policy_result\": \"denied\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_export.stdout_text, "\"policy_profile\": \"permissive\""));
+    T81_TEST_CHECK(contains(example_policy_deny_export.stdout_text, "\"status\": \"error\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_export.stdout_text, "\"kind\": \"policy-failure\""));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_export.stdout_text, "\"reason\": \"policy_denied\""));
+    T81_TEST_CHECK(contains(example_policy_deny_export.stdout_text, "\"message\": \"policy denied export"));
+
     const fs::path example_alpha_only_root =
         make_temp_path("t81-cli-canonfs-example-alpha-root", "");
     const auto example_alpha_only_import =
