@@ -14,6 +14,23 @@ Use this contract as:
 - a rollback/reference anchor for the current bounded family
 - a guard against accidental contract drift while future work continues
 
+## Contract Enforcement
+
+This contract is normative for the current stable baseline.
+
+If an implementation or change violates any frozen law in this document:
+
+- it must not be described as compliant with this baseline
+- it must not be treated as part of the stable baseline without an explicit
+  contract update
+- it must be gated behind an explicit version or experimental boundary
+
+Expected enforcement surfaces for this baseline include:
+
+- deterministic identity invariants
+- bundle schema and validation compliance
+- policy pre-side-effect enforcement behavior
+
 ## Scope
 
 This contract applies only to the current admitted bounded AI OS-object family:
@@ -58,6 +75,21 @@ The identity model excludes:
 - filesystem path
 - host-local environment
 
+## Deterministic Identity Clarification
+
+For the admitted family:
+
+- canonical object identity is defined by CanonFS content-addressed hash
+- identical task, model, policy, and input must produce identical bytes for:
+  - result artifact
+  - provenance artifact where validated
+  - downstream record
+  - canonical bundle
+
+Trace or diagnostic representation may evolve outside this baseline, but must
+not be treated as part of canonical object identity unless explicitly frozen by
+another contract.
+
 ### 4. CanonFS-Backed Provenance And Artifact Identity
 
 The current baseline freezes:
@@ -98,6 +130,39 @@ The narrow `.v1` versioning boundary for this bundle surface is defined in:
 
 - [AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md](./AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
 
+## Bundle Structural Integrity
+
+For the current `.v1` admitted-family bundles:
+
+- all frozen fields are required
+- field names and semantics are immutable within `.v1`
+- field ordering is canonicalized in the rendered bundle object
+- malformed or partial bundles are invalid for baseline consumers
+
+The baseline expects fail-closed validation for:
+
+- wrong bundle schema
+- malformed `action_ref`
+- malformed `record_ref`
+- other malformed required CanonFS refs
+
+Consumers and tests must not treat malformed or partial bundles as compliant
+baseline objects.
+
+## Policy Evaluation Boundary
+
+Policy evaluation must occur before:
+
+- artifact materialization for the governed action
+- execution of governed instructions for the bounded action
+- mutation of CanonFS state on the governed artifact path
+
+No partial execution of the governed action is permitted prior to a deny
+decision.
+
+A deny verdict must terminate the action without observable side effects on the
+governed artifact path.
+
 ## Admitted Family Only
 
 This stable baseline includes only:
@@ -111,6 +176,18 @@ It does not imply:
 - a fourth composition
 - automatic admission of future compositions
 - general bundle compatibility beyond the admitted family
+
+## Admitted Family Freeze Clause
+
+No new composition may be treated as part of this stable baseline without:
+
+- explicit admission into the bounded family
+- demonstration of compliance with the frozen laws in this document
+- the required proof bar from
+  [AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md](./AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md)
+- an explicit contract update naming that composition as baseline-admitted
+
+All other compositions are non-baseline by definition.
 
 ## What Is Guaranteed
 
