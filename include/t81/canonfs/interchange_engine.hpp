@@ -2,6 +2,7 @@
 
 #include "t81/canonfs/interchange_ops.hpp"
 #include "t81/canonfs/interchange.hpp"
+#include <filesystem>
 #include <functional>
 #include <memory>
 #include <optional>
@@ -37,8 +38,8 @@ public:
     ~CanonFSInterchangeEngine() = default;
     
     // Core operations
-    ImportOutcome import(const ImportRequest& request);
-    ExportOutcome export(const ExportRequest& request);
+    ImportOutcome import(const std::filesystem::path& input_path, const ImportOptions& options = {});
+    ExportOutcome export(const std::string& canonical_hash, const std::filesystem::path& output_path, const ExportOptions& options = {});
     
     // Policy evaluation
     std::optional<InterchangePolicyDecision> evaluate_policy(
@@ -53,8 +54,8 @@ public:
     void set_json_renderer(std::shared_ptr<InterchangeJSONRenderer> renderer);
     
 private:
-    ImportOutcome perform_import(const ImportRequest& request);
-    ExportOutcome perform_export(const ExportRequest& request);
+    ImportOutcome perform_import(const std::filesystem::path& input_path, const ImportOptions& options);
+    ExportOutcome perform_export(const std::string& canonical_hash, const std::filesystem::path& output_path, const ExportOptions& options);
     
     bool check_policy_compliance(const PolicyContext& context,
                               const ImportOptions& options);

@@ -127,16 +127,18 @@ ExportOutcome CanonFSInterchangeEngine::export(const ExportRequest& request) {
     return outcome;
 }
 
-ImportOutcome CanonFSInterchangeEngine::perform_import(const ImportRequest& request) {
+ImportOutcome CanonFSInterchangeEngine::perform_import(const std::filesystem::path& input_path, const ImportOptions& options) {
     // Delegate to existing implementation for now
     // This maintains backward compatibility while allowing future enhancements
-    return import_path(request.input_path, request);
+    return import_path(input_path, options);
 }
 
-ExportOutcome CanonFSInterchangeEngine::perform_export(const ExportRequest& request) {
+ExportOutcome CanonFSInterchangeEngine::perform_export(const std::string& canonical_hash, 
+                                                   const std::filesystem::path& output_path, 
+                                                   const ExportOptions& options) {
     // Delegate to existing implementation for now
     // This maintains backward compatibility while allowing future enhancements
-    return export_ref(request.canonical_hash, request.output_path, request);
+    return export_ref(canonical_hash, output_path, options);
 }
 
 bool CanonFSInterchangeEngine::check_policy_compliance(const PolicyContext& context,
