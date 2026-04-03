@@ -22,5 +22,9 @@
   "bugs": {
     "url": "https://github.com/t81dev/t81-foundation/issues"
   },
-  "homepage": "https://github.com/t81dev/t81-foundation#readme"
+  "homepage": "https://github.com/t81dev/t81-foundation#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "lunr": "^2.3.9"
+  }
 }
