@@ -216,7 +216,7 @@ private:
     };
     
     std::unordered_map<std::string, std::unique_ptr<MetricData>> metrics_;
-    mutable std::shared_mutex metrics_mutex_;
+    mutable std::mutex metrics_mutex_;
     
     std::vector<ResourceSnapshot> resource_history_;
     mutable std::mutex resource_history_mutex_;
@@ -376,7 +376,7 @@ private:
     std::unordered_map<std::string, ProfilingSession> sessions_;
     std::unordered_map<std::string, OperationProfile> active_operations_;
     
-    mutable std::shared_mutex sessions_mutex_;
+    mutable std::mutex sessions_mutex_;
     mutable std::mutex operations_mutex_;
     
     std::string generate_session_id();
@@ -454,7 +454,7 @@ private:
     std::unordered_map<std::string, size_t> component_memory_usage_;
     std::unordered_map<std::string, size_t> tensor_memory_usage_;
     
-    mutable std::shared_mutex usage_mutex_;
+    mutable std::mutex usage_mutex_;
     
     // Auto-scaling
     std::atomic<bool> auto_scaling_enabled_{false};

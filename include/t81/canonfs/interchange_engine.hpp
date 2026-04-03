@@ -56,6 +56,10 @@ public:
 
   // Configuration
   void set_json_renderer(std::shared_ptr<InterchangeJSONRenderer> renderer);
+  
+  // Performance monitoring
+  void enable_performance_monitoring(bool enable = true);
+  std::string get_performance_summary() const;
 
 private:
   ImportOutcome perform_import(const ImportRequest& request);
@@ -65,13 +69,12 @@ private:
   ExportOutcome perform_export(const std::string& canonical_hash,
                                const std::filesystem::path& output_path,
                                const ExportOptions& options);
-
+  
   bool check_policy_compliance(const PolicyContext& context, const ImportOptions& options);
   bool check_policy_compliance(const PolicyContext& context, const ExportOptions& options);
 
   std::vector<OperationContext> evidence_log_;
   std::shared_ptr<InterchangeJSONRenderer> json_renderer_;
-
   std::string generate_operation_id() const;
 };
 

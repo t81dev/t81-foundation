@@ -49,40 +49,45 @@ std::vector<OperationContext> CanonFSInterchangeEngine::get_evidence_log() const
   return evidence_log_;
 }
 
-void CanonFSInterchangeEngine::clear_evidence_log() { evidence_log_.clear(); }
+void CanonFSInterchangeEngine::clear_evidence_log() { 
+    evidence_log_.clear(); 
+}
 
 std::optional<InterchangePolicyDecision> CanonFSInterchangeEngine::evaluate_policy(
     const PolicyContext& context) {
   // Implement actual policy evaluation based on profile and context
+  std::optional<InterchangePolicyDecision> decision;
   if (context.operation == "import") {
     // Check if import is allowed based on policy profile
     if (context.user_has_explicit_consent) {
-      return InterchangePolicyDecision{true, "user_explicit_consent"};
+      decision = InterchangePolicyDecision{true, "user_explicit_consent"};
+    } else {
+      // Default import policy: allow if path is safe
+      if (context.path.find("..") == std::string_view::npos && 
+          !context.path.empty()) {
+        decision = InterchangePolicyDecision{true, "safe_import_path"};
+      } else {
+        decision = InterchangePolicyDecision{false, "unsafe_import_path"};
+      }
     }
-    
-    // Default import policy: allow if path is safe
-    if (context.path.find("..") == std::string_view::npos && 
-        !context.path.empty()) {
-      return InterchangePolicyDecision{true, "safe_import_path"};
-    }
-    
-    return InterchangePolicyDecision{false, "unsafe_import_path"};
   } else if (context.operation == "export") {
     // Check if export is allowed based on policy profile
     if (context.user_has_explicit_consent) {
-      return InterchangePolicyDecision{true, "user_explicit_consent"};
+      decision = InterchangePolicyDecision{true, "user_explicit_consent"};
+    } else {
+      // Default export policy: allow if canonical_ref is valid format
+      if (context.canonical_ref.find("sha3-256:") == 0 && 
+          context.canonical_ref.length() > 9) {
+        decision = InterchangePolicyDecision{true, "valid_canonical_ref"};
+      } else {
+        decision = InterchangePolicyDecision{false, "invalid_canonical_ref"};
+      }
     }
-    
-    // Default export policy: allow if canonical_ref is valid format
-    if (context.canonical_ref.find("sha3-256:") == 0 && 
-        context.canonical_ref.length() > 9) {
-      return InterchangePolicyDecision{true, "valid_canonical_ref"};
-    }
-    
-    return InterchangePolicyDecision{false, "invalid_canonical_ref"};
+  } else {
+    decision = InterchangePolicyDecision{false, "unknown_operation"};
   }
-  
-  return InterchangePolicyDecision{false, "unknown_operation"};
+
+  return decision;
 }
 
 ImportOutcome CanonFSInterchangeEngine::import(const ImportRequest& request) {
