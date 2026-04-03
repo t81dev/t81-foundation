@@ -39,6 +39,8 @@ add_library(t81_tool_cli STATIC
   ${PROJECT_SOURCE_DIR}/tools/cli/driver_refactored.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/main.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance_standalone.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_auto_optimizer.cpp
   ${PROJECT_SOURCE_DIR}/tools/diagnostics/ternary_codec_metrics.cpp)
 
 # Add standalone performance tool as executable
@@ -46,6 +48,12 @@ add_executable(canonfs_performance_standalone
   ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance_standalone.cpp)
 
 target_link_libraries(canonfs_performance_standalone PRIVATE t81_core)
+
+# Add real AI integration executable
+add_executable(real_ai_integration
+  ${PROJECT_SOURCE_DIR}/tools/cli/real_ai_integration.cpp)
+
+target_link_libraries(real_ai_integration PRIVATE t81_core)
 
 t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
