@@ -60,6 +60,8 @@
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
 #include "t81/cli/artifact_family.hpp"
+#include "t81/canonfs/performance_cli.hpp"
+#include "t81/canonsfs/performance_cli.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/config.hpp"

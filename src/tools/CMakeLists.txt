@@ -29,10 +29,18 @@ if(T81_ENABLE_LLAMA_CPP)
 endif()
 
 add_library(t81_tool_cli STATIC
-  ${PROJECT_SOURCE_DIR}/tools/cli/driver.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/debugger.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_cli.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_controlled.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/artifact_family.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/debugger.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/driver.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/driver_refactored.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance.cpp
+  ${PROJECT_SOURCE_DIR}/tools/diagnostics/ternary_codec_metrics.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance.cpp
 )
 t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
