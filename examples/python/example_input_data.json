@@ -1,0 +1,9 @@
+{
+  "request_type": "access_request",
+  "user_id": "user_12345",
+  "resource": "sensitive_data_vault",
+  "context": "Routine operational access",
+  "urgency": "normal",
+  "compliance_required": ["SOX", "HIPAA"],
+  "timestamp": "2026-04-03T15:30:00Z"
+}

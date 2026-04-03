@@ -1,0 +1,10 @@
+{
+  "model_id": "gpt4_turbo",
+  "model_name": "GPT-4 Turbo",
+  "provider": "OpenAI",
+  "model_type": "foundation",
+  "api_endpoint": "https://api.openai.com/v1/chat/completions",
+  "compliance_level": "ENTERPRISE",
+  "pricing_model": "per_token",
+  "integration_status": "ACTIVE"
+}
