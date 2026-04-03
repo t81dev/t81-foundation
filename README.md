@@ -74,22 +74,14 @@ T81 also has in-progress ternary hardware directions, but the usable form today 
 
 ## Best Current Surfaces
 
-If you want the clearest contributor-facing surfaces for **decision substrate**, start here:
+If you want the clearest contributor-facing surfaces in the repo today, start here:
 
-- **Bundle definition**: [WHAT_IS_A_BUNDLE.md](docs/reference/WHAT_IS_A_BUNDLE.md)
-- **Bundle consumption**: [examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh](examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh)
-- **Python library**: [examples/python/bundle_consumer.py](examples/python/bundle_consumer.py)
-- **Go library**: [examples/go/bundle.go](examples/go/bundle.go)
-- **Integration patterns**: [docs/reference/BUNDLE_INTEGRATION_GUIDE.md](docs/reference/BUNDLE_INTEGRATION_GUIDE.md)
-- **Transport examples**: [docs/reference/BUNDLE_TRANSPORT_EXAMPLES.md](docs/reference/BUNDLE_TRANSPORT_EXAMPLES.md)
-- **Production tooling**: [tools/README.md](tools/README.md)
-- **Production deployment**: [docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md](docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
-- **Ecosystem growth**: [docs/ecosystem/ECOSYSTEM_GROWTH_STRATEGY.md](docs/ecosystem/ECOSYSTEM_GROWTH_STRATEGY.md)
-- **Integration matrix**: [AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md](docs/reference/AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md)
+- **CanonFS interchange**: RFC-00D1 current draft contract:
+  [RFC-00D1-canonfs-foreign-filesystem-interchange.md](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
 - bounded AI OS-object family status:
   [BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 - canonical bundle consumption contract:
-  [AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md](docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md)
+  [examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh](examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh)
 - canonical bundle `.v1` versioning boundary:
   [AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md](docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
 
