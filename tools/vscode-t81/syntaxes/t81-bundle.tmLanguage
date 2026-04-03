@@ -1,0 +1,47 @@
+
+{
+    "scopeName": "source.t81-bundle",
+    "patterns": [
+        {
+            "include": "#.*",
+            "name": "comment.line.double-slash"
+        },
+        {
+            "begin": "\"schema\"",
+            "beginCaptures": [
+                "key",
+                "delimiter"
+            ],
+            "end": "\"",
+            "name": "string.quoted.double.t81",
+            "patterns": [
+                {
+                    "include": "t81\\.ai\\.task\\.(assess|route|classify)-fixed\\.bundle\\.v1",
+                    "name": "support.type.bundle-schema"
+                }
+            ]
+        },
+        {
+            "begin": "\"",
+            "end": "\"",
+            "name": "string.quoted.double"
+        },
+        {
+            "match": "\b(ALLOW|DENY|REVIEW)\b",
+            "name": "constant.language.decision"
+        },
+        {
+            "match": "\b(write_\w+_marker)\b",
+            "name": "constant.language.action"
+        },
+        {
+            "begin": "\"",
+            "end": "\"",
+            "name": "string.quoted.double"
+        },
+        {
+            "match": "\b(sha3-256:[a-f0-9]{96})\b",
+            "name": "constant.language.ref"
+        }
+    ]
+}
