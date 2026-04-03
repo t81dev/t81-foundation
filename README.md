@@ -18,71 +18,74 @@
 
 ## What is T81
 
-T81 is a runtime where code and model artifacts can be allowed or denied before they run.
+T81 is a substrate for producing **canonical decision objects with identity** from governed AI tasks.
 
-Store artifacts as immutable hashes, apply allow/deny policy before execution or materialization, and emit deterministic, audit-ready output on verified platforms. T81 can be used today without requiring ternary hardware or OS adoption.
+Instead of interpreting AI output, T81 consumes **durable decision bundles** that provide complete provenance, deterministic replayability, and cross-system portability.
 
 Policies are evaluated deterministically and enforced before execution or materialization begins. Governance does not rely on runtime heuristics, anomaly scoring, or after-the-fact monitoring. T81 can be adopted incrementally via CanonFS + policy enforcement without requiring full stack adoption.
 
 ## Why This Matters
 
-- Verify model provenance before execution
-- Enforce allow/deny policies on models and code
-- Produce reproducible, audit-ready execution traces
-- Prevent untrusted artifacts from running
-- Consume completed bounded AI decision chains through canonical bundle objects
+- **Decision objects over interpretation** - AI decisions become verifiable, consumable objects
+- **Identity through provenance** - Every decision carries complete audit trail
+- **Deterministic replayability** - Same inputs always produce identical bundles
+- **Cross-system portability** - Decisions can be consumed without original execution environment
+- **Policy-bound outcomes** - All decisions are validated against governance before materialization
 
 ## When to Use T81
 
-- Run code or model artifacts only after policy approval
-- Keep artifacts hash-addressed and provenance-linked
-- Reproduce execution results and audit what happened
+- **When you need verifiable AI decisions** rather than interpretable output
+- **When decisions must be portable** across different execution environments  
+- **When complete provenance is required** for compliance or audit
+- **When deterministic replay** of decisions is a security requirement
 
 ## Real-World Use Cases
 
-- Verify model provenance before execution
-- Enforce allowlists for AI models in production
-- Generate reproducible audit logs for compliance
-- Block untrusted artifacts in CI/CD pipelines
-- Hand off canonical decision bundles to downstream consumers without relying on logs alone
+- **Security governance** - Consume policy-approved decision bundles for access control
+- **Compliance auditing** - Archive canonical decision objects with complete provenance
+- **Cross-system handoff** - Transfer decisions between environments without losing context
+- **Regulatory reporting** - Provide verifiable decision artifacts to auditors
+- **Release gates** - Use bundles as canonical approval evidence for deployments
 
 ## Performance Characteristics
 
-General arithmetic is slower than conventional binary runtimes today. That is
-expected: T81 currently runs ternary-native semantics through emulated paths,
-and it prioritizes determinism and governance over raw throughput.
+T81 prioritizes **decision integrity over raw throughput**. Bundle creation and consumption are optimized for deterministic verification, not maximum inference speed.
 
-Where T81 does have structural advantages, they come from the representation
-itself rather than from pretending to be a general high-speed numeric runtime:
+The system's advantages come from **identity and provenance guarantees**, not from emulated ternary arithmetic performance.
 
-- negation and sign-aware transforms are unusually cheap in ternary form
-- packed/canonical forms make artifact identity and replay workflows simpler
-- reproducibility is a built-in property of the runtime, not an optional mode
-- policy enforcement can block execution before side effects occur
+## System Guarantees
 
-When performance matters most, T81 is usually not the first choice for generic
-high-throughput arithmetic. When guarantees matter most, T81 is designed to
-trade speed for governed execution, reproducible results, and audit-ready
-artifacts.
+- **Identity by design** - Content-addressed bundles provide cryptographic proof of decision integrity
+- **Deterministic replay** - Same inputs always produce identical decision objects
+- **Policy enforcement** - All decisions validated against governance before materialization
+- **Cross-system portability** - Bundles can be consumed without original execution environment
+- **Complete provenance** - Full audit trail from input to decision is verifiable
+
+When performance matters more than decision integrity, other runtimes may be better suited. When guarantees matter more than speed, T81 provides **verifiable, replayable, policy-bound decisions**.
 
 ### Architectural Pillars
 
-1. **Immutable Artifacts** — **CanonFS** provides content-addressed, hash-verified storage for models, code, and audit evidence.
-2. **Policy Enforcement** — **Axion** mediates operations and enforces rules pre-dispatch.
-3. **Deterministic Execution** — Bit-identical traces are guaranteed within the Deterministic Core Profile (DCP).
-4. **Ternary-Native Paths** — Efficient inference via ternary-weight dot products (conditional ±1 additions instead of FP multiplies).
+1. **Canonical Decision Objects** — **Bundles** provide content-addressed, verifiable decision artifacts with complete provenance
+2. **Policy Enforcement** — **Axion** validates decisions against governance before materialization
+3. **Immutable Storage** — **CanonFS** provides hash-verified storage for decision chains and evidence
+4. **Deterministic Execution** — Bit-identical decisions are guaranteed for identical inputs
 
-T81 also has an in-progress bare-metal and guest OS direction, but the usable form today is the governed runtime.
+T81 also has in-progress ternary hardware directions, but the usable form today is the **decision substrate**.
 
-## Best Current Build-Against Surfaces
+## Best Current Surfaces
 
-If you want the clearest contributor-facing surfaces in the repo today, start
-here:
+If you want the clearest contributor-facing surfaces for **decision substrate**, start here:
 
-- RFC-00D1 CanonFS interchange seed:
-  [examples/storage-and-canonfs/canonfs-interchange/README.md](examples/storage-and-canonfs/canonfs-interchange/README.md)
-- RFC-00D1 current draft contract:
-  [RFC-00D1-canonfs-foreign-filesystem-interchange.md](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
+- **Bundle definition**: [WHAT_IS_A_BUNDLE.md](docs/reference/WHAT_IS_A_BUNDLE.md)
+- **Bundle consumption**: [examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh](examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh)
+- **Python library**: [examples/python/bundle_consumer.py](examples/python/bundle_consumer.py)
+- **Go library**: [examples/go/bundle.go](examples/go/bundle.go)
+- **Integration patterns**: [docs/reference/BUNDLE_INTEGRATION_GUIDE.md](docs/reference/BUNDLE_INTEGRATION_GUIDE.md)
+- **Transport examples**: [docs/reference/BUNDLE_TRANSPORT_EXAMPLES.md](docs/reference/BUNDLE_TRANSPORT_EXAMPLES.md)
+- **Production tooling**: [tools/README.md](tools/README.md)
+- **Production deployment**: [docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md](docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
+- **Ecosystem growth**: [docs/ecosystem/ECOSYSTEM_GROWTH_STRATEGY.md](docs/ecosystem/ECOSYSTEM_GROWTH_STRATEGY.md)
+- **Integration matrix**: [AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md](docs/reference/AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md)
 - bounded AI OS-object family status:
   [BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
 - canonical bundle consumption contract:

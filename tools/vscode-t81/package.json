@@ -1,36 +1,41 @@
 {
-    "name": "vscode-t81",
-    "displayName": "T81 Foundation Support",
-    "description": "Syntax highlighting and snippets for T81Lang — the balanced ternary language for T81 Foundation.",
-    "version": "0.2.0",
-    "publisher": "t81-foundation",
-    "license": "MIT",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/t81dev/t81-foundation"
-    },
-    "engines": {
-        "vscode": "^1.80.0"
-    },
-    "categories": [
-        "Programming Languages",
-        "Snippets"
+  "name": "t81-bundle-support",
+  "displayName": "T81 Bundle Support",
+  "description": "Language support for T81 decision bundles",
+  "version": "1.0.0",
+  "publisher": "t81-foundation",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/t81dev/t81-foundation"
+  },
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "t81-bundle",
+        "aliases": [
+          "t81-bundle",
+          "bundle"
+        ],
+        "extensions": [
+          ".t81-bundle"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "contributes": {
-        "languages": [{
-            "id": "t81",
-            "aliases": ["T81Lang", "T81", "t81"],
-            "extensions": [".t81", ".tisc"],
-            "configuration": "./language-configuration.json"
-        }],
-        "grammars": [{
-            "language": "t81",
-            "scopeName": "source.t81",
-            "path": "./syntaxes/t81.tmLanguage.json"
-        }],
-        "snippets": [{
-            "language": "t81",
-            "path": "./snippets/t81.json"
-        }]
-    }
+    "grammars": [
+      {
+        "language": "t81-bundle",
+        "scopeName": "source.t81-bundle",
+        "path": "./syntaxes/t81.tmLanguage.json"
+      }
+    ]
+  }
 }

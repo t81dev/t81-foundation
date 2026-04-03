@@ -29,7 +29,11 @@ trap 'rm -rf "$tmp_root"' EXIT
 bundle_path="$tmp_root/bundle.json"
 record_path="$tmp_root/record.json"
 
-build/t81 canonfs get "$bundle_ref" --canonfs-root "$canon_root" --out "$bundle_path" --json >/dev/null
+# Add error handling for bundle retrieval
+if ! build/t81 canonfs get "$bundle_ref" --canonfs-root "$canon_root" --out "$bundle_path" --json 2>/dev/null; then
+  echo "error: failed to retrieve bundle $bundle_ref" >&2
+  exit 1
+fi
 
 bundle_schema="$(sed -n 's/.*"schema": "\([^"]*\)".*/\1/p' "$bundle_path" | head -n 1)"
 
@@ -75,7 +79,12 @@ action_ref="$(build/t81 artifact read-field "$bundle_ref" \
   --field action_ref \
   --canonfs-root "$canon_root")"
 
-build/t81 canonfs get "$record_ref" --canonfs-root "$canon_root" --out "$record_path" --json >/dev/null
+# Add error handling for record retrieval
+if ! build/t81 canonfs get "$record_ref" --canonfs-root "$canon_root" --out "$record_path" --json 2>/dev/null; then
+  echo "error: failed to retrieve record $record_ref" >&2
+  exit 1
+fi
+
 record_schema="$(sed -n 's/.*"schema": "\([^"]*\)".*/\1/p' "$record_path" | head -n 1)"
 if [[ "$record_schema" != "$expected_record_schema" ]]; then
   echo "error: unexpected record schema: $record_schema" >&2
@@ -83,14 +92,22 @@ if [[ "$record_schema" != "$expected_record_schema" ]]; then
   exit 1
 fi
 
-primary_value="$(build/t81 artifact read-field "$record_ref" \
+# Add error handling for field extraction
+if ! primary_value="$(build/t81 artifact read-field "$record_ref" \
   --schema "$record_schema" \
   --field "$primary_field" \
-  --canonfs-root "$canon_root")"
-secondary_value="$(build/t81 artifact read-field "$record_ref" \
+  --canonfs-root "$canon_root" 2>/dev/null)"; then
+  echo "error: failed to extract primary field $primary_field from $record_ref" >&2
+  exit 1
+fi
+
+if ! secondary_value="$(build/t81 artifact read-field "$record_ref" \
   --schema "$record_schema" \
   --field "$secondary_field" \
-  --canonfs-root "$canon_root")"
+  --canonfs-root "$canon_root" 2>/dev/null)"; then
+  echo "error: failed to extract secondary field $secondary_field from $record_ref" >&2
+  exit 1
+fi
 
 printf 'bundle_ref=%s\n' "$bundle_ref"
 printf 'bundle_schema=%s\n' "$bundle_schema"

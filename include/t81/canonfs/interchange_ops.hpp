@@ -39,7 +39,22 @@ struct ImportOptions {
   InterchangePolicyEvaluator policy_evaluator{};
 };
 
+struct ImportRequest {
+  std::filesystem::path input_path;
+  std::filesystem::path canonfs_root = ".t81_canonfs";
+  InterchangePolicyProfile policy_profile = InterchangePolicyProfile::Permissive;
+  InterchangePolicyEvaluator policy_evaluator{};
+};
+
 struct ExportOptions {
+  std::filesystem::path canonfs_root = ".t81_canonfs";
+  InterchangePolicyProfile policy_profile = InterchangePolicyProfile::Permissive;
+  InterchangePolicyEvaluator policy_evaluator{};
+};
+
+struct ExportRequest {
+  std::string canonical_hash;
+  std::filesystem::path output_path;
   std::filesystem::path canonfs_root = ".t81_canonfs";
   InterchangePolicyProfile policy_profile = InterchangePolicyProfile::Permissive;
   InterchangePolicyEvaluator policy_evaluator{};

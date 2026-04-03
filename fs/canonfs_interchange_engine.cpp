@@ -8,6 +8,7 @@ namespace t81::canonfs {
 
 CanonFSInterchangeEngine::CanonFSInterchangeEngine() {
     json_renderer_ = create_default_json_renderer();
+    evidence_log_.reserve(1000); // Reserve space to reduce allocations
 }
 
 std::unique_ptr<CanonFSInterchangeEngine> create_interchange_engine() {
@@ -23,7 +24,7 @@ ImportOutcome CanonFSInterchangeEngine::import(const std::filesystem::path& inpu
   return perform_import(input_path, options);
 }
 
-ExportOutcome CanonFSInterchangeEngine::export(const std::string& canonical_hash, const std::filesystem::path& output_path, const ExportOptions& options) {
+ExportOutcome CanonFSInterchangeEngine::export_bundle(const std::string& canonical_hash, const std::filesystem::path& output_path, const ExportOptions& options) {
   return perform_export(canonical_hash, output_path, options);
 }
 
@@ -33,6 +34,14 @@ std::string CanonFSInterchangeEngine::generate_operation_id() const {
 }
 
 void CanonFSInterchangeEngine::collect_evidence(const OperationContext& context) {
+  // Add bounds checking to prevent unbounded growth
+  constexpr size_t MAX_EVIDENCE_ENTRIES = 10000;
+  
+  if (evidence_log_.size() >= MAX_EVIDENCE_ENTRIES) {
+    // Remove oldest entries to maintain bounds
+    evidence_log_.erase(evidence_log_.begin(), evidence_log_.begin() + 1000);
+  }
+  
   evidence_log_.push_back(context);
 }
 
@@ -44,22 +53,36 @@ void CanonFSInterchangeEngine::clear_evidence_log() { evidence_log_.clear(); }
 
 std::optional<InterchangePolicyDecision> CanonFSInterchangeEngine::evaluate_policy(
     const PolicyContext& context) {
-  // For now, use the existing policy evaluator from interchange_ops
-  // This will be enhanced in future iterations
+  // Implement actual policy evaluation based on profile and context
   if (context.operation == "import") {
-    ImportOptions options;
-    // Convert PolicyContext to ImportOptions for compatibility
-    // This is a simplified conversion - full implementation would be more sophisticated
-
-    return std::nullopt;  // Placeholder - use default behavior
+    // Check if import is allowed based on policy profile
+    if (context.user_has_explicit_consent) {
+      return InterchangePolicyDecision{true, "user_explicit_consent"};
+    }
+    
+    // Default import policy: allow if path is safe
+    if (context.path.find("..") == std::string_view::npos && 
+        !context.path.empty()) {
+      return InterchangePolicyDecision{true, "safe_import_path"};
+    }
+    
+    return InterchangePolicyDecision{false, "unsafe_import_path"};
   } else if (context.operation == "export") {
-    ExportOptions options;
-    // Similar conversion for export
-
-    return std::nullopt;  // Placeholder - use default behavior
+    // Check if export is allowed based on policy profile
+    if (context.user_has_explicit_consent) {
+      return InterchangePolicyDecision{true, "user_explicit_consent"};
+    }
+    
+    // Default export policy: allow if canonical_ref is valid format
+    if (context.canonical_ref.find("sha3-256:") == 0 && 
+        context.canonical_ref.length() > 9) {
+      return InterchangePolicyDecision{true, "valid_canonical_ref"};
+    }
+    
+    return InterchangePolicyDecision{false, "invalid_canonical_ref"};
   }
-
-  return InterchangePolicyDecision{true, "allow"};
+  
+  return InterchangePolicyDecision{false, "unknown_operation"};
 }
 
 ImportOutcome CanonFSInterchangeEngine::import(const ImportRequest& request) {
@@ -74,31 +97,29 @@ ImportOutcome CanonFSInterchangeEngine::import(const ImportRequest& request) {
   context.metadata["policy_profile"] = interchange_policy_profile_name(request.policy_profile);
 
   collect_evidence(context);
+  
+  // Get reference to the stored context for updates
+  size_t context_index = evidence_log_.size() - 1;
 
   // Use existing import_path implementation
   ImportOutcome outcome = perform_import(request);
 
   // Add evidence to outcome metadata
-  // For now, we'll store this in the evidence log
-  // Future versions could include this in the outcome itself
-
   auto end_time = std::chrono::steady_clock::now();
   auto duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(end_time - context.start_time).count();
 
-  context.metadata["duration_ms"] = std::to_string(duration);
-  context.metadata["success"] = outcome.ok() ? "true" : "false";
-
-  // Update the last evidence entry with completion info
-  if (!evidence_log_.empty()) {
-    evidence_log_.back().metadata = context.metadata;
-    evidence_log_.back().end_time = end_time;
+  // Update the stored context directly
+  if (context_index < evidence_log_.size()) {
+    evidence_log_[context_index].metadata["duration_ms"] = std::to_string(duration);
+    evidence_log_[context_index].metadata["success"] = outcome.ok() ? "true" : "false";
+    evidence_log_[context_index].end_time = end_time;
   }
 
   return outcome;
 }
 
-ExportOutcome CanonFSInterchangeEngine::export(const ExportRequest& request) {
+ExportOutcome CanonFSInterchangeEngine::export_bundle(const ExportRequest& request) {
   auto operation_id = generate_operation_id();
 
   OperationContext context;
@@ -111,6 +132,9 @@ ExportOutcome CanonFSInterchangeEngine::export(const ExportRequest& request) {
   context.metadata["policy_profile"] = interchange_policy_profile_name(request.policy_profile);
 
   collect_evidence(context);
+  
+  // Get reference to the stored context for updates
+  size_t context_index = evidence_log_.size() - 1;
 
   // Use existing export_ref implementation
   ExportOutcome outcome = perform_export(request);
@@ -120,16 +144,26 @@ ExportOutcome CanonFSInterchangeEngine::export(const ExportRequest& request) {
   auto duration =
       std::chrono::duration_cast<std::chrono::milliseconds>(end_time - context.start_time).count();
 
-  context.metadata["duration_ms"] = std::to_string(duration);
-  context.metadata["success"] = outcome.ok() ? "true" : "false";
-
-  // Update the last evidence entry with completion info
-  if (!evidence_log_.empty()) {
-    evidence_log_.back().metadata = context.metadata;
-    evidence_log_.back().end_time = end_time;
+  // Update the stored context directly
+  if (context_index < evidence_log_.size()) {
+    evidence_log_[context_index].metadata["duration_ms"] = std::to_string(duration);
+    evidence_log_[context_index].metadata["success"] = outcome.ok() ? "true" : "false";
+    evidence_log_[context_index].end_time = end_time;
   }
 
   return outcome;
+}
+
+ImportOutcome CanonFSInterchangeEngine::perform_import(const ImportRequest& request) {
+  // Convert ImportRequest to ImportOptions for compatibility
+  ImportOptions options;
+  options.canonfs_root = request.canonfs_root;
+  options.policy_profile = request.policy_profile;
+  options.policy_evaluator = request.policy_evaluator;
+  
+  // Delegate to existing implementation for now
+  // This maintains backward compatibility while allowing future enhancements
+  return import_path(request.input_path, options);
 }
 
 ImportOutcome CanonFSInterchangeEngine::perform_import(const std::filesystem::path& input_path,
@@ -137,6 +171,18 @@ ImportOutcome CanonFSInterchangeEngine::perform_import(const std::filesystem::pa
   // Delegate to existing implementation for now
   // This maintains backward compatibility while allowing future enhancements
   return import_path(input_path, options);
+}
+
+ExportOutcome CanonFSInterchangeEngine::perform_export(const ExportRequest& request) {
+  // Convert ExportRequest to ExportOptions for compatibility
+  ExportOptions options;
+  options.canonfs_root = request.canonfs_root;
+  options.policy_profile = request.policy_profile;
+  options.policy_evaluator = request.policy_evaluator;
+  
+  // Delegate to existing implementation for now
+  // This maintains backward compatibility while allowing future enhancements
+  return export_ref(request.canonical_hash, request.output_path, options);
 }
 
 ExportOutcome CanonFSInterchangeEngine::perform_export(const std::string& canonical_hash,
@@ -149,16 +195,26 @@ ExportOutcome CanonFSInterchangeEngine::perform_export(const std::string& canoni
 
 bool CanonFSInterchangeEngine::check_policy_compliance(const PolicyContext& context,
                                                        const ImportOptions& options) {
-    (void)context;     // Mark as used to avoid warning
-    (void)options;     // Mark as used to avoid warning
-    return true; // Placeholder implementation
+    // Use actual policy evaluation
+    auto decision = evaluate_policy(context);
+    if (decision.has_value()) {
+        return decision->allowed;
+    }
+    
+    // Fallback to profile-based checking
+    return options.policy_profile != InterchangePolicyProfile::DenyAll;
 }
 
 bool CanonFSInterchangeEngine::check_policy_compliance(const PolicyContext& context,
                                                        const ExportOptions& options) {
-    (void)context;     // Mark as used to avoid warning
-    (void)options;     // Mark as used to avoid warning
-    return true; // Placeholder implementation
+    // Use actual policy evaluation
+    auto decision = evaluate_policy(context);
+    if (decision.has_value()) {
+        return decision->allowed;
+    }
+    
+    // Fallback to profile-based checking
+    return options.policy_profile != InterchangePolicyProfile::DenyAll;
 }
 
 }  // namespace t81::canonfs
