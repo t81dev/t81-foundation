@@ -8,14 +8,14 @@ namespace t81::canonfs {
 
 class PerformanceCLI {
 public:
-    PerformanceCLI(std::shared_ptr<CanonFSInterchangeEngine> engine);
+    PerformanceCLI(CanonFSInterchangeEngine* engine);
     void run_interactive_mode();
     void run_analysis_mode(const std::string& output_file);
     void run_monitoring_mode(int interval_seconds);
     void generate_performance_dashboard(const std::string& output_file);
 
 private:
-    std::shared_ptr<CanonFSInterchangeEngine> engine_;
+    CanonFSInterchangeEngine* engine_;
     std::shared_ptr<PerformanceAnalyzer> analyzer_;
     
     void print_banner();

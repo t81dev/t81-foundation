@@ -5,7 +5,7 @@
 
 namespace t81::canonfs {
 
-PerformanceCLI::PerformanceCLI(std::shared_ptr<CanonFSInterchangeEngine> engine)
+PerformanceCLI::PerformanceCLI(CanonFSInterchangeEngine* engine)
     : engine_(engine) {
     analyzer_ = std::make_shared<PerformanceAnalyzer>(nullptr);
 }

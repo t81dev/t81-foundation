@@ -22,7 +22,7 @@ struct PerformanceAnalysis {
 
 class PerformanceAnalyzer {
 public:
-    PerformanceAnalyzer(std::shared_ptr<PerformanceCollector> collector);
+    PerformanceAnalyzer(std::shared_ptr<t81::monitoring::PerformanceCollector> collector);
     ~PerformanceAnalyzer();
     
     // Real-time analysis
@@ -39,7 +39,7 @@ public:
     std::string generate_performance_report();
 
 private:
-    std::shared_ptr<PerformanceCollector> collector_;
+    std::shared_ptr<t81::monitoring::PerformanceCollector> collector_;
     std::vector<PerformanceAnalysis> analysis_history_;
     
     // Analysis methods
