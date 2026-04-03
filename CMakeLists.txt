@@ -580,7 +580,14 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   target_link_libraries(t81_canonfs_driver_test PRIVATE t81_core)
 
   add_executable(canonfs_interchange_test tests/cpp/canonfs_interchange_test.cpp)
-  target_link_libraries(canonfs_interchange_test PRIVATE t81_core)
+  target_link_libraries(canonfs_interchange_test PRIVATE t81_core t81_canonfs_interchange_ops)
+  
+  add_executable(canonfs_negative_tests tests/cpp/canonfs_negative_tests.cpp)
+  target_link_libraries(canonfs_negative_tests PRIVATE t81_core)
+  
+  # Find and link GTest
+  find_package(GTest REQUIRED)
+  target_link_libraries(canonfs_negative_tests PRIVATE GTest::gtest GTest::gtest_main)
 
   add_executable(t81_canonfs_rs_repair_test tests/cpp/canonfs_rs_repair_test.cpp)
   target_link_libraries(t81_canonfs_rs_repair_test PRIVATE t81_core)
