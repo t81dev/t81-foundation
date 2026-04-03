@@ -4,6 +4,8 @@ add_library(t81_core STATIC
   ${PROJECT_SOURCE_DIR}/isa/encoding.cpp
   ${PROJECT_SOURCE_DIR}/fs/canonfs_interchange.cpp
   ${PROJECT_SOURCE_DIR}/fs/canonfs_interchange_ops.cpp
+  ${PROJECT_SOURCE_DIR}/fs/canonfs_interchange_engine.cpp
+  ${PROJECT_SOURCE_DIR}/fs/canonfs_json_renderer.cpp
   ${PROJECT_SOURCE_DIR}/fs/in_memory_driver.cpp
   ${PROJECT_SOURCE_DIR}/fs/persistent_driver.cpp
   ${PROJECT_SOURCE_DIR}/fs/block_backed_driver.cpp
