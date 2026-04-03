@@ -1,0 +1,28 @@
+{
+  "schema": "t81.canonfs-import.v1",
+  "status": "error",
+  "source_kind": "host-file",
+  "source_ref": "",
+  "imported_objects": [],
+  "provenance_schema": "t81.canonfs-import-provenance.v1",
+  "provenance_ref": "",
+  "manifest_schema": "t81.canonfs-interchange-manifest.v1",
+  "manifest_ref": "",
+  "imported_paths": [],
+  "warnings": [],
+  "errors": [
+    {
+      "kind": "policy-failure",
+      "message": "policy denied import of test-data.txt: policy-profile deny-all denies canonfs.import before CanonFS or host-side materialization",
+      "code": "canonfs-policy-denied",
+      "reason": "policy_denied"
+    }
+  ],
+  "policy_result": "policy denied: policy-profile deny-all denies canonfs.import before CanonFS or host-side materialization",
+  "policy_profile": "deny-all",
+  "normalization_summary": {
+    "timestamps": "provenance-only",
+    "ownership": "provenance-only",
+    "mode_hint": "preserved"
+  }
+}

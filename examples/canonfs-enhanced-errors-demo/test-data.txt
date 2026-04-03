@@ -1,0 +1,4 @@
+This is test data for CanonFS enhanced error handling demonstration.
+
+The content is simple but sufficient to demonstrate import operations
+and error handling scenarios.

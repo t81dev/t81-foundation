@@ -1,0 +1,6 @@
+{
+  "input_path": "test-data.txt",
+  "canonfs_root": "./canonfs",
+  "policy_profile": "deny-all",
+  "as_json": true
+}
