@@ -1,0 +1,401 @@
+version: "0.1.0"
+system:
+  name: "T81 Foundation"
+  thesis: >
+    Deterministic AI operating substrate in which governed, canonical,
+    replayable decision objects can be produced and consumed as system artifacts.
+  status: "active"
+  authority:
+    mode: "advisory-until-frozen"
+    notes:
+      - "This map is the canonical architectural inventory once adopted."
+      - "Where map and docs disagree, mark drift explicitly rather than silently reconciling."
+
+design_center:
+  primary_objective:
+    - "Deterministic execution"
+    - "Governed decision production"
+    - "Canonical object identity"
+    - "Replayable post-execution consumption"
+  non_goals:
+    - "General workflow engine"
+    - "Dynamic agent loop substrate"
+    - "Streaming inference control plane"
+    - "Arbitrary external API contract"
+  litmus_test: >
+    Does this strengthen canonical decision objects and their trustworthy
+    downstream consumption without widening the admitted family?
+
+layers:
+  - id: "t81lang"
+    name: "T81Lang"
+    kind: "language"
+    status: "admitted"
+    responsibilities:
+      - "Frontend language surface"
+      - "Program expression for deterministic execution"
+      - "Typed source-level abstraction over lower layers"
+    produces:
+      - "tisc_program"
+    consumes:
+      - "language_source"
+      - "stdlib"
+    depends_on:
+      - "tisc"
+    forbidden_dependencies:
+      - "canonfs"
+      - "axion_runtime_policy_direct"
+    proofs:
+      specs:
+        - "spec/t81lang-spec.md"
+      tests: []
+      demos: []
+
+  - id: "tisc"
+    name: "TISC"
+    kind: "instruction_set"
+    status: "frozen"
+    version: "1.1.0"
+    responsibilities:
+      - "Deterministic instruction semantics"
+      - "Stable executable target for VM/runtime"
+    produces:
+      - "executable_instruction_stream"
+    consumes:
+      - "tisc_program"
+    depends_on:
+      - "t81vm"
+    forbidden_dependencies: []
+    proofs:
+      specs:
+        - "spec/tisc-v1.1.0"
+      tests:
+        - "freeze_integrity"
+      demos: []
+
+  - id: "t81vm"
+    name: "T81VM"
+    kind: "runtime"
+    status: "admitted"
+    responsibilities:
+      - "Deterministic interpretation/execution"
+      - "Object production during governed execution"
+      - "Stable runtime substrate for bounded AI lanes"
+    produces:
+      - "runtime_trace"
+      - "decision_artifacts"
+    consumes:
+      - "executable_instruction_stream"
+    depends_on:
+      - "axion"
+      - "canonfs"
+    forbidden_dependencies: []
+    proofs:
+      specs: []
+      tests:
+        - "determinism_slice"
+      demos: []
+
+  - id: "axion"
+    name: "Axion"
+    kind: "governance_kernel"
+    status: "admitted"
+    responsibilities:
+      - "Policy evaluation close to execution"
+      - "Admission control for governed actions"
+      - "Fail-closed enforcement before side effects"
+    produces:
+      - "policy_decision"
+      - "security_fault"
+    consumes:
+      - "runtime_action_request"
+      - "policy_artifacts"
+    depends_on: []
+    forbidden_dependencies: []
+    proofs:
+      specs: []
+      tests: []
+      demos:
+        - "governance_demo"
+
+  - id: "canonfs"
+    name: "CanonFS"
+    kind: "content_addressed_store"
+    status: "admitted"
+    responsibilities:
+      - "Canonical object storage"
+      - "Content-addressed identity"
+      - "Stable dereference surface for admitted artifacts"
+    produces:
+      - "canonfs_ref"
+      - "stored_artifact"
+    consumes:
+      - "artifact_bytes"
+    depends_on: []
+    forbidden_dependencies: []
+    proofs:
+      specs: []
+      tests: []
+      demos: []
+
+surfaces:
+  admitted_families:
+    - id: "assess-fixed"
+      kind: "bundle_family"
+      status: "admitted"
+      top_level_object: "bundle"
+      post_execution_only: true
+    - id: "route-fixed"
+      kind: "bundle_family"
+      status: "admitted"
+      top_level_object: "bundle"
+      post_execution_only: true
+    - id: "classify-fixed"
+      kind: "bundle_family"
+      status: "admitted"
+      top_level_object: "bundle"
+      post_execution_only: true
+
+  excluded_patterns:
+    - id: "streaming_inference_consumer"
+      reason: "bundle is post-execution consumption, not live runtime control"
+    - id: "agent_loop_orchestrator"
+      reason: "bundle is not a general workflow object"
+    - id: "general_workflow_engine"
+      reason: "would widen admitted family beyond stable baseline"
+    - id: "arbitrary_external_api_contract"
+      reason: "current bundle contract is family-only and not a general network API"
+
+objects:
+  - id: "bundle"
+    kind: "canonical_top_level_decision_object"
+    status: "admitted"
+    description: >
+      Consumer-facing system boundary for the current admitted bounded AI
+      OS-object family. Authoritative object for post-execution consumption.
+    properties:
+      - "canonical"
+      - "policy-approved"
+      - "replayable"
+      - "post-execution"
+      - "family-bound"
+    must_not_be:
+      - "general workflow object"
+      - "streaming control object"
+      - "arbitrary network API payload"
+    refs:
+      optional:
+        - "record_ref"
+        - "action_ref"
+        - "provenance_ref"
+
+  - id: "typed_downstream_record"
+    kind: "record"
+    status: "admitted"
+    description: >
+      Family-specific typed object carrying downstream fields required by some
+      consumers after bundle validation.
+    properties:
+      - "typed"
+      - "family-specific"
+      - "dereferenceable"
+
+  - id: "canonical_action_identity"
+    kind: "action"
+    status: "admitted"
+    description: >
+      Canonical downstream action identity used by active execution-oriented
+      consumers after bundle validation.
+    properties:
+      - "canonical"
+      - "dereferenceable"
+
+  - id: "provenance_artifact"
+    kind: "provenance"
+    status: "admitted"
+    description: >
+      Additional evidence object that may be followed on demand by audit,
+      compliance, and historical replay surfaces.
+    properties:
+      - "optional_for_bundle_only_consumers"
+      - "evidence-bearing"
+
+bundle_consumption_modes:
+  - id: "bundle_only"
+    description: >
+      Consumer can perform useful work using the bundle artifact itself without
+      immediate dereference of deeper objects.
+    allowed_consumers:
+      - "audit_review_system"
+      - "compliance_evidence_pipeline"
+      - "governance_dashboard"
+      - "approval_trail_storage"
+      - "release_deployment_gate"
+      - "artifact_attestation_pipeline"
+      - "canonfs_archival_store"
+      - "historical_replay_surface"
+
+  - id: "bundle_plus_record_and_action"
+    description: >
+      Consumer validates the bundle first, then follows typed downstream record
+      and canonical action identity as required by family-specific semantics.
+    allowed_consumers:
+      - "host_side_action_runner"
+      - "rule_following_service"
+      - "routing_handoff_component"
+      - "classification_result_consumer"
+
+integrations:
+  - id: "host_side_action_runner"
+    reads_bundle_only: false
+    follows_record_ref: true
+    follows_action_ref: true
+    writeback_needed: false
+    baseline_safe: true
+    admitted_families:
+      - "assess-fixed"
+      - "route-fixed"
+
+  - id: "rule_following_service"
+    reads_bundle_only: false
+    follows_record_ref: true
+    follows_action_ref: true
+    writeback_needed: false
+    baseline_safe: true
+    admitted_families:
+      - "classify-fixed"
+
+  - id: "routing_handoff_component"
+    reads_bundle_only: false
+    follows_record_ref: true
+    follows_action_ref: true
+    writeback_needed: false
+    baseline_safe: true
+    admitted_families:
+      - "route-fixed"
+
+  - id: "classification_result_consumer"
+    reads_bundle_only: false
+    follows_record_ref: true
+    follows_action_ref: true
+    writeback_needed: false
+    baseline_safe: true
+    admitted_families:
+      - "classify-fixed"
+
+  - id: "audit_review_system"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "compliance_evidence_pipeline"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "governance_dashboard"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "approval_trail_storage"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "release_deployment_gate"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "artifact_attestation_pipeline"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "canonfs_archival_store"
+    reads_bundle_only: true
+    follows_record_ref: false
+    follows_action_ref: false
+    writeback_needed: false
+    baseline_safe: true
+
+  - id: "historical_replay_surface"
+    reads_bundle_only: true
+    follows_record_ref: "optional"
+    follows_action_ref: "optional"
+    writeback_needed: false
+    baseline_safe: true
+
+claims:
+  - id: "bundle_post_execution_authority"
+    statement: >
+      The current bundle is strongest when treated as the authoritative object
+      for post-execution consumption.
+    status: "grounded"
+    evidence:
+      docs:
+        - "docs/reference/AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md"
+
+  - id: "bundle_not_general_platform"
+    statement: >
+      The current bundle does not define a general bundle platform.
+    status: "grounded"
+    evidence:
+      docs:
+        - "docs/reference/AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md"
+
+  - id: "bundle_family_only_contract"
+    statement: >
+      The current bundle contract is family-only and not a general network API.
+    status: "grounded"
+    evidence:
+      docs:
+        - "docs/reference/AI_OS_OBJECT_BUNDLE_INTEGRATION_MATRIX.md"
+
+derivations:
+  can_generate:
+    - "architecture_overview_markdown"
+    - "bundle_family_registry"
+    - "integration_matrix_markdown"
+    - "non_goals_page"
+    - "claim_to_proof_ledger"
+    - "drift_report"
+  must_not_generate:
+    - "normative architecture decisions without human review"
+    - "new admitted families automatically"
+    - "broad orchestration semantics"
+    - "core implementation logic without proof constraints"
+
+drift_checks:
+  - id: "integration_matrix_sync"
+    description: >
+      Verify derived integration matrix matches canonical integration entries in map.
+  - id: "excluded_pattern_sync"
+    description: >
+      Verify excluded patterns in docs match excluded_patterns list in map.
+  - id: "claim_proof_coverage"
+    description: >
+      Ensure each top-level architectural claim has at least one governing doc or proof artifact.
+
+next_tools:
+  - id: "validate_system_map"
+    purpose: "Schema and internal consistency validation"
+  - id: "render_architecture_overview"
+    purpose: "Generate current-state markdown overview from map"
+  - id: "render_bundle_registry"
+    purpose: "Generate admitted family and consumption registry"
+  - id: "render_drift_report"
+    purpose: "Compare generated outputs against checked-in docs"
