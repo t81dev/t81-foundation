@@ -488,13 +488,14 @@ jobs:
           set -eo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18 libasio-dev
+            build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18 libasio-dev \
+            libgtest-dev libgmock-dev
 
       - name: Install Dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
           set -eo pipefail
-          brew install ccache
+          brew install ccache googletest
           if [ "${{ matrix.compiler }}" = "gcc" ]; then
             brew install gcc@14
             echo "/opt/homebrew/bin" >> "$GITHUB_PATH"

@@ -921,23 +921,21 @@ int main(int argc, char* argv[]) {
     fs::create_directories(export_file_blocked_target, ignore_ec);
     T81_TEST_CHECK(!ignore_ec);
     const auto export_target_open_failed = run_cli(
-        t81_bin, {"canonfs", "export", hash, "--out", export_file_blocked_target.string(), "--json"});
+        t81_bin,
+        {"canonfs", "export", hash, "--out", export_file_blocked_target.string(), "--json"});
     T81_TEST_CHECK(export_target_open_failed.exit_code != 0);
     T81_TEST_CHECK(
         contains(export_target_open_failed.stdout_text, "\"schema\": \"t81.canonfs-export.v1\""));
     T81_TEST_CHECK(contains(export_target_open_failed.stdout_text, "\"status\": \"error\""));
-    T81_TEST_CHECK(
-        contains(export_target_open_failed.stdout_text, "\"kind\": \"target-failure\""));
+    T81_TEST_CHECK(contains(export_target_open_failed.stdout_text, "\"kind\": \"target-failure\""));
     T81_TEST_CHECK(contains(export_target_open_failed.stdout_text,
                             "\"code\": \"canonfs-export-target-open-failed\""));
     T81_TEST_CHECK(
         contains(export_target_open_failed.stdout_text, "\"reason\": \"target_open_failed\""));
     T81_TEST_CHECK(appears_in_order(
         export_target_open_failed.stdout_text,
-        {"\"kind\": \"target-failure\"",
-         "\"message\": \"could not open output file: ",
-         "\"code\": \"canonfs-export-target-open-failed\"",
-         "\"reason\": \"target_open_failed\""}));
+        {"\"kind\": \"target-failure\"", "\"message\": \"could not open output file: ",
+         "\"code\": \"canonfs-export-target-open-failed\"", "\"reason\": \"target_open_failed\""}));
 
     const fs::path missing_import_path = make_temp_path("t81-cli-contract-missing-import", ".txt");
     const auto import_missing_result =
@@ -1028,10 +1026,8 @@ int main(int argc, char* argv[]) {
         contains(malformed_export_result.stdout_text, "\"reason\": \"malformed_manifest\""));
     T81_TEST_CHECK(appears_in_order(
         malformed_export_result.stdout_text,
-        {"\"kind\": \"materialization-failure\"",
-         "\"message\": \"invalid interchange manifest",
-         "\"code\": \"canonfs-export-malformed-manifest\"",
-         "\"reason\": \"malformed_manifest\""}));
+        {"\"kind\": \"materialization-failure\"", "\"message\": \"invalid interchange manifest",
+         "\"code\": \"canonfs-export-malformed-manifest\"", "\"reason\": \"malformed_manifest\""}));
 
     const fs::path invalid_schema_object = make_temp_path("t81-cli-contract-bad-schema", ".json");
     {
@@ -1061,8 +1057,7 @@ int main(int argc, char* argv[]) {
         invalid_schema_export.stdout_text,
         {"\"kind\": \"materialization-failure\"",
          "\"message\": \"invalid interchange schema for export source object",
-         "\"code\": \"canonfs-export-invalid-schema\"",
-         "\"reason\": \"invalid_schema\""}));
+         "\"code\": \"canonfs-export-invalid-schema\"", "\"reason\": \"invalid_schema\""}));
 
     const fs::path tampered_root = make_temp_path("t81-cli-contract-tampered-root", "");
     fs::create_directories(tampered_root, ignore_ec);
@@ -1128,12 +1123,10 @@ int main(int argc, char* argv[]) {
         contains(import_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
     T81_TEST_CHECK(
         contains(import_policy_deny_result.stdout_text, "\"reason\": \"policy_denied\""));
-    T81_TEST_CHECK(appears_in_order(
-        import_policy_deny_result.stdout_text,
-        {"\"kind\": \"policy-failure\"",
-         "\"message\": \"policy denied import of ",
-         "\"code\": \"canonfs-policy-denied\"",
-         "\"reason\": \"policy_denied\""}));
+    T81_TEST_CHECK(
+        appears_in_order(import_policy_deny_result.stdout_text,
+                         {"\"kind\": \"policy-failure\"", "\"message\": \"policy denied import of ",
+                          "\"code\": \"canonfs-policy-denied\"", "\"reason\": \"policy_denied\""}));
 
     const auto export_policy_deny_result =
         run_cli(t81_bin, {"canonfs", "export", hash, "--policy", canonfs_policy.string(), "--out",
@@ -1151,12 +1144,10 @@ int main(int argc, char* argv[]) {
         contains(export_policy_deny_result.stdout_text, "\"code\": \"canonfs-policy-denied\""));
     T81_TEST_CHECK(
         contains(export_policy_deny_result.stdout_text, "\"reason\": \"policy_denied\""));
-    T81_TEST_CHECK(appears_in_order(
-        export_policy_deny_result.stdout_text,
-        {"\"kind\": \"policy-failure\"",
-         "\"message\": \"policy denied export",
-         "\"code\": \"canonfs-policy-denied\"",
-         "\"reason\": \"policy_denied\""}));
+    T81_TEST_CHECK(
+        appears_in_order(export_policy_deny_result.stdout_text,
+                         {"\"kind\": \"policy-failure\"", "\"message\": \"policy denied export",
+                          "\"code\": \"canonfs-policy-denied\"", "\"reason\": \"policy_denied\""}));
 
     const auto import_profile_deny_result = run_cli(
         t81_bin,
@@ -1223,12 +1214,11 @@ int main(int argc, char* argv[]) {
                             "\"code\": \"canonfs-import-invalid-policy-profile\""));
     T81_TEST_CHECK(
         contains(invalid_profile_result.stdout_text, "\"reason\": \"invalid_policy_profile\""));
-    T81_TEST_CHECK(appears_in_order(
-        invalid_profile_result.stdout_text,
-        {"\"kind\": \"source-failure\"",
-         "\"message\": \"invalid policy profile",
-         "\"code\": \"canonfs-import-invalid-policy-profile\"",
-         "\"reason\": \"invalid_policy_profile\""}));
+    T81_TEST_CHECK(
+        appears_in_order(invalid_profile_result.stdout_text,
+                         {"\"kind\": \"source-failure\"", "\"message\": \"invalid policy profile",
+                          "\"code\": \"canonfs-import-invalid-policy-profile\"",
+                          "\"reason\": \"invalid_policy_profile\""}));
 
     const fs::path example_input_dir =
         repo_root / "examples" / "storage-and-canonfs" / "canonfs-interchange" / "input";
@@ -1335,7 +1325,8 @@ int main(int argc, char* argv[]) {
         contains(example_policy_deny_export.stdout_text, "\"kind\": \"policy-failure\""));
     T81_TEST_CHECK(
         contains(example_policy_deny_export.stdout_text, "\"reason\": \"policy_denied\""));
-    T81_TEST_CHECK(contains(example_policy_deny_export.stdout_text, "\"message\": \"policy denied export"));
+    T81_TEST_CHECK(
+        contains(example_policy_deny_export.stdout_text, "\"message\": \"policy denied export"));
 
     const fs::path example_alpha_only_root =
         make_temp_path("t81-cli-canonfs-example-alpha-root", "");
@@ -1391,11 +1382,10 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(
         contains(example_alpha_only_export.stdout_text, "\"reason\": \"policy_denied\""));
     T81_TEST_CHECK(contains(example_alpha_only_export.stdout_text, "nested/beta.txt"));
-    T81_TEST_CHECK(
-        appears_in_order(example_alpha_only_export.stdout_text,
-                         {"\"kind\": \"policy-failure\"", "\"message\": ",
-                          "\"code\": \"canonfs-policy-denied\"",
-                          "\"reason\": \"policy_denied\""}));
+    T81_TEST_CHECK(appears_in_order(
+        example_alpha_only_export.stdout_text,
+        {"\"kind\": \"policy-failure\"", "\"message\": ", "\"code\": \"canonfs-policy-denied\"",
+         "\"reason\": \"policy_denied\""}));
     T81_TEST_CHECK(fs::exists(example_alpha_only_export_root / "alpha.txt"));
     T81_TEST_CHECK(!fs::exists(example_alpha_only_export_root / "nested" / "beta.txt"));
 
@@ -2450,8 +2440,8 @@ int main(int argc, char* argv[]) {
   }
 
   {
-    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path().parent_path() / "examples" /
-                                 "core-language" / "hello_world.t81";
+    const fs::path hello_world = fs::absolute(t81_bin).parent_path().parent_path().parent_path() /
+                                 "examples" / "core-language" / "hello_world.t81";
     const auto memory_stats_result =
         run_cli(t81_bin, {"internal", "memory-stats", hello_world.string()});
     T81_TEST_CHECK(memory_stats_result.exit_code == 0);
