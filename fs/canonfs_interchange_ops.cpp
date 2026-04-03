@@ -1,5 +1,5 @@
+#include "t81/canonfs/interchange.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
-
 #include <algorithm>
 #include <cstddef>
 #include <filesystem>
@@ -10,12 +10,10 @@
 
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/interchange.hpp"
-#include "t81/crypto/sha3.hpp"
 
 namespace fs = std::filesystem;
 
 namespace {
-
 using Issue = t81::canonfs::interchange::Issue;
 
 Issue make_issue(std::string_view reason, std::string message) {
