@@ -1,0 +1,160 @@
+# AI Inference Policy for T81
+# Allows controlled non-deterministic AI inference operations
+# Maintains determinism by default, requires explicit consent for AI operations
+
+policy "ai.inference.determinism_control" {
+    description: "Control AI inference determinism level",
+    version: "1.0",
+    
+    # Default to strict determinism
+    determinism_level: "strict",
+    
+    # External AI integration disabled by default
+    external_ai_enabled: false,
+    
+    # Evidence collection always enabled for AI operations
+    evidence_collection: true,
+    
+    # User consent required for non-deterministic operations
+    require_explicit_consent: true,
+    
+    # Allowed AI operation contexts
+    allowed_contexts: [
+        "ai.inference",
+        "ai.training",
+        "ai.quantization"
+    ],
+    
+    # Non-determinism conditions
+    non_determinism_conditions: [
+        {
+            name: "user_explicit_consent",
+            description: "User has explicitly consented to non-deterministic AI operations",
+            required_fields: ["user.consent_token", "operation.timestamp"]
+        },
+        {
+            name: "policy_approval",
+            description: "Policy explicitly allows non-deterministic AI operations",
+            required_fields: ["policy.allow_non_deterministic"]
+        },
+        {
+            name: "external_ai_approved",
+            description: "External AI service is approved and configured",
+            required_fields: ["external_ai.endpoint", "external_ai.auth_token"]
+        }
+    ],
+    
+    # Evidence collection requirements
+    evidence_requirements: {
+        operation_context: true,
+        determinism_level: true,
+        user_consent: true,
+        external_ai_calls: true,
+        performance_metrics: true,
+        error_conditions: true
+    },
+    
+    # Audit logging requirements
+    audit_requirements: {
+        all_ai_operations: true,
+        non_deterministic_decisions: true,
+        external_ai_interactions: true,
+        policy_violations: true
+    }
+}
+
+# Allow non-deterministic AI inference with explicit user consent
+policy "ai.inference.allow_non_deterministic" {
+    description: "Allow non-deterministic AI inference with user consent",
+    version: "1.0",
+    
+    # Enable controlled non-determinism
+    determinism_level: "controlled",
+    
+    # Require explicit user consent
+    require_explicit_consent: true,
+    
+    # Evidence collection mandatory
+    evidence_collection: true,
+    
+    # Conditions for allowing non-determinism
+    allow_conditions: [
+        {
+            type: "user_consent",
+            description: "User has provided explicit consent for non-deterministic operations",
+            validation: "check_consent_token"
+        },
+        {
+            type: "policy_override",
+            description: "Policy explicitly allows non-deterministic operations",
+            validation: "check_policy_allowance"
+        }
+    ]
+}
+
+# External AI integration policy
+policy "ai.inference.external_ai_integration" {
+    description: "Allow external AI service integration under controlled conditions",
+    version: "1.0",
+    
+    # External AI integration settings
+    external_ai_enabled: true,
+    
+    # Approved external AI endpoints
+    approved_endpoints: [
+        "https://api.openai.com/v1",
+        "https://api.anthropic.com/v1",
+        "https://api.google.com/ai/v1"
+    ],
+    
+    # Security requirements
+    security_requirements: [
+        "endpoint_tls_verification",
+        "api_key_encryption",
+        "request_signing",
+        "response_validation"
+    ],
+    
+    # Rate limiting
+    rate_limits: {
+        requests_per_minute: 60,
+        tokens_per_minute: 10000,
+        concurrent_requests: 5
+    },
+    
+    # Fallback requirements
+    fallback_requirements: {
+        local_model_required: true,
+        deterministic_fallback: true,
+        evidence_preservation: true
+    }
+}
+
+# Deny non-deterministic AI operations by default
+policy "ai.inference.deny_non_deterministic" {
+    description: "Deny non-deterministic AI inference operations",
+    version: "1.0",
+    
+    # Strict determinism
+    determinism_level: "strict",
+    
+    # External AI disabled
+    external_ai_enabled: false,
+    
+    # Evidence collection for audit
+    evidence_collection: true,
+    
+    # Deny conditions
+    deny_conditions: [
+        {
+            name: "non_deterministic_requested",
+            description: "Non-deterministic AI operation requested without consent",
+            trigger_fields: ["operation.type", "user.consent_missing"]
+        },
+        {
+            name: "external_ai_requested",
+            description: "External AI integration requested without approval",
+            trigger_fields: ["external_ai.requested", "policy.external_ai_disabled"]
+        }
+    ]
+}
