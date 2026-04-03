@@ -331,7 +331,8 @@ jobs:
         run: |
           set -eo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build
+          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build \
+            libgtest-dev libgmock-dev
 
       - name: Configure CMake (bench-enabled)
         run: |
@@ -846,7 +847,8 @@ jobs:
         run: |
           set -eo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build binutils
+          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build binutils \
+            libgtest-dev libgmock-dev
 
       - name: Build t81 WITHOUT TUI (baseline)
         shell: bash
@@ -1061,7 +1063,8 @@ jobs:
           set -eo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build clang-18
+            cmake ninja-build clang-18 \
+            libgtest-dev libgmock-dev
 
       - name: Configure CMake
         shell: bash
@@ -1192,7 +1195,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build jq
+          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build jq \
+            libgtest-dev libgmock-dev
 
       - name: Configure benchmark build
         run: |
@@ -1239,7 +1243,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y clang-tidy-18 build-essential cmake ninja-build libasio-dev pybind11-dev
+          sudo apt-get install -y clang-tidy-18 build-essential cmake ninja-build libasio-dev pybind11-dev \
+            libgtest-dev libgmock-dev
 
       - name: Configure CMake
         run: |
@@ -1295,7 +1300,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build clang-18
+          sudo apt-get install -y build-essential cmake ninja-build clang-18 \
+            libgtest-dev libgmock-dev
 
       - name: Configure and Build (ASan/UBSan)
         run: |
@@ -1325,7 +1331,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build clang-18
+          sudo apt-get install -y build-essential cmake ninja-build clang-18 \
+            libgtest-dev libgmock-dev
 
       - name: Configure and Build
         run: |
@@ -1354,7 +1361,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build gcc-14 g++-14
+          sudo apt-get install -y build-essential cmake ninja-build gcc-14 g++-14 \
+            libgtest-dev libgmock-dev
 
       - name: Configure and Build
         run: |
@@ -1401,7 +1409,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build python3
+          sudo apt-get install -y build-essential cmake ninja-build python3 \
+            libgtest-dev libgmock-dev
 
       - name: Configure CMake
         run: |
