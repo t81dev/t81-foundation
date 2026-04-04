@@ -1,0 +1,535 @@
+// Model Checkpoint Bundles Demo in T81Lang
+// EXPERIMENTAL - NOT FOR PRODUCTION USE
+// Demonstrates model checkpointing with bundle integration
+
+@extern "advanced_ai"
+
+// Neural network configuration types
+type NeuralLayer = struct {
+    layer_type: int,
+    input_size: int,
+    output_size: int,
+    activation: int,
+    seed: uint64
+};
+
+// Checkpoint configuration
+type CheckpointConfig = struct {
+    auto_checkpoint_enabled: bool,
+    checkpoint_frequency: int,
+    checkpoint_on_validation_improvement: bool,
+    checkpoint_on_training_completion: bool,
+    checkpoint_name_prefix: string,
+    checkpoint_seed: uint64,
+    min_improvement_threshold: float
+};
+
+// Model checkpoint bundle structure
+type ModelCheckpointBundle = struct {
+    checkpoint_id: string,
+    model_version: string,
+    training_metrics: TrainingMetrics,
+    parent_bundle_id: string,
+    hyperparameters: map,
+    checkpoint_timestamp: uint64,
+    checkpoint_description: string,
+    is_final_checkpoint: bool
+};
+
+// Checkpoint statistics
+type CheckpointStats = struct {
+    total_checkpoints: int,
+    checkpoint_ids: array,
+    best_validation_accuracy: float,
+    best_checkpoint_id: string,
+    latest_checkpoint_id: string,
+    total_checkpoint_size: uint64
+};
+
+// Neural network operations
+@neural @tier(2) @deterministic
+function neural_forward(dest: int, input: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic  
+function neural_backward(dest: int, grad: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic
+function neural_optimize(layer_id: int, learning_rate: float) -> void;
+
+// Checkpoint operations
+@checkpoint @tier(2) @deterministic
+function checkpoint_create(layer_ids: array, metrics: TrainingMetrics, parent_bundle_id: string, hyperparameters: map) -> string;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_load(checkpoint_id: string, layer_ids: array) -> bool;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_should_create(metrics: TrainingMetrics, epoch: int, batch: int) -> bool;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_create_final(layer_ids: array, final_metrics: TrainingMetrics, parent_bundle_id: string) -> string;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_get_statistics() -> CheckpointStats;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_list() -> array;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_compare(checkpoint_id1: string, checkpoint_id2: string) -> CheckpointComparison;
+
+@checkpoint @tier(2) @deterministic
+function checkpoint_export_data() -> map;
+
+// Helper functions for checkpointing
+@tier(2) @pure
+function create_checkpoint_config(auto_enabled: bool, frequency: int, val_improvement: bool, 
+                                   train_completion: bool, prefix: string, seed: uint64, 
+                                   min_threshold: float) -> CheckpointConfig {
+    var config: CheckpointConfig;
+    config.auto_checkpoint_enabled = auto_enabled;
+    config.checkpoint_frequency = frequency;
+    config.checkpoint_on_validation_improvement = val_improvement;
+    config.checkpoint_on_training_completion = train_completion;
+    config.checkpoint_name_prefix = prefix;
+    config.checkpoint_seed = seed;
+    config.min_improvement_threshold = min_threshold;
+    return config;
+}
+
+@tier(2) @pure
+function create_dense_layer(input_size: int, output_size: int, activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 0; // DENSE
+    layer_config.input_size = input_size;
+    layer_config.output_size = output_size;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+@tier(2) @pure
+function create_conv1d_layer(input_channels: int, output_channels: int, kernel_size: int, 
+                           activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 1; // CONV1D
+    layer_config.input_size = input_channels * 1000; // Packed format
+    layer_config.output_size = output_channels;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    // Pack convolution parameters
+    layer_config.hidden_size = (input_channels << 20) | (output_channels << 10) | kernel_size;
+    
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+// Generate synthetic dataset for checkpointing demo
+@tier(2)
+function generate_checkpoint_dataset(num_samples: int, input_size: int, num_classes: int) -> int {
+    var dataset = allocate_dataset(num_samples);
+    var labels = allocate_dataset(num_samples);
+    
+    for (var i = 0; i < num_samples; i = i + 1) {
+        var sample = allocate_tensor();
+        var class_id = i % num_classes;
+        
+        // Generate class-specific patterns
+        var class_offset = class_id * 0.5;
+        for (var j = 0; j < input_size; j = j + 1) {
+            var base_value = sin(j * 0.1 + class_offset) + (random_float() - 0.5) * 0.2;
+            sample[j] = base_value + class_offset;
+        }
+        
+        dataset[i] = sample;
+        labels[i] = class_id;
+    }
+    
+    return combine_dataset_and_labels(dataset, labels);
+}
+
+// Basic checkpointing demo
+@tier(2)
+function basic_checkpointing_demo() -> void {
+    print("=== Basic Model Checkpointing Demo ===");
+    
+    // Generate dataset
+    var dataset_size = 200;
+    var input_size = 64;
+    var num_classes = 4;
+    var dataset = generate_checkpoint_dataset(dataset_size, input_size, num_classes);
+    
+    // Split dataset
+    var split_result = split_dataset(dataset, 0.8);
+    var train_dataset = split_result[0];
+    var val_dataset = split_result[1];
+    
+    print("Dataset: ", get_dataset_size(train_dataset), " training, ", get_dataset_size(val_dataset), " validation");
+    
+    // Create neural network
+    var layer1 = create_dense_layer(input_size, 32, 1, 11234); // Dense: 64->32
+    var layer2 = create_dense_layer(32, 16, 1, 11235); // Dense: 32->16
+    var output = create_dense_layer(16, num_classes, 3, 11236); // Output: 16->4
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    print("Created neural network: 64->32->16->4");
+    
+    // Configure checkpointing
+    var checkpoint_config = create_checkpoint_config(
+        true, 5, true, true, "basic_checkpoint", 54321, 0.001
+    );
+    
+    print("Checkpoint configuration:");
+    print("  Auto-enabled: ", checkpoint_config.auto_checkpoint_enabled);
+    print("  Frequency: ", checkpoint_config.checkpoint_frequency);
+    print("  Validation improvement: ", checkpoint_config.checkpoint_on_validation_improvement);
+    print("  Training completion: ", checkpoint_config.checkpoint_on_training_completion);
+    
+    // Initialize checkpoint manager
+    var checkpoint_manager = create_checkpoint_manager(checkpoint_config);
+    
+    // Training with checkpointing
+    var epochs = 10;
+    var learning_rate = 0.001;
+    var created_checkpoints = allocate_array(0);
+    
+    print("Starting training with checkpointing for ", epochs, " epochs...");
+    print("");
+    
+    for (var epoch = 0; epoch < epochs; epoch = epoch + 1) {
+        print("Epoch ", epoch + 1, "/", epochs, ":");
+        
+        // Simulate training (simplified)
+        var train_metrics = simulate_training_epoch(train_dataset, layer_ids, learning_rate);
+        var val_metrics = simulate_validation_epoch(val_dataset, layer_ids);
+        
+        print("  Training: Loss=", train_metrics.avg_loss, ", Acc=", (train_metrics.accuracy * 100), "%");
+        print("  Validation: Loss=", val_metrics.avg_loss, ", Acc=", (val_metrics.accuracy * 100), "%");
+        
+        // Check if checkpoint should be created
+        if (checkpoint_should_create(val_metrics, epoch + 1, train_metrics.batches_processed)) {
+            var parent_bundle_id = "training_epoch_" + (epoch + 1);
+            var hyperparams = {"learning_rate": learning_rate, "batch_size": 32};
+            
+            var checkpoint_id = checkpoint_create(layer_ids, val_metrics, parent_bundle_id, hyperparams);
+            created_checkpoints = array_append(created_checkpoints, checkpoint_id);
+            
+            print("  ✅ Checkpoint created: ", checkpoint_id);
+        } else {
+            print("  ⏸️ No checkpoint created");
+        }
+        
+        print("");
+    }
+    
+    // Create final checkpoint
+    var final_metrics = simulate_validation_epoch(val_dataset, layer_ids);
+    var final_checkpoint_id = checkpoint_create_final(layer_ids, final_metrics, "training_completed");
+    created_checkpoints = array_append(created_checkpoints, final_checkpoint_id);
+    
+    print("✅ Final checkpoint created: ", final_checkpoint_id);
+    print("Total checkpoints created: ", array_length(created_checkpoints));
+    
+    // Display checkpoint statistics
+    var stats = checkpoint_get_statistics();
+    print("Checkpoint Statistics:");
+    print("  Total checkpoints: ", stats.total_checkpoints);
+    print("  Best validation accuracy: ", (stats.best_validation_accuracy * 100), "%");
+    print("  Best checkpoint: ", stats.best_checkpoint_id);
+    print("  Latest checkpoint: ", stats.latest_checkpoint_id);
+    print("  Total size: ", stats.total_checkpoint_size, " bytes");
+    
+    // List all checkpoints
+    var checkpoint_list = checkpoint_list();
+    print("Available checkpoints:");
+    for (var i = 0; i < array_length(checkpoint_list); i = i + 1) {
+        print("  ", checkpoint_list[i]);
+    }
+    
+    print("Basic checkpointing demo completed!");
+}
+
+// Checkpoint loading and restoration demo
+@tier(2)
+function checkpoint_loading_demo() -> void {
+    print("=== Checkpoint Loading and Restoration Demo ===");
+    
+    // Create a simple network
+    var layer1 = create_dense_layer(32, 16, 1, 22334);
+    var layer2 = create_dense_layer(16, 8, 1, 22335);
+    var output = create_dense_layer(8, 3, 3, 22336);
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    print("Created test network: 32->16->8->3");
+    
+    // Configure checkpointing
+    var checkpoint_config = create_checkpoint_config(
+        true, 1, true, true, "loading_test", 65432, 0.001
+    );
+    
+    var checkpoint_manager = create_checkpoint_manager(checkpoint_config);
+    
+    // Create initial checkpoint
+    var initial_metrics: TrainingMetrics;
+    initial_metrics.avg_loss = 0.8;
+    initial_metrics.accuracy = 0.65;
+    initial_metrics.batches_processed = 50;
+    initial_metrics.training_time_ms = 800;
+    
+    var checkpoint_id = checkpoint_create(layer_ids, initial_metrics, "initial_training", {});
+    
+    print("Created initial checkpoint: ", checkpoint_id);
+    print("  Model accuracy: ", (initial_metrics.accuracy * 100), "%");
+    print("  Model loss: ", initial_metrics.avg_loss);
+    
+    // Simulate some training to change model state
+    print("Simulating additional training...");
+    var updated_metrics = simulate_training_progress(layer_ids, 5);
+    
+    print("After training:");
+    print("  Model accuracy: ", (updated_metrics.accuracy * 100), "%");
+    print("  Model loss: ", updated_metrics.avg_loss);
+    
+    // Load from checkpoint (restore to initial state)
+    print("Loading model from checkpoint...");
+    var load_success = checkpoint_load(checkpoint_id, layer_ids);
+    
+    print("Load success: ", load_success);
+    
+    if (load_success) {
+        print("✅ Model restored from checkpoint");
+        print("  Restored accuracy: ", (initial_metrics.accuracy * 100), "%");
+        print("  Restored loss: ", initial_metrics.avg_loss);
+        
+        // Verify restoration by checking current state
+        var current_metrics = get_current_model_metrics(layer_ids);
+        print("  Current accuracy after restoration: ", (current_metrics.accuracy * 100), "%");
+        print("  Current loss after restoration: ", current_metrics.avg_loss);
+    } else {
+        print("❌ Failed to load checkpoint");
+    }
+    
+    print("Checkpoint loading demo completed!");
+}
+
+// Checkpoint comparison and analysis demo
+@tier(2)
+function checkpoint_comparison_demo() -> void {
+    print("=== Checkpoint Comparison and Analysis Demo ===");
+    
+    // Create network
+    var layer1 = create_dense_layer(48, 24, 1, 33445);
+    var layer2 = create_dense_layer(24, 12, 1, 33446);
+    var output = create_dense_layer(12, 5, 3, 33447);
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    print("Created comparison network: 48->24->12->5");
+    
+    // Configure checkpointing
+    var checkpoint_config = create_checkpoint_config(
+        true, 1, true, true, "comparison_test", 76543, 0.001
+    );
+    
+    var checkpoint_manager = create_checkpoint_manager(checkpoint_config);
+    
+    // Create multiple checkpoints at different training stages
+    var training_stages = [
+        {loss: 0.9, accuracy: 0.45, description: "Early training"},
+        {loss: 0.6, accuracy: 0.68, description: "Mid training"},
+        {loss: 0.4, accuracy: 0.82, description: "Late training"},
+        {loss: 0.3, accuracy: 0.89, description: "Converged"}
+    ];
+    
+    var checkpoint_ids = allocate_array(0);
+    
+    for (var i = 0; i < training_stages.length; i = i + 1) {
+        var stage = training_stages[i];
+        var metrics: TrainingMetrics;
+        metrics.avg_loss = stage.loss;
+        metrics.accuracy = stage.accuracy;
+        metrics.batches_processed = 50 * (i + 1);
+        metrics.training_time_ms = 500 * (i + 1);
+        
+        var checkpoint_id = checkpoint_create(layer_ids, metrics, "stage_" + i, {});
+        checkpoint_ids = array_append(checkpoint_ids, checkpoint_id);
+        
+        print("Checkpoint ", (i + 1), ": ", stage.description);
+        print("  ID: ", checkpoint_id);
+        print("  Loss: ", stage.loss, ", Accuracy: ", (stage.accuracy * 100), "%");
+    }
+    
+    print("");
+    
+    // Compare checkpoints
+    print("Checkpoint Comparisons:");
+    
+    for (var i = 0; i < array_length(checkpoint_ids) - 1; i = i + 1) {
+        var cp1_id = checkpoint_ids[i];
+        var cp2_id = checkpoint_ids[i + 1];
+        
+        var comparison = checkpoint_compare(cp1_id, cp2_id);
+        
+        print("  ", cp1_id, " vs ", cp2_id, ":");
+        print("    Accuracy improvement: ", (comparison.accuracy_difference * 100), "%");
+        print("    Loss reduction: ", comparison.loss_difference);
+        print("    Time difference: ", comparison.time_difference_ms, "ms");
+        print("    Layer differences: ", array_length(comparison.layer_differences));
+        print("");
+    }
+    
+    // Find best checkpoint
+    var stats = checkpoint_get_statistics();
+    print("Best Performing Checkpoint:");
+    print("  ID: ", stats.best_checkpoint_id);
+    print("  Validation accuracy: ", (stats.best_validation_accuracy * 100), "%");
+    
+    // Export checkpoint data for analysis
+    var export_data = checkpoint_export_data();
+    print("Export Data Analysis:");
+    print("  Total checkpoints: ", export_data["total_checkpoints_created"]);
+    print("  Auto-checkpoint enabled: ", export_data["auto_checkpoint_enabled"]);
+    print("  Checkpoint frequency: ", export_data["checkpoint_frequency"]);
+    print("  Best accuracy: ", export_data["best_validation_accuracy"]);
+    
+    print("Checkpoint comparison demo completed!");
+}
+
+// Advanced checkpointing with frequency optimization
+@tier(2)
+function checkpoint_frequency_optimization_demo() -> void {
+    print("=== Checkpoint Frequency Optimization Demo ===");
+    
+    // Generate larger dataset
+    var dataset_size = 500;
+    var input_size = 64;
+    var num_classes = 6;
+    var dataset = generate_checkpoint_dataset(dataset_size, input_size, num_classes);
+    
+    var split_result = split_dataset(dataset, 0.8);
+    var train_dataset = split_result[0];
+    var val_dataset = split_result[1];
+    
+    print("Large dataset: ", get_dataset_size(train_dataset), " training, ", get_dataset_size(val_dataset), " validation");
+    
+    // Create network
+    var layer1 = create_dense_layer(input_size, 48, 1, 44556);
+    var layer2 = create_dense_layer(48, 24, 1, 44557);
+    var layer3 = create_dense_layer(24, 12, 1, 44558);
+    var output = create_dense_layer(12, num_classes, 3, 44559);
+    
+    var layer_ids = [layer1, layer2, layer3, output];
+    
+    print("Created deeper network: 64->48->24->12->6");
+    
+    // Test different checkpoint frequencies
+    var frequencies = [2, 5, 10, 15];
+    var epochs = 12;
+    var learning_rate = 0.0005;
+    
+    print("Testing checkpoint frequencies for ", epochs, " epochs:");
+    print("");
+    
+    for (var i = 0; i < frequencies.length; i = i + 1) {
+        var frequency = frequencies[i];
+        
+        print("Frequency ", frequency, " (checkpoint every ", frequency, " epochs):");
+        
+        // Configure checkpointing
+        var checkpoint_config = create_checkpoint_config(
+            true, frequency, true, true, "freq_test_" + frequency, 87654, 0.001
+        );
+        
+        var checkpoint_manager = create_checkpoint_manager(checkpoint_config);
+        
+        var total_start_time = get_current_time();
+        var created_checkpoints = allocate_array(0);
+        var total_checkpoint_overhead = 0.0;
+        
+        // Simulate training with checkpointing
+        for (var epoch = 0; epoch < epochs; epoch = epoch + 1) {
+            var checkpoint_start_time = get_current_time();
+            
+            // Simulate training metrics
+            var train_metrics = simulate_training_epoch(train_dataset, layer_ids, learning_rate);
+            var val_metrics = simulate_validation_epoch(val_dataset, layer_ids);
+            
+            // Check if checkpoint should be created
+            if (checkpoint_should_create(val_metrics, epoch + 1, train_metrics.batches_processed)) {
+                var checkpoint_id = checkpoint_create(layer_ids, val_metrics, "freq_training", {});
+                created_checkpoints = array_append(created_checkpoints, checkpoint_id);
+            }
+            
+            var checkpoint_end_time = get_current_time();
+            total_checkpoint_overhead = total_checkpoint_overhead + (checkpoint_end_time - checkpoint_start_time);
+        }
+        
+        var total_end_time = get_current_time();
+        var total_time = total_end_time - total_start_time;
+        
+        // Create final checkpoint
+        var final_metrics = simulate_validation_epoch(val_dataset, layer_ids);
+        var final_checkpoint_id = checkpoint_create_final(layer_ids, final_metrics, "freq_completed");
+        created_checkpoints = array_append(created_checkpoints, final_checkpoint_id);
+        
+        // Calculate metrics
+        var overhead_percent = (total_checkpoint_overhead / total_time) * 100.0;
+        var avg_time_per_checkpoint = total_checkpoint_overhead / array_length(created_checkpoints);
+        
+        print("  Total time: ", total_time, "ms");
+        print("  Checkpoint overhead: ", total_checkpoint_overhead, "ms (", overhead_percent, "%)");
+        print("  Checkpoints created: ", array_length(created_checkpoints));
+        print("  Avg time per checkpoint: ", avg_time_per_checkpoint, "ms");
+        print("  Final checkpoint: ", final_checkpoint_id);
+        print("");
+    }
+    
+    print("Checkpoint frequency optimization completed!");
+}
+
+// Main program
+@tier(2)
+function main() -> void {
+    print("Model Checkpoint Bundles Demo in T81Lang");
+    print("=======================================");
+    print("Status: EXPERIMENTAL - NOT FOR PRODUCTION USE");
+    print("");
+    
+    // Run all checkpointing demos
+    basic_checkpointing_demo();
+    print("");
+    
+    checkpoint_loading_demo();
+    print("");
+    
+    checkpoint_comparison_demo();
+    print("");
+    
+    checkpoint_frequency_optimization_demo();
+    print("");
+    
+    print("All model checkpoint demos completed successfully!");
+    print("Complete checkpoint provenance stored in CanonFS bundles for reproducibility.");
+    print("");
+    print("Model checkpoint capabilities:");
+    print("✅ Automatic checkpoint creation with configurable frequency");
+    print("✅ Validation improvement-based checkpointing");
+    print("✅ Final checkpoint creation on training completion");
+    print("✅ Model state restoration from checkpoints");
+    print("✅ Checkpoint comparison and analysis");
+    print("✅ Checkpoint statistics and monitoring");
+    print("✅ Bundle-based provenance for checkpoints");
+    print("✅ Checkpoint export and analysis capabilities");
+    print("✅ Frequency optimization for performance");
+    print("✅ Policy-gated checkpoint operations");
+    print("✅ Deterministic checkpoint management");
+}

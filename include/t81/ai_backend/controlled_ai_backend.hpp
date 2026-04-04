@@ -43,6 +43,7 @@ struct AIBackendConfig {
 };
 
 // Forward declaration
+namespace t81::axion { class PolicyEngine; }
 class ControlledAIBackend;
 
 // Evidence collection structure for AI operations

@@ -1,0 +1,30 @@
+# T81 Direct API v3 CMakeLists.txt
+# Working implementation with real T81 APIs
+
+add_library(t81_direct_api_v3 STATIC
+    t81_direct_api_v3.cpp
+)
+
+target_link_libraries(t81_direct_api_v3 PUBLIC
+    t81_core
+    t81_axion
+    t81_weights
+)
+
+target_include_directories(t81_direct_api_v3 PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_compile_features(t81_direct_api_v3 PUBLIC cxx_std_17)
+
+# Add test executable
+add_executable(test_direct_api_v3
+    ../../test_direct_api_v3.cpp
+)
+
+target_link_libraries(test_direct_api_v3 PRIVATE
+    t81_direct_api_v3
+)
+
+t81_preserve_root_output(test_direct_api_v3)

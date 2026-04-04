@@ -6758,6 +6758,48 @@ public:
         }
         break;
       }
+      // RFC-00E1 — Controlled Stochastic Inference (CSI) Opcode Extensions
+      // Experimental opcodes for policy-gated stochastic operations
+      case t81::tisc::Opcode::STOCHASTIC_DECODE:
+      case t81::tisc::Opcode::STOCHASTIC_SAMPLE:
+      case t81::tisc::Opcode::STOCHASTIC_CHAIN_BEGIN:
+      case t81::tisc::Opcode::STOCHASTIC_CHAIN_STEP:
+      case t81::tisc::Opcode::STOCHASTIC_CHAIN_END:
+      case t81::tisc::Opcode::STOCHASTIC_CONFIG:
+      case t81::tisc::Opcode::STOCHASTIC_SEED:
+      case t81::tisc::Opcode::STOCHASTIC_VERIFY:
+      case t81::tisc::Opcode::POLICY_EVAL_STOCHASTIC:
+      case t81::tisc::Opcode::POLICY_CONSTRAIN_ENTROPY:
+      case t81::tisc::Opcode::POLICY_FILTER_TOKENS:
+      case t81::tisc::Opcode::POLICY_RECORD_DECISION: {
+        // Delegate to CSI integration if enabled
+        extern Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn& insn, VMContext& ctx);
+        trap = execute_csi_opcode_if_enabled(insn, ctx);
+        break;
+      }
+      // RFC-00E2 — Advanced AI Opcode Extensions (0xE0-0xEF range)
+      // Experimental opcodes for advanced neural network and quantization operations
+      case t81::tisc::Opcode::NEURAL_FWD:
+      case t81::tisc::Opcode::NEURAL_BACK:
+      case t81::tisc::Opcode::NEURAL_OPT:
+      case t81::tisc::Opcode::NEURAL_ACT:
+      case t81::tisc::Opcode::NEURAL_NORM:
+      case t81::tisc::Opcode::NEURAL_DROP:
+      case t81::tisc::Opcode::NEURAL_RES:
+      case t81::tisc::Opcode::NEURAL_ATTN:
+      case t81::tisc::Opcode::QUANT_TERN:
+      case t81::tisc::Opcode::QUANT_PRUN:
+      case t81::tisc::Opcode::QUANT_DIST:
+      case t81::tisc::Opcode::QUANT_COMP:
+      case t81::tisc::Opcode::QUANT_DECOMP:
+      case t81::tisc::Opcode::QUANT_VERIFY:
+      case t81::tisc::Opcode::QUANT_ADAPT:
+      case t81::tisc::Opcode::QUANT_MIXED: {
+        // Delegate to advanced AI integration if enabled
+        extern Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn& insn, VMContext& ctx);
+        trap = execute_advanced_ai_opcode_if_enabled(insn, ctx);
+        break;
+      }
         default:
           trap = Trap::DecodeFault;
           break;

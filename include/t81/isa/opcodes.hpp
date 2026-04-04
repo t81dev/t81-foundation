@@ -239,6 +239,39 @@ enum class Opcode : std::uint8_t {
   TNOT_SWAR,
   TAND_SWAR,
   TOR_SWAR,
+  // RFC-00E1 — Controlled Stochastic Inference (CSI) Opcode Extensions
+  // Experimental opcodes for policy-gated stochastic operations (0xD0-0xDF range)
+  STOCHASTIC_DECODE = 0xD0,        // Policy-gated stochastic decoding
+  STOCHASTIC_SAMPLE = 0xD1,        // Sample from candidate set with policy
+  STOCHASTIC_CHAIN_BEGIN = 0xD2,   // Begin stochastic provenance chain
+  STOCHASTIC_CHAIN_STEP = 0xD3,    // Add step to provenance chain
+  STOCHASTIC_CHAIN_END = 0xD4,      // Finalize provenance chain
+  STOCHASTIC_CONFIG = 0xD5,         // Configure stochastic parameters
+  STOCHASTIC_SEED = 0xD6,          // Set stochastic seed
+  STOCHASTIC_VERIFY = 0xD7,        // Verify stochastic chain integrity
+  POLICY_EVAL_STOCHASTIC = 0xD8,    // Evaluate stochastic policy
+  POLICY_CONSTRAIN_ENTROPY = 0xD9,  // Apply entropy constraints
+  POLICY_FILTER_TOKENS = 0xDA,      // Filter forbidden tokens
+  POLICY_RECORD_DECISION = 0xDB,    // Record policy decision
+  
+  // RFC-00E2 — Advanced AI Opcode Extensions (0xE0-0xEF range)
+  // Experimental opcodes for advanced neural network and quantization operations
+  NEURAL_FWD = 0xE0,       // Forward pass with configurable layers
+  NEURAL_BACK = 0xE1,      // Backward pass (for training/research)
+  NEURAL_OPT = 0xE2,       // Optimizer step (SGD, Adam, etc.)
+  NEURAL_ACT = 0xE3,       // Advanced activation functions
+  NEURAL_NORM = 0xE4,      // Layer/Batch/Group normalization
+  NEURAL_DROP = 0xE5,      // Dropout with deterministic seeding
+  NEURAL_RES = 0xE6,       // Residual connections
+  NEURAL_ATTN = 0xE7,      // Advanced attention variants
+  QUANT_TERN = 0xE8,       // Ternary quantization (beyond T3_K)
+  QUANT_PRUN = 0xE9,       // Structured pruning
+  QUANT_DIST = 0xEA,       // Distribution-aware quantization
+  QUANT_COMP = 0xEB,       // Compression algorithms
+  QUANT_DECOMP = 0xEC,     // Decompression with verification
+  QUANT_VERIFY = 0xED,     // Quantization integrity checks
+  QUANT_ADAPT = 0xEE,      // Adaptive quantization
+  QUANT_MIXED = 0xEF,      // Mixed-precision operations
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -676,12 +709,68 @@ enum class Opcode : std::uint8_t {
       return "TAND_SWAR";
     case Opcode::TOR_SWAR:
       return "TOR_SWAR";
+    case Opcode::STOCHASTIC_DECODE:
+      return "STOCHASTIC_DECODE";
+    case Opcode::STOCHASTIC_SAMPLE:
+      return "STOCHASTIC_SAMPLE";
+    case Opcode::STOCHASTIC_CHAIN_BEGIN:
+      return "STOCHASTIC_CHAIN_BEGIN";
+    case Opcode::STOCHASTIC_CHAIN_STEP:
+      return "STOCHASTIC_CHAIN_STEP";
+    case Opcode::STOCHASTIC_CHAIN_END:
+      return "STOCHASTIC_CHAIN_END";
+    case Opcode::STOCHASTIC_CONFIG:
+      return "STOCHASTIC_CONFIG";
+    case Opcode::STOCHASTIC_SEED:
+      return "STOCHASTIC_SEED";
+    case Opcode::STOCHASTIC_VERIFY:
+      return "STOCHASTIC_VERIFY";
+    case Opcode::POLICY_EVAL_STOCHASTIC:
+      return "POLICY_EVAL_STOCHASTIC";
+    case Opcode::POLICY_CONSTRAIN_ENTROPY:
+      return "POLICY_CONSTRAIN_ENTROPY";
+    case Opcode::POLICY_FILTER_TOKENS:
+      return "POLICY_FILTER_TOKENS";
+    case Opcode::POLICY_RECORD_DECISION:
+      return "POLICY_RECORD_DECISION";
+    case Opcode::NEURAL_FWD:
+      return "NEURAL_FWD";
+    case Opcode::NEURAL_BACK:
+      return "NEURAL_BACK";
+    case Opcode::NEURAL_OPT:
+      return "NEURAL_OPT";
+    case Opcode::NEURAL_ACT:
+      return "NEURAL_ACT";
+    case Opcode::NEURAL_NORM:
+      return "NEURAL_NORM";
+    case Opcode::NEURAL_DROP:
+      return "NEURAL_DROP";
+    case Opcode::NEURAL_RES:
+      return "NEURAL_RES";
+    case Opcode::NEURAL_ATTN:
+      return "NEURAL_ATTN";
+    case Opcode::QUANT_TERN:
+      return "QUANT_TERN";
+    case Opcode::QUANT_PRUN:
+      return "QUANT_PRUN";
+    case Opcode::QUANT_DIST:
+      return "QUANT_DIST";
+    case Opcode::QUANT_COMP:
+      return "QUANT_COMP";
+    case Opcode::QUANT_DECOMP:
+      return "QUANT_DECOMP";
+    case Opcode::QUANT_VERIFY:
+      return "QUANT_VERIFY";
+    case Opcode::QUANT_ADAPT:
+      return "QUANT_ADAPT";
+    case Opcode::QUANT_MIXED:
+      return "QUANT_MIXED";
   }
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TOR_SWAR) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::TOR_SWAR) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -689,7 +778,7 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::TOR_SWAR) +
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::TOR_SWAR);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::QUANT_MIXED);
 }
 
 }  // namespace t81::tisc

@@ -1,6 +1,6 @@
 #include "t81/ai_backend/controlled_ai_backend.hpp"
 #include "t81/axion/policy_engine.hpp"
-#include "t81/axion/policy_serialization.hpp"
+// #include "t81/axion/policy_serialization.hpp" // TODO: Add missing header
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -49,18 +49,18 @@ ControlledAICLIConfig parse_arguments(int argc, char* argv[]) {
     ControlledAICLIConfig config;
     
     static option long_options[] = {
-        {"model", required_argument, nullptr, 'm', "Model hash"},
-        {"input", required_argument, nullptr, 'i', "Input text"},
-        {"temperature", required_argument, nullptr, 't', "Temperature"},
-        {"determinism", required_argument, nullptr, 'd', "Determinism level"},
-        {"external-endpoint", required_argument, nullptr, 'e', "External AI endpoint"},
-        {"auth-token", required_argument, nullptr, 'a', "Auth token"},
-        {"policy", required_argument, nullptr, 'p', "Policy file"},
-        {"evidence-output", required_argument, nullptr, 'o', "Evidence output file"},
-        {"user-consent", no_argument, nullptr, 'c', "User consent"},
-        {"show-evidence", no_argument, nullptr, 's', "Show evidence"},
-        {"help", no_argument, nullptr, 'h', "Help"},
-        {nullptr, 0, nullptr, 0, nullptr}
+        {"model", required_argument, nullptr, 'm'},
+        {"input", required_argument, nullptr, 'i'},
+        {"temperature", required_argument, nullptr, 't'},
+        {"determinism", required_argument, nullptr, 'd'},
+        {"external-endpoint", required_argument, nullptr, 'e'},
+        {"auth-token", required_argument, nullptr, 'a'},
+        {"policy", required_argument, nullptr, 'p'},
+        {"evidence-output", required_argument, nullptr, 'o'},
+        {"user-consent", no_argument, nullptr, 'c'},
+        {"show-evidence", no_argument, nullptr, 's'},
+        {"help", no_argument, nullptr, 'h'},
+        {nullptr, 0, nullptr, 0}
     };
     
     int option_index = 0;
@@ -110,7 +110,9 @@ ControlledAICLIConfig parse_arguments(int argc, char* argv[]) {
     return config;
 }
 
-std::unique_ptr<t81::axion::PolicyEngine> load_policy(const std::optional<std::string>& policy_file) {
+std::unique_ptr<t81::ai_backend::ControlledAIBackend> create_policy_engine_from_file(
+    const std::optional<std::string>& policy_file,
+    const ControlledAICLIConfig& config) {
     if (!policy_file) {
         return nullptr; // Use default policy
     }
@@ -122,15 +124,30 @@ std::unique_ptr<t81::axion::PolicyEngine> load_policy(const std::optional<std::s
     }
     
     std::string policy_text((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    auto policy_result = t81::axion::PolicyEngine::validate_policy(policy_text);
+    auto policy_violation = t81::axion::PolicyEngine::validate_policy(policy_text);
     
-    if (policy_result) {
-        std::cerr << "Error: Invalid policy file: " << policy_result->message << std::endl;
+    if (policy_violation) {
+        std::cerr << "Error: Invalid policy file: " << policy_violation->reason << std::endl;
         return nullptr;
     }
     
-    auto policy = t81::axion::PolicyEngine::parse_policy(policy_text);
-    return std::make_unique<t81::axion::PolicyEngine>(policy);
+    auto policy_result = t81::axion::parse_policy(policy_text);
+    if (!policy_result) {
+        std::cerr << "Error: Failed to parse policy: " << policy_result.error() << std::endl;
+        return nullptr;
+    }
+    
+    // Create the AI backend directly with the policy
+    t81::ai_backend::AIBackendConfig ai_config;
+    ai_config.determinism_level = config.determinism_level;
+    ai_config.external_ai_endpoint = config.external_ai_endpoint;
+    ai_config.external_ai_auth_token = config.external_ai_auth_token;
+    ai_config.require_user_consent = !config.user_consent;
+    
+    auto ai_backend = t81::ai_backend::create_controlled_ai_backend(
+        t81::axion::make_policy_engine(policy_result.value()), ai_config);
+    
+    return ai_backend;
 }
 
 int run_controlled_ai_inference(const ControlledAICLIConfig& config) {
@@ -145,22 +162,11 @@ int run_controlled_ai_inference(const ControlledAICLIConfig& config) {
         return 1;
     }
     
-    // Load policy
-    auto policy_engine = load_policy(config.policy_file);
-    if (!policy_engine) {
-        std::cerr << "Error: Failed to load policy" << std::endl;
+    // Create AI backend directly
+    auto ai_backend = create_policy_engine_from_file(config.policy_file, config);
+    if (!ai_backend) {
         return 1;
     }
-    
-    // Create AI backend
-    t81::ai_backend::AIBackendConfig ai_config;
-    ai_config.determinism_level = config.determinism_level;
-    ai_config.external_ai_endpoint = config.external_ai_endpoint;
-    ai_config.external_ai_auth_token = config.external_ai_auth_token;
-    ai_config.require_user_consent = !config.user_consent; // Consent flag means user has consented
-    
-    auto ai_backend = t81::ai_backend::create_controlled_ai_backend(
-        std::move(policy_engine), ai_config);
     
     // Prepare inference request
     size_t input_tokens = config.input_text.length(); // Simplified tokenization

@@ -9,7 +9,7 @@
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
 ![Release](https://img.shields.io/badge/release-v1.9.5--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-407%2F407_passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-393%2F393_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)

@@ -1,0 +1,450 @@
+// Advanced Neural Network Demo in T81Lang
+// EXPERIMENTAL - NOT FOR PRODUCTION USE
+// Demonstrates neural network capabilities with Advanced AI opcodes
+
+@extern "advanced_ai"
+
+// Neural network configuration types
+type NeuralLayer = struct {
+    layer_type: int,      // DENSE=0, CONV1D=1, CONV2D=2, LSTM=3, TRANSFORMER=4
+    input_size: int,
+    output_size: int,
+    activation: int,      // RELU=0, GELU=1, SWISH=2, SIGMOID=3, TANH=4, SELU=5
+    seed: uint64
+};
+
+type QuantConfig = struct {
+    quant_type: int,      // INT8=0, INT4=1, TERNARY=2, BINARY=3, MIXED=4
+    pruning_type: int,    // NONE=0, STRUCTURED=1, UNSTRUCTURED=2, MAGNITUDE=3
+    compression_type: int, // NONE=0, HUFFMAN=1, GOLOMB=2, ARITHMETIC=3
+    scale: float,
+    sparsity: float,
+    symmetric: bool
+};
+
+// Neural network operations with policy annotations
+@neural @tier(2) @deterministic
+function neural_forward(dest: int, input: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic  
+function neural_backward(dest: int, grad: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic
+function neural_optimize(layer_id: int, learning_rate: float) -> void;
+
+@neural @tier(2) @deterministic
+function neural_activation(dest: int, input: int, activation_type: int) -> void;
+
+@neural @tier(2) @deterministic
+function neural_normalization(dest: int, input: int, norm_type: int) -> void;
+
+@neural @tier(3) @deterministic
+function neural_dropout(dest: int, input: int, dropout_rate: float) -> void;
+
+@neural @tier(2) @deterministic
+function neural_residual(dest: int, input: int, residual: int) -> void;
+
+@neural @tier(3) @deterministic
+function neural_attention(dest: int, q: int, kv: int) -> void;
+
+// Quantization operations
+@quantization @tier(2) @deterministic
+function quant_ternary(dest: int, input: int, threshold: float) -> void;
+
+@quantization @tier(2) @deterministic
+function quant_prune(dest: int, weights: int, sparsity: float) -> void;
+
+@quantization @tier(3) @deterministic
+function quant_compress(dest: int, input: int, compression_level: int) -> void;
+
+@quantization @tier(2) @deterministic
+function quant_verify(dest: int, original: int, quantized: int) -> void;
+
+// Helper functions for neural network creation
+@tier(2) @pure
+function create_dense_layer(input_size: int, output_size: int, activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 0; // DENSE
+    layer_config.input_size = input_size;
+    layer_config.output_size = output_size;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    // Store layer configuration in CanonFS for provenance
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+@tier(2) @deterministic
+function layer_forward(layer_id: int, input_tensor: int) -> int {
+    var output_tensor = allocate_tensor();
+    
+    // Execute NEURAL_FWD opcode
+    neural_forward(output_tensor, input_tensor, layer_id);
+    
+    // Store provenance
+    var proof = create_provenance_entry("layer_forward", layer_id, input_tensor, output_tensor);
+    canonfs_store(proof);
+    
+    return output_tensor;
+}
+
+@tier(3) @deterministic
+function training_step(layer_id: int, input: int, target: int, learning_rate: float) -> float {
+    // Forward pass
+    var output = layer_forward(layer_id, input);
+    
+    // Compute loss (simplified MSE)
+    var loss = compute_loss(output, target);
+    
+    // Backward pass
+    var grad_output = compute_loss_gradient(output, target);
+    neural_backward(layer_id, grad_output, layer_id);
+    
+    // Optimize weights
+    neural_optimize(layer_id, learning_rate);
+    
+    // Store training provenance
+    var training_proof = create_training_proof(layer_id, input, target, loss);
+    canonfs_store(training_proof);
+    
+    return loss;
+}
+
+@tier(2) @deterministic
+function quantize_layer(layer_id: int, quant_config: QuantConfig) -> int {
+    var quantized_layer = allocate_layer();
+    
+    // Get layer weights
+    var weights = get_layer_weights(layer_id);
+    
+    // Apply ternary quantization
+    var quantized_weights = allocate_tensor();
+    quant_ternary(quantized_weights, weights, 0.1); // threshold = 0.1
+    
+    // Apply pruning if configured
+    if (quant_config.pruning_type == 1) { // STRUCTURED
+        var pruned_weights = allocate_tensor();
+        quant_prune(pruned_weights, quantized_weights, quant_config.sparsity);
+        quantized_weights = pruned_weights;
+    }
+    
+    // Apply compression if configured
+    if (quant_config.compression_type == 1) { // HUFFMAN
+        var compressed_weights = allocate_tensor();
+        quant_compress(compressed_weights, quantized_weights, 6); // level 6
+        quantized_weights = compressed_weights;
+    }
+    
+    // Verify quantization integrity
+    var verification_result = allocate_tensor();
+    quant_verify(verification_result, weights, quantized_weights);
+    
+    if (verification_result == 1) { // Success
+        set_layer_weights(quantized_layer, quantized_weights);
+        return quantized_layer;
+    } else {
+        // Quantization failed, return original
+        return layer_id;
+    }
+}
+
+// MNIST Digit Classification Example
+@tier(2)
+function mnist_classification_demo() -> void {
+    print("=== MNIST Digit Classification Demo ===");
+    
+    // Create 3-layer MLP for MNIST (784->256->128->10)
+    var layer1 = create_dense_layer(784, 256, 1, 12345); // GELU activation
+    var layer2 = create_dense_layer(256, 128, 1, 12346); // GELU activation  
+    var layer3 = create_dense_layer(128, 10, 3, 12347);  // SIGMOID activation
+    
+    print("Created 3-layer neural network for MNIST classification");
+    
+    // Load training data (simplified)
+    var training_inputs = load_mnist_images("mnist_train_images.t81");
+    var training_labels = load_mnist_labels("mnist_train_labels.t81");
+    
+    print("Loaded training data: ", training_inputs.length, " samples");
+    
+    // Training loop
+    var epochs = 5;
+    var learning_rate = 0.001;
+    
+    for (var epoch = 0; epoch < epochs; epoch = epoch + 1) {
+        var total_loss = 0.0;
+        var correct_predictions = 0;
+        
+        for (var i = 0; i < training_inputs.length; i = i + 1) {
+            // Forward pass through network
+            var hidden1 = layer_forward(layer1, training_inputs[i]);
+            var hidden2 = layer_forward(layer2, hidden1);
+            var output = layer_forward(layer3, hidden2);
+            
+            // Convert output to prediction (argmax)
+            var prediction = argmax(output);
+            var target_label = training_labels[i];
+            
+            if (prediction == target_label) {
+                correct_predictions = correct_predictions + 1;
+            }
+            
+            // Convert target to one-hot encoding
+            var one_hot_target = one_hot_encode(target_label, 10);
+            
+            // Training step for output layer
+            var loss3 = training_step(layer3, hidden2, one_hot_target, learning_rate);
+            
+            // Training step for hidden layer 2
+            var hidden2_target = allocate_tensor(); // Simplified target
+            var loss2 = training_step(layer2, hidden1, hidden2_target, learning_rate);
+            
+            // Training step for hidden layer 1
+            var hidden1_target = allocate_tensor(); // Simplified target
+            var loss1 = training_step(layer1, training_inputs[i], hidden1_target, learning_rate);
+            
+            total_loss = total_loss + loss3;
+        }
+        
+        var accuracy = (correct_predictions * 100.0) / training_inputs.length;
+        var avg_loss = total_loss / training_inputs.length;
+        
+        print("Epoch ", epoch, ": Loss = ", avg_loss, ", Accuracy = ", accuracy, "%");
+        
+        // Store epoch provenance
+        var epoch_proof = create_epoch_proof(epoch, avg_loss, accuracy);
+        canonfs_store(epoch_proof);
+    }
+    
+    // Test on validation set
+    var test_inputs = load_mnist_images("mnist_test_images.t81");
+    var test_labels = load_mnist_labels("mnist_test_labels.t81");
+    
+    var test_correct = 0;
+    for (var i = 0; i < test_inputs.length; i = i + 1) {
+        var hidden1 = layer_forward(layer1, test_inputs[i]);
+        var hidden2 = layer_forward(layer2, hidden1);
+        var output = layer_forward(layer3, hidden2);
+        var prediction = argmax(output);
+        
+        if (prediction == test_labels[i]) {
+            test_correct = test_correct + 1;
+        }
+    }
+    
+    var test_accuracy = (test_correct * 100.0) / test_inputs.length;
+    print("Test Accuracy: ", test_accuracy, "%");
+    
+    // Quantize the trained model
+    print("Quantizing trained model...");
+    
+    var quant_config: QuantConfig;
+    quant_config.quant_type = 2; // TERNARY
+    quant_config.pruning_type = 1; // STRUCTURED
+    quant_config.compression_type = 1; // HUFFMAN
+    quant_config.sparsity = 0.3;
+    quant_config.symmetric = true;
+    
+    var quantized_layer1 = quantize_layer(layer1, quant_config);
+    var quantized_layer2 = quantize_layer(layer2, quant_config);
+    var quantized_layer3 = quantize_layer(layer3, quant_config);
+    
+    print("Model quantization completed");
+    
+    // Test quantized model
+    var quantized_correct = 0;
+    for (var i = 0; i < test_inputs.length; i = i + 1) {
+        var hidden1 = layer_forward(quantized_layer1, test_inputs[i]);
+        var hidden2 = layer_forward(quantized_layer2, hidden1);
+        var output = layer_forward(quantized_layer3, hidden2);
+        var prediction = argmax(output);
+        
+        if (prediction == test_labels[i]) {
+            quantized_correct = quantized_correct + 1;
+        }
+    }
+    
+    var quantized_accuracy = (quantized_correct * 100.0) / test_inputs.length;
+    print("Quantized Model Test Accuracy: ", quantized_accuracy, "%");
+    
+    // Store complete training provenance
+    var training_summary = create_training_summary(
+        epochs, learning_rate, test_accuracy, quantized_accuracy
+    );
+    canonfs_store(training_summary);
+}
+
+// Linear Regression Example
+@tier(2)
+function linear_regression_demo() -> void {
+    print("=== Linear Regression Demo ===");
+    
+    // Generate synthetic data
+    var num_samples = 100;
+    var feature_dim = 5;
+    var dataset = generate_linear_dataset(num_samples, feature_dim);
+    
+    print("Generated synthetic dataset: ", num_samples, " samples, ", feature_dim, " features");
+    
+    // Create simple regression network (5->16->1)
+    var hidden_layer = create_dense_layer(feature_dim, 16, 1, 12348); // RELU
+    var output_layer = create_dense_layer(16, 1, 3, 12349); // SIGMOID
+    
+    // Training parameters
+    var epochs = 50;
+    var learning_rate = 0.01;
+    
+    for (var epoch = 0; epoch < epochs; epoch = epoch + 1) {
+        var total_loss = 0.0;
+        
+        for (var i = 0; i < num_samples; i = epoch + 1) {
+            var features = dataset[i].features;
+            var target = dataset[i].target;
+            
+            // Forward pass
+            var hidden = layer_forward(hidden_layer, features);
+            var output = layer_forward(output_layer, hidden);
+            
+            // Compute loss
+            var loss = (output[0] - target) * (output[0] - target);
+            total_loss = total_loss + loss;
+            
+            // Training step
+            var target_tensor = allocate_tensor();
+            target_tensor[0] = target;
+            
+            training_step(output_layer, hidden, target_tensor, learning_rate);
+            
+            // Simplified hidden layer training
+            var hidden_target = allocate_tensor();
+            training_step(hidden_layer, features, hidden_target, learning_rate);
+        }
+        
+        var avg_loss = total_loss / num_samples;
+        if (epoch % 10 == 0) {
+            print("Epoch ", epoch, ": MSE Loss = ", avg_loss);
+        }
+    }
+    
+    print("Linear regression training completed");
+    
+    // Test predictions
+    var test_features = generate_linear_dataset(10, feature_dim);
+    var total_error = 0.0;
+    
+    for (var i = 0; i < 10; i = i + 1) {
+        var hidden = layer_forward(hidden_layer, test_features[i].features);
+        var output = layer_forward(output_layer, hidden);
+        var prediction = output[0];
+        var actual = test_features[i].target;
+        
+        var error = prediction - actual;
+        total_error = total_error + error * error;
+        
+        print("Sample ", i, ": Predicted = ", prediction, ", Actual = ", actual, ", Error = ", error);
+    }
+    
+    var mse = total_error / 10.0;
+    print("Test MSE: ", mse);
+}
+
+// Advanced Neural Network Features Demo
+@tier(3)
+function advanced_features_demo() -> void {
+    print("=== Advanced Neural Network Features Demo ===");
+    
+    // Demonstrate different activation functions
+    var input_value = 0.5;
+    var activations = allocate_tensor();
+    
+    print("Testing activation functions with input = ", input_value);
+    
+    // Test different activations
+    neural_activation(activations, input_value, 0); // RELU
+    print("RELU(", input_value, ") = ", activations[0]);
+    
+    neural_activation(activations, input_value, 1); // GELU
+    print("GELU(", input_value, ") = ", activations[0]);
+    
+    neural_activation(activations, input_value, 2); // SWISH
+    print("SWISH(", input_value, ") = ", activations[0]);
+    
+    neural_activation(activations, input_value, 3); // SIGMOID
+    print("SIGMOID(", input_value, ") = ", activations[0]);
+    
+    // Demonstrate dropout
+    var dropout_input = allocate_tensor();
+    dropout_input[0] = 1000; // 1.0 scaled
+    
+    var dropout_output = allocate_tensor();
+    neural_dropout(dropout_output, dropout_input, 0.5); // 50% dropout
+    
+    print("Dropout(1.0, 0.5) = ", dropout_output[0] / 1000.0);
+    
+    // Demonstrate residual connections
+    var residual_input = allocate_tensor();
+    residual_input[0] = 800; // 0.8 scaled
+    
+    var residual_add = allocate_tensor();
+    neural_residual(residual_add, dropout_input, residual_input);
+    print("Residual(1.0, 0.8) = ", residual_add[0] / 1000.0);
+    
+    // Demonstrate attention (simplified)
+    var attention_q = allocate_tensor();
+    var attention_kv = allocate_tensor();
+    attention_q[0] = 1000; // Query
+    attention_kv[0] = 1500; // Key/Value packed
+    
+    var attention_output = allocate_tensor();
+    neural_attention(attention_output, attention_q, attention_kv);
+    print("Attention(Q=1.0, KV=1.5) = ", attention_output[0] / 1000.0);
+    
+    // Demonstrate quantization pipeline
+    print("Testing quantization pipeline...");
+    
+    var weights = allocate_tensor();
+    weights[0] = 1200; // 1.2 scaled
+    weights[1] = 50;   // 0.05 scaled (will be pruned)
+    weights[2] = -800; // -0.8 scaled
+    
+    var quantized = allocate_tensor();
+    quant_ternary(quantized, weights, 0.1); // threshold = 0.1
+    print("Ternary quantization: [1.2, 0.05, -0.8] -> [", 
+          quantized[0], ", ", quantized[1], ", ", quantized[2], "]");
+    
+    var pruned = allocate_tensor();
+    quant_prune(pruned, weights, 0.3); // 30% sparsity
+    print("Pruning result: [", pruned[0], ", ", pruned[1], ", ", pruned[2], "]");
+    
+    var compressed = allocate_tensor();
+    quant_compress(compressed, weights, 6); // compression level 6
+    print("Compression result: ", compressed[0]);
+    
+    var verification = allocate_tensor();
+    quant_verify(verification, weights, quantized);
+    print("Quantization verification: ", verification[0] == 1 ? "PASSED" : "FAILED");
+}
+
+// Main program
+@tier(2)
+function main() -> void {
+    print("Advanced Neural Network Demo in T81Lang");
+    print("=======================================");
+    print("Status: EXPERIMENTAL - NOT FOR PRODUCTION USE");
+    print("");
+    
+    // Run all demos
+    linear_regression_demo();
+    print("");
+    
+    advanced_features_demo();
+    print("");
+    
+    mnist_classification_demo();
+    print("");
+    
+    print("All neural network demos completed successfully!");
+    print("Complete provenance stored in CanonFS for reproducibility.");
+}

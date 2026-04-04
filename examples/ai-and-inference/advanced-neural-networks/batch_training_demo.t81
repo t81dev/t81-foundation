@@ -1,0 +1,493 @@
+// Mini-Batch Training Demo in T81Lang
+// EXPERIMENTAL - NOT FOR PRODUCTION USE
+// Demonstrates efficient mini-batch training with Advanced AI opcodes
+
+@extern "advanced_ai"
+
+// Neural network configuration types
+type NeuralLayer = struct {
+    layer_type: int,
+    input_size: int,
+    output_size: int,
+    activation: int,
+    seed: uint64
+};
+
+// Batch processing configuration
+type BatchConfig = struct {
+    batch_size: int,
+    sequence_length: int,
+    num_channels: int,
+    shuffle_enabled: bool,
+    seed: uint64
+};
+
+// Training metrics
+type TrainingMetrics = struct {
+    avg_loss: float,
+    accuracy: float,
+    batches_processed: int,
+    training_time_ms: float
+};
+
+// Neural network operations
+@neural @tier(2) @deterministic
+function neural_forward(dest: int, input: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic  
+function neural_backward(dest: int, grad: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic
+function neural_optimize(layer_id: int, learning_rate: float) -> void;
+
+// Batch processing operations
+@batch @tier(2) @deterministic
+function batch_create_batch(dataset: int, targets: int, start_idx: int, config: BatchConfig) -> int;
+
+@batch @tier(2) @deterministic
+function batch_forward_pass(batch_inputs: int, layer_id: int) -> int;
+
+@batch @tier(3) @deterministic
+function batch_training_step(batch_data: int, layer_ids: array, learning_rate: float) -> float;
+
+@batch @tier(2) @deterministic
+function batch_predict(batch_inputs: int, layer_ids: array) -> array;
+
+@batch @tier(2) @deterministic
+function batch_calculate_accuracy(predictions: array, targets: array) -> float;
+
+// Helper functions for batch processing
+@tier(2) @pure
+function create_batch_config(batch_size: int, sequence_length: int, num_channels: int, 
+                           shuffle: bool, seed: uint64) -> BatchConfig {
+    var config: BatchConfig;
+    config.batch_size = batch_size;
+    config.sequence_length = sequence_length;
+    config.num_channels = num_channels;
+    config.shuffle_enabled = shuffle;
+    config.seed = seed;
+    return config;
+}
+
+@tier(2) @pure
+function create_dense_layer(input_size: int, output_size: int, activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 0; // DENSE
+    layer_config.input_size = input_size;
+    layer_config.output_size = output_size;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+@tier(2) @pure
+function create_conv1d_layer(input_channels: int, output_channels: int, kernel_size: int, 
+                           activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 1; // CONV1D
+    layer_config.input_size = input_channels * 1000; // Packed format
+    layer_config.output_size = output_channels;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    // Pack convolution parameters
+    layer_config.hidden_size = (input_channels << 20) | (output_channels << 10) | kernel_size;
+    
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+// Generate synthetic dataset for batch training
+@tier(2)
+function generate_classification_dataset(num_samples: int, input_size: int, num_classes: int) -> array {
+    var dataset = allocate_array(num_samples);
+    var labels = allocate_array(num_samples);
+    
+    for (var i = 0; i < num_samples; i = i + 1) {
+        var sample = allocate_tensor();
+        var class_id = i % num_classes;
+        
+        // Generate class-specific patterns
+        var class_offset = class_id * 0.5;
+        for (var j = 0; j < input_size; j = j + 1) {
+            var base_value = sin(j * 0.1 + class_offset) + (random_float() - 0.5) * 0.2;
+            sample[j] = base_value + class_offset;
+        }
+        
+        dataset[i] = sample;
+        labels[i] = class_id;
+    }
+    
+    return combine_dataset_and_labels(dataset, labels);
+}
+
+// Split dataset into train/validation
+@tier(2)
+function split_dataset(full_dataset: int, train_ratio: float) -> array {
+    var total_size = get_dataset_size(full_dataset);
+    var train_size = floor(total_size * train_ratio);
+    
+    var train_dataset = extract_dataset_subset(full_dataset, 0, train_size);
+    var val_dataset = extract_dataset_subset(full_dataset, train_size, total_size - train_size);
+    
+    return [train_dataset, val_dataset];
+}
+
+// Mini-batch training with CNN
+@tier(2)
+function mini_batch_cnn_training_demo() -> void {
+    print("=== Mini-Batch CNN Training Demo ===");
+    
+    // Generate synthetic time series dataset
+    var num_samples = 1000;
+    var sequence_length = 50;
+    var num_channels = 4;
+    var num_classes = 5;
+    
+    print("Generating synthetic time series dataset...");
+    var full_dataset = generate_time_series_dataset(num_samples, sequence_length, num_channels, num_classes);
+    
+    // Split into train/validation
+    var split_result = split_dataset(full_dataset, 0.8);
+    var train_dataset = split_result[0];
+    var val_dataset = split_result[1];
+    
+    print("Dataset split: ", get_dataset_size(train_dataset), " training, ", get_dataset_size(val_dataset), " validation");
+    
+    // Create CNN architecture
+    var conv1 = create_conv1d_layer(num_channels, 16, 5, 1, 12345); // Conv1D: 4->16, k=5
+    var conv2 = create_conv1d_layer(16, 32, 3, 1, 12346); // Conv1D: 16->32, k=3
+    
+    // Calculate flattened size after convolutions
+    var flattened_size = calculate_conv_output_size(sequence_length, num_channels, 16, 5, 32, 3);
+    var dense1 = create_dense_layer(flattened_size, 128, 1, 12347); // Dense: flattened->128
+    var output_layer = create_dense_layer(128, num_classes, 3, 12348); // Output: 128->5
+    
+    var layer_ids = [conv1, conv2, dense1, output_layer];
+    
+    print("Created CNN architecture:");
+    print("  Conv1D: ", num_channels, "->16 channels, kernel=5");
+    print("  Conv1D: 16->32 channels, kernel=3");
+    print("  Dense: ", flattened_size, "->128");
+    print("  Output: 128->", num_classes);
+    
+    // Configure batch processing
+    var batch_config = create_batch_config(32, sequence_length, num_channels, true, 54321);
+    print("Batch configuration: size=", batch_config.batch_size, ", shuffle=", batch_config.shuffle_enabled);
+    
+    // Training parameters
+    var epochs = 10;
+    var learning_rate = 0.001;
+    
+    print("Starting mini-batch training for ", epochs, " epochs...");
+    print("");
+    
+    // Multi-epoch training loop
+    for (var epoch = 0; epoch < epochs; epoch = epoch + 1) {
+        print("Epoch ", epoch + 1, "/", epochs, ":");
+        
+        var epoch_start_time = get_current_time();
+        
+        // Training phase
+        var train_metrics = train_epoch_with_batches(train_dataset, layer_ids, batch_config, learning_rate);
+        
+        // Validation phase
+        var val_metrics = validate_epoch_with_batches(val_dataset, layer_ids, batch_config);
+        
+        var epoch_end_time = get_current_time();
+        var epoch_time = epoch_end_time - epoch_start_time;
+        
+        print("  Training: Loss=", train_metrics.avg_loss, ", Acc=", (train_metrics.accuracy * 100), "%");
+        print("  Validation: Loss=", val_metrics.avg_loss, ", Acc=", (val_metrics.accuracy * 100), "%");
+        print("  Time: ", epoch_time, "ms, Batches: ", train_metrics.batches_processed);
+        print("");
+        
+        // Store epoch provenance
+        var epoch_proof = create_batch_training_proof(epoch, train_metrics, val_metrics, epoch_time);
+        canonfs_store(epoch_proof);
+    }
+    
+    print("Mini-batch CNN training completed!");
+    
+    // Final evaluation
+    var final_metrics = validate_epoch_with_batches(val_dataset, layer_ids, batch_config);
+    print("Final validation accuracy: ", (final_metrics.accuracy * 100), "%");
+    
+    // Store complete training provenance
+    var training_summary = create_batch_training_summary(epochs, learning_rate, final_metrics, "cnn_batch_training");
+    canonfs_store(training_summary);
+}
+
+// Train one epoch with mini-batches
+@tier(2)
+function train_epoch_with_batches(dataset: int, layer_ids: array, batch_config: BatchConfig, learning_rate: float) -> TrainingMetrics {
+    var dataset_size = get_dataset_size(dataset);
+    var batch_size = batch_config.batch_size;
+    var num_batches = ceil(dataset_size / batch_size);
+    
+    var total_loss = 0.0;
+    var total_correct = 0;
+    var total_samples = 0;
+    
+    var epoch_start_time = get_current_time();
+    
+    // Process all batches
+    for (var batch_idx = 0; batch_idx < num_batches; batch_idx = batch_idx + 1) {
+        var start_idx = batch_idx * batch_size;
+        
+        // Create batch
+        var batch_data = batch_create_batch(dataset, null, start_idx, batch_config);
+        
+        if (is_batch_empty(batch_data)) {
+            continue;
+        }
+        
+        // Training step
+        var batch_loss = batch_training_step(batch_data, layer_ids, learning_rate);
+        total_loss = total_loss + batch_loss * get_batch_size(batch_data);
+        
+        // Prediction for accuracy
+        var predictions = batch_predict(get_batch_inputs(batch_data), layer_ids);
+        var batch_labels = get_batch_labels(batch_data);
+        var batch_accuracy = batch_calculate_accuracy(predictions, batch_labels);
+        
+        total_correct = total_correct + floor(batch_accuracy * get_batch_size(batch_data));
+        total_samples = total_samples + get_batch_size(batch_data);
+        
+        // Optional: Print batch progress
+        if (num_batches <= 10 || batch_idx % (num_batches / 10) == 0) {
+            print("    Batch ", batch_idx + 1, "/", num_batches, ": Loss=", batch_loss, ", Acc=", (batch_accuracy * 100), "%");
+        }
+    }
+    
+    var epoch_end_time = get_current_time();
+    
+    var metrics: TrainingMetrics;
+    metrics.avg_loss = total_loss / total_samples;
+    metrics.accuracy = total_correct / total_samples;
+    metrics.batches_processed = num_batches;
+    metrics.training_time_ms = epoch_end_time - epoch_start_time;
+    
+    return metrics;
+}
+
+// Validate one epoch with mini-batches
+@tier(2)
+function validate_epoch_with_batches(dataset: int, layer_ids: array, batch_config: BatchConfig) -> TrainingMetrics {
+    var dataset_size = get_dataset_size(dataset);
+    var batch_size = batch_config.batch_size;
+    var num_batches = ceil(dataset_size / batch_size);
+    
+    var total_loss = 0.0;
+    var total_correct = 0;
+    var total_samples = 0;
+    
+    var epoch_start_time = get_current_time();
+    
+    // Process all batches (no weight updates during validation)
+    for (var batch_idx = 0; batch_idx < num_batches; batch_idx = batch_idx + 1) {
+        var start_idx = batch_idx * batch_size;
+        
+        // Create batch
+        var batch_data = batch_create_batch(dataset, null, start_idx, batch_config);
+        
+        if (is_batch_empty(batch_data)) {
+            continue;
+        }
+        
+        // Forward pass only (no training)
+        var predictions = batch_predict(get_batch_inputs(batch_data), layer_ids);
+        var batch_labels = get_batch_labels(batch_data);
+        var batch_accuracy = batch_calculate_accuracy(predictions, batch_labels);
+        
+        // Simplified loss calculation for validation
+        var batch_loss = 1.0 - batch_accuracy; // Use accuracy as inverse loss metric
+        total_loss = total_loss + batch_loss * get_batch_size(batch_data);
+        
+        total_correct = total_correct + floor(batch_accuracy * get_batch_size(batch_data));
+        total_samples = total_samples + get_batch_size(batch_data);
+    }
+    
+    var epoch_end_time = get_current_time();
+    
+    var metrics: TrainingMetrics;
+    metrics.avg_loss = total_loss / total_samples;
+    metrics.accuracy = total_correct / total_samples;
+    metrics.batches_processed = num_batches;
+    metrics.training_time_ms = epoch_end_time - epoch_start_time;
+    
+    return metrics;
+}
+
+// Batch size optimization demo
+@tier(2)
+function batch_size_optimization_demo() -> void {
+    print("=== Batch Size Optimization Demo ===");
+    
+    // Generate test dataset
+    var dataset_size = 500;
+    var input_size = 64;
+    var num_classes = 4;
+    var test_dataset = generate_classification_dataset(dataset_size, input_size, num_classes);
+    
+    // Create simple network for testing
+    var layer1 = create_dense_layer(input_size, 32, 1, 23456); // Dense: 64->32
+    var layer2 = create_dense_layer(32, 16, 1, 23457); // Dense: 32->16
+    var output = create_dense_layer(16, num_classes, 3, 23458); // Output: 16->4
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    // Test different batch sizes
+    var batch_sizes = [8, 16, 32, 64, 128];
+    var learning_rate = 0.001;
+    var test_epochs = 3;
+    
+    print("Testing batch sizes with ", dataset_size, " samples for ", test_epochs, " epochs:");
+    print("");
+    
+    for (var i = 0; i < batch_sizes.length; i = i + 1) {
+        var batch_size = batch_sizes[i];
+        
+        if (batch_size > dataset_size) {
+            continue;
+        }
+        
+        print("Batch Size ", batch_size, ":");
+        
+        // Configure batch processing
+        var batch_config = create_batch_config(batch_size, input_size, 1, false, 34567);
+        
+        var total_start_time = get_current_time();
+        var final_accuracy = 0.0;
+        var total_training_time = 0.0;
+        
+        // Train for test epochs
+        for (var epoch = 0; epoch < test_epochs; epoch = epoch + 1) {
+            var epoch_metrics = train_epoch_with_batches(test_dataset, layer_ids, batch_config, learning_rate);
+            final_accuracy = epoch_metrics.accuracy;
+            total_training_time = total_training_time + epoch_metrics.training_time_ms;
+        }
+        
+        var total_end_time = get_current_time();
+        var total_time = total_end_time - total_start_time;
+        
+        // Calculate throughput
+        var throughput = (dataset_size * test_epochs * 1000.0) / total_time; // samples per second
+        
+        print("  Final Accuracy: ", (final_accuracy * 100), "%");
+        print("  Total Time: ", total_time, "ms");
+        print("  Throughput: ", floor(throughput), " samples/second");
+        print("  Avg Batch Time: ", (total_training_time / (test_epochs * ceil(dataset_size / batch_size))), "ms");
+        print("");
+    }
+    
+    print("Batch size optimization completed!");
+}
+
+// Memory efficiency demo
+@tier(2)
+function memory_efficiency_demo() -> void {
+    print("=== Memory Efficiency Demo ===");
+    
+    // Generate large dataset
+    var large_dataset_size = 2000;
+    var input_size = 128;
+    var num_classes = 8;
+    var large_dataset = generate_classification_dataset(large_dataset_size, input_size, num_classes);
+    
+    print("Large dataset: ", large_dataset_size, " samples, ", input_size, " features each");
+    
+    // Create network
+    var layer1 = create_dense_layer(input_size, 64, 1, 45678); // Dense: 128->64
+    var layer2 = create_dense_layer(64, 32, 1, 45679); // Dense: 64->32
+    var output = create_dense_layer(32, num_classes, 3, 45680); // Output: 32->8
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    // Compare single sample vs batch processing
+    print("Comparing single sample vs batch processing:");
+    
+    // Single sample processing (sequential)
+    var single_start_time = get_current_time();
+    var single_correct = 0;
+    
+    for (var i = 0; i < 100; i = i + 1) { // Test with subset for time
+        var sample = get_single_sample(large_dataset, i);
+        var prediction = batch_predict([sample], layer_ids);
+        var label = get_sample_label(large_dataset, i);
+        
+        if (prediction[0] == label) {
+            single_correct = single_correct + 1;
+        }
+    }
+    
+    var single_end_time = get_current_time();
+    var single_time = single_end_time - single_start_time;
+    var single_accuracy = single_correct / 100.0;
+    
+    // Batch processing
+    var batch_config = create_batch_config(32, input_size, 1, false, 56789);
+    var batch_start_time = get_current_time();
+    
+    var batch_metrics = train_epoch_with_batches(large_dataset, layer_ids, batch_config, 0.001);
+    
+    var batch_end_time = get_current_time();
+    var batch_time = batch_end_time - batch_start_time;
+    
+    print("Single Sample Processing:");
+    print("  Time for 100 samples: ", single_time, "ms");
+    print("  Accuracy: ", (single_accuracy * 100), "%");
+    print("  Avg time per sample: ", (single_time / 100), "ms");
+    print("");
+    
+    print("Batch Processing:");
+    print("  Time for ", large_dataset_size, " samples: ", batch_time, "ms");
+    print("  Accuracy: ", (batch_metrics.accuracy * 100), "%");
+    print("  Avg time per sample: ", (batch_time / large_dataset_size), "ms");
+    print("  Throughput: ", floor((large_dataset_size * 1000.0) / batch_time), " samples/second");
+    print("");
+    
+    // Calculate efficiency gain
+    var efficiency_gain = (single_time / 100) / (batch_time / large_dataset_size);
+    print("Efficiency gain: ", (efficiency_gain * 100), "% faster with batch processing");
+    
+    print("Memory efficiency demo completed!");
+}
+
+// Main program
+@tier(2)
+function main() -> void {
+    print("Mini-Batch Training Demo in T81Lang");
+    print("===================================");
+    print("Status: EXPERIMENTAL - NOT FOR PRODUCTION USE");
+    print("");
+    
+    // Run all batch processing demos
+    mini_batch_cnn_training_demo();
+    print("");
+    
+    batch_size_optimization_demo();
+    print("");
+    
+    memory_efficiency_demo();
+    print("");
+    
+    print("All mini-batch training demos completed successfully!");
+    print("Complete provenance stored in CanonFS for reproducibility.");
+    print("");
+    print("Mini-batch processing capabilities:");
+    print("✅ Efficient batch creation and management");
+    print("✅ Configurable batch sizes and shuffling");
+    print("✅ Multi-epoch training with validation");
+    print("✅ Performance optimization and throughput analysis");
+    print("✅ Memory-efficient processing");
+    print("✅ Policy-gated batch execution");
+    print("✅ Deterministic batch processing");
+    print("✅ Complete provenance tracking");
+}

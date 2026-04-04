@@ -1,0 +1,601 @@
+// Bundle and Batch Processing Integration Demo in T81Lang
+// EXPERIMENTAL - NOT FOR PRODUCTION USE
+// Demonstrates CanonFS bundle integration with mini-batch training
+
+@extern "advanced_ai"
+
+// Neural network configuration types
+type NeuralLayer = struct {
+    layer_type: int,
+    input_size: int,
+    output_size: int,
+    activation: int,
+    seed: uint64
+};
+
+// Bundle-aware batch processing configuration
+type BundleBatchConfig = struct {
+    batch_size: int,
+    sequence_length: int,
+    num_channels: int,
+    shuffle_enabled: bool,
+    seed: uint64,
+    bundle_enabled: bool,
+    bundle_name_prefix: string,
+    auto_bundle_creation: bool,
+    bundle_frequency: int,
+    bundle_seed: uint64
+};
+
+// Bundle training metrics
+type BundleTrainingMetrics = struct {
+    training_metrics: TrainingMetrics,
+    bundle_stats: BundleStats,
+    created_bundle_ids: array,
+    total_bundle_overhead_ms: float
+};
+
+// Bundle statistics
+type BundleStats = struct {
+    total_batches_processed: int,
+    total_samples_processed: int,
+    average_batch_processing_time: float,
+    total_bundle_creation_time: float,
+    completed_bundles_count: int,
+    bundle_ids: array
+};
+
+// Neural network operations
+@neural @tier(2) @deterministic
+function neural_forward(dest: int, input: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic  
+function neural_backward(dest: int, grad: int, layer_id: int) -> void;
+
+@neural @tier(3) @deterministic
+function neural_optimize(layer_id: int, learning_rate: float) -> void;
+
+// Bundle-aware batch processing operations
+@bundle @tier(2) @deterministic
+function bundle_create_batch(dataset: int, targets: int, start_idx: int, config: BundleBatchConfig) -> int;
+
+@bundle @tier(2) @deterministic
+function bundle_forward_pass(bundle_batch: int, layer_id: int) -> int;
+
+@bundle @tier(3) @deterministic
+function bundle_training_step(bundle_batch: int, layer_ids: array, learning_rate: float) -> float;
+
+@bundle @tier(2) @deterministic
+function bundle_predict(bundle_batch: int, layer_ids: array) -> array;
+
+@bundle @tier(2) @deterministic
+function bundle_get_statistics(processor: int) -> BundleStats;
+
+@bundle @tier(2) @deterministic
+function bundle_export_data(processor: int) -> map;
+
+// Helper functions for bundle batch processing
+@tier(2) @pure
+function create_bundle_batch_config(batch_size: int, sequence_length: int, num_channels: int, 
+                                   shuffle: bool, seed: uint64,
+                                   bundle_enabled: bool, bundle_prefix: string,
+                                   auto_create: bool, frequency: int, bundle_seed: uint64) -> BundleBatchConfig {
+    var config: BundleBatchConfig;
+    config.batch_size = batch_size;
+    config.sequence_length = sequence_length;
+    config.num_channels = num_channels;
+    config.shuffle_enabled = shuffle;
+    config.seed = seed;
+    config.bundle_enabled = bundle_enabled;
+    config.bundle_name_prefix = bundle_prefix;
+    config.auto_bundle_creation = auto_create;
+    config.bundle_frequency = frequency;
+    config.bundle_seed = bundle_seed;
+    return config;
+}
+
+@tier(2) @pure
+function create_dense_layer(input_size: int, output_size: int, activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 0; // DENSE
+    layer_config.input_size = input_size;
+    layer_config.output_size = output_size;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+@tier(2) @pure
+function create_conv1d_layer(input_channels: int, output_channels: int, kernel_size: int, 
+                           activation: int, seed: uint64) -> int {
+    var layer_config: NeuralLayer;
+    layer_config.layer_type = 1; // CONV1D
+    layer_config.input_size = input_channels * 1000; // Packed format
+    layer_config.output_size = output_channels;
+    layer_config.activation = activation;
+    layer_config.seed = seed;
+    
+    // Pack convolution parameters
+    layer_config.hidden_size = (input_channels << 20) | (output_channels << 10) | kernel_size;
+    
+    var layer_id = allocate_layer_id();
+    store_layer_config(layer_id, layer_config);
+    
+    return layer_id;
+}
+
+// Generate synthetic dataset for bundle batch training
+@tier(2)
+function generate_bundle_dataset(num_samples: int, input_size: int, num_classes: int) -> int {
+    var dataset = allocate_dataset(num_samples);
+    var labels = allocate_dataset(num_samples);
+    
+    for (var i = 0; i < num_samples; i = i + 1) {
+        var sample = allocate_tensor();
+        var class_id = i % num_classes;
+        
+        // Generate class-specific patterns with bundle-friendly structure
+        var class_offset = class_id * 0.5;
+        for (var j = 0; j < input_size; j = j + 1) {
+            var base_value = sin(j * 0.1 + class_offset) + (random_float() - 0.5) * 0.2;
+            sample[j] = base_value + class_offset;
+        }
+        
+        dataset[i] = sample;
+        labels[i] = class_id;
+    }
+    
+    return combine_dataset_and_labels(dataset, labels);
+}
+
+// Bundle-aware CNN training with comprehensive provenance
+@tier(2)
+function bundle_cnn_training_demo() -> void {
+    print("=== Bundle-Aware CNN Training Demo ===");
+    
+    // Generate time series dataset
+    var num_samples = 500;
+    var sequence_length = 40;
+    var num_channels = 3;
+    var num_classes = 4;
+    
+    print("Generating time series dataset for bundle processing...");
+    var full_dataset = generate_bundle_dataset(num_samples, sequence_length * num_channels, num_classes);
+    
+    // Split into train/validation
+    var split_result = split_dataset(full_dataset, 0.8);
+    var train_dataset = split_result[0];
+    var val_dataset = split_result[1];
+    
+    print("Dataset split: ", get_dataset_size(train_dataset), " training, ", get_dataset_size(val_dataset), " validation");
+    
+    // Create CNN architecture
+    var conv1 = create_conv1d_layer(num_channels, 12, 5, 1, 13456); // Conv1D: 3->12, k=5
+    var conv2 = create_conv1d_layer(12, 24, 3, 1, 13457); // Conv1D: 12->24, k=3
+    
+    var flattened_size = calculate_conv_output_size(sequence_length, num_channels, 12, 5, 24, 3);
+    var dense1 = create_dense_layer(flattened_size, 64, 1, 13458); // Dense: flattened->64
+    var output_layer = create_dense_layer(64, num_classes, 3, 13459); // Output: 64->4
+    
+    var layer_ids = [conv1, conv2, dense1, output_layer];
+    
+    print("Created CNN architecture for bundle processing:");
+    print("  Conv1D: ", num_channels, "->12 channels, kernel=5");
+    print("  Conv1D: 12->24 channels, kernel=3");
+    print("  Dense: ", flattened_size, "->64");
+    print("  Output: 64->", num_classes);
+    
+    // Configure bundle-aware batch processing
+    var bundle_config = create_bundle_batch_config(
+        16, // batch_size
+        sequence_length, 
+        num_channels, 
+        true, // shuffle
+        54321, // seed
+        true, // bundle_enabled
+        "cnn_training_bundle", // bundle_prefix
+        true, // auto_bundle_creation
+        5, // bundle_frequency (create bundle every 5 batches)
+        65432 // bundle_seed
+    );
+    
+    print("Bundle configuration:");
+    print("  Batch size: ", bundle_config.batch_size);
+    print("  Bundle enabled: ", bundle_config.bundle_enabled);
+    print("  Bundle prefix: ", bundle_config.bundle_name_prefix);
+    print("  Auto bundle creation: ", bundle_config.auto_bundle_creation);
+    print("  Bundle frequency: ", bundle_config.bundle_frequency);
+    
+    // Create bundle processor
+    var bundle_processor = create_bundle_batch_processor(bundle_config);
+    
+    // Training parameters
+    var epochs = 6;
+    var learning_rate = 0.001;
+    
+    print("Starting bundle-aware CNN training for ", epochs, " epochs...");
+    print("");
+    
+    // Multi-epoch training with bundles
+    var total_start_time = get_current_time();
+    var total_bundle_overhead = 0.0;
+    var all_created_bundle_ids = allocate_array(0);
+    
+    for (var epoch = 0; epoch < epochs; epoch = epoch + 1) {
+        print("Epoch ", epoch + 1, "/", epochs, ":");
+        
+        var epoch_start_time = get_current_time();
+        var epoch_bundle_overhead = 0.0;
+        var epoch_created_bundles = allocate_array(0);
+        
+        // Training phase with bundles
+        var train_dataset_size = get_dataset_size(train_dataset);
+        var batch_size = bundle_config.batch_size;
+        var num_batches = ceil(train_dataset_size / batch_size);
+        
+        var train_total_loss = 0.0;
+        var train_total_correct = 0;
+        var train_total_samples = 0;
+        
+        for (var batch_idx = 0; batch_idx < num_batches; batch_idx = batch_idx + 1) {
+            var start_idx = batch_idx * batch_size;
+            
+            // Create bundle-aware batch
+            var bundle_start_time = get_current_time();
+            var bundle_batch = bundle_create_batch(train_dataset, null, start_idx, bundle_config);
+            var bundle_end_time = get_current_time();
+            var bundle_creation_time = bundle_end_time - bundle_start_time;
+            epoch_bundle_overhead = epoch_bundle_overhead + bundle_creation_time;
+            
+            if (is_bundle_batch_empty(bundle_batch)) {
+                continue;
+            }
+            
+            // Bundle-aware training step
+            var training_start_time = get_current_time();
+            var batch_loss = bundle_training_step(bundle_batch, layer_ids, learning_rate);
+            var training_end_time = get_current_time();
+            
+            train_total_loss = train_total_loss + batch_loss * get_bundle_batch_size(bundle_batch);
+            
+            // Bundle-aware prediction for accuracy
+            var predictions = bundle_predict(get_bundle_batch_inputs(bundle_batch), layer_ids);
+            var batch_labels = get_bundle_batch_labels(bundle_batch);
+            var batch_accuracy = calculate_bundle_accuracy(predictions, batch_labels);
+            
+            train_total_correct = train_total_correct + floor(batch_accuracy * get_bundle_batch_size(bundle_batch));
+            train_total_samples = train_total_samples + get_bundle_batch_size(bundle_batch);
+            
+            // Track bundle creation
+            if (bundle_was_created_this_batch(bundle_batch)) {
+                var bundle_id = get_bundle_batch_id(bundle_batch);
+                epoch_created_bundles = array_append(epoch_created_bundles, bundle_id);
+                all_created_bundle_ids = array_append(all_created_bundle_ids, bundle_id);
+                
+                print("    New bundle created: ", bundle_id, " (creation time: ", bundle_creation_time, "ms)");
+            }
+            
+            // Optional: Print batch progress
+            if (num_batches <= 8 || batch_idx % (num_batches / 8) == 0) {
+                print("    Batch ", batch_idx + 1, "/", num_batches, ": Loss=", batch_loss, ", Acc=", (batch_accuracy * 100), "%");
+            }
+        }
+        
+        var epoch_end_time = get_current_time();
+        var epoch_time = epoch_end_time - epoch_start_time;
+        
+        // Validation phase with bundles
+        var val_metrics = bundle_validate_epoch(val_dataset, layer_ids, bundle_config);
+        
+        var train_accuracy = train_total_correct / train_total_samples;
+        var train_avg_loss = train_total_loss / train_total_samples;
+        
+        print("  Training: Loss=", train_avg_loss, ", Acc=", (train_accuracy * 100), "%");
+        print("  Validation: Loss=", val_metrics.avg_loss, ", Acc=", (val_metrics.accuracy * 100), "%");
+        print("  Time: ", epoch_time, "ms, Bundle overhead: ", epoch_bundle_overhead, "ms");
+        print("  Bundles created this epoch: ", array_length(epoch_created_bundles));
+        
+        // Store epoch provenance with bundle information
+        var epoch_proof = create_bundle_epoch_proof(epoch, train_avg_loss, train_accuracy, val_metrics, 
+                                                  epoch_time, epoch_bundle_overhead, epoch_created_bundles);
+        canonfs_store(epoch_proof);
+        
+        total_bundle_overhead = total_bundle_overhead + epoch_bundle_overhead;
+    }
+    
+    var total_end_time = get_current_time();
+    var total_time = total_end_time - total_start_time;
+    
+    print("Bundle-aware CNN training completed!");
+    print("Total training time: ", total_time, "ms");
+    print("Total bundle overhead: ", total_bundle_overhead, "ms");
+    print("Bundle overhead percentage: ", (total_bundle_overhead / total_time) * 100, "%");
+    print("Total bundles created: ", array_length(all_created_bundle_ids));
+    
+    // Get final bundle statistics
+    var final_bundle_stats = bundle_get_statistics(bundle_processor);
+    print("Final bundle statistics:");
+    print("  Total batches processed: ", final_bundle_stats.total_batches_processed);
+    print("  Total samples processed: ", final_bundle_stats.total_samples_processed);
+    print("  Completed bundles: ", final_bundle_stats.completed_bundles_count);
+    print("  Average batch processing time: ", final_bundle_stats.average_batch_processing_time, "μs");
+    print("  Total bundle creation time: ", final_bundle_stats.total_bundle_creation_time, "ms");
+    
+    // Export bundle data for analysis
+    var bundle_export_data = bundle_export_data(bundle_processor);
+    print("Bundle export data keys: ", map_keys(bundle_export_data));
+    
+    // Store complete training provenance with bundle information
+    var bundle_training_summary = create_bundle_training_summary(
+        epochs, learning_rate, final_bundle_stats, total_time, total_bundle_overhead, 
+        all_created_bundle_ids, "cnn_bundle_training"
+    );
+    canonfs_store(bundle_training_summary);
+}
+
+// Bundle validation epoch
+@tier(2)
+function bundle_validate_epoch(dataset: int, layer_ids: array, bundle_config: BundleBatchConfig) -> TrainingMetrics {
+    var dataset_size = get_dataset_size(dataset);
+    var batch_size = bundle_config.batch_size;
+    var num_batches = ceil(dataset_size / batch_size);
+    
+    var total_loss = 0.0;
+    var total_correct = 0;
+    var total_samples = 0;
+    
+    var epoch_start_time = get_current_time();
+    
+    // Process all batches (no weight updates during validation)
+    for (var batch_idx = 0; batch_idx < num_batches; batch_idx = batch_idx + 1) {
+        var start_idx = batch_idx * batch_size;
+        
+        // Create bundle-aware batch
+        var bundle_batch = bundle_create_batch(dataset, null, start_idx, bundle_config);
+        
+        if (is_bundle_batch_empty(bundle_batch)) {
+            continue;
+        }
+        
+        // Bundle-aware prediction (no training)
+        var predictions = bundle_predict(get_bundle_batch_inputs(bundle_batch), layer_ids);
+        var batch_labels = get_bundle_batch_labels(bundle_batch);
+        var batch_accuracy = calculate_bundle_accuracy(predictions, batch_labels);
+        
+        // Simplified loss calculation for validation
+        var batch_loss = 1.0 - batch_accuracy; // Use accuracy as inverse loss metric
+        total_loss = total_loss + batch_loss * get_bundle_batch_size(bundle_batch);
+        
+        total_correct = total_correct + floor(batch_accuracy * get_bundle_batch_size(bundle_batch));
+        total_samples = total_samples + get_bundle_batch_size(bundle_batch);
+    }
+    
+    var epoch_end_time = get_current_time();
+    
+    var metrics: TrainingMetrics;
+    metrics.avg_loss = total_loss / total_samples;
+    metrics.accuracy = total_correct / total_samples;
+    metrics.batches_processed = num_batches;
+    metrics.training_time_ms = epoch_end_time - epoch_start_time;
+    
+    return metrics;
+}
+
+// Bundle frequency optimization demo
+@tier(2)
+function bundle_frequency_optimization_demo() -> void {
+    print("=== Bundle Frequency Optimization Demo ===");
+    
+    // Generate test dataset
+    var dataset_size = 200;
+    var input_size = 48;
+    var num_classes = 5;
+    var test_dataset = generate_bundle_dataset(dataset_size, input_size, num_classes);
+    
+    // Create simple network for testing
+    var layer1 = create_dense_layer(input_size, 32, 1, 23456); // Dense: 48->32
+    var layer2 = create_dense_layer(32, 16, 1, 23457); // Dense: 32->16
+    var output = create_dense_layer(16, num_classes, 3, 23458); // Output: 16->5
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    // Test different bundle frequencies
+    var bundle_frequencies = [2, 5, 10, 20];
+    var learning_rate = 0.001;
+    var test_epochs = 3;
+    
+    print("Testing bundle frequencies with ", dataset_size, " samples for ", test_epochs, " epochs:");
+    print("");
+    
+    for (var i = 0; i < bundle_frequencies.length; i = i + 1) {
+        var frequency = bundle_frequencies[i];
+        
+        print("Bundle Frequency ", frequency, ":");
+        
+        // Configure bundle processing
+        var bundle_config = create_bundle_batch_config(
+            16, input_size, 1, false, 34567, // base config
+            true, "freq_test", true, frequency, 45678 // bundle config
+        );
+        
+        var total_start_time = get_current_time();
+        var total_bundle_overhead = 0.0;
+        var created_bundles = allocate_array(0);
+        
+        // Train for test epochs
+        for (var epoch = 0; epoch < test_epochs; epoch = epoch + 1) {
+            var epoch_start_time = get_current_time();
+            var epoch_bundle_overhead = 0.0;
+            
+            // Process batches
+            var batch_size = bundle_config.batch_size;
+            var num_batches = ceil(dataset_size / batch_size);
+            
+            for (var batch_idx = 0; batch_idx < num_batches; batch_idx = batch_idx + 1) {
+                var start_idx = batch_idx * batch_size;
+                
+                var bundle_start_time = get_current_time();
+                var bundle_batch = bundle_create_batch(test_dataset, null, start_idx, bundle_config);
+                var bundle_end_time = get_current_time();
+                
+                if (bundle_was_created_this_batch(bundle_batch)) {
+                    epoch_bundle_overhead = epoch_bundle_overhead + (bundle_end_time - bundle_start_time);
+                    created_bundles = array_append(created_bundles, get_bundle_batch_id(bundle_batch));
+                }
+                
+                var batch_loss = bundle_training_step(bundle_batch, layer_ids, learning_rate);
+            }
+            
+            var epoch_end_time = get_current_time();
+            total_bundle_overhead = total_bundle_overhead + epoch_bundle_overhead;
+        }
+        
+        var total_end_time = get_current_time();
+        var total_time = total_end_time - total_start_time;
+        
+        // Calculate metrics
+        var overhead_percent = (total_bundle_overhead / total_time) * 100.0;
+        var bundles_per_epoch = array_length(created_bundles) / test_epochs;
+        
+        print("  Total Time: ", total_time, "ms");
+        print("  Bundle Overhead: ", total_bundle_overhead, "ms (", overhead_percent, "%)");
+        print("  Bundles Created: ", array_length(created_bundles));
+        print("  Bundles per Epoch: ", bundles_per_epoch);
+        print("  Avg Overhead per Bundle: ", (total_bundle_overhead / array_length(created_bundles)), "ms");
+        print("");
+    }
+    
+    print("Bundle frequency optimization completed!");
+}
+
+// Bundle provenance analysis demo
+@tier(2)
+function bundle_provenance_analysis_demo() -> void {
+    print("=== Bundle Provenance Analysis Demo ===");
+    
+    // Generate dataset
+    var dataset_size = 100;
+    var input_size = 36;
+    var num_classes = 4;
+    var test_dataset = generate_bundle_dataset(dataset_size, input_size, num_classes);
+    
+    // Create network
+    var layer1 = create_dense_layer(input_size, 24, 1, 45678); // Dense: 36->24
+    var layer2 = create_dense_layer(24, 12, 1, 45679); // Dense: 24->12
+    var output = create_dense_layer(12, num_classes, 3, 45680); // Output: 12->4
+    
+    var layer_ids = [layer1, layer2, output];
+    
+    // Configure bundle processing with detailed provenance
+    var bundle_config = create_bundle_batch_config(
+        8, input_size, 1, true, 56789, // base config
+        true, "provenance_demo", true, 3, 67890 // bundle config
+    );
+    
+    print("Processing dataset with detailed bundle provenance...");
+    
+    // Process dataset with provenance tracking
+    var batch_size = bundle_config.batch_size;
+    var num_batches = ceil(dataset_size / batch_size);
+    var processed_samples = 0;
+    var created_bundles = allocate_array(0);
+    var provenance_entries = allocate_array(0);
+    
+    for (var batch_idx = 0; batch_idx < num_batches; batch_idx = batch_idx + 1) {
+        var start_idx = batch_idx * batch_size;
+        
+        // Create bundle-aware batch
+        var bundle_batch = bundle_create_batch(test_dataset, null, start_idx, bundle_config);
+        
+        if (is_bundle_batch_empty(bundle_batch)) {
+            continue;
+        }
+        
+        // Track bundle creation
+        if (bundle_was_created_this_batch(bundle_batch)) {
+            var bundle_id = get_bundle_batch_id(bundle_batch);
+            created_bundles = array_append(created_bundles, bundle_id);
+            
+            print("Bundle ", array_length(created_bundles), " created: ", bundle_id);
+            print("  Batch ID: ", get_bundle_batch_id(bundle_batch));
+            print("  Samples: ", get_bundle_batch_size(bundle_batch));
+            print("  Timestamp: ", get_bundle_batch_timestamp(bundle_batch));
+            
+            // Track sample provenance
+            var sample_provenance = get_bundle_sample_provenance(bundle_batch);
+            for (var i = 0; i < array_length(sample_provenance); i = i + 1) {
+                provenance_entries = array_append(provenance_entries, sample_provenance[i]);
+            }
+        }
+        
+        // Process batch with provenance tracking
+        var bundle_start_time = get_current_time();
+        var batch_loss = bundle_training_step(bundle_batch, layer_ids, 0.001);
+        var bundle_end_time = get_current_time();
+        
+        // Track forward pass provenance
+        var forward_provenance = track_bundle_forward_pass(bundle_batch, layer_ids[0], bundle_end_time - bundle_start_time);
+        provenance_entries = array_append(provenance_entries, forward_provenance);
+        
+        // Track prediction provenance
+        var predictions = bundle_predict(get_bundle_batch_inputs(bundle_batch), layer_ids);
+        var prediction_provenance = track_bundle_predictions(bundle_batch, layer_ids, predictions);
+        provenance_entries = array_append(provenance_entries, prediction_provenance);
+        
+        processed_samples = processed_samples + get_bundle_batch_size(bundle_batch);
+    }
+    
+    print("Bundle provenance analysis completed!");
+    print("Processed samples: ", processed_samples);
+    print("Created bundles: ", array_length(created_bundles));
+    print("Total provenance entries: ", array_length(provenance_entries));
+    
+    // Analyze provenance coverage
+    print("Provenance coverage analysis:");
+    print("  Sample-level provenance: ", processed_samples, " entries");
+    print("  Bundle-level provenance: ", array_length(created_bundles), " entries");
+    print("  Operation-level provenance: ", (array_length(provenance_entries) - processed_samples - array_length(created_bundles)), " entries");
+    
+    // Export provenance data
+    var provenance_export = export_bundle_provenance(created_bundles, provenance_entries);
+    print("Provenance export keys: ", map_keys(provenance_export));
+    
+    print("Bundle provenance analysis completed!");
+}
+
+// Main program
+@tier(2)
+function main() -> void {
+    print("Bundle and Batch Processing Integration Demo in T81Lang");
+    print("======================================================");
+    print("Status: EXPERIMENTAL - NOT FOR PRODUCTION USE");
+    print("");
+    
+    // Run all bundle-batch integration demos
+    bundle_cnn_training_demo();
+    print("");
+    
+    bundle_frequency_optimization_demo();
+    print("");
+    
+    bundle_provenance_analysis_demo();
+    print("");
+    
+    print("All bundle and batch processing integration demos completed successfully!");
+    print("Complete provenance stored in CanonFS bundles for reproducibility.");
+    print("");
+    print("Bundle and batch processing capabilities:");
+    print("✅ CanonFS bundle integration with batch processing");
+    print("✅ Comprehensive provenance tracking in bundles");
+    print("✅ Automatic bundle creation and management");
+    print("✅ Bundle frequency optimization");
+    print("✅ Bundle performance analysis");
+    print("✅ Multi-epoch training with bundle provenance");
+    print("✅ Bundle export and analysis capabilities");
+    print("✅ Policy-gated bundle execution");
+    print("✅ Deterministic bundle processing");
+}

@@ -19,8 +19,8 @@ target_include_directories(t81_experimental PUBLIC
 function(t81_add_experimental_tool_targets)
   if(T81_ENABLE_AI_EXPERIMENTS)
     add_executable(t81_ai
-      ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_cli.cpp
-      ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
+      ${PROJECT_SOURCE_DIR}/tools/experimental/ai_tools/deterministic_ai_os.cpp
+      ${PROJECT_SOURCE_DIR}/tools/experimental/ai_tools/governed_ai_system.cpp
     )
     t81_preserve_root_output(t81_ai)
     target_link_libraries(t81_ai PRIVATE
@@ -33,6 +33,6 @@ function(t81_add_experimental_tool_targets)
     )
     set(AI_EXP_DIR "${CMAKE_BINARY_DIR}/experiments")
     set_target_properties(t81_ai PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY "${AI_EXP_DIR}/ai/ux_tools")
+      RUNTIME_OUTPUT_DIRECTORY "${AI_EXP_DIR}/ai_tools")
   endif()
 endfunction()

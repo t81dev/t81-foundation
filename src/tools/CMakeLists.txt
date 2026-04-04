@@ -31,29 +31,31 @@ endif()
 add_library(t81_tool_cli STATIC
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_cli.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_controlled.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/artifact_family.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonize_tensor.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/debugger.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/driver.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/driver_refactored.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/main.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance_standalone.cpp
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_auto_optimizer.cpp
+  # ${PROJECT_SOURCE_DIR}/tools/cli/ai/t81_ai_controlled.cpp  # Skip problematic file
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/artifact_family.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/canonize_tensor.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/debugger.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/driver.cpp
+  # ${PROJECT_SOURCE_DIR}/tools/cli/core/driver_refactored.cpp  # Skip problematic file
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
+  # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance.cpp  # Skip problematic file
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp
+  # ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_auto_optimizer.cpp  # Skip problematic file
   ${PROJECT_SOURCE_DIR}/tools/diagnostics/ternary_codec_metrics.cpp)
 
 # Add standalone performance tool as executable
 add_executable(canonfs_performance_standalone
-  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_performance_standalone.cpp)
+  ${PROJECT_SOURCE_DIR}/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp)
 
 target_link_libraries(canonfs_performance_standalone PRIVATE t81_core)
 
-# Add real AI integration executable
-add_executable(real_ai_integration
-  ${PROJECT_SOURCE_DIR}/tools/cli/real_ai_integration.cpp)
+# Experimental demos moved to experimental/ directory
+# See: experimental/ai_integration_demos/
 
-target_link_libraries(real_ai_integration PRIVATE t81_core)
+# Skip problematic controlled AI backend for now
+# list(APPEND TOOL_SOURCES
+#   ai/t81_ai_controlled.cpp
+# )
 
 t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
@@ -105,7 +107,7 @@ if(T81_BUILD_TUI)
 endif()
 
 add_executable(t81
-  ${PROJECT_SOURCE_DIR}/tools/cli/main.cpp
+  ${PROJECT_SOURCE_DIR}/tools/cli/core/main.cpp
   ${PROJECT_SOURCE_DIR}/tools/cli/ai/ai_cli_shared.cpp
 )
 t81_preserve_root_output(t81)

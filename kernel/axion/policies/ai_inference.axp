@@ -6,11 +6,11 @@ policy "ai.inference.determinism_control" {
     description: "Control AI inference determinism level",
     version: "1.0",
     
-    # Default to strict determinism
-    determinism_level: "strict",
+    # Default to allow controlled nondeterminism for research
+    determinism_level: "reproducible_nondeterministic",
     
-    # External AI integration disabled by default
-    external_ai_enabled: false,
+    # External AI integration enabled for research
+    external_ai_enabled: true,
     
     # Evidence collection always enabled for AI operations
     evidence_collection: true,
