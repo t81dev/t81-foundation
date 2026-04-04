@@ -335,8 +335,10 @@ As of March 2026, The T81 deterministic core (ISA, VM, data types) is stable and
 - A drop-in replacement for general-purpose OSes
 - Optimized for legacy binary software
 - Dependent on real ternary hardware (emulated on conventional CPUs)
+- A high-throughput AI inference platform for unconstrained workloads
+- A general-purpose application runtime for broad software compatibility
 
-T81 prioritizes **verifiability, determinism, and governance** over broad compatibility.
+T81 prioritizes verifiability, determinism, and governance over broad compatibility. When decision integrity matters more than raw throughput, T81 provides verifiable, replayable, policy-bound decisions.
 
 ## Architecture Overview
 
