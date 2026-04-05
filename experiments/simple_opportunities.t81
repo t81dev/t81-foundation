@@ -1,0 +1,48 @@
+// experiments/simple_opportunities.t81
+// Simple demonstration of T81Lang's unique opportunities
+
+@tier(2)
+fn deterministic_interest(principal: T81Float, rate: T81Float, periods: int) -> T81Float {
+    var result = principal;
+    
+    for (var i = 0; i < periods; i = i + 1) {
+        result = result * (1.0 + rate);
+    }
+    
+    return result;
+}
+
+@tier(1) @pure
+fn verify_property(input: T81Float) -> bool {
+    if (input < 0.0) {
+        return false;
+    }
+    return true;
+}
+
+@tier(2)
+fn ternary_logic(a: int, b: int, c: int) -> int {
+    if (a == b && b == c) {
+        return a;
+    }
+    if (a == b || b == c || a == c) {
+        return (a == b) ? a : c;
+    }
+    return 0;
+}
+
+@tier(2)
+fn main() -> void {
+    print("=== T81Lang Opportunities Demo ===");
+    
+    let amount = deterministic_interest(1000.0, 0.05, 12);
+    print("Final amount: ", amount);
+    
+    let check = verify_property(5.0);
+    print("Property check: ", check ? "PASS" : "FAIL");
+    
+    let result = ternary_logic(1, 1, 0);
+    print("Ternary result: ", result);
+    
+    print("=== T81Lang enables new possibilities ===");
+}
