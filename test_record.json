@@ -1,0 +1,11 @@
+{
+  "schema": "t81.ai.task.assess-fixed.host-action-record.v1",
+  "source_result_ref": "sha3-256:test",
+  "source_provenance_ref": "sha3-256:test",
+  "decision": "ALLOW",
+  "reason_code": "TEST_EXAMPLE",
+  "termination_reason": "test_complete",
+  "selected_action": "write_test_marker",
+  "selected_path": "test/marker",
+  "action_ref": "sha3-256:test"
+}
