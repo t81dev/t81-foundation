@@ -1,5 +1,18 @@
 # T81-AGI Alignment Policies
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81-AGI Alignment Policies](#t81-agi-alignment-policies)
+  - [Alignment Requirements](#alignment-requirements)
+    - [Syntax](#syntax)
+  - [Enforcement](#enforcement)
+  - [Integrated Alignment Hooks](#integrated-alignment-hooks)
+
+<!-- T81-TOC:END -->
+
+
 The Axion kernel supports explicit alignment policies to ensure high-tier cognitive agents remain within ethical and safety bounds.
 
 ## Alignment Requirements

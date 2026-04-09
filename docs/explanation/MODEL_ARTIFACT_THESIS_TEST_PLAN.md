@@ -1,5 +1,36 @@
 # Model Artifact Thesis Test Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Artifact Thesis Test Plan](#model-artifact-thesis-test-plan)
+  - [Purpose](#purpose)
+  - [Thesis Under Test](#thesis-under-test)
+  - [Non-Goals](#non-goals)
+  - [Smallest Prototype](#smallest-prototype)
+    - [Command](#command)
+    - [Output](#output)
+    - [Report Should Answer](#report-should-answer)
+  - [Test Workflows](#test-workflows)
+    - [Workflow 1: Third-Party Intake](#workflow-1-third-party-intake)
+    - [Workflow 2: Revision Comparison](#workflow-2-revision-comparison)
+    - [Workflow 3: Conversion Verification](#workflow-3-conversion-verification)
+    - [Workflow 4: CI Gate Trial](#workflow-4-ci-gate-trial)
+  - [Test Users](#test-users)
+  - [Questions To Ask](#questions-to-ask)
+  - [Success Criteria](#success-criteria)
+  - [Failure Criteria](#failure-criteria)
+  - [Decision Gate](#decision-gate)
+    - [Proceed](#proceed)
+    - [Pause](#pause)
+    - [Stop](#stop)
+  - [What Not To Build Yet](#what-not-to-build-yet)
+  - [Recommended First Milestone](#recommended-first-milestone)
+
+<!-- T81-TOC:END -->
+
+
 Status: Draft
 Last Updated: 2026-04-08
 

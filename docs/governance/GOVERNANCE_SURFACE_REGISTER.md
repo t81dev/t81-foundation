@@ -1,5 +1,27 @@
 # Governance Surface Register
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Surface Register](#governance-surface-register)
+  - [Authority](#authority)
+  - [Class Definitions](#class-definitions)
+    - [Deterministic Core Profile (DCP)](#deterministic-core-profile-dcp)
+    - [Governed non-DCP](#governed-non-dcp)
+    - [Experimental](#experimental)
+    - [Out of Scope](#out-of-scope)
+  - [Surface Register](#surface-register)
+  - [Immediate Interpretation Rules](#immediate-interpretation-rules)
+  - [Promotion Notes](#promotion-notes)
+    - [Promotion to Governed non-DCP](#promotion-to-governed-non-dcp)
+    - [Promotion to DCP](#promotion-to-dcp)
+  - [Current Review Priorities](#current-review-priorities)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-19  
 Owner: @t81dev
 

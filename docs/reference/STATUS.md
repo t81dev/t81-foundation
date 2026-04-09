@@ -1,5 +1,20 @@
 # T81 Foundation – Current Status
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation – Current Status](#t81-foundation-–-current-status)
+  - [1. Snapshot](#1-snapshot)
+  - [2. Component Maturity](#2-component-maturity)
+  - [3. Cognitive Tier Status](#3-cognitive-tier-status)
+  - [4. Supported Toolchains](#4-supported-toolchains)
+  - [5. Validation Ritual](#5-validation-ritual)
+  - [6. Source-of-Truth Links](#6-source-of-truth-links)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the **current operational state** of the project (what is true today). For future plans, see [../process/roadmaps-plans/ROADMAP.md](../process/roadmaps-plans/ROADMAP.md). For version history, see [CHANGELOG.md](CHANGELOG.md).
 
 **Last Updated:** March 14, 2026

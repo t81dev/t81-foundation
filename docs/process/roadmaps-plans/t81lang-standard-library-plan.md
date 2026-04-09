@@ -1,5 +1,32 @@
 # T81Lang Standard Library Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library Plan](#t81lang-standard-library-plan)
+  - [1. Design Philosophy](#1-design-philosophy)
+  - [2. Library Structure](#2-library-structure)
+    - [2.1 Core & Primitives (`std.core`)](#21-core-&-primitives-`stdcore`)
+    - [2.2 Mathematics (`std.math`)](#22-mathematics-`stdmath`)
+    - [2.3 Collections (`std.collections`)](#23-collections-`stdcollections`)
+    - [2.4 Text & Data (`std.text`, `std.bytes`)](#24-text-&-data-`stdtext`-`stdbytes`)
+    - [2.5 System & Runtime (`std.sys`)](#25-system-&-runtime-`stdsys`)
+    - [2.6 Input/Output (`std.io`)](#26-inputoutput-`stdio`)
+    - [2.7 Concurrency (`std.async`)](#27-concurrency-`stdasync`)
+    - [2.8 AI & Tensor (`std.tensor`)](#28-ai-&-tensor-`stdtensor`)
+    - [2.9 High-Level Agents (`std.agent`)](#29-high-level-agents-`stdagent`)
+  - [3. Implementation Strategy](#3-implementation-strategy)
+  - [4. Future Considerations](#4-future-considerations)
+  - [5. Implementation Status (Current)](#5-implementation-status-current)
+  - [6. Completed Milestone: `std.text.split` / `std.text.join`](#6-completed-milestone-`stdtextsplit`--`stdtextjoin`)
+    - [6.1 Deterministic Semantics (Target)](#61-deterministic-semantics-target)
+    - [6.2 Runtime/IR Work Completed](#62-runtimeir-work-completed)
+    - [6.3 Acceptance Criteria](#63-acceptance-criteria)
+
+<!-- T81-TOC:END -->
+
+
 This document outlines the proposed standard libraries for T81Lang, designed to expose the powerful ternary-native types implemented in the `t81-foundation` C++ codebase.
 For implementation continuity, see `docs/t81lang-standard-library-handoff.md`.
 

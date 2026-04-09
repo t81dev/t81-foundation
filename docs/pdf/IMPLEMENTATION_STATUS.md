@@ -1,5 +1,23 @@
 # T81 Foundation Implementation Status
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Implementation Status](#t81-foundation-implementation-status)
+  - [1. Implemented](#1-implemented)
+    - [Core T81 Data Types (Base-81)](#core-t81-data-types-base-81)
+    - [Data Structures & Codecs](#data-structures-&-codecs)
+    - [Cognitive Tiers & Neural Primitives](#cognitive-tiers-&-neural-primitives)
+    - [Virtual Machine & System Features](#virtual-machine-&-system-features)
+  - [2. Needs Implementation / Porting](#2-needs-implementation--porting)
+  - [3. Could be Implemented (Aspirational)](#3-could-be-implemented-aspirational)
+    - [Higher-Order Base Systems](#higher-order-base-systems)
+    - [Future Extensions (from Specs)](#future-extensions-from-specs)
+
+<!-- T81-TOC:END -->
+
+
 This document summarizes the implementation status of the T81 runtime, based on an analysis of the codebase, specifications, and available documentation (including legacy and aspirational materials).
 
 ## 1. Implemented

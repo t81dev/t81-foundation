@@ -1,5 +1,14 @@
 # Capítulo 7: Programación en T81Lang
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 7: Programación en T81Lang](#capítulo-7-programación-en-t81lang)
+
+<!-- T81-TOC:END -->
+
+
 **Estado: Implementado**
 
 (Pendiente de traducción)

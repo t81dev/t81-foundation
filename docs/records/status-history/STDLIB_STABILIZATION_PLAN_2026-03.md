@@ -1,5 +1,26 @@
 # T81Lang Standard Library Stabilization Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Standard Library Stabilization Plan](#t81lang-standard-library-stabilization-plan)
+  - [1. Goal](#1-goal)
+  - [2. Why This Is Next](#2-why-this-is-next)
+  - [3. Scope (This Sprint)](#3-scope-this-sprint)
+  - [4. Stabilization Principles](#4-stabilization-principles)
+  - [5. Acceptance Gates](#5-acceptance-gates)
+  - [6. Work Packages](#6-work-packages)
+  - [7. Exit Criteria](#7-exit-criteria)
+  - [8. Sprint 1 Closure (2026-02-26)](#8-sprint-1-closure-2026-02-26)
+  - [9. Sprint 2 (2026-02-27..28, In Progress)](#9-sprint-2-2026-02-2728-in-progress)
+    - [Completed in Sprint 2](#completed-in-sprint-2)
+    - [Remaining in Sprint 2](#remaining-in-sprint-2)
+    - [Sprint 2 Exit Criteria](#sprint-2-exit-criteria)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-26
 Status: Sprint 2 In Progress (updated 2026-02-28)
 Owner: Language + Governance

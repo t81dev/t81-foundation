@@ -1,5 +1,20 @@
 # Capítulo 11: Apêndices
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 11: Apêndices](#capítulo-11-apêndices)
+  - [11.1 O Que Ainda Não Foi Implementado](#111-o-que-ainda-não-foi-implementado)
+    - [11.1.1 Fase 2: Cobertura Completa de `dmath`](#1111-fase-2-cobertura-completa-de-`dmath`)
+    - [11.1.2 Fase 3: Consenso Distribuído (Nível 4)](#1112-fase-3-consenso-distribuído-nível-4)
+    - [11.1.3 Fase 4: Formas Infinitas Completas (Nível 5)](#1113-fase-4-formas-infinitas-completas-nível-5)
+  - [11.2 Glossário](#112-glossário)
+  - [11.3 Links Úteis](#113-links-úteis)
+
+<!-- T81-TOC:END -->
+
+
 ## 11.1 O Que Ainda Não Foi Implementado
 
 **Status: Acompanhamento**

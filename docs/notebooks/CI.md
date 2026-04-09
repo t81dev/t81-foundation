@@ -1,5 +1,21 @@
 # Notebook CI Strategy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Notebook CI Strategy](#notebook-ci-strategy)
+  - [Goal](#goal)
+  - [Strategy](#strategy)
+    - [1. Automated Execution](#1-automated-execution)
+- [Example CI command](#example-ci-command)
+    - [2. Output Verification](#2-output-verification)
+    - [3. Environment Setup](#3-environment-setup)
+    - [4. Failure Handling](#4-failure-handling)
+
+<!-- T81-TOC:END -->
+
+
 ## Goal
 
 Ensure that all notebooks in `/notebooks` remain executable and produce deterministic outputs consistent with the underlying C++ implementation.

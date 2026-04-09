@@ -1,5 +1,27 @@
 # T81 Handoff
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Handoff](#t81-handoff)
+  - [T81 in one paragraph](#t81-in-one-paragraph)
+  - [What is real today](#what-is-real-today)
+  - [What is still draft or in motion](#what-is-still-draft-or-in-motion)
+  - [What should not be casually rewritten](#what-should-not-be-casually-rewritten)
+  - [What can be simplified](#what-can-be-simplified)
+  - [Architectural priorities](#architectural-priorities)
+  - [Current phase](#current-phase)
+  - [Proposal filter](#proposal-filter)
+  - [Current best entry points](#current-best-entry-points)
+  - [If you only have 30 minutes](#if-you-only-have-30-minutes)
+  - [Highest-leverage next tasks](#highest-leverage-next-tasks)
+  - [Suggested owner mindset](#suggested-owner-mindset)
+  - [Good first contribution shape](#good-first-contribution-shape)
+
+<!-- T81-TOC:END -->
+
+
 This document is the shortest practical handoff for a new maintainer or serious contributor.
 
 ## T81 in one paragraph

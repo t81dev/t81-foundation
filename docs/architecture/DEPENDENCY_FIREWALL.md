@@ -1,5 +1,18 @@
 # Dependency Firewall
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Dependency Firewall](#dependency-firewall)
+  - [Allowed Dependency Graph](#allowed-dependency-graph)
+  - [Rules](#rules)
+  - [Enforcement](#enforcement)
+  - [Enforcement Escalation Plan](#enforcement-escalation-plan)
+
+<!-- T81-TOC:END -->
+
+
 This document is the normative structural dependency policy for the `t81-foundation` repository.
 
 ## Allowed Dependency Graph

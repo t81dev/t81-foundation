@@ -1,5 +1,31 @@
 # Axion: Implementation Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion: Implementation Roadmap](#axion-implementation-roadmap)
+  - [1. Current Position](#1-current-position)
+  - [2. Implemented Inventory](#2-implemented-inventory)
+    - [Compute Layer](#compute-layer)
+    - [Storage & Governance Layer](#storage-&-governance-layer)
+    - [Process & Memory Foundations](#process-&-memory-foundations)
+    - [TernOS Prototype Layers](#ternos-prototype-layers)
+  - [3. Phase Status](#3-phase-status)
+    - [Promotion Track — Hosted to VirtualBox](#promotion-track-—-hosted-to-virtualbox)
+    - [Phase 1 — Bootloader & HAL](#phase-1-—-bootloader-&-hal)
+    - [Phase 2 — Ternary Memory Management](#phase-2-—-ternary-memory-management)
+    - [Phase 3 — Kernel Scheduling & IPC](#phase-3-—-kernel-scheduling-&-ipc)
+    - [Phase 4 — Device Drivers & I/O](#phase-4-—-device-drivers-&-io)
+    - [Phase 5 — Userland Ecosystem (early v2.x)](#phase-5-—-userland-ecosystem-early-v2x)
+  - [4. Phased Delivery Plan](#4-phased-delivery-plan)
+  - [5. Current Success Criteria](#5-current-success-criteria)
+  - [6. Open Questions & Risks](#6-open-questions-&-risks)
+  - [7. Conclusion](#7-conclusion)
+
+<!-- T81-TOC:END -->
+
+
 This document captures the current implementation state, completed milestones, remaining work, and exit criteria for evolving the T81 Foundation stack into a standalone ternary operating system, currently named Axion.
 
 Current working release label: `Axion v0.1.0-alpha`

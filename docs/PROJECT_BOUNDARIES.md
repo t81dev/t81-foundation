@@ -1,5 +1,34 @@
 # T81 Project Boundaries
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Project Boundaries](#t81-project-boundaries)
+  - [**Stable Core (Production-Ready)**](#**stable-core-production-ready**)
+    - [What IS Stable Core:](#what-is-stable-core)
+    - [Location:](#location)
+    - [Status:](#status)
+  - [**Experimental Frontier (Research-Grade)**](#**experimental-frontier-research-grade**)
+    - [What IS Experimental:](#what-is-experimental)
+    - [Location:](#location)
+    - [Status:](#status)
+  - [**Decision Criteria**](#**decision-criteria**)
+    - [**Stable Core Addition Criteria:**](#**stable-core-addition-criteria**)
+    - [**Experimental Retention Criteria:**](#**experimental-retention-criteria**)
+    - [**Critical Boundary: Determinism vs Nondeterminism**](#**critical-boundary-determinism-vs-nondeterminism**)
+      - [**Production T81 Runtime: ALWAYS DETERMINISTIC**](#**production-t81-runtime-always-deterministic**)
+      - [**Experimental Research: MAY EXPLORE NONDETERMINISM**](#**experimental-research-may-explore-nondeterminism**)
+  - [**Usage Guidelines**](#**usage-guidelines**)
+    - [**For Production Users:**](#**for-production-users**)
+    - [**For Researchers/Contributors:**](#**for-researcherscontributors**)
+  - [**Project Positioning**](#**project-positioning**)
+    - [**Primary Identity**: **"Deterministic AI Runtime"**](#**primary-identity**-**"deterministic-ai-runtime"**)
+    - [**Secondary Identity**: **"AI Operating System Research"**](#**secondary-identity**-**"ai-operating-system-research"**)
+
+<!-- T81-TOC:END -->
+
+
 ## **Stable Core (Production-Ready)**
 
 ### What IS Stable Core:

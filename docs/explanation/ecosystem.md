@@ -1,5 +1,19 @@
 # Ecosystem and Interoperability
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Ecosystem and Interoperability](#ecosystem-and-interoperability)
+  - [1. Expanding Language Bindings](#1-expanding-language-bindings)
+    - [Strategy: Preserve Determinism](#strategy-preserve-determinism)
+  - [2. Runtime Boundary Tooling](#2-runtime-boundary-tooling)
+    - [Goal: Strengthen Downstream Integration](#goal-strengthen-downstream-integration)
+  - [3. Deterministic Observability](#3-deterministic-observability)
+
+<!-- T81-TOC:END -->
+
+
 **Last Updated:** February 10, 2026
 
 This document outlines the strategy for expanding the T81 Foundation ecosystem and ensuring robust interoperability with external tools and languages.

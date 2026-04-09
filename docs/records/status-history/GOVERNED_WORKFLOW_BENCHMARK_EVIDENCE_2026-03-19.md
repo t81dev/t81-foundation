@@ -1,5 +1,31 @@
 # Governed Workflow Benchmark Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governed Workflow Benchmark Evidence](#governed-workflow-benchmark-evidence)
+  - [Scope](#scope)
+  - [Build Conditions](#build-conditions)
+  - [Command](#command)
+  - [Benchmarks Exercised](#benchmarks-exercised)
+  - [Observed Result](#observed-result)
+  - [Interpretation](#interpretation)
+    - [Policy overhead on a matched workload](#policy-overhead-on-a-matched-workload)
+    - [Observability materialization cost](#observability-materialization-cost)
+    - [Render/export formatting cost](#renderexport-formatting-cost)
+    - [File-emission cost](#file-emission-cost)
+    - [End-to-end CLI export cost](#end-to-end-cli-export-cost)
+    - [Tensor-path policy cost](#tensor-path-policy-cost)
+    - [Hash-path and persistence comparison](#hash-path-and-persistence-comparison)
+  - [What This Proves](#what-this-proves)
+  - [What This Does Not Prove](#what-this-does-not-prove)
+  - [Known Caveats](#known-caveats)
+  - [Recommended Next Measurements](#recommended-next-measurements)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-19  
 Status: Active  
 Owner: @t81dev

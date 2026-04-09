@@ -1,5 +1,29 @@
 # Capítulo 5: Instalación y Verificación de la Construcción
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 5: Instalación y Verificación de la Construcción](#capítulo-5-instalación-y-verificación-de-la-construcción)
+  - [5.1 Requisitos Previos](#51-requisitos-previos)
+    - [Plataformas Soportadas](#plataformas-soportadas)
+    - [Requisitos de la Cadena de Herramientas](#requisitos-de-la-cadena-de-herramientas)
+  - [5.2 Construcción desde la Fuente](#52-construcción-desde-la-fuente)
+    - [5.2.1 El Flujo de Trabajo CMake](#521-el-flujo-de-trabajo-cmake)
+- [1. Clonar el repositorio](#1-clonar-el-repositorio)
+- [2. Configurar (Recomendado modo Release para rendimiento)](#2-configurar-recomendado-modo-release-para-rendimiento)
+- [3. Construir el ejecutable principal](#3-construir-el-ejecutable-principal)
+    - [5.2.2 Opciones de Construcción](#522-opciones-de-construcción)
+  - [5.3 Verificando la Construcción](#53-verificando-la-construcción)
+    - [5.3.1 Ejecutando Pruebas Unitarias](#531-ejecutando-pruebas-unitarias)
+    - [5.3.2 La Puerta de Determinismo (Determinism Gate)](#532-la-puerta-de-determinismo-determinism-gate)
+- [Ejecutar la puerta de reproducción](#ejecutar-la-puerta-de-reproducción)
+    - [5.3.3 Verificando Objetivos de Arquitectura](#533-verificando-objetivos-de-arquitectura)
+  - [5.4 Solución de Problemas](#54-solución-de-problemas)
+
+<!-- T81-TOC:END -->
+
+
 ## 5.1 Requisitos Previos
 
 **Estado: Estandarizado**

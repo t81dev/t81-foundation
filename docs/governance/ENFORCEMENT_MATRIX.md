@@ -1,5 +1,21 @@
 # Governance Enforcement Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Enforcement Matrix](#governance-enforcement-matrix)
+  - [Enforcement Definitions](#enforcement-definitions)
+  - [Policy: Capability Contract](#policy-capability-contract)
+  - [Policy: Multilingual Governance](#policy-multilingual-governance)
+  - [Policy: Dependency & Hygiene](#policy-dependency-&-hygiene)
+  - [Policy: System Status & Implementation](#policy-system-status-&-implementation)
+  - [Policy: Project Control Center](#policy-project-control-center)
+  - [Policy: Documentation Guardrails](#policy-documentation-guardrails)
+
+<!-- T81-TOC:END -->
+
+
 This document translates high-level governance policies into machine-verifiable enforcement rules.
 
 ## Enforcement Definitions

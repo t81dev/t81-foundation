@@ -1,5 +1,25 @@
 # Capítulo 2: Principios Centrales e Invariantes
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 2: Principios Centrales e Invariantes](#capítulo-2-principios-centrales-e-invariantes)
+  - [2.1 El Invariante de Determinismo](#21-el-invariante-de-determinismo)
+    - [2.1.1 Superficies de Determinismo y Vectores de Ataque](#211-superficies-de-determinismo-y-vectores-de-ataque)
+    - [2.1.2 La "Brecha Libm" y `dmath`](#212-la-"brecha-libm"-y-`dmath`)
+  - [2.2 Lógica Ternaria (Base-3)](#22-lógica-ternaria-base-3)
+    - [2.2.1 ¿Por qué Ternario?](#221-¿por-qué-ternario?)
+    - [2.2.2 Implementación](#222-implementación)
+  - [2.3 Auditabilidad y la Traza Axion](#23-auditabilidad-y-la-traza-axion)
+    - [2.3.1 La Estructura de la Traza](#231-la-estructura-de-la-traza)
+  - [2.4 Los Nueve Principios (Cumplimiento Ético)](#24-los-nueve-principios-cumplimiento-ético)
+  - [2.5 Lista de Verificación](#25-lista-de-verificación)
+  - [2.6 Matriz de Auditoría Formal](#26-matriz-de-auditoría-formal)
+
+<!-- T81-TOC:END -->
+
+
 ## 2.1 El Invariante de Determinismo
 
 **Estado: Implementado y Probado**

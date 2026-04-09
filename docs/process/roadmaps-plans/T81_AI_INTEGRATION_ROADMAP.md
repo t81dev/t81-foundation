@@ -1,5 +1,53 @@
 # T81 AI Integration Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 AI Integration Roadmap](#t81-ai-integration-roadmap)
+  - [Overview](#overview)
+  - [Guiding Principles](#guiding-principles)
+  - [RFC Roadmap Summary](#rfc-roadmap-summary)
+    - [Phase 1: Foundation (High Priority - Low Risk)](#phase-1-foundation-high-priority---low-risk)
+      - [RFC-00A0: AI Experiment Sandbox and Repository Boundaries](#rfc-00a0-ai-experiment-sandbox-and-repository-boundaries)
+      - [RFC-00A1: Deterministic Evidence and Reproducibility Protocol for AI Workloads](#rfc-00a1-deterministic-evidence-and-reproducibility-protocol-for-ai-workloads)
+      - [RFC-00A2: AI Benchmark Specification and Reporting Format](#rfc-00a2-ai-benchmark-specification-and-reporting-format)
+      - [RFC-00A3: Model Artifact Identity and Provenance (GGUF/Safetensors Policy)](#rfc-00a3-model-artifact-identity-and-provenance-ggufsafetensors-policy)
+    - [Phase 2: Core AI Capabilities (Medium Priority - Medium Risk)](#phase-2-core-ai-capabilities-medium-priority---medium-risk)
+      - [RFC-00A4: Ternary Quantization Codec Contract (T3_K and Friends)](#rfc-00a4-ternary-quantization-codec-contract-t3_k-and-friends)
+      - [RFC-00A5: LLM Backend Adapter Interface (Engine-Agnostic)](#rfc-00a5-llm-backend-adapter-interface-engine-agnostic)
+      - [RFC-00A6: Axion Policy Hooks for Inference and Tooling Events](#rfc-00a6-axion-policy-hooks-for-inference-and-tooling-events)
+      - [RFC-00A7: UX Integration for AI in T81 (CLI + Observability + Workflows)](#rfc-00a7-ux-integration-for-ai-in-t81-cli-+-observability-+-workflows)
+    - [Phase 3: Advanced Optimization (Low Priority - High Risk)](#phase-3-advanced-optimization-low-priority---high-risk)
+      - [RFC-00A8: AI-Native VM Opcode Exploration (QMATMUL/ATTN/EMBED…)](#rfc-00a8-ai-native-vm-opcode-exploration-qmatmulattnembed…)
+  - [Implementation Strategy](#implementation-strategy)
+    - [Safe Integration Path](#safe-integration-path)
+    - [Risk Mitigation](#risk-mitigation)
+  - [Developer Experience Integration](#developer-experience-integration)
+    - [CLI Workflow Example](#cli-workflow-example)
+- [1. Initialize AI project](#1-initialize-ai-project)
+- [2. Add trusted model](#2-add-trusted-model)
+- [3. Test with deterministic validation](#3-test-with-deterministic-validation)
+- [4. Benchmark performance](#4-benchmark-performance)
+- [5. Validate policy compliance](#5-validate-policy-compliance)
+- [6. Deploy with monitoring](#6-deploy-with-monitoring)
+    - [Observability Dashboard](#observability-dashboard)
+  - [Timeline and Milestones](#timeline-and-milestones)
+    - [Q1 2026: Foundation](#q1-2026-foundation)
+    - [Q2 2026: Core Capabilities](#q2-2026-core-capabilities)
+    - [Q3 2026: Advanced Features](#q3-2026-advanced-features)
+    - [Q4 2026: Production Readiness](#q4-2026-production-readiness)
+  - [Success Metrics](#success-metrics)
+    - [Technical Metrics](#technical-metrics)
+    - [Quality Metrics](#quality-metrics)
+  - [Community Engagement](#community-engagement)
+    - [Contribution Guidelines](#contribution-guidelines)
+    - [Review Process](#review-process)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 
 This document presents a comprehensive roadmap for integrating AI capabilities into the T81 Foundation ecosystem while preserving its core principle of **bit-exact deterministic computing**. The roadmap consists of 9 structured RFCs that form a controlled path from experimental research to production-ready AI features.

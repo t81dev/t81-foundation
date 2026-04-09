@@ -1,5 +1,57 @@
 # T81 System Integration: Architectural Coalescence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 System Integration: Architectural Coalescence](#t81-system-integration-architectural-coalescence)
+  - [1. The Vision: A Reproducible Computing Discipline](#1-the-vision-a-reproducible-computing-discipline)
+  - [2. Architectural Formalisms](#2-architectural-formalisms)
+    - [2.1 Architectural Assumptions](#21-architectural-assumptions)
+    - [2.2 Component Dependencies](#22-component-dependencies)
+    - [2.3 Interaction Patterns: The Supervision Loop](#23-interaction-patterns-the-supervision-loop)
+    - [2.4 Operational Boundaries](#24-operational-boundaries)
+  - [3. The Vertical Stack](#3-the-vertical-stack)
+    - [Layer 1: The Numeric Substrate (`T81Int`, `T81BigInt`, `T729Tensor`)](#layer-1-the-numeric-substrate-`t81int`-`t81bigint`-`t729tensor`)
+    - [Layer 2: Storage and Persistence (`CanonFS`)](#layer-2-storage-and-persistence-`canonfs`)
+    - [Layer 3: Program Representation (`T81Lang`, `TISC`)](#layer-3-program-representation-`t81lang`-`tisc`)
+    - [Layer 4: The Execution Engine (`HanoiVM`, `Trace-JIT`)](#layer-4-the-execution-engine-`hanoivm`-`trace-jit`)
+    - [Layer 5: Governance and Oversight (`Axion`)](#layer-5-governance-and-oversight-`axion`)
+  - [4. Functional Coalescence: The Life of a Program](#4-functional-coalescence-the-life-of-a-program)
+    - [Phase 1: Source to Binary (Compilation)](#phase-1-source-to-binary-compilation)
+    - [Phase 2: Environment Bootstrapping](#phase-2-environment-bootstrapping)
+    - [Phase 3: Supervised Execution](#phase-3-supervised-execution)
+    - [Phase 4: Dynamic Optimization](#phase-4-dynamic-optimization)
+    - [Phase 5: Audit and Replay](#phase-5-audit-and-replay)
+  - [5. Key System Guarantees](#5-key-system-guarantees)
+  - [6. Comprehensive Example Walkthrough: The "Auditable Accumulator"](#6-comprehensive-example-walkthrough-the-"auditable-accumulator")
+    - [Step 1: Human Intent (T81Lang)](#step-1-human-intent-t81lang)
+    - [Step 2: Canonical Representation (TISC)](#step-2-canonical-representation-tisc)
+    - [Step 3: Governance Definition (Axion Policy)](#step-3-governance-definition-axion-policy)
+    - [Step 4: Integrated Execution (HanoiVM + Axion)](#step-4-integrated-execution-hanoivm-+-axion)
+    - [Step 5: Verification (Audit Replay)](#step-5-verification-audit-replay)
+  - [7. Comprehensive Example Walkthrough: "Policy-Gated Model Inference"](#7-comprehensive-example-walkthrough-"policy-gated-model-inference")
+    - [Step 1: Human Intent (T81Lang)](#step-1-human-intent-t81lang)
+    - [Step 2: Governance Definition (Axion Policy)](#step-2-governance-definition-axion-policy)
+    - [Step 3: Interaction Patterns during `matmul`](#step-3-interaction-patterns-during-`matmul`)
+    - [Step 4: Systemic Coalescence Result](#step-4-systemic-coalescence-result)
+  - [8. Comprehensive Example Walkthrough: "Self-Refining Cognition Loop (Tier 4)"](#8-comprehensive-example-walkthrough-"self-refining-cognition-loop-tier-4")
+    - [Step 1: Reflective Intent (T81Lang)](#step-1-reflective-intent-t81lang)
+    - [Step 2: Reflection Opcodes (TISC)](#step-2-reflection-opcodes-tisc)
+    - [Step 3: Governance of Self-Modification (Axion Policy)](#step-3-governance-of-self-modification-axion-policy)
+    - [Step 4: Coalescence of the Cognition Loop](#step-4-coalescence-of-the-cognition-loop)
+    - [Step 5: Systemic Coalescence Result](#step-5-systemic-coalescence-result)
+  - [9. Full-Stack Coalescence: "Distributed Inference with Self-Tuning"](#9-full-stack-coalescence-"distributed-inference-with-self-tuning")
+    - [The Coalescence](#the-coalescence)
+  - [10. Full-Stack Coalescence: "Policy-Governed Evolutionary Database"](#10-full-stack-coalescence-"policy-governed-evolutionary-database")
+    - [The Coalescence](#the-coalescence)
+  - [11. Full-Stack Coalescence: "Auditable Autonomous Agent"](#11-full-stack-coalescence-"auditable-autonomous-agent")
+    - [The Coalescence](#the-coalescence)
+  - [12. Conclusion: The Unified Machine](#12-conclusion-the-unified-machine)
+
+<!-- T81-TOC:END -->
+
+
 This document provides a comprehensive overview of how the various components of the T81 Foundation stack—T81Lang, TISC, HanoiVM, Axion, and CanonFS—coalesce into a functional, bounded-deterministic, and auditable system.
 
 ---

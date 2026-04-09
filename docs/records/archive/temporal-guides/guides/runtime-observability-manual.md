@@ -1,5 +1,22 @@
 # Runtime / VM Observability Manual
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Runtime / VM Observability Manual](#runtime--vm-observability-manual)
+  - [1. HanoiVM state & Axion hooks](#1-hanoivm-state-&-axion-hooks)
+  - [2. Segment visibility](#2-segment-visibility)
+  - [3. Guard & enum payload instrumentation](#3-guard-&-enum-payload-instrumentation)
+  - [4. Loop & Axion policy metadata](#4-loop-&-axion-policy-metadata)
+  - [5. Observing runtime artifacts](#5-observing-runtime-artifacts)
+  - [6. Fault tracing](#6-fault-tracing)
+  - [7. Linking observability to RFCs](#7-linking-observability-to-rfcs)
+  - [8. Release artifact checklist](#8-release-artifact-checklist)
+
+<!-- T81-TOC:END -->
+
+
 This manual describes the runtime internals you can observe to understand Axion’s determinism guarantees. It covers the HanoiVM state, `State::axion_log`, the segment instrumentation (stack/heap/tensor/meta), guard/enum payload events, and how regressions expose faults so you can audit behavior without deep debugging.
 
 ## 1. HanoiVM state & Axion hooks

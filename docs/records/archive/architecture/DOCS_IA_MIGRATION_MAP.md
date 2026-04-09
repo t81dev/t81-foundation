@@ -1,5 +1,17 @@
 # Docs IA Migration Map
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Docs IA Migration Map](#docs-ia-migration-map)
+  - [Phase 0 Snapshot (pre-move)](#phase-0-snapshot-pre-move)
+  - [Move Map](#move-map)
+  - [Notes / Deferred Follow-ups](#notes--deferred-follow-ups)
+
+<!-- T81-TOC:END -->
+
+
 This record captures the `/docs` IA hardening migration that separates:
 
 - Canonical reference docs

@@ -5,6 +5,24 @@ title: C++ Quickstart Guide
 
 # T81 C++ Quickstart Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 C++ Quickstart Guide](#t81-c++-quickstart-guide)
+  - [1. Prerequisites](#1-prerequisites)
+  - [2. Build and Test](#2-build-and-test)
+- [1. Clone the repository](#1-clone-the-repository)
+- [2. Configure the build (add -G Ninja if you prefer)](#2-configure-the-build-add--g-ninja-if-you-prefer)
+- [3. Build libraries, examples, tests, and docs](#3-build-libraries-examples-tests-and-docs)
+- [4. Run the CTest test suite](#4-run-the-ctest-test-suite)
+  - [3. "Hello Ternary" Example](#3-"hello-ternary"-example)
+  - [4. Where to Go Next](#4-where-to-go-next)
+  - [5. Notes & Caveats](#5-notes-&-caveats)
+
+<!-- T81-TOC:END -->
+
+
 This page is the C++ portal: it describes how to bootstrap the deterministic ledger (build, tests, code, docs) so every artifact remains reproducible.
 
 ______________________________________________________________________

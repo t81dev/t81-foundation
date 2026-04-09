@@ -1,5 +1,30 @@
 # RFC-0034 VM Hotpath SIMD Optimization Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-0034 VM Hotpath SIMD Optimization Evidence](#rfc-0034-vm-hotpath-simd-optimization-evidence)
+  - [Scope](#scope)
+  - [Changes Committed (bb74edaa and preceding commits)](#changes-committed-bb74edaa-and-preceding-commits)
+    - [TWMATMUL — L2 P-tiling + 16-wide NEON/AVX2 unroll + prefetch](#twmatmul-—-l2-p-tiling-+-16-wide-neonavx2-unroll-+-prefetch)
+    - [TATTN — Reordered score loop + NEON int8×int8 + FMA V-output](#tattn-—-reordered-score-loop-+-neon-int8×int8-+-fma-v-output)
+    - [TERNACCUM — ExactTrit fast path](#ternaccum-—-exacttrit-fast-path)
+    - [TQUANT — NEON/AVX2 int8→float widening](#tquant-—-neonavx2-int8→float-widening)
+    - [TACT — Explicit mode + NEON/AVX2 int8→float](#tact-—-explicit-mode-+-neonavx2-int8→float)
+    - [TWEMBED — Branchless trit decode](#twembed-—-branchless-trit-decode)
+    - [RoPE — NEON vld2q_f32 / vst2q_f32 deinterleave rotation](#rope-—-neon-vld2q_f32--vst2q_f32-deinterleave-rotation)
+    - [AVX2 parity](#avx2-parity)
+  - [Benchmark Results (ARM64, Darwin 25.3.0, -O3 -march=native)](#benchmark-results-arm64-darwin-2530--o3--march=native)
+    - [Transformer Layer Forward Pass (dim=256, heads=4, mlp=512)](#transformer-layer-forward-pass-dim=256-heads=4-mlp=512)
+  - [HybridMLP Benchmark and Governance Gate](#hybridmlp-benchmark-and-governance-gate)
+  - [Conformance Test Status](#conformance-test-status)
+- [→ 5/5 pass](#→-55-pass)
+  - [Remaining Evidence Work](#remaining-evidence-work)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Date: 2026-03-21
 Owner: @t81dev

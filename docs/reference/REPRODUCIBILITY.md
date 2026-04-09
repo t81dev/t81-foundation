@@ -1,5 +1,22 @@
 # Reproducibility Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Reproducibility Guide](#reproducibility-guide)
+  - [1. Goal](#1-goal)
+  - [2. Supported Environment](#2-supported-environment)
+  - [3. Reproduction Ritual (Canonical)](#3-reproduction-ritual-canonical)
+- [1. Configure](#1-configure)
+- [2. Build](#2-build)
+- [3. Run the exact T81Lang reproducibility gate](#3-run-the-exact-t81lang-reproducibility-gate)
+  - [4. Expected Artifact Hashes](#4-expected-artifact-hashes)
+  - [5. Known Nondeterminism Surfaces](#5-known-nondeterminism-surfaces)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document provides the exact instructions to reproduce
 > the currently supported T81Lang determinism evidence surfaces and verify them
 > against the checked-in aggregate fixture hash.

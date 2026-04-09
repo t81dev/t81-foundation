@@ -5,6 +5,17 @@ title: "Guide: Runtime Contract Helpers"
 
 # Guide: Runtime Contract Helpers
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Guide: Runtime Contract Helpers](#guide-runtime-contract-helpers)
+  - [TISC Opcode Contract Helpers](#tisc-opcode-contract-helpers)
+  - [VM Safety Counters](#vm-safety-counters)
+
+<!-- T81-TOC:END -->
+
+
 This guide covers new low-level helpers used to harden determinism and safety checks in runtime flows.
 
 ## TISC Opcode Contract Helpers

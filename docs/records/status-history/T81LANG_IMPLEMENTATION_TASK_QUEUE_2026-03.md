@@ -1,5 +1,26 @@
 # T81Lang Implementation Task Queue (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Implementation Task Queue (2026-03)](#t81lang-implementation-task-queue-2026-03)
+  - [Purpose](#purpose)
+  - [Task Queue](#task-queue)
+  - [Follow-On Queue (Post-A1)](#follow-on-queue-post-a1)
+  - [Next-Cycle Queue (Post-A1/A1B)](#next-cycle-queue-post-a1a1b)
+  - [Post-A1C Queue (A1D Seed)](#post-a1c-queue-a1d-seed)
+  - [Post-A1D Queue (A1E Seed)](#post-a1d-queue-a1e-seed)
+  - [Post-A1E Queue (A1F Seed)](#post-a1e-queue-a1f-seed)
+  - [Post-A1F Queue (A1G Seed)](#post-a1f-queue-a1g-seed)
+  - [Execution Rule](#execution-rule)
+  - [Cycle Progression Gate](#cycle-progression-gate)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: @t81dev
 Last Updated: 2026-02-25

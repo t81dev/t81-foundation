@@ -1,5 +1,23 @@
 # T81 Architecture Overview
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Architecture Overview](#t81-architecture-overview)
+  - [Purpose](#purpose)
+  - [Layer Cake](#layer-cake)
+  - [Current State by Layer](#current-state-by-layer)
+  - [Binary Host Execution Boundary](#binary-host-execution-boundary)
+  - [Key Invariants](#key-invariants)
+  - [Execution Summary](#execution-summary)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+  - [Acceptance Criteria](#acceptance-criteria)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26  
 Maturity: Mixed (`Frozen` core, `Experimental` periphery)

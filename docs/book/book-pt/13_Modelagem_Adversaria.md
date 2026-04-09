@@ -1,5 +1,20 @@
 # Capítulo 13: Modelagem Adversária e Ataques de Determinismo
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 13: Modelagem Adversária e Ataques de Determinismo](#capítulo-13-modelagem-adversária-e-ataques-de-determinismo)
+  - [13.1 Modelo de Ameaça](#131-modelo-de-ameaça)
+  - [13.2 Ataques de Nível de Compilador](#132-ataques-de-nível-de-compilador)
+  - [13.3 Vetores de Ataque de VM e GC](#133-vetores-de-ataque-de-vm-e-gc)
+  - [13.4 Ataques CanonFS e Hash](#134-ataques-canonfs-e-hash)
+  - [13.5 Ataque de Viagem no Tempo de Nível Distribuído](#135-ataque-de-viagem-no-tempo-de-nível-distribuído)
+  - [13.6 Modelo de Post-Mortem de Violação de Determinismo](#136-modelo-de-post-mortem-de-violação-de-determinismo)
+
+<!-- T81-TOC:END -->
+
+
 ## 13.1 Modelo de Ameaça
 
 **Status: Teórico**

@@ -11,14 +11,17 @@ title: Public API Overview
 
 - [T81 Foundation: Public API Overview](#t81-foundation-public-api-overview)
   - [1. Where to Look](#1-where-to-look)
-  - [2. Core Numerics (`include/t81/types`, `include/t81/tensor`, `include/t81/ternary`)](#2-core-numerics-`includet81core`-`includet81tensor`-`includet81ternary`)
+  - [2. Core Numerics (`include/t81/types`, `include/t81/tensor`, `include/t81/ternary`)](#2-core-numerics-`includet81types`-`includet81tensor`-`includet81ternary`)
   - [3. Frontend (`include/t81/frontend`)](#3-frontend-`includet81frontend`)
+    - [3.1 Command-Line Frontend Helpers](#31-command-line-frontend-helpers)
   - [4. TISC & VM (`include/t81/tisc`, `include/t81/vm`)](#4-tisc-&-vm-`includet81tisc`-`includet81vm`)
-  - [5. Weights & Tooling (`include/t81/weights`, `tooling/model`)](#5-weights-&-tooling-`includet81weights`-`srctools`)
+  - [5. Weights & Tooling (`include/t81/weights`, `tooling/model`)](#5-weights-&-tooling-`includet81weights`-`toolingmodel`)
   - [6. CanonFS & Axion Entrypoints (`include/t81/canonfs`, `include/t81/axion`)](#6-canonfs-&-axion-entrypoints-`includet81canonfs`-`includet81axion`)
   - [7. Targeted Coverage Notes](#7-targeted-coverage-notes)
 
 <!-- T81-TOC:END -->
+
+
 
 This guide catalogs the public C++ APIs under `include/t81/`, highlights threading/error-handling expectations, and points readers toward the generated Doxygen docs.
 

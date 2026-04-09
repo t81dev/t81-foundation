@@ -1,5 +1,19 @@
 # Capítulo 14: Continuidad y Resiliencia
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 14: Continuidad y Resiliencia](#capítulo-14-continuidad-y-resiliencia)
+  - [14.1 El Protocolo de Sala Limpia](#141-el-protocolo-de-sala-limpia)
+    - [14.1.1 Pasos de Reconstrucción](#1411-pasos-de-reconstrucción)
+  - [14.2 Puntos Únicos de Fallo](#142-puntos-únicos-de-fallo)
+  - [14.3 Manifiesto de Continuidad](#143-manifiesto-de-continuidad)
+  - [14.4 Invariantes Formales Inmutables](#144-invariantes-formales-inmutables)
+
+<!-- T81-TOC:END -->
+
+
 ## 14.1 El Protocolo de Sala Limpia
 
 **Estado: Aspiracional**

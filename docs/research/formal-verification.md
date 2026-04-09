@@ -1,5 +1,20 @@
 # Formal Methods and Verification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Formal Methods and Verification](#formal-methods-and-verification)
+  - [1. Core Arithmetic Primitives](#1-core-arithmetic-primitives)
+    - [Status: Verified](#status-verified)
+  - [2. Axion Policy Invariants](#2-axion-policy-invariants)
+    - [Status: In Progress](#status-in-progress)
+  - [3. Compiler + VM Boundary](#3-compiler-+-vm-boundary)
+    - [Status: Planned](#status-planned)
+
+<!-- T81-TOC:END -->
+
+
 **Last Updated:** February 10, 2026
 
 This document details the formal verification strategy and current status for the T81 Foundation stack. Our goal is to ensure mathematical correctness and absolute determinism across the balanced ternary arithmetic primitives, the Axion policy engine, and the compiler-VM boundary.

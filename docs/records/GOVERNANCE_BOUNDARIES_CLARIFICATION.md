@@ -1,5 +1,60 @@
 # Governance Boundaries Clarification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Boundaries Clarification](#governance-boundaries-clarification)
+  - [Executive Summary](#executive-summary)
+  - [1. Deterministic Core Profile (DCP) Components](#1-deterministic-core-profile-dcp-components)
+    - [1.1 Core DCP - Tier A (Strict Determinism)](#11-core-dcp---tier-a-strict-determinism)
+    - [1.2 Conditional DCP - Tier B (Canonical Numeric)](#12-conditional-dcp---tier-b-canonical-numeric)
+  - [2. Explicitly Excluded Components](#2-explicitly-excluded-components)
+    - [2.1 Outside DCP - Non-Deterministic](#21-outside-dcp---non-deterministic)
+    - [2.2 Experimental - Not DCP Guaranteed](#22-experimental---not-dcp-guaranteed)
+  - [3. Boundary Enforcement Mechanisms](#3-boundary-enforcement-mechanisms)
+    - [3.1 Compile-Time Guards](#31-compile-time-guards)
+    - [3.2 Runtime Policy Enforcement](#32-runtime-policy-enforcement)
+    - [3.3 API Documentation Boundaries](#33-api-documentation-boundaries)
+  - [4. Specification Boundaries](#4-specification-boundaries)
+    - [4.1 Normative DCP Specifications](#41-normative-dcp-specifications)
+    - [4.2 Non-Normative Experimental Specifications](#42-non-normative-experimental-specifications)
+  - [5. CI/CD Enforcement](#5-cicd-enforcement)
+    - [5.1 DCP Compliance Gates](#51-dcp-compliance-gates)
+- [.github/workflows/deterministic-core.yml](#githubworkflowsdeterministic-coreyml)
+    - [5.2 Experimental Feature Gates](#52-experimental-feature-gates)
+- [.github/workflows/experimental-features.yml](#githubworkflowsexperimental-featuresyml)
+  - [6. Documentation Standards](#6-documentation-standards)
+    - [6.1 Component Classification Tags](#61-component-classification-tags)
+    - [6.2 API Boundary Markers](#62-api-boundary-markers)
+  - [7. Migration Path Guidelines](#7-migration-path-guidelines)
+    - [7.1 Experimental → Core Promotion Path](#71-experimental-→-core-promotion-path)
+    - [7.2 Core → Experimental Demotion](#72-core-→-experimental-demotion)
+  - [8. User Guidance](#8-user-guidance)
+    - [8.1 DCP-Only Usage](#81-dcp-only-usage)
+- [Compile with strict DCP enforcement](#compile-with-strict-dcp-enforcement)
+- [Runtime with DCP validation](#runtime-with-dcp-validation)
+    - [8.2 Experimental Usage](#82-experimental-usage)
+- [Explicit experimental feature enablement](#explicit-experimental-feature-enablement)
+- [Runtime with experimental features](#runtime-with-experimental-features)
+    - [8.3 Boundary Violation Detection](#83-boundary-violation-detection)
+  - [9. Compliance Verification](#9-compliance-verification)
+    - [9.1 Automated Boundary Checking](#91-automated-boundary-checking)
+- [scripts/verify_dcp_boundaries.py](#scriptsverify_dcp_boundariespy)
+    - [9.2 Documentation Compliance](#92-documentation-compliance)
+- [scripts/verify_boundary_documentation.py](#scriptsverify_boundary_documentationpy)
+  - [10. Success Criteria](#10-success-criteria)
+    - [10.1 Boundary Clarity Metrics](#101-boundary-clarity-metrics)
+    - [10.2 Compliance Metrics](#102-compliance-metrics)
+  - [11. Implementation Plan](#11-implementation-plan)
+    - [Phase 1: Documentation (Week 1)](#phase-1-documentation-week-1)
+    - [Phase 2: Enforcement (Week 2)](#phase-2-enforcement-week-2)
+    - [Phase 3: User Guidance (Week 3)](#phase-3-user-guidance-week-3)
+  - [12. Conclusion](#12-conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** 2026-03-06  
 **Purpose:** Explicitly define and document the separation between "deterministic core" and "experimental/excluded" components  
 **Status:** Normative - Immediate effect

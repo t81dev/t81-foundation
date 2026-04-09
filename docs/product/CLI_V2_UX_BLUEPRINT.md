@@ -1,5 +1,28 @@
 # CLI v2 UX Blueprint (t81)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI v2 UX Blueprint (t81)](#cli-v2-ux-blueprint-t81)
+  - [1. North-Star Design](#1-north-star-design)
+  - [2. Command Architecture](#2-command-architecture)
+    - [2.1 Core User Workflow (default help)](#21-core-user-workflow-default-help)
+    - [2.2 Expert Workflow (advanced help)](#22-expert-workflow-advanced-help)
+    - [2.3 Internal/Labs Workflow (labs help)](#23-internallabs-workflow-labs-help)
+  - [3. What We Should Provide](#3-what-we-should-provide)
+  - [4. What We Should Not Provide](#4-what-we-should-not-provide)
+  - [5. Gaps We Missed](#5-gaps-we-missed)
+  - [6. Capability Decisions (Keep / Move / Remove)](#6-capability-decisions-keep--move--remove)
+    - [Keep (as product capabilities)](#keep-as-product-capabilities)
+    - [Move to Internal/Labs](#move-to-internallabs)
+    - [Remove from Public Contract Now](#remove-from-public-contract-now)
+  - [7. Migration Strategy (No Flag Day)](#7-migration-strategy-no-flag-day)
+  - [8. Acceptance Bar for “World-Class UX”](#8-acceptance-bar-for-“world-class-ux”)
+
+<!-- T81-TOC:END -->
+
+
 Status: Proposed
 Last Updated: 2026-02-26
 Owner: Product/Tooling

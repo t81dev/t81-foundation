@@ -1,5 +1,43 @@
 # Full System Architectural and Strategic Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Full System Architectural and Strategic Audit](#full-system-architectural-and-strategic-audit)
+  - [Executive Summary](#executive-summary)
+  - [1. Architectural Integrity](#1-architectural-integrity)
+    - [Rating](#rating)
+    - [Drift Matrix (Spec vs Implementation)](#drift-matrix-spec-vs-implementation)
+    - [Layer Violation Analysis](#layer-violation-analysis)
+  - [2. Determinism Validation](#2-determinism-validation)
+    - [Rating](#rating)
+    - [Progress Since February](#progress-since-february)
+    - [Open Determinism Gaps (BG-06..10)](#open-determinism-gaps-bg-0610)
+    - [Determinism Threat Map (Updated)](#determinism-threat-map-updated)
+  - [3. Instruction Set Coherence (TISC)](#3-instruction-set-coherence-tisc)
+  - [4. VM & Execution Engine](#4-vm-&-execution-engine)
+    - [Phase 3 Conformance Expansion (Slice 1 — Complete)](#phase-3-conformance-expansion-slice-1-—-complete)
+  - [5. Axion Governance & Enforcement](#5-axion-governance-&-enforcement)
+  - [6. Documentation vs Reality](#6-documentation-vs-reality)
+    - [Documentation Credibility Score: **7.5/10** (up from 6/10)](#documentation-credibility-score-**7510**-up-from-610)
+    - [Overstatement Map (Updated)](#overstatement-map-updated)
+    - [Remaining Documentation Risks](#remaining-documentation-risks)
+  - [7. Code Quality & Engineering Discipline](#7-code-quality-&-engineering-discipline)
+    - [Test Suite Quality (Updated)](#test-suite-quality-updated)
+    - [Refactor Priority Ranking (Updated)](#refactor-priority-ranking-updated)
+  - [8. Strategic Position Assessment](#8-strategic-position-assessment)
+    - [Classification: **Governed Deterministic Runtime — Early Beta**](#classification-**governed-deterministic-runtime-—-early-beta**)
+  - [9. Hard Truth Section](#9-hard-truth-section)
+    - [5 Most Serious Structural Risks (Updated)](#5-most-serious-structural-risks-updated)
+    - [5 Most Valuable Strengths (Updated)](#5-most-valuable-strengths-updated)
+    - [Single Most Important Next Move](#single-most-important-next-move)
+  - [Strategic Risk Matrix (March)](#strategic-risk-matrix-march)
+  - [Delta Summary (Feb 26 → Mar 1)](#delta-summary-feb-26-→-mar-1)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-02-28
 Status: Active
 Owner: Program Management / Governance

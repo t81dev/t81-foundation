@@ -1,5 +1,24 @@
 # AI CLI Implementation Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI CLI Implementation Matrix](#ai-cli-implementation-matrix)
+  - [Summary](#summary)
+  - [Classification](#classification)
+  - [Matrix](#matrix)
+  - [Evidence](#evidence)
+  - [Relationship To Other Inference Surfaces](#relationship-to-other-inference-surfaces)
+    - [Real execution surfaces today](#real-execution-surfaces-today)
+    - [Experimental bridge surface today](#experimental-bridge-surface-today)
+  - [What Is Complete In The RFC Sense](#what-is-complete-in-the-rfc-sense)
+  - [Missing For True Native Inference](#missing-for-true-native-inference)
+  - [Recommended Next Milestone](#recommended-next-milestone)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-29
 Authority: `tools/cli/ai/ai_cli_shared.cpp`, `tools/cli/main.cpp`, related tests and examples
 

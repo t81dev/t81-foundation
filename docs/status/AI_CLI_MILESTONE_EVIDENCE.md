@@ -1,5 +1,21 @@
 # AI CLI Milestone Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI CLI Milestone Evidence](#ai-cli-milestone-evidence)
+  - [Purpose](#purpose)
+  - [Current Milestone](#current-milestone)
+  - [Runnable Evidence](#runnable-evidence)
+  - [Contract Evidence](#contract-evidence)
+  - [What This Does Not Yet Prove](#what-this-does-not-yet-prove)
+  - [Related Status Docs](#related-status-docs)
+  - [Build Evidence](#build-evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-29
 Authority: `tools/cli/ai/ai_cli_shared.cpp`, `tests/cpp/cli_contract_test.cpp`, `examples/model-load-canonfs/`

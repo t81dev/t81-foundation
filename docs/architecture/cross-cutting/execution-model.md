@@ -1,5 +1,20 @@
 # Cross-Cutting: Execution Model
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cross-Cutting: Execution Model](#cross-cutting-execution-model)
+  - [Purpose](#purpose)
+  - [Execution Pathways](#execution-pathways)
+  - [Current Maturity](#current-maturity)
+  - [Key Invariants](#key-invariants)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26
 

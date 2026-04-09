@@ -1,5 +1,17 @@
 # CLI JSON Schema Contracts (t81)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI JSON Schema Contracts (t81)](#cli-json-schema-contracts-t81)
+  - [1. Schema IDs](#1-schema-ids)
+  - [2. Compatibility Rules](#2-compatibility-rules)
+  - [3. Minimum Contract Tests](#3-minimum-contract-tests)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-08
 Owner: Product/Tooling

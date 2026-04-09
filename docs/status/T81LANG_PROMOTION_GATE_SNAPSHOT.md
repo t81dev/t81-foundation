@@ -1,5 +1,23 @@
 # T81Lang Promotion Gate Snapshot
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Promotion Gate Snapshot](#t81lang-promotion-gate-snapshot)
+  - [Gate Criteria Status](#gate-criteria-status)
+  - [Promotion Readiness](#promotion-readiness)
+  - [Backlog Statuses](#backlog-statuses)
+  - [Command Runs](#command-runs)
+    - [Docs Governance Hygiene](#docs-governance-hygiene)
+    - [Conformance + Semantics Slice](#conformance-+-semantics-slice)
+    - [Compile Determinism Slice](#compile-determinism-slice)
+    - [Axion Metadata Slice](#axion-metadata-slice)
+    - [Repro Gate](#repro-gate)
+
+<!-- T81-TOC:END -->
+
+
 Generated (UTC): 2026-03-15 15:32:32Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 

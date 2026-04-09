@@ -1,5 +1,22 @@
 # Release Notes: TISC v1.1.0 (Canonical Freeze)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release Notes: TISC v1.1.0 (Canonical Freeze)](#release-notes-tisc-v110-canonical-freeze)
+  - [Overview](#overview)
+  - [Key Changes](#key-changes)
+    - [1. Bitwise Integer Operations (RFC-Implementation)](#1-bitwise-integer-operations-rfc-implementation)
+    - [2. Neural, Axion, and Async/Network Primitives](#2-neural-axion-and-asyncnetwork-primitives)
+    - [3. Reserved Range](#3-reserved-range)
+  - [Determinism Caveats](#determinism-caveats)
+  - [Deferred Extensions](#deferred-extensions)
+  - [Migration Guide](#migration-guide)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2025-02-15
 **Status:** Frozen / Long-Term Stable
 **Canonical Opcode Count:** 174

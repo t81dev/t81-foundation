@@ -1,5 +1,23 @@
 # Release Discipline Checklist (Status View)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release Discipline Checklist (Status View)](#release-discipline-checklist-status-view)
+  - [Purpose](#purpose)
+  - [Source of Truth](#source-of-truth)
+  - [Pre-Tag Checklist (`vX.Y.Z`)](#pre-tag-checklist-`vxyz`)
+  - [Required-Context Verification Procedure](#required-context-verification-procedure)
+  - [Release Decision Gate](#release-decision-gate)
+  - [Non-Required Workflow Failure Rule](#non-required-workflow-failure-rule)
+  - [Required Release Artifacts](#required-release-artifacts)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-02-25
 Owner: Release / Governance

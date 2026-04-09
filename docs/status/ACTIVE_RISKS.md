@@ -1,5 +1,16 @@
 # Active Risks
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Active Risks](#active-risks)
+  - [Open Risks](#open-risks)
+  - [Closed Risks](#closed-risks)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-04-01
 Owner: @t81dev
 Cadence: Weekly refresh

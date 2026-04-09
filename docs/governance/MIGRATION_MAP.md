@@ -1,5 +1,15 @@
 # Migration Map
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Migration Map](#migration-map)
+  - [Execution Strategy](#execution-strategy)
+
+<!-- T81-TOC:END -->
+
+
 This document outlines the planned movement of files and directories to achieve the new governance structure.
 
 | Current Path | New Path | Rationale |

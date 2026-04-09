@@ -1,5 +1,20 @@
 # Tutorial: Building and Deploying Secure Ternary Applications
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Tutorial: Building and Deploying Secure Ternary Applications](#tutorial-building-and-deploying-secure-ternary-applications)
+  - [Step 1: Write the T81Lang Source](#step-1-write-the-t81lang-source)
+  - [Step 2: Author the Axion Policy](#step-2-author-the-axion-policy)
+  - [Step 3: Compile and Validate](#step-3-compile-and-validate)
+  - [Step 4: Secure Execution](#step-4-secure-execution)
+  - [Step 5: Auditing the Trace](#step-5-auditing-the-trace)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 This tutorial provides a step-by-step guide to developing, securing, and auditing an application on the T81 Foundation stack. We will build a simple "Secure Vault" that uses Axion policies to ensure all memory access is audited.
 
 ______________________________________________________________________

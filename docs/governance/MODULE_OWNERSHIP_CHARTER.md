@@ -1,5 +1,22 @@
 # Module Ownership Charter
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Module Ownership Charter](#module-ownership-charter)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Definitions](#definitions)
+  - [Module Taxonomy (Authoritative)](#module-taxonomy-authoritative)
+  - [Ownership Model](#ownership-model)
+  - [Freeze Escalation Rules](#freeze-escalation-rules)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Version: 1.0.0
 Owner: Governance

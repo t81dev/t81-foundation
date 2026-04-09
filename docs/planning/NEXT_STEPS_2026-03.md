@@ -1,5 +1,22 @@
 # T81 Foundation: Next Steps (Sprint 2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Next Steps (Sprint 2026-03)](#t81-foundation-next-steps-sprint-2026-03)
+  - [Executive Summary](#executive-summary)
+  - [Prioritized Milestones](#prioritized-milestones)
+  - [Risks & Mitigations](#risks-&-mitigations)
+  - [Task Breakdown](#task-breakdown)
+    - [Technical Actions (60–70% capacity)](#technical-actions-60–70%-capacity)
+    - [Project Management & Docs Actions (30–40% capacity)](#project-management-&-docs-actions-30–40%-capacity)
+  - [Appendix](#appendix)
+    - [New RFC Stubs Needed](#new-rfc-stubs-needed)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Summary
 
 As of v1.9.5, the T81 core is frozen and stable (TISC, bit-exact determinism, Axion policy engine). Our top strategic priority for this sprint is to move the bare-metal Axion/ternaryos kernel from alpha to beta, unlocking our "first deterministic ternary-native OS" narrative without host dependencies. Concurrently, we will deliberately tackle the "first-killer-app" barrier by delivering a concrete, 60-second governed ternary inference demo (T3K quantization + policy enforcement) to drastically improve external discoverability and SEO, turning our internal CI success into external momentum.

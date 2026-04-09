@@ -1,5 +1,20 @@
 # Active Tasks
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Active Tasks](#active-tasks)
+  - [Current Priority](#current-priority)
+  - [Now](#now)
+  - [Next](#next)
+  - [Explicitly Deferred](#explicitly-deferred)
+  - [Recently Closed](#recently-closed)
+  - [Rule](#rule)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-04-01
 Owner: @t81dev
 

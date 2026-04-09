@@ -1,5 +1,16 @@
 # Governance Boundaries Clarification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Boundaries Clarification](#governance-boundaries-clarification)
+  - [Overview](#overview)
+  - [Boundaries](#boundaries)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 This document clarifies the governance boundaries and deterministic profile enforcement for the T81VM and associated components.
 

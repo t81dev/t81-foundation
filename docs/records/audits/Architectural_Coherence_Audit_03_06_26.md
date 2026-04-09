@@ -1,5 +1,56 @@
 # T81 Architectural Coherence Audit Prompt
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Architectural Coherence Audit Prompt](#t81-architectural-coherence-audit-prompt)
+- [T81 Architectural Coherence Audit Report](#t81-architectural-coherence-audit-report)
+  - [Executive Summary](#executive-summary)
+  - [Architecture Overview](#architecture-overview)
+  - [Layer-by-Layer Findings](#layer-by-layer-findings)
+    - [1. Data Representation Layer](#1-data-representation-layer)
+    - [2. Language Layer (T81Lang)](#2-language-layer-t81lang)
+    - [3. Instruction Set (TISC)](#3-instruction-set-tisc)
+    - [4. Virtual Machine (T81VM)](#4-virtual-machine-t81vm)
+    - [5. Determinism Guarantees](#5-determinism-guarantees)
+    - [6. Governance and Policy Layer (Axion)](#6-governance-and-policy-layer-axion)
+    - [7. AI-Native Execution Surfaces (RFC-0026)](#7-ai-native-execution-surfaces-rfc-0026)
+    - [8. CI Determinism Infrastructure](#8-ci-determinism-infrastructure)
+    - [9. Benchmarking and Validation](#9-benchmarking-and-validation)
+    - [10. Architectural Coherence](#10-architectural-coherence)
+  - [Determinism Risk Analysis](#determinism-risk-analysis)
+  - [Integration Gaps](#integration-gaps)
+  - [Governance Coverage](#governance-coverage)
+  - [CI Enforcement Coverage](#ci-enforcement-coverage)
+  - [Evidence of Deterministic Behavior](#evidence-of-deterministic-behavior)
+  - [System Maturity Assessment](#system-maturity-assessment)
+  - [Final Verdict](#final-verdict)
+  - [Recommendations](#recommendations)
+- [T81 Architectural Coherence Audit - Remediation Prompt](#t81-architectural-coherence-audit---remediation-prompt)
+- [PART 1 — Deterministic Container Hashing](#part-1-—-deterministic-container-hashing)
+- [PART 2 — Deterministic Software Math Layer](#part-2-—-deterministic-software-math-layer)
+- [PART 3 — Native Container IR](#part-3-—-native-container-ir)
+- [PART 4 — Complete Experimental Types](#part-4-—-complete-experimental-types)
+- [PART 5 — Formalize Binary Hardware Boundary](#part-5-—-formalize-binary-hardware-boundary)
+- [PART 6 — CI Determinism Extensions](#part-6-—-ci-determinism-extensions)
+- [PART 7 — Validation](#part-7-—-validation)
+- [PART 8 — Deliverables](#part-8-—-deliverables)
+- [OBJECTIVE](#objective)
+- [PART 1 — Fix BigInt Literal Parsing (Compiler Layer)](#part-1-—-fix-bigint-literal-parsing-compiler-layer)
+- [PART 2 — Repair VM Arithmetic Semantics](#part-2-—-repair-vm-arithmetic-semantics)
+- [PART 3 — Eliminate Runtime Trap Failures](#part-3-—-eliminate-runtime-trap-failures)
+- [PART 4 — Expand Determinism Verification Corpus](#part-4-—-expand-determinism-verification-corpus)
+- [PART 5 — Improve CI Build Reliability](#part-5-—-improve-ci-build-reliability)
+- [PART 6 — Strengthen Deterministic Memory Behavior](#part-6-—-strengthen-deterministic-memory-behavior)
+- [PART 7 — Axion Governance Promotion](#part-7-—-axion-governance-promotion)
+- [PART 8 — Documentation Alignment](#part-8-—-documentation-alignment)
+- [PART 9 — Validation](#part-9-—-validation)
+- [DELIVERABLES](#deliverables)
+
+<!-- T81-TOC:END -->
+
+
 You are a senior systems architect, language/runtime engineer, and deterministic computing auditor tasked with performing a full architectural coherence audit of the T81 deterministic ternary computing stack.
 
 Repository: https://github.com/t81dev/t81-foundation

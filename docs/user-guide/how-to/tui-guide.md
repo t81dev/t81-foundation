@@ -1,5 +1,26 @@
 # T81 TUI Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 TUI Guide](#t81-tui-guide)
+  - [t81 studio](#t81-studio)
+    - [Layout](#layout)
+    - [Keyboard shortcuts](#keyboard-shortcuts)
+    - [Views](#views)
+  - [t81 agent](#t81-agent)
+    - [Flags](#flags)
+    - [Layout](#layout)
+    - [Slash commands](#slash-commands)
+    - [Trit-probability display](#trit-probability-display)
+    - [Session persistence](#session-persistence)
+  - [Building with TUI support](#building-with-tui-support)
+  - [Troubleshooting](#troubleshooting)
+
+<!-- T81-TOC:END -->
+
+
 The T81 toolchain ships two optional text-based user interfaces built with
 [FTXUI](https://github.com/ArthurSonzogni/FTXUI):
 

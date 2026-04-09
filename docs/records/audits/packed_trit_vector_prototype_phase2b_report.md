@@ -1,5 +1,31 @@
 # PackedTritVector Prototype Phase 2B Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Prototype Phase 2B Report](#packedtritvector-prototype-phase-2b-report)
+  - [1. Summary](#1-summary)
+  - [2. Phase 2A Follow-Through Adjustments](#2-phase-2a-follow-through-adjustments)
+    - [Performance Claims](#performance-claims)
+    - [Storage vs Compute Representation](#storage-vs-compute-representation)
+    - [Benchmark Metadata](#benchmark-metadata)
+  - [3. Direct Packed 2-Bit Tritwise Design (LUT-First)](#3-direct-packed-2-bit-tritwise-design-lut-first)
+    - [Byte-Lane Mapping](#byte-lane-mapping)
+    - [LUT Strategy](#lut-strategy)
+    - [Invalid-State Policy](#invalid-state-policy)
+  - [4. Implementation of Direct Packed Ops](#4-implementation-of-direct-packed-ops)
+    - [Reference Path](#reference-path)
+    - [Partial-Byte Handling](#partial-byte-handling)
+    - [`TXor` Implementation](#`txor`-implementation)
+  - [5. Conformance and Safety Verification](#5-conformance-and-safety-verification)
+  - [6. Benchmark Comparisons](#6-benchmark-comparisons)
+  - [7. Validation Results](#7-validation-results)
+  - [8. Phase 2C Recommendations and Remaining Gaps](#8-phase-2c-recommendations-and-remaining-gaps)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 Phase 2B successfully implements **direct tritwise operations** on the `ComputeTritVector` 2-bit packed representation, fulfilling the primary goal of eliminating the unpack-operate-repack bottleneck in the hot path.

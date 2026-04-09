@@ -1,5 +1,30 @@
 # T81 Foundation Project Profile
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Project Profile](#t81-foundation-project-profile)
+  - [1. Executive Positioning](#1-executive-positioning)
+  - [2. Architectural Overview](#2-architectural-overview)
+    - [Base-81 / balanced ternary data model](#base-81--balanced-ternary-data-model)
+    - [Deterministic runtime and virtual machine](#deterministic-runtime-and-virtual-machine)
+    - [Axion policy enforcement](#axion-policy-enforcement)
+    - [CanonFS immutable storage and provenance](#canonfs-immutable-storage-and-provenance)
+    - [TernaryOS and systems direction](#ternaryos-and-systems-direction)
+  - [3. What Works Now](#3-what-works-now)
+  - [4. What Is Stable, Draft, And Experimental](#4-what-is-stable-draft-and-experimental)
+    - [Stable enough to build against](#stable-enough-to-build-against)
+    - [Draft but meaningful](#draft-but-meaningful)
+    - [Experimental](#experimental)
+  - [5. Why T81 Is Distinct](#5-why-t81-is-distinct)
+  - [6. Current Risks And Friction](#6-current-risks-and-friction)
+  - [7. Best Near-Term Development Shape](#7-best-near-term-development-shape)
+  - [8. Recommended Reading Order](#8-recommended-reading-order)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Executive Positioning
 
 T81 Foundation delivers bit-exact, policy-enforced deterministic execution for governed computation surfaces, with a ternary-native data model and immutable provenance substrate in CanonFS.

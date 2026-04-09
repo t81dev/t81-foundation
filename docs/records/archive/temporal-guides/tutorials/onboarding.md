@@ -5,6 +5,23 @@ title: Developer Onboarding
 
 # T81 Foundation: Developer Onboarding
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: Developer Onboarding](#t81-foundation-developer-onboarding)
+  - [1. Prerequisites](#1-prerequisites)
+  - [2. Repository Layout at a Glance](#2-repository-layout-at-a-glance)
+  - [3. Build, Test, and Docs Workflow](#3-build-test-and-docs-workflow)
+  - [3.1 Canonical Ecosystem Consumer Path](#31-canonical-ecosystem-consumer-path)
+  - [4. CLI Cheat Sheet](#4-cli-cheat-sheet)
+  - [5. First Bug Fix / Feature Path](#5-first-bug-fix--feature-path)
+  - [6. Troubleshooting Tips](#6-troubleshooting-tips)
+  - [7. Further Reading](#7-further-reading)
+
+<!-- T81-TOC:END -->
+
+
 This guide is the deterministic portal: it lays out the ledgered path from cloning the repo to shipping a change, complete with Axion policies, canonical builds, and reproducibility checkpoints.
 
 ______________________________________________________________________

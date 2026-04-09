@@ -1,5 +1,39 @@
 # CI Gate Status
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CI Gate Status](#ci-gate-status)
+  - [Purpose](#purpose)
+  - [Branch Protection: Required Contexts](#branch-protection-required-contexts)
+  - [Informational Gates (Non-Required)](#informational-gates-non-required)
+  - [Benchmark Workflow Split](#benchmark-workflow-split)
+  - [Operational Notes (2026-04-01)](#operational-notes-2026-04-01)
+  - [Operational Notes (2026-03-26, historical snapshot)](#operational-notes-2026-03-26-historical-snapshot)
+  - [Operational Notes (2026-03-22, axion integration)](#operational-notes-2026-03-22-axion-integration)
+  - [Operational Notes (2026-03-22)](#operational-notes-2026-03-22)
+  - [Operational Notes (2026-03-19)](#operational-notes-2026-03-19)
+  - [Operational Notes (2026-03-15)](#operational-notes-2026-03-15)
+  - [Operational Notes (2026-03-14)](#operational-notes-2026-03-14)
+  - [Operational Notes (2026-03-06)](#operational-notes-2026-03-06)
+  - [Known Failures](#known-failures)
+    - [TLOADHASH Tests — Closed (2026-03-15)](#tloadhash-tests-—-closed-2026-03-15)
+    - [Jekyll Pages Build — Mitigating](#jekyll-pages-build-—-mitigating)
+    - [2026-03-14 CI Incident — Resolved](#2026-03-14-ci-incident-—-resolved)
+    - [2026-03-05 CI Incident — Resolved](#2026-03-05-ci-incident-—-resolved)
+  - [Benchmark Guardrail Signal](#benchmark-guardrail-signal)
+  - [Flaky Test Inventory](#flaky-test-inventory)
+  - [Repro Ledger](#repro-ledger)
+  - [Stdlib Surface Baseline Gate](#stdlib-surface-baseline-gate)
+  - [Governance and Hygiene Gates](#governance-and-hygiene-gates)
+  - [Cadence](#cadence)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-04-01
 Owner: @t81dev

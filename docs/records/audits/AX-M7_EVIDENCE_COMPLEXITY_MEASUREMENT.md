@@ -1,5 +1,41 @@
 # AX-M7 Evidence: Complexity Measurement (Axion §1.3)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AX-M7 Evidence: Complexity Measurement (Axion §1.3)](#ax-m7-evidence-complexity-measurement-axion-§13)
+  - [📋 **Requirement Summary**](#📋-**requirement-summary**)
+  - [🔍 **Evidence Collected**](#🔍-**evidence-collected**)
+    - [**1. Recursion Depth Measurement**](#**1-recursion-depth-measurement**)
+    - [**2. Call Graph Complexity Measurement**](#**2-call-graph-complexity-measurement**)
+    - [**3. Tensor and Matrix Operation Complexity**](#**3-tensor-and-matrix-operation-complexity**)
+    - [**4. Shape Explosion Detection**](#**4-shape-explosion-detection**)
+    - [**5. Branching Factor and Path Divergence**](#**5-branching-factor-and-path-divergence**)
+  - [📊 **Test Coverage Evidence**](#📊-**test-coverage-evidence**)
+    - [**Complexity Measurement Test Suite**](#**complexity-measurement-test-suite**)
+    - [**Coverage Metrics**](#**coverage-metrics**)
+  - [🔧 **Implementation Evidence**](#🔧-**implementation-evidence**)
+    - [**Complexity Measurement Components**](#**complexity-measurement-components**)
+    - [**Integration Points**](#**integration-points**)
+  - [📈 **Performance Evidence**](#📈-**performance-evidence**)
+    - [**Complexity Measurement Overhead**](#**complexity-measurement-overhead**)
+    - [**Scalability Evidence**](#**scalability-evidence**)
+  - [🔍 **Detailed Complexity Metrics Evidence**](#🔍-**detailed-complexity-metrics-evidence**)
+    - [**Recursion Depth Metrics**](#**recursion-depth-metrics**)
+    - [**Call Graph Complexity Metrics**](#**call-graph-complexity-metrics**)
+    - [**Tensor Operation Metrics**](#**tensor-operation-metrics**)
+    - [**Shape Explosion Metrics**](#**shape-explosion-metrics**)
+    - [**Branching Factor Metrics**](#**branching-factor-metrics**)
+  - [✅ **Evidence Conclusion**](#✅-**evidence-conclusion**)
+    - [**Requirements Satisfaction:**](#**requirements-satisfaction**)
+    - [**Beta Readiness:**](#**beta-readiness**)
+    - [**Tier Transition Guidance:**](#**tier-transition-guidance**)
+    - [**Governance Acceptance:**](#**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Evidence ID:** AX-M7-2026-03-04  
 **Specification Section:** Axion Governance Kernel §1.3 - Complexity Measurement
 **Target Date:** 2026-03-14 (Completed 2026-03-04)  

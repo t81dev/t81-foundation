@@ -1,5 +1,21 @@
 # T81 Strict Determinism Profile — Minimal Implementation Delta Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Strict Determinism Profile — Minimal Implementation Delta Plan](#t81-strict-determinism-profile-—-minimal-implementation-delta-plan)
+  - [1. Core Numerics (T81Float Guardrails)](#1-core-numerics-t81float-guardrails)
+  - [2. VM Trap & Fault Semantics](#2-vm-trap-&-fault-semantics)
+  - [3. Axion Policy Enforcement](#3-axion-policy-enforcement)
+  - [4. Symbol Identity Stabilization](#4-symbol-identity-stabilization)
+  - [5. Error Determinism](#5-error-determinism)
+  - [6. Verification & CI](#6-verification-&-ci)
+  - [Summary](#summary)
+
+<!-- T81-TOC:END -->
+
+
 This plan outlines the minimal set of changes required to enforce the **Strict Determinism Profile (Tier A)** defined in `spec/determinism-profile.md`.
 
 ## 1. Core Numerics (T81Float Guardrails)

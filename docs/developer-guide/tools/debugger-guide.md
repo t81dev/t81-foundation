@@ -1,5 +1,24 @@
 # HanoiVM Debugger Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [HanoiVM Debugger Guide](#hanoivm-debugger-guide)
+  - [Usage](#usage)
+  - [Commands](#commands)
+    - [Execution Control](#execution-control)
+    - [Breakpoints & Watchpoints](#breakpoints-&-watchpoints)
+    - [Inspection](#inspection)
+    - [Help](#help)
+  - [Advanced Features](#advanced-features)
+    - [Policy Breakpoints](#policy-breakpoints)
+    - [Watchpoints](#watchpoints)
+  - [Example Session](#example-session)
+
+<!-- T81-TOC:END -->
+
+
 The `t81 debug` command provides a built-in interactive debugger for HanoiVM, allowing you to step through instructions, inspect memory and registers, and set various types of breakpoints.
 
 ## Usage

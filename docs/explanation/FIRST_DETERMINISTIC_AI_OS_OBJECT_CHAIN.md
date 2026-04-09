@@ -1,5 +1,21 @@
 # First Deterministic AI OS-Object Chain
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [First Deterministic AI OS-Object Chain](#first-deterministic-ai-os-object-chain)
+  - [What Happens](#what-happens)
+  - [The Four Objects](#the-four-objects)
+  - [Canonical Identity Invariant](#canonical-identity-invariant)
+  - [Key Helper Surfaces](#key-helper-surfaces)
+  - [What This Is](#what-this-is)
+  - [What This Is Not](#what-this-is-not)
+  - [Core Claim](#core-claim)
+
+<!-- T81-TOC:END -->
+
+
 This is the smallest current example of T81 acting like a governed AI
 OS-object substrate rather than only an AI runtime.
 

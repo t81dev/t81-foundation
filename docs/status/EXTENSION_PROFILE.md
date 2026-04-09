@@ -1,5 +1,22 @@
 # Extension Profile
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Extension Profile](#extension-profile)
+  - [The Rule](#the-rule)
+  - [Experimental Surfaces (Non-DCP)](#experimental-surfaces-non-dcp)
+  - [Governed Non-DCP Surfaces](#governed-non-dcp-surfaces)
+  - [Governed Active Surfaces Outside DCP](#governed-active-surfaces-outside-dcp)
+  - [Explicit Determinism Exclusions](#explicit-determinism-exclusions)
+  - [Promotion Path](#promotion-path)
+  - [What This Document Is NOT](#what-this-document-is-not)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-30
 Owner: @t81dev
 

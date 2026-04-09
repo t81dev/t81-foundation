@@ -1,5 +1,44 @@
 # T81 Foundation Development Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Development Roadmap](#t81-foundation-development-roadmap)
+  - [Executive Summary](#executive-summary)
+  - [Current Architecture State](#current-architecture-state)
+    - [Core Subsystems and Maturity](#core-subsystems-and-maturity)
+    - [Determinism Surface Registry](#determinism-surface-registry)
+  - [Strategic Development Phases](#strategic-development-phases)
+    - [Phase 1: Stabilization (2026 Q1-Q2)](#phase-1-stabilization-2026-q1-q2)
+    - [Phase 2: Integration (2026 Q3-Q4)](#phase-2-integration-2026-q3-q4)
+    - [Phase 3: Expansion (2027 Q1-Q3)](#phase-3-expansion-2027-q1-q3)
+    - [Phase 4: Ecosystem (2027 Q4+)](#phase-4-ecosystem-2027-q4+)
+  - [Component Promotion Criteria](#component-promotion-criteria)
+    - [Alpha → Beta Promotion Requirements](#alpha-→-beta-promotion-requirements)
+    - [Beta → Stable Promotion Requirements](#beta-→-stable-promotion-requirements)
+    - [Experimental → Promotion Path](#experimental-→-promotion-path)
+  - [Risk Management and Mitigation](#risk-management-and-mitigation)
+    - [High-Priority Risks](#high-priority-risks)
+    - [Technical Risks](#technical-risks)
+  - [Governance and Decision Making](#governance-and-decision-making)
+    - [Promotion Gates](#promotion-gates)
+    - [Change Management](#change-management)
+    - [Review Cadence](#review-cadence)
+  - [Success Metrics](#success-metrics)
+    - [Phase 1 Success Indicators](#phase-1-success-indicators)
+    - [Phase 2 Success Indicators](#phase-2-success-indicators)
+    - [Phase 3 Success Indicators](#phase-3-success-indicators)
+    - [Phase 4 Success Indicators](#phase-4-success-indicators)
+  - [Resource Requirements](#resource-requirements)
+    - [Development Resources](#development-resources)
+    - [Infrastructure](#infrastructure)
+    - [Community and Ecosystem](#community-and-ecosystem)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Status**: Active
 **Last Updated**: 2026-03-07
 **Version**: 3.1.0

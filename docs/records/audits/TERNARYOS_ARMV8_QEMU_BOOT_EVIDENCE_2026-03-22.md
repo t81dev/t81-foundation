@@ -1,5 +1,24 @@
 # TernaryOS ARMv8 QEMU Boot Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [TernaryOS ARMv8 QEMU Boot Evidence](#ternaryos-armv8-qemu-boot-evidence)
+  - [Summary](#summary)
+  - [Probe Parameters](#probe-parameters)
+  - [Contract File Verification](#contract-file-verification)
+  - [Boot Report (`boot-report.txt`)](#boot-report-`boot-reporttxt`)
+  - [Startup Status (`startup-status.txt`)](#startup-status-`startup-statustxt`)
+  - [Phase 4/5 Device Evidence (`startup-phase4.txt`)](#phase-45-device-evidence-`startup-phase4txt`)
+  - [Serial Output (key lines)](#serial-output-key-lines)
+  - [Probe Summary](#probe-summary)
+  - [Notes](#notes)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-22
 **Milestone:** TernaryOS bare-metal boot — QEMU ARMv8/AArch64 EFI lane (Phase 5)
 **Status:** PASS — all contract files verified; Phase 5 startup + CanonStore + display/network round-trips confirmed

@@ -1,5 +1,16 @@
 # Terminology Alignment Notes
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Terminology Alignment Notes](#terminology-alignment-notes)
+  - [Canonical Terms](#canonical-terms)
+  - [Alignment Rules](#alignment-rules)
+
+<!-- T81-TOC:END -->
+
+
 Snapshot date: 2026-02-08.
 
 This document aligns key terms used across `t81-foundation`, `duotronic-whitepaper`, and `t81-docs`.

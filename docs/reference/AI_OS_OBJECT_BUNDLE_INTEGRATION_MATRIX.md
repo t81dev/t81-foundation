@@ -1,5 +1,18 @@
 # AI OS-Object Bundle Integration Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI OS-Object Bundle Integration Matrix](#ai-os-object-bundle-integration-matrix)
+  - [Scope](#scope)
+  - [Integration Matrix](#integration-matrix)
+  - [Reading The Columns](#reading-the-columns)
+  - [Operating Rule](#operating-rule)
+
+<!-- T81-TOC:END -->
+
+
 This matrix describes the most realistic current integration targets for the
 canonical bundle in the admitted bounded AI OS-object family.
 

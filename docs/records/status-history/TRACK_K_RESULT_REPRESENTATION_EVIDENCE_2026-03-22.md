@@ -1,5 +1,27 @@
 # Track K — Result Representation Fix Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Track K — Result Representation Fix Evidence](#track-k-—-result-representation-fix-evidence)
+  - [Summary](#summary)
+  - [Root Cause](#root-cause)
+  - [Changes Made](#changes-made)
+    - [`vm/tensor_helpers.cpp`](#`vmtensor_helperscpp`)
+    - [`include/t81/tensor/matmul.hpp`](#`includet81tensormatmulhpp`)
+    - [`include/t81/tensor/reduce.hpp`](#`includet81tensorreducehpp`)
+    - [`include/t81/tensor/unary.hpp`](#`includet81tensorunaryhpp`)
+    - [`include/t81/tensor/llama.hpp`](#`includet81tensorllamahpp`)
+    - [`tests/cpp/vm_tensor_test.cpp`](#`testscppvm_tensor_testcpp`)
+  - [Test Results](#test-results)
+  - [Benchmark: `BM_NativeWeightsExpThenMatMul_T81Native`](#benchmark-`bm_nativeweightsexpthenmatmul_t81native`)
+  - [What Was NOT Fixed (Deferred)](#what-was-not-fixed-deferred)
+  - [RFC-00BB §6.3 Update](#rfc-00bb-§63-update)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-22
 **Status:** Implemented; 405/405 tests passing
 

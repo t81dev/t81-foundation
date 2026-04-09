@@ -1,5 +1,27 @@
 # Chapter 13: Adversarial Modeling and Determinism Attacks
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 13: Adversarial Modeling and Determinism Attacks](#chapter-13-adversarial-modeling-and-determinism-attacks)
+  - [13.1 Threat Model](#131-threat-model)
+  - [13.2 Compiler-Level Attacks](#132-compiler-level-attacks)
+  - [13.3 VM and GC Attack Vectors](#133-vm-and-gc-attack-vectors)
+  - [13.4 CanonFS and Hash Attacks](#134-canonfs-and-hash-attacks)
+  - [13.5 Distributed Tier Time-Travel Attack](#135-distributed-tier-time-travel-attack)
+  - [13.6 Determinism Breach Postmortem Template](#136-determinism-breach-postmortem-template)
+    - [Tabletop Exercise](#tabletop-exercise)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 Determinism can fail through design mistakes, implementation bugs, or deliberate attack. This chapter teaches how to reason about hostile conditions so assurance claims remain credible under pressure.
 
 For onboarding, the core lesson is: strong systems are built assuming adversaries exist, not hoping they do not.

@@ -1,5 +1,50 @@
 # Experimental Tooling Consolidation Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Experimental Tooling Consolidation Plan](#experimental-tooling-consolidation-plan)
+  - [**Analysis: Significant Duplication Identified**](#**analysis-significant-duplication-identified**)
+    - [**🔍 Duplicate Categories Found**](#**🔍-duplicate-categories-found**)
+      - [**1. AI System Frameworks (3 duplicates)**](#**1-ai-system-frameworks-3-duplicates**)
+      - [**2. Bundle AI Integration (2 duplicates)**](#**2-bundle-ai-integration-2-duplicates**)
+      - [**3. Critical Issue Fixes (2 duplicates)**](#**3-critical-issue-fixes-2-duplicates**)
+      - [**4. Testing Frameworks (2 duplicates)**](#**4-testing-frameworks-2-duplicates**)
+      - [**5. Ternary Impact Demos (2 duplicates)**](#**5-ternary-impact-demos-2-duplicates**)
+  - [**🎯 Consolidation Strategy**](#**🎯-consolidation-strategy**)
+    - [**Phase 1: Remove Clear Duplicates**](#**phase-1-remove-clear-duplicates**)
+      - [**AI Frameworks** → Keep 1, Remove 2](#**ai-frameworks**-→-keep-1-remove-2)
+      - [**Bundle Integration** → Keep 1, Remove 1](#**bundle-integration**-→-keep-1-remove-1)
+      - [**Critical Fixes** → Keep 1, Remove 1](#**critical-fixes**-→-keep-1-remove-1)
+      - [**Testing Frameworks** → Keep 1, Remove 1](#**testing-frameworks**-→-keep-1-remove-1)
+      - [**Impact Demos** → Keep 1, Remove 1](#**impact-demos**-→-keep-1-remove-1)
+    - [**Phase 2: Consolidate Similar Purpose**](#**phase-2-consolidate-similar-purpose**)
+      - [**Deployment Tools** → Merge 2 into 1](#**deployment-tools**-→-merge-2-into-1)
+      - [**Observability Tools** → Keep 1](#**observability-tools**-→-keep-1)
+      - [**Assessment Tools** → Keep 1](#**assessment-tools**-→-keep-1)
+  - [**📊 Expected Reduction**](#**📊-expected-reduction**)
+    - [**Before Consolidation**](#**before-consolidation**)
+    - [**After Consolidation**](#**after-consolidation**)
+    - [**Files to Remove (13 files)**](#**files-to-remove-13-files**)
+  - [**🔧 Implementation Steps**](#**🔧-implementation-steps**)
+    - [**Step 1: Backup and Document**](#**step-1-backup-and-document**)
+    - [**Step 2: Remove Duplicates**](#**step-2-remove-duplicates**)
+    - [**Step 3: Consolidate Similar Tools**](#**step-3-consolidate-similar-tools**)
+    - [**Step 4: Update Documentation**](#**step-4-update-documentation**)
+  - [**🎯 Success Metrics**](#**🎯-success-metrics**)
+    - [**Quantitative Goals**](#**quantitative-goals**)
+    - [**Qualitative Goals**](#**qualitative-goals**)
+  - [**⚠️ Risk Mitigation**](#**⚠️-risk-mitigation**)
+    - [**Preserve Value**](#**preserve-value**)
+    - [**Avoid Disruption**](#**avoid-disruption**)
+  - [**📈 Benefits**](#**📈-benefits**)
+    - [**Immediate Benefits**](#**immediate-benefits**)
+    - [**Long-term Benefits**](#**long-term-benefits**)
+
+<!-- T81-TOC:END -->
+
+
 ## **Analysis: Significant Duplication Identified**
 
 ### **🔍 Duplicate Categories Found**

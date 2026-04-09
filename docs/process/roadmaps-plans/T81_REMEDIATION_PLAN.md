@@ -1,5 +1,22 @@
 # T81 Core Type System Remediation Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Core Type System Remediation Plan](#t81-core-type-system-remediation-plan)
+  - [1. Determinism Classification Normalization](#1-determinism-classification-normalization)
+  - [2. Global State Mutation Audit](#2-global-state-mutation-audit)
+  - [3. SPEC–IMPLEMENTATION GAP Remediation](#3-spec–implementation-gap-remediation)
+  - [4. Canonical Serialization Enforcement Plan](#4-canonical-serialization-enforcement-plan)
+  - [5. Memory Domain Consistency Plan](#5-memory-domain-consistency-plan)
+  - [6. Determinism Boundary Definition for VM Core](#6-determinism-boundary-definition-for-vm-core)
+  - [7. Implementation Roadmap (Completed)](#7-implementation-roadmap-completed)
+  - [8. Stub Implementation Remediation](#8-stub-implementation-remediation)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** IMPLEMENTED (Partial Polyfill)
 **Target:** T81 Core Architecture
 **Scope:** Determinism, Memory Safety, and Canonical Serialization

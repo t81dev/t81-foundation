@@ -1,5 +1,14 @@
 # RFC-00B8 FFI Evidence (2026-03-18)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00B8 FFI Evidence (2026-03-18)](#rfc-00b8-ffi-evidence-2026-03-18)
+
+<!-- T81-TOC:END -->
+
+
 Host:
 - Apple M2 / macOS ARM64
 - build directory: `build`

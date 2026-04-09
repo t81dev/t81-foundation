@@ -1,5 +1,43 @@
 # BG-09 Implementation Evidence: T81Graph Serialization
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BG-09 Implementation Evidence: T81Graph Serialization](#bg-09-implementation-evidence-t81graph-serialization)
+  - [📋 **Issue Resolution Summary**](#📋-**issue-resolution-summary**)
+    - [**Problem Identified:**](#**problem-identified**)
+    - [**Root Cause Found:**](#**root-cause-found**)
+    - [**Solution Implemented:**](#**solution-implemented**)
+  - [🔧 **Implementation Details**](#🔧-**implementation-details**)
+    - [**Phase 1: SymbolicGraph Serialization Method**](#**phase-1-symbolicgraph-serialization-method**)
+    - [**Phase 2: VM Format Value Integration**](#**phase-2-vm-format-value-integration**)
+  - [📊 **Test Coverage Evidence**](#📊-**test-coverage-evidence**)
+    - [**✅ SymbolicGraph Serialization Test**](#**✅-symbolicgraph-serialization-test**)
+    - [**✅ Determinism Test**](#**✅-determinism-test**)
+    - [**✅ VM Integration Test**](#**✅-vm-integration-test**)
+    - [**✅ Existing Test Suite Verification**](#**✅-existing-test-suite-verification**)
+  - [🔍 **Verification Results**](#🔍-**verification-results**)
+    - [**Serialization Format:**](#**serialization-format**)
+    - [**Determinism Verification:**](#**determinism-verification**)
+    - [**VM Integration:**](#**vm-integration**)
+  - [📈 **Implementation Impact**](#📈-**implementation-impact**)
+    - [**Before BG-09 Fix:**](#**before-bg-09-fix**)
+    - [**After BG-09 Fix:**](#**after-bg-09-fix**)
+  - [✅ **Acceptance Criteria Satisfaction**](#✅-**acceptance-criteria-satisfaction**)
+    - [**BG-09 Requirements Met:**](#**bg-09-requirements-met**)
+    - [**Implementation Quality:**](#**implementation-quality**)
+  - [🚀 **Strategic Impact**](#🚀-**strategic-impact**)
+    - [**Immediate Benefits:**](#**immediate-benefits**)
+    - [**Long-term Benefits:**](#**long-term-benefits**)
+  - [✅ **Implementation Conclusion**](#✅-**implementation-conclusion**)
+    - [**Requirements Satisfaction:**](#**requirements-satisfaction**)
+    - [**Production Readiness:**](#**production-readiness**)
+    - [**Governance Acceptance:**](#**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Implementation ID:** BG-09-2026-03-04  
 **Surface:** `T81Graph` + collection lang runtime  
 **Issue:** `serialize_canonical()` exists in C++ headers but is never called from the language runtime  

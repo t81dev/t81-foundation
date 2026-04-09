@@ -1,5 +1,21 @@
 # PackedTritVector Prototype Phase 1 Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Prototype Phase 1 Report](#packedtritvector-prototype-phase-1-report)
+  - [1. Summary](#1-summary)
+  - [2. Prototype Placement and Reused Components](#2-prototype-placement-and-reused-components)
+  - [3. Prototype API and Semantics](#3-prototype-api-and-semantics)
+  - [4. Conformance Test Harness](#4-conformance-test-harness)
+  - [5. Benchmark Scaffold](#5-benchmark-scaffold)
+  - [6. Validation Results](#6-validation-results)
+  - [7. Known Limitations and Phase 2 Recommendations](#7-known-limitations-and-phase-2-recommendations)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 This report documents the Phase 1 prototype of `PackedTritVector`, a library-level implementation of packed tritwise operations. The goal was to establish a correctness baseline and benchmark scaffold using the existing PT-5 codec (5 trits/byte) without modifying the TISC ISA.

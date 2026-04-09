@@ -1,5 +1,19 @@
 # Benchmark Methodology & Determinism Protocol
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Benchmark Methodology & Determinism Protocol](#benchmark-methodology-&-determinism-protocol)
+  - [1. Philosophy](#1-philosophy)
+  - [2. Benchmark Suite Structure](#2-benchmark-suite-structure)
+  - [3. Running Benchmarks](#3-running-benchmarks)
+  - [4. Deterministic Performance Gating](#4-deterministic-performance-gating)
+  - [5. Artifact Retention](#5-artifact-retention)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Philosophy
 T81 benchmarks serve two purposes:
 1.  **Performance Regression Testing**: Detecting speed regressions in critical paths (VM dispatch, Tritwise ops).

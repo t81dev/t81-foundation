@@ -1,4 +1,25 @@
 # Determinism Fix Report: T81 Core Data Types Audit
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism Fix Report: T81 Core Data Types Audit](#determinism-fix-report-t81-core-data-types-audit)
+  - [1. Executive Summary](#1-executive-summary)
+  - [2. Determinism Surface Table](#2-determinism-surface-table)
+  - [3. Per-Type Notes](#3-per-type-notes)
+    - [3.1. Low-Level Primitives (`Cell`, `T81Int`)](#31-low-level-primitives-`cell`-`t81int`)
+    - [3.2. Floating Point (`T81Float`)](#32-floating-point-`t81float`)
+    - [3.3. Containers (`Map`, `Set`, `Graph`)](#33-containers-`map`-`set`-`graph`)
+  - [4. Minimal Failing Examples (Pre-Fix)](#4-minimal-failing-examples-pre-fix)
+    - [4.1. Cell Overflow](#41-cell-overflow)
+    - [4.2. Float Signed Zero](#42-float-signed-zero)
+  - [5. Patch Summary](#5-patch-summary)
+  - [6. Regression Test Summary](#6-regression-test-summary)
+  - [7. Remaining Risks / Experimental Surfaces](#7-remaining-risks--experimental-surfaces)
+
+<!-- T81-TOC:END -->
+
 **Date:** March 1, 2026
 **Agent:** Determinism Stress + Remediation Agent
 

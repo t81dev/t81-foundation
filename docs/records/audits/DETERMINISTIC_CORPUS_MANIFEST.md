@@ -1,5 +1,21 @@
 # Deterministic Corpus Manifest
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Deterministic Corpus Manifest](#deterministic-corpus-manifest)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Corpus Files](#corpus-files)
+  - [Verification Command](#verification-command)
+  - [DCP Linkage](#dcp-linkage)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Version: 1.0.0
 Owner: Status/Governance

@@ -1,5 +1,28 @@
 # Chapter 9: The Axion Safety Kernel
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 9: The Axion Safety Kernel](#chapter-9-the-axion-safety-kernel)
+    - [Policy Enforcement Map](#policy-enforcement-map)
+  - [9.1 Formal Definition](#91-formal-definition)
+  - [9.2 The Policy Model](#92-the-policy-model)
+  - [9.3 Instruction Interception](#93-instruction-interception)
+  - [9.4 The Audit Log (Trace)](#94-the-audit-log-trace)
+  - [9.5 Cognitive Promotion](#95-cognitive-promotion)
+    - [Policy Lab Exercise](#policy-lab-exercise)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Cross-Chapter Continuity](#cross-chapter-continuity)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 Axion is the enforcement layer that turns policy intent into runtime behavior. Without a kernel like this, governance rules remain documentation rather than operational control.
 
 For new users, Axion is best understood as a safety boundary that is explicit, inspectable, and auditable.

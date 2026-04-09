@@ -1,5 +1,21 @@
 # Third-Party Dependency & Hygiene Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Third-Party Dependency & Hygiene Policy](#third-party-dependency-&-hygiene-policy)
+  - [1. Principles](#1-principles)
+  - [2. C++ Dependency Management](#2-c++-dependency-management)
+    - [Approved Dependencies](#approved-dependencies)
+    - [Integration Guidelines](#integration-guidelines)
+  - [3. Node/JS Dependency Management](#3-nodejs-dependency-management)
+  - [4. Artifact Containment](#4-artifact-containment)
+  - [5. Remediation Plan (Immediate)](#5-remediation-plan-immediate)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Principles
 *   **Containment**: All third-party code must be isolated from canonical source.
 *   **Reproducibility**: Builds must be offline-capable and bit-exact reproducible.

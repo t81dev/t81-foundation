@@ -1,5 +1,21 @@
 # AI RFC Backlog
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI RFC Backlog](#ai-rfc-backlog)
+  - [Priority Order](#priority-order)
+  - [Dependency Chain](#dependency-chain)
+  - [This Week Execution Slices](#this-week-execution-slices)
+  - [Compliance Snapshot (2026-03-15)](#compliance-snapshot-2026-03-15)
+  - [Compliance Snapshot (2026-03-08)](#compliance-snapshot-2026-03-08)
+  - [Compliance Snapshot (2026-03-07)](#compliance-snapshot-2026-03-07)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-29
 Owner: @t81dev
 Scope: AI integration RFC implementation sequencing and compliance tracking

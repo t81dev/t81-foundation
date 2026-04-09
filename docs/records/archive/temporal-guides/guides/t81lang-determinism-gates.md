@@ -1,5 +1,25 @@
 # T81Lang Determinism Gates
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Determinism Gates](#t81lang-determinism-gates)
+  - [Why these gates exist](#why-these-gates-exist)
+  - [Current gate set](#current-gate-set)
+    - [1) Compile-twice bytecode identity](#1-compile-twice-bytecode-identity)
+    - [2) Compile-twice hash identity](#2-compile-twice-hash-identity)
+    - [3) Runtime printed output identity](#3-runtime-printed-output-identity)
+    - [4) Golden fixture pack](#4-golden-fixture-pack)
+    - [5) Binary serialization determinism regression](#5-binary-serialization-determinism-regression)
+  - [Local verification commands](#local-verification-commands)
+  - [Interpretation](#interpretation)
+  - [Hash Mismatch Triage](#hash-mismatch-triage)
+  - [Related docs](#related-docs)
+
+<!-- T81-TOC:END -->
+
+
 This guide defines the practical determinism checks used for T81Lang compile
 and runtime behavior.
 

@@ -1,5 +1,29 @@
 # CanonFS Enhanced Error Handling
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CanonFS Enhanced Error Handling](#canonfs-enhanced-error-handling)
+  - [Overview](#overview)
+  - [Enhanced Error Codes](#enhanced-error-codes)
+    - [Policy and Permission Errors (1000-1099)](#policy-and-permission-errors-1000-1099)
+    - [Content Integrity Errors (2000-2099)](#content-integrity-errors-2000-2099)
+    - [Filesystem and I/O Errors (3000-3099)](#filesystem-and-io-errors-3000-3099)
+    - [Schema and Validation Errors (4000-4099)](#schema-and-validation-errors-4000-4099)
+    - [CanonFS Specific Errors (5000-5099)](#canonfs-specific-errors-5000-5099)
+  - [Error Message Format](#error-message-format)
+  - [API Usage](#api-usage)
+    - [Creating Enhanced Issues](#creating-enhanced-issues)
+    - [Error Context Collection](#error-context-collection)
+  - [Integration with Existing Code](#integration-with-existing-code)
+  - [Benefits](#benefits)
+  - [Implementation Status](#implementation-status)
+  - [RFC-00D1 Compliance](#rfc-00d1-compliance)
+
+<!-- T81-TOC:END -->
+
+
 This document describes the enhanced error handling framework added to T81 CanonFS interchange operations.
 
 ## Overview

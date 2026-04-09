@@ -1,5 +1,25 @@
 # T81 Buildable Next Steps
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Buildable Next Steps](#t81-buildable-next-steps)
+  - [Priority board](#priority-board)
+    - [Now](#now)
+    - [Next](#next)
+    - [Later](#later)
+  - [Suggested issue list](#suggested-issue-list)
+  - [Pick one lane](#pick-one-lane)
+  - [1. RFC-00D1 policy-profile depth](#1-rfc-00d1-policy-profile-depth)
+  - [2. RFC-00D1 contract promotion review](#2-rfc-00d1-contract-promotion-review)
+  - [3. RFC-00D0 resolver prototype](#3-rfc-00d0-resolver-prototype)
+  - [4. Public-story cleanup](#4-public-story-cleanup)
+  - [5. CI boringness work](#5-ci-boringness-work)
+
+<!-- T81-TOC:END -->
+
+
 These are the best next tasks for a contributor who wants to ship something real instead of only studying the architecture.
 
 ## Priority board

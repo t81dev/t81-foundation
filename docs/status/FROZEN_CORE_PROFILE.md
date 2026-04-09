@@ -1,5 +1,24 @@
 # Frozen Core Profile
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Frozen Core Profile](#frozen-core-profile)
+  - [What This Document Is](#what-this-document-is)
+  - [1. Directory Boundary](#1-directory-boundary)
+  - [2. Opcode Whitelist](#2-opcode-whitelist)
+  - [3. Determinism Guarantees](#3-determinism-guarantees)
+  - [4. Verified Determinism Surfaces (Registry Snapshot)](#4-verified-determinism-surfaces-registry-snapshot)
+  - [5. Explicit Exclusions](#5-explicit-exclusions)
+  - [6. Build-Layer Firewall](#6-build-layer-firewall)
+  - [7. Deterministic Corpus](#7-deterministic-corpus)
+  - [8. DCP Versioning Rule](#8-dcp-versioning-rule)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Status: Constitutional — Do Not Edit Without Major Version Bump
 Last Updated: 2026-03-19
 Authority: `spec/tisc-spec.md` > `docs/product/DETERMINISTIC_CORE_PROFILE.md` > this document

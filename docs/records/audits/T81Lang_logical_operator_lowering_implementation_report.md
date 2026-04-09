@@ -1,5 +1,24 @@
 # T81Lang Logical Operator Lowering Implementation Report (`&&`, `||`)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Logical Operator Lowering Implementation Report (`&&`, `||`)](#t81lang-logical-operator-lowering-implementation-report-`&&`-`||`)
+  - [1. Summary](#1-summary)
+  - [2. Control-Flow Lowering Infrastructure Reuse](#2-control-flow-lowering-infrastructure-reuse)
+  - [3. `&&` / `||` Lowering Design and Implementation](#3-`&&`--`||`-lowering-design-and-implementation)
+    - [Logical AND (`lhs && rhs`)](#logical-and-`lhs-&&-rhs`)
+    - [Logical OR (`lhs || rhs`)](#logical-or-`lhs-||-rhs`)
+  - [4. Regression and Verification Tests](#4-regression-and-verification-tests)
+    - [Test Cases](#test-cases)
+  - [5. Follow-up Plan/Tracking Updates](#5-follow-up-plantracking-updates)
+  - [6. Validation Results](#6-validation-results)
+  - [7. Remaining Gaps and Next Steps](#7-remaining-gaps-and-next-steps)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 This report documents the successful implementation of IR lowering for T81Lang logical AND (`&&`) and logical OR (`||`) operators. Previously, these operators were parsed but caused an "Unsupported binary operator" error during code generation. The implementation lowers these operators to short-circuiting control flow using existing jump and label infrastructure, ensuring adherence to T81 boolean semantics (canonical `0`/`1`).

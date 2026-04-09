@@ -1,5 +1,29 @@
 # Determinism & Security Incident Response Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Determinism & Security Incident Response Plan](#determinism-&-security-incident-response-plan)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Definitions](#definitions)
+  - [1. Determinism Breach Definition](#1-determinism-breach-definition)
+  - [2. Immediate Actions](#2-immediate-actions)
+  - [3. Disclosure Policy](#3-disclosure-policy)
+  - [3A. Governed AGI Incident Triggers](#3a-governed-agi-incident-triggers)
+  - [4. Postmortem Template](#4-postmortem-template)
+    - [Incident ID](#incident-id)
+    - [Summary](#summary)
+    - [Timeline](#timeline)
+    - [Root Cause](#root-cause)
+    - [Corrective Actions](#corrective-actions)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Version: 1.0.0
 Owner: Governance/Security

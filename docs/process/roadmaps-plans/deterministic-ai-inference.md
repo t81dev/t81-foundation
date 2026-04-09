@@ -1,5 +1,27 @@
 # Roadmap: Deterministic AI Inference at Scale
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Roadmap: Deterministic AI Inference at Scale](#roadmap-deterministic-ai-inference-at-scale)
+  - [Executive Summary](#executive-summary)
+  - [1. Problem Statement](#1-problem-statement)
+  - [2. The T81 Solution Stack](#2-the-t81-solution-stack)
+    - [2.1 Core Numerics](#21-core-numerics)
+    - [2.2 Structural & Symbolic Types](#22-structural-&-symbolic-types)
+    - [2.3 System & Utility Types](#23-system-&-utility-types)
+  - [3. Implementation Plan](#3-implementation-plan)
+    - [Phase 1: Closing the "Libm Gap" (The Math Kernel)](#phase-1-closing-the-"libm-gap"-the-math-kernel)
+    - [Phase 2: Deterministic Tensor Operations](#phase-2-deterministic-tensor-operations)
+    - [Phase 3: Model Architecture Porting](#phase-3-model-architecture-porting)
+    - [Phase 4: Validation at Scale](#phase-4-validation-at-scale)
+  - [4. Risks & Mitigations](#4-risks-&-mitigations)
+  - [5. Success Metrics](#5-success-metrics)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Summary
 
 This roadmap outlines the strategic plan to enable **guaranteed reproducible inference** for Large Language Models (LLMs) and other deep learning architectures using the T81 platform. Current AI systems suffer from non-determinism due to floating-point drift across hardware architectures (the "Libm Gap") and non-associative parallel reductions. By leveraging the bit-exact properties of T81's balanced ternary datatypes, we aim to ensure that `Prompt + Seed + Model = Identical Token Stream`, universally.

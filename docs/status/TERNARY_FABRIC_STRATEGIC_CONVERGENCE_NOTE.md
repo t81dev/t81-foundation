@@ -1,5 +1,21 @@
 # Ternary Fabric Strategic Convergence Note
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Ternary Fabric Strategic Convergence Note](#ternary-fabric-strategic-convergence-note)
+  - [Current Decision](#current-decision)
+  - [Why](#why)
+  - [Allowed Near-Term Convergence](#allowed-near-term-convergence)
+  - [Explicitly Out Of Scope](#explicitly-out-of-scope)
+  - [Future Integration Seam](#future-integration-seam)
+  - [Revisit Conditions](#revisit-conditions)
+  - [Public Framing Rule](#public-framing-rule)
+
+<!-- T81-TOC:END -->
+
+
 This note records the current architectural decision for how T81 relates to
 the separate `t81dev/ternary-fabric` repository.
 

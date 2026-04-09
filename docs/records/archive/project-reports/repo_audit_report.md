@@ -1,5 +1,17 @@
 # Repository Classification Audit Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Repository Classification Audit Report](#repository-classification-audit-report)
+  - [1. Root Item Classification](#1-root-item-classification)
+  - [2. Risk Assessment Summary](#2-risk-assessment-summary)
+  - [3. Remediation Actions](#3-remediation-actions)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Root Item Classification
 
 | Item | Classification | Risk Assessment | Remediation |

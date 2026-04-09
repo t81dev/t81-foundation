@@ -1,5 +1,24 @@
 # Project Control Center
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Project Control Center](#project-control-center)
+  - [Phase](#phase)
+  - [Classification Note](#classification-note)
+  - [Program Health](#program-health)
+  - [Open Governance Gates](#open-governance-gates)
+  - [Drift Level](#drift-level)
+  - [Top Risks](#top-risks)
+  - [Active Hardening Work](#active-hardening-work)
+  - [Experimental and Governed Non-DCP (Do Not Overclaim)](#experimental-and-governed-non-dcp-do-not-overclaim)
+  - [Next Decision Points](#next-decision-points)
+  - [Cockpit Index](#cockpit-index)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-04-01
 Owner: @t81dev

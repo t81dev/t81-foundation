@@ -1,5 +1,51 @@
 # Comprehensive Technical Analysis of the T81-Foundation GitHub Repository: A Deterministic Ternary-Native Computing Stack
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Comprehensive Technical Analysis of the T81-Foundation GitHub Repository: A Deterministic Ternary-Native Computing Stack](#comprehensive-technical-analysis-of-the-t81-foundation-github-repository-a-deterministic-ternary-native-computing-stack)
+  - [Introduction](#introduction)
+  - [Project Overview](#project-overview)
+    - [Core Thesis and Goals](#core-thesis-and-goals)
+    - [Key Components](#key-components)
+    - [Deterministic and Auditable Computation](#deterministic-and-auditable-computation)
+    - [Recursive Cognition Tiers](#recursive-cognition-tiers)
+  - [Technical Architecture](#technical-architecture)
+    - [Ternary Logic and Base-81 Data Model](#ternary-logic-and-base-81-data-model)
+    - [TISC Instruction Set Architecture](#tisc-instruction-set-architecture)
+    - [T81VM Virtual Machine](#t81vm-virtual-machine)
+    - [Axion Safety and Optimization Engine](#axion-safety-and-optimization-engine)
+    - [2.63-bit Balanced Ternary Quantization for LLMs](#263-bit-balanced-ternary-quantization-for-llms)
+    - [Comparative Advantages Over Binary Systems](#comparative-advantages-over-binary-systems)
+  - [Code Analysis](#code-analysis)
+    - [Repository Structure](#repository-structure)
+    - [Languages and Tools](#languages-and-tools)
+    - [Code Quality](#code-quality)
+    - [Notable Implementations](#notable-implementations)
+    - [Strengths](#strengths)
+    - [Potential Issues](#potential-issues)
+  - [Innovations and Contributions](#innovations-and-contributions)
+    - [AI and ML Efficiency](#ai-and-ml-efficiency)
+    - [Cryptography and Security](#cryptography-and-security)
+    - [Scientific Computing](#scientific-computing)
+    - [Comparison with Competing Projects](#comparison-with-competing-projects)
+  - [Installation and Usage](#installation-and-usage)
+    - [Prerequisites](#prerequisites)
+    - [Build and Install](#build-and-install)
+    - [Verify Installation](#verify-installation)
+    - [Example Workflow](#example-workflow)
+    - [Simulation and Emulation](#simulation-and-emulation)
+  - [Community and Impact](#community-and-impact)
+    - [Engagement Metrics](#engagement-metrics)
+    - [Challenges](#challenges)
+    - [Future Directions](#future-directions)
+  - [Recommendations](#recommendations)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 > - T81-foundation implements a deterministic, ternary-native computing stack using balanced ternary logic (-1, 0, +1) and base-81 data types.  
 > - The stack comprises TISC (Ternary Instruction Set Computing), T81VM (virtual machine), T81Lang (language), and Axion (runtime safety/optimization engine).  
 > - Ternary quantization at 2.63 bits per weight enables efficient, lossless inference for large language models (LLMs), outperforming binary quantization in memory and compute efficiency.  

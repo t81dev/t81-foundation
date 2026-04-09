@@ -1,5 +1,21 @@
 # PDF Implementation Proposal
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PDF Implementation Proposal](#pdf-implementation-proposal)
+  - [1. Priority: Recursive AGI Codex (TΩNARY)](#1-priority-recursive-agi-codex-tωnary)
+    - [Proposed Actions:](#proposed-actions)
+  - [2. Priority: Full Semantic Inference Engine](#2-priority-full-semantic-inference-engine)
+    - [Proposed Actions:](#proposed-actions)
+  - [3. Secondary: Higher-Order Base Systems](#3-secondary-higher-order-base-systems)
+    - [Proposed Actions:](#proposed-actions)
+  - [4. Maintenance & Optimization](#4-maintenance-&-optimization)
+
+<!-- T81-TOC:END -->
+
+
 This document outlines a proposal for future implementation work based on the aspirational concepts found in the `pdf/` archive, particularly the "Aspirational" documents that have not yet been fully realized in the C++ runtime.
 
 ## 1. Priority: Recursive AGI Codex (TΩNARY)

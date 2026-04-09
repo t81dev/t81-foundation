@@ -1,5 +1,18 @@
 # Hardening Backlog
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Hardening Backlog](#hardening-backlog)
+  - [Open Items](#open-items)
+  - [Closed Items](#closed-items)
+  - [Priority Rule](#priority-rule)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-26
 Owner: @t81dev
 

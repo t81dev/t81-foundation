@@ -1,5 +1,22 @@
 # Bounded AI OS-Object Family Status
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Bounded AI OS-Object Family Status](#bounded-ai-os-object-family-status)
+  - [What Is In The Family](#what-is-in-the-family)
+  - [What Is Proven](#what-is-proven)
+  - [What Admits A New Member](#what-admits-a-new-member)
+  - [What Is Frozen](#what-is-frozen)
+  - [What Is Enforced Negatively](#what-is-enforced-negatively)
+  - [What Is Explicitly Deferred](#what-is-explicitly-deferred)
+  - [Current Posture](#current-posture)
+  - [Reference Surfaces](#reference-surfaces)
+
+<!-- T81-TOC:END -->
+
+
 This note summarizes the current bounded deterministic AI OS-object family in
 one maintainer-facing place.
 

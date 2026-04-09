@@ -1,5 +1,27 @@
 # Capítulo 6: Uso de CLI e API
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 6: Uso de CLI e API](#capítulo-6-uso-de-cli-e-api)
+  - [6.1 A Interface de Linha de Comando T81](#61-a-interface-de-linha-de-comando-t81)
+    - [6.1.1 Compilação (`compile`)](#611-compilação-`compile`)
+    - [6.1.2 Execução (`run`)](#612-execução-`run`)
+- [Executar bytecode](#executar-bytecode)
+- [Executar fonte diretamente](#executar-fonte-diretamente)
+    - [6.1.3 Análise de Trace (`trace`)](#613-análise-de-trace-`trace`)
+    - [6.1.4 Modo Interativo (`repl`)](#614-modo-interativo-`repl`)
+  - [6.2 Embutindo T81 (API C++)](#62-embutindo-t81-api-c++)
+  - [6.3 Embutindo T81 (API Python)](#63-embutindo-t81-api-python)
+- [Criar VM](#criar-vm)
+- [Carregar Código](#carregar-código)
+- [Executar](#executar)
+  - [6.4 Depuração](#64-depuração)
+
+<!-- T81-TOC:END -->
+
+
 ## 6.1 A Interface de Linha de Comando T81
 
 **Status: Implementado**

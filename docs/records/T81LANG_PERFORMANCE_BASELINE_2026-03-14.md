@@ -1,5 +1,44 @@
 # T81Lang Performance Baseline Report (2026-03-14)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Performance Baseline Report (2026-03-14)](#t81lang-performance-baseline-report-2026-03-14)
+  - [📋 **Executive Summary**](#📋-**executive-summary**)
+  - [🎯 **Baseline Metrics**](#🎯-**baseline-metrics**)
+    - [**1. Arithmetic Performance Baselines**](#**1-arithmetic-performance-baselines**)
+      - [**Ternary Addition Performance (Kogge-Stone Adder)**](#**ternary-addition-performance-kogge-stone-adder**)
+      - [**Binary Reference Performance (Carry Propagate)**](#**binary-reference-performance-carry-propagate**)
+    - [**2. Compilation Performance Baselines**](#**2-compilation-performance-baselines**)
+      - [**T81Lang Source → TISC Compilation**](#**t81lang-source-→-tisc-compilation**)
+      - [**VM Execution Performance**](#**vm-execution-performance**)
+    - [**3. Memory Usage Baselines**](#**3-memory-usage-baselines**)
+      - [**Component Memory Footprint**](#**component-memory-footprint**)
+      - [**Memory Allocation Patterns**](#**memory-allocation-patterns**)
+    - [**4. Determinism Performance Impact**](#**4-determinism-performance-impact**)
+      - [**Determinism Overhead Measurements**](#**determinism-overhead-measurements**)
+  - [🛡️ **Performance Guardrails**](#🛡️-**performance-guardrails**)
+    - [**Regression Detection Thresholds**](#**regression-detection-thresholds**)
+    - [**Performance SLA for Stable Promotion**](#**performance-sla-for-stable-promotion**)
+  - [📊 **Benchmark Methodology**](#📊-**benchmark-methodology**)
+    - [**Test Environment**](#**test-environment**)
+    - [**Measurement Tools**](#**measurement-tools**)
+    - [**Test Data Sets**](#**test-data-sets**)
+  - [🎯 **Performance Optimization Opportunities**](#🎯-**performance-optimization-opportunities**)
+    - [**Identified Optimization Targets**](#**identified-optimization-targets**)
+    - [**Recommended Optimizations (Post-Stable)**](#**recommended-optimizations-post-stable**)
+  - [✅ **Baseline Validation**](#✅-**baseline-validation**)
+    - [**Cross-Platform Consistency**](#**cross-platform-consistency**)
+    - [**Regression Test Suite**](#**regression-test-suite**)
+  - [📋 **Next Actions**](#📋-**next-actions**)
+    - [**Immediate (This Week)**](#**immediate-this-week**)
+    - [**Short-term (2-4 weeks)**](#**short-term-2-4-weeks**)
+  - [🎯 **Conclusion**](#🎯-**conclusion**)
+
+<!-- T81-TOC:END -->
+
+
 **Baseline ID:** T81LANG-PERF-BASELINE-2026-03-14  
 **Assessment Date:** 2026-03-14  
 **Baseline Status:** ESTABLISHED  
