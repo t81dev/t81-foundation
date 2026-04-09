@@ -3485,6 +3485,11 @@ struct NormalizedModelTensorDiffSummary {
   std::map<std::string, std::string> normalized_match_reasons;
 };
 
+void emit_count_field(std::string_view key, std::size_t value, int indent = 2) {
+  const std::string pad(static_cast<std::size_t>(indent), ' ');
+  std::cout << pad << "\"" << key << "\": " << value;
+}
+
 std::map<std::string, const t81::weights::TensorInfo*> index_model_tensors(
     const t81::weights::ModelFile& mf) {
   std::map<std::string, const t81::weights::TensorInfo*> indexed;
@@ -3691,6 +3696,18 @@ void emit_model_diff_json(const fs::path& lhs_path,
   std::cout << "  \"rhs_parameters\": " << rhs.total_parameters << ",\n";
   std::cout << "  \"lhs_trits\": " << lhs.total_trits << ",\n";
   std::cout << "  \"rhs_trits\": " << rhs.total_trits << ",\n";
+  emit_count_field("lhs_only_count", tensor_diff.lhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("rhs_only_count", tensor_diff.rhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("changed_count", tensor_diff.changed.size());
+  std::cout << ",\n";
+  emit_count_field("provenance_lhs_only_count", provenance_diff.lhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("provenance_rhs_only_count", provenance_diff.rhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("provenance_changed_count", provenance_diff.changed.size());
+  std::cout << ",\n";
   emit_string_array("lhs_only", tensor_diff.lhs_only);
   std::cout << ",\n";
   emit_string_array("rhs_only", tensor_diff.rhs_only);
@@ -3733,6 +3750,20 @@ void emit_model_diff_normalized_json(const fs::path& lhs_path,
   std::cout << "  \"rhs_parameters\": " << rhs.model.total_parameters << ",\n";
   std::cout << "  \"lhs_trits\": " << lhs.model.total_trits << ",\n";
   std::cout << "  \"rhs_trits\": " << rhs.model.total_trits << ",\n";
+  emit_count_field("lhs_only_count", tensor_diff.lhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("rhs_only_count", tensor_diff.rhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("changed_count", tensor_diff.changed.size());
+  std::cout << ",\n";
+  emit_count_field("normalized_match_count", tensor_diff.normalized_matches.size());
+  std::cout << ",\n";
+  emit_count_field("provenance_lhs_only_count", provenance_diff.lhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("provenance_rhs_only_count", provenance_diff.rhs_only.size());
+  std::cout << ",\n";
+  emit_count_field("provenance_changed_count", provenance_diff.changed.size());
+  std::cout << ",\n";
   emit_string_array("lhs_only", tensor_diff.lhs_only);
   std::cout << ",\n";
   emit_string_array("rhs_only", tensor_diff.rhs_only);
@@ -3775,6 +3806,13 @@ void emit_model_diff_report(const fs::path& lhs_path,
   std::cout << "RHS Parameters: " << rhs.total_parameters << "\n";
   std::cout << "LHS Trits:      " << lhs.total_trits << "\n";
   std::cout << "RHS Trits:      " << rhs.total_trits << "\n";
+  std::cout << "Summary:\n";
+  std::cout << "  tensor lhs_only=" << tensor_diff.lhs_only.size()
+            << " rhs_only=" << tensor_diff.rhs_only.size()
+            << " changed=" << tensor_diff.changed.size() << "\n";
+  std::cout << "  provenance lhs_only=" << provenance_diff.lhs_only.size()
+            << " rhs_only=" << provenance_diff.rhs_only.size()
+            << " changed=" << provenance_diff.changed.size() << "\n";
   if (!tensor_diff.lhs_only.empty()) {
     std::cout << "Only in LHS:\n";
     for (const auto& name : tensor_diff.lhs_only) {

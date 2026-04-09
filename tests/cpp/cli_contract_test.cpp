@@ -281,7 +281,9 @@ void validate_model_diff_json_against_schema(const fs::path& schema_path,
   const std::vector<std::string> success_required = {
       "\"schema\"", "\"lhs\"", "\"rhs\"", "\"identical\"", "\"lhs_format\"", "\"rhs_format\"",
       "\"lhs_tensor_count\"", "\"rhs_tensor_count\"", "\"lhs_parameters\"", "\"rhs_parameters\"",
-      "\"lhs_trits\"", "\"rhs_trits\"", "\"lhs_only\"", "\"rhs_only\"", "\"changed\"",
+      "\"lhs_trits\"", "\"rhs_trits\"", "\"lhs_only_count\"", "\"rhs_only_count\"",
+      "\"changed_count\"", "\"provenance_lhs_only_count\"", "\"provenance_rhs_only_count\"",
+      "\"provenance_changed_count\"", "\"lhs_only\"", "\"rhs_only\"", "\"changed\"",
       "\"provenance_lhs_only\"", "\"provenance_rhs_only\"", "\"provenance_changed\""};
   const std::vector<std::string> failure_required = {
       "\"schema\"", "\"lhs\"", "\"rhs\"", "\"error\""};
@@ -308,8 +310,10 @@ void validate_model_diff_normalized_json_against_schema(const fs::path& schema_p
       "\"schema\"", "\"comparison_mode\"", "\"lhs\"", "\"rhs\"", "\"identical\"",
       "\"lhs_format\"", "\"rhs_format\"", "\"lhs_source_format\"", "\"rhs_source_format\"",
       "\"lhs_tensor_count\"", "\"rhs_tensor_count\"", "\"lhs_parameters\"", "\"rhs_parameters\"",
-      "\"lhs_trits\"", "\"rhs_trits\"", "\"lhs_only\"", "\"rhs_only\"", "\"changed\"",
-      "\"normalized_matches\"", "\"normalization_rules\"", "\"provenance_lhs_only\"",
+      "\"lhs_trits\"", "\"rhs_trits\"", "\"lhs_only_count\"", "\"rhs_only_count\"",
+      "\"changed_count\"", "\"normalized_match_count\"", "\"provenance_lhs_only_count\"",
+      "\"provenance_rhs_only_count\"", "\"provenance_changed_count\"", "\"lhs_only\"",
+      "\"rhs_only\"", "\"changed\"", "\"normalized_matches\"", "\"normalization_rules\"", "\"provenance_lhs_only\"",
       "\"provenance_rhs_only\"", "\"provenance_changed\"", "\"normalized_match_reasons\""};
   const std::vector<std::string> failure_required = {
       "\"schema\"", "\"lhs\"", "\"rhs\"", "\"error\""};
@@ -558,6 +562,9 @@ int main(int argc, char* argv[]) {
     validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
     T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": []"));
@@ -586,6 +593,12 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only_count\": 1"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only_count\": 1"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 0"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": ["));
     T81_TEST_CHECK(contains(result.stdout_text, "\"host_format_reader\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": ["));
@@ -607,6 +620,9 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
@@ -629,8 +645,12 @@ int main(int argc, char* argv[]) {
         contains(result.stdout_text, "\"rhs_format\": \"SafeTensors(float-quantized; profile=native-dense-v1)\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 18"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": ["));
     T81_TEST_CHECK(contains(result.stdout_text, "\"lm_head.weight\""));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 2"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": ["));
     T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\""));
   }
@@ -692,6 +712,10 @@ int main(int argc, char* argv[]) {
                                                        result.stdout_text, true);
     T81_TEST_CHECK(contains(result.stdout_text, "\"comparison_mode\": \"normalized\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_match_count\": 8"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_source_format\": \"gguf\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_source_format\": \"safetensors\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_matches\": ["));
@@ -700,8 +724,10 @@ int main(int argc, char* argv[]) {
         contains(result.stdout_text, "\"normalization_rules\": [\"known_2d_transpose_for_gguf_safetensors\"]"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": ["));
     T81_TEST_CHECK(contains(result.stdout_text, "\"gguf_version\""));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only_count\": 2"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": ["));
     T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\""));
+    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 2"));
     T81_TEST_CHECK(contains(result.stdout_text, "\"embedded_source_sha3_512\""));
     T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_match_reasons\": {"));
     T81_TEST_CHECK(contains(

@@ -437,6 +437,8 @@ imported view that T81 sees today, not a cross-format semantic-normalization
 layer.
 Both raw and normalized diff results now also surface provenance-key deltas as
 review context.
+They also emit aggregate summary counts so reviewers can quickly tell how many
+tensors or provenance keys changed before reading the detailed arrays.
 `model diff --json --mode normalized` is an opt-in experimental path with
 schema `t81.model-diff-normalized.v1`. It currently admits only a narrow,
 explicit normalization rule set and should not be read as general semantic

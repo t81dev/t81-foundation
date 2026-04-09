@@ -36,6 +36,12 @@
         "rhs_parameters",
         "lhs_trits",
         "rhs_trits",
+        "lhs_only_count",
+        "rhs_only_count",
+        "changed_count",
+        "provenance_lhs_only_count",
+        "provenance_rhs_only_count",
+        "provenance_changed_count",
         "lhs_only",
         "rhs_only",
         "changed",
@@ -87,6 +93,30 @@
           "minimum": 0
         },
         "rhs_trits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lhs_only_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rhs_only_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "changed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenance_lhs_only_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenance_rhs_only_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenance_changed_count": {
           "type": "integer",
           "minimum": 0
         },

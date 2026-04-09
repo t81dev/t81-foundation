@@ -43,6 +43,13 @@ Stable top-level fields:
 - `rhs_parameters`
 - `lhs_trits`
 - `rhs_trits`
+- `lhs_only_count`
+- `rhs_only_count`
+- `changed_count`
+- `normalized_match_count`
+- `provenance_lhs_only_count`
+- `provenance_rhs_only_count`
+- `provenance_changed_count`
 - `lhs_only`
 - `rhs_only`
 - `changed`
@@ -87,12 +94,18 @@ The current result fields mean:
 - `normalized_matches`
   - tensors that would differ in raw imported representation but were accepted
     by the current normalization rules
+- `normalized_match_count`
+  - aggregate count for `normalized_matches`
 - `normalization_rules`
   - rule identifiers used during the comparison
 - `normalized_match_reasons`
   - per-tensor explanation map for entries admitted through normalization
   - keys are tensor names
   - values are rule identifiers used for that tensor
+- `lhs_only_count`, `rhs_only_count`, `changed_count`
+  - aggregate counts for the corresponding tensor-difference arrays
+- `provenance_lhs_only_count`, `provenance_rhs_only_count`, `provenance_changed_count`
+  - aggregate counts for the corresponding provenance-difference arrays
 - `provenance_lhs_only`, `provenance_rhs_only`, `provenance_changed`
   - provenance-key deltas surfaced as review context
   - these do not currently change `identical`

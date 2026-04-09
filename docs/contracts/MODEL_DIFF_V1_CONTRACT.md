@@ -40,6 +40,12 @@ Stable top-level fields:
 - `rhs_parameters`
 - `lhs_trits`
 - `rhs_trits`
+- `lhs_only_count`
+- `rhs_only_count`
+- `changed_count`
+- `provenance_lhs_only_count`
+- `provenance_rhs_only_count`
+- `provenance_changed_count`
 - `lhs_only`
 - `rhs_only`
 - `changed`
@@ -93,6 +99,10 @@ presence of a human-readable error string.
   - total imported trit count on the left-hand side
 - `rhs_trits`
   - total imported trit count on the right-hand side
+- `lhs_only_count`, `rhs_only_count`, `changed_count`
+  - aggregate counts for the corresponding tensor-difference arrays
+- `provenance_lhs_only_count`, `provenance_rhs_only_count`, `provenance_changed_count`
+  - aggregate counts for the corresponding provenance-difference arrays
 - `lhs_only`
   - tensor names present only on the left-hand side
 - `rhs_only`
