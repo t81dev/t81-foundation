@@ -411,7 +411,65 @@ an `error` field on load failures.
 `weights verify --json` uses schema `t81.weights-verify.v1`.
 `weights export --json` uses schema `t81.weights-export.v1`.
 
-### 4.17 `policy`
+### 4.17 `model`
+
+```text
+t81 model <subcommand> [options]
+t81 model import <file> [--json] [--report] [--format <fmt>] [-o <out>] [--manifest <file>]
+t81 model diff <lhs> <rhs> [--json] [--mode <raw|normalized>]
+```
+
+Review-oriented model-artifact intake helper built on top of the current
+weights loaders.
+
+`model import --json` uses schema `t81.model-import.v1`.
+On success it emits basic artifact identity, provenance, and tensor inventory.
+On failure it returns `ok: false` with an `error` field.
+For `.gguf` inputs, the current import path also surfaces container-level
+provenance such as the GGUF version and any embedded source checksum when
+present.
+`model import --manifest <file>` also writes a narrower persisted manifest
+with schema `t81.model-manifest.v1`.
+`model diff --json` uses schema `t81.model-diff.v1` and accepts either live
+model artifacts or persisted `t81.model-manifest.v1` files on each side.
+Current `model diff` behavior is representation-sensitive: it compares the
+imported view that T81 sees today, not a cross-format semantic-normalization
+layer.
+Both raw and normalized diff results now also surface provenance-key deltas as
+review context.
+`model diff --json --mode normalized` is an opt-in experimental path with
+schema `t81.model-diff-normalized.v1`. It currently admits only a narrow,
+explicit normalization rule set and should not be read as general semantic
+equivalence across formats.
+Normalized results include `normalized_matches` plus
+`normalized_match_reasons`, a per-tensor map from tensor name to the rule id
+that admitted the match.
+
+Current contract reference:
+`docs/contracts/MODEL_IMPORT_V1_CONTRACT.md`
+
+Machine-readable schema:
+`spec/rfcs/RFC-00D3-model-import-result-schema.json`
+
+Persisted manifest contract:
+`docs/contracts/MODEL_MANIFEST_V1_CONTRACT.md`
+
+Persisted manifest schema:
+`spec/rfcs/RFC-00D3-model-manifest-schema.json`
+
+Diff result contract:
+`docs/contracts/MODEL_DIFF_V1_CONTRACT.md`
+
+Normalized diff contract:
+`docs/contracts/MODEL_DIFF_NORMALIZED_V1_CONTRACT.md`
+
+Diff result schema:
+`spec/rfcs/RFC-00D3-model-diff-result-schema.json`
+
+Normalized diff schema:
+`spec/rfcs/RFC-00D3-model-diff-normalized-result-schema.json`
+
+### 4.18 `policy`
 
 ```text
 t81 policy <subcommand> [options]

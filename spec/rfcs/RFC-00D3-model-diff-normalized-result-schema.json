@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d3-model-diff-normalized-result.schema.json",
+  "title": "RFC-00D3 Model Diff Normalized Result",
+  "description": "Schema for t81.model-diff-normalized.v1 result documents emitted by the normalized model diff CLI mode.",
+  "type": "object",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/successResult"
+    },
+    {
+      "$ref": "#/$defs/failureResult"
+    }
+  ],
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "stringMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "successResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "comparison_mode",
+        "lhs",
+        "rhs",
+        "identical",
+        "lhs_format",
+        "rhs_format",
+        "lhs_source_format",
+        "rhs_source_format",
+        "lhs_tensor_count",
+        "rhs_tensor_count",
+        "lhs_parameters",
+        "rhs_parameters",
+        "lhs_trits",
+        "rhs_trits",
+        "lhs_only",
+        "rhs_only",
+        "changed",
+        "normalized_matches",
+        "normalization_rules",
+        "provenance_lhs_only",
+        "provenance_rhs_only",
+        "provenance_changed",
+        "normalized_match_reasons"
+      ],
+      "properties": {
+        "schema": {
+          "const": "t81.model-diff-normalized.v1"
+        },
+        "comparison_mode": {
+          "const": "normalized"
+        },
+        "lhs": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rhs": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identical": {
+          "type": "boolean"
+        },
+        "lhs_format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rhs_format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lhs_source_format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rhs_source_format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lhs_tensor_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rhs_tensor_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lhs_parameters": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rhs_parameters": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lhs_trits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rhs_trits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lhs_only": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "rhs_only": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "changed": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "normalized_matches": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "normalization_rules": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "provenance_lhs_only": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "provenance_rhs_only": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "provenance_changed": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "normalized_match_reasons": {
+          "$ref": "#/$defs/stringMap"
+        }
+      }
+    },
+    "failureResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "lhs", "rhs", "error"],
+      "properties": {
+        "schema": {
+          "const": "t81.model-diff-normalized.v1"
+        },
+        "lhs": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rhs": {
+          "type": "string",
+          "minLength": 1
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

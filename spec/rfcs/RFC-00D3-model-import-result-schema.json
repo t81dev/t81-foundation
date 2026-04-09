@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://t81.foundation/schemas/rfc-00d3-model-import-result.schema.json",
+  "title": "RFC-00D3 Model Import Result",
+  "description": "Schema for t81.model-import.v1 result documents emitted by the model import CLI surface.",
+  "type": "object",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/successResult"
+    },
+    {
+      "$ref": "#/$defs/failureResult"
+    }
+  ],
+  "$defs": {
+    "tensorEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "shape", "trits", "sparsity"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shape": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "trits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sparsity": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        }
+      }
+    },
+    "provenanceMap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "successResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "ok",
+        "input",
+        "source_format",
+        "artifact_format",
+        "tensor_count",
+        "parameters",
+        "trits",
+        "file_size_bytes",
+        "provenance",
+        "tensors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "t81.model-import.v1"
+        },
+        "ok": {
+          "const": true
+        },
+        "input": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_format": {
+          "type": "string",
+          "enum": ["safetensors", "bitnet", "gguf"]
+        },
+        "artifact_format": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tensor_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "parameters": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trits": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "file_size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "provenance": {
+          "$ref": "#/$defs/provenanceMap"
+        },
+        "tensors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/tensorEntry"
+          }
+        }
+      }
+    },
+    "failureResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "ok", "input", "error"],
+      "properties": {
+        "schema": {
+          "const": "t81.model-import.v1"
+        },
+        "ok": {
+          "const": false
+        },
+        "input": {
+          "type": "string",
+          "minLength": 1
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

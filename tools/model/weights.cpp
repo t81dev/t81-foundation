@@ -586,6 +586,10 @@ ModelFile load_native_ternary_safetensors_impl(const std::filesystem::path& path
     throw std::runtime_error("BitNet import currently supports only native ternary I8 SafeTensors tensors");
   }
 
+  mf.file_size = file_size;
+  mf.provenance.emplace("source_path", path.string());
+  mf.provenance.emplace("source_sha3_512", "sha3-512:" + crypto::sha3_512_hex(buffer));
+
   if (profile == "bitnet-b1.58-v1") {
     mf.format = "SafeTensors(bitnet-b1.58; profile=bitnet-b1.58-v1)";
   } else if (profile == "llama-dense-v1" || profile == "gemma-dense-v1" ||
@@ -1432,6 +1436,9 @@ ModelFile load_gguf(const std::filesystem::path& path) {
   ModelFile mf;
   mf.format = "GGUF";
   mf.file_size = file_size;
+  mf.provenance.emplace("source_path", path.string());
+  mf.provenance.emplace("source_sha3_512", "sha3-512:" + crypto::sha3_512_hex(buffer));
+  mf.provenance.emplace("gguf_version", std::to_string(version));
   std::unordered_map<std::string, uint64_t> scalar_metadata;
 
   // Read KV pairs
@@ -1531,6 +1538,10 @@ ModelFile load_gguf(const std::filesystem::path& path) {
     }
   }
 
+  if (!mf.checksum.empty()) {
+    mf.provenance.emplace("embedded_source_sha3_512", "sha3-512:" + mf.checksum);
+  }
+
   struct GGUFTensorHeader {
     std::string name;
     std::vector<uint64_t> shape;
@@ -1618,7 +1629,6 @@ ModelFile load_gguf(const std::filesystem::path& path) {
       throw std::runtime_error("GGUF import could not open llama.cpp bridge: " + bridge.error());
     }
 
-    const std::string source_sha3_512 = sha3_512_file(path);
     const std::string bridge_revision = t81::model::GgufImportBridge::bridge_revision();
     const std::string architecture = bridge.value()->model_architecture();
     const std::string profile = native_gguf_profile_for_architecture(architecture);
@@ -1670,8 +1680,6 @@ ModelFile load_gguf(const std::filesystem::path& path) {
     }
 
     mf.format = "GGUF(llama.cpp bridge; arch=" + architecture + "; profile=" + profile + ")";
-    mf.provenance.emplace("source_path", path.string());
-    mf.provenance.emplace("source_sha3_512", source_sha3_512);
     mf.provenance.emplace("bridge_backend", "llama.cpp");
     mf.provenance.emplace("bridge_revision", bridge_revision);
     return mf;

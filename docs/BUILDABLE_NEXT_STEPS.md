@@ -35,6 +35,17 @@ If those answers are unclear, narrow the work before starting it.
   promote more once the remaining RFC-scoped blockers actually stop moving;
   use `docs/reference/RFC_00D1_CONTRACT_REVIEW_CHECKLIST.md` when touching the
   current build-against boundary
+- Model-artifact intake wedge:
+  evaluate a narrow `safetensors`-first intake path that treats model files as
+  auditable execution inputs; prefer CanonFS-backed manifests, tensor identity,
+  and reproducible import/report behavior over broad "AI runtime" expansion;
+  current framing memo:
+  `docs/explanation/MODEL_ARTIFACT_STRATEGY.md`
+  Current prototype contract:
+  `docs/contracts/MODEL_IMPORT_V1_CONTRACT.md`
+  Current pipeline contracts:
+  `docs/contracts/MODEL_MANIFEST_V1_CONTRACT.md`,
+  `docs/contracts/MODEL_DIFF_V1_CONTRACT.md`
 - Public-story cleanup:
   keep the runtime-first story, handoff docs, and contributor roadmap aligned
   with the strongest usable surfaces
@@ -76,19 +87,37 @@ repo.
 7. Add fail-fast checks for remaining QEMU/EFI toolchain and smoke-path footguns.
 8. Trim the highest-friction contributor-path docs so they stay short and current.
 9. Review workflow overlap and consolidate only where it lowers maintenance cost.
-10. Keep public claims aligned with the validated bounded AI OS-object family.
+10. Evaluate the `safetensors` / `gguf` model-artifact intake wedge as a narrow,
+    buildable extension of CanonFS provenance and import/export behavior.
+    Current reference:
+    `docs/explanation/MODEL_ARTIFACT_STRATEGY.md`
+    Current JSON contract:
+    `docs/contracts/MODEL_IMPORT_V1_CONTRACT.md`
+    The first practical step should be a `safetensors`-first import/report path,
+    not a broad runtime or OS claim.
+    Current next question:
+    decide whether to keep `model diff` representation-sensitive or add a
+    normalization-aware comparison mode for cross-format pairs like
+    `.gguf` versus `safetensors`.
+    Current design sketch:
+    `docs/explanation/MODEL_DIFF_NORMALIZATION_SKETCH.md`
+    Current reviewer walkthrough:
+    `examples/ai-and-inference/model-artifact-review/README.md`
+    Current smoke helper:
+    `scripts/ci/run_model_artifact_review_smoke.sh`
+11. Keep public claims aligned with the validated bounded AI OS-object family.
     Current reference:
     `docs/explanation/DETERMINISTIC_AI_OS_OBJECT_SUBSTRATE_REFERENCE_MEMO.md`
     should be the standard check before broadening external language about
     DAIOS, AI operating systems, or generalized deterministic AI claims.
-11. Keep the admitted bounded AI OS-object family boring.
+12. Keep the admitted bounded AI OS-object family boring.
     Current reference surfaces:
     `docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md`,
     `docs/reference/AI_OS_OBJECT_FAMILY_ADMISSION_CONTRACT.md`,
     and `docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md`.
     The next work on this lane should be stabilization and misuse-path
     hardening, not a fourth composition unless a concrete consumer justifies it.
-12. (DONE) Review RFC-00D1 for partial contract promotion after behavior stops moving.
+13. (DONE) Review RFC-00D1 for partial contract promotion after behavior stops moving.
     Current state:
     RFC-00D1 now explicitly names the current CanonFS interchange v1 candidate
     contract instead of leaving contributors to infer it from code and tests.
@@ -105,7 +134,7 @@ repo.
     The practical result is that a contributor can now tell which interchange
     fields are the current v1 candidate surface and which questions are still
     intentionally deferred.
-13. (DONE) Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
+14. (DONE) Promote the bounded native `t81 ai inference run` lane into a reusable runtime state path.
     Current state:
     the strict deterministic `t81_reference_vm` lane is already real. It now
     runs a bounded native Llama-shaped probe with tokenizer-aware candidate
@@ -149,7 +178,7 @@ repo.
     2. Keep `benchmark run` and `policy test` out of scope for this lane until
        their current scaffolded behavior is explicitly being replaced.
 
-14. (DONE) Harden the CanonFS interchange contract surface.
+15. (DONE) Harden the CanonFS interchange contract surface.
     Current state:
     the RFC-00D1 CanonFS interchange lane now emits explicit structured error
     reasons from core import/export operations, carries those same reasons
@@ -174,7 +203,7 @@ repo.
     2. tighten policy-profile docs/examples rather than adding new interchange
        formats or broader subsystem scope
 
-15. (DONE) Make the built-in RFC-00D1 policy-profile surface explicit.
+16. (DONE) Make the built-in RFC-00D1 policy-profile surface explicit.
     Current state:
     the four shipped built-in interchange policy profiles now have a reusable
     core description, user-visible CLI help text, example coverage, and direct

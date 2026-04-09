@@ -5,6 +5,7 @@ CI policy and reproducibility gate scripts used by `.github/workflows/ci.yml`.
 ## Categories
 - Reproducibility gates: `t81lang_repro_gate.py`, `t3k_repro_gate.py`, `llama_cpp_repro_gate.py`
 - Determinism slice runner: `run_determinism_slice.sh`
+- Model-artifact review smoke helper: `run_model_artifact_review_smoke.sh`
 - Governance/audit checks: workflow action pinning, permissions, architecture sync
 - Architecture coherence gate now also asserts tensor provenance trace surfaces (`VM_TENSOR_PROVENANCE`) and its regression target.
 - Architecture coherence gate also asserts the phase-1 VM/shared AI helper parity regression target.
@@ -109,6 +110,7 @@ python3 scripts/ci/t81lang_repro_gate.py --help
 python3 scripts/ci/t3k_repro_gate.py --help
 python3 scripts/ci/llama_cpp_repro_gate.py --help
 bash scripts/ci/run_determinism_slice.sh build
+bash scripts/ci/run_model_artifact_review_smoke.sh
 ```
 
 ## Keyring material sources

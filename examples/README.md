@@ -23,6 +23,8 @@ Depending on your background and goals, we recommend the following learning path
     Dive into `governance/` to see the Axion Kernel in action. Start with `governance/governance-demo/governed_matmul.t81` to understand how mathematical operations are policy-gated, then review the `.apl` (Axion Policy Language) traces. This path also needs a `--weights-model` runtime model or the demo script.
 *   **AI/ML & Systems Engineers:**
     Explore `ai-and-inference/` and `model-load-canonfs/`. These examples demonstrate how T81 securely parses external `.safetensors` or `.gguf` weights, probes layers immutably via CanonFS, and executes tensor operations deterministically.
+    For the current review-first model-artifact wedge, start with
+    `ai-and-inference/model-artifact-review/README.md`.
 *   **Architects & Visionaries:**
     Read `aspirational/T81Genesis.cpp` and explore the `system-integration-agi/` directory. These outline the ultimate North Star of T81: self-reflective, distributed, governed artificial general intelligence.
 
@@ -32,6 +34,11 @@ Depending on your background and goals, we recommend the following learning path
     Proves our core thesis: computation can be dynamically policy-gated. Run `bash examples/governance/governance-demo/run_governance_demo.sh` to see an Axion policy allow and deny the same weights-backed tensor program.
 *   **Model Loading via CanonFS (`ai-and-inference/model-load-canonfs/`)** ⚠️
     Demonstrates bridging the outside world into T81's immutable storage (CanonFS). Features scripts like `run_real_hf_tiny_model.sh` and tools that parse and probe real Hugging Face model weights deterministically.
+*   **Model Artifact Review (`ai-and-inference/model-artifact-review/`)** ✅
+    Shows the current artifact-intake wedge with `model import`, persisted
+    manifests, raw representation-sensitive diff, and opt-in normalized
+    `.gguf` versus `safetensors` comparison. Includes
+    `run_model_artifact_review.sh` for a single smokeable walkthrough.
 *   **LLaMA Bridge & AI Integration (`ai-and-inference/ai-integration/`)** ⚠️
     Showcases C++ host integrations wrapping standard AI runtimes (like `llama.cpp`) inside T81's deterministic governance boundaries.
 *   **T81 Genesis (`aspirational/T81Genesis.cpp`)** 🔥

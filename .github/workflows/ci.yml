@@ -592,6 +592,13 @@ jobs:
             --t81-bin build/t81 \
             --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
 
+      - name: Run model-artifact review smoke (single matrix lane)
+        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+        shell: bash
+        run: |
+          set -eo pipefail
+          bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
+
       - name: Verify stable baseline compliance surfaces are present
         shell: bash
         run: |
