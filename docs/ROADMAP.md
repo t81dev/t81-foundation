@@ -1,124 +1,63 @@
-# T81 Contributor Roadmap
+# T81 Governed AI Operating System (DAIOS) Roadmap
 
-This is the short roadmap for someone trying to build T81 forward without first absorbing the entire historical planning corpus.
+This roadmap defines the engineering path for T81 as an Operating System for Governed, Deterministic AI Execution.
+Architecture map: [RFC-00D2: DAIOS Target Architecture](../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md).
 
-## Roadmap goal
+---
 
-Move T81 from "ambitious and credible" toward "pick-up-able and extensible by new contributors" without weakening its determinism, governance, or provenance posture.
+## Near-Term Milestones (0–6 Months): Core OS Unification & Bare-Metal Hardening
 
-Use [RFC-00D2](../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)
-as the target-architecture map, not as permission to widen implementation
-scope ahead of proof.
+### Milestone 0.1: Unified Kernel & Process Execution Substrate (Layer 1 & 2)
+* **Objective:** Merge freestanding `ternaryos/` kernel primitives into a unified `kernel/` hierarchy and standardize the T81 Process Model.
+* **OS Deliverables:**
+  - Consolidate `ternaryos/kernel` and `kernel/axion` into `kernel/core` and `kernel/governance`.
+  - Implement TISC Task Process Control Block (PCB) supporting state saved context, capability masks, and memory region bounds.
+  - Freeze Kernelcall ABI Ordinals (RFC-00BD) for process creation, memory allocation, and Axion policy validation.
+  - Verification: `ctest --test-dir build -R kernel_process_suite` passing on GCC/Clang/MSVC and QEMU ARM64 target.
 
-## Phase 1: Make the current value obvious
+### Milestone 0.2: CanonFS as Immutable OS Root File System (Layer 3)
+* **Objective:** Elevate CanonFS from a userland CLI tool into the canonical root file system (CanonVFS).
+* **OS Deliverables:**
+  - Implement read-only VFS driver for CanonFS objects, mounting executable bundles into process address spaces.
+  - Establish content-addressed executable image verification: kernel verifies binary `CanonHash81` prior to page table mapping.
+  - Harden RFC-00D1 foreign filesystem interchange with bit-exact import/export negative testing.
 
-Primary goal: make the runtime story clearer than the long-horizon OS story.
+---
 
-Current posture: the bounded AI OS-object family is now a protected subsystem,
-so this phase should favor stabilization and truthful framing over additional
-family breadth.
+## Mid-Term Milestones (6–18 Months): System Services, GHAL & AI Runtime Integration
 
-Success looks like:
+### Milestone 1.1: Governed Hardware Abstraction Layer (GHAL) & Driver Boundary (Layer 6)
+* **Objective:** Establish formal driver and interrupt mediation interfaces under Axion policy.
+* **OS Deliverables:**
+  - Standardize GHAL device driver interfaces (`drivers/char`, `drivers/block`, `drivers/net`).
+  - Implement hardware-interrupt-driven `WaitForDevice` and concurrent device wait filtering (RFC-00C2, RFC-00C5).
+  - Integrate ternary-native hardware/accelerator interposer seams behind a deterministic GHAL backend API.
 
-- a newcomer can tell what T81 is in under a minute
-- the runtime path feels complete enough to try and explain
-- the docs clearly distinguish:
-  - usable now
-  - experimental but demoable
-  - draft architectural direction
+### Milestone 1.2: Base81 Governed IPC & Microkernel System Services (Layer 6)
+* **Objective:** Replace ad-hoc FFI/host calls with deterministic, policy-gated Inter-Process Communication (IPC).
+* **OS Deliverables:**
+  - Implement Base81-aware IPC channel primitive for kernel-mediated message passing between EL0 userland services.
+  - Build core system services: Governed Service Resolver (RFC-00D0), Audit Logging Daemon, and CanonFS Storage Daemon.
+  - Enforce EL0 fault containment and supervisor fault recovery (RFC-00C7, RFC-00CD).
 
-Recommended work:
+### Milestone 1.3: Governed AI Object Runtime & Model Paging (Layer 4 & 5)
+* **Objective:** Expose ternary weight execution and model execution as OS-native task pipelines.
+* **OS Deliverables:**
+  - Implement bounded AI task process templates (`assess-fixed`, `route-fixed`, `classify-fixed`) running in isolated EL0 tasks.
+  - Develop demand-paging mechanism for CanonFS weight tensors into T81VM address space with pre-side-effect policy gates.
 
-- continue tightening README and docs entry points
-- reduce duplicated roadmap/status material
-- keep handoff documents current
-- keep contributor-facing examples and smoke paths aligned with the docs that point to them
+---
 
-## Phase 2: Harden the CanonFS interchange lane
+## Longer-Term Milestones (18+ Months): Multi-Core DAIOS, Hardware Ecosystem & Release
 
-Primary goal: turn RFC-00D1 from a good seed into a contributor-friendly subsystem.
+### Milestone 2.1: Deterministic Multi-Core & Parallel Execution (DPE)
+* **Objective:** Scale DAIOS execution across multi-core systems while preserving bit-exact reproducibility.
+* **OS Deliverables:**
+  - Implement Deterministic Parallel Execution (DPE) kernel scheduler (RFC-DPE-0001 through RFC-DPE-0009).
+  - Enforce DAG-ordered epoch commitments across parallel worker threads with deterministic fault recovery.
 
-Success looks like:
-
-- import/export semantics are stable enough for non-authors to build against
-- policy and provenance are real, not placeholder-shaped
-- interchange behavior is documented in a small number of obvious files
-- the stable seed contract is named explicitly so examples, tests, and tooling
-  can depend on it without pretending the whole RFC is finished
-
-Recommended work:
-
-- deepen policy-profile semantics
-- add more negative/edge-case tests
-- clarify which RFC-00D1 surfaces are draft vs implementation detail
-- keep the current stable seed explicit:
-  `canonfs import` / `canonfs export`,
-  `t81.canonfs-import.v1`,
-  `t81.canonfs-export.v1`,
-  structured interchange `reason` / `kind` / `code`,
-  explicit `provenance_schema` / `manifest_schema` result fields,
-  provenance/manifest schemas,
-  `host-file` / `host-directory`,
-  and current policy-profile names
-- keep the golden example plus frozen `v1/` fixture set aligned with the same
-  build-against boundary
-- consider promoting more of RFC-00D1 only after the deferred v1 questions stop
-  moving
-
-## Phase 3: Pick one narrow new subsystem and keep it narrow
-
-Primary goal: avoid broad new architectural spread.
-
-Hardware/interposer acceleration remains external to T81's current stable
-runtime surface; if convergence is revisited later, it should happen only
-through a narrow experimental backend seam after the current runtime and
-RFC-00D1 lanes are stable.
-
-Best candidate today:
-
-- RFC-00D0 service descriptor and resolution prototype before full TCP/IP breadth
-
-Success looks like:
-
-- a small base-81-aware resolver exists
-- CanonFS-backed descriptor loading works
-- API and evidence behavior are testable without pretending the full stack is done
-
-## Phase 4: Keep the repo boring to operate
-
-Primary goal: portability, CI, and docs should not become the bottleneck.
-
-Success looks like:
-
-- CI failures are mostly meaningful, not housekeeping
-- formatting and portability regressions are fixed quickly
-- Windows/macOS/Linux lanes stay trustworthy
-
-Recommended work:
-
-- keep workflow drift low
-- keep portable helper patterns centralized
-- avoid reintroducing ad hoc platform-specific builtins or checkout gaps
-- make contributor/demo scripts fail fast on missing host tools instead of failing deep in the run
-
-## What not to do next
-
-- do not expand scope across many draft subsystems at once
-- do not rewrite stable accepted surfaces just because the repo is large
-- do not make the OS/bare-metal lane the only public story
-- do not let planning docs multiply faster than buildable work
-
-## Decision rule
-
-Prefer work that does one of these:
-
-- makes a current surface easier to adopt
-- turns draft work into something another engineer can finish
-- removes project dependence on one maintainer’s memory
-
-When RFC-00D2 applies, prefer work that strengthens an earlier materially real
-layer over work that jumps ahead into a later planned layer. If a task cannot
-name its target layer and current proof surface clearly, narrow it before
-starting.
-
-De-prioritize work that mainly adds conceptual breadth without making the existing system easier to use or extend.
+### Milestone 2.2: DAIOS Standalone Bare-Metal Platform & Hardware Certification
+* **Objective:** Deliver self-contained, bare-metal ISO/UEFI images for real hardware and emulated targets.
+* **OS Deliverables:**
+  - Provide complete UEFI/bootloader image booting directly into the Axion Governance Kernel and CanonVFS root.
+  - Achieve formal Deterministic Core Profile (DCP) verification and release DAIOS v2.0-LTS.
