@@ -1,6 +1,6 @@
 # RFC-00D2: Deterministic Artificial Intelligence Operating System Target Architecture and Sequencing
 
-**Status:** draft
+**Status:** accepted
 **Type:** informational
 **Applies-To:** cross-layer architecture planning, sequencing, stable-vs-deferred boundary setting
 **Created:** 2026-04-02
