@@ -459,6 +459,31 @@ Expected result:
 - execution traps with `SecurityFault`
 - no `<tensor#1>` is printed
 
+## Real Model Validation Experiment (End-to-End Phases 1 - 9)
+
+This is the complete real-world validation experiment for T81 using an externally
+sourced Hugging Face model (`hf-internal-testing/tiny-random-LlamaForCausalLM`).
+
+One-command runner:
+
+```bash
+bash examples/ai-and-inference/model-load-canonfs/test_real_hf_model.sh
+```
+
+What the script validates across 9 phases:
+
+1. **Phase 1 (Establish Artifact):** Downloads real Hugging Face model, records metadata/URL, imports into `.t81w` format, and registers in CanonFS.
+2. **Phase 2 (Canonical Identity):** Demonstrates stable cryptographic identity and metadata logging.
+3. **Phase 3 (Axion Governance):** Applies an Axion policy binding authorization explicitly to model checksum (`sha3-512`).
+4. **Phase 4 (Real Inference):** Executes governed inference via `t81 ai task answer-fixed` producing canonical result and provenance artifacts.
+5. **Phase 5 (Deterministic Replay):** Executes identical runs and proves bit-exact equality (`run1_result_ref == run2_result_ref`).
+6. **Phase 6 (Model Tampering):** Flips 1 byte in the model file and proves pre-execution policy rejection before inference (`SecurityFault`, exit code 13, `compute executed: no`).
+7. **Phase 7 (Bundle Verification):** Generates and verifies a decision/provenance bundle (`t81 artifact store-bundle` and `t81 artifact validate-record`).
+8. **Phase 8 (Bundle Tampering):** Tampers with bundle metadata and verifies validation failure.
+9. **Phase 9 (Summary Output):** Emits machine-readable report summary.
+
+See [REAL_MODEL_VALIDATION_REPORT.md](REAL_MODEL_VALIDATION_REPORT.md) for full report details.
+
 ## Real Hugging Face Tiny Model Path
 
 This is the smallest real external model flow currently validated in the repo.

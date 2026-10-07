@@ -42,6 +42,24 @@
 #include "t81/vm/vm.hpp"
 
 namespace t81::vm {
+
+struct ThreadContext;
+#if defined(__GNUC__) || defined(__clang__)
+extern "C" [[gnu::weak]] Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn& insn, ThreadContext& ctx) {
+  (void)insn;
+  (void)ctx;
+  return Trap::DecodeFault;
+}
+extern "C" [[gnu::weak]] Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn& insn, ThreadContext& ctx) {
+  (void)insn;
+  (void)ctx;
+  return Trap::DecodeFault;
+}
+#else
+extern "C" Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn& insn, ThreadContext& ctx);
+extern "C" Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn& insn, ThreadContext& ctx);
+#endif
+
 namespace {
 constexpr std::size_t kDefaultStackSize = 256;
 constexpr std::size_t kDefaultHeapSize = 768;
@@ -6773,7 +6791,6 @@ public:
       case t81::tisc::Opcode::POLICY_FILTER_TOKENS:
       case t81::tisc::Opcode::POLICY_RECORD_DECISION: {
         // Delegate to CSI integration if enabled
-        extern Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn& insn, VMContext& ctx);
         trap = execute_csi_opcode_if_enabled(insn, ctx);
         break;
       }
@@ -6796,7 +6813,6 @@ public:
       case t81::tisc::Opcode::QUANT_ADAPT:
       case t81::tisc::Opcode::QUANT_MIXED: {
         // Delegate to advanced AI integration if enabled
-        extern Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn& insn, VMContext& ctx);
         trap = execute_advanced_ai_opcode_if_enabled(insn, ctx);
         break;
       }

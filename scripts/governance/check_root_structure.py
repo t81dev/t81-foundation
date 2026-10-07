@@ -30,6 +30,7 @@ EXPECTED_TOP_LEVEL = {
     "README.pt-BR.md",
     "README.ru.md",
     "README.zh-CN.md",
+    "REAL_MODEL_VALIDATION_REPORT.md",
     "SECURITY.md",
     "SUPPORT_TAXONOMY.md",
     "T81_CAPABILITIES_REPORT.md",
