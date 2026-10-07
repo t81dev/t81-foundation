@@ -208,27 +208,27 @@ enum class Opcode : std::uint8_t {
   // RFC-0034 §5.17 — Ternary-Native Inference Operations (Tier 2+)
   // Opcode bytes: TWMATMUL=0xC2, TQUANT=0xC3, TATTN=0xC4,
   //               TWEMBED=0xC5, TERNACCUM=0xC6, TACT=0xC7
-  TWMATMUL = 0xC2,   // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
-  TQUANT,     // Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
-  TATTN,      // Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
-  TWEMBED,    // Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
-  TERNACCUM,  // Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
-  TACT,       // Ternary activation:    TACT     RD, R_SRC, R_MODE
+  TWMATMUL = 0xC2,  // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT,           // Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
+  TATTN,            // Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED,          // Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM,        // Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
+  TACT,             // Ternary activation:    TACT     RD, R_SRC, R_MODE
   // RFC-00B8 — Governed Foreign Function Interface
-  FFICall,     // Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
-  FFIRegister, // Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
-  FFIPolicySet, // Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
+  FFICall,       // Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
+  FFIRegister,   // Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
+  FFIPolicySet,  // Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
   // RFC-0038 — Ternary Lattice Cryptography Primitives
   POLYMUL,  // Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
   POLYMOD,  // Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
   // TISC v0.4 extensions (RFC-0005 §2.2 + §2.4) — contiguous-layout vector helpers
-  VLoad,          // Shape-aware tensor reshape: VLoad RD, RS_SRC, RS_SHAPE
-  VStore,         // Shape-validated tensor copy: VStore RD, RS_SRC, RS_SHAPE
-  VAdd,           // Elementwise add on handles: VAdd RD, RS1, RS2
-  VFma,           // Fused multiply-accumulate: VFma RD, RS1, RS2  (RD = RS1*RS2 + RD)
-  ReadIsaVersion, // Write ISA version constant: ReadIsaVersion RD
+  VLoad,           // Shape-aware tensor reshape: VLoad RD, RS_SRC, RS_SHAPE
+  VStore,          // Shape-validated tensor copy: VStore RD, RS_SRC, RS_SHAPE
+  VAdd,            // Elementwise add on handles: VAdd RD, RS1, RS2
+  VFma,            // Fused multiply-accumulate: VFma RD, RS1, RS2  (RD = RS1*RS2 + RD)
+  ReadIsaVersion,  // Write ISA version constant: ReadIsaVersion RD
   // RFC-0006 §2.3 — Deterministic GC safepoint
-  GcSafepoint,    // Explicit GC safepoint: GcSafepoint (no operands); triggers a DGC cycle
+  GcSafepoint,  // Explicit GC safepoint: GcSafepoint (no operands); triggers a DGC cycle
   // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
   // Encoding: AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
   // Axion observes every AgentInvoke for tier-check and policy enforcement.
@@ -241,37 +241,37 @@ enum class Opcode : std::uint8_t {
   TOR_SWAR = 215,
   // RFC-00E1 — Controlled Stochastic Inference (CSI) Opcode Extensions
   // Experimental opcodes for policy-gated stochastic operations (0xD8-0xE3 range)
-  STOCHASTIC_DECODE = 0xD8,        // Policy-gated stochastic decoding
-  STOCHASTIC_SAMPLE = 0xD9,        // Sample from candidate set with policy
-  STOCHASTIC_CHAIN_BEGIN = 0xDA,   // Begin stochastic provenance chain
-  STOCHASTIC_CHAIN_STEP = 0xDB,    // Add step to provenance chain
+  STOCHASTIC_DECODE = 0xD8,         // Policy-gated stochastic decoding
+  STOCHASTIC_SAMPLE = 0xD9,         // Sample from candidate set with policy
+  STOCHASTIC_CHAIN_BEGIN = 0xDA,    // Begin stochastic provenance chain
+  STOCHASTIC_CHAIN_STEP = 0xDB,     // Add step to provenance chain
   STOCHASTIC_CHAIN_END = 0xDC,      // Finalize provenance chain
   STOCHASTIC_CONFIG = 0xDD,         // Configure stochastic parameters
-  STOCHASTIC_SEED = 0xDE,          // Set stochastic seed
-  STOCHASTIC_VERIFY = 0xDF,        // Verify stochastic chain integrity
+  STOCHASTIC_SEED = 0xDE,           // Set stochastic seed
+  STOCHASTIC_VERIFY = 0xDF,         // Verify stochastic chain integrity
   POLICY_EVAL_STOCHASTIC = 0xE0,    // Evaluate stochastic policy
   POLICY_CONSTRAIN_ENTROPY = 0xE1,  // Apply entropy constraints
   POLICY_FILTER_TOKENS = 0xE2,      // Filter forbidden tokens
   POLICY_RECORD_DECISION = 0xE3,    // Record policy decision
-  
+
   // RFC-00E2 — Advanced AI Opcode Extensions (0xE4-0xF3 range)
   // Experimental opcodes for advanced neural network and quantization operations
-  NEURAL_FWD = 0xE4,       // Forward pass with configurable layers
-  NEURAL_BACK,              // Backward pass (for training/research)
-  NEURAL_OPT,               // Optimizer step (SGD, Adam, etc.)
-  NEURAL_ACT,               // Advanced activation functions
-  NEURAL_NORM,              // Layer/Batch/Group normalization
-  NEURAL_DROP,              // Dropout with deterministic seeding
-  NEURAL_RES,               // Residual connections
-  NEURAL_ATTN,              // Advanced attention variants
-  QUANT_TERN,               // Ternary quantization (beyond T3_K)
-  QUANT_PRUN,               // Structured pruning
-  QUANT_DIST,               // Distribution-aware quantization
-  QUANT_COMP,               // Compression algorithms
-  QUANT_DECOMP,             // Decompression with verification
-  QUANT_VERIFY,             // Quantization integrity checks
-  QUANT_ADAPT,              // Adaptive quantization
-  QUANT_MIXED,              // Mixed-precision operations
+  NEURAL_FWD = 0xE4,  // Forward pass with configurable layers
+  NEURAL_BACK,        // Backward pass (for training/research)
+  NEURAL_OPT,         // Optimizer step (SGD, Adam, etc.)
+  NEURAL_ACT,         // Advanced activation functions
+  NEURAL_NORM,        // Layer/Batch/Group normalization
+  NEURAL_DROP,        // Dropout with deterministic seeding
+  NEURAL_RES,         // Residual connections
+  NEURAL_ATTN,        // Advanced attention variants
+  QUANT_TERN,         // Ternary quantization (beyond T3_K)
+  QUANT_PRUN,         // Structured pruning
+  QUANT_DIST,         // Distribution-aware quantization
+  QUANT_COMP,         // Compression algorithms
+  QUANT_DECOMP,       // Decompression with verification
+  QUANT_VERIFY,       // Quantization integrity checks
+  QUANT_ADAPT,        // Adaptive quantization
+  QUANT_MIXED,        // Mixed-precision operations
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -769,13 +769,14 @@ enum class Opcode : std::uint8_t {
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> values{};
-  for (std::size_t i = 0; i < values.size(); ++i) {
-    values[i] = static_cast<Opcode>(i);
-  }
-  return values;
-}();
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> kAllOpcodes =
+    [] {
+      std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> values{};
+      for (std::size_t i = 0; i < values.size(); ++i) {
+        values[i] = static_cast<Opcode>(i);
+      }
+      return values;
+    }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
   return raw_opcode <= static_cast<std::uint8_t>(Opcode::QUANT_MIXED);
