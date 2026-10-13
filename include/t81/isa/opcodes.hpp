@@ -204,41 +204,29 @@ enum class Opcode : std::uint8_t {
   WLOAD,    // Weight load with Axion policy gate: WLOAD RD, R_SRC, R_POLICY
   GATHER,   // Sparse gather: GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)
   SCATTER,  // Sparse scatter-add: SCATTER RD, R_DST, PACK(R_IDX, R_SRC)
-  Int2BigInt,
-  // TISC v0.4 extensions (RFC-0005 §2.2 + §2.4) — contiguous-layout vector helpers
-  VLoad,          // Shape-aware tensor reshape: VLoad RD, RS_SRC, RS_SHAPE
-  VStore,         // Shape-validated tensor copy: VStore RD, RS_SRC, RS_SHAPE
-  VAdd,           // Elementwise add on handles: VAdd RD, RS1, RS2
-  VFma,           // Fused multiply-accumulate: VFma RD, RS1, RS2  (RD = RS1*RS2 + RD)
-  ReadIsaVersion, // Write ISA version constant: ReadIsaVersion RD
-  // RFC-0006 §2.3 — Deterministic GC safepoint
-  GcSafepoint,    // Explicit GC safepoint: GcSafepoint (no operands); triggers a DGC cycle
-  // RFC-0015 §3.2 — Tier-tagged agent behavior invocation
-  // Encoding: AgentInvoke RD, R_ADDR, PACK(agent_id, behavior_id)
-  // Axion observes every AgentInvoke for tier-check and policy enforcement.
-  AgentInvoke,
+  Int2BigInt = 193, // 0xC1
   // RFC-0034 §5.17 — Ternary-Native Inference Operations (Tier 2+)
   // Opcode bytes: TWMATMUL=0xC2, TQUANT=0xC3, TATTN=0xC4,
   //               TWEMBED=0xC5, TERNACCUM=0xC6, TACT=0xC7
-  TWMATMUL,   // Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
-  TQUANT,     // Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
-  TATTN,      // Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
-  TWEMBED,    // Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
-  TERNACCUM,  // Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
-  TACT,       // Ternary activation:    TACT     RD, R_SRC, R_MODE
+  TWMATMUL = 194, // 0xC2 Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT   = 195, // 0xC3 Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
+  TATTN    = 196, // 0xC4 Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED  = 197, // 0xC5 Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM = 198, // 0xC6 Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
+  TACT     = 199, // 0xC7 Ternary activation:    TACT     RD, R_SRC, R_MODE
   // RFC-00B8 — Governed Foreign Function Interface
-  FFICall,     // Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
-  FFIRegister, // Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
-  FFIPolicySet, // Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
+  FFICall     = 200, // 0xC8 Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
+  FFIRegister  = 201, // 0xC9 Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
+  FFIPolicySet = 202, // 0xCA Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
   // RFC-0038 — Ternary Lattice Cryptography Primitives
-  POLYMUL,  // Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
-  POLYMOD,  // Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
+  POLYMUL = 203, // 0xCB Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
+  POLYMOD = 204, // 0xCC Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
   // RFC-0039 — NTRU-KEM polynomial ring arithmetic
-  TVecSub,  // Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
+  TVecSub = 205, // 0xCD Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
   // RFC-0040 — Explicit SWAR tensor ops over ExactTrit tensors.
-  TNOT_SWAR,
-  TAND_SWAR,
-  TOR_SWAR,
+  TNOT_SWAR = 206, // 0xCE
+  TAND_SWAR = 207, // 0xCF
+  TOR_SWAR  = 220, // 0xDC
   // RFC-00E1 — Controlled Stochastic Inference (CSI) Opcode Extensions
   // Experimental opcodes for policy-gated stochastic operations (0xD0-0xDF range)
   STOCHASTIC_DECODE = 0xD0,        // Policy-gated stochastic decoding
@@ -272,6 +260,15 @@ enum class Opcode : std::uint8_t {
   QUANT_VERIFY = 0xED,     // Quantization integrity checks
   QUANT_ADAPT = 0xEE,      // Adaptive quantization
   QUANT_MIXED = 0xEF,      // Mixed-precision operations
+
+  // TISC v0.4 extensions (RFC-0005 §2.2 + §2.4) & RFC-0015
+  VLoad          = 0xF0, // 240
+  VStore         = 241,  // 241
+  VAdd           = 242,  // 242
+  VFma           = 243,  // 243
+  ReadIsaVersion = 244,  // 244
+  GcSafepoint    = 245,  // 245
+  AgentInvoke    = 246,  // 246
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -769,8 +766,8 @@ enum class Opcode : std::uint8_t {
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED) + 1> values{};
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> kAllOpcodes = [] {
+  std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> values{};
   for (std::size_t i = 0; i < values.size(); ++i) {
     values[i] = static_cast<Opcode>(i);
   }
@@ -778,7 +775,7 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::QUANT_MIXED
 }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::QUANT_MIXED);
+  return raw_opcode <= static_cast<std::uint8_t>(Opcode::AgentInvoke);
 }
 
 }  // namespace t81::tisc

@@ -41,6 +41,26 @@
 #include "t81/types/T81Float.hpp"
 #include "t81/vm/vm.hpp"
 
+namespace t81::vm::csi {
+#ifdef T81_CSI_EXPERIMENTAL
+extern "C" Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn& insn, ThreadContext& ctx);
+#else
+inline Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn&, ThreadContext&) {
+  return Trap::DecodeFault;
+}
+#endif
+}
+
+namespace t81::vm::advanced_ai {
+#if defined(T81_BUILD_ADVANCED_AI) || defined(T81_ADVANCED_AI_EXPERIMENTAL)
+extern "C" Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn& insn, ThreadContext& ctx);
+#else
+inline Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn&, ThreadContext&) {
+  return Trap::DecodeFault;
+}
+#endif
+}
+
 namespace t81::vm {
 namespace {
 constexpr std::size_t kDefaultStackSize = 256;
@@ -6773,8 +6793,7 @@ public:
       case t81::tisc::Opcode::POLICY_FILTER_TOKENS:
       case t81::tisc::Opcode::POLICY_RECORD_DECISION: {
         // Delegate to CSI integration if enabled
-        extern Trap execute_csi_opcode_if_enabled(const t81::tisc::Insn& insn, VMContext& ctx);
-        trap = execute_csi_opcode_if_enabled(insn, ctx);
+        trap = t81::vm::csi::execute_csi_opcode_if_enabled(insn, ctx);
         break;
       }
       // RFC-00E2 — Advanced AI Opcode Extensions (0xE0-0xEF range)
@@ -6796,8 +6815,7 @@ public:
       case t81::tisc::Opcode::QUANT_ADAPT:
       case t81::tisc::Opcode::QUANT_MIXED: {
         // Delegate to advanced AI integration if enabled
-        extern Trap execute_advanced_ai_opcode_if_enabled(const t81::tisc::Insn& insn, VMContext& ctx);
-        trap = execute_advanced_ai_opcode_if_enabled(insn, ctx);
+        trap = t81::vm::advanced_ai::execute_advanced_ai_opcode_if_enabled(insn, ctx);
         break;
       }
         default:
