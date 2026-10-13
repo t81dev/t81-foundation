@@ -8,8 +8,8 @@
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
 
-![Release](https://img.shields.io/badge/release-v1.9.5--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-393%2F393_passing-brightgreen)
+![Release](https://img.shields.io/badge/release-v1.9.1--Stable-blue)
+![Tests](https://img.shields.io/badge/tests-394%2F394_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
 ![Execution](https://img.shields.io/badge/execution-deterministic-green)
 ![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
@@ -18,92 +18,70 @@
 
 ## What is T81
 
-T81 is a substrate for producing **canonical decision objects with identity** from governed AI tasks.
+T81 is a deterministic, policy-gated runtime substrate for producing **canonical decision objects with identity** from governed computation and AI tasks.
 
-Instead of interpreting AI output, T81 consumes **durable decision bundles** that provide complete provenance, deterministic replayability, and cross-system portability.
+Instead of consuming unverified model outputs or unmonitored side effects, T81 produces **durable decision bundles** that carry complete cryptographic provenance, bit-exact replayability, and cross-system portability.
 
-Policies are evaluated deterministically and enforced before execution or materialization begins. Governance does not rely on runtime heuristics, anomaly scoring, or after-the-fact monitoring. T81 can be adopted incrementally via CanonFS + policy enforcement without requiring full stack adoption.
+Policies are evaluated deterministically and enforced by the **Axion** governance kernel before execution or materialization occurs. Governance does not rely on runtime heuristics, anomaly scoring, or after-the-fact log parsing. T81 can be adopted incrementally via **CanonFS** content-addressed storage and policy enforcement without requiring full stack adoption.
 
 ## Why This Matters
 
-- **Decision objects over interpretation** - AI decisions become verifiable, consumable objects
-- **Identity through provenance** - Every decision carries complete audit trail
-- **Deterministic replayability** - Same inputs always produce identical bundles
-- **Cross-system portability** - Decisions can be consumed without original execution environment
-- **Policy-bound outcomes** - All decisions are validated against governance before materialization
+- **Decision objects over interpretation** — AI decisions become verifiable, consumable artifacts with durable identity.
+- **Pre-side-effect policy enforcement** — Axion validates execution rules before state changes or storage side effects occur.
+- **Immutable provenance** — Every artifact, input, and state change is content-addressed in CanonFS with verifiable lineage.
+- **Bit-exact replayability** — Identical inputs and seeds produce bit-identical execution traces and output hashes across platforms.
+- **Cross-system portability** — Decision bundles can be verified and consumed without depending on the original execution environment.
 
 ## When to Use T81
 
-- **When you need verifiable AI decisions** rather than interpretable output
-- **When decisions must be portable** across different execution environments  
-- **When complete provenance is required** for compliance or audit
-- **When deterministic replay** of decisions is a security requirement
+- **When you need verifiable decision objects** rather than raw, unverified model text or unmonitored execution.
+- **When execution must be policy-gated before side effects** occur in storage, network, or host systems.
+- **When complete cryptographic provenance** is required for compliance, regulatory audit, or supply-chain security.
+- **When deterministic replayability** across heterogeneous execution environments is a mandatory security contract.
 
 ## Real-World Use Cases
 
-- **Security governance** - Consume policy-approved decision bundles for access control
-- **Compliance auditing** - Archive canonical decision objects with complete provenance
-- **Cross-system handoff** - Transfer decisions between environments without losing context
-- **Regulatory reporting** - Provide verifiable decision artifacts to auditors
-- **Release gates** - Use bundles as canonical approval evidence for deployments
-
-## Performance Characteristics
-
-T81 prioritizes **decision integrity over raw throughput**. Bundle creation and consumption are optimized for deterministic verification, not maximum inference speed.
-
-The system's advantages come from **identity and provenance guarantees**, not from emulated ternary arithmetic performance.
+- **Governed AI decision chains** — Produce policy-approved, verifiable decision bundles from bounded AI tasks (`assess-fixed`, `route-fixed`, `classify-fixed`).
+- **Security governance & access control** — Enforce fail-closed pre-execution policy checks on sensitive data imports and exports.
+- **Compliance & regulatory auditing** — Maintain content-addressed archives of decision artifacts and execution traces for independent verification.
+- **Release gates & deployment authorization** — Use canonical decision bundles as cryptographic approval evidence for deployment pipelines.
+- **Cross-environment handoff** — Transfer verifiable decision bundles between distinct systems without losing execution context or provenance.
 
 ## System Guarantees
 
-- **Identity by design** - Content-addressed bundles provide cryptographic proof of decision integrity
-- **Deterministic replay** - Same inputs always produce identical decision objects
-- **Policy enforcement** - All decisions validated against governance before materialization
-- **Cross-system portability** - Bundles can be consumed without original execution environment
-- **Complete provenance** - Full audit trail from input to decision is verifiable
+- **Cryptographic identity** — Content-addressed bundles (CanonHash-81) provide tamper-evident proof of decision integrity.
+- **Deterministic replay** — Identical inputs produce bit-identical decision objects across supported platform architectures.
+- **Fail-closed policy enforcement** — All operations are validated against governance rules before side effects occur.
+- **Immutable storage** — CanonFS guarantees content immutability and complete auditability.
+- **Cross-system portability** — Bundles are self-contained and consumable without host runtime dependencies.
 
-When performance matters more than decision integrity, other runtimes may be better suited. When guarantees matter more than speed, T81 provides **verifiable, replayable, policy-bound decisions**.
+## Architectural Pillars
 
-### Architectural Pillars
-
-1. **Canonical Decision Objects** — **Bundles** provide content-addressed, verifiable decision artifacts with complete provenance
-2. **Policy Enforcement** — **Axion** validates decisions against governance before materialization
-3. **Immutable Storage** — **CanonFS** provides hash-verified storage for decision chains and evidence
-4. **Deterministic Execution** — Bit-identical decisions are guaranteed for identical inputs
-
-T81 also has in-progress ternary hardware directions, but the usable form today is the **decision substrate**.
+1. **Canonical Decision Objects** — Content-addressed **bundles** providing verifiable artifacts with complete execution provenance.
+2. **Policy Enforcement (Axion)** — Fail-closed governance kernel validating decisions before state changes or materialization.
+3. **Immutable Storage (CanonFS)** — Content-addressed, hash-verified storage backend for decision chains and evidence.
+4. **Deterministic VM (T81VM / TISC ISA)** — Bit-exact execution engine running the frozen TISC instruction set architecture (v1.9.0).
 
 ## Best Current Surfaces
 
-If you want the clearest contributor-facing surfaces in the repo today, start here:
+For the clearest, most actionable entry points in the repository today:
 
-- **CanonFS interchange**: RFC-00D1 current draft contract:
-  [RFC-00D1-canonfs-foreign-filesystem-interchange.md](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)
-- bounded AI OS-object family status:
-  [BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
-- canonical bundle consumption contract:
-  [examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh](examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh)
-- canonical bundle `.v1` versioning boundary:
-  [AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md](docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
+- **T81 Operator Guide**: [docs/explanation/T81_OPERATOR_GUIDE.md](docs/explanation/T81_OPERATOR_GUIDE.md) — The practical guide for operating core T81 surfaces.
+- **CanonFS Interchange Contract (RFC-00D1)**: [spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md) — Import/export interchange specification.
+- **Bounded AI OS-Object Family Status**: [docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md) — Admitted decision chain family (`assess-fixed`, `route-fixed`, `classify-fixed`).
+- **Bundle Consumption Contract**: [docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md](docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md) — Contract for external consumers of decision bundles.
 
-These are narrower and more buildable than the repo's longer-horizon OS and
-hardware directions.
+## Core Subsystems & Maturity
 
-If you want the shortest practical “how do I actually use this today?” guide,
-start here:
+| Subsystem | Role | Maturity |
+| :--- | :--- | :--- |
+| **TISC ISA** | Frozen ternary instruction set architecture (v1.9.0) | **Frozen** |
+| **T81VM** | Deterministic interpreter with Axion policy hooks | **Stable** |
+| **Axion Kernel** | Governance kernel enforcing pre-side-effect policies | **Stable** |
+| **CanonFS** | Immutable, content-addressed storage backend | **Stable** |
+| **T81Lang** | High-level language frontend for ternary logic | **Stable** |
 
-- [T81 Operator Guide](docs/explanation/T81_OPERATOR_GUIDE.md)
-
-## Core Subsystems & Maturity (March 2026)
-
-| Subsystem     | Role                                              | Maturity     |
-|---------------|---------------------------------------------------|--------------|
-| **TISC ISA**  | Frozen ternary instruction set (v1.9.0)           | **Frozen**   |
-| **T81VM**     | Deterministic interpreter with Axion hooks        | **Stable**   |
-| **Axion**     | Governance kernel mediating dispatch              | **Stable**   |
-| **CanonFS**   | Immutable, hash-verified storage backend          | **Stable**   |
-| **T81Lang**   | High-level language frontend for ternary logic    | **Stable**   |
-
-The **Deterministic Core Profile (DCP)** (TISC ISA, core VM, and data types) is a **Verified Deterministic Surface**. Experimental areas (e.g., Cognitive Tiers, full Hanoi VM) sit outside the DCP.
+The **Deterministic Core Profile (DCP)** (TISC ISA, core VM, and data types) forms the verified deterministic surface. Experimental research areas (e.g., Cognitive Tiers, Hanoi VM) sit outside the DCP in the experimental frontier.
 
 ## Execution Workflow
 
@@ -131,49 +109,36 @@ sequenceDiagram
     VM-->>Host: Deterministic Result + Audit Trace
 ```
 
-## Why Ternary?
-
-This is part of the longer-term systems direction, not the main reason a new
-contributor should pick up T81 today.
-
-Balanced ternary delivers structural advantages for verifiable inference:
-
-- **Multiplication-free dot products** — Conditional additions yield significant energy/throughput gains.
-- **Zero floating-point drift** — Truncation-only rounding ensures bit-exact **CanonHash81** traces.
-- **Constant-time negation** — Simple digit flip (~10× faster than binary integer negation in benchmarks).
-- **Trit-level policy interception** — Axion can gate individual operations before side effects.
-
-See full benchmarks in [`benchmarks/results/`](benchmarks/results/).
-
 ## Quick Start
 
-### 30-Second Proof: CanonFS + Axion
+### 1. 30-Second Proof: CanonFS + Axion Policy Gating
 
-This shows that an artifact can be stored immutably and execution can be
-denied before it runs.
-
-Run this from the repo root after building:
+This proof demonstrates content-addressed artifact storage and pre-side-effect policy enforcement.
 
 ```bash
 tmp_root="$(mktemp -d)"
 canon_root="$tmp_root/.t81_canonfs"
 
-# 1. Import one artifact into CanonFS
+# 1. Import an artifact into CanonFS
 ./build/t81 canonfs import \
   examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w \
   --canonfs-root "$canon_root" \
   --json
 
-canon_hash="<imported_objects[0] from step 1>"
+# Extract imported CanonHash81 hash
+canon_hash=$(./build/t81 canonfs import \
+  examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w \
+  --canonfs-root "$canon_root" \
+  --json | grep -o '"hash": "[^"]*"' | head -n 1 | cut -d'"' -f4)
 
-# 2. Export the same artifact back out by CanonFS hash
+# 2. Export the artifact back by CanonHash81 reference
 ./build/t81 canonfs export \
   "$canon_hash" \
   --canonfs-root "$canon_root" \
   --out "$tmp_root/restored.t81w" \
   --json
 
-# 3. Try the same import under a checked-in denying policy
+# 3. Attempt import under a denying Axion policy
 ./build/t81 canonfs import \
   examples/storage-and-canonfs/canonfs-interchange/v1/model.t81w \
   --canonfs-root "$canon_root" \
@@ -181,37 +146,19 @@ canon_hash="<imported_objects[0] from step 1>"
   --json
 ```
 
-What you should see:
+**Expected results:**
+- Steps 1 and 2 return `status: "ok"`.
+- Step 3 returns `status: "error"` with `kind: "policy-failure"` and `reason: "policy_denied"`, blocking side effects prior to storage write.
 
-- Step 1 returns `status: "ok"`
-- Step 2 returns `status: "ok"`
-- Step 3 returns `status: "error"` with `kind: "policy-failure"` and `reason: "policy_denied"`
-
-## What Just Happened
-
-- The artifact was stored as a hash-addressed CanonFS object.
-- Import and export were both subject to Axion policy approval.
-- The checked-in denying policy blocked the import before storage-side effects for that run.
-- The JSON output shape and success/failure results are deterministic and reproducible.
-
-## 60-Second Proof
-
-See: [`examples/proofs/canonfs_policy_proof/`](examples/proofs/canonfs_policy_proof/)
-
-This shows:
-- artifact import -> hash identity
-- allowed execution -> deterministic output
-- denied execution -> no computation occurs
-
-### Docker (easiest — ~60 seconds)
+### 2. Docker One-Liner (~60 seconds)
 
 ```bash
 docker run --rm -it ghcr.io/t81dev/t81-foundation demo
 ```
 
-Runs hello-world → ternary demo → determinism check → interactive REPL.
+Executes hello-world → ternary demo → determinism verification → interactive REPL.
 
-### Native Build (Linux/macOS)
+### 3. Native Build (Linux/macOS)
 
 ```bash
 git clone https://github.com/t81dev/t81-foundation.git
@@ -221,139 +168,61 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Key CMake flags:
-- `T81_STRICT_DETERMINISTIC_FLOAT=ON` (default) — Enforces bit-exact float paths.
-- `T81_HYBRID_MLP=OFF` — Keeps pure ternary invariants (requires Axion approval if enabled).
+Key CMake configuration options:
+- `T81_STRICT_DETERMINISTIC_FLOAT=ON` (default) — Enforces bit-exact float calculation paths.
+- `T81_BUILD_EXAMPLES=ON` (default) — Builds checked-in C++ demonstration binaries.
 
-### Python Integration
+### 4. Admitted Bounded AI OS-Object Family Examples
 
-```bash
-pip install .
-```
-
-### First-Run Examples
+Run the admitted decision chain compositions:
 
 ```bash
-# Compile and run T81Lang
-t81 code build examples/core-language/hello_world.t81 -o hello.tisc
-t81 vm run hello.tisc
-
-# CanonFS + policy-gated execution example
-t81 canonfs import model.t81w --json
-t81 code run inference.t81 --weights-model model.t81w --policy secure_model.apl --trace
-```
-
-Current admitted bounded AI OS-object family examples:
-
-```bash
+# 1. Host action decision chain
 bash examples/ai-and-inference/model-load-canonfs/run_assess_fixed_host_action.sh
-```
 
-That example ends on a stored bundle object, not just an AI task result. The
-bundle is the top-level persisted object for the current assess-fixed chain and
-links:
-
-- the AI task result artifact
-- the AI task provenance artifact
-- the typed downstream record
-- the host action artifact
-
-Second admitted bounded composition using the same object model:
-
-```bash
+# 2. Path selection decision chain
 bash examples/ai-and-inference/model-load-canonfs/run_route_fixed_path_selection.sh
-```
 
-Third admitted bounded composition using the same object model:
-
-```bash
+# 3. Rule selection decision chain
 bash examples/ai-and-inference/model-load-canonfs/run_classify_fixed_rule_selection.sh
 ```
 
-Short explanation:
-- [First Deterministic AI OS-Object Chain](docs/explanation/FIRST_DETERMINISTIC_AI_OS_OBJECT_CHAIN.md)
+Each script outputs a content-addressed decision bundle (`.json`) containing:
+- AI task result artifact
+- Execution provenance artifact
+- Typed downstream record
+- Canonical bundle header
 
-Current bounded composition catalog:
-- [AI OS-Object Chain Catalog](docs/reference/AI_OS_OBJECT_CHAIN_CATALOG.md)
-
-Maintainer-facing bounded family status:
-- [Bounded AI OS-Object Family Status](docs/status/BOUNDED_AI_OS_OBJECT_FAMILY_STATUS.md)
-
-Portable smoke path for the same chain:
-- `./build/t81_ai_task_assess_fixed_composition_test ./build/t81`
-
-The bounded family is now a protected subsystem. Treat these examples as the
-current admitted family:
-
-- `assess-fixed`
-- `route-fixed`
-- `classify-fixed`
-
-If you want the bundle-first external-consumer path for that family, start
-with:
-
-- [AI OS-Object Bundle Consumption Contract](docs/reference/AI_OS_OBJECT_BUNDLE_CONSUMPTION_CONTRACT.md)
-- [AI OS-Object Bundle Versioning Boundary](docs/reference/AI_OS_OBJECT_BUNDLE_VERSIONING_BOUNDARY.md)
-
-### QEMU Boot Demo (OS-like experience)
+To inspect or summarize a generated decision bundle:
 
 ```bash
-# Install deps (Ubuntu example)
-sudo apt-get install -y qemu-system-arm qemu-efi-aarch64 mtools parted
-
-git clone https://github.com/t81dev/t81-foundation.git && cd t81-foundation
-./drivers/qemu/scripts/boot_demo.sh
+bash examples/ai-and-inference/model-load-canonfs/summarize_ai_bundle.sh <bundle_ref> <canonfs_root>
 ```
-
-At the `t81>` prompt: `status`, `policy`, `help`.
-
-## T81Lang + Policy Example
-
-```t81
-agent Inference {
-  behavior run(prompt: String) -> Tensor {
-    return Model.forward(prompt);  // gated by Axion
-  }
-}
-```
-
-```apl
-# secure_model.apl
-allow infer if model.hash in approved_models;
-deny infer reason "unapproved-model";
-```
-
-## Project Status & Governance
-
-As of March 2026, The T81 deterministic core (ISA, VM, data types) is stable and governed by a monthly C2 review cadence. Active risks, implementation matrix, and decision logs are tracked in [`docs/status/`](docs/status/).
-
-- **Determinism claims** are bounded by the [Deterministic Core Profile](docs/status/SYSTEM_STATUS.md) and the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md), verified via CI gates.
-- See the full [Project Roadmap & Governance Status](docs/status/ROADMAP.md) and [Getting Started & Installation](docs/user-guide/quickstart/INSTALL.md) for details.
 
 ## What T81 is Not (Yet)
 
-- A drop-in replacement for general-purpose OSes
-- Optimized for legacy binary software
-- Dependent on real ternary hardware (emulated on conventional CPUs)
-- A high-throughput AI inference platform for unconstrained workloads
-- A general-purpose application runtime for broad software compatibility
+- **Not a general-purpose OS** — T81 is a governed execution runtime, not a desktop/server OS replacement.
+- **Not a drop-in binary host** — T81 executes TISC bytecode and governed T81Lang programs, not arbitrary host binaries.
+- **Not dependent on physical ternary hardware** — Balanced ternary logic and Base-81 encodings run deterministically on conventional binary CPUs (x86_64, ARM64) via SWAR vectorization.
+- **Not an unconstrained AI inference engine** — T81 prioritizes decision integrity, provenance, and policy enforcement over maximum throughput.
 
-T81 prioritizes verifiability, determinism, and governance over broad compatibility. When decision integrity matters more than raw throughput, T81 provides verifiable, replayable, policy-bound decisions.
+## Project Status & Governance
 
-## Architecture Overview
+As of 2026, the T81 deterministic core (TISC ISA v1.9.0, core VM, and data types) is frozen and governed under the **Deterministic Core Profile (DCP)**.
 
-For deeper technical mapping (Natural Language Space → Code Entity Space), see the [Project Overview](docs/index.md) in the DeepWiki.
+- **Determinism boundaries** are defined by the [Deterministic Core Profile](docs/status/SYSTEM_STATUS.md) and tracked in the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
+- Detailed project dashboards, active risk registers, and decision logs are available in [`docs/status/`](docs/status/).
 
-## Long-term direction
+## Long-Term Direction
 
-T81 is being developed toward a computing model where cognition becomes a first-class software substrate. Rather than treating model weights as opaque blobs behind external runtimes, T81 treats them as governed software artifacts: provenance-bound, policy-mediated, and executable within bounded cognitive tiers.
+T81 is evolving toward an environment where decision objects and reasoning paths are treated as first-class governed software artifacts: provenance-bound, policy-mediated, and executable within defined cognitive tiers.
 
-The long-term goal is an operating environment where cognitive software can be stored, invoked, composed, and governed with the same rigor applied today to code, processes, and files.
+The long-term objective is a computing environment where cognitive processes can be stored, invoked, composed, and governed with the same rigor applied to systems code, processes, and files.
 
 ## License
 
-Apache 2.0
+Licensed under the [Apache License, Version 2.0](LICENSE).
 
 ---
 
-Thanks for checking out T81. Early feedback, issues, and contributors are welcome!
+For contribution guidelines and development rituals, see [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md).
