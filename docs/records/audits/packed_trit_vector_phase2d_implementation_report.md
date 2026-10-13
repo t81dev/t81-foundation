@@ -1,5 +1,29 @@
 # PackedTritVector Phase 2D Implementation Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Phase 2D Implementation Report](#packedtritvector-phase-2d-implementation-report)
+  - [1. Summary](#1-summary)
+  - [2. Scope, Constraints, and Preserved Invariants](#2-scope-constraints-and-preserved-invariants)
+    - [Canonical Padding and Determinism Guarantees](#canonical-padding-and-determinism-guarantees)
+  - [3. API and Kernel Layer Refactor](#3-api-and-kernel-layer-refactor)
+  - [4. Native SIMD Backend Implementation](#4-native-simd-backend-implementation)
+  - [5. Dispatch Design](#5-dispatch-design)
+  - [6. Conformance and Safety Verification](#6-conformance-and-safety-verification)
+  - [7. Benchmark Matrix (Full Phase 2D Gate Coverage)](#7-benchmark-matrix-full-phase-2d-gate-coverage)
+    - [1. Pure Kernel (No Allocation)](#1-pure-kernel-no-allocation)
+    - [2. API-Level](#2-api-level)
+    - [3. Real Workload](#3-real-workload)
+    - [4. Scaling Curve Commentary](#4-scaling-curve-commentary)
+  - [8. Phase 2D Gate Evaluation (Explicit)](#8-phase-2d-gate-evaluation-explicit)
+  - [9. Validation Checklist](#9-validation-checklist)
+  - [10. Remaining Gaps and Next Recommendations](#10-remaining-gaps-and-next-recommendations)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 Phase 2D has been successfully implemented, introducing native AVX2 SIMD kernels and zero-allocation in-place APIs for `ComputeTritVector`.

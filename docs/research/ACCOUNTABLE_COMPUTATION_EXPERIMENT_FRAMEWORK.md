@@ -1,5 +1,31 @@
 # Accountable Computation Research Framework & Empirical Experiment Protocol
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Accountable Computation Research Framework & Empirical Experiment Protocol](#accountable-computation-research-framework-&-empirical-experiment-protocol)
+  - [1. Research Posture and Core Question Restatement](#1-research-posture-and-core-question-restatement)
+    - [Research Posture](#research-posture)
+    - [Core Research Question](#core-research-question)
+    - [Primitive: The Accountable Computational Act](#primitive-the-accountable-computational-act)
+  - [2. Mapping the Current T81 Implementation](#2-mapping-the-current-t81-implementation)
+    - [A. Observed / Testable Properties (Works in the Repo Today)](#a-observed--testable-properties-works-in-the-repo-today)
+    - [B. Unproven Assumptions (Promoted Hypotheses Lacking Comparative Advantage)](#b-unproven-assumptions-promoted-hypotheses-lacking-comparative-advantage)
+    - [C. Unknown Territory (Uncharted Operational Realities)](#c-unknown-territory-uncharted-operational-realities)
+  - [3. Empirical Ranking of Competing Hypotheses](#3-empirical-ranking-of-competing-hypotheses)
+    - [Commitment vs. Testing Analysis](#commitment-vs-testing-analysis)
+  - [4. Comparative Experiment Protocol: Inventory Replenishment Task](#4-comparative-experiment-protocol-inventory-replenishment-task)
+    - [Workload Specification: "Inventory Replenishment Under Constraint"](#workload-specification-"inventory-replenishment-under-constraint")
+    - [Adversarial Scenarios](#adversarial-scenarios)
+    - [Three Implementations Under Test](#three-implementations-under-test)
+    - [Explicit Evaluation Metrics](#explicit-evaluation-metrics)
+    - [Allowed Outcomes & Falsification Criteria](#allowed-outcomes-&-falsification-criteria)
+  - [5. Next Steps: Concrete Artifacts to Preserve Experimental Freedom](#5-next-steps-concrete-artifacts-to-preserve-experimental-freedom)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** April 2026
 **Status:** Open Research Hypothesis
 **Target Surface:** `docs/research/ACCOUNTABLE_COMPUTATION_EXPERIMENT_FRAMEWORK.md`

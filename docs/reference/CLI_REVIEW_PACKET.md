@@ -1,5 +1,19 @@
 # CLI Review Packet
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI Review Packet](#cli-review-packet)
+  - [1. Public CLI Surface](#1-public-cli-surface)
+  - [2. Determinism Scope](#2-determinism-scope)
+  - [3. Minimal Verification Ritual](#3-minimal-verification-ritual)
+  - [4. JSON and Exit-Code Contract](#4-json-and-exit-code-contract)
+  - [5. Submission Notes](#5-submission-notes)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-08
 Audience: external technical reviewers

@@ -1,5 +1,19 @@
 # Notebook Migration Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Notebook Migration Guide](#notebook-migration-guide)
+  - [Overview](#overview)
+  - [Legacy Notebooks](#legacy-notebooks)
+  - [New Track Structure](#new-track-structure)
+  - [Migration Steps for Developers](#migration-steps-for-developers)
+  - [FAQ](#faq)
+
+<!-- T81-TOC:END -->
+
+
 ## Overview
 
 The `/notebooks` directory has been restructured into a comprehensive interactive laboratory organized into five tracks. This new structure aligns with the T81 specification and provides a rigorous, executable reference manual.

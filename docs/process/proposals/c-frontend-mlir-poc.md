@@ -1,5 +1,31 @@
 # C Frontend MLIR Proof of Concept
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [C Frontend MLIR Proof of Concept](#c-frontend-mlir-proof-of-concept)
+  - [1. Goal](#1-goal)
+  - [2. Why C First](#2-why-c-first)
+  - [3. Non-Goals](#3-non-goals)
+  - [4. Proposed User Surface](#4-proposed-user-surface)
+  - [5. Supported C Subset v0](#5-supported-c-subset-v0)
+  - [6. Determinism Contract](#6-determinism-contract)
+  - [7. Integration Strategy](#7-integration-strategy)
+  - [8. IR Boundary Recommendation](#8-ir-boundary-recommendation)
+  - [9. Recommended Milestones](#9-recommended-milestones)
+    - [Milestone A: Parse and Reject Correctly](#milestone-a-parse-and-reject-correctly)
+    - [Milestone B: Integer Function Lowering](#milestone-b-integer-function-lowering)
+    - [Milestone C: Multi-Function Subset](#milestone-c-multi-function-subset)
+    - [Milestone D: Memory Discipline](#milestone-d-memory-discipline)
+  - [9.1 Current Status (2026-03-09)](#91-current-status-2026-03-09)
+  - [10. File/Module Sketch](#10-filemodule-sketch)
+  - [11. Key Design Rules](#11-key-design-rules)
+  - [12. Recommendation](#12-recommendation)
+
+<!-- T81-TOC:END -->
+
+
 This proposal defines the next external-ecosystem milestone after the LLVM/MLIR
 translator work: accept a tightly restricted subset of C and lower it into the
 existing T81 MLIR/TISC pipeline.

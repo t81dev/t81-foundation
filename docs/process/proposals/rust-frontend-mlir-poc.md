@@ -1,5 +1,25 @@
 # Rust Frontend MLIR Proof of Concept
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Rust Frontend MLIR Proof of Concept](#rust-frontend-mlir-proof-of-concept)
+  - [1. Goal](#1-goal)
+  - [2. Why Rust Next](#2-why-rust-next)
+  - [3. Current State](#3-current-state)
+  - [4. Non-Goals](#4-non-goals)
+  - [5. Proposed User Surface](#5-proposed-user-surface)
+  - [6. Supported Rust Subset v0](#6-supported-rust-subset-v0)
+  - [7. Determinism Contract](#7-determinism-contract)
+  - [8. Integration Strategy](#8-integration-strategy)
+  - [9. Milestones](#9-milestones)
+  - [10. Recommended Resume Point](#10-recommended-resume-point)
+  - [11. Success Criteria](#11-success-criteria)
+
+<!-- T81-TOC:END -->
+
+
 This proposal defines the next ingress milestone after the C-subset frontend:
 accept a tightly restricted subset of Rust and lower it into the existing
 T81 MLIR/TISC pipeline.

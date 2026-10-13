@@ -1,5 +1,20 @@
 # Output Presentation Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Output Presentation Contract](#output-presentation-contract)
+  - [Core Pattern](#core-pattern)
+  - [AI Inference JSON](#ai-inference-json)
+  - [Tensor-Backed CLI Success](#tensor-backed-cli-success)
+  - [Governance Demo Output](#governance-demo-output)
+  - [Drift Rules](#drift-rules)
+  - [Enforcement](#enforcement)
+
+<!-- T81-TOC:END -->
+
+
 Purpose: keep user-facing results in a stable "answer first, evidence second"
 shape across CLI, JSON, and example wrappers.
 

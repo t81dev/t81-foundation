@@ -1,5 +1,31 @@
 # Risk Register
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Risk Register](#risk-register)
+  - [Purpose](#purpose)
+  - [Severity Model](#severity-model)
+  - [Risk Registry](#risk-registry)
+  - [Risk Detail](#risk-detail)
+    - [RISK-001 — Required-context mismatch holds March release packet](#risk-001-—-required-context-mismatch-holds-march-release-packet)
+    - [RISK-002 — Determinism overclaim](#risk-002-—-determinism-overclaim)
+    - [RISK-003 — Single-owner concentration](#risk-003-—-single-owner-concentration)
+    - [RISK-004 — AGI surface growth outpacing promotion evidence](#risk-004-—-agi-surface-growth-outpacing-promotion-evidence)
+    - [RISK-005 — Experimental scope creep](#risk-005-—-experimental-scope-creep)
+    - [RISK-006 — Benchmark variability](#risk-006-—-benchmark-variability)
+    - [RISK-007 — Jekyll Pages build failure](#risk-007-—-jekyll-pages-build-failure)
+    - [RISK-008 — T81Graph serialization gap (BG-09)](#risk-008-—-t81graph-serialization-gap-bg-09)
+    - [RISK-009 — Axion Alpha posture delays Beta promotion](#risk-009-—-axion-alpha-posture-delays-beta-promotion)
+  - [Cadence](#cadence)
+  - [Closed Risks](#closed-risks)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-02-28
 Owner: Project Management / Governance

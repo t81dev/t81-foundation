@@ -1,5 +1,16 @@
 # System Status Reference Pointer
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [System Status Reference Pointer](#system-status-reference-pointer)
+  - [Current Authoritative Status Docs](#current-authoritative-status-docs)
+  - [Why This File Exists](#why-this-file-exists)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Updated: 2026-02-26
 

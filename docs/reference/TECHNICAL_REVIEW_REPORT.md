@@ -1,5 +1,25 @@
 # T81 Foundation Technical Review Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation Technical Review Report](#t81-foundation-technical-review-report)
+  - [1. CODE IMPLEMENTATION ANALYSIS](#1-code-implementation-analysis)
+  - [2. BUILD & DEPENDENCY HEALTH](#2-build-&-dependency-health)
+  - [3. TESTING INFRASTRUCTURE](#3-testing-infrastructure)
+  - [4. CODE QUALITY INDICATORS](#4-code-quality-indicators)
+  - [5. PROJECT MATURITY ASSESSMENT](#5-project-maturity-assessment)
+  - [6. DOCUMENTATION AUDIT](#6-documentation-audit)
+  - [7. COMMUNITY & MAINTENANCE](#7-community-&-maintenance)
+  - [8. SPECIFIC FEATURE VERIFICATION](#8-specific-feature-verification)
+  - [9. RED FLAGS & CONCERNS](#9-red-flags-&-concerns)
+  - [10. ACTIONABLE RECOMMENDATIONS](#10-actionable-recommendations)
+  - [OVERALL HEALTH SCORE: 9/10](#overall-health-score-910)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. CODE IMPLEMENTATION ANALYSIS
 - **Core Types:** `T81Int` (packed 2-bit storage), `T81Float` (canonical storage, host-dependent math), `T81Fraction` (exact rational), and `T81BigInt` are fully implemented in `include/t81/types`.
 - **VM:** A complete interpreter (`core/vm/vm.cpp`) exists with JIT capabilities (`runtime/jit/jit_compiler.cpp`), stack/heap management, and Axion policy integration.

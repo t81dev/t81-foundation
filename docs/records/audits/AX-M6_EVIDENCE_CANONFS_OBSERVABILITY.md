@@ -1,5 +1,36 @@
 # AX-M6 Evidence: CanonFS Observability (Axion §1.10)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AX-M6 Evidence: CanonFS Observability (Axion §1.10)](#ax-m6-evidence-canonfs-observability-axion-§110)
+  - [📋 **Requirement Summary**](#📋-**requirement-summary**)
+  - [🔍 **Evidence Collected**](#🔍-**evidence-collected**)
+    - [**1. CanonFS Integration Evidence**](#**1-canonfs-integration-evidence**)
+    - [**2. Policy Hint Persistence Evidence**](#**2-policy-hint-persistence-evidence**)
+    - [**3. Bounds-Fault Snippet Evidence**](#**3-bounds-fault-snippet-evidence**)
+    - [**4. Trace Export Evidence**](#**4-trace-export-evidence**)
+  - [📊 **Test Coverage Evidence**](#📊-**test-coverage-evidence**)
+    - [**CanonFS Observability Test Suite**](#**canonfs-observability-test-suite**)
+    - [**Coverage Metrics**](#**coverage-metrics**)
+  - [🔧 **Implementation Evidence**](#🔧-**implementation-evidence**)
+    - [**CanonFS Integration Components**](#**canonfs-integration-components**)
+    - [**Integration Points**](#**integration-points**)
+  - [📈 **Performance Evidence**](#📈-**performance-evidence**)
+    - [**CanonFS Observability Overhead**](#**canonfs-observability-overhead**)
+    - [**Scalability Evidence**](#**scalability-evidence**)
+  - [🔍 **Detailed Meta Slot Event Evidence**](#🔍-**detailed-meta-slot-event-evidence**)
+    - [**Meta Slot Event Patterns**](#**meta-slot-event-patterns**)
+    - [**Event Timing Evidence**](#**event-timing-evidence**)
+  - [✅ **Evidence Conclusion**](#✅-**evidence-conclusion**)
+    - [**Requirements Satisfaction:**](#**requirements-satisfaction**)
+    - [**Beta Readiness:**](#**beta-readiness**)
+    - [**Governance Acceptance:**](#**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Evidence ID:** AX-M6-2026-03-04  
 **Specification Section:** Axion Governance Kernel §1.10 - CanonFS Observability
 **Target Date:** 2026-03-12 (Completed 2026-03-04)  

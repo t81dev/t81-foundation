@@ -1,5 +1,19 @@
 # RFC 0041 SIMD Migration Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC 0041 SIMD Migration Guide](#rfc-0041-simd-migration-guide)
+  - [Preferred Surface](#preferred-surface)
+  - [Compatibility](#compatibility)
+  - [Migration Examples](#migration-examples)
+  - [What Did Not Change](#what-did-not-change)
+  - [Follow-On Work](#follow-on-work)
+
+<!-- T81-TOC:END -->
+
+
 RFC-0041 formalizes the packed-trit SIMD surface that already existed in
 `experimental/packed_trit_vector.hpp`.
 

@@ -9,8 +9,11 @@
   - [2. Compile](#2-compile)
   - [3. Run with the HanoiVM](#3-run-with-the-hanoivm)
   - [4. Implementation Notes](#4-implementation-notes)
+  - [5. Failure Cases & Diagnostics](#5-failure-cases-&-diagnostics)
 
 <!-- T81-TOC:END -->
+
+
 
 This guide walks through compiling and running a `match`-heavy T81Lang program using the `t81` CLI so you can see the full frontend → IR → VM pipeline in action.
 

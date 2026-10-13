@@ -1,5 +1,46 @@
 # CanonFS Interchange Refactoring Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CanonFS Interchange Refactoring Plan](#canonfs-interchange-refactoring-plan)
+  - [Current State Analysis](#current-state-analysis)
+    - [Current Architecture](#current-architecture)
+    - [Issues with Current Design](#issues-with-current-design)
+  - [Refactoring Strategy](#refactoring-strategy)
+    - [Phase 1: Extract Core Interchange Library](#phase-1-extract-core-interchange-library)
+      - [1.1 Create Reusable Interchange Engine](#11-create-reusable-interchange-engine)
+      - [1.2 Define Request/Response Structures](#12-define-requestresponse-structures)
+      - [1.3 Separate JSON Rendering](#13-separate-json-rendering)
+    - [Phase 2: Refactor CLI Integration](#phase-2-refactor-cli-integration)
+      - [2.1 Update CLI to Use New Engine](#21-update-cli-to-use-new-engine)
+      - [2.2 Maintain Backward Compatibility](#22-maintain-backward-compatibility)
+    - [Phase 3: Enhanced Testing](#phase-3-enhanced-testing)
+      - [3.1 Unit Test Interchange Engine](#31-unit-test-interchange-engine)
+      - [3.2 Integration Tests](#32-integration-tests)
+  - [Implementation Benefits](#implementation-benefits)
+    - [1. Improved Separation of Concerns](#1-improved-separation-of-concerns)
+    - [2. Enhanced Reusability](#2-enhanced-reusability)
+    - [3. Better Testing](#3-better-testing)
+    - [4. Future Extensibility](#4-future-extensibility)
+  - [Migration Path](#migration-path)
+    - [Step 1: Create New Interfaces](#step-1-create-new-interfaces)
+    - [Step 2: Implement Engine](#step-2-implement-engine)
+    - [Step 3: Update CLI](#step-3-update-cli)
+    - [Step 4: Add Tests](#step-4-add-tests)
+    - [Step 5: Documentation](#step-5-documentation)
+  - [Risk Mitigation](#risk-mitigation)
+    - [Technical Risks](#technical-risks)
+    - [Mitigation Strategies](#mitigation-strategies)
+  - [Success Metrics](#success-metrics)
+    - [Code Quality](#code-quality)
+    - [Functionality](#functionality)
+    - [Developer Experience](#developer-experience)
+
+<!-- T81-TOC:END -->
+
+
 ## Current State Analysis
 
 ### Current Architecture

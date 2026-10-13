@@ -1,5 +1,33 @@
 # Stable Baseline
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Stable Baseline](#stable-baseline)
+  - [Purpose](#purpose)
+  - [Baseline Identification](#baseline-identification)
+  - [Baseline Guarantees](#baseline-guarantees)
+    - [1. Deterministic Execution](#1-deterministic-execution)
+    - [2. Successful Build](#2-successful-build)
+    - [3. Passing Test Suite](#3-passing-test-suite)
+    - [4. Clean Repository State](#4-clean-repository-state)
+  - [Baseline Scope](#baseline-scope)
+  - [Experimental Work Policy](#experimental-work-policy)
+  - [Promotion Gates](#promotion-gates)
+  - [Reproducing the Baseline](#reproducing-the-baseline)
+  - [Purpose in Project Governance](#purpose-in-project-governance)
+  - [Future Baseline Updates](#future-baseline-updates)
+  - [AI Experiments Note (2026-03-05)](#ai-experiments-note-2026-03-05)
+    - [Integration Details](#integration-details)
+    - [What This Means](#what-this-means)
+    - [Verification](#verification)
+- [Build AI experiments (optional)](#build-ai-experiments-optional)
+- [Test AI CLI](#test-ai-cli)
+
+<!-- T81-TOC:END -->
+
+
 ## Purpose
 
 This document defines the last known-good state of the T81 repository before experimental AI integration work. It establishes a deterministic, reproducible reference point that all future experiments must branch from and must not modify directly.

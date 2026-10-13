@@ -1,5 +1,25 @@
 # Model Diff v1 Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Diff v1 Contract](#model-diff-v1-contract)
+  - [Stable v1 Surface](#stable-v1-surface)
+    - [Supported operation](#supported-operation)
+    - [Schema identifier](#schema-identifier)
+  - [Result Documents](#result-documents)
+    - [Success result](#success-result)
+    - [Failure result](#failure-result)
+  - [Field Semantics](#field-semantics)
+    - [Top-level fields](#top-level-fields)
+    - [Array fields](#array-fields)
+  - [Comparison Semantics](#comparison-semantics)
+  - [Stability Boundary](#stability-boundary)
+
+<!-- T81-TOC:END -->
+
+
 This document is the authoritative contributor-facing contract for the current
 JSON surface emitted by:
 

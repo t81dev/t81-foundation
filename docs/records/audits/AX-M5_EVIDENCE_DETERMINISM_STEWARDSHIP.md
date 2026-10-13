@@ -1,5 +1,33 @@
 # AX-M5 Evidence: Determinism Stewardship (Axion §1.1)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AX-M5 Evidence: Determinism Stewardship (Axion §1.1)](#ax-m5-evidence-determinism-stewardship-axion-§11)
+  - [📋 **Requirement Summary**](#📋-**requirement-summary**)
+  - [🔍 **Evidence Collected**](#🔍-**evidence-collected**)
+    - [**1. T81VM State Transition Tracing**](#**1-t81vm-state-transition-tracing**)
+    - [**2. Nondeterministic Pattern Detection**](#**2-nondeterministic-pattern-detection**)
+    - [**3. Deterministic Semantics Enforcement**](#**3-deterministic-semantics-enforcement**)
+    - [**4. Canonical Memory Enforcement**](#**4-canonical-memory-enforcement**)
+  - [📊 **Test Coverage Evidence**](#📊-**test-coverage-evidence**)
+    - [**Determinism Test Suite**](#**determinism-test-suite**)
+    - [**Coverage Metrics**](#**coverage-metrics**)
+  - [🔧 **Implementation Evidence**](#🔧-**implementation-evidence**)
+    - [**Core Components**](#**core-components**)
+    - [**Integration Points**](#**integration-points**)
+  - [📈 **Performance Evidence**](#📈-**performance-evidence**)
+    - [**Determinism Overhead**](#**determinism-overhead**)
+    - [**Scalability Evidence**](#**scalability-evidence**)
+  - [✅ **Evidence Conclusion**](#✅-**evidence-conclusion**)
+    - [**Requirements Satisfaction:**](#**requirements-satisfaction**)
+    - [**Beta Readiness:**](#**beta-readiness**)
+    - [**Governance Acceptance:**](#**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Evidence ID:** AX-M5-2026-03-04  
 **Specification Section:** Axion Governance Kernel §1.1 - Determinism Stewardship
 **Target Date:** 2026-03-10 (Completed 2026-03-04)  

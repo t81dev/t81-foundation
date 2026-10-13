@@ -1,5 +1,64 @@
 # IEEE-T81: Standard for Deterministic Ternary Computing Systems
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [IEEE-T81: Standard for Deterministic Ternary Computing Systems](#ieee-t81-standard-for-deterministic-ternary-computing-systems)
+  - [Abstract](#abstract)
+  - [Background and Goals](#background-and-goals)
+    - [Introduction](#introduction)
+    - [Scope](#scope)
+    - [Purpose](#purpose)
+  - [Referenced Documents and Terminology](#referenced-documents-and-terminology)
+    - [Normative References](#normative-references)
+    - [Definitions, Acronyms, and Abbreviations](#definitions-acronyms-and-abbreviations)
+  - [Architecture Overview](#architecture-overview)
+    - [Overview](#overview)
+    - [Design rationale (informative)](#design-rationale-informative)
+  - [Technical Specifications](#technical-specifications)
+    - [Representation Layer](#representation-layer)
+      - [Balanced trit domain](#balanced-trit-domain)
+      - [Integer value interpretation](#integer-value-interpretation)
+      - [Canonical normalization for variable-length integers](#canonical-normalization-for-variable-length-integers)
+      - [Fixed-width integer types](#fixed-width-integer-types)
+      - [Trytes and the base-81 relationship](#trytes-and-the-base-81-relationship)
+      - [Canonical tryte byte packing (T81 Tryte-Octet encoding)](#canonical-tryte-byte-packing-t81-tryte-octet-encoding)
+      - [Binary storage alignment considerations (informative)](#binary-storage-alignment-considerations-informative)
+      - [Fixed-point values](#fixed-point-values)
+    - [Instruction Semantics](#instruction-semantics)
+      - [General requirements](#general-requirements)
+      - [Execution profiles](#execution-profiles)
+      - [Exception conditions and flags](#exception-conditions-and-flags)
+      - [Arithmetic operations on T81.I(n)](#arithmetic-operations-on-t81in)
+      - [Logical and comparison operations](#logical-and-comparison-operations)
+    - [Runtime Execution Model](#runtime-execution-model)
+      - [Deterministic sequencing](#deterministic-sequencing)
+      - [Memory model (single-threaded)](#memory-model-single-threaded)
+      - [Deterministic external inputs](#deterministic-external-inputs)
+      - [Deterministic math library policy (informative but recommended)](#deterministic-math-library-policy-informative-but-recommended)
+    - [Canonical Serialization](#canonical-serialization)
+      - [Goals](#goals)
+      - [T81 Canonical Serialization (T81-CS) format](#t81-canonical-serialization-t81-cs-format)
+      - [Canonical header for deterministic runs (normative)](#canonical-header-for-deterministic-runs-normative)
+  - [Conformance](#conformance)
+    - [Conformance and Verification](#conformance-and-verification)
+      - [Conformance classes](#conformance-classes)
+      - [Mandatory artifacts](#mandatory-artifacts)
+      - [Arithmetic test vectors (normative requirements)](#arithmetic-test-vectors-normative-requirements)
+      - [Serialization test vectors (normative requirements)](#serialization-test-vectors-normative-requirements)
+      - [Trace hashing (normative requirements)](#trace-hashing-normative-requirements)
+      - [Cross-platform verification rule (normative)](#cross-platform-verification-rule-normative)
+  - [Annexes (Informative)](#annexes-informative)
+    - [Annex A — Performance considerations](#annex-a-—-performance-considerations)
+    - [Annex B — Emulation on binary hardware](#annex-b-—-emulation-on-binary-hardware)
+    - [Annex C — Example applications](#annex-c-—-example-applications)
+    - [Annex D — Limitations and future extensions](#annex-d-—-limitations-and-future-extensions)
+  - [Bibliography](#bibliography)
+
+<!-- T81-TOC:END -->
+
+
 **Front Matter**
 
 **Title Page**  

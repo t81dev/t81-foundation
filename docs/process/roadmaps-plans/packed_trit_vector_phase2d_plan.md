@@ -1,5 +1,25 @@
 # PackedTritVector Phase 2D Implementation Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Phase 2D Implementation Plan](#packedtritvector-phase-2d-implementation-plan)
+  - [1. Objective](#1-objective)
+  - [2. Scope & Constraints](#2-scope-&-constraints)
+    - [2.1 In-Scope](#21-in-scope)
+    - [2.2 Out-of-Scope / Excluded](#22-out-of-scope--excluded)
+  - [3. Implementation Tasks](#3-implementation-tasks)
+    - [3.1 Task A: Allocator Reuse & In-Place APIs](#31-task-a-allocator-reuse-&-in-place-apis)
+    - [3.2 Task B: Native SIMD Kernels (AVX2)](#32-task-b-native-simd-kernels-avx2)
+    - [3.3 Task C: Architecture Dispatch](#33-task-c-architecture-dispatch)
+  - [4. Integration Thresholds (The "Gate")](#4-integration-thresholds-the-"gate")
+  - [5. Benchmark Matrix](#5-benchmark-matrix)
+  - [6. Risk Management](#6-risk-management)
+
+<!-- T81-TOC:END -->
+
+
 **Status:** Planned / Ready for Implementation
 **Pre-requisite:** Phase 2C (Completed)
 **Goal:** Native SIMD optimization and zero-alloc compute paths.

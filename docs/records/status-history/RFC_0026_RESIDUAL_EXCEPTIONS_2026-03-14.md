@@ -1,5 +1,20 @@
 # RFC-0026 Residual Strict-Core Exceptions
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-0026 Residual Strict-Core Exceptions](#rfc-0026-residual-strict-core-exceptions)
+  - [Summary](#summary)
+  - [Category A: Acceptable For Now Under Current Spec](#category-a-acceptable-for-now-under-current-spec)
+  - [Category B: Real RFC-0026 Closure Candidates](#category-b-real-rfc-0026-closure-candidates)
+  - [Category C: RFC-0030 Deterministic Math Dependencies](#category-c-rfc-0030-deterministic-math-dependencies)
+  - [Category D: Outside RFC-0026 Scope](#category-d-outside-rfc-0026-scope)
+  - [Recommended Next Step](#recommended-next-step)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: record the remaining non-strict or host-float surfaces after the

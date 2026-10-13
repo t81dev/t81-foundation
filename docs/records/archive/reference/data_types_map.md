@@ -1,5 +1,22 @@
 # Data Types and Representation Map
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Data Types and Representation Map](#data-types-and-representation-map)
+  - [Core Primitives](#core-primitives)
+  - [Symbolic & Raw Data](#symbolic-&-raw-data)
+  - [Containers & Structures](#containers-&-structures)
+  - [Numerical Containers](#numerical-containers)
+  - [Semantic & Flow Control](#semantic-&-flow-control)
+  - [Civilizational & Reflective Types](#civilizational-&-reflective-types)
+  - [Neural Network & AI](#neural-network-&-ai)
+  - [Low-Level Utilities](#low-level-utilities)
+
+<!-- T81-TOC:END -->
+
+
 This document provides a comprehensive map of the T81 canonical data types, their headers, descriptions, and underlying C++ memory representations.
 
 ## Core Primitives

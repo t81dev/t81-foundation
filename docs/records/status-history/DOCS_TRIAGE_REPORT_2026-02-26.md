@@ -1,5 +1,20 @@
 # Docs Triage Report (2026-02-26)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Docs Triage Report (2026-02-26)](#docs-triage-report-2026-02-26)
+  - [Recommendation Totals](#recommendation-totals)
+  - [Per-Directory Summary](#per-directory-summary)
+  - [Move-to-Archive Candidates](#move-to-archive-candidates)
+  - [Immediate Actions Suggested](#immediate-actions-suggested)
+  - [Artifacts](#artifacts)
+  - [Constraints](#constraints)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Scope: `docs/**` full file triage (markdown + support artifacts).
 Method: content scan + metadata extraction + inbound-link heuristic (docs-local), with README safety override.

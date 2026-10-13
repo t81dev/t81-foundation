@@ -1,5 +1,19 @@
 # RFC-00BB Native Compatibility Evidence — 2026-03-18
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00BB Native Compatibility Evidence — 2026-03-18](#rfc-00bb-native-compatibility-evidence-—-2026-03-18)
+  - [Scope](#scope)
+  - [Verified Path](#verified-path)
+  - [Commands](#commands)
+  - [Result](#result)
+  - [Notes](#notes)
+
+<!-- T81-TOC:END -->
+
+
 This note records the first family-specific native execution evidence for
 RFC-00BB.
 

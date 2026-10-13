@@ -1,5 +1,21 @@
 # T81 Contributor Roadmap
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Contributor Roadmap](#t81-contributor-roadmap)
+  - [Roadmap goal](#roadmap-goal)
+  - [Phase 1: Make the current value obvious](#phase-1-make-the-current-value-obvious)
+  - [Phase 2: Harden the CanonFS interchange lane](#phase-2-harden-the-canonfs-interchange-lane)
+  - [Phase 3: Pick one narrow new subsystem and keep it narrow](#phase-3-pick-one-narrow-new-subsystem-and-keep-it-narrow)
+  - [Phase 4: Keep the repo boring to operate](#phase-4-keep-the-repo-boring-to-operate)
+  - [What not to do next](#what-not-to-do-next)
+  - [Decision rule](#decision-rule)
+
+<!-- T81-TOC:END -->
+
+
 This is the short roadmap for someone trying to build T81 forward without first absorbing the entire historical planning corpus.
 
 ## Roadmap goal

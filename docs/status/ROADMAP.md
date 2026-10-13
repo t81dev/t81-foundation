@@ -1,5 +1,25 @@
 # Roadmap for the T81 Deterministic Ternary Stack
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Roadmap for the T81 Deterministic Ternary Stack](#roadmap-for-the-t81-deterministic-ternary-stack)
+  - [Current strategic position](#current-strategic-position)
+  - [External landscape shaping the next decade](#external-landscape-shaping-the-next-decade)
+  - [Future-state targets for the midterm and long horizon](#future-state-targets-for-the-midterm-and-long-horizon)
+  - [Roadmap architecture and phased delivery](#roadmap-architecture-and-phased-delivery)
+    - [Program A: Determinism beyond execution](#program-a-determinism-beyond-execution)
+    - [Program B: Governance interoperability as a product surface](#program-b-governance-interoperability-as-a-product-surface)
+    - [Program C: Supply-chain-grade provenance and signing](#program-c-supply-chain-grade-provenance-and-signing)
+    - [Program D: Deterministic parallelism and distributed execution](#program-d-deterministic-parallelism-and-distributed-execution)
+    - [Program E: Governed AI inference that is actually deterministic](#program-e-governed-ai-inference-that-is-actually-deterministic)
+  - [Ecosystem and governance strategy](#ecosystem-and-governance-strategy)
+  - [Risks, tradeoffs, and decision gates](#risks-tradeoffs-and-decision-gates)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-26
 Owner: @t81dev
 

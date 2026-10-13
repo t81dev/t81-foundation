@@ -1,5 +1,23 @@
 # T81Lang Implementation Plan (Deterministic-First)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Implementation Plan (Deterministic-First)](#t81lang-implementation-plan-deterministic-first)
+  - [1. Scope and Constraints](#1-scope-and-constraints)
+  - [2. Delivery Sequence](#2-delivery-sequence)
+    - [Phase A: Developer Verifiability (Immediate)](#phase-a-developer-verifiability-immediate)
+    - [Phase B: Deterministic Compiler Gates](#phase-b-deterministic-compiler-gates)
+    - [Phase C: Deterministic JIT MVP](#phase-c-deterministic-jit-mvp)
+    - [Phase D: Backend Expansion with Parity Gates](#phase-d-backend-expansion-with-parity-gates)
+    - [Phase E: Advisory AI Optimization](#phase-e-advisory-ai-optimization)
+  - [3. Non-Goals (Current Cycle)](#3-non-goals-current-cycle)
+  - [4. Exit Criteria](#4-exit-criteria)
+
+<!-- T81-TOC:END -->
+
+
 This plan translates the broader `T81Lang` vision into a deterministic implementation sequence aligned with current repository constraints.
 
 ## 1. Scope and Constraints

@@ -1,5 +1,26 @@
 # Chapter 1: Introduction
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 1: Introduction](#chapter-1-introduction)
+  - [1.1 Scope and Definition](#11-scope-and-definition)
+  - [1.2 System Architecture](#12-system-architecture)
+  - [1.3 Verifiable Compute Mission](#13-verifiable-compute-mission)
+  - [1.4 Terminology](#14-terminology)
+  - [1.5 Verification Checklist](#15-verification-checklist)
+    - [Try It](#try-it)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 If this is your first contact with T81, you should read this chapter as an orientation map, not a policy document. The purpose here is to answer three practical onboarding questions:
 
 1. What is T81 trying to optimize for?

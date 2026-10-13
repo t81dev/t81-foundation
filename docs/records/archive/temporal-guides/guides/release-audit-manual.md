@@ -1,5 +1,20 @@
 # Release & Audit Manual
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release & Audit Manual](#release-&-audit-manual)
+  - [1. Artifact collection checklist](#1-artifact-collection-checklist)
+  - [2. Automated capture scripts](#2-automated-capture-scripts)
+  - [3. Release note template](#3-release-note-template)
+  - [4. Audit verification steps](#4-audit-verification-steps)
+  - [5. CanonFS & Axion policy runner](#5-canonfs-&-axion-policy-runner)
+  - [6. Cross-reference matrix](#6-cross-reference-matrix)
+
+<!-- T81-TOC:END -->
+
+
 This manual explains how to capture, archive, and verify Axion/Cli artifacts so auditors or downstream reviewers can replay deterministic traces without rebuilding the codebase. It ties together the CLI, Axion trace, policy, and runtime manuals already published.
 
 ## 1. Artifact collection checklist

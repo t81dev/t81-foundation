@@ -5,6 +5,19 @@ title: "Guide: Setun Bridge"
 
 # Guide: Setun Bridge (v2)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Guide: Setun Bridge (v2)](#guide-setun-bridge-v2)
+  - [Supported Mnemonics](#supported-mnemonics)
+  - [Labels](#labels)
+  - [Diagnostics](#diagnostics)
+  - [Notes](#notes)
+
+<!-- T81-TOC:END -->
+
+
 The Setun bridge translates a compact Setun-style assembly dialect into TISC `Program` bytecode-ready structures.
 
 API surface:

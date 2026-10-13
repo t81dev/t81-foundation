@@ -1,5 +1,19 @@
 # Versioning and Compatibility Policy
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Versioning and Compatibility Policy](#versioning-and-compatibility-policy)
+  - [1. Versioning Scheme](#1-versioning-scheme)
+  - [2. Compatibility Matrix](#2-compatibility-matrix)
+  - [3. Spec vs. Runtime Versioning](#3-spec-vs-runtime-versioning)
+  - [4. Support Window](#4-support-window)
+  - [5. Deprecation Policy](#5-deprecation-policy)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the normative versioning rules and backward compatibility guarantees for the project.
 
 **Last Updated:** February 10, 2026

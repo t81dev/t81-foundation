@@ -5,6 +5,26 @@ title: C++ Tensor Guide
 
 # T81 C++ Tensor Guide
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 C++ Tensor Guide](#t81-c++-tensor-guide)
+  - [1. Core Concepts](#1-core-concepts)
+  - [2. Creating a Tensor](#2-creating-a-tensor)
+  - [3. Core Operations](#3-core-operations)
+    - [Matrix Multiplication (`matmul`)](#matrix-multiplication-`matmul`)
+    - [Transpose & Reshape](#transpose-&-reshape)
+    - [Slicing & Indexing](#slicing-&-indexing)
+    - [Reduction](#reduction)
+    - [Broadcasting & Elementwise Ops](#broadcasting-&-elementwise-ops)
+    - [Unary Functions](#unary-functions)
+    - [IO & Serialization](#io-&-serialization)
+  - [4. Status & Next Steps](#4-status-&-next-steps)
+
+<!-- T81-TOC:END -->
+
+
 This guide summarizes the lightweight `T729Tensor` implementation plus the supporting APIs shipped in `include/t81/tensor`. It is the practical reference for developers working with the current C++ tensor utilities.
 
 **Companion Documents:**

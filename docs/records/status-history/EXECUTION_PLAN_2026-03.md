@@ -1,5 +1,35 @@
 # Execution Plan (2026-03)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Execution Plan (2026-03)](#execution-plan-2026-03)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Inputs](#inputs)
+  - [Execution Status Ledger (as of 2026-02-25)](#execution-status-ledger-as-of-2026-02-25)
+  - [Track A — Spec/Implementation Drift Reduction](#track-a-—-specimplementation-drift-reduction)
+    - [A1. T81Lang Drift Decomposition](#a1-t81lang-drift-decomposition)
+    - [A2. Axion Partial-Coverage Alignment Plan](#a2-axion-partial-coverage-alignment-plan)
+    - [A3. Experimental Tiers Boundary Clarification](#a3-experimental-tiers-boundary-clarification)
+  - [Track B — Release-Governance Hardening](#track-b-—-release-governance-hardening)
+    - [B1. Required-Checks Release Gating Procedure](#b1-required-checks-release-gating-procedure)
+    - [B2. Release Decision Lifecycle Standardization](#b2-release-decision-lifecycle-standardization)
+    - [B3. Non-Required Workflow Failure Handling Rule](#b3-non-required-workflow-failure-handling-rule)
+  - [Track C — Documentation Lifecycle Enforcement](#track-c-—-documentation-lifecycle-enforcement)
+    - [C1. Root Hygiene Guard Review](#c1-root-hygiene-guard-review)
+  - [Track D — Governed AGI Orientation Hardening](#track-d-—-governed-agi-orientation-hardening)
+    - [D1. Bounded AGI Direction + Promotion Controls](#d1-bounded-agi-direction-+-promotion-controls)
+    - [C2. Records Cadence Enforcement](#c2-records-cadence-enforcement)
+    - [C3. Status Cross-Link Integrity Sweep](#c3-status-cross-link-integrity-sweep)
+  - [KPI Snapshot for 2026-03 Close](#kpi-snapshot-for-2026-03-close)
+  - [Immediate Next Actions](#immediate-next-actions)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Window: 2026-03-01 to 2026-03-31
 Owner: Project Management / Governance

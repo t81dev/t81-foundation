@@ -1,5 +1,18 @@
 # Governance Model
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Model](#governance-model)
+  - [1. Overview](#1-overview)
+  - [2. Decision Making](#2-decision-making)
+  - [3. RFC Process](#3-rfc-process)
+  - [4. Code of Conduct](#4-code-of-conduct)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document defines the **decision-making process** for the project.
 
 **Last Updated:** February 10, 2026
