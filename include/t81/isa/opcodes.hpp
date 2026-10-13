@@ -223,21 +223,25 @@ enum class Opcode : std::uint8_t {
   POLYMUL = 203,  // 0xCB Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
   POLYMOD = 204,  // 0xCC Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
   // RFC-0039 — NTRU-KEM polynomial ring arithmetic
-  TVecSub = 212,  // 0xD4 Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
+  TVecSub = 205,  // 0xCD Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
   // RFC-0040 — Explicit SWAR tensor ops over ExactTrit tensors.
-  TNOT_SWAR = 213,  // 0xD5
-  TAND_SWAR = 214,  // 0xD6
-  TOR_SWAR = 215,   // 0xD7
+  TNOT_SWAR = 206,  // 0xCE
+  TAND_SWAR = 207,  // 0xCF
+  TOR_SWAR = 220,   // 0xDC
   // RFC-00E1 — Controlled Stochastic Inference (CSI) Opcode Extensions
-  // Experimental opcodes for policy-gated stochastic operations (0xD8-0xDF & 0xF7-0xFA ranges)
-  STOCHASTIC_DECODE = 0xD8,         // Policy-gated stochastic decoding
-  STOCHASTIC_SAMPLE = 0xD9,         // Sample from candidate set with policy
-  STOCHASTIC_CHAIN_BEGIN = 0xDA,    // Begin stochastic provenance chain
-  STOCHASTIC_CHAIN_STEP = 0xDB,     // Add step to provenance chain
-  STOCHASTIC_CHAIN_END = 0xDC,      // Finalize provenance chain
-  STOCHASTIC_CONFIG = 0xDD,         // Configure stochastic parameters
-  STOCHASTIC_SEED = 0xDE,           // Set stochastic seed
-  STOCHASTIC_VERIFY = 0xDF,         // Verify stochastic chain integrity
+  // Experimental opcodes for policy-gated stochastic operations (0xD0-0xDF range)
+  STOCHASTIC_DECODE = 0xD0,         // Policy-gated stochastic decoding
+  STOCHASTIC_SAMPLE = 0xD1,         // Sample from candidate set with policy
+  STOCHASTIC_CHAIN_BEGIN = 0xD2,    // Begin stochastic provenance chain
+  STOCHASTIC_CHAIN_STEP = 0xD3,     // Add step to provenance chain
+  STOCHASTIC_CHAIN_END = 0xD4,      // Finalize provenance chain
+  STOCHASTIC_CONFIG = 0xD5,         // Configure stochastic parameters
+  STOCHASTIC_SEED = 0xD6,           // Set stochastic seed
+  STOCHASTIC_VERIFY = 0xD7,         // Verify stochastic chain integrity
+  POLICY_EVAL_STOCHASTIC = 0xD8,    // Evaluate stochastic policy
+  POLICY_CONSTRAIN_ENTROPY = 0xD9,  // Apply entropy constraints
+  POLICY_FILTER_TOKENS = 0xDA,      // Filter forbidden tokens
+  POLICY_RECORD_DECISION = 0xDB,    // Record policy decision
 
   // RFC-00E2 — Advanced AI Opcode Extensions (0xE0-0xEF range)
   // Experimental opcodes for advanced neural network and quantization operations
@@ -266,12 +270,6 @@ enum class Opcode : std::uint8_t {
   ReadIsaVersion = 244,  // 244
   GcSafepoint = 245,     // 245
   AgentInvoke = 246,     // 246
-
-  // Additional CSI Policy Opcodes (247..250)
-  POLICY_EVAL_STOCHASTIC = 0xF7,    // Evaluate stochastic policy
-  POLICY_CONSTRAIN_ENTROPY = 0xF8,  // Apply entropy constraints
-  POLICY_FILTER_TOKENS = 0xF9,      // Filter forbidden tokens
-  POLICY_RECORD_DECISION = 0xFA,    // Record policy decision
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -769,9 +767,9 @@ enum class Opcode : std::uint8_t {
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::POLICY_RECORD_DECISION) + 1> kAllOpcodes =
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> kAllOpcodes =
     [] {
-      std::array<Opcode, static_cast<std::size_t>(Opcode::POLICY_RECORD_DECISION) + 1> values{};
+      std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> values{};
       for (std::size_t i = 0; i < values.size(); ++i) {
         values[i] = static_cast<Opcode>(i);
       }

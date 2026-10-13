@@ -1,7 +1,7 @@
 # AI CLI Milestone Evidence
 
 Status: Active
-Last Updated: 2026-03-29
+Last Updated: 2026-10-13
 Authority: `tools/cli/ai/ai_cli_shared.cpp`, `tests/cpp/cli_contract_test.cpp`, `examples/model-load-canonfs/`
 
 ## Purpose
