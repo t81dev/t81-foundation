@@ -20,7 +20,6 @@ function(t81_add_experimental_tool_targets)
   if(T81_ENABLE_AI_EXPERIMENTS)
     add_executable(t81_ai
       ${PROJECT_SOURCE_DIR}/tools/experimental/ai_tools/deterministic_ai_os.cpp
-      ${PROJECT_SOURCE_DIR}/tools/experimental/ai_tools/governed_ai_system.cpp
     )
     t81_preserve_root_output(t81_ai)
     target_link_libraries(t81_ai PRIVATE
