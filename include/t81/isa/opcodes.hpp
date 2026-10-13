@@ -201,74 +201,75 @@ enum class Opcode : std::uint8_t {
   QMATMUL,
   EMBED,
   // RFC-0026 phase-1 extension: weight load + sparse gather/scatter.
-  WLOAD,    // Weight load with Axion policy gate: WLOAD RD, R_SRC, R_POLICY
-  GATHER,   // Sparse gather: GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)
-  SCATTER,  // Sparse scatter-add: SCATTER RD, R_DST, PACK(R_IDX, R_SRC)
-  Int2BigInt = 193, // 0xC1
+  WLOAD,             // Weight load with Axion policy gate: WLOAD RD, R_SRC, R_POLICY
+  GATHER,            // Sparse gather: GATHER RD, R_SRC, PACK(R_IDX, R_AXIS)
+  SCATTER,           // Sparse scatter-add: SCATTER RD, R_DST, PACK(R_IDX, R_SRC)
+  Int2BigInt = 193,  // 0xC1
   // RFC-0034 §5.17 — Ternary-Native Inference Operations (Tier 2+)
   // Opcode bytes: TWMATMUL=0xC2, TQUANT=0xC3, TATTN=0xC4,
   //               TWEMBED=0xC5, TERNACCUM=0xC6, TACT=0xC7
-  TWMATMUL = 194, // 0xC2 Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
-  TQUANT   = 195, // 0xC3 Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
-  TATTN    = 196, // 0xC4 Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
-  TWEMBED  = 197, // 0xC5 Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
-  TERNACCUM = 198, // 0xC6 Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
-  TACT     = 199, // 0xC7 Ternary activation:    TACT     RD, R_SRC, R_MODE
+  TWMATMUL = 194,   // 0xC2 Ternary-weight matmul:  TWMATMUL RD, R_ACT, R_WT
+  TQUANT = 195,     // 0xC3 Quantize to ternary:   TQUANT   RD, R_SRC, R_THR
+  TATTN = 196,      // 0xC4 Ternary Q/K attention: TATTN    RD, R_Q, PACK(R_K, R_V)
+  TWEMBED = 197,    // 0xC5 Ternary embed lookup:  TWEMBED  RD, R_TABLE, R_IDX
+  TERNACCUM = 198,  // 0xC6 Ternary dot product:   TERNACCUM RD, R_WT, R_ACT
+  TACT = 199,       // 0xC7 Ternary activation:    TACT     RD, R_SRC, R_MODE
   // RFC-00B8 — Governed Foreign Function Interface
-  FFICall     = 200, // 0xC8 Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
-  FFIRegister  = 201, // 0xC9 Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
-  FFIPolicySet = 202, // 0xCA Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
+  FFICall =
+      200,  // 0xC8 Call foreign function with governance: FFICall R_FUNC, R_ARG_COUNT, R_RESULT
+  FFIRegister = 201,   // 0xC9 Register foreign library: FFIRegister R_LIB_NAME, R_VERSION_HASH
+  FFIPolicySet = 202,  // 0xCA Set FFI policy: FFIPolicySet R_POLICY_TYPE, R_POLICY_VALUE
   // RFC-0038 — Ternary Lattice Cryptography Primitives
-  POLYMUL = 203, // 0xCB Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
-  POLYMOD = 204, // 0xCC Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
+  POLYMUL = 203,  // 0xCB Negacyclic poly multiply in Z[x]/(x^n+1): POLYMUL RD, R_A, R_B
+  POLYMOD = 204,  // 0xCC Centered coefficient reduction mod q:       POLYMOD RD, R_A, R_Q
   // RFC-0039 — NTRU-KEM polynomial ring arithmetic
-  TVecSub = 205, // 0xCD Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
+  TVecSub = 205,  // 0xCD Elementwise tensor subtraction (poly ring): TVecSub RD, RA, RB
   // RFC-0040 — Explicit SWAR tensor ops over ExactTrit tensors.
-  TNOT_SWAR = 206, // 0xCE
-  TAND_SWAR = 207, // 0xCF
-  TOR_SWAR  = 220, // 0xDC
+  TNOT_SWAR = 206,  // 0xCE
+  TAND_SWAR = 207,  // 0xCF
+  TOR_SWAR = 220,   // 0xDC
   // RFC-00E1 — Controlled Stochastic Inference (CSI) Opcode Extensions
   // Experimental opcodes for policy-gated stochastic operations (0xD0-0xDF range)
-  STOCHASTIC_DECODE = 0xD0,        // Policy-gated stochastic decoding
-  STOCHASTIC_SAMPLE = 0xD1,        // Sample from candidate set with policy
-  STOCHASTIC_CHAIN_BEGIN = 0xD2,   // Begin stochastic provenance chain
-  STOCHASTIC_CHAIN_STEP = 0xD3,    // Add step to provenance chain
+  STOCHASTIC_DECODE = 0xD0,         // Policy-gated stochastic decoding
+  STOCHASTIC_SAMPLE = 0xD1,         // Sample from candidate set with policy
+  STOCHASTIC_CHAIN_BEGIN = 0xD2,    // Begin stochastic provenance chain
+  STOCHASTIC_CHAIN_STEP = 0xD3,     // Add step to provenance chain
   STOCHASTIC_CHAIN_END = 0xD4,      // Finalize provenance chain
   STOCHASTIC_CONFIG = 0xD5,         // Configure stochastic parameters
-  STOCHASTIC_SEED = 0xD6,          // Set stochastic seed
-  STOCHASTIC_VERIFY = 0xD7,        // Verify stochastic chain integrity
+  STOCHASTIC_SEED = 0xD6,           // Set stochastic seed
+  STOCHASTIC_VERIFY = 0xD7,         // Verify stochastic chain integrity
   POLICY_EVAL_STOCHASTIC = 0xD8,    // Evaluate stochastic policy
   POLICY_CONSTRAIN_ENTROPY = 0xD9,  // Apply entropy constraints
   POLICY_FILTER_TOKENS = 0xDA,      // Filter forbidden tokens
   POLICY_RECORD_DECISION = 0xDB,    // Record policy decision
-  
+
   // RFC-00E2 — Advanced AI Opcode Extensions (0xE0-0xEF range)
   // Experimental opcodes for advanced neural network and quantization operations
-  NEURAL_FWD = 0xE0,       // Forward pass with configurable layers
-  NEURAL_BACK = 0xE1,      // Backward pass (for training/research)
-  NEURAL_OPT = 0xE2,       // Optimizer step (SGD, Adam, etc.)
-  NEURAL_ACT = 0xE3,       // Advanced activation functions
-  NEURAL_NORM = 0xE4,      // Layer/Batch/Group normalization
-  NEURAL_DROP = 0xE5,      // Dropout with deterministic seeding
-  NEURAL_RES = 0xE6,       // Residual connections
-  NEURAL_ATTN = 0xE7,      // Advanced attention variants
-  QUANT_TERN = 0xE8,       // Ternary quantization (beyond T3_K)
-  QUANT_PRUN = 0xE9,       // Structured pruning
-  QUANT_DIST = 0xEA,       // Distribution-aware quantization
-  QUANT_COMP = 0xEB,       // Compression algorithms
-  QUANT_DECOMP = 0xEC,     // Decompression with verification
-  QUANT_VERIFY = 0xED,     // Quantization integrity checks
-  QUANT_ADAPT = 0xEE,      // Adaptive quantization
-  QUANT_MIXED = 0xEF,      // Mixed-precision operations
+  NEURAL_FWD = 0xE0,    // Forward pass with configurable layers
+  NEURAL_BACK = 0xE1,   // Backward pass (for training/research)
+  NEURAL_OPT = 0xE2,    // Optimizer step (SGD, Adam, etc.)
+  NEURAL_ACT = 0xE3,    // Advanced activation functions
+  NEURAL_NORM = 0xE4,   // Layer/Batch/Group normalization
+  NEURAL_DROP = 0xE5,   // Dropout with deterministic seeding
+  NEURAL_RES = 0xE6,    // Residual connections
+  NEURAL_ATTN = 0xE7,   // Advanced attention variants
+  QUANT_TERN = 0xE8,    // Ternary quantization (beyond T3_K)
+  QUANT_PRUN = 0xE9,    // Structured pruning
+  QUANT_DIST = 0xEA,    // Distribution-aware quantization
+  QUANT_COMP = 0xEB,    // Compression algorithms
+  QUANT_DECOMP = 0xEC,  // Decompression with verification
+  QUANT_VERIFY = 0xED,  // Quantization integrity checks
+  QUANT_ADAPT = 0xEE,   // Adaptive quantization
+  QUANT_MIXED = 0xEF,   // Mixed-precision operations
 
   // TISC v0.4 extensions (RFC-0005 §2.2 + §2.4) & RFC-0015
-  VLoad          = 0xF0, // 240
-  VStore         = 241,  // 241
-  VAdd           = 242,  // 242
-  VFma           = 243,  // 243
+  VLoad = 0xF0,          // 240
+  VStore = 241,          // 241
+  VAdd = 242,            // 242
+  VFma = 243,            // 243
   ReadIsaVersion = 244,  // 244
-  GcSafepoint    = 245,  // 245
-  AgentInvoke    = 246,  // 246
+  GcSafepoint = 245,     // 245
+  AgentInvoke = 246,     // 246
 };
 
 [[nodiscard]] constexpr std::string_view opcode_name(Opcode opcode) {
@@ -766,13 +767,14 @@ enum class Opcode : std::uint8_t {
   return "Unknown";
 }
 
-inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> kAllOpcodes = [] {
-  std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> values{};
-  for (std::size_t i = 0; i < values.size(); ++i) {
-    values[i] = static_cast<Opcode>(i);
-  }
-  return values;
-}();
+inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> kAllOpcodes =
+    [] {
+      std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke) + 1> values{};
+      for (std::size_t i = 0; i < values.size(); ++i) {
+        values[i] = static_cast<Opcode>(i);
+      }
+      return values;
+    }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
   return raw_opcode <= static_cast<std::uint8_t>(Opcode::AgentInvoke);
