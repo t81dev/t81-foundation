@@ -777,7 +777,7 @@ inline constexpr std::array<Opcode, static_cast<std::size_t>(Opcode::AgentInvoke
     }();
 
 [[nodiscard]] constexpr bool is_valid_opcode(std::uint8_t raw_opcode) {
-  return raw_opcode <= static_cast<std::uint8_t>(Opcode::AgentInvoke);
+  return opcode_name(static_cast<Opcode>(raw_opcode)) != "Unknown";
 }
 
 }  // namespace t81::tisc
