@@ -35,11 +35,11 @@ static void test_frozen_isa_mappings() {
   assert(static_cast<std::uint8_t>(Opcode::FFIPolicySet) == 202);
   assert(static_cast<std::uint8_t>(Opcode::POLYMUL) == 203);
   assert(static_cast<std::uint8_t>(Opcode::POLYMOD) == 204);
-  assert(static_cast<std::uint8_t>(Opcode::TVecSub) == 205);
-  assert(static_cast<std::uint8_t>(Opcode::TNOT_SWAR) == 206);
-  assert(static_cast<std::uint8_t>(Opcode::TAND_SWAR) == 207);
-  assert(static_cast<std::uint8_t>(Opcode::STOCHASTIC_DECODE) == 208);
-  assert(static_cast<std::uint8_t>(Opcode::TOR_SWAR) == 220);
+  assert(static_cast<std::uint8_t>(Opcode::TVecSub) == 212);
+  assert(static_cast<std::uint8_t>(Opcode::TNOT_SWAR) == 213);
+  assert(static_cast<std::uint8_t>(Opcode::TAND_SWAR) == 214);
+  assert(static_cast<std::uint8_t>(Opcode::TOR_SWAR) == 215);
+  assert(static_cast<std::uint8_t>(Opcode::STOCHASTIC_DECODE) == 216);
   assert(static_cast<std::uint8_t>(Opcode::NEURAL_FWD) == 224);
   assert(static_cast<std::uint8_t>(Opcode::VLoad) == 240);
   assert(static_cast<std::uint8_t>(Opcode::AgentInvoke) == 246);

@@ -582,11 +582,64 @@ add_test(NAME t81lang_surface_gate_test COMMAND t81lang_surface_gate_test)
   add_executable(canonfs_interchange_test tests/cpp/canonfs_interchange_test.cpp)
   target_link_libraries(canonfs_interchange_test PRIVATE t81_core)
   
-  # Find and link GTest (optional)
+  # Find and link GTest (optional system finding; fallback to FetchContent if unavailable)
   find_package(GTest QUIET)
+  if(NOT GTEST_FOUND)
+    FetchContent_Declare(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG v1.14.0
+    )
+    # For Windows MSVC runtime compatibility if needed
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    set(GTEST_FOUND TRUE)
+  endif()
+
   if(GTEST_FOUND)
+    # Ensure targets exist for GTest and gmock (whether system or FetchContent)
+    set(GTEST_LIBS GTest::gtest GTest::gtest_main)
+    if(TARGET gmock)
+      list(APPEND GTEST_LIBS gmock)
+    elseif(TARGET GTest::gmock)
+      list(APPEND GTEST_LIBS GTest::gmock)
+    endif()
+
     add_executable(canonfs_cli_contract_tests tests/cpp/canonfs_cli_contract_tests.cpp)
-    target_link_libraries(canonfs_cli_contract_tests PRIVATE t81_core GTest::gtest GTest::gtest_main)
+    target_link_libraries(canonfs_cli_contract_tests PRIVATE t81_core ${GTEST_LIBS})
+    add_test(NAME canonfs_cli_contract_tests COMMAND canonfs_cli_contract_tests)
+
+    add_executable(controlled_ai_backend_test tests/cpp/controlled_ai_backend_test.cpp)
+    target_link_libraries(controlled_ai_backend_test PRIVATE t81_vm t81_axion t81_core ${GTEST_LIBS})
+    add_test(NAME controlled_ai_backend_test COMMAND controlled_ai_backend_test)
+
+    add_executable(ai_phase3_jit_optimization_test tests/cpp/ai_phase3_jit_optimization_test.cpp)
+    target_link_libraries(ai_phase3_jit_optimization_test PRIVATE t81_vm t81_jit t81_core ${GTEST_LIBS})
+    add_test(NAME ai_phase3_jit_optimization_test COMMAND ai_phase3_jit_optimization_test)
+
+    add_executable(cli_integration_test tests/cpp/cli_integration_test.cpp)
+    target_link_libraries(cli_integration_test PRIVATE t81_core ${GTEST_LIBS})
+    add_test(NAME cli_integration_test COMMAND cli_integration_test)
+
+    add_executable(canonfs_negative_tests tests/cpp/canonfs_negative_tests.cpp)
+    target_link_libraries(canonfs_negative_tests PRIVATE t81_core ${GTEST_LIBS})
+    add_test(NAME canonfs_negative_tests COMMAND canonfs_negative_tests)
+
+    add_executable(canonfs_enhanced_errors_test tests/cpp/canonfs_enhanced_errors_test.cpp)
+    target_link_libraries(canonfs_enhanced_errors_test PRIVATE t81_core ${GTEST_LIBS})
+    add_test(NAME canonfs_enhanced_errors_test COMMAND canonfs_enhanced_errors_test)
+
+    add_executable(ffi_basic_test tests/cpp/ffi_basic_test.cpp)
+    target_link_libraries(ffi_basic_test PRIVATE t81_vm t81_ffi t81_axion t81_core ${GTEST_LIBS})
+    add_test(NAME ffi_basic_test COMMAND ffi_basic_test)
+
+    add_executable(canonfs_enhanced_errors_simple_test tests/cpp/canonfs_enhanced_errors_simple_test.cpp)
+    target_link_libraries(canonfs_enhanced_errors_simple_test PRIVATE t81_core ${GTEST_LIBS})
+    add_test(NAME canonfs_enhanced_errors_simple_test COMMAND canonfs_enhanced_errors_simple_test)
+
+    add_executable(canonfs_interchange_engine_test tests/cpp/canonfs_interchange_engine_test.cpp)
+    target_link_libraries(canonfs_interchange_engine_test PRIVATE t81_core ${GTEST_LIBS})
+    add_test(NAME canonfs_interchange_engine_test COMMAND canonfs_interchange_engine_test)
   endif()
 
   add_executable(t81_canonfs_rs_repair_test tests/cpp/canonfs_rs_repair_test.cpp)

@@ -15,21 +15,21 @@ namespace t81::vm::csi {
 
 // CSI opcode family extensions (0xD0-0xDF range)
 enum class CSIOpcode : std::uint8_t {
-    // Stochastic inference operations
-    STOCHASTIC_DECODE = 0xD0,      // Policy-gated stochastic decoding
-    STOCHASTIC_SAMPLE = 0xD1,      // Sample from candidate set
-    STOCHASTIC_CHAIN_BEGIN = 0xD2, // Begin provenance chain
-    STOCHASTIC_CHAIN_STEP = 0xD3,  // Add step to provenance chain
-    STOCHASTIC_CHAIN_END = 0xD4,    // Finalize provenance chain
-    STOCHASTIC_CONFIG = 0xD5,      // Configure stochastic parameters
-    STOCHASTIC_SEED = 0xD6,         // Set stochastic seed
-    STOCHASTIC_VERIFY = 0xD7,      // Verify stochastic chain
+    // Stochastic inference operations (0xD8-0xDF range)
+    STOCHASTIC_DECODE = 0xD8,      // Policy-gated stochastic decoding
+    STOCHASTIC_SAMPLE = 0xD9,      // Sample from candidate set
+    STOCHASTIC_CHAIN_BEGIN = 0xDA, // Begin provenance chain
+    STOCHASTIC_CHAIN_STEP = 0xDB,  // Add step to provenance chain
+    STOCHASTIC_CHAIN_END = 0xDC,    // Finalize provenance chain
+    STOCHASTIC_CONFIG = 0xDD,      // Configure stochastic parameters
+    STOCHASTIC_SEED = 0xDE,         // Set stochastic seed
+    STOCHASTIC_VERIFY = 0xDF,      // Verify stochastic chain
     
-    // Policy enforcement operations
-    POLICY_EVAL_STOCHASTIC = 0xD8,  // Evaluate stochastic policy
-    POLICY_CONSTRAIN_ENTROPY = 0xD9, // Apply entropy constraints
-    POLICY_FILTER_TOKENS = 0xDA,   // Filter forbidden tokens
-    POLICY_RECORD_DECISION = 0xDB, // Record policy decision
+    // Policy enforcement operations (0xF7-0xFA range)
+    POLICY_EVAL_STOCHASTIC = 0xF7,  // Evaluate stochastic policy
+    POLICY_CONSTRAIN_ENTROPY = 0xF8, // Apply entropy constraints
+    POLICY_FILTER_TOKENS = 0xF9,   // Filter forbidden tokens
+    POLICY_RECORD_DECISION = 0xFA, // Record policy decision
 };
 
 // CSI VM state extension
