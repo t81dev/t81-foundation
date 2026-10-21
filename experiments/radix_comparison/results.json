@@ -1,0 +1,34 @@
+{
+  "experiment": "t81_radix_comparison",
+  "status": "PASSED",
+  "storage_bytes_64bit": {
+    "binary64": 8,
+    "canonical_ternary_packed": 11,
+    "redundant_ternary": 40,
+    "radix9": 20,
+    "radix27": 14,
+    "radix81": 10
+  },
+  "addition_latency_ns": {
+    "binary64": 1.99995,
+    "canonical_ternary": 286.207,
+    "redundant_ternary_carry_free": 356.039,
+    "radix9": 146.119,
+    "radix27": 117.599,
+    "radix81": 105.337
+  },
+  "conversion_latency_ns": {
+    "binary64": 1.42526,
+    "canonical_ternary": 204.683,
+    "redundant_ternary": 269.192,
+    "radix9": 409.539,
+    "radix27": 376.238,
+    "radix81": 379.897
+  },
+  "carry_propagation_distance": {
+    "canonical_avg": 4.81061,
+    "canonical_max": 12,
+    "redundant_avg": 1,
+    "redundant_max": 1
+  }
+}
