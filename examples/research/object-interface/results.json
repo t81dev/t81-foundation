@@ -1,0 +1,622 @@
+{
+  "classification": "Partially supported",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.3",
+  "rows": [
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "authorized",
+      "stored_payloads_hex": [
+        "34320a",
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a633566353932356366316436363635383830393437353761616635373530373431653834376364393737626632303233633133346432356261306132626564310a746973630a72756e0a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a316431643531323131376266666335303030373563303863643236313066333862353661616566386232323836376436653935383938306439626435363862610a"
+      ],
+      "status": "ok",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "d6e57a1c776f8037217c18f7f1254daa9f28b4ca67c6540a951276e03df39739",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "base81-symbolic-tisc",
+        "instructions": 4
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "wrong_hash",
+      "stored_payloads_hex": [],
+      "status": "identity_denied",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "wrong_representation",
+      "stored_payloads_hex": [
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a"
+      ],
+      "status": "representation_rejected",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "unsupported",
+      "stored_payloads_hex": [
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a"
+      ],
+      "status": "adapter_unsupported",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "capability_denial",
+      "stored_payloads_hex": [
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a"
+      ],
+      "status": "capability_denied",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "policy_denial",
+      "stored_payloads_hex": [
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a"
+      ],
+      "status": "policy_denied",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "changed_after_verify",
+      "stored_payloads_hex": [
+        "34320a",
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a633566353932356366316436363635383830393437353761616635373530373431653834376364393737626632303233633133346432356261306132626564310a746973630a72756e0a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a316431643531323131376266666335303030373563303863643236313066333862353661616566386232323836376436653935383938306439626435363862610a"
+      ],
+      "status": "ok",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "d6e57a1c776f8037217c18f7f1254daa9f28b4ca67c6540a951276e03df39739",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "base81-symbolic-tisc",
+        "instructions": 4
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "invalid_provenance",
+      "stored_payloads_hex": [
+        "34320a",
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a633566353932356366316436363635383830393437353761616635373530373431653834376364393737626632303233633133346432356261306132626564310a746973630a72756e0a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a"
+      ],
+      "status": "ok",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "676ec30a3e948b6d4b2b56cd8e5a4a14dea250ea70ab230bf4325e6a1eb6c615",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "base81-symbolic-tisc",
+        "instructions": 4
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "tisc",
+      "scenario": "incomplete_provenance",
+      "stored_payloads_hex": [
+        "34320a",
+        "40636f64650a6765ce936565656577656565656565656565656565656565650a676530666565657a656565656565656565656565656565650a6c653166656565cf89666565656565656565346a65656565650a6665656565656565656565656565656565656565656565650a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a"
+      ],
+      "status": "ok",
+      "input_ref": "c5f5925cf1d666588094757aaf5750741e847cd977bf2023c134d25ba0a2bed1",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "b3e7d63e1ca2a2eb67e70fb54a6142e7c5a8c80b6b8529f64cd324af027daa37",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "base81-symbolic-tisc",
+        "instructions": 4
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "authorized",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a333536393061393162666636333136353961346435666430346361653537353934636132613463336438626630383331613562393336636666613234666438380a7361666574656e736f72730a696e73706563740a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a626563343434386565303431636533616334663533636262646530653665343135396131366566633366353833616132356338363539666565393162633530340a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "dadeab3200a2e3413dd8d6a2b34a0307015ee678ef01d6eaa1a8b07c22d893e7",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "wrong_hash",
+      "stored_payloads_hex": [],
+      "status": "identity_denied",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "wrong_representation",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "representation_rejected",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "unsupported",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "adapter_unsupported",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "capability_denial",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "capability_denied",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "policy_denial",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "policy_denied",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "changed_after_verify",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a333536393061393162666636333136353961346435666430346361653537353934636132613463336438626630383331613562393336636666613234666438380a7361666574656e736f72730a696e73706563740a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a626563343434386565303431636533616334663533636262646530653665343135396131366566633366353833616132356338363539666565393162633530340a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "dadeab3200a2e3413dd8d6a2b34a0307015ee678ef01d6eaa1a8b07c22d893e7",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "invalid_provenance",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a333536393061393162666636333136353961346435666430346361653537353934636132613463336438626630383331613562393336636666613234666438380a7361666574656e736f72730a696e73706563740a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "f2cdfd414b8c9d2ff4b7a27720c8b347b34de18351506bf5ed4bc08282bfdfa3",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "t81",
+      "kind": "safetensors",
+      "scenario": "incomplete_provenance",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "b3e7d63e1ca2a2eb67e70fb54a6142e7c5a8c80b6b8529f64cd324af027daa37",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "authorized",
+      "stored_payloads_hex": [
+        "34320a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a663437393261613832386539306262383638336533623261623833393765333534666436383666353632623632313733656533633736376439356331323437380a746973630a72756e0a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a316431643531323131376266666335303030373563303863643236313066333862353661616566386232323836376436653935383938306439626435363862610a",
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "ok",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "750f0cc313499fdce8c46e5789e01c037322165142a0ed7158045daf63d1d6fa",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "python-source",
+        "statements": 1
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "wrong_hash",
+      "stored_payloads_hex": [],
+      "status": "identity_denied",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "wrong_representation",
+      "stored_payloads_hex": [
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "representation_rejected",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "unsupported",
+      "stored_payloads_hex": [
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "adapter_unsupported",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "capability_denial",
+      "stored_payloads_hex": [
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "capability_denied",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "policy_denial",
+      "stored_payloads_hex": [
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "policy_denied",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "changed_after_verify",
+      "stored_payloads_hex": [
+        "34320a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a663437393261613832386539306262383638336533623261623833393765333534666436383666353632623632313733656533633736376439356331323437380a746973630a72756e0a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a316431643531323131376266666335303030373563303863643236313066333862353661616566386232323836376436653935383938306439626435363862610a",
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "ok",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "750f0cc313499fdce8c46e5789e01c037322165142a0ed7158045daf63d1d6fa",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "python-source",
+        "statements": 1
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "invalid_provenance",
+      "stored_payloads_hex": [
+        "34320a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a663437393261613832386539306262383638336533623261623833393765333534666436383666353632623632313733656533633736376439356331323437380a746973630a72756e0a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a",
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "ok",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "7b3d4bad79890680607663cd8825779ac547c5c91b218d0e25881dcbb83e2d88",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "python-source",
+        "statements": 1
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "tisc",
+      "scenario": "incomplete_provenance",
+      "stored_payloads_hex": [
+        "34320a",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a",
+        "726573756c74203d2036202a20370a"
+      ],
+      "status": "ok",
+      "input_ref": "f4792aa828e90bb8683e3b2ab8397e354fd686f562b62173ee3c767d95c12478",
+      "output_ref": "1d1d512117bffc500075c08cd2610f38b56aaef8b22867d6e958980d9bd568ba",
+      "provenance_ref": "b3e7d63e1ca2a2eb67e70fb54a6142e7c5a8c80b6b8529f64cd324af027daa37",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "python-source",
+        "statements": 1
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "authorized",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a333536393061393162666636333136353961346435666430346361653537353934636132613463336438626630383331613562393336636666613234666438380a7361666574656e736f72730a696e73706563740a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a626563343434386565303431636533616334663533636262646530653665343135396131366566633366353833616132356338363539666565393162633530340a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "dadeab3200a2e3413dd8d6a2b34a0307015ee678ef01d6eaa1a8b07c22d893e7",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "wrong_hash",
+      "stored_payloads_hex": [],
+      "status": "identity_denied",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "wrong_representation",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "representation_rejected",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "unsupported",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "adapter_unsupported",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "capability_denial",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "capability_denied",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "policy_denial",
+      "stored_payloads_hex": [
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff"
+      ],
+      "status": "policy_denied",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "",
+      "provenance_ref": "",
+      "completed_operations": 0,
+      "inspection": null
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "changed_after_verify",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a333536393061393162666636333136353961346435666430346361653537353934636132613463336438626630383331613562393336636666613234666438380a7361666574656e736f72730a696e73706563740a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a626563343434386565303431636533616334663533636262646530653665343135396131366566633366353833616132356338363539666565393162633530340a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "dadeab3200a2e3413dd8d6a2b34a0307015ee678ef01d6eaa1a8b07c22d893e7",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "invalid_provenance",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a333536393061393162666636333136353961346435666430346361653537353934636132613463336438626630383331613562393336636666613234666438380a7361666574656e736f72730a696e73706563740a353539386565623438636465323433636632643363333233623035303339303233626438396532386261346464373836363662363736643237356636313931320a303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030300a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "f2cdfd414b8c9d2ff4b7a27720c8b347b34de18351506bf5ed4bc08282bfdfa3",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    },
+    {
+      "arm": "conventional",
+      "kind": "safetensors",
+      "scenario": "incomplete_provenance",
+      "stored_payloads_hex": [
+        "313a340a",
+        "40000000000000007b22776569676874223a7b226474797065223a224938222c227368617065223a5b322c325d2c22646174615f6f666673657473223a5b302c345d7d7d20202020ff0001ff",
+        "6f626a6563742d696e746572666163652d6578706572696d656e742d76310a"
+      ],
+      "status": "ok",
+      "input_ref": "35690a91bff631659a4d5fd04cae57594ca2a4c3d8bf0831a5b936cffa24fd88",
+      "output_ref": "bec4448ee041ce3ac4f53cbbde0e6e4159a16efc3f583aa25c8659fee91bc504",
+      "provenance_ref": "b3e7d63e1ca2a2eb67e70fb54a6142e7c5a8c80b6b8529f64cd324af027daa37",
+      "completed_operations": 1,
+      "inspection": {
+        "representation": "safetensors-i8",
+        "tensor": "weight",
+        "shape": [
+          2,
+          2
+        ]
+      }
+    }
+  ],
+  "checks": "36 cases plus provenance/output tampering",
+  "baseline": "8a6dce4831bd84e23d499fa71900e959ba940875",
+  "runner_sha256": "633768a1c2b519deefab819417a5f685412ef40b22bc45139c9c8b434686a0ed",
+  "source_sha256": {
+    "compare.py": "ae47649aa8b558216713342e760c8e9ef5906372aaba54aaf0a4912f9edd255a",
+    "runner.cpp": "b102069be99d46625803607cfa87f52d2a9fa3d2d181ef3f151c8f00d9d7316f"
+  }
+}

@@ -26,6 +26,19 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
 
+if(T81_BUILD_OBJECT_INTERFACE_EXPERIMENT)
+  add_executable(t81_object_comparison examples/research/object-interface/runner.cpp)
+  target_link_libraries(t81_object_comparison PRIVATE t81_vm t81_isa t81_tool_model t81_axion)
+  if(T81_BUILD_TESTS)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(NAME object_interface_comparison
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/examples/research/object-interface/compare.py
+        --runner $<TARGET_FILE:t81_object_comparison>)
+    set_tests_properties(object_interface_comparison PROPERTIES TIMEOUT 60)
+  endif()
+endif()
+
 # =============================================================================
 # TernaryOS — HAL, shell, and user environment (RFC-00B0 through RFC-00C6)
 # Stable; disable with -DT81_ENABLE_TERNARYOS=OFF
