@@ -1,0 +1,23 @@
+{
+  "record": {
+    "version": 1,
+    "arm": "C",
+    "case": "wrong_hash",
+    "input_hex": "323520313030300a",
+    "expected_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "policy_hex": "28706f6c696379202874696572203129290a",
+    "observation": {
+      "status": "identity_denied",
+      "input_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+      "policy_digest": "233c1964e35f7f6f4cf565617a6393765d5024d851dd88b1ed6c9b42bed4cc58",
+      "output_digest": "",
+      "amount": 0,
+      "vm_policy_calls": 0,
+      "policy_calls": 0
+    },
+    "objects": [],
+    "boundary": "result-object creation",
+    "method": "bounded-integer-product-v1"
+  },
+  "signature": "cd903f7d993fc2972e5b9815b4c15be0b8946571cbd8cf58350f0f0b3ef6e86d755a11bfb56914df2497c5741660f773970dc54c038846e16103b3a3af2d1003"
+}

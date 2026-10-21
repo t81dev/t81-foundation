@@ -56,7 +56,9 @@ def sign(record, key):
     return {"record": record, "signature": sig.hex()}
 
 
-def run(runner, destination, repetitions=30):
+def run(runner, destination, repetitions=30, baseline_runner=None, arms=("A", "B", "C")):
+    if any(arm in arms for arm in ("B", "C")) and "D" in arms and baseline_runner is None:
+        raise ValueError("four-arm comparison requires the original-commit baseline runner")
     destination.mkdir(parents=True, exist_ok=False)
     key = destination / "ephemeral-test-key.pem"
     public = destination / "public.pem"
@@ -74,7 +76,7 @@ def run(runner, destination, repetitions=30):
     }
     rows = []
     for case, (data, expected, policy, revoke) in scenarios.items():
-        for arm in ("A", "B", "C"):
+        for arm in arms:
             timings, verify_times = [], []
             for repetition in range(repetitions):
                 folder = destination / f"{arm}-{case}-{repetition}"
@@ -89,7 +91,8 @@ def run(runner, destination, repetitions=30):
                 if arm == "A":
                     observation = baseline(data, expected, policy, store, revoke)
                 else:
-                    result = subprocess.run([str(runner), arm, str(source), expected, str(active),
+                    selected_runner = baseline_runner if baseline_runner is not None and arm in ("B", "C") else runner
+                    result = subprocess.run([str(selected_runner), arm, str(source), expected, str(active),
                                              str(store), str(revoked) if revoke is not None else "-"],
                                             check=True, capture_output=True, text=True)
                     observation = json.loads(result.stdout)
@@ -137,7 +140,10 @@ def run(runner, destination, repetitions=30):
                                          for name in ("runner.cpp", "run.py", "verify.py")},
                    source_sha256={name: hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()
                                   for name in ("runner.cpp", "run.py", "verify.py")},
-                   recommendation="Revise", rows=rows)
+                   baseline_runner_sha256=hashlib.sha256(baseline_runner.read_bytes()).hexdigest() if baseline_runner else None,
+                   baseline_experiment_commit="d8ad35254a1e35ca7374a4f57f7a870d568521fa" if baseline_runner else None,
+                   production_base_commit="634e0dc69a69cb148f81159ac8c7fc3225582149" if "D" in arms else None,
+                   recommendation="Evaluate measured D authorization gates" if "D" in arms else "Revise", rows=rows)
     (destination / "results.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary, indent=2))
     return summary
@@ -148,7 +154,16 @@ if __name__ == "__main__":
     parser.add_argument("--runner", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--repetitions", type=int, default=30)
+    parser.add_argument("--baseline-runner", type=Path,
+                        help="B/C binary built from original experiment commit d8ad3525")
+    parser.add_argument("--production", action="store_true", help="compare A/B/C/D; requires --baseline-runner")
     args = parser.parse_args()
     if args.repetitions < 1:
         parser.error("repetitions must be positive")
-    run(args.runner.resolve(), args.output.resolve(), args.repetitions)
+    if not args.production:
+        parser.error("on the hardened checkout use --production with --baseline-runner; run the original CLI at d8ad3525 for A/B/C alone")
+    if args.production and args.baseline_runner is None:
+        parser.error("--production requires --baseline-runner; never relabel patched B as historical B")
+    run(args.runner.resolve(), args.output.resolve(), args.repetitions,
+        args.baseline_runner.resolve() if args.baseline_runner else None,
+        arms=("A", "B", "C", "D") if args.production else ("A", "B", "C"))

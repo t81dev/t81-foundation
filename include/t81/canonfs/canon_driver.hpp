@@ -10,7 +10,9 @@
 
 // Forward-declare IBlockDevice before opening t81::canonfs so that the
 // make_block_backed_driver factory parameter type resolves correctly.
-namespace t81::ternaryos::dev { class IBlockDevice; }
+namespace t81::ternaryos::dev {
+class IBlockDevice;
+}
 
 namespace t81::canonfs {
 enum class Error {
@@ -34,7 +36,12 @@ public:
   virtual Result<void> revoke_capability(const CanonRef& ref) = 0;
   virtual Result<void> parity_repair_subtree(const CanonRef& ref) = 0;
 
-  // Optional Axion hook: set a verdict callback; returns false if rejected.
+  // Optional Axion hook: consulted before protected storage operations. False
+  // or an exception denies with CapabilityError. An empty callback explicitly
+  // selects the low-level, ungoverned bootstrap mode (capability checks remain).
+  // A configured missing/invalid policy must use a rejecting callback, not {}.
+  // Drivers/callback replacement require external serialization; no concurrent
+  // revocation or transaction across policy evaluation and I/O is provided.
   virtual void set_axion_hook(std::function<AxionVerdict(OpKind, const CanonRef&)> hook) = 0;
 };
 
@@ -52,7 +59,6 @@ std::unique_ptr<Driver> make_persistent_driver(std::filesystem::path root);
 /// a clean shutdown that called flush(); required after an unclean shutdown).
 /// Returns nullptr if `dev` is null.
 std::unique_ptr<Driver> make_block_backed_driver(
-    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev,
-    bool rebuild_on_open = true);
+    std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev, bool rebuild_on_open = true);
 
 }  // namespace t81::canonfs

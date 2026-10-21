@@ -3,6 +3,7 @@
 #include <cctype>
 #include <cstdint>
 #include <iostream>
+#include <limits>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -128,7 +129,8 @@ struct PolicyToken {
     Float,
     Symbol,
     String,
-    End
+    End,
+    Invalid
   } kind{Kind::End};
   std::string text;
   int64_t value{0};
@@ -214,9 +216,9 @@ public:
       tok.text = std::string(src_.substr(start, pos_ - start));
       return tok;
     }
-    // Unknown char -> skip and treat as End to force parse failure.
+    // Unknown bytes must not masquerade as clean end-of-input.
     pos_ = src_.size();
-    return PolicyToken{};
+    return PolicyToken{PolicyToken::Kind::Invalid, {}};
   }
 
 private:
@@ -259,6 +261,9 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
       auto val = lex.next();
       if (val.kind != detail::PolicyToken::Kind::Integer) {
         return make_error("tier requires integer");
+      }
+      if (val.value < 0 || val.value > std::numeric_limits<int>::max()) {
+        return make_error("tier out of range");
       }
       policy.tier = static_cast<int>(val.value);
       tok = lex.next();
@@ -366,9 +371,11 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
     if (key.text == "activation-ceiling") {
       Policy::ActivationCeilingPolicy ceiling;
       auto val = lex.next();
-      if (val.kind == detail::PolicyToken::Kind::Integer || val.kind == detail::PolicyToken::Kind::Float) {
-        const double frac =
-            val.kind == detail::PolicyToken::Kind::Float ? val.float_value : static_cast<double>(val.value);
+      if (val.kind == detail::PolicyToken::Kind::Integer ||
+          val.kind == detail::PolicyToken::Kind::Float) {
+        const double frac = val.kind == detail::PolicyToken::Kind::Float
+                                ? val.float_value
+                                : static_cast<double>(val.value);
         ceiling.max_nonzero_fraction = frac;
         policy.activation_ceiling_max_nonzero_fraction = frac;
         policy.activation_ceiling_policy = ceiling;
@@ -392,9 +399,9 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
               frac.kind != detail::PolicyToken::Kind::Float) {
             return make_error("activation-ceiling max-nonzero-fraction requires numeric value");
           }
-          ceiling.max_nonzero_fraction =
-              frac.kind == detail::PolicyToken::Kind::Float ? frac.float_value
-                                                            : static_cast<double>(frac.value);
+          ceiling.max_nonzero_fraction = frac.kind == detail::PolicyToken::Kind::Float
+                                             ? frac.float_value
+                                             : static_cast<double>(frac.value);
         } else if (field.text == "scope") {
           auto scope = lex.next();
           if (scope.kind != detail::PolicyToken::Kind::Symbol &&
@@ -803,6 +810,15 @@ inline t81::expected<Policy, std::string> parse_policy(std::string_view text) {
       continue;
     }
     return make_error("unknown policy clause: " + key.text);
+  }
+  if (lex.next().kind != detail::PolicyToken::Kind::End) {
+    return make_error("unexpected trailing policy input");
+  }
+  for (const auto limit :
+       {policy.max_stack, policy.max_instructions, policy.max_recursion, policy.max_reflections,
+        policy.max_meta_writes, policy.max_tensors, policy.max_tensor_elements,
+        policy.max_symbolic_nodes, policy.max_symbolic_graphs, policy.max_infinite_forms}) {
+    if (limit && *limit < 0) return make_error("resource limits must be nonnegative");
   }
   return policy;
 }

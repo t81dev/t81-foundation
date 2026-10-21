@@ -56,7 +56,8 @@ Verdict PolicyEngine::execute_bytecode(const SyscallContext& ctx) {
     return policy_->symbol_table[idx];
   };
 
-  const bool final_instruction = ctx.next_opcode == t81::tisc::Opcode::Halt;
+  const bool final_instruction =
+      ctx.final_authorization || ctx.next_opcode == t81::tisc::Opcode::Halt;
 
   while (pc < end) {
     AxionOp op = static_cast<AxionOp>(*pc++);
@@ -214,6 +215,11 @@ Verdict PolicyEngine::execute_bytecode(const SyscallContext& ctx) {
 }
 
 Verdict PolicyEngine::evaluate(const SyscallContext& ctx) {
+  if (ctx.final_authorization) {
+    // Host authorization must not inherit a cached loop-evidence match from a
+    // previous request or instruction evaluation on the same engine.
+    for (auto& requirement : loop_reqs_) requirement.satisfied = false;
+  }
   Verdict warning = {VerdictKind::Allow, ""};
 
   // 1. Immutable Ethics Check (Theta-1 - Theta-9)
@@ -238,6 +244,9 @@ Verdict PolicyEngine::evaluate(const SyscallContext& ctx) {
 
 Verdict PolicyEngine::evaluate_internal(const SyscallContext& ctx) {
   if (!policy_) {
+    if (ctx.final_authorization) {
+      return Verdict{VerdictKind::Deny, "Final authorization requires active policy"};
+    }
     if (ctx.next_opcode == t81::tisc::Opcode::TLoadHash) {
       return Verdict{VerdictKind::Deny, "TLOADHASH requires active policy"};
     }
@@ -308,7 +317,8 @@ Verdict PolicyEngine::evaluate_internal(const SyscallContext& ctx) {
       return Verdict{VerdictKind::Deny, reason.str()};
     }
   }
-  const bool final_instruction = ctx.next_opcode == t81::tisc::Opcode::Halt;
+  const bool final_instruction =
+      ctx.final_authorization || ctx.next_opcode == t81::tisc::Opcode::Halt;
   if (final_instruction) {
     for (const auto& req : policy_->match_guards) {
       if (!match_guard_satisfied(ctx, req)) {

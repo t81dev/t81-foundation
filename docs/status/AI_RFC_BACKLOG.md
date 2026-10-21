@@ -1,12 +1,28 @@
 # AI RFC Backlog
 
-Last Updated: 2026-10-13
+Last Updated: 2026-10-21
 Owner: @t81dev
 Scope: AI integration RFC implementation sequencing and compliance tracking
 
 This backlog tracks active AI integration RFC work only. It is separate from structural hardening in `HARDENING_BACKLOG.md`.
 
 ---
+
+
+## October 21 enforcement and CI audit
+
+The merged PR #537 experiment found that the configured CanonFS text-policy hook
+allowed its denied, revoked, and malformed-policy output cases. Historical
+implementation/compliance entries below do not establish enforcement at that
+boundary. Production hardening and a separately labeled arm D are under test;
+no full inventory or system-wide security result is claimed.
+
+AI Experiments CI run [39644888844](https://github.com/t81dev/t81-foundation/actions/runs/39644888844)
+failed in the status-document freshness check (three documents aged eight days,
+limit seven), before configuration or compilation. This failure is independent
+of the opt-in experiment. These status notes record that audit without changing
+freshness limits or claiming that subsequent CI stages have passed.
+
 
 ## Priority Order
 

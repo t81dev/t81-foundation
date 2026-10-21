@@ -29,7 +29,8 @@ class Experiment(unittest.TestCase):
     def setUpClass(cls):
         cls.temp = tempfile.TemporaryDirectory()
         cls.output = Path(cls.temp.name) / "results"
-        cls.summary = producer.run(RUNNER, cls.output, repetitions=2)
+        cls.summary = producer.run(RUNNER, cls.output, repetitions=2,
+                                   arms=("A", "D") if PRODUCTION_ONLY else ("A", "B", "C"))
         # A second key lets negative tests re-sign logically invalid evidence.
         cls.key = Path(cls.temp.name) / "test-key.pem"
         cls.public = Path(cls.temp.name) / "test-public.pem"
@@ -54,7 +55,7 @@ class Experiment(unittest.TestCase):
                     self.assertEqual(row["object_count"], 0)
 
     def test_detached_verifier_attacks(self):
-        folder = self.output / "C-authorized-0"
+        folder = self.output / ("D-authorized-0" if PRODUCTION_ONLY else "C-authorized-0")
         original = json.loads((folder / "receipt.json").read_text())
         def verify(envelope, public=None):
             receipt = Path(self.temp.name) / "attack.json"
@@ -109,6 +110,8 @@ class Experiment(unittest.TestCase):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--runner", required=True, type=Path)
+    parser.add_argument("--production-only", action="store_true")
     args, rest = parser.parse_known_args()
+    PRODUCTION_ONLY = args.production_only
     RUNNER = args.runner.resolve()
     unittest.main(argv=[sys.argv[0], *rest])

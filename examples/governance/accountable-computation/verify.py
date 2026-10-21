@@ -38,7 +38,7 @@ def verify(receipt, public_key, expected_input, expected_policy):
                 "observation", "objects", "boundary", "method"}
     if set(record) != required or record["version"] != 1:
         raise ValueError("incomplete record")
-    if record["arm"] not in ("A", "B", "C") or record["boundary"] != "result-object creation":
+    if record["arm"] not in ("A", "B", "C", "D") or record["boundary"] != "result-object creation":
         raise ValueError("unsupported scope")
     if record["method"] != "bounded-integer-product-v1":
         raise ValueError("unsupported method")

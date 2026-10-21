@@ -1,0 +1,28 @@
+{
+  "record": {
+    "version": 1,
+    "arm": "B",
+    "case": "revoked",
+    "input_hex": "323520313030300a",
+    "expected_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+    "policy_hex": "28706f6c6963792028746965722031292028726571756972652d6178696f6e2d6576656e742028726561736f6e2022636f6d6d69742d617574686f72697a6564222929290a",
+    "observation": {
+      "status": "committed",
+      "input_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+      "policy_digest": "b8f72eba765e2fccd3a6d5d489367e81781481b799d0268ec5bf176bf7b191e2",
+      "output_digest": "f240cb585558f845852731ce9c30b3bb686bc7712fee6a8e7b6934351fcb2b25",
+      "amount": 25000,
+      "vm_policy_calls": 4,
+      "policy_calls": 1
+    },
+    "objects": [
+      {
+        "name": "51KF8\u03c9\u2265yYC9qS\u00f76FEI\u2212Ga\u2260KYsN\u03bcE-mtPjFU\u03bcE\u03c45i\u00d7.blk",
+        "hex": "32353030300a"
+      }
+    ],
+    "boundary": "result-object creation",
+    "method": "bounded-integer-product-v1"
+  },
+  "signature": "aabd3daba84927fc0e37f8da9c3b8e6ec9cf8b8ac3a805f226c48f0dace43b3eb21ca30647a26f8ee5638c24cdabaf84e0594c8eb7ef02b41cc4e562003f3c03"
+}

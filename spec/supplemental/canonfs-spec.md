@@ -155,11 +155,46 @@ ______________________________________________________________________
 
 # 7. Axion Observability Contract
 
-CanonFS operations are **Axion-guarded**. Every `AXSET`/`AXREAD`/`AXVERIFY` interaction triggers an Axion syscall before touching storage so the Axion kernel can enforce capability constraints, recursion bounds, and policy predicates.
+Configured CanonFS operations are **Axion-guarded**; the raw driver also exposes
+the explicit bootstrap mode described below. Every `AXSET`/`AXREAD`/`AXVERIFY` interaction triggers an Axion syscall before touching storage so the Axion kernel can enforce capability constraints, recursion bounds, and policy predicates.
 
 1. **Meta slot journaling** — Each Axion syscall prepends a deterministic `meta slot axion event segment=meta addr=<value>` entry to the Axion trace before the actual write. CanonFS implementations MUST emit `action=Write` for `AXSET`/`write_object` paths and `action=Read` for `AXREAD`/`read_object` paths so policies can assert them via `(require-axion-event (reason "<substring>"))`.
 2. **Trace hygiene** — Axion traces MUST include the same `meta slot` string every time CanonFS writes persist metadata (e.g., capability grants, snapshots, links). Changing the verbatim string invalidates RFC-0020 policies and must be coordinated through a new RFC.
 3. **CI artifact parity** — The `canonfs_axion_trace_test` reproduction (see `docs/developer-guide/internals/axion-trace.md`) records those exact strings into `build/artifacts/canonfs_axion_trace.log`, providing auditors with a reference trace that CanonFS policies can expect before touching the filesystem.
+
+### Final authorization at storage boundaries
+
+Configured text-policy hooks request `SyscallContext::final_authorization` before
+storage operations. PolicyEngine checks required events immediately in this mode,
+for interpreted and compiled policies, and rejects a missing active policy. The
+context continues to describe no VM instruction (`Nop`); no synthetic `Halt` is
+needed. Existing VM dispatch keeps its required-evidence checks at `Halt`.
+
+`make_axion_policy_hook` rejects empty/malformed policy, parse/evaluation errors,
+and every verdict except explicit `Allow`. A default-constructed `AxionVerdict`
+also denies. The context reports one proposed metadata mutation for non-read
+operations (zero for reads), so `(max-meta-writes 0)` prevents writes; this is a
+per-operation count, not a cumulative session quota. Trailing policy input is invalid.
+Policy-required events refer to the current operation's canonical attempted-event
+strings, not historical entries from other operations or drivers. Audit entries
+are retained for denied attempts and are not proof of a successful write. A policy
+requiring a future read cannot authorize a present write; install policies for the
+actual operation being authorized.
+
+The driver hook runs before file creation, cache insertion, or protected metadata
+mutation. A callback exception is denial (`CapabilityError`). The low-level Driver
+API intentionally retains its optional-hook bootstrap mode: an empty callback
+means **unconfigured/ungoverned**, with capability checks still applied. It must not
+be substituted for a configured but missing/invalid policy. Driver construction
+may create store directories; those are outside the protected result-object write.
+Raw driver holders can remove/replace hooks and are trusted host code.
+
+These guarantees require serialized operations and policy replacement. There is
+no concurrent revocation transaction: the window between callback authorization
+and the subsequent OS file creation is not synchronized with another policy owner.
+The current global Axion audit trace is also not safe for concurrent callers.
+External serialization is required; synchronous revocation tests do not establish
+multi-thread/process revocation safety.
 
 Maintaining this contract makes CanonFS the canonical source of policy-verified persistence for Axion-aware binaries: canonical trace strings, capability enforcement, and deterministic writes all execute before the block is sealed inside CanonFS.
 
@@ -167,7 +202,7 @@ Maintaining this contract makes CanonFS the canonical source of policy-verified 
 
 The reference implementation exposes `make_persistent_driver(root)` (see `include/t81/canonfs/canon_driver.hpp`), creating a directory tree under `root` with `objects/`, `caps/`, and `parity/`. Each object is stored at `objects/<hash>.blk`, while capability masks live at `caps/<hash>.cap` as decimal `perms` values. The driver currently treats `parity/` as a placeholder directory for future repair shards.
 
-Every `write_object`, `read_object_bytes`, `publish_capability`, and `revoke_capability` invocation runs the Axion hook before mutating `objects/` or `caps/`. That hook emits the canonical `meta slot axion event segment=meta addr=<n> action=Write` (for writes) and `action=Read` (for reads), so `scripts/capture-axion-trace.sh` can verify `canonfs_axion_trace_test` produces the same strings auditors expect. Capabilities gate access via the `CANON_PERM_READ`/`CANON_PERM_WRITE` bitmask; when no capabilities exist the driver permits bootstrap writes, but once a capability is published, only callers with the matching mask may read or write the object.
+With a hook configured, every `write_object`, `read_object_bytes`, `publish_capability`, and `revoke_capability` invocation runs the Axion hook before mutating `objects/` or `caps/`. That hook emits the canonical `meta slot axion event segment=meta addr=<n> action=Write` (for writes) and `action=Read` (for reads), so `scripts/capture-axion-trace.sh` can verify `canonfs_axion_trace_test` produces the same strings auditors expect. Capabilities gate access via the `CANON_PERM_READ`/`CANON_PERM_WRITE` bitmask; when no capabilities exist the driver permits bootstrap writes, but once a capability is published, only callers with the matching mask may read or write the object.
 
 Read paths re-verify content identity by default: after loading bytes, the driver recomputes `CanonHash-81(payload_bytes)` and compares it to the requested `CanonRef`. Mismatches fail with deterministic decode errors. A diagnostic override exists via `T81_CANONFS_READ_VERIFY=0`.
 

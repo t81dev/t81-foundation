@@ -34,7 +34,7 @@ enum class ObjectType : std::uint8_t {
   CanonLink = 0x15,
   CanonExec = 0x16,
   CanonJitTrace = 0x17,  // RFC-0028 §4: serialised JIT trace payload
-  CanonTensor = 0x20,  // Was CanonView
+  CanonTensor = 0x20,    // Was CanonView
 };
 
 struct CanonRef {
@@ -139,7 +139,7 @@ enum : uint16_t {
 
 // Minimal Axion verdict hook for CanonFS operations.
 struct AxionVerdict {
-  bool allow{true};
+  bool allow{false};  // Authorization must be explicit, including custom hooks.
   std::string reason;
 };
 

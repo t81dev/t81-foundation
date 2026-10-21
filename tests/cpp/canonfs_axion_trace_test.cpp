@@ -21,8 +21,7 @@ int main() {
     (policy
       (tier 1)
       (require-axion-event (reason "meta slot axion event segment=meta addr="))
-      (require-axion-event (reason "action=Write"))
-      (require-axion-event (reason "action=Read")))
+      (require-axion-event (reason "action=Write")))
   )"));
 
   const std::string payload = "axion-canonfs";
@@ -38,6 +37,12 @@ int main() {
     std::filesystem::remove_all(workdir);
     return 1;
   }
+
+  // Each operation must satisfy its own policy before touching storage.
+  driver->set_axion_hook(make_axion_policy_hook(R"(
+    (policy (tier 1)
+      (require-axion-event (reason "meta slot axion event segment=meta"))
+      (require-axion-event (reason "action=Read"))))"));
 
   [[maybe_unused]] auto read_res = driver->read_object_bytes(write_res.value());
   if (!read_res.has_value()) {

@@ -171,7 +171,11 @@ private:
   bool axion_allow(OpKind kind) const noexcept {
     if (!hook_) return true;
     const CanonRef nil{};
-    return hook_(kind, nil).allow;
+    try {
+      return hook_(kind, nil).allow;
+    } catch (...) {
+      return false;
+    }
   }
 
   std::unique_ptr<t81::ternaryos::dev::IBlockDevice> dev_;

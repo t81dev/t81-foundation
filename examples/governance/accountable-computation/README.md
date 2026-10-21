@@ -1,4 +1,13 @@
-# First falsifiable accountable computation experiment
+# Falsifiable accountable computation experiment
+
+Production hardening adds **D**, measured through the corrected production hook.
+A/B/C and their fixtures/results remain historical controls. B/C must run using
+the native binary built from original commit
+`d8ad35254a1e35ca7374a4f57f7a870d568521fa`, never a hardened binary relabeled as B.
+See [PRODUCTION_HARDENING.md](PRODUCTION_HARDENING.md) for the audit, fourth-arm
+results, baseline build commands, and exact combined reproduction commands.
+The opt-in CTest now exercises A/D; the original A/B/C CTest remains reproducible
+at the original commit. The historical report and observed receipts are retained.
 
 This is a bounded precursor to the inventory protocol, using the stable VM,
 CanonFS, and Axion surfaces in the current priority lanes. It creates a purchase
@@ -29,9 +38,11 @@ ctest --test-dir /tmp/t81-accountable-build --output-on-failure \
   -R '^(accountable_computation_experiment|canonfs_axion_trace_test|canonfs_read_verify_test|canonfs_identity_contract_test|t81_vm_predispatch_policy_deny_logging_test)$'
 python3 examples/governance/accountable-computation/run.py \
   --runner /tmp/t81-accountable-build/t81_accountable_experiment \
-  --output /tmp/t81-accountable-results --repetitions 30
+  --output /tmp/t81-accountable-results --repetitions 30 \
+  --production --baseline-runner /tmp/t81-policy-baseline-build/t81_accountable_experiment
 ```
 
+Build the pinned baseline binary first using PRODUCTION_HARDENING.md.
 Choose fresh build/results paths if they already exist. An offline CMake build
 can point `FETCHCONTENT_SOURCE_DIR_ASIO` to a separately obtained checkout at
 `asio-1-30-2`. The measurement output includes all individual receipts, artifacts,
@@ -65,8 +76,8 @@ Use `changed-input` for changed_bytes, `deny.apl` for denied/revoked, and
 `invalid.apl` for invalid_policy. Other cases use input/allow.apl.
 For newly generated revoked cases pin the `revoked` policy file. The B-invalid-policy, B-denied, and B-revoked receipts
 **must fail verification**: they record actual unauthorized object creation.
-The CTest suite passes when it detects these known research failures, checks the
-other cases, and rejects evidence attacks. A green CTest is not a passing H1 gate.
+The original-commit CTest detects these known research failures. The hardened
+checkout CTest tests A/D and rejects evidence attacks. A green CTest is not a passing H1 gate.
 
 ## Arms and scope
 

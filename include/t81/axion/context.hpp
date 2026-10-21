@@ -24,5 +24,9 @@ struct SyscallContext {
   std::size_t reflection_count{0};
   std::size_t meta_write_count{0};
   int current_tier{0};
+  // Complete authorization at a host side-effect boundary. Requires an active
+  // policy and checks all required evidence now, without inventing a VM opcode.
+  // Normal VM evaluation still completes required-evidence checks at Halt.
+  bool final_authorization{false};
 };
 }  // namespace t81::axion

@@ -120,8 +120,12 @@ public:
 private:
   bool axion_allow(OpKind kind, std::optional<CanonRef> ref) const {
     if (!hook_) return true;
-    AxionVerdict v = hook_(kind, ref.value_or(CanonRef{CanonHash{}}));
-    return v.allow;
+    try {
+      AxionVerdict v = hook_(kind, ref.value_or(CanonRef{CanonHash{}}));
+      return v.allow;
+    } catch (...) {
+      return false;
+    }
   }
 
   bool has_capability(const CanonRef& ref, uint16_t required) const {

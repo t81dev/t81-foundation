@@ -31,8 +31,7 @@ int main() {
     (policy
       (tier 1)
       (require-axion-event (reason "meta slot axion event segment=meta"))
-      (require-axion-event (reason "action=Write"))
-      (require-axion-event (reason "action=Read")))
+      (require-axion-event (reason "action=Write")))
   )"));
 
   const std::string payload = "persistent payload";
@@ -40,6 +39,12 @@ int main() {
   auto write_res = driver->write_object(
       ObjectType::RawBlock, std::span<const std::byte>(write_bytes.data(), write_bytes.size()));
   if (!write_res.has_value()) return 1;
+
+  // Each operation must satisfy its own policy before touching storage.
+  driver->set_axion_hook(make_axion_policy_hook(R"(
+    (policy (tier 1)
+      (require-axion-event (reason "meta slot axion event segment=meta"))
+      (require-axion-event (reason "action=Read"))))"));
 
   [[maybe_unused]] auto read_res = driver->read_object_bytes(write_res.value());
   if (!read_res.has_value()) return 1;

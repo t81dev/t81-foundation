@@ -1,0 +1,28 @@
+{
+  "record": {
+    "version": 1,
+    "arm": "A",
+    "case": "authorized",
+    "input_hex": "323520313030300a",
+    "expected_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+    "policy_hex": "28706f6c696379202874696572203129290a",
+    "observation": {
+      "status": "committed",
+      "amount": 25000,
+      "input_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+      "policy_digest": "233c1964e35f7f6f4cf565617a6393765d5024d851dd88b1ed6c9b42bed4cc58",
+      "output_digest": "f240cb585558f845852731ce9c30b3bb686bc7712fee6a8e7b6934351fcb2b25",
+      "vm_policy_calls": 0,
+      "policy_calls": 1
+    },
+    "objects": [
+      {
+        "name": "f240cb585558f845852731ce9c30b3bb686bc7712fee6a8e7b6934351fcb2b25.blk",
+        "hex": "32353030300a"
+      }
+    ],
+    "boundary": "result-object creation",
+    "method": "bounded-integer-product-v1"
+  },
+  "signature": "ef65eff8da1eb5e2e8adb7980e5734a7a9acfd4ad4c1ecc1b33b749b8dc058fc2c2d7fd7c50b35b62f9ec55cba975fc553a95a92827a82c71d867df2e6901f0a"
+}

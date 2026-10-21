@@ -44,9 +44,9 @@ int main(int argc, char** argv) {
   try {
     if (argc != 7)
       throw std::runtime_error(
-          "usage: runner B|C input expected-digest policy output-store revoke-policy-or-dash");
+          "usage: runner B|C|D input expected-digest policy output-store revoke-policy-or-dash");
     const std::string arm = argv[1];
-    if (arm != "B" && arm != "C") throw std::runtime_error("unknown arm");
+    if (arm != "B" && arm != "C" && arm != "D") throw std::runtime_error("unknown arm");
     const auto input = read(argv[2]);
     const auto input_hash = digest(input);
     const std::string expected = argv[3];
@@ -81,11 +81,16 @@ int main(int argc, char** argv) {
       output = std::to_string(vm->state().contexts[0].registers[42]) + "\n";
       // Deterministic revocation barrier: replace active policy after computation.
       if (std::string(argv[6]) != "-") policy = read(argv[6]);
-      auto parsed = t81::axion::parse_policy(policy);
+      std::optional<t81::axion::Policy> parsed;
+      // D delegates parsing and all authorization to the production hook.
+      if (arm != "D") {
+        auto candidate = t81::axion::parse_policy(policy);
+        if (candidate) parsed = std::move(*candidate);
+      }
       status = "policy_denied";
       // C validates and requests final policy evaluation at the commit boundary.
       // The existing text hook checks these requirements only for Opcode::Halt.
-      if (arm == "B" || parsed.has_value()) {
+      if (arm == "B" || arm == "D" || parsed.has_value()) {
         t81::canonfs::reset_axion_trace();
         auto hook = t81::canonfs::make_axion_policy_hook(policy);
         std::unique_ptr<t81::axion::Engine> boundary_engine;

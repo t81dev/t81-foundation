@@ -124,7 +124,7 @@ if(T81_BUILD_TESTS)
     add_test(NAME accountable_computation_experiment
       COMMAND ${Python3_EXECUTABLE}
         ${PROJECT_SOURCE_DIR}/tests/python/test_accountable_computation.py
-        --runner $<TARGET_FILE:t81_accountable_experiment>)
+        --runner $<TARGET_FILE:t81_accountable_experiment> --production-only)
   endif()
   include(FetchContent)
   FetchContent_Declare(
@@ -222,6 +222,10 @@ if(T81_BUILD_TESTS)
 
   add_executable(canonfs_axion_trace_test tests/cpp/canonfs_axion_trace_test.cpp)
   target_link_libraries(canonfs_axion_trace_test PRIVATE t81_core t81_axion)
+  add_executable(canonfs_policy_boundary_test tests/cpp/canonfs_policy_boundary_test.cpp
+    ternaryos/dev/canon_store.cpp)
+  target_link_libraries(canonfs_policy_boundary_test PRIVATE t81_core t81_axion)
+  target_include_directories(canonfs_policy_boundary_test PRIVATE ${PROJECT_SOURCE_DIR}/ternaryos)
 
   add_executable(canonfs_persistent_driver_test tests/cpp/canonfs_persistent_driver_test.cpp)
   target_link_libraries(canonfs_persistent_driver_test PRIVATE t81_core t81_axion)
@@ -1322,6 +1326,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_tensor_loader_test
     t81_canonfs_io_test
     canonfs_persistent_driver_test
+    canonfs_policy_boundary_test
     canonfs_identity_contract_test
     canonfs_read_verify_test
     canonfs_read_verify_env_contract_test
@@ -1558,6 +1563,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   foreach(tgt IN LISTS T81_TEST_TARGETS)
     add_test(NAME ${tgt} COMMAND $<TARGET_FILE:${tgt}>)
   endforeach()
+  # Golden interchange fixtures live in the source tree, including out-of-tree builds.
+  set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   if(NOT WIN32)
     add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)

@@ -35,43 +35,46 @@ void push_reason(std::string reason) { g_axion_trace.push_back(std::move(reason)
 
 std::function<AxionVerdict(OpKind, const CanonRef&)> make_axion_policy_hook(
     std::string policy_text) {
-  std::optional<t81::axion::Policy> policy_storage;
-  auto parse_res = t81::axion::parse_policy(policy_text);
-  if (parse_res.has_value()) {
-    policy_storage = std::move(parse_res.value());
-  }
   std::shared_ptr<t81::axion::Engine> engine;
-  if (policy_storage) {
-    auto policy_engine = t81::axion::make_policy_engine(std::move(policy_storage));
-    engine = std::move(policy_engine);
+  // Parsing can throw on out-of-range numbers. Invalid/absent policy always
+  // installs a rejecting callback, never an unconfigured bootstrap callback.
+  try {
+    auto parsed = t81::axion::parse_policy(policy_text);
+    if (parsed) engine = t81::axion::make_policy_engine(std::move(*parsed));
+  } catch (...) {
+    // The returned callback below denies when no engine could be constructed.
   }
 
   return [engine](OpKind kind, const CanonRef&) mutable {
     const std::size_t slot = g_meta_ptr++;
-    auto reason_str =
-        t81::axion::reasons::canonical_meta_slot_reason(slot, action_to_string(kind));
+    auto reason_str = t81::axion::reasons::canonical_meta_slot_reason(slot, action_to_string(kind));
     push_reason(reason_str);
 
     // Secondary trace record: canonical meta event reason for policy audit.
     push_reason(t81::axion::reasons::canonical_meta_event_reason(slot, action_to_string(kind)));
 
     if (!engine) {
-      return AxionVerdict{true, reason_str};
+      return AxionVerdict{false, "CanonFS policy missing or invalid"};
     }
     t81::axion::SyscallContext ctx;
     ctx.caller = "CanonFS";
     ctx.syscall = "canonfs-" + std::string(action_to_string(kind));
     ctx.pc = 0;
-    ctx.next_opcode = t81::tisc::Opcode::Nop;
-    std::vector<std::string_view> trace_views;
-    trace_views.reserve(g_axion_trace.size());
-    for (const auto& entry : g_axion_trace) {
-      trace_views.emplace_back(entry);
-    }
-    ctx.trace_reasons = std::move(trace_views);
-    auto verdict = engine->evaluate(ctx);
-    if (verdict.kind == t81::axion::VerdictKind::Deny) {
-      return AxionVerdict{false, verdict.reason};
+    ctx.final_authorization = true;
+    // Per-operation proposed metadata mutation, not a VM/session counter.
+    ctx.meta_write_count = kind == OpKind::Read ? 0 : 1;
+    // Authorize from this request's events, not another operation/driver's
+    // historical audit entries. These events describe an attempted operation.
+    const auto event_reason =
+        t81::axion::reasons::canonical_meta_event_reason(slot, action_to_string(kind));
+    ctx.trace_reasons = {reason_str, event_reason};
+    try {
+      auto verdict = engine->evaluate(ctx);
+      if (verdict.kind != t81::axion::VerdictKind::Allow) {
+        return AxionVerdict{false, verdict.reason};
+      }
+    } catch (...) {
+      return AxionVerdict{false, "CanonFS policy evaluation failed"};
     }
     return AxionVerdict{true, reason_str};
   };
