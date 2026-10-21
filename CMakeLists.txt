@@ -116,6 +116,20 @@ endif()
 # All tests — exactly as you wrote them
 # =============================================================================
 if(T81_BUILD_TESTS)
+  if(T81_BUILD_CONCURRENT_EXPERIMENT)
+    find_package(Threads REQUIRED)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_executable(t81_concurrent_revocation
+      examples/governance/accountable-computation/concurrent_revocation.cpp
+      ternaryos/dev/canon_store.cpp)
+    target_include_directories(t81_concurrent_revocation PRIVATE ${PROJECT_SOURCE_DIR}/ternaryos)
+    target_link_libraries(t81_concurrent_revocation PRIVATE t81_core t81_axion Threads::Threads)
+    add_test(NAME canonfs_concurrent_revocation_experiment
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_concurrent_revocation.py
+        --runner $<TARGET_FILE:t81_concurrent_revocation>)
+    set_tests_properties(canonfs_concurrent_revocation_experiment PROPERTIES TIMEOUT 120)
+  endif()
   if(T81_BUILD_ACCOUNTABLE_EXPERIMENT)
     add_executable(t81_accountable_experiment
       examples/governance/accountable-computation/runner.cpp)

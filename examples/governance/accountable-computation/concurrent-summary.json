@@ -1,0 +1,598 @@
+{
+  "verification": {
+    "cases": 64,
+    "operations": 1920,
+    "stronger_goal_snapshot_counterexamples": 240,
+    "serialized_owner_prohibited_commits": 0,
+    "existing_serialized_contract_violation_demonstrated": false
+  },
+  "environment": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+  "runner_sha256": "764830e82864bb1fea076c29f24c508b5a47fa4f283c0c3fbc8f3a25a0ce8af7",
+  "source_sha256": {
+    "concurrent_revocation.cpp": "75a55e90f6aa1e3573c4e910a7cff8eeaa44d86bde4416cfefe665468564b113",
+    "verify_concurrent.py": "c98c8df9e98a56d9559b8810f07cf81b6ec1235e79eec15edad9822999ed2202",
+    "measure_concurrent.py": "751ff9aaa95874aa23172c9b129fe841c64b7b8a6a687c9a04c8e624d1a3aabe"
+  },
+  "performance_scope": "Descriptive writer interval including scheduled waits; not compute or durability rankings",
+  "costs": [
+    {
+      "backend": "conventional-file",
+      "mode": "snapshot",
+      "scenario": "no_revocation",
+      "median_us": 148.16649999999998,
+      "min_us": 125.5,
+      "max_us": 434.959,
+      "stdev_us": 77.51517303154489
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "snapshot",
+      "scenario": "before_authorization",
+      "median_us": 0.25,
+      "min_us": 0.167,
+      "max_us": 0.542,
+      "stdev_us": 0.08395349013440197
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "snapshot",
+      "scenario": "after_authorization",
+      "median_us": 155.3955,
+      "min_us": 137.917,
+      "max_us": 570,
+      "stdev_us": 76.40731183153017
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "snapshot",
+      "scenario": "during_revocation",
+      "median_us": 18.4795,
+      "min_us": 13.583,
+      "max_us": 28.708,
+      "stdev_us": 3.6795125472075063
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "snapshot",
+      "scenario": "after_commit",
+      "median_us": 154.2705,
+      "min_us": 141.292,
+      "max_us": 304.042,
+      "stdev_us": 28.737834794358044
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "serialized-owner",
+      "scenario": "no_revocation",
+      "median_us": 128.8745,
+      "min_us": 121.333,
+      "max_us": 287.667,
+      "stdev_us": 30.663631310251468
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "serialized-owner",
+      "scenario": "before_authorization",
+      "median_us": 0.417,
+      "min_us": 0.292,
+      "max_us": 0.791,
+      "stdev_us": 0.09590410080765129
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "serialized-owner",
+      "scenario": "after_authorization",
+      "median_us": 150.3125,
+      "min_us": 136,
+      "max_us": 510.125,
+      "stdev_us": 71.07526794347513
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "serialized-owner",
+      "scenario": "during_revocation",
+      "median_us": 18.813000000000002,
+      "min_us": 13.833,
+      "max_us": 26.791,
+      "stdev_us": 4.097851232412971
+    },
+    {
+      "backend": "conventional-file",
+      "mode": "serialized-owner",
+      "scenario": "after_commit",
+      "median_us": 153.209,
+      "min_us": 134.25,
+      "max_us": 345.375,
+      "stdev_us": 35.87599129081802
+    },
+    {
+      "backend": "t81-file",
+      "mode": "snapshot",
+      "scenario": "no_revocation",
+      "median_us": 141.04149999999998,
+      "min_us": 125.708,
+      "max_us": 193.459,
+      "stdev_us": 16.497517747419966
+    },
+    {
+      "backend": "t81-file",
+      "mode": "snapshot",
+      "scenario": "before_authorization",
+      "median_us": 1.542,
+      "min_us": 1.417,
+      "max_us": 2.167,
+      "stdev_us": 0.18900920125993742
+    },
+    {
+      "backend": "t81-file",
+      "mode": "snapshot",
+      "scenario": "after_authorization",
+      "median_us": 154.10399999999998,
+      "min_us": 143.083,
+      "max_us": 306.5,
+      "stdev_us": 29.240114206205728
+    },
+    {
+      "backend": "t81-file",
+      "mode": "snapshot",
+      "scenario": "during_revocation",
+      "median_us": 22.104,
+      "min_us": 14.583,
+      "max_us": 32.167,
+      "stdev_us": 4.401790290037823
+    },
+    {
+      "backend": "t81-file",
+      "mode": "snapshot",
+      "scenario": "after_commit",
+      "median_us": 152.062,
+      "min_us": 136.792,
+      "max_us": 282.542,
+      "stdev_us": 25.147039974092785
+    },
+    {
+      "backend": "t81-file",
+      "mode": "serialized-owner",
+      "scenario": "no_revocation",
+      "median_us": 128.708,
+      "min_us": 119.375,
+      "max_us": 291.041,
+      "stdev_us": 30.24397893585455
+    },
+    {
+      "backend": "t81-file",
+      "mode": "serialized-owner",
+      "scenario": "before_authorization",
+      "median_us": 1.8955,
+      "min_us": 1.583,
+      "max_us": 2.167,
+      "stdev_us": 0.1587883721386323
+    },
+    {
+      "backend": "t81-file",
+      "mode": "serialized-owner",
+      "scenario": "after_authorization",
+      "median_us": 144.542,
+      "min_us": 131.875,
+      "max_us": 289.583,
+      "stdev_us": 37.196550033695274
+    },
+    {
+      "backend": "t81-file",
+      "mode": "serialized-owner",
+      "scenario": "during_revocation",
+      "median_us": 24.146,
+      "min_us": 18.625,
+      "max_us": 35.792,
+      "stdev_us": 4.976292077232911
+    },
+    {
+      "backend": "t81-file",
+      "mode": "serialized-owner",
+      "scenario": "after_commit",
+      "median_us": 148.75,
+      "min_us": 137.792,
+      "max_us": 303.916,
+      "stdev_us": 34.15319057680939
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "snapshot",
+      "scenario": "no_revocation",
+      "median_us": 0.4165,
+      "min_us": 0.291,
+      "max_us": 0.709,
+      "stdev_us": 0.125712996429424
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "snapshot",
+      "scenario": "before_authorization",
+      "median_us": 0.208,
+      "min_us": 0.125,
+      "max_us": 0.375,
+      "stdev_us": 0.056397694988359226
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "snapshot",
+      "scenario": "after_authorization",
+      "median_us": 18.2915,
+      "min_us": 14,
+      "max_us": 25.25,
+      "stdev_us": 3.456417385795238
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "snapshot",
+      "scenario": "during_revocation",
+      "median_us": 15.5835,
+      "min_us": 11.792,
+      "max_us": 24.875,
+      "stdev_us": 4.166966412758503
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "snapshot",
+      "scenario": "after_commit",
+      "median_us": 21.5,
+      "min_us": 14.166,
+      "max_us": 35.083,
+      "stdev_us": 5.47022616271616
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "serialized-owner",
+      "scenario": "no_revocation",
+      "median_us": 0.4585,
+      "min_us": 0.333,
+      "max_us": 10.75,
+      "stdev_us": 1.8802713918199552
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "serialized-owner",
+      "scenario": "before_authorization",
+      "median_us": 0.417,
+      "min_us": 0.333,
+      "max_us": 0.666,
+      "stdev_us": 0.0818577754541305
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "serialized-owner",
+      "scenario": "after_authorization",
+      "median_us": 19.396,
+      "min_us": 14.5,
+      "max_us": 33.666,
+      "stdev_us": 4.713042159306693
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "serialized-owner",
+      "scenario": "during_revocation",
+      "median_us": 23.583,
+      "min_us": 17.458,
+      "max_us": 39.791,
+      "stdev_us": 5.401477841199157
+    },
+    {
+      "backend": "conventional-memory",
+      "mode": "serialized-owner",
+      "scenario": "after_commit",
+      "median_us": 19.5835,
+      "min_us": 13.959,
+      "max_us": 48.75,
+      "stdev_us": 6.5488711075084245
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "snapshot",
+      "scenario": "no_revocation",
+      "median_us": 3.375,
+      "min_us": 2.917,
+      "max_us": 6.375,
+      "stdev_us": 0.8339512713513337
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "snapshot",
+      "scenario": "before_authorization",
+      "median_us": 1.1875,
+      "min_us": 0.958,
+      "max_us": 2,
+      "stdev_us": 0.19651755792985176
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "snapshot",
+      "scenario": "after_authorization",
+      "median_us": 25.375500000000002,
+      "min_us": 18.042,
+      "max_us": 38.833,
+      "stdev_us": 5.593312796668832
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "snapshot",
+      "scenario": "during_revocation",
+      "median_us": 24.9585,
+      "min_us": 16.292,
+      "max_us": 35.75,
+      "stdev_us": 5.667531425159671
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "snapshot",
+      "scenario": "after_commit",
+      "median_us": 23.771,
+      "min_us": 16.625,
+      "max_us": 35.792,
+      "stdev_us": 4.787334148983439
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "serialized-owner",
+      "scenario": "no_revocation",
+      "median_us": 3.146,
+      "min_us": 2.75,
+      "max_us": 16.375,
+      "stdev_us": 3.787527235211816
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "serialized-owner",
+      "scenario": "before_authorization",
+      "median_us": 1.375,
+      "min_us": 1.25,
+      "max_us": 1.917,
+      "stdev_us": 0.1524194303841236
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "serialized-owner",
+      "scenario": "after_authorization",
+      "median_us": 24.208,
+      "min_us": 19.125,
+      "max_us": 32.75,
+      "stdev_us": 3.1899069319468802
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "serialized-owner",
+      "scenario": "during_revocation",
+      "median_us": 25.979,
+      "min_us": 18.417,
+      "max_us": 84.375,
+      "stdev_us": 13.289262494607243
+    },
+    {
+      "backend": "t81-memory",
+      "mode": "serialized-owner",
+      "scenario": "after_commit",
+      "median_us": 21.3965,
+      "min_us": 16.416,
+      "max_us": 29.583,
+      "stdev_us": 3.929354511788208
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "snapshot",
+      "scenario": "no_revocation",
+      "median_us": 0.5,
+      "min_us": 0.375,
+      "max_us": 1.125,
+      "stdev_us": 0.17786157603564928
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "snapshot",
+      "scenario": "before_authorization",
+      "median_us": 0.25,
+      "min_us": 0.166,
+      "max_us": 0.459,
+      "stdev_us": 0.06073103507013243
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "snapshot",
+      "scenario": "after_authorization",
+      "median_us": 22.021,
+      "min_us": 14.709,
+      "max_us": 43.791,
+      "stdev_us": 6.5086475694078425
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "snapshot",
+      "scenario": "during_revocation",
+      "median_us": 19.9165,
+      "min_us": 15.625,
+      "max_us": 46.583,
+      "stdev_us": 6.070322417633431
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "snapshot",
+      "scenario": "after_commit",
+      "median_us": 20.729,
+      "min_us": 14.416,
+      "max_us": 32.666,
+      "stdev_us": 4.79194344947731
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "snapshot",
+      "scenario": "at_mutation",
+      "median_us": 19.375500000000002,
+      "min_us": 15.041,
+      "max_us": 46.25,
+      "stdev_us": 7.14839552136597
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "serialized-owner",
+      "scenario": "no_revocation",
+      "median_us": 0.5834999999999999,
+      "min_us": 0.417,
+      "max_us": 1.542,
+      "stdev_us": 0.25648404310564055
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "serialized-owner",
+      "scenario": "before_authorization",
+      "median_us": 0.417,
+      "min_us": 0.292,
+      "max_us": 0.625,
+      "stdev_us": 0.0885631212005404
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "serialized-owner",
+      "scenario": "after_authorization",
+      "median_us": 22.1875,
+      "min_us": 14.625,
+      "max_us": 30.792,
+      "stdev_us": 3.9652945396536303
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "serialized-owner",
+      "scenario": "during_revocation",
+      "median_us": 23.8125,
+      "min_us": 16.875,
+      "max_us": 34.125,
+      "stdev_us": 4.266499813907059
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "serialized-owner",
+      "scenario": "after_commit",
+      "median_us": 19.5835,
+      "min_us": 14.959,
+      "max_us": 29.541,
+      "stdev_us": 3.5936679331559147
+    },
+    {
+      "backend": "conventional-block",
+      "mode": "serialized-owner",
+      "scenario": "at_mutation",
+      "median_us": 20.125,
+      "min_us": 14.541,
+      "max_us": 29.583,
+      "stdev_us": 4.2904217990534566
+    },
+    {
+      "backend": "t81-block",
+      "mode": "snapshot",
+      "scenario": "no_revocation",
+      "median_us": 6.2915,
+      "min_us": 5.584,
+      "max_us": 8.375,
+      "stdev_us": 0.7835157606113848
+    },
+    {
+      "backend": "t81-block",
+      "mode": "snapshot",
+      "scenario": "before_authorization",
+      "median_us": 1.1665,
+      "min_us": 1,
+      "max_us": 1.416,
+      "stdev_us": 0.1043715952022267
+    },
+    {
+      "backend": "t81-block",
+      "mode": "snapshot",
+      "scenario": "after_authorization",
+      "median_us": 28.0625,
+      "min_us": 21.125,
+      "max_us": 36.083,
+      "stdev_us": 4.290455797130001
+    },
+    {
+      "backend": "t81-block",
+      "mode": "snapshot",
+      "scenario": "during_revocation",
+      "median_us": 21.792,
+      "min_us": 13.667,
+      "max_us": 33.416,
+      "stdev_us": 5.060955408870415
+    },
+    {
+      "backend": "t81-block",
+      "mode": "snapshot",
+      "scenario": "after_commit",
+      "median_us": 26.104,
+      "min_us": 20.541,
+      "max_us": 40.25,
+      "stdev_us": 4.753991317164784
+    },
+    {
+      "backend": "t81-block",
+      "mode": "snapshot",
+      "scenario": "at_mutation",
+      "median_us": 26.2915,
+      "min_us": 21.333,
+      "max_us": 42,
+      "stdev_us": 4.949432620449319
+    },
+    {
+      "backend": "t81-block",
+      "mode": "serialized-owner",
+      "scenario": "no_revocation",
+      "median_us": 5.875,
+      "min_us": 5.542,
+      "max_us": 6.667,
+      "stdev_us": 0.2775383084254823
+    },
+    {
+      "backend": "t81-block",
+      "mode": "serialized-owner",
+      "scenario": "before_authorization",
+      "median_us": 1.375,
+      "min_us": 1.208,
+      "max_us": 1.833,
+      "stdev_us": 0.1443233279428719
+    },
+    {
+      "backend": "t81-block",
+      "mode": "serialized-owner",
+      "scenario": "after_authorization",
+      "median_us": 23.104,
+      "min_us": 18.75,
+      "max_us": 33.667,
+      "stdev_us": 3.4958773784026786
+    },
+    {
+      "backend": "t81-block",
+      "mode": "serialized-owner",
+      "scenario": "during_revocation",
+      "median_us": 28.7915,
+      "min_us": 17.25,
+      "max_us": 50.125,
+      "stdev_us": 8.662115299314637
+    },
+    {
+      "backend": "t81-block",
+      "mode": "serialized-owner",
+      "scenario": "after_commit",
+      "median_us": 25.9375,
+      "min_us": 21.167,
+      "max_us": 38.208,
+      "stdev_us": 3.653729832445982
+    },
+    {
+      "backend": "t81-block",
+      "mode": "serialized-owner",
+      "scenario": "at_mutation",
+      "median_us": 25.5625,
+      "min_us": 21.375,
+      "max_us": 40.292,
+      "stdev_us": 4.8080649140003695
+    }
+  ]
+}
