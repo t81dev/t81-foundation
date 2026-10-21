@@ -1,0 +1,23 @@
+{
+  "record": {
+    "version": 1,
+    "arm": "C",
+    "case": "invalid_policy",
+    "input_hex": "323520313030300a",
+    "expected_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+    "policy_hex": "696e76616c69642d706f6c6963790a",
+    "observation": {
+      "status": "policy_denied",
+      "input_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+      "policy_digest": "58ead14bfd29696ebfe7df2d8a71f411742d3d69ffabcb50246a756ec69a1622",
+      "output_digest": "",
+      "amount": 25000,
+      "vm_policy_calls": 4,
+      "policy_calls": 0
+    },
+    "objects": [],
+    "boundary": "result-object creation",
+    "method": "bounded-integer-product-v1"
+  },
+  "signature": "71595df0406db9414e3825e439e03414ccd959281f8313cbd94941d42ff1587df83f1f57c19c6fe73210fd5be72c7ae61fb04dc01f1fbe18eb4cf9925d4d1c06"
+}

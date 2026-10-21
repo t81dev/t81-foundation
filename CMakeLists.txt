@@ -116,6 +116,16 @@ endif()
 # All tests — exactly as you wrote them
 # =============================================================================
 if(T81_BUILD_TESTS)
+  if(T81_BUILD_ACCOUNTABLE_EXPERIMENT)
+    add_executable(t81_accountable_experiment
+      examples/governance/accountable-computation/runner.cpp)
+    target_link_libraries(t81_accountable_experiment PRIVATE t81_vm t81_axion t81_core)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(NAME accountable_computation_experiment
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/test_accountable_computation.py
+        --runner $<TARGET_FILE:t81_accountable_experiment>)
+  endif()
   include(FetchContent)
   FetchContent_Declare(
     asio

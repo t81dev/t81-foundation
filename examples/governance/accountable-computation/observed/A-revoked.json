@@ -1,0 +1,23 @@
+{
+  "record": {
+    "version": 1,
+    "arm": "A",
+    "case": "revoked",
+    "input_hex": "323520313030300a",
+    "expected_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+    "policy_hex": "28706f6c6963792028746965722031292028726571756972652d6178696f6e2d6576656e742028726561736f6e2022636f6d6d69742d617574686f72697a6564222929290a",
+    "observation": {
+      "status": "policy_denied",
+      "amount": 25000,
+      "input_digest": "24c7ef023a5b9b1ee91fec7fd453b7646889f71213013a8022a4cbe9facb9617",
+      "policy_digest": "b8f72eba765e2fccd3a6d5d489367e81781481b799d0268ec5bf176bf7b191e2",
+      "output_digest": "",
+      "vm_policy_calls": 0,
+      "policy_calls": 1
+    },
+    "objects": [],
+    "boundary": "result-object creation",
+    "method": "bounded-integer-product-v1"
+  },
+  "signature": "4e0678d8b9bb0e3d35e403d459f4fbd862e4b1db13cc6df4d6441e8ec84e7888410c6bc1c0d7d37bec31fd2651fd251c642ee5064d03dc3b65d738fae0869d01"
+}
