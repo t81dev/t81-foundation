@@ -39,6 +39,23 @@ if(T81_BUILD_OBJECT_INTERFACE_EXPERIMENT)
   endif()
 endif()
 
+if(T81_BUILD_DESCRIPTOR_EXPERIMENT)
+  add_executable(t81_descriptor_comparison examples/research/validated-descriptors/runner.cpp)
+  target_link_libraries(t81_descriptor_comparison PRIVATE t81_vm t81_isa t81_tool_model t81_axion)
+  if(NOT T81_BUILD_OBJECT_INTERFACE_EXPERIMENT)
+    message(FATAL_ERROR "Descriptor comparison requires T81_BUILD_OBJECT_INTERFACE_EXPERIMENT=ON for arm A")
+  endif()
+  if(T81_BUILD_TESTS)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(NAME validated_descriptor_comparison
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/examples/research/validated-descriptors/compare.py
+        --runner $<TARGET_FILE:t81_descriptor_comparison>
+        --baseline-runner $<TARGET_FILE:t81_object_comparison>)
+    set_tests_properties(validated_descriptor_comparison PROPERTIES TIMEOUT 60)
+  endif()
+endif()
+
 # =============================================================================
 # TernaryOS — HAL, shell, and user environment (RFC-00B0 through RFC-00C6)
 # Stable; disable with -DT81_ENABLE_TERNARYOS=OFF

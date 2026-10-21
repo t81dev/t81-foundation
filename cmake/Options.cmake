@@ -3,6 +3,7 @@ include_guard(GLOBAL)
 # Core build toggles
 option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
 option(T81_BUILD_TESTS "Build T81 C++ unit tests" ON)
+option(T81_BUILD_DESCRIPTOR_EXPERIMENT "Build the bounded validated descriptor experiment" OFF)
 option(T81_BUILD_OBJECT_INTERFACE_EXPERIMENT "Build the bounded representation comparison" OFF)
 option(T81_BUILD_ACCOUNTABLE_EXPERIMENT "Build the opt-in accountable computation experiment" OFF)
 option(T81_BUILD_CONCURRENT_EXPERIMENT "Build the opt-in CanonFS revocation schedule experiment" OFF)
