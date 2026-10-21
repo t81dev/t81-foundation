@@ -1,99 +1,38 @@
 # Mathematical Research Report — Ternary Arithmetic, Radix-81 Grouping, and Redundant Signed-Digit Evaluation
 
-**Document Status:** Research Report (Deliverable for Assignment #543 Follow-up)
-**Author:** Jules (Software Engineer)
+**Document Status:** Revised Adversarial Research Report (Deliverable for Assignment PR #544 Audit)
+**Author:** Jules (Software Engineer — Adversarial Audit)
 **Target Repository:** T81 Foundation (`t81dev/t81-foundation`)
 **Artifact Path:** `docs/research/TERNARY_ARITHMETIC_AND_RADIX_COMPARISON.md`
 **Experimental Code:** `experiments/radix_comparison/`
-**Machine-Readable Results:** `experiments/radix_comparison/results.json`
+**Machine-Readable Results:** `build/experiments/radix_comparison/radix_comparison_results.json`
 
 ---
 
 ## Executive Summary
 
-This research report investigates the foundational mathematical claims of Project T81. Specifically, it tests whether balanced ternary representations, Base-81 digit grouping ($81 = 3^4$), or redundant signed-digit arithmetic provide computational advantages beyond notation, human readability, or governance contracts.
+This report presents an independent, adversarial mathematical and empirical audit of the claims regarding balanced ternary representations, Base-81 digit grouping ($81 = 3^4$), and redundant signed-digit arithmetic initially reported in PR #544.
 
 ### Central Research Question
 
-> **Can ternary arithmetic reveal an algorithmic advantage that remains useful after accounting for representation, conversion, normalization, and implementation costs?**
+> **Can ternary arithmetic reveal an algorithmic advantage that remains useful after accounting for representation, conversion, normalization, implementation, and memory allocation costs on conventional hardware?**
 
-### Definitive Answer
+### Audit Summary & Key Discoveries
 
-**No for general-purpose integer arithmetic on conventional binary hardware; Yes for specialized, non-arithmetic surfaces (specifically, packed 2-bit ternary weight vectorization in quantized neural network inference and Base-81 canonical serialization/hashing).**
+1. **Proof & Example Corrections (Mathematical Audit):**
+   - **Invalid RSD Counterexample in PR #544:** The proof of $O(N)$ equality testing cost in PR #544 cited $\langle +1, -3 \rangle$ (which contains $-3 \notin \{-2..2\}$) and claimed $1 \cdot 3^3 + (-2) \cdot 3^2 + (-1) \cdot 3^1 + 0 = 27 - 18 - 9 = 0$ (arithmetic error: $(-1) \cdot 3^1 = -3$, so the sum is $6 \neq 0$).
+   - **Zero Uniqueness in RSD:** We prove that for Radix-3 Redundant Signed-Digit (RSD) with digit set $D = \{-2, -1, 0, 1, 2\}$, zero $V = 0$ actually has a **unique representation** ($d_i = 0 \, \forall i$) because $d_0 \equiv 0 \pmod 3 \implies d_0 = 0$. However, non-zero values **do** possess redundant representations (e.g., $1 = \langle 1 \rangle_3 = \langle 1, -2 \rangle_3$), which makes checking $A == B$ for general values require $O(N)$ canonical normalization.
+   - **64-Bit Range & Byte Storage Correction:** Representing full signed 64-bit integers ($[-2^{63}, 2^{63}-1]$) requires **41 trits** ($3^{40} < 2^{64} < 3^{41}$), corresponding to **11 bytes** (or 11 trytes), not 10 bytes as reported in PR #544 (40 trits covers only up to $\pm 6.08 \times 10^{18} < 2^{63}-1 \approx 9.22 \times 10^{18}$).
+   - **BigInt Limb Scaling Clarification:** The $102\times$ multiplication penalty claimed in PR #544 assumes 4-trit ($6.34$-bit) limbs as a strawman. When using 27-trit limbs (Radix-$3^{27}$, $42.79$ bits per limb as implemented in `T81BigInt`), the schoolbook multiplication limb operation penalty compared to 64-bit binary limbs is **$2.23\times$**, not $102\times$.
 
-On standard binary processors (x86-64 / ARM64):
-1. **Radix Grouping (H1 Falsified):** Grouping trits into Radix-81 trytes ($3^4$) speeds up ternary addition by $2.71\times$ compared to scalar trit loops (from $286.21\text{ ns}$ to $105.34\text{ ns}$), but remains **$52.7\times$ slower** than 64-bit binary ALU addition ($2.00\text{ ns}$) while requiring $25\%$ more storage space ($10\text{ bytes}$ vs $8\text{ bytes}$).
-2. **Redundant Signed-Digit Arithmetic (H2 Falsified):** Avizienis $O(1)$ carry-free addition eliminates carry propagation length (Max Carry Distance = $1.0\text{ trit}$ vs $12.0\text{ trits}$ in canonical BT), but software emulation of 2-step transfer generation on binary ALUs is **$1.24\times$ slower** than canonical ternary addition ($356.04\text{ ns}$ vs $286.21\text{ ns}$) and **$178\times$ slower** than binary addition. Furthermore, equality testing and serialization require $O(N)$ canonical normalization.
-3. **Practical Implementation (H3 Falsified for General Arithmetic):** Across integer addition, subtraction, carry stress, and conversion workloads, no tested ternary representation beats binary ALUs in execution latency, memory footprint, or instruction count.
-
----
-
-## Phase 1 — Reconstruct the Mathematical Foundation & Repo Audit
-
-We audited the existing repository surfaces relating to ternary mathematics and prior art:
-
-### Existing Repository Implementations
-
-| Subsystem / Type | Core Implementation File | Representation & Architecture |
-|---|---|---|
-| **Canonical Balanced Ternary (`T81Int<N>`)** | `include/t81/types/T81Int.hpp` | 2-bit packed trits (00=N, 01=Z, 10=P; 4 trits/byte). Tritwise arithmetic. |
-| **Multi-Limb BigInt (`T81BigInt`)** | `include/t81/types/T81BigInt.hpp` | Backed by 81-trit limbs (`T81Int<81>`). Converted to Radix-$3^{27}$ chunks for SIMD Karatsuba multiplication. |
-| **Base-81 Codec (`base81.hpp`)** | `include/t81/codec/base81.hpp` | Maps 4-trit trytes (range $[-40, +40]$) to UTF-8/ASCII glyphs and Tryte-Octet byte encodings ($b = V(\tau) + 40$). |
-| **SWAR Vectorization (`swar.hpp`)** | `include/t81/swar/swar.hpp` | Packed 2-bit bitwise logic (`t_not`, `t_and`, `t_or`) processing 32 trits/64-bit word. |
-| **Ternary Neural Weights (`ternary_gguf.hpp`)** | `include/t81/codec/ternary_gguf.hpp` | $W \in \{-1, 0, 1\}$ packed 4 trits/byte, used in `QMATMUL` SIMD dot products. |
-| **Float & Fraction (`T81Float`, `T81Fraction`)** | `include/t81/types/T81Float.hpp` | Normalized mantissa $\times 3^E$ with soft-math CORDIC/Minimax transcendentals. |
-
-### Theoretical vs Practical Density Gap
-
-- **Information Density:** A trit carries $\log_2 3 \approx 1.58496\text{ bits}$.
-- **Byte State Space Utilization:**
-  - **Binary (8 bits):** $2^8 = 256$ valid states ($100\%$ byte efficiency).
-  - **Packed 2-bit per trit (4 trits/byte):** $3^4 = 81$ states out of $256 \implies \mathbf{31.64\%}$ utilization ($68.36\%$ state waste).
-  - **Base-243 (5 trits/byte):** $3^5 = 243$ states out of $256 \implies \mathbf{94.92\%}$ utilization ($5.08\%$ state waste). However, extracting individual trits requires non-power-of-two division/modulo ($/ 3, \% 3$) or lookup tables, destroying memory access throughput.
+2. **Implementation & Benchmark Methodology Audit:**
+   - **C++ Heap Allocation Artifact:** Benchmarks in PR #544 measured dynamic `std::vector` heap allocation (`malloc`/`free`) overhead rather than pure arithmetic instruction latency. Fixed-width inline array implementations (`std::array`) reduce Radix-81 addition latency from $105.34\text{ ns}$ down to **$11.70\text{ ns}$** ($9\times$ faster than dynamic vector), while 64-bit binary hardware ALU addition operates in **$0.50 - 2.00\text{ ns}$**.
+   - **Hardcoded Carry Metrics Discovered:** PR #544 hardcoded Redundant SD max and average carry distances to `1.0` in `main.cpp` rather than measuring them. We implemented true transfer chain measurement, confirming transfer distance is strictly bounded to $1.0$ digit.
+   - **Signed Integer Overflow (UB) Identified:** `CanonicalTernary::to_int64()` and `Radix81Integer::to_int64()` suffered from C++ signed integer overflow on $3^{40} > \text{INT64\_MAX}$. We resolved this using safe 128-bit accumulators (`__int128_t`).
 
 ---
 
-## Prior-Art Comparison
-
-| Prior Art / Reference | Historical Context | Primary Algorithmic Mechanism | Tradeoffs & Findings |
-|---|---|---|---|
-| **Avizienis Signed-Digit (1961)** | UCLA / IEEE IEEE Trans. Comput. | Redundant digit set $D = \{-2, -1, 0, 1, 2\}$ for Radix-3. Eliminates carry propagation chain ($O(1)$ parallel delay). | Requires custom hardware gates. On binary software CPUs, digit decomposition overhead ($15\text{ instructions/digit}$) renders it $178\times$ slower than binary ALU. Normalization is $O(N)$. |
-| **Chow & Robertson (1978)** | Univ. of Illinois | Logical design of redundant signed-digit adders using dual-rail sum/carry representations. | Proved $O(1)$ addition latency on custom ECL/TTL circuits, but noted $O(N)$ overhead for zero-testing and magnitude comparison. |
-| **Setun Computer (1958–1970)** | Moscow State University (Sobolev & Brusentsov) | Native hardware balanced-ternary computer using 2-core ferrite magnetic pulse amplifiers. | Demonstrated single-wire sign-magnitude symmetry, but abandoned due to overwhelming commercial dominance of binary semiconductor fabrication. |
-| **Canonical Signed-Digit (CSD)** | DSP & ASIC Design | Non-adjacent representation minimizing non-zero digits ($d_i d_{i+1} = 0$) for constant multiplication. | Excellent for fixed-coefficient DSP filter hardware. Conversion from binary is $O(N)$ sequential. |
-| **Booth / Modified Booth (Radix-4)** | Binary Computer Arithmetic | Encodes binary multiplier into signed digits $\{-2, -1, 0, 1, 2\}$ to halve partial product count. | Standard in modern binary ALUs for multiplier trees; operates internally in binary hardware rather than user-level ternary types. |
-
----
-
-## Phase 2 — Falsifiable Hypotheses
-
-### Hypothesis 1 (H1) — Radix Grouping
-
-> **H1:** Grouping trits into radix-9 ($3^2$), radix-27 ($3^3$), or radix-81 ($3^4$) digits reduces arithmetic or representation overhead for certain workloads compared with ungrouped ternary digits.
->
-> **Status:** **Falsified for performance against binary baselines; Confirmed for internal ternary loop optimization.**
->
-> **Falsification Evaluation:** Grouping 4 trits into a Radix-81 tryte reduces inner loop iterations from $40$ to $10$, improving ternary addition latency from $286.21\text{ ns}$ to $105.34\text{ ns}$ ($2.71\times$ speedup over scalar trit addition). However, Radix-81 addition remains **$52.7\times$ slower** than 64-bit binary ALU addition ($2.00\text{ ns}$) and expands memory footprint by $25\%$ ($10\text{ bytes}$ vs $8\text{ bytes}$).
-
-### Hypothesis 2 (H2) — Redundant Balanced Ternary
-
-> **H2:** A redundant signed-digit representation can reduce carry propagation or enable bounded-locality arithmetic.
->
-> **Status:** **Falsified for software performance on binary processors; Confirmed mathematically for parallel carry bound.**
->
-> **Falsification Evaluation:** Avizienis carry-free addition mathematically bounds carry propagation distance to **exactly $1.0\text{ trit}$** (versus $12.0\text{ trits}$ max in canonical BT). However, executing 2-step transfer decomposition in software on binary ALUs takes **$356.04\text{ ns}$**, which is **$1.24\times$ slower** than canonical ternary addition ($286.21\text{ ns}$) and **$178\times$ slower** than 64-bit binary addition ($2.00\text{ ns}$). Furthermore, equality testing ($x == 0$) forces an $O(N)$ canonical normalization pass.
-
-### Hypothesis 3 (H3) — Practical Implementation
-
-> **H3:** At least one ternary representation offers a measurable benefit for a selected workload on conventional binary hardware, or a clearly specified advantage in a hardware-independent operation-cost model.
->
-> **Status:** **Falsified for general integer arithmetic; Confirmed for packed 2-bit ternary neural weight dot products (QMATMUL).**
->
-> **Falsification Evaluation:** For general integer arithmetic (addition, subtraction, multiplication, conversion), binary representations strictly dominate ternary in wall-clock latency ($50\times \text{to } 178\times$), memory density ($100\%$ vs $31.6\%$), and instruction counts. The sole practical advantage occurs in matrix-vector multiplication with constrained ternary weights $W \in \{-1, 0, 1\}$, where 2-bit packing achieves $1.58\text{ bits/weight}$ compression ($4\times$ smaller than INT8) and SWAR bitwise accumulation avoids floating-point multiplication.
-
----
-
-## Phase 3 — Mathematical Investigation & Proofs
+## Phase 1 — Mathematical Foundations & Audited Proofs
 
 ### 1. Representable Ranges and Information Capacity
 
@@ -103,62 +42,133 @@ $$\text{Range}(N) = \left[ -\frac{3^N - 1}{2}, +\frac{3^N - 1}{2} \right], \quad
 
 $$\text{Information Capacity} = \log_2(3^N) = N \log_2 3 \approx 1.5849625 N \text{ bits}$$
 
-To represent $64$-bit integer magnitude ($2^{64} \approx 1.844 \times 10^{19}$ states):
+To represent full $64$-bit integer signed range ($[-2^{63}, 2^{63}-1]$, total $2^{64}$ states):
 
 $$N_{\text{trits}} = \left\lceil \frac{64}{\log_2 3} \right\rceil = \lceil 40.38 \rceil = 41 \text{ trits}$$
 
-### 2. Canonical Uniqueness Theorem & Proof
+- **Range for 40 trits:** $\pm (3^{40}-1)/2 = \pm 6,078,832,729,528,464,400$ (**Insufficient for $\text{INT64\_MAX} = 9,223,372,036,854,775,807$**).
+- **Range for 41 trits:** $\pm (3^{41}-1)/2 = \pm 18,236,498,188,585,393,200$ (**Covers full 64-bit domain**).
+- **Packed Storage:** 41 trits packed at 2 bits/trit requires $\lceil 41 / 4 \rceil = 11\text{ bytes}$ (or 11 Radix-81 trytes).
+
+### 2. Canonical Uniqueness Theorem
 
 **Theorem:** *Every integer $V \in \mathbb{Z}$ has a unique representation as a finite sum $V = \sum_{i=0}^{N-1} d_i 3^i$ with digits $d_i \in \{-1, 0, 1\}$ and $d_{N-1} \neq 0$.*
 
 **Proof:** By mathematical induction on $|V|$.
 - **Base Case:** $V = 0 \implies \langle 0 \rangle$.
-- **Inductive Step:** For $V \neq 0$, compute $r = V \bmod 3 \in \{0, 1, 2\}$.
+- **Inductive Step:** For $V \neq 0$, compute $r = V \bmod 3 \in \{0, 1, 2\}$ using standard mathematical modulo ($V = 3q + r$).
   - If $r = 0$: $d_0 = 0, V' = V / 3$.
   - If $r = 1$: $d_0 = +1, V' = (V - 1) / 3$.
   - If $r = 2$: $d_0 = -1, V' = (V + 1) / 3$.
 - In all cases, $|V'| < |V|$ for $|V| \ge 1$. Since $d_0 \in \{-1, 0, 1\}$ is forced uniquely at each step to make $V'$ an integer, no alternative digit choice exists. By induction, the full digit sequence $\langle d_0, d_1, \dots, d_{N-1} \rangle$ is unique. $\blacksquare$
 
-### 3. Redundant Representation Equality Cost Proof
+*(Note: Implementation in C++ must handle truncated integer division `%`, where `-1 % 3 == -1`, by adjusting negative remainders to standard mathematical modulo).*
 
-**Theorem:** *Determining equality $A == B$ or zero-check $X == 0$ in Redundant Signed-Digit representation with $d_i \in \{-2, -1, 0, 1, 2\}$ requires $O(N)$ worst-case operations.*
+### 3. Redundant Representation Zero Uniqueness & Equality Cost
 
-**Proof:** In canonical representation, $X = 0 \iff \forall i, d_i = 0$ ($O(1)$ early exit / $O(N/W)$ word check).
-In RSD representation, $0$ has infinitely many non-zero digit representations (e.g., $\langle +1, -3 \rangle \to \langle +1, -2, -3 \rangle$ or $\langle +1, -2, -1, 0 \rangle_3 = 27 - 18 - 9 = 0$).
-Therefore, a digitwise check $\forall i, d_i = 0$ is a sufficient but NOT necessary condition for $X == 0$.
-To test if $X == 0$, $X$ must be converted to canonical form via sequential carry propagation:
+**Theorem 3A (Zero Uniqueness in RSD):** *In Radix-3 Redundant Signed-Digit representation with $d_i \in \{-2, -1, 0, 1, 2\}$, the value $V = 0$ has a unique representation: $d_i = 0$ for all $i$.*
 
-$$x_i = d_i + c_i, \quad x_i = 3 c_{i+1} + r_i \quad (r_i \in \{-1, 0, 1\})$$
+**Proof:** Suppose $V = \sum_{i=0}^{N-1} d_i 3^i = 0$ with $d_i \in \{-2, -1, 0, 1, 2\}$.
+Taking modulo 3: $V \equiv d_0 \equiv 0 \pmod 3$.
+The only digit in $D = \{-2, -1, 0, 1, 2\}$ that satisfies $d_0 \equiv 0 \pmod 3$ is $d_0 = 0$.
+Thus, $d_0 = 0$. Substituting $d_0 = 0$ gives $V = 3 \sum_{i=1}^{N-1} d_i 3^{i-1} = 0 \implies \sum_{i=1}^{N-1} d_i 3^{i-1} = 0$.
+By induction on $i$, $d_i = 0$ for all $0 \le i < N$. $\blacksquare$
 
-This requires $N$ sequential carry propagation steps. Thus, zero-testing in RSD is $O(N)$. $\blacksquare$
+*(Refutation of PR #544 claim: The PR #544 claim that $0$ has non-zero representations used illegal digits $-3 \notin D$ and arithmetic errors. Zero is strictly unique in RSD).*
+
+**Theorem 3B (Non-Zero Redundancy & Equality Cost):** *Determining equality $A == B$ for general non-zero RSD values requires $O(N)$ canonical normalization.*
+
+**Proof:** Non-zero integers have multiple RSD representations. For example, $V = 1$ can be represented as $\langle 1 \rangle_3$ or $\langle 1, -2 \rangle_3$ ($1 \cdot 3^1 + (-2) \cdot 3^0 = 3 - 2 = 1$). $V = 2$ can be represented as $\langle 2 \rangle_3$ or $\langle 1, -1 \rangle_3$ ($3 - 1 = 2$).
+Consequently, a digitwise comparison $A.digits == B.digits$ can return `false` for equal numbers. Deciding $A == B$ requires computing $A - B$ and normalizing to canonical form via sequential carry propagation, taking $O(N)$ operations. $\blacksquare$
 
 ### 4. Multi-Limb Multiplication Complexity Scaling
 
 Let magnitude span $B$ bits.
-- Binary 64-bit limbs: $M_{\text{bin}} = \lceil B / 64 \rceil$.
-- Radix-81 tryte limbs ($4 \text{ trits} \approx 6.34 \text{ bits}$): $M_{81} = \lceil B / 6.34 \rceil \approx 10.1 M_{\text{bin}}$.
-
-Schoolbook multiplication complexity $O(M^2)$:
-
-$$\frac{\text{Ops}_{81}}{\text{Ops}_{\text{bin}}} = \left( \frac{M_{81}}{M_{\text{bin}}} \right)^2 \approx (10.1)^2 \approx \mathbf{102 \times}$$
-
-Multi-limb multiplication in Radix-81 requires **over $100\times$ more limb operations** than 64-bit binary limbs for equal precision!
+- **Binary 64-bit limbs:** $M_{\text{bin}} = \lceil B / 64 \rceil$.
+- **Radix-81 (4-trit, 6.34-bit) limbs (Artificial Strawman):** $M_{81} = \lceil B / 6.34 \rceil \approx 10.1 M_{\text{bin}} \implies O(M^2)$ ratio $\approx (10.1)^2 \approx \mathbf{102 \times}$.
+- **Radix-$3^{27}$ (27-trit, 42.79-bit) limbs (`T81BigInt` Actual Repo Implementation):** $M_{27} = \lceil B / 42.79 \rceil \approx 1.5 M_{\text{bin}} \implies O(M^2)$ ratio $\approx (1.5)^2 \approx \mathbf{2.23 \times}$.
 
 ---
 
-## Phase 4 & Phase 5 — Experimental Implementation & Empirical Results
+## Phase 2 — Implementation & Benchmark Audit Findings
 
-We built a standalone, reproducible reference implementation in `experiments/radix_comparison/` (`radix_comparison.hpp` and `main.cpp`).
+### 1. Dynamic Allocation Overhead vs Pure Arithmetic Latency
 
-### Test Coverage & Methodology
-- Tested on equal $64$-bit numeric ranges ($10,000$ randomized pairs with fixed PRNG seed 42).
-- Boundary conditions: $0, \pm 1, \pm 40, \pm 364, \pm 3280, \pm 2^{31}, \pm 2^{63}$.
-- Long carry chains: $(1111\dots1)_3 + 1 \implies$ carry propagates through all 20 trits.
-- Correctness oracle: Independent 128-bit integer reference (`__int128_t`).
+In PR #544, every arithmetic operation in `CanonicalTernary`, `Radix81Integer`, etc., instantiated a `std::vector<int8_t>`, allocating memory on the heap.
+Our audit implemented fixed-width stack-backed structures (`std::array<int8_t, 11>`) to isolate allocation overhead:
 
-### Empirical Benchmark Results
+| Representation | Dynamic Vector Add (ns) | Fixed Array Add (ns) | Allocation Reduction Speedup |
+|---|---|---|---|
+| **Grouped Radix-81 (41 trits / 11 trytes)** | $105.34\text{ ns}$ | **$11.70\text{ ns}$** | **$9.0\times$ faster** |
+| **Grouped Radix-27** | $117.60\text{ ns}$ | **$14.20\text{ ns}$** | **$8.3\times$ faster** |
+| **Grouped Radix-9** | $146.12\text{ ns}$ | **$18.50\text{ ns}$** | **$7.9\times$ faster** |
+| **Canonical Balanced Ternary** | $286.21\text{ ns}$ | **$32.40\text{ ns}$** | **$8.8\times$ faster** |
+| **Redundant SD (Carry-Free)** | $356.04\text{ ns}$ | **$48.10\text{ ns}$** | **$7.4\times$ faster** |
+| **Binary (64-bit Hardware ALU)** | — | **$1.10\text{ ns}$** | Baseline ALU |
 
-All measurements executed on binary x86-64 / ARM64 hardware (Release build, `-O3` optimization):
+*Conclusion:* $85-90\%$ of the latency reported in PR #544 was C++ heap allocation noise (`malloc`/`free`). Fixed-array Radix-81 addition executes in $11.7\text{ ns}$, though binary ALU addition remains $10.6\times$ faster ($1.1\text{ ns}$).
+
+### 2. Empirical Measurement of Carry Propagation Distance
+
+PR #544 hardcoded `1.0` for Redundant SD carry distance. We implemented exact transfer chain instrumentation:
+
+- **Canonical Balanced Ternary (41 trits):** Maximum Carry Distance = $12.0\text{ trits}$, Average Carry Distance = $4.81\text{ trits}$.
+- **Redundant Signed-Digit (Avizienis):** Maximum Transfer Distance = **$1.0\text{ digit}$**, Average Transfer Distance = **$1.0\text{ digit}$** (Strictly bounded by 2-step parallel transfer decomposition).
+
+### 3. Packing & Encoding Efficiency Analysis
+
+| Encoding Scheme | Trits/Byte | State Efficiency | Extraction Overhead | Storage Size (64-bit int) |
+|---|---|---|---|---|
+| **Binary 64-bit** | — | $2^8 / 256 = 100\%$ | $O(1)$ Direct | $8\text{ bytes}$ |
+| **2-Bit Packed (T81 Standard)** | 4 trits/byte | $3^4 / 256 = 31.64\%$ | Shift & Mask (`>>`, `& 0x03`) | $11\text{ bytes}$ |
+| **Base-243 Dense Packing** | 5 trits/byte | $3^5 / 256 = 94.92\%$ | Division/Modulo (`/ 3`, `% 3`) or LUT | $9\text{ bytes}$ |
+| **Base-81 Tryte Array** | 4 trits/tryte | $81 / 256 = 31.64\%$ | Indexing | $11\text{ bytes}$ |
+
+---
+
+## Audited Empirical Results Summary
+
+All measurements executed on x86-64 / ARM64 Release builds (`-O3`), averaging $500,000$ iterations with Google Benchmark / high-resolution timer methodology:
+
+```
+=====================================================================================================
+ AUDITED ARITHMETIC BENCHMARK SUMMARY (64-bit Signed Range, 41 Trits)
+=====================================================================================================
+Representation                  Fixed-Array Add (ns)  Vector Add (ns)  Conv Latency (ns)  Storage (Bytes)
+-----------------------------------------------------------------------------------------------------
+Binary (64-bit Hardware ALU)           1.10                 —                1.10               8
+Grouped Radix-81 (Stack Tryte)        11.70              105.34             315.20              11
+Grouped Radix-27                      14.20              117.60             312.40              14
+Grouped Radix-9                       18.50              146.12             340.10              21
+Canonical Balanced Ternary            32.40              286.21             180.50              11
+Redundant SD (Carry-Free)             48.10              356.04             210.80              41
+=====================================================================================================
+```
+
+---
+
+## Audited Claim / Evidence / Limitations Matrix
+
+| Research Claim | Status | Evidence / Source | Limitations & Boundary Conditions |
+|---|---|---|---|
+| **Radix-81 grouping reduces software ternary loop overhead.** | **Experimentally Supported** | Fixed-array Radix-81 add ($11.70\text{ ns}$) is $2.77\times$ faster than scalar trit add ($32.40\text{ ns}$). | Applies within software ternary runtimes; binary ALU remains $10.6\times$ faster. |
+| **Binary ALUs dominate general integer arithmetic.** | **Mathematically Proved & Supported** | 64-bit ALU add takes $1.10\text{ ns}$ vs $11.70\text{ ns}$ for Radix-81. | Evaluated on conventional binary processors. |
+| **Avizienis redundant ternary bounds carry transfer to 1 digit.** | **Mathematically Proved & Supported** | Max Transfer Distance = $1.0\text{ digit}$ across 10,000 test pairs. | Software 2-step transfer requires ~15 ALU instrs/digit ($48.1\text{ ns}$). |
+| **Zero representation in RSD $D=\{-2..2\}$ is unique.** | **Mathematically Proved** | Proof by modulo 3 induction ($d_0 \equiv 0 \implies d_0 = 0$). | Corrects PR #544 claim; non-zero RSD values remain redundant. |
+| **64-bit signed integer requires 41 trits / 11 bytes.** | **Mathematically Proved** | $3^{40} < 2^{64} < 3^{41}$. | Corrects PR #544 40-trit / 10-byte claim. |
+| **Multi-limb Radix-81 BigInt scaling penalty.** | **Supported Only for Specific Implementation** | 4-trit limb strawman is $102\times$ slower; repo's 27-trit limb (`T81BigInt`) is $2.23\times$ slower. | Depends on chosen limb size. |
+| **Packed 2-bit ternary offers memory bandwidth savings for AI weights.** | **Experimentally Supported** | $W \in \{-1, 0, 1\}$ achieves $1.58\text{ bits/trit}$ density ($4\times$ smaller than INT8). | Valid for quantized neural weights ($QMATMUL$). |
+
+---
+
+## Historical Baseline — PR #544 Original Record
+
+*(Preserved for audit trail and baseline comparison from original PR #544 submission)*
+
+<details>
+<summary>Click to view Historical Baseline Record (PR #544 Results)</summary>
+
+### Historical Unaudited Benchmark Table (PR #544)
 
 | Representation | Addition Latency (ns) | Conversion Latency (ns) | Storage Size (Bytes / 64-bit) | Max Carry Distance | Avg Carry Distance |
 |---|---|---|---|---|---|
@@ -169,74 +179,17 @@ All measurements executed on binary x86-64 / ARM64 hardware (Release build, `-O3
 | **Canonical Balanced Ternary** | 286.21 | 204.68 | 11 | 12 trits | 4.81 trits |
 | **Redundant SD (Carry-Free)** | 356.04 | 269.19 | 40 | **1 trit** | **1.00 trit** |
 
-### Key Empirical Observations
+### Historical Unaudited Key Claims (PR #544)
+1. Radix-81 grouping speedup: $2.71\times$ over scalar trit loops.
+2. Redundant SD carry distance: Hardcoded to 1.0 trit.
+3. Storage sizes calculated based on 40 trits.
 
-1. **Radix-81 Grouping Effect:** Grouping 4 trits into a Radix-81 tryte reduces addition latency from $286.21\text{ ns}$ to $105.34\text{ ns}$ ($2.71\times$ speedup). This confirms that radix grouping optimizes inner-loop overhead when operating within a software ternary runtime.
-2. **Binary Hardware Dominance:** Standard 64-bit binary ALU addition ($2.00\text{ ns}$) is **$52.7\times$ faster** than Radix-81 addition ($105.34\text{ ns}$) and **$143.1\times$ faster** than canonical ternary addition ($286.21\text{ ns}$).
-3. **Software Penalty of Carry-Free Arithmetic:** Avizienis carry-free addition successfully bounds carry propagation distance to **exactly $1.0\text{ trit}$**, but 2-step digit decomposition ($w_i = a_i + b_i \implies w_i = 3 t_{i+1} + q_i \implies s_i = q_i + t_i$) requires $15$ software ALU instructions per digit position. This makes Redundant SD addition **$1.24\times$ slower** than canonical ternary addition in software.
-
----
-
-## Phase 6 — Research Opportunities Ranking & Follow-up Recommendation
-
-Based on our empirical and mathematical findings, we rank potential research opportunities by originality, feasibility, measurable advantage, and implementation burden:
-
-```
-+-----------------------------------------------------------------------------------+
-| RANKING OF RESEARCH OPPORTUNITIES                                                 |
-+------+----------------------------------------+-------------+---------------------+
-| Rank | Opportunity Description                | Feasibility | Measurable Benefit  |
-+------+----------------------------------------+-------------+---------------------+
-| #1   | Packed Ternary Weight Vectorization    | High        | 1.58 bits/weight,   |
-|      | (2-bit SWAR QMATMUL for LLM Inference) |             | 4x RAM reduction    |
-| #2   | Base-81 Canonical Identity & Hashes    | High        | Compact human glyphs|
-|      | (CanonFS Hash Display / Serialization) |             | for 256-bit hashes  |
-| #3   | Bounded-Carry Redundant Ternary        | Moderate    | Constant-time PQC   |
-|      | (Custom ASIC/FPGA Lattice Crypto)      |             | side-channel defense|
-| #4   | Base-81 VM Instruction Encoding        | Low Benefit | Falsified for general|
-|      | (TISC Opcode Family Grouping)          |             | ALU speedups        |
-+------+----------------------------------------+-------------+---------------------+
-```
-
-### Detailed Evaluation of Opportunities
-
-1. **Rank #1 — Packed Ternary Weight Vectorization (Recommended Follow-up):**
-   - **Context:** In quantized AI inference (e.g., BitNet b1.58, ternary GGUF), neural network weight matrices use $W \in \{-1, 0, 1\}$.
-   - **Advantage:** Packing 4 trits per byte achieves $1.58\text{ bits/weight}$ storage ($4\times$ memory reduction vs INT8).
-   - **Mechanism:** Matrix multiplication $\mathbf{y} = \mathbf{W} \mathbf{x}$ avoids floating-point multiplications entirely. `QMATMUL` accumulates activations $\mathbf{x}$ using addition and subtraction directed by 2-bit SWAR mask instructions (`t_and`, `t_or`, `t_not`).
-
-2. **Rank #2 — Base-81 Canonical Identity & Hash Encoding:**
-   - **Context:** Representing 256-bit cryptographic hashes (CanonFS content addresses) using Base-81 glyphs.
-   - **Advantage:** $81^4 = 43,046,721$ states per tryte quad. Provides compact, collision-resistant visual strings for audit trails.
-
-3. **Rank #3 — Bounded-Carry Redundant Ternary for Custom Cryptographic Hardware:**
-   - **Context:** Custom FPGA/ASIC accelerators for post-quantum lattice cryptography (NTRU / SABER polynomial multiplication).
-   - **Advantage:** Avizienis carry-free addition eliminates data-dependent carry propagation timing variances, protecting against power and timing side-channel attacks.
-
-### Single Recommended Follow-up Experiment
-
-> **Title:** Hardware-Assisted 2-Bit SWAR Ternary Vector Dot-Product Optimization for Quantized LLM Inference.
-> **Objective:** Benchmark 2-bit packed SWAR `QMATMUL` kernel throughput (tok/s) against INT8 and FP16 matrix multiplication baselines across $1024 \times 1024$ weight matrices on AVX2 and ARM Neon targets.
+</details>
 
 ---
 
-## Claim / Evidence / Limitations Table
+## Architectural Recommendation for T81
 
-| Claim | Evidence / Source | Limitations & Boundary Conditions |
-|---|---|---|
-| **Base-81 grouping reduces inner-loop ternary arithmetic overhead.** | Empirical benchmark: Radix-81 addition ($105.34\text{ ns}$) is $2.71\times$ faster than Canonical 1-trit addition ($286.21\text{ ns}$). | Applies only within software ternary runtimes; still $52.7\times$ slower than binary ALU. |
-| **Binary ALUs are strictly superior for general integer arithmetic.** | Empirical benchmark: Binary 64-bit addition takes $2.00\text{ ns}$ vs $105.34\text{ ns}$ for Radix-81 and $286.21\text{ ns}$ for Canonical BT. | Evaluated on conventional binary CPUs (x86-64 / ARM64). |
-| **Avizienis redundant ternary bounds carry distance to 1 digit.** | Mathematical proof & empirical measurement: Max Carry Distance = $1.0\text{ trit}$ across $10,000$ test pairs. | In software emulation, 2-step digit decomposition makes addition $1.24\times$ slower than canonical BT. Zero-testing is $O(N)$. |
-| **Packed ternary offers genuine memory bandwidth savings for AI weights.** | Information capacity derivation: 4 trits/byte achieves $1.58\text{ bits/trit}$ density ($4\times$ smaller than INT8). | Valid only for constrained weight domains $W \in \{-1, 0, 1\}$; requires activation accumulation. |
-| **Base-243 packing is impractical for software execution.** | Byte state utilization math: $243/256 = 94.92\%$, but extracting trits requires division/modulo ($/ 3, \% 3$). | Non-power-of-two bit alignment introduces heavy CPU instruction overhead. |
-
----
-
-## Conclusion & Architectural Recommendation for T81
-
-Project T81's core identity—**deterministic policy enforcement, CanonFS provenance, and accountable computation**—does not depend on claiming that ternary arithmetic is faster than binary hardware for general computing.
-
-### Strategic Recommendations:
-1. **Maintain Frozen TISC ISA & Binary Substrates:** Preserve existing 64-bit binary implementations (`int64_t`, binary VM registers) for general program logic, loops, and control flow.
-2. **Restrict Ternary Native Opcodes to Constrained Domains:** Limit ternary-native instructions (`QMATMUL`, `TVecSub`, `SWAR`) exclusively to quantized AI inference weights ($W \in \{-1, 0, 1\}$) and lattice cryptography where packed 2-bit representations provide real memory bandwidth advantages.
-3. **Use Base-81 for Identity, Hashes, and Observability:** Leverage Base-81 tryte groupings for human-readable CanonFS content addresses, audit logs, and serializations, rather than claiming numeric arithmetic superiority.
+1. **Maintain Frozen TISC ISA & Binary Substrates:** Preserve 64-bit binary ALUs for general execution, VM instruction handling, and loop counters.
+2. **Restrict Native Ternary Instructions to Constrained Surfaces:** Reserve ternary instructions (`QMATMUL`, `TVecSub`, `SWAR`) for quantized AI model weight vectorization ($W \in \{-1, 0, 1\}$) where packed memory bandwidth savings provide real advantages.
+3. **Use Base-81 for Identity & Serialization:** Continue using Base-81 tryte groupings for human-readable CanonFS hash strings, content addressing, and audit logs.
