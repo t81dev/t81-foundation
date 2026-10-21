@@ -1,0 +1,639 @@
+{
+  "observed_at_utc": "2026-10-21T19:03:18.481843+00:00",
+  "main_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+  "prs": [
+    {
+      "number": 537,
+      "url": "https://github.com/t81dev/t81-foundation/pull/537",
+      "title": "experiment: falsifiable accountable computation baseline",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "base_sha": "d1c24670470e74412ab96182a177a47e7127c68a",
+      "head_sha": "d8ad35254a1e35ca7374a4f57f7a870d568521fa",
+      "merge_commit_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+    },
+    {
+      "number": 538,
+      "url": "https://github.com/t81dev/t81-foundation/pull/538",
+      "title": "fix(canonfs): fail-closed policy enforcement at write boundary",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "base_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149",
+      "head_sha": "504c1c5728bf903b729cc2767a29a1cb737d41a3",
+      "merge_commit_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+    },
+    {
+      "number": 539,
+      "url": "https://github.com/t81dev/t81-foundation/pull/539",
+      "title": "experiment(canonfs): concurrent authorization and revocation",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "base_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502",
+      "head_sha": "e04b95f12798be7d85d5b6b1d3645a5c677c2a4e",
+      "merge_commit_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+    },
+    {
+      "number": 540,
+      "url": "https://github.com/t81dev/t81-foundation/pull/540",
+      "title": "experiment: computational object interface comparison",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "base_sha": "8a6dce4831bd84e23d499fa71900e959ba940875",
+      "head_sha": "448edf49be6116c08fa5ec20641c447f53b934f0",
+      "merge_commit_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+    },
+    {
+      "number": 541,
+      "url": "https://github.com/t81dev/t81-foundation/pull/541",
+      "title": "experiment: validated computational object descriptors",
+      "state": "closed",
+      "draft": false,
+      "merged": true,
+      "base_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470",
+      "head_sha": "1a110b07792770e3e720c449c558830f4313731a",
+      "merge_commit_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd"
+    }
+  ],
+  "ci": {
+    "1a110b07792770e3e720c449c558830f4313731a": {
+      "checks": [
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657242171/job/119420655834",
+          "head_sha": "1a110b07792770e3e720c449c558830f4313731a"
+        },
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657242090/job/119420652732",
+          "head_sha": "1a110b07792770e3e720c449c558830f4313731a"
+        }
+      ],
+      "check_total": 2,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "448edf49be6116c08fa5ec20641c447f53b934f0": {
+      "checks": [
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655122552/job/119413230538",
+          "head_sha": "448edf49be6116c08fa5ec20641c447f53b934f0"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655122536/job/119413230478",
+          "head_sha": "448edf49be6116c08fa5ec20641c447f53b934f0"
+        }
+      ],
+      "check_total": 2,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "504c1c5728bf903b729cc2767a29a1cb737d41a3": {
+      "checks": [
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39647803448/job/119387888567",
+          "head_sha": "504c1c5728bf903b729cc2767a29a1cb737d41a3"
+        },
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39647802803/job/119387886362",
+          "head_sha": "504c1c5728bf903b729cc2767a29a1cb737d41a3"
+        }
+      ],
+      "check_total": 2,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "634e0dc69a69cb148f81159ac8c7fc3225582149": {
+      "checks": [
+        {
+          "name": "deploy",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644887642/job/119378077144",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        },
+        {
+          "name": "report-build-status",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644887642/job/119378076879",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        },
+        {
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644887642/job/119377722444",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        },
+        {
+          "name": "ubuntu \u2022 badge refresh",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644888845/job/119377720088",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        },
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "failure",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644888844/job/119377719992",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644888867/job/119377719913",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        },
+        {
+          "name": "Build BOOTX64.EFI and validate OVMF boot",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644888557/job/119377717199",
+          "head_sha": "634e0dc69a69cb148f81159ac8c7fc3225582149"
+        }
+      ],
+      "check_total": 7,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "6977f49b3a2eba54d9776361a6026971ee529bfd": {
+      "checks": [
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657977880/job/119423654240",
+          "name": "deploy",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657977880/job/119423654039",
+          "name": "report-build-status",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657981147/job/119423209508",
+          "name": "test-ai-experiments",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657977880/job/119423206347",
+          "name": "build",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657980763/job/119423206199",
+          "name": "format / clang-format",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657980795/job/119423206060",
+          "name": "Build BOOTX64.EFI and validate OVMF boot",
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "head_sha": "6977f49b3a2eba54d9776361a6026971ee529bfd",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39657980606/job/119423204932",
+          "name": "ubuntu \u2022 badge refresh",
+          "status": "completed"
+        }
+      ],
+      "check_total": 7,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "8a6dce4831bd84e23d499fa71900e959ba940875": {
+      "checks": [
+        {
+          "name": "deploy",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652318348/job/119403999639",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        },
+        {
+          "name": "report-build-status",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652318348/job/119403999626",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        },
+        {
+          "name": "ubuntu \u2022 badge refresh",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652321205/job/119403562461",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652320995/job/119403561936",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        },
+        {
+          "name": "Build BOOTX64.EFI and validate OVMF boot",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652321026/job/119403561729",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        },
+        {
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652318348/job/119403561710",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        },
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652321044/job/119403561502",
+          "head_sha": "8a6dce4831bd84e23d499fa71900e959ba940875"
+        }
+      ],
+      "check_total": 7,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "b4860a8a3065a679c2f5f12896cb1990d1633470": {
+      "checks": [
+        {
+          "name": "deploy",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655276743/job/119414163233",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        },
+        {
+          "name": "report-build-status",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655276743/job/119414163211",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        },
+        {
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655276743/job/119413768743",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        },
+        {
+          "name": "ubuntu \u2022 badge refresh",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655278311/job/119413766461",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        },
+        {
+          "name": "Build BOOTX64.EFI and validate OVMF boot",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655278197/job/119413766288",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        },
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655278275/job/119413765704",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39655278234/job/119413765690",
+          "head_sha": "b4860a8a3065a679c2f5f12896cb1990d1633470"
+        }
+      ],
+      "check_total": 7,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "d8ad35254a1e35ca7374a4f57f7a870d568521fa": {
+      "checks": [
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "failure",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644488433/job/119376333247",
+          "head_sha": "d8ad35254a1e35ca7374a4f57f7a870d568521fa"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39644488373/job/119376330973",
+          "head_sha": "d8ad35254a1e35ca7374a4f57f7a870d568521fa"
+        }
+      ],
+      "check_total": 2,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "dec74cfa4d7be321e0c28adb276a8dc2d278c502": {
+      "checks": [
+        {
+          "name": "deploy",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649279604/job/119393516335",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "report-build-status",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649279604/job/119393516243",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "ubuntu \u2022 badge refresh",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649284226/job/119393038964",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "Generate Sidebar",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649283994/job/119393037959",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649284109/job/119393037882",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "Inject TOCs",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649283994/job/119393037741",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "Build Search Index",
+          "status": "completed",
+          "conclusion": "failure",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649283994/job/119393037681",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "Build BOOTX64.EFI and validate OVMF boot",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649283989/job/119393037611",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "Build PDFs",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649283994/job/119393037175",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649284137/job/119393037160",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        },
+        {
+          "name": "build",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39649279604/job/119393031479",
+          "head_sha": "dec74cfa4d7be321e0c28adb276a8dc2d278c502"
+        }
+      ],
+      "check_total": 11,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    },
+    "e04b95f12798be7d85d5b6b1d3645a5c677c2a4e": {
+      "checks": [
+        {
+          "name": "test-ai-experiments",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652037969/job/119402581615",
+          "head_sha": "e04b95f12798be7d85d5b6b1d3645a5c677c2a4e"
+        },
+        {
+          "name": "format / clang-format",
+          "status": "completed",
+          "conclusion": "success",
+          "html_url": "https://github.com/t81dev/t81-foundation/actions/runs/39652037976/job/119402580983",
+          "head_sha": "e04b95f12798be7d85d5b6b1d3645a5c677c2a4e"
+        }
+      ],
+      "check_total": 2,
+      "legacy_state": "pending",
+      "legacy_statuses": []
+    }
+  },
+  "open_prs": [
+    {
+      "number": 536,
+      "title": "fix(core,vm): fix arithmetic UB, BigInt invariants, ControlledAIBacke\u2026",
+      "draft": false,
+      "head_sha": "c3820c2d67040f92213adc1c7ce6915ac3b4abef"
+    },
+    {
+      "number": 534,
+      "title": "Accountable Computation: Experimental Design and Protocol Audit",
+      "draft": false,
+      "head_sha": "5f3c8072f94bb3e5fd5eb7ceaf3af6e96e14d004"
+    },
+    {
+      "number": 528,
+      "title": "Implement Phase 1 Real-Model Validation Experiment",
+      "draft": false,
+      "head_sha": "29b09ec231e2f695e7c94be70569e2546688a45f"
+    },
+    {
+      "number": 527,
+      "title": "docs: complete T81 portfolio evidence and reality audit",
+      "draft": false,
+      "head_sha": "0fd1bb43c58ee68e187fbba97effcd22ea8d16ce"
+    },
+    {
+      "number": 526,
+      "title": "Transition T81 to Governed Artificial Intelligence Operating System (DAIOS)",
+      "draft": false,
+      "head_sha": "4afba8805f6af754f98c727c122cf2a416c431f9"
+    },
+    {
+      "number": 525,
+      "title": "Bump actions/checkout from 6.0.2 to 7.0.0",
+      "draft": false,
+      "head_sha": "e6e3f9d8ba7fdb253ba0398ec7c64c447669f2c4"
+    },
+    {
+      "number": 524,
+      "title": "Bump softprops/action-gh-release from 2.6.1 to 3.0.1",
+      "draft": false,
+      "head_sha": "5b057e7a81c1bbe417b030d89655caba0c1c46ac"
+    },
+    {
+      "number": 523,
+      "title": "Bump github/codeql-action from 4.34.1 to 4.36.2",
+      "draft": false,
+      "head_sha": "abcec70e01d4366a24a3b6b128f9bb7813b2c87c"
+    },
+    {
+      "number": 516,
+      "title": "Bump actions/setup-node from 6.3.0 to 6.4.0",
+      "draft": false,
+      "head_sha": "537ad15b36cc65106ecdcb20d9d141c0db69c486"
+    },
+    {
+      "number": 514,
+      "title": "Bump actions/cache from 5.0.4 to 5.0.5",
+      "draft": false,
+      "head_sha": "61002ef3b586fcfa8c3eaf07a540608744b1fb77"
+    },
+    {
+      "number": 513,
+      "title": "Bump actions/upload-artifact from 7.0.0 to 7.0.1",
+      "draft": false,
+      "head_sha": "687ced99ac87f81d1f4effc16f5675d291569234"
+    },
+    {
+      "number": 508,
+      "title": "feat: integrate Tier 6 distributed monad into build and add tests",
+      "draft": false,
+      "head_sha": "832b7b0824d1d7c744f2550756391e0b5d182999"
+    },
+    {
+      "number": 507,
+      "title": "Documentation audit and hygiene update",
+      "draft": false,
+      "head_sha": "b8ca8e3b25ee94cbedf55702f4c639a6294b6565"
+    },
+    {
+      "number": 504,
+      "title": "docs: Provide RFC compliance audit and fix status mismatch",
+      "draft": false,
+      "head_sha": "cb208858bb9a77fcf5115592bdc74c1ca2e41317"
+    },
+    {
+      "number": 503,
+      "title": "feat(kernel): Implement RFC-00C8 concurrent fault isolation test",
+      "draft": false,
+      "head_sha": "60e86c0aa00f649a93ee171ba01710818be4cb39"
+    }
+  ],
+  "inventory": [
+    {
+      "root": "examples/governance/accountable-computation",
+      "files": 69,
+      "bytes": 374283,
+      "json_bytes": 259453,
+      "code_lines": 1070
+    },
+    {
+      "root": "examples/research/object-interface",
+      "files": 4,
+      "bytes": 60639,
+      "json_bytes": 28736,
+      "code_lines": 352
+    },
+    {
+      "root": "examples/research/validated-descriptors",
+      "files": 5,
+      "bytes": 211752,
+      "json_bytes": 170837,
+      "code_lines": 450
+    }
+  ],
+  "preserved_results": [
+    {
+      "path": "examples/governance/accountable-computation/concurrent-results.json",
+      "bytes": 115524,
+      "sha256": "bd501d626784fa93b6bc2e93604b456e3e7a52d2f652106e004667adae03034a"
+    },
+    {
+      "path": "examples/governance/accountable-computation/concurrent-summary.json",
+      "bytes": 15563,
+      "sha256": "a1e5c5a68bfdd80061fb1168defbf09a898e59560b6cb0c0b6a4a72b70b1816d"
+    },
+    {
+      "path": "examples/governance/accountable-computation/hardening-results.json",
+      "bytes": 50204,
+      "sha256": "5560fe678e4f2714b1b5701959d9f26edca0b1728f589af2d5c88202500c9bed"
+    },
+    {
+      "path": "examples/governance/accountable-computation/results.json",
+      "bytes": 37729,
+      "sha256": "060e117dd3f5dc2383c92c9cfda68b0f0d22aecf17a0428cbed6aef6c8369c18"
+    },
+    {
+      "path": "examples/research/object-interface/results.json",
+      "bytes": 28736,
+      "sha256": "a02fa38d11beb7bfc0d7241e20b8a7c9a59e9af18d1e55e71f30e5bf2cbfa260"
+    },
+    {
+      "path": "examples/research/validated-descriptors/results.json",
+      "bytes": 170837,
+      "sha256": "34c7ee1a363248dc63a8eeb325c0fdc25285ef56430ebc7e3ee9d6d9436eeea5"
+    }
+  ],
+  "main_checks_refreshed_at_utc": "2026-10-21T19:09:10.174991+00:00",
+  "local_validation": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3",
+    "compiler": "AppleClang 21.0.0.21000101",
+    "configuration": "fresh Release; all four research options ON; existing pinned Asio source",
+    "ctests_passed": 8,
+    "signed_receipts_accepted": 36,
+    "historical_unauthorized_receipts_rejected": 6,
+    "concurrency_recorded_cases": 64,
+    "concurrency_recorded_operations": 1920,
+    "concurrency_recorded_snapshot_counterexamples": 240,
+    "concurrency_recorded_owner_prohibited_commits": 0,
+    "recorded_source_fingerprints_match_pinned_heads": true,
+    "historical_30_repetition_measurements_rerun": false
+  }
+}
