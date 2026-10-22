@@ -1,6 +1,6 @@
 # Mathematical Research Report — Ternary Arithmetic, Radix-81 Grouping, and Redundant Signed-Digit Evaluation
 
-**Document Status:** Revised Adversarial Research Report (Deliverable for Assignment PR #544 Audit)
+**Document Status:** Revised Adversarial Research Report (Frozen via Synthesis Report `TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`)
 **Author:** Jules (Software Engineer — Adversarial Audit)
 **Target Repository:** T81 Foundation (`t81dev/t81-foundation`)
 **Artifact Path:** `docs/research/TERNARY_ARITHMETIC_AND_RADIX_COMPARISON.md`
@@ -193,3 +193,4 @@ Redundant SD (Carry-Free)             48.10              356.04             210.
 1. **Maintain Frozen TISC ISA & Binary Substrates:** Preserve 64-bit binary ALUs for general execution, VM instruction handling, and loop counters.
 2. **Restrict Native Ternary Instructions to Constrained Surfaces:** Reserve ternary instructions (`QMATMUL`, `TVecSub`, `SWAR`) for quantized AI model weight vectorization ($W \in \{-1, 0, 1\}$) where packed memory bandwidth savings provide real advantages.
 3. **Use Base-81 for Identity & Serialization:** Continue using Base-81 tryte groupings for human-readable CanonFS hash strings, content addressing, and audit logs.
+4. **Synthesis Reference:** See [Ternary Research Closure and Next-Hypothesis Selection](TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md) for the complete research sequence synthesis and next hypothesis proposal.

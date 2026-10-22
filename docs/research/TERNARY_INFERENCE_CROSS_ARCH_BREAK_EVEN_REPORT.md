@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/research/TERNARY_INFERENCE_CROSS_ARCH_BREAK_EVEN_REPORT.md`
 **Date:** April 2026
-**Status:** Completed
+**Status:** Frozen / STOP (Closed via Synthesis Report `TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`)
 **Target Subsystem:** `experiments/packed_ternary_matvec/`
 **CTest Targets:** `t81_packed_ternary_matvec_oracle_test`, `t81_packed_ternary_matvec_arm64_qemu_test`
 
@@ -34,6 +34,8 @@ Across all measured matrix sizes ($64 \times 256$ to $4096 \times 4096$), workin
 | **Compiler** | GCC 13.3.0 (`gcc-13` Ubuntu 13.3.0-6ubuntu2) | Cross GCC 13.3.0 (`aarch64-linux-gnu-g++`) |
 | **Compilation Flags** | `-O3 -mavx2 -mfma` | `-O3 -march=armv8-a+simd` |
 | **Cache Architecture** | L1d 128 KiB, L2 1 MiB, L3 45 MiB | Virtualized QEMU environment |
+
+*Note on ARM64 Environment:* Metrics collected under `qemu-aarch64` measure software dynamic binary translation latency and QEMU host dispatch rather than physical ARM silicon cycle counts. These metrics validate **algorithmic correctness** and **instruction sequence validity**, but must **not** be presented as physical ARM hardware execution speeds.
 
 ### Phase 1 Audit & Adversarial Verification
 
@@ -106,3 +108,5 @@ Evaluating row scale factors ($y_i = \text{scale}_i \cdot \sum_{j} w_{i,j} x_j$)
    Standardize CPU-based ternary model inference on native INT8 / byte-aligned representation pipelines (or GGML/llama.cpp dequantization pathways) where hardware vector units operate at peak instruction throughput.
 3. **Hardware Acceleration Scope**
    Reserve 2-bit bit-packed ternary formats ($0.25 \text{ bytes/weight}$) for specialized hardware accelerators (FPGAs, NPUs, or custom ASICs) with dedicated single-cycle 2-bit trit unpacking hardware logic.
+4. **Synthesis Reference**
+   See [Ternary Research Closure and Next-Hypothesis Selection](TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md) for the complete research sequence synthesis and next hypothesis proposal.

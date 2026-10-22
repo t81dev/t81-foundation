@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md`
 **Date:** April 2026
-**Status:** Completed (Updated with SIMD-Native Kernel)
+**Status:** Frozen / STOP (Closed via Synthesis Report `TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`)
 **Target Subsystem:** `experiments/packed_ternary_matvec/`
 **CTest Target:** `t81_packed_ternary_matvec_oracle_test`
 
@@ -12,17 +12,11 @@
 
 This study evaluates packed ternary Matrix-Vector Multiplication (`MatVec`) and determines whether a SIMD-native packed ternary kernel can close the performance gap between scalar packed implementations and the AVX2 INT8 baseline. We audited `experiments/packed_ternary_matvec/matvec_experiment.hpp`, designed an AVX2 SIMD candidate (`matvec_ternary_2bit_avx2`) utilizing VPSHUFB nibble-parallel lookup table decoding, verified correctness against a double-precision oracle across irregular matrix shapes and invalid 2-bit code policies (0x02 -> 0), and benchmarked performance across cache-resident, medium, and DRAM workloads.
 
-### Primary Conclusion & Decision: **GO (SIMD-Native Decoding Feasible)**
+### Primary Conclusion & Final Decision: **STOP (CPU Ternary Kernel Optimization Frozen)**
 
-SIMD-native packed ternary decoding successfully recovers the computational cost of two-bit ternary decoding and converts its **$4\times$ memory storage advantage over INT8** into significant execution throughput:
+While SIMD-native packed ternary decoding successfully recovers a significant portion of the computational cost of two-bit ternary decoding (achieving **$12.97\text{ GFLOP/s}$** on DRAM-bound $4096 \times 4096$ workloads and reaching **$69.4\%-75.3\%$** of INT8 AVX2 speed), packed ternary execution **never outperforms INT8 SIMD on general-purpose CPUs**. The ratio of bit-shuffle decode instructions to vector ALUs inside CPU architectures prevents 2-bit packed ternary from beating INT8 execution speed.
 
-On x86_64 hardware with AVX2/FMA support:
-- **New 2-bit AVX2 Candidate** achieves **$12.97$ GFLOP/s** on DRAM-bound workloads ($4096 \times 4096$).
-- **$4.56\times$ faster** than the existing scalar 2-bit LUT kernel ($2.84$ GFLOP/s).
-- **$2.28\times$ faster** than the FP32 AVX2 baseline ($5.69$ GFLOP/s).
-- **Closes gap to INT8 AVX2** ($18.70$ GFLOP/s) from $6.7\times$ down to **$1.44\times$** ($69.4\%$ of INT8 speed), while requiring only **$0.25$ bytes/weight** ($4\times$ less memory bandwidth than INT8).
-
-Vectorized VPSHUFB table lookups eliminate branch mispredictions and scalar shift overhead, demonstrating that SIMD execution makes packed 2-bit ternary storage practical for memory-bound inference workloads.
+Consequently, further optimization of CPU ternary MatVec kernels is formally **FROZEN (STOP)**.
 
 ---
 
@@ -120,7 +114,7 @@ ctest --test-dir build -R t81_packed_ternary_matvec_oracle_test --output-on-fail
 
 ---
 
-## 7. Explicit Recommendation & Next Steps
+## 7. Explicit Recommendation & Closure Reference
 
 1. **Explicit Decision: STOP**
    Do not incorporate custom CPU software 2-bit bit-packed ternary MatVec kernels into the T81 runtime or TISC ISA. Software bitwise decoding on general-purpose binary CPUs cannot compete with native SIMD instructions (`_mm256_fmadd_ps` or `_mm256_cvtepi8_epi32`).
@@ -128,3 +122,5 @@ ctest --test-dir build -R t81_packed_ternary_matvec_oracle_test --output-on-fail
    Standardize CPU-based ternary inference on native INT8 AVX2 / GGML dequantization pathways, where hardware vector units operate at peak instruction throughput.
 3. **Hardware Acceleration Scope**
    Reserve 2-bit and custom trit bit-packed layouts for dedicated hardware accelerators (FPGAs, NPUs, or custom ASICs) with specialized single-cycle bit-unpacking and dot-product functional units.
+4. **Synthesis Reference**
+   See [Ternary Research Closure and Next-Hypothesis Selection](TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md) for the complete research sequence synthesis and next hypothesis proposal.
