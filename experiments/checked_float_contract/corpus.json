@@ -1,0 +1,1356 @@
+{
+  "schema": "t81.checked-float-conversion.draft1",
+  "authority": "PROPOSED; not production conformance",
+  "expected_results": "Exact integer constructions and rational nearest-neighbor certificates; no host float observations",
+  "cases": [
+    {
+      "id": "positive-zero-exact_only",
+      "operation": "from_binary64",
+      "input": "0000000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "+0E0",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-zero-exact_only",
+      "operation": "from_binary64",
+      "input": "8000000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "+0E0",
+        "error": null,
+        "flags": [
+          "negative_zero_normalized"
+        ]
+      }
+    },
+    {
+      "id": "one-exact_only",
+      "operation": "from_binary64",
+      "input": "3ff0000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "++00000000000000000000000000E0",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "three-exact_only",
+      "operation": "from_binary64",
+      "input": "4008000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "++00000000000000000000000000E1",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "half-exact_only",
+      "operation": "from_binary64",
+      "input": "3fe0000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-half-exact_only",
+      "operation": "from_binary64",
+      "input": "bfe0000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "denorm-min-exact_only",
+      "operation": "from_binary64",
+      "input": "0000000000000001",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "min-normal-exact_only",
+      "operation": "from_binary64",
+      "input": "0010000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "max-finite-exact_only",
+      "operation": "from_binary64",
+      "input": "7fefffffffffffff",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "inf-exact_only",
+      "operation": "from_binary64",
+      "input": "7ff0000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-inf-exact_only",
+      "operation": "from_binary64",
+      "input": "fff0000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "quiet-nan-exact_only",
+      "operation": "from_binary64",
+      "input": "7ff8000000000000",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "signaling-nan-exact_only",
+      "operation": "from_binary64",
+      "input": "7ff0000000000001",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "nan-payload-exact_only",
+      "operation": "from_binary64",
+      "input": "fff8000000000042",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "source-underflow-exact_only",
+      "operation": "from_binary64",
+      "input": "0000000000000001",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "underflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "source-overflow-exact_only",
+      "operation": "from_binary64",
+      "input": "7fefffffffffffff",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "overflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "exact-integer-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "27",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "++000E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "odd-lower-tie-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "55",
+      "denominator": "2",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "even-lower-tie-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "57",
+      "denominator": "2",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "both-even-binade-tie-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "41",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-binade-tie-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "-41",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "above-midpoint-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "123",
+      "denominator": "4",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "minimum-subnormal-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "1",
+      "denominator": "328256967394537077627",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "+000+E-40",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "maximum-finite-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "6003785411879964840",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "+++++E39",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "below-minimum-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "1",
+      "denominator": "656513934789074155254",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "underflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "above-maximum-exact_only",
+      "operation": "quantize_rational",
+      "numerator": "6003785411879964841",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "overflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "zero-to-binary-exact_only",
+      "operation": "to_binary64",
+      "input": "+0E0",
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "0000000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "one-to-binary-exact_only",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E0",
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "3ff0000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "third-to-binary-exact_only",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E-1",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "two-subnormal-quanta-exact_only",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000000000000000000000000000000000000000000000000E-677",
+      "M": 72,
+      "E": 9,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-exact-large-exact_only",
+      "operation": "to_binary64",
+      "input": "++--0--+-+--0--0---00-+++00+--++----0000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "exact_only",
+      "expected": {
+        "status": "exact",
+        "value": "4340000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-tie-even-lower-exact_only",
+      "operation": "to_binary64",
+      "input": "++--0--+-+--0--0---00-+++00+--++---00000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-tie-even-upper-exact_only",
+      "operation": "to_binary64",
+      "input": "++--0--+-+--0--0---00-+++00+--++--0-0000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-significand-carry-exact_only",
+      "operation": "to_binary64",
+      "input": "++0+-0++++0+-0+-00+00-00-00++--+00000000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "destination-underflow-exact_only",
+      "operation": "to_binary64",
+      "input": "+00000000000000000000000000+E-9841",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "underflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "destination-overflow-exact_only",
+      "operation": "to_binary64",
+      "input": "++++++++++++++++++++++++++++E9840",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "overflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "infinity-to-binary-exact_only",
+      "operation": "to_binary64",
+      "input": "+Inf",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "nae-to-binary-exact_only",
+      "operation": "to_binary64",
+      "input": "NaE",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "positive-zero-nearest_even",
+      "operation": "from_binary64",
+      "input": "0000000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "+0E0",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-zero-nearest_even",
+      "operation": "from_binary64",
+      "input": "8000000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "+0E0",
+        "error": null,
+        "flags": [
+          "negative_zero_normalized"
+        ]
+      }
+    },
+    {
+      "id": "one-nearest_even",
+      "operation": "from_binary64",
+      "input": "3ff0000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "++00000000000000000000000000E0",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "three-nearest_even",
+      "operation": "from_binary64",
+      "input": "4008000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "++00000000000000000000000000E1",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "half-nearest_even",
+      "operation": "from_binary64",
+      "input": "3fe0000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "++++++++++++++++++++++++++++E-1",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-half-nearest_even",
+      "operation": "from_binary64",
+      "input": "bfe0000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "-+++++++++++++++++++++++++++E-1",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "denorm-min-nearest_even",
+      "operation": "from_binary64",
+      "input": "0000000000000001",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "++----00++++-0--00-+++0++000E-677",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "min-normal-nearest_even",
+      "operation": "from_binary64",
+      "input": "0010000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "max-finite-nearest_even",
+      "operation": "from_binary64",
+      "input": "7fefffffffffffff",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "++0+-+-00+--+-0+--+0+---000+E646",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "inf-nearest_even",
+      "operation": "from_binary64",
+      "input": "7ff0000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-inf-nearest_even",
+      "operation": "from_binary64",
+      "input": "fff0000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "quiet-nan-nearest_even",
+      "operation": "from_binary64",
+      "input": "7ff8000000000000",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "signaling-nan-nearest_even",
+      "operation": "from_binary64",
+      "input": "7ff0000000000001",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "nan-payload-nearest_even",
+      "operation": "from_binary64",
+      "input": "fff8000000000042",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "source-underflow-nearest_even",
+      "operation": "from_binary64",
+      "input": "0000000000000001",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "underflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "source-overflow-nearest_even",
+      "operation": "from_binary64",
+      "input": "7fefffffffffffff",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "overflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "exact-integer-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "27",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "++000E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "odd-lower-tie-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "55",
+      "denominator": "2",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "++00+E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "even-lower-tie-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "57",
+      "denominator": "2",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "++00+E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "both-even-binade-tie-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "41",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "+++++E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-binade-tie-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "-41",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "-++++E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "above-midpoint-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "123",
+      "denominator": "4",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "++0++E3",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "minimum-subnormal-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "1",
+      "denominator": "328256967394537077627",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "+000+E-40",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "maximum-finite-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "6003785411879964840",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "+++++E39",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "below-minimum-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "1",
+      "denominator": "656513934789074155254",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "underflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "above-maximum-nearest_even",
+      "operation": "quantize_rational",
+      "numerator": "6003785411879964841",
+      "denominator": "1",
+      "M": 4,
+      "E": 4,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "overflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "zero-to-binary-nearest_even",
+      "operation": "to_binary64",
+      "input": "+0E0",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "0000000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "one-to-binary-nearest_even",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E0",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "3ff0000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "third-to-binary-nearest_even",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E-1",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "3fd5555555555555",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "two-subnormal-quanta-nearest_even",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000000000000000000000000000000000000000000000000E-677",
+      "M": 72,
+      "E": 9,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "0000000000000002",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-exact-large-nearest_even",
+      "operation": "to_binary64",
+      "input": "++--0--+-+--0--0---00-+++00+--++----0000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "exact",
+        "value": "4340000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-tie-even-lower-nearest_even",
+      "operation": "to_binary64",
+      "input": "++--0--+-+--0--0---00-+++00+--++---00000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "4340000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-tie-even-upper-nearest_even",
+      "operation": "to_binary64",
+      "input": "++--0--+-+--0--0---00-+++00+--++--0-0000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "4340000000000002",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "binary-significand-carry-nearest_even",
+      "operation": "to_binary64",
+      "input": "++0+-0++++0+-0+-00+00-00-00++--+00000000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "4350000000000000",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "destination-underflow-nearest_even",
+      "operation": "to_binary64",
+      "input": "+00000000000000000000000000+E-9841",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "underflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "destination-overflow-nearest_even",
+      "operation": "to_binary64",
+      "input": "++++++++++++++++++++++++++++E9840",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "overflow",
+        "flags": []
+      }
+    },
+    {
+      "id": "infinity-to-binary-nearest_even",
+      "operation": "to_binary64",
+      "input": "+Inf",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "nae-to-binary-nearest_even",
+      "operation": "to_binary64",
+      "input": "NaE",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "nonfinite_input",
+        "flags": []
+      }
+    },
+    {
+      "id": "empty-bits",
+      "operation": "from_binary64",
+      "input": "",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "uppercase-bits",
+      "operation": "from_binary64",
+      "input": "3FF0000000000000",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "too-wide-bits",
+      "operation": "from_binary64",
+      "input": "10000000000000000",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "invalid-bit-digit",
+      "operation": "from_binary64",
+      "input": "000000000000000g",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-zero-encoding",
+      "operation": "to_binary64",
+      "input": "-0E0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "noncanonical_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "long-zero-alias",
+      "operation": "to_binary64",
+      "input": "+000000000000000000000000000E0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "noncanonical_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "unnormalized-mantissa",
+      "operation": "to_binary64",
+      "input": "+0+0000000000000000000000000E0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "noncanonical_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "exponent-leading-zero",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E00",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "noncanonical_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "exponent-negative-zero",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E-0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "noncanonical_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "reserved-finite-exponent",
+      "operation": "to_binary64",
+      "input": "++00000000000000000000000000E9841",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "short-mantissa",
+      "operation": "to_binary64",
+      "input": "+++++++++++++++++++++++++++E0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "whitespace",
+      "operation": "to_binary64",
+      "input": " +0E0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "invalid-trit",
+      "operation": "to_binary64",
+      "input": "+xxxxxxxxxxxxxxxxxxxxxxxxxxxE0",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "invalid_encoding",
+        "flags": []
+      }
+    },
+    {
+      "id": "unsupported-format-3-9",
+      "operation": "from_binary64",
+      "input": "junk",
+      "M": 3,
+      "E": 9,
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "unsupported_format",
+        "flags": []
+      }
+    },
+    {
+      "id": "unsupported-format-73-9",
+      "operation": "from_binary64",
+      "input": "junk",
+      "M": 73,
+      "E": 9,
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "unsupported_format",
+        "flags": []
+      }
+    },
+    {
+      "id": "unsupported-format-27-3",
+      "operation": "from_binary64",
+      "input": "junk",
+      "M": 27,
+      "E": 3,
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "unsupported_format",
+        "flags": []
+      }
+    },
+    {
+      "id": "unsupported-format-27-10",
+      "operation": "from_binary64",
+      "input": "junk",
+      "M": 27,
+      "E": 10,
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "unsupported_format",
+        "flags": []
+      }
+    },
+    {
+      "id": "unsupported-format-True-9",
+      "operation": "from_binary64",
+      "input": "junk",
+      "M": true,
+      "E": 9,
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "unsupported_format",
+        "flags": []
+      }
+    },
+    {
+      "id": "unsupported-rounding",
+      "operation": "from_binary64",
+      "input": "junk",
+      "mode": "host_default",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "unsupported_mode",
+        "flags": []
+      }
+    },
+    {
+      "id": "both-odd-binade-tie-positive-exact_only",
+      "operation": "quantize_rational",
+      "M": 5,
+      "E": 4,
+      "mode": "exact_only",
+      "numerator": "122",
+      "denominator": "1",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "both-odd-binade-tie---exact_only",
+      "operation": "quantize_rational",
+      "M": 5,
+      "E": 4,
+      "mode": "exact_only",
+      "numerator": "-122",
+      "denominator": "1",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "both-odd-binade-tie-positive-nearest_even",
+      "operation": "quantize_rational",
+      "M": 5,
+      "E": 4,
+      "mode": "nearest_even",
+      "numerator": "122",
+      "denominator": "1",
+      "expected": {
+        "status": "rounded",
+        "value": "++++++E4",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "both-odd-binade-tie---nearest_even",
+      "operation": "quantize_rational",
+      "M": 5,
+      "E": 4,
+      "mode": "nearest_even",
+      "numerator": "-122",
+      "denominator": "1",
+      "expected": {
+        "status": "rounded",
+        "value": "-+++++E4",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "common-18-trit-one",
+      "operation": "from_binary64",
+      "M": 18,
+      "E": 9,
+      "input": "3ff0000000000000",
+      "expected": {
+        "status": "exact",
+        "value": "++00000000000000000E0",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-third-exact_only",
+      "operation": "to_binary64",
+      "input": "-+00000000000000000000000000E-1",
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-binary-tie-exact_only",
+      "operation": "to_binary64",
+      "input": "-+--0--+-+--0--0---00-+++00+--++---00000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "exact_only",
+      "expected": {
+        "status": "error",
+        "value": null,
+        "error": "inexact",
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-third-nearest_even",
+      "operation": "to_binary64",
+      "input": "-+00000000000000000000000000E-1",
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "bfd5555555555555",
+        "error": null,
+        "flags": []
+      }
+    },
+    {
+      "id": "negative-binary-tie-nearest_even",
+      "operation": "to_binary64",
+      "input": "-+--0--+-+--0--0---00-+++00+--++---00000000000000000000000000000000000000E34",
+      "M": 72,
+      "E": 9,
+      "mode": "nearest_even",
+      "expected": {
+        "status": "rounded",
+        "value": "c340000000000000",
+        "error": null,
+        "flags": []
+      }
+    }
+  ]
+}

@@ -14,6 +14,8 @@ specification authority, freeze boundaries, or determinism claim scope.
 
 ## Key Research Consolidations & Decisions
 
+- **[Checked conversion contract proposal](../../experiments/checked_float_contract/README.md)** — Draft numerical semantics, independent bidirectional corpus, compatibility/decision record and bounded plan; no production replacement or new determinism claim.
+
 - **[Native float conversion audit](../../experiments/float_conversion_audit/README.md)** — Exact binary64 reference, preserved numerical failures and explicit exclusion from evidence v2; production conversion remains unresolved.
 
 - **[Deterministic execution and provenance, Phase 1](../../experiments/deterministic_provenance/README.md)** — Bounded production VM/Axion/CanonFS experiment, independent trace/result verifier, adversarial tests and native measurement limits.

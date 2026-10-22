@@ -1,0 +1,29 @@
+name: Draft checked float conversion reference
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/checked-float-contract.yml'
+      - 'experiments/checked_float_contract/**'
+      - 'spec/rfcs/RFC-00D5-checked-floating-point-conversion.md'
+      - 'docs/architecture/adr/ADR-0005-checked-float-conversion.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  draft-reference:
+    name: proposed conversion reference / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Verify proposed numerical corpus and independent certificates
+        run: python3 experiments/checked_float_contract/test_reference.py
+      - name: Verify preserved audit reference
+        run: python3 experiments/float_conversion_audit/test_oracle.py
