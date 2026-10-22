@@ -1,5 +1,23 @@
 # Release Readiness Packet (2026-02)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Release Readiness Packet (2026-02)](#release-readiness-packet-2026-02)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Evidence Snapshot](#evidence-snapshot)
+  - [DCP and Governance Gate Interpretation](#dcp-and-governance-gate-interpretation)
+  - [Decision Basis](#decision-basis)
+  - [Required-Context Verification (Procedure Alignment)](#required-context-verification-procedure-alignment)
+  - [Open Blocking Items](#open-blocking-items)
+  - [Release Manager Checklist Pointers](#release-manager-checklist-pointers)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Hold (Decisioned)
 Date (UTC): 2026-02-25
 Owner: Release / Governance

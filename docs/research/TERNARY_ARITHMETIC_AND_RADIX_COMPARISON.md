@@ -1,5 +1,32 @@
 # Mathematical Research Report — Ternary Arithmetic, Radix-81 Grouping, and Redundant Signed-Digit Evaluation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Mathematical Research Report — Ternary Arithmetic, Radix-81 Grouping, and Redundant Signed-Digit Evaluation](#mathematical-research-report-—-ternary-arithmetic-radix-81-grouping-and-redundant-signed-digit-evaluation)
+  - [Executive Summary](#executive-summary)
+    - [Central Research Question](#central-research-question)
+    - [Audit Summary & Key Discoveries](#audit-summary-&-key-discoveries)
+  - [Phase 1 — Mathematical Foundations & Audited Proofs](#phase-1-—-mathematical-foundations-&-audited-proofs)
+    - [1. Representable Ranges and Information Capacity](#1-representable-ranges-and-information-capacity)
+    - [2. Canonical Uniqueness Theorem](#2-canonical-uniqueness-theorem)
+    - [3. Redundant Representation Zero Uniqueness & Equality Cost](#3-redundant-representation-zero-uniqueness-&-equality-cost)
+    - [4. Multi-Limb Multiplication Complexity Scaling](#4-multi-limb-multiplication-complexity-scaling)
+  - [Phase 2 — Implementation & Benchmark Audit Findings](#phase-2-—-implementation-&-benchmark-audit-findings)
+    - [1. Dynamic Allocation Overhead vs Pure Arithmetic Latency](#1-dynamic-allocation-overhead-vs-pure-arithmetic-latency)
+    - [2. Empirical Measurement of Carry Propagation Distance](#2-empirical-measurement-of-carry-propagation-distance)
+    - [3. Packing & Encoding Efficiency Analysis](#3-packing-&-encoding-efficiency-analysis)
+  - [Audited Empirical Results Summary](#audited-empirical-results-summary)
+  - [Audited Claim / Evidence / Limitations Matrix](#audited-claim--evidence--limitations-matrix)
+  - [Historical Baseline — PR #544 Original Record](#historical-baseline-—-pr-#544-original-record)
+    - [Historical Unaudited Benchmark Table (PR #544)](#historical-unaudited-benchmark-table-pr-#544)
+    - [Historical Unaudited Key Claims (PR #544)](#historical-unaudited-key-claims-pr-#544)
+  - [Architectural Recommendation for T81](#architectural-recommendation-for-t81)
+
+<!-- T81-TOC:END -->
+
+
 **Document Status:** Revised Adversarial Research Report (Frozen via Synthesis Report `TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`)
 **Author:** Jules (Software Engineer — Adversarial Audit)
 **Target Repository:** T81 Foundation (`t81dev/t81-foundation`)

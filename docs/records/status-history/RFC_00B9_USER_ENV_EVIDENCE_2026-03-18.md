@@ -1,5 +1,14 @@
 # RFC-00B9 User Environment Evidence (2026-03-18)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00B9 User Environment Evidence (2026-03-18)](#rfc-00b9-user-environment-evidence-2026-03-18)
+
+<!-- T81-TOC:END -->
+
+
 Build mode:
 - `Release`
 - `-DT81_ENABLE_TERNARYOS=ON`

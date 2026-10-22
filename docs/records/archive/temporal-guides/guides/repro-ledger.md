@@ -5,6 +5,19 @@ title: Reproducibility Ledger Dashboard
 
 # Reproducibility Ledger Dashboard
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Reproducibility Ledger Dashboard](#reproducibility-ledger-dashboard)
+  - [1. What It Captures](#1-what-it-captures)
+  - [2. Run Locally](#2-run-locally)
+  - [3. CI Workflow](#3-ci-workflow)
+  - [4. Determinism Notes](#4-determinism-notes)
+
+<!-- T81-TOC:END -->
+
+
 This guide documents the automated dashboard that turns CI outputs into a deterministic ledger artifact.
 
 The workflow is defined in `.github/workflows/repro-ledger.yml` and emits:

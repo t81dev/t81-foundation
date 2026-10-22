@@ -1,5 +1,29 @@
 # Project Baseline-X Bootstrap & Architecture Specification
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Project Baseline-X Bootstrap & Architecture Specification](#project-baseline-x-bootstrap-&-architecture-specification)
+  - [1. Executive Summary & Purpose](#1-executive-summary-&-purpose)
+  - [2. Technology Stack & Scope Constraints](#2-technology-stack-&-scope-constraints)
+    - [Minimal Stack Selection](#minimal-stack-selection)
+    - [Explicit "Do Not Build" List](#explicit-"do-not-build"-list)
+  - [3. Directory Layout & Repository Structure](#3-directory-layout-&-repository-structure)
+  - [4. Primary Adversarial Scenario: Mid-Flight Policy Revocation](#4-primary-adversarial-scenario-mid-flight-policy-revocation)
+    - [Flow Sequence](#flow-sequence)
+  - [5. Build, Run, and Verification Commands](#5-build-run-and-verification-commands)
+    - [Build](#build)
+- [Build Wasm guest module](#build-wasm-guest-module)
+- [Bootstrap Baseline-X environment](#bootstrap-baseline-x-environment)
+    - [Execution & Audit](#execution-&-audit)
+- [Run the inventory replenishment decision](#run-the-inventory-replenishment-decision)
+- [Verify the resulting RFC-00D4 decision bundle offline](#verify-the-resulting-rfc-00d4-decision-bundle-offline)
+  - [6. Comparative Evaluation Matrix against Arms (i) and (ii)](#6-comparative-evaluation-matrix-against-arms-i-and-ii)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** April 2026
 **Status:** Experimental Bootstrap Specification
 **Target Surface:** `docs/research/BASELINE_X_PROTOTYPE.md`

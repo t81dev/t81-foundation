@@ -1,5 +1,26 @@
 # T81 Language Reference
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Language Reference](#t81-language-reference)
+  - [Types](#types)
+    - [Primitive Types](#primitive-types)
+    - [Infinite Types (T19683)](#infinite-types-t19683)
+  - [Statements & Blocks](#statements-&-blocks)
+    - [Loop Annotations](#loop-annotations)
+    - [Cognitive Tier Blocks](#cognitive-tier-blocks)
+      - [Reflective (T729)](#reflective-t729)
+      - [Recursive (T2187)](#recursive-t2187)
+      - [Distributed (T6561)](#distributed-t6561)
+      - [Infinite (T19683)](#infinite-t19683)
+    - [Pattern Matching](#pattern-matching)
+  - [Keywords](#keywords)
+
+<!-- T81-TOC:END -->
+
+
 This document provides a reference for the T81 programming language (T81Lang), including syntax, types, and cognitive tier constructs.
 
 **Last Updated:** February 17, 2026

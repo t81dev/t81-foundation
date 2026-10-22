@@ -1,5 +1,27 @@
 # Capítulo 12: Semântica Formal do TISC e T81VM
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 12: Semântica Formal do TISC e T81VM](#capítulo-12-semântica-formal-do-tisc-e-t81vm)
+  - [12.1 Semântica Operacional](#121-semântica-operacional)
+    - [12.1.1 A Função de Transição $\delta$](#1211-a-função-de-transição-$\delta$)
+    - [12.1.2 Regras de Inferência](#1212-regras-de-inferência)
+      - [**Regra: Busca-Decodificação**](#**regra-busca-decodificação**)
+      - [**Regra: Aritmética (Add)**](#**regra-aritmética-add**)
+      - [**Regra: Verificação de Política (Axion)**](#**regra-verificação-de-política-axion**)
+  - [12.2 Função de Transição Algébrica](#122-função-de-transição-algébrica)
+  - [12.3 Sistema de Reescrita de Canonicalização](#123-sistema-de-reescrita-de-canonicalização)
+    - [12.3.1 Formas Normais](#1231-formas-normais)
+  - [12.4 Esboços de Prova de Determinismo](#124-esboços-de-prova-de-determinismo)
+    - [Teorema 1: Independência de Hardware do `dmath`](#teorema-1-independência-de-hardware-do-`dmath`)
+    - [Teorema 2: Segurança Axion](#teorema-2-segurança-axion)
+  - [12.5 Equivalência Intérprete vs Trace-JIT](#125-equivalência-intérprete-vs-trace-jit)
+
+<!-- T81-TOC:END -->
+
+
 ## 12.1 Semântica Operacional
 
 **Status: Formalizando**

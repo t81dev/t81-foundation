@@ -1,5 +1,45 @@
 # **The T81 Foundation White Paper: A Ternary Operating System for AI**
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [**The T81 Foundation White Paper: A Ternary Operating System for AI**](#**the-t81-foundation-white-paper-a-ternary-operating-system-for-ai**)
+  - [**What T81 Is**](#**what-t81-is**)
+  - [**The Mathematical Imperative for Balanced Ternary Logic**](#**the-mathematical-imperative-for-balanced-ternary-logic**)
+    - [**Information Density and Base-81 Encoding**](#**information-density-and-base-81-encoding**)
+    - [**Eliminating Undefined Behavior through Canonical Semantics**](#**eliminating-undefined-behavior-through-canonical-semantics**)
+  - [**TISC: The Instruction Set for the AI-Native Era**](#**tisc-the-instruction-set-for-the-ai-native-era**)
+    - [**Ternary-Native Inference Opcodes**](#**ternary-native-inference-opcodes**)
+    - [**Deterministic Floating Point and Attention Mechanisms**](#**deterministic-floating-point-and-attention-mechanisms**)
+  - [**The T81VM Reference Runtime and Deterministic Parallelism**](#**the-t81vm-reference-runtime-and-deterministic-parallelism**)
+    - [**Memory Model and Reproducibility**](#**memory-model-and-reproducibility**)
+    - [**SIMD Optimizations and Limb Architecture**](#**simd-optimizations-and-limb-architecture**)
+  - [**Axion OS: The Governance-First Operating System**](#**axion-os-the-governance-first-operating-system**)
+    - [**The Axion Governance Kernel and APL**](#**the-axion-governance-kernel-and-apl**)
+    - [**AGI Containment and the Ethics-First Boot**](#**agi-containment-and-the-ethics-first-boot**)
+  - [**CanonFS: The Identity-Centric Filesystem**](#**canonfs-the-identity-centric-filesystem**)
+    - [**Content-Addressing and Structural Verification**](#**content-addressing-and-structural-verification**)
+    - [**Impact on Cognitive Reproducibility**](#**impact-on-cognitive-reproducibility**)
+  - [**Post-Quantum Cryptography and Security Guarantees**](#**post-quantum-cryptography-and-security-guarantees**)
+    - [**Ternary Lattice Cryptography and NTRU-KEM**](#**ternary-lattice-cryptography-and-ntru-kem**)
+    - [**Verification and Auditability**](#**verification-and-auditability**)
+  - [**Cognitive Tiers and the Path to AGI**](#**cognitive-tiers-and-the-path-to-agi**)
+  - [**Decentralized Identity and the Agentic Economy**](#**decentralized-identity-and-the-agentic-economy**)
+    - [**Verifiable Agent Identity**](#**verifiable-agent-identity**)
+    - [**Trust without Centralization**](#**trust-without-centralization**)
+  - [**Development Ecosystem and Recent Activity**](#**development-ecosystem-and-recent-activity**)
+    - [**March 2026 Updates (v1.9.3)**](#**march-2026-updates-v193**)
+    - [**Integration with Global Developer Trends**](#**integration-with-global-developer-trends**)
+  - [**Roadmap and Future Outlook (2026–2027)**](#**roadmap-and-future-outlook-2026–2027**)
+    - [**Near-Term Goals (Q2–Q3 2026\)**](#**near-term-goals-q2–q3-2026\**)
+    - [**Medium-to-Long-Term Goals (2027+)**](#**medium-to-long-term-goals-2027+**)
+  - [**Conclusion**](#**conclusion**)
+      - [**Works cited**](#**works-cited**)
+
+<!-- T81-TOC:END -->
+
+
 ## **What T81 Is**
 
 T81 is a ternary operating system designed to host AI agents alongside their users. Its kernel intercepts every AI operation before any side effect. Its filesystem stores models and artifacts as immutable, content-addressed blobs whose integrity is verified at load time. Its instruction set replaces floating-point matrix multiply with addition, and its process model — the `agent`/`behavior` construct — makes an AI agent a first-class citizen of the execution environment, not a library call inside a binary process.

@@ -1,5 +1,26 @@
 # T81 Research Charter: Accountable Computation Substrate
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Charter: Accountable Computation Substrate](#t81-research-charter-accountable-computation-substrate)
+  - [1. Context and Strategic Shift](#1-context-and-strategic-shift)
+    - [Core Research Question](#core-research-question)
+    - [The Six Primitives of an Accountable Computational Act](#the-six-primitives-of-an-accountable-computational-act)
+  - [2. Falsification Conditions](#2-falsification-conditions)
+    - [(a) Custom Virtual Machine Necessity](#a-custom-virtual-machine-necessity)
+    - [(b) Ternary Substrate Advantage](#b-ternary-substrate-advantage)
+    - [(c) Governance-Inside-Kernel Coupling](#c-governance-inside-kernel-coupling)
+    - [(d) Integrated Stack vs. Detached Protocol](#d-integrated-stack-vs-detached-protocol)
+  - [3. Comparative Protocol & Allowed Outcomes](#3-comparative-protocol-&-allowed-outcomes)
+    - [Allowed Outcomes](#allowed-outcomes)
+  - [4. Definition of Success under "Protocol, Not Runtime"](#4-definition-of-success-under-"protocol-not-runtime")
+  - [5. Relationship to Existing Repository State](#5-relationship-to-existing-repository-state)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** April 2026
 **Status:** Operational Research Directive
 **Target Surface:** `docs/research/RESEARCH_CHARTER.md`

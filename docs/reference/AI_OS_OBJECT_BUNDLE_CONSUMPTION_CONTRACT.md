@@ -1,5 +1,22 @@
 # AI OS-Object Bundle Consumption Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI OS-Object Bundle Consumption Contract](#ai-os-object-bundle-consumption-contract)
+  - [Scope](#scope)
+  - [What A Consumer May Assume](#what-a-consumer-may-assume)
+  - [What The Bundle Means](#what-the-bundle-means)
+  - [Current Family Reading](#current-family-reading)
+  - [Minimum Consumer Workflow](#minimum-consumer-workflow)
+  - [What A Consumer Must Not Assume](#what-a-consumer-must-not-assume)
+  - [Stability Boundary](#stability-boundary)
+  - [Relationship To Existing Family Docs](#relationship-to-existing-family-docs)
+
+<!-- T81-TOC:END -->
+
+
 This document defines the narrowest current contract for consuming a canonical
 bounded-family bundle outside the immediate composition script or test that
 created it.

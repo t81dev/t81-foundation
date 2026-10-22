@@ -1,5 +1,23 @@
 # Documentation Audit Report - February 2026
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Documentation Audit Report - February 2026](#documentation-audit-report---february-2026)
+  - [1. Scope](#1-scope)
+  - [2. Findings](#2-findings)
+    - [2.1. Redundant Files](#21-redundant-files)
+    - [2.2. Status Accuracy](#22-status-accuracy)
+    - [2.3. Task Tracking](#23-task-tracking)
+    - [2.4. Architectural Alignment](#24-architectural-alignment)
+    - [2.5. Documentation Consistency](#25-documentation-consistency)
+  - [3. Summary of Actions](#3-summary-of-actions)
+  - [4. Recommendations](#4-recommendations)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** February 10, 2026
 **Auditor:** Jules (AI Agent)
 

@@ -1,5 +1,25 @@
 # Base-81 Codecs and SIMD Kernels
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Base-81 Codecs and SIMD Kernels](#base-81-codecs-and-simd-kernels)
+  - [1. Overview](#1-overview)
+  - [2. Balanced Base-81](#2-balanced-base-81)
+    - [APIs](#apis)
+  - [3. SIMD Kernels](#3-simd-kernels)
+    - [Hot Path Primitives](#hot-path-primitives)
+    - [Performance](#performance)
+  - [4. Packed Base-81 Blocks](#4-packed-base-81-blocks)
+    - [APIs](#apis)
+  - [5. Canonical Metadata](#5-canonical-metadata)
+    - [Header Layout (16 bytes)](#header-layout-16-bytes)
+    - [APIs](#apis)
+
+<!-- T81-TOC:END -->
+
+
 This guide covers the Base-81 representation layers in the T81 Foundation, including balanced digits, SIMD-accelerated arithmetic, and packed storage formats.
 
 ## 1. Overview

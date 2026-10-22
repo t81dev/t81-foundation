@@ -1,5 +1,25 @@
 # VM Layer (T81VM Interpreter)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [VM Layer (T81VM Interpreter)](#vm-layer-t81vm-interpreter)
+  - [Purpose and Responsibilities](#purpose-and-responsibilities)
+  - [Maturity](#maturity)
+  - [Principal Data Structures and Interfaces](#principal-data-structures-and-interfaces)
+  - [Internal Structure (Interpreter)](#internal-structure-interpreter)
+  - [Dispatch / Enforcement Flow](#dispatch--enforcement-flow)
+  - [Key Invariants / Guarantees](#key-invariants--guarantees)
+  - [Principal Failure Modes and Handling](#principal-failure-modes-and-handling)
+  - [Determinism Boundary Notes](#determinism-boundary-notes)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+  - [Acceptance Criteria](#acceptance-criteria)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26  
 Maturity: `Stable` interpreter, `Experimental` trace/JIT path

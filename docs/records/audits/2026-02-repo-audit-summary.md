@@ -1,5 +1,25 @@
 # Repository Audit Summary (2026-02)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Repository Audit Summary (2026-02)](#repository-audit-summary-2026-02)
+  - [Scope and Method](#scope-and-method)
+  - [Executive Readout](#executive-readout)
+  - [Key Findings](#key-findings)
+    - [1. Strong Core Surfaces](#1-strong-core-surfaces)
+    - [2. Redundancy Candidates](#2-redundancy-candidates)
+    - [3. CI Action Pinning Posture](#3-ci-action-pinning-posture)
+    - [4. CI Permissions Posture](#4-ci-permissions-posture)
+    - [5. Documentation Surfaces to Keep Tight](#5-documentation-surfaces-to-keep-tight)
+  - [Prioritized Actions](#prioritized-actions)
+  - [Validation Snapshot](#validation-snapshot)
+  - [Next Recommended Audit Pass](#next-recommended-audit-pass)
+
+<!-- T81-TOC:END -->
+
+
 This report summarizes the current full-repository audit artifacts:
 
 - `docs/records/inventories/repo_tree.txt`

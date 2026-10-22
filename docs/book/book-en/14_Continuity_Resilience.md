@@ -1,5 +1,25 @@
 # Chapter 14: Continuity and Resilience
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 14: Continuity and Resilience](#chapter-14-continuity-and-resilience)
+  - [14.1 The Cleanroom Protocol](#141-the-cleanroom-protocol)
+  - [14.2 Single Points of Failure](#142-single-points-of-failure)
+  - [14.3 Continuity Manifest](#143-continuity-manifest)
+  - [14.4 Immutable Formal Invariants](#144-immutable-formal-invariants)
+    - [Continuity Drill](#continuity-drill)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 This chapter focuses on keeping the system trustworthy over time, including personnel changes, infrastructure shocks, and institutional drift. Determinism without continuity planning eventually degrades into brittle process.
 
 For onboarding, continuity means more than backups: it means preserving the ability to rebuild, verify, and govern the system responsibly.

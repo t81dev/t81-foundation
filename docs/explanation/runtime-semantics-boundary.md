@@ -1,5 +1,20 @@
 # Runtime Semantics Boundary (Foundation vs VM)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Runtime Semantics Boundary (Foundation vs VM)](#runtime-semantics-boundary-foundation-vs-vm)
+  - [Active Runtime Baseline](#active-runtime-baseline)
+  - [Ownership Split](#ownership-split)
+  - [Source-of-Truth Rule](#source-of-truth-rule)
+  - [Required Cross-Repo Fan-Out](#required-cross-repo-fan-out)
+  - [High-Risk Mismatch Zones](#high-risk-mismatch-zones)
+  - [Verification Rule](#verification-rule)
+
+<!-- T81-TOC:END -->
+
+
 This note locks the ownership boundary between normative semantics (`t81-foundation`) and executable runtime behavior (`t81-vm`).
 
 ## Active Runtime Baseline

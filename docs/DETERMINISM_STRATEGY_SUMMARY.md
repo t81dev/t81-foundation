@@ -1,5 +1,41 @@
 # T81 Determinism Strategy: Complete Implementation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Determinism Strategy: Complete Implementation](#t81-determinism-strategy-complete-implementation)
+  - [**Date: April 3, 2026**](#**date-april-3-2026**)
+    - [**Strategic Decision: Maintain Deterministic Focus**](#**strategic-decision-maintain-deterministic-focus**)
+  - [**🎯 Core Decision Made**](#**🎯-core-decision-made**)
+  - [**✅ Implementation Complete**](#**✅-implementation-complete**)
+    - [**1. Production T81 Runtime: Deterministic Focus Maintained**](#**1-production-t81-runtime-deterministic-focus-maintained**)
+      - [**Core Identity Preserved**](#**core-identity-preserved**)
+      - [**Deterministic Guarantees**](#**deterministic-guarantees**)
+    - [**2. Experimental Research: Nondeterministic Support Added**](#**2-experimental-research-nondeterministic-support-added**)
+      - [**New Research Tool Created**](#**new-research-tool-created**)
+      - [**Educational Value**](#**educational-value**)
+    - [**3. Clear Boundaries Established**](#**3-clear-boundaries-established**)
+      - [**Critical Boundary Documented**](#**critical-boundary-documented**)
+      - [**User Guidelines**](#**user-guidelines**)
+  - [**📊 Strategic Benefits Achieved**](#**📊-strategic-benefits-achieved**)
+    - [**Market Positioning Preserved**](#**market-positioning-preserved**)
+    - [**Technical Simplicity Maintained**](#**technical-simplicity-maintained**)
+    - [**Research Support Enabled**](#**research-support-enabled**)
+    - [**Risk Mitigation Achieved**](#**risk-mitigation-achieved**)
+  - [**🔍 Implementation Details**](#**🔍-implementation-details**)
+    - [**Production Runtime Verification**](#**production-runtime-verification**)
+    - [**Experimental Tool Verification**](#**experimental-tool-verification**)
+    - [**Documentation Updates**](#**documentation-updates**)
+  - [**🎯 Final Strategic State**](#**🎯-final-strategic-state**)
+    - [**T81 Foundation Now Has:**](#**t81-foundation-now-has**)
+    - [**Value Proposition:**](#**value-proposition**)
+    - [**Research Support:**](#**research-support**)
+  - [**🚀 Strategic Success**](#**🚀-strategic-success**)
+
+<!-- T81-TOC:END -->
+
+
 ## **Date: April 3, 2026**
 
 ### **Strategic Decision: Maintain Deterministic Focus**

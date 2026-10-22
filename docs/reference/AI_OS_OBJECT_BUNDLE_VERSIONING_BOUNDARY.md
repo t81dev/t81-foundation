@@ -1,5 +1,20 @@
 # AI OS-Object Bundle Versioning Boundary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI OS-Object Bundle Versioning Boundary](#ai-os-object-bundle-versioning-boundary)
+  - [Scope](#scope)
+  - [What `.v1` Freezes](#what-`v1`-freezes)
+  - [Changes That Require A New Bundle Schema Version](#changes-that-require-a-new-bundle-schema-version)
+  - [Changes That Do Not Require A New Bundle Schema Version](#changes-that-do-not-require-a-new-bundle-schema-version)
+  - [What Is Still Outside This Boundary](#what-is-still-outside-this-boundary)
+  - [Relationship To Existing Family Docs](#relationship-to-existing-family-docs)
+
+<!-- T81-TOC:END -->
+
+
 This note defines the narrow versioning boundary for the current canonical
 bundle in the admitted bounded AI OS-object family.
 

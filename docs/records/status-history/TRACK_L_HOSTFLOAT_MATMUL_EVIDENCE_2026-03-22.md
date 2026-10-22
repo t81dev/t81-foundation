@@ -1,5 +1,23 @@
 # Track L — HostFloat Matmul Fast Path Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Track L — HostFloat Matmul Fast Path Evidence](#track-l-—-hostfloat-matmul-fast-path-evidence)
+  - [Summary](#summary)
+  - [Root Cause](#root-cause)
+  - [Changes Made](#changes-made)
+    - [`include/t81/tensor/matmul.hpp` — two changes](#`includet81tensormatmulhpp`-—-two-changes)
+  - [Benchmark Results](#benchmark-results)
+    - [`BM_NativeWeightsExpThenMatMul_T81Native` (chained `WeightsLoad → TExp → TMatMul`)](#`bm_nativeweightsexpthenmatmul_t81native`-chained-`weightsload-→-texp-→-tmatmul`)
+    - [Reference: `BM_NativeWeightsLoadAndTWMATMUL_Binary` (ExactTrit × ExactTrit, BigInt path)](#reference-`bm_nativeweightsloadandtwmatmul_binary`-exacttrit-×-exacttrit-bigint-path)
+    - [Speedup vs binary BigInt reference](#speedup-vs-binary-bigint-reference)
+  - [What Remains Deferred](#what-remains-deferred)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-22
 **Status:** Implemented; 405/405 tests passing
 

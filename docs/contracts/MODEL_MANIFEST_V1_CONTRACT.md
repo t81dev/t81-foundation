@@ -1,5 +1,24 @@
 # Model Manifest v1 Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Manifest v1 Contract](#model-manifest-v1-contract)
+  - [Stable v1 Surface](#stable-v1-surface)
+    - [Supported operation](#supported-operation)
+    - [Schema identifier](#schema-identifier)
+  - [Manifest Document](#manifest-document)
+  - [Field Semantics](#field-semantics)
+    - [Top-level fields](#top-level-fields)
+    - [Tensor entries](#tensor-entries)
+  - [Provenance Map](#provenance-map)
+  - [Stability Boundary](#stability-boundary)
+  - [Relationship To Other Surfaces](#relationship-to-other-surfaces)
+
+<!-- T81-TOC:END -->
+
+
 This document is the authoritative contributor-facing contract for the current
 persisted manifest emitted by:
 

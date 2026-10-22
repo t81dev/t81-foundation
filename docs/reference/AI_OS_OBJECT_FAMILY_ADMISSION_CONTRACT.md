@@ -1,5 +1,23 @@
 # AI OS-Object Family Admission Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI OS-Object Family Admission Contract](#ai-os-object-family-admission-contract)
+  - [Scope](#scope)
+  - [Required Object Shape](#required-object-shape)
+  - [Allowed Source](#allowed-source)
+  - [Downstream Record Rules](#downstream-record-rules)
+  - [Bundle Rules](#bundle-rules)
+  - [Forbidden Moves](#forbidden-moves)
+  - [Required Proof Bar](#required-proof-bar)
+  - [Current Admitted Family](#current-admitted-family)
+  - [Boundary](#boundary)
+
+<!-- T81-TOC:END -->
+
+
 This document defines what a new bounded composition must satisfy before it is
 treated as a member of the current deterministic AI OS-object family in T81.
 

@@ -1,5 +1,49 @@
 # BG-07 Governance Decision: T81BigInt Precision Resolution
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [BG-07 Governance Decision: T81BigInt Precision Resolution](#bg-07-governance-decision-t81bigint-precision-resolution)
+  - [📋 **Issue Analysis**](#📋-**issue-analysis**)
+    - [**Problem Identified:**](#**problem-identified**)
+    - [**Root Cause:**](#**root-cause**)
+    - [**Evidence Collected:**](#**evidence-collected**)
+  - [🎯 **Governance Decision**](#🎯-**governance-decision**)
+    - [**Decision: IMPLEMENT PRAGMATIC ARBITRARY-PRECISION SUPPORT WITH ARCHITECTURAL ROADMAP**](#**decision-implement-pragmatic-arbitrary-precision-support-with-architectural-roadmap**)
+    - [**Implementation Strategy:**](#**implementation-strategy**)
+      - [**Phase 1: Pragmatic Fix (Immediate)**](#**phase-1-pragmatic-fix-immediate**)
+      - [**Phase 2: Architectural Enhancement (Future)**](#**phase-2-architectural-enhancement-future**)
+    - [**Implementation Requirements:**](#**implementation-requirements**)
+      - [**1. Semantic Analyzer Fix (Phase 1)**](#**1-semantic-analyzer-fix-phase-1**)
+      - [**2. Documentation Updates (Phase 1)**](#**2-documentation-updates-phase-1**)
+      - [**3. Future Architecture Changes (Phase 2)**](#**3-future-architecture-changes-phase-2**)
+  - [🔧 **Implementation Plan**](#🔧-**implementation-plan**)
+    - [**✅ Phase 1 Implementation: COMPLETED**](#**✅-phase-1-implementation-completed**)
+      - [**Semantic Analyzer Enhancement:**](#**semantic-analyzer-enhancement**)
+      - [**Key Changes Made:**](#**key-changes-made**)
+      - [**Enhanced constant_integer_value Function:**](#**enhanced-constant_integer_value-function**)
+    - [**Phase 2: Base-81 Parsing Implementation**](#**phase-2-base-81-parsing-implementation**)
+    - [**Phase 3: Test Coverage**](#**phase-3-test-coverage**)
+  - [📊 **Impact Assessment**](#📊-**impact-assessment**)
+    - [**Positive Impacts:**](#**positive-impacts**)
+    - [**Implementation Complexity:**](#**implementation-complexity**)
+    - [**Risk Mitigation:**](#**risk-mitigation**)
+  - [✅ **Acceptance Criteria**](#✅-**acceptance-criteria**)
+    - [**BG-07 Resolution Requirements:**](#**bg-07-resolution-requirements**)
+    - [**Success Metrics:**](#**success-metrics**)
+  - [🚀 **Strategic Benefits**](#🚀-**strategic-benefits**)
+    - [**Immediate Benefits:**](#**immediate-benefits**)
+    - [**Long-term Benefits:**](#**long-term-benefits**)
+  - [📋 **Implementation Timeline**](#📋-**implementation-timeline**)
+    - [**Phase 1 (Day 1): Semantic Analyzer Fix**](#**phase-1-day-1-semantic-analyzer-fix**)
+    - [**Phase 2 (Day 2): Base-81 Parsing Implementation**](#**phase-2-day-2-base-81-parsing-implementation**)
+    - [**Phase 3 (Day 3): Testing and Validation**](#**phase-3-day-3-testing-and-validation**)
+  - [🎯 **Governance Acceptance**](#🎯-**governance-acceptance**)
+
+<!-- T81-TOC:END -->
+
+
 **Decision ID:** BG-07-2026-03-04  
 **Surface:** `T81BigInt`  
 **Issue:** VM aliases BigInt to 64-bit; >64-bit literals silently truncated — spec claims arbitrary-precision  

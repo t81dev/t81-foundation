@@ -1,5 +1,18 @@
 # Workflow Action Pinning Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Workflow Action Pinning Audit](#workflow-action-pinning-audit)
+  - [Summary](#summary)
+  - [Tag/Major References (Migration Candidates)](#tagmajor-references-migration-candidates)
+  - [SHA-Pinned References](#sha-pinned-references)
+  - [Recommendation](#recommendation)
+
+<!-- T81-TOC:END -->
+
+
 ## Summary
 
 - Total `uses:` references: **49**

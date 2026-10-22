@@ -1,5 +1,20 @@
 # Cross-Cutting: Governance and Axion Enforcement
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cross-Cutting: Governance and Axion Enforcement](#cross-cutting-governance-and-axion-enforcement)
+  - [Purpose](#purpose)
+  - [Enforcement Path](#enforcement-path)
+  - [Enforcement Points](#enforcement-points)
+  - [Auditability Mechanisms](#auditability-mechanisms)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26
 

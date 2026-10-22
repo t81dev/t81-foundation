@@ -5,6 +5,20 @@ title: CI & Test Matrix
 
 # T81 Foundation: CI & Test Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Foundation: CI & Test Matrix](#t81-foundation-ci-&-test-matrix)
+  - [1. Local Commands (Must-run before PR)](#1-local-commands-must-run-before-pr)
+  - [2. GitHub Workflows](#2-github-workflows)
+  - [3. Troubleshooting CI Failures](#3-troubleshooting-ci-failures)
+  - [4. Questions for Maintainers](#4-questions-for-maintainers)
+  - [5. Required Checks Setup](#5-required-checks-setup)
+
+<!-- T81-TOC:END -->
+
+
 This doc explains how to reproduce the core CI workflows locally and which tests are run in GitHub Actions before merging.
 
 ______________________________________________________________________

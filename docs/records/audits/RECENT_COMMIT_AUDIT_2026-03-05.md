@@ -1,5 +1,20 @@
 # Recent Commit Audit — 2026-03-05
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Recent Commit Audit — 2026-03-05](#recent-commit-audit-—-2026-03-05)
+  - [Objective](#objective)
+  - [Recovery Provenance](#recovery-provenance)
+  - [Reviewed Commit Window](#reviewed-commit-window)
+  - [Audit Findings](#audit-findings)
+  - [Remediation Applied](#remediation-applied)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 Status: Final
 Owner: @t81dev
 Scope: Post-rollback recovery and stabilization on `main`

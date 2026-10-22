@@ -1,5 +1,28 @@
 # Capítulo 1: Introducción
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 1: Introducción](#capítulo-1-introducción)
+  - [1.1 Alcance y Definición](#11-alcance-y-definición)
+    - [1.1.1 Invariantes Centrales](#111-invariantes-centrales)
+  - [1.2 Arquitectura del Sistema](#12-arquitectura-del-sistema)
+    - [1.2.1 La Máquina Virtual TISC (T81VM)](#121-la-máquina-virtual-tisc-t81vm)
+    - [1.2.2 El Kernel de Seguridad Axion](#122-el-kernel-de-seguridad-axion)
+    - [1.2.3 Sistema de Archivos Canónico (CanonFS)](#123-sistema-de-archivos-canónico-canonfs)
+    - [1.2.4 Los Niveles Cognitivos](#124-los-niveles-cognitivos)
+  - [1.3 Misión de Cómputo Verificable](#13-misión-de-cómputo-verificable)
+    - [1.3.1 Inferencia de IA Sin Confianza](#131-inferencia-de-ia-sin-confianza)
+    - [1.3.2 Contratos Inteligentes y Consenso](#132-contratos-inteligentes-y-consenso)
+    - [1.3.3 Reproducibilidad Científica](#133-reproducibilidad-científica)
+  - [1.4 Terminología](#14-terminología)
+  - [1.5 Lista de Verificación](#15-lista-de-verificación)
+  - [Nota del Autor para la Próxima Revisión](#nota-del-autor-para-la-próxima-revisión)
+
+<!-- T81-TOC:END -->
+
+
 ## 1.1 Alcance y Definición
 
 **Estado: Implementado y Probado**

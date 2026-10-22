@@ -1,5 +1,19 @@
 # Program Checkpoint (2026-02-25)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Program Checkpoint (2026-02-25)](#program-checkpoint-2026-02-25)
+  - [Purpose](#purpose)
+  - [Completed](#completed)
+  - [Intentionally Deferred](#intentionally-deferred)
+  - [Next Two Executable Items](#next-two-executable-items)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: Project Management / Governance
 Last Updated: 2026-02-25

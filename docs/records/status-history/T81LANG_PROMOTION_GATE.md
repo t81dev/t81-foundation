@@ -1,5 +1,24 @@
 # T81Lang Promotion Gate (Draft -> Beta)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Promotion Gate (Draft -> Beta)](#t81lang-promotion-gate-draft-->-beta)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Definitions](#definitions)
+  - [Gate Criteria](#gate-criteria)
+  - [Rerunnable Snapshot Procedure](#rerunnable-snapshot-procedure)
+  - [Current Gate Snapshot (2026-02-25)](#current-gate-snapshot-2026-02-25)
+  - [Promotion Decision Record (Implementation Maturity)](#promotion-decision-record-implementation-maturity)
+  - [Blocking Items (Post-Decision Maintenance)](#blocking-items-post-decision-maintenance)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Owner: @t81dev
 Last Updated: 2026-02-26

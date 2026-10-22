@@ -1,5 +1,28 @@
 # Model Import v1 Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Import v1 Contract](#model-import-v1-contract)
+  - [Stable v1 Surface](#stable-v1-surface)
+    - [Supported operation](#supported-operation)
+    - [Schema identifier](#schema-identifier)
+    - [Supported input format labels](#supported-input-format-labels)
+  - [Result Documents](#result-documents)
+    - [Success result](#success-result)
+    - [Failure result](#failure-result)
+  - [Field Semantics](#field-semantics)
+    - [Top-level fields](#top-level-fields)
+    - [Tensor entries](#tensor-entries)
+  - [Provenance Map](#provenance-map)
+  - [Stability Boundary](#stability-boundary)
+  - [Contributor Expectations](#contributor-expectations)
+  - [Adjacent Persisted Artifact](#adjacent-persisted-artifact)
+
+<!-- T81-TOC:END -->
+
+
 This document is the authoritative contributor-facing contract for the current
 `t81 model import --json` surface.
 

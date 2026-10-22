@@ -1,5 +1,20 @@
 # Cross-Cutting: Capability Boundaries (DCP vs Non-DCP)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cross-Cutting: Capability Boundaries (DCP vs Non-DCP)](#cross-cutting-capability-boundaries-dcp-vs-non-dcp)
+  - [Purpose](#purpose)
+  - [Boundary Matrix](#boundary-matrix)
+  - [Capability Graph](#capability-graph)
+  - [CanonFS Capability Notes](#canonfs-capability-notes)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26
 

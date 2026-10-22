@@ -1,5 +1,20 @@
 # RFC 0041 SIMD Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC 0041 SIMD Evidence](#rfc-0041-simd-evidence)
+  - [Scope](#scope)
+  - [Verified Test Surface](#verified-test-surface)
+  - [Benchmark Slice](#benchmark-slice)
+  - [Current Interpretation](#current-interpretation)
+  - [ARM64 Threshold Tuning Outcome](#arm64-threshold-tuning-outcome)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-18
 Host: Apple M2
 Platform: macOS ARM64 (`Darwin 25.3.0`, `arm64`)

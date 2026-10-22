@@ -1,5 +1,29 @@
 # Bundle Transport Examples
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Bundle Transport Examples](#bundle-transport-examples)
+  - [HTTP Transport](#http-transport)
+    - [Simple Bundle Transfer](#simple-bundle-transfer)
+- [Usage](#usage)
+  - [File System Transport](#file-system-transport)
+    - [Bundle Export/Import](#bundle-exportimport)
+- [Export bundle from source system](#export-bundle-from-source-system)
+- [Transfer bundle.json to target system (scp, rsync, etc.)](#transfer-bundlejson-to-target-system-scp-rsync-etc)
+- [Import into target system](#import-into-target-system)
+  - [Verification After Transport](#verification-after-transport)
+    - [Always Verify Bundle Integrity](#always-verify-bundle-integrity)
+- [Usage](#usage)
+  - [Cross-System Considerations](#cross-system-considerations)
+    - [What Transfers](#what-transfers)
+    - [What Doesn't Transfer](#what-doesn't-transfer)
+    - [Security Notes](#security-notes)
+
+<!-- T81-TOC:END -->
+
+
 This document shows how to move T81 decision bundles between systems while maintaining verifiability.
 
 ## HTTP Transport

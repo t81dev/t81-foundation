@@ -1,5 +1,17 @@
 # RFC Triage Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC Triage Matrix](#rfc-triage-matrix)
+  - [Complete Now](#complete-now)
+  - [Keep In Backlog](#keep-in-backlog)
+  - [Rule Of Thumb](#rule-of-thumb)
+
+<!-- T81-TOC:END -->
+
+
 Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: distinguish release-critical RFC closure from backlog RFC tracking.

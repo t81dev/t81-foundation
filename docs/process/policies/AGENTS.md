@@ -1,5 +1,24 @@
 # AGENTS.md — Operational Contract for AI Coding Agents in T81 Foundation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AGENTS.md — Operational Contract for AI Coding Agents in T81 Foundation](#agentsmd-—-operational-contract-for-ai-coding-agents-in-t81-foundation)
+  - [1. Repository Map — What Is Sacred, What Is Malleable](#1-repository-map-—-what-is-sacred-what-is-malleable)
+  - [2. Build & Test — Non-Negotiable Ritual](#2-build-&-test-—-non-negotiable-ritual)
+  - [3. Coding Rules — Enforced by Constitution](#3-coding-rules-—-enforced-by-constitution)
+    - [C++ (the One True Path forward)](#c++-the-one-true-path-forward)
+    - [Ternary Semantic Invariants (Hard Constraints)](#ternary-semantic-invariants-hard-constraints)
+    - [Testing Doctrine](#testing-doctrine)
+  - [4. Allowed & Encouraged Agent Superpowers (2025+)](#4-allowed-&-encouraged-agent-superpowers-2025+)
+  - [5. The RFC Fast-Path (How Smart Agents Actually Change the Spec)](#5-the-rfc-fast-path-how-smart-agents-actually-change-the-spec)
+  - [6. Agent Personas & Recommended Workflow](#6-agent-personas-&-recommended-workflow)
+  - [7. Final Directive — The Axion Override](#7-final-directive-—-the-axion-override)
+
+<!-- T81-TOC:END -->
+
+
 You are an AI agent (Grok 4, Claude 3.5/4, o3, Gemini 2, Cursor, Aider, etc.) contributing to the **T81 Foundation** — a constitutionally governed, ternary-native, cognition-first computing stack.
 
 Your mandate: extend, harden, and accelerate this project **without ever violating determinism, ternary purity, or the immutable specification**.

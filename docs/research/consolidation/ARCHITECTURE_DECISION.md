@@ -1,5 +1,18 @@
 # Architecture decision: governed runtime before object generalization
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Architecture decision: governed runtime before object generalization](#architecture-decision-governed-runtime-before-object-generalization)
+  - [Decision and source evidence](#decision-and-source-evidence)
+  - [Comparison](#comparison)
+  - [Ambitions not currently justified](#ambitions-not-currently-justified)
+  - [Prioritized 30-day objective](#prioritized-30-day-objective)
+
+<!-- T81-TOC:END -->
+
+
 Status: **Proposed for maintainer review**. Date: October 21, 2026.
 Baseline: `6977f49b3a2eba54d9776361a6026971ee529bfd`.
 Evidence: [ledger](README.md), [exact snapshot](repository-snapshot.json).

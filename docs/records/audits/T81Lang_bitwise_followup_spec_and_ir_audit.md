@@ -1,5 +1,21 @@
 # T81Lang Bitwise Follow-up Spec and IR Audit Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Bitwise Follow-up Spec and IR Audit Report](#t81lang-bitwise-follow-up-spec-and-ir-audit-report)
+  - [1. Summary](#1-summary)
+  - [2. Parser-to-Spec Mismatch Review](#2-parser-to-spec-mismatch-review)
+  - [3. `spec/t81lang-spec.md` Updates](#3-`spect81lang-specmd`-updates)
+  - [4. Targeted IR Snapshot / Lowering Audit](#4-targeted-ir-snapshot--lowering-audit)
+  - [5. Negative Parse Coverage Status](#5-negative-parse-coverage-status)
+  - [6. Validation Results](#6-validation-results)
+  - [7. Remaining Gaps and Next Steps](#7-remaining-gaps-and-next-steps)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 This audit completes the stabilization of the T81Lang bitwise/shift operator integration. It synchronizes the formal grammar specification with the implemented parser and verifies the lowering structure of precedence-sensitive expressions via targeted IR snapshot tests.

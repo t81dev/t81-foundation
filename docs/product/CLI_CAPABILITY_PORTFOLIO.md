@@ -1,5 +1,31 @@
 # CLI Capability Portfolio (t81)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [CLI Capability Portfolio (t81)](#cli-capability-portfolio-t81)
+  - [1. Command Tiers](#1-command-tiers)
+    - [Core (public default surface)](#core-public-default-surface)
+    - [Advanced (supported expert surface)](#advanced-supported-expert-surface)
+    - [Labs (non-default, non-DCP, ops/experimental)](#labs-non-default-non-dcp-opsexperimental)
+  - [2. Add / Keep / Remove Decisions](#2-add--keep--remove-decisions)
+    - [Add (approved and implemented)](#add-approved-and-implemented)
+    - [Keep (approved)](#keep-approved)
+    - [Remove or downgrade unless hardened](#remove-or-downgrade-unless-hardened)
+  - [3. Promotion / Demotion Rules](#3-promotion--demotion-rules)
+  - [4. Global UX Standards (All Tiers)](#4-global-ux-standards-all-tiers)
+  - [5. Capability Gaps to Address Before New Expansion](#5-capability-gaps-to-address-before-new-expansion)
+  - [6. Sequencing (Design-First)](#6-sequencing-design-first)
+    - [Phase A: Design lock (now)](#phase-a-design-lock-now)
+    - [Phase B: Core completion](#phase-b-core-completion)
+    - [Phase C: Standardization](#phase-c-standardization)
+    - [Phase D: Promotion decisions](#phase-d-promotion-decisions)
+  - [7. Non-Goals](#7-non-goals)
+
+<!-- T81-TOC:END -->
+
+
 Status: Draft
 Last Updated: 2026-02-26
 Owner: Product/Tooling
