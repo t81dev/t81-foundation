@@ -123,3 +123,21 @@ Windows native build; audit PR #536 with UBSan boundary tests; decide whether
 extreme conversion behavior warrants a separate correctness fix; only then widen
 to bounded deterministic transcendentals and a WASM toolchain/runtime. Preserve
 all failures and platform exclusions before expanding the claim.
+
+## Preserved native measurement
+
+Measured source commit: `77d63b5025bb86634cf96c35f8af7482b9b0cef5` (clean tracked tree). The binary and all experiment source digests are recorded in [observed-arm64.json](observed-arm64.json).
+
+| Stage | Baseline mean ± sample stdev (µs) | Governed mean ± sample stdev (µs) |
+| --- | --- | --- |
+| VM execution (trace included) | 22.82 ± 0.87 | 25.05 ± 2.13 |
+| Trace/audit serialization + trace hash | 5.99 ± 0.11 | 6.05 ± 0.11 |
+| Storage + readback | 529.17 ± 429.32 | 543.64 ± 451.60 |
+| Numeric probes + record encoding/hashes | 136.30 ± 2.26 | 140.15 ± 4.15 |
+| Producer interval | 699.32 ± 429.61 | 720.76 ± 452.69 |
+
+30 samples/arm; VM execution mean increment 9.78%. This single microbenchmark run neither validates nor falsifies the soft-math/libm <5% hypothesis. Raw samples, extrema, medians and variance remain in the JSON.
+
+Canonical allowed evidence: 1516 bytes versus 1459 baseline bytes; stored payload: 3 bytes in both. Retained trace/audit capacities: 384/432 bytes in both. Mean peak RSS: 2500.3 KiB governed, 2462.9 KiB baseline. Whole-process RSS includes warm-up and cannot isolate the incremental tracing allocation.
+
+Local validation: all six selected CTest suites passed (including the seven-test experiment suite); standalone fixture replay and the determinism-claim governance check passed. All 240 committed-source measurement executions passed actual storage inspection and exact per-case repeatability.
