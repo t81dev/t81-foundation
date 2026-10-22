@@ -1,0 +1,126 @@
+{
+  "canonical_evidence_version": 2,
+  "canonical_repeatability": "PASS: exact bytes equal per case",
+  "configuration": {
+    "ambient_T81_variables": "removed",
+    "jit": false,
+    "max_steps": 64,
+    "store": "fresh persistent CanonFS per sample",
+    "strict_float": true
+  },
+  "conversion_status": "UNRESOLVED: excluded from canonical evidence; see float_conversion_audit",
+  "evidence_hashes": {
+    "allow": "3e6622cc2d0e7d4a886d1c6799c392bc0745342c6c03f6e525a4be9740e6d1b8",
+    "baseline": "97ae4e8d897d52d9d4f8ddc353a0e7ca84acf23785357dc9cc6ae349dbb4ba30",
+    "changed-input": "cd783491d155cd08397a4f0474713d45f55ebccda24697371109f3d088f26cb6",
+    "deny-store": "76173a1e5f53cc6499b3a1e2d41e05c8567c8641a75db23583ad7122aa41cfe9",
+    "deny-vm": "35f3ae13c017ac7c57358e8a6432a66b282c106ee372ca887ad00d2e757863c2",
+    "division-zero": "f9e8ec1b3fd7855a1042ee3c269363547ee04f4156c81400101bfe261197505d",
+    "lower-bound": "2a4f1964b7d39ebccb15f71560f6c0bb9bc276f52060575f4b985cb1b337b7c4",
+    "upper-bound": "28d9cf7e9151c7ac086164773ccf2ed74a94856b3b38e65828d5f28ba017bb8b"
+  },
+  "executions": 240,
+  "git_sha": "273a49bc4a4e6cf3bb63b138ef28e03232e1d813",
+  "known_exclusions": [
+    "No cross-platform identity established; this report is one native host only",
+    "WASM NOT TESTED; other native architectures/OSes NOT TESTED in this report",
+    "Built-in trace generation cannot be timed separately through the stable VM API",
+    "Peak RSS includes startup/warmup; no marginal allocator measurement",
+    "No host libm comparison, transcendental accuracy claim, AI inference, signatures or remote attestation",
+    "INT64_MIN / -1, helper signed overflow and negative BigInt cancellation excluded pending PR #536 audit/fixes",
+    "All T81Float from_double probes are unsupported noncanonical diagnostics; no conversion correctness or identity claim",
+    "Unsigned evidence needs caller-pinned workload/profile and trusted verifier; unreported external side effects cannot be proven absent",
+    "Less-than-5-percent overhead remains an untested inference/libm hypothesis"
+  ],
+  "platform": {
+    "compiler": "Clang 21.0.0 (clang-2100.1.1.101)",
+    "machine": "arm64",
+    "python": "3.14.3",
+    "release": "25.5.0",
+    "system": "Darwin"
+  },
+  "repetitions_per_case": 30,
+  "runner_hash": "5e0fe26c96e3cfad459d134b0befb9c87cf8313840ec9b8f105a0daa54689eb2",
+  "source_hashes": {
+    "experiments/deterministic_provenance/run.py": "06d320ce4819bdffaba9093c33fdc129848d200934388973f1469a2da6d64e6b",
+    "experiments/deterministic_provenance/runner.cpp": "d0150dd74b196b7140d2abd1c2dcd9b2070ad99e37c5d202f787620c59eaa449",
+    "experiments/deterministic_provenance/test_experiment.py": "60cd34f33a8c4940f884f868f501cea1fd46a02b5508ef83977702d0db66014c",
+    "experiments/deterministic_provenance/verify.py": "ac25836de48e690dde88cc7cfe03a16ee462392a9e03c209b7feccd532c0df6e"
+  },
+  "tracked_tree_dirty": false,
+  "unsupported_conversion_observations": {
+    "allow": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "baseline": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "changed-input": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "deny-store": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "deny-vm": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "division-zero": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "lower-bound": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ],
+    "upper-bound": [
+      {
+        "count": 30,
+        "observation": {
+          "float_conversions": "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n",
+          "status": "UNSUPPORTED_NONCANONICAL"
+        }
+      }
+    ]
+  },
+  "verifier": "PASS for every run, including actual store inspection"
+}

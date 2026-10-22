@@ -129,3 +129,58 @@ of normalization and the inverse `to_double` path (also host `powl` based). Unti
 then **floating-point cross-platform identity and correctness are not established**.
 The integer provenance milestone can advance only within its declared boundary
 when the native comparison passes. WASM and Windows remain **NOT TESTED**.
+
+## Local evidence (native macOS ARM64)
+
+Measured source commit `273a49bc4a4e6cf3bb63b138ef28e03232e1d813`:
+[conversion observations](native-macos-arm64.json) and
+[240-run provenance recheck](provenance-v2-macos-arm64.json).
+Apple Clang 21.0.0; `long double` has 53 precision bits and maximum binary exponent
+1024. Optimizations O0 and O3 produce identical canonical outputs on this corpus.
+
+| Exact binary64 input | Production before = after | Independent nearest candidate | Checked reference outcome |
+| --- | --- | --- | --- |
+| `0000000000000001` (denorm_min) | `+0E0` | `++----00++++-0--00-+++0++000E-677` | inexact |
+| `0010000000000000` (min) | `+0E0` | `+++-0+-+000+-+++-0+0++0+-0-0E-645` | inexact |
+| `7fefffffffffffff` (max) | `+0E0` | `++0+-+-00+--+-0+--+0+---000+E646` | inexact |
+| `3fe0000000000000` (0.5) | `++--------------------------E0` | `++++++++++++++++++++++++++++E-1` | inexact |
+| +/-0 | `+0E0` | `+0E0` | exact |
+| +/-infinity | `+Inf` / `-Inf` | no finite candidate | invalid |
+| NaN payloads | `NaE` | no finite candidate | invalid |
+
+All seven targeted CTest suites passed, including eight provenance and five
+reference tests. All 240 integer executions verified with identical canonical
+v2 bytes per case; actual stores, policy denials and adversarial rehashed records
+were checked. The production header is unchanged. The normative/API conflict
+remains; this table records numerical failures, not a production fix.
+
+## Native CI reproduction
+
+The [first native run](https://github.com/t81dev/t81-foundation/actions/runs/39859892032)
+reproduced the discrepancy with GCC 14.2.0 on Linux x86-64 (64-bit `long double`
+precision, maximum binary exponent 16384) and Apple Clang 21.0.0 on macOS ARM64
+(53 bits, exponent 1024). [Native CI observations](native-ci.json) preserve all
+24 encodings and their exact reference expectations. Neither platform changed
+canonical outputs between O0 and O3 for this corpus.
+
+| Input | Linux production before = after | macOS production before = after |
+| --- | --- | --- |
+| denorm_min | `++----00++++-0--00-+++0++000E-677` | `+0E0` |
+| min-normal | `+++-0+-+000+-+++-0+0++0+-0-0E-645` | `+0E0` |
+| max finite | `+0E0` | `+0E0` |
+| 0.5 | `++--------------------------E0` | `++--------------------------E0` |
+| +/-0 | `+0E0` | `+0E0` |
+| +/-infinity | `+Inf` / `-Inf` | `+Inf` / `-Inf` |
+| NaN payloads | `NaE` | `NaE` |
+
+Linux's two tiny results match the nearest diagnostic candidates, while macOS's
+zeros do not. Both platforms' max/half results fail even nearest-value checking.
+The inexact and invalid statuses remain distinct from numerical success.
+
+The first CI jobs passed all five reference tests and eight provenance tests per
+platform, plus 24 repeated provenance executions each. They then failed uploading
+raw CanonFS filenames containing `<`, which GitHub artifacts reject. The workflow
+now uploads tar bundles preserving every store filename and payload; no evidence
+is discarded. The initial overall run is recorded as **failed**, not a passing
+cross-platform comparison. A subsequent native comparison is required before the
+integer-only identity conclusion can advance.

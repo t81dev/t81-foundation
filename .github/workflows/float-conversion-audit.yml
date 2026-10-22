@@ -60,12 +60,15 @@ jobs:
         run: |
           python3 experiments/deterministic_provenance/test_experiment.py --runner build/t81_provenance_experiment
           python3 experiments/deterministic_provenance/run.py --runner build/t81_provenance_experiment --output audit/provenance --repetitions 3
+      - name: Package native evidence with original CanonFS filenames
+        if: always()
+        run: tar -czf audit-bundle.tar.gz audit
       - name: Upload native observations even on failure
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: float-audit-${{ matrix.platform }}
-          path: audit/
+          path: audit-bundle.tar.gz
           retention-days: 90
 
   compare:
@@ -79,8 +82,11 @@ jobs:
           path: evidence
       - name: Compare all admitted integer evidence bytes
         run: |
+          for platform in linux-x86_64 macos-arm64; do
+            tar -xzf "evidence/float-audit-${platform}/audit-bundle.tar.gz" -C "evidence/float-audit-${platform}"
+          done
           for case in allow changed-input deny-vm deny-store division-zero lower-bound upper-bound baseline; do
-            cmp "evidence/float-audit-linux-x86_64/provenance/${case}-0/evidence.json" "evidence/float-audit-macos-arm64/provenance/${case}-0/evidence.json"
+            cmp "evidence/float-audit-linux-x86_64/audit/provenance/${case}-0/evidence.json" "evidence/float-audit-macos-arm64/audit/provenance/${case}-0/evidence.json"
           done
           echo 'PASS: eight bounded integer provenance records match. Floating-point conversions remain UNSUPPORTED and excluded; this is not a numerical conformance pass.' >> "$GITHUB_STEP_SUMMARY"
       - name: Upload comparison evidence
@@ -88,5 +94,6 @@ jobs:
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: float-audit-comparison
-          path: evidence/
+          path: |
+            evidence/*/audit-bundle.tar.gz
           retention-days: 90

@@ -1,0 +1,1017 @@
+{
+  "run_url": "https://github.com/t81dev/t81-foundation/actions/runs/39859892032",
+  "source_head": "273a49bc4a4e6cf3bb63b138ef28e03232e1d813",
+  "note": "Native numerical and provenance tests passed; initial job conclusions failed at artifact upload. See README for packaging correction and subsequent comparison.",
+  "platforms": {
+    "linux": {
+      "cases": {
+        "denorm-min": {
+          "bits": "0000000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-677",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "703",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "703"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++----00++++-0--00-+++0++000E-677",
+          "reference": {
+            "candidate": "++----00++++-0--00-+++0++000E-677",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "half": {
+          "bits": "3fe0000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "0",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "26",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "26"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "++--------------------------E0",
+          "reference": {
+            "candidate": "++++++++++++++++++++++++++++E-1",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "large-finite": {
+          "bits": "5ff0000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "324",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-298",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709551318"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++00+0+-++0-+++-0++-+0-0-++-E323",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "max-finite": {
+          "bits": "7fefffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "647",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-621",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709550995"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++0+-+-00+--+-0+--+0+---000+E646",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "max-finite-before": {
+          "bits": "7feffffffffffffe",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "647",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-621",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709550995"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++0+-+-00+--+-0+--+0+---000+E646",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "max-subnormal": {
+          "bits": "000fffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "670",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+          "reference": {
+            "candidate": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "min-normal": {
+          "bits": "0010000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "670",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+          "reference": {
+            "candidate": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "min-normal-next": {
+          "bits": "0010000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "670",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+          "reference": {
+            "candidate": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-denorm-min": {
+          "bits": "8000000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-677",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "703",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "703"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "-+----00++++-0--00-+++0++000E-677",
+          "reference": {
+            "candidate": "-+----00++++-0--00-+++0++000E-677",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-infinity": {
+          "bits": "fff0000000000000",
+          "input_class": "infinity",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "-Inf",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "negative-max-finite": {
+          "bits": "ffefffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "647",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-621",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709550995"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "-+0+-+-00+--+-0+--+0+---000+E646",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-min-normal": {
+          "bits": "8010000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "670",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "-++-0+-+000+-+++-0+0++0+-0-0E-645",
+          "reference": {
+            "candidate": "-++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-nan-payload": {
+          "bits": "fff8000000000042",
+          "input_class": "nan",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "NaE",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "negative-zero": {
+          "bits": "8000000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+0E0",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "one": {
+          "bits": "3ff0000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "1",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "25",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "25"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E0",
+          "reference": {
+            "candidate": "++00000000000000000000000000E0",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "one-after": {
+          "bits": "3ff0000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "1",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "25",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "25"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E0",
+          "reference": {
+            "candidate": "++00000000000000000000000000E0",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "one-before": {
+          "bits": "3fefffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "0",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "26",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "26"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E0",
+          "reference": {
+            "candidate": "++00000000000000000000000000E0",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "positive-infinity": {
+          "bits": "7ff0000000000000",
+          "input_class": "infinity",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+Inf",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "positive-zero": {
+          "bits": "0000000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+0E0",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "quiet-nan": {
+          "bits": "7ff8000000000000",
+          "input_class": "nan",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "NaE",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "signaling-nan": {
+          "bits": "7ff0000000000001",
+          "input_class": "nan",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "NaE",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "three": {
+          "bits": "4008000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "2",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "24",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "24"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E1",
+          "reference": {
+            "candidate": "++00000000000000000000000000E1",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "three-after": {
+          "bits": "4008000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "2",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "24",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "24"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E1",
+          "reference": {
+            "candidate": "++00000000000000000000000000E1",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "three-before": {
+          "bits": "4007ffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "1",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "25",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "25"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E1",
+          "reference": {
+            "candidate": "++00000000000000000000000000E1",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        }
+      },
+      "compiler": "compiler=GCC 14.2.0;long_double_digits=64;long_double_max_exponent=16384",
+      "excluded_from_cross_platform_provenance": true,
+      "git_sha": "4db5ef61b20c4f3bfaeebb599cc7f6acbd3c0653",
+      "optimization_changes_canonical_outputs": false,
+      "oracle_profile": "checked exact binary64 -> balanced ternary; nearest-even candidate diagnostic only",
+      "platform": {
+        "machine": "x86_64",
+        "python": "3.12.3",
+        "release": "6.17.0-1022-azure",
+        "system": "Linux"
+      },
+      "production_before_after": "UNCHANGED: no numerical production correction in this PR",
+      "production_status": "UNRESOLVED: excluded from cross-platform canonical provenance",
+      "source_sha256": {
+        "corpus": "3449e50309a283416010ed7c6279d68ef915f7f9e5200dd754a00573cfd7d2d4",
+        "oracle": "3c3fdc7f40d30e52af60be3110f58fbd02c64792769d8ecbd4b11314d111dad4",
+        "probe": "177d641e40adc99c2d86669ae2e61a32e3473b105fd2df87197d83a9e07f723f",
+        "probe_binary": "8ad8b231547fe352398089d456011fbb164a1f0baef09af77d462da8cce2b545",
+        "production_header": "6360035708d3a4292a889af13c4202d928fe43dabf4f6016e5a40cd4cc910032"
+      },
+      "v1_macos_fixture_would_reject_this_platform": true
+    },
+    "macos": {
+      "cases": {
+        "denorm-min": {
+          "bits": "0000000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-677",
+            "power_finite": "0",
+            "signed_power_finite": "0",
+            "signed_scale": "703",
+            "signed_scaled_finite": "0",
+            "unsigned_scale": "703"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++----00++++-0--00-+++0++000E-677",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "half": {
+          "bits": "3fe0000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "0",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "26",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "26"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "++--------------------------E0",
+          "reference": {
+            "candidate": "++++++++++++++++++++++++++++E-1",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "large-finite": {
+          "bits": "5ff0000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "324",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-298",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709551318"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++00+0+-++0-+++-0++-+0-0-++-E323",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "max-finite": {
+          "bits": "7fefffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "647",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-621",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709550995"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++0+-+-00+--+-0+--+0+---000+E646",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "max-finite-before": {
+          "bits": "7feffffffffffffe",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "647",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-621",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709550995"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "++0+-+-00+--+-0+--+0+---000+E646",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "max-subnormal": {
+          "bits": "000fffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "0",
+            "signed_power_finite": "0",
+            "signed_scale": "670",
+            "signed_scaled_finite": "0",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "min-normal": {
+          "bits": "0010000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "0",
+            "signed_power_finite": "0",
+            "signed_scale": "670",
+            "signed_scaled_finite": "0",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "min-normal-next": {
+          "bits": "0010000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "0",
+            "signed_power_finite": "0",
+            "signed_scale": "670",
+            "signed_scaled_finite": "0",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-denorm-min": {
+          "bits": "8000000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-677",
+            "power_finite": "0",
+            "signed_power_finite": "0",
+            "signed_scale": "703",
+            "signed_scaled_finite": "0",
+            "unsigned_scale": "703"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "-+----00++++-0--00-+++0++000E-677",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-infinity": {
+          "bits": "fff0000000000000",
+          "input_class": "infinity",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "-Inf",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "negative-max-finite": {
+          "bits": "ffefffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "647",
+            "power_finite": "0",
+            "signed_power_finite": "1",
+            "signed_scale": "-621",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "18446744073709550995"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "-+0+-+-00+--+-0+--+0+---000+E646",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-min-normal": {
+          "bits": "8010000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "-644",
+            "power_finite": "0",
+            "signed_power_finite": "0",
+            "signed_scale": "670",
+            "signed_scaled_finite": "0",
+            "unsigned_scale": "670"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "-++-0+-+000+-+++-0+0++0+-0-0E-645",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "negative-nan-payload": {
+          "bits": "fff8000000000042",
+          "input_class": "nan",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "NaE",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "negative-zero": {
+          "bits": "8000000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+0E0",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "one": {
+          "bits": "3ff0000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "1",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "25",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "25"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E0",
+          "reference": {
+            "candidate": "++00000000000000000000000000E0",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "one-after": {
+          "bits": "3ff0000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "1",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "25",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "25"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E0",
+          "reference": {
+            "candidate": "++00000000000000000000000000E0",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "one-before": {
+          "bits": "3fefffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "0",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "26",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "26"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E0",
+          "reference": {
+            "candidate": "++00000000000000000000000000E0",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "positive-infinity": {
+          "bits": "7ff0000000000000",
+          "input_class": "infinity",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "+Inf",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "positive-zero": {
+          "bits": "0000000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "+0E0",
+          "reference": {
+            "candidate": "+0E0",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "quiet-nan": {
+          "bits": "7ff8000000000000",
+          "input_class": "nan",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "NaE",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "signaling-nan": {
+          "bits": "7ff0000000000001",
+          "input_class": "nan",
+          "intermediates": {
+            "host_exp": "NA",
+            "power_finite": "NA",
+            "signed_power_finite": "NA",
+            "signed_scale": "NA",
+            "signed_scaled_finite": "NA",
+            "unsigned_scale": "NA"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": false,
+          "production_canonical": "NaE",
+          "reference": {
+            "candidate": null,
+            "status": "invalid"
+          },
+          "represents_exact_input": false
+        },
+        "three": {
+          "bits": "4008000000000000",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "2",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "24",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "24"
+          },
+          "lossless_contract_satisfied": true,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E1",
+          "reference": {
+            "candidate": "++00000000000000000000000000E1",
+            "status": "exact"
+          },
+          "represents_exact_input": true
+        },
+        "three-after": {
+          "bits": "4008000000000001",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "2",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "24",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "24"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E1",
+          "reference": {
+            "candidate": "++00000000000000000000000000E1",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        },
+        "three-before": {
+          "bits": "4007ffffffffffff",
+          "input_class": "finite",
+          "intermediates": {
+            "host_exp": "1",
+            "power_finite": "1",
+            "signed_power_finite": "1",
+            "signed_scale": "25",
+            "signed_scaled_finite": "1",
+            "unsigned_scale": "25"
+          },
+          "lossless_contract_satisfied": false,
+          "matches_nearest_candidate": true,
+          "production_canonical": "++00000000000000000000000000E1",
+          "reference": {
+            "candidate": "++00000000000000000000000000E1",
+            "status": "inexact"
+          },
+          "represents_exact_input": false
+        }
+      },
+      "compiler": "compiler=Clang 21.0.0 (clang-2100.1.1.101);long_double_digits=53;long_double_max_exponent=1024",
+      "excluded_from_cross_platform_provenance": true,
+      "git_sha": "4db5ef61b20c4f3bfaeebb599cc7f6acbd3c0653",
+      "optimization_changes_canonical_outputs": false,
+      "oracle_profile": "checked exact binary64 -> balanced ternary; nearest-even candidate diagnostic only",
+      "platform": {
+        "machine": "arm64",
+        "python": "3.15.0",
+        "release": "25.6.0",
+        "system": "Darwin"
+      },
+      "production_before_after": "UNCHANGED: no numerical production correction in this PR",
+      "production_status": "UNRESOLVED: excluded from cross-platform canonical provenance",
+      "source_sha256": {
+        "corpus": "3449e50309a283416010ed7c6279d68ef915f7f9e5200dd754a00573cfd7d2d4",
+        "oracle": "3c3fdc7f40d30e52af60be3110f58fbd02c64792769d8ecbd4b11314d111dad4",
+        "probe": "177d641e40adc99c2d86669ae2e61a32e3473b105fd2df87197d83a9e07f723f",
+        "probe_binary": "477e5dbaba667cab9da60d8e3c32f31a9532be794082b4105af77d7d8f110a4c",
+        "production_header": "6360035708d3a4292a889af13c4202d928fe43dabf4f6016e5a40cd4cc910032"
+      },
+      "v1_macos_fixture_would_reject_this_platform": false
+    }
+  }
+}
