@@ -1,0 +1,38 @@
+{
+  "tested_head": "8394ac458bbfdcc13843705685f6c0ad3c278f97",
+  "native_run": "https://github.com/t81dev/t81-foundation/actions/runs/39860319282",
+  "results": {
+    "linux_x86_64": "PASS: exact-reference suite, 24 conversions at O0/O3, eight provenance tests and 24 repeated integer executions",
+    "macos_arm64": "PASS: exact-reference suite, 24 conversions at O0/O3, eight provenance tests and 24 repeated integer executions",
+    "comparison": "PASS: all eight admitted evidence-v2 records byte-identical",
+    "format": "PASS",
+    "ai_experiments": "PASS"
+  },
+  "numerical_status": "UNRESOLVED: production conversions unchanged, fail numerical reference and differ across platforms; excluded from evidence-v2",
+  "determination": "Bounded integer provenance can advance for this native pair and admitted corpus. Floating-point provenance cannot advance.",
+  "limitations": [
+    "No production numerical correction; exact/inexact/invalid/range API contract requires resolution",
+    "No claim for other workloads, compilers, Windows or WASM",
+    "Initial run 39859892032 failed uploading raw CanonFS filenames; tar packaging preserves stores intact"
+  ],
+  "artifacts": [
+    {
+      "id": 12461317702,
+      "name": "float-audit-comparison",
+      "digest": "sha256:a885baefbbc8057c9f4684a106c5e4aeea25a933c4e7b4dbcc7052f113fc8efc",
+      "expires_at": "2027-01-20T21:49:29Z"
+    },
+    {
+      "id": 12461277350,
+      "name": "float-audit-macos-arm64",
+      "digest": "sha256:e7f427f2ad5053c9492ae6eb7b03c0c1637dafc62a65419b8ed90585c0343000",
+      "expires_at": "2027-01-20T21:49:29Z"
+    },
+    {
+      "id": 12461199158,
+      "name": "float-audit-linux-x86_64",
+      "digest": "sha256:04046d648ab7b45c3a8071ceb630f472c902a95b9a0498a4b6d1964c9aa3b675",
+      "expires_at": "2027-01-20T21:49:29Z"
+    }
+  ]
+}

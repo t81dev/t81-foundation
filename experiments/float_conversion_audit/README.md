@@ -184,3 +184,13 @@ now uploads tar bundles preserving every store filename and payload; no evidence
 is discarded. The initial overall run is recorded as **failed**, not a passing
 cross-platform comparison. A subsequent native comparison is required before the
 integer-only identity conclusion can advance.
+
+The [subsequent native run](https://github.com/t81dev/t81-foundation/actions/runs/39860319282)
+**passed** on source head `8394ac458bbfdcc13843705685f6c0ad3c278f97`:
+both native jobs and the byte-for-byte comparison of all eight admitted integer
+records succeeded. Format and AI experiment checks passed too.
+[CI validation](ci-validation.json) records the source identity, artifact digests
+and explicit scope. **Bounded integer provenance can advance for this native
+pair/corpus; floating-point provenance cannot.** Conversion production code is
+unchanged and its failures remain excluded. This conclusion is based on actual
+native artifacts, not matching pass/fail statuses or hashes alone.
