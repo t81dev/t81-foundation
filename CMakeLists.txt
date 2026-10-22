@@ -26,6 +26,22 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
 
+if(T81_BUILD_PROVENANCE_EXPERIMENT)
+  if(NOT T81_STRICT_DETERMINISTIC_FLOAT)
+    message(FATAL_ERROR "Provenance experiment requires T81_STRICT_DETERMINISTIC_FLOAT=ON")
+  endif()
+  add_executable(t81_provenance_experiment experiments/deterministic_provenance/runner.cpp)
+  target_link_libraries(t81_provenance_experiment PRIVATE t81_vm t81_axion t81_core)
+  if(T81_BUILD_TESTS)
+    find_package(Python3 COMPONENTS Interpreter REQUIRED)
+    add_test(NAME deterministic_provenance_experiment
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/experiments/deterministic_provenance/test_experiment.py
+        --runner $<TARGET_FILE:t81_provenance_experiment>)
+    set_tests_properties(deterministic_provenance_experiment PROPERTIES TIMEOUT 120)
+  endif()
+endif()
+
 if(T81_BUILD_OBJECT_INTERFACE_EXPERIMENT)
   add_executable(t81_object_comparison examples/research/object-interface/runner.cpp)
   target_link_libraries(t81_object_comparison PRIVATE t81_vm t81_isa t81_tool_model t81_axion)

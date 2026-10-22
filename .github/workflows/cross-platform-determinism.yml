@@ -68,7 +68,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
-            -DT81_BUILD_TESTS=ON
+            -DT81_BUILD_TESTS=ON \
+            -DT81_BUILD_PROVENANCE_EXPERIMENT=ON
 
       # ── Build ────────────────────────────────────────────────────────────
       - name: Build
@@ -104,6 +105,18 @@ jobs:
         run: |
           ctest --test-dir build --output-on-failure \
             -R '(jit|vm_|determinism|bigint|trace|canonical|repro|tritwise_backend_equivalence)'
+
+      - name: Run bounded provenance experiment
+        run: |
+          ctest --test-dir build --output-on-failure -R '^deterministic_provenance_experiment$'
+          python3 experiments/deterministic_provenance/run.py \
+            --runner build/t81_provenance_experiment \
+            --output build/provenance-results --repetitions 10
+          mkdir -p build/determinism-evidence/provenance
+          for case in allow changed-input deny-vm deny-store division-zero lower-bound upper-bound baseline; do
+            cp "build/provenance-results/${case}-0/evidence.json" "build/determinism-evidence/provenance/${case}.json"
+          done
+          cp build/provenance-results/report.json build/determinism-evidence/provenance-report.json
 
       # ── Record platform metadata alongside hash ──────────────────────────
       - name: Annotate hash artifact
@@ -154,6 +167,11 @@ jobs:
         with:
           name: determinism-evidence-macos-arm64
           path: evidence/macos-arm64
+
+      - name: Compare canonical governed execution evidence
+        run: |
+          diff -ru evidence/linux-x86_64/provenance evidence/macos-arm64/provenance
+          echo 'Bounded provenance: all eight canonical records match on Linux x86_64 and macOS ARM64.' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Compare hashes and publish summary
         run: |

@@ -1,6 +1,7 @@
 include_guard(GLOBAL)
 
 # Core build toggles
+option(T81_BUILD_PROVENANCE_EXPERIMENT "Build the bounded deterministic provenance experiment" OFF)
 option(T81_BUILD_EXAMPLES "Build T81 C++ examples" ON)
 option(T81_BUILD_TESTS "Build T81 C++ unit tests" ON)
 option(T81_BUILD_DESCRIPTOR_EXPERIMENT "Build the bounded validated descriptor experiment" OFF)

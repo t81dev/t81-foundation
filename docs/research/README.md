@@ -14,6 +14,8 @@ specification authority, freeze boundaries, or determinism claim scope.
 
 ## Key Research Consolidations & Decisions
 
+- **[Deterministic execution and provenance, Phase 1](../../experiments/deterministic_provenance/README.md)** — Bounded production VM/Axion/CanonFS experiment, independent trace/result verifier, adversarial tests and native measurement limits.
+
 - **[Ternary Research Closure and Next-Hypothesis Selection](TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md)** — Final evidence synthesis closing the CPU ternary arithmetic and inference research sequence (PRs #544–#549), marking CPU ternary MatVec optimization as frozen (STOP), and selecting Candidate 3 (Deterministic Execution & Canonical Provenance Verification in Policy-Gated AI Runtimes) as the next 30-day research objective.
 - **[Research evidence ledger and architecture decision](consolidation/README.md)** — Consolidation of PRs #537–#541 establishing Option A (Governed Deterministic Runtime) as T81's core architecture foundation.
 
