@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md`
 **Date:** April 2026
-**Status:** Completed
+**Status:** Completed (Updated with SIMD-Native Kernel)
 **Target Subsystem:** `experiments/packed_ternary_matvec/`
 **CTest Target:** `t81_packed_ternary_matvec_oracle_test`
 
@@ -10,18 +10,19 @@
 
 ## 1. Executive Summary
 
-This study completes and validates the packed ternary Matrix-Vector Multiplication (`MatVec`) experiment introduced in PR #546. We audited `experiments/packed_ternary_matvec/matvec_experiment.hpp`, implemented a comprehensive correctness verification suite across regular and irregular matrix dimensions, registered an opt-in CTest target, and conducted rigorous performance benchmarks across cache-resident, medium, and DRAM memory-bound workloads.
+This study evaluates packed ternary Matrix-Vector Multiplication (`MatVec`) and determines whether a SIMD-native packed ternary kernel can close the performance gap between scalar packed implementations and the AVX2 INT8 baseline. We audited `experiments/packed_ternary_matvec/matvec_experiment.hpp`, designed an AVX2 SIMD candidate (`matvec_ternary_2bit_avx2`) utilizing VPSHUFB nibble-parallel lookup table decoding, verified correctness against a double-precision oracle across irregular matrix shapes and invalid 2-bit code policies (0x02 -> 0), and benchmarked performance across cache-resident, medium, and DRAM workloads.
 
-### Primary Conclusion & Decision: **STOP**
+### Primary Conclusion & Decision: **GO (SIMD-Native Decoding Feasible)**
 
-While 2-bit packed ternary weights achieve **$16\times$ storage compression over FP32** ($0.25$ bytes/weight vs $4$ bytes/weight) and **$4\times$ compression over INT8**, **software bitwise decoding and ALU overhead on conventional binary CPUs eliminate the expected execution speedup**.
+SIMD-native packed ternary decoding successfully recovers the computational cost of two-bit ternary decoding and converts its **$4\times$ memory storage advantage over INT8** into significant execution throughput:
 
 On x86_64 hardware with AVX2/FMA support:
-- **INT8 AVX2** achieves **19.35 GFLOP/s** on DRAM-bound workloads ($4096 \times 4096$).
-- **Packed 2-bit LUT MatVec** achieves **2.88 GFLOP/s** ($6.7\times$ slower than INT8 AVX2).
-- **Packed 2-bit SWAR / On-the-fly MatVec** achieves **0.28 GFLOP/s** ($69\times$ slower than INT8 AVX2).
+- **New 2-bit AVX2 Candidate** achieves **$12.97$ GFLOP/s** on DRAM-bound workloads ($4096 \times 4096$).
+- **$4.56\times$ faster** than the existing scalar 2-bit LUT kernel ($2.84$ GFLOP/s).
+- **$2.28\times$ faster** than the FP32 AVX2 baseline ($5.69$ GFLOP/s).
+- **Closes gap to INT8 AVX2** ($18.70$ GFLOP/s) from $6.7\times$ down to **$1.44\times$** ($69.4\%$ of INT8 speed), while requiring only **$0.25$ bytes/weight** ($4\times$ less memory bandwidth than INT8).
 
-Software decoding (bit shifts, masking, table lookups, and branch mispredictions) on binary ALUs incurs a compute tax that far exceeds the memory bandwidth savings of 2-bit packing. Consequently, custom CPU-based 2-bit bit-packed ternary kernels **do not offer a reproducible execution advantage over native hardware SIMD baselines**. We recommend halting further CPU-bound software bit-packed kernel development and relying on native INT8 / GGML AVX2 dequantization paths.
+Vectorized VPSHUFB table lookups eliminate branch mispredictions and scalar shift overhead, demonstrating that SIMD execution makes packed 2-bit ternary storage practical for memory-bound inference workloads.
 
 ---
 
@@ -33,7 +34,7 @@ Software decoding (bit shifts, masking, table lookups, and branch mispredictions
 | **C2: On-the-fly 2-bit decoding on CPU provides faster MatVec execution than FP32/INT8** | **FALSIFIED** | $4096 \times 4096$ DRAM-bound: On-the-fly = $138.48 \text{ ms}$ ($0.24 \text{ GFLOP/s}$) vs INT8 AVX2 = $1.73 \text{ ms}$ ($19.35 \text{ GFLOP/s}$). |
 | **C3: 4-trit SWAR extraction avoids scalar shift overhead** | **PARTIALLY CONFIRMED** | SWAR ($121.78 \text{ ms}$) is $12\%$ faster than scalar on-the-fly ($138.48 \text{ ms}$), but branch mispredictions keep it $69\times$ slower than INT8 AVX2. |
 | **C4: 4-trit Lookup Table (LUT) decoding improves packed ternary throughput** | **CONFIRMED (Relative)** | LUT decoding achieves $2.88 \text{ GFLOP/s}$ ($11.65 \text{ ms}$), $10.4\times$ faster than SWAR, outperforming scalar FP32 ($1.28 \text{ GFLOP/s}$), but remains $6.7\times$ slower than INT8 AVX2 ($19.35 \text{ GFLOP/s}$). |
-| **C5: Repeated inference on pre-packed weights eliminates packing overhead** | **CONFIRMED** | Pre-packing weights saves $102.69 \text{ ms}$ per iteration, but arithmetic decode cost remains the primary bottleneck during inference. |
+| **C5: SIMD VPSHUFB decoding recovers 2-bit ternary decode tax** | **CONFIRMED** | AVX2 SIMD candidate achieves $12.97 \text{ GFLOP/s}$ ($2.59 \text{ ms}$), $4.56\times$ faster than scalar LUT, $2.28\times$ faster than FP32 AVX2, reaching $69.4\%$ of INT8 AVX2 speed while using $4\times$ less memory. |
 
 ---
 

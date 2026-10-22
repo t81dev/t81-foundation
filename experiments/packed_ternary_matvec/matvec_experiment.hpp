@@ -436,4 +436,96 @@ inline void matvec_ternary_2bit_lut(size_t m, size_t k, const uint8_t* packed_w,
   }
 }
 
+// 4e. Ternary 2-bit Packed MatVec (AVX2 SIMD-Native Vectorized Decoding)
+inline void matvec_ternary_2bit_avx2(size_t m, size_t k, const uint8_t* packed_w,
+                                     const float* x, float* y_out) {
+#if defined(__x86_64__) && defined(__AVX2__)
+  alignas(16) static const int8_t lut0_data[16] = {
+      0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1, 0, 1, 0, -1};
+  alignas(16) static const int8_t lut1_data[16] = {
+      0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, -1, -1, -1, -1};
+
+  __m128i v_lut0 = _mm_load_si128(reinterpret_cast<const __m128i*>(lut0_data));
+  __m128i v_lut1 = _mm_load_si128(reinterpret_cast<const __m128i*>(lut1_data));
+  __m128i v_mask_nib = _mm_set1_epi8(0x0F);
+
+  for (size_t i = 0; i < m; ++i) {
+    size_t row_trit_offset = i * k;
+    size_t j = 0;
+
+    __m256 vacc0 = _mm256_setzero_ps();
+    __m256 vacc1 = _mm256_setzero_ps();
+    float scalar_acc = 0.0f;
+
+    // Align to 64-trit (16-byte) boundary in memory if row offset is not aligned
+    while (j < k && ((row_trit_offset + j) % 64 != 0)) {
+      size_t global_idx = row_trit_offset + j;
+      uint8_t code = (packed_w[global_idx / 4] >> ((global_idx % 4) * 2)) & 0x03;
+      int8_t wt = decode_trit_2bit(code);
+      scalar_acc += static_cast<float>(wt) * x[j];
+      ++j;
+    }
+
+    // Vectorized 64-trit (16 packed bytes) AVX2 loop
+    for (; j + 63 < k; j += 64) {
+      size_t global_byte_idx = (row_trit_offset + j) / 4;
+      __m128i v_bytes = _mm_loadu_si128(
+          reinterpret_cast<const __m128i*>(packed_w + global_byte_idx));
+
+      __m128i v_low = _mm_and_si128(v_bytes, v_mask_nib);
+      __m128i v_high = _mm_and_si128(_mm_srli_epi16(v_bytes, 4), v_mask_nib);
+
+      __m128i t0 = _mm_shuffle_epi8(v_lut0, v_low);
+      __m128i t1 = _mm_shuffle_epi8(v_lut1, v_low);
+      __m128i t2 = _mm_shuffle_epi8(v_lut0, v_high);
+      __m128i t3 = _mm_shuffle_epi8(v_lut1, v_high);
+
+      __m128i ab_lo = _mm_unpacklo_epi8(t0, t1);
+      __m128i ab_hi = _mm_unpackhi_epi8(t0, t1);
+      __m128i cd_lo = _mm_unpacklo_epi8(t2, t3);
+      __m128i cd_hi = _mm_unpackhi_epi8(t2, t3);
+
+      __m128i q0 = _mm_unpacklo_epi16(ab_lo, cd_lo);
+      __m128i q1 = _mm_unpackhi_epi16(ab_lo, cd_lo);
+      __m128i q2 = _mm_unpacklo_epi16(ab_hi, cd_hi);
+      __m128i q3 = _mm_unpackhi_epi16(ab_hi, cd_hi);
+
+      const __m128i q_arr[4] = {q0, q1, q2, q3};
+
+      for (int q_idx = 0; q_idx < 4; ++q_idx) {
+        size_t xj_off = j + q_idx * 16;
+        __m128i q_vec = q_arr[q_idx];
+
+        __m256i raw32_0 = _mm256_cvtepi8_epi32(q_vec);
+        __m256i raw32_1 = _mm256_cvtepi8_epi32(_mm_srli_si128(q_vec, 8));
+
+        __m256 fw0 = _mm256_cvtepi32_ps(raw32_0);
+        __m256 fw1 = _mm256_cvtepi32_ps(raw32_1);
+
+        __m256 x0 = _mm256_loadu_ps(x + xj_off);
+        __m256 x1 = _mm256_loadu_ps(x + xj_off + 8);
+
+        vacc0 = _mm256_fmadd_ps(fw0, x0, vacc0);
+        vacc1 = _mm256_fmadd_ps(fw1, x1, vacc1);
+      }
+    }
+
+    // Scalar remainder trits
+    for (; j < k; ++j) {
+      size_t global_idx = row_trit_offset + j;
+      uint8_t code = (packed_w[global_idx / 4] >> ((global_idx % 4) * 2)) & 0x03;
+      int8_t wt = decode_trit_2bit(code);
+      scalar_acc += static_cast<float>(wt) * x[j];
+    }
+
+    __m256 vsum = _mm256_add_ps(vacc0, vacc1);
+    alignas(32) float tmp[8];
+    _mm256_storeu_ps(tmp, vsum);
+    y_out[i] = scalar_acc + tmp[0] + tmp[1] + tmp[2] + tmp[3] + tmp[4] + tmp[5] + tmp[6] + tmp[7];
+  }
+#else
+  matvec_ternary_2bit_lut(m, k, packed_w, x, y_out);
+#endif
+}
+
 }  // namespace t81::research::matvec

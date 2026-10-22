@@ -129,6 +129,9 @@ static bool verify_matrix_dimensions(size_t m, size_t k, std::mt19937& rng) {
   matvec_ternary_2bit_lut(m, k, data.w_packed_2bit.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_2bit_lut", y_test)) ok = false;
 
+  matvec_ternary_2bit_avx2(m, k, data.w_packed_2bit.data(), x.data(), y_test.data());
+  if (!check_close("matvec_ternary_2bit_avx2", y_test)) ok = false;
+
   // Verify roundtrip packing/unpacking
   std::vector<int8_t> unpacked(m * k, 0);
   unpack_ternary_2bit(data.w_packed_2bit.data(), m * k, unpacked.data());
@@ -148,6 +151,19 @@ static bool verify_matrix_dimensions(size_t m, size_t k, std::mt19937& rng) {
   if (invalid_out[0] != 0) {
     std::cerr << "Invalid trit code 0x02 failed to decode to 0, got: " << static_cast<int>(invalid_out[0]) << "\n";
     ok = false;
+  }
+
+  // Verify matvec_ternary_2bit_avx2 on matrix filled with invalid code 0x02 (10)
+  std::vector<uint8_t> all_invalid_packed((m * k + 3) / 4, 0xAA); // 0xAA = 10101010 in binary = all invalid trits
+  std::vector<float> y_invalid(m, 999.0f);
+  matvec_ternary_2bit_avx2(m, k, all_invalid_packed.data(), x.data(), y_invalid.data());
+  for (size_t i = 0; i < m; ++i) {
+    if (std::abs(y_invalid[i]) > 1e-6f) {
+      std::cerr << "Invalid code matrix execution in matvec_ternary_2bit_avx2 produced non-zero result at row "
+                << i << ": " << y_invalid[i] << "\n";
+      ok = false;
+      break;
+    }
   }
 
   return ok;
@@ -308,6 +324,10 @@ static void run_benchmarks(const std::string& json_path) {
 
     bench_kernel("4d. Ternary 2-bit LUT (4-trit)", bytes_packed, [&]() {
       matvec_ternary_2bit_lut(m, k, data.w_packed_2bit.data(), x.data(), y.data());
+    });
+
+    bench_kernel("4e. Ternary 2-bit AVX2 Candidate", bytes_packed, [&]() {
+      matvec_ternary_2bit_avx2(m, k, data.w_packed_2bit.data(), x.data(), y.data());
     });
 
     // 5. End-to-End Single-Use (Pack + SWAR Run)
