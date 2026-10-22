@@ -1,7 +1,7 @@
 # ADR-0005: Additive checked conversion with an explicit numerical profile
 
-Status: Proposed — maintainer approval pending  
-Date: 2026-10-22  
+Status: Proposed — maintainer approval pending
+Date: 2026-10-22
 Authority: Design recommendation only; RFC-00D5 is draft, production unchanged
 
 ## Context

@@ -1,9 +1,9 @@
 # RFC-00D5: Checked Floating-Point Conversion
 
-**Status:** draft — proposed requirements, not binding production behavior  
-**Type:** standards-track  
-**Created:** 2026-10-22  
-**Applies-To:** future checked `T81Float` ↔ IEEE binary64 conversion boundaries  
+**Status:** draft — proposed requirements, not binding production behavior
+**Type:** standards-track
+**Created:** 2026-10-22
+**Applies-To:** future checked `T81Float` ↔ IEEE binary64 conversion boundaries
 **Supersedes:** nothing; does not amend ISA v1.9.0 or `t81-data-types.md` today
 
 ## 1. Purpose and authority
