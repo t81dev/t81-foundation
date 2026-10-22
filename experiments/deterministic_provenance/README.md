@@ -28,7 +28,7 @@ Independent replay verification, without loading T81 or importing producer code:
 
 ```sh
 python3 experiments/deterministic_provenance/verify.py \
-  experiments/deterministic_provenance/fixture.json \
+  experiments/deterministic_provenance/fixture-v2.json \
   --input 40 --divisor 2 --profile allow
 python3 experiments/deterministic_provenance/verify.py \
   /tmp/t81-provenance-results/allow-0/evidence.json \
@@ -39,7 +39,7 @@ python3 experiments/deterministic_provenance/verify.py \
 The caller pins input and profile. The first command verifies the detached
 fixture by recomputing this admitted transformation and its exact execution
 sequence. The second additionally checks the actual CanonFS file inventory and
-payload bytes. Copy `verify.py` and `fixture.json` to another directory to verify
+payload bytes. Copy `verify.py` and `fixture-v2.json` to another directory to verify
 without the repository or producer executable.
 
 `run.py` executes eight cases in rotating order: allowed, changed input, VM deny,
@@ -55,8 +55,8 @@ integers and strings; SHA3-512 truncated to the first 32 bytes. The experiment's
 program/trace text uses decimal integers, opcode names and LF, never C++ object
 memory or host endianness. CanonFS references retain production Base81 encoding.
 `record_hash` covers the complete record, including program/input/policy/output
-hashes, actual ordered trace and policy audit, content reference and numerical
-probes. Platform, compiler, Git SHA, timings, memory and file paths live only in
+hashes, actual ordered trace and policy audit, content reference and integer
+boundary probes. Platform, compiler, Git SHA, timings, memory and file paths live only in
 the measurement report. No timestamps enter canonical evidence.
 
 A changed arithmetic input can preserve the control-flow trace hash while
@@ -68,3 +68,19 @@ bounded computation, not producer identity or absence of unreported host writes.
 The protected storage side effect is creation of the result `.blk` payload;
 constructing a denied persistent store may create empty administrative directories.
 This experiment does not claim transactionality or concurrent revocation.
+
+## Floating-point conversion exclusion (evidence v2)
+
+PR #551 included host-dependent `T81Float::from_double` probes in evidence v1.
+They fail numerical/reference checks and differ across native platforms. Version 2
+explicitly excludes **all** these conversions from canonical evidence; the runner
+still emits their exact outputs as `UNSUPPORTED_NONCANONICAL` diagnostics and
+`run.py` preserves every observation outside the hashes. The independent verifier
+rejects v1 and any reintroduced floating-point fields instead of ignoring them.
+
+The original `fixture.json` and `observed-arm64.json` remain immutable v1 research
+artifacts, not v2 verification targets. `fixture-v2.json` replaces the active
+integer-only contract. See the [conversion audit](../float_conversion_audit/README.md)
+for exact reference expectations, root causes, preserved failures and the unresolved
+production/API contract. A passing integer provenance gate does not resolve
+floating-point conversion or establish any floating-point determinism claim.

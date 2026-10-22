@@ -59,11 +59,13 @@ def verify(envelope, x, divisor, profile, store=None):
     if set(envelope) != {"record", "record_hash"}:
         raise ValueError("invalid envelope")
     r = envelope["record"]
+    if r.get("version") != 2:
+        raise ValueError("unsupported evidence version: v1 includes unverified host float conversions")
     if envelope["record_hash"] != digest(canonical(r)):
         raise ValueError("evidence hash mismatch")
     # Every field is checked; attacker-rehashed records still require replay.
     expected = {
-        "version": 1, "input": f"{x} {divisor}\n", "profile": profile,
+        "version": 2, "input": f"{x} {divisor}\n", "profile": profile,
         "program": program(x, divisor),
         "vm_policy": "" if profile == "baseline" else
             f"(policy (tier 1) (max-instructions {9 if profile == 'deny-vm' else 64}))\n",
@@ -81,10 +83,8 @@ def verify(envelope, x, divisor, profile, store=None):
     expected["trace"] = "".join(f"{pc} {names[pc]} {'DivisionFault' if pc == 6 and divisor == 0 else 'None'}\n" for pc in pcs)
     expected["output"] = f"{(x + 2) * 3 // divisor}\n" if divisor and profile != "deny-vm" else "0\n"
     expected["reference"] = address(expected["output"]) if trap == "None" and profile != "deny-store" else ""
-    # Exact policy audit and conversion fixture constants are pinned by this
-    # verifier implementation, never selected by the evidence producer.
+    # Exact policy audit is pinned by this verifier, never by the producer.
     expected["decisions"] = expected_decisions(trap)
-    expected["float_conversions"] = FLOAT_CONVERSIONS
     expected["integer_boundaries"] = f"{2**63}\n{(2**63-1)*3}\n{2**63}\n"
     for field in ("input", "program", "vm_policy", "storage_policy", "trace", "output"):
         expected[field + "_hash"] = digest(expected[field])
@@ -99,11 +99,6 @@ def verify(envelope, x, divisor, profile, store=None):
         if files != expected_files:
             raise ValueError("actual storage differs from verified side effects")
     return r
-
-
-# Filled from the documented conversion surface; golden values are regression
-# observations, not a proof of correctly rounded math across the full domain.
-FLOAT_CONVERSIONS = "+0E0\n+0E0\nNaE\n+Inf\n-Inf\n+0E0\n+0E0\n+0E0\n+0E0\n"
 
 
 def expected_decisions(trap):

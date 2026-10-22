@@ -121,8 +121,19 @@ class Experiment(unittest.TestCase):
             with self.assertRaises(ValueError):
                 verify(attacked, 40, 2, "allow")
 
+    def test_unsupported_conversion_is_explicit(self):
+        self.counter += 1
+        envelope, raw = execute(ARGS.runner.resolve(), self.root / f"diagnostic-{self.counter}", 40, 2, "allow")
+        self.assertEqual(envelope["record"]["version"], 2)
+        self.assertNotIn("float_conversions", envelope["record"])
+        self.assertEqual(raw["diagnostics"]["status"], "UNSUPPORTED_NONCANONICAL")
+        self.assertEqual(len(raw["diagnostics"]["float_conversions"].splitlines()), 9)
+        historical = load(Path(__file__).parent / "fixture.json")
+        with self.assertRaisesRegex(ValueError, "unsupported evidence version"):
+            verify(historical, 40, 2, "allow")
+
     def test_checked_in_fixture(self):
-        fixture = Path(__file__).parent / "fixture.json"
+        fixture = Path(__file__).parent / "fixture-v2.json"
         envelope = load(fixture)
         verify(envelope, 40, 2, "allow")
         actual, _ = self.produce()

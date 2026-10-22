@@ -1,5 +1,9 @@
 # Phase 1 audit and research report
 
+Historical v1 observations from PR #551. The [conversion audit](../float_conversion_audit/README.md)
+supersedes admission of float-conversion probes; v2 explicitly excludes them.
+The original numerical observations below remain preserved, not approved expectations.
+
 2026-10-22. Experimental, bounded implementation of Candidate 3 selected by
 [PR #550](https://github.com/t81dev/t81-foundation/pull/550), not promotion of a
 new verified surface. CPU packed-ternary optimization remains frozen.

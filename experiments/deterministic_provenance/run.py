@@ -56,6 +56,7 @@ def main():
     runner = args.runner.resolve()
     observations = {case: [] for case in CASES}
     signatures = {}
+    unsupported = {case: [] for case in CASES}
     compiler = None
     # Rotate order each round to reduce fixed-order filesystem/thermal bias.
     cases = list(CASES)
@@ -72,6 +73,7 @@ def main():
                 raise ValueError(f"canonical evidence drift: {case}")
             signatures[case] = data
             observations[case].append(raw["measurements"])
+            unsupported[case].append(raw["diagnostics"])
             compiler = raw["compiler"]
     if signatures["allow"] == signatures["changed-input"]:
         raise ValueError("input sensitivity failed")
@@ -82,6 +84,9 @@ def main():
     sources = [HERE / name for name in ("runner.cpp", "verify.py", "run.py", "test_experiment.py")]
     baseline = summary["baseline"]["execution_ns"]["mean"]
     report = {
+        "canonical_evidence_version": 2,
+        "conversion_status": "UNRESOLVED: excluded from canonical evidence; see float_conversion_audit",
+        "unsupported_conversion_observations": unsupported,
         "git_sha": sha, "tracked_tree_dirty": dirty,
         "source_hashes": {str(p.relative_to(ROOT)): digest(p.read_bytes()) for p in sources},
         "runner_hash": digest(runner.read_bytes()),
@@ -109,7 +114,7 @@ def main():
             "Peak RSS includes startup/warmup; no marginal allocator measurement",
             "No host libm comparison, transcendental accuracy claim, AI inference, signatures or remote attestation",
             "INT64_MIN / -1, helper signed overflow and negative BigInt cancellation excluded pending PR #536 audit/fixes",
-            "Float extremes converting to zero are observed limitations, not IEEE-conformance assertions",
+            "All T81Float from_double probes are unsupported noncanonical diagnostics; no conversion correctness or identity claim",
             "Unsigned evidence needs caller-pinned workload/profile and trusted verifier; unreported external side effects cannot be proven absent",
             "Less-than-5-percent overhead remains an untested inference/libm hypothesis",
         ],

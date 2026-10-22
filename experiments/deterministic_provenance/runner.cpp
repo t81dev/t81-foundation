@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
                                            "\n" + (wide_sum / one).to_string() + "\n";
     for (double v : values) numerics += F::from_double(v).to_canonical_string() + "\n";
     std::ostringstream record;
-    record << "{\"version\":1,\"input\":" << json_quote(xs + " " + ds + "\n")
+    record << "{\"version\":2,\"input\":" << json_quote(xs + " " + ds + "\n")
            << ",\"profile\":" << json_quote(mode) << ",\"program\":" << json_quote(program)
            << ",\"program_hash\":" << json_quote(digest(program))
            << ",\"input_hash\":" << json_quote(digest(xs + " " + ds + "\n"))
@@ -161,7 +161,6 @@ int main(int argc, char** argv) {
            << ",\"decisions\":" << json_quote(decisions) << ",\"output\":" << json_quote(output)
            << ",\"output_hash\":" << json_quote(digest(output))
            << ",\"reference\":" << json_quote(reference)
-           << ",\"float_conversions\":" << json_quote(numerics)
            << ",\"integer_boundaries\":" << json_quote(integer_boundaries) << "}";
     const auto envelope_ns = elapsed(envelope_start);
     const auto total_ns = elapsed(start);
@@ -175,7 +174,12 @@ int main(int argc, char** argv) {
 #endif
     }
 #endif
-    std::cout << "{\"record\":" << record.str() << ",\"measurements\":{\"setup_ns\":" << setup_ns
+    // Unsupported host-dependent conversions are diagnostics, never canonical
+    // evidence. Preserve them explicitly so a valid integer replay cannot be
+    // misread as a passing float-conversion conformance test.
+    std::cout << "{\"record\":" << record.str()
+              << ",\"diagnostics\":{\"status\":\"UNSUPPORTED_NONCANONICAL\",\"float_conversions\":"
+              << json_quote(numerics) << "},\"measurements\":{\"setup_ns\":" << setup_ns
               << ",\"envelope_ns\":" << envelope_ns << ",\"process_peak_rss_bytes\":" << peak_rss
               << ",\"execution_ns\":" << execution_ns
               << ",\"serialization_hash_ns\":" << serialization_hash_ns

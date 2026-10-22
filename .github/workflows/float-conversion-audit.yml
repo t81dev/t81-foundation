@@ -1,0 +1,92 @@
+name: Native float conversion audit
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/float-conversion-audit.yml'
+      - 'experiments/float_conversion_audit/**'
+      - 'experiments/deterministic_provenance/**'
+      - 'include/t81/types/T81Float.hpp'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-audit:
+    name: float audit / ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux-x86_64
+            cc: gcc-14
+            cxx: g++-14
+            machine: x86_64
+          - os: macos-latest
+            platform: macos-arm64
+            cc: clang
+            cxx: clang++
+            machine: arm64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Verify native architecture
+        run: test "$(uname -m)" = '${{ matrix.machine }}'
+      - name: Install Linux compiler
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y gcc-14 g++-14 ninja-build
+      - name: Reference regression suite
+        run: python3 experiments/float_conversion_audit/test_oracle.py
+      - name: Compile unchanged production conversion at O0 and O3
+        run: |
+          mkdir -p audit
+          ${{ matrix.cxx }} -std=c++23 -O0 -DNDEBUG -DT81_DETERMINISTIC -I include experiments/float_conversion_audit/probe.cpp -o audit/probe-o0
+          ${{ matrix.cxx }} -std=c++23 -O3 -DNDEBUG -DT81_DETERMINISTIC -I include experiments/float_conversion_audit/probe.cpp -o audit/probe-o3
+      - name: Preserve unsupported conversion failures against exact oracle
+        run: |
+          python3 experiments/float_conversion_audit/audit.py --probe audit/probe-o3 --unoptimized-probe audit/probe-o0 --output audit/conversion.json
+      - name: Build bounded provenance executable only
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=${{ matrix.cc }} -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
+            -DT81_BUILD_PROVENANCE_EXPERIMENT=ON -DT81_STRICT_DETERMINISTIC_FLOAT=ON \
+            -DT81_BUILD_TESTS=OFF -DT81_BUILD_BENCHMARKS=OFF -DT81_BUILD_EXAMPLES=OFF \
+            -DT81_BUILD_TUI=OFF -DT81_ENABLE_TERNARYOS=OFF -DT81_BUILD_FUZZ_TESTS=OFF
+          cmake --build build --target t81_provenance_experiment --parallel 4
+      - name: Verify integer provenance without admitting unsupported conversions
+        run: |
+          python3 experiments/deterministic_provenance/test_experiment.py --runner build/t81_provenance_experiment
+          python3 experiments/deterministic_provenance/run.py --runner build/t81_provenance_experiment --output audit/provenance --repetitions 3
+      - name: Upload native observations even on failure
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: float-audit-${{ matrix.platform }}
+          path: audit/
+          retention-days: 90
+
+  compare:
+    name: float audit / bounded provenance compare (conversions excluded)
+    needs: native-audit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: float-audit-*
+          path: evidence
+      - name: Compare all admitted integer evidence bytes
+        run: |
+          for case in allow changed-input deny-vm deny-store division-zero lower-bound upper-bound baseline; do
+            cmp "evidence/float-audit-linux-x86_64/provenance/${case}-0/evidence.json" "evidence/float-audit-macos-arm64/provenance/${case}-0/evidence.json"
+          done
+          echo 'PASS: eight bounded integer provenance records match. Floating-point conversions remain UNSUPPORTED and excluded; this is not a numerical conformance pass.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload comparison evidence
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: float-audit-comparison
+          path: evidence/
+          retention-days: 90

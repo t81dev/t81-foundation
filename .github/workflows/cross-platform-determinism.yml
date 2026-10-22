@@ -106,6 +106,8 @@ jobs:
           ctest --test-dir build --output-on-failure \
             -R '(jit|vm_|determinism|bigint|trace|canonical|repro|tritwise_backend_equivalence)'
 
+      # Evidence v2 excludes unsupported T81Float conversion diagnostics.
+      # Native numerical failures are preserved by float-conversion-audit.yml.
       - name: Run bounded provenance experiment
         run: |
           ctest --test-dir build --output-on-failure -R '^deterministic_provenance_experiment$'

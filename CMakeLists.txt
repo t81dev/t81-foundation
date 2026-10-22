@@ -39,6 +39,10 @@ if(T81_BUILD_PROVENANCE_EXPERIMENT)
         ${PROJECT_SOURCE_DIR}/experiments/deterministic_provenance/test_experiment.py
         --runner $<TARGET_FILE:t81_provenance_experiment>)
     set_tests_properties(deterministic_provenance_experiment PROPERTIES TIMEOUT 120)
+    add_test(NAME float_conversion_exact_reference
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/experiments/float_conversion_audit/test_oracle.py)
+    set_tests_properties(float_conversion_exact_reference PROPERTIES TIMEOUT 60)
   endif()
 endif()
 
