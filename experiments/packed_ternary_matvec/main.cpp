@@ -6,6 +6,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -62,15 +63,10 @@ static BenchmarkStats compute_stats(const std::string& name, size_t m, size_t k,
   return {name, m, k, median_val, mean_val, min_val, max_val, stddev_val, iqr_val, var_pct, gflops, throughput};
 }
 
-// Correctness verification
-static bool verify_matrix_dimensions(size_t m, size_t k, std::mt19937& rng) {
-  std::vector<int8_t> trits(m * k);
-  std::uniform_int_distribution<int> dist(-1, 1);
-  for (size_t i = 0; i < m * k; ++i) {
-    trits[i] = static_cast<int8_t>(dist(rng));
-  }
-
-  MatrixData data = MatrixData::create(m, k, trits);
+// Correctness verification helper for a specific matrix configuration and trit pattern
+static bool verify_matrix_data(const MatrixData& data, const std::string& pattern_desc, std::mt19937& rng) {
+  size_t m = data.m;
+  size_t k = data.k;
 
   std::vector<float> x(k);
   std::uniform_real_distribution<float> fdist(-1.0f, 1.0f);
@@ -81,15 +77,16 @@ static bool verify_matrix_dimensions(size_t m, size_t k, std::mt19937& rng) {
   std::vector<float> y_oracle(m, 0.0f);
   std::vector<float> y_test(m, 0.0f);
 
-  matvec_oracle_f64(m, k, data.logical_trits.data(), x.data(), y_oracle.data());
+  matvec_oracle_f64(m, k, data.logical_trits.data(), data.row_scales.data(), x.data(), y_oracle.data());
 
-  auto check_close = [&](const std::string& name, const std::vector<float>& y) {
+  auto check_close = [&](const std::string& kernel_name, const std::vector<float>& y) {
     for (size_t i = 0; i < m; ++i) {
       float diff = std::abs(y[i] - y_oracle[i]);
       float tol = 1e-3f * (1.0f + std::abs(y_oracle[i]));
       if (diff > tol) {
-        std::cerr << "Mismatch in " << name << " at row " << i << " (M=" << m << ", K=" << k
-                  << "): got " << y[i] << ", expected " << y_oracle[i] << " (diff " << diff << ")\n";
+        std::cerr << "Mismatch in " << kernel_name << " [" << pattern_desc << "] at row " << i
+                  << " (M=" << m << ", K=" << k << "): got " << y[i] << ", expected " << y_oracle[i]
+                  << " (diff " << diff << ")\n";
         return false;
       }
     }
@@ -104,63 +101,51 @@ static bool verify_matrix_dimensions(size_t m, size_t k, std::mt19937& rng) {
   matvec_fp32_avx2(m, k, data.w_fp32.data(), x.data(), y_test.data());
   if (!check_close("matvec_fp32_avx2", y_test)) ok = false;
 
-  matvec_int8(m, k, data.w_int8.data(), x.data(), y_test.data());
+  matvec_fp32_neon(m, k, data.w_fp32.data(), x.data(), y_test.data());
+  if (!check_close("matvec_fp32_neon", y_test)) ok = false;
+
+  matvec_int8(m, k, data.w_int8.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_int8", y_test)) ok = false;
 
-  matvec_int8_avx2(m, k, data.w_int8.data(), x.data(), y_test.data());
+  matvec_int8_avx2(m, k, data.w_int8.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_int8_avx2", y_test)) ok = false;
 
-  matvec_ternary_byte_cond(m, k, data.w_ternary_byte.data(), x.data(), y_test.data());
+  matvec_int8_neon(m, k, data.w_int8.data(), data.row_scales.data(), x.data(), y_test.data());
+  if (!check_close("matvec_int8_neon", y_test)) ok = false;
+
+  matvec_ternary_byte_cond(m, k, data.w_ternary_byte.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_byte_cond", y_test)) ok = false;
 
-  matvec_ternary_byte_branchless(m, k, data.w_ternary_byte.data(), x.data(), y_test.data());
+  matvec_ternary_byte_branchless(m, k, data.w_ternary_byte.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_byte_branchless", y_test)) ok = false;
 
-  matvec_ternary_2bit_onthefly(m, k, data.w_packed_2bit.data(), x.data(), y_test.data());
+  matvec_ternary_2bit_onthefly(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_2bit_onthefly", y_test)) ok = false;
 
   std::vector<int8_t> scratch;
-  matvec_ternary_2bit_preunpacked(m, k, data.w_packed_2bit.data(), x.data(), y_test.data(), scratch);
+  matvec_ternary_2bit_preunpacked(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y_test.data(), scratch);
   if (!check_close("matvec_ternary_2bit_preunpacked", y_test)) ok = false;
 
-  matvec_ternary_2bit_swar(m, k, data.w_packed_2bit.data(), x.data(), y_test.data());
+  matvec_ternary_2bit_swar(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_2bit_swar", y_test)) ok = false;
 
-  matvec_ternary_2bit_lut(m, k, data.w_packed_2bit.data(), x.data(), y_test.data());
+  matvec_ternary_2bit_lut(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_2bit_lut", y_test)) ok = false;
 
-  matvec_ternary_2bit_avx2(m, k, data.w_packed_2bit.data(), x.data(), y_test.data());
+  matvec_ternary_2bit_avx2(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y_test.data());
   if (!check_close("matvec_ternary_2bit_avx2", y_test)) ok = false;
+
+  matvec_ternary_2bit_neon(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y_test.data());
+  if (!check_close("matvec_ternary_2bit_neon", y_test)) ok = false;
 
   // Verify roundtrip packing/unpacking
   std::vector<int8_t> unpacked(m * k, 0);
   unpack_ternary_2bit(data.w_packed_2bit.data(), m * k, unpacked.data());
-  for (size_t i = 0; i < m * k; ++i) {
-    if (unpacked[i] != data.logical_trits[i]) {
-      std::cerr << "Unpack mismatch at idx " << i << ": got " << static_cast<int>(unpacked[i])
-                << ", expected " << static_cast<int>(data.logical_trits[i]) << "\n";
-      ok = false;
-      break;
-    }
-  }
-
-  // Verify invalid code handling (0x02 -> 0)
-  uint8_t invalid_packed[1] = { 0x02 }; // lane 0 has invalid code 10
-  int8_t invalid_out[1] = { 99 };
-  unpack_ternary_2bit(invalid_packed, 1, invalid_out);
-  if (invalid_out[0] != 0) {
-    std::cerr << "Invalid trit code 0x02 failed to decode to 0, got: " << static_cast<int>(invalid_out[0]) << "\n";
-    ok = false;
-  }
-
-  // Verify matvec_ternary_2bit_avx2 on matrix filled with invalid code 0x02 (10)
-  std::vector<uint8_t> all_invalid_packed((m * k + 3) / 4, 0xAA); // 0xAA = 10101010 in binary = all invalid trits
-  std::vector<float> y_invalid(m, 999.0f);
-  matvec_ternary_2bit_avx2(m, k, all_invalid_packed.data(), x.data(), y_invalid.data());
-  for (size_t i = 0; i < m; ++i) {
-    if (std::abs(y_invalid[i]) > 1e-6f) {
-      std::cerr << "Invalid code matrix execution in matvec_ternary_2bit_avx2 produced non-zero result at row "
-                << i << ": " << y_invalid[i] << "\n";
+  for (size_t idx = 0; idx < m * k; ++idx) {
+    if (unpacked[idx] != data.logical_trits[idx]) {
+      std::cerr << "Unpack mismatch [" << pattern_desc << "] at idx " << idx << ": got "
+                << static_cast<int>(unpacked[idx]) << ", expected "
+                << static_cast<int>(data.logical_trits[idx]) << "\n";
       ok = false;
       break;
     }
@@ -169,11 +154,52 @@ static bool verify_matrix_dimensions(size_t m, size_t k, std::mt19937& rng) {
   return ok;
 }
 
+// Generate adversarial trit patterns for Phase 1
+static std::vector<int8_t> generate_adversarial_trits(size_t total, const std::string& pattern, std::mt19937& rng) {
+  std::vector<int8_t> trits(total, 0);
+  if (pattern == "all_pos") {
+    std::fill(trits.begin(), trits.end(), static_cast<int8_t>(1));
+  } else if (pattern == "all_neg") {
+    std::fill(trits.begin(), trits.end(), static_cast<int8_t>(-1));
+  } else if (pattern == "all_zero") {
+    std::fill(trits.begin(), trits.end(), static_cast<int8_t>(0));
+  } else if (pattern == "alternating") {
+    for (size_t i = 0; i < total; ++i) trits[i] = (i % 2 == 0) ? 1 : -1;
+  } else if (pattern == "checkerboard") {
+    for (size_t i = 0; i < total; ++i) {
+      int mode = i % 3;
+      trits[i] = (mode == 0) ? 1 : ((mode == 1) ? -1 : 0);
+    }
+  } else if (pattern == "boundary_isolated") {
+    for (size_t i = 0; i < total; ++i) {
+      if (i % 4 == 0 || i % 4 == 3) trits[i] = (i % 2 == 0) ? 1 : -1;
+      else trits[i] = 0;
+    }
+  } else {
+    // Random
+    std::uniform_int_distribution<int> dist(-1, 1);
+    for (size_t i = 0; i < total; ++i) trits[i] = static_cast<int8_t>(dist(rng));
+  }
+  return trits;
+}
+
 static bool run_all_verifications() {
   std::mt19937 rng(42);
   struct Shape { size_t m; size_t k; std::string desc; };
   std::vector<Shape> shapes = {
     {1, 1, "1x1 scalar edge case"},
+    {1, 3, "1x3 non-byte aligned column"},
+    {1, 4, "1x4 single byte alignment"},
+    {1, 5, "1x5 byte+1 scalar remainder"},
+    {1, 15, "1x15 byte*3+3 boundary"},
+    {1, 16, "1x16 two-byte / 16-trit alignment"},
+    {1, 17, "1x17 16-trit + 1 scalar remainder"},
+    {1, 31, "1x31 32-trit boundary - 1"},
+    {1, 32, "1x32 32-trit NEON vector block alignment"},
+    {1, 33, "1x33 32-trit + 1 scalar remainder"},
+    {1, 63, "1x63 64-trit AVX2 vector block - 1"},
+    {1, 64, "1x64 64-trit AVX2 vector block alignment"},
+    {1, 65, "1x65 64-trit + 1 scalar remainder"},
     {7, 13, "7x13 prime/irregular shape"},
     {100, 33, "100x33 odd col alignment"},
     {127, 255, "127x255 prime - 1 shape"},
@@ -181,19 +207,69 @@ static bool run_all_verifications() {
     {513, 1007, "513x1007 large irregular shape"}
   };
 
-  std::cout << "=== Running Correctness Verification Suite ===\n";
+  std::vector<std::string> patterns = {
+    "random", "all_pos", "all_neg", "all_zero", "alternating", "checkerboard", "boundary_isolated"
+  };
+
+  std::cout << "=== Phase 1: Running Correctness & Adversarial Verification Suite ===\n";
   bool overall_pass = true;
+
   for (const auto& s : shapes) {
-    bool ok = verify_matrix_dimensions(s.m, s.k, rng);
-    std::cout << "Verification [" << s.desc << " (" << s.m << "x" << s.k << ")]: "
-              << (ok ? "PASS" : "FAIL") << "\n";
-    if (!ok) overall_pass = false;
+    bool shape_pass = true;
+    for (const auto& pat : patterns) {
+      size_t total = s.m * s.k;
+      auto trits = generate_adversarial_trits(total, pat, rng);
+
+      // Create row scale factors for scaled quantized testing
+      std::vector<float> scales(s.m);
+      for (size_t i = 0; i < s.m; ++i) scales[i] = 0.5f + static_cast<float>(i % 5) * 0.25f;
+
+      MatrixData data = MatrixData::create(s.m, s.k, trits, &scales);
+      bool ok = verify_matrix_data(data, pat, rng);
+      if (!ok) {
+        shape_pass = false;
+        overall_pass = false;
+      }
+    }
+    if (shape_pass) {
+      std::cout << "Shape Verification [" << s.desc << " (" << s.m << "x" << s.k << ")]: PASS across 7 adversarial patterns\n";
+    } else {
+      std::cout << "Shape Verification [" << s.desc << " (" << s.m << "x" << s.k << ")]: FAIL\n";
+    }
   }
+
+  // Edge case: Verify invalid 2-bit code handling (0x02 -> 0)
+  uint8_t invalid_packed[1] = { 0x02 }; // lane 0 has invalid code 10
+  int8_t invalid_out[1] = { 99 };
+  unpack_ternary_2bit(invalid_packed, 1, invalid_out);
+  if (invalid_out[0] != 0) {
+    std::cerr << "Invalid trit code 0x02 failed to decode to 0, got: " << static_cast<int>(invalid_out[0]) << "\n";
+    overall_pass = false;
+  }
+
+  // Edge case: Verify SIMD AVX2 and NEON on matrix filled with invalid code 0x02 (10)
+  size_t m_inv = 16, k_inv = 64;
+  std::vector<uint8_t> all_invalid_packed((m_inv * k_inv + 3) / 4, 0xAA); // 0xAA = 10101010 in binary = all invalid trits
+  std::vector<float> x_inv(k_inv, 1.0f);
+  std::vector<float> y_invalid_avx2(m_inv, 999.0f);
+  std::vector<float> y_invalid_neon(m_inv, 999.0f);
+
+  matvec_ternary_2bit_avx2(m_inv, k_inv, all_invalid_packed.data(), nullptr, x_inv.data(), y_invalid_avx2.data());
+  matvec_ternary_2bit_neon(m_inv, k_inv, all_invalid_packed.data(), nullptr, x_inv.data(), y_invalid_neon.data());
+
+  for (size_t i = 0; i < m_inv; ++i) {
+    if (std::abs(y_invalid_avx2[i]) > 1e-6f || std::abs(y_invalid_neon[i]) > 1e-6f) {
+      std::cerr << "Invalid code matrix execution produced non-zero result at row " << i
+                << ": AVX2=" << y_invalid_avx2[i] << ", NEON=" << y_invalid_neon[i] << "\n";
+      overall_pass = false;
+      break;
+    }
+  }
+
   return overall_pass;
 }
 
-static void run_benchmarks(const std::string& json_path) {
-  constexpr int REPETITIONS = 100;
+static void run_benchmarks(const std::string& json_path, int repetitions) {
   std::mt19937 rng(12345);
 
   struct Workload {
@@ -210,7 +286,7 @@ static void run_benchmarks(const std::string& json_path) {
 
   std::vector<BenchmarkStats> all_stats;
 
-  std::cout << "\n=== Running Performance Benchmark Suite (" << REPETITIONS << " repetitions) ===\n";
+  std::cout << "\n=== Running Performance Benchmark Suite (" << repetitions << " repetitions) ===\n";
 
   for (const auto& wl : workloads) {
     size_t m = wl.m;
@@ -221,7 +297,10 @@ static void run_benchmarks(const std::string& json_path) {
     std::uniform_int_distribution<int> dist(-1, 1);
     for (size_t i = 0; i < total; ++i) trits[i] = static_cast<int8_t>(dist(rng));
 
-    MatrixData data = MatrixData::create(m, k, trits);
+    std::vector<float> row_scales(m);
+    for (size_t i = 0; i < m; ++i) row_scales[i] = 0.05f + static_cast<float>(i % 10) * 0.01f;
+
+    MatrixData data = MatrixData::create(m, k, trits, &row_scales);
 
     std::vector<float> x(k);
     std::uniform_real_distribution<float> fdist(-1.0f, 1.0f);
@@ -239,8 +318,8 @@ static void run_benchmarks(const std::string& json_path) {
     // 1. Packing Cost Alone
     {
       std::vector<double> times;
-      times.reserve(REPETITIONS);
-      for (int r = 0; r < REPETITIONS; ++r) {
+      times.reserve(repetitions);
+      for (int r = 0; r < repetitions; ++r) {
         auto t0 = std::chrono::high_resolution_clock::now();
         auto packed = pack_ternary_2bit(trits.data(), total);
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -253,8 +332,8 @@ static void run_benchmarks(const std::string& json_path) {
     // 2. Scratch Alloc + Unpack Cost Alone
     {
       std::vector<double> times;
-      times.reserve(REPETITIONS);
-      for (int r = 0; r < REPETITIONS; ++r) {
+      times.reserve(repetitions);
+      for (int r = 0; r < repetitions; ++r) {
         auto t0 = std::chrono::high_resolution_clock::now();
         std::vector<int8_t> buf(total);
         unpack_ternary_2bit(data.w_packed_2bit.data(), total, buf.data());
@@ -268,10 +347,10 @@ static void run_benchmarks(const std::string& json_path) {
     // Benchmark Kernel Function helper
     auto bench_kernel = [&](const std::string& name, size_t bytes, auto func) {
       std::vector<double> times;
-      times.reserve(REPETITIONS);
+      times.reserve(repetitions);
       // Warmup
       func();
-      for (int r = 0; r < REPETITIONS; ++r) {
+      for (int r = 0; r < repetitions; ++r) {
         auto t0 = std::chrono::high_resolution_clock::now();
         func();
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -279,9 +358,10 @@ static void run_benchmarks(const std::string& json_path) {
         times.push_back(std::chrono::duration<double, std::micro>(t1 - t0).count());
       }
       auto stats = compute_stats(wl.name + " :: " + name, m, k, bytes, times);
-      std::cout << std::left << std::setw(45) << stats.name
+      std::cout << std::left << std::setw(52) << stats.name
                 << " Median: " << std::right << std::setw(9) << std::fixed << std::setprecision(2) << stats.median_us << " us | "
                 << std::setw(7) << std::setprecision(2) << stats.gflops << " GFLOP/s | "
+                << "BW: " << std::setw(6) << std::setprecision(2) << stats.throughput_gb_per_sec << " GB/s | "
                 << "IQR: " << std::setw(5) << std::setprecision(1) << stats.variation_pct << "%\n";
       all_stats.push_back(stats);
     };
@@ -294,46 +374,58 @@ static void run_benchmarks(const std::string& json_path) {
       matvec_fp32_avx2(m, k, data.w_fp32.data(), x.data(), y.data());
     });
 
-    bench_kernel("2a. INT8 Scalar", bytes_int8, [&]() {
-      matvec_int8(m, k, data.w_int8.data(), x.data(), y.data());
+    bench_kernel("1c. FP32 NEON", bytes_fp32, [&]() {
+      matvec_fp32_neon(m, k, data.w_fp32.data(), x.data(), y.data());
     });
 
-    bench_kernel("2b. INT8 AVX2", bytes_int8, [&]() {
-      matvec_int8_avx2(m, k, data.w_int8.data(), x.data(), y.data());
+    bench_kernel("2a. INT8 Scalar (Scaled)", bytes_int8, [&]() {
+      matvec_int8(m, k, data.w_int8.data(), data.row_scales.data(), x.data(), y.data());
+    });
+
+    bench_kernel("2b. INT8 AVX2 (Scaled)", bytes_int8, [&]() {
+      matvec_int8_avx2(m, k, data.w_int8.data(), data.row_scales.data(), x.data(), y.data());
+    });
+
+    bench_kernel("2c. INT8 NEON (Scaled)", bytes_int8, [&]() {
+      matvec_int8_neon(m, k, data.w_int8.data(), data.row_scales.data(), x.data(), y.data());
     });
 
     bench_kernel("3a. Ternary 1-Byte Cond", bytes_int8, [&]() {
-      matvec_ternary_byte_cond(m, k, data.w_ternary_byte.data(), x.data(), y.data());
+      matvec_ternary_byte_cond(m, k, data.w_ternary_byte.data(), data.row_scales.data(), x.data(), y.data());
     });
 
     bench_kernel("3b. Ternary 1-Byte Branchless", bytes_int8, [&]() {
-      matvec_ternary_byte_branchless(m, k, data.w_ternary_byte.data(), x.data(), y.data());
+      matvec_ternary_byte_branchless(m, k, data.w_ternary_byte.data(), data.row_scales.data(), x.data(), y.data());
     });
 
-    bench_kernel("4a. Ternary 2-bit On-The-Fly", bytes_packed, [&]() {
-      matvec_ternary_2bit_onthefly(m, k, data.w_packed_2bit.data(), x.data(), y.data());
+    bench_kernel("4a. Ternary 2-bit On-The-Fly (Scaled)", bytes_packed, [&]() {
+      matvec_ternary_2bit_onthefly(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y.data());
     });
 
     bench_kernel("4b. Ternary 2-bit Pre-Unpacked", bytes_packed, [&]() {
-      matvec_ternary_2bit_preunpacked(m, k, data.w_packed_2bit.data(), x.data(), y.data(), scratch);
+      matvec_ternary_2bit_preunpacked(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y.data(), scratch);
     });
 
     bench_kernel("4c. Ternary 2-bit SWAR (4-trit)", bytes_packed, [&]() {
-      matvec_ternary_2bit_swar(m, k, data.w_packed_2bit.data(), x.data(), y.data());
+      matvec_ternary_2bit_swar(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y.data());
     });
 
     bench_kernel("4d. Ternary 2-bit LUT (4-trit)", bytes_packed, [&]() {
-      matvec_ternary_2bit_lut(m, k, data.w_packed_2bit.data(), x.data(), y.data());
+      matvec_ternary_2bit_lut(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y.data());
     });
 
-    bench_kernel("4e. Ternary 2-bit AVX2 Candidate", bytes_packed, [&]() {
-      matvec_ternary_2bit_avx2(m, k, data.w_packed_2bit.data(), x.data(), y.data());
+    bench_kernel("4e. Ternary 2-bit AVX2 (Scaled)", bytes_packed, [&]() {
+      matvec_ternary_2bit_avx2(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y.data());
+    });
+
+    bench_kernel("4f. Ternary 2-bit NEON (Scaled)", bytes_packed, [&]() {
+      matvec_ternary_2bit_neon(m, k, data.w_packed_2bit.data(), data.row_scales.data(), x.data(), y.data());
     });
 
     // 5. End-to-End Single-Use (Pack + SWAR Run)
     bench_kernel("5a. Single-Use End-to-End (Pack+Run)", bytes_packed, [&]() {
       auto packed = pack_ternary_2bit(trits.data(), total);
-      matvec_ternary_2bit_swar(m, k, packed.data(), x.data(), y.data());
+      matvec_ternary_2bit_swar(m, k, packed.data(), data.row_scales.data(), x.data(), y.data());
       do_not_optimize(packed.data());
     });
   }
@@ -348,11 +440,16 @@ static void run_benchmarks(const std::string& json_path) {
 
     ofs << "{\n";
     ofs << "  \"experiment\": \"t81_packed_ternary_matvec\",\n";
-    ofs << "  \"repetitions\": " << REPETITIONS << ",\n";
+    ofs << "  \"repetitions\": " << repetitions << ",\n";
 #if defined(__AVX2__)
     ofs << "  \"compiler_avx2_enabled\": true,\n";
 #else
     ofs << "  \"compiler_avx2_enabled\": false,\n";
+#endif
+#if defined(__ARM_NEON) || defined(__aarch64__)
+    ofs << "  \"compiler_neon_enabled\": true,\n";
+#else
+    ofs << "  \"compiler_neon_enabled\": false,\n";
 #endif
     ofs << "  \"results\": [\n";
     for (size_t i = 0; i < all_stats.size(); ++i) {
@@ -381,6 +478,7 @@ static void run_benchmarks(const std::string& json_path) {
 int main(int argc, char** argv) {
   std::string json_path = "";
   bool verify_only = false;
+  int repetitions = 100;
 
   for (int i = 1; i < argc; ++i) {
     std::string arg = argv[i];
@@ -388,6 +486,9 @@ int main(int argc, char** argv) {
       json_path = argv[++i];
     } else if (arg == "--verify-only") {
       verify_only = true;
+    } else if (arg == "--repetitions" && i + 1 < argc) {
+      repetitions = std::atoi(argv[++i]);
+      if (repetitions <= 0) repetitions = 100;
     }
   }
 
@@ -402,6 +503,6 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  run_benchmarks(json_path);
+  run_benchmarks(json_path, repetitions);
   return 0;
 }
