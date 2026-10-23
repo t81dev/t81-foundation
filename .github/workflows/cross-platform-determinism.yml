@@ -69,7 +69,8 @@ jobs:
             -DCMAKE_C_COMPILER=${{ matrix.cc }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} \
             -DT81_BUILD_TESTS=ON \
-            -DT81_BUILD_PROVENANCE_EXPERIMENT=ON
+            -DT81_BUILD_PROVENANCE_EXPERIMENT=ON \
+            -DT81_STRICT_DETERMINISTIC_FLOAT=ON
 
       # ── Build ────────────────────────────────────────────────────────────
       - name: Build

@@ -1,0 +1,3 @@
+# Preserve historical evidence and native archives byte-for-byte.
+original-554/** -text -whitespace
+observed-*/** -text -whitespace
