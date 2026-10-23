@@ -184,3 +184,73 @@ anchors are required. First add one durable transaction/authority-version witnes
 shared across restart, test producer fabrication against it, and atomically couple
 its receipt to the protected effect or explicitly record recovery ambiguity.
 Only then repeat the same A/B adjudication and consider a third OPA/database arm.
+
+## Preserved native observations
+
+Measured source: `789a357a8a7851dcb20da13fc8d6342c97edc4a7`, clean tracked
+and untracked working tree. Native macOS ARM64, Python 3.14.3, Apple C++ toolchain,
+Release/strict-float configuration; pinned Wasmtime 38.0.0. The
+[raw corpus](observed-macos-arm64/corpus.jsonl),
+[producer/archive stdout and exit codes](observed-macos-arm64/raw.jsonl),
+[verifier outputs](observed-macos-arm64/verification.jsonl),
+[all measurements and metadata](observed-macos-arm64/report.json),
+[defined source/dependency counts](observed-macos-arm64/counts.json), and
+[attack observations](observed-macos-arm64/attacks.json) are committed.
+The initial adapter compilation error and corrected build/test logs are preserved
+as development observations; they are not counted as runtime results.
+`sha256.json` detects artifact changes but is not an authenticated manifest.
+
+- 660 producer observations, 30 repetitions per arm/case; no unexpected run,
+  verification, within-arm repeatability or paired-protocol differences.
+- 600 normal-case observations accepted with actual file-inventory checks;
+  60 deliberately unauthorized stale-policy controls rejected with actual PO
+  writes preserved. These 60 are counterexamples, not successful protections.
+- The 240 normal over-limit/malformed-policy/revocation observations created no
+  protected file. All 60 same-session second invocations were denied.
+- All 120 controlled before/after interruption processes exited 75. After-write
+  interruptions retained the PO; before-write interruptions did not.
+- 14 evidence attacks preserved: six rejected; eight accepted instances exposing
+  fabricated-history/observer and repeated-envelope gaps (four per arm).
+
+Approved samples, mean ± sample standard deviation in microseconds:
+
+| Interval | A: T81 | B: Wasmtime host |
+| --- | ---: | ---: |
+| Setup | 363.61 ± 133.17 | 2878.91 ± 5982.06 |
+| Execution, native instrumentation retained | 52.49 ± 129.21 | 236.80 ± 75.31 |
+| Final side-effect authorization | 11.11 ± 14.88 | 2.43 ± 0.11 |
+| Protected storage | 159.85 ± 52.82 | 265.49 ± 58.58 |
+| Protocol evidence generation | 165.77 ± 148.40 | 156.91 ± 15.70 |
+| Native evidence archive | 491.06 ± 59.64 | 243.78 ± 48.61 |
+| In-process verification of captured inventory | 152.34 ± 10.26 | 123.86 ± 12.71 |
+| Separate verifier process including live inspection | 68015.06 ± 1552.61 | 68128.10 ± 1968.12 |
+| Whole producer process | 6953.60 ± 1747.54 | 77969.15 ± 7401.88 |
+
+The cold-start Wasm/Python path is slower here; do not hide that observation
+behind the proposal's lower-latency target. High variance, tiny workloads,
+different implementation languages and intrinsic tracing prevent a general
+runtime performance conclusion. Raw medians/extrema and every sample remain in
+the report; no ratio is promoted as evidence that the integrated architecture
+is necessary for enforcement.
+
+Adapter nonblank physical lines: A **159**, B **99**; shared runner/verifier/auditor
+**316**, validation/counting/attacks **207**. Actual native build closure: **180
+source/header files, 36,606 nonblank lines** (includes the A adapter), executable
+**1,423,624 bytes**. Installed dependency files: Wasmtime **22,470,881 bytes**,
+importlib_resources **285,984 bytes**. These scope-defined inventories are not a
+claim that a 99-line host replaces every T81 subsystem or that the external
+Wasmtime implementation has no maintenance cost.
+
+Five adversarial unittest methods passed, including 44 further real-arm
+observations; detached stdlib corpus audit and determinism-claim guard passed.
+Linux x86_64 and Windows x86_64 remain pending native CI artifact inspection;
+no cross-platform identity is inferred from this local run.
+
+The first native macOS CI run also passed 220 measurements, its five-test suite
+and independent corpus audit, then failed uploading raw CanonFS filenames:
+GitHub artifacts reject Base81 names containing `<`/`>` (NTFS portability rules).
+The [full first-job log](observed-macos-arm64/first-ci-macos-job.json) is preserved.
+The workflow now packages the entire native directory tree in a tarball, preserving
+names and bytes instead of renaming/skipping objects. A local tar round-trip
+compared every archived file with the original bytes. CI artifact publication
+must still be observed after this packaging fix.

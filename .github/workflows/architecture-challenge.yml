@@ -50,12 +50,21 @@ jobs:
         run: |
           python experiments/architecture_challenge/attacks.py --output challenge-attacks
           python experiments/architecture_challenge/audit_corpus.py challenge-results/corpus.jsonl
+      - name: Package native filenames intact
+        if: always()
+        run: |
+          python - <<'PYTHON'
+          from pathlib import Path
+          import tarfile
+          entries = [Path('challenge-results'), Path('challenge-attacks'), *Path('.').glob('*.log')]
+          with tarfile.open('architecture-challenge.tar.gz', 'w:gz') as archive:
+              for entry in entries:
+                  if entry.exists():
+                      archive.add(entry, arcname=entry.name)
+          PYTHON
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: architecture-challenge-${{ matrix.os }}
-          path: |
-            challenge-results/
-            challenge-attacks/
-            *.log
+          path: architecture-challenge.tar.gz
           retention-days: 30

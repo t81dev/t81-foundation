@@ -1,0 +1,3 @@
+[1/2] Building CXX object CMakeFiles/t81_architecture_arm_a.dir/experiments/architecture_challenge/arm_a.cpp.o
+[2/2] Linking CXX executable t81_architecture_arm_a
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'

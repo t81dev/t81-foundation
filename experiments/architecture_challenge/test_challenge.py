@@ -108,7 +108,7 @@ class Challenge(unittest.TestCase):
                 result = run('approved', inp, root/str(value), guest)
                 self.assertEqual(result['status'], 'denied')
                 self.assertEqual(inventory(root/str(value)), {})
-            guest.write_text('(module (import "wasi_snapshot_preview1" "path_open" (func)) '
+            guest.write_text('(module (import "wasi_snapshot_preview1" "path_open" (func (param i32) (result i32))) '
                              '(func (export "run") (param i32 i32) (result i32) i32.const 1))')
             with self.assertRaises(wasmtime.WasmtimeError):
                 run('approved', inp, root/'no-wasi', guest)

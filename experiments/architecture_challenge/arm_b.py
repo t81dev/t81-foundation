@@ -76,7 +76,9 @@ def run(scenario, input_path, root, guest_path=None):
         store = wasmtime.Store(engine)
         store.set_fuel(100)
         function = wasmtime.Func(store, wasmtime.FuncType([wasmtime.ValType.i32()], [wasmtime.ValType.i32()]), submit)
-        instance = wasmtime.Instance(store, module, [function])
+        linker = wasmtime.Linker(engine)
+        linker.define(store, 'host', 'submit', function)
+        instance = linker.instantiate(store, module)
         setup = now() - begin
         start = now()
         instance.exports(store)['run'](store, *(int(v) for v in match.groups()))
