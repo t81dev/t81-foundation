@@ -1,0 +1,104 @@
+{
+  "archive_sha256": "aa28275cff9f612fe69a255d7b3a9f616b7b7af278a5ce6bfbd5279105314d14",
+  "artifact_id": 12469200732,
+  "complete_observations": 120,
+  "conventional_B_controls_rejected": 10,
+  "conventional_B_normal_verified": 100,
+  "failures": 100,
+  "filename_predictions": [
+    {
+      "case": "approved",
+      "evidence_path": "objects/K\u2260E>6MH\u00d7caMV\u2248x0Y\u03c3<I0WRDdcouopjGfHdTea\u2260E5.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": true,
+      "observed_A_failure": true,
+      "protected_path": "objects/2I\u2248Ewmi5\u03c4c<\u2212JTzBE\u2212aV32YVsb\u03bb\u2260Dwf\u03c3T9bvRt\u22482y.blk"
+    },
+    {
+      "case": "denied",
+      "evidence_path": "objects/23Oo1p7E<dO8B\u03c0hdjZ9pBv3C8Rx\u03c0gNp1\u2248<FiEHiqD.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": false,
+      "observed_A_failure": true,
+      "protected_path": ""
+    },
+    {
+      "case": "malformed",
+      "evidence_path": "objects/4nJFtlQfZJHlt<>AuBx\u03c9S6VA<yLN\u00f7V\u03bcrR\u00d78Pd<Z\u0393g.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": false,
+      "observed_A_failure": true,
+      "protected_path": ""
+    },
+    {
+      "case": "malformed-policy",
+      "evidence_path": "objects/1\u2212\u2248\u22602o4\u22483diU\u2264p4l\u221ekA=0\u03c0RTOb\u2264Srb4R\u03c02JUfq=k\u221e.blk",
+      "invalid_evidence_filename": false,
+      "invalid_protected_filename": false,
+      "observed_A_failure": false,
+      "protected_path": ""
+    },
+    {
+      "case": "replayed",
+      "evidence_path": "objects/1a>gKt\u03bb2yGA\u03c9=\u00f7\u2260jKuG0ffcJ\u2264YZu2d17Fc\u2265mc2>wF.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": true,
+      "observed_A_failure": true,
+      "protected_path": "objects/2I\u2248Ewmi5\u03c4c<\u2212JTzBE\u2212aV32YVsb\u03bb\u2260Dwf\u03c3T9bvRt\u22482y.blk"
+    },
+    {
+      "case": "interrupted-before",
+      "evidence_path": "objects/2\u2265D9Z\u00f7dIFFwsSY\u00d7\u2260\u221ez5wiY<T0LB\u00d79>F\u2264j2SPMtAbl.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": false,
+      "observed_A_failure": true,
+      "protected_path": ""
+    },
+    {
+      "case": "interrupted-after",
+      "evidence_path": "objects/2O\u00d7QBJms>qRmRg\u2265lKa\u221ef\u03bbo\u03bb<YekLl-4YUexRx\u2260\u03c9oy.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": true,
+      "observed_A_failure": true,
+      "protected_path": "objects/2I\u2248Ewmi5\u03c4c<\u2212JTzBE\u2212aV32YVsb\u03bb\u2260Dwf\u03c3T9bvRt\u22482y.blk"
+    },
+    {
+      "case": "revoke-after-compute",
+      "evidence_path": "objects/V\u2264<3p\u0393h>x\u03bb3HKijON7\u2260zOB\u03c94IuJn\u22123\u226071=Hsknqf.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": false,
+      "observed_A_failure": true,
+      "protected_path": ""
+    },
+    {
+      "case": "revoke-after-check",
+      "evidence_path": "objects/1\u03bbu5SJBO1x>z\u0393S1QKb\u00d7\u03c0\u2264J\u0393Y=ByHfIbGx3p\u2260P5\u2264w1.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": false,
+      "observed_A_failure": true,
+      "protected_path": ""
+    },
+    {
+      "case": "revoke-after-commit",
+      "evidence_path": "objects/18B\u221epwQr\u03c9L\u2212lrUPc7\u03c4hC\u03bbCH9RFP6jnHer\u2264t>2IdpA.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": true,
+      "observed_A_failure": true,
+      "protected_path": "objects/2I\u2248Ewmi5\u03c4c<\u2212JTzBE\u2212aV32YVsb\u03bb\u2260Dwf\u03c3T9bvRt\u22482y.blk"
+    },
+    {
+      "case": "snapshot-control",
+      "evidence_path": "objects/4MII\u2248Cm>>i41<ag0zEPBZAO\u226534q19\u2265\u03bcu\u22647rZ\u2248\u03c9\u03bbmA.blk",
+      "invalid_evidence_filename": true,
+      "invalid_protected_filename": true,
+      "observed_A_failure": true,
+      "protected_path": "objects/2I\u2248Ewmi5\u03c4c<\u2212JTzBE\u2212aV32YVsb\u03bb\u2260Dwf\u03c3T9bvRt\u22482y.blk"
+    }
+  ],
+  "head_sha": "1c2fc827655efbeb88b9f05369f03f5c58d3d871",
+  "inference": "All 100 A failures align with the exact forbidden ASCII filename cases; production driver uses Base81 directly in _open. Adapter logs do not expose errno; no deeper encoding diagnosis is asserted.",
+  "native_A_complete": 10,
+  "native_revision": "97097d66bd0502a5f8658c3f5004110230b579fe",
+  "workflow_run": 39877038395,
+  "zip_sha256": "862f3f60b36fae93dd2d63f61fb8b6f36f73f8e7aee6c889c4b929447afd25f6"
+}

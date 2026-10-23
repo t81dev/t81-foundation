@@ -26,6 +26,12 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
 
+option(T81_BUILD_ARCHITECTURE_CHALLENGE "Build isolated inventory architecture comparison" OFF)
+if(T81_BUILD_ARCHITECTURE_CHALLENGE)
+  add_executable(t81_architecture_arm_a experiments/architecture_challenge/arm_a.cpp)
+  target_link_libraries(t81_architecture_arm_a PRIVATE t81_vm t81_axion t81_core)
+endif()
+
 if(T81_BUILD_PROVENANCE_EXPERIMENT)
   if(NOT T81_STRICT_DETERMINISTIC_FLOAT)
     message(FATAL_ERROR "Provenance experiment requires T81_STRICT_DETERMINISTIC_FLOAT=ON")

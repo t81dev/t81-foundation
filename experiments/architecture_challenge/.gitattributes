@@ -1,0 +1,2 @@
+# Raw evidence preserves bytes, including native log trailing whitespace.
+observed-*/** -text -whitespace

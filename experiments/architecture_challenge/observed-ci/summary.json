@@ -1,0 +1,40 @@
+{
+  "comparison": {
+    "head_sha": "481c6923c7b1f2c0c5d9438add87375a86889b2f",
+    "paired_observations": 220,
+    "protocol_bytes_equal_between_native_linux_x86_64_and_macos_arm64": true,
+    "unsigned_occurrence_attestation": false,
+    "windows": "Native build succeeded; corrected harness exposed 100 A protected/evidence storage failures; B completed 110 observations. See windows-analysis.json.",
+    "workflow_run": 39876732879
+  },
+  "linux": {
+    "actual_archive_file_bytes_match": true,
+    "artifact_id": 12467479974,
+    "detached_audit": {
+      "attestation": false,
+      "observations": 220,
+      "paired_protocol_equality": true,
+      "snapshot_control_rejections": 20
+    },
+    "machine": "x86_64",
+    "observed_source_revision": "decd97b2c29d30104f1de32335b1df901b69ec1c",
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "tar_sha256": "17da0e29920455d07403af79d0736bd2e1f0abb5fd1b1cf33cd5c9f6155df64d",
+    "zip_sha256": "dd1a8c2bcdeda2fb5356f89e2f24716960318f92d10ea8c33600d94c378c6f61"
+  },
+  "macos": {
+    "actual_archive_file_bytes_match": true,
+    "artifact_id": 12468712890,
+    "detached_audit": {
+      "attestation": false,
+      "observations": 220,
+      "paired_protocol_equality": true,
+      "snapshot_control_rejections": 20
+    },
+    "machine": "arm64",
+    "observed_source_revision": "decd97b2c29d30104f1de32335b1df901b69ec1c",
+    "platform": "macOS-14.8.9-arm64-arm-64bit",
+    "tar_sha256": "e00f712a1efd52be754905346b5a549976f713636ee1785d87ca47fa0fe42c28",
+    "zip_sha256": "5f20e20d98aedddae753230940b3b1db32f3e00aa2c5ee4547057f165fc93216"
+  }
+}
