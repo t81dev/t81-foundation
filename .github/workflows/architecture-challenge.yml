@@ -1,0 +1,61 @@
+name: Independent architecture challenge
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'experiments/architecture_challenge/**'
+      - '.github/workflows/architecture-challenge.yml'
+      - 'CMakeLists.txt'
+permissions:
+  contents: read
+jobs:
+  compare:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-2022]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Linux toolchain
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y ninja-build g++-14
+      - name: Windows toolchain
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+      - name: Dependencies
+        run: python -m pip install -r experiments/architecture_challenge/requirements.txt ninja
+      - name: Configure
+        run: |
+          if [[ "$RUNNER_OS" == Linux ]]; then export CC=gcc-14 CXX=g++-14; fi
+          cmake -S . -B challenge-build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DT81_BUILD_ARCHITECTURE_CHALLENGE=ON -DT81_BUILD_TESTS=OFF \
+            -DT81_STRICT_DETERMINISTIC_FLOAT=ON -DT81_BUILD_BENCHMARKS=OFF \
+            -DT81_BUILD_EXAMPLES=OFF -DT81_BUILD_TUI=OFF -DT81_ENABLE_TERNARYOS=OFF \
+            -DT81_BUILD_FUZZ_TESTS=OFF 2>&1 | tee configure.log
+      - name: Build
+        run: cmake --build challenge-build --target t81_architecture_arm_a -j 4 2>&1 | tee build.log
+      - name: Adversarial tests
+        run: python experiments/architecture_challenge/test_challenge.py --runner challenge-build/t81_architecture_arm_a 2>&1 | tee tests.log
+      - name: Measurements
+        run: python experiments/architecture_challenge/run.py --runner challenge-build/t81_architecture_arm_a --output challenge-results --repetitions 10 2>&1 | tee measurements.log
+      - name: Detached audit and preserved attacks
+        if: always()
+        run: |
+          python experiments/architecture_challenge/attacks.py --output challenge-attacks
+          python experiments/architecture_challenge/audit_corpus.py challenge-results/corpus.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: architecture-challenge-${{ matrix.os }}
+          path: |
+            challenge-results/
+            challenge-attacks/
+            *.log
+          retention-days: 30

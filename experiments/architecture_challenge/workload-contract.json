@@ -1,0 +1,18 @@
+{
+  "id": "t81.inventory-architecture-challenge.v1",
+  "status": "experimental; not RFC-00D4 conformance",
+  "request_encoding": "ASCII canonical positive decimal units SPACE unit_price_dollars LF; no leading zeros, extra bytes or whitespace; each integer 1..1000",
+  "fixture": {"inventory_units": 0, "target_units": 100, "units": 100, "unit_price_dollars": 250, "transaction_id": "8491", "initial_limit_dollars": 50000, "reduced_limit_dollars": 10000},
+  "calculation": "proposed_amount_dollars = units * unit_price_dollars; exact bounded integers",
+  "protected_effect": "Create the purchase-order payload ASCII '8491 25000\\n' in the protected store; this is a local purchase-order issuance proxy, not a supplier/payment network transaction",
+  "authorization": "At the actual protected write: request valid AND amount matches request AND current limit >= amount > 0 AND transaction not consumed AND policy valid; evaluation and write serialized with policy updates by the host owner",
+  "revocation_linearization": "Explicit policy.reduce.10000 event; no scheduler timing or sleep chooses outcome. A reduction before final authorization denies; a reduction after completed commit does not retroactively undo it",
+  "interruptions": "Abrupt process exit 75 before write or after completed write, before protocol evidence archive; parent observer recovers from stdout plus store. No power-loss/fsync claim",
+  "protocol_comparison": "Compare complete externally observable record bytes, output payload bytes, ordered boundary events and independent oracle verdicts; native VM trace bytes and physical store filenames differ",
+  "evidence_encoding": "Sorted compact ASCII JSON, ensure_ascii=true, no floats; SHA-256 over complete record; no signature or claimed producer identity. Both arms archive exact envelope bytes in their native store",
+  "acceptance_criteria": ["All honest-host cases agree with independent bounded oracle and actual file inventory", "Same-session duplicate capability invocation denied before second write", "Stale-policy negative controls rejected", "All self-consistent false claims of occurrence and freshness rejected for full adversarial success"],
+  "threats": ["Malformed request/policy", "Stale policy snapshot between calculation/check and final write", "Duplicate invocation", "Producer interruption", "Changed input/output/evidence or storage bytes", "Producer capable of fabricating and rehashing complete evidence", "Producer supplying false observer inventory", "Replayed previously valid evidence"],
+  "tcb_A": ["Host request/amount binding, live authority serialization and one-session consumed flag", "Production interpreter and Axion parser/engine/hook", "Persistent CanonFS driver and hash implementations", "C++ compiler and standard library", "Host process, OS/filesystem", "Independent verifier plus caller-pinned case and trusted observer when supplied"],
+  "tcb_B": ["Host request/amount binding, live authority serialization and one-session consumed flag", "Wasmtime engine, Python bindings and one submit import; no WASI", "Python interpreter/stdlib including hashlib and file writes", "Host process, OS/filesystem", "Independent verifier plus caller-pinned case and trusted observer when supplied"],
+  "excluded_from_enforcement_claim": ["Host/OS compromise", "Raw host filesystem bypass", "Cross-process shared authority absent a serialized owner", "Durable/global transaction replay prevention", "External inventory/quote truth", "Authenticated execution or commit attestation", "Power loss or atomic effect/evidence commit", "Floating-point conformance", "Cross-platform reproducibility until native CI artifacts are inspected"]
+}
