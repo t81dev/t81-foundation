@@ -59,6 +59,12 @@ host writes. `attacks.py` preserves accepted fabrications/replays to demonstrate
 this distinction. Native storage uses different hash/filename algorithms; the
 verifier independently checks both without comparing internal trace bytes.
 
+The [preserved native corpus and report](observed-macos-arm64/report.json) and
+[adversarial evidence](observed-macos-arm64/attacks.json) are committed.
+Unittest execution retains its real-arm output directory; `--output-root PATH`
+chooses its location. CI packages this directory and all measurement outputs in
+a tarball so native CanonFS filenames survive artifact-service restrictions.
+
 The machine matrix is a separate experiment workflow for Linux x86_64, macOS
 ARM64 and Windows x86_64. It uploads failures and raw files using `always()`.
 Workflow definitions alone do not establish portability or cross-platform byte

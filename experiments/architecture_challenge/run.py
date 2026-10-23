@@ -51,6 +51,8 @@ def main():
         p.error('repetitions must be 2..1000')
     args.output.mkdir(parents=True, exist_ok=False)
     runner = args.runner.resolve()
+    if os.name == 'nt' and not runner.exists() and runner.with_suffix('.exe').exists():
+        runner = runner.with_suffix('.exe')
     summaries, failures, signatures = {}, [], {}
     with (args.output / 'raw.jsonl').open('w') as rawlog, (args.output / 'corpus.jsonl').open('w') as corpus:
         for repetition in range(args.repetitions):
@@ -140,7 +142,7 @@ def main():
                     git_status=subprocess.check_output(['git','status','--porcelain'], cwd=ROOT, text=True),
                     platform=platform.platform(), machine=platform.machine(), python=sys.version,
                     dependencies={name: importlib.metadata.version(name) for name in ('wasmtime','importlib_resources')},
-                    source_sha256={v.name:sha(v.read_bytes()) for v in sources}, runner_sha256=sha(runner.read_bytes()),
+                    source_sha256={v.name:sha(v.read_bytes()) for v in sources}, runner_sha256=sha(runner.read_bytes()) if runner.exists() else None,
                     repetitions=args.repetitions, warmup='none; fresh process/store per sample',
                     order='rotate cases and alternate arms', failures=failures,
                     measurements={key:{k:describe([r[k] for r in rows]) for k in rows[0]} for key,rows in summaries.items()},

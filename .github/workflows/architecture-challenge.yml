@@ -42,8 +42,9 @@ jobs:
       - name: Build
         run: cmake --build challenge-build --target t81_architecture_arm_a -j 4 2>&1 | tee build.log
       - name: Adversarial tests
-        run: python experiments/architecture_challenge/test_challenge.py --runner challenge-build/t81_architecture_arm_a 2>&1 | tee tests.log
+        run: python experiments/architecture_challenge/test_challenge.py --runner challenge-build/t81_architecture_arm_a --output-root challenge-test-results 2>&1 | tee tests.log
       - name: Measurements
+        if: always()
         run: python experiments/architecture_challenge/run.py --runner challenge-build/t81_architecture_arm_a --output challenge-results --repetitions 10 2>&1 | tee measurements.log
       - name: Detached audit and preserved attacks
         if: always()
@@ -56,7 +57,7 @@ jobs:
           python - <<'PYTHON'
           from pathlib import Path
           import tarfile
-          entries = [Path('challenge-results'), Path('challenge-attacks'), *Path('.').glob('*.log')]
+          entries = [Path('challenge-results'), Path('challenge-attacks'), Path('challenge-test-results'), *Path('.').glob('*.log')]
           with tarfile.open('architecture-challenge.tar.gz', 'w:gz') as archive:
               for entry in entries:
                   if entry.exists():

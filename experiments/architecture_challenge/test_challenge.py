@@ -1,5 +1,6 @@
 """Adversarial producer and verifier tests, including deliberately accepted forgery."""
 import argparse
+import contextlib
 import copy
 import json
 from pathlib import Path
@@ -20,7 +21,7 @@ def envelope(record):
 
 class Challenge(unittest.TestCase):
     def test_two_real_arms_and_negative_controls(self):
-        with tempfile.TemporaryDirectory() as temp:
+        with contextlib.nullcontext(str(TEST_OUTPUT or tempfile.mkdtemp(prefix='t81-challenge-tests-'))) as temp:
             output = Path(temp)/'result'
             subprocess.run([sys.executable, HERE/'run.py', '--runner', RUNNER,
                             '--output', output, '--repetitions', '2'], check=True, timeout=120)
@@ -116,6 +117,8 @@ class Challenge(unittest.TestCase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--runner', required=True, type=Path)
+    parser.add_argument('--output-root', type=Path)
     args, rest = parser.parse_known_args()
     RUNNER = str(args.runner.resolve())
+    TEST_OUTPUT = args.output_root.resolve() if args.output_root else None
     unittest.main(argv=[__file__, *rest])

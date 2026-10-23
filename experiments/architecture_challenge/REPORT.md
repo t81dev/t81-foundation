@@ -187,7 +187,7 @@ Only then repeat the same A/B adjudication and consider a third OPA/database arm
 
 ## Preserved native observations
 
-Measured source: `789a357a8a7851dcb20da13fc8d6342c97edc4a7`, clean tracked
+Measured source: `481c6923c7b1f2c0c5d9438add87375a86889b2f`, clean tracked
 and untracked working tree. Native macOS ARM64, Python 3.14.3, Apple C++ toolchain,
 Release/strict-float configuration; pinned Wasmtime 38.0.0. The
 [raw corpus](observed-macos-arm64/corpus.jsonl),
@@ -196,8 +196,8 @@ Release/strict-float configuration; pinned Wasmtime 38.0.0. The
 [all measurements and metadata](observed-macos-arm64/report.json),
 [defined source/dependency counts](observed-macos-arm64/counts.json), and
 [attack observations](observed-macos-arm64/attacks.json) are committed.
-The initial adapter compilation error and corrected build/test logs are preserved
-as development observations; they are not counted as runtime results.
+The [initial run](observed-macos-arm64-initial/report.json), adapter compilation
+error and corrected build/test logs remain preserved separately as development observations; they are not counted as runtime results.
 `sha256.json` detects artifact changes but is not an authenticated manifest.
 
 - 660 producer observations, 30 repetitions per arm/case; no unexpected run,
@@ -216,15 +216,15 @@ Approved samples, mean ± sample standard deviation in microseconds:
 
 | Interval | A: T81 | B: Wasmtime host |
 | --- | ---: | ---: |
-| Setup | 363.61 ± 133.17 | 2878.91 ± 5982.06 |
-| Execution, native instrumentation retained | 52.49 ± 129.21 | 236.80 ± 75.31 |
-| Final side-effect authorization | 11.11 ± 14.88 | 2.43 ± 0.11 |
-| Protected storage | 159.85 ± 52.82 | 265.49 ± 58.58 |
-| Protocol evidence generation | 165.77 ± 148.40 | 156.91 ± 15.70 |
-| Native evidence archive | 491.06 ± 59.64 | 243.78 ± 48.61 |
-| In-process verification of captured inventory | 152.34 ± 10.26 | 123.86 ± 12.71 |
-| Separate verifier process including live inspection | 68015.06 ± 1552.61 | 68128.10 ± 1968.12 |
-| Whole producer process | 6953.60 ± 1747.54 | 77969.15 ± 7401.88 |
+| Setup | 345.92 ± 58.93 | 2948.60 ± 6110.57 |
+| Execution, native instrumentation retained | 37.82 ± 52.85 | 232.17 ± 45.98 |
+| Final side-effect authorization | 10.08 ± 9.97 | 3.01 ± 1.48 |
+| Protected storage | 154.93 ± 48.84 | 354.51 ± 257.66 |
+| Protocol evidence generation | 148.22 ± 15.84 | 164.68 ± 13.86 |
+| Native evidence archive | 511.58 ± 94.52 | 246.66 ± 45.89 |
+| In-process verification of captured inventory | 152.44 ± 10.58 | 123.03 ± 10.34 |
+| Separate verifier process including live inspection | 67557.11 ± 1084.46 | 67728.81 ± 1384.18 |
+| Whole producer process | 6746.45 ± 606.24 | 77934.81 ± 7851.26 |
 
 The cold-start Wasm/Python path is slower here; do not hide that observation
 behind the proposal's lower-latency target. High variance, tiny workloads,
@@ -233,8 +233,9 @@ runtime performance conclusion. Raw medians/extrema and every sample remain in
 the report; no ratio is promoted as evidence that the integrated architecture
 is necessary for enforcement.
 
-Adapter nonblank physical lines: A **159**, B **99**; shared runner/verifier/auditor
-**316**, validation/counting/attacks **207**. Actual native build closure: **180
+Final adapter/harness inventory (the measured-source inventory is preserved separately):
+nonblank physical lines: A **159**, B **101**; shared runner/verifier/auditor
+**318**, validation/counting/attacks **210**. Actual native build closure: **180
 source/header files, 36,606 nonblank lines** (includes the A adapter), executable
 **1,423,624 bytes**. Installed dependency files: Wasmtime **22,470,881 bytes**,
 importlib_resources **285,984 bytes**. These scope-defined inventories are not a
@@ -249,8 +250,25 @@ no cross-platform identity is inferred from this local run.
 The first native macOS CI run also passed 220 measurements, its five-test suite
 and independent corpus audit, then failed uploading raw CanonFS filenames:
 GitHub artifacts reject Base81 names containing `<`/`>` (NTFS portability rules).
-The [full first-job log](observed-macos-arm64/first-ci-macos-job.json) is preserved.
+The [full first-job log](observed-macos-arm64-initial/first-ci-macos-job.json) is preserved.
 The workflow now packages the entire native directory tree in a tarball, preserving
 names and bytes instead of renaming/skipping objects. A local tar round-trip
 compared every archived file with the original bytes. CI artifact publication
 must still be observed after this packaging fix.
+
+The primary preserved run uses explicitly named `host.submit` linking. A
+same-signature unsupported-import test ensures import names are enforced, not
+merely positional function types. The earlier 660-observation run remains in
+`observed-macos-arm64-initial/`; both runs had zero unexpected differences.
+Subsequent harness-only portability edits resolve `.exe` for Windows metadata
+hashing and retain failing unittest directories. They do not change the measured
+calculation, authorization or storage path on macOS.
+
+The first Windows native build succeeded but its suite failed in metadata
+collection because an extensionless executable path was passed to `read_bytes`;
+the [first Windows job log](observed-macos-arm64-initial/first-ci-windows-job.json)
+preserves this failure. Execution via Windows process lookup and direct file
+hashing have different suffix requirements. The harness now resolves the actual
+`.exe` and emits a failure report even if the runner is absent. Test directories
+and full measurements are packaged even after test failure. This fixes the
+observed harness issue; it does not assert Windows CanonFS compatibility.
