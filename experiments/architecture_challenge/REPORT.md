@@ -235,7 +235,7 @@ is necessary for enforcement.
 
 Final adapter/harness inventory (the measured-source inventory is preserved separately):
 nonblank physical lines: A **159**, B **101**; shared runner/verifier/auditor
-**318**, validation/counting/attacks **210**. Actual native build closure: **180
+**368**, validation/counting/attacks **221**. Actual native build closure: **180
 source/header files, 36,606 nonblank lines** (includes the A adapter), executable
 **1,423,624 bytes**. Installed dependency files: Wasmtime **22,470,881 bytes**,
 importlib_resources **285,984 bytes**. These scope-defined inventories are not a
@@ -244,8 +244,9 @@ Wasmtime implementation has no maintenance cost.
 
 Five adversarial unittest methods passed, including 44 further real-arm
 observations; detached stdlib corpus audit and determinism-claim guard passed.
-Linux x86_64 and Windows x86_64 remain pending native CI artifact inspection;
-no cross-platform identity is inferred from this local run.
+The local run alone establishes no cross-platform identity. The separately
+inspected Linux/macOS native evidence below extends that bounded claim; Windows
+remains subject to its own native observations.
 
 The first native macOS CI run also passed 220 measurements, its five-test suite
 and independent corpus audit, then failed uploading raw CanonFS filenames:
@@ -253,8 +254,7 @@ GitHub artifacts reject Base81 names containing `<`/`>` (NTFS portability rules)
 The [full first-job log](observed-macos-arm64-initial/first-ci-macos-job.json) is preserved.
 The workflow now packages the entire native directory tree in a tarball, preserving
 names and bytes instead of renaming/skipping objects. A local tar round-trip
-compared every archived file with the original bytes. CI artifact publication
-must still be observed after this packaging fix.
+compared every archived file with the original bytes. Subsequent native Linux/macOS publication passed after this packaging fix.
 
 The primary preserved run uses explicitly named `host.submit` linking. A
 same-signature unsupported-import test ensures import names are enforced, not
@@ -272,3 +272,60 @@ hashing have different suffix requirements. The harness now resolves the actual
 `.exe` and emits a failure report even if the runner is absent. Test directories
 and full measurements are packaged even after test failure. This fixes the
 observed harness issue; it does not assert Windows CanonFS compatibility.
+
+## Native Linux/macOS archive comparison
+
+[Workflow run 39876732879](https://github.com/t81dev/t81-foundation/actions/runs/39876732879)
+passed the Linux x86_64 and macOS ARM64 experiment jobs, including artifact
+publication. Both executed the five-test suite and 220 measurements with no
+unexpected differences; both rejected all 20 stale-policy controls. Downloaded
+ZIP SHA-256 digests match the published artifact digests. The committed
+[Linux tarball](observed-ci/linux.tar.gz), [macOS tarball](observed-ci/macos.tar.gz),
+[download/check summary](observed-ci/summary.json) and
+[independent offline audit](observed-ci/offline-audit.json) preserve the native
+files and measurements before artifact retention expires.
+
+`audit_archives.py` independently checked every protected/evidence file's actual
+tar payload against the recorded byte inventory. All 220 corresponding protocol
+envelopes match exactly between native Linux x86_64 and macOS ARM64, including
+the intentionally failing controls. Internal native traces and measurements were
+not normalized or compared as though they represented identical execution.
+The measured CI revision is GitHub's synthetic merge
+`decd97b2c29d30104f1de32335b1df901b69ec1c`, for head
+`481c6923c7b1f2c0c5d9438add87375a86889b2f` against the requested base. This extends
+reproducibility only for the admitted integer contract; it does not establish
+occurrence authentication, freshness, numerical conformance or Windows support.
+
+## Preserved Windows portability failure
+
+The corrected native Windows run at head
+`1c2fc827655efbeb88b9f05369f03f5c58d3d871` built successfully, then produced
+**100 Arm A protected/evidence-storage failures** across 110 attempted A trials.
+Only ten A trials completed the full path. All 110 B trials completed: 100 normal
+records independently verify, and ten stale-policy controls are rejected.
+The suite, measurements and full-corpus audit remain red on Windows; they are
+not skipped, allowlisted or reported as passing. The
+[complete failure archive](observed-ci/windows-failure.tar.gz),
+[job log](observed-ci/windows-job.json) and
+[case/path analysis](observed-ci/windows-analysis.json) are committed, including
+raw stdout/stderr, failed directories and partial measurements.
+
+All 100 failures align exactly with cases whose protected/evidence Base81 object
+basename contains reserved ASCII filename characters. The PO itself resolves to
+`2I≈Ewmi5τc<−JTzBE−aV32YVsbλ≠DwfσT9bvRt≈2y.blk`.
+The production persistent driver's `object_path` directly appends Base81 text and
+its Windows `_open` branch maps failed opens to `DecodeError`.
+[Microsoft's filename rules](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file)
+reserve `<`/`>` for these APIs. The exact correlation and source path support the
+filename diagnosis; the adapter does not expose errno, so no more specific
+encoding/OS error is claimed. Some evidence basenames avoid forbidden characters,
+which explains the ten successful A trials. This is a concrete storage-layout
+portability disadvantage for A in the tested domain, not an arithmetic failure
+or proof that a different CanonFS backend cannot work on Windows.
+
+Repairing production CanonFS filename mapping requires its own identity/persistence
+compatibility review and migration tests. It is outside this isolated experiment;
+changing the native layout here would erase the observation. The focused PR
+therefore remains draft with this real platform failure visible. The architectural
+security verdict remains **neither passes the full malicious-producer/freshness
+requirements**; B's observed portability benefit does not authenticate its evidence.

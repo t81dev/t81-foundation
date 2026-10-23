@@ -69,3 +69,16 @@ The machine matrix is a separate experiment workflow for Linux x86_64, macOS
 ARM64 and Windows x86_64. It uploads failures and raw files using `always()`.
 Workflow definitions alone do not establish portability or cross-platform byte
 identity; inspect each native artifact. No OPA/database third arm is included.
+
+The committed native CI archives can also be audited without extraction (including
+on filesystems that cannot represent CanonFS object names):
+
+```sh
+python3 experiments/architecture_challenge/audit_archives.py \
+  experiments/architecture_challenge/observed-ci/linux.tar.gz \
+  experiments/architecture_challenge/observed-ci/macos.tar.gz
+```
+
+This checks the actual tar member payloads against every recorded protected and
+evidence file, then compares all protocol envelopes. It requires only the three
+independent `verify.py`/`audit*.py` scripts and the archives.

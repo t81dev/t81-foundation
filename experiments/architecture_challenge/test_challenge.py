@@ -29,6 +29,17 @@ class Challenge(unittest.TestCase):
             self.assertEqual(report['failures'], [])
             rows = [json.loads(line) for line in (output/'corpus.jsonl').read_text().splitlines()]
             self.assertEqual(len(rows), 44)
+            from audit_corpus import audit
+            self.assertEqual(audit(output/'corpus.jsonl')['observations'], 44)
+            bad_rows = copy.deepcopy(rows)
+            bad_control = next(r for r in bad_rows if r['case'] == 'snapshot-control')
+            # Preserve the original hash to challenge bool/int equality in the
+            # special negative-control path, not only the ordinary verifier.
+            bad_control['bundle']['record']['version'] = True
+            attacked = output/'attacked-corpus.jsonl'
+            attacked.write_text(''.join(json.dumps(r)+'\n' for r in bad_rows))
+            with self.assertRaises(ValueError):
+                audit(attacked)
             self.assertEqual(sum('write.commit' in r['bundle']['record']['events'] for r in rows
                                  if r['case'] == 'snapshot-control'), 4)
             for arm in ('A', 'B'):

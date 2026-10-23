@@ -44,7 +44,7 @@ def main():
     report = dict(rules='Count every physical/nonblank line, including comments; bytes are uncompressed file bytes. No generated corpus, docs, build outputs or vendored source in adapter counts. Native closure is actual Ninja compile inputs plus repo headers for this otherwise single-target build. Dependency wheel sizes include metadata/native libraries, exclude Python interpreter/stdlib/system shared libraries. Installed sizes are not resident memory or full TCB size.',
                   adapters={arm:source_inventory([HERE/name for name in names]) for arm,names in {
                       'A':['arm_a.cpp'], 'B':['arm_b.py','guest.wat'],
-                      'shared':['run.py','verify.py','audit_corpus.py'],
+                      'shared':['run.py','verify.py','audit_corpus.py','audit_archives.py'],
                       'validation':['test_challenge.py','attacks.py','count.py']}.items()},
                   native_compiled_source_closure=source_inventory(closure),
                   native_executable_bytes=(args.build/'t81_architecture_arm_a').stat().st_size,

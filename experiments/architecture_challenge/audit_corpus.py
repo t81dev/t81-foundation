@@ -31,7 +31,7 @@ def audit(path):
             control['events'] = ['compute', 'precheck.allow', 'policy.reduce.10000', 'authorize.allow', 'write.commit']
             control['status'] = 'committed'
             control['payload_sha256'] = sha(b'8491 25000\n')
-            if row['bundle'] != {'record':control, 'sha256':sha(canonical(control))}:
+            if canonical(row['bundle']) != canonical({'record':control, 'sha256':sha(canonical(control))}):
                 raise ValueError('invalid negative control evidence')
             if row['protected_files'] != expected_inventory(control, arm):
                 raise ValueError('negative control storage mismatch')
