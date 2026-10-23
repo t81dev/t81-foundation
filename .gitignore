@@ -95,6 +95,7 @@ pdf/*.toc
 !.vscode/tasks.json
 .claude/
 .idea/
+.prime-research/
 *~
 .DS_Store
 Thumbs.db
