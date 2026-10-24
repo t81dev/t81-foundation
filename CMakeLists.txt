@@ -1958,6 +1958,7 @@ set(T81_INSTALL_TARGETS
   t81_c_api
   t81_lang_frontend
   t81_isa
+  t81_math_quantization
   t81_vm
   t81_experimental
   t81_llvm

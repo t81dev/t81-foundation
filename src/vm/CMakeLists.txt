@@ -10,6 +10,7 @@ add_library(t81_vm STATIC
   ${PROJECT_SOURCE_DIR}/vm/ffi_dispatcher.cpp
   # RFC-0032 Phase 4 -- promoted AI VM backend adapter (C-02)
   ${PROJECT_SOURCE_DIR}/vm/ai_backend/backend_adapter.cpp
+  ${PROJECT_SOURCE_DIR}/vm/ai_backend/controlled_ai_backend.cpp
   ${PROJECT_SOURCE_DIR}/vm/decode_state.cpp
   ${PROJECT_SOURCE_DIR}/ffi/ffi_dispatcher.cpp
 )

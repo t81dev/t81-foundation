@@ -8,10 +8,9 @@ add_library(t81_direct_api STATIC
 target_link_libraries(t81_direct_api PUBLIC
     t81_core
     t81_axion
-    t81_ai_backend
-    t81_weights
-    t81_canonfs
-    t81_tracing
+    t81_vm
+    t81_tool_model
+    t81_math_quantization
 )
 
 target_include_directories(t81_direct_api PUBLIC
