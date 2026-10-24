@@ -1,0 +1,15 @@
+{
+  "source_revision": "6ea606587c1488ee21da39433785da5d75baffaf",
+  "files": {
+    "existing-production-ci-failure.json": "56da8fc86cbc60c4004a0679f54d20a480a3f337aeb022259cc367d50423278b",
+    "independent-audit.json": "2ab41ec717331b8af1490120efbb17576d1f7dd88cff2c2d9b1bcae0387afc2a",
+    "measurements.json": "0b0b38ba677524f3e853f891d53b76604c95740a0225ad53c38736fe9edc0a37",
+    "missing-effect-attack.json": "5709a298fc71256b6c87c1885e8aeb100994d9c6d9a791b2a21ed5e8376b83bf",
+    "public-evidence.tar.gz": "537579fe4431b9c7685046d117d64a51b492a524f3cb6b9540bacf94a96f3620",
+    "shared-authority-cross-arm.json": "4dc3fc9b3e81dd7004598c8482afbdbabfb6dda7726ec38a4173cfffe5665bb0",
+    "test-raw.json": "786c4ee1cb375d9efbe0d53009461a2cd9054aa24b8d2dac0108e57e3666415e",
+    "test-results.json": "eeb20cf14f87f9258f19d8f555ec864a04261f30990236028084612ab62f5b73"
+  },
+  "note": "Auditor additionally checked signed-outbox/observed-effect completeness after this measured source.",
+  "auditor_sha256": "10b014bd9e830152d2fee79eebcf04ebe743cee539e87b2989cb787c915b5e69"
+}

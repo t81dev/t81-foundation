@@ -1,0 +1,29 @@
+{
+  "checks": 48,
+  "signed_receipts_checked": 26,
+  "explicit_unreceipted_raw_bypasses": 2,
+  "explicit_corrupt_payload_recovery_rejections": 2,
+  "excluded_controls": 4,
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "sqlite": "3.51.3",
+  "source_revision": "6ea606587c1488ee21da39433785da5d75baffaf",
+  "source_sha256": {
+    "CMakeLists.txt": "b6cbe3ef98f09c366a0c5ca7d63b2422f906d436e3a3d707463f0bc481a6ae69",
+    "PROTOCOL.md": "5cd45d0f1a198eb4f17e704361352a5710c96c57e72940ac545aa4c3ad4527c8",
+    "README.md": "71b9aa7d3787c2af3467d587de8b4b4c39063a7ba926e7f24c81f6110e385cdf",
+    "REPORT.md": "e955577da7a3d03c908de2960504d4a300d39178d88ca4bcd3e6249ce0bac9b4",
+    "THREAT_MODEL.md": "b52e5a433b086cc773f95d0d2a1db337a3113d9eb941e4d8312c20ef251d28b4",
+    "arm_a.cpp": "6cfe0eef243d1b46b12aa072ec6b443d5382668c8304c6632758d579d94cfa2b",
+    "arm_b.py": "96e932bc725c9fe604d0c1e4c845c24addfffd3edd5a56d336ee4d34577a29c5",
+    "audit_public.py": "9d59a636ef4f0a08f7ba224f166338b48a59d3ab0a001de2d7090213da295675",
+    "measure.py": "dc74a69e56db220725df07e73bf63d67c82e5588f26d3ba46814830b3d7188f0",
+    "preserve.py": "6414406bb43e3313564ce8819287e309c84f59cb949bcd1da72cb6b972718403",
+    "requirements.txt": "705c8d73153018ba07b1444d1850f7433594b890f3adcb6d302758caab82909c",
+    "test_protocol.py": "3544beb7a137b2a9f15ed72867ac5de109cfc2cc389ff56791efe30f98130b65",
+    "verify.py": "29e760d24ce8f56b6494c07ed07aa97a50212bebaa2accca28130c2126916b91",
+    "witness.py": "ceb90a81758ebc96390b07c626b99fc1eca9157a3a8a4fb422c7b6bd3fdb7915"
+  },
+  "result_sha256": "4ca29edd00bd3215e2ebbb4f0a4d8eaaf44bda6efbc68432e84aca592d7ea011",
+  "warning": "Audit uses test fixture pins; real trust anchors must arrive out of band"
+}
