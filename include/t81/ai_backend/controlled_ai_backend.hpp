@@ -8,6 +8,8 @@
 #include <functional>
 #include <atomic>
 
+namespace t81::axion { class PolicyEngine; }
+
 namespace t81::ai_backend {
 
 // AI inference request structure
@@ -43,7 +45,6 @@ struct AIBackendConfig {
 };
 
 // Forward declaration
-namespace t81::axion { class PolicyEngine; }
 class ControlledAIBackend;
 
 // Evidence collection structure for AI operations
@@ -65,6 +66,7 @@ public:
     ControlledAIBackend(std::unique_ptr<t81::axion::PolicyEngine> policy_engine,
                        std::optional<std::string> external_ai_endpoint = std::nullopt,
                        std::optional<std::string> external_ai_auth_token = std::nullopt);
+    ~ControlledAIBackend();
 
     // Configuration
     void set_determinism_level(const std::string& level);
