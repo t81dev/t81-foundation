@@ -149,6 +149,8 @@ public:
             now.time_since_epoch()).count();
         randomness_ = std::make_unique<ControlledRandomness>(seed, false);
     }
+
+    ~ControlledAIBackend() = default;
     
     void set_determinism_level(const std::string& level) {
         bool enabled = (level == "controlled" || level == "permissive");

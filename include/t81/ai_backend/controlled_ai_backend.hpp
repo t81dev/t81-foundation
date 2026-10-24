@@ -8,6 +8,8 @@
 #include <functional>
 #include <atomic>
 
+namespace t81::axion { class PolicyEngine; }
+
 namespace t81::ai_backend {
 
 // AI inference request structure
@@ -42,9 +44,7 @@ struct AIBackendConfig {
     bool require_user_consent = true;
 };
 
-// Forward declaration
-namespace t81::axion { class PolicyEngine; }
-class ControlledAIBackend;
+class ControlledRandomness;
 
 // Evidence collection structure for AI operations
 struct AIOperationEvidence {
@@ -65,6 +65,7 @@ public:
     ControlledAIBackend(std::unique_ptr<t81::axion::PolicyEngine> policy_engine,
                        std::optional<std::string> external_ai_endpoint = std::nullopt,
                        std::optional<std::string> external_ai_auth_token = std::nullopt);
+    ~ControlledAIBackend();
     
     // Configuration
     void set_determinism_level(const std::string& level);
@@ -88,9 +89,9 @@ private:
     std::string generate_operation_id() const;
     
     template<typename T>
-    T with_controlled_randomness(std::function<T(class ControlledRandomness&)> operation);
+    T with_controlled_randomness(std::function<T(ControlledRandomness&)> operation);
     
-    std::unique_ptr<class ControlledRandomness> randomness_;
+    std::unique_ptr<ControlledRandomness> randomness_;
     std::unique_ptr<t81::axion::PolicyEngine> policy_engine_;
     std::vector<AIOperationEvidence> evidence_log_;
     std::string current_operation_id_;
