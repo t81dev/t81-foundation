@@ -1,0 +1,26 @@
+{
+  "arm": "A",
+  "tx_id": "wrong-A",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 5,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": 499,
+  "runtime": {
+    "status": "committed",
+    "amount": 499,
+    "events": [
+      "write.commit"
+    ]
+  },
+  "success": false,
+  "status_code": "COMPUTED_AMOUNT_MISMATCH",
+  "receipt": null,
+  "error": {
+    "error": "COMPUTED_AMOUNT_MISMATCH",
+    "computed_amount": 499
+  }
+}

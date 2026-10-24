@@ -1,0 +1,36 @@
+{
+  "arm": "A",
+  "tx_id": "tx-rev-04",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 10,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": 1000,
+  "runtime": {
+    "status": "committed",
+    "amount": 1000,
+    "limit": 50000,
+    "events": [
+      "compute",
+      "authorize.allow",
+      "write.commit"
+    ],
+    "native_trace": "0 LoadImm\n1 LoadImm\n2 Mul\n3 Halt\n",
+    "measurements": {
+      "setup_ns": 365292,
+      "execution_ns": 27750,
+      "authorization_ns": 7875,
+      "storage_ns": 139417
+    }
+  },
+  "success": false,
+  "status_code": "REVOCATION_DETECTED",
+  "receipt": null,
+  "error": {
+    "error": "REVOCATION_DETECTED",
+    "message": "Authority version v2 is REVOKED."
+  }
+}

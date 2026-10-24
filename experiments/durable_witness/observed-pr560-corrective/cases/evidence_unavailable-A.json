@@ -1,0 +1,21 @@
+{
+  "arm": "A",
+  "tx_id": "unavailable-A",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 5,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": null,
+  "runtime": null,
+  "success": false,
+  "status_code": "RUNTIME_UNAVAILABLE",
+  "receipt": null,
+  "error": {
+    "error": "RUNTIME_UNAVAILABLE",
+    "message": "Native binary unavailable: experiments/durable_witness/observed-pr560-corrective/cases/missing-binary",
+    "details": null
+  }
+}

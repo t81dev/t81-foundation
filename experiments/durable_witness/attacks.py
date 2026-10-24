@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import sys
+import argparse
+from contextlib import closing
 import json
-import shutil
 import sqlite3
 import tempfile
 import threading
@@ -47,9 +48,7 @@ def _mp_proc_submit(queue, arm, tx_id, auth_ver, qty, price, db_path, out_dir, s
     queue.put(res)
 
 def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
-    if base_dir.exists():
-        shutil.rmtree(base_dir)
-    base_dir.mkdir(parents=True, exist_ok=True)
+    base_dir.mkdir(parents=True, exist_ok=False)
 
     results = []
 
@@ -62,7 +61,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_1():
         att_dir = get_attack_dir(1)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         po_data = {"item": "Widget-X", "quantity": 10, "unit_price": 100, "currency": "USD"}
         payload_hash = hashlib.sha256(json.dumps(po_data, sort_keys=True).encode("utf-8")).hexdigest()
@@ -101,7 +100,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_2():
         att_dir = get_attack_dir(2)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         execute_runner("A", "tx-replay-02", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
         replay_res = execute_runner("A", "tx-replay-02", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
@@ -120,7 +119,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_3():
         att_dir = get_attack_dir(3)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         import multiprocessing
 
@@ -136,7 +135,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
                 continue
 
             ctx_db_path = att_dir / f"witness_{ctx_name}.db"
-            init_db(ctx_db_path)
+            init_db(ctx_db_path).close()
             ctx_out_dir = att_dir / f"out_{ctx_name}"
             ctx_out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -150,9 +149,9 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
                 p1.join(timeout=10.0)
                 p2.join(timeout=10.0)
 
-                results_list = []
-                while not q.empty():
-                    results_list.append(q.get())
+                if p1.exitcode != 0 or p2.exitcode != 0:
+                    raise RuntimeError(f"duplicate workers did not finish successfully: {p1.exitcode}, {p2.exitcode}")
+                results_list = [q.get(timeout=2.0), q.get(timeout=2.0)]
 
                 # Also test revocation racing with transaction admission across separate OS processes
                 q_race = ctx.Queue()
@@ -164,7 +163,9 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
                 p_sub.join(timeout=10.0)
                 p_rev.join(timeout=10.0)
 
-                race_res = q_race.get() if not q_race.empty() else None
+                if p_sub.exitcode != 0 or p_rev.exitcode != 0:
+                    raise RuntimeError(f"revocation workers did not finish successfully: {p_sub.exitcode}, {p_rev.exitcode}")
+                race_res = q_race.get(timeout=2.0)
 
                 successes = [r for r in results_list if r["success"]]
                 blocked_replays = [
@@ -172,7 +173,10 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
                     if not r["success"] and r.get("status_code") in ("REPLAY_DETECTED", "INTEGRITY_ERROR", "DATABASE_LOCKED")
                 ]
 
-                ctx_blocked = (len(successes) == 1 and len(blocked_replays) == 1)
+                # Either ordering is legitimate in an uncontrolled race. This
+                # does not prove that revocation preceded admission.
+                ctx_blocked = (len(successes) == 1 and len(blocked_replays) == 1
+                               and race_res["status_code"] in ("SUCCESS", "REVOCATION_DETECTED"))
                 if not ctx_blocked:
                     overall_blocked = False
 
@@ -199,7 +203,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_4():
         att_dir = get_attack_dir(4)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
         revoke_authority(db_path, "v2")
 
         res = execute_runner("A", "tx-rev-04", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
@@ -217,11 +221,11 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_5():
         att_dir = get_attack_dir(5)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         po_data = {"item": "Widget-X", "quantity": 10, "unit_price": 100, "currency": "USD"}
-        succ1, res1, stat1 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data, secret_key=secret_key)
-        succ2, res2, stat2 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data, secret_key=secret_key)
+        succ1, res1, stat1 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data, secret_key=secret_key, computed_amount=1000)
+        succ2, res2, stat2 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data, secret_key=secret_key, computed_amount=1000)
 
         blocked = (succ1 and (not succ2) and stat2 == "REPLAY_DETECTED" and "existing_receipt" in res2)
         return {
@@ -236,7 +240,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_6():
         att_dir = get_attack_dir(6)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         po_data = {"item": "Phantom-Widget", "quantity": 1, "unit_price": 500, "currency": "USD"}
         canonical_po_bytes = json.dumps(po_data, sort_keys=True).encode("utf-8")
@@ -295,7 +299,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_7():
         att_dir = get_attack_dir(7)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         po_data = {"item": "Widget-X", "quantity": 10, "unit_price": 100, "currency": "USD"}
         wrong_key = b"wrong-secret-key-00000000000000!"
@@ -348,7 +352,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
         """
         att_dir = get_attack_dir(8)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         # Step 1: Take consistent snapshot before transaction using SQLite backup API
         snapshot_pre = att_dir / "witness_snapshot_pre.db"
@@ -392,7 +396,7 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     def attack_9():
         att_dir = get_attack_dir(9)
         db_path = att_dir / "witness.db"
-        init_db(db_path)
+        init_db(db_path).close()
 
         res = execute_runner("B", "tx-conflict-09", "v1", 10, 100, db_path, att_dir, secret_key=secret_key)
         blocked = not res["success"] and res["status_code"] == "REVOCATION_DETECTED"
@@ -404,29 +408,23 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
             "reason": res.get("status_code")
         }
 
-    # Attack 10: Partial persistence failure and recovery
+    # Attack 10: Force failure AFTER the effect insertion, before transaction insertion.
     def attack_10():
         att_dir = get_attack_dir(10)
-        bad_db = att_dir / "readonly_witness.db"
-        init_db(bad_db)
-        bad_db.chmod(0o444)
-
-        try:
-            success, res, status = submit_transaction(bad_db, "tx-fail-10", "v2", {"item": "Test", "unit_price": 10, "quantity": 1}, secret_key=secret_key)
-            blocked = not success
-        except Exception as e:
-            blocked = True
-            status = "INTEGRITY_ERROR"
-        finally:
-            bad_db.chmod(0o644)
-
-        return {
-            "attack_id": 10,
-            "name": "Partial persistence failure and recovery",
-            "blocked": blocked,
-            "verdict": "ROLLED_BACK_CLEANLY" if blocked else "PARTIAL_WRITE",
-            "status": status
-        }
+        bad_db = att_dir / "failed_witness.db"
+        init_db(bad_db).close()
+        with closing(sqlite3.connect(bad_db)) as conn:
+            conn.execute("CREATE TRIGGER fail_transaction BEFORE INSERT ON transactions BEGIN SELECT RAISE(ABORT, 'injected persistence failure'); END")
+        success, res, status = submit_transaction(
+            bad_db, "tx-fail-10", "v2", {"item": "Test", "unit_price": 10, "quantity": 1},
+            secret_key=secret_key, computed_amount=10)
+        with closing(sqlite3.connect(bad_db)) as conn:
+            counts = {table: conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+                      for table in ("effects", "transactions")}
+        blocked = not success and status == "INTEGRITY_ERROR" and all(n == 0 for n in counts.values())
+        return {"attack_id": 10, "name": "Partial persistence failure and recovery",
+                "blocked": blocked, "verdict": "ROLLED_BACK_CLEANLY" if blocked else "PARTIAL_WRITE",
+                "status": status, "row_counts": counts}
 
     results.append(attack_1())
     results.append(attack_2())
@@ -455,8 +453,10 @@ def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     return summary
 
 def main():
-    out = Path("/tmp/durable-witness-attacks")
-    summary = run_attacks(out)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=Path, required=True, help="New directory; existing evidence is preserved")
+    args = parser.parse_args()
+    summary = run_attacks(args.output_dir)
     print(json.dumps(summary, indent=2))
 
 if __name__ == "__main__":

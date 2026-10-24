@@ -1,0 +1,42 @@
+{
+  "arm": "A",
+  "tx_id": "tx-A-11",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 5,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": 500,
+  "runtime": {
+    "status": "committed",
+    "amount": 500,
+    "limit": 50000,
+    "events": [
+      "compute",
+      "authorize.allow",
+      "write.commit"
+    ],
+    "native_trace": "0 LoadImm\n1 LoadImm\n2 Mul\n3 Halt\n",
+    "measurements": {
+      "setup_ns": 395583,
+      "execution_ns": 28250,
+      "authorization_ns": 8750,
+      "storage_ns": 144833
+    }
+  },
+  "success": true,
+  "status_code": "SUCCESS",
+  "receipt": {
+    "witness_id": "durable-witness-v1",
+    "tx_id": "tx-A-11",
+    "authority_version": "v2",
+    "effect_id": "effect-tx-A-11-d1a24556f3d93293",
+    "payload_hash": "d1a24556f3d93293adda3871a5c28b8b866555e657e5b302caf87180161520fc",
+    "total_amount": 500,
+    "timestamp": "2026-10-24T10:56:01Z",
+    "receipt_id": "dc1760495fa6c0c65cf4e1e682a97965ae54610d39d17a5ebdc9ab8edaf37470"
+  },
+  "error": null
+}

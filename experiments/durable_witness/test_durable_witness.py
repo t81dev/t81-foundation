@@ -17,7 +17,7 @@ class TestDurableWitness(unittest.TestCase):
         self.db_path = self.test_dir / "witness.db"
         self.out_dir = self.test_dir / "out"
         self.secret_key = TEST_SECRET_KEY
-        init_db(self.db_path)
+        init_db(self.db_path).close()
 
     def tearDown(self):
         shutil.rmtree(self.test_dir)
@@ -159,11 +159,11 @@ class TestDurableWitness(unittest.TestCase):
         )
 
         # Attempt boundary shifting substitution that might succeed under colon-delimited string
-        # e.g., tx_id="tx", authority_version=":1:v2" vs tx_id="tx:1", authority_version="v2"
+        # e.g., tx_id="tx", authority_version="1:v2" vs tx_id="tx:1", authority_version="v2"
         sig_shifted = compute_receipt_signature(
             secret_key=key,
             tx_id="tx",
-            authority_version=":1:v2",
+            authority_version="1:v2",
             effect_id="eff1",
             payload_hash="hash1",
             total_amount=100,

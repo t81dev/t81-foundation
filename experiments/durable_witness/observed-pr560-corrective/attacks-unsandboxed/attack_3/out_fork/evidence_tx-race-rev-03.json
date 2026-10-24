@@ -1,0 +1,23 @@
+{
+  "arm": "B",
+  "tx_id": "tx-race-rev-03",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 5,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": 500,
+  "runtime": {
+    "status": "computed",
+    "amount": 500
+  },
+  "success": false,
+  "status_code": "REVOCATION_DETECTED",
+  "receipt": null,
+  "error": {
+    "error": "REVOCATION_DETECTED",
+    "message": "Authority version v2 is REVOKED."
+  }
+}

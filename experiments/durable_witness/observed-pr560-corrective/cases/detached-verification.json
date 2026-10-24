@@ -1,0 +1,30 @@
+[
+  {
+    "command": [
+      "${VENV}/bin/python",
+      "${REPO_ROOT}/experiments/durable_witness/verify.py",
+      "experiments/durable_witness/observed-pr560-corrective/cases/evidence_approved-A.json",
+      "--db",
+      "experiments/durable_witness/observed-pr560-corrective/cases/witness.db",
+      "--secret-key",
+      "public-corrective-test-fixture-only"
+    ],
+    "returncode": 0,
+    "stdout": "{\n  \"valid\": true,\n  \"crypto_authentic\": true,\n  \"database_present\": true,\n  \"effect_observed\": false,\n  \"reason\": \"SUCCESS\",\n  \"tx_id\": \"approved-A\",\n  \"authority_version\": \"v2\",\n  \"effect_id\": \"effect-approved-A-d1a24556f3d93293\",\n  \"receipt_id\": \"3d6f4d969a047bfe7736ac28247e6702e39f834d46d94b90af2538d21a08279d\",\n  \"witness_verified\": true\n}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "${VENV}/bin/python",
+      "${REPO_ROOT}/experiments/durable_witness/verify.py",
+      "experiments/durable_witness/observed-pr560-corrective/cases/evidence_approved-B.json",
+      "--db",
+      "experiments/durable_witness/observed-pr560-corrective/cases/witness.db",
+      "--secret-key",
+      "public-corrective-test-fixture-only"
+    ],
+    "returncode": 0,
+    "stdout": "{\n  \"valid\": true,\n  \"crypto_authentic\": true,\n  \"database_present\": true,\n  \"effect_observed\": false,\n  \"reason\": \"SUCCESS\",\n  \"tx_id\": \"approved-B\",\n  \"authority_version\": \"v2\",\n  \"effect_id\": \"effect-approved-B-d1a24556f3d93293\",\n  \"receipt_id\": \"0d112262de0217a43005ba428306089c9a672509a108b255ce85dadc39b6b916\",\n  \"witness_verified\": true\n}\n",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,18 @@
+test_historical_collision_and_substitution (test_corrective.CorrectiveContracts.test_historical_collision_and_substitution) ... FAIL
+
+======================================================================
+FAIL: test_historical_collision_and_substitution (test_corrective.CorrectiveContracts.test_historical_collision_and_substitution)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${REPO_ROOT}/experiments/durable_witness/test_corrective.py", line 155, in test_historical_collision_and_substitution
+    self.assertNotEqual(witness.compute_receipt_signature(KEY, **a),
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        witness.compute_receipt_signature(KEY, **b))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '7de99b14b21704a71580996dee290fd03026a36e5678672d4b7d8ffc9f559504' == '7de99b14b21704a71580996dee290fd03026a36e5678672d4b7d8ffc9f559504'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.009s
+
+FAILED (failures=1)
+EXPECTED FAILURE: old encoding restores colliding HMAC signatures

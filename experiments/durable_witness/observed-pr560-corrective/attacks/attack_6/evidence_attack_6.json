@@ -1,0 +1,21 @@
+{
+  "arm": "B",
+  "tx_id": "tx-phantom-06",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Phantom-Widget",
+    "quantity": 1,
+    "unit_price": 500,
+    "currency": "USD"
+  },
+  "receipt": {
+    "witness_id": "durable-witness-v1",
+    "tx_id": "tx-phantom-06",
+    "authority_version": "v2",
+    "effect_id": "effect-phantom",
+    "payload_hash": "fe679272024cc58bc50b8e2f2d16d3bac76eababb11c401c517b02c427f7bbde",
+    "total_amount": 500,
+    "timestamp": "2026-10-22T20:00:00Z",
+    "receipt_id": "c029b3d72d5aaf047db3eb14cbbf185065850382a76fc6c2dd122ec447c939a0"
+  }
+}

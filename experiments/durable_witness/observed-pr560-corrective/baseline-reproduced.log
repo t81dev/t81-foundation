@@ -1,0 +1,377 @@
+test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) ...
+  test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) (case='over-limit', arm='A') ... ERROR
+  test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) (case='malformed', arm='A') ... ERROR
+  test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) (case='malformed', arm='B') ... FAIL
+test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) ... FAIL
+test_historical_collision_and_substitution (__main__.CorrectiveContracts.test_historical_collision_and_substitution) ... ok
+test_incorrect_runtime_result_rejected_both_arms (__main__.CorrectiveContracts.test_incorrect_runtime_result_rejected_both_arms) ...
+  test_incorrect_runtime_result_rejected_both_arms (__main__.CorrectiveContracts.test_incorrect_runtime_result_rejected_both_arms) (arm='A') ... FAIL
+  test_incorrect_runtime_result_rejected_both_arms (__main__.CorrectiveContracts.test_incorrect_runtime_result_rejected_both_arms) (arm='B') ... FAIL
+test_native_denial_is_evidence (__main__.CorrectiveContracts.test_native_denial_is_evidence) ... ${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/traceback.py:890: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def setup_positions(expr, force_valid=True):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ERROR
+test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) ...
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='not-json') ... ERROR
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='[]') ... ERROR
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{}') ... ERROR
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"committed","amount":"500"}') ... FAIL
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"unexpected","amount":500}') ... ERROR
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"committed","amount":true}') ... FAIL
+  test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"malformed","amount":0,"events":["input.reject"]}') ... ERROR
+test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) ... ERROR
+test_old_encoding_negative_control_detects_regression (__main__.CorrectiveContracts.test_old_encoding_negative_control_detects_regression) ... ok
+test_partial_write_rolls_back_effect (__main__.CorrectiveContracts.test_partial_write_rolls_back_effect) ... ok
+test_unavailable_runtime_has_no_fallback (__main__.CorrectiveContracts.test_unavailable_runtime_has_no_fallback) ... ERROR
+test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) ...
+  test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount=499) ... ERROR
+  test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount=None) ... ERROR
+  test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount='500') ... ERROR
+  test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount=True) ... ERROR
+test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) ... FAIL
+
+======================================================================
+ERROR: test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) (case='over-limit', arm='A')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 68, in test_defined_outcome_parity
+    ev = self.execute(arm, tx=f'{label}-{arm}', authority=auth, quantity=q, price=p)
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 39, in run_arm_a
+    raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+RuntimeError: Arm A binary failed to commit transaction. Output: {'status': 'denied', 'amount': 60000, 'limit': 50000, 'events': ['compute', 'authorize.deny'], 'native_trace': '0 LoadImm\n1 LoadImm\n2 Mul\n3 Halt\n', 'measurements': {'setup_ns': 412916, 'execution_ns': 28542, 'authorization_ns': 11875, 'storage_ns': 3250}}
+
+======================================================================
+ERROR: test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) (case='malformed', arm='A')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 68, in test_defined_outcome_parity
+    ev = self.execute(arm, tx=f'{label}-{arm}', authority=auth, quantity=q, price=p)
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 39, in run_arm_a
+    raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+RuntimeError: Arm A binary failed to commit transaction. Output: {'status': 'malformed', 'amount': 0, 'limit': 50000, 'events': ['input.reject'], 'native_trace': '', 'measurements': {'setup_ns': 376375, 'execution_ns': 0, 'authorization_ns': 0, 'storage_ns': 0}}
+
+======================================================================
+ERROR: test_native_denial_is_evidence (__main__.CorrectiveContracts.test_native_denial_is_evidence)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 49, in test_native_denial_is_evidence
+    ev = self.execute('A', quantity=100, price=600)
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 39, in run_arm_a
+    raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+RuntimeError: Arm A binary failed to commit transaction. Output: {'status': 'denied', 'amount': 60000, 'limit': 50000, 'events': ['compute', 'authorize.deny'], 'native_trace': '0 LoadImm\n1 LoadImm\n2 Mul\n3 Halt\n', 'measurements': {'setup_ns': 402875, 'execution_ns': 28958, 'authorization_ns': 12000, 'storage_ns': 3542}}
+
+======================================================================
+ERROR: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='not-json')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/runner.py", line 34, in run_arm_a
+    output_data = json.loads(res.stdout.strip())
+  File "${PYTHON_STDLIB}/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "${PYTHON_STDLIB}/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "${PYTHON_STDLIB}/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 111, in test_native_malformed_responses_and_runtime_failure
+    ev = self.execute('A')
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 36, in run_arm_a
+    raise RuntimeError(f"Arm A binary stdout is not valid JSON: {res.stdout.strip()}") from e
+RuntimeError: Arm A binary stdout is not valid JSON: not-json
+
+======================================================================
+ERROR: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='[]')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 111, in test_native_malformed_responses_and_runtime_failure
+    ev = self.execute('A')
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 38, in run_arm_a
+    if output_data.get("status") != "committed":
+       ^^^^^^^^^^^^^^^
+AttributeError: 'list' object has no attribute 'get'
+
+======================================================================
+ERROR: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 111, in test_native_malformed_responses_and_runtime_failure
+    ev = self.execute('A')
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 39, in run_arm_a
+    raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+RuntimeError: Arm A binary failed to commit transaction. Output: {}
+
+======================================================================
+ERROR: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"unexpected","amount":500}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 111, in test_native_malformed_responses_and_runtime_failure
+    ev = self.execute('A')
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 39, in run_arm_a
+    raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+RuntimeError: Arm A binary failed to commit transaction. Output: {'status': 'unexpected', 'amount': 500}
+
+======================================================================
+ERROR: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"malformed","amount":0,"events":["input.reject"]}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 111, in test_native_malformed_responses_and_runtime_failure
+    ev = self.execute('A')
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 39, in run_arm_a
+    raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+RuntimeError: Arm A binary failed to commit transaction. Output: {'status': 'malformed', 'amount': 0, 'events': ['input.reject']}
+
+======================================================================
+ERROR: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 116, in test_native_malformed_responses_and_runtime_failure
+    ev = self.execute('A')
+  File "${TEMP_CASE}/test_corrective.py", line 39, in execute
+    return runner.execute_runner(arm, tx, authority, quantity, price, self.db,
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                 self.root / 'out', KEY, arm_a_bin=BINARY, **kw)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 31, in run_arm_a
+    raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
+RuntimeError: Arm A binary execution failed (exit code 2): VM fault
+
+======================================================================
+ERROR: test_unavailable_runtime_has_no_fallback (__main__.CorrectiveContracts.test_unavailable_runtime_has_no_fallback)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 122, in test_unavailable_runtime_has_no_fallback
+    ev = runner.execute_runner('A', 'unavailable', 'v2', 5, 100, self.db,
+                               self.root / 'out', KEY, arm_a_bin=self.root / 'missing')
+  File "${TEMP_CASE}/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${TEMP_CASE}/runner.py", line 16, in run_arm_a
+    raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+RuntimeError: Arm A runtime binary not found at '${TEMP_CASE}/missing'. Native execution unavailable.
+
+======================================================================
+ERROR: test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount=499)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 96, in test_witness_requires_computed_amount
+    ok, _, status = witness.submit_transaction(self.db, 'bad', 'v2', po, KEY,
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                               computed_amount=amount)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: submit_transaction() got an unexpected keyword argument 'computed_amount'
+
+======================================================================
+ERROR: test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount=None)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 96, in test_witness_requires_computed_amount
+    ok, _, status = witness.submit_transaction(self.db, 'bad', 'v2', po, KEY,
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                               computed_amount=amount)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: submit_transaction() got an unexpected keyword argument 'computed_amount'
+
+======================================================================
+ERROR: test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount='500')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 96, in test_witness_requires_computed_amount
+    ok, _, status = witness.submit_transaction(self.db, 'bad', 'v2', po, KEY,
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                               computed_amount=amount)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: submit_transaction() got an unexpected keyword argument 'computed_amount'
+
+======================================================================
+ERROR: test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount) (amount=True)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 96, in test_witness_requires_computed_amount
+    ok, _, status = witness.submit_transaction(self.db, 'bad', 'v2', po, KEY,
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                               computed_amount=amount)
+                                               ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: submit_transaction() got an unexpected keyword argument 'computed_amount'
+
+======================================================================
+FAIL: test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity) (case='malformed', arm='B')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 69, in test_defined_outcome_parity
+    self.assertEqual(ev['status_code'], status)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'SUCCESS' != 'MALFORMED_INPUT'
+- SUCCESS
++ MALFORMED_INPUT
+
+
+======================================================================
+FAIL: test_defined_outcome_parity (__main__.CorrectiveContracts.test_defined_outcome_parity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 77, in test_defined_outcome_parity
+    self.assertEqual(conn.execute('SELECT COUNT(*) FROM transactions').fetchone()[0], 2)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 3 != 2
+
+======================================================================
+FAIL: test_incorrect_runtime_result_rejected_both_arms (__main__.CorrectiveContracts.test_incorrect_runtime_result_rejected_both_arms) (arm='A')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 87, in test_incorrect_runtime_result_rejected_both_arms
+    self.assertFalse(ev['success'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_incorrect_runtime_result_rejected_both_arms (__main__.CorrectiveContracts.test_incorrect_runtime_result_rejected_both_arms) (arm='B')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 88, in test_incorrect_runtime_result_rejected_both_arms
+    self.assertEqual(ev['status_code'], 'COMPUTED_AMOUNT_MISMATCH')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'REPLAY_DETECTED' != 'COMPUTED_AMOUNT_MISMATCH'
+- REPLAY_DETECTED
++ COMPUTED_AMOUNT_MISMATCH
+
+
+======================================================================
+FAIL: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"committed","amount":"500"}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 112, in test_native_malformed_responses_and_runtime_failure
+    self.assertFalse(ev['success'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_native_malformed_responses_and_runtime_failure (__main__.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) (stdout='{"status":"committed","amount":true}')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 113, in test_native_malformed_responses_and_runtime_failure
+    self.assertEqual(ev['status_code'], 'MALFORMED_RUNTIME_RESPONSE')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'REPLAY_DETECTED' != 'MALFORMED_RUNTIME_RESPONSE'
+- REPLAY_DETECTED
++ MALFORMED_RUNTIME_RESPONSE
+
+
+======================================================================
+FAIL: test_witness_requires_computed_amount (__main__.CorrectiveContracts.test_witness_requires_computed_amount)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${TEMP_CASE}/test_corrective.py", line 101, in test_witness_requires_computed_amount
+    with self.assertRaises(TypeError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+AssertionError: TypeError not raised
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.200s
+
+FAILED (failures=7, errors=14)
+Baseline regression exit code: 1

@@ -1,0 +1,23 @@
+{
+  "arm": "B",
+  "tx_id": "over-limit-B",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 100,
+    "unit_price": 600,
+    "currency": "USD"
+  },
+  "total_amount": 60000,
+  "runtime": {
+    "status": "computed",
+    "amount": 60000
+  },
+  "success": false,
+  "status_code": "POLICY_LIMIT_EXCEEDED",
+  "receipt": null,
+  "error": {
+    "error": "POLICY_LIMIT_EXCEEDED",
+    "message": "PO amount (unit: 600, total: 60000) exceeds policy limits."
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "reference_sha": "056f0d6307f59049ef9dfa42c482f727a02c2b96",
+  "initial_branch": "experiment/canonfs-concurrent-revocation",
+  "initial_sha": "e04b95f12798be7d85d5b6b1d3645a5c677c2a4e",
+  "branch": "corrective/pr560-witness",
+  "head_sha": "056f0d6307f59049ef9dfa42c482f727a02c2b96",
+  "corrective_state": "uncommitted source changes identified by source_sha256",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "python_executable": "${VENV}/bin/python",
+  "sqlite": "3.51.3",
+  "dependencies": {
+    "wasmtime": "38.0.0",
+    "importlib_resources": "7.1.0"
+  },
+  "cmake": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+  "ninja": "1.13.2",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: ${TOOLCHAIN}/usr/bin",
+  "native_binary": "${BUILD_DIR}/t81_architecture_arm_a",
+  "native_binary_sha256": "921f777424fce86d11d56fee559e9b228b34a5511dd61e9f2d7877db2be99314",
+  "native_source_matches_reference": true,
+  "source_sha256": {
+    "experiments/durable_witness/attacks.py": "52a4191b34575cfda894b3e213d3bfd45104ad15345fb2390a5be58be30fb01e",
+    "experiments/durable_witness/record_cases.py": "cf95b493dd8c902215d13e9112c68b9d2f9005d3749270cda80fc23bc7dcf236",
+    "experiments/durable_witness/run.py": "eacd20644808597bb840c31e51db9c96db2505194dc927704c787d5bc75dc5d9",
+    "experiments/durable_witness/runner.py": "5d08f05d3549b8226e23bc884812d20e570433c4d57140a85e0129da6754ba19",
+    "experiments/durable_witness/test_corrective.py": "7885423d27fe6b8efa098e7601d8fa7a26055e3a85fa69f5aae545fac6c061d4",
+    "experiments/durable_witness/test_durable_witness.py": "d97462330d81a80e44b1bf00e5c81d25b8e6ca091aa9d04a44ec1304f53f8b0f",
+    "experiments/durable_witness/verify.py": "bf1aaa4f51e9fdc1bdd4d268bc024d3c2ca6d1992748931acba975b464241494",
+    "experiments/durable_witness/witness.py": "6ebe6a241cd07f601fe21c4e205a77e0e940ca606a41bb8fd0d93554de390308",
+    "experiments/durable_witness/guest.wat": "809cfa02d22d6cdefff7949adadaac1820874e6704d8b7f41ff7d189d26f5cb7",
+    "experiments/durable_witness/workload-contract.json": "e83ff372ddcb94c2d5e1ad2580641a8450b6a70bb2d659583d1dd4c6ec086c16",
+    "experiments/architecture_challenge/arm_a.cpp": "412a697e9326c0e8fd8dcb0687d2fddedb9f92d35bc36994af763eb6d56d5820",
+    "CMakeLists.txt": "8d41f042a1788dcf7a2a9cd7738891e11c5350075bb5e5d251904ace0eb66085"
+  },
+  "configure_command": "cmake -S . -B ${BUILD_DIR} -G Ninja -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_ARCHITECTURE_CHALLENGE=ON -DT81_BUILD_TESTS=OFF -DT81_BUILD_TUI=OFF -DT81_BUILD_EXAMPLES=OFF -DT81_BUILD_BENCHMARKS=OFF",
+  "build_command": "cmake --build ${BUILD_DIR} --target t81_architecture_arm_a -j 4",
+  "final_tests_command": "T81_ARM_A_BIN=${BUILD_DIR}/t81_architecture_arm_a ${VENV}/bin/python -m unittest discover -s experiments/durable_witness -v",
+  "executed_platforms": [
+    "macOS ARM64"
+  ],
+  "unexecuted_platforms": [
+    "Linux",
+    "Windows",
+    "x86_64"
+  ]
+}

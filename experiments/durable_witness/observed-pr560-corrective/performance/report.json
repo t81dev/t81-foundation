@@ -1,0 +1,15 @@
+{
+  "repetitions": 30,
+  "arm_a": {
+    "exec_mean_us": 9970.554166666667,
+    "exec_stdev_us": 542.1064911076422,
+    "verify_mean_us": 782.9387666666667,
+    "all_verified": true
+  },
+  "arm_b": {
+    "exec_mean_us": 3959.661133333333,
+    "exec_stdev_us": 4619.7453311972595,
+    "verify_mean_us": 721.9569333333334,
+    "all_verified": true
+  }
+}

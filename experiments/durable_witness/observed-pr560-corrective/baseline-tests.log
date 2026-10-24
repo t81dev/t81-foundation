@@ -1,0 +1,58 @@
+E..EEE.
+======================================================================
+ERROR: test_database_record_vs_authenticated_effect_observation (__main__.TestDurableWitness.test_database_record_vs_authenticated_effect_observation)
+Demonstrate required investigation 5:
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${REPO_ROOT}/experiments/durable_witness/test_durable_witness.py", line 185, in test_database_record_vs_authenticated_effect_observation
+    ev = execute_runner("A", "tx-effect-obs", "v2", 10, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 16, in run_arm_a
+    raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+RuntimeError: Arm A runtime binary not found at '${REPO_ROOT}/build/t81_architecture_arm_a'. Native execution unavailable.
+
+======================================================================
+ERROR: test_replay_rejected_across_restart (__main__.TestDurableWitness.test_replay_rejected_across_restart)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${REPO_ROOT}/experiments/durable_witness/test_durable_witness.py", line 63, in test_replay_rejected_across_restart
+    ev1 = execute_runner("A", "tx-replay", "v2", 5, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 16, in run_arm_a
+    raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+RuntimeError: Arm A runtime binary not found at '${REPO_ROOT}/build/t81_architecture_arm_a'. Native execution unavailable.
+
+======================================================================
+ERROR: test_revocation_at_boundary (__main__.TestDurableWitness.test_revocation_at_boundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${REPO_ROOT}/experiments/durable_witness/test_durable_witness.py", line 76, in test_revocation_at_boundary
+    ev = execute_runner("A", "tx-revoked", "v2", 5, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 16, in run_arm_a
+    raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+RuntimeError: Arm A runtime binary not found at '${REPO_ROOT}/build/t81_architecture_arm_a'. Native execution unavailable.
+
+======================================================================
+ERROR: test_successful_transaction_arm_a (__main__.TestDurableWitness.test_successful_transaction_arm_a)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "${REPO_ROOT}/experiments/durable_witness/test_durable_witness.py", line 26, in test_successful_transaction_arm_a
+    evidence = execute_runner(
+        arm="A",
+    ...<6 lines>...
+        secret_key=self.secret_key
+    )
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 102, in execute_runner
+    total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+  File "${REPO_ROOT}/experiments/durable_witness/runner.py", line 16, in run_arm_a
+    raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+RuntimeError: Arm A runtime binary not found at '${REPO_ROOT}/build/t81_architecture_arm_a'. Native execution unavailable.
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.063s
+
+FAILED (errors=4)

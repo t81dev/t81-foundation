@@ -1,0 +1,15 @@
+test_database_record_vs_authenticated_effect_observation (test_durable_witness.TestDurableWitness.test_database_record_vs_authenticated_effect_observation)
+Demonstrate required investigation 5: ... ok
+test_hmac_boundary_shifting_substitutions_fail_verification (test_durable_witness.TestDurableWitness.test_hmac_boundary_shifting_substitutions_fail_verification)
+Regression test proving that boundary-shifting field substitutions cannot preserve valid HMAC signature. ... ok
+test_offline_verification_accepts_forged_receipt_without_witness_db (test_durable_witness.TestDurableWitness.test_offline_verification_accepts_forged_receipt_without_witness_db)
+Demonstrate required investigation 3: ... ok
+test_replay_rejected_across_restart (test_durable_witness.TestDurableWitness.test_replay_rejected_across_restart) ... ok
+test_revocation_at_boundary (test_durable_witness.TestDurableWitness.test_revocation_at_boundary) ... ok
+test_successful_transaction_arm_a (test_durable_witness.TestDurableWitness.test_successful_transaction_arm_a) ... ok
+test_successful_transaction_arm_b (test_durable_witness.TestDurableWitness.test_successful_transaction_arm_b) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.067s
+
+OK

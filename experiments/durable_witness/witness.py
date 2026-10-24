@@ -76,17 +76,30 @@ def submit_transaction(
     authority_version: str,
     po_data: Dict[str, Any],
     secret_key: bytes,
-    contract_limits: Dict[str, Any] = None
+    computed_amount: int,
+    contract_limits: Dict[str, Any] = None,
+    runtime_allowed: bool = True
 ) -> Tuple[bool, Dict[str, Any], str]:
     if contract_limits is None:
         contract_limits = {"max_unit_price": 1000, "max_total_amount": 50000}
 
+    unit_price = po_data.get("unit_price")
+    quantity = po_data.get("quantity")
+    if not all(type(v) is int and 1 <= v <= 1000 for v in (unit_price, quantity)):
+        return False, {"error": "MALFORMED_INPUT"}, "MALFORMED_INPUT"
+    # Runtime output is mandatory. Python multiplication validates it; it never
+    # substitutes for missing execution. No effect or transaction is recorded yet.
+    if type(computed_amount) is not int or computed_amount != unit_price * quantity:
+        return False, {"error": "COMPUTED_AMOUNT_MISMATCH", "computed_amount": computed_amount}, "COMPUTED_AMOUNT_MISMATCH"
+    total_amount = computed_amount
     conn = sqlite3.connect(db_path, timeout=10.0)
     conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA synchronous=FULL;")
 
     try:
         with conn:
+            # Serialize policy lookup and writes against revocation/duplicate writers.
+            conn.execute("BEGIN IMMEDIATE")
             # 1. Check duplicate tx_id (Replay Protection)
             cur = conn.execute("SELECT tx_id, receipt_id FROM transactions WHERE tx_id = ?", (tx_id,))
             existing = cur.fetchone()
@@ -117,15 +130,15 @@ def submit_transaction(
                 }, "REVOCATION_DETECTED"
 
             # 3. Check PO contract rules
-            unit_price = po_data.get("unit_price", 0)
-            quantity = po_data.get("quantity", 0)
-            total_amount = unit_price * quantity
-
-            if unit_price > contract_limits["max_unit_price"] or total_amount > contract_limits["max_total_amount"]:
+            if (unit_price > min(max_unit_price, contract_limits["max_unit_price"])
+                    or total_amount > min(max_total_amount, contract_limits["max_total_amount"])):
                 return False, {
                     "error": "POLICY_LIMIT_EXCEEDED",
                     "message": f"PO amount (unit: {unit_price}, total: {total_amount}) exceeds policy limits."
                 }, "POLICY_LIMIT_EXCEEDED"
+
+            if runtime_allowed is not True:
+                return False, {"error": "RUNTIME_POLICY_DENIED"}, "RUNTIME_POLICY_DENIED"
 
             # 4. Generate effect and receipt identity bound to tx_id
             canonical_po_bytes = json.dumps(po_data, sort_keys=True).encode("utf-8")

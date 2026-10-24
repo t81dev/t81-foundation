@@ -1,53 +1,68 @@
 #!/usr/bin/env python3
 import sys
+import os
 import json
-import shutil
 import tempfile
 import subprocess
 import argparse
 from pathlib import Path
+from urllib.parse import quote
 
-import wasmtime
 from witness import init_db, submit_transaction
 
-def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> int:
-    """Run T81 Arm A C++ binary to compute total and enforce bounded execution."""
-    if not arm_a_bin or not arm_a_bin.exists():
-        raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+class RuntimeFailure(RuntimeError):
+    def __init__(self, code, message, details=None):
+        super().__init__(message)
+        self.code = code
+        self.details = details
 
-    # Create temporary input file and store for Arm A binary
-    tmp_dir = Path(tempfile.mkdtemp())
-    try:
+
+def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> dict:
+    """Return native computation/admission evidence, including expected denials.
+
+    The native CanonFS commit is a temporary local artifact, not the durable
+    witness transaction or proof of an external effect.
+    """
+    if not arm_a_bin or not arm_a_bin.is_file():
+        raise RuntimeFailure("RUNTIME_UNAVAILABLE", f"Native binary unavailable: {arm_a_bin}")
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_dir = Path(tmp)
         input_txt = tmp_dir / "input.txt"
-        store_dir = tmp_dir / "store"
-
-        # Format input expected by arm_a.cpp: "units price\n"
-        with open(input_txt, "w") as f:
-            f.write(f"{quantity} {unit_price}\n")
-
-        cmd = [str(arm_a_bin), "approved", str(input_txt), str(store_dir)]
-        res = subprocess.run(cmd, capture_output=True, text=True)
-        if res.returncode != 0:
-            raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
-
+        input_txt.write_text(f"{quantity} {unit_price}\n", encoding="utf-8")
+        cmd = [str(arm_a_bin.resolve()), "approved", str(input_txt), str(tmp_dir / "store")]
         try:
-            output_data = json.loads(res.stdout.strip())
-        except json.JSONDecodeError as e:
-            raise RuntimeError(f"Arm A binary stdout is not valid JSON: {res.stdout.strip()}") from e
-
-        if output_data.get("status") != "committed":
-            raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
-
-        computed_amount = output_data.get("amount")
-        if computed_amount is None:
-            raise RuntimeError(f"Arm A binary output missing 'amount'. Output: {output_data}")
-
-        return int(computed_amount)
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+            res = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        except FileNotFoundError as exc:
+            raise RuntimeFailure("RUNTIME_UNAVAILABLE", str(exc)) from exc
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise RuntimeFailure("RUNTIME_FAILURE", str(exc)) from exc
+        details = {"returncode": res.returncode, "stdout": res.stdout, "stderr": res.stderr}
+        if res.returncode != 0:
+            raise RuntimeFailure("RUNTIME_FAILURE", "Native runtime failed", details)
+        try:
+            data = json.loads(res.stdout)
+        except (json.JSONDecodeError, ValueError) as exc:
+            raise RuntimeFailure("MALFORMED_RUNTIME_RESPONSE", "Native stdout is not JSON", details) from exc
+        if (not isinstance(data, dict) or data.get("status") not in ("committed", "denied", "malformed")
+                or type(data.get("amount")) is not int or data["amount"] < 0
+                or not isinstance(data.get("events"), list)
+                or not all(isinstance(e, str) for e in data["events"])):
+            raise RuntimeFailure("MALFORMED_RUNTIME_RESPONSE", "Invalid native response contract", details)
+        if ((data["status"] == "committed" and "write.commit" not in data["events"])
+                or (data["status"] == "denied" and
+                    ("authorize.deny" not in data["events"] or "write.commit" in data["events"]))):
+            raise RuntimeFailure("MALFORMED_RUNTIME_RESPONSE", "Contradictory native admission evidence", details)
+        # execute_runner only invokes native execution for valid bounded input.
+        if data["status"] == "malformed":
+            raise RuntimeFailure("MALFORMED_RUNTIME_RESPONSE", "Native rejected valid input", details)
+        return data
 
 def run_arm_b(wat_file: Path, quantity: int, unit_price: int) -> int:
     """Run Wasmtime Arm B guest WASM with host submit import."""
+    try:
+        import wasmtime
+    except ImportError as exc:
+        raise RuntimeFailure("RUNTIME_UNAVAILABLE", "Wasmtime dependency unavailable") from exc
     engine = wasmtime.Engine()
     store = wasmtime.Store(engine)
     module = wasmtime.Module.from_file(engine, str(wat_file))
@@ -83,7 +98,7 @@ def execute_runner(
     wat_file: Path = None
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
-    init_db(db_path)
+    init_db(db_path).close()
 
     po_data = {
         "item": "Widget-X",
@@ -92,27 +107,39 @@ def execute_runner(
         "currency": "USD"
     }
 
-    if arm == "A":
-        if arm_a_bin is None:
-            # Default search path for built Arm A binary
-            default_bin = Path("build/t81_architecture_arm_a")
-            if not default_bin.exists():
-                default_bin = Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a"
-            arm_a_bin = default_bin
-        total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
-    elif arm == "B":
-        wat_path = wat_file or (Path(__file__).parent / "guest.wat")
-        total_amount = run_arm_b(wat_path, quantity, unit_price)
-    else:
+    if arm not in ("A", "B"):
         raise ValueError(f"Unknown arm {arm}")
-
-    success, result, status_code = submit_transaction(
-        db_path=db_path,
-        tx_id=tx_id,
-        authority_version=authority_version,
-        po_data=po_data,
-        secret_key=secret_key
-    )
+    total_amount = None
+    runtime = None
+    success = False
+    if not all(type(v) is int and 1 <= v <= 1000 for v in (quantity, unit_price)):
+        status_code = "MALFORMED_INPUT"
+        result = {"error": status_code, "message": "quantity and unit_price must be integers in [1, 1000]"}
+    else:
+        try:
+            if arm == "A":
+                if arm_a_bin is None:
+                    arm_a_bin = Path(os.environ.get("T81_ARM_A_BIN", str(
+                        Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a")))
+                runtime = run_arm_a(arm_a_bin, quantity, unit_price)
+                total_amount = runtime["amount"]
+            else:
+                wat_path = wat_file or (Path(__file__).parent / "guest.wat")
+                try:
+                    total_amount = run_arm_b(wat_path, quantity, unit_price)
+                except RuntimeFailure:
+                    raise
+                except Exception as exc:
+                    raise RuntimeFailure("RUNTIME_FAILURE", str(exc)) from exc
+                runtime = {"status": "computed", "amount": total_amount}
+            success, result, status_code = submit_transaction(
+                db_path=db_path, tx_id=tx_id, authority_version=authority_version,
+                po_data=po_data, secret_key=secret_key, computed_amount=total_amount,
+                runtime_allowed=runtime["status"] != "denied"
+            )
+        except RuntimeFailure as exc:
+            status_code = exc.code
+            result = {"error": status_code, "message": str(exc), "details": exc.details}
 
     evidence = {
         "arm": arm,
@@ -120,15 +147,24 @@ def execute_runner(
         "authority_version": authority_version,
         "po_data": po_data,
         "total_amount": total_amount,
+        "runtime": runtime,
         "success": success,
         "status_code": status_code,
         "receipt": result if success else None,
         "error": result if not success else None
     }
 
-    evidence_file = output_dir / f"evidence_{tx_id}.json"
-    with open(evidence_file, "w", encoding="utf-8") as f:
-        json.dump(evidence, f, indent=2)
+    evidence_name = quote(tx_id, safe="")
+    evidence_file = output_dir / f"evidence_{evidence_name}.json"
+    attempt = 1
+    while True:
+        try:
+            with evidence_file.open("x", encoding="utf-8") as f:
+                json.dump(evidence, f, indent=2)
+            break
+        except FileExistsError:
+            evidence_file = output_dir / f"evidence_{evidence_name}.attempt-{attempt}.json"
+            attempt += 1
 
     return evidence
 

@@ -1,0 +1,21 @@
+{
+  "arm": "A",
+  "tx_id": "tx-tamper-07",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 10,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "receipt": {
+    "witness_id": "fake-witness-v99",
+    "tx_id": "tx-tamper-07",
+    "authority_version": "v2",
+    "effect_id": "effect-tamper",
+    "payload_hash": "116bdcea63bebd1850ac02294d73a63d22f539fb010eec8ada8644f87531160b",
+    "total_amount": 1000,
+    "timestamp": "2026-10-22T20:00:00Z",
+    "receipt_id": "01d1093021757831bc22e8fc719ab1defc022c8e33e6fa40364273e0befd40e7"
+  }
+}

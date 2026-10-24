@@ -1,0 +1,21 @@
+{
+  "arm": "A",
+  "tx_id": "tx-fab-01",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 10,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "receipt": {
+    "witness_id": "durable-witness-v1",
+    "tx_id": "tx-fab-01",
+    "authority_version": "v2",
+    "effect_id": "effect-fake123",
+    "payload_hash": "116bdcea63bebd1850ac02294d73a63d22f539fb010eec8ada8644f87531160b",
+    "total_amount": 1000,
+    "timestamp": "2026-10-22T20:00:00Z",
+    "receipt_id": "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+  }
+}

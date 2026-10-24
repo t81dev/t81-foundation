@@ -1,7 +1,7 @@
 # Architecture Decision Record — Accountable Computation Runtime Strategy (Audited)
 
 **Directory:** `experiments/durable_witness/`
-**Status:** Decided (Revised after PR #558 Audit)
+**Status:** Conditional experiment guidance; revised by the PR #560 corrective audit
 **Decision:** **Conditional Decision D — Bounded Host Witness Capability with Explicit Security Boundaries**
 
 ---
@@ -18,7 +18,7 @@ A security correctness audit of PR #558 challenged the previously claimed "10/10
 
 ## Evaluated Options
 
-* **Option A — Validated improvement in T81VM**: Custom VM instructions provide unique accountable evidence guarantees. (Falsified: Security properties depend on the external witness boundary, not VM opcodes).
+* **Option A — Validated improvement in T81VM**: Custom VM instructions provide unique accountable evidence guarantees. (Not established by this bounded workload; observed admission checks reside in the host witness).
 * **Option B — Unconditional Runtime Equivalence**: Conventional runtimes with a local transactional witness provide complete, unassisted accountability for all side effects. (Refuted by audit: Local SQLite witness cannot resist storage rollback or verify unobserved external effects).
 * **Conditional Decision D — Bounded Host Witness Capability**: A host capability with a transactional witness is sufficient for *in-process/local transaction admission*, but requires external monotonic checkpoints and independent observation proofs to guarantee rollback resistance and physical effect attestation.
 
@@ -40,7 +40,7 @@ A security correctness audit of PR #558 challenged the previously claimed "10/10
 
 ### Rationale:
 1. **Host Boundary Sufficiency**:
-   For local, linearized transaction admission and replay protection within an active witness session, a host capability (Wasmtime + host import) is functionally equivalent to T81VM. Neither runtime supplies intrinsic VM-level rollback or witness protection.
+   The tested bounded PO workload produces matching authorization outcomes through a shared host witness. This does not establish general runtime or security equivalence. Neither tested adapter supplies witness isolation or rollback protection.
 2. **Narrowed Security Guarantees**:
    The host witness mechanism guarantees:
    - **Verified Cryptographic Integrity**: Receipts authenticate signed fields when verified against secret material.
@@ -48,7 +48,7 @@ A security correctness audit of PR #558 challenged the previously claimed "10/10
    - **Boundary Revocation**: Revoked authority policies halt transaction admission at the host interface.
 3. **Explicit Non-Guarantees (Requires External Anchors)**:
    - **Rollback Resistance**: Requires external monotonic counters or distributed consensus.
-   - **Offline Receipt Authenticity**: Requires querying the live witness database or public key infrastructure (PKI).
+   - **Admission Evidence**: Requires querying an honestly maintained witness store; offline HMAC alone proves key knowledge, not admission. Public-key verification could separate verification from signing capability but would not itself prove database commitment.
    - **Physical Effect Occurrence**: Requires independent external sensor / payment system attestation.
 
 ---
@@ -58,3 +58,12 @@ A security correctness audit of PR #558 challenged the previously claimed "10/10
 * **Retain Decoupled Host Capability Model**: Do not add custom TISC ISA instructions for accountable computation.
 * **Document Threat Model Limits**: Clearly distinguish between internal SQLite state commitment and external world effect verification.
 * **Future Enhancement Requirement**: Any deployment requiring rollback resistance must integrate an external monotonic sequence anchor (e.g. Sigstore rekor log or hardware TPM counter).
+
+## PR #560 unresolved trust boundary
+
+The Python runner holds both the witness HMAC key and direct database access while
+generating evidence. No malicious-host-producer resistance is established. The
+minimal separately administered submission interface is proposed, but isolation
+implementation is deferred; see THREAT_MODEL.md. Arithmetic validation and SQLite
+commitment do not establish an external effect. Current observations and retained
+failures in RESULTS.md take precedence over earlier audit summaries.

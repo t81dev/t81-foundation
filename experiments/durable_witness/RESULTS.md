@@ -1,52 +1,88 @@
-# Results & Findings — Accountable Computation & Durable Witness (Audited & Finalized)
+# PR #560 corrective engineering results
 
-**Directory:** `experiments/durable_witness/`
-**Baseline Git SHA:** `66b7905b98820816caf0c04bfbe938ea006e48e8`
-**Tested Platform:** Linux x86_64 (`Linux devbox 6.8.0 #1 SMP PREEMPT_DYNAMIC Fri Feb 20 20:38:43 UTC 2026 x86_64`)
-**Python Runtime:** Python 3.12.13 (with `wasmtime==50.0.1`, `importlib_resources==7.1.0`)
+Recorded on 2026-10-24 on macOS ARM64, from reference head
+`056f0d6307f59049ef9dfa42c482f727a02c2b96`, on branch
+`corrective/pr560-witness`. Corrective source hashes and runtime/dependency details
+are in [environment.json](observed-pr560-corrective/environment.json).
+This report supersedes the earlier unqualified parity and isolation claims.
 
----
+## Reproduced before source changes
 
-## 1. Summary of Audited Empirical Findings
+The original suite ran seven tests: with the fresh native binary explicitly
+injected, all passed. The default-path run instead recorded four missing-binary
+errors. Neither result exposed the two runtime/admission defects.
 
-1. **Native Process Execution & Result Binding**:
-   - Both Arm A (T81VM C++ `t81_architecture_arm_a` binary) and Arm B (Wasmtime guest WASM runner) execute native process pipelines and return actual computed quantities directly from process output.
-   - Independent Python arithmetic calculation fallbacks (`quantity * unit_price`) were removed; missing/failed binary execution now strictly raises `RuntimeError`.
+The nine initial corrective tests then produced seven failure reports and fourteen
+error reports (including subtests). Native over-limit output raised an exception;
+a deliberately wrong runtime result could obtain a successful receipt; malformed
+Arm B input could be admitted. These logs and the initial regression fixture are
+retained. Reconstructing the original modules from the reference Git SHA repeats
+the same failure/error counts; see `baseline-reproduced.log` and
+[REPRODUCE.md](observed-pr560-corrective/REPRODUCE.md).
 
-2. **Durable Witness & Cryptographic Security Corrections**:
-   - HMAC signatures replaced delimiter-based string concatenation (`:` formatting) with a versioned canonical JSON representation (`json.dumps(..., sort_keys=True, separators=(',', ':'))`). Boundary-shifting parameter substitutions fail verification.
-   - Default committed signing secret (`DEFAULT_SECRET_KEY`) was removed from producer and core witness routines. Secret keys must be supplied explicitly; test fixtures are isolated within test files.
-   - Cross-platform multiprocessing worker functions were refactored to module-level targets in `attacks.py`, executing across `spawn`, `forkserver`, and `fork` contexts with explicit reporting.
-   - **Rollback Experiment Repaired**: Database snapshot and restoration procedure was updated to use SQLite's native `backup` API (`backup_db`). Snapshot rollback allows transaction reuse; both `witness_snapshot_pre.db` and `witness_snapshot_post.db` states are preserved.
-   - **Distinct Verdicts**: Evidence verification distinguishes `crypto_authentic` (HMAC validity), `database_present` (witness store presence), and `effect_observed` (external physical effect occurrence).
+## Fixed and tested
 
----
+| Finding | Correction | Evidence |
+| --- | --- | --- |
+| Native denial discarded | Retain native JSON status, amount, events and trace; return structured witness denial | Real native 100 × 600 computation yields `runtime.status=denied`, `POLICY_LIMIT_EXCEEDED`, no receipt |
+| Authorization parity overstated | Define shared bounded input and authorization outcomes, retain runtime-specific evidence separately | Real T81VM and Wasmtime agree for approved, over-limit, revoked, revoked+over-limit, unknown authority, and malformed inputs |
+| Historical HMAC regression used wrong tuple | Correct shifted authority to `1:v2`; compare historical bytes, canonical bytes, signatures and verifier substitution | Old `tx:1:v2:eff1` bytes collide; canonical signatures differ; signed-field substitution fails; restored old signer makes the security test fail |
+| Runtime amount ignored | Mandatory `computed_amount`; strict integer equality before witness writes; receipt signs that validated value | Injected wrong results for both adapters and an actual incorrect Wasmtime guest return `COMPUTED_AMOUNT_MISMATCH`; neither witness table gains a row |
+| Local denial could be overridden | Native denial is an additional witness admission veto | Injected denial for an otherwise allowed amount yields `RUNTIME_POLICY_DENIED` |
+| Evidence amount could contradict receipt | Verifier checks submitted amount against signed amount and PO | Tampered evidence yields `AMOUNT_BINDING_MISMATCH` |
+| Replay could overwrite original evidence | Exclusive attempt files; harnesses refuse existing output directories | Original success and later rejection are retained separately |
+| Weak partial-write probe | Inject failure between effect and transaction insertion and inspect both tables | `INTEGRITY_ERROR`, zero effects, zero transactions |
 
-## 2. Audited Adversarial Attack Suite Results
+Admission also now reads persisted policy limits and starts `BEGIN IMMEDIATE`
+before replay/policy lookup, serializing admission with policy writers. Tests
+confirm stricter persisted limits deny admission.
 
-| Attack ID | Scenario Name | Verdict | Observed Result & Security Limitation |
-| :---: | :--- | :---: | :--- |
-| **1** | Fabricated evidence with valid internal hashes | **BLOCKED** | Rejected with `INVALID_RECEIPT_SIGNATURE` across all receipt fields. |
-| **2** | Valid receipt replay after process restart | **BLOCKED** | Rejected with `REPLAY_DETECTED` in active witness database. |
-| **3** | Duplicate submission from concurrent processes | **BLOCKED** | Tested across `spawn`, `forkserver`, and `fork` contexts. SQLite uniqueness constraint blocked duplicates; revocation races caught across OS processes. |
-| **4** | Authorization revocation before effect admission | **BLOCKED** | Rejected with `REVOCATION_DETECTED`. |
-| **5** | Effect committed but receipt publication interrupted | **HANDLED** | Recovered existing receipt ID on retry without duplicate effect creation. |
-| **6** | Receipt generated without claimed effect | **BLOCKED (Online)** | Verifier rejected with `TRANSACTION_NOT_IN_WITNESS_STORE` when querying DB (*Note: Offline verifier accepts forged receipt if signing key is known*). |
-| **7** | Tampered or substituted witness identities | **BLOCKED** | Rejected with `INVALID_RECEIPT_SIGNATURE`. |
-| **8** | Witness storage rollback from old snapshot | **VULNERABLE** | Witness store alone cannot detect snapshot rollback; reused TX ID accepted after DB restoration (*Requires external monotonic checkpoint*). |
-| **9** | Conflicting / revoked authority versions (`v1`) | **BLOCKED** | Rejected with `REVOCATION_DETECTED`. |
-| **10** | Partial persistence failure (read-only DB) | **BLOCKED** | Transaction rolled back cleanly with `INTEGRITY_ERROR`. |
+The final suite ran **22 tests without failures or skips**; the evidence above,
+rather than that count alone, defines the supported result. Negative controls
+that mock native output are explicitly fault injections, not native execution.
+`cases/` retains real native/Wasmtime envelopes and detached verifier subprocess
+outputs. Exactly the two approved cases produced witness transaction/effect rows.
 
----
+## Attack and measurement observations
 
-## 3. Formal Claim Classification Table (Post-Audit)
+The finalized ten-scenario attack run reports nine blocked/handled cases and one
+reproduced vulnerability: **restoring an older SQLite snapshot allows transaction
+ID reuse**. Original and rolled-back submission evidence and pre/post DB snapshots
+are retained in `attacks-final/attack_8/`.
 
-| Claim | Classification | Evidence & Justification |
-| :--- | :--- | :--- |
-| **Arm A and Arm B protocol parity** | **Demonstrated** | Confirmed identical protocol envelopes and policy enforcement across Arm A and Arm B. |
-| **HMAC signature covers full receipt state** | **Fixed & Verified** | Signature expanded to include `payload_hash`, `total_amount`, `timestamp`, and `witness_id`. Field substitution fails verification. |
-| **In-session duplicate submission blocked across processes** | **Verified** | Multi-process tests in `attacks.py` verify multi-process SQLite lock & uniqueness constraints. |
-| **Witness store resists database snapshot rollback** | **Refuted / Falsified** | Restoring older SQLite DB allows reusing previously committed transaction IDs (Attack 8). Requires external monotonic checkpoint. |
-| **Offline verification proves transaction commitment** | **Refuted / Falsified** | Verification without `--db` accepts forged receipts generated by an actor with the signing key without verifying store presence. |
-| **Database record proves physical effect occurrence** | **Refuted / Falsified** | Internal SQLite write proves internal state transition only; physical external effect requires independent sensor attestation. |
-| **T81 custom VM instructions are required for accountable evidence** | **Experimentally Falsified** | Wasmtime + host witness capability achieves identical security guarantees as T81VM. |
+Duplicate submissions in `spawn`, `forkserver`, and `fork` each produced one
+success and one rejection. The uncontrolled revocation races are observations of
+allowed ordering outcomes, not proof that revocation won every possible schedule.
+The sandboxed run could not create forkserver IPC (`Operation not permitted`);
+its failure remains in `attacks.log`. A separate unsandboxed run executed all three
+contexts. `attacks-first.log`, `attacks-unsandboxed.log`, and earlier test failures
+are also preserved.
+
+Thirty approved trials per arm completed with all receipts verified. The final
+local mean runner times were about 17.39 ms (A) and 7.87 ms (B); standard deviations
+were 9.38 ms and 18.22 ms. These noisy end-to-end timings include asymmetric native
+subprocess/temporary CanonFS work and Wasmtime setup, SQLite, and JSON publication.
+They are **not a VM performance comparison**. Earlier measurement output is retained
+separately. See `performance-final/{raw.jsonl,report.json}` for individual trials.
+
+## Unresolved and deferred
+
+**Signing-key isolation remains unresolved.** The evidence-producing Python host
+receives the witness key and can directly access the database. The known-key
+phantom receipt test still succeeds offline and is rejected against the honest DB.
+Removing a default key did not establish a separate trusted witness. The smallest
+proposed service boundary and reasons to defer implementation are in
+[THREAT_MODEL.md](THREAT_MODEL.md).
+
+**SQLite rollback resistance remains unresolved.** Authenticated external-effect
+observations also remain absent. The native adapter's temporary CanonFS write is not a durable
+witness transaction. A witness `effects` row proves only local SQLite state.
+These results do not establish broad runtime/security equivalence, malicious-host
+resistance, or that custom VM instructions are unnecessary for every accountability
+workload.
+
+Only macOS ARM64 was run here. Linux, Windows and other architectures were not
+executed; percent-encoded filenames, explicit paths, and existing module-level
+multiprocessing targets retain portable implementation choices without claiming
+cross-platform validation. No ISA or T81Float changes were made. PR #560 was not
+merged. Corrective changes use a separate branch.

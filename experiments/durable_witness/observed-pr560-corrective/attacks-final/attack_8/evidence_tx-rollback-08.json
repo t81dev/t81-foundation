@@ -1,0 +1,42 @@
+{
+  "arm": "A",
+  "tx_id": "tx-rollback-08",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 10,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": 1000,
+  "runtime": {
+    "status": "committed",
+    "amount": 1000,
+    "limit": 50000,
+    "events": [
+      "compute",
+      "authorize.allow",
+      "write.commit"
+    ],
+    "native_trace": "0 LoadImm\n1 LoadImm\n2 Mul\n3 Halt\n",
+    "measurements": {
+      "setup_ns": 391084,
+      "execution_ns": 25875,
+      "authorization_ns": 8125,
+      "storage_ns": 148042
+    }
+  },
+  "success": true,
+  "status_code": "SUCCESS",
+  "receipt": {
+    "witness_id": "durable-witness-v1",
+    "tx_id": "tx-rollback-08",
+    "authority_version": "v2",
+    "effect_id": "effect-tx-rollback-08-116bdcea63bebd18",
+    "payload_hash": "116bdcea63bebd1850ac02294d73a63d22f539fb010eec8ada8644f87531160b",
+    "total_amount": 1000,
+    "timestamp": "2026-10-24T10:55:30Z",
+    "receipt_id": "38e9742bfb598cf72b34063961b85f678fee4ce20e4af1706839a86b0f90a2ab"
+  },
+  "error": null
+}

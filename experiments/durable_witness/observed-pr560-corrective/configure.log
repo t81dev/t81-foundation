@@ -1,0 +1,126 @@
+-- The C compiler identification is AppleClang 21.0.0.21000101
+-- The CXX compiler identification is AppleClang 21.0.0.21000101
+-- The ASM compiler identification is AppleClang
+-- Found assembler: /usr/bin/cc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+[1/9] Creating directories for 'ftxui-populate'
+[1/9] Performing download step (download, verify and extract) for 'ftxui-populate'
+-- Downloading...
+   dst='${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/v5.0.0.tar.gz'
+   timeout='none'
+   inactivity timeout='none'
+-- Using src='https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz'
+-- Retrying...
+-- Using src='https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz'
+-- Retry after 5 seconds (attempt #2) ...
+-- Using src='https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz'
+-- Retry after 5 seconds (attempt #3) ...
+-- Using src='https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz'
+-- Retry after 15 seconds (attempt #4) ...
+-- Using src='https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz'
+-- Retry after 60 seconds (attempt #5) ...
+-- Using src='https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz'
+CMake Error at ${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/download-ftxui-populate.cmake:163 (message):
+  Each download failed!
+
+    error: downloading 'https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz' failed
+          status_code: 6
+          status_string: "Couldn't resolve host name"
+          log:
+          --- LOG BEGIN ---
+          Could not resolve host: github.com
+
+  Closing connection
+
+
+
+          --- LOG END ---
+          error: downloading 'https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz' failed
+          status_code: 6
+          status_string: "Couldn't resolve host name"
+          log:
+          --- LOG BEGIN ---
+          Could not resolve host: github.com
+
+  Closing connection
+
+
+
+          --- LOG END ---
+          error: downloading 'https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz' failed
+          status_code: 6
+          status_string: "Couldn't resolve host name"
+          log:
+          --- LOG BEGIN ---
+          Could not resolve host: github.com
+
+  Closing connection
+
+
+
+          --- LOG END ---
+          error: downloading 'https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz' failed
+          status_code: 6
+          status_string: "Couldn't resolve host name"
+          log:
+          --- LOG BEGIN ---
+          Could not resolve host: github.com
+
+  Closing connection
+
+
+
+          --- LOG END ---
+          error: downloading 'https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz' failed
+          status_code: 6
+          status_string: "Couldn't resolve host name"
+          log:
+          --- LOG BEGIN ---
+          Could not resolve host: github.com
+
+  Closing connection
+
+
+
+          --- LOG END ---
+          error: downloading 'https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v5.0.0.tar.gz' failed
+          status_code: 6
+          status_string: "Couldn't resolve host name"
+          log:
+          --- LOG BEGIN ---
+          Could not resolve host: github.com
+
+  Closing connection
+
+
+
+          --- LOG END ---
+
+
+
+
+FAILED: [code=1] ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-download ${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-download
+cd ${FAILED_BUILD_DIR}/_deps && ${TOOLS}/bin/cmake -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P ${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/download-ftxui-populate.cmake && ${TOOLS}/bin/cmake -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P ${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/verify-ftxui-populate.cmake && ${TOOLS}/bin/cmake -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P ${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/extract-ftxui-populate.cmake && ${TOOLS}/bin/cmake -E touch ${FAILED_BUILD_DIR}/_deps/ftxui-subbuild/ftxui-populate-prefix/src/ftxui-populate-stamp/ftxui-populate-download
+ninja: build stopped: subcommand failed.
+
+CMake Error at ${TOOLS}/share/cmake/Modules/FetchContent.cmake:1931 (message):
+  Build step for ftxui failed: 1
+Call Stack (most recent call first):
+  ${TOOLS}/share/cmake/Modules/FetchContent.cmake:1622 (__FetchContent_populateSubbuild)
+  ${TOOLS}/share/cmake/Modules/FetchContent.cmake:2158:EVAL:2 (__FetchContent_doPopulation)
+  ${TOOLS}/share/cmake/Modules/FetchContent.cmake:2158 (cmake_language)
+  ${TOOLS}/share/cmake/Modules/FetchContent.cmake:2399 (__FetchContent_Populate)
+  cmake/Dependencies.cmake:31 (FetchContent_MakeAvailable)
+  CMakeLists.txt:26 (include)
+
+
+-- Configuring incomplete, errors occurred!

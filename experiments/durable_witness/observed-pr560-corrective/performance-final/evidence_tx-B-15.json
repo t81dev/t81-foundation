@@ -1,0 +1,29 @@
+{
+  "arm": "B",
+  "tx_id": "tx-B-15",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 5,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": 500,
+  "runtime": {
+    "status": "computed",
+    "amount": 500
+  },
+  "success": true,
+  "status_code": "SUCCESS",
+  "receipt": {
+    "witness_id": "durable-witness-v1",
+    "tx_id": "tx-B-15",
+    "authority_version": "v2",
+    "effect_id": "effect-tx-B-15-d1a24556f3d93293",
+    "payload_hash": "d1a24556f3d93293adda3871a5c28b8b866555e657e5b302caf87180161520fc",
+    "total_amount": 500,
+    "timestamp": "2026-10-24T10:56:02Z",
+    "receipt_id": "b9c42d15e0770a45f3ae5595f6ee320c2146fbe368a7231c4018bc83220742d4"
+  },
+  "error": null
+}

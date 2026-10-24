@@ -6,6 +6,7 @@ import argparse
 from pathlib import Path
 
 import hashlib
+import hmac
 from witness import compute_receipt_signature
 
 def verify_evidence(
@@ -73,7 +74,7 @@ def verify_evidence(
         timestamp=timestamp,
         witness_id=witness_id
     )
-    crypto_authentic = (receipt_id == expected_receipt_id)
+    crypto_authentic = isinstance(receipt_id, str) and hmac.compare_digest(receipt_id, expected_receipt_id)
 
     # 3. Check payload hash matches PO data
     canonical_po_bytes = json.dumps(po_data, sort_keys=True).encode("utf-8")
@@ -91,6 +92,16 @@ def verify_evidence(
             "reason": reason,
             "message": f"Cryptographic authenticity check failed ({reason})"
         }
+
+    # Check the evidence's claimed computation against the authenticated amount.
+    # Legacy/offline evidence may omit total_amount, but may not contradict it.
+    q, p = po_data.get("quantity"), po_data.get("unit_price")
+    if (type(q) is not int or type(p) is not int or type(total_amount) is not int
+            or q * p != total_amount
+            or ("total_amount" in evidence and
+                (type(evidence["total_amount"]) is not int or evidence["total_amount"] != total_amount))):
+        return {"valid": False, "crypto_authentic": True, "database_present": False,
+                "effect_observed": False, "reason": "AMOUNT_BINDING_MISMATCH"}
 
     # 4. Inspect witness database state if provided
     database_present = False

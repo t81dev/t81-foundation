@@ -1,0 +1,1 @@
+(module (import "host" "submit" (func $submit (param i32) (result i32))) (func (export "run") (param i32 i32) (result i32) i32.const 499 call $submit))

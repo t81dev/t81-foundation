@@ -1,0 +1,45 @@
+test_defined_outcome_parity (test_corrective.CorrectiveContracts.test_defined_outcome_parity) ... ok
+test_historical_collision_and_substitution (test_corrective.CorrectiveContracts.test_historical_collision_and_substitution) ... ok
+test_incorrect_runtime_result_rejected_both_arms (test_corrective.CorrectiveContracts.test_incorrect_runtime_result_rejected_both_arms) ... ok
+test_native_denial_is_evidence (test_corrective.CorrectiveContracts.test_native_denial_is_evidence) ... ok
+test_native_malformed_responses_and_runtime_failure (test_corrective.CorrectiveContracts.test_native_malformed_responses_and_runtime_failure) ... ${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+${PYTHON_STDLIB}/unittest/mock.py:2252: ResourceWarning: unclosed database in <sqlite3.Connection object at <address>>
+  def __init__(self, name, parent):
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+ok
+test_old_encoding_negative_control_detects_regression (test_corrective.CorrectiveContracts.test_old_encoding_negative_control_detects_regression) ... ok
+test_partial_write_rolls_back_effect (test_corrective.CorrectiveContracts.test_partial_write_rolls_back_effect) ... ok
+test_unavailable_runtime_has_no_fallback (test_corrective.CorrectiveContracts.test_unavailable_runtime_has_no_fallback) ... ok
+test_witness_requires_computed_amount (test_corrective.CorrectiveContracts.test_witness_requires_computed_amount) ... ok
+test_database_record_vs_authenticated_effect_observation (test_durable_witness.TestDurableWitness.test_database_record_vs_authenticated_effect_observation)
+Demonstrate required investigation 5: ... ok
+test_hmac_boundary_shifting_substitutions_fail_verification (test_durable_witness.TestDurableWitness.test_hmac_boundary_shifting_substitutions_fail_verification)
+Regression test proving that boundary-shifting field substitutions cannot preserve valid HMAC signature. ... ok
+test_offline_verification_accepts_forged_receipt_without_witness_db (test_durable_witness.TestDurableWitness.test_offline_verification_accepts_forged_receipt_without_witness_db)
+Demonstrate required investigation 3: ... ok
+test_replay_rejected_across_restart (test_durable_witness.TestDurableWitness.test_replay_rejected_across_restart) ... ok
+test_revocation_at_boundary (test_durable_witness.TestDurableWitness.test_revocation_at_boundary) ... ok
+test_successful_transaction_arm_a (test_durable_witness.TestDurableWitness.test_successful_transaction_arm_a) ... ok
+test_successful_transaction_arm_b (test_durable_witness.TestDurableWitness.test_successful_transaction_arm_b) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.285s
+
+OK

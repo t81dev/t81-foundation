@@ -1,0 +1,35 @@
+{
+  "scope": "Only experiments/durable_witness is included; unrelated build-bench is excluded.",
+  "production_code_modified": false,
+  "frozen_contracts_modified": false,
+  "publication_normalization": "Local paths and memory addresses replaced by documented placeholders; trailing log whitespace trimmed.",
+  "receipt_objects_preserved": 148,
+  "sqlite_files_preserved": 48,
+  "sqlite_integrity_checks": "48 passed; all tables limited to authority_policies, transactions, effects",
+  "sqlite_fixture_text_cells_checked": 1470,
+  "unexpected_sqlite_text_values": 0,
+  "sensitive_content_review": "No real secrets, personal data, credential URLs, private keys or machine-specific absolute paths found in publication files. Keys are public synthetic experiment fixtures.",
+  "final_tests": {
+    "count": 22,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "log": "pre-push-tests.log"
+  },
+  "retained_receipt_reverification": {
+    "count": 60,
+    "native_arm_a": 30,
+    "wasmtime_arm_b": 30,
+    "all_verified": true,
+    "evidence": "pre-push-receipt-verification.json"
+  },
+  "unresolved": [
+    "Signing-key isolation",
+    "SQLite rollback resistance",
+    "Authenticated external effect observations"
+  ],
+  "pr560_head_branch": "fix/durable-witness-review-findings-12519996085072777950",
+  "corrective_branch": "corrective/pr560-witness",
+  "existing_pr_updated_by_push": false,
+  "separate_corrective_pr_required": true
+}

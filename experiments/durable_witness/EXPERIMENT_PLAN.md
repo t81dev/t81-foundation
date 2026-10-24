@@ -17,7 +17,7 @@
 2. **Fabrication Detection**: The independent verifier MUST detect and reject producer-generated evidence where receipt signatures fail HMAC validation (`INVALID_RECEIPT_SIGNATURE`).
 3. **Revocation Enforcement**: Policy revocations executed in the witness store MUST immediately block pending effect admissions (`REVOCATION_DETECTED`).
 4. **Transaction Atomicity**: Effect commitment and transaction log insertion MUST execute in a single SQLite WAL transaction (no partial commits or phantom receipts).
-5. **Runtime Parity**: Both Arm A (T81VM) and Arm B (Wasmtime host capability) MUST achieve identical security properties (100% attack blocking).
+5. **Runtime Parity**: Both Arm A (T81VM) and Arm B (Wasmtime host capability) must agree on defined authorization outcomes for bounded inputs. Snapshot rollback and known-key forgery are expected limitations, not blocking successes.
 
 ---
 
@@ -47,3 +47,11 @@ experiments/durable_witness/
 * Execution and verification timing measured in microseconds via Python `time.perf_counter_ns()`.
 * Raw inputs, execution traces, verifier verdicts, and attack outputs preserved in `raw.jsonl` and `attacks.json`.
 * Independent verifier `verify.py` checks both cryptographic signatures and direct witness SQLite store state without relying on producer trace assertions.
+
+## PR #560 corrective scope
+
+Runtime results must be supplied explicitly for witness admission; a wrong result
+must create neither a witness transaction nor effect. Preserve native denial
+evidence, reproduce the historical delimiter collision, and run an old-encoding
+negative control. Treat the Python host as trusted: key isolation is unresolved.
+See RESULTS.md and observed-pr560-corrective/REPRODUCE.md for retained evidence.

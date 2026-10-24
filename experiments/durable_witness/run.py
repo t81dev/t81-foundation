@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys
+import argparse
 import time
 import json
 import statistics
@@ -12,16 +13,9 @@ from verify import verify_evidence
 TEST_SECRET_KEY = b"test-secret-key-for-perf-harness-32bytes"
 
 def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = None, secret_key: bytes = TEST_SECRET_KEY) -> dict:
-    if arm_a_bin is None:
-        default_bin = Path("/tmp/t81-challenge-build/t81_architecture_arm_a")
-        if default_bin.exists():
-            arm_a_bin = default_bin
-    if output_dir.exists():
-        import shutil
-        shutil.rmtree(output_dir)
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=False)
     db_path = output_dir / "witness_perf.db"
-    init_db(db_path)
+    init_db(db_path).close()
 
     results = []
 
@@ -100,8 +94,14 @@ def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = No
     return summary
 
 def main():
-    out = Path("/tmp/durable-witness-perf")
-    summary = run_experiment(out, repetitions=30)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--repetitions", type=int, default=30)
+    parser.add_argument("--arm-a-bin", type=Path)
+    args = parser.parse_args()
+    if args.repetitions < 1:
+        parser.error("--repetitions must be positive")
+    summary = run_experiment(args.output_dir, args.repetitions, args.arm_a_bin)
     print(json.dumps(summary, indent=2))
 
 if __name__ == "__main__":

@@ -1,0 +1,20 @@
+{
+  "arm": "A",
+  "tx_id": "malformed-A",
+  "authority_version": "v2",
+  "po_data": {
+    "item": "Widget-X",
+    "quantity": 0,
+    "unit_price": 100,
+    "currency": "USD"
+  },
+  "total_amount": null,
+  "runtime": null,
+  "success": false,
+  "status_code": "MALFORMED_INPUT",
+  "receipt": null,
+  "error": {
+    "error": "MALFORMED_INPUT",
+    "message": "quantity and unit_price must be integers in [1, 1000]"
+  }
+}
