@@ -7,9 +7,7 @@ import time
 from pathlib import Path
 from typing import Dict, Any, Tuple
 
-DEFAULT_SECRET_KEY = b"t81-durable-witness-secret-key-32bytes!!"
-
-def init_db(db_path: Path, secret_key: bytes = DEFAULT_SECRET_KEY) -> sqlite3.Connection:
+def init_db(db_path: Path) -> sqlite3.Connection:
     """Initialize SQLite DB with WAL mode and atomic tables."""
     conn = sqlite3.connect(db_path, timeout=10.0)
     conn.execute("PRAGMA journal_mode=WAL;")
@@ -58,15 +56,26 @@ def compute_receipt_signature(
     timestamp: str = "",
     witness_id: str = "durable-witness-v1"
 ) -> str:
-    message = f"{witness_id}:{tx_id}:{authority_version}:{effect_id}:{payload_hash}:{total_amount}:{timestamp}".encode("utf-8")
-    return hmac.new(secret_key, message, hashlib.sha256).hexdigest()
+    """Compute HMAC signature using a versioned canonical JSON representation of fields."""
+    canonical_dict = {
+        "v": 1,
+        "witness_id": witness_id,
+        "tx_id": tx_id,
+        "authority_version": authority_version,
+        "effect_id": effect_id,
+        "payload_hash": payload_hash,
+        "total_amount": total_amount,
+        "timestamp": timestamp,
+    }
+    canonical_bytes = json.dumps(canonical_dict, sort_keys=True, separators=(',', ':')).encode("utf-8")
+    return hmac.new(secret_key, canonical_bytes, hashlib.sha256).hexdigest()
 
 def submit_transaction(
     db_path: Path,
     tx_id: str,
     authority_version: str,
     po_data: Dict[str, Any],
-    secret_key: bytes = DEFAULT_SECRET_KEY,
+    secret_key: bytes,
     contract_limits: Dict[str, Any] = None
 ) -> Tuple[bool, Dict[str, Any], str]:
     if contract_limits is None:
@@ -168,3 +177,14 @@ def revoke_authority(db_path: Path, authority_version: str):
     with conn:
         conn.execute("UPDATE authority_policies SET status = 'REVOKED' WHERE authority_version = ?", (authority_version,))
     conn.close()
+
+def backup_db(src_path: Path, dst_path: Path):
+    """Consistent database backup using SQLite online backup API."""
+    src_conn = sqlite3.connect(src_path)
+    dst_conn = sqlite3.connect(dst_path)
+    try:
+        with dst_conn:
+            src_conn.backup(dst_conn)
+    finally:
+        src_conn.close()
+        dst_conn.close()

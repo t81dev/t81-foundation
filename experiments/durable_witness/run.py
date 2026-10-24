@@ -9,7 +9,9 @@ from witness import init_db
 from runner import execute_runner
 from verify import verify_evidence
 
-def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = None) -> dict:
+TEST_SECRET_KEY = b"test-secret-key-for-perf-harness-32bytes"
+
+def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = None, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     if arm_a_bin is None:
         default_bin = Path("/tmp/t81-challenge-build/t81_architecture_arm_a")
         if default_bin.exists():
@@ -27,12 +29,12 @@ def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = No
         # Arm A Trial
         tx_a = f"tx-A-{i}"
         t0 = time.perf_counter_ns()
-        ev_a = execute_runner("A", tx_a, "v2", 5, 100, db_path, output_dir, arm_a_bin=arm_a_bin)
+        ev_a = execute_runner("A", tx_a, "v2", 5, 100, db_path, output_dir, secret_key=secret_key, arm_a_bin=arm_a_bin)
         t1 = time.perf_counter_ns()
 
         ev_file_a = output_dir / f"evidence_{tx_a}.json"
         t2 = time.perf_counter_ns()
-        ver_a = verify_evidence(ev_file_a, db_path)
+        ver_a = verify_evidence(ev_file_a, db_path, secret_key=secret_key)
         t3 = time.perf_counter_ns()
 
         results.append({
@@ -48,12 +50,12 @@ def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = No
         # Arm B Trial
         tx_b = f"tx-B-{i}"
         t0 = time.perf_counter_ns()
-        ev_b = execute_runner("B", tx_b, "v2", 5, 100, db_path, output_dir)
+        ev_b = execute_runner("B", tx_b, "v2", 5, 100, db_path, output_dir, secret_key=secret_key)
         t1 = time.perf_counter_ns()
 
         ev_file_b = output_dir / f"evidence_{tx_b}.json"
         t2 = time.perf_counter_ns()
-        ver_b = verify_evidence(ev_file_b, db_path)
+        ver_b = verify_evidence(ev_file_b, db_path, secret_key=secret_key)
         t3 = time.perf_counter_ns()
 
         results.append({

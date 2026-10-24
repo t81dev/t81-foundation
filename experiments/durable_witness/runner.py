@@ -8,37 +8,41 @@ import argparse
 from pathlib import Path
 
 import wasmtime
-from witness import init_db, submit_transaction, DEFAULT_SECRET_KEY
+from witness import init_db, submit_transaction
 
 def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> int:
     """Run T81 Arm A C++ binary to compute total and enforce bounded execution."""
     if not arm_a_bin or not arm_a_bin.exists():
         raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
 
-    # Create temporary contract file and store for Arm A binary
+    # Create temporary input file and store for Arm A binary
     tmp_dir = Path(tempfile.mkdtemp())
     try:
-        input_json = tmp_dir / "input.json"
+        input_txt = tmp_dir / "input.txt"
         store_dir = tmp_dir / "store"
-        store_dir.mkdir(parents=True, exist_ok=True)
 
-        contract_payload = {
-            "max_unit_price": 1000,
-            "max_total_amount": 50000,
-            "items": [{"quantity": quantity, "unit_price": unit_price}]
-        }
-        with open(input_json, "w") as f:
-            json.dump(contract_payload, f)
+        # Format input expected by arm_a.cpp: "units price\n"
+        with open(input_txt, "w") as f:
+            f.write(f"{quantity} {unit_price}\n")
 
-        if store_dir.exists():
-            shutil.rmtree(store_dir)
-        cmd = [str(arm_a_bin), "approved", str(input_json), str(store_dir)]
+        cmd = [str(arm_a_bin), "approved", str(input_txt), str(store_dir)]
         res = subprocess.run(cmd, capture_output=True, text=True)
         if res.returncode != 0:
             raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
 
-        # Arm A succeeded within bounds
-        return quantity * unit_price
+        try:
+            output_data = json.loads(res.stdout.strip())
+        except json.JSONDecodeError as e:
+            raise RuntimeError(f"Arm A binary stdout is not valid JSON: {res.stdout.strip()}") from e
+
+        if output_data.get("status") != "committed":
+            raise RuntimeError(f"Arm A binary failed to commit transaction. Output: {output_data}")
+
+        computed_amount = output_data.get("amount")
+        if computed_amount is None:
+            raise RuntimeError(f"Arm A binary output missing 'amount'. Output: {output_data}")
+
+        return int(computed_amount)
     finally:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
@@ -61,6 +65,9 @@ def run_arm_b(wat_file: Path, quantity: int, unit_price: int) -> int:
     run_export = instance.exports(store)["run"]
     run_export(store, quantity, unit_price)
 
+    if computed_total[0] is None:
+        raise RuntimeError("Arm B Wasm execution failed to call host submit or compute result.")
+
     return computed_total[0]
 
 def execute_runner(
@@ -71,6 +78,7 @@ def execute_runner(
     unit_price: int,
     db_path: Path,
     output_dir: Path,
+    secret_key: bytes,
     arm_a_bin: Path = None,
     wat_file: Path = None
 ) -> dict:
@@ -102,7 +110,8 @@ def execute_runner(
         db_path=db_path,
         tx_id=tx_id,
         authority_version=authority_version,
-        po_data=po_data
+        po_data=po_data,
+        secret_key=secret_key
     )
 
     evidence = {
@@ -133,7 +142,10 @@ def main():
     parser.add_argument("--db-path", type=Path, required=True, help="Path to witness SQLite DB")
     parser.add_argument("--output-dir", type=Path, required=True, help="Output evidence directory")
     parser.add_argument("--arm-a-bin", type=Path, default=None, help="Path to Arm A binary")
+    parser.add_argument("--secret-key", type=str, required=True, help="Signing secret key for witness HMAC")
     args = parser.parse_args()
+
+    secret_key_bytes = args.secret_key.encode("utf-8")
 
     evidence = execute_runner(
         arm=args.arm,
@@ -143,6 +155,7 @@ def main():
         unit_price=args.unit_price,
         db_path=args.db_path,
         output_dir=args.output_dir,
+        secret_key=secret_key_bytes,
         arm_a_bin=args.arm_a_bin
     )
 

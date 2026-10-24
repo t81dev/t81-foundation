@@ -1,23 +1,24 @@
-# Results & Findings — Accountable Computation & Durable Witness (Audited)
+# Results & Findings — Accountable Computation & Durable Witness (Audited & Finalized)
 
 **Directory:** `experiments/durable_witness/`
-**Audit Git SHA:** `1ecba5f9962f97587e827b4db9e89dbc9819e6cd`
+**Baseline Git SHA:** `66b7905b98820816caf0c04bfbe938ea006e48e8`
+**Tested Platform:** Linux x86_64 (`Linux devbox 6.8.0 #1 SMP PREEMPT_DYNAMIC Fri Feb 20 20:38:43 UTC 2026 x86_64`)
+**Python Runtime:** Python 3.12.13 (with `wasmtime==50.0.1`, `importlib_resources==7.1.0`)
 
 ---
 
 ## 1. Summary of Audited Empirical Findings
 
-1. **Reproduction & Provenance Audit of PR #554**:
-   - Both Arm A (T81VM) and Arm B (Wasmtime) enforce identical purchase order policy limits and issue identical protocol envelopes.
-   - Audit revealed that PR #558 imported pre-existing PR #554 archives into `experiments/architecture_challenge/` rather than producing fresh Windows native logs.
-   - Silent fallback to Python arithmetic in `runner.py` was eliminated; native runtime missing/failure now explicitly raises `RuntimeError` or reports `SKIPPED`.
+1. **Native Process Execution & Result Binding**:
+   - Both Arm A (T81VM C++ `t81_architecture_arm_a` binary) and Arm B (Wasmtime guest WASM runner) execute native process pipelines and return actual computed quantities directly from process output.
+   - Independent Python arithmetic calculation fallbacks (`quantity * unit_price`) were removed; missing/failed binary execution now strictly raises `RuntimeError`.
 
-2. **Durable Witness Audit & Security Corrections**:
-   - Expanded HMAC signature coverage in `witness.py` and `verify.py` to sign `witness_id`, `payload_hash`, `total_amount`, and `timestamp` alongside `tx_id`, `authority_version`, and `effect_id`. Tampering with any unsigned metadata field now triggers `INVALID_RECEIPT_SIGNATURE`.
-   - Multi-process concurrency tests (`multiprocessing`) confirmed atomic SQLite uniqueness constraints block duplicate submissions across separate OS processes, and boundary revocation races immediately stop transaction admission.
-   - **Rollback Vulnerability Confirmed**: Restoring an older witness SQLite snapshot wipes transaction history, allowing previously committed transaction IDs to be re-submitted and issued new valid receipts. Local witness database state cannot resist rollback without an external monotonic checkpoint.
-   - **Offline Verification Limitations**: Verifying evidence without `--db` checks cryptographic signature validity, but cannot detect uncommitted "phantom" receipts. Querying the witness store is strictly required.
-   - **DB Record vs Physical Effect**: A database record proves an internal SQLite state transition, but does not authenticate physical external world execution (e.g. shipping disbursement) without separate sensor/audit proof.
+2. **Durable Witness & Cryptographic Security Corrections**:
+   - HMAC signatures replaced delimiter-based string concatenation (`:` formatting) with a versioned canonical JSON representation (`json.dumps(..., sort_keys=True, separators=(',', ':'))`). Boundary-shifting parameter substitutions fail verification.
+   - Default committed signing secret (`DEFAULT_SECRET_KEY`) was removed from producer and core witness routines. Secret keys must be supplied explicitly; test fixtures are isolated within test files.
+   - Cross-platform multiprocessing worker functions were refactored to module-level targets in `attacks.py`, executing across `spawn`, `forkserver`, and `fork` contexts with explicit reporting.
+   - **Rollback Experiment Repaired**: Database snapshot and restoration procedure was updated to use SQLite's native `backup` API (`backup_db`). Snapshot rollback allows transaction reuse; both `witness_snapshot_pre.db` and `witness_snapshot_post.db` states are preserved.
+   - **Distinct Verdicts**: Evidence verification distinguishes `crypto_authentic` (HMAC validity), `database_present` (witness store presence), and `effect_observed` (external physical effect occurrence).
 
 ---
 
@@ -27,7 +28,7 @@
 | :---: | :--- | :---: | :--- |
 | **1** | Fabricated evidence with valid internal hashes | **BLOCKED** | Rejected with `INVALID_RECEIPT_SIGNATURE` across all receipt fields. |
 | **2** | Valid receipt replay after process restart | **BLOCKED** | Rejected with `REPLAY_DETECTED` in active witness database. |
-| **3** | Duplicate submission from concurrent processes | **BLOCKED** | Multi-process SQLite atomic constraint blocked duplicate submission; revocation race caught. |
+| **3** | Duplicate submission from concurrent processes | **BLOCKED** | Tested across `spawn`, `forkserver`, and `fork` contexts. SQLite uniqueness constraint blocked duplicates; revocation races caught across OS processes. |
 | **4** | Authorization revocation before effect admission | **BLOCKED** | Rejected with `REVOCATION_DETECTED`. |
 | **5** | Effect committed but receipt publication interrupted | **HANDLED** | Recovered existing receipt ID on retry without duplicate effect creation. |
 | **6** | Receipt generated without claimed effect | **BLOCKED (Online)** | Verifier rejected with `TRANSACTION_NOT_IN_WITNESS_STORE` when querying DB (*Note: Offline verifier accepts forged receipt if signing key is known*). |
