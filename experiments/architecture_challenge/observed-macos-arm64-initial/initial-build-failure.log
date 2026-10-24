@@ -1,0 +1,72 @@
+[1/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange.cpp.o
+[2/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/encoding.cpp.o
+[3/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/bigint.cpp.o
+[4/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/fraction.cpp.o
+[5/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_json_renderer.cpp.o
+[6/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_engine.cpp.o
+[7/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/in_memory_driver.cpp.o
+[8/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/vm/determinism/canon_hash81.cpp.o
+[9/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_ops.cpp.o
+[10/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/persistent_driver.cpp.o
+[11/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/block_backed_driver.cpp.o
+[12/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81.cpp.o
+[13/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/math/t81_soft_math/t81_soft_math.cpp.o
+[14/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_balanced.cpp.o
+[15/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base243.cpp.o
+[16/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_packed.cpp.o
+[17/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/crypto/sha3.cpp.o
+[18/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/metadata.cpp.o
+[19/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/trit_packing.cpp.o
+[20/67] Building CXX object src/core/CMakeFiles/t81_tracing.dir/__/__/vm/tracing/canonhash81.cpp.o
+[21/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/error.cpp.o
+[22/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/cog/v1/symbolic_graph.cpp.o
+[23/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/in_memory_kernel.cpp.o
+[24/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier2/reflective.cpp.o
+[25/67] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/setun/bridge.cpp.o
+[26/67] Linking CXX static library libt81_core.a
+[27/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier3/recursive.cpp.o
+[28/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/promotion.cpp.o
+[29/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/distributed/distributed.cpp.o
+[30/67] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/pretty_printer.cpp.o
+[31/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier5/infinite.cpp.o
+[32/67] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier4/tier4_loop.cpp.o
+[33/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/axion_api.cpp.o
+[34/67] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_emitter.cpp.o
+[35/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/engine.cpp.o
+[36/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ethics.cpp.o
+[37/67] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_io.cpp.o
+[38/67] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/base81_view.cpp.o
+[39/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_engine.cpp.o
+[40/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/nondeterminism_detector.cpp.o
+[41/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_serialization.cpp.o
+[42/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_hooks.cpp.o
+[43/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_model_loader.cpp.o
+[44/67] Linking CXX static library libt81_experimental.a
+[45/67] Linking CXX static library libt81_isa.a
+[46/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/canonfs_hook.cpp.o
+[47/67] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_validator.cpp.o
+[48/67] Linking CXX static library libt81_axion.a
+[49/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/value_ops.cpp.o
+[50/67] Building CXX object src/ffi/CMakeFiles/t81_ffi.dir/__/__/ffi/ffi_dispatcher.cpp.o
+[51/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tier_limits.cpp.o
+[52/67] Linking CXX static library libt81_ffi.a
+[53/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/memory_segments.cpp.o
+[54/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/runtime_state_helpers.cpp.o
+[55/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/policy_trace_bridge.cpp.o
+[56/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/gc_helpers.cpp.o
+[57/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ffi_dispatcher.cpp.o
+[58/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ai_backend/backend_adapter.cpp.o
+[59/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tensor_helpers.cpp.o
+[60/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/ffi/ffi_dispatcher.cpp.o
+[61/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/vm.cpp.o
+[62/67] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/decode_state.cpp.o
+[63/67] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_trace_cache.cpp.o
+[64/67] Building CXX object CMakeFiles/t81_architecture_arm_a.dir/experiments/architecture_challenge/arm_a.cpp.o
+FAILED: [code=1] CMakeFiles/t81_architecture_arm_a.dir/experiments/architecture_challenge/arm_a.cpp.o
+/usr/bin/c++ -DT81_DETERMINISTIC -I/private/tmp/t81-architecture-challenge/include -O3 -DNDEBUG -std=gnu++23 -fPIE -Wall -Wextra -Wpedantic -O3 -DNDEBUG -MD -MT CMakeFiles/t81_architecture_arm_a.dir/experiments/architecture_challenge/arm_a.cpp.o -MF CMakeFiles/t81_architecture_arm_a.dir/experiments/architecture_challenge/arm_a.cpp.o.d -o CMakeFiles/t81_architecture_arm_a.dir/experiments/architecture_challenge/arm_a.cpp.o -c /private/tmp/t81-architecture-challenge/experiments/architecture_challenge/arm_a.cpp
+/private/tmp/t81-architecture-challenge/experiments/architecture_challenge/arm_a.cpp:77:13: error: 'auto' deduced as 'long long' in declaration of 'auth_before' and deduced as 'time_point' (aka 'time_point<std::chrono::steady_clock, duration<long long, ratio<1LL, 1000000000LL>>>') in declaration of 'begin'
+   77 |       const auto auth_before = authorization, begin = Clock::now();
+      |             ^                  ~~~~~~~~~~~~~          ~~~~~~~~~~~~
+1 error generated.
+[65/67] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_compiler.cpp.o
+ninja: build stopped: subcommand failed.

@@ -1,0 +1,28 @@
+{
+  "archives": {
+    "experiments/architecture_challenge/observed-ci/linux.tar.gz": {
+      "observations": 220,
+      "paired_protocol_equality": true,
+      "snapshot_control_rejections": 20,
+      "attestation": false,
+      "source_revision": "decd97b2c29d30104f1de32335b1df901b69ec1c",
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "actual_archived_file_bytes_match": true,
+      "archive_sha256": "17da0e29920455d07403af79d0736bd2e1f0abb5fd1b1cf33cd5c9f6155df64d"
+    },
+    "experiments/architecture_challenge/observed-ci/macos.tar.gz": {
+      "observations": 220,
+      "paired_protocol_equality": true,
+      "snapshot_control_rejections": 20,
+      "attestation": false,
+      "source_revision": "decd97b2c29d30104f1de32335b1df901b69ec1c",
+      "platform": "macOS-14.8.9-arm64-arm-64bit",
+      "machine": "arm64",
+      "actual_archived_file_bytes_match": true,
+      "archive_sha256": "e00f712a1efd52be754905346b5a549976f713636ee1785d87ca47fa0fe42c28"
+    }
+  },
+  "protocol_bytes_equal": true,
+  "authenticated_occurrence": false
+}

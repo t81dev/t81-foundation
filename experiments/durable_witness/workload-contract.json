@@ -1,0 +1,7 @@
+{
+  "max_unit_price": 1000,
+  "max_total_amount": 50000,
+  "allowed_currencies": ["USD", "EUR"],
+  "active_authority_version": "v2",
+  "witness_key": "t81-durable-witness-secret-key-32bytes!!"
+}
