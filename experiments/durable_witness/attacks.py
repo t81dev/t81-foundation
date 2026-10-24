@@ -88,20 +88,43 @@ def run_attacks(base_dir: Path) -> dict:
         db_path = att_dir / "witness.db"
         init_db(db_path)
 
+        import multiprocessing
+
+        def worker_proc(queue, arm, tx_id, auth_ver, qty, price, db, out):
+            res = execute_runner(arm, tx_id, auth_ver, qty, price, db, out)
+            queue.put(res)
+
+        q = multiprocessing.Queue()
+        p1 = multiprocessing.Process(target=worker_proc, args=(q, "B", "tx-concurrent-03", "v2", 5, 100, db_path, att_dir))
+        p2 = multiprocessing.Process(target=worker_proc, args=(q, "B", "tx-concurrent-03", "v2", 5, 100, db_path, att_dir))
+
+        p1.start()
+        p2.start()
+        p1.join(timeout=5.0)
+        p2.join(timeout=5.0)
+
         results_list = []
-        barrier = threading.Barrier(2)
+        while not q.empty():
+            results_list.append(q.get())
 
-        def submit_worker():
-            barrier.wait()
-            res = execute_runner("B", "tx-concurrent-03", "v2", 5, 100, db_path, att_dir)
-            results_list.append(res)
+        # Also test revocation racing with transaction admission across separate OS processes
+        def proc_revoke(db):
+            revoke_authority(db, "v2")
 
-        t1 = threading.Thread(target=submit_worker)
-        t2 = threading.Thread(target=submit_worker)
-        t1.start()
-        t2.start()
-        t1.join()
-        t2.join()
+        def proc_submit(queue, db, out):
+            res = execute_runner("B", "tx-race-rev-03", "v2", 5, 100, db, out)
+            queue.put(res)
+
+        q_race = multiprocessing.Queue()
+        p_sub = multiprocessing.Process(target=proc_submit, args=(q_race, db_path, att_dir))
+        p_rev = multiprocessing.Process(target=proc_revoke, args=(db_path,))
+
+        p_sub.start()
+        p_rev.start()
+        p_sub.join(timeout=5.0)
+        p_rev.join(timeout=5.0)
+
+        race_res = q_race.get() if not q_race.empty() else None
 
         successes = [r for r in results_list if r["success"]]
         blocked_replays = [
@@ -115,7 +138,8 @@ def run_attacks(base_dir: Path) -> dict:
             "name": "Duplicate transaction submission from concurrent processes",
             "blocked": blocked,
             "verdict": "BLOCKED" if blocked else "ALLOWED",
-            "details": f"Successes: {len(successes)}, Blocked concurrent attempts: {len(blocked_replays)}"
+            "details": f"Successes: {len(successes)}, Blocked concurrent attempts: {len(blocked_replays)}",
+            "revocation_race_result": race_res.get("status_code") if race_res else "UNKNOWN"
         }
 
     # Attack 4: Authorization revocation immediately before effect admission
@@ -168,7 +192,20 @@ def run_attacks(base_dir: Path) -> dict:
         tx_id = "tx-phantom-06"
         authority_version = "v2"
         effect_id = "effect-phantom"
-        receipt_id = compute_receipt_signature(DEFAULT_SECRET_KEY, tx_id, authority_version, effect_id)
+        timestamp = "2026-10-22T20:00:00Z"
+        witness_id = "durable-witness-v1"
+        total_amount = 500
+
+        receipt_id = compute_receipt_signature(
+            secret_key=DEFAULT_SECRET_KEY,
+            tx_id=tx_id,
+            authority_version=authority_version,
+            effect_id=effect_id,
+            payload_hash=payload_hash,
+            total_amount=total_amount,
+            timestamp=timestamp,
+            witness_id=witness_id
+        )
 
         phantom_evidence = {
             "arm": "B",
@@ -176,13 +213,13 @@ def run_attacks(base_dir: Path) -> dict:
             "authority_version": authority_version,
             "po_data": po_data,
             "receipt": {
-                "witness_id": "durable-witness-v1",
+                "witness_id": witness_id,
                 "tx_id": tx_id,
                 "authority_version": authority_version,
                 "effect_id": effect_id,
                 "payload_hash": payload_hash,
-                "total_amount": 500,
-                "timestamp": "2026-10-22T20:00:00Z",
+                "total_amount": total_amount,
+                "timestamp": timestamp,
                 "receipt_id": receipt_id
             }
         }
@@ -248,25 +285,46 @@ def run_attacks(base_dir: Path) -> dict:
 
     # Attack 8: Witness storage rollback or restoration from an old snapshot
     def attack_8():
+        """Demonstrate required investigation 6:
+
+        Restoring an older valid witness database snapshot wipes the record of committed transactions.
+        When an attacker re-submits a previously committed transaction ID to the restored database,
+        the isolated database accepts it as a new transaction and issues a second valid receipt.
+        This proves that isolated database state CANNOT resist rollback without an independent external
+        checkpoint, monotonic sequence counter, or external observer log.
+        """
         att_dir = get_attack_dir(8)
         db_path = att_dir / "witness.db"
         init_db(db_path)
 
+        # Take snapshot before transaction
         snapshot_db = att_dir / "witness_snapshot.db"
         shutil.copyfile(db_path, snapshot_db)
 
-        execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir)
+        # Step 1: Execute original transaction
+        ev1 = execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir)
         ev_file = att_dir / "evidence_tx-rollback-08.json"
 
+        # Verifying evidence against snapshot DB fails because tx is absent from snapshot
         ver_snap = verify_evidence(ev_file, snapshot_db)
-        blocked = not ver_snap["valid"] and ver_snap.get("reason") == "TRANSACTION_NOT_IN_WITNESS_STORE"
+
+        # Step 2: Restore older witness snapshot (rollback witness storage)
+        shutil.copyfile(snapshot_db, db_path)
+
+        # Step 3: Re-submit the same transaction ID to the rolled-back witness database
+        ev2 = execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir)
+
+        # Since witness DB was rolled back, ev2 succeeds! This proves rollback vulnerability.
+        rollback_reused_tx = ev2["success"]
+
         return {
             "attack_id": 8,
             "name": "Witness storage rollback or restoration from an old snapshot",
-            "blocked": blocked,
-            "verdict": "DETECTED_BY_VERIFIER" if blocked else "UNDETECTED",
-            "reason": ver_snap.get("reason"),
-            "message": ver_snap.get("message")
+            "blocked": False,
+            "verdict": "VULNERABLE_TO_ROLLBACK_REUSE",
+            "reason": "WITNESS_ROLLBACK_ALLOWED_TX_REUSE",
+            "message": "Isolated witness store accepted previously committed transaction ID after DB snapshot rollback. Requires external monotonic checkpoint or transparency log to prevent.",
+            "verifier_snapshot_check": ver_snap.get("reason")
         }
 
     # Attack 9: Conflicting authority versions

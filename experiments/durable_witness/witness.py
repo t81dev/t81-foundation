@@ -48,8 +48,17 @@ def init_db(db_path: Path, secret_key: bytes = DEFAULT_SECRET_KEY) -> sqlite3.Co
             conn.execute("INSERT INTO authority_policies VALUES ('v2', 1000, 50000, 'ACTIVE');")
     return conn
 
-def compute_receipt_signature(secret_key: bytes, tx_id: str, authority_version: str, effect_id: str) -> str:
-    message = f"{tx_id}:{authority_version}:{effect_id}".encode("utf-8")
+def compute_receipt_signature(
+    secret_key: bytes,
+    tx_id: str,
+    authority_version: str,
+    effect_id: str,
+    payload_hash: str = "",
+    total_amount: int = 0,
+    timestamp: str = "",
+    witness_id: str = "durable-witness-v1"
+) -> str:
+    message = f"{witness_id}:{tx_id}:{authority_version}:{effect_id}:{payload_hash}:{total_amount}:{timestamp}".encode("utf-8")
     return hmac.new(secret_key, message, hashlib.sha256).hexdigest()
 
 def submit_transaction(
@@ -115,7 +124,17 @@ def submit_transaction(
             effect_id = f"effect-{tx_id}-{payload_hash[:16]}"
             timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
-            receipt_id = compute_receipt_signature(secret_key, tx_id, authority_version, effect_id)
+            witness_id = "durable-witness-v1"
+            receipt_id = compute_receipt_signature(
+                secret_key=secret_key,
+                tx_id=tx_id,
+                authority_version=authority_version,
+                effect_id=effect_id,
+                payload_hash=payload_hash,
+                total_amount=total_amount,
+                timestamp=timestamp,
+                witness_id=witness_id
+            )
 
             # 5. Insert atomically into SQLite DB
             conn.execute(

@@ -13,7 +13,7 @@ from witness import init_db, submit_transaction, DEFAULT_SECRET_KEY
 def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> int:
     """Run T81 Arm A C++ binary to compute total and enforce bounded execution."""
     if not arm_a_bin or not arm_a_bin.exists():
-        return quantity * unit_price
+        raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
 
     # Create temporary contract file and store for Arm A binary
     tmp_dir = Path(tempfile.mkdtemp())
@@ -30,10 +30,12 @@ def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> int:
         with open(input_json, "w") as f:
             json.dump(contract_payload, f)
 
+        if store_dir.exists():
+            shutil.rmtree(store_dir)
         cmd = [str(arm_a_bin), "approved", str(input_json), str(store_dir)]
         res = subprocess.run(cmd, capture_output=True, text=True)
         if res.returncode != 0:
-            return quantity * unit_price
+            raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
 
         # Arm A succeeded within bounds
         return quantity * unit_price
@@ -83,6 +85,12 @@ def execute_runner(
     }
 
     if arm == "A":
+        if arm_a_bin is None:
+            # Default search path for built Arm A binary
+            default_bin = Path("build/t81_architecture_arm_a")
+            if not default_bin.exists():
+                default_bin = Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a"
+            arm_a_bin = default_bin
         total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
     elif arm == "B":
         wat_path = wat_file or (Path(__file__).parent / "guest.wat")

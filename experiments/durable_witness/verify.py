@@ -26,9 +26,21 @@ def verify_evidence(evidence_path: Path, db_path: Path = None, secret_key: bytes
     effect_id = receipt.get("effect_id")
     receipt_id = receipt.get("receipt_id")
     payload_hash = receipt.get("payload_hash")
+    total_amount = receipt.get("total_amount", 0)
+    timestamp = receipt.get("timestamp", "")
+    witness_id = receipt.get("witness_id", "durable-witness-v1")
 
-    # 2. Check receipt signature
-    expected_receipt_id = compute_receipt_signature(secret_key, tx_id, authority_version, effect_id)
+    # 2. Check receipt signature across all receipt fields
+    expected_receipt_id = compute_receipt_signature(
+        secret_key=secret_key,
+        tx_id=tx_id,
+        authority_version=authority_version,
+        effect_id=effect_id,
+        payload_hash=payload_hash,
+        total_amount=total_amount,
+        timestamp=timestamp,
+        witness_id=witness_id
+    )
     if receipt_id != expected_receipt_id:
         return {
             "valid": False,

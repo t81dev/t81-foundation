@@ -1,59 +1,51 @@
-# Results & Findings — Accountable Computation & Durable Witness
+# Results & Findings — Accountable Computation & Durable Witness (Audited)
 
 **Directory:** `experiments/durable_witness/`
-**Git SHAs:**
-- `main`: `0005ab675d2729b2795200e8c78ded43d4520b0d`
-- PR #554: `7af837ece1325752e555b814c94aacc33afd2c96`
+**Audit Git SHA:** `1ecba5f9962f97587e827b4db9e89dbc9819e6cd`
 
 ---
 
-## 1. Summary of Empirical Findings
+## 1. Summary of Audited Empirical Findings
 
-1. **Reproduction of PR #554 Results**:
+1. **Reproduction & Provenance Audit of PR #554**:
    - Both Arm A (T81VM) and Arm B (Wasmtime) enforce identical purchase order policy limits and issue identical protocol envelopes.
-   - Without a durable witness, both arms shared identical security gaps: accepted fabricated producer evidence with valid internal hashes and allowed receipt replay across process restarts.
-   - Arm A exhibited 100 out of 110 failures on Windows native runs due to CanonFS Base81 filename reserved-character restrictions (`<`/`>`), whereas Arm B had 0 failures.
+   - Audit revealed that PR #558 imported pre-existing PR #554 archives into `experiments/architecture_challenge/` rather than producing fresh Windows native logs.
+   - Silent fallback to Python arithmetic in `runner.py` was eliminated; native runtime missing/failure now explicitly raises `RuntimeError` or reports `SKIPPED`.
 
-2. **Durable Witness Validation**:
-   - Incorporating a transactional SQLite WAL witness coupled with HMAC receipt signing successfully blocked **10 out of 10 adversarial attacks** across both runtime arms.
-   - Replay attacks across process restarts and concurrent duplicate submissions were reliably caught and rejected.
-   - Revocation at the witness boundary immediately halted effect admissions.
+2. **Durable Witness Audit & Security Corrections**:
+   - Expanded HMAC signature coverage in `witness.py` and `verify.py` to sign `witness_id`, `payload_hash`, `total_amount`, and `timestamp` alongside `tx_id`, `authority_version`, and `effect_id`. Tampering with any unsigned metadata field now triggers `INVALID_RECEIPT_SIGNATURE`.
+   - Multi-process concurrency tests (`multiprocessing`) confirmed atomic SQLite uniqueness constraints block duplicate submissions across separate OS processes, and boundary revocation races immediately stop transaction admission.
+   - **Rollback Vulnerability Confirmed**: Restoring an older witness SQLite snapshot wipes transaction history, allowing previously committed transaction IDs to be re-submitted and issued new valid receipts. Local witness database state cannot resist rollback without an external monotonic checkpoint.
+   - **Offline Verification Limitations**: Verifying evidence without `--db` checks cryptographic signature validity, but cannot detect uncommitted "phantom" receipts. Querying the witness store is strictly required.
+   - **DB Record vs Physical Effect**: A database record proves an internal SQLite state transition, but does not authenticate physical external world execution (e.g. shipping disbursement) without separate sensor/audit proof.
 
 ---
 
-## 2. Adversarial Attack Suite Results (10/10 Blocked)
+## 2. Audited Adversarial Attack Suite Results
 
-| Attack ID | Scenario Name | Verdict | Observed Result |
+| Attack ID | Scenario Name | Verdict | Observed Result & Security Limitation |
 | :---: | :--- | :---: | :--- |
-| **1** | Fabricated evidence with valid internal hashes | **BLOCKED** | Rejected with `INVALID_RECEIPT_SIGNATURE`. |
-| **2** | Valid receipt replay after process restart | **BLOCKED** | Rejected with `REPLAY_DETECTED`. |
-| **3** | Duplicate submission from concurrent threads | **BLOCKED** | Atomic SQLite constraint blocked duplicate thread with `INTEGRITY_ERROR`. |
+| **1** | Fabricated evidence with valid internal hashes | **BLOCKED** | Rejected with `INVALID_RECEIPT_SIGNATURE` across all receipt fields. |
+| **2** | Valid receipt replay after process restart | **BLOCKED** | Rejected with `REPLAY_DETECTED` in active witness database. |
+| **3** | Duplicate submission from concurrent processes | **BLOCKED** | Multi-process SQLite atomic constraint blocked duplicate submission; revocation race caught. |
 | **4** | Authorization revocation before effect admission | **BLOCKED** | Rejected with `REVOCATION_DETECTED`. |
-| **5** | Effect committed but receipt publication interrupted | **HANDLED** | Recovered existing receipt ID on retry without duplicate effect. |
-| **6** | Receipt generated without claimed effect | **BLOCKED** | Verifier rejected with `TRANSACTION_NOT_IN_WITNESS_STORE`. |
+| **5** | Effect committed but receipt publication interrupted | **HANDLED** | Recovered existing receipt ID on retry without duplicate effect creation. |
+| **6** | Receipt generated without claimed effect | **BLOCKED (Online)** | Verifier rejected with `TRANSACTION_NOT_IN_WITNESS_STORE` when querying DB (*Note: Offline verifier accepts forged receipt if signing key is known*). |
 | **7** | Tampered or substituted witness identities | **BLOCKED** | Rejected with `INVALID_RECEIPT_SIGNATURE`. |
-| **8** | Witness storage rollback from old snapshot | **BLOCKED** | Verifier detected transaction absence in restored snapshot DB. |
+| **8** | Witness storage rollback from old snapshot | **VULNERABLE** | Witness store alone cannot detect snapshot rollback; reused TX ID accepted after DB restoration (*Requires external monotonic checkpoint*). |
 | **9** | Conflicting / revoked authority versions (`v1`) | **BLOCKED** | Rejected with `REVOCATION_DETECTED`. |
 | **10** | Partial persistence failure (read-only DB) | **BLOCKED** | Transaction rolled back cleanly with `INTEGRITY_ERROR`. |
 
 ---
 
-## 3. Performance & Repeatability Benchmark (30 Trials / Arm)
-
-| Metric | Arm A (T81VM) | Arm B (Wasmtime host capability) |
-| :--- | :---: | :---: |
-| **Execution & Witness Commit Mean** | 2,612.70 µs ± 1,248.31 µs | 4,352.91 µs ± 1,276.84 µs |
-| **Verification Mean** | 453.94 µs | 441.87 µs |
-| **Pass / Verification Rate** | 100% (30/30) | 100% (30/30) |
-
----
-
-## 4. Formal Claim Classification Table
+## 3. Formal Claim Classification Table (Post-Audit)
 
 | Claim | Classification | Evidence & Justification |
 | :--- | :--- | :--- |
-| **Arm A and Arm B protocol parity** | **Independently Reproduced** | Confirmed PR #554 measurements across 660 trials and independent tar archive audits. |
-| **Durable transactional witness closes replay/fabrication gaps** | **Implemented & Tested** | `witness.py` and `attacks.py` demonstrate 100% attack blocking across 10 scenarios. |
-| **T81 custom VM instructions are required for accountable evidence** | **Experimentally Falsified** | Arm B (Wasmtime + host capability) achieves identical security guarantees as Arm A. |
-| **CanonFS Base81 storage works portably on Windows** | **Experimentally Falsified** | Windows native runs suffered 100/110 storage failures due to reserved filename characters (`<`/`>`). |
-| **Custom execution surface provides intrinsic security advantage** | **Unsupported** | Security properties depend entirely on the external transactional witness boundary. |
+| **Arm A and Arm B protocol parity** | **Demonstrated** | Confirmed identical protocol envelopes and policy enforcement across Arm A and Arm B. |
+| **HMAC signature covers full receipt state** | **Fixed & Verified** | Signature expanded to include `payload_hash`, `total_amount`, `timestamp`, and `witness_id`. Field substitution fails verification. |
+| **In-session duplicate submission blocked across processes** | **Verified** | Multi-process tests in `attacks.py` verify multi-process SQLite lock & uniqueness constraints. |
+| **Witness store resists database snapshot rollback** | **Refuted / Falsified** | Restoring older SQLite DB allows reusing previously committed transaction IDs (Attack 8). Requires external monotonic checkpoint. |
+| **Offline verification proves transaction commitment** | **Refuted / Falsified** | Verification without `--db` accepts forged receipts generated by an actor with the signing key without verifying store presence. |
+| **Database record proves physical effect occurrence** | **Refuted / Falsified** | Internal SQLite write proves internal state transition only; physical external effect requires independent sensor attestation. |
+| **T81 custom VM instructions are required for accountable evidence** | **Experimentally Falsified** | Wasmtime + host witness capability achieves identical security guarantees as T81VM. |
