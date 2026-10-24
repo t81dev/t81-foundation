@@ -76,4 +76,4 @@ Upon experiment completion (or early termination), the evaluation committee maps
 If Outcome B is validated, the evaluation committee SHALL execute the following workload-bounded research directive:
 1. Conclude that for deterministic integer decision workloads of this complexity class, custom virtual machine dispatch is not required to maintain computational accountability and pre-side-effect policy enforcement.
 2. Direct future protocol development toward lightweight, runtime-agnostic evidence formats based on internal `spec/rfcs/RFC-00D4-accountable-decision-bundle.md` schemas for standard WebAssembly and Linux environments.
-3. Restrict all conclusions strictly to the measured workload. Broader ecosystem-wide architectural changes or VM deprecations require separate empirical research protocols and explicit governance review.
+3. Restrict all conclusions and engineering decisions strictly to the measured workload and guarantees. Automatic ecosystem-wide architectural pivots or global ISA deprecations are prohibited; broader changes require separate empirical research protocols and explicit governance review.

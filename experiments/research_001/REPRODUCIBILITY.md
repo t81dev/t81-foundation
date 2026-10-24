@@ -105,7 +105,8 @@ An independent evaluator MUST be able to re-execute the experiment on a clean ho
 
 ### Step 1: Environment & Dependency Verification
 ```bash
-# Verify system dependencies and Python 3.12 environment with cryptography package
+# Verify system dependencies and Python 3.12 environment with cryptography PyPI package
+python3 -m pip install cryptography
 python3 -c "import cryptography; print(cryptography.__version__)"
 cmake --version
 ninja --version

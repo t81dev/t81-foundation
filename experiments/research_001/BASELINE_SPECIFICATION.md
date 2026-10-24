@@ -41,7 +41,7 @@ To satisfy the **Fair Comparison Principle** ([RESEARCH_CHARTER.md](RESEARCH_CHA
 2. **Policy Engine:** Open Policy Agent (OPA) / Rego rules linked via in-process FFI / C bindings for primary benchmarks to eliminate IPC transport bias. Asynchronous HTTP/gRPC sidecar OPA evaluation is measured separately as a secondary transport variable (see [HYPOTHESES.md](HYPOTHESES.md) H3).
 3. **Storage Engine:** SQLite database for transactional local state, paired with SHA256 content-addressed blob storage under `objects/<hash>.blk`.
 4. **Evidence Schema:** Internal experimental specification draft proposal `RFC-00D4` (Accountable Decision Bundle JSON schema residing at `spec/rfcs/RFC-00D4-accountable-decision-bundle.md`).
-5. **Cryptographic Identity & Verification Dependencies:** Cryptographic signatures covering canonical JSON representations (RFC 8785 / JCS). Standalone offline verification (`verify.py`) requires Python 3.12 with the standard library and the `cryptography` package (for Ed25519 signature verification). An optional pure-stdlib HMAC-SHA256 verification mode is supported for zero-external-dependency test environments.
+5. **Cryptographic Identity & Verification Dependencies:** Cryptographic signatures covering canonical JSON representations (RFC 8785 / JCS). Standalone offline verification (`verify.py`) requires Python 3.12 with the standard library and the `cryptography` PyPI package (`pip install cryptography`, for Ed25519 signature verification; Ed25519 is not present in the Python standard library). An optional pure-stdlib HMAC-SHA256 verification mode is supported for zero-external-dependency test environments.
 
 ---
 

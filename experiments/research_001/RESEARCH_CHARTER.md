@@ -1,9 +1,11 @@
 # T81 Experimental Research Charter: Research Protocol 001
 
+**Protocol ID:** Research Protocol 001
+**Location:** `experiments/research_001/RESEARCH_CHARTER.md`
+**Author:** T81 Foundation Research Group
 **Date:** April 2026
 **Version:** v1.1.0 (Corrected Specification)
 **Status:** Active Research Governance Directive
-**Location:** `experiments/research_001/RESEARCH_CHARTER.md`
 
 ---
 

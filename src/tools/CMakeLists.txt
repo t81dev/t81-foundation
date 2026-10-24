@@ -59,6 +59,7 @@ target_link_libraries(canonfs_performance_standalone PRIVATE t81_core)
 
 t81_preserve_root_output(t81_tool_cli)
 target_link_libraries(t81_tool_cli PUBLIC t81_lang_frontend t81_isa t81_vm t81_tool_model)
+target_link_libraries(t81_tool_cli PRIVATE t81_math_quantization t81_decode)
 target_link_libraries(t81_tool_cli PUBLIC t81_llvm t81_mlir t81_c_frontend t81_rust_frontend t81_python_frontend)
 target_include_directories(t81_tool_cli PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

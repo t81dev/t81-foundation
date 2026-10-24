@@ -29,9 +29,9 @@ Both systems under test MUST execute the standardized **Inventory Replenishment 
 
 ---
 
-## 3. Adversarial Threat Scenarios & Design Resolutions
+## 3. Adversarial Threat Scenarios & Experimental Design Resolutions
 
-The experimental protocol subjects all systems to four explicit threat scenarios:
+The experimental protocol subjects all systems to four explicit threat scenarios while resolving three key experimental design questions:
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -62,6 +62,12 @@ The experimental protocol subjects all systems to four explicit threat scenarios
 ### Scenario 4: Detached Offline Audit Challenge (Common Evidence Resolution)
 - **Attack Vector:** An auditor with zero network access and no access to the producer runtime must verify compliance using only the exported evidence bundle and public key.
 - **Design Resolution:** Primary comparative benchmarks evaluate evidence exported strictly in RFC 8785 Canonical JSON (JCS) format conforming to the internal `spec/rfcs/RFC-00D4-accountable-decision-bundle.md` draft schema. Native secondary representations (e.g., custom Base81 trytes) are recorded as secondary metrics to isolate serialization overhead.
+
+### 3.1 Resolution of Experimental Design Questions
+
+1. **OPA Integration & IPC Transport Fairness:** Primary comparative benchmarks for Arm (iii) link Open Policy Agent (OPA) / Rego rules in-process via C/Rust FFI bindings to eliminate network/socket IPC transport bias when comparing against T81's in-process Axion kernel. Asynchronous HTTP/gRPC sidecar IPC transport is evaluated separately as a secondary variable under Hypothesis H3.
+2. **Deterministic Mid-Flight Revocation Injection:** Mid-flight policy revocation is injected synchronously via a `post_calc_pre_commit` callback hook invoked inside the workload dispatch sequence after decision calculation but immediately before policy evaluation and side-effect commit. This eliminates asynchronous race-condition timing jitter.
+3. **Common Evidence Canonicalization vs Native Formats:** Primary comparative measurements evaluate common RFC 8785 JSON Canonicalization Scheme (JCS) bundles across all arms. Native secondary formats (e.g., raw Base81 tryte streams) are recorded as secondary measurements to quantify serialization tax without biasing primary safety comparisons.
 
 ---
 

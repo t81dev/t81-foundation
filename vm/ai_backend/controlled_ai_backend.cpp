@@ -98,17 +98,17 @@ bool ControlledAIBackend::check_policy_consent(const std::string& operation_type
   if (!policy_engine_) return false;
 
   t81::axion::SyscallContext ctx;
-  ctx.operation = "ai.inference." + operation_type;
-  ctx.user_has_explicit_consent = true;
+  ctx.syscall = "ai.inference." + operation_type;
 
   auto verdict = policy_engine_->evaluate(ctx);
+  bool allowed = (verdict.kind == t81::axion::VerdictKind::Allow);
 
   if (evidence_log_.size() > 0) {
     evidence_log_.back().policy_decisions.push_back(
-        std::string(verdict.allowed ? "allow" : "deny") + ": " + verdict.reason);
+        std::string(allowed ? "allow" : "deny") + ": " + verdict.reason);
   }
 
-  return verdict.allowed;
+  return allowed;
 }
 
 template <typename T>

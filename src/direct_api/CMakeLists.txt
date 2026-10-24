@@ -3,15 +3,16 @@
 
 add_library(t81_direct_api STATIC
     t81_direct_api.cpp
+    ${PROJECT_SOURCE_DIR}/vm/ai_backend/controlled_ai_backend.cpp
 )
 
 target_link_libraries(t81_direct_api PUBLIC
     t81_core
     t81_axion
-    t81_ai_backend
-    t81_weights
-    t81_canonfs
     t81_tracing
+    t81_tool_model
+    t81_tool_cli
+    t81_vm
 )
 
 target_include_directories(t81_direct_api PUBLIC

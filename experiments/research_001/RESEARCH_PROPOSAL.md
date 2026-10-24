@@ -1,7 +1,7 @@
 # Research Proposal: Evaluation of Deterministic Artifact Execution vs. Conventional Content-Addressed Pipelines
 
 **Protocol ID:** Research Protocol 001
-**Target Directory:** `experiments/research_001/`
+**Location:** `experiments/research_001/RESEARCH_PROPOSAL.md`
 **Author:** T81 Foundation Research Group
 **Date:** April 2026
 **Version:** v1.1.0 (Corrected Specification)

@@ -11,7 +11,7 @@
 
 ## 1. Overview
 
-Research Protocol 001 evaluates three nonexclusive, falsifiable explanatory models regarding deterministic artifact execution, policy enforcement, and accountable computation.
+Research Protocol 001 evaluates three nonexclusive, falsifiable explanatory models regarding deterministic artifact execution, policy enforcement, and accountable computation. Hypotheses H1, H2, and H3 are nonexclusive: experimental outcomes may support elements of multiple hypotheses simultaneously or yield inconclusive results.
 
 ```
 +-----------------------------------------------------------------------------------+

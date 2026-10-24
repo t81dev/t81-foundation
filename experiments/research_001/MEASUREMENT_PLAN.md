@@ -37,8 +37,9 @@ To adhere to the **Stopping Discipline Principle** ([RESEARCH_CHARTER.md](RESEAR
 
 1. **Sample Size & Binomial Confidence Bounds:**
    - Every primary test case MUST be executed for $N = 30$ independent repetitions per system arm per hardware platform.
-   - **Binomial Failure Rate Bound:** Observing zero failures in $N = 30$ trials establishes a Clopper-Pearson 95% upper confidence limit of **9.50%** failure rate ($p \le 0.0950$).
-   - **Expanded Verification Run:** To bound the zero-failure probability to $\le 1.0\%$, safety test cases (`case_01` through `case_04`) MUST undergo an expanded execution run of $N = 300$ trials, yielding a Clopper-Pearson 95% upper bound of **0.99%** failure rate ($p \le 0.0099$).
+   - **Clopper-Pearson Exact Binomial Failure Rate Bounds:**
+     - Observing zero failures in $N = 30$ trials establishes an exact Clopper-Pearson 95% upper confidence limit of **9.50%** failure rate ($p \le 0.0950$).
+     - Observing zero failures in $N = 300$ trials (expanded safety verification run for `case_01` through `case_04`) establishes an exact Clopper-Pearson 95% upper confidence limit of **0.99%** failure rate ($p \le 0.0099$).
 2. **Warmup Iterations:** Each execution process MUST run 5 unmeasured warmup iterations prior to recording metrics to purge cold JIT page faults and cache misses.
 3. **Reported Continuous Statistics:** For every continuous numeric metric (Latency, Memory, Verification Time, Bundle Size), the measurement runner MUST compute and record:
    - Arithmetic Mean ($\mu$)
@@ -46,7 +47,7 @@ To adhere to the **Stopping Discipline Principle** ([RESEARCH_CHARTER.md](RESEAR
    - Standard Deviation ($\sigma$)
    - Minimum ($P_0$) and Maximum ($P_{100}$)
    - 95% Confidence Interval ($CI_{95}$) derived via Student's t-distribution or bootstrap resampling.
-4. **Hypothesis Testing for Continuous Metrics:** Comparisons between latency means MUST report $p$-values using Welch's two-sample t-test (for normally distributed samples) or Mann-Whitney U test (for non-normal distributions). If $p > 0.05$ or $\frac{|\mu_A - \mu_B|}{CI_{95\_max}} < 1.0$, the difference MUST be reported as inconclusive (see [HYPOTHESES.md](HYPOTHESES.md) §5).
+4. **Hypothesis Testing & Inconclusive Result Handling:** Comparisons between latency means MUST report $p$-values using Welch's two-sample t-test (for normally distributed samples) or Mann-Whitney U test (for non-normal distributions). If $p > 0.05$ or $\frac{|\mu_A - \mu_B|}{CI_{95\_max}} < 1.0$, the difference MUST be formally reported as `INCONCLUSIVE_INSUFFICIENT_DELTA` (see [HYPOTHESES.md](HYPOTHESES.md) §5).
 5. **Outlier Policy:** Raw timing samples exceeding $3\sigma$ from the mean MUST be preserved in the raw measurement register in `report.json` and tagged as `OUTLIER_PRESERVED`. Trimming raw data is forbidden.
 
 ---
