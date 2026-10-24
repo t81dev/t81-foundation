@@ -203,3 +203,70 @@ The initial committed-source test archive above precedes the additional
 receipt-completeness exporter/auditor. The later native artifacts additionally
 retain every committed transaction's signed outbox and independently compare
 it with observed payload bytes, preserving the raw-bypass and corruption controls.
+
+
+## Receipt-complete follow-up
+
+Source `6ea606587c1488ee21da39433785da5d75baffaf`, clean tree, repeats all 48 checks
+and 30 cold/steady samples per arm with unchanged witness/calculator/verifier code.
+[Receipt-complete public evidence](observed-receipt-audit/public-evidence.tar.gz),
+[measurements](observed-receipt-audit/measurements.json) and
+[independent audit](observed-receipt-audit/independent-audit.json) are preserved.
+The independent auditor verifies 26 signed outboxes and their actual observed
+payloads, exposing two intentional raw bypasses and two intentional corruptions.
+The later validation-only completeness check also rejects a fabricated observation
+that removes an effect while retaining its valid signed receipt; the candidate
+and rejection are [preserved](observed-receipt-audit/missing-effect-attack.json).
+Read-only artifact auditing makes no fresh receipt-consumption claim.
+
+[Broader production CI failure evidence](observed-receipt-audit/existing-production-ci-failure.json)
+preserves both platforms' errors and matching base/head file SHA-256 digests.
+This includes ModelFile optional-style API calls as well as incomplete backend
+types. These existing production paths need a separate correctness change; this
+isolated experiment neither depends on #536 nor declares overall PR CI green.
+
+A further [shared-owner check](observed-receipt-audit/shared-authority-cross-arm.json)
+submits A then B, and B then A, to the **same** ledger/key/policy owner. Both first
+submissions commit; both cross-arm repeats are rejected. The two effects each
+have independently consumed receipts. This supplements the 48 per-arm checks and
+confirms that state is shared across calculator implementations, not only reused
+protocol code with separate stores.
+
+
+## Independently audited native publication
+
+[Run 40049452341](https://github.com/t81dev/t81-foundation/actions/runs/40049452341)
+passes all native jobs at head `6ea606587c1488ee21da39433785da5d75baffaf`.
+GitHub's measured synthetic merge is `516fca507281d38d860fc5f960e83d82a4e8b6ee`.
+Linux x86_64 (SQLite 3.45.1), macOS ARM64 (SQLite 3.50.4) and Windows x86_64
+(SQLite 3.50.4) each pass 48 checks and publish ten cold/steady samples per arm.
+Actual SQLite versions vary with Python/platform; their exact versions, dependencies,
+raw outcomes and timings are preserved, not treated as one pinned SQLite build.
+
+The downloaded [Linux](observed-native/linux.tar.gz),
+[macOS](observed-native/macos.tar.gz) and [Windows](observed-native/windows.tar.gz)
+public trees were independently audited locally with the strengthened auditor.
+Each verifies 26 signed outboxes against pinned test requests and observed payloads,
+with exactly two raw bypasses, two corrupt-payload rejections and four accepted
+excluded controls. All archived bytes were compared with the downloaded files.
+[Audit/source checks](observed-native/independent-audit.json),
+[GitHub artifact metadata](observed-native/github-artifacts.json),
+[run/job provenance](observed-native/run.json) and
+[archive hashes](observed-native/sha256.json) retain the evidence beyond CI retention.
+The repackaged archive hashes are distinct from GitHub's original ZIP digests.
+
+The initial literal source-byte equality check **failed on Windows**: its fourteen
+raw source hashes match CRLF checkout of the pinned LF Git blobs exactly. Linux
+and macOS match the literal Git blobs. This [negative observation](observed-native/source-byte-comparison-negative-result.json)
+is preserved; no raw hash is silently normalized. It is not a protocol-byte failure:
+the independent verifier enforces ASCII LF payload/signature encoding in every
+receipt on every platform. Random keys/UUIDs mean entire receipt bytes are not
+expected to agree between independent trials. No general cross-platform source
+byte identity, power-loss test or production CanonFS Windows compatibility is claimed.
+
+The final validation-only auditor addition checks the converse link as well:
+every signed committed outbox must have its observed effect, not only every effect
+must have an outbox. It passes all three downloaded native trees and rejects the
+preserved missing-effect attack. Formatting and determinism/overclaim guards pass
+for this experiment. The broader unchanged-production determinism build remains
+red as separately recorded; this PR stays draft and is not automatically merged.

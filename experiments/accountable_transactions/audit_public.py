@@ -25,6 +25,10 @@ def audit(root):
             body = checked(receipt, trust, expected)
             signed[body['transaction']] = body['effect']['payload'].encode('ascii').hex()
             receipts += 1
+        effect_ids = {effect['transaction'] for effect in ledger.get('effects', [])}
+        committed_ids = {txid for txid, state in ledger.get('transactions', []) if state == 'committed'}
+        if set(signed) != committed_ids or not set(signed).issubset(effect_ids):
+            raise ValueError('signed outbox lacks corresponding committed observed effect')
         for effect in ledger.get('effects', []):
             if signed.get(effect['transaction']) != effect['payload']:
                 # Expected, explicitly preserved fault/permission negative controls.

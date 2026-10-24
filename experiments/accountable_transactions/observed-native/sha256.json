@@ -1,0 +1,9 @@
+{
+  "github-artifacts.json": "3ad084dfb66ec5f39df6cd6230fce80ff0446029d349f46204d3c798e0faaeec",
+  "independent-audit.json": "f857c35f1d833097df262eab30142c47b9e8e24568b3ebfd2f10f5da13494bd7",
+  "linux.tar.gz": "aafaac23b11e40586d82e06860660d9ee9caee7dd4e9130029c1cf443add066b",
+  "macos.tar.gz": "fafb43377485896c226822df279bb464046f4681cc66b6937161361edf31138c",
+  "run.json": "5d48c949936d7449362b1f8adf993e1c55ba41353d71cf37e5dbc6ced153ab6c",
+  "source-byte-comparison-negative-result.json": "63c632369673d0c400f9b61a78cd4a646af2181fedcb0f6c1f8c99aa33ec2061",
+  "windows.tar.gz": "174d4596da29e6e40162ab9c80cc31e346232ea57877371058944748d322bc2b"
+}
