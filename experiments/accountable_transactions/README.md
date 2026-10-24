@@ -46,6 +46,10 @@ witness-process exit 75, fresh recovery processes and concurrent process pairs.
 `preserve.py` exports public JSON/text evidence while excluding private witness
 keys and SQLite databases. Native CI uploads these public artifacts even on failure.
 Keep private keys out of publication, including temporary research keys.
+`audit_public.py PUBLIC_EVIDENCE_ROOT` independently checks every exported signed
+outbox against its expected request and actual observed ledger payload. It requires
+only verify.py and cryptography; the two deliberately unreceipted raw bypasses and
+two deliberately corrupted payloads must remain explicitly visible.
 
 ## Verify independently
 

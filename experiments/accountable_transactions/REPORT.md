@@ -1,7 +1,7 @@
 # Research report: durable witnessed transactions
 
-Status: local validation complete; committed-source measurements and native CI
-observations will be recorded below. No architectural winner is assumed.
+Status: bounded research result with committed-source local evidence. Native CI
+observations are recorded below. No architectural winner is established.
 
 ## Decision
 
@@ -133,4 +133,73 @@ supports a general architectural winner or an advantage for ternary representati
 
 ## Recorded runs
 
-Pending committed-source recording.
+Measured source `6bd2633f726bb160e9e83df8314a5fdee5d7ec64`, clean tree.
+Native macOS ARM64, Python 3.14.3, SQLite 3.51.3; exact platform and source/file
+hashes are in [measurements.json](observed-macos-arm64/measurements.json).
+Pinned dependencies: cryptography 46.0.3, Wasmtime 38.0.0, cffi 2.0.0,
+pycparser 2.23, importlib_resources 6.5.2. Compiler/build logs and exact commands
+are preserved in the [manifest](observed-macos-arm64/manifest.json).
+
+- 48 two-arm checks pass: 44 within the declared boundary and four excluded
+  negative controls. No in-model fabrication/replay acceptance observed.
+- 30 cold calculator and 30 steady transaction samples per arm, plus one cold
+  witness reserve/commit pair and one cold restart retrieval per arm. No sample
+  is dropped. The tiny cold-witness/recovery sample count is descriptive only.
+- Standalone copy of only verify.py succeeds once, then rejects replay in a new
+  process, with a Python import guard forbidding all runtime/producer imports.
+  [Raw commands/results](observed-macos-arm64/detached-verification.json).
+- [Aggregate test outcomes](observed-macos-arm64/tests-results.json),
+  [raw subprocess evidence](observed-macos-arm64/tests-raw.json) and
+  [full public fixtures](observed-macos-arm64/public-tests.tar.gz) retain attacks,
+  caller pins, producer outputs and actual payload observations. Exported archive
+  file bytes were checked against source artifacts; no private keys/databases.
+  Digests detect changes, not independent identity of the research publication.
+
+Steady medians, microseconds (30 samples each):
+
+| Interval | A: T81VM | B: Wasmtime |
+| --- | ---: | ---: |
+| Preliminary authorization + durable reserve | 9680.75 | 9075.50 |
+| Final authorization predicate only | 1.56 | 2.21 |
+| Protected commit, including signing and flush | 9643.54 | 10924.27 |
+| Receipt encoding/signature creation | 505.08 | 514.27 |
+| Independent verification + durable consumption | 11968.65 | 12166.35 |
+| Calculator round trip (different IPC paths) | 192.44 | 650.08 |
+| Native runtime invocation | 35.67 | 254.00 |
+
+Cold calculator process medians: A 5.43 ms, B 69.99 ms (30 samples each).
+Single cold witness reserve/commit processes: A 128.98/132.57 ms,
+B 128.47/129.80 ms. Single restart retrieval: A 143.38 ms, B 141.05 ms.
+The common durable witness dominates this small local workload; sequential arm
+measurement and filesystem noise preclude interpreting differences as runtime
+security or general throughput advantages.
+
+Each measured witness DB is 53,248 bytes after 31 transactions; each verifier DB
+is 32,768 bytes. A executable is 1,398,976 bytes. Installed wheel file inventory:
+cryptography 22,582,958; cffi 1,045,015; pycparser 1,874,701;
+Wasmtime 22,470,793; importlib_resources 289,807 bytes. These counts include wheel
+files/metadata and are not process RSS, full source LOC or total deployment size.
+
+Introduced nonblank physical code lines, including comments: A calculator 43,
+B calculator 35; shared witness 194 and standalone verifier 160. Test harness
+331, measurement 137, public exporter 20. Existing runtime and crypto/SQLite
+implementation complexity remains additional; shared additions are the same
+for both arms. No full-stack LOC or maintenance-cost ratio is claimed.
+
+[Native run 40049128010](https://github.com/t81dev/t81-foundation/actions/runs/40049128010)
+passes Linux x86_64, macOS ARM64 and Windows x86_64, including all 48 checks
+and ten cold/steady samples per arm. Source head is the measured `6bd2633f`;
+GitHub PR jobs run its synthetic merge with main. This is narrow experiment
+coverage, not a full production suite or a CanonFS Windows fix.
+
+The unrelated broad determinism workflow fails building unchanged production
+`src/direct_api/t81_direct_api.cpp` / `controlled_ai_backend.hpp` (incomplete
+ControlledRandomness/PolicyEngine types). These paths match the base revision;
+no experiment file is implicated. They overlap #536's documented correctness
+risks. No #536 merge/dependency or production edit is made to hide this failure.
+Full failure details and native receipt audits are recorded with final CI evidence.
+
+The initial committed-source test archive above precedes the additional
+receipt-completeness exporter/auditor. The later native artifacts additionally
+retain every committed transaction's signed outbox and independently compare
+it with observed payload bytes, preserving the raw-bypass and corruption controls.

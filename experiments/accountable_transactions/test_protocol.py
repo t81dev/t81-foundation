@@ -81,6 +81,8 @@ def exercise(runner, output):
                 with sqlite3.connect(root / 'ledger.db') as db:
                     row['ledger'] = dict(
                         transactions=db.execute('SELECT id,state FROM transactions').fetchall(),
+                        receipts=[json.loads(value) for (value,) in db.execute(
+                            'SELECT receipt FROM transactions WHERE receipt IS NOT NULL')],
                         effects=[dict(transaction=x, payload=bytes(y).hex()) for x, y in
                                  db.execute('SELECT transaction_id,payload FROM effects')])
             except sqlite3.Error as error:

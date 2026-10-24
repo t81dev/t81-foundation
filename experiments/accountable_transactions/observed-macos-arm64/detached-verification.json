@@ -1,0 +1,53 @@
+[
+  {
+    "command": [
+      "/private/tmp/t81-witness-venv/bin/python",
+      "-I",
+      "guarded.py",
+      "--trust",
+      "trust.json",
+      "--state",
+      "consumed.db",
+      "--init-state"
+    ],
+    "returncode": 0,
+    "stdout": "{\"initialized\":true}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-witness-venv/bin/python",
+      "-I",
+      "guarded.py",
+      "--trust",
+      "trust.json",
+      "--state",
+      "consumed.db",
+      "--receipt",
+      "receipt.json",
+      "--expected",
+      "expected.json"
+    ],
+    "returncode": 0,
+    "stdout": "{\"accepted\": true, \"transaction\": \"e0d564b3-b469-4ebd-9a69-34f0562948cc\", \"claim\": \"trusted witness committed local ledger effect; consumed once here\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-witness-venv/bin/python",
+      "-I",
+      "guarded.py",
+      "--trust",
+      "trust.json",
+      "--state",
+      "consumed.db",
+      "--receipt",
+      "receipt.json",
+      "--expected",
+      "expected.json"
+    ],
+    "returncode": 2,
+    "stdout": "{\"accepted\": false, \"error\": \"ValueError\", \"detail\": \"receipt replay\"}\n",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "measured_source": "6bd2633f726bb160e9e83df8314a5fdee5d7ec64",
+  "files": {
+    "build.log": "4cfb2fd62f6ae7949f51c0ad082a4d65afcab5ce7d4d23cb531799915d585dc1",
+    "configure.log": "ffb145ef6b81b32483e803b31b7938a287a4ef6b454fd9f6aeacf08cdc160d0e",
+    "detached-import-guard.py": "400771f40c90f7e76d8293940d6e5a1b3c4dd898f60cb57e2d5ae3631399c152",
+    "detached-verification.json": "3c2605273395ab965dc0b29707460bf78591c6a93d458fcc684b93bf0b469100",
+    "measurements.json": "cdf1395e0573035c77bce7024df2c3562b6c0ea64d75fa1b8fda9a5d6df2b52b",
+    "public-tests.tar.gz": "09c0e5dcbb2861adfe0531d22094ce57425adec106a5c68801dc90b7e7012848",
+    "rebuild.log": "e156267aae02a9522199eb8afb71123a2767f8303c7261515edc4ecee401641e",
+    "tests-raw.json": "e6bd8b8b07888f71a3e24c2489ded9ad917ba8061f86560fa573a0b4d3a1699f",
+    "tests-results.json": "20417ace077092bb2b5e29405ba3235bcca21e47c0beff7b6ed03d8fe82143fa"
+  },
+  "archive_bytes_compared": true,
+  "private_keys_exported": false,
+  "commands": [
+    "cmake -S experiments/accountable_transactions -B /private/tmp/t81-witness-build -G Ninja -DCMAKE_BUILD_TYPE=Release",
+    "cmake --build /private/tmp/t81-witness-build --target accountable_arm_a -j 4",
+    "/private/tmp/t81-witness-venv/bin/python experiments/accountable_transactions/test_protocol.py --runner /private/tmp/t81-witness-build/accountable_arm_a --output /private/tmp/t81-witness-tests-committed",
+    "/private/tmp/t81-witness-venv/bin/python experiments/accountable_transactions/measure.py --runner /private/tmp/t81-witness-build/accountable_arm_a --output /private/tmp/t81-witness-measured-committed --repetitions 30"
+  ]
+}
