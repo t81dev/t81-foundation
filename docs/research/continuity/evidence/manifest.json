@@ -1,0 +1,120 @@
+{
+  "scope": "all continuity packet files except this manifest; no self-reference or signature claim",
+  "files": [
+    {
+      "path": "CHANGELOG.md",
+      "bytes": 816,
+      "sha256": "e4f9ca54fc43bca5ca1882f233d3eaceb7eec956a59c7b7f081fda70070bd458"
+    },
+    {
+      "path": "H04_RADIX_ADAPTATION_DISCRIMINATOR.md",
+      "bytes": 5406,
+      "sha256": "cc392a610aff47da79f25e22dc95f976b553798bcd4416bbed6aa004ca02475b"
+    },
+    {
+      "path": "HYPOTHESIS_REGISTER_v1.json",
+      "bytes": 20922,
+      "sha256": "af8ca65dcef136f294eb33010b5a6621875a52db4f3e60b94a4e28db5318a1c1"
+    },
+    {
+      "path": "LINEAGE.md",
+      "bytes": 8646,
+      "sha256": "23a8ac97fb993059a81c1829929e6b1ede94ad66279b10be0c928f955c24d5cc"
+    },
+    {
+      "path": "MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "bytes": 21058,
+      "sha256": "e56d1cb51fe80465d86bb106b95832674a7560af9437d3c9b2b9f729ec6a79c9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5259,
+      "sha256": "9e56ac959baf9e1e0ea1db316e086312ef6fbaaaea8fae0d4f0cae2e47626e1f"
+    },
+    {
+      "path": "SESSION_HANDOFF.md",
+      "bytes": 4451,
+      "sha256": "3e239914d6f63704989c18eccbb7098345ab52ff9af4b125dbbda7e3c200a6fc"
+    },
+    {
+      "path": "evidence/charter-origin.json",
+      "bytes": 249,
+      "sha256": "c8882b11ca57990ff516f952168ec88ff27a5f38d5711dba3a81250bfe96f100"
+    },
+    {
+      "path": "evidence/hanoi-arithmetic-results.json",
+      "bytes": 1621,
+      "sha256": "2957f5f37c29ce57a881f8968c597e24a91e0145dc13f36e39094cdccb192aa3"
+    },
+    {
+      "path": "evidence/isolated_hanoi_arithmetic.c",
+      "bytes": 2512,
+      "sha256": "2455ff81d0f4346ee0a6ef48990f6d730875f2f3da829ed78a11fab7e9352772"
+    },
+    {
+      "path": "evidence/local-link-check.md",
+      "bytes": 256,
+      "sha256": "c7b1b7d716bb9ba30d1b9fe097b9d4509d31cd4894c5ce61cb2861127bffc86c"
+    },
+    {
+      "path": "evidence/maintenance-status.json",
+      "bytes": 2182,
+      "sha256": "64e97fd302c94bb3ac47b2941e39812fdcac524a8f86022ccd01ad3ba45a1f78"
+    },
+    {
+      "path": "evidence/shared-hanoi-foundation-blobs.json",
+      "bytes": 8111,
+      "sha256": "840048d6b1e193f8415ad6efd7e0572be214b11aa96d3b64466c36363bf13c43"
+    },
+    {
+      "path": "evidence/source-pins.json",
+      "bytes": 3180,
+      "sha256": "55184b2d252a1f5b501c30d05381404797ff0bf82e3a4180de34ba509d2780cc"
+    },
+    {
+      "path": "evidence/storage-boundary-results.json",
+      "bytes": 2183,
+      "sha256": "bf125deb36d73129f154a7074e2888cf4c159c78cd48b2b504a061d1d83de885"
+    },
+    {
+      "path": "evidence/t81-continuity-hanoi-make-dry-run.txt",
+      "bytes": 77,
+      "sha256": "67a0cb131e05cc70ed6b626e303eb1190eb03693bfc4e3d7915954e6fd9d704d"
+    },
+    {
+      "path": "evidence/t81-continuity-pr565.json",
+      "bytes": 10619,
+      "sha256": "20ce9ca8b02729caa9d7e5e1110328aff4875c003e6e33bcea139493f4d02c9e"
+    },
+    {
+      "path": "evidence/t81-continuity-pr566.json",
+      "bytes": 12778,
+      "sha256": "24dcf12aa6bb6ed8d1e419bfe2c6d7c5a995322bdc2c04592c72e0d54a2b56e6"
+    },
+    {
+      "path": "evidence/validation.json",
+      "bytes": 2085,
+      "sha256": "a1059555750d613e32ed9db4cc254843d04d12357b76e1e9efd8c7de9a3ce282"
+    },
+    {
+      "path": "evidence/verified-lineage.json",
+      "bytes": 9227,
+      "sha256": "518cab97229840f3310612b8359d98323a8b2bbe5ea38c187e6573d47e953072"
+    },
+    {
+      "path": "probes/reproduce_hanoi_arithmetic.py",
+      "bytes": 4560,
+      "sha256": "adc3ad2728ceebd1787b2c411fcf997b8b5c3d42027f408b9593b69f1bc5b040"
+    },
+    {
+      "path": "probes/storage_boundary.py",
+      "bytes": 1326,
+      "sha256": "138da102790dc642b691c6cf97c01f42a9d5e7477ad96cfaa82341bc7c7097da"
+    },
+    {
+      "path": "probes/verify_lineage.py",
+      "bytes": 2313,
+      "sha256": "8a844ce6e52cafa599d6af37656727c823fbe43c85c5036221f68dd685688aa2"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "validated_at": "2026-10-25T12:06:53-04:00",
+  "commands": [
+    "python3 docs/research/continuity/probes/reproduce_hanoi_arithmetic.py --hanoi-root /private/tmp/t81-continuity-sources/Hanoi --output-dir /private/tmp/t81-continuity-probe",
+    "python3 docs/research/continuity/probes/verify_lineage.py --foundation-root /private/tmp/t81-research-continuity --hanoi-root /private/tmp/t81-continuity-sources/Hanoi --lang-root /private/tmp/t81-continuity-sources/t81-lang",
+    "python3 docs/research/continuity/probes/storage_boundary.py",
+    "make -n all (Hanoi root, exit 2; no full build performed)",
+    "/private/tmp/t81-lychee-bin/lychee --offline --no-progress --root-dir /private/tmp/t81-research-continuity --format markdown --output /private/tmp/t81-continuity-links.md docs/research/continuity/*.md"
+  ],
+  "results": {
+    "isolated_probe_collection": "completed; candidate arithmetic fails",
+    "lineage": "two byte identities and 41 ancestor-scoped shared blobs verified",
+    "storage": "exact finite-cost assertions and deterministic rerun verified",
+    "register": "8 stable IDs, required fields, JSON parsing, 28 source commit/path references verified",
+    "original_charter": "byte-identical to user attachment",
+    "local_links": "10 successful, 3 external excluded in offline mode, zero errors; no HTTP success claimed",
+    "scope": "no production build, timing benchmark, complete CWEB build, RTL simulation or physical measurement"
+  },
+  "limitations": [
+    "Referenced PDF, two historical transcripts and original mathematics paper unavailable",
+    "Source dates are recorded metadata, not proof of invention date",
+    "Historical H04 semantic domains unresolved",
+    "Selected four-arm trace experiment not implemented"
+  ],
+  "diff_whitespace_check": {
+    "all_paths": "flags original charter lines 3 and 4: intentional two-space Markdown hard breaks preserved from user input",
+    "exception": "only the byte-preserved charter archive; no repository whitespace rule changed",
+    "other_added_paths": "checked separately before commit"
+  }
+}

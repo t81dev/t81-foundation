@@ -1,0 +1,54 @@
+{
+  "addition_cases": 547,
+  "addition_failures": 422,
+  "negative_one_plus_zero": [
+    2,
+    0,
+    0
+  ],
+  "multiplication_cases": 201,
+  "multiplication_failures": 140,
+  "three_times_one": [
+    0,
+    0,
+    0
+  ],
+  "negation_cases": 27,
+  "negation_failures": 0,
+  "source_commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+  "source_path": "src/ternary_arithmetic_optimization.cweb",
+  "extracted_sections": [
+    {
+      "name": "ternary_addition",
+      "line": 82,
+      "sha256": "1ad998d1482a27d03bcafe14e13bb9550d177062c8a729441eab2500acee5c20"
+    },
+    {
+      "name": "ternary_multiplication",
+      "line": 100,
+      "sha256": "2563f304e06ece76a7ae440eaa96794bf10b80e861764e2cb5376761ed3aa14d"
+    },
+    {
+      "name": "ternary_negation",
+      "line": 108,
+      "sha256": "3b148f6a020896165430b39d945dd8ed3f6cc4c3aad878d576ab94df12f6e98c"
+    }
+  ],
+  "source_sha256": "f66cc904891fd22b9b5e43454fc317c3238651af36eaa0649b319c20160fc7bc",
+  "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)",
+  "compile_command": [
+    "clang",
+    "-std=c11",
+    "-O2",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "/private/tmp/t81-continuity-probe/isolated_hanoi_arithmetic.c",
+    "-o",
+    "/private/tmp/t81-continuity-probe/isolated_hanoi_arithmetic"
+  ],
+  "scope": "verbatim isolated functions, balanced inputs, only exact results in [-13,13]; no CWEB module/VM build",
+  "oracle": "ordinary integer addition/multiplication of a+3b+9c; closure in {-1,0,1} required",
+  "candidate_passes": false,
+  "exit_zero_means": "data collection and expected counterexample verification completed"
+}

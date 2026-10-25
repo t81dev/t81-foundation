@@ -1,7 +1,7 @@
 # Research documentation index
 
 Status: Active
-Last Updated: April 2026
+Last Updated: 2026-10-25
 
 ## Purpose
 
@@ -13,6 +13,8 @@ This README is a navigation aid for this directory. It does not change
 specification authority, freeze boundaries, or determinism claim scope.
 
 ## Key Research Consolidations & Decisions
+
+- **[Research continuity charter and hypothesis register](continuity/README.md)** — Current research mission, pinned Hanoi/T81 lineage, isolated arithmetic counterexamples and a selected radix/adaptation discriminator. Historical reports below remain preserved; this packet does not certify implementations or change ISA freezes.
 
 - **[Checked conversion contract proposal](../../experiments/checked_float_contract/README.md)** — Draft numerical semantics, independent bidirectional corpus, compatibility/decision record and bounded plan; no production replacement or new determinism claim.
 

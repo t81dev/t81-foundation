@@ -1,0 +1,397 @@
+{
+  "schema": "t81.research-hypothesis-register.v1",
+  "version": "1.0.0",
+  "as_of": "2026-10-25",
+  "status": "research register, not implementation certification",
+  "source_pins": "evidence/source-pins.json",
+  "evidence_tiers": {
+    "A": "reproduced on pinned source with artifacts (scope explicit)",
+    "B": "source inspected, not executed integration",
+    "C": "historical/user report or AI synthesis not independently verified",
+    "D": "mathematical/model derivation under assumptions",
+    "E": "proposal/speculation"
+  },
+  "entries": [
+    {
+      "id": "H01",
+      "formal_claim": "Equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions.",
+      "earliest_identified_source": {
+        "status": "original invention date unknown; historical PDF unavailable",
+        "earliest_verified_relevant_RTL": {
+          "repository": "t81-hardware",
+          "commit": "3ea4bccf0dfa867cf8186ff886c9d716bb7b96dc",
+          "path": "rtl/core/t81_top.sv",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-hardware/blob/3ea4bccf0dfa867cf8186ff886c9d716bb7b96dc/rtl/core/t81_top.sv#L1"
+        }
+      },
+      "sources": [
+        {
+          "repository": "t81-hardware",
+          "commit": "834521d4e6b37cf8c871b1ac64af449ff6493b7d",
+          "path": "rtl/core/t81_top.sv",
+          "line": 5,
+          "url": "https://github.com/t81dev/t81-hardware/blob/834521d4e6b37cf8c871b1ac64af449ff6493b7d/rtl/core/t81_top.sv#L5"
+        },
+        {
+          "repository": "t81-hardware",
+          "commit": "834521d4e6b37cf8c871b1ac64af449ff6493b7d",
+          "path": "interfaces/isa-contract.md",
+          "line": 9,
+          "url": "https://github.com/t81dev/t81-hardware/blob/834521d4e6b37cf8c871b1ac64af449ff6493b7d/interfaces/isa-contract.md#L9"
+        }
+      ],
+      "baseline": "Optimally packed binary representation of the same M states; same reliability, access and I/O requirements.",
+      "assumptions": [
+        "C2 and C3 have the same physical cost unit",
+        "Include sensing, ECC, control and conversion rather than treating grouping as a physical element"
+      ],
+      "measurement": "Exact ceil(log_b M) counts and sensitivity over measured device costs; area/energy/latency reported separately.",
+      "falsifier": "No cost reduction over matched binary anywhere in the preregistered plausible parameter region, or reduction vanishes with overhead.",
+      "result": "D: ideal threshold derived; M=256 and C3/C2=1.5 gives ternary cost 9 vs binary 8. B: current RTL uses two binary bits per trit and supplies no measured three-state-device advantage.",
+      "evidence_tiers": [
+        "B",
+        "D"
+      ],
+      "confidence": "High for exact arithmetic/source facts; physical advantage open.",
+      "next_action": "Use storage_boundary.py and selected factorial model; require independent device data before physical claims."
+    },
+    {
+      "id": "H02",
+      "formal_claim": "Balanced ternary can improve a specified signed arithmetic or rounding task at equal semantics and cost accounting.",
+      "earliest_identified_source": {
+        "repository": "t81-foundation",
+        "commit": "fe00396831c8bb249fde06a04186fa02f6018caf",
+        "path": "legacy/hanoivm/src/hanoivm_core/ternary_arithmetic_optimization.cweb",
+        "line": 44,
+        "url": "https://github.com/t81dev/t81-foundation/blob/fe00396831c8bb249fde06a04186fa02f6018caf/legacy/hanoivm/src/hanoivm_core/ternary_arithmetic_optimization.cweb#L44"
+      },
+      "sources": [
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/ternary_arithmetic_optimization.cweb",
+          "line": 43,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/ternary_arithmetic_optimization.cweb#L43"
+        },
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/ternary_arithmetic_optimization.cweb",
+          "line": 82,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/ternary_arithmetic_optimization.cweb#L82"
+        },
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/ternary_arithmetic_optimization.cweb",
+          "line": 100,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/ternary_arithmetic_optimization.cweb#L100"
+        }
+      ],
+      "baseline": "Exact integer oracle, competitive binary signed arithmetic and a correct ternary candidate.",
+      "assumptions": [
+        "Candidate must be closed over its advertised digit set",
+        "Representable outputs only; overflow rules explicit"
+      ],
+      "measurement": "Correctness first; then matched carry/depth/work/latency or rounding-error metrics.",
+      "falsifier": "Candidate fails exact arithmetic, or no advantage survives equivalent optimized binary and conversion costs.",
+      "result": "A: isolated current CWEB routines fail balanced positional semantics: addition 422/547; multiplication 140/201; negation 0/27 failures. This rejects these routines as evidence, not balanced ternary mathematics. Multiplication is documented as componentwise; the oracle failure rules it out for positional-integer claims, not for a separately specified vector algebra.",
+      "evidence_tiers": [
+        "A",
+        "B"
+      ],
+      "confidence": "High for isolated reproduction; complete Hanoi integration untested.",
+      "next_action": "Preserve failures; specify domain and correct oracle before any performance comparison; do not rewrite Hanoi."
+    },
+    {
+      "id": "H03",
+      "formal_claim": "Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond equivalent binary packing.",
+      "earliest_identified_source": {
+        "status": "earliest design origin unknown",
+        "early_available_contract": {
+          "repository": "t81-foundation",
+          "commit": "bf6dd85834a010044f59766a6aca8c40ac2ba0b9",
+          "path": "spec/tisc-spec.md",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/bf6dd85834a010044f59766a6aca8c40ac2ba0b9/spec/tisc-spec.md#L1"
+        }
+      },
+      "sources": [
+        {
+          "repository": "t81lib",
+          "commit": "995ea70796259a8f9c5f265a6cb3084143e2b949",
+          "path": "include/t81/core/limb.hpp",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81lib/blob/995ea70796259a8f9c5f265a6cb3084143e2b949/include/t81/core/limb.hpp#L1"
+        },
+        {
+          "repository": "t81-foundation",
+          "commit": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+          "path": "include/t81/tensor.hpp",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/f6d4d680709c5c6c98b305628e04346f5ef61620/include/t81/tensor.hpp#L1"
+        }
+      ],
+      "baseline": "Ungrouped ternary, binary bit-packed and binary limb representations with equal value domains.",
+      "assumptions": [
+        "81=3^4 is grouping, not a free 81-level device",
+        "Indexing, padding, decode and conversion charged"
+      ],
+      "measurement": "Storage bytes and end-to-end operation cost with grouping ablation.",
+      "falsifier": "A matched packed-binary implementation removes the apparent benefit or grouping overhead dominates.",
+      "result": "D: four-trit grouping established. B: grouped numeric/data surfaces exist; no grouping-specific performance advantage reproduced in this session.",
+      "evidence_tiers": [
+        "B",
+        "D"
+      ],
+      "confidence": "High for identity; benefit open.",
+      "next_action": "Keep mathematical grouping distinct from kernel speed and physical storage; isolate grouping in a later ablation."
+    },
+    {
+      "id": "H04",
+      "formal_claim": "An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload.",
+      "earliest_identified_source": {
+        "legacy_promotion": {
+          "repository": "t81-foundation",
+          "commit": "fe00396831c8bb249fde06a04186fa02f6018caf",
+          "path": "legacy/hanoivm/src/hanoivm_core/hvm_promotion.cweb",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/fe00396831c8bb249fde06a04186fa02f6018caf/legacy/hanoivm/src/hanoivm_core/hvm_promotion.cweb#L1"
+        },
+        "current_scheduler_first_available_commit": {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/tier_scheduler.cweb",
+          "line": 37,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/tier_scheduler.cweb#L37"
+        }
+      },
+      "sources": [
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/tier_scheduler.cweb",
+          "line": 37,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/tier_scheduler.cweb#L37"
+        },
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/hvm_promotion.cweb",
+          "line": 40,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/hvm_promotion.cweb#L40"
+        },
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/hanoivm_vm.cweb",
+          "line": 41,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/hanoivm_vm.cweb#L41"
+        },
+        {
+          "repository": "t81-foundation",
+          "commit": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+          "path": "vm/tier_limits.cpp",
+          "line": 29,
+          "url": "https://github.com/t81dev/t81-foundation/blob/f6d4d680709c5c6c98b305628e04346f5ef61620/vm/tier_limits.cpp#L29"
+        }
+      ],
+      "baseline": "Fixed binary, adaptive binary, fixed ternary, adaptive ternary; identical domains, predictor information and conversion accounting.",
+      "assumptions": [
+        "Original 81/243/729 labels do not establish bit widths or equivalent domains",
+        "Entropy/depth heuristic and promotion logic are distinct source mechanisms",
+        "Modern Tier0..Tier6 resource limits are not proof of the historical scheduler"
+      ],
+      "measurement": "Factorial radix/adaptation contrasts; storage, selection, switching and conversion reported separately before any dimensionally valid aggregate model.",
+      "falsifier": "No advantage over adaptive binary, effect is equally explained by adaptation, or correctness/transition costs remove it.",
+      "result": "B: scheduler thresholds >40/>100 and AI substring; promotion uses enum 0/1/2 with depth>10/tensor trigger. No verified mapping from tier_mode to mode or equivalent semantic domains; original H04 remains under-specified.",
+      "evidence_tiers": [
+        "B"
+      ],
+      "confidence": "High for source facts; optimization/integration unproven.",
+      "next_action": "Select H04-R01 capacity-trace discriminator as a declared refinement, not a reconstruction of working Hanoi semantics."
+    },
+    {
+      "id": "H05",
+      "formal_claim": "A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation.",
+      "earliest_identified_source": {
+        "earliest_origin": "not established",
+        "available_primitive_source": {
+          "repository": "t81-hardware",
+          "commit": "3ea4bccf0dfa867cf8186ff886c9d716bb7b96dc",
+          "path": "rtl/core/t81_top.sv",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-hardware/blob/3ea4bccf0dfa867cf8186ff886c9d716bb7b96dc/rtl/core/t81_top.sv#L1"
+        }
+      },
+      "sources": [
+        {
+          "repository": "t81-hardware",
+          "commit": "834521d4e6b37cf8c871b1ac64af449ff6493b7d",
+          "path": "rtl/core/t81_top.sv",
+          "line": 11,
+          "url": "https://github.com/t81dev/t81-hardware/blob/834521d4e6b37cf8c871b1ac64af449ff6493b7d/rtl/core/t81_top.sv#L11"
+        },
+        {
+          "repository": "Hanoi",
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "path": "src/hanoivm_vm.cweb",
+          "line": 241,
+          "url": "https://github.com/t81dev/Hanoi/blob/59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/hanoivm_vm.cweb#L241"
+        }
+      ],
+      "baseline": "Boolean synthesis for exactly the same function, I/O states, throughput and reliability.",
+      "assumptions": [
+        "A two-bit binary comparator can encode three outcomes",
+        "Saturating single-trit ADD differs from positional multi-trit addition"
+      ],
+      "measurement": "Gate count/depth, mapped area/energy and input/output conversion under a common process.",
+      "falsifier": "Equivalent Boolean synthesis matches or beats claimed cost, or semantics differ.",
+      "result": "B: hardware repo implements eight operations over signed two-bit trit signals; CMP3 handler in the Hanoi table is null. No physical or synthesis comparison reproduced.",
+      "evidence_tiers": [
+        "B"
+      ],
+      "confidence": "Source inspection only; architectural benefit open.",
+      "next_action": "Formalize one operation truth table before any new ISA or hardware extension."
+    },
+    {
+      "id": "H06",
+      "formal_claim": "Ternary weights or activations can improve accuracy-constrained inference versus equally optimized binary low-bit alternatives.",
+      "earliest_identified_source": {
+        "earliest_invention": "not established from unavailable historical records",
+        "verified_relevant_source": {
+          "repository": "t81lib",
+          "commit": "995ea70796259a8f9c5f265a6cb3084143e2b949",
+          "path": "src/linalg/gemm_cpu.cpp",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81lib/blob/995ea70796259a8f9c5f265a6cb3084143e2b949/src/linalg/gemm_cpu.cpp#L1"
+        }
+      },
+      "sources": [
+        {
+          "repository": "t81lib",
+          "commit": "995ea70796259a8f9c5f265a6cb3084143e2b949",
+          "path": "src/linalg/gemm_cpu.cpp",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81lib/blob/995ea70796259a8f9c5f265a6cb3084143e2b949/src/linalg/gemm_cpu.cpp#L1"
+        },
+        {
+          "repository": "t81lib",
+          "commit": "995ea70796259a8f9c5f265a6cb3084143e2b949",
+          "path": "README.md",
+          "line": 32,
+          "url": "https://github.com/t81dev/t81lib/blob/995ea70796259a8f9c5f265a6cb3084143e2b949/README.md#L32"
+        },
+        {
+          "repository": "t81-foundation",
+          "commit": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+          "path": "docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/f6d4d680709c5c6c98b305628e04346f5ef61620/docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md#L1"
+        }
+      ],
+      "baseline": "Matched INT8/low-bit kernels and models at equal task accuracy, bandwidth and batching.",
+      "assumptions": [
+        "README speedups are claims, not independent observations",
+        "Separate compression, arithmetic, bandwidth and accuracy effects"
+      ],
+      "measurement": "Task accuracy, memory footprint and measured latency/energy with matched kernels and conversion.",
+      "falsifier": "Equivalent optimized baseline removes speed/size advantage at equal accuracy.",
+      "result": "B: implementations and C: prior reports exist. No inference benchmark, model accuracy or device energy independently reproduced here.",
+      "evidence_tiers": [
+        "B",
+        "C"
+      ],
+      "confidence": "No new performance confidence assigned.",
+      "next_action": "Audit existing artifact/model provenance before designing a bounded kernel/model experiment."
+    },
+    {
+      "id": "H07",
+      "formal_claim": "Representation-independent governed execution can improve a defined auditability property.",
+      "earliest_identified_source": {
+        "early_policy_source": {
+          "repository": "t81-foundation",
+          "commit": "649e235c60c1b269449d5a8419e6ced902a755b2",
+          "path": "src/axion/policy_engine.cpp",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/649e235c60c1b269449d5a8419e6ced902a755b2/src/axion/policy_engine.cpp#L1"
+        }
+      },
+      "sources": [
+        {
+          "repository": "t81-foundation",
+          "commit": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+          "path": "kernel/axion/policy_engine.cpp",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/f6d4d680709c5c6c98b305628e04346f5ef61620/kernel/axion/policy_engine.cpp#L1"
+        },
+        {
+          "repository": "t81-vm",
+          "commit": "4e2bba639d05249722db847563ae37991289ea52",
+          "path": "src/vm/loader.cpp",
+          "line": 11,
+          "url": "https://github.com/t81dev/t81-vm/blob/4e2bba639d05249722db847563ae37991289ea52/src/vm/loader.cpp#L11"
+        },
+        {
+          "repository": "t81-vm",
+          "commit": "4e2bba639d05249722db847563ae37991289ea52",
+          "path": "docs/foundation-migration.md",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-vm/blob/4e2bba639d05249722db847563ae37991289ea52/docs/foundation-migration.md#L1"
+        }
+      ],
+      "baseline": "Conventional runtime plus explicit authorization/evidence boundary; equal threat model and host trust.",
+      "assumptions": [
+        "Authorization, evidence integrity, factual validity and consent are different",
+        "No inference-security or malicious-host claims from simulated dispatch"
+      ],
+      "measurement": "Replay/tamper/revocation and pre-side-effect denial with trustworthy test execution.",
+      "falsifier": "Conventional baseline meets the same defined property at lower cost, or evidence/authorization bypass is reproduced.",
+      "result": "Separate engineering track. PRs #565/#566 remain open/draft: both CodeQL pass, required quality gate fails. Existing source/test reports are not a new independent security certification here.",
+      "evidence_tiers": [
+        "B",
+        "C"
+      ],
+      "confidence": "Current PR metadata checked; prior security tests not rerun in this session.",
+      "next_action": "Maintain the bounded CI/security investigation separately; Protocol 001 remains NOT READY."
+    },
+    {
+      "id": "H08",
+      "formal_claim": "AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process.",
+      "earliest_identified_source": {
+        "source": "User-supplied Master Continuity Charter v1.0; earlier prompt provenance not available"
+      },
+      "sources": [
+        {
+          "repository": "t81-foundation",
+          "commit": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+          "path": "docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md",
+          "line": 1,
+          "url": "https://github.com/t81dev/t81-foundation/blob/f6d4d680709c5c6c98b305628e04346f5ef61620/docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md#L1"
+        }
+      ],
+      "baseline": "Human-only or alternative-assisted work under matched tasks and independent verification.",
+      "assumptions": [
+        "Commit authorship does not prove prompt provenance",
+        "Repeated model summaries are not independent verification"
+      ],
+      "measurement": "Claim error rates, reproduction yield, correction costs and provenance completeness.",
+      "falsifier": "No improvement under controlled comparison, or benefits depend on unverified generated claims.",
+      "result": "This session records source claims, independent extraction probes and mathematical derivation separately; it is not a controlled study of AI productivity.",
+      "evidence_tiers": [
+        "C",
+        "E"
+      ],
+      "confidence": "Researcher intent authoritative; comparative benefit untested.",
+      "next_action": "Append session handoffs and preserve failed claims rather than rewriting the narrative."
+    }
+  ],
+  "selected_refinement": {
+    "id": "H04-R01",
+    "parent": "H04",
+    "specification": "H04_RADIX_ADAPTATION_DISCRIMINATOR.md",
+    "status": "selected specification, not implemented or benchmarked",
+    "reason": "separate radix from adaptive precision; no new VM/scheduler; original Hanoi tier semantics remain unresolved"
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "checked_at": "2026-10-25T12:03:15-04:00",
+  "action": "read-only status refresh; no CI/PR mutation",
+  "pull_requests": {
+    "565": {
+      "head": "736e4fd9754936b4851564881cfb244e359d916e",
+      "state": "OPEN",
+      "draft": true,
+      "merged_at": null,
+      "required_checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-25T02:35:05Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/t81dev/t81-foundation/actions/runs/40150754516/job/121041642620",
+          "name": "Analyze (cpp)",
+          "startedAt": "2026-10-25T01:28:25Z",
+          "status": "COMPLETED",
+          "workflowName": "CodeQL"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-25T01:28:51Z",
+          "conclusion": "FAILURE",
+          "detailsUrl": "https://github.com/t81dev/t81-foundation/actions/runs/40150754534/job/121041719282",
+          "name": "quality gate / required",
+          "startedAt": "2026-10-25T01:28:49Z",
+          "status": "COMPLETED",
+          "workflowName": "T81 Foundation CI"
+        }
+      ]
+    },
+    "566": {
+      "head": "5bfe915531f0629b3dabb15cda6c374fe86945a0",
+      "state": "OPEN",
+      "draft": true,
+      "merged_at": null,
+      "required_checks": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-25T14:49:25Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/t81dev/t81-foundation/actions/runs/40198913930/job/121185674579",
+          "name": "Analyze (cpp)",
+          "startedAt": "2026-10-25T13:43:25Z",
+          "status": "COMPLETED",
+          "workflowName": "CodeQL"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-25T14:22:23Z",
+          "conclusion": "FAILURE",
+          "detailsUrl": "https://github.com/t81dev/t81-foundation/actions/runs/40198913954/job/121194676284",
+          "name": "quality gate / required",
+          "startedAt": "2026-10-25T14:22:19Z",
+          "status": "COMPLETED",
+          "workflowName": "T81 Foundation CI"
+        }
+      ]
+    }
+  },
+  "protocol_001": "NOT READY; unchanged"
+}

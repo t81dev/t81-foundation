@@ -1,0 +1,77 @@
+{
+  "recorded_at": "2026-10-25T11:53:21-04:00",
+  "repositories": {
+    "Hanoi": {
+      "url": "https://github.com/t81dev/Hanoi",
+      "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+      "commit_record": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3 2026-10-25T10:36:46-04:00 2026-10-25T10:36:46-04:00 Initial",
+      "reachable_commits": 1,
+      "root_commits": [
+        {
+          "commit": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+          "record": "2026-10-25T10:36:46-04:00 Initial"
+        }
+      ]
+    },
+    "t81-foundation": {
+      "url": "https://github.com/t81dev/t81-foundation",
+      "commit": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+      "commit_record": "f6d4d680709c5c6c98b305628e04346f5ef61620 2026-10-24T18:34:41-04:00 2026-10-24T18:34:41-04:00 Merge pull request #563 from t81dev/docs/research-protocol-001-corrections-12664850865098082831",
+      "reachable_commits": 4257,
+      "root_commits": [
+        {
+          "commit": "049d1d929d3558deac4b68a1bcc2cfdeb6128359",
+          "record": "2025-11-21T17:25:00-05:00 Initial commit"
+        }
+      ]
+    },
+    "t81-lang": {
+      "url": "https://github.com/t81dev/t81-lang",
+      "commit": "bcce8e729595df8fdcf92ad81c0c751fe0d928d6",
+      "commit_record": "bcce8e729595df8fdcf92ad81c0c751fe0d928d6 2026-02-09T15:17:54-05:00 2026-02-09T15:17:54-05:00 feat(lang): add compile-verified core datatype teaching track (00-20)",
+      "reachable_commits": 23,
+      "root_commits": [
+        {
+          "commit": "dc9ec92044876651aa2531b2879413285b388961",
+          "record": "2026-02-08T11:04:23-05:00 Initial"
+        }
+      ]
+    },
+    "t81-vm": {
+      "url": "https://github.com/t81dev/t81-vm",
+      "commit": "4e2bba639d05249722db847563ae37991289ea52",
+      "commit_record": "4e2bba639d05249722db847563ae37991289ea52 2026-02-08T20:49:16-05:00 2026-02-08T20:49:16-05:00 docs(rfc): start runtime-contract-v0.6 planning lane",
+      "reachable_commits": 36,
+      "root_commits": [
+        {
+          "commit": "b7a117eccd84a448bdb00c7335208f232e0faaec",
+          "record": "2026-02-08T11:05:49-05:00 Initial commit"
+        }
+      ]
+    },
+    "t81lib": {
+      "url": "https://github.com/t81dev/t81lib",
+      "commit": "995ea70796259a8f9c5f265a6cb3084143e2b949",
+      "commit_record": "995ea70796259a8f9c5f265a6cb3084143e2b949 2026-02-08T18:28:22-05:00 2026-02-08T18:28:22-05:00 docs: add phase-1 quantization hardening gate",
+      "reachable_commits": 99,
+      "root_commits": [
+        {
+          "commit": "87e480c5fae5082aa5807bb0bd28d836b9c9d478",
+          "record": "2025-12-09T17:00:28-05:00 Initial import of t81lib skeleton"
+        }
+      ]
+    },
+    "t81-hardware": {
+      "url": "https://github.com/t81dev/t81-hardware",
+      "commit": "834521d4e6b37cf8c871b1ac64af449ff6493b7d",
+      "commit_record": "834521d4e6b37cf8c871b1ac64af449ff6493b7d 2026-10-25T11:37:26Z 2026-10-25T11:37:26Z chore: refresh t81dev ecosystem snapshot",
+      "reachable_commits": 258,
+      "root_commits": [
+        {
+          "commit": "0e693f8bb71a8441ee5ab14bf96a3d918086bd7c",
+          "record": "2026-02-08T08:59:19-05:00 Initial commit"
+        }
+      ]
+    }
+  }
+}

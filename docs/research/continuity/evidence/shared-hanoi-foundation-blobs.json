@@ -1,0 +1,289 @@
+[
+  {
+    "hanoi_path": "docs/T81RegisterInfo.td",
+    "blob": "b215c6257e01ab180bfbda78e17d1e5a102e06b0",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/T81RegisterInfo.td"
+    ]
+  },
+  {
+    "hanoi_path": "src/FrameSceneBuilder.cweb",
+    "blob": "d6910de9db783ac189434929d3f5b617d1f01d24",
+    "foundation_paths": [
+      "legacy/hanoivm/src/visualization/FrameSceneBuilder.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/README.cweb",
+    "blob": "a0fd400798fc6c3eea7c65ecb6ef0d7096a4f76c",
+    "foundation_paths": [
+      "legacy/hanoivm/docs/README.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/ai_hook.cweb",
+    "blob": "fb2eb8e8397c5733a23f790b760fa36114231220",
+    "foundation_paths": [
+      "legacy/hanoivm/src/axion_ai/ai_hook.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/build-all.cweb",
+    "blob": "283a1f57d5d8b80614c14e47f1f849de7f60485d",
+    "foundation_paths": [
+      "legacy/hanoivm/scripts/build-all.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/hvm-trit-util.cweb",
+    "blob": "d4901ac85f2370078623e040d5002285f202298a",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/hvm-trit-util.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/main_driver.cweb",
+    "blob": "ede5aa506bc66842dff9f2926b4fb043042b3b39",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/main_driver.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/meta.cweb",
+    "blob": "31ea5b9cf4e5230c8a67486df986d94b6396344d",
+    "foundation_paths": [
+      "legacy/hanoivm/src/axion_ai/meta.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/nist_encryption.cweb",
+    "blob": "8f2ec9c365ca4d0a26e54c7b0dd5e9e04c842686",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/nist_encryption.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/recursive_tier_execution.cweb",
+    "blob": "d227eb224b8a87ce52088bbf84f88cccb0bfce16",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/recursive_tier_execution.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/simple_add.cweb",
+    "blob": "9355c0bdd756c94a1161151406013fa4ed3897c5",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/simple_add.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t243_to_t729.cweb",
+    "blob": "f4a33bc4572cfe7ab510b97057ae49503b235e44",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t243_to_t729.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t243bigint.cweb",
+    "blob": "1da128f4ea82beec666221fa2778aa1a1d7688b6",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t243bigint.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t729tensor.cweb",
+    "blob": "88f37df3a776af821057c21cdf0e30324ee3d878",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t729tensor.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t729tensor_loader.cweb",
+    "blob": "8ac92d992077f8f145038a73ed6826666beec67b",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t729tensor_loader.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t729tensor_reshape.cweb",
+    "blob": "fc3af8555f09f7b88927df3fe9bd3830711a42e4",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t729tensor_reshape.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t729tensor_slice.cweb",
+    "blob": "2539cd42b9ced4f10a0d53792f67aab148a6bb4e",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t729tensor_slice.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t729tensor_to_string.cweb",
+    "blob": "5bcc41f1354aa3f9eceb08abdc8cbee0e4a16ec3",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t729tensor_to_string.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t729tensor_transpose.cweb",
+    "blob": "43c7b678493acbb28e8a431d931ff2237c408d26",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t729tensor_transpose.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81_codegen.cweb",
+    "blob": "13c7c7e52c494dc4a785c21e98aa81b13d6e355d",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81_codegen.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81_llvm_backend.cweb",
+    "blob": "9e9aa70402f58dce4661351715f6a4d7eed597c9",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81_llvm_backend.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81_patterns.cweb",
+    "blob": "928440bfe4a1816a0fa102a36d09774cf265b276",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/t81_patterns.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81_stack.cweb",
+    "blob": "562bebd16b32737219b93b49f2638175ded26b13",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/t81_stack.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81_to_hvm.cweb",
+    "blob": "3616b3acabd01d0f1d9b73260a03bede6f77f7e9",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81_to_hvm.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81_types_support.cweb",
+    "blob": "827245c5958c631a090474874f1c35a1e8779bc4",
+    "foundation_paths": [
+      "legacy/hanoivm/src/lib/t81_types_support.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81asm.cweb",
+    "blob": "1efadcaf9b1e8a0afe64a7d4b32b04426e12ca93",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81asm.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81lang_compiler.cweb",
+    "blob": "d6853ebe2cac2fe373bc1d7eb201ef4dc0799642",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81lang_compiler.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81lang_grammar.cweb",
+    "blob": "9b47a31f27acb1aeec128e347dc5161d67cd47cf",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81lang_grammar.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81lang_irgen.cweb",
+    "blob": "9622f001baf9f19b49c9475ea67fbd9953191a21",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81lang_irgen.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81lang_lexer.cweb",
+    "blob": "5f16e8a3cc7759d767022c1b8006caae48de3ccc",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81lang_lexer.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81lang_parser.cweb",
+    "blob": "1ab1d3697f379593e54b3dd07206514b947d90b2",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81lang_parser.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81lang_semantic.cweb",
+    "blob": "4677e45d9172ea6991757b39aedfae368dad0402",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/t81lang_semantic.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81recursion.cweb",
+    "blob": "d9a0d3301ebc5820b7997db5d09965414ad65883",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/t81recursion.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/t81recursion.h",
+    "blob": "cfc133c539aaca6e9b3811f39db0f8db89f551c3",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/t81recursion.h"
+    ]
+  },
+  {
+    "hanoi_path": "src/telemetry-cli.cweb",
+    "blob": "28071a21319c206a8e2583a783a151ea68f39f8f",
+    "foundation_paths": [
+      "legacy/hanoivm/src/axion_ai/telemetry-cli.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/ternary_base.h",
+    "blob": "429697352e010f6351c939d0d5819f06f85dadbb",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/ternary_base.h"
+    ]
+  },
+  {
+    "hanoi_path": "src/tisc_backend.cweb",
+    "blob": "8b2822f0d0ffff225ae16305664aa2253e2deb31",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/tisc_backend.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/tisc_compiler.cweb",
+    "blob": "4df6d866ab9aeb49f5d61c2bb7f3996aa5a16166",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/tisc_compiler.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/tisc_ir.cweb",
+    "blob": "30178b5d126791026d0ae9a7c9b9638830318656",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/tisc_ir.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/tisc_stdlib.cweb",
+    "blob": "1cb90958ecd99944fb25584cdc9073d911eca8fa",
+    "foundation_paths": [
+      "legacy/hanoivm/src/t81lang_compiler/tisc_stdlib.cweb"
+    ]
+  },
+  {
+    "hanoi_path": "src/write_simple_add.cweb",
+    "blob": "cd4b5368c548e50d0a1cd43dde02ec03678067d7",
+    "foundation_paths": [
+      "legacy/hanoivm/src/hanoivm_core/write_simple_add.cweb"
+    ]
+  }
+]
