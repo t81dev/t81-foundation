@@ -1,45 +1,30 @@
-# H04-R02 Verification and Reproduction Guide
+# H04-R02 Verification and Reproduction Instructions
 
 **Document ID:** `experiments/h04_r02_adaptive_representation/VERIFICATION.md`
-**Date:** October 2026
-**Status:** Complete / Final Research Packet
+**Date:** October 2026 (Audit Corrected)
 
 ---
 
-## 1. Environment & Toolchain
+## 1. Reproduction Instructions from Merged Source
 
-- **OS / Platform:** Linux x86_64 / Debian Sandbox
-- **Compiler:** GCC / Clang with C++17 support (`-std=c++17`)
-- **Build System:** CMake 3.16+ / Ninja
-- **Python:** Python 3.12+
-
----
-
-## 2. Reproduction Commands
-
-From a clean checkout at commit `aecb71c3b9af2979d31051c38d071178e143b3a3`:
+To reproduce the corrected H04-R02 audit verification suite directly from the merged source:
 
 ```bash
-# 1. Configure CMake build directory with test targets enabled
-cmake -S . -B build -G Ninja -DT81_BUILD_TESTS=ON
-
-# 2. Compile H04-R02 experiment binary
+# 1. Build the adaptive experiment C++ executable and tests
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build --target t81_h04_r02_adaptive
 
-# 3. Execute H04-R02 CTest target suite
-ctest --test-dir build -R h04_r02 --output-on-failure
+# 2. Run the CTest experiment suite (C++ evaluator, Python oracle, Audit regression tests)
+ctest --test-dir build --output-on-failure -R h04_r02
 
-# 4. Run standalone independent optimization oracle
-python3 experiments/h04_r02_adaptive_representation/oracle.py
-
-# 5. Run full research regressions suite
-python3 scripts/ci/run_research_regressions.py --build-dir build
+# 3. Directly run the standalone audit regression test suite
+python3 tests/ci/h04_r02_audit_regression_test.py
 ```
 
 ---
 
-## 3. Expected Test Outcomes
+## 2. Verification Targets
 
-- `t81_h04_r02_adaptive_test`: **PASSED**
-- `t81_h04_r02_oracle_test`: **PASSED**
-- `scripts/ci/run_research_regressions.py`: **8/8 PASSED (100%)**
+1. `t81_h04_r02_adaptive_test`: C++ evaluator generating JSON trace ledgers.
+2. `t81_h04_r02_oracle_test`: Python independent DP oracle verification script.
+3. `t81_h04_r02_audit_regression_test`: Audit regression suite verifying DEF-01 through DEF-07 fixes.

@@ -176,8 +176,8 @@ class IndependentOracle:
 
         dp = [{} for _ in range(n)]
 
-        # Metadata in ternary (scaled by symbol ratio)
-        meta_base = self.metadata_bits * self.c3_over_c2
+        # Metadata in ternary (uncorrupted: 2 bits = 2.0 cost, independent of C3/C2)
+        meta_base = self.metadata_bits
 
         for t in range(req_tiers[0], 4):
             cost = (
@@ -218,7 +218,7 @@ class IndependentOracle:
 
         symbol_slots = sum(TERNARY_TRITS[t] for t in best_final_seq)
         meta_cost = (
-            sum(1 for i in range(n) if i % self.block_size == 0) * meta_base
+            sum(1 for i in range(n) if i % self.block_size == 0) * self.metadata_bits
         )
         trans_count = sum(
             1 for i in range(1, n) if best_final_seq[i] != best_final_seq[i - 1]

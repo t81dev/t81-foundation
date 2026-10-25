@@ -16,4 +16,8 @@ if(T81_BUILD_TESTS)
   add_test(NAME t81_h04_r02_oracle_test
     COMMAND Python3::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/oracle.py
   )
+
+  add_test(NAME t81_h04_r02_audit_regression_test
+    COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/tests/ci/h04_r02_audit_regression_test.py
+  )
 endif()

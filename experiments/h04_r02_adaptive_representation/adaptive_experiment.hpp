@@ -53,14 +53,14 @@ struct TierLimits {
     -364LL,
     -88573LL,
     -5230176601LL,
-    -9223372036854775807LL - 1LL
+    -9223372036854775807LL - 1LL // Standard 64-bit domain boundary; 41 trits covers -18236498188585393201LL
   };
 
   static constexpr int64_t ternary_max[4] = {
     364LL,
     88573LL,
     5230176601LL,
-    9223372036854775807LL
+    9223372036854775807LL // Standard 64-bit domain boundary; 41 trits covers 18236498188585393201LL
   };
 
   static int get_binary_tier(int64_t val) {
@@ -144,12 +144,10 @@ class Evaluator {
       ledger.tier_sequence.push_back(current_tier);
 
       // Metadata cost (charged per block)
+      // Uncorrupted metadata accounting: metadata bits represent control bits (00, 01, 10, 11), not trits.
       if (arm == Arm::AB || arm == Arm::AT) {
         if (i % static_cast<size_t>(params.block_size) == 0) {
           double meta = params.metadata_bits_per_block;
-          if (arm == Arm::AT) {
-            meta *= params.symbol_cost_ratio;
-          }
           ledger.metadata_cost += meta;
         }
       }
