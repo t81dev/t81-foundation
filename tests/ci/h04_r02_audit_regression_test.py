@@ -34,22 +34,37 @@ class TestH04R02AuditRegressions(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Locate or build C++ binary
+        # Parse optional --bin-path from sys.argv
+        bin_arg = None
+        for i, arg in enumerate(sys.argv):
+            if arg == "--bin-path" and i + 1 < len(sys.argv):
+                bin_arg = sys.argv[i + 1]
+                break
+
         cls.build_dir = os.path.join(REPO_ROOT, "build")
-        cls.bin_path = os.path.join(
-            cls.build_dir,
-            "experiments",
-            "h04_r02_adaptive_representation",
-            "t81_h04_r02_adaptive",
-        )
-        cls.json_path = os.path.join(cls.build_dir, "h04_r02_audit_results.json")
+
+        if bin_arg and os.path.exists(bin_arg):
+            cls.bin_path = bin_arg
+        else:
+            # Search for binary in build directories or walk repo
+            cls.bin_path = os.path.join(
+                cls.build_dir,
+                "experiments",
+                "h04_r02_adaptive_representation",
+                "t81_h04_r02_adaptive",
+            )
+            if not os.path.exists(cls.bin_path):
+                # Search walking REPO_ROOT
+                bin_name = "t81_h04_r02_adaptive"
+                for root, _, files in os.walk(REPO_ROOT):
+                    if bin_name in files or (bin_name + ".exe") in files:
+                        cls.bin_path = os.path.join(root, bin_name if bin_name in files else bin_name + ".exe")
+                        break
 
         if not os.path.exists(cls.bin_path):
-            subprocess.run(
-                ["cmake", "--build", cls.build_dir, "--target", "t81_h04_r02_adaptive"],
-                check=True,
-                capture_output=True,
-            )
+            raise FileNotFoundError(f"C++ binary not found at {cls.bin_path}")
+
+        cls.json_path = os.path.join(os.path.dirname(cls.bin_path), "h04_r02_audit_results.json")
 
         # Execute C++ executable and output JSON
         res = subprocess.run(

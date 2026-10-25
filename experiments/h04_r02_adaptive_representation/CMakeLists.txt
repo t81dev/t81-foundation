@@ -18,6 +18,6 @@ if(T81_BUILD_TESTS)
   )
 
   add_test(NAME t81_h04_r02_audit_regression_test
-    COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/tests/ci/h04_r02_audit_regression_test.py
+    COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/tests/ci/h04_r02_audit_regression_test.py --bin-path $<TARGET_FILE:t81_h04_r02_adaptive>
   )
 endif()
