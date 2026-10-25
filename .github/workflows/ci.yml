@@ -1,1540 +1,406 @@
-name: T81 Foundation CI
-
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: "0 3 * * *"
-  workflow_dispatch:
-
+# Audit-only native reproduction harness. Never merge into main.
+---
+name: PR566 exact-main failure reproduction
+run-name: PR566 baseline / main f6d4d680
+'on':
+  workflow_dispatch: {}
 permissions:
   contents: read
   actions: read
   checks: read
-
 jobs:
-  ############################################################################
-  # JOB: spec-and-docs
-  ############################################################################
-  spec-and-docs:
-    name: " lint / spec & docs "
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Set up Python 3.12
-        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
-        with:
-          python-version: "3.12"
-          cache: "pip"
-
-      - name: Start log capture
-        run: mkdir -p .github/logs && echo "--- Starting log capture ---" > .github/logs/spec-and-docs.log
-
-      - name: Install Python tools
-        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Check Markdown links (lychee)
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
-        with:
-          lycheeVersion: v0.18.1
-          fail: true
-          args: >-
-            --verbose --no-progress
-            --root-dir ${{ github.workspace }}
-            --exclude "http://localhost*"
-            --exclude "https://github.com/t81dev/t81-foundation/edit*"
-            --exclude "https://github.com/t81dev/t81-foundation/stargazers"
-            --exclude "https://www.mdpi.com/*"
-            --exclude "https://fossies.org/*"
-            --exclude "https://github.com/ggerganov/*"
-            --exclude "https://www.researchgate.net/*"
-            --exclude "https://medium.com/*"
-            --exclude "https://t81dev.medium.com/*"
-            --exclude "https://www.reddit.com/*"
-            .github/**/*.md spec/**/*.md docs/**/*.md README.md CONTRIBUTING.md
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: lychee
-
-      - name: Verify repository structure
-        run: |
-          set -euo pipefail
-          required_dirs=("spec" "docs" "include/t81" "vm" "tests")
-          for d in "${required_dirs[@]}"; do
-            [ -d "$d" ] || { echo "::error::Missing required directory: $d"; exit 1; }
-          done
-          echo "All required directories present." 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Verify ARCHITECTURE.md target table matches CMake
-        run: python3 scripts/ci/check_architecture_targets.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Verify TISC v1.1.0 Freeze Integrity
-        run: python3 scripts/ci/check_tisc_freeze_integrity.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Enforce AI experiment sandbox boundary (RFC-00A0)
-        run: python3 scripts/ci/check_ai_experiment_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Enforce architecture coherence invariants
-        run: python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Enforce workflow action pinning policy
-        run: |
-          python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Enforce workflow permissions policy
-        run: |
-          python3 scripts/ci/audit_workflow_permissions.py --max-missing 0 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Run governance policy structure/license/artifact checks
-        run: |
-          python3 scripts/governance/check_root_structure.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_readme_naming.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_translation_metadata.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_translation_staleness.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_translation_semantic_alignment.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_docs_structure.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_active_docs_link_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_license_policy.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_repo_artifact_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_public_api_semver.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_spec_code_alignment_baseline.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_stdlib_surface_baseline.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_stdlib_promotion_snapshot.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_status_label_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_cognitive_tier_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_overclaim_guardrails.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-          python3 scripts/governance/check_rfc_lifecycle_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Run governance audit wrapper
-        run: |
-          python3 scripts/governance/check_docs_governance_hygiene.py 2>&1 | tee -a .github/logs/spec-and-docs.log
-
-      - name: Job Failure Summary
-        if: failure()
-        shell: bash
-        run: |
-          {
-            echo "### Spec & Docs Job Failed"
-            echo "One or more documentation or specification checks failed."
-            echo "- **Job**: ${{ github.job }}"
-            echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  ############################################################################
-  # JOB: architecture-invariants (informational)
-  ############################################################################
-  architecture-invariants:
-    name: " architecture / invariants (informational) "
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Run dependency firewall check
-        run: python3 scripts/architecture/check_dependency_firewall.py
-
-      - name: Run legacy path check
-        run: scripts/architecture/check_legacy_paths.sh
-
-      - name: Run restructure verification (optional invariant)
-        run: scripts/restructure/verify_restructure_clean.sh
-
-  ############################################################################
-  # JOB: deterministic-core-profile-check (informational)
-  ############################################################################
-  deterministic-core-profile-check:
-    name: " product / dcp integrity (informational) "
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Verify DCP and governance documents exist
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f docs/product/DETERMINISTIC_CORE_PROFILE.md
-          test -f docs/governance/DETERMINISM_SURFACE_REGISTRY.md
-          test -f docs/governance/FREEZE_ENFORCEMENT.md
-
-      - name: Verify DCP/registry surface alignment
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          dcp = Path("docs/product/DETERMINISTIC_CORE_PROFILE.md").read_text(encoding="utf-8")
-          reg = Path("docs/governance/DETERMINISM_SURFACE_REGISTRY.md").read_text(encoding="utf-8")
-
-          required = [
-              "Core Data Types",
-              "TISC ISA",
-              "T81VM Interpreter",
-              "Soft-float",
-              "Canonical serialization",
-          ]
-
-          missing_dcp = [s for s in required if s not in dcp]
-          if missing_dcp:
-              raise SystemExit(f"Missing required DCP surface labels: {missing_dcp}")
-
-          registry_markers = [
-              "TISC Opcode Semantics",
-              "VM Interpreter Execution",
-              "Data Type Canonical Encoding",
-              "Soft-Float Deterministic Math",
-          ]
-          missing_registry = [s for s in registry_markers if s not in reg]
-          if missing_registry:
-              raise SystemExit(f"Missing required registry markers: {missing_registry}")
-
-          print("DCP and determinism registry contain required surface markers.")
-          PY
-
-      - name: Verify public headers are under include/t81 only
-        shell: bash
-        run: |
-          set -euo pipefail
-          bad="$(find include -type f \( -name '*.h' -o -name '*.hh' -o -name '*.hpp' -o -name '*.hxx' \) | grep -v '^include/t81/' || true)"
-          if [ -n "$bad" ]; then
-            echo "::error::Found non-public header paths under include/:"
-            echo "$bad"
-            exit 1
-          fi
-          echo "Public header root check passed."
-
-  ############################################################################
-  # JOB: deterministic-profile-enforcement
-  # Consolidated from deterministic-profile-enforcement.yml. Keep the
-  # deterministic-profile-specific static/file checks as a first-class CI lane
-  # while avoiding a duplicate standalone workflow and duplicate test rebuilds.
-  # The matching runtime tests already run in the main build-and-test matrix.
-  ############################################################################
-  deterministic-profile-enforcement:
-    name: " product / deterministic profile enforcement "
-    needs: [spec-and-docs, build-and-test]
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Check for undefined deterministic macros
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "Checking for undefined deterministic macros..."
-          if grep -r "T81_DETERMINISTIC_.*_AVAILABLE" include/; then
-            echo "Found undefined deterministic macros"
-            exit 1
-          fi
-          echo "No undefined deterministic macros found"
-
-      - name: Verify deterministic boundary documentation markers
-        shell: bash
-        run: |
-          set -euo pipefail
-          docs=(
-            "docs/status/AUDIT_REMEDIATION_CROSSWALK.md"
-            "docs/status/T81LANG_TRACEABILITY_MATRIX.md"
-            "docs/status/JIT_EQUIVALENCE_GAP.md"
-            "docs/status/GOVERNANCE_BOUNDARIES_CLARIFICATION.md"
-            "docs/records/status-history/AXION_STATUS.md"
-          )
-
-          for doc in "${docs[@]}"; do
-            test -f "$doc" || { echo "Missing deterministic-profile status marker: $doc"; exit 1; }
-            echo "Found $doc"
-          done
-
-      - name: Check for removed non-compiling test references
-        shell: bash
-        run: |
-          set -euo pipefail
-          test ! -f tests/cpp/test_axion_evidence_loop_closure.cpp
-          echo "Non-compiling legacy test reference is absent."
-
-      - name: Verify deterministic-profile test files exist
-        shell: bash
-        run: |
-          set -euo pipefail
-          test_files=(
-            "tests/cpp/test_deterministic_float_boundaries.cpp"
-            "tests/cpp/test_map_determinism.cpp"
-            "tests/cpp/test_t81lang_traceability_enforcement.cpp"
-            "tests/cpp/test_axion_evidence_loop_closure_corrected.cpp"
-          )
-
-          for file in "${test_files[@]}"; do
-            test -f "$file" || { echo "Missing deterministic-profile test file: $file"; exit 1; }
-            echo "Found $file"
-          done
-
-      - name: Verify deterministic iterator implementation marker
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -q "deterministic_iterator" include/t81/types/T81Map.hpp
-          echo "Deterministic iterator marker present."
-
-      - name: Check T81Float deterministic guard marker
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -q "not available in current dmath implementation" include/t81/types/T81Float.hpp
-          echo "T81Float deterministic guard marker present."
-
-  ############################################################################
-  # JOB: governance-metrics
-  ############################################################################
-  governance-metrics:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Enforce determinism registry claims
-        run: python3 scripts/governance/check_determinism_claims.py
-      - name: Run governance metrics
-        run: python3 scripts/ci/governance_metrics.py
-      - name: Upload report
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: governance-metrics
-          path: artifacts/ci_reports/governance_metrics.json
-
-  ############################################################################
-  # JOB: benchmark-workload-gate
-  ############################################################################
-  benchmark-workload-gate:
-    name: " benchmark / vm workload gate "
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build \
-            libgtest-dev libgmock-dev
-
-      - name: Configure CMake (bench-enabled)
-        run: |
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_BENCHMARKS=ON
-
-      - name: Build benchmark runner
-        run: cmake --build build --target benchmark_runner --parallel
-
-      - name: Run VM workload benchmark slice
-        run: |
-          ./build/benchmarks/benchmark_runner \
-            --benchmark_filter='BM_VMSimulation_Dispatch|BM_NativeCall_Loop' \
-            --benchmark_min_time=0.02s \
-            --benchmark_format=json \
-            --benchmark_out=bench-vm-workload.json
-
-      - name: Enforce VM workload benchmark guardrail
-        run: |
-          python3 scripts/ci/check_vm_workload_benchmark_regression.py bench-vm-workload.json
-
-  ############################################################################
-  # JOB: warn-strict
-  # Fast clang warning scan that mirrors the Windows CI (/WX) warning classes
-  # that have historically caused failures: -Wswitch (unhandled enum values),
-  # -Wunused-variable, and -Wunused-function. Failures here save ~10 min per
-  # fix cycle vs waiting for the full Windows matrix.
-  # To reproduce locally: cmake --preset warn-strict && cmake --build build-warn-strict
-  ############################################################################
-  warn-strict:
-    name: " warn-strict / clang / linux "
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install clang-18 and dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-18 libgtest-dev libgmock-dev
-
-      - name: Configure (warn-strict preset)
-        run: |
-          cmake --preset warn-strict \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18
-
-      - name: Build (warnings-as-errors)
-        run: cmake --build build-warn-strict --parallel $(nproc) 2>&1 | tee warn-strict.log
-
-      - name: Upload warning log on failure
-        if: failure()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: warn-strict-log
-          path: warn-strict.log
-
-  ############################################################################
-  # JOB: build-and-test
-  ############################################################################
   build-and-test:
-    name: " build / ${{ matrix.platform }} / ${{ matrix.compiler }}"
-    needs: [spec-and-docs, warn-strict]
-    runs-on: ${{ matrix.runs_on }}
+    name: audit baseline / build / ${{ matrix.platform }} / ${{ matrix.compiler }}
+    runs-on: "${{ matrix.runs_on }}"
     timeout-minutes: 40
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: linux-x86_64
-            runs_on: ubuntu-24.04
-            compiler: gcc
-            c_compiler: gcc-14
-            cpp_compiler: g++-14
-          - platform: linux-x86_64
-            runs_on: ubuntu-24.04
-            compiler: clang
-            c_compiler: clang-18
-            cpp_compiler: clang++-18
-          - platform: linux-arm64
-            runs_on: ubuntu-24.04-arm
-            compiler: clang
-            c_compiler: clang-18
-            cpp_compiler: clang++-18
-          - platform: macos-arm64
-            runs_on: macos-14
-            compiler: clang
-            c_compiler: clang
-            cpp_compiler: clang++
-          - platform: macos-x86_64
-            runs_on: macos-15-intel
-            compiler: gcc
-            c_compiler: gcc-14
-            cpp_compiler: g++-14
-          - platform: windows-x86_64
-            runs_on: windows-latest
-            compiler: msvc
-            c_compiler: cl
-            cpp_compiler: cl
-          - platform: windows-x86_64
-            runs_on: windows-latest
-            compiler: clang-cl
-            c_compiler: clang-cl
-            cpp_compiler: clang-cl
-
+        - platform: windows-x86_64
+          runs_on: windows-latest
+          compiler: msvc
+          c_compiler: cl
+          cpp_compiler: cl
+        - platform: windows-x86_64
+          runs_on: windows-latest
+          compiler: clang-cl
+          c_compiler: clang-cl
+          cpp_compiler: clang-cl
     steps:
-      - name: Checkout repository
-        if: runner.os != 'Windows'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Checkout repository (Windows sparse)
-        if: runner.os == 'Windows'
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with:
-          sparse-checkout: |
-            /CMakeLists.txt
-            /CMakePresets.json
-            /cmake/**
-            /codec/**
-            /include/**
-            /core/**
-            /crypto/**
-            /fs/**
-            /ffi/**
-            /inference/**
-            /isa/**
-            /vm/**
-            /experimental/**
-            /runtime/**
-            /kernel/**
-            /ternaryos/**
-            /tooling/**
-            /lang/**
-            /examples/**
-            /src/**
-            /tools/**
-            /tests/**
-            /scripts/**
-            /benchmarks/**
-            /spec/**
-            /third_party/**
-            /README.md
-            /LICENSE
-          sparse-checkout-cone-mode: false
-
-      - name: Start log capture
-        run: mkdir -p .github/logs
-
-      - name: Install Dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18 libasio-dev \
-            libgtest-dev libgmock-dev
-
-      - name: Install Dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          set -eo pipefail
-          brew install ccache googletest
-          if [ "${{ matrix.compiler }}" = "gcc" ]; then
-            brew install gcc@14
-            echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
-          fi
-
-      - name: Install Dependencies (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          set -eo pipefail
-          choco install ninja cmake ccache
-          if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
-            choco install llvm
-          fi
-        shell: bash
-
-      - name: Configure ccache
-        run: |
-          ccache -z
-          ccache --set-config=max_size=500M
-
-      - name: Cache ccache
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: ${{ runner.os == 'Linux' && '~/.ccache' || runner.os == 'macOS' && '~/Library/Caches/ccache' || 'C:/Users/runneradmin/AppData/Local/ccache' }}
-          key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
-          restore-keys: |
-            ccache-${{ runner.os }}-${{ matrix.compiler }}-
-
-      - name: Cache CMake build directory
-        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
-        with:
-          path: build
-          key: >-
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
-            ${{ hashFiles('CMakeLists.txt', 'cmake/**', 'include/**', 'src/**', 'tests/**') }}
-          restore-keys: |
-            cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-
-
-      - name: Setup MSVC/cl environment (Windows)
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
-
-      - name: Force clean build directory on Windows (fresh compile)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          echo "Windows detected - forcing fresh configure to avoid stale build metadata"
-          rm -rf build
-
-      - name: Configure CMake
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
-            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Build
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake --build build --parallel 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Verify CLI docs parity (single matrix lane)
-        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/check_cli_docs_parity.py \
-            --t81-bin build/t81 \
-            --manual docs/user-guide/reference/cli-user-manual.md 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run CLI docs smoke examples (single matrix lane)
-        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
-        shell: bash
-        run: |
-          set -eo pipefail
-          mkdir -p .t81_canonfs/objects .t81_canonfs/snapshots
-          python3 scripts/ci/check_cli_docs_smoke.py \
-            --manual docs/user-guide/reference/cli-user-manual.md \
-            --cwd . \
-            --timeout-sec 20 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Verify CLI JSON schema contracts (single matrix lane)
-        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/check_cli_json_contracts.py \
-            --t81-bin build/t81 \
-            --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run model-artifact review smoke (single matrix lane)
-        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
-        shell: bash
-        run: |
-          set -eo pipefail
-          bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Verify stable baseline compliance surfaces are present
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/check_stable_baseline_compliance.py \
-            --repo-root . \
-            --build-dir build 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run stable baseline compliance tests (single matrix lane)
-        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/check_stable_baseline_compliance.py \
-            --repo-root . \
-            --build-dir build \
-            --run-tests 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run AI bundle consumer conformance checks (single matrix lane)
-        if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/check_ai_bundle_consumer_conformance.py \
-            --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Test
-        shell: bash
-        run: |
-          set -eo pipefail
-          ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run T3_K reproducibility gates
-        if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/t3k_repro_gate.py \
-            --t81-bin build/t81 \
-            --workdir build/t3k-repro \
-            --hash-out build/t3k-repro/hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run T81Lang compile determinism gates
-        if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        shell: bash
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/t81lang_repro_gate.py \
-            --t81-bin build/t81 \
-            --fixtures-dir tests/fixtures/t81lang_determinism \
-            --workdir build/t81lang-repro \
-            --hash-out build/t81lang-repro/hash.txt \
-            --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Provision llama.cpp fixture from sanctioned source (optional)
-        if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') == ''
-        shell: bash
-        env:
-          T81_LLAMA_MODEL_URL: ${{ secrets.T81_LLAMA_MODEL_URL }}
-          T81_LLAMA_MODEL_SHA256: ${{ vars.T81_LLAMA_MODEL_SHA256 }}
-          T81_LLAMA_EXPECTED_MODEL_HASH: ${{ vars.T81_LLAMA_EXPECTED_MODEL_HASH }}
-        run: |
-          set -eo pipefail
-          if [[ -z "${T81_LLAMA_MODEL_URL}" ]]; then
-            echo "::warning::Skipping optional llama repro fixture provisioning: missing T81_LLAMA_MODEL_URL secret."
-            exit 0
-          fi
-          if [[ -z "${T81_LLAMA_EXPECTED_MODEL_HASH}" ]]; then
-            echo "::warning::Skipping optional llama repro fixture provisioning: missing T81_LLAMA_EXPECTED_MODEL_HASH repository variable."
-            exit 0
-          fi
-          mkdir -p tests/fixtures/llama_cpp_repro
-          curl -fsSL "${T81_LLAMA_MODEL_URL}" -o tests/fixtures/llama_cpp_repro/model.gguf
-          if [[ -n "${T81_LLAMA_MODEL_SHA256}" ]]; then
-            echo "${T81_LLAMA_MODEL_SHA256}  tests/fixtures/llama_cpp_repro/model.gguf" | sha256sum -c -
-          fi
-          printf '%s\n' "${T81_LLAMA_EXPECTED_MODEL_HASH}" > tests/fixtures/llama_cpp_repro/model_hash.txt
-
-      - name: Init llama.cpp submodule (optional repro gate)
-        if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != '' && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt') != ''
-        shell: bash
-        run: |
-          set -eo pipefail
-          git submodule update --init --recursive third_party/llama.cpp 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Configure/Build llama.cpp optional repro target
-        if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != '' && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt') != ''
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build-llama-repro -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
-            -DT81_ENABLE_LLAMA_CPP=ON \
-            -DT81_BUILD_TESTS=OFF \
-            -DT81_BUILD_BENCHMARKS=OFF \
-            -DT81_BUILD_FUZZ_TESTS=OFF 2>&1 | tee -a .github/logs/build-and-test.log
-          cmake --build build-llama-repro --target t81 --parallel 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Run llama.cpp reproducibility gate (optional)
-        if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != '' && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt') != ''
-        shell: bash
-        run: |
-          set -eo pipefail
-          PROMPT="$(tr -d '\r' < tests/fixtures/llama_cpp_repro/prompt.txt)"
-          EXPECTED_MODEL_HASH="$(tr -d '\r\n' < tests/fixtures/llama_cpp_repro/model_hash.txt)"
-          if [[ -z "${EXPECTED_MODEL_HASH}" ]]; then
-            echo "tests/fixtures/llama_cpp_repro/model_hash.txt must be non-empty" >&2
-            exit 1
-          fi
-          if ! grep -q "__MODEL_HASH__" tests/fixtures/llama_cpp_repro/policy.apl; then
-            echo "tests/fixtures/llama_cpp_repro/policy.apl must include __MODEL_HASH__ placeholder" >&2
-            exit 1
-          fi
-          sed "s|__MODEL_HASH__|${EXPECTED_MODEL_HASH}|g" \
-            tests/fixtures/llama_cpp_repro/policy.apl \
-            > build/llama-cpp-repro/policy.effective.apl
-          python3 scripts/ci/llama_cpp_repro_gate.py \
-            --t81-bin build-llama-repro/t81 \
-            --model tests/fixtures/llama_cpp_repro/model.gguf \
-            --policy build/llama-cpp-repro/policy.effective.apl \
-            --prompt "$PROMPT" \
-            --expected-model-hash "$EXPECTED_MODEL_HASH" \
-            --hash-out build/llama-cpp-repro/hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Upload build artifacts
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: ci-build-${{ matrix.platform }}-${{ matrix.compiler }}
-          path: |
-            .github/logs/build-and-test.log
-            build/ctest-results.xml
-            build/artifacts/vm_workload_determinism_signatures.log
-          if-no-files-found: warn
-
-      - name: Upload T3_K hash artifact
-        if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: t3k-hash-${{ matrix.platform }}-${{ matrix.compiler }}
-          path: build/t3k-repro/hash.txt
-          if-no-files-found: error
-
-      - name: Upload T81Lang hash artifact
-        if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform == 'linux-arm64')
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: t81lang-hash-${{ matrix.platform }}-${{ matrix.compiler }}
-          path: build/t81lang-repro/hash.txt
-          if-no-files-found: error
-
-      - name: Upload llama.cpp hash artifact (optional)
-        if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf') != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != '' && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt') != ''
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: llama-cpp-hash-${{ matrix.platform }}-${{ matrix.compiler }}
-          path: build/llama-cpp-repro/hash.txt
-          if-no-files-found: error
-
-      - name: Show ccache stats
-        shell: bash
-        run: ccache -s 2>&1 | tee -a .github/logs/build-and-test.log
-
-      - name: Job Failure Summary
-        if: failure()
-        shell: bash
-        run: |
-          {
-            echo "### Build failed"
-            echo "- **OS**: ${{ runner.os }}"
-            echo "- **Compiler**: ${{ matrix.compiler }}"
-            echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-            echo ""
-            echo "Last 40 log lines:"
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ -f .github/logs/build-and-test.log ]; then
-            tail -n 40 .github/logs/build-and-test.log >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "(no log captured)" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-
-  ############################################################################
-  # JOB: cross-compile-armv9 (informational)
-  ############################################################################
-  cross-compile-armv9:
-    name: " cross-compile / linux-armv9 / gcc (informational) "
-    needs: build-and-test
-    runs-on: ubuntu-24.04
-    continue-on-error: true
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Start log capture
-        run: mkdir -p .github/logs
-
-      - name: Install ARMv9 cross toolchain dependencies
-        shell: bash
-        run: |
-          set -eo pipefail
-          sudo apt-get update
-          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu ninja-build cmake
-
-      - name: Configure CMake for ARMv9 cross-compile
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_C_COMPILER=aarch64-linux-gnu-gcc \
-            -DCMAKE_CXX_COMPILER=aarch64-linux-gnu-g++ \
-            -DCMAKE_C_FLAGS="-march=armv9-a" \
-            -DCMAKE_CXX_FLAGS="-march=armv9-a" \
-            -DT81_BUILD_TESTS=OFF \
-            -DT81_BUILD_FUZZ_TESTS=OFF \
-            -DT81_BUILD_BENCHMARKS=OFF 2>&1 | tee -a .github/logs/cross-compile-armv9.log
-
-      - name: Build (cross-compile only)
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake --build build 2>&1 | tee -a .github/logs/cross-compile-armv9.log
-
-      - name: Upload ARMv9 cross-compile logs
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: cross-compile-armv9-logs
-          path: .github/logs/cross-compile-armv9.log
-          if-no-files-found: warn
-
-  ############################################################################
-  # JOB: tui-binary-size-gate
-  # Warns (continue-on-error) if TUI adds >15% to the stripped t81 binary.
-  ############################################################################
-  tui-binary-size-gate:
-    name: " gate / TUI binary size delta "
-    needs: build-and-test
-    runs-on: ubuntu-24.04
-    continue-on-error: true
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build binutils \
-            libgtest-dev libgmock-dev
-
-      - name: Build t81 WITHOUT TUI (baseline)
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build-notui -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DT81_BUILD_TUI=OFF \
-            -DT81_BUILD_TESTS=OFF \
-            -DT81_BUILD_EXAMPLES=OFF \
-            -DT81_BUILD_BENCHMARKS=OFF
-          cmake --build build-notui --target t81 --parallel
-          strip build-notui/t81
-          du -b build-notui/t81 | awk '{print $1}' > /tmp/size_notui.txt
-          echo "Baseline (no-TUI) size: $(cat /tmp/size_notui.txt) bytes"
-
-      - name: Build t81 WITH TUI
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build-withtui -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DT81_BUILD_TUI=ON \
-            -DT81_BUILD_TESTS=OFF \
-            -DT81_BUILD_EXAMPLES=OFF \
-            -DT81_BUILD_BENCHMARKS=OFF
-          cmake --build build-withtui --target t81 --parallel
-          strip build-withtui/t81
-          du -b build-withtui/t81 | awk '{print $1}' > /tmp/size_withtui.txt
-          echo "With-TUI size: $(cat /tmp/size_withtui.txt) bytes"
-
-      - name: Check binary size delta
-        shell: bash
-        run: |
-          set -eo pipefail
-          BASE=$(cat /tmp/size_notui.txt)
-          TUI=$(cat /tmp/size_withtui.txt)
-          DELTA=$((TUI - BASE))
-          PCT=$(python3 -c "print(f'{($TUI - $BASE) / $BASE * 100:.1f}')")
-          echo "Binary size delta: +${DELTA} bytes (+${PCT}%)"
-          echo "| Variant | Size (bytes) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|---------|-------------|"  >> "$GITHUB_STEP_SUMMARY"
-          echo "| No TUI  | ${BASE}     |"  >> "$GITHUB_STEP_SUMMARY"
-          echo "| With TUI| ${TUI}      |"  >> "$GITHUB_STEP_SUMMARY"
-          echo "| Delta   | +${DELTA} (+${PCT}%) |" >> "$GITHUB_STEP_SUMMARY"
-          # Warn (not fail — continue-on-error: true) if delta exceeds 15%
-          python3 - <<PY
-          base, tui = $BASE, $TUI
-          pct = (tui - base) / base * 100
-          if pct > 15.0:
-              print(f"::warning::TUI binary size delta is {pct:.1f}% (threshold: 15%). Consider investigating FTXUI link bloat.")
-          else:
-              print(f"TUI binary size delta {pct:.1f}% is within the 15% threshold.")
-          PY
-
-  ############################################################################
-  # JOB: determinism-slice
-  ############################################################################
-  determinism-slice:
-    name: " gate / determinism slice / linux-x86_64 / clang "
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-18
-
-      - name: Configure CMake
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18
-
-      - name: Build
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake --build build --parallel
-
-      - name: Run determinism slice
-        shell: bash
-        run: |
-          set -eo pipefail
-          scripts/ci/run_determinism_slice.sh build
-
-  ############################################################################
-  # JOB: axion-epoch-determinism
-  ############################################################################
-  axion-epoch-determinism:
-    name: " gate / axion epoch determinism / linux-x86_64 / clang "
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-18
-
-      - name: Configure CMake
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DT81_ENABLE_TERNARYOS=ON \
-            -DT81_ENABLE_DPE=ON
-
-      - name: Build epoch determinism targets
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake --build build --parallel --target \
-            t81_ternaryos_epoch_submission_test \
-            t81_ternaryos_epoch_audit_test
-
-      - name: Run epoch determinism proofs
-        shell: bash
-        run: |
-          set -eo pipefail
-          ctest --test-dir build --output-on-failure \
-            -R 't81_ternaryos_epoch_(submission|audit)_test'
-
-  ############################################################################
-  # JOB: determinism-repeatability
-  ############################################################################
-  determinism-repeatability:
-    name: " gate / determinism repeatability / linux-x86_64 / clang "
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            build-essential cmake ninja-build clang-18 python3
-
-      - name: Configure CMake
-        run: |
-          set -eo pipefail
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18
-
-      - name: Build repeatability target
-        run: |
-          set -eo pipefail
-          cmake --build build --parallel --target t81_vm_workload_determinism_tiers_test
-
-      - name: Verify same-machine repeatability
-        run: |
-          set -eo pipefail
-          python3 scripts/ci/check_repeatable_vm_signature.py \
-            --build-dir build \
-            --out-json artifacts/ci_reports/vm_repeatability_report.json
-
-      - name: Upload repeatability artifacts
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: ci-determinism-repeatability
-          path: |
-            artifacts/ci_reports/vm_repeatability_report.json
-            build/artifacts/vm_workload_determinism_signatures.run1.log
-            build/artifacts/vm_workload_determinism_signatures.run2.log
-          if-no-files-found: warn
-
-  ############################################################################
-  # JOB: cxx-standard-compat
-  ############################################################################
-  cxx-standard-compat:
-    name: " cxx-std / linux-x86_64 / clang / ${{ matrix.cxx23 }}"
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        cxx23: [ON, OFF]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies (Ubuntu)
-        run: |
-          set -eo pipefail
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build clang-18 \
-            libgtest-dev libgmock-dev
-
-      - name: Configure CMake
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake -S . -B build-cxxstd -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DT81_USE_CXX23=${{ matrix.cxx23 }}
-
-      - name: Build
-        shell: bash
-        run: |
-          set -eo pipefail
-          cmake --build build-cxxstd --parallel
-
-      - name: Test
-        shell: bash
-        run: |
-          set -eo pipefail
-          ctest --test-dir build-cxxstd --output-on-failure
-
-  ############################################################################
-  # JOB: t3k-cross-arch-bit-identity
-  ############################################################################
-  t3k-cross-arch-bit-identity:
-    name: " gate / t3k cross-arch bit-identity "
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Download x86_64 T3_K hash
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: t3k-hash-linux-x86_64-clang
-          path: hashes/x86_64
-
-      - name: Download arm64 T3_K hash
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: t3k-hash-linux-arm64-clang
-          path: hashes/arm64
-
-      - name: Compare cross-arch hashes
-        shell: bash
-        run: |
-          set -euo pipefail
-          x86_hash="$(tr -d ' \n\r' < hashes/x86_64/hash.txt)"
-          arm_hash="$(tr -d ' \n\r' < hashes/arm64/hash.txt)"
-          echo "x86_64 hash: ${x86_hash}"
-          echo "arm64  hash: ${arm_hash}"
-          if [ -z "${x86_hash}" ] || [ -z "${arm_hash}" ]; then
-            echo "::error::missing one or both hash values"
-            exit 1
-          fi
-          if [ "${x86_hash}" != "${arm_hash}" ]; then
-            echo "::error::cross-arch bit identity failed"
-            exit 1
-          fi
-          echo "Cross-arch bit identity passed."
-          {
-            echo "### T3_K Cross-Arch Hash Check"
-            echo "- x86_64: \`${x86_hash}\`"
-            echo "- arm64: \`${arm_hash}\`"
-            echo "- verdict: PASS"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  ############################################################################
-  # JOB: t81lang-cross-arch-bit-identity
-  ############################################################################
-  t81lang-cross-arch-bit-identity:
-    name: " gate / t81lang cross-arch bit-identity "
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Download x86_64 T81Lang hash
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: t81lang-hash-linux-x86_64-clang
-          path: hashes/x86_64
-
-      - name: Download arm64 T81Lang hash
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: t81lang-hash-linux-arm64-clang
-          path: hashes/arm64
-
-      - name: Compare cross-arch hashes
-        shell: bash
-        run: |
-          set -euo pipefail
-          x86_hash="$(tr -d ' \n\r' < hashes/x86_64/hash.txt)"
-          arm_hash="$(tr -d ' \n\r' < hashes/arm64/hash.txt)"
-          echo "x86_64 hash: ${x86_hash}"
-          echo "arm64  hash: ${arm_hash}"
-          if [ -z "${x86_hash}" ] || [ -z "${arm_hash}" ]; then
-            echo "::error::missing one or both hash values"
-            exit 1
-          fi
-          if [ "${x86_hash}" != "${arm_hash}" ]; then
-            echo "::error::cross-arch bit identity failed"
-            exit 1
-          fi
-          echo "Cross-arch bit identity passed."
-          {
-            echo "### T81Lang Cross-Arch Hash Check"
-            echo "- x86_64: \`${x86_hash}\`"
-            echo "- arm64: \`${arm_hash}\`"
-            echo "- verdict: PASS"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-  ############################################################################
-  # JOB: benchmarks
-  ############################################################################
-  benchmarks:
-    name: " benchmark / linux-x86_64 "
-    needs: spec-and-docs
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends build-essential cmake ninja-build jq \
-            libgtest-dev libgmock-dev
-
-      - name: Configure benchmark build
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DT81_BUILD_BENCHMARKS=ON \
-            -DT81_BUILD_TESTS=OFF
-
-      - name: Build benchmark runner
-        run: cmake --build build --parallel --target benchmark_runner
-
-      - name: Run benchmark runner
-        run: |
-          mkdir -p .github/logs
-          ./build/benchmarks/benchmark_runner --benchmark_format=json --benchmark_out=bench.json 2>&1 | tee .github/logs/benchmark.log
-
-      - name: Enforce SIMD benchmark non-regression thresholds
-        run: |
-          python3 scripts/ci/check_simd_regression.py bench.json 2>&1 | tee -a .github/logs/benchmark.log
-
-      - name: Upload benchmark artifacts
-        if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
-        with:
-          name: ci-benchmarks-linux-x86_64
-          path: |
-            bench.json
-            docs/reference/benchmarks.md
-            .github/logs/benchmark.log
-          if-no-files-found: warn
-
-  ############################################################################
-  # JOB: static-analysis
-  ############################################################################
-  static-analysis:
-    name: " static analysis / clang-tidy "
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y clang-tidy-18 build-essential cmake ninja-build libasio-dev pybind11-dev \
-            libgtest-dev libgmock-dev
-
-      - name: Configure CMake
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DT81_BUILD_TESTS=OFF \
-            -DT81_BUILD_EXAMPLES=OFF \
-            -DT81_BUILD_BENCHMARKS=OFF \
-            -DT81_BUILD_FUZZ_TESTS=OFF
-
-      - name: Run clang-tidy
-        run: |
-          python3 - <<'PY' > /tmp/clang_tidy_files.txt
-          import json
-          from pathlib import Path
-
-          root = Path.cwd().resolve()
-          with open(root / "build" / "compile_commands.json", "r", encoding="utf-8") as fh:
-              compile_db = json.load(fh)
-
-          source_files = []
-          for entry in compile_db:
-              file_path = Path(entry["file"]).resolve()
-              try:
-                  rel = file_path.relative_to(root)
-              except ValueError:
-                  continue
-              if rel.suffix in {".cpp", ".cc", ".cxx"} and rel.parts and rel.parts[0] in {
-                  "src", "core", "kernel", "runtime", "lang"
-              }:
-                  source_files.append(str(rel))
-
-          for path in sorted(set(source_files)):
-              print(path)
-          PY
-          test -s /tmp/clang_tidy_files.txt
-          xargs -a /tmp/clang_tidy_files.txt clang-tidy-18 -p build \
-            --header-filter='^.*/(include/t81|core|kernel|runtime|lang)/.*' \
-            --checks='-*,clang-analyzer-core.*,clang-analyzer-cplusplus.*,clang-analyzer-deadcode.*,clang-analyzer-security.*,clang-analyzer-unix.*' \
-
-  ############################################################################
-  # JOB: sanitizers
-  ############################################################################
-  sanitizers:
-    name: " build / sanitizers "
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build clang-18 \
-            libgtest-dev libgmock-dev
-
-      - name: Configure and Build (ASan/UBSan)
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DCMAKE_BUILD_TYPE=Debug \
-            -DT81_ENABLE_ASAN=ON \
-            -DT81_ENABLE_UBSAN=ON
-          cmake --build build --parallel
-
-      - name: Test
-        run: |
-          ctest --test-dir build --output-on-failure
-
-  ############################################################################
-  # JOB: fuzzing
-  ############################################################################
-  fuzzing:
-    name: " fuzzing / frontend "
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build clang-18 \
-            libgtest-dev libgmock-dev
-
-      - name: Configure and Build
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DT81_BUILD_FUZZ_TESTS=ON
-          cmake --build build --target t81_frontend_fuzz_test
-
-      - name: Run Fuzzer
-        run: |
-          ./build/t81_frontend_fuzz_test -max_total_time=60
-
-  ############################################################################
-  # JOB: formal-verification
-  ############################################################################
-  formal-verification:
-    name: " formal verification / ternary logic "
-    needs: spec-and-docs
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build gcc-14 g++-14 \
-            libgtest-dev libgmock-dev
-
-      - name: Configure and Build
-        run: |
-          cmake -S . -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_C_COMPILER=gcc-14 \
-            -DCMAKE_CXX_COMPILER=g++-14
-
-      - name: Build t81 CLI
-        run: |
-          cmake --build build --parallel --target t81
-
-      - name: Run Ternary Logic Verification
-        run: |
-          python3 scripts/verify_ternary_logic.py
-
-  ############################################################################
-  # JOB: tritwise-determinism
-  ############################################################################
+    - name: Checkout repository
+      if: runner.os != 'Windows'
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        ref: f6d4d680709c5c6c98b305628e04346f5ef61620
+    - name: Checkout repository (Windows sparse)
+      if: runner.os == 'Windows'
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        sparse-checkout: |
+          /CMakeLists.txt
+          /CMakePresets.json
+          /cmake/**
+          /codec/**
+          /include/**
+          /core/**
+          /crypto/**
+          /fs/**
+          /ffi/**
+          /inference/**
+          /isa/**
+          /vm/**
+          /experimental/**
+          /runtime/**
+          /kernel/**
+          /ternaryos/**
+          /tooling/**
+          /lang/**
+          /examples/**
+          /src/**
+          /tools/**
+          /tests/**
+          /scripts/**
+          /benchmarks/**
+          /spec/**
+          /third_party/**
+          /README.md
+          /LICENSE
+        sparse-checkout-cone-mode: false
+        ref: f6d4d680709c5c6c98b305628e04346f5ef61620
+    - name: Start log capture
+      run: mkdir -p .github/logs
+    - name: Install Dependencies (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        set -eo pipefail
+        sudo apt-get update -qq
+        sudo apt-get install -y --no-install-recommends \
+          build-essential cmake ninja-build ccache gcc-14 g++-14 clang-18 libasio-dev \
+          libgtest-dev libgmock-dev
+    - name: Install Dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        set -eo pipefail
+        brew install ccache googletest
+        if [ "${{ matrix.compiler }}" = "gcc" ]; then
+          brew install gcc@14
+          echo "/opt/homebrew/bin" >> "$GITHUB_PATH"
+        fi
+    - name: Install Dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        set -eo pipefail
+        choco install ninja cmake ccache
+        if [ "${{ matrix.compiler }}" = "clang-cl" ]; then
+          choco install llvm
+        fi
+      shell: bash
+    - name: Configure ccache
+      run: |
+        ccache -z
+        ccache --set-config=max_size=500M
+    - name: Cache ccache
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+      with:
+        path: "${{ runner.os == 'Linux' && '~/.ccache' || runner.os == 'macOS' &&
+          '~/Library/Caches/ccache' || 'C:/Users/runneradmin/AppData/Local/ccache'
+          }}"
+        key: ccache-${{ runner.os }}-${{ matrix.compiler }}-${{ github.ref }}
+        restore-keys: 'ccache-${{ runner.os }}-${{ matrix.compiler }}-
+
+'
+    - name: Cache CMake build directory
+      uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7
+      with:
+        path: build
+        key: cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler
+          }}- ${{ hashFiles('CMakeLists.txt', 'cmake/**', 'include/**', 'src/**',
+          'tests/**') }}
+        restore-keys: 'cmake-build-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.compiler
+          }}-
+
+'
+    - name: Setup MSVC/cl environment (Windows)
+      if: runner.os == 'Windows'
+      uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+    - name: Force clean build directory on Windows (fresh compile)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        echo "Windows detected - forcing fresh configure to avoid stale build metadata"
+        rm -rf build
+    - name: Configure CMake
+      shell: bash
+      run: |
+        set -eo pipefail
+        cmake -S . -B build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Build
+      shell: bash
+      run: |
+        set -eo pipefail
+        cmake --build build --parallel 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Verify CLI docs parity (single matrix lane)
+      if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/check_cli_docs_parity.py \
+          --t81-bin build/t81 \
+          --manual docs/user-guide/reference/cli-user-manual.md 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run CLI docs smoke examples (single matrix lane)
+      if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+      shell: bash
+      run: |
+        set -eo pipefail
+        mkdir -p .t81_canonfs/objects .t81_canonfs/snapshots
+        python3 scripts/ci/check_cli_docs_smoke.py \
+          --manual docs/user-guide/reference/cli-user-manual.md \
+          --cwd . \
+          --timeout-sec 20 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Verify CLI JSON schema contracts (single matrix lane)
+      if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/check_cli_json_contracts.py \
+          --t81-bin build/t81 \
+          --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run model-artifact review smoke (single matrix lane)
+      if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+      shell: bash
+      run: |
+        set -eo pipefail
+        bash scripts/ci/run_model_artifact_review_smoke.sh 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Verify stable baseline compliance surfaces are present
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/check_stable_baseline_compliance.py \
+          --repo-root . \
+          --build-dir build 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run stable baseline compliance tests (single matrix lane)
+      if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/check_stable_baseline_compliance.py \
+          --repo-root . \
+          --build-dir build \
+          --run-tests 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run AI bundle consumer conformance checks (single matrix lane)
+      if: matrix.platform == 'linux-x86_64' && matrix.compiler == 'gcc'
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/check_ai_bundle_consumer_conformance.py \
+          --repo-root . 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Test
+      shell: bash
+      run: |
+        set -eo pipefail
+        ctest --test-dir build --output-on-failure --verbose --output-junit build/ctest-results.xml 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run T3_K reproducibility gates
+      if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform
+        == 'linux-arm64')
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/t3k_repro_gate.py \
+          --t81-bin build/t81 \
+          --workdir build/t3k-repro \
+          --hash-out build/t3k-repro/hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run T81Lang compile determinism gates
+      if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform
+        == 'linux-arm64')
+      shell: bash
+      run: |
+        set -eo pipefail
+        python3 scripts/ci/t81lang_repro_gate.py \
+          --t81-bin build/t81 \
+          --fixtures-dir tests/fixtures/t81lang_determinism \
+          --workdir build/t81lang-repro \
+          --hash-out build/t81lang-repro/hash.txt \
+          --expected-hash-file tests/fixtures/t81lang_determinism/t81lang_repro_hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Provision llama.cpp fixture from sanctioned source (optional)
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform
+        == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf')
+        == ''
+      shell: bash
+      env:
+        T81_LLAMA_MODEL_URL: "${{ secrets.T81_LLAMA_MODEL_URL }}"
+        T81_LLAMA_MODEL_SHA256: "${{ vars.T81_LLAMA_MODEL_SHA256 }}"
+        T81_LLAMA_EXPECTED_MODEL_HASH: "${{ vars.T81_LLAMA_EXPECTED_MODEL_HASH }}"
+      run: |
+        set -eo pipefail
+        if [[ -z "${T81_LLAMA_MODEL_URL}" ]]; then
+          echo "::warning::Skipping optional llama repro fixture provisioning: missing T81_LLAMA_MODEL_URL secret."
+          exit 0
+        fi
+        if [[ -z "${T81_LLAMA_EXPECTED_MODEL_HASH}" ]]; then
+          echo "::warning::Skipping optional llama repro fixture provisioning: missing T81_LLAMA_EXPECTED_MODEL_HASH repository variable."
+          exit 0
+        fi
+        mkdir -p tests/fixtures/llama_cpp_repro
+        curl -fsSL "${T81_LLAMA_MODEL_URL}" -o tests/fixtures/llama_cpp_repro/model.gguf
+        if [[ -n "${T81_LLAMA_MODEL_SHA256}" ]]; then
+          echo "${T81_LLAMA_MODEL_SHA256}  tests/fixtures/llama_cpp_repro/model.gguf" | sha256sum -c -
+        fi
+        printf '%s\n' "${T81_LLAMA_EXPECTED_MODEL_HASH}" > tests/fixtures/llama_cpp_repro/model_hash.txt
+    - name: Init llama.cpp submodule (optional repro gate)
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform
+        == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf')
+        != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != ''
+        && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt')
+        != ''
+      shell: bash
+      run: |
+        set -eo pipefail
+        git submodule update --init --recursive third_party/llama.cpp 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Configure/Build llama.cpp optional repro target
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform
+        == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf')
+        != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != ''
+        && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt')
+        != ''
+      shell: bash
+      run: |
+        set -eo pipefail
+        cmake -S . -B build-llama-repro -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+          -DT81_ENABLE_LLAMA_CPP=ON \
+          -DT81_BUILD_TESTS=OFF \
+          -DT81_BUILD_BENCHMARKS=OFF \
+          -DT81_BUILD_FUZZ_TESTS=OFF 2>&1 | tee -a .github/logs/build-and-test.log
+        cmake --build build-llama-repro --target t81 --parallel 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Run llama.cpp reproducibility gate (optional)
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform
+        == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf')
+        != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != ''
+        && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt')
+        != ''
+      shell: bash
+      run: |
+        set -eo pipefail
+        PROMPT="$(tr -d '\r' < tests/fixtures/llama_cpp_repro/prompt.txt)"
+        EXPECTED_MODEL_HASH="$(tr -d '\r\n' < tests/fixtures/llama_cpp_repro/model_hash.txt)"
+        if [[ -z "${EXPECTED_MODEL_HASH}" ]]; then
+          echo "tests/fixtures/llama_cpp_repro/model_hash.txt must be non-empty" >&2
+          exit 1
+        fi
+        if ! grep -q "__MODEL_HASH__" tests/fixtures/llama_cpp_repro/policy.apl; then
+          echo "tests/fixtures/llama_cpp_repro/policy.apl must include __MODEL_HASH__ placeholder" >&2
+          exit 1
+        fi
+        sed "s|__MODEL_HASH__|${EXPECTED_MODEL_HASH}|g" \
+          tests/fixtures/llama_cpp_repro/policy.apl \
+          > build/llama-cpp-repro/policy.effective.apl
+        python3 scripts/ci/llama_cpp_repro_gate.py \
+          --t81-bin build-llama-repro/t81 \
+          --model tests/fixtures/llama_cpp_repro/model.gguf \
+          --policy build/llama-cpp-repro/policy.effective.apl \
+          --prompt "$PROMPT" \
+          --expected-model-hash "$EXPECTED_MODEL_HASH" \
+          --hash-out build/llama-cpp-repro/hash.txt 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Upload build artifacts
+      if: always()
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      with:
+        name: ci-build-${{ matrix.platform }}-${{ matrix.compiler }}
+        path: |
+          .github/logs/build-and-test.log
+          build/ctest-results.xml
+          build/artifacts/vm_workload_determinism_signatures.log
+        if-no-files-found: warn
+    - name: Upload T3_K hash artifact
+      if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform
+        == 'linux-arm64')
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      with:
+        name: t3k-hash-${{ matrix.platform }}-${{ matrix.compiler }}
+        path: build/t3k-repro/hash.txt
+        if-no-files-found: error
+    - name: Upload T81Lang hash artifact
+      if: matrix.compiler == 'clang' && (matrix.platform == 'linux-x86_64' || matrix.platform
+        == 'linux-arm64')
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      with:
+        name: t81lang-hash-${{ matrix.platform }}-${{ matrix.compiler }}
+        path: build/t81lang-repro/hash.txt
+        if-no-files-found: error
+    - name: Upload llama.cpp hash artifact (optional)
+      if: vars.T81_ENABLE_LLAMA_REPRO == '1' && matrix.compiler == 'clang' && matrix.platform
+        == 'linux-x86_64' && hashFiles('tests/fixtures/llama_cpp_repro/model.gguf')
+        != '' && hashFiles('tests/fixtures/llama_cpp_repro/model_hash.txt') != ''
+        && hashFiles('tests/fixtures/llama_cpp_repro/policy.apl') != '' && hashFiles('tests/fixtures/llama_cpp_repro/prompt.txt')
+        != ''
+      uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+      with:
+        name: llama-cpp-hash-${{ matrix.platform }}-${{ matrix.compiler }}
+        path: build/llama-cpp-repro/hash.txt
+        if-no-files-found: error
+    - name: Show ccache stats
+      shell: bash
+      run: ccache -s 2>&1 | tee -a .github/logs/build-and-test.log
+    - name: Job Failure Summary
+      if: failure()
+      shell: bash
+      run: |
+        {
+          echo "### Build failed"
+          echo "- **OS**: ${{ runner.os }}"
+          echo "- **Compiler**: ${{ matrix.compiler }}"
+          echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "Last 40 log lines:"
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+        if [ -f .github/logs/build-and-test.log ]; then
+          tail -n 40 .github/logs/build-and-test.log >> "$GITHUB_STEP_SUMMARY"
+        else
+          echo "(no log captured)" >> "$GITHUB_STEP_SUMMARY"
+        fi
+        echo '```' >> "$GITHUB_STEP_SUMMARY"
   tritwise-determinism:
-    name: " gate / tritwise-determinism / ${{ matrix.config.name }}"
-    needs: spec-and-docs
+    name: audit baseline / gate / tritwise-determinism / ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
         config:
-          - name: "avx2-asan"
-            cmake_args: "-DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DT81_BUILD_TESTS=ON -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS=\"-mavx2 -mfma\""
-            build_targets: "t81_tritwise_backend_equivalence_test benchmark_runner"
-            run_cmd: "./build/t81_tritwise_backend_equivalence_test"
-            smoke_cmd: "./build/benchmarks/benchmark_runner --benchmark_filter=\"BM_MaskApply_Library/256\" --benchmark_min_time=0.01"
-          - name: "no-simd"
-            cmake_args: "-DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_TESTS=ON"
-            build_targets: "t81_tritwise_backend_equivalence_test"
-            run_cmd: "./build/t81_tritwise_backend_equivalence_test"
-            smoke_cmd: "echo 'No smoke test for no-simd'"
-
+        - name: avx2-asan
+          cmake_args: -DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DT81_BUILD_TESTS=ON
+            -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS="-mavx2 -mfma"
+          build_targets: t81_tritwise_backend_equivalence_test benchmark_runner
+          run_cmd: "./build/t81_tritwise_backend_equivalence_test"
+          smoke_cmd: ./build/benchmarks/benchmark_runner --benchmark_filter="BM_MaskApply_Library/256"
+            --benchmark_min_time=0.01
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - name: Checkout repository
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        ref: f6d4d680709c5c6c98b305628e04346f5ef61620
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -y build-essential cmake ninja-build python3 \
+          libgtest-dev libgmock-dev
+    - name: Configure CMake
+      run: 'cmake -S . -B build -G Ninja ${{ matrix.config.cmake_args }}
 
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y build-essential cmake ninja-build python3 \
-            libgtest-dev libgmock-dev
-
-      - name: Configure CMake
-        run: |
-          cmake -S . -B build -G Ninja ${{ matrix.config.cmake_args }}
-
-      - name: Build
-        run: cmake --build build --target ${{ matrix.config.build_targets }} --parallel
-
-      - name: Run Equivalence Tests
-        run: ${{ matrix.config.run_cmd }}
-
-      - name: Run Benchmark Smoke Test
-        if: matrix.config.name == 'avx2-asan'
-        run: ${{ matrix.config.smoke_cmd }}
-
-  ############################################################################
-  # JOB GROUP: experimental-architectures (nightly only, informational)
-  ############################################################################
-  experimental-architectures:
-    name: " experimental architectures / group anchor "
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: Experimental architecture group anchor
-        run: echo "Nightly-only experimental architecture sanity jobs."
-
-  ############################################################################
-  # JOB: oneapi-sycl-sanity (nightly only, informational)
-  ############################################################################
-  oneapi-sycl-sanity:
-    name: " experimental / oneapi sycl sanity "
-    if: github.event_name == 'schedule'
-    needs: experimental-architectures
-    runs-on: ubuntu-24.04
-    continue-on-error: true
-    timeout-minutes: 20
-    steps:
-      - name: Install minimal Intel oneAPI toolchain
-        shell: bash
-        run: |
-          set -eo pipefail
-          wget -qO- https://apt.repos.intel.com/oneapi/intel-oneapi-apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/oneapi-archive-keyring.gpg
-          echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-          sudo apt-get update
-          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp
-
-      - name: Compile SYCL hello world
-        shell: bash
-        run: |
-          cat > hello_sycl.cpp <<'CPP'
-          #include <sycl/sycl.hpp>
-          int main() {
-            sycl::queue q;
-            q.single_task([=]() {}).wait();
-            return 0;
-          }
-          CPP
-          source /opt/intel/oneapi/setvars.sh
-          icpx -fsycl hello_sycl.cpp
-
-  ############################################################################
-  # JOB: ascend-cann-sanity (nightly only, informational)
-  ############################################################################
-  ascend-cann-sanity:
-    name: " experimental / ascend cann sanity "
-    if: github.event_name == 'schedule' && vars.T81_ENABLE_ASCEND_CI == '1'
-    needs: experimental-architectures
-    runs-on: ubuntu-24.04
-    continue-on-error: true
-    timeout-minutes: 15
-    container:
-      image: swr.cn-southwest-2.myhuaweicloud.com/ascendhub/ascend-toolkit:latest
-    steps:
-      - name: Check Ascend CANN toolchain availability
-        shell: bash
-        run: |
-          set -eo pipefail
-          atc --version
-
-  ############################################################################
-  # JOB: quality-gate
-  ############################################################################
-  quality-gate:
-    name: " quality gate / required "
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    needs:
-      - spec-and-docs
-      - determinism-slice
-      - determinism-repeatability
-      - build-and-test
-      - t3k-cross-arch-bit-identity
-      - t81lang-cross-arch-bit-identity
-      - cxx-standard-compat
-      - static-analysis
-      - sanitizers
-      - fuzzing
-      - formal-verification
-      - benchmarks
-      - tritwise-determinism
-    if: always()
-    steps:
-      - name: Verify all required jobs succeeded
-        shell: bash
-        run: |
-          if [[ "${{ needs.spec-and-docs.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.determinism-slice.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.determinism-repeatability.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.build-and-test.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.t3k-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.t81lang-cross-arch-bit-identity.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.cxx-standard-compat.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.static-analysis.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.sanitizers.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.fuzzing.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.formal-verification.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.benchmarks.result }}" != "success" ]]; then exit 1; fi
-          if [[ "${{ needs.tritwise-determinism.result }}" != "success" ]]; then exit 1; fi
-          echo "All required CI quality gates passed."
+'
+    - name: Build
+      run: cmake --build build --target ${{ matrix.config.build_targets }} --parallel
+    - name: Run Equivalence Tests
+      run: "${{ matrix.config.run_cmd }}"
+    - name: Run Benchmark Smoke Test
+      if: matrix.config.name == 'avx2-asan'
+      run: "${{ matrix.config.smoke_cmd }}"
