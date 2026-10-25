@@ -1,7 +1,7 @@
 # Audit-only native reproduction harness. Never merge into main.
 ---
-name: PR566 exact-main failure reproduction
-run-name: PR566 baseline / main f6d4d680
+name: PR566 exact-main macOS failure reproduction
+run-name: PR566 macOS baseline / main f6d4d680
 'on':
   workflow_dispatch: {}
 permissions:
@@ -17,16 +17,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-        - platform: windows-x86_64
-          runs_on: windows-latest
-          compiler: msvc
-          c_compiler: cl
-          cpp_compiler: cl
-        - platform: windows-x86_64
-          runs_on: windows-latest
-          compiler: clang-cl
-          c_compiler: clang-cl
-          cpp_compiler: clang-cl
+        - platform: macos-arm64
+          runs_on: macos-14
+          compiler: clang
+          c_compiler: clang
+          cpp_compiler: clang++
     steps:
     - name: Checkout repository
       if: runner.os != 'Windows'
@@ -368,39 +363,3 @@ jobs:
           echo "(no log captured)" >> "$GITHUB_STEP_SUMMARY"
         fi
         echo '```' >> "$GITHUB_STEP_SUMMARY"
-  tritwise-determinism:
-    name: audit baseline / gate / tritwise-determinism / ${{ matrix.config.name }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-        - name: avx2-asan
-          cmake_args: -DCMAKE_BUILD_TYPE=Debug -DT81_BUILD_BENCHMARKS=ON -DT81_BUILD_TESTS=ON
-            -DT81_ENABLE_ASAN=ON -DT81_ENABLE_UBSAN=ON -DCMAKE_CXX_FLAGS="-mavx2 -mfma"
-          build_targets: t81_tritwise_backend_equivalence_test benchmark_runner
-          run_cmd: "./build/t81_tritwise_backend_equivalence_test"
-          smoke_cmd: ./build/benchmarks/benchmark_runner --benchmark_filter="BM_MaskApply_Library/256"
-            --benchmark_min_time=0.01
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        ref: f6d4d680709c5c6c98b305628e04346f5ef61620
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y build-essential cmake ninja-build python3 \
-          libgtest-dev libgmock-dev
-    - name: Configure CMake
-      run: 'cmake -S . -B build -G Ninja ${{ matrix.config.cmake_args }}
-
-'
-    - name: Build
-      run: cmake --build build --target ${{ matrix.config.build_targets }} --parallel
-    - name: Run Equivalence Tests
-      run: "${{ matrix.config.run_cmd }}"
-    - name: Run Benchmark Smoke Test
-      if: matrix.config.name == 'avx2-asan'
-      run: "${{ matrix.config.smoke_cmd }}"
