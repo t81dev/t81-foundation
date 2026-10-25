@@ -1,0 +1,17 @@
+{
+  "changed_jobs": [
+    "spec-and-docs"
+  ],
+  "identities": {
+    "build-and-test": {
+      "main_sha256": "862ac2740cfb5229a9a49e97612876d45f0023d98618ad5feca980f7b31d1e14",
+      "pr566_sha256": "862ac2740cfb5229a9a49e97612876d45f0023d98618ad5feca980f7b31d1e14",
+      "identical": true
+    },
+    "tritwise-determinism": {
+      "main_sha256": "0bddc5e7b196eb1659fbb4a7e20ac3ae7c9c9fcdcb2f5d6388f5f5df2d7d77fa",
+      "pr566_sha256": "0bddc5e7b196eb1659fbb4a7e20ac3ae7c9c9fcdcb2f5d6388f5f5df2d7d77fa",
+      "identical": true
+    }
+  }
+}

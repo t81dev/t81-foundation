@@ -1,0 +1,25 @@
+{
+  "base_sha": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+  "changed_file": ".github/workflows/ci.yml",
+  "jobs": {
+    "build-and-test": {
+      "commands_identical": true,
+      "runner_identical": true,
+      "original_sha256": "862ac2740cfb5229a9a49e97612876d45f0023d98618ad5feca980f7b31d1e14",
+      "audit_sha256": "86a2681582e9741d9d735b049debf732dedeb280ff54f923b4f84c798b6fe51e"
+    },
+    "tritwise-determinism": {
+      "commands_identical": true,
+      "runner_identical": true,
+      "original_sha256": "0bddc5e7b196eb1659fbb4a7e20ac3ae7c9c9fcdcb2f5d6388f5f5df2d7d77fa",
+      "audit_sha256": "a706914e4253465ee783643866ab52978498ac5100e915a082a75d08c6eb272e"
+    }
+  },
+  "allowed_differences": [
+    "workflow trigger/name",
+    "job names prefixed audit baseline",
+    "remove documentation/warning gate dependencies for observation only",
+    "select Windows msvc/clang-cl and AVX2/ASan matrix entries",
+    "pin every checkout to exact main SHA"
+  ]
+}

@@ -1,0 +1,334 @@
+{
+  "scope": "Downloaded evidence bytes and local reproductions; manifest excludes itself to avoid self-reference",
+  "files": [
+    {
+      "original_name": "avx2-asan.log",
+      "stored_name": "avx2-asan.log.gz",
+      "original_bytes": 55450,
+      "original_sha256": "63e1c0fc8eb25e31af2f1bfaf5fc158f1864e821a182f02913039b59ba3c1341",
+      "stored_sha256": "4b595639300dac1f83d1c1933d904338d3023458e1cc41285d6f2ef3bbba184c"
+    },
+    {
+      "original_name": "baseline-harness-manifest.json",
+      "stored_name": "baseline-harness-manifest.json",
+      "original_bytes": 972,
+      "original_sha256": "ce60938de88f92b24054c247ff10224f9f95aa01d1560b4d7bfad7ed5b820c2d",
+      "stored_sha256": "ce60938de88f92b24054c247ff10224f9f95aa01d1560b4d7bfad7ed5b820c2d"
+    },
+    {
+      "original_name": "cxx23-off.log",
+      "stored_name": "cxx23-off.log.gz",
+      "original_bytes": 266289,
+      "original_sha256": "5c2486e64601a83811f3325ed7bb2543ff7060ef10434c7d100e9590dd4108e2",
+      "stored_sha256": "cff85a04b4f8c6d8ab479be8bbff8d4b6ef82affd6444c90e55a864ac7c6523f"
+    },
+    {
+      "original_name": "cxx23-on.log",
+      "stored_name": "cxx23-on.log.gz",
+      "original_bytes": 256196,
+      "original_sha256": "983eb3f8af7c1c94f63ec788d597dc1ae1af5f09f9919f1a8b0ee3f2a1f35d1d",
+      "stored_sha256": "1eec413d732a16732f0c2a4a9cc0e8cee74ac27484ce59e189c817a8fcbcab77"
+    },
+    {
+      "original_name": "job-definition-identity.json",
+      "stored_name": "job-definition-identity.json",
+      "original_bytes": 544,
+      "original_sha256": "2e880ff6ab48f7f40c6d6ecb821de8c84ddadcf94579d1514c43f548a06c0991",
+      "stored_sha256": "2e880ff6ab48f7f40c6d6ecb821de8c84ddadcf94579d1514c43f548a06c0991"
+    },
+    {
+      "original_name": "linux-arm64-clang.log",
+      "stored_name": "linux-arm64-clang.log.gz",
+      "original_bytes": 577289,
+      "original_sha256": "9d8eb63ead74c9a28ab25a12ea132ae5f9ad5bfdef1cb6a2f3bcbbed1187053b",
+      "stored_sha256": "6dc6aaef1ed3b15598acc0dd9273971a07bad30a9c78ade71753bdf7835d69c4"
+    },
+    {
+      "original_name": "linux-x86-clang.log",
+      "stored_name": "linux-x86-clang.log.gz",
+      "original_bytes": 578685,
+      "original_sha256": "688e583dca22ee09724b5afda58f2432f8db0e9df92efbcfb46785d069525e72",
+      "stored_sha256": "c08abef38b25794aed01db57e95c52eee511d627b8fde09d6c950bf905a9b1bc"
+    },
+    {
+      "original_name": "linux-x86-gcc.log",
+      "stored_name": "linux-x86-gcc.log.gz",
+      "original_bytes": 217715,
+      "original_sha256": "15899dc26018628de29e79d4d94df74dccb92e3c6ffb0b3c1bcd3cd9eea3c63b",
+      "stored_sha256": "bd43273291f8c6431982668b4f1ed3c2f0e9381887c11e3fa6bcdf004a6d867b"
+    },
+    {
+      "original_name": "macos-arm64.log",
+      "stored_name": "macos-arm64.log.gz",
+      "original_bytes": 144041,
+      "original_sha256": "ec1280763a9368e638db28bf0fd9e8a23a4fff45e70e584942e03daa1bcae466",
+      "stored_sha256": "4124200dbfbf2b0f8da7d7b436a39349c2d71c21055ff211e207981e320ff370"
+    },
+    {
+      "original_name": "macos-baseline-harness-manifest.json",
+      "stored_name": "macos-baseline-harness-manifest.json",
+      "original_bytes": 537,
+      "original_sha256": "56b283aa51ad70c80b46d2f62fe4bf7d3eb98f528ccececee17760e09b37a49c",
+      "stored_sha256": "56b283aa51ad70c80b46d2f62fe4bf7d3eb98f528ccececee17760e09b37a49c"
+    },
+    {
+      "original_name": "main-avx2-asan.log",
+      "stored_name": "main-avx2-asan.log.gz",
+      "original_bytes": 55879,
+      "original_sha256": "5cc5066ef3fa7e4143dddcc26a4f08a2b2df4f213b22c5aef6e8f06e20744f95",
+      "stored_sha256": "054df526ae2b6ad3f7151a14ba35b7afdef8db9ffed053c8d632f84fb801622b"
+    },
+    {
+      "original_name": "main-fixture-preconditions.json",
+      "stored_name": "main-fixture-preconditions.json",
+      "original_bytes": 262,
+      "original_sha256": "1bf9af92cdd7052139dcab3c42f7843ec3b4cdd03558df4f5a2865914b9d94a1",
+      "stored_sha256": "1bf9af92cdd7052139dcab3c42f7843ec3b4cdd03558df4f5a2865914b9d94a1"
+    },
+    {
+      "original_name": "main-macos-arm64.log",
+      "stored_name": "main-macos-arm64.log.gz",
+      "original_bytes": 144365,
+      "original_sha256": "aa40d5293abf10dcd6c96ea74e35d29fd2fe135115fc7a1fee548cd1948ff45c",
+      "stored_sha256": "dad64dd35be83f316e57c3f474403e2330c63c615e2b0ae9673dd45282965e73"
+    },
+    {
+      "original_name": "main-macos-baseline-jobs.json",
+      "stored_name": "main-macos-baseline-jobs.json",
+      "original_bytes": 7595,
+      "original_sha256": "9afc29a384b783a1cde533a82865e6f74c11ddabd2a021d21f81946b3d5f49f5",
+      "stored_sha256": "9afc29a384b783a1cde533a82865e6f74c11ddabd2a021d21f81946b3d5f49f5"
+    },
+    {
+      "original_name": "main-macos-baseline-run.json",
+      "stored_name": "main-macos-baseline-run.json",
+      "original_bytes": 12513,
+      "original_sha256": "5f9d5f87539e36998f4fe0ae211407cc98c045f9072164720db1d903e640af1b",
+      "stored_sha256": "5f9d5f87539e36998f4fe0ae211407cc98c045f9072164720db1d903e640af1b"
+    },
+    {
+      "original_name": "main-model-artifact-preflight.log",
+      "stored_name": "main-model-artifact-preflight.log.gz",
+      "original_bytes": 76,
+      "original_sha256": "4ec40de91ee393dcb093a38d7548cf5058f452b4eefd7a0e72003a9dacb2f307",
+      "stored_sha256": "f84e9081bcbbe41f0eb4aadba41a61bd2ce5fccd39b59ba6be9e8796ef345fab"
+    },
+    {
+      "original_name": "main-model-artifact-smoke.log",
+      "stored_name": "main-model-artifact-smoke.log.gz",
+      "original_bytes": 125,
+      "original_sha256": "c87c21ad22060ba83c7aaa1a7e476724b80dae12071a678686dd9cdce7052f36",
+      "stored_sha256": "4ca19f9df3174a971ac705c68ba58adfef52ab7eef978ce5b3d4aac6a563969d"
+    },
+    {
+      "original_name": "main-native-baseline-jobs.json",
+      "stored_name": "main-native-baseline-jobs.json",
+      "original_bytes": 17611,
+      "original_sha256": "46975fbc88b62adcd813adce994e93ad7ab6ed2f2fe8832d6017c8a004576662",
+      "stored_sha256": "46975fbc88b62adcd813adce994e93ad7ab6ed2f2fe8832d6017c8a004576662"
+    },
+    {
+      "original_name": "main-native-baseline-run.json",
+      "stored_name": "main-native-baseline-run.json",
+      "original_bytes": 12502,
+      "original_sha256": "92a7efdc2e1ccde82e741815f29a78e817646407e7755ec3f8539fd3d7286a09",
+      "stored_sha256": "92a7efdc2e1ccde82e741815f29a78e817646407e7755ec3f8539fd3d7286a09"
+    },
+    {
+      "original_name": "main-permissions-masked.log",
+      "stored_name": "main-permissions-masked.log.gz",
+      "original_bytes": 177,
+      "original_sha256": "f1f2cdf77a214dee8205c2ba5c9e33bea5fc121e6d236c5c81474036f099f996",
+      "stored_sha256": "fa481b2d339ef905a053572659b624765a0c80bb0e1a8a5a0ab498f8fdbc2ada"
+    },
+    {
+      "original_name": "main-permissions-strict.log",
+      "stored_name": "main-permissions-strict.log.gz",
+      "original_bytes": 177,
+      "original_sha256": "f1f2cdf77a214dee8205c2ba5c9e33bea5fc121e6d236c5c81474036f099f996",
+      "stored_sha256": "fa481b2d339ef905a053572659b624765a0c80bb0e1a8a5a0ab498f8fdbc2ada"
+    },
+    {
+      "original_name": "main-pinning-masked.log",
+      "stored_name": "main-pinning-masked.log.gz",
+      "original_bytes": 119,
+      "original_sha256": "1a973a7535e64a7fc79f9b0de521a236470e7992755a8b74840088d43ee22c94",
+      "stored_sha256": "0bff0efdf8a68a3a7ea736a29afcfa724e5558623955969f753be601bac5a04b"
+    },
+    {
+      "original_name": "main-pinning-strict.log",
+      "stored_name": "main-pinning-strict.log.gz",
+      "original_bytes": 119,
+      "original_sha256": "1a973a7535e64a7fc79f9b0de521a236470e7992755a8b74840088d43ee22c94",
+      "stored_sha256": "0bff0efdf8a68a3a7ea736a29afcfa724e5558623955969f753be601bac5a04b"
+    },
+    {
+      "original_name": "main-policy-pipeline-reproduction.json",
+      "stored_name": "main-policy-pipeline-reproduction.json",
+      "original_bytes": 1745,
+      "original_sha256": "ad2c667dfe5f3349ee6fd9e9bec961be4f3531d022f79293bfcbd227f61bab72",
+      "stored_sha256": "ad2c667dfe5f3349ee6fd9e9bec961be4f3531d022f79293bfcbd227f61bab72"
+    },
+    {
+      "original_name": "main-scheduled-jobs.json",
+      "stored_name": "main-scheduled-jobs.json",
+      "original_bytes": 29378,
+      "original_sha256": "3f8ee4498bdb3d540b14c5d10f153eba1e4dcfa8205e518db0e6ff31e5f16f7a",
+      "stored_sha256": "3f8ee4498bdb3d540b14c5d10f153eba1e4dcfa8205e518db0e6ff31e5f16f7a"
+    },
+    {
+      "original_name": "main-scheduled-run.json",
+      "stored_name": "main-scheduled-run.json",
+      "original_bytes": 12540,
+      "original_sha256": "559e2a44076ee2dcd48f968d2e6ab7911088819ad6f52cbb64e5c1f379b4a93f",
+      "stored_sha256": "559e2a44076ee2dcd48f968d2e6ab7911088819ad6f52cbb64e5c1f379b4a93f"
+    },
+    {
+      "original_name": "main-windows-clang-cl.log",
+      "stored_name": "main-windows-clang-cl.log.gz",
+      "original_bytes": 97306,
+      "original_sha256": "3382064537901f20536020d13f7634e02533768ce97a27c6e9252a5b732283c6",
+      "stored_sha256": "200d8cb138d839642dd2ae1000780cf4dd9521d40df3b37b5fc088c211234640"
+    },
+    {
+      "original_name": "main-windows-msvc.log",
+      "stored_name": "main-windows-msvc.log.gz",
+      "original_bytes": 97295,
+      "original_sha256": "cfca313abea49b45fea391dfa9e84ded2a0b72608395cc70c9b630c57a4d1cd2",
+      "stored_sha256": "16433f5a3b795d4f112d9ec577e81743e0c0088e88e4edee14269358c824bf6e"
+    },
+    {
+      "original_name": "native-environment-comparison.json",
+      "stored_name": "native-environment-comparison.json",
+      "original_bytes": 1953,
+      "original_sha256": "40724de664447466381733d154a7b2ebedde008cac770dc1362ac1323392dbe2",
+      "stored_sha256": "40724de664447466381733d154a7b2ebedde008cac770dc1362ac1323392dbe2"
+    },
+    {
+      "original_name": "native-error-comparison.json",
+      "stored_name": "native-error-comparison.json",
+      "original_bytes": 6002,
+      "original_sha256": "15bea9cf9aefaad425ac9193458a17c10dcbd1f2429f6bd2922031aa98fe7335",
+      "stored_sha256": "15bea9cf9aefaad425ac9193458a17c10dcbd1f2429f6bd2922031aa98fe7335"
+    },
+    {
+      "original_name": "permissions-masked.log",
+      "stored_name": "permissions-masked.log.gz",
+      "original_bytes": 177,
+      "original_sha256": "f1f2cdf77a214dee8205c2ba5c9e33bea5fc121e6d236c5c81474036f099f996",
+      "stored_sha256": "fa481b2d339ef905a053572659b624765a0c80bb0e1a8a5a0ab498f8fdbc2ada"
+    },
+    {
+      "original_name": "permissions-strict.log",
+      "stored_name": "permissions-strict.log.gz",
+      "original_bytes": 177,
+      "original_sha256": "f1f2cdf77a214dee8205c2ba5c9e33bea5fc121e6d236c5c81474036f099f996",
+      "stored_sha256": "fa481b2d339ef905a053572659b624765a0c80bb0e1a8a5a0ab498f8fdbc2ada"
+    },
+    {
+      "original_name": "pinning-masked.log",
+      "stored_name": "pinning-masked.log.gz",
+      "original_bytes": 119,
+      "original_sha256": "1a973a7535e64a7fc79f9b0de521a236470e7992755a8b74840088d43ee22c94",
+      "stored_sha256": "0bff0efdf8a68a3a7ea736a29afcfa724e5558623955969f753be601bac5a04b"
+    },
+    {
+      "original_name": "pinning-strict.log",
+      "stored_name": "pinning-strict.log.gz",
+      "original_bytes": 119,
+      "original_sha256": "1a973a7535e64a7fc79f9b0de521a236470e7992755a8b74840088d43ee22c94",
+      "stored_sha256": "0bff0efdf8a68a3a7ea736a29afcfa724e5558623955969f753be601bac5a04b"
+    },
+    {
+      "original_name": "policy-pipeline-commands.json",
+      "stored_name": "policy-pipeline-commands.json",
+      "original_bytes": 3944,
+      "original_sha256": "b8ad2e86cbbe8e3750bd4acff11c26d18badb7fea554adccd03fa1195b3400bb",
+      "stored_sha256": "b8ad2e86cbbe8e3750bd4acff11c26d18badb7fea554adccd03fa1195b3400bb"
+    },
+    {
+      "original_name": "pr565-check-runs.json",
+      "stored_name": "pr565-check-runs.json",
+      "original_bytes": 117316,
+      "original_sha256": "4f3651ca6c0349f84481172ba19d1e6a1ad9966da3a7e68e48532bcf6b01d316",
+      "stored_sha256": "4f3651ca6c0349f84481172ba19d1e6a1ad9966da3a7e68e48532bcf6b01d316"
+    },
+    {
+      "original_name": "pr565-info.json",
+      "stored_name": "pr565-info.json",
+      "original_bytes": 19447,
+      "original_sha256": "1165c6e18d3b1975c74f775436b39ef7e0aaf3b0862284c13fb0747939a320f0",
+      "stored_sha256": "1165c6e18d3b1975c74f775436b39ef7e0aaf3b0862284c13fb0747939a320f0"
+    },
+    {
+      "original_name": "pr566-check-runs.json",
+      "stored_name": "pr566-check-runs.json",
+      "original_bytes": 117711,
+      "original_sha256": "cb89038542fdb7254a142c835f20c737c020c5abdc438c466f96546cb37bbb4c",
+      "stored_sha256": "cb89038542fdb7254a142c835f20c737c020c5abdc438c466f96546cb37bbb4c"
+    },
+    {
+      "original_name": "pr566-codeql-run.json",
+      "stored_name": "pr566-codeql-run.json",
+      "original_bytes": 13002,
+      "original_sha256": "711489a538222e460f4240ebc18a3e97175f8dbfd4b5fa2f15d2b7f3deab2872",
+      "stored_sha256": "711489a538222e460f4240ebc18a3e97175f8dbfd4b5fa2f15d2b7f3deab2872"
+    },
+    {
+      "original_name": "pr566-info.json",
+      "stored_name": "pr566-info.json",
+      "original_bytes": 19459,
+      "original_sha256": "8ec1af1db351bf13dbc3f6506963e3571f55d9409e52eda708203964c47daed4",
+      "stored_sha256": "8ec1af1db351bf13dbc3f6506963e3571f55d9409e52eda708203964c47daed4"
+    },
+    {
+      "original_name": "pr566-jobs.json",
+      "stored_name": "pr566-jobs.json",
+      "original_bytes": 96561,
+      "original_sha256": "652da5a12f1b8515b2c17e766cb5b6c43c225f7e7ae92cb9b99a152667cf25e0",
+      "stored_sha256": "652da5a12f1b8515b2c17e766cb5b6c43c225f7e7ae92cb9b99a152667cf25e0"
+    },
+    {
+      "original_name": "pr566-run.json",
+      "stored_name": "pr566-run.json",
+      "original_bytes": 13009,
+      "original_sha256": "735166ceb4f587fc65716747c327df28e2075f056236669dbedc2036af051c06",
+      "stored_sha256": "735166ceb4f587fc65716747c327df28e2075f056236669dbedc2036af051c06"
+    },
+    {
+      "original_name": "pr566-spec-docs.log",
+      "stored_name": "pr566-spec-docs.log.gz",
+      "original_bytes": 116491,
+      "original_sha256": "adad2bdd0100812e2dbe5a11fe8a63b7651ccec1525f5c351ffad40f3d8f999f",
+      "stored_sha256": "09f4a3e8a8a901a0c5b289bc7ee577451e66b6c66e44eab429d141dcad4d1c68"
+    },
+    {
+      "original_name": "protection-after.json",
+      "stored_name": "protection-after.json",
+      "original_bytes": 1076,
+      "original_sha256": "5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa",
+      "stored_sha256": "5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa"
+    },
+    {
+      "original_name": "protection-before.json",
+      "stored_name": "protection-before.json",
+      "original_bytes": 1076,
+      "original_sha256": "5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa",
+      "stored_sha256": "5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa"
+    },
+    {
+      "original_name": "windows-clang-cl.log",
+      "stored_name": "windows-clang-cl.log.gz",
+      "original_bytes": 97043,
+      "original_sha256": "f4609edeff292d70ec7086f4eb5645e262165e78c9d1c5fc5e2fb6a1d357b1e2",
+      "stored_sha256": "84c0d6ea9dbf701541990d2cd457b359be7264d604b3cfeff7d0a554c487e5ff"
+    },
+    {
+      "original_name": "windows-msvc.log",
+      "stored_name": "windows-msvc.log.gz",
+      "original_bytes": 97093,
+      "original_sha256": "a6241903a2c59a4b6eadb08581d5fefda1e0735e61382847e464fca46188b489",
+      "stored_sha256": "8bcd1a63f08aa3f59214ef7203fa0ccacbde2c5876cb7b008f708a96a3e2d539"
+    }
+  ]
+}

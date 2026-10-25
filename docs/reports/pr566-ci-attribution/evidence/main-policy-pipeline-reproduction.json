@@ -1,0 +1,44 @@
+{
+  "pinning_masked": {
+    "exit": 0,
+    "command": [
+      "bash",
+      "-e",
+      "-c",
+      "python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0 2>&1 | tee /private/tmp/t81-pr566-failure-audit/main-pinning-masked.log"
+    ],
+    "output": "workflow action audit: total=107 pinned_sha=100 tagged=7 unknown=0\nERROR: tagged references 7 exceed allowed maximum 0\n"
+  },
+  "pinning_strict": {
+    "exit": 1,
+    "command": [
+      "bash",
+      "-eo",
+      "pipefail",
+      "-c",
+      "python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0 2>&1 | tee /private/tmp/t81-pr566-failure-audit/main-pinning-strict.log"
+    ],
+    "output": "workflow action audit: total=107 pinned_sha=100 tagged=7 unknown=0\nERROR: tagged references 7 exceed allowed maximum 0\n"
+  },
+  "permissions_masked": {
+    "exit": 0,
+    "command": [
+      "bash",
+      "-e",
+      "-c",
+      "python3 scripts/ci/audit_workflow_permissions.py --max-missing 0 2>&1 | tee /private/tmp/t81-pr566-failure-audit/main-permissions-masked.log"
+    ],
+    "output": "  - .github/workflows/qemu-boot-x86.yml\nworkflow permissions audit: total=20 explicit=19 missing=1 write_scoped=8\nERROR: missing explicit permissions 1 exceed allowed maximum 0\n"
+  },
+  "permissions_strict": {
+    "exit": 1,
+    "command": [
+      "bash",
+      "-eo",
+      "pipefail",
+      "-c",
+      "python3 scripts/ci/audit_workflow_permissions.py --max-missing 0 2>&1 | tee /private/tmp/t81-pr566-failure-audit/main-permissions-strict.log"
+    ],
+    "output": "  - .github/workflows/qemu-boot-x86.yml\nworkflow permissions audit: total=20 explicit=19 missing=1 write_scoped=8\nERROR: missing explicit permissions 1 exceed allowed maximum 0\n"
+  }
+}

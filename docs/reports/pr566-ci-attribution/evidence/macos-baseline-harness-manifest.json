@@ -1,0 +1,23 @@
+{
+  "base_sha": "f6d4d680709c5c6c98b305628e04346f5ef61620",
+  "commands_identical": true,
+  "runner_identical": true,
+  "matrix": {
+    "include": [
+      {
+        "platform": "macos-arm64",
+        "runs_on": "macos-14",
+        "compiler": "clang",
+        "c_compiler": "clang",
+        "cpp_compiler": "clang++"
+      }
+    ]
+  },
+  "allowed_differences": [
+    "workflow trigger/name",
+    "audit job name",
+    "remove preflight needs for observation",
+    "select macOS ARM64 matrix lane",
+    "pin checkout to exact main"
+  ]
+}

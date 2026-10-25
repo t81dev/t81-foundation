@@ -1,0 +1,60 @@
+[
+  {
+    "pr_log": "windows-msvc.log",
+    "main_log": "main-windows-msvc.log",
+    "error_diagnostics_identical": true,
+    "diagnostics": [
+      "CMake Error at src/direct_api/CMakeLists.txt:26 (add_executable):",
+      "CMake Error at src/direct_api/CMakeLists.txt:26 (add_executable):"
+    ]
+  },
+  {
+    "pr_log": "windows-clang-cl.log",
+    "main_log": "main-windows-clang-cl.log",
+    "error_diagnostics_identical": true,
+    "diagnostics": [
+      "CMake Error at src/direct_api/CMakeLists.txt:26 (add_executable):",
+      "CMake Error at src/direct_api/CMakeLists.txt:26 (add_executable):"
+    ]
+  },
+  {
+    "pr_log": "avx2-asan.log",
+    "main_log": "main-avx2-asan.log",
+    "error_diagnostics_identical": true,
+    "diagnostics": [
+      "/usr/include/c++/15/bits/std_function.h:407:42: error: \u2018*(std::function<bool(char)>*)((char*)&__tmp + offsetof(std::__detail::_StateT, std::__detail::_State<char>::<unnamed>.std::__detail::_State_base::<unnamed>)).std::function<bool(char)>::_M_invoker\u2019 may be used uninitialized [-Werror=maybe-uninitialized]",
+      "/usr/include/c++/15/bits/std_function.h:249:37: error: \u2018*(const std::_Function_base*)((char*)&__tmp + offsetof(std::__detail::_StateT, std::__detail::_State<char>::<unnamed>.std::__detail::_State_base::<unnamed>)).std::_Function_base::_M_manager\u2019 may be used uninitialized [-Werror=maybe-uninitialized]",
+      "/usr/include/c++/15/bits/std_function.h:407:42: error: \u2018*(std::function<bool(char)>*)((char*)&__tmp + offsetof(std::__detail::_StateT, std::__detail::_State<char>::<unnamed>.std::__detail::_State_base::<unnamed>)).std::function<bool(char)>::_M_invoker\u2019 may be used uninitialized [-Werror=maybe-uninitialized]",
+      "/usr/include/c++/15/bits/std_function.h:249:37: error: \u2018*(const std::_Function_base*)((char*)&__tmp + offsetof(std::__detail::_StateT, std::__detail::_State<char>::<unnamed>.std::__detail::_State_base::<unnamed>)).std::_Function_base::_M_manager\u2019 may be used uninitialized [-Werror=maybe-uninitialized]",
+      "/usr/include/c++/15/bits/std_function.h:407:42: error: \u2018*(std::function<bool(char)>*)((char*)&__tmp + offsetof(std::__detail::_StateT, std::__detail::_State<char>::<unnamed>.std::__detail::_State_base::<unnamed>)).std::function<bool(char)>::_M_invoker\u2019 may be used uninitialized [-Werror=maybe-uninitialized]",
+      "/usr/include/c++/15/bits/std_function.h:249:37: error: \u2018*(const std::_Function_base*)((char*)&__tmp + offsetof(std::__detail::_StateT, std::__detail::_State<char>::<unnamed>.std::__detail::_State_base::<unnamed>)).std::_Function_base::_M_manager\u2019 may be used uninitialized [-Werror=maybe-uninitialized]"
+    ]
+  },
+  {
+    "pr_log": "macos-arm64.log",
+    "main_log": "main-macos-arm64.log",
+    "error_diagnostics_identical": true,
+    "diagnostics": [
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:43:8: error: unknown type name 'constexpr'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:43:42: error: expected function body after function declarator",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:150:15: error: no template named 'tuple' in namespace 'std'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:97:30: error: expected expression",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:110:41: error: expected expression",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:142:15: error: use of undeclared identifier 'trit_to_int'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:163:38: error: use of undeclared identifier 'trit_to_int'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:164:38: error: use of undeclared identifier 'trit_to_int'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:169:23: error: use of undeclared identifier 'int_to_trit'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:173:23: error: use of undeclared identifier 'int_to_trit'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:177:23: error: use of undeclared identifier 'int_to_trit'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:185:12: error: excess elements in scalar initializer",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:262:15: error: no template named 'tuple' in namespace 'std'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:217:31: error: expected expression",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:223:34: error: use of undeclared identifier 'trit_to_int'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:247:23: error: use of undeclared identifier 'int_to_trit'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:250:23: error: use of undeclared identifier 'int_to_trit'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:253:23: error: use of undeclared identifier 'int_to_trit'",
+      "/Users/runner/work/t81-foundation/t81-foundation/experiments/radix_comparison/radix_comparison.hpp:320:12: error: excess elements in scalar initializer",
+      "fatal error: too many errors emitted, stopping now [-ferror-limit=]"
+    ]
+  }
+]

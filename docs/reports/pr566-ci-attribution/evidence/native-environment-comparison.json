@@ -1,0 +1,38 @@
+[
+  {
+    "pr_log": "windows-msvc.log",
+    "main_log": "main-windows-msvc.log",
+    "environment_identical": true,
+    "environment": {
+      "image": "Image: windows-2025-vs2026\nVersion: 20261021.278.1\nIncluded Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261021.278/images/windows/Windows2025-VS2026-Readme.md\nImage Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261021.278",
+      "compiler": "MSVC 19.51.36260.0"
+    }
+  },
+  {
+    "pr_log": "windows-clang-cl.log",
+    "main_log": "main-windows-clang-cl.log",
+    "environment_identical": true,
+    "environment": {
+      "image": "Image: windows-2025-vs2026\nVersion: 20261021.278.1\nIncluded Software: https://github.com/actions/runner-images/blob/win25-vs2026/20261021.278/images/windows/Windows2025-VS2026-Readme.md\nImage Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20261021.278",
+      "compiler": "Clang 20.1.8 with MSVC-like command-line"
+    }
+  },
+  {
+    "pr_log": "avx2-asan.log",
+    "main_log": "main-avx2-asan.log",
+    "environment_identical": true,
+    "environment": {
+      "image": "Image: ubuntu-26.04\nVersion: 20261012.163.1\nIncluded Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md\nImage Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163",
+      "compiler": "GNU 15.2.0"
+    }
+  },
+  {
+    "pr_log": "macos-arm64.log",
+    "main_log": "main-macos-arm64.log",
+    "environment_identical": true,
+    "environment": {
+      "image": "Image: macos-14-arm64\nVersion: 20260831.0302.1\nIncluded Software: https://github.com/actions/runner-images/blob/macos-14-arm64/20260831.0302/images/macos/macos-14-arm64-Readme.md\nImage Release: https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20260831.0302",
+      "compiler": "AppleClang 15.0.0.15000309"
+    }
+  }
+]
