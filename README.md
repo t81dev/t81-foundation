@@ -2,6 +2,8 @@
 
 **Deterministic execution · Content-addressed artifacts · Pre-dispatch governance · Empirical representation limits**
 
+*All determinism claims in this repository are strictly bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).*
+
 [![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 [![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue.svg)](spec/tisc/opcode-registry.md)
 [![Status](https://img.shields.io/badge/Research-Active-green.svg)](docs/research/RESEARCH_CHARTER.md)
