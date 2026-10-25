@@ -98,3 +98,7 @@ bash scripts/ci/run_model_artifact_review_smoke.sh
 ```
 
 The sentinel is an untracked local test input only; no CLI code executes because the script rejects the missing fixture first. No fixture, model or production source was fabricated. The early no-binary attempt and the later missing-fixture attempt are both preserved with different filenames.
+
+## Final refresh — 2026-10-25 10:15 EDT
+
+The same nine completed failed jobs remain. Required `quality gate / required` is not yet reported; `Analyze (cpp)` remains in progress with null conclusion. Neither has genuinely passed on #566. Still-running jobs in this workflow: build / macos-x86_64 / gcc. The separate general `build / sanitizers` job has now completed with conclusion `cancelled`; this does not substitute for the failed AVX2/ASan lane. Final job/check snapshots are preserved alongside the earlier snapshot. Branch protection is unchanged, both PRs remain draft/open at their original heads, and auto_merge is null for each. No merge recommendation is made.
