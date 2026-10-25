@@ -113,71 +113,122 @@ class Evaluator {
     ledger.total_elements = static_cast<int64_t>(trace.size());
     if (trace.empty()) return ledger;
 
-    ledger.tier_sequence.reserve(trace.size());
-    int prev_tier = -1;
-
-    for (size_t i = 0; i < trace.size(); ++i) {
-      int64_t val = trace[i];
-      int current_tier = 3;
-
-      switch (arm) {
-        case Arm::FB:
-          current_tier = 3;
+    if (arm == Arm::FB || arm == Arm::FT) {
+      ledger.tier_sequence.assign(trace.size(), 3);
+      for (size_t i = 0; i < trace.size(); ++i) {
+        if (arm == Arm::FB) {
           ledger.symbol_slots += TierLimits::binary_bits[3];
-          break;
-        case Arm::AB:
-          current_tier = TierLimits::get_binary_tier(val);
-          ledger.symbol_slots += TierLimits::binary_bits[current_tier];
-          ledger.selector_checks += 1;
-          break;
-        case Arm::FT:
-          current_tier = 3;
+        } else {
           ledger.symbol_slots += TierLimits::ternary_trits[3];
-          break;
-        case Arm::AT:
-          current_tier = TierLimits::get_ternary_tier(val);
-          ledger.symbol_slots += TierLimits::ternary_trits[current_tier];
-          ledger.selector_checks += 1;
-          break;
-      }
-
-      ledger.tier_sequence.push_back(current_tier);
-
-      // Metadata cost (charged per block)
-      // Uncorrupted metadata accounting: metadata bits represent control bits (00, 01, 10, 11), not trits.
-      if (arm == Arm::AB || arm == Arm::AT) {
-        if (i % static_cast<size_t>(params.block_size) == 0) {
-          double meta = params.metadata_bits_per_block;
-          ledger.metadata_cost += meta;
         }
       }
-
-      // Transition tracking
-      if (prev_tier != -1 && current_tier != prev_tier) {
-        int delta = std::abs(current_tier - prev_tier);
-        ledger.transition_count += 1;
-        ledger.transition_level_delta += delta;
-        if (arm == Arm::AB || arm == Arm::AT) {
-          ledger.transition_cost += delta * params.transition_cost_per_level;
-        }
+      if (arm == Arm::FB) {
+        ledger.weighted_symbol_cost = static_cast<double>(ledger.symbol_slots);
+      } else {
+        ledger.weighted_symbol_cost = static_cast<double>(ledger.symbol_slots) * params.symbol_cost_ratio;
       }
-
-      prev_tier = current_tier;
+      ledger.total_cost = ledger.weighted_symbol_cost;
+      return ledger;
     }
 
-    // Weighted symbol cost
-    if (arm == Arm::FB || arm == Arm::AB) {
+    // Dynamic Programming for adaptive arms (AB and AT)
+    size_t n = trace.size();
+    struct DpNode {
+      double cost = 1e18;
+      std::vector<int> path;
+    };
+
+    // dp[i][t] = min cost for prefix i ending at tier t
+    std::vector<std::vector<DpNode>> dp(n, std::vector<DpNode>(TierLimits::kNumTiers));
+
+    std::vector<int> req_tiers(n);
+    for (size_t i = 0; i < n; ++i) {
+      if (arm == Arm::AB) {
+        req_tiers[i] = TierLimits::get_binary_tier(trace[i]);
+      } else {
+        req_tiers[i] = TierLimits::get_ternary_tier(trace[i]);
+      }
+    }
+
+    double meta_per_block = params.metadata_bits_per_block;
+
+    // Step 0
+    for (int t = req_tiers[0]; t < TierLimits::kNumTiers; ++t) {
+      double sym_cost = (arm == Arm::AB) ? TierLimits::binary_bits[t] : TierLimits::ternary_trits[t] * params.symbol_cost_ratio;
+      double cost = sym_cost + meta_per_block + params.conversion_cost;
+      dp[0][t] = {cost, {t}};
+    }
+
+    // Steps 1..n-1
+    for (size_t i = 1; i < n; ++i) {
+      double meta = (i % static_cast<size_t>(params.block_size) == 0) ? meta_per_block : 0.0;
+      for (int t = req_tiers[i]; t < TierLimits::kNumTiers; ++t) {
+        double sym_cost = (arm == Arm::AB) ? TierLimits::binary_bits[t] : TierLimits::ternary_trits[t] * params.symbol_cost_ratio;
+        double elem_cost = sym_cost + meta + params.conversion_cost;
+
+        double best_prev_cost = 1e18;
+        int best_prev_t = -1;
+
+        for (int prev_t = req_tiers[i-1]; prev_t < TierLimits::kNumTiers; ++prev_t) {
+          double trans_cost = std::abs(t - prev_t) * params.transition_cost_per_level;
+          double tot = dp[i-1][prev_t].cost + elem_cost + trans_cost;
+          if (tot < best_prev_cost) {
+            best_prev_cost = tot;
+            best_prev_t = prev_t;
+          }
+        }
+
+        dp[i][t].cost = best_prev_cost;
+        dp[i][t].path = dp[i-1][best_prev_t].path;
+        dp[i][t].path.push_back(t);
+      }
+    }
+
+    // Find best final tier
+    double best_final_cost = 1e18;
+    int best_final_t = -1;
+    for (int t = req_tiers[n-1]; t < TierLimits::kNumTiers; ++t) {
+      if (dp[n-1][t].cost < best_final_cost) {
+        best_final_cost = dp[n-1][t].cost;
+        best_final_t = t;
+      }
+    }
+
+    ledger.tier_sequence = dp[n-1][best_final_t].path;
+    ledger.selector_checks = static_cast<int64_t>(n);
+
+    int prev_tier = -1;
+    for (size_t i = 0; i < n; ++i) {
+      int t = ledger.tier_sequence[i];
+      if (arm == Arm::AB) {
+        ledger.symbol_slots += TierLimits::binary_bits[t];
+      } else {
+        ledger.symbol_slots += TierLimits::ternary_trits[t];
+      }
+
+      if (i % static_cast<size_t>(params.block_size) == 0) {
+        ledger.metadata_cost += meta_per_block;
+      }
+
+      if (prev_tier != -1 && t != prev_tier) {
+        int delta = std::abs(t - prev_tier);
+        ledger.transition_count += 1;
+        ledger.transition_level_delta += delta;
+        ledger.transition_cost += delta * params.transition_cost_per_level;
+      }
+      prev_tier = t;
+    }
+
+    if (arm == Arm::AB) {
       ledger.weighted_symbol_cost = static_cast<double>(ledger.symbol_slots);
     } else {
       ledger.weighted_symbol_cost = static_cast<double>(ledger.symbol_slots) * params.symbol_cost_ratio;
     }
 
-    double conversion_work = (arm == Arm::AB || arm == Arm::AT) ? (ledger.selector_checks * params.conversion_cost) : 0.0;
-
     ledger.total_cost = ledger.weighted_symbol_cost +
                         ledger.metadata_cost +
                         ledger.transition_cost +
-                        conversion_work;
+                        (ledger.selector_checks * params.conversion_cost);
 
     return ledger;
   }

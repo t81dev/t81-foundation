@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-An adversarial validity audit of PR #569 identified 8 defects in the published H04-R02 experiment (see `DISCREPANCY_LEDGER.md`). Original historical results are archived in `HISTORICAL_RESULTS.md`. Corrected canonical figures derived from first principles are documented in `CORRECTED_RESULTS.md`.
+An adversarial validity audit of PR #569 identified 8 defects in the published H04-R02 experiment (see `DISCREPANCY_LEDGER.md`). Original historical results are archived in `HISTORICAL_RESULTS.md`. Corrected canonical figures derived directly from the repaired C++ executable `t81_h04_r02_adaptive` and independent DP oracle are documented in `CORRECTED_RESULTS.md`.
 
 The audit reclassifies H04-R02 from **Classification B** to **Classification D (Invalid Experimental Methodology)** due to structural defects in original control accounting and comparator capacity symmetry. However, the scientific conclusion remains firm: **adaptive balanced ternary provides no storage, operational, or physical performance advantage over adaptive binary in modern binary hardware or physically realizable encodings.**
 
@@ -30,8 +30,18 @@ The audit reclassifies H04-R02 from **Classification B** to **Classification D (
 
 ---
 
-## 3. Key Findings
+## 3. Key Mathematical and Physical Bounds Findings
 
-1. **Information-Theoretic Limit:** All non-asymmetric break-even ratios ($1.3333 - 1.5610$) are below $\log_2(3) \approx 1.585$. Any hardware encoding requiring $\ge 1.585$ bits per trit renders adaptive binary superior.
-2. **Attribution Method Boundaries:** The claim that "over 96% of savings arise from adaptation" is specific to `constant_small` and does not generalize to large-magnitude workloads where adaptation savings are negative or neutral.
-3. **No Hardware/Software Performance Extrapolation:** Abstract symbol slot counts must not be extrapolated to CPU cycle speedups or physical device energy savings.
+1. **Information-Theoretic Bound vs Realizable Encodings:**
+   - Theoretical minimum bit cost per trit is $\log_2(3) \approx 1.58496$.
+   - Standard non-asymmetric break-even ratios ($1.3333 - 1.5610$) fall strictly below $\log_2(3) \approx 1.585$.
+   - Realizable bit-packing schemes (Base-243 at $1.600$ bits/trit, 2-bit packed at $2.000$ bits/trit) render adaptive binary superior across all standard workloads on binary ALUs.
+
+2. **10-bit Binary Mode Comparator Analysis:**
+   - Under `boundary_oscillation` with a 10-bit mode comparator ($M=1024$), break-even ratio is $1.6667$.
+   - A ratio of $1.6667$ exceeds $\log_2(3) \approx 1.585$, showing that sub-byte/10-bit unaligned fractional bit-packing could theoretically achieve an advantage if encoding overhead is zero.
+   - However, in realizable encodings ($2.0$ bits/trit or Base-243 at $1.60$ bits/trit plus SIMD decode latency), adaptive binary with 10-bit or byte-aligned modes maintains superior performance.
+
+3. **Narrowing of Inferences:**
+   - Claims are strictly limited to software emulation on binary ALUs and abstract symbol-slot ledgers.
+   - No conclusions regarding custom ternary silicon ASICs or physical energy measurement in Joules are established.

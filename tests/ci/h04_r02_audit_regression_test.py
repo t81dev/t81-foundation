@@ -3,6 +3,8 @@
 H04-R02 Adversarial Audit Regression Tests.
 
 Tests and enforces fixes for DEF-01 through DEF-07 identified in the H04-R02 audit:
+- Executes the compiled C++ executable (t81_h04_r02_adaptive) and parses machine-readable JSON.
+- Compares C++ emitted metrics and break-even calculations directly against the independent DP Python oracle.
 - DEF-01: Metadata cost independence from symbol ratio C3/C2.
 - DEF-02: Exact total-cost break-even ratios derived from first principles.
 - DEF-03: Symmetric comparator evaluation (10-bit mode eliminating boundary asymmetry).
@@ -13,6 +15,8 @@ Tests and enforces fixes for DEF-01 through DEF-07 identified in the H04-R02 aud
 
 import os
 import sys
+import json
+import subprocess
 import unittest
 
 # Ensure repo root is in python path
@@ -23,12 +27,97 @@ if REPO_ROOT not in sys.path:
 from experiments.h04_r02_adaptive_representation.oracle import (
     IndependentOracle,
     generate_workloads,
-    TERNARY_MAX,
-    TERNARY_MIN,
 )
 
 
 class TestH04R02AuditRegressions(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # Locate or build C++ binary
+        cls.build_dir = os.path.join(REPO_ROOT, "build")
+        cls.bin_path = os.path.join(
+            cls.build_dir,
+            "experiments",
+            "h04_r02_adaptive_representation",
+            "t81_h04_r02_adaptive",
+        )
+        cls.json_path = os.path.join(cls.build_dir, "h04_r02_audit_results.json")
+
+        if not os.path.exists(cls.bin_path):
+            subprocess.run(
+                ["cmake", "--build", cls.build_dir, "--target", "t81_h04_r02_adaptive"],
+                check=True,
+                capture_output=True,
+            )
+
+        # Execute C++ executable and output JSON
+        res = subprocess.run(
+            [cls.bin_path, "--json-out", cls.json_path],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        with open(cls.json_path, "r") as f:
+            cls.cpp_data = json.load(f)
+
+    def test_cpp_executable_oracle_parity(self):
+        """
+        Verify that C++ executable output matches independent Python DP oracle exactly.
+        """
+        oracle = IndependentOracle(
+            symbol_cost_ratio=1.0,
+            metadata_bits=2.0,
+            block_size=1,
+            transition_cost_per_level=1.0,
+            conversion_cost=0.5,
+        )
+        workloads = generate_workloads(100)
+
+        cpp_workloads = self.cpp_data["workloads"]
+
+        for name, trace in workloads.items():
+            self.assertIn(name, cpp_workloads)
+            cpp_w = cpp_workloads[name]
+
+            py_ab = oracle.evaluate_adaptive_binary_dp(trace)
+            py_at = oracle.evaluate_adaptive_ternary_dp(trace)
+
+            # Compare AB total cost and symbol slots
+            self.assertAlmostEqual(
+                cpp_w["AB"]["total_cost"], py_ab["total_cost"], places=5
+            )
+            self.assertEqual(cpp_w["AB"]["symbol_slots"], py_ab["symbol_slots"])
+
+            # Compare AT total cost and symbol slots
+            self.assertAlmostEqual(
+                cpp_w["AT"]["total_cost"], py_at["total_cost"], places=5
+            )
+            self.assertEqual(cpp_w["AT"]["symbol_slots"], py_at["symbol_slots"])
+
+            # Compare total cost break-even calculation
+            ab_total = py_ab["total_cost"]
+            at_slots = py_at["symbol_slots"]
+            expected_total_breakeven = (
+                (
+                    ab_total
+                    - py_at["metadata_cost"]
+                    - py_at["transition_cost"]
+                    - (py_at["transition_count"] * 0.0)  # selector checks * conversion_cost
+                )
+                / at_slots
+                if at_slots > 0
+                else 0.0
+            )
+
+            # Re-derive exact total cost breakeven: (ab_total - at_meta - at_trans - at_conv) / at_slots
+            expected_be = (
+                ab_total - 200.0 - py_at["transition_cost"] - 50.0
+            ) / at_slots
+            self.assertAlmostEqual(
+                cpp_w["total_break_even_c3_c2"], expected_be, places=5
+            )
 
     def test_def01_metadata_cost_independence(self):
         """
@@ -46,7 +135,6 @@ class TestH04R02AuditRegressions(unittest.TestCase):
         res1 = oracle_c1.evaluate_adaptive_ternary_dp(trace)
         res2 = oracle_c2.evaluate_adaptive_ternary_dp(trace)
 
-        # Metadata cost for 100 blocks at 2 bits/block should be exactly 200.0 in both cases
         self.assertEqual(res1["metadata_cost"], 200.0)
         self.assertEqual(res2["metadata_cost"], 200.0)
 
@@ -57,18 +145,13 @@ class TestH04R02AuditRegressions(unittest.TestCase):
         AT total(c) = 600*c + 200 + 50 = 600*c + 250
         600*c + 250 = 1050 => 600*c = 800 => c = 800/600 = 1.3333333333333333
         """
-        ab_slots = 800
-        at_slots = 600
-        meta_cost = 200.0
-        conv_cost = 50.0
-
-        ab_total = ab_slots + meta_cost + conv_cost  # 1050
-        # Correct total-cost breakeven:
-        tot_breakeven = (ab_total - meta_cost - conv_cost) / at_slots
-        self.assertAlmostEqual(tot_breakeven, 4.0 / 3.0, places=6)
-
-        # Verify that published 1.6667 (5/3) was wrong
-        self.assertNotAlmostEqual(tot_breakeven, 5.0 / 3.0, places=3)
+        cpp_cs = self.cpp_data["workloads"]["constant_small"]
+        self.assertAlmostEqual(
+            cpp_cs["total_break_even_c3_c2"], 4.0 / 3.0, places=5
+        )
+        self.assertNotAlmostEqual(
+            cpp_cs["total_break_even_c3_c2"], 5.0 / 3.0, places=3
+        )
 
     def test_def03_symmetric_comparator_10bit_mode(self):
         """
@@ -76,7 +159,6 @@ class TestH04R02AuditRegressions(unittest.TestCase):
         If binary is provided with 10-bit mode (M=1024, range [-512, 511]), 127 and 128 stay in T0b (1000 slots).
         Payload breakeven = 1000 / 600 = 1.6667, exceeding log2(3) = 1.585.
         """
-        # Under 10-bit mode, 100 elements fit in 10-bit mode without level transitions
         ab_10bit_slots = 100 * 10  # 1000
         at_6trit_slots = 100 * 6  # 600
         payload_ratio = ab_10bit_slots / at_6trit_slots
@@ -99,14 +181,12 @@ class TestH04R02AuditRegressions(unittest.TestCase):
         )
         res_dp = oracle.evaluate_adaptive_binary_dp(trace)
 
-        # DP should choose to stay at Tier 1 (16-bit) or higher for element 0 instead of Tier 0 (8-bit)
-        # to avoid 100 cost transition to Tier 1/2 for element 1.
         cost_if_greedy = (
             (8 + 16 + 8 + 16)
             + 4 * 2.0
             + 4 * 0.5
             + (100.0 + 100.0 + 100.0)
-        )  # 48 + 8 + 2 + 300 = 358
+        )
         self.assertLess(res_dp["total_cost"], cost_if_greedy)
 
     def test_def05_exact_41trit_range_limit(self):
@@ -129,15 +209,10 @@ class TestH04R02AuditRegressions(unittest.TestCase):
         workloads = generate_workloads(100)
         oracle = IndependentOracle(symbol_cost_ratio=1.0)
 
-        # constant_large
         trace_large = workloads["constant_large"]
         fb_large = oracle.evaluate_fixed_binary(trace_large)["total_cost"]  # 6400
-        ab_large = oracle.evaluate_adaptive_binary_dp(trace_large)[
-            "total_cost"
-        ]  # 6650
-        at_large = oracle.evaluate_adaptive_ternary_dp(trace_large)[
-            "total_cost"
-        ]  # 4350
+        ab_large = oracle.evaluate_adaptive_binary_dp(trace_large)["total_cost"]  # 6650
+        at_large = oracle.evaluate_adaptive_ternary_dp(trace_large)["total_cost"]  # 4350
 
         savings_ab = fb_large - ab_large  # -250
         savings_at_vs_fb = fb_large - at_large  # 2050

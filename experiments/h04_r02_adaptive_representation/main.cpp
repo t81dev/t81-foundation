@@ -89,9 +89,9 @@ int main(int argc, char** argv) {
 
     // Total cost break-even solving AT_cost(c) == AB_cost
     // AB_cost = ab.weighted_symbol_cost + ab.metadata_cost + ab.transition_cost + ab.selector_checks * conversion_cost
-    // AT_cost(c) = at.symbol_slots * c + at.metadata_cost(c) + at.transition_cost + at.selector_checks * conversion_cost
+    // AT_cost(c) = at.symbol_slots * c + at.metadata_cost + at.transition_cost + at.selector_checks * conversion_cost
     double ab_total = ab.total_cost;
-    double total_break_even = (at.symbol_slots > 0) ? (ab_total - ab.transition_cost - ab.selector_checks * params.conversion_cost) / at.symbol_slots : 0.0;
+    double total_break_even = (at.symbol_slots > 0) ? (ab_total - at.metadata_cost - at.transition_cost - (at.selector_checks * params.conversion_cost)) / at.symbol_slots : 0.0;
 
     summaries.push_back({name, fb, ab, ft, at, payload_break_even, total_break_even});
 
@@ -109,8 +109,8 @@ int main(int argc, char** argv) {
     if (os.is_open()) {
       os << "{\n";
       os << "  \"experiment\": \"t81_h04_r02_adaptive_representation\",\n";
-      os << "  \"classification\": \"B\",\n";
-      os << "  \"classification_name\": \"No ternary-specific advantage: Apparent benefits disappear after comparator optimization or overhead accounting\",\n";
+      os << "  \"classification\": \"D\",\n";
+      os << "  \"classification_name\": \"Invalid experimental methodology: Metadata corruption, division math defects, and comparator asymmetry in original experiment\",\n";
       os << "  \"workloads\": {\n";
 
       for (size_t i = 0; i < summaries.size(); ++i) {

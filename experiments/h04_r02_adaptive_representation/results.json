@@ -1,7 +1,7 @@
 {
   "experiment": "t81_h04_r02_adaptive_representation",
-  "classification": "B",
-  "classification_name": "No ternary-specific advantage: Apparent benefits disappear after comparator optimization or overhead accounting",
+  "classification": "D",
+  "classification_name": "Invalid experimental methodology: Metadata corruption, division math defects, and comparator asymmetry in original experiment",
   "workloads": {
     "adversarial_transition": {
       "FB": {
@@ -49,7 +49,7 @@
           "total_cost": 2372
         },
       "payload_break_even_c3_c2": 1.51899,
-      "total_break_even_c3_c2": 1.62025
+      "total_break_even_c3_c2": 1.51899
     },
     "alternating": {
       "FB": {
@@ -97,7 +97,7 @@
           "total_cost": 2897
         },
       "payload_break_even_c3_c2": 1.53191,
-      "total_break_even_c3_c2": 1.61702
+      "total_break_even_c3_c2": 1.53191
     },
     "boundary_oscillation": {
       "FB": {
@@ -145,7 +145,7 @@
           "total_cost": 850
         },
       "payload_break_even_c3_c2": 2,
-      "total_break_even_c3_c2": 2.33333
+      "total_break_even_c3_c2": 2.165
     },
     "constant_large": {
       "FB": {
@@ -193,7 +193,7 @@
           "total_cost": 4350
         },
       "payload_break_even_c3_c2": 1.56098,
-      "total_break_even_c3_c2": 1.60976
+      "total_break_even_c3_c2": 1.56098
     },
     "constant_small": {
       "FB": {
@@ -241,7 +241,7 @@
           "total_cost": 850
         },
       "payload_break_even_c3_c2": 1.33333,
-      "total_break_even_c3_c2": 1.66667
+      "total_break_even_c3_c2": 1.33333
     },
     "phased": {
       "FB": {
@@ -289,7 +289,7 @@
           "total_cost": 2228
         },
       "payload_break_even_c3_c2": 1.51899,
-      "total_break_even_c3_c2": 1.62025
+      "total_break_even_c3_c2": 1.51899
     },
     "signed_extremes": {
       "FB": {
@@ -337,7 +337,7 @@
           "total_cost": 2359
         },
       "payload_break_even_c3_c2": 1.5204,
-      "total_break_even_c3_c2": 1.6199
+      "total_break_even_c3_c2": 1.5204
     },
     "sparse_large": {
       "FB": {
@@ -385,7 +385,7 @@
           "total_cost": 929
         },
       "payload_break_even_c3_c2": 1.36119,
-      "total_break_even_c3_c2": 1.6597
+      "total_break_even_c3_c2": 1.36119
     }
   }
 }

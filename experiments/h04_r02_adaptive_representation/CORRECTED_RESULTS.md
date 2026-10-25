@@ -8,7 +8,7 @@
 
 ## 1. Corrected Summary Ledger Table ($C_3/C_2 = 1.0$, $M_{meta}=2$, $C_{trans}=1$, $C_{conv}=0.5$)
 
-*All calculations below are derived strictly from first principles under uncorrupted metadata accounting ($M_{meta} = 2.0$ bits/block).*
+*All calculations below are regenerated directly from the repaired C++ executable `t81_h04_r02_adaptive` and matched against the independent DP Python oracle under uncorrupted metadata accounting ($M_{meta} = 2.0$ bits/block).*
 
 | Workload Family | FB Cost | AB Cost (Slots) | FT Cost | AT Cost (Slots) | Corrected Payload $C_3/C_2$ Break-even | Corrected Total Cost $C_3/C_2$ Break-even |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -24,17 +24,22 @@
 
 ---
 
-## 2. Key First-Principles Discoveries
+## 2. Key Mathematical and Physical Bounds Analysis
 
-1. **Equivalence of Payload and Total Cost Break-Even:**
-   When metadata overhead ($M_{meta}$) and transition penalties ($T_{trans}$) are identical for AB and AT, setting $\text{Cost}_{AB} = \text{Cost}_{AT}$ yields:
-   $$S_{AB} + M_{meta} + T_{trans} + C_{conv} = S_{AT} \cdot (C_3/C_2) + M_{meta} + T_{trans} + C_{conv}$$
-   $$S_{AB} = S_{AT} \cdot (C_3/C_2) \implies (C_3/C_2)_{break-even} = \frac{S_{AB}}{S_{AT}}$$
-   Thus, under fair control accounting, the total cost break-even point is **identically equal** to the payload slot ratio $S_{AB} / S_{AT}$.
+1. **Information-Theoretic Bound vs Realizable Encodings:**
+   - The theoretical minimum bit cost per trit is $\log_2(3) \approx 1.58496$.
+   - Realizable bit-packing encodings require additional overhead:
+     - 5-trits in 8-bits (Base-243): $8/5 = 1.600$ bits/trit.
+     - 2-bit packed trits: $2.000$ bits/trit.
+   - For all standard non-asymmetric workloads (`constant_small`, `constant_large`, `phased`, `alternating`, `signed_extremes`, `sparse_large`, `adversarial_transition`), the total cost break-even symbol ratio $C_3/C_2$ ranges between $1.3333$ and $1.5610$.
+   - Since $1.5610 < \log_2(3) \approx 1.585 < 1.600 < 2.000$, adaptive binary outperforms adaptive balanced ternary under all realizable bit-packing schemes and physical binary hardware encodings.
 
-2. **Physical Feasibility Limit:**
-   In physical binary hardware, packing 1 trit requires at least $\log_2(3) \approx 1.58496$ bits (or $2.0$ bits in 2-bit packed representation).
-   Since all non-asymmetric workload break-even ratios ($1.3333 - 1.5610$) are strictly less than $\log_2(3) \approx 1.585$, **adaptive balanced ternary cannot achieve a storage or cost advantage over adaptive binary in any physically realizable hardware encoding**.
+2. **Analysis of the $127/128$ Boundary Advantage (DEF-03):**
+   - On `boundary_oscillation` ($127, 128$), 8-bit Tier 0 AB switches to 16-bit Tier 1, yielding a break-even ratio of $2.0000$ (payload) or $2.1650$ (total cost).
+   - Because $1.6667 > 1.585$, a ratio of $1.6667$ under a 10-bit mode comparator ($M=1024$, range $[-512, 511]$) is mathematically above $\log_2(3)$ and therefore *physically possible* under ideal, unaligned fractional bit-packing.
+   - However, in realizable hardware encodings ($2.0$ bits/trit or Base-243 at $1.60$ bits/trit plus SIMD decode latency), adaptive binary with a 10-bit or byte-aligned mode retains superior execution and storage efficiency.
+   - Thus, the $127/128$ advantage is a precision granularity artifact of omitting sub-byte/10-bit modes in 8-bit step baselines, rather than an inherent property of the balanced-ternary radix.
 
-3. **Symmetric Comparator Evaluation:**
-   Providing binary with a 10-bit mode tier ($M=1024$, range $[-512, 511]$) matches Tier 0 information capacity ($M=729$) without asymmetry. Under 10-bit mode on `boundary_oscillation`, the break-even ratio drops from $2.0000$ (or $2.1650$) to $1.6667$, which still exceeds realistic physical hardware encoding bounds.
+3. **Scope and Limits of Inferences:**
+   - Abstract symbol-slot models ($C_3/C_2$) measure symbolic storage bounds, not measured CPU instruction counts, cache behavior, or silicon energy in Joules.
+   - Claims regarding ternary software impossibility are strictly bounded to software emulation on binary ALUs and abstract cost models; they do not establish universal physical impossibility for hypothetical custom ternary hardware ASICs.
