@@ -1365,6 +1365,9 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/experiments/packed_ternary_matvec/CMakeLists.txt")
     add_subdirectory(experiments/packed_ternary_matvec)
   endif()
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/experiments/h04_r02_adaptive_representation/CMakeLists.txt")
+    add_subdirectory(experiments/h04_r02_adaptive_representation)
+  endif()
   set(T81_TEST_TARGETS
     t81_float_test
     t81_float_properties_test
