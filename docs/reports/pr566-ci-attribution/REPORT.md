@@ -102,3 +102,11 @@ The sentinel is an untracked local test input only; no CLI code executes because
 ## Final refresh — 2026-10-25 10:15 EDT
 
 The same nine completed failed jobs remain. Required `quality gate / required` is not yet reported; `Analyze (cpp)` remains in progress with null conclusion. Neither has genuinely passed on #566. Still-running jobs in this workflow: build / macos-x86_64 / gcc. The separate general `build / sanitizers` job has now completed with conclusion `cancelled`; this does not substitute for the failed AVX2/ASan lane. Final job/check snapshots are preserved alongside the earlier snapshot. Branch protection is unchanged, both PRs remain draft/open at their original heads, and auto_merge is null for each. No merge recommendation is made.
+
+## Additional non-passing job: general sanitizer timeout
+
+[Job 121185892790](https://github.com/t81dev/t81-foundation/actions/runs/40198913954/job/121185892790) is cancelled, not successful. Its check annotation explicitly says: `The job has exceeded the maximum execution time of 30m0s`. Started 13:44:23 UTC, completed 14:14:41 UTC; the inherited sanitizers job timeout is 30 minutes (main .github/workflows/ci.yml:1302; #566:1326). The general sanitizer cancellation is distinct from the independently reproduced AVX2 compile failure.
+
+Classification: UNDETERMINED versus an equivalent exact-main timing baseline. The job definition and code are unchanged, but the complete native sanitizer workload was not independently replayed and runtime duration can depend on runner/cache/load. Do not claim that a source regression or the same timeout on main has been demonstrated. It remains an outstanding required dependency and provides no successful sanitizer verification. Annotation, job metadata and raw logs are preserved.
+
+There are nine jobs with conclusion failure plus this cancelled job in the recorded snapshot. macOS x86_64 GCC and this PR's CodeQL were still running; the aggregate protected gate was not yet reported. No required-success claim or merge recommendation is made.

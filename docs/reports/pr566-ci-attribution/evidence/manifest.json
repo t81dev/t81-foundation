@@ -350,6 +350,27 @@
       "original_bytes": 1076,
       "original_sha256": "5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa",
       "stored_sha256": "5446533d4c44a2badceb905ad0de1398eb734ba727aa1f7ec2792a73832efefa"
+    },
+    {
+      "original_name": "general-sanitizers-cancelled.log",
+      "stored_name": "general-sanitizers-cancelled.log.gz",
+      "original_bytes": 254695,
+      "original_sha256": "799fde9ed765cd8d2483f05f1518b28504a9973c637dde5437c6e680eb215ea4",
+      "stored_sha256": "f0b44631a9066cf6cd406fbe2cbea9a0253417b87fb49aeb0ea457b7e96e182d"
+    },
+    {
+      "original_name": "general-sanitizers-cancelled-job.json",
+      "stored_name": "general-sanitizers-cancelled-job.json",
+      "original_bytes": 2047,
+      "original_sha256": "6042d4d3d24cf308cae6fe1125de930b9b9d03e850538b35ce518dd3e6311402",
+      "stored_sha256": "6042d4d3d24cf308cae6fe1125de930b9b9d03e850538b35ce518dd3e6311402"
+    },
+    {
+      "original_name": "general-sanitizers-annotations.json",
+      "stored_name": "general-sanitizers-annotations.json",
+      "original_bytes": 1040,
+      "original_sha256": "aaf8f5fe5071f67adb2dc72708ee3e2b6089a18aff1e5d9e9399fe73aaf6c037",
+      "stored_sha256": "aaf8f5fe5071f67adb2dc72708ee3e2b6089a18aff1e5d9e9399fe73aaf6c037"
     }
   ]
 }
