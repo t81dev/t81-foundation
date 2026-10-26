@@ -1,0 +1,18 @@
+{
+  "source_commit": "551d5075f35355b9ef96d9ce659d71be0891ee27",
+  "reviewed_head": "99a95d1db0f6aaf05638065c0ad4f82d818bfc5f",
+  "status": "SUPERSEDED_INVALID_SCIENTIFIC_EVIDENCE",
+  "files": {
+    "CMakeLists.txt": "2f0243b9e2ea2d7d9e51b4a7a0f811b3cd133c1336e78416eab8df8577700f83",
+    "METHODOLOGY.md": "03e9e088731a58fdf0024980d6b2d32b242d5b488da00b003f06639ed66f9704",
+    "README.md": "a2a3f57e66209c0e8bea53cf864e3519e2191d38f7171637e1503ae94d769c03",
+    "RESEARCH_REPORT.md": "36a64dfc805e483138c4ecdf2b57fd66e2c9239adbd9adab94c75277fa153a35",
+    "SPECIFICATION.md": "d6080001b55ca36162c9395bf4c275d4f65b60ff782663c533c4dd686129fca6",
+    "VERIFICATION.md": "897b831e0c6cc73864f8be32530890a3b448c4acf3ce3da6180df331bc00bfa5",
+    "main.cpp": "28f00f42c3509f0f7c6728e4daff58657f09f644b20f302aeaad24e86ddddefb",
+    "oracle.py": "ad217e2c4b12e0082cc2b70ff98e6999650cb408e15b36fe1ff025e01fcde08d",
+    "results.json": "1a3f51457c871d1aa30c5e6ef419827638795dbf5322bc8b2dccc73d5b696118",
+    "stochastic_topology.hpp": "7aee1acd959d69826a7679f480a87ce4ac2aba541a00f0eb1df4cdc719f78e46",
+    "test_oracle.py": "c2facfb230cd1c0f138847258cb8525ff5a232ffd2e77f5640a5d52d3f27f46d"
+  }
+}

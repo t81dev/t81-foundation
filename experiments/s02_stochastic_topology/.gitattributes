@@ -1,0 +1,9 @@
+*.py text eol=lf
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+results.traces.jsonl.gz -text
+# Preserve exact original/frozen/observed bytes on Windows checkouts too.
+historical/pr582/** -text
+evidence/** -text

@@ -1,0 +1,10 @@
+{
+  "frozen_at_utc": "2026-10-26T19:37:44.602746+00:00",
+  "file": "S02_EVALUATION_RUBRIC.md",
+  "sha256": "b220e94331fa59e205929890be1f68f1a876e3d728b32c3535a3012970d87353",
+  "version": 1,
+  "S02_implementation_read": false,
+  "S02_results_read": false,
+  "protocol_availability": "Not supplied; only old pinned-main filenames enumerated; no S02 protocol found there",
+  "registration": "Local prospective review seal only, not authenticated external preregistration"
+}

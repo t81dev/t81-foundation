@@ -1,0 +1,8 @@
+{
+  "configure": "cmake -S experiments/s02_stochastic_topology -B /private/tmp/t81-s02-integrity-build -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+  "build": "cmake --build /private/tmp/t81-s02-integrity-build --parallel 2",
+  "generate": "python3 experiments/s02_stochastic_topology/regenerate.py --runner /private/tmp/t81-s02-integrity-build/t81_s02_stochastic_topology",
+  "test": "ctest --test-dir /private/tmp/t81-s02-integrity-build --output-on-failure --output-junit experiments/s02_stochastic_topology/evidence/after/ctest.xml",
+  "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+  "cmake_version": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n"
+}

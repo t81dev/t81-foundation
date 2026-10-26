@@ -1,37 +1,25 @@
-# T81 Research Experiment S02 — Stochastic State–Topology Computation
+# S02 — corrected scientific-integrity pilot
 
-**Status:** Completed Research Cycle
-**Final Verdict:** STOP (Track S Research Concluded)
+**Decision: REVISE. H2 is UNTESTED.** This packet corrects merged PR #582; it does not initiate S03. Original results and the original STOP verdict are superseded, preserved byte-for-byte under [historical/pr582](historical/pr582/HISTORICAL_NOTICE.md), and are not valid hypothesis evidence.
 
----
+The corrected runner evaluates immutable spin-glass tasks while adaptive algorithms change a separate computational graph. It produces 315 state trajectories and 1260 cost-repriced vertex-matched rows across 15 tasks. A separate Python oracle audits all 63315 initial/post-update states and every reference, task gap, occupancy and first hit. This is a **partial five-seed pilot**, not the full predefined sweep or an architectural/hardware validation.
 
-## Overview
+- [Generated research report](RESEARCH_REPORT.md) and [machine-readable analysis](analysis.json)
+- [Actual specification and omitted scope](SPECIFICATION.md)
+- [Correction protocol and unchanged rubric](CORRECTION_PROTOCOL.md)
+- [Five reproduced defects and verification](VERIFICATION.md)
+- [Reproduction/provenance and limitations](METHODOLOGY.md)
 
-This repository contains the complete experimental suite for T81 Research Experiment S02. The experiment investigated whether a stochastic computational network with adaptive local topology provides measurable computational advantages over fixed-topology networks and centralized adaptive baselines under explicit operational cost models.
+Build only this experiment, without configuring T81VM/TISC/T81Lang or governance:
 
-## Structure
-
-- `SPECIFICATION.md`: Formal mathematical specification, energy functions, Glauber transition probabilities, capacity matching rules, and explicit cost models.
-- `stochastic_topology.hpp`: Header-only C++17 simulator implementing Models A–D, Centralized Baseline, and Negative Controls.
-- `main.cpp`: Standalone CLI executable conducting parameter sweeps across seeds, node counts, temperatures, and cost penalties.
-- `CMakeLists.txt`: Build configuration for `t81_s02_stochastic_topology`.
-- `oracle.py`: Python reference oracle computing exact ground states and partition functions via exhaustive enumeration.
-- `test_oracle.py`: Test harness verifying C++ simulator outputs against exact Python oracle ground truth.
-- `results.json`: Full reproducible experimental dataset (1,260 simulation runs).
-- `RESEARCH_REPORT.md`: Final research paper detailing empirical observations, interpretations, control comparisons, and stopping rule decision.
-- `METHODOLOGY.md`: Methodological details and experimental procedure.
-- `VERIFICATION.md`: Correctness proof and verification results.
-
-## Reproduction Steps
-
-```bash
-# Build the simulation binary
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_TESTS=ON
-cmake --build build --target t81_s02_stochastic_topology
-
-# Run Python oracle verification tests
-python3 experiments/s02_stochastic_topology/test_oracle.py --runner build/experiments/s02_stochastic_topology/t81_s02_stochastic_topology
-
-# Generate results dataset
-./build/experiments/s02_stochastic_topology/t81_s02_stochastic_topology experiments/s02_stochastic_topology/results.json
+```sh
+cmake -S experiments/s02_stochastic_topology -B /tmp/t81-s02-build \
+  -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_TESTS=ON
+cmake --build /tmp/t81-s02-build --parallel 2
+python3 experiments/s02_stochastic_topology/regenerate.py \
+  --runner /tmp/t81-s02-build/t81_s02_stochastic_topology
+ctest --test-dir /tmp/t81-s02-build --output-on-failure
+python3 experiments/s02_stochastic_topology/analyze_results.py --check
 ```
+
+The same experiment subdirectory remains available through the existing root CMake integration. No production build graph or source is changed. Local recorded execution is macOS ARM64; cross-platform certification is not claimed. Numerical comparison uses explicit tolerances, not an unsupported cross-platform bit-exact promise. The compressed state trace is deterministic for the recorded source/toolchain; PRNG words have fixed cross-language test vectors.

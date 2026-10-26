@@ -1,108 +1,43 @@
-# Specification: T81 Research Experiment S02 — Stochastic State–Topology Computation
+# S02 corrected pilot specification
 
-**Date:** April 2026
-**Status:** Experimental Research Specification
-**Target Surface:** `experiments/s02_stochastic_topology/`
+Date: October 26, 2026. Status: bounded scientific-integrity correction; **REVISE**, not a new research cycle. The unchanged original specification is archived in historical/pr582/SPECIFICATION.md. The full original parameter grid is not claimed executed.
 
----
+## Task and computational network are different objects
 
-## 1. Research Objective
+The immutable task has N spins, fields h and symmetric zero-diagonal J, and energy
 
-This experiment investigates whether a stochastic computational network with adaptive topology provides measurable advantages over conventional fixed-topology and centrally adaptive approaches under explicit resource and operational cost models.
+`E_task(s) = -sum_i h_i*s_i - sum_{i<j} J_ij*s_i*s_j`.
 
-This is an empirical, non-commercial scientific experiment. It does not modify or introduce any new T81 runtime features.
+Fields in this regenerated pilot follow the original implementation/methodology interval [-0.5,0.5), not the original specification's wider [-1,1]. Couplings on a clipped square-grid graph are ±1; nonedges have task J=0. All seven arms for a given problem use identical task coefficients. Reporting, exact references, task gaps, ground-state occupancy and first-hit observations always use E_task.
 
----
+The mutable computational graph A and network couplings W begin from the task graph/J. Proposals use `E_network(s,A,W)`, with a positive coupling-scale fallback when a newly selected network edge has no stored nonzero W. Removing a computational edge does not remove a task constraint; adding a computational edge does not add a task constraint. Local/random rewires may set a previously zero W to a seeded random ±scale, retained for later reuse. The original task is a const deep copy.
 
-## 2. Tested Hypotheses
+Here exact reference means exhaustive endpoint enumeration with binary64 energy arithmetic and explicit 1e-9 comparison tolerance, not arbitrary-precision real arithmetic.
 
-* **H1 (Stochastic Exploration):** Stochastic network dynamics efficiently explore candidate solution spaces compared to deterministic descent.
-* **H2 (Ternary State Advantage):** Three-state computational elements ($s_i \in \{-1, 0, +1\}$) provide structural or computational advantages over two-state elements ($s_i \in \{-1, +1\}$) under explicitly defined capacity and resource assumptions.
-* **H3 (Adaptive Topology Advantage):** Adaptive topology improves task performance enough to justify its restructuring and coordination overhead costs.
+The exact-reference cache includes N, alphabet, every h value and the complete J matrix after validating finite, symmetric, well-formed coefficients. N=1..16 is supported by this bounded exact-reference runner. E_task is affine in each spin when the other spins are fixed: any zero trit can be replaced by an endpoint that does not increase energy. Thus a binary endpoint achieves a ternary minimum for this particular Hamiltonian (no onsite quadratic term). Binary 2^N enumeration computes both minima; independent 3^N enumeration verifies the theorem on tiny instances. It is not an H2 dynamics/capacity result.
 
-All three hypotheses are treated as unproven.
+## Actual transition and topology rules
 
----
+One step is one seeded random single-site proposal, **not an N-site sweep**. Binary flips sign; ternary chooses either alternative with probability 1/2. The proposal is symmetric. Stochastic acceptance is **Metropolis** `min(1,exp(-delta_E_network/T))`, not the original specification's Glauber/logistic formula. The deterministic-labeled arm accepts non-increasing network energy, but its scan order remains seeded random. Temperature is fixed per stochastic run; this is not simulated annealing.
 
-## 3. Mathematical Foundation
+Topology attempts occur after zero-based proposal indices 10,20,...,190 (19 attempts during 200 steps). Fixed arms do nothing. Local adaptation samples a pair and, if an existing edge is instantaneously frustrated, samples a possible non-neighbor for one rewire. There is no persistent-frustration history or guaranteed improving choice of the new neighbor. Random control attempts the same kind of valid-edge rewire without consulting spins/frustration. Centralized adaptation globally ranks all candidate pairs by current W*s_i*s_j and selects the top N edges; this is a **correlation-ranking heuristic**, not spectral min-cut, exact optimization or a complete strong baseline portfolio.
 
-### 3.1 Problem Domain: Probabilistic Constraint Satisfaction (Ising Spin Glass)
-We evaluate computational models on a 2D spin-glass / probabilistic constraint-satisfaction graph $G = (V, E)$ with random couplings $J_{ij} \in \{-1.0, +1.0\}$ and local magnetic fields $h_i \in [-1.0, +1.0]$.
+Adaptive arms are nonequilibrium optimization heuristics, not claimed samplers of the immutable task Gibbs law. The complete implementation state includes spins, computational adjacency/couplings, stream states and proposal counter. No learned weight optimizer or equilibrium/mixing theorem is inferred. The exact state–topology update sequence is spin proposal, acceptance/rejection, optional rewire, then immutable-task observation.
 
-The system energy is given by:
-$$E(s, E_{top}) = -\sum_{(i,j) \in E_{top}} J_{ij} s_i s_j - \sum_{i \in V} h_i s_i$$
+Randomness uses the published public-domain SplitMix64 word permutation and rejection-based bounded integer sampling. Modulo reduction occurs only after rejecting the incomplete residue interval. Task generation, initialization, spin proposals, acceptance and topology use distinct fixed domain constants. This prevents task words/adaptation draws from being reused as the same spin-proposal stream. It is deterministic pseudo-randomness, not a proof of independent physical entropy or cryptographic strength. C++ and Python words/coefficients have fixed vector/equality tests. [Primary reference](https://prng.di.unimi.it/splitmix64.c).
 
-For small spin counts ($N \le 16$), the partition function $Z$ and ground-state energy $E^*$ are computed exactly by exhaustive enumeration in an independent Python oracle:
-$$Z = \sum_{s \in \mathcal{S}} \exp\left(-\frac{E(s)}{T}\right)$$
+## Scope, controls and H2
 
-### 3.2 Element State Spaces & Capacity Matching
-- **Binary elements:** $s_i \in \{-1, +1\}$.
-- **Ternary elements:** $s_i \in \{-1, 0, +1\}$, where $s_i = 0$ represents an uncommitted / inactive state providing dynamic sparsity and structural dropout.
+The original predefined vertex grid has seeds1–10, N8/12/16/24, T0.1/0.5/1/2, coupling scales0.5/1/1.5, costs0/0.5/1/2/5/10 and seven arms: **20160 priced cells**. The corrected pilot repeats only the originally executed subset: seeds1–5, N8/12/16, T0.1/0.5/1, coupling1, costs0/0.5/1/5, 200 single-site steps. This is 1260 priced cells, 6.25%, with 18900 unexecuted. Five seeds per size do not pass the unchanged rubric's independent-instance planning floor or power requirements. Wider field distribution and N24 are also not tested.
 
-**Capacity Matching Rules:**
-1. *Vertex-Matched Evaluation:* Equal number of vertices $N$ across binary and ternary networks on identical problem graphs.
-2. *State-Space Capacity Matched Evaluation:* Capacity ratio matching where $N_{binary} = \lceil N_{ternary} \cdot \log_2(3) \rceil \approx \lceil 1.585 N_{ternary} \rceil$, ensuring binary and ternary networks operate with matched state space sizes $2^{N_2} \approx 3^{N_3}$.
+Arms remain binary/ternary fixed, binary/ternary local-adaptive, binary central-ranking, binary random-rewire and binary zero-temperature-acceptance local-adaptive. The fixed arms serve as no-adaptation controls. A runtime capacity flag now rejects: growing N with unused binary variables does not create the same task under matched capacity. **H2 is UNTESTED.** No capacity-matched result, 18% penalty, ternary superiority/inferiority or no-advantage conclusion is permitted.
 
-### 3.3 Spin Transition Probability
-Spin updates follow Glauber dynamics at temperature $T$:
-$$P(s_i \to s_i') = \frac{1}{1 + \exp\left(\frac{\Delta E_i}{T}\right)}$$
-where $\Delta E_i = E(s \text{ with } s_i') - E(s \text{ with } s_i)$.
+C_top is a measurement weight, not part of the transition law. Simulate 315 trajectories once, then reprice each at four values. Zero-temperature trajectories repeated under different nominal T labels are not additional independent evidence. Report all seeds, failures and raw traces; do not treat repriced rows or time steps as independent instances.
 
-### 3.4 Joint State–Topology Adaptation Dynamics
-The graph edge topology $E_{top}(t)$ evolves dynamically alongside spin states $s(t)$.
-Local edge frustration is measured as $A_{ij} = J_{ij} s_i s_j$.
-If an edge $(i, j)$ remains persistently frustrated ($A_{ij} < 0$), the adaptive network prunes or rewires edge $(i, j)$ to a candidate node $k$ where expected local energy decreases.
+## Metrics and cost boundary
 
----
+Task gap is E_task(final)-E_task*, with a 1e-9 numerical tolerance. A below-reference gap beyond tolerance raises an error, not absolute-value masking. Occupancy is the fraction of the 200 post-proposal states within 1e-9 of the task optimum, **not ESS**. First-hit indices include the initial state at 0; nonhits serialize as null. Mean task energy excludes the initial state. Network final energy is a separately labeled diagnostic.
 
-## 4. Explicit Cost Model
+The retained three-term proxy is `proposal_attempts + degree_communications + C_top*edge_edits`. Edge edits count undirected additions/removals; central updates charge the symmetric difference rather than pretending every selected unchanged edge is new. Additional full-network pair checks, topology inspections, sort comparisons and random-word draws are exposed. They are not all weighted in the proxy. Full energy scans, global sorting, adjacency clearing/storage, task observation, reference computation, setup and physical communication are not a measured full-system cost. Sorting counts can depend on the C++ standard-library implementation. Do not infer architecture efficiency or hardware joules from this proxy. Offline exact oracles are evaluation machinery, not information supplied to the search policy.
 
-Computational work is decomposed into explicit operational units:
-$$\text{Total Cost } W = N_{\text{spin\_updates}} \cdot C_{\text{spin}} + N_{\text{comm}} \cdot C_{\text{comm}} + N_{\text{topo\_updates}} \cdot C_{\text{top}}$$
-
-* $C_{\text{spin}} = 1.0$ operation per spin state transition evaluation.
-* $C_{\text{comm}} = \text{degree}(i)$ operations per spin state propagation.
-* $C_{\text{top}} \in [0.0, 10.0]$ operations per topology edge addition/deletion/rewiring.
-
-**Important Constraints:**
-- One stochastic update is NOT equated to one unit of equivalent computational work across models.
-- Operational counts are software operation counts only; no physical hardware latency or physical energy claims are made.
-
----
-
-## 5. Experimental Models & Controls
-
-### 5.1 Four Core Models
-* **Model A:** Binary stochastic network with fixed topology.
-* **Model B:** Ternary stochastic network with fixed topology.
-* **Model C:** Binary stochastic network with adaptive topology.
-* **Model D:** Ternary stochastic network with adaptive topology.
-
-### 5.2 Centralized Adaptive Baseline
-* **Centralized Baseline:** Global Simulated Annealing with centrally re-optimized topology (using spectral min-cut / global energy gradient topological optimization at regular intervals).
-
-### 5.3 Required Negative Controls
-1. **No-Adaptation Control:** Topology updates disabled ($C_{\text{top}} \to \infty$, static graph).
-2. **Random-Adaptation Control:** Edge rewiring chosen uniformly at random, completely independent of task energy or spin correlation.
-3. **Deterministic Control:** Temperature $T \to 0$ (zero thermal noise, deterministic local greedy energy descent).
-4. **Centrally Optimized Topology:** Comparison against global centralized adaptation.
-5. **Overhead Sensitivity Sweep:** Sweeping $C_{\text{top}} \in [0.0, 10.0]$ to verify if adaptive advantages survive non-zero restructuring costs.
-
----
-
-## 6. Predefined Parameter Sweeps
-
-Experiments are conducted across 10 deterministic random seeds (seeds 1..10) with parameter sweeps over:
-- Temperature $T \in [0.1, 0.5, 1.0, 2.0]$
-- Coupling strength $J \in [0.5, 1.0, 1.5]$
-- Workload size $N \in [8, 12, 16, 24]$
-- Restructuring cost penalty $C_{\text{top}} \in [0.0, 0.5, 1.0, 2.0, 5.0, 10.0]$
-
----
-
-## 7. Stopping Rule & Reporting
-
-At the end of the experimental cycle, the study reports one of:
-* **CONTINUE:** Reproducible advantage over strong centralized baseline and fixed topologies under explicit cost models ($C_{\text{top}} > 0$) with statistical significance across random seeds.
-* **REVISE:** Inconclusive results or strong parameter sensitivity requiring methodological refinement.
-* **STOP:** Tested hypotheses H1, H2, or H3 fail against controls and baselines when restructuring costs are included.
+The unchanged falsification rubric remains the acceptance/rejection standard. Missing matched controls, full cost, strong baselines and powered independent instances imply **REVISE** for architectural interpretation; no automatic continuation or termination of Track S/S03 is authorized.

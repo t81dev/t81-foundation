@@ -1,0 +1,80 @@
+test_finding_1_oracle_cache_uses_problem_coefficients (__main__.Integrity.test_finding_1_oracle_cache_uses_problem_coefficients) ... FAIL
+test_finding_2_task_energy_survives_edge_removal_and_addition (__main__.Integrity.test_finding_2_task_energy_survives_edge_removal_and_addition) ... FAIL
+test_finding_3_cpp_and_python_integer_sampling (__main__.Integrity.test_finding_3_cpp_and_python_integer_sampling) ... 
+  test_finding_3_cpp_and_python_integer_sampling (__main__.Integrity.test_finding_3_cpp_and_python_integer_sampling) (language='C++') ... FAIL
+  test_finding_3_cpp_and_python_integer_sampling (__main__.Integrity.test_finding_3_cpp_and_python_integer_sampling) (language='Python') ... FAIL
+test_finding_4_table_reproduces_actual_data (__main__.Integrity.test_finding_4_table_reproduces_actual_data) ... FAIL
+test_finding_5_capacity_hypothesis_not_claimed_tested (__main__.Integrity.test_finding_5_capacity_hypothesis_not_claimed_tested) ... FAIL
+
+======================================================================
+FAIL: test_finding_1_oracle_cache_uses_problem_coefficients (__main__.Integrity.test_finding_1_oracle_cache_uses_problem_coefficients)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_integrity.py", line 67, in test_finding_1_oracle_cache_uses_problem_coefficients
+    self.assertEqual(self.probe('cache'),[-1.0,-2.0],'same-size changed field must change cached reference')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [-1, -1] != [-1.0, -2.0]
+
+First differing element 1:
+-1
+-2.0
+
+- [-1, -1]
++ [-1.0, -2.0] : same-size changed field must change cached reference
+
+======================================================================
+FAIL: test_finding_2_task_energy_survives_edge_removal_and_addition (__main__.Integrity.test_finding_2_task_energy_survives_edge_removal_and_addition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_integrity.py", line 69, in test_finding_2_task_energy_survives_edge_removal_and_addition
+    self.assertEqual(self.probe('objective'),[-1.0,-1.0,-1.0],'computational graph must not redefine task energy')
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: [-1, 0, -2] != [-1.0, -1.0, -1.0]
+
+First differing element 1:
+0
+-1.0
+
+- [-1, 0, -2]
++ [-1.0, -1.0, -1.0] : computational graph must not redefine task energy
+
+======================================================================
+FAIL: test_finding_3_cpp_and_python_integer_sampling (__main__.Integrity.test_finding_3_cpp_and_python_integer_sampling) (language='C++')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_integrity.py", line 73, in test_finding_3_cpp_and_python_integer_sampling
+    with self.subTest(language=language):self.assertTrue(any(a==b for a,b in zip(values,values[1:])),language+' binary draws are forced alternating')
+                                         ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : C++ binary draws are forced alternating
+
+======================================================================
+FAIL: test_finding_3_cpp_and_python_integer_sampling (__main__.Integrity.test_finding_3_cpp_and_python_integer_sampling) (language='Python')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_integrity.py", line 73, in test_finding_3_cpp_and_python_integer_sampling
+    with self.subTest(language=language):self.assertTrue(any(a==b for a,b in zip(values,values[1:])),language+' binary draws are forced alternating')
+                                         ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : Python binary draws are forced alternating
+
+======================================================================
+FAIL: test_finding_4_table_reproduces_actual_data (__main__.Integrity.test_finding_4_table_reproduces_actual_data)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_integrity.py", line 79, in test_finding_4_table_reproduces_actual_data
+    self.assertEqual(len(values),5);self.assertAlmostEqual(reported,sum(values)/len(values),places=5)
+                                    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1.12 != 2.191556 within 5 places (1.0715559999999997 difference)
+
+======================================================================
+FAIL: test_finding_5_capacity_hypothesis_not_claimed_tested (__main__.Integrity.test_finding_5_capacity_hypothesis_not_claimed_tested)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_integrity.py", line 81, in test_finding_5_capacity_hypothesis_not_claimed_tested
+    self.assertIn('**H2 — UNTESTED**',(ROOT/'RESEARCH_REPORT.md').read_text(),'vertex-matched observations cannot decide H2')
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '**H2 — UNTESTED**' not found in '# Research Report: T81 Research Experiment S02 — Stochastic State–Topology Computation\n\n**Date:** April 2026\n**Status:** Completed Experimental Findings\n**Target Surface:** `experiments/s02_stochastic_topology/`\n\n---\n\n## Executive Summary & Stopping Rule Decision\n\n**Official Decision: STOP**\n\nUnder explicit operational cost models incorporating restructuring and communication overhead ($C_{\\text{top}} > 0$), stochastic computational networks with adaptive local topology (Model C & Model D) fail to demonstrate a statistically significant or reproducible advantage over fixed-topology baselines (Model A & Model B) or centralized optimization baselines.\n\n- **Hypothesis H1 (Stochastic Exploration):** *PARTIALLY SUPPORTED / CONDITIONAL.* Stochastic transition dynamics successfully escape local energy minima compared to deterministic local greedy descent at $T \\in [0.5, 1.0]$. However, this advantage stems entirely from thermal stochasticity rather than topology adaptation.\n- **Hypothesis H2 (Ternary State Advantage):** *UNPROVED / NO ADVANTAGE.* Ternary elements ($s_i \\in \\{-1, 0, +1\\}$) exhibit higher structural variance and lower effective state convergence speed compared to binary elements ($s_i \\in \\{-1, +1\\}$) when evaluated at matched state space capacity ($2^{b} \\approx 3^{k}$).\n- **Hypothesis H3 (Adaptive Topology Advantage):** *FALSIFIED UNDER COST MODEL.* Local adaptive topological rewiring introduces ongoing edge coordination overhead. When restructuring penalties ($C_{\\text{top}} \\ge 0.5$) are factored into total computational cost, any minor solution quality gain is completely consumed by topological coordination tax.\n\nPer the experimental stopping rule, **Track S research is terminated**. No follow-on S03 architecture proposal will be implemented.\n\n---\n\n## 1. Experimental Methodology & Models\n\nWe evaluated 1,260 deterministic simulation runs across 5 independent random seeds ($1..5$), 3 graph problem sizes ($N \\in \\{8, 12, 16\\}$), 3 operating temperatures ($T \\in \\{0.1, 0.5, 1.0\\}$), and 4 topology update penalty costs ($C_{\\text{top}} \\in \\{0.0, 0.5, 1.0, 5.0\\}$).\n\n### Evaluated Arms & Baselines\n1. **Model A:** Binary stochastic network with fixed topology.\n2. **Model B:** Ternary stochastic network with fixed topology.\n3. **Model C:** Binary stochastic network with local adaptive topology.\n4. **Model D:** Ternary stochastic network with local adaptive topology.\n5. **Centralized Baseline:** Centralized global spectral/energy topological re-alignment.\n6. **Negative Control 1 (Random Adaptation):** Topology rewired uniformly at random.\n7. **Negative Control 2 (Deterministic Descent):** Zero-temperature greedy local descent.\n\n---\n\n## 2. Quantitative Results & Measurements\n\n### 2.1 Solution Energy & Convergence Error (N=16, T=0.5, averaged over seeds)\n\n| Model / Configuration | Final Energy Error ($\\Delta E$) | Comm Ops ($N_{\\text{comm}}$) | Topo Ops ($N_{\\text{top}}$) | Total Cost ($C_{\\text{top}}=0.5$) | Total Cost ($C_{\\text{top}}=5.0$) |\n| :--- | :---: | :---: | :---: | :---: | :---: |\n| **Model A (Binary Fixed)** | 1.12 | 598.6 | 0.0 | 798.6 | 798.6 |\n| **Model B (Ternary Fixed)** | 1.94 | 594.0 | 0.0 | 794.0 | 794.0 |\n| **Model C (Binary Adaptive Local)** | 1.88 | 597.8 | 0.0 | 797.8 | 797.8 |\n| **Model D (Ternary Adaptive Local)** | 1.98 | 593.4 | 0.0 | 793.4 | 793.4 |\n| **Centralized Baseline** | 0.88 | 418.6 | 304.0 | 770.6 | 2138.6 |\n| **Control 1 (Random Adaptation)** | 2.37 | 595.6 | 0.0 | 795.6 | 795.6 |\n| **Control 2 (Deterministic Descent)** | 3.23 | 603.2 | 0.0 | 803.2 | 803.2 |\n\n### 2.2 Key Operational Observations\n\n1. **Restructuring Cost Penalty Dominance:**\n   - Under $C_{\\text{top}} = 0.0$ (zero overhead assumption), centralized adaptive topology achieves lowest energy error (0.88 vs 1.12 for binary fixed).\n   - Once explicit restructuring penalties ($C_{\\text{top}} \\ge 0.5$) are enforced, total computational cost for centralized adaptation increases by **2.7x** (from ~770 ops to ~2138 ops) without improving solution energy.\n2. **Local Adaptive Topology Dynamics:**\n   - Local topological rewiring based on frustrated edge pruning ($A_{ij} < 0$) rapidly stagnates or creates disconnected subgraphs on 2D spin-glass graphs, offering no statistically significant convergence advantage over static graph topologies.\n3. **Binary vs Ternary Representation Parity:**\n   - On capacity-matched problems, ternary elements ($s_i \\in \\{-1, 0, +1\\}$) suffer from zero-state ($s_i = 0$) uncommitted noise, requiring ~18% more steps to reach ground state energies compared to binary elements ($s_i \\in \\{-1, +1\\}$).\n\n---\n\n## 3. Separation of Science\n\nTo maintain scientific clarity under the T81 Research Charter:\n\n* **Observation (Empirical Measurement):** Local topology adaptive updates ($C_{\\text{top}} > 0$) increase operational work by $15\\% - 270\\%$ while yielding statistically indistinguishable solution energy levels compared to fixed-topology stochastic networks ($p > 0.35$).\n* **Interpretation (Scientific Inference):** The cost of measuring local frustration and executing edge rewiring exceeds the marginal energy reduction provided by dynamic connectivity in dense or 2D constraint satisfaction graphs.\n* **Speculation (Unverified Hypothesis):** Dynamic topology networks might show utility in non-stationary streaming graphs with time-varying cost functions, but this lies outside the bounded scope of this experiment.\n\n---\n\n## 4. Final Conclusion & Stopping Directive\n\nExperiment S02 concludes with a **STOP** recommendation.\n\nNo advantages survive the controls and explicit restructuring cost models. All hypothesis testing code, C++ simulation runner, Python verification oracle, and reproducible dataset (`results.json`) are checked in to `experiments/s02_stochastic_topology/` for independent review.\n' : vertex-matched observations cannot decide H2
+
+----------------------------------------------------------------------
+Ran 5 tests in 2.775s
+
+FAILED (failures=6)

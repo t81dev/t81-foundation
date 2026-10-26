@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "rows_verified": 1260,
+  "trajectories_verified": 315,
+  "states_audited": 63315,
+  "distinct_immutable_problems": 15,
+  "max_cpp_python_reference_difference": 0.0,
+  "oracle": "independent Python binary exhaustive enumeration; ternary equality follows multi-affinity and is exhaustively checked separately on tiny cases",
+  "hardware_or_architectural_advantage_verified": false
+}

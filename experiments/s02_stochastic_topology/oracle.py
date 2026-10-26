@@ -5,23 +5,37 @@ Stochastic State-Topology Computation.
 """
 
 import math
+import itertools
 from typing import Dict, List, Tuple
 
+MASK64 = (1 << 64) - 1
+PROBLEM_STREAM = 0x243F6A8885A308D3
+
 class SimplePRNG:
+    """SplitMix64 plus exact rejection-based integer range reduction.
+
+    Reference: https://prng.di.unimi.it/splitmix64.c (public domain).
+    Deterministic reproducibility, not a physical/cryptographic IID guarantee.
+    """
     def __init__(self, seed: int):
-        self.state = (seed ^ 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
-
+        self.state = seed & MASK64
     def next(self) -> int:
-        self.state = (self.state * 6364136223846793005 + 1442695040888963407) & 0xFFFFFFFFFFFFFFFF
-        return self.state
-
+        self.state = (self.state + 0x9E3779B97F4A7C15) & MASK64
+        z = self.state
+        z = ((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9) & MASK64
+        z = ((z ^ (z >> 27)) * 0x94D049BB133111EB) & MASK64
+        return z ^ (z >> 31)
     def uniform_real(self, min_val: float, max_val: float) -> float:
-        u = (self.next() >> 11) / 9007199254740992.0
-        return min_val + u * (max_val - min_val)
-
+        return min_val + (self.next() >> 11) / 9007199254740992.0 * (max_val - min_val)
     def uniform_int(self, min_val: int, max_val: int) -> int:
         span = max_val - min_val + 1
-        return min_val + (self.next() % span)
+        if not 0 < span <= 1 << 64:
+            raise ValueError("invalid integer range")
+        threshold = ((1 << 64) - span) % span
+        while True:
+            word = self.next()
+            if word >= threshold:
+                return min_val + word % span
 
 
 class IsingOracle:
@@ -32,7 +46,7 @@ class IsingOracle:
         self.h_fields, self.J_couplings = self._generate_problem_instance()
 
     def _generate_problem_instance(self) -> Tuple[List[float], List[List[float]]]:
-        prng = SimplePRNG(self.seed)
+        prng = SimplePRNG(self.seed ^ PROBLEM_STREAM)
         N = self.num_nodes
         h_fields = [prng.uniform_real(-0.5, 0.5) for _ in range(N)]
         J_couplings = [[0.0] * N for _ in range(N)]
@@ -61,7 +75,7 @@ class IsingOracle:
         for i in range(self.num_nodes):
             E -= self.h_fields[i] * spins[i]
             for j in range(i + 1, self.num_nodes):
-                if abs(self.J_couplings[i][j]) > 1e-9:
+                if self.J_couplings[i][j] != 0.0:
                     E -= self.J_couplings[i][j] * spins[i] * spins[j]
         return E
 
@@ -81,22 +95,14 @@ class IsingOracle:
         return min_E, best_spins
 
     def exact_ground_state_ternary(self) -> Tuple[float, List[int]]:
-        N = self.num_nodes
-        min_E = float('inf')
-        best_spins = []
-        total_states = 3 ** N
-        for state in range(total_states):
-            spins = []
-            tmp = state
-            for _ in range(N):
-                digit = tmp % 3
-                spins.append(-1 if digit == 0 else (0 if digit == 1 else 1))
-                tmp //= 3
-            E = self.compute_energy_ternary(spins)
-            if E < min_E:
-                min_E = E
-                best_spins = spins
-        return min_E, best_spins
+        # Multi-affine Hamiltonian: eliminate zeros one coordinate at a time.
+        # A minimum exists at binary endpoints. No onsite quadratic terms here.
+        return self.exact_ground_state_binary()
+
+    def exhaustive_ground_state_ternary(self) -> Tuple[float, List[int]]:
+        """Independent 3^N check for tiny problems, not a production shortcut."""
+        return min((self.compute_energy_ternary(list(s)), list(s))
+                   for s in itertools.product((-1, 0, 1), repeat=self.num_nodes))
 
     def exact_partition_function_binary(self, temperature: float) -> float:
         N = self.num_nodes
@@ -107,7 +113,7 @@ class IsingOracle:
             Z += math.exp(-E / temperature)
         return Z
 
-    def glauber_transition_probability(self, dE: float, temperature: float) -> float:
+    def metropolis_acceptance_probability(self, dE: float, temperature: float) -> float:
         if dE <= 0.0:
             return 1.0
         return math.exp(-dE / temperature)

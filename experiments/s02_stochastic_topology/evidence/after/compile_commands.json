@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/private/tmp/t81-s02-integrity-build",
+  "command": "/usr/bin/c++  -I/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/t81_s02_stochastic_topology.dir/main.cpp.o -c /private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/main.cpp",
+  "file": "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/main.cpp",
+  "output": "CMakeFiles/t81_s02_stochastic_topology.dir/main.cpp.o"
+},
+{
+  "directory": "/private/tmp/t81-s02-integrity-build",
+  "command": "/usr/bin/c++   -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/t81_s02_integrity_controls.dir/test_controls.cpp.o -c /private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_controls.cpp",
+  "file": "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_controls.cpp",
+  "output": "CMakeFiles/t81_s02_integrity_controls.dir/test_controls.cpp.o"
+},
+{
+  "directory": "/private/tmp/t81-s02-integrity-build",
+  "command": "/usr/bin/c++   -O3 -DNDEBUG -std=gnu++17 -o CMakeFiles/t81_s02_regression_probe.dir/test_probe.cpp.o -c /private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_probe.cpp",
+  "file": "/private/tmp/t81-s02-scientific-integrity/experiments/s02_stochastic_topology/test_probe.cpp",
+  "output": "CMakeFiles/t81_s02_regression_probe.dir/test_probe.cpp.o"
+}
+]
