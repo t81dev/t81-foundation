@@ -16,6 +16,10 @@ on:
       - '.github/workflows/qemu-boot-x86.yml'
   workflow_dispatch:
 
+# Checkout reads source; artifact upload uses the Actions runtime token.
+permissions:
+  contents: read
+
 jobs:
   boot-x86:
     name: Build BOOTX64.EFI and validate OVMF boot
