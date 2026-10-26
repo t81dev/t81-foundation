@@ -69,8 +69,27 @@ def submit_transaction(
     secret_key: bytes = DEFAULT_SECRET_KEY,
     contract_limits: Dict[str, Any] = None
 ) -> Tuple[bool, Dict[str, Any], str]:
-    if contract_limits is None:
-        contract_limits = {"max_unit_price": 1000, "max_total_amount": 50000}
+    # 0. Validate input values
+    if not isinstance(po_data, dict):
+        return False, {
+            "error": "INVALID_TRANSACTION_INPUT",
+            "message": "PO data must be a dictionary."
+        }, "INVALID_TRANSACTION_INPUT"
+
+    unit_price = po_data.get("unit_price")
+    quantity = po_data.get("quantity")
+
+    if (
+        isinstance(unit_price, bool) or not isinstance(unit_price, int) or
+        isinstance(quantity, bool) or not isinstance(quantity, int) or
+        unit_price <= 0 or quantity <= 0
+    ):
+        return False, {
+            "error": "INVALID_TRANSACTION_INPUT",
+            "message": f"Invalid unit_price ({unit_price}) or quantity ({quantity}). Must be positive integers."
+        }, "INVALID_TRANSACTION_INPUT"
+
+    total_amount = unit_price * quantity
 
     conn = sqlite3.connect(db_path, timeout=10.0)
     conn.execute("PRAGMA journal_mode=WAL;")
@@ -100,19 +119,27 @@ def submit_transaction(
                     "message": f"Authority version {authority_version} not recognized."
                 }, "INVALID_AUTHORITY_VERSION"
 
-            status, max_unit_price, max_total_amount = policy
+            status, db_max_unit_price, db_max_total_amount = policy
             if status != "ACTIVE":
                 return False, {
                     "error": "REVOCATION_DETECTED",
                     "message": f"Authority version {authority_version} is REVOKED."
                 }, "REVOCATION_DETECTED"
 
-            # 3. Check PO contract rules
-            unit_price = po_data.get("unit_price", 0)
-            quantity = po_data.get("quantity", 0)
-            total_amount = unit_price * quantity
+            # 3. Compute effective limits (caller limits can restrict but never relax stored authority limits)
+            effective_max_unit_price = db_max_unit_price
+            effective_max_total_amount = db_max_total_amount
 
-            if unit_price > contract_limits["max_unit_price"] or total_amount > contract_limits["max_total_amount"]:
+            if contract_limits and isinstance(contract_limits, dict):
+                caller_max_unit_price = contract_limits.get("max_unit_price")
+                if isinstance(caller_max_unit_price, int) and not isinstance(caller_max_unit_price, bool):
+                    effective_max_unit_price = min(effective_max_unit_price, caller_max_unit_price)
+
+                caller_max_total_amount = contract_limits.get("max_total_amount")
+                if isinstance(caller_max_total_amount, int) and not isinstance(caller_max_total_amount, bool):
+                    effective_max_total_amount = min(effective_max_total_amount, caller_max_total_amount)
+
+            if unit_price > effective_max_unit_price or total_amount > effective_max_total_amount:
                 return False, {
                     "error": "POLICY_LIMIT_EXCEEDED",
                     "message": f"PO amount (unit: {unit_price}, total: {total_amount}) exceeds policy limits."

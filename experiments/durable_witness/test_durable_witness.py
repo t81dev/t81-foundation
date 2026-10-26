@@ -127,10 +127,12 @@ class TestDurableWitness(unittest.TestCase):
         with open(evidence_file, "w") as f:
             json.dump(phantom_evidence, f, indent=2)
 
-        # WITHOUT DB: Offline verification claims valid!
+        # WITHOUT DB: Offline verification fails valid claim and reports DETACHED_OFFLINE_SIGNATURE_ONLY
         offline_ver = verify_evidence(evidence_file, db_path=None)
-        self.assertTrue(offline_ver["valid"])
-        self.assertFalse(offline_ver["witness_verified"])
+        self.assertFalse(offline_ver["valid"])
+        self.assertEqual(offline_ver["reason"], "DETACHED_OFFLINE_SIGNATURE_ONLY")
+        self.assertTrue(offline_ver["crypto_authentic"])
+        self.assertFalse(offline_ver["witness_committed"])
 
         # WITH DB: Witness store verification detects phantom receipt!
         online_ver = verify_evidence(evidence_file, db_path=self.db_path)
@@ -153,24 +155,137 @@ class TestDurableWitness(unittest.TestCase):
         ver = verify_evidence(self.out_dir / "evidence_tx-effect-obs.json", self.db_path)
         self.assertTrue(ver["valid"])
         self.assertTrue(ver["witness_verified"])
+        self.assertTrue(ver["crypto_authentic"])
+        self.assertTrue(ver["authorization_valid"])
+        self.assertTrue(ver["witness_committed"])
+        self.assertFalse(ver["effect_observed"])
 
-        # Define external observation check function
-        def observe_external_world_effect(tx_id: str, external_audit_log: dict) -> bool:
-            """An authenticated external observation requires a separate observation proof
-            (e.g., physical hardware sensor attestation or external bank transfer receipt),
-            not merely an internal SQLite table row.
-            """
-            return tx_id in external_audit_log.get("confirmed_external_disbursements", [])
+    # --- NEW REGRESSION TESTS ---
 
-        # Simulated external reality log
-        external_world_log = {"confirmed_external_disbursements": []}
+    def test_stored_limits_lower_than_caller_limits(self):
+        """Stored policy limits (e.g., max_unit_price=1000) lower than caller limits (e.g. 5000) are enforced."""
+        # Unit price 2000 is within caller limit (5000) but exceeds stored policy limit (1000)
+        po_data = {"item": "Widget", "quantity": 1, "unit_price": 2000, "currency": "USD"}
+        caller_limits = {"max_unit_price": 5000, "max_total_amount": 100000}
+        success, res, status = submit_transaction(
+            self.db_path, "tx-stored-lower", "v2", po_data, contract_limits=caller_limits
+        )
+        self.assertFalse(success)
+        self.assertEqual(status, "POLICY_LIMIT_EXCEEDED")
 
-        # DB record exists, but external world effect observation is FALSE
-        db_record_exists = ver["valid"]
-        external_effect_observed = observe_external_world_effect("tx-effect-obs", external_world_log)
+    def test_caller_limits_lower_than_stored_limits(self):
+        """Caller limits (e.g., max_unit_price=500) lower than stored limits (1000) further restrict execution."""
+        po_data = {"item": "Widget", "quantity": 1, "unit_price": 800, "currency": "USD"}
+        caller_limits = {"max_unit_price": 500, "max_total_amount": 50000}
+        success, res, status = submit_transaction(
+            self.db_path, "tx-caller-lower", "v2", po_data, contract_limits=caller_limits
+        )
+        self.assertFalse(success)
+        self.assertEqual(status, "POLICY_LIMIT_EXCEEDED")
 
-        self.assertTrue(db_record_exists, "DB record confirms state transition inside witness DB")
-        self.assertFalse(external_effect_observed, "External world observation remains unverified without independent sensor/disbursement proof")
+    def test_missing_or_inaccessible_witness_database(self):
+        """Passing an explicitly provided non-existent database path to verify_evidence fails."""
+        ev = execute_runner("A", "tx-missing-db", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev["success"])
+        evidence_file = self.out_dir / "evidence_tx-missing-db.json"
+
+        non_existent_db = self.test_dir / "does_not_exist.db"
+        ver = verify_evidence(evidence_file, db_path=non_existent_db)
+        self.assertFalse(ver["valid"])
+        self.assertEqual(ver["reason"], "MISSING_WITNESS_DATABASE")
+
+    def test_detached_offline_signature_verification(self):
+        """Detached verification without DB returns crypto_authentic=True, valid=False, reason=DETACHED_OFFLINE_SIGNATURE_ONLY."""
+        ev = execute_runner("A", "tx-offline-sig", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev["success"])
+        evidence_file = self.out_dir / "evidence_tx-offline-sig.json"
+
+        ver = verify_evidence(evidence_file, db_path=None)
+        self.assertFalse(ver["valid"])
+        self.assertEqual(ver["reason"], "DETACHED_OFFLINE_SIGNATURE_ONLY")
+        self.assertTrue(ver["crypto_authentic"])
+        self.assertFalse(ver["witness_committed"])
+
+    def test_duplicate_transaction_ids(self):
+        """Re-submitting identical transaction ID is rejected with REPLAY_DETECTED."""
+        ev1 = execute_runner("A", "tx-dup-id", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev1["success"])
+
+        ev2 = execute_runner("A", "tx-dup-id", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertFalse(ev2["success"])
+        self.assertEqual(ev2["status_code"], "REPLAY_DETECTED")
+
+    def test_revoked_authority(self):
+        """Submitting transaction under a revoked authority version fails."""
+        revoke_authority(self.db_path, "v2")
+        ev = execute_runner("A", "tx-rev-test", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertFalse(ev["success"])
+        self.assertEqual(ev["status_code"], "REVOCATION_DETECTED")
+
+    def test_invalid_monetary_inputs(self):
+        """Monetary/quantity inputs that are negative, zero, boolean, or float are rejected."""
+        po_negative = {"item": "Widget", "quantity": -5, "unit_price": 100, "currency": "USD"}
+        succ1, res1, stat1 = submit_transaction(self.db_path, "tx-invalid-1", "v2", po_negative)
+        self.assertFalse(succ1)
+        self.assertEqual(stat1, "INVALID_TRANSACTION_INPUT")
+
+        po_bool = {"item": "Widget", "quantity": True, "unit_price": 100, "currency": "USD"}
+        succ2, res2, stat2 = submit_transaction(self.db_path, "tx-invalid-2", "v2", po_bool)
+        self.assertFalse(succ2)
+        self.assertEqual(stat2, "INVALID_TRANSACTION_INPUT")
+
+        po_float = {"item": "Widget", "quantity": 10, "unit_price": 99.9, "currency": "USD"}
+        succ3, res3, stat3 = submit_transaction(self.db_path, "tx-invalid-3", "v2", po_float)
+        self.assertFalse(succ3)
+        self.assertEqual(stat3, "INVALID_TRANSACTION_INPUT")
+
+    def test_receipt_and_authority_version_mismatches(self):
+        """Detect receipt hash and authority version discrepancies between evidence and store."""
+        ev = execute_runner("A", "tx-mismatch", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev["success"])
+        evidence_file = self.out_dir / "evidence_tx-mismatch.json"
+
+        # Tamper receipt authority version in evidence file
+        with open(evidence_file, "r") as f:
+            data = json.load(f)
+        data["receipt"]["authority_version"] = "v1"
+        # Re-compute receipt signature to make cryptographic HMAC valid for v1
+        import hashlib
+        from witness import compute_receipt_signature, DEFAULT_SECRET_KEY
+        data["receipt"]["receipt_id"] = compute_receipt_signature(
+            secret_key=DEFAULT_SECRET_KEY,
+            tx_id=data["receipt"]["tx_id"],
+            authority_version="v1",
+            effect_id=data["receipt"]["effect_id"],
+            payload_hash=data["receipt"]["payload_hash"],
+            total_amount=data["receipt"]["total_amount"],
+            timestamp=data["receipt"]["timestamp"],
+            witness_id=data["receipt"]["witness_id"]
+        )
+        with open(evidence_file, "w") as f:
+            json.dump(data, f)
+
+        # Database contains authority_version 'v2', evidence contains 'v1'
+        ver = verify_evidence(evidence_file, self.db_path)
+        self.assertFalse(ver["valid"])
+        self.assertEqual(ver["reason"], "REVOKED_OR_INVALID_AUTHORITY_VERSION")
+
+    def test_database_rollback_documented_limitation(self):
+        """Database snapshot rollback allows reusing transaction IDs; documented as an unresolved limitation."""
+        snapshot_path = self.test_dir / "witness_snapshot.db"
+        shutil.copyfile(self.db_path, snapshot_path)
+
+        ev1 = execute_runner("A", "tx-rollback-limit", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev1["success"])
+
+        # Remove active DB file and WAL/SHM sidecars to simulate restoring older snapshot
+        for p in self.test_dir.glob("witness.db*"):
+            p.unlink()
+        shutil.copyfile(snapshot_path, self.db_path)
+
+        # Re-submission succeeds because database state was rolled back (unresolved local limitation)
+        ev2 = execute_runner("A", "tx-rollback-limit", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev2["success"], "Confirmed limitation: local SQLite DB alone cannot detect external snapshot rollback")
 
 if __name__ == "__main__":
     unittest.main()

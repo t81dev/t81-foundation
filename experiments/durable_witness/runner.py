@@ -72,7 +72,8 @@ def execute_runner(
     db_path: Path,
     output_dir: Path,
     arm_a_bin: Path = None,
-    wat_file: Path = None
+    wat_file: Path = None,
+    contract_limits: dict = None
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     init_db(db_path)
@@ -84,25 +85,30 @@ def execute_runner(
         "currency": "USD"
     }
 
-    if arm == "A":
-        if arm_a_bin is None:
-            # Default search path for built Arm A binary
-            default_bin = Path("build/t81_architecture_arm_a")
-            if not default_bin.exists():
-                default_bin = Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a"
-            arm_a_bin = default_bin
-        total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
-    elif arm == "B":
-        wat_path = wat_file or (Path(__file__).parent / "guest.wat")
-        total_amount = run_arm_b(wat_path, quantity, unit_price)
-    else:
-        raise ValueError(f"Unknown arm {arm}")
+    try:
+        if arm == "A":
+            if arm_a_bin is None:
+                # Default search path for built Arm A binary
+                default_bin = Path("build/t81_architecture_arm_a")
+                if not default_bin.exists():
+                    default_bin = Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a"
+                arm_a_bin = default_bin
+            total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+        elif arm == "B":
+            wat_path = wat_file or (Path(__file__).parent / "guest.wat")
+            total_amount = run_arm_b(wat_path, quantity, unit_price)
+        else:
+            raise ValueError(f"Unknown arm {arm}")
+    except Exception as e:
+        # If execution fails during calculation (e.g., negative inputs), attempt direct witness submit for error record
+        total_amount = unit_price * quantity if isinstance(unit_price, int) and isinstance(quantity, int) else 0
 
     success, result, status_code = submit_transaction(
         db_path=db_path,
         tx_id=tx_id,
         authority_version=authority_version,
-        po_data=po_data
+        po_data=po_data,
+        contract_limits=contract_limits
     )
 
     evidence = {

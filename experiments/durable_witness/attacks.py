@@ -309,6 +309,8 @@ def run_attacks(base_dir: Path) -> dict:
         ver_snap = verify_evidence(ev_file, snapshot_db)
 
         # Step 2: Restore older witness snapshot (rollback witness storage)
+        for p in att_dir.glob("witness.db*"):
+            p.unlink()
         shutil.copyfile(snapshot_db, db_path)
 
         # Step 3: Re-submit the same transaction ID to the rolled-back witness database
