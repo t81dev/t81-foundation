@@ -299,7 +299,8 @@ def authorization(repo, commit, tree, approval_file):
         raise Invalid('invalid trusted approval or unapproved commit')
     tracked = parse_tree(git(repo, 'ls-tree', '-r', '-z', tree))
     protected = {CONTRACT, SCHEMA, CHECKER, LEGACY}
-    protected |= {p for p in tracked if p.startswith(('.github/workflows/', '.github/actions/'))}
+    protected |= {p for p in tracked if p in {'.github/workflows', '.github/actions'}
+                  or p.startswith(('.github/workflows/', '.github/actions/'))}
     if set(data['artifacts']) != protected:
         raise Invalid('trusted approval artifact coverage mismatch')
     for path in sorted(protected):

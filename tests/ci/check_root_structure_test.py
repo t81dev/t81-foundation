@@ -117,6 +117,18 @@ class RootLayout(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn('preservation-only exceptions: 17', result.stdout)
 
+    def test_contract_matches_immutable_approved_proposal(self):
+        proposal = json.loads(self.cmd(ROOT, 'show', BASELINE + ':docs/records/audits/2026-10-root-layout-contract/proposed-contract.json'))
+        expected = {}
+        for key in ['required_directories', 'required_files', 'unresolved_entries']:
+            for entry in proposal[key]:
+                expected[entry['path']] = (entry['type'], entry['baseline_git']['mode'],
+                                          entry['baseline_git']['oid'] if key == 'unresolved_entries' else None)
+        observed = {e['path']: (e['kind'], e['mode'], e.get('object')) for e in self.original['entries']}
+        self.assertEqual(observed, expected)
+        self.assertEqual(sum(e['kind'] == 'directory' and 'object' not in e for e in self.original['entries']), 31)
+        self.assertEqual(sum(e['kind'] == 'file' and 'object' not in e for e in self.original['entries']), 29)
+
     def test_missing_required_file(self):
         (self.repo / 'LICENSE').unlink(); self.commit()
         self.reject('missing required file: LICENSE')
