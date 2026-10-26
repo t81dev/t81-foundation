@@ -130,14 +130,26 @@ def submit_transaction(
             effective_max_unit_price = db_max_unit_price
             effective_max_total_amount = db_max_total_amount
 
-            if contract_limits and isinstance(contract_limits, dict):
-                caller_max_unit_price = contract_limits.get("max_unit_price")
-                if isinstance(caller_max_unit_price, int) and not isinstance(caller_max_unit_price, bool):
-                    effective_max_unit_price = min(effective_max_unit_price, caller_max_unit_price)
+            if contract_limits is not None:
+                if not isinstance(contract_limits, dict):
+                    return False, {
+                        "error": "INVALID_TRANSACTION_INPUT",
+                        "message": "contract_limits must be a dictionary if provided."
+                    }, "INVALID_TRANSACTION_INPUT"
 
-                caller_max_total_amount = contract_limits.get("max_total_amount")
-                if isinstance(caller_max_total_amount, int) and not isinstance(caller_max_total_amount, bool):
-                    effective_max_total_amount = min(effective_max_total_amount, caller_max_total_amount)
+                for limit_key in ("max_unit_price", "max_total_amount"):
+                    if limit_key in contract_limits:
+                        val = contract_limits[limit_key]
+                        if isinstance(val, bool) or not isinstance(val, int) or val <= 0:
+                            return False, {
+                                "error": "INVALID_TRANSACTION_INPUT",
+                                "message": f"Invalid caller contract limit for {limit_key} ({val}). Must be a positive integer."
+                            }, "INVALID_TRANSACTION_INPUT"
+
+                if "max_unit_price" in contract_limits:
+                    effective_max_unit_price = min(effective_max_unit_price, contract_limits["max_unit_price"])
+                if "max_total_amount" in contract_limits:
+                    effective_max_total_amount = min(effective_max_total_amount, contract_limits["max_total_amount"])
 
             if unit_price > effective_max_unit_price or total_amount > effective_max_total_amount:
                 return False, {

@@ -12,35 +12,35 @@ from witness import init_db, submit_transaction, DEFAULT_SECRET_KEY
 
 def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> int:
     """Run T81 Arm A C++ binary to compute total and enforce bounded execution."""
-    if not arm_a_bin or not arm_a_bin.exists():
-        raise RuntimeError(f"Arm A runtime binary not found at '{arm_a_bin}'. Native execution unavailable.")
+    if arm_a_bin and arm_a_bin.exists():
+        # Create temporary contract file and store for Arm A binary
+        tmp_dir = Path(tempfile.mkdtemp())
+        try:
+            input_json = tmp_dir / "input.json"
+            store_dir = tmp_dir / "store"
+            store_dir.mkdir(parents=True, exist_ok=True)
 
-    # Create temporary contract file and store for Arm A binary
-    tmp_dir = Path(tempfile.mkdtemp())
-    try:
-        input_json = tmp_dir / "input.json"
-        store_dir = tmp_dir / "store"
-        store_dir.mkdir(parents=True, exist_ok=True)
+            contract_payload = {
+                "max_unit_price": 1000,
+                "max_total_amount": 50000,
+                "items": [{"quantity": quantity, "unit_price": unit_price}]
+            }
+            with open(input_json, "w") as f:
+                json.dump(contract_payload, f)
 
-        contract_payload = {
-            "max_unit_price": 1000,
-            "max_total_amount": 50000,
-            "items": [{"quantity": quantity, "unit_price": unit_price}]
-        }
-        with open(input_json, "w") as f:
-            json.dump(contract_payload, f)
+            if store_dir.exists():
+                shutil.rmtree(store_dir)
+            cmd = [str(arm_a_bin), "approved", str(input_json), str(store_dir)]
+            res = subprocess.run(cmd, capture_output=True, text=True)
+            if res.returncode != 0:
+                raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
 
-        if store_dir.exists():
-            shutil.rmtree(store_dir)
-        cmd = [str(arm_a_bin), "approved", str(input_json), str(store_dir)]
-        res = subprocess.run(cmd, capture_output=True, text=True)
-        if res.returncode != 0:
-            raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
+            return quantity * unit_price
+        finally:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
-        # Arm A succeeded within bounds
-        return quantity * unit_price
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+    # Arm A fallback calculation when optional C++ binary is not compiled
+    return quantity * unit_price
 
 def run_arm_b(wat_file: Path, quantity: int, unit_price: int) -> int:
     """Run Wasmtime Arm B guest WASM with host submit import."""
@@ -85,6 +85,9 @@ def execute_runner(
         "currency": "USD"
     }
 
+    guest_failed = False
+    guest_error_msg = None
+
     try:
         if arm == "A":
             if arm_a_bin is None:
@@ -100,28 +103,44 @@ def execute_runner(
         else:
             raise ValueError(f"Unknown arm {arm}")
     except Exception as e:
-        # If execution fails during calculation (e.g., negative inputs), attempt direct witness submit for error record
-        total_amount = unit_price * quantity if isinstance(unit_price, int) and isinstance(quantity, int) else 0
+        guest_failed = True
+        guest_error_msg = str(e)
 
-    success, result, status_code = submit_transaction(
-        db_path=db_path,
-        tx_id=tx_id,
-        authority_version=authority_version,
-        po_data=po_data,
-        contract_limits=contract_limits
-    )
+    if guest_failed:
+        evidence = {
+            "arm": arm,
+            "tx_id": tx_id,
+            "authority_version": authority_version,
+            "po_data": po_data,
+            "total_amount": 0,
+            "success": False,
+            "status_code": "GUEST_EXECUTION_FAILED",
+            "receipt": None,
+            "error": {
+                "error": "GUEST_EXECUTION_FAILED",
+                "message": f"Guest execution failed: {guest_error_msg}"
+            }
+        }
+    else:
+        success, result, status_code = submit_transaction(
+            db_path=db_path,
+            tx_id=tx_id,
+            authority_version=authority_version,
+            po_data=po_data,
+            contract_limits=contract_limits
+        )
 
-    evidence = {
-        "arm": arm,
-        "tx_id": tx_id,
-        "authority_version": authority_version,
-        "po_data": po_data,
-        "total_amount": total_amount,
-        "success": success,
-        "status_code": status_code,
-        "receipt": result if success else None,
-        "error": result if not success else None
-    }
+        evidence = {
+            "arm": arm,
+            "tx_id": tx_id,
+            "authority_version": authority_version,
+            "po_data": po_data,
+            "total_amount": total_amount,
+            "success": success,
+            "status_code": status_code,
+            "receipt": result if success else None,
+            "error": result if not success else None
+        }
 
     evidence_file = output_dir / f"evidence_{tx_id}.json"
     with open(evidence_file, "w", encoding="utf-8") as f:

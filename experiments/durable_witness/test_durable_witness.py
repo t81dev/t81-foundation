@@ -268,7 +268,69 @@ class TestDurableWitness(unittest.TestCase):
         # Database contains authority_version 'v2', evidence contains 'v1'
         ver = verify_evidence(evidence_file, self.db_path)
         self.assertFalse(ver["valid"])
-        self.assertEqual(ver["reason"], "REVOKED_OR_INVALID_AUTHORITY_VERSION")
+        self.assertEqual(ver["reason"], "AUTHORITY_VERSION_MISMATCH_IN_WITNESS_STORE")
+
+    def test_historical_transaction_verified_post_revocation(self):
+        """Transaction legitimately authorized and committed before revocation remains historically valid."""
+        ev = execute_runner("A", "tx-hist-01", "v2", 5, 100, self.db_path, self.out_dir)
+        self.assertTrue(ev["success"])
+
+        # Revoke authority version v2 AFTER tx-hist-01 was committed
+        revoke_authority(self.db_path, "v2")
+
+        evidence_file = self.out_dir / "evidence_tx-hist-01.json"
+        ver = verify_evidence(evidence_file, self.db_path)
+
+        # Historical transaction evidence remains valid; current status is disaggregated
+        self.assertTrue(ver["valid"])
+        self.assertTrue(ver["witness_committed"])
+        self.assertTrue(ver["authorization_valid"])
+        self.assertFalse(ver["current_authority_active"])
+
+    def test_guest_execution_failure_prevents_submission(self):
+        """Failed guest execution results in GUEST_EXECUTION_FAILED and does NOT submit a valid receipt."""
+        bad_wat = self.test_dir / "non_existent.wat"
+        ev = execute_runner(
+            arm="B",
+            tx_id="tx-failed-guest",
+            authority_version="v2",
+            quantity=5,
+            unit_price=100,
+            db_path=self.db_path,
+            output_dir=self.out_dir,
+            wat_file=bad_wat
+        )
+        self.assertFalse(ev["success"])
+        self.assertEqual(ev["status_code"], "GUEST_EXECUTION_FAILED")
+        self.assertIsNone(ev["receipt"])
+
+        evidence_file = self.out_dir / "evidence_tx-failed-guest.json"
+        ver = verify_evidence(evidence_file, self.db_path)
+        self.assertFalse(ver["valid"])
+
+    def test_malformed_caller_contract_limits_rejected(self):
+        """Malformed or non-positive caller limits are rejected with INVALID_TRANSACTION_INPUT."""
+        po = {"item": "Widget", "quantity": 1, "unit_price": 100, "currency": "USD"}
+
+        # Non-dict contract_limits
+        s1, r1, st1 = submit_transaction(self.db_path, "tx-mal-1", "v2", po, contract_limits="500")
+        self.assertFalse(s1)
+        self.assertEqual(st1, "INVALID_TRANSACTION_INPUT")
+
+        # String max_unit_price
+        s2, r2, st2 = submit_transaction(self.db_path, "tx-mal-2", "v2", po, contract_limits={"max_unit_price": "500"})
+        self.assertFalse(s2)
+        self.assertEqual(st2, "INVALID_TRANSACTION_INPUT")
+
+        # Negative max_unit_price
+        s3, r3, st3 = submit_transaction(self.db_path, "tx-mal-3", "v2", po, contract_limits={"max_unit_price": -500})
+        self.assertFalse(s3)
+        self.assertEqual(st3, "INVALID_TRANSACTION_INPUT")
+
+        # Boolean max_unit_price
+        s4, r4, st4 = submit_transaction(self.db_path, "tx-mal-4", "v2", po, contract_limits={"max_unit_price": True})
+        self.assertFalse(s4)
+        self.assertEqual(st4, "INVALID_TRANSACTION_INPUT")
 
     def test_database_rollback_documented_limitation(self):
         """Database snapshot rollback allows reusing transaction IDs; documented as an unresolved limitation."""

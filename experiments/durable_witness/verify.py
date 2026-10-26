@@ -129,27 +129,14 @@ def verify_evidence(evidence_path: Path, db_path: Path = None, secret_key: bytes
         }
 
     try:
+        cur = conn.execute("SELECT authority_version, receipt_id FROM transactions WHERE tx_id = ?", (tx_id,))
+        tx_row = cur.fetchone()
+
         cur = conn.execute(
-            "SELECT status, max_unit_price, max_total_amount FROM authority_policies WHERE authority_version = ?",
+            "SELECT status FROM authority_policies WHERE authority_version = ?",
             (authority_version,)
         )
         auth_row = cur.fetchone()
-        if not auth_row or auth_row[0] != "ACTIVE":
-            conn.close()
-            return {
-                "valid": False,
-                "reason": "REVOKED_OR_INVALID_AUTHORITY_VERSION",
-                "message": f"Authority version {authority_version} is missing or not ACTIVE in witness store",
-                "crypto_authentic": crypto_authentic,
-                "authorization_valid": False,
-                "witness_committed": False,
-                "effect_observed": False
-            }
-
-        authorization_valid = True
-
-        cur = conn.execute("SELECT authority_version, receipt_id FROM transactions WHERE tx_id = ?", (tx_id,))
-        tx_row = cur.fetchone()
         conn.close()
     except sqlite3.OperationalError as e:
         return {
@@ -162,14 +149,29 @@ def verify_evidence(evidence_path: Path, db_path: Path = None, secret_key: bytes
             "effect_observed": False
         }
 
+    current_authority_active = (auth_row is not None and auth_row[0] == "ACTIVE")
+
     if not tx_row:
+        if not auth_row or auth_row[0] != "ACTIVE":
+            return {
+                "valid": False,
+                "reason": "REVOKED_OR_INVALID_AUTHORITY_VERSION",
+                "message": f"Authority version {authority_version} is missing or not ACTIVE in witness store",
+                "crypto_authentic": crypto_authentic,
+                "authorization_valid": False,
+                "witness_committed": False,
+                "current_authority_active": current_authority_active,
+                "effect_observed": False
+            }
+
         return {
             "valid": False,
             "reason": "TRANSACTION_NOT_IN_WITNESS_STORE",
             "message": f"Transaction {tx_id} is absent from trusted witness database",
             "crypto_authentic": crypto_authentic,
-            "authorization_valid": authorization_valid,
+            "authorization_valid": False,
             "witness_committed": False,
+            "current_authority_active": current_authority_active,
             "effect_observed": False
         }
 
@@ -181,8 +183,9 @@ def verify_evidence(evidence_path: Path, db_path: Path = None, secret_key: bytes
             "reason": "AUTHORITY_VERSION_MISMATCH_IN_WITNESS_STORE",
             "message": f"Recorded authority version {db_auth_ver} differs from evidence authority version {authority_version}",
             "crypto_authentic": crypto_authentic,
-            "authorization_valid": authorization_valid,
+            "authorization_valid": False,
             "witness_committed": False,
+            "current_authority_active": current_authority_active,
             "effect_observed": False
         }
 
@@ -192,12 +195,14 @@ def verify_evidence(evidence_path: Path, db_path: Path = None, secret_key: bytes
             "reason": "RECEIPT_MISMATCH_IN_WITNESS_STORE",
             "message": f"Recorded receipt {db_receipt_id} differs from evidence receipt {receipt_id}",
             "crypto_authentic": crypto_authentic,
-            "authorization_valid": authorization_valid,
+            "authorization_valid": False,
             "witness_committed": False,
+            "current_authority_active": current_authority_active,
             "effect_observed": False
         }
 
     witness_committed = True
+    authorization_valid = True
 
     return {
         "valid": True,
@@ -208,6 +213,7 @@ def verify_evidence(evidence_path: Path, db_path: Path = None, secret_key: bytes
         "crypto_authentic": crypto_authentic,
         "authorization_valid": authorization_valid,
         "witness_committed": witness_committed,
+        "current_authority_active": current_authority_active,
         "effect_observed": False,  # Physical external world execution requires separate external attestation
         "witness_verified": True
     }
