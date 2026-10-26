@@ -1,0 +1,56 @@
+[
+  {
+    "name": "included-file",
+    "fragment": "include(cmake/review-source.cmake)\n",
+    "structural_exit": 0,
+    "structural_stdout": "committed root structure PASSED: 14b2576220424856f0a16978cd6a600e70431513; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n",
+    "authorization_without_trust_exit": 1,
+    "cmake_exit": 0,
+    "cmake_command": [
+      "cmake",
+      "-S",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpo7wvj2ed/candidate",
+      "-B",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpmv4vnq8t"
+    ],
+    "cmake_stdout": "-- The CXX compiler identification is AppleClang 21.0.0.21000101\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- REVIEW_SOURCES=/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpo7wvj2ed/candidate/development_tests/test.cpp;/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpo7wvj2ed/candidate/market-demos/customer_demo_system.cpp\n-- Configuring done (1.1s)\n-- Generating done (0.0s)\n-- Build files have been written to: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpmv4vnq8t\n",
+    "cmake_stderr": "",
+    "classification": "explicitly outside literal add_subdirectory/source-path inventory; not complete CMake certification"
+  },
+  {
+    "name": "macro-invocation",
+    "fragment": "macro(hidden_sources)\n target_sources(direct PRIVATE ${PROJECT_SOURCE_DIR}/market-demos/customer_demo_system.cpp)\nendmacro()\nhidden_sources()\n",
+    "structural_exit": 0,
+    "structural_stdout": "committed root structure PASSED: 60799452a75bd993383083710908c937309b5b8f; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n",
+    "authorization_without_trust_exit": 1,
+    "cmake_exit": 0,
+    "cmake_command": [
+      "cmake",
+      "-S",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpibe_i73w/candidate",
+      "-B",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmptcy4jwzg"
+    ],
+    "cmake_stdout": "-- The CXX compiler identification is AppleClang 21.0.0.21000101\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- REVIEW_SOURCES=/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpibe_i73w/candidate/development_tests/test.cpp;/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpibe_i73w/candidate/market-demos/customer_demo_system.cpp\n-- Configuring done (0.4s)\n-- Generating done (0.0s)\n-- Build files have been written to: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmptcy4jwzg\n",
+    "cmake_stderr": "",
+    "classification": "explicitly outside literal add_subdirectory/source-path inventory; not complete CMake certification"
+  },
+  {
+    "name": "indirect-source-variable",
+    "fragment": "set(HIDDEN_SOURCE ${PROJECT_SOURCE_DIR}/market-demos/customer_demo_system.cpp)\ntarget_sources(direct PRIVATE ${HIDDEN_SOURCE})\n",
+    "structural_exit": 0,
+    "structural_stdout": "committed root structure PASSED: b40da78ad09d7a63558d3ad07f567736df6b2a12; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n",
+    "authorization_without_trust_exit": 1,
+    "cmake_exit": 0,
+    "cmake_command": [
+      "cmake",
+      "-S",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpbhv6d2q2/candidate",
+      "-B",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmp2hk1sxbs"
+    ],
+    "cmake_stdout": "-- The CXX compiler identification is AppleClang 21.0.0.21000101\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- REVIEW_SOURCES=/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpbhv6d2q2/candidate/development_tests/test.cpp;/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmpbhv6d2q2/candidate/market-demos/customer_demo_system.cpp\n-- Configuring done (0.5s)\n-- Generating done (0.0s)\n-- Build files have been written to: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/tmp2hk1sxbs\n",
+    "cmake_stderr": "",
+    "classification": "explicitly outside literal add_subdirectory/source-path inventory; not complete CMake certification"
+  }
+]

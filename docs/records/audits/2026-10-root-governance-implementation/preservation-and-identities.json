@@ -1,0 +1,14 @@
+{
+  "commit": "304b63bedb261904e8bf194daed5c0e9c6a0aabe",
+  "required_directories": 31,
+  "required_files": 29,
+  "exact_preservation_objects": 17,
+  "legacy_gate_byte_identical": true,
+  "workflow_changes": false,
+  "artifacts": {
+    "docs/governance/root-layout-contract.json": "852d199aa1369cecf7088b18cd139f218c143820bda6e5922c1a22752710fb11",
+    "docs/governance/root-layout-contract.schema.json": "dd3ba6135dd9c783ed64182e7c18d4e2dad6fb01e102e64d2bfdde6dbb054950",
+    "scripts/governance/check_root_structure.py": "c9f3d711f2f83112b4e0e3400eecabd55ba1502553c00b9cd1353dfa71795cf1",
+    "scripts/governance/check_root_structure_legacy.py": "c438964b3ab47b776520ee4453a10b48e9b1b2816bb0d1c982a21caa0ded7c96"
+  }
+}

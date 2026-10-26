@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "tests/ci/check_root_structure_test.py",
+    "RootLayout.test_unsorted_raw_root_tree_rejected"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": "test_unsorted_raw_root_tree_rejected (__main__.RootLayout.test_unsorted_raw_root_tree_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 3.753s\n\nOK\n"
+}

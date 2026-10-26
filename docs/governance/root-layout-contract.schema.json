@@ -1,0 +1,80 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "status",
+    "proposal",
+    "authorization",
+    "entries",
+    "prohibited_generated"
+  ],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "status": {
+      "const": "preparation-only"
+    },
+    "proposal": {
+      "const": "71bb2c0e937dbcad73c9421e5465651b6e0d3ec3"
+    },
+    "authorization": {
+      "const": "https://github.com/t81dev/t81-foundation/pull/579#issuecomment-6419311331"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "kind",
+          "mode"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9_.-]+$"
+          },
+          "kind": {
+            "enum": [
+              "file",
+              "directory"
+            ]
+          },
+          "mode": {
+            "enum": [
+              "040000",
+              "100644",
+              "100755"
+            ]
+          },
+          "object": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$"
+          },
+          "owner": {
+            "const": "t81dev"
+          },
+          "status": {
+            "const": "preservation-only"
+          },
+          "review_trigger": {
+            "const": "before any proposed change to this entry or root contract"
+          }
+        }
+      }
+    },
+    "prohibited_generated": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(?!\\.{1,2}$)[A-Za-z0-9_.-]+$"
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "T81 preparation-only typed root layout v1"
+}

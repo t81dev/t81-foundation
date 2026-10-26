@@ -1,0 +1,41 @@
+{
+  "synthetic_fixture_only": true,
+  "results": [
+    {
+      "case": "contract loosening alone is structurally consistent, not authorization",
+      "exit": 0,
+      "stdout": "committed root structure PASSED: 449c0074e8e58c9911eb36f6eb6d06444e1917c6; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n",
+      "stderr": ""
+    },
+    {
+      "case": "original external approval rejects altered candidate",
+      "exit": 1,
+      "stdout": "root validation FAILED: invalid trusted approval or unapproved commit\n",
+      "stderr": ""
+    },
+    {
+      "case": "candidate-local forged approval is rejected",
+      "exit": 1,
+      "stdout": "root validation FAILED: candidate-local approval forbidden\n",
+      "stderr": ""
+    },
+    {
+      "case": "forged external approval accepted if operator trust assumption is violated",
+      "exit": 0,
+      "stdout": "authorization prototype PASSED: 449c0074e8e58c9911eb36f6eb6d06444e1917c6; operator-authenticated external input assumed; NOT ACTIVATION\n",
+      "stderr": ""
+    },
+    {
+      "case": "candidate-controlled evaluator can forge its own apparent success",
+      "exit": 0,
+      "stdout": "forged candidate evaluator success\n",
+      "stderr": ""
+    },
+    {
+      "case": "trusted evaluator with original external data rejects altered candidate evaluator",
+      "exit": 1,
+      "stdout": "root validation FAILED: invalid trusted approval or unapproved commit\n",
+      "stderr": ""
+    }
+  ]
+}

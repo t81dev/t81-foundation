@@ -78,6 +78,7 @@ Auxiliary note:
 | RFC-0054 | CanonFS Object Identity and Persistence Contract | accepted | Reconciles CanonFS object identity, persistent-driver guarantees, capability semantics, parity semantics, and user-visible reference naming |
 | RFC-0055 | Native Ternary Hardware Target and Interop Contract | accepted | Separates native ternary hardware targets from accelerator-only targets; defines TISC semantic authority, hardware interop obligations, and promotion rules for future external ternary platforms |
 | RFC-0056 | Google Axion-T81 Integration Contract | accepted | Contract specifies Axion as a Verified Lowering Target (RFC-0055): TISC-to-ARM64 lowering, Titanium offload governance (RFC-0048 boundary classification), cloud monitoring separation (§5.2), and multi-instance/multi-region determinism via RFC-0053 epoch protocol; all 4 open questions resolved (2026-03-22); Phase 1–3 implementation is post-acceptance work |
+| RFC-0057 | Root Layout Authority, Preservation Exceptions, and Contract Revision Approval | draft | Scope A preparation only; typed root contract and independent approval boundary; no activation |
 | RFC-00B0 | Axion HAL Specification | accepted | First non-hosted promotion path and HAL contract for the Axion OS stack |
 | RFC-00B1 | Ternary MMU | accepted | TVA layout, radix page table, and MMU fault model for Axion |
 | RFC-00B2 | Device Driver Architecture | accepted | Phase 4 storage/display/network boundary and guest-device model |

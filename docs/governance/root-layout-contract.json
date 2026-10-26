@@ -1,0 +1,470 @@
+{
+  "version": 1,
+  "status": "preparation-only",
+  "proposal": "71bb2c0e937dbcad73c9421e5465651b6e0d3ec3",
+  "authorization": "https://github.com/t81dev/t81-foundation/pull/579#issuecomment-6419311331",
+  "entries": [
+    {
+      "path": ".clang-format",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".clang-tidy",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".cursorrules",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".devcontainer",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": ".editorconfig",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".gitattributes",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".github",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": ".gitignore",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".gitmodules",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": ".t81",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "BUILD.bazel",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "CMakeDoxyfile.in",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "CMakeLists.txt",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "CMakePresets.json",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "Dockerfile",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "LICENSE",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "Makefile",
+      "kind": "file",
+      "mode": "100644",
+      "object": "233ead3b180bc198631b270a3ab05f3cebf52571",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "kind": "file",
+      "mode": "100644",
+      "object": "e556cd7b21b5d4fa3ef6192c72da4434ccf36d24",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "README.es.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "README.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "README.pt-BR.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "README.ru.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "README.zh-CN.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "SECURITY.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "SUPPORT_TAXONOMY.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "SYSTEMS_AND_SUBSYSTEMS_REPORT.md",
+      "kind": "file",
+      "mode": "100644",
+      "object": "dc9d4d0b8b97314eac3427739e24a18935e10ed6",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "T81_CAPABILITIES_REPORT.md",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "_config.yml",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "artifacts",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "benchmarks",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "build.log",
+      "kind": "file",
+      "mode": "100644",
+      "object": "09014f9343e05e47e902f74a58b3bb7c68918a83",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "cmake",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "codec",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "contracts",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "crypto",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "customer_tools",
+      "kind": "directory",
+      "mode": "040000",
+      "object": "c6632381f381275ac2be21d2d9b133246900e02c",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "development_tests",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "docs",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "drivers",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "examples",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "execution_reports",
+      "kind": "directory",
+      "mode": "040000",
+      "object": "8e7d9568b38b2df24c3f7c43898ebbfeca0cc4a3",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "experimental",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "experiments",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "ffi",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "fs",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "import.apl",
+      "kind": "file",
+      "mode": "100644",
+      "object": "bfc41f84d39dbde59fd55c44318d6d73545259c5",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "include",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "inference",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "install.ps1",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "install.sh",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "isa",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "kernel",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "lang",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "logs",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "market-demos",
+      "kind": "directory",
+      "mode": "040000",
+      "object": "5d599548f0d0111ec847904a4e0dd0ead99f09ef",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "market_analysis",
+      "kind": "directory",
+      "mode": "040000",
+      "object": "4850b47267d06575adf10177c3f503e03d8e62ba",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "pyproject.toml",
+      "kind": "file",
+      "mode": "100644"
+    },
+    {
+      "path": "record_hash.txt",
+      "kind": "file",
+      "mode": "100644",
+      "object": "bf884759c9f5796e800f44041a043c1b045dae46",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "scripts",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "skills",
+      "kind": "directory",
+      "mode": "040000",
+      "object": "99b046ab070a99e82fddd489bd80b70cdb62b3c9",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "spec",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "src",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "strategic_docs",
+      "kind": "directory",
+      "mode": "040000",
+      "object": "439d66c2d34337e0018c351780463d3815f27c4f",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "symbolic_algebraic.tisc",
+      "kind": "file",
+      "mode": "100644",
+      "object": "eb294c2abde70a653207d3ebc3e96cb33318bdcc",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "symbolic_algebraic_exported.tisc",
+      "kind": "file",
+      "mode": "100644",
+      "object": "eb294c2abde70a653207d3ebc3e96cb33318bdcc",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "ternaryos",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "test_input.txt",
+      "kind": "file",
+      "mode": "100644",
+      "object": "d8b669cf4b6e6f4dca8a46683fdf360d45e3569f",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "test_record.json",
+      "kind": "file",
+      "mode": "100644",
+      "object": "aecb51ae63aa82d82d0eb589afaf34dbd841defc",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "tests",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "third_party",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "tiny-model-policy.apl",
+      "kind": "file",
+      "mode": "100644",
+      "object": "0b70acbcbda1aeed8c043a1f24520d31709445af",
+      "owner": "t81dev",
+      "status": "preservation-only",
+      "review_trigger": "before any proposed change to this entry or root contract"
+    },
+    {
+      "path": "tools",
+      "kind": "directory",
+      "mode": "040000"
+    },
+    {
+      "path": "vm",
+      "kind": "directory",
+      "mode": "040000"
+    }
+  ],
+  "prohibited_generated": [
+    "CMakeCache.txt",
+    "CMakeFiles",
+    "cmake_install.cmake",
+    "compile_commands.json",
+    "node_modules",
+    "__pycache__",
+    ".DS_Store"
+  ]
+}

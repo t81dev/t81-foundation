@@ -1,0 +1,874 @@
+{
+  "cases": 47,
+  "failures": 0,
+  "results": [
+    {
+      "name": "spec-and-docs-producer-0",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/spec-and-docs-producer-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": true
+    },
+    {
+      "name": "spec-and-docs-producer-7",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/spec-and-docs-producer-7/step.sh"
+      ],
+      "expected_exit": 7,
+      "actual_exit": 7,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "spec-and-docs-producer-23",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/spec-and-docs-producer-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "spec-and-docs-tee-failure",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/spec-and-docs-tee-failure/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "warn-strict-producer-0",
+      "workflow": "ci.yml",
+      "job": "warn-strict",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/warn-strict-producer-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": true
+    },
+    {
+      "name": "warn-strict-producer-7",
+      "workflow": "ci.yml",
+      "job": "warn-strict",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/warn-strict-producer-7/step.sh"
+      ],
+      "expected_exit": 7,
+      "actual_exit": 7,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "warn-strict-producer-23",
+      "workflow": "ci.yml",
+      "job": "warn-strict",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/warn-strict-producer-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "warn-strict-tee-failure",
+      "workflow": "ci.yml",
+      "job": "warn-strict",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/warn-strict-tee-failure/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "benchmarks-producer-0",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-producer-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": true
+    },
+    {
+      "name": "benchmarks-producer-7",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-producer-7/step.sh"
+      ],
+      "expected_exit": 7,
+      "actual_exit": 7,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "benchmarks-producer-23",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-producer-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "benchmarks-tee-failure",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-tee-failure/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "test-ai-experiments-producer-0",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/test-ai-experiments-producer-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": true
+    },
+    {
+      "name": "test-ai-experiments-producer-7",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/test-ai-experiments-producer-7/step.sh"
+      ],
+      "expected_exit": 7,
+      "actual_exit": 7,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "test-ai-experiments-producer-23",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/test-ai-experiments-producer-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true,
+      "combined_log_retained": true,
+      "following_command_ran": false
+    },
+    {
+      "name": "test-ai-experiments-tee-failure",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/test-ai-experiments-tee-failure/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "governance-pass",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/governance-pass/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "validator_calls": [
+        "scripts/governance/check_root_structure.py",
+        "scripts/governance/check_readme_naming.py",
+        "scripts/governance/check_translation_metadata.py",
+        "scripts/governance/check_translation_staleness.py",
+        "scripts/governance/check_translation_semantic_alignment.py",
+        "scripts/governance/check_docs_structure.py",
+        "scripts/governance/check_active_docs_link_hygiene.py",
+        "scripts/governance/check_license_policy.py",
+        "scripts/governance/check_repo_artifact_hygiene.py",
+        "scripts/governance/check_public_api_semver.py",
+        "scripts/governance/check_spec_code_alignment_baseline.py",
+        "scripts/governance/check_stdlib_surface_baseline.py",
+        "scripts/governance/check_stdlib_promotion_snapshot.py",
+        "scripts/governance/check_status_label_coherence.py",
+        "scripts/governance/check_cognitive_tier_boundary.py",
+        "scripts/governance/check_overclaim_guardrails.py",
+        "scripts/governance/check_rfc_lifecycle_hygiene.py"
+      ],
+      "log_retained": true
+    },
+    {
+      "name": "governance-first",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/governance-first/step.sh"
+      ],
+      "expected_exit": 17,
+      "actual_exit": 17,
+      "passed": true,
+      "validator_calls": [
+        "scripts/governance/check_root_structure.py"
+      ],
+      "log_retained": true
+    },
+    {
+      "name": "governance-middle",
+      "workflow": "ci.yml",
+      "job": "spec-and-docs",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/governance-middle/step.sh"
+      ],
+      "expected_exit": 19,
+      "actual_exit": 19,
+      "passed": true,
+      "validator_calls": [
+        "scripts/governance/check_root_structure.py",
+        "scripts/governance/check_readme_naming.py",
+        "scripts/governance/check_translation_metadata.py",
+        "scripts/governance/check_translation_staleness.py",
+        "scripts/governance/check_translation_semantic_alignment.py",
+        "scripts/governance/check_docs_structure.py",
+        "scripts/governance/check_active_docs_link_hygiene.py",
+        "scripts/governance/check_license_policy.py"
+      ],
+      "log_retained": true
+    },
+    {
+      "name": "warn-strict-19-0",
+      "workflow": "ci.yml",
+      "job": "warn-strict",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/warn-strict-19-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "warn-strict-20-23",
+      "workflow": "ci.yml",
+      "job": "warn-strict",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/warn-strict-20-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true
+    },
+    {
+      "name": "benchmarks-21-0",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-21-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "benchmarks-22-23",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-22-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true
+    },
+    {
+      "name": "benchmarks-23-0",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-23-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "benchmarks-24-23",
+      "workflow": "ci.yml",
+      "job": "benchmarks",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/benchmarks-24-23/step.sh"
+      ],
+      "expected_exit": 23,
+      "actual_exit": 23,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-0-present",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-0-present/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-0-help-failed-with-matching-output",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-0-help-failed-with-matching-output/step.sh"
+      ],
+      "expected_exit": 29,
+      "actual_exit": 29,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-0-absent",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-0-absent/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-0-build-failed",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-0-build-failed/step.sh"
+      ],
+      "expected_exit": 31,
+      "actual_exit": 31,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-1-present",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-1-present/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-1-help-failed-with-matching-output",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-1-help-failed-with-matching-output/step.sh"
+      ],
+      "expected_exit": 29,
+      "actual_exit": 29,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-1-absent",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-1-absent/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-1-build-failed",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-1-build-failed/step.sh"
+      ],
+      "expected_exit": 31,
+      "actual_exit": 31,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-2-present",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-2-present/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-2-help-failed-with-matching-output",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-2-help-failed-with-matching-output/step.sh"
+      ],
+      "expected_exit": 29,
+      "actual_exit": 29,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-2-absent",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-2-absent/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-2-build-failed",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-2-build-failed/step.sh"
+      ],
+      "expected_exit": 31,
+      "actual_exit": 31,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-3-present",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-3-present/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-3-help-failed-with-matching-output",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-3-help-failed-with-matching-output/step.sh"
+      ],
+      "expected_exit": 29,
+      "actual_exit": 29,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-3-absent",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-3-absent/step.sh"
+      ],
+      "expected_exit": 1,
+      "actual_exit": 1,
+      "passed": true
+    },
+    {
+      "name": "ai-probe-3-build-failed",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-probe-3-build-failed/step.sh"
+      ],
+      "expected_exit": 31,
+      "actual_exit": 31,
+      "passed": true
+    },
+    {
+      "name": "ai-ctest-0-0",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-ctest-0-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "ctest_log_retained": true
+    },
+    {
+      "name": "ai-ctest-0-37",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-ctest-0-37/step.sh"
+      ],
+      "expected_exit": 37,
+      "actual_exit": 37,
+      "passed": true,
+      "ctest_log_retained": true
+    },
+    {
+      "name": "ai-ctest-1-0",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-ctest-1-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "ctest_log_retained": true
+    },
+    {
+      "name": "ai-ctest-1-37",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-ctest-1-37/step.sh"
+      ],
+      "expected_exit": 37,
+      "actual_exit": 37,
+      "passed": true,
+      "ctest_log_retained": true
+    },
+    {
+      "name": "ai-ctest-2-0",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-ctest-2-0/step.sh"
+      ],
+      "expected_exit": 0,
+      "actual_exit": 0,
+      "passed": true,
+      "ctest_log_retained": true
+    },
+    {
+      "name": "ai-ctest-2-37",
+      "workflow": "ai-experiments-ci.yml",
+      "job": "test-ai-experiments",
+      "command": [
+        "bash",
+        "--noprofile",
+        "--norc",
+        "-e",
+        "-o",
+        "pipefail",
+        "/private/tmp/t81-root-governance-final-failure-controls/ai-ctest-2-37/step.sh"
+      ],
+      "expected_exit": 37,
+      "actual_exit": 37,
+      "passed": true,
+      "ctest_log_retained": true
+    }
+  ],
+  "workflow_sha256": {
+    "ci.yml": "7bb2760c296ae58f32329b3666ace0e20056c90f94c77f47ba713b0a9233a27f",
+    "ai-experiments-ci.yml": "e2369b6b63d4b77089a7aa8e2410eddeea17cf14bae0efbc6472c1eaeaaa3de2"
+  }
+}

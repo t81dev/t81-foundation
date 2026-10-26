@@ -1,0 +1,15 @@
+{
+  "command": [
+    "python3",
+    "tests/ci/check_root_structure_test.py",
+    "RootLayout.test_git_replace_cannot_hide_unknown_root",
+    "RootLayout.test_nested_repo_root_cannot_hide_outer_violation",
+    "RootLayout.test_git_replace_cannot_forge_authorization_digest",
+    "RootLayout.test_nonfinite_schema_json_is_rejected",
+    "RootLayout.test_cmake_literal_source_list_cannot_hide_preserved_root",
+    "RootLayout.test_cmake_current_source_dir_cannot_hide_preserved_root"
+  ],
+  "exit": 0,
+  "stdout": "",
+  "stderr": "test_git_replace_cannot_hide_unknown_root (__main__.RootLayout.test_git_replace_cannot_hide_unknown_root) ... ok\ntest_nested_repo_root_cannot_hide_outer_violation (__main__.RootLayout.test_nested_repo_root_cannot_hide_outer_violation) ... ok\ntest_git_replace_cannot_forge_authorization_digest (__main__.RootLayout.test_git_replace_cannot_forge_authorization_digest) ... ok\ntest_nonfinite_schema_json_is_rejected (__main__.RootLayout.test_nonfinite_schema_json_is_rejected) ... ok\ntest_cmake_literal_source_list_cannot_hide_preserved_root (__main__.RootLayout.test_cmake_literal_source_list_cannot_hide_preserved_root) ... ok\ntest_cmake_current_source_dir_cannot_hide_preserved_root (__main__.RootLayout.test_cmake_current_source_dir_cannot_hide_preserved_root) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 5.840s\n\nOK\n"
+}
