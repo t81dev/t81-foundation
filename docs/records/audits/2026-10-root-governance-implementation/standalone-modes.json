@@ -1,0 +1,24 @@
+[
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_root_structure.py",
+      "--structural"
+    ],
+    "commit": "304b63bedb261904e8bf194daed5c0e9c6a0aabe",
+    "exit": 0,
+    "stdout": "committed root structure PASSED: 304b63bedb261904e8bf194daed5c0e9c6a0aabe; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_root_structure.py",
+      "--authorization"
+    ],
+    "commit": "304b63bedb261904e8bf194daed5c0e9c6a0aabe",
+    "exit": 1,
+    "stdout": "root validation FAILED: absent trusted approval: external operator input required\n",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,9 @@
+{
+  "url": "https://github.com/t81dev/t81-foundation/pull/579#issuecomment-6419311331",
+  "api_url": "https://api.github.com/repos/t81dev/t81-foundation/issues/comments/6419311331",
+  "author": "t81dev",
+  "author_id": 207451414,
+  "created_at": "2026-10-26T15:01:14Z",
+  "updated_at": "2026-10-26T15:01:14Z",
+  "body": "I, @t81dev, confirm that I am the Project Lead and sole active maintainer of T81 Foundation. I approve D1–D5 as documented in this decision, referencing proposal commit 71bb2c0e937dbcad73c9421e5465651b6e0d3ec3, including the exact 60 required entries and 17 preservation-only exceptions.\r\n\r\nThis approval authorizes preparation and testing of Scope A. It does not authorize policy activation, merging, branch-protection changes, artifact cleanup, or modifications to scientific results. Final activation remains subject to the accepted governance clarification, independent trust enforcement, verification evidence, and separate approval."
+}
