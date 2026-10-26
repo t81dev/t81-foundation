@@ -1,0 +1,17 @@
+{
+  "baseline": "f4ffa85bf0bcaf028b51462113bf19c2eebb0091",
+  "schema": "draft-2020-12 validated",
+  "coverage": 77,
+  "proposed_required": 60,
+  "unresolved": 17,
+  "activated_exceptions": 0,
+  "authority_granted": false,
+  "inventory_pass": 18,
+  "inventory_fail": 9,
+  "regression_programs_passed": 5,
+  "baseline_root_objects_unchanged_except_audit_docs": 76,
+  "review_artifact_sha256_not_trust_anchors": {
+    "proposed-contract.json": "0548f2a2291f364db9d60196ffbe40403a611b08918cd939de0f7ba8350faab5",
+    "proposed-contract.schema.json": "4e7abafa412343885316cb6729ebaa2f65f2a7c3a08c7ff1366f14e3a687a54d"
+  }
+}

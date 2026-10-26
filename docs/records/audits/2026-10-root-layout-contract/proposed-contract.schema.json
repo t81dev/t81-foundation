@@ -1,0 +1,440 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "status": {
+      "const": "PROPOSED_NOT_AUTHORIZED"
+    },
+    "baseline": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "activation_authority": {
+      "type": "null"
+    },
+    "default_unknown_entry": {
+      "const": "reject"
+    },
+    "symlinks": {
+      "const": "reject"
+    },
+    "contract_revision_guard": {
+      "type": "string",
+      "minLength": 1
+    },
+    "required_directories": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/entry"
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "directory"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "required_files": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/entry"
+          },
+          {
+            "properties": {
+              "type": {
+                "const": "file"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "approved_optional_entries": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "grandfathered_historical_entries": {
+      "type": "array",
+      "maxItems": 0
+    },
+    "prohibited_generated_artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "not": {
+              "enum": [
+                ".",
+                "..",
+                ".git"
+              ]
+            }
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "reason"
+        ]
+      }
+    },
+    "unresolved_entries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unresolved"
+      }
+    },
+    "obsolete_required_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.-]+$",
+            "not": {
+              "enum": [
+                ".",
+                "..",
+                ".git"
+              ]
+            }
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "proposed_action": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "path",
+          "evidence",
+          "proposed_action"
+        ]
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "baseline",
+    "activation_authority",
+    "default_unknown_entry",
+    "symlinks",
+    "contract_revision_guard",
+    "required_directories",
+    "required_files",
+    "approved_optional_entries",
+    "grandfathered_historical_entries",
+    "prohibited_generated_artifacts",
+    "unresolved_entries",
+    "obsolete_required_files"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Inactive T81 root layout proposal; not an authorization schema",
+  "$defs": {
+    "git_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "040000",
+            "100644",
+            "100755"
+          ]
+        },
+        "object_type": {
+          "enum": [
+            "tree",
+            "blob"
+          ]
+        },
+        "oid": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        }
+      },
+      "required": [
+        "mode",
+        "object_type",
+        "oid"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "040000"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "object_type": {
+                "const": "tree"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "object_type": {
+                "const": "blob"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "not": {
+            "enum": [
+              ".",
+              "..",
+              ".git"
+            ]
+          }
+        },
+        "type": {
+          "enum": [
+            "file",
+            "directory"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_git": {
+          "$ref": "#/$defs/git_entry"
+        }
+      },
+      "required": [
+        "path",
+        "type",
+        "role",
+        "evidence",
+        "authority",
+        "baseline_git"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "directory"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "baseline_git": {
+                "properties": {
+                  "mode": {
+                    "const": "040000"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "baseline_git": {
+                "properties": {
+                  "mode": {
+                    "enum": [
+                      "100644",
+                      "100755"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unresolved": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$",
+          "not": {
+            "enum": [
+              ".",
+              "..",
+              ".git"
+            ]
+          }
+        },
+        "type": {
+          "enum": [
+            "file",
+            "directory"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseline_git": {
+          "$ref": "#/$defs/git_entry"
+        },
+        "maintainer_decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recommended_disposition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "preservation_candidate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "const": "NOT_GRANTED"
+            },
+            "expected_mode": {
+              "enum": [
+                "040000",
+                "100644",
+                "100755"
+              ]
+            },
+            "expected_object": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "allowed_operation_if_separately_approved": {
+              "const": "preserve_exact_content_only"
+            },
+            "require_presence": {
+              "const": true
+            },
+            "owner": {
+              "type": "null"
+            },
+            "approval_evidence": {
+              "type": "null"
+            },
+            "review_trigger": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "status",
+            "expected_mode",
+            "expected_object",
+            "allowed_operation_if_separately_approved",
+            "require_presence",
+            "owner",
+            "approval_evidence",
+            "review_trigger"
+          ]
+        }
+      },
+      "required": [
+        "path",
+        "type",
+        "role",
+        "evidence",
+        "authority",
+        "baseline_git",
+        "maintainer_decision",
+        "recommended_disposition",
+        "preservation_candidate"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "directory"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "baseline_git": {
+                "properties": {
+                  "mode": {
+                    "const": "040000"
+                  }
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "baseline_git": {
+                "properties": {
+                  "mode": {
+                    "enum": [
+                      "100644",
+                      "100755"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "command": [
+      "python3",
+      "scripts/ci/test_failure_propagation.py"
+    ],
+    "exit": 2,
+    "stdout": "",
+    "stderr": "usage: test_failure_propagation.py [-h] --output-dir OUTPUT_DIR\ntest_failure_propagation.py: error: the following arguments are required: --output-dir\n"
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/test_failure_propagation.py",
+      "--output-dir",
+      "/private/tmp/t81-root-layout-contract-failure-probes"
+    ],
+    "exit": 0,
+    "stdout": "{\"cases\": 47, \"failures\": 0, \"evidence\": \"/private/tmp/t81-root-layout-contract-failure-probes\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "tests/ci/check_architecture_targets_test.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_annotated_benchmark_row_is_checked (__main__.TargetSync.test_annotated_benchmark_row_is_checked) ... ok\ntest_comments_cannot_declare_targets (__main__.TargetSync.test_comments_cannot_declare_targets) ... ok\ntest_computed_subdirectory_is_not_guessed (__main__.TargetSync.test_computed_subdirectory_is_not_guessed) ... ok\ntest_computed_target_is_not_guessed (__main__.TargetSync.test_computed_target_is_not_guessed) ... ok\ntest_missing_or_empty_expectations_fail (__main__.TargetSync.test_missing_or_empty_expectations_fail) ... ok\ntest_missing_reachable_file_is_diagnostic_failure (__main__.TargetSync.test_missing_reachable_file_is_diagnostic_failure) ... ok\ntest_missing_required_benchmark_file_still_fails (__main__.TargetSync.test_missing_required_benchmark_file_still_fails) ... ok\ntest_nested_source_declarations (__main__.TargetSync.test_nested_source_declarations) ... ok\ntest_obsolete_python_name_still_fails (__main__.TargetSync.test_obsolete_python_name_still_fails) ... ok\ntest_optional_pybind_module_name_is_not_exempt (__main__.TargetSync.test_optional_pybind_module_name_is_not_exempt) ... ok\ntest_quoted_multiline_paths_and_case_insensitive_commands (__main__.TargetSync.test_quoted_multiline_paths_and_case_insensitive_commands) ... ok\ntest_quoted_or_bracket_messages_cannot_declare_targets (__main__.TargetSync.test_quoted_or_bracket_messages_cannot_declare_targets) ... ok\ntest_removed_subdirectory_edge_does_not_scan_orphaned_source (__main__.TargetSync.test_removed_subdirectory_edge_does_not_scan_orphaned_source) ... ok\ntest_removed_target_cannot_be_satisfied_by_disconnected_copy (__main__.TargetSync.test_removed_target_cannot_be_satisfied_by_disconnected_copy) ... ok\ntest_renamed_target_fails_with_exact_name (__main__.TargetSync.test_renamed_target_fails_with_exact_name) ... ok\ntest_source_edge_cannot_escape_repository (__main__.TargetSync.test_source_edge_cannot_escape_repository) ... ok\ntest_unbalanced_cmake_command_fails (__main__.TargetSync.test_unbalanced_cmake_command_fails) ... ok\ntest_uninvoked_function_and_macro_cannot_declare_targets (__main__.TargetSync.test_uninvoked_function_and_macro_cannot_declare_targets) ... ok\n\n----------------------------------------------------------------------\nRan 18 tests in 0.914s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "tests/ci/governance_deadlock_test.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_current_layout_without_obsolete_core_tree (__main__.GovernanceTests.test_current_layout_without_obsolete_core_tree) ... ok\ntest_each_required_contract_remains_enforced (__main__.GovernanceTests.test_each_required_contract_remains_enforced) ... ok\ntest_independent_summary_cases (__main__.GovernanceTests.test_independent_summary_cases) ... ok\ntest_old_copy_cannot_replace_missing_current_source (__main__.GovernanceTests.test_old_copy_cannot_replace_missing_current_source) ... ok\ntest_readme_boundary_and_its_removal (__main__.GovernanceTests.test_readme_boundary_and_its_removal) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 1.518s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "tests/ci/workflow_supply_chain_test.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_current_actions_and_permissions_pass (__main__.SupplyChainTests.test_current_actions_and_permissions_pass) ... ok\ntest_every_new_pin_matches_verified_identity (__main__.SupplyChainTests.test_every_new_pin_matches_verified_identity) ... ok\ntest_expanded_scopes_and_job_overrides_fail_budget (__main__.SupplyChainTests.test_expanded_scopes_and_job_overrides_fail_budget) ... ok\ntest_missing_explicit_permissions_fails_audit (__main__.SupplyChainTests.test_missing_explicit_permissions_fails_audit) ... ok\ntest_mutable_or_malformed_action_references_fail (__main__.SupplyChainTests.test_mutable_or_malformed_action_references_fail) ... ok\ntest_smoke_has_no_publish_credentials_or_write_scopes (__main__.SupplyChainTests.test_smoke_has_no_publish_credentials_or_write_scopes) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 1.855s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/check_tisc_freeze_integrity.py"
+    ],
+    "exit": 0,
+    "stdout": "Checking /private/tmp/t81-root-layout-contract/spec/tisc/opcode-registry.md...\nSUCCESS: TISC v1.1.0 Freeze Integrity Verified.\n- Count: 209 opcodes\n- Bitwise Ops: Verified\n- Reserved Range: Clean\n",
+    "stderr": ""
+  }
+]

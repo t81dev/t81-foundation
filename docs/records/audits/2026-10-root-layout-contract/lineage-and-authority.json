@@ -1,0 +1,218 @@
+[
+  {
+    "command": [
+      "git",
+      "log",
+      "--all",
+      "--diff-filter=A",
+      "--format=%H %as %s",
+      "--",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "exit": 0,
+    "stdout": "529a9486240a525a62b3393a94b0b842d77b8096 2026-02-26 Promote governance warning rows to machine-verifiable CI checks\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "log",
+      "--follow",
+      "-p",
+      "--format=%H %as %s",
+      "--",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "exit": 0,
+    "stdout": "3ec0fea8846a5b1045f7dfb364a6e466bc73c123 2026-03-30 Add deterministic AI governance \"care-trigger\" demo\n\ndiff --git a/scripts/governance/check_root_structure.py b/scripts/governance/check_root_structure.py\nindex a5b85f1f..f66410ef 100755\n--- a/scripts/governance/check_root_structure.py\n+++ b/scripts/governance/check_root_structure.py\n@@ -19,7 +19,6 @@ EXPECTED_TOP_LEVEL = {\n     \".t81\",\n     \"BUILD.bazel\",\n     \"CMakeDoxyfile.in\",\n-    \"CMakeDoxygenDefaults.cmake\",\n     \"CMakeLists.txt\",\n     \"CMakePresets.json\",\n     \"CODE_OF_CONDUCT.md\",\n@@ -35,36 +34,38 @@ EXPECTED_TOP_LEVEL = {\n     \"SUPPORT_TAXONOMY.md\",\n     \"T81_CAPABILITIES_REPORT.md\",\n     \"artifacts\",\n-    \"assets\",\n     \"benchmarks\",\n-    \"book\",\n     \"cmake\",\n+    \"codec\",\n     \"contracts\",\n-    \"core\",\n+    \"crypto\",\n     \"docs\",\n+    \"drivers\",\n     \"examples\",\n-    \"experiments\",\n     \"experimental\",\n+    \"ffi\",\n+    \"fs\",\n     \"include\",\n-    \"internal\",\n+    \"inference\",\n     \"kernel\",\n     \"lang\",\n-    \"legacy\",\n     \"logs\",\n-    \"notebooks\",\n     \"package-lock.json\",\n     \"package.json\",\n-    \"pdf\",\n     \"pyproject.toml\",\n-    \"qemu\",\n-    \"runtime\",\n     \"scripts\",\n     \"spec\",\n-    \"src\",\n+    \"ternaryos\",\n     \"tests\",\n     \"third_party\",\n-    \"tooling\",\n     \"tools\",\n+    \"vm\",\n+    \"install.ps1\",\n+    \"install.sh\",\n+    \"isa\",\n+    \"_config.yml\",\n+    \"AGENTS.md\",\n+    \"Dockerfile\",\n }\n \n \naf4f07dbd5c54e5556a24fd8df44f12300528b83 2026-03-20 fix: update root structure and public API governance locks\n\ndiff --git a/scripts/governance/check_root_structure.py b/scripts/governance/check_root_structure.py\nindex 8065a342..a5b85f1f 100755\n--- a/scripts/governance/check_root_structure.py\n+++ b/scripts/governance/check_root_structure.py\n@@ -33,6 +33,7 @@ EXPECTED_TOP_LEVEL = {\n     \"README.zh-CN.md\",\n     \"SECURITY.md\",\n     \"SUPPORT_TAXONOMY.md\",\n+    \"T81_CAPABILITIES_REPORT.md\",\n     \"artifacts\",\n     \"assets\",\n     \"benchmarks\",\n326abf8aff9a49ebc2001074c4d41195063ea1fb 2026-03-19 Align docs governance and harden CLI/docs integrity checks\n\ndiff --git a/scripts/governance/check_root_structure.py b/scripts/governance/check_root_structure.py\nindex 3b8680d7..8065a342 100755\n--- a/scripts/governance/check_root_structure.py\n+++ b/scripts/governance/check_root_structure.py\n@@ -18,17 +18,21 @@ EXPECTED_TOP_LEVEL = {\n     \".pre-commit-config.yaml\",\n     \".t81\",\n     \"BUILD.bazel\",\n+    \"CMakeDoxyfile.in\",\n+    \"CMakeDoxygenDefaults.cmake\",\n     \"CMakeLists.txt\",\n     \"CMakePresets.json\",\n     \"CODE_OF_CONDUCT.md\",\n     \"CONTRIBUTING.md\",\n     \"LICENSE\",\n+    \"Makefile\",\n     \"README.es.md\",\n     \"README.md\",\n     \"README.pt-BR.md\",\n     \"README.ru.md\",\n     \"README.zh-CN.md\",\n     \"SECURITY.md\",\n+    \"SUPPORT_TAXONOMY.md\",\n     \"artifacts\",\n     \"assets\",\n     \"benchmarks\",\n@@ -51,6 +55,7 @@ EXPECTED_TOP_LEVEL = {\n     \"package.json\",\n     \"pdf\",\n     \"pyproject.toml\",\n+    \"qemu\",\n     \"runtime\",\n     \"scripts\",\n     \"spec\",\nd969bb4f8274d5174187b6c400a51e903f3f7f2c 2026-03-05 Fix CI governance gates for root structure and API lock\n\ndiff --git a/scripts/governance/check_root_structure.py b/scripts/governance/check_root_structure.py\nindex 786a5748..3b8680d7 100755\n--- a/scripts/governance/check_root_structure.py\n+++ b/scripts/governance/check_root_structure.py\n@@ -17,7 +17,6 @@ EXPECTED_TOP_LEVEL = {\n     \".gitmodules\",\n     \".pre-commit-config.yaml\",\n     \".t81\",\n-    \".t81_canonfs\",\n     \"BUILD.bazel\",\n     \"CMakeLists.txt\",\n     \"CMakePresets.json\",\nc087907d8f1158f330a0124248500f180793cd7c 2026-03-05 fix(ci): restore missing pipeline assets and recover build/governance gates\n\ndiff --git a/scripts/governance/check_root_structure.py b/scripts/governance/check_root_structure.py\nindex dcf8b36c..786a5748 100755\n--- a/scripts/governance/check_root_structure.py\n+++ b/scripts/governance/check_root_structure.py\n@@ -1,9 +1,9 @@\n #!/usr/bin/env python3\n from __future__ import annotations\n \n-import subprocess\n import sys\n from pathlib import Path\n+import subprocess\n \n EXPECTED_TOP_LEVEL = {\n     \".clang-format\",\n@@ -39,6 +39,7 @@ EXPECTED_TOP_LEVEL = {\n     \"core\",\n     \"docs\",\n     \"examples\",\n+    \"experiments\",\n     \"experimental\",\n     \"include\",\n     \"internal\",\n529a9486240a525a62b3393a94b0b842d77b8096 2026-02-26 Promote governance warning rows to machine-verifiable CI checks\n\ndiff --git a/scripts/governance/check_root_structure.py b/scripts/governance/check_root_structure.py\nnew file mode 100755\nindex 00000000..dcf8b36c\n--- /dev/null\n+++ b/scripts/governance/check_root_structure.py\n@@ -0,0 +1,101 @@\n+#!/usr/bin/env python3\n+from __future__ import annotations\n+\n+import subprocess\n+import sys\n+from pathlib import Path\n+\n+EXPECTED_TOP_LEVEL = {\n+    \".clang-format\",\n+    \".clang-tidy\",\n+    \".cursorrules\",\n+    \".devcontainer\",\n+    \".editorconfig\",\n+    \".gitattributes\",\n+    \".github\",\n+    \".gitignore\",\n+    \".gitmodules\",\n+    \".pre-commit-config.yaml\",\n+    \".t81\",\n+    \".t81_canonfs\",\n+    \"BUILD.bazel\",\n+    \"CMakeLists.txt\",\n+    \"CMakePresets.json\",\n+    \"CODE_OF_CONDUCT.md\",\n+    \"CONTRIBUTING.md\",\n+    \"LICENSE\",\n+    \"README.es.md\",\n+    \"README.md\",\n+    \"README.pt-BR.md\",\n+    \"README.ru.md\",\n+    \"README.zh-CN.md\",\n+    \"SECURITY.md\",\n+    \"artifacts\",\n+    \"assets\",\n+    \"benchmarks\",\n+    \"book\",\n+    \"cmake\",\n+    \"contracts\",\n+    \"core\",\n+    \"docs\",\n+    \"examples\",\n+    \"experimental\",\n+    \"include\",\n+    \"internal\",\n+    \"kernel\",\n+    \"lang\",\n+    \"legacy\",\n+    \"logs\",\n+    \"notebooks\",\n+    \"package-lock.json\",\n+    \"package.json\",\n+    \"pdf\",\n+    \"pyproject.toml\",\n+    \"runtime\",\n+    \"scripts\",\n+    \"spec\",\n+    \"src\",\n+    \"tests\",\n+    \"third_party\",\n+    \"tooling\",\n+    \"tools\",\n+}\n+\n+\n+def main() -> int:\n+    root = Path(__file__).resolve().parents[2]\n+    proc = subprocess.run(\n+        [\"git\", \"ls-tree\", \"--name-only\", \"HEAD\"],\n+        cwd=root,\n+        capture_output=True,\n+        text=True,\n+        check=False,\n+    )\n+    if proc.returncode != 0:\n+        print(proc.stdout)\n+        print(proc.stderr)\n+        return proc.returncode\n+\n+    current = {line.strip() for line in proc.stdout.splitlines() if line.strip()}\n+    missing = sorted(EXPECTED_TOP_LEVEL - current)\n+    extra = sorted(current - EXPECTED_TOP_LEVEL)\n+\n+    if missing or extra:\n+        print(\"root structure check FAILED\")\n+        if missing:\n+            print(\"- missing:\")\n+            for name in missing:\n+                print(f\"  - {name}\")\n+        if extra:\n+            print(\"- unexpected:\")\n+            for name in extra:\n+                print(f\"  - {name}\")\n+        return 1\n+\n+    print(\"root structure check PASSED\")\n+    print(f\"- entries checked: {len(current)}\")\n+    return 0\n+\n+\n+if __name__ == \"__main__\":\n+    sys.exit(main())\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "blame",
+      "HEAD",
+      "--",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "exit": 0,
+    "stdout": "529a94862 (t81dev                 2026-02-26 11:48:52 -0500   1) #!/usr/bin/env python3\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   2) from __future__ import annotations\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   3) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   4) import sys\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   5) from pathlib import Path\nc087907d8 (t81dev                 2026-03-05 08:18:59 -0500   6) import subprocess\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   7) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   8) EXPECTED_TOP_LEVEL = {\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500   9)     \".clang-format\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  10)     \".clang-tidy\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  11)     \".cursorrules\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  12)     \".devcontainer\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  13)     \".editorconfig\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  14)     \".gitattributes\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  15)     \".github\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  16)     \".gitignore\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  17)     \".gitmodules\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  18)     \".pre-commit-config.yaml\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  19)     \".t81\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  20)     \"BUILD.bazel\",\n326abf8af (t81dev                 2026-03-19 07:29:34 -0400  21)     \"CMakeDoxyfile.in\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  22)     \"CMakeLists.txt\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  23)     \"CMakePresets.json\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  24)     \"CODE_OF_CONDUCT.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  25)     \"CONTRIBUTING.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  26)     \"LICENSE\",\n326abf8af (t81dev                 2026-03-19 07:29:34 -0400  27)     \"Makefile\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  28)     \"README.es.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  29)     \"README.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  30)     \"README.pt-BR.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  31)     \"README.ru.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  32)     \"README.zh-CN.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  33)     \"SECURITY.md\",\n326abf8af (t81dev                 2026-03-19 07:29:34 -0400  34)     \"SUPPORT_TAXONOMY.md\",\naf4f07dbd (google-labs-jules[bot] 2026-03-20 12:25:51 +0000  35)     \"T81_CAPABILITIES_REPORT.md\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  36)     \"artifacts\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  37)     \"benchmarks\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  38)     \"cmake\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  39)     \"codec\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  40)     \"contracts\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  41)     \"crypto\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  42)     \"docs\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  43)     \"drivers\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  44)     \"examples\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  45)     \"experimental\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  46)     \"ffi\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  47)     \"fs\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  48)     \"include\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  49)     \"inference\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  50)     \"kernel\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  51)     \"lang\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  52)     \"logs\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  53)     \"package-lock.json\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  54)     \"package.json\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  55)     \"pyproject.toml\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  56)     \"scripts\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  57)     \"spec\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  58)     \"ternaryos\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  59)     \"tests\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  60)     \"third_party\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  61)     \"tools\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  62)     \"vm\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  63)     \"install.ps1\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  64)     \"install.sh\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  65)     \"isa\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  66)     \"_config.yml\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  67)     \"AGENTS.md\",\n3ec0fea88 (google-labs-jules[bot] 2026-03-30 07:32:03 +0000  68)     \"Dockerfile\",\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  69) }\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  70) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  71) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  72) def main() -> int:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  73)     root = Path(__file__).resolve().parents[2]\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  74)     proc = subprocess.run(\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  75)         [\"git\", \"ls-tree\", \"--name-only\", \"HEAD\"],\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  76)         cwd=root,\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  77)         capture_output=True,\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  78)         text=True,\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  79)         check=False,\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  80)     )\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  81)     if proc.returncode != 0:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  82)         print(proc.stdout)\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  83)         print(proc.stderr)\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  84)         return proc.returncode\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  85) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  86)     current = {line.strip() for line in proc.stdout.splitlines() if line.strip()}\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  87)     missing = sorted(EXPECTED_TOP_LEVEL - current)\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  88)     extra = sorted(current - EXPECTED_TOP_LEVEL)\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  89) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  90)     if missing or extra:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  91)         print(\"root structure check FAILED\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  92)         if missing:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  93)             print(\"- missing:\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  94)             for name in missing:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  95)                 print(f\"  - {name}\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  96)         if extra:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  97)             print(\"- unexpected:\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  98)             for name in extra:\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500  99)                 print(f\"  - {name}\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 100)         return 1\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 101) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 102)     print(\"root structure check PASSED\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 103)     print(f\"- entries checked: {len(current)}\")\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 104)     return 0\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 105) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 106) \n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 107) if __name__ == \"__main__\":\n529a94862 (t81dev                 2026-02-26 11:48:52 -0500 108)     sys.exit(main())\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "cat-file",
+      "-e",
+      "529a9486^:scripts/governance/check_root_structure.py"
+    ],
+    "exit": 128,
+    "stdout": "",
+    "stderr": "fatal: path 'scripts/governance/check_root_structure.py' exists on disk, but not in '529a9486^'\n"
+  },
+  {
+    "command": [
+      "git",
+      "diff-tree",
+      "--root",
+      "--no-commit-id",
+      "--name-status",
+      "-r",
+      "529a9486",
+      "--",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "exit": 0,
+    "stdout": "A\tscripts/governance/check_root_structure.py\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "529a9486",
+      "01c8501931"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "merge-base",
+      "--is-ancestor",
+      "01c8501931",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "show",
+      "--stat",
+      "--format=fuller",
+      "01c8501931"
+    ],
+    "exit": 0,
+    "stdout": "commit 01c85019319fd020922402ba356878e392cb2231\nAuthor:     t81dev <copyleft7212@gmail.com>\nAuthorDate: Sun Oct 25 18:24:21 2026 -0400\nCommit:     GitHub <noreply@github.com>\nCommitDate: Sun Oct 25 18:24:21 2026 -0400\n\n    research(h04-r02): adaptive representation optimization & verification (#569)\n\n CMakeLists.txt                                     |   3 +\n .../h04_r02_adaptive_representation/CMakeLists.txt |  19 +\n .../h04_r02_adaptive_representation/HANDOFF.md     |  31 ++\n .../h04_r02_adaptive_representation/LIMITATIONS.md |  27 ++\n .../h04_r02_adaptive_representation/METHODOLOGY.md |  49 +++\n .../h04_r02_adaptive_representation/ORACLE.md      |  38 ++\n .../h04_r02_adaptive_representation/RESULTS.md     |  47 +++\n .../SPECIFICATION.md                               |  55 +++\n .../VERIFICATION.md                                |  45 +++\n .../adaptive_experiment.hpp                        | 277 +++++++++++++++\n .../h04_r02_adaptive_representation/main.cpp       | 136 +++++++\n .../h04_r02_adaptive_representation/oracle.py      | 360 +++++++++++++++++++\n .../h04_r02_adaptive_representation/results.json   | 391 +++++++++++++++++++++\n 13 files changed, 1478 insertions(+)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "01c8501931^",
+      "01c8501931",
+      "--",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "rev-parse",
+      "01c8501931:scripts/governance/check_root_structure.py",
+      "01c8501931^:scripts/governance/check_root_structure.py"
+    ],
+    "exit": 0,
+    "stdout": "f66410ef17f18d9ec5282923ac5dc04b182916bb\nf66410ef17f18d9ec5282923ac5dc04b182916bb\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "show",
+      "cb54c175",
+      "--",
+      "package.json",
+      "package-lock.json"
+    ],
+    "exit": 0,
+    "stdout": "commit cb54c1757c58ce5847fbb9d3f4f94f39212b4a87\nAuthor: t81dev <copyleft7212@gmail.com>\nDate:   Sat Apr 4 14:30:21 2026 -0400\n\n    cleanup: remove experimental CLI tools and temporary files\n    \n    - Remove 35+ experimental/prototype CLI tools to reduce maintenance burden\n    - Delete temporary development files (ctest.log, debug files, package files)\n    - Clean up unused experimental code paths and prototypes\n    - Focus codebase on stable, production-ready components\n\ndiff --git a/package-lock.json b/package-lock.json\ndeleted file mode 100644\nindex eeecb554..00000000\n--- a/package-lock.json\n+++ /dev/null\n@@ -1,13 +0,0 @@\n-{\n-  \"name\": \"t81-foundation\",\n-  \"version\": \"1.0.0\",\n-  \"lockfileVersion\": 3,\n-  \"requires\": true,\n-  \"packages\": {\n-    \"\": {\n-      \"name\": \"t81-foundation\",\n-      \"version\": \"1.0.0\",\n-      \"license\": \"ISC\"\n-    }\n-  }\n-}\ndiff --git a/package.json b/package.json\ndeleted file mode 100644\nindex c3efca75..00000000\n--- a/package.json\n+++ /dev/null\n@@ -1,26 +0,0 @@\n-{\n-  \"name\": \"t81-foundation\",\n-  \"version\": \"1.0.0\",\n-  \"description\": \"Metadata and docs tooling manifest for the T81 Foundation repository.\",\n-  \"private\": true,\n-  \"directories\": {\n-    \"doc\": \"docs\",\n-    \"example\": \"examples\",\n-    \"test\": \"tests\"\n-  },\n-  \"scripts\": {\n-    \"docs:search\": \"node docs/site/search/build_index.js\"\n-  },\n-  \"repository\": {\n-    \"type\": \"git\",\n-    \"url\": \"git+https://github.com/t81dev/t81-foundation.git\"\n-  },\n-  \"keywords\": [],\n-  \"author\": \"\",\n-  \"license\": \"MIT\",\n-  \"type\": \"commonjs\",\n-  \"bugs\": {\n-    \"url\": \"https://github.com/t81dev/t81-foundation/issues\"\n-  },\n-  \"homepage\": \"https://github.com/t81dev/t81-foundation#readme\"\n-}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "log",
+      "-L",
+      "/### F. New Root File/,+2:docs/governance/SPEC_AUTHORITY_MODEL.md",
+      "--format=%H %as %s"
+    ],
+    "exit": 0,
+    "stdout": "525757f042c268a5ca4a390099286853991fb233 2026-02-24 docs(governance): define spec authority model and freeze rules\n\ndiff --git a/docs/governance/SPEC_AUTHORITY_MODEL.md b/docs/governance/SPEC_AUTHORITY_MODEL.md\n--- /dev/null\n+++ b/docs/governance/SPEC_AUTHORITY_MODEL.md\n@@ -0,0 +94,2 @@\n+### F. New Root File\n+*   **Prohibited**: Adding new files to the repository root is **strictly prohibited** without unanimous maintainer approval.\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "add_subdirectory\\(src|experiments/",
+      "CMakeLists.txt"
+    ],
+    "exit": 0,
+    "stdout": "27:add_subdirectory(src)\n31:  add_executable(t81_architecture_arm_a experiments/architecture_challenge/arm_a.cpp)\n39:  add_executable(t81_provenance_experiment experiments/deterministic_provenance/runner.cpp)\n45:        ${PROJECT_SOURCE_DIR}/experiments/deterministic_provenance/test_experiment.py\n50:        ${PROJECT_SOURCE_DIR}/experiments/float_conversion_audit/test_oracle.py)\n1362:  if(EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/experiments/radix_comparison/CMakeLists.txt\")\n1363:    add_subdirectory(experiments/radix_comparison)\n1365:  if(EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/experiments/packed_ternary_matvec/CMakeLists.txt\")\n1366:    add_subdirectory(experiments/packed_ternary_matvec)\n1368:  if(EXISTS \"${CMAKE_CURRENT_SOURCE_DIR}/experiments/h04_r02_adaptive_representation/CMakeLists.txt\")\n1369:    add_subdirectory(experiments/h04_r02_adaptive_representation)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "cat",
+      "src/CMakeLists.txt",
+      "src/direct_api/CMakeLists.txt"
+    ],
+    "exit": 0,
+    "stdout": "function(t81_preserve_root_output target)\n  get_target_property(_t81_target_type ${target} TYPE)\n  if(NOT _t81_target_type STREQUAL \"INTERFACE_LIBRARY\" AND NOT _t81_target_type STREQUAL \"OBJECT_LIBRARY\")\n    set_target_properties(${target} PROPERTIES\n      ARCHIVE_OUTPUT_DIRECTORY \"${PROJECT_BINARY_DIR}\"\n      LIBRARY_OUTPUT_DIRECTORY \"${PROJECT_BINARY_DIR}\"\n      RUNTIME_OUTPUT_DIRECTORY \"${PROJECT_BINARY_DIR}\"\n    )\n  endif()\nendfunction()\n\nadd_subdirectory(core)\nadd_subdirectory(experimental)\nadd_subdirectory(isa)\nadd_subdirectory(axion)\nadd_subdirectory(ffi)\nadd_subdirectory(io)\nadd_subdirectory(lang)\nadd_subdirectory(vm)\nadd_subdirectory(tools)\nadd_subdirectory(direct_api)\n# T81 Direct API CMakeLists.txt\n# Implements high-performance direct API to bypass CLI overhead\n\nadd_library(t81_direct_api STATIC\n    t81_direct_api.cpp\n    ${PROJECT_SOURCE_DIR}/vm/ai_backend/controlled_ai_backend.cpp\n)\n\ntarget_link_libraries(t81_direct_api PUBLIC\n    t81_core\n    t81_axion\n    t81_tracing\n    t81_tool_model\n    t81_tool_cli\n    t81_vm\n)\n\ntarget_include_directories(t81_direct_api PUBLIC\n    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>\n    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>\n)\n\ntarget_compile_features(t81_direct_api PUBLIC cxx_std_17)\n\n# Add test executable\nadd_executable(test_real_direct_api\n    ${PROJECT_SOURCE_DIR}/development_tests/test_real_direct_api.cpp\n)\n\ntarget_link_libraries(test_real_direct_api PRIVATE\n    t81_direct_api\n)\n\nt81_preserve_root_output(test_real_direct_api)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "npm |npx |yarn|package.json|package-lock.json",
+      ".github",
+      "scripts",
+      "cmake",
+      "CMakeLists.txt",
+      "Dockerfile",
+      "pyproject.toml"
+    ],
+    "exit": 0,
+    "stdout": ".github/workflows/documentation.yml:172:          if [ -f package-lock.json ]; then\n.github/workflows/documentation.yml:173:            npm ci\n.github/workflows/documentation.yml:175:            npm install cheerio@1.0.0-rc.12 lunr@2.3.9\nscripts/governance/check_root_structure.py:53:    \"package-lock.json\",\nscripts/governance/check_root_structure.py:54:    \"package.json\",\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "rg",
+      "-n",
+      "-i",
+      "unanimous|root.layout|root structure|root additions|root file",
+      "docs/governance",
+      "docs/architecture",
+      "spec",
+      "CONTRIBUTING.md",
+      "AGENTS.md",
+      "--glob",
+      "!*.json"
+    ],
+    "exit": 0,
+    "stdout": "docs/governance/SPEC_AUTHORITY_MODEL.md:90:### F. New Root File\ndocs/governance/SPEC_AUTHORITY_MODEL.md:91:*   **Prohibited**: Adding new files to the repository root is **strictly prohibited** without unanimous maintainer approval.\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "cat",
+      ".github/CODEOWNERS"
+    ],
+    "exit": 0,
+    "stdout": "# Global default owner\n* @t81dev\n\n# Module ownership boundaries\n/core/types/ @t81dev\n/core/isa/ @t81dev\n/core/vm/ @t81dev\n/kernel/axion/ @t81dev\n/runtime/tracing/ @t81dev\n/runtime/jit/ @t81dev\n/experimental/ @t81dev\n/tools/ @t81dev\n/include/t81/ @t81dev\n\n# Governance and specifications\n/docs/governance/ @t81dev\n/docs/architecture/ @t81dev\n/docs/product/ @t81dev\n/spec/ @t81dev\n\n# Test and release evidence surfaces\n/tests/ @t81dev\n/docs/status/ @t81dev\n",
+    "stderr": ""
+  }
+]
