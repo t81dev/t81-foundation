@@ -24,7 +24,7 @@ target_compile_features(t81_direct_api PUBLIC cxx_std_17)
 
 # Add test executable
 add_executable(test_real_direct_api
-    ${PROJECT_SOURCE_DIR}/development_tests/test_real_direct_api.cpp
+    "${PROJECT_SOURCE_DIR}/development_tests/test_real_direct_api.cpp"
 )
 
 target_link_libraries(test_real_direct_api PRIVATE
