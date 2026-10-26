@@ -1,0 +1,148 @@
+{
+  "ai-experiments-ci.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "ai-kms-rotation.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "write",
+      "pull-requests": "write"
+    }
+  },
+  "bench.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "write",
+      "pull-requests": "write"
+    }
+  },
+  "benchmark_packed_trit_vector.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "checked-float-contract.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "ci.yml": {
+    "jobs": {
+      "workflow-action-smoke": {
+        "contents": "read"
+      }
+    },
+    "workflow": {
+      "actions": "read",
+      "checks": "read",
+      "contents": "read"
+    }
+  },
+  "codeql.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read",
+      "security-events": "write"
+    }
+  },
+  "cross-platform-determinism.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "docker.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read",
+      "packages": "write"
+    }
+  },
+  "documentation.yml": {
+    "jobs": {
+      "build-index": {
+        "contents": "write",
+        "pull-requests": "write"
+      },
+      "generate-sidebar": {
+        "contents": "write",
+        "pull-requests": "write"
+      },
+      "inject-toc": {
+        "contents": "write",
+        "pull-requests": "write"
+      }
+    },
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "float-conversion-audit.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "format.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "inference-bench.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "write",
+      "pull-requests": "write"
+    }
+  },
+  "python-wheels.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read",
+      "id-token": "write"
+    }
+  },
+  "qemu-boot-x86.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "qemu-boot.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "write"
+    }
+  },
+  "release.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "write"
+    }
+  },
+  "repro-ledger.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "runtime-contract.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
+  "t81lang-repro-hash-refresh.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "write",
+      "pull-requests": "write"
+    }
+  }
+}
