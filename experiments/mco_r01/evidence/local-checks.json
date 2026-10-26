@@ -1,0 +1,39 @@
+[
+  {
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "docs/research/model-computational-object/review/check_packet.py",
+      "--manifest"
+    ],
+    "returncode": 0,
+    "stdout": "{\n  \"scope\": \"fixture integrity, raw-byte profiles, Draft 2020-12 structural validation and finite table consistency; NOT candidate enforcement or mutation execution\",\n  \"python\": \"3.14.3\",\n  \"platform\": \"macOS-26.5.2-arm64-arm-64bit-Mach-O\",\n  \"jsonschema\": \"4.26.0\",\n  \"meta_schemas_validated\": 4,\n  \"schema_boundary_probes\": 22,\n  \"schema_probe_results\": [\n    {\n      \"name\": \"request request_id newline\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"request model_ref newline\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"request additional field\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"request missing required\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"request duplicate refs\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"request empty refs\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"response request_id newline\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"response model_ref newline\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"response additional field\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"response missing required\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"response duplicate refs\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"response empty refs\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"budget 1.0\",\n      \"valid\": true\n    },\n    {\n      \"name\": \"budget Boolean\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"budget tiny positive\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"budget out of range\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"rationale 512 code points\",\n      \"valid\": true\n    },\n    {\n      \"name\": \"rationale 513 code points\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"rationale 512 non-BMP code points\",\n      \"valid\": true\n    },\n    {\n      \"name\": \"underflow fractional deadline\",\n      \"valid\": false\n    },\n    {\n      \"name\": \"integral decimal deadline\",\n      \"valid\": true\n    },\n    {\n      \"name\": \"wrong binding is schema-valid\",\n      \"valid\": true\n    }\n  ],\n  \"corpus_cases\": 60,\n  \"profiles\": {\n    \"request:ok\": 60,\n    \"response:byte_limit\": 1,\n    \"response:depth_limit\": 1,\n    \"response:duplicate_key\": 1,\n    \"response:json_syntax\": 2,\n    \"response:not_observed\": 3,\n    \"response:ok\": 50,\n    \"response:unicode_scalar\": 1,\n    \"response:utf8\": 1\n  },\n  \"schema_results\": {\n    \"request:invalid\": 1,\n    \"request:valid\": 59,\n    \"response:invalid\": 8,\n    \"response:not_run\": 10,\n    \"response:valid\": 42\n  },\n  \"guard_assignments\": 729,\n  \"guard_summary_counts\": {\n    \"D\": 665,\n    \"U\": 63,\n    \"P\": 1\n  },\n  \"guard_domains\": {\n    \"completed\": 162,\n    \"binding-prefix\": 1,\n    \"abstract-only\": 566\n  },\n  \"event_plans\": 24,\n  \"reachable_event_plans\": 4,\n  \"invalid_event_plans\": 20,\n  \"binary_float_underflow_demo\": {\n    \"default_parser_schema_valid\": true,\n    \"exact_parser_schema_valid\": false\n  },\n  \"authorization_annotations\": \"design expectations; not executable semantic verification\",\n  \"candidate_runs\": 0,\n  \"mutation_runs\": 0,\n  \"manifest_files_verified\": 28\n}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "scripts/governance/check_repo_artifact_hygiene.py"
+    ],
+    "returncode": 0,
+    "stdout": "repo artifact hygiene check PASSED\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "scripts/governance/check_readme_naming.py"
+    ],
+    "returncode": 0,
+    "stdout": "README naming check PASSED\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-mco-schema-review-venv/bin/python",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "returncode": 1,
+    "stdout": "root structure check FAILED\n- missing:\n  - package-lock.json\n  - package.json\n- unexpected:\n  - PROJECT_STRUCTURE.md\n  - SYSTEMS_AND_SUBSYSTEMS_REPORT.md\n  - build.log\n  - customer_tools\n  - development_tests\n  - execution_reports\n  - experiments\n  - import.apl\n  - market-demos\n  - market_analysis\n  - record_hash.txt\n  - skills\n  - src\n  - strategic_docs\n  - symbolic_algebraic.tisc\n  - symbolic_algebraic_exported.tisc\n  - test_input.txt\n  - test_record.json\n  - tiny-model-policy.apl\n",
+    "stderr": ""
+  }
+]
