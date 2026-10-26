@@ -1,0 +1,531 @@
+[
+  {
+    "entry": "PROJECT_STRUCTURE.md",
+    "tracked_files": [
+      "PROJECT_STRUCTURE.md"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "SYSTEMS_AND_SUBSYSTEMS_REPORT.md",
+    "tracked_files": [
+      "SYSTEMS_AND_SUBSYSTEMS_REPORT.md"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "build.log",
+    "tracked_files": [
+      "build.log"
+    ],
+    "addition_history": [
+      "4299504f 2026-04-01 Fix CMake build errors due to missing example sources",
+      "53efb64b 2026-02-21 Fix VM tier promotion and build issues"
+    ],
+    "last_change": "4299504f 2026-04-01 Fix CMake build errors due to missing example sources"
+  },
+  {
+    "entry": "customer_tools",
+    "tracked_files": [
+      "customer_tools/roi_calculators/financial_services_roi.py",
+      "customer_tools/roi_calculators/financial_services_roi_report.json",
+      "customer_tools/roi_calculators/healthcare_roi.py",
+      "customer_tools/roi_calculators/healthcare_roi_report.json"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "development_tests",
+    "tracked_files": [
+      "development_tests/ctest.log",
+      "development_tests/debug_canonfs.cpp",
+      "development_tests/quick_debug.cpp",
+      "development_tests/test_direct_api.cpp",
+      "development_tests/test_direct_api_simple",
+      "development_tests/test_direct_api_simple.cpp",
+      "development_tests/test_direct_api_v2.cpp",
+      "development_tests/test_direct_api_v3.cpp",
+      "development_tests/test_minimal_direct_api",
+      "development_tests/test_minimal_direct_api.cpp",
+      "development_tests/test_production_direct_api",
+      "development_tests/test_real_direct_api.cpp"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "execution_reports",
+    "tracked_files": [
+      "execution_reports/VERIFICATION_REPORT.md",
+      "execution_reports/WEEK2_EXECUTION_SUMMARY.md",
+      "execution_reports/WEEK3_EXECUTION_SUMMARY.md",
+      "execution_reports/WEEK4_EXECUTION_SUMMARY.md"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "experiments",
+    "tracked_files": [
+      "experiments/T81LANG_OPPORTUNITIES_ANALYSIS.md",
+      "experiments/advanced_t81lang_capabilities.t81",
+      "experiments/architecture_challenge/.gitattributes",
+      "experiments/architecture_challenge/README.md",
+      "experiments/architecture_challenge/REPORT.md",
+      "experiments/architecture_challenge/arm_a.cpp",
+      "experiments/architecture_challenge/arm_b.py",
+      "experiments/architecture_challenge/attacks.py",
+      "experiments/architecture_challenge/audit_archives.py",
+      "experiments/architecture_challenge/audit_corpus.py",
+      "experiments/architecture_challenge/count.py",
+      "experiments/architecture_challenge/guest.wat",
+      "experiments/architecture_challenge/observed-ci/linux.tar.gz",
+      "experiments/architecture_challenge/observed-ci/macos.tar.gz",
+      "experiments/architecture_challenge/observed-ci/offline-audit.json",
+      "experiments/architecture_challenge/observed-ci/sha256.json",
+      "experiments/architecture_challenge/observed-ci/summary.json",
+      "experiments/architecture_challenge/observed-ci/windows-analysis.json",
+      "experiments/architecture_challenge/observed-ci/windows-failure.tar.gz",
+      "experiments/architecture_challenge/observed-ci/windows-job.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/attacks.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/build.log",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/configure.log",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/corpus.jsonl",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/counts.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/first-ci-macos-job.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/first-ci-windows-job.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/initial-build-failure.log",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/measurements.log",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/raw.jsonl",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/report.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/sha256.json",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/tests.log",
+      "experiments/architecture_challenge/observed-macos-arm64-initial/verification.jsonl",
+      "experiments/architecture_challenge/observed-macos-arm64/attacks.json",
+      "experiments/architecture_challenge/observed-macos-arm64/corpus.jsonl",
+      "experiments/architecture_challenge/observed-macos-arm64/counts-measured-source.json",
+      "experiments/architecture_challenge/observed-macos-arm64/counts.json",
+      "experiments/architecture_challenge/observed-macos-arm64/final-tests.log",
+      "experiments/architecture_challenge/observed-macos-arm64/measurements.log",
+      "experiments/architecture_challenge/observed-macos-arm64/raw.jsonl",
+      "experiments/architecture_challenge/observed-macos-arm64/report.json",
+      "experiments/architecture_challenge/observed-macos-arm64/sha256.json",
+      "experiments/architecture_challenge/observed-macos-arm64/tests.log",
+      "experiments/architecture_challenge/observed-macos-arm64/verification.jsonl",
+      "experiments/architecture_challenge/requirements.txt",
+      "experiments/architecture_challenge/run.py",
+      "experiments/architecture_challenge/test_challenge.py",
+      "experiments/architecture_challenge/verify.py",
+      "experiments/architecture_challenge/workload-contract.json",
+      "experiments/checked_float_contract/PLAN.md",
+      "experiments/checked_float_contract/README.md",
+      "experiments/checked_float_contract/corpus.json",
+      "experiments/checked_float_contract/reference.py",
+      "experiments/checked_float_contract/test_reference.py",
+      "experiments/deterministic_provenance/README.md",
+      "experiments/deterministic_provenance/REPORT.md",
+      "experiments/deterministic_provenance/fixture-v2.json",
+      "experiments/deterministic_provenance/fixture.json",
+      "experiments/deterministic_provenance/observed-arm64.json",
+      "experiments/deterministic_provenance/run.py",
+      "experiments/deterministic_provenance/runner.cpp",
+      "experiments/deterministic_provenance/test_experiment.py",
+      "experiments/deterministic_provenance/verify.py",
+      "experiments/durable_witness/ARCHITECTURE_DECISION.md",
+      "experiments/durable_witness/EXPERIMENT_PLAN.md",
+      "experiments/durable_witness/README.md",
+      "experiments/durable_witness/RESULTS.md",
+      "experiments/durable_witness/THREAT_MODEL.md",
+      "experiments/durable_witness/attacks.py",
+      "experiments/durable_witness/guest.wat",
+      "experiments/durable_witness/run.py",
+      "experiments/durable_witness/runner.py",
+      "experiments/durable_witness/test_durable_witness.py",
+      "experiments/durable_witness/verify.py",
+      "experiments/durable_witness/witness.py",
+      "experiments/durable_witness/workload-contract.json",
+      "experiments/float_conversion_audit/README.md",
+      "experiments/float_conversion_audit/audit.py",
+      "experiments/float_conversion_audit/ci-validation.json",
+      "experiments/float_conversion_audit/corpus.json",
+      "experiments/float_conversion_audit/native-ci.json",
+      "experiments/float_conversion_audit/native-macos-arm64.json",
+      "experiments/float_conversion_audit/oracle.py",
+      "experiments/float_conversion_audit/probe.cpp",
+      "experiments/float_conversion_audit/provenance-v2-macos-arm64.json",
+      "experiments/float_conversion_audit/test_oracle.py",
+      "experiments/h04_r02_adaptive_representation/CMakeLists.txt",
+      "experiments/h04_r02_adaptive_representation/HANDOFF.md",
+      "experiments/h04_r02_adaptive_representation/LIMITATIONS.md",
+      "experiments/h04_r02_adaptive_representation/METHODOLOGY.md",
+      "experiments/h04_r02_adaptive_representation/ORACLE.md",
+      "experiments/h04_r02_adaptive_representation/RESULTS.md",
+      "experiments/h04_r02_adaptive_representation/SPECIFICATION.md",
+      "experiments/h04_r02_adaptive_representation/VERIFICATION.md",
+      "experiments/h04_r02_adaptive_representation/adaptive_experiment.hpp",
+      "experiments/h04_r02_adaptive_representation/main.cpp",
+      "experiments/h04_r02_adaptive_representation/oracle.py",
+      "experiments/h04_r02_adaptive_representation/results.json",
+      "experiments/opportunities_demo.t81",
+      "experiments/packed_ternary_matvec/CMakeLists.txt",
+      "experiments/packed_ternary_matvec/main.cpp",
+      "experiments/packed_ternary_matvec/matvec_experiment.hpp",
+      "experiments/radix_comparison/CMakeLists.txt",
+      "experiments/radix_comparison/main.cpp",
+      "experiments/radix_comparison/radix_comparison.hpp",
+      "experiments/radix_comparison/results.json",
+      "experiments/research_001/BASELINE_SPECIFICATION.md",
+      "experiments/research_001/CLAIM_REGISTER.md",
+      "experiments/research_001/EXPERIMENT_PROTOCOL.md",
+      "experiments/research_001/HYPOTHESES.md",
+      "experiments/research_001/MEASUREMENT_PLAN.md",
+      "experiments/research_001/NEGATIVE_CONTROLS.md",
+      "experiments/research_001/POST_MERGE_AUDIT.md",
+      "experiments/research_001/REPRODUCIBILITY.md",
+      "experiments/research_001/RESEARCH_CHARTER.md",
+      "experiments/research_001/RESEARCH_PROPOSAL.md",
+      "experiments/research_001/STOPPING_CRITERIA.md",
+      "experiments/research_001/TRACEABILITY.md",
+      "experiments/research_001/audit/README.md",
+      "experiments/research_001/audit/backend-probe.txt",
+      "experiments/research_001/audit/backend_policy_probe.cpp",
+      "experiments/research_001/audit/decoder-test.txt",
+      "experiments/research_001/audit/decoder-unrestricted-test.txt",
+      "experiments/research_001/audit/nc01-tests.txt",
+      "experiments/research_001/audit/policy-tests.txt",
+      "experiments/research_001/audit/production.patch",
+      "experiments/research_001/audit/test_nc01_contract.py",
+      "experiments/research_001/audit/tui-tests.txt",
+      "experiments/simple_opportunities.t81",
+      "experiments/unique_opportunities.t81"
+    ],
+    "addition_history": [
+      "01c85019 2026-10-25 research(h04-r02): adaptive representation optimization & verification (#569)",
+      "43348011 2026-10-24 docs(research): audit PR 563 and correct NC-01 canonical verification",
+      "a2d1b24c 2026-10-24 docs(research): correct Research Protocol 001 specifications",
+      "6869f7c3 2026-10-24 docs(research): add Research Protocol 001 experiment protocol (#561)",
+      "1ecba5f9 2026-10-24 research: independent audit and durable witness decision",
+      "00a514d0 2026-10-22 design: specify checked floating-point conversion and exact reference corpus",
+      "9a2c12c5 2026-10-22 docs: record passing native provenance comparison and numerical exclusions",
+      "58deac28 2026-10-22 audit: preserve native failures and package CanonFS CI artifacts intact",
+      "f2d67eb2 2026-10-22 fix(experiment): quarantine unsupported float conversions with exact audit",
+      "ed26decb 2026-10-22 experiment: preserve native ARM64 provenance measurements",
+      "2a396552 2026-10-22 experiment: verify bounded governed execution and canonical provenance",
+      "f3732689 2026-10-21 research: validate packed ternary matvec performance (#547)",
+      "6ec17959 2026-10-21 research: packed ternary matvec performance comparison",
+      "d53e88fa 2026-10-21 research: falsifiable ternary arithmetic and radix comparison",
+      "ab51ff35 2026-04-05 In-depth T81Lang capabilities exploration and opportunities analysis",
+      "e0a52e9b 2026-03-05 ci(ai): add opcode baseline history window support",
+      "0b147461 2026-03-05 Queue: add RFC-00A8 baseline hash diff gate for phase1 opcodes",
+      "c67d3e60 2026-03-05 Publish RFC-00A8 opcode runtime evidence report and CI artifact",
+      "82c4e483 2026-03-05 feat(experiments): add minimal AI CLI framework",
+      "05b358a0 2026-02-27 Explore and verify T81 core data types via T81Lang"
+    ],
+    "last_change": "01c85019 2026-10-25 research(h04-r02): adaptive representation optimization & verification (#569)"
+  },
+  {
+    "entry": "import.apl",
+    "tracked_files": [
+      "import.apl"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  },
+  {
+    "entry": "market-demos",
+    "tracked_files": [
+      "market-demos/customer_demo_system",
+      "market-demos/customer_demo_system.cpp",
+      "market-demos/financial_services/trading_demo.cpp",
+      "market-demos/healthcare/diagnosis_demo.cpp",
+      "market-demos/industrial/safety_monitoring_demo.cpp",
+      "market-demos/legal_services/document_analysis_demo.cpp"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "market_analysis",
+    "tracked_files": [
+      "market_analysis/INTEGRATION_ROADMAP.md",
+      "market_analysis/MARKET_APPLICATION_ROADMAP.md"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "record_hash.txt",
+    "tracked_files": [
+      "record_hash.txt"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  },
+  {
+    "entry": "skills",
+    "tracked_files": [
+      "skills/README.md",
+      "skills/ai-tasks/SKILL.md",
+      "skills/ai-tasks/assess.sh",
+      "skills/ai-tasks/chain.sh",
+      "skills/ai-tasks/classify.sh",
+      "skills/ai-tasks/history.sh",
+      "skills/ai-tasks/route.sh",
+      "skills/ai-tasks/status.sh",
+      "skills/bundle-creator/SKILL.md",
+      "skills/bundle-creator/bundle-from-execution.sh",
+      "skills/bundle-creator/bundle-info.sh",
+      "skills/bundle-creator/create-bundle.sh",
+      "skills/bundle-creator/extract-bundle.sh",
+      "skills/bundle-creator/merge-bundles.sh",
+      "skills/bundle-creator/sign-bundle.sh",
+      "skills/bundle-creator/verify-bundle.sh",
+      "skills/bundle-validator/SKILL.md",
+      "skills/bundle-validator/check-determinism.sh",
+      "skills/bundle-validator/validate.sh",
+      "skills/bundle-validator/verify-provenance.sh",
+      "skills/canonfs-export/SKILL.md",
+      "skills/canonfs-export/export-batch.sh",
+      "skills/canonfs-export/export-with-meta.sh",
+      "skills/canonfs-export/export.sh",
+      "skills/canonfs-export/list.sh",
+      "skills/canonfs-export/search.sh",
+      "skills/canonfs-export/verify-export.sh",
+      "skills/canonfs-import/SKILL.md",
+      "skills/canonfs-import/import.sh",
+      "skills/governance-demo/SKILL.md",
+      "skills/governance-demo/compliance-demo.sh",
+      "skills/governance-demo/demo-determinism.sh",
+      "skills/governance-demo/demo-governance.sh",
+      "skills/governance-demo/demo-policy.sh",
+      "skills/governance-demo/interactive-policy.sh",
+      "skills/governance-demo/tutorial-policy.sh",
+      "skills/model-loader/SKILL.md",
+      "skills/model-loader/batch-load.sh",
+      "skills/model-loader/convert-model.sh",
+      "skills/model-loader/load-gguf.sh",
+      "skills/model-loader/load-hf.sh",
+      "skills/model-loader/load-safetensors.sh",
+      "skills/model-loader/probe-model.sh",
+      "skills/model-loader/validate-model.sh",
+      "skills/policy-checker/SKILL.md",
+      "skills/policy-checker/check.sh",
+      "skills/policy-checker/list-policies.sh",
+      "skills/policy-checker/simulate.sh",
+      "skills/policy-checker/test-rule.sh",
+      "skills/policy-checker/validate-policy.sh",
+      "skills/t81-compiler/SKILL.md",
+      "skills/t81-compiler/analyze.sh",
+      "skills/t81-compiler/build-batch.sh",
+      "skills/t81-compiler/build.sh",
+      "skills/t81-compiler/compile.sh",
+      "skills/t81-compiler/disasm.sh",
+      "skills/t81-compiler/optimize.sh",
+      "skills/t81-debugger/SKILL.md",
+      "skills/t81-debugger/analyze-violations.sh",
+      "skills/t81-debugger/breakpoint.sh",
+      "skills/t81-debugger/continue.sh",
+      "skills/t81-debugger/debug.sh",
+      "skills/t81-debugger/inspect.sh",
+      "skills/t81-debugger/profile.sh",
+      "skills/t81-debugger/step.sh",
+      "skills/t81-debugger/trace.sh",
+      "skills/t81vm-runner/SKILL.md",
+      "skills/t81vm-runner/debug.sh",
+      "skills/t81vm-runner/inspect.sh",
+      "skills/t81vm-runner/run-batch.sh",
+      "skills/t81vm-runner/run.sh",
+      "skills/t81vm-runner/trace.sh",
+      "skills/tensor-ops/SKILL.md",
+      "skills/tensor-ops/tensor-batch.sh",
+      "skills/tensor-ops/tensor-convert.sh",
+      "skills/tensor-ops/tensor-math.sh",
+      "skills/tensor-ops/tensor-reshape.sh",
+      "skills/tensor-ops/tensor-stats.sh",
+      "skills/tensor-ops/tensor-validate.sh"
+    ],
+    "addition_history": [
+      "2c185fbd 2026-04-04 Add comprehensive OpenClaw skill integration for T81 Foundation"
+    ],
+    "last_change": "6222c821 2026-04-05 Enhance T81 OpenClaw skills documentation with comprehensive details"
+  },
+  {
+    "entry": "src",
+    "tracked_files": [
+      "src/CMakeLists.txt",
+      "src/axion/CMakeLists.txt",
+      "src/controlled_verification.cpp",
+      "src/core/CMakeLists.txt",
+      "src/direct_api/CMakeLists.txt",
+      "src/direct_api/CMakeLists_v3.txt",
+      "src/direct_api/t81_direct_api.cpp",
+      "src/direct_api/t81_direct_api_v3.cpp",
+      "src/experimental/CMakeLists.txt",
+      "src/ffi/CMakeLists.txt",
+      "src/io/CMakeLists.txt",
+      "src/isa/CMakeLists.txt",
+      "src/lang/CMakeLists.txt",
+      "src/real_integration/real_t81_test.cpp",
+      "src/simplified_integration/simplified_t81_test.cpp",
+      "src/test_production_direct_api.cpp",
+      "src/tools/CMakeLists.txt",
+      "src/verification_test.cpp",
+      "src/vm/CMakeLists.txt"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework",
+      "c36ccaff 2026-04-01 Refactor CMake layout without changing build behavior",
+      "6108c548 2026-03-19 Close phase-1 governance and Axion boundary gaps",
+      "002e4301 2026-03-19 Promote DPE surfaces and harden CLI behavior",
+      "e5020c25 2026-03-14 Add AI Phase 3 implementation with cognitive tier framework and JIT optimizations",
+      "68158f87 2026-03-09 Add minimal scalar Python frontend lowering",
+      "4b54c254 2026-03-09 Add Rust frontend CLI scaffold",
+      "78d92d84 2026-03-09 Add experimental C-subset frontend PoC",
+      "942a4184 2026-03-09 Add custom T81 MLIR register dialect",
+      "d26066db 2026-03-09 Add LLVM and MLIR frontend integration",
+      "099286d2 2026-03-05 Harden CI determinism/coherence gates and unify policy/opcode surfaces",
+      "a4006728 2026-03-04 feat: Phase 3 - Advanced Memory Management",
+      "f35c1e5a 2026-03-04 feat: Enhanced T81 LLM integration with contextual responses",
+      "f7db3aa1 2026-02-21 Implement Axion Ethics Engine (Theta-1 - Theta-9)",
+      "68e2c653 2026-02-20 Implement cognitive tiers T1-T5 structures and documentation",
+      "65e4f4d4 2026-02-20 Implement RFC-0025: Policy-Gated Tensor Loading via CanonFS",
+      "85bc0233 2026-02-17 feat(std.symbol): add intern/to_string aliases with semantic, IR, e2e, and CLI coverage",
+      "097dd359 2026-02-17 feat(std.bytes): add deterministic len/is_empty/concat aliases with CLI fixtures",
+      "52393336 2026-02-12 Implement T81Lang standard library infrastructure and math module",
+      "3378aa4c 2026-02-10 docs: add and polish README coverage across repository",
+      "4203959e 2026-02-09 feat: add Setun bridge MVP and harden VM/TISC contracts",
+      "83c95047 2026-02-09 feat: implement Base-81 infrastructure and SIMD kernels",
+      "c7ed0c52 2026-02-09 feat: introduce Base-81 support and PT-5 preserving codecs",
+      "15d5a7ec 2026-02-07 Advance T81 stack: Tier 4 Cognition, APL Evolution, SIMD, and CLI",
+      "a4c9156c 2026-02-07 Advance Tier 4 and performance stories",
+      "7668acfc 2026-02-07 Expand T81 ecosystem and cognition layers",
+      "88b6a01c 2026-02-07 Harden compiler pipeline, expand benchmarks, and initial Python bindings.",
+      "0e8e2ddf 2025-12-04 canonfs",
+      "a813e77d 2025-12-04 manuals",
+      "0a38e9f5 2025-12-01 weights",
+      "e98b388f 2025-12-01 Major upgrades",
+      "62a8329b 2025-12-01 t81 weights",
+      "c17eaf42 2025-12-01 CLI Integration",
+      "cde01373 2025-11-29 feat(docs): Add README.md files to core component directories",
+      "9c42af2a 2025-11-27 feat(compiler): add semantic analysis foundation",
+      "cc92ceff 2025-11-27 feat: Add v1.0 roadmap and initial CLI tool",
+      "e4b8a711 2025-11-25 feat(compiler): implement TISC binary emitter",
+      "e03d9bbe 2025-11-24 update",
+      "8491bda8 2025-11-23 Add spec-driven API scaffolding and integration tests",
+      "e6317000 2025-11-23 Create base243.cpp",
+      "86aaf80d 2025-11-23 Create base81.cpp",
+      "a26ca880 2025-11-23 Create stats.cpp",
+      "de174e1b 2025-11-23 Create canonhash81.cpp",
+      "51ad15dc 2025-11-23 Create gcd.cpp",
+      "c672c82c 2025-11-23 Create divmod.cpp",
+      "c27953a7 2025-11-23 Create README.md",
+      "78e28e95 2025-11-23 Create README.md",
+      "f85f3a90 2025-11-22 Create tensor_loader.cpp",
+      "1da0b10f 2025-11-22 Create t81_c_api.cpp",
+      "582631d8 2025-11-22 Create t81_c_api.h",
+      "2219468a 2025-11-22 Create axion_signal.hpp",
+      "99d3e06f 2025-11-22 Create axion_api.cpp",
+      "640f537b 2025-11-22 Create axion_api.hpp",
+      "9ce9056a 2025-11-22 Create axion_kernel.hpp",
+      "d3a1dfcc 2025-11-22 Add files via upload",
+      "973a4a21 2025-11-21 Create main.c",
+      "a60c0357 2025-11-21 Create t81_core.h",
+      "e8918bf5 2025-11-21 Create tensor.h",
+      "3244470a 2025-11-21 Create t81_tensor.c",
+      "893ae0f2 2025-11-21 Create t81_fraction.h",
+      "e879bc2f 2025-11-21 Create t81_fraction.c",
+      "584aa68a 2025-11-21 Create t81_bigint.h",
+      "bffb0570 2025-11-21 Create t81_bigint.c",
+      "c99652a3 2025-11-21 Create test.md",
+      "4249970f 2025-11-21 Create test.md",
+      "ab02515b 2025-11-21 Create test.md",
+      "664bf86e 2025-11-21 Create test.md",
+      "64d124fc 2025-11-21 Create test.md",
+      "60ddbd61 2025-11-21 Create test.md"
+    ],
+    "last_change": "0c87a748 2026-10-24 style: fix controlled AI remediation format checks"
+  },
+  {
+    "entry": "strategic_docs",
+    "tracked_files": [
+      "strategic_docs/CUSTOMER_ACQUISITION_STRATEGY.md",
+      "strategic_docs/CUSTOMER_ENGAGEMENT_STRATEGY.md",
+      "strategic_docs/STRATEGIC_EXECUTION_PLAN.md"
+    ],
+    "addition_history": [
+      "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+    ],
+    "last_change": "8d56582d 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+  },
+  {
+    "entry": "symbolic_algebraic.tisc",
+    "tracked_files": [
+      "symbolic_algebraic.tisc"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  },
+  {
+    "entry": "symbolic_algebraic_exported.tisc",
+    "tracked_files": [
+      "symbolic_algebraic_exported.tisc"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  },
+  {
+    "entry": "test_input.txt",
+    "tracked_files": [
+      "test_input.txt"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  },
+  {
+    "entry": "test_record.json",
+    "tracked_files": [
+      "test_record.json"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  },
+  {
+    "entry": "tiny-model-policy.apl",
+    "tracked_files": [
+      "tiny-model-policy.apl"
+    ],
+    "addition_history": [
+      "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+    ],
+    "last_change": "cc74c53e 2026-04-05 Experiment with T81 OpenClaw skills integration"
+  }
+]

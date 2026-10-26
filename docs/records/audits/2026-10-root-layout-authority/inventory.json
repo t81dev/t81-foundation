@@ -1,0 +1,251 @@
+[
+  {
+    "command": [
+      "python3",
+      "scripts/ci/check_architecture_targets.py"
+    ],
+    "exit": 0,
+    "stdout": "architecture target sync: ok (11 documented targets, 19 reachable CMakeLists.txt files)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/check_tisc_freeze_integrity.py"
+    ],
+    "exit": 0,
+    "stdout": "Checking /private/tmp/t81-root-layout-authority/spec/tisc/opcode-registry.md...\nSUCCESS: TISC v1.1.0 Freeze Integrity Verified.\n- Count: 209 opcodes\n- Bitwise Ops: Verified\n- Reserved Range: Clean\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/check_ai_experiment_boundary.py"
+    ],
+    "exit": 0,
+    "stdout": "AI experiment boundary check (RFC-00A0)\nNo AI sandbox boundary violations found.\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/check_architecture_coherence.py"
+    ],
+    "exit": 0,
+    "stdout": "architecture coherence check: PASSED\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_root_structure.py"
+    ],
+    "exit": 1,
+    "stdout": "root structure check FAILED\n- missing:\n  - package-lock.json\n  - package.json\n- unexpected:\n  - PROJECT_STRUCTURE.md\n  - SYSTEMS_AND_SUBSYSTEMS_REPORT.md\n  - build.log\n  - customer_tools\n  - development_tests\n  - execution_reports\n  - experiments\n  - import.apl\n  - market-demos\n  - market_analysis\n  - record_hash.txt\n  - skills\n  - src\n  - strategic_docs\n  - symbolic_algebraic.tisc\n  - symbolic_algebraic_exported.tisc\n  - test_input.txt\n  - test_record.json\n  - tiny-model-policy.apl\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_readme_naming.py"
+    ],
+    "exit": 0,
+    "stdout": "README naming check PASSED\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_translation_metadata.py"
+    ],
+    "exit": 1,
+    "stdout": "translation metadata check FAILED\n- README.md: missing language link token 'README.zh-CN.md'\n- README.md: missing language link token 'README.es.md'\n- README.md: missing language link token 'README.pt-BR.md'\n- README.md: missing language link token 'README.ru.md'\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_translation_staleness.py"
+    ],
+    "exit": 1,
+    "stdout": "translation staleness check FAILED\n- README.zh-CN.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- README.es.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- README.pt-BR.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- README.ru.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_translation_semantic_alignment.py"
+    ],
+    "exit": 0,
+    "stdout": "translation semantic alignment check PASSED\n- files checked: 4 root translation READMEs\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_docs_structure.py"
+    ],
+    "exit": 1,
+    "stdout": "docs structure check FAILED\n- missing directory: book/book-en\n- missing directory: book/book-cn\n- missing directory: book/book-es\n- missing directory: book/book-pt\n- missing directory: book/book-ru\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_active_docs_link_hygiene.py"
+    ],
+    "exit": 0,
+    "stdout": "active docs link hygiene check PASSED\n- no legacy docs/guides path references found on the active docs surface\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_license_policy.py"
+    ],
+    "exit": 0,
+    "stdout": "license policy check PASSED\n- scanned license files: 1\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_repo_artifact_hygiene.py"
+    ],
+    "exit": 0,
+    "stdout": "repo artifact hygiene check PASSED\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_public_api_semver.py"
+    ],
+    "exit": 1,
+    "stdout": "public API semver lock check FAILED\n- version mismatch: config=1.9.1, lock=1.9.0 (update lock with --write-lock after approved semver bump)\n- public API surface digest mismatch for include/t81/**/*.hpp (update lock with --write-lock after approved API change)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_spec_code_alignment_baseline.py"
+    ],
+    "exit": 1,
+    "stdout": "spec-code alignment baseline check FAILED\n- missing mapped implementation/evidence file: core/vm/vm.cpp (from spec/t81vm-spec.md)\n- missing mapped implementation/evidence file: core/isa/encoding.cpp (from spec/tisc-spec.md)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_stdlib_surface_baseline.py"
+    ],
+    "exit": 0,
+    "stdout": "stdlib surface baseline check PASSED\n- modules validated: 13\n- fixture directories validated: 13\n- fixture tests validated: 1\n- collection determinism tests validated: 4\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_stdlib_promotion_snapshot.py"
+    ],
+    "exit": 0,
+    "stdout": "stdlib promotion snapshot check PASSED\n- modules validated: 11\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_status_label_coherence.py"
+    ],
+    "exit": 1,
+    "stdout": "status label coherence check FAILED:\n- README missing component status row for: t81lang\n- README missing component status row for: t81vm\n- README missing component status row for: axion\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_cognitive_tier_boundary.py"
+    ],
+    "exit": 0,
+    "stdout": "cognitive-tier boundary check PASSED\n- verified experimental/non-DCP boundary markers across status/product artifacts\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_overclaim_guardrails.py"
+    ],
+    "exit": 0,
+    "stdout": "overclaim guardrails check PASSED\n- scanned active README/docs/book markdown surfaces for banned overclaim phrases\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_rfc_lifecycle_hygiene.py"
+    ],
+    "exit": 1,
+    "stdout": "rfc lifecycle hygiene check FAILED\n- RFC-0036-t81lang-ffi-grammar.md: unable to parse status/version metadata\n- RFC-0037-tnn-stdlib.md: unable to parse status/version metadata\n- RFC-0038-lattice-crypto.md: unable to parse status/version metadata\n- RFC-0055-hardware-target-profile-template.md: status mismatch index=accepted file=draft\n- RFC-0056-google-axion-hardware-profile.md: status mismatch index=accepted file=draft\n- RFC-00C4-per-device-wake-filtering.md: unable to parse status/version metadata\n- RFC-00C5-concurrent-device-wait.md: unable to parse status/version metadata\n- RFC-00C6-per-thread-ttbr0.md: unable to parse status/version metadata\n- RFC-00C7-el0-fault-containment.md: unable to parse status/version metadata\n- RFC-00C8-concurrent-fault-isolation.md: unable to parse status/version metadata\n- RFC-00C9-el0-fault-evidence-query.md: unable to parse status/version metadata\n- RFC-00CA-el0-fault-summary-query.md: unable to parse status/version metadata\n- RFC-00CB-el0-fault-detail-query.md: unable to parse status/version metadata\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_docs_governance_hygiene.py"
+    ],
+    "exit": 1,
+    "stdout": "governance hygiene check FAILED:\n- missing required README: core/README.md\n- missing required README: runtime/README.md\n- missing required README: runtime/jit/README.md\n- missing required README: internal/README.md\n- missing required README: internal/axion/README.md\n- missing required README: internal/tooling/README.md\n- missing required README: tooling/README.md\n- missing required README: examples/consumer_cmake/README.md\n- missing required README: examples/system-integration/README.md\n- status label coherence check failed\n- coherence: status label coherence check FAILED:\n- coherence: - README missing component status row for: t81lang\n- coherence: - README missing component status row for: t81vm\n- coherence: - README missing component status row for: axion\n- root structure check failed\n- root structure: root structure check FAILED\n- root structure: - missing:\n- root structure:   - package-lock.json\n- root structure:   - package.json\n- root structure: - unexpected:\n- root structure:   - PROJECT_STRUCTURE.md\n- root structure:   - SYSTEMS_AND_SUBSYSTEMS_REPORT.md\n- root structure:   - build.log\n- root structure:   - customer_tools\n- root structure:   - development_tests\n- root structure:   - execution_reports\n- root structure:   - experiments\n- root structure:   - import.apl\n- root structure:   - market-demos\n- root structure:   - market_analysis\n- root structure:   - record_hash.txt\n- root structure:   - skills\n- root structure:   - src\n- root structure:   - strategic_docs\n- root structure:   - symbolic_algebraic.tisc\n- root structure:   - symbolic_algebraic_exported.tisc\n- root structure:   - test_input.txt\n- root structure:   - test_record.json\n- root structure:   - tiny-model-policy.apl\n- translation metadata check failed\n- translation metadata: translation metadata check FAILED\n- translation metadata: - README.md: missing language link token 'README.zh-CN.md'\n- translation metadata: - README.md: missing language link token 'README.es.md'\n- translation metadata: - README.md: missing language link token 'README.pt-BR.md'\n- translation metadata: - README.md: missing language link token 'README.ru.md'\n- translation staleness check failed\n- translation staleness: translation staleness check FAILED\n- translation staleness: - README.zh-CN.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- translation staleness: - README.es.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- translation staleness: - README.pt-BR.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- translation staleness: - README.ru.md is stale vs README.md: 220.4 days, 70 canonical commits behind (thresholds: >30 days or >10 commits)\n- docs structure check failed\n- docs structure: docs structure check FAILED\n- docs structure: - missing directory: book/book-en\n- docs structure: - missing directory: book/book-cn\n- docs structure: - missing directory: book/book-es\n- docs structure: - missing directory: book/book-pt\n- docs structure: - missing directory: book/book-ru\n- public api semver lock check failed\n- public api semver lock: public API semver lock check FAILED\n- public api semver lock: - version mismatch: config=1.9.1, lock=1.9.0 (update lock with --write-lock after approved semver bump)\n- public api semver lock: - public API surface digest mismatch for include/t81/**/*.hpp (update lock with --write-lock after approved API change)\n- spec-code alignment baseline check failed\n- spec-code alignment baseline: spec-code alignment baseline check FAILED\n- spec-code alignment baseline: - missing mapped implementation/evidence file: core/vm/vm.cpp (from spec/t81vm-spec.md)\n- spec-code alignment baseline: - missing mapped implementation/evidence file: core/isa/encoding.cpp (from spec/tisc-spec.md)\n- rfc lifecycle hygiene check failed\n- rfc lifecycle hygiene: rfc lifecycle hygiene check FAILED\n- rfc lifecycle hygiene: - RFC-0036-t81lang-ffi-grammar.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-0037-tnn-stdlib.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-0038-lattice-crypto.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-0055-hardware-target-profile-template.md: status mismatch index=accepted file=draft\n- rfc lifecycle hygiene: - RFC-0056-google-axion-hardware-profile.md: status mismatch index=accepted file=draft\n- rfc lifecycle hygiene: - RFC-00C4-per-device-wake-filtering.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00C5-concurrent-device-wait.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00C6-per-thread-ttbr0.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00C7-el0-fault-containment.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00C8-concurrent-fault-isolation.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00C9-el0-fault-evidence-query.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00CA-el0-fault-summary-query.md: unable to parse status/version metadata\n- rfc lifecycle hygiene: - RFC-00CB-el0-fault-detail-query.md: unable to parse status/version metadata\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_determinism_claims.py"
+    ],
+    "exit": 0,
+    "stdout": "determinism claims boundary check: pass\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/governance_metrics.py"
+    ],
+    "exit": 0,
+    "stdout": "Metrics written to /private/tmp/t81-root-layout-authority/artifacts/ci_reports/governance_metrics.json\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/governance/check_target_name_drift.py"
+    ],
+    "exit": 0,
+    "stdout": "target name drift check PASSED\n- checked legacy target aliases: t81_cli_driver, t81_frontend\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/audit_workflow_actions.py",
+      "--max-tagged",
+      "0",
+      "--max-unknown",
+      "0"
+    ],
+    "exit": 0,
+    "stdout": "workflow action audit: total=116 pinned_sha=116 tagged=0 unknown=0\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/audit_workflow_permissions.py",
+      "--max-missing",
+      "0"
+    ],
+    "exit": 0,
+    "stdout": "workflow permissions audit: total=20 explicit=20 missing=0 write_scoped=8\n",
+    "stderr": ""
+  }
+]
