@@ -1,0 +1,18 @@
+{
+  "ledger.json": {
+    "matches_recovered_reference": true,
+    "sha256": "26d27efa2416b0f688c04e3a3caa3b4c973ca158b721e07f54a20bd43bd00bc3"
+  },
+  "analysis.json": {
+    "matches_recovered_reference": true,
+    "sha256": "a86248b97569d1ab8f1bb6922e8ef64bb3c3b101d547590be664103fa9c2f3b6"
+  },
+  "controls.json": {
+    "matches_recovered_reference": true,
+    "sha256": "1b4809276ae8a9c38ab33de470bc98f1fc0352d55442939b2351d525f294445c"
+  },
+  "manifest.json": {
+    "matches_recovered_reference": true,
+    "sha256": "3bc5207fafb72be5b432ebcb7218cd94f959f53c3e2037fdef504a920a27bc3e"
+  }
+}

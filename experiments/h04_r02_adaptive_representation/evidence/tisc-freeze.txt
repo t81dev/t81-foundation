@@ -1,0 +1,5 @@
+Checking /private/tmp/t81-h04-r02-integration/spec/tisc/opcode-registry.md...
+SUCCESS: TISC v1.1.0 Freeze Integrity Verified.
+- Count: 209 opcodes
+- Bitwise Ops: Verified
+- Reserved Range: Clean

@@ -1,0 +1,43 @@
+-- The C compiler identification is AppleClang 21.0.0.21000101
+-- The CXX compiler identification is AppleClang 21.0.0.21000101
+-- The ASM compiler identification is AppleClang
+-- Found assembler: /usr/bin/cc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- [t81] T81_ENABLE_DPE=ON -- building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)
+[1/9] Creating directories for 'asio-populate'
+[1/9] Performing download step (git clone) for 'asio-populate'
+Cloning into 'asio-src'...
+fatal: unable to access 'https://github.com/chriskohlhoff/asio.git/': Could not resolve host: github.com
+Cloning into 'asio-src'...
+fatal: unable to access 'https://github.com/chriskohlhoff/asio.git/': Could not resolve host: github.com
+Cloning into 'asio-src'...
+fatal: unable to access 'https://github.com/chriskohlhoff/asio.git/': Could not resolve host: github.com
+Had to git clone more than once: 3 times.
+CMake Error at asio-subbuild/asio-populate-prefix/tmp/asio-populate-gitclone.cmake:50 (message):
+  Failed to clone repository: 'https://github.com/chriskohlhoff/asio.git'
+
+
+FAILED: [code=1] asio-populate-prefix/src/asio-populate-stamp/asio-populate-download /private/tmp/t81-h04-r02-clean/_deps/asio-subbuild/asio-populate-prefix/src/asio-populate-stamp/asio-populate-download 
+cd /private/tmp/t81-h04-r02-clean/_deps && /opt/homebrew/bin/cmake -DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE -P /private/tmp/t81-h04-r02-clean/_deps/asio-subbuild/asio-populate-prefix/tmp/asio-populate-gitclone.cmake && /opt/homebrew/bin/cmake -E touch /private/tmp/t81-h04-r02-clean/_deps/asio-subbuild/asio-populate-prefix/src/asio-populate-stamp/asio-populate-download
+ninja: build stopped: subcommand failed.
+
+CMake Error at /opt/homebrew/share/cmake/Modules/FetchContent.cmake:1931 (message):
+  Build step for asio failed: 1
+Call Stack (most recent call first):
+  /opt/homebrew/share/cmake/Modules/FetchContent.cmake:1622 (__FetchContent_populateSubbuild)
+  /opt/homebrew/share/cmake/Modules/FetchContent.cmake:2158:EVAL:2 (__FetchContent_doPopulation)
+  /opt/homebrew/share/cmake/Modules/FetchContent.cmake:2158 (cmake_language)
+  /opt/homebrew/share/cmake/Modules/FetchContent.cmake:2399 (__FetchContent_Populate)
+  CMakeLists.txt:205 (FetchContent_MakeAvailable)
+
+
+-- Configuring incomplete, errors occurred!

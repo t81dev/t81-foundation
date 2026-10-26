@@ -1,0 +1,24 @@
+test_disabled_policy_matches_fixed (test_h04_radix_adaptation.H04Tests.test_disabled_policy_matches_fixed) ... ok
+test_exhaustive_balanced_codebook (test_h04_radix_adaptation.H04Tests.test_exhaustive_balanced_codebook) ... ok
+test_exhaustive_binary_codebook (test_h04_radix_adaptation.H04Tests.test_exhaustive_binary_codebook) ... ok
+test_exhaustive_bounded_addition (test_h04_radix_adaptation.H04Tests.test_exhaustive_bounded_addition) ... ok
+test_external_mutants_fail_original_verification_test (test_h04_radix_adaptation.H04Tests.test_external_mutants_fail_original_verification_test) ... ok
+test_finite_thresholds_and_negative_result (test_h04_radix_adaptation.H04Tests.test_finite_thresholds_and_negative_result) ... ok
+test_independent_saved_data_verification (test_h04_radix_adaptation.H04Tests.test_independent_saved_data_verification) ... ok
+test_mode_domain_is_not_value_width (test_h04_radix_adaptation.H04Tests.test_mode_domain_is_not_value_width) ... ok
+test_mode_relabeling_invariant (test_h04_radix_adaptation.H04Tests.test_mode_relabeling_invariant) ... ok
+test_mutation_accounting_is_detected (test_h04_radix_adaptation.H04Tests.test_mutation_accounting_is_detected) ... ok
+test_mutation_arithmetic_is_detected (test_h04_radix_adaptation.H04Tests.test_mutation_arithmetic_is_detected) ... ok
+test_mutation_omitted_sweep_point_detected (test_h04_radix_adaptation.H04Tests.test_mutation_omitted_sweep_point_detected) ... ok
+test_mutation_result_and_disabled_control_detected (test_h04_radix_adaptation.H04Tests.test_mutation_result_and_disabled_control_detected) ... ok
+test_no_wrapping_or_discarded_overflow (test_h04_radix_adaptation.H04Tests.test_no_wrapping_or_discarded_overflow) ... ok
+test_packing_has_no_binary_only_penalty (test_h04_radix_adaptation.H04Tests.test_packing_has_no_binary_only_penalty) ... ok
+test_repeated_subprocess_bytes_and_manifest (test_h04_radix_adaptation.H04Tests.test_repeated_subprocess_bytes_and_manifest) ... ok
+test_required_boundaries_and_four_traces (test_h04_radix_adaptation.H04Tests.test_required_boundaries_and_four_traces) ... ok
+test_seeded_large_arithmetic (test_h04_radix_adaptation.H04Tests.test_seeded_large_arithmetic) ... ok
+test_signed_domain_minimality (test_h04_radix_adaptation.H04Tests.test_signed_domain_minimality) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 4.511s
+
+OK

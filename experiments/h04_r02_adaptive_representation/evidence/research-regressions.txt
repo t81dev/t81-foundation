@@ -1,0 +1,141 @@
+-- The C compiler identification is AppleClang 21.0.0.21000101
+-- The CXX compiler identification is AppleClang 21.0.0.21000101
+-- The ASM compiler identification is AppleClang
+-- Found assembler: /usr/bin/cc
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- [t81] T81_ENABLE_DPE=ON -- building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)
+-- Found Python3: /opt/homebrew/opt/python@3.14/bin/python3.14 (found version "3.14.3") found components: Interpreter
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Performing Test COMPILER_HAS_AVX2
+-- Performing Test COMPILER_HAS_AVX2 - Failed
+-- Performing Test COMPILER_HAS_FMA
+-- Performing Test COMPILER_HAS_FMA - Failed
+-- Found Doxygen: /opt/homebrew/bin/doxygen (found version "1.16.1") found components: doxygen missing components: dot
+-- Configuring done (3.4s)
+-- Generating done (0.4s)
+-- Build files have been written to: /private/tmp/t81-h04-r02-research-clean
+[1/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange.cpp.o
+[2/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/bigint.cpp.o
+[3/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/encoding.cpp.o
+[4/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/fraction.cpp.o
+[5/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_json_renderer.cpp.o
+[6/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_engine.cpp.o
+[7/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/in_memory_driver.cpp.o
+[8/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/vm/determinism/canon_hash81.cpp.o
+[9/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_ops.cpp.o
+[10/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/persistent_driver.cpp.o
+[11/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/block_backed_driver.cpp.o
+[12/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81.cpp.o
+[13/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/math/t81_soft_math/t81_soft_math.cpp.o
+[14/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base243.cpp.o
+[15/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_balanced.cpp.o
+[16/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_packed.cpp.o
+[17/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/crypto/sha3.cpp.o
+[18/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/metadata.cpp.o
+[19/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/trit_packing.cpp.o
+[20/87] Building CXX object src/core/CMakeFiles/t81_tracing.dir/__/__/vm/tracing/canonhash81.cpp.o
+[21/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/error.cpp.o
+[22/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/cog/v1/symbolic_graph.cpp.o
+[23/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/in_memory_kernel.cpp.o
+[24/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier2/reflective.cpp.o
+[25/87] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/setun/bridge.cpp.o
+[26/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier3/recursive.cpp.o
+[27/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/promotion.cpp.o
+[28/87] Linking CXX static library libt81_core.a
+[29/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/distributed/distributed.cpp.o
+[30/87] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/pretty_printer.cpp.o
+[31/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier4/tier4_loop.cpp.o
+[32/87] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier5/infinite.cpp.o
+[33/87] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_emitter.cpp.o
+[34/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/axion_api.cpp.o
+[35/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/engine.cpp.o
+[36/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ethics.cpp.o
+[37/87] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_io.cpp.o
+[38/87] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/base81_view.cpp.o
+[39/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_engine.cpp.o
+[40/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/nondeterminism_detector.cpp.o
+[41/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_serialization.cpp.o
+[42/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_hooks.cpp.o
+[43/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_model_loader.cpp.o
+[44/87] Linking CXX static library libt81_experimental.a
+[45/87] Linking CXX static library libt81_isa.a
+[46/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/canonfs_hook.cpp.o
+[47/87] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_validator.cpp.o
+[48/87] Linking CXX static library libt81_axion.a
+[49/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/value_ops.cpp.o
+[50/87] Building CXX object src/ffi/CMakeFiles/t81_ffi.dir/__/__/ffi/ffi_dispatcher.cpp.o
+[51/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tier_limits.cpp.o
+[52/87] Linking CXX static library libt81_ffi.a
+[53/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/memory_segments.cpp.o
+[54/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/runtime_state_helpers.cpp.o
+[55/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/policy_trace_bridge.cpp.o
+[56/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/gc_helpers.cpp.o
+[57/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ffi_dispatcher.cpp.o
+[58/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ai_backend/backend_adapter.cpp.o
+[59/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tensor_helpers.cpp.o
+[60/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/ffi/ffi_dispatcher.cpp.o
+[61/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/vm.cpp.o
+[62/87] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/decode_state.cpp.o
+[63/87] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/gguf_import_bridge.cpp.o
+[64/87] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/weights_t81w_emitter.cpp.o
+[65/87] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_trace_cache.cpp.o
+[66/87] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_compiler.cpp.o
+[67/87] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/weights.cpp.o
+[68/87] Building CXX object CMakeFiles/t81_object_comparison.dir/examples/research/object-interface/runner.cpp.o
+[69/87] Building CXX object CMakeFiles/t81_descriptor_comparison.dir/examples/research/validated-descriptors/runner.cpp.o
+[70/87] Building CXX object CMakeFiles/t81_concurrent_revocation.dir/ternaryos/dev/canon_store.cpp.o
+[71/87] Building CXX object CMakeFiles/t81_concurrent_revocation.dir/examples/governance/accountable-computation/concurrent_revocation.cpp.o
+[72/87] Building CXX object CMakeFiles/canonfs_policy_boundary_test.dir/ternaryos/dev/canon_store.cpp.o
+[73/87] Building CXX object CMakeFiles/canonfs_identity_contract_test.dir/tests/cpp/canonfs_identity_contract_test.cpp.o
+[74/87] Building CXX object CMakeFiles/t81_accountable_experiment.dir/examples/governance/accountable-computation/runner.cpp.o
+[75/87] Linking CXX static library libt81_vm.a
+[76/87] Building CXX object CMakeFiles/canonfs_policy_boundary_test.dir/tests/cpp/canonfs_policy_boundary_test.cpp.o
+[77/87] Linking CXX static library libt81_tool_model.a
+[78/87] Linking CXX executable t81_concurrent_revocation
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[79/87] Linking CXX executable t81_object_comparison
+[80/87] Linking CXX executable t81_descriptor_comparison
+[81/87] Linking CXX executable t81_accountable_experiment
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[82/87] Linking CXX executable canonfs_policy_boundary_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[83/87] Linking CXX executable canonfs_identity_contract_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[84/87] Building CXX object CMakeFiles/t81_vm_predispatch_policy_deny_logging_test.dir/tests/cpp/vm_predispatch_policy_deny_logging_test.cpp.o
+[85/87] Linking CXX executable t81_vm_predispatch_policy_deny_logging_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+[86/87] Building CXX object CMakeFiles/t81_weights_load_test.dir/tests/cpp/weights_load_test.cpp.o
+[87/87] Linking CXX executable t81_weights_load_test
+ld: warning: ignoring duplicate libraries: 'libt81_core.a'
+Test project /private/tmp/t81-h04-r02-research-clean
+    Start   1: object_interface_comparison
+1/8 Test   #1: object_interface_comparison ...................   Passed    0.65 sec
+    Start   2: validated_descriptor_comparison
+2/8 Test   #2: validated_descriptor_comparison ...............   Passed    1.32 sec
+    Start   3: canonfs_concurrent_revocation_experiment
+3/8 Test   #3: canonfs_concurrent_revocation_experiment ......   Passed    0.84 sec
+    Start   4: accountable_computation_experiment
+4/8 Test   #4: accountable_computation_experiment ............   Passed    4.82 sec
+    Start  84: canonfs_policy_boundary_test
+5/8 Test  #84: canonfs_policy_boundary_test ..................   Passed    0.30 sec
+    Start  85: canonfs_identity_contract_test
+6/8 Test  #85: canonfs_identity_contract_test ................   Passed    0.26 sec
+    Start 154: t81_vm_predispatch_policy_deny_logging_test
+7/8 Test #154: t81_vm_predispatch_policy_deny_logging_test ...   Passed    0.30 sec
+    Start 166: t81_weights_load_test
+8/8 Test #166: t81_weights_load_test .........................   Passed    0.30 sec
+
+100% tests passed, 0 tests failed out of 8
+
+Total Test time (real) =   8.81 sec
