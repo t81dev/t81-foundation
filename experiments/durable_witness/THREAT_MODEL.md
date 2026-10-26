@@ -1,4 +1,4 @@
-# Threat Model — Accountable Computation & Durable Witness (Audited)
+# Threat Model — Accountable Computation & Durable Witness (Audited & Finalized)
 
 **Directory:** `experiments/durable_witness/`
 **Scope:** Protected side-effect authorization, execution attestation, and receipt verification for autonomous runtimes (T81VM and Wasmtime).
@@ -56,7 +56,8 @@ The accountable computation model separates execution into three distinct entiti
 ## 4. Security Guarantees & Boundary Non-Goals
 
 ### Demonstrated Security Guarantees
-* **Full-Field Signature Verification**: Receipts cover `witness_id`, `tx_id`, `authority_version`, `effect_id`, `payload_hash`, `total_amount`, and `timestamp`. Modifying any field invalidates the signature.
+* **Versioned Canonical Signature Encoding**: HMAC receipts cover a versioned canonical JSON representation (`json.dumps(..., sort_keys=True, separators=(',', ':'))`). Boundary-shifting parameter substitution cannot produce valid signatures.
+* **Isolated Signing Secret Model**: Default committed signing keys are removed from producer code. Key material must be supplied explicitly to the witness and verifier.
 * **In-Session Replay Protection**: Within a non-rolled-back witness store, transaction IDs are strictly one-shot.
 * **Authority Boundary Enforcement**: Active policy versions gating transaction admission are evaluated atomically inside SQLite transactions.
 

@@ -8,11 +8,45 @@ import threading
 import hashlib
 from pathlib import Path
 
-from witness import init_db, submit_transaction, revoke_authority, compute_receipt_signature, DEFAULT_SECRET_KEY
+from witness import init_db, submit_transaction, revoke_authority, backup_db, compute_receipt_signature
 from runner import execute_runner
 from verify import verify_evidence
 
-def run_attacks(base_dir: Path) -> dict:
+TEST_SECRET_KEY = b"test-secret-key-for-attack-suite-32bytes!"
+
+# Module-level worker functions for multiprocessing compatibility across fork, spawn, and forkserver
+def _mp_worker_proc(queue, arm, tx_id, auth_ver, qty, price, db_path, out_dir, secret_key=TEST_SECRET_KEY, arm_a_bin=None):
+    res = execute_runner(
+        arm=arm,
+        tx_id=tx_id,
+        authority_version=auth_ver,
+        quantity=qty,
+        unit_price=price,
+        db_path=db_path,
+        output_dir=out_dir,
+        secret_key=secret_key,
+        arm_a_bin=arm_a_bin
+    )
+    queue.put(res)
+
+def _mp_proc_revoke(db_path):
+    revoke_authority(db_path, "v2")
+
+def _mp_proc_submit(queue, arm, tx_id, auth_ver, qty, price, db_path, out_dir, secret_key=TEST_SECRET_KEY, arm_a_bin=None):
+    res = execute_runner(
+        arm=arm,
+        tx_id=tx_id,
+        authority_version=auth_ver,
+        quantity=qty,
+        unit_price=price,
+        db_path=db_path,
+        output_dir=out_dir,
+        secret_key=secret_key,
+        arm_a_bin=arm_a_bin
+    )
+    queue.put(res)
+
+def run_attacks(base_dir: Path, secret_key: bytes = TEST_SECRET_KEY) -> dict:
     if base_dir.exists():
         shutil.rmtree(base_dir)
     base_dir.mkdir(parents=True, exist_ok=True)
@@ -52,7 +86,7 @@ def run_attacks(base_dir: Path) -> dict:
         with open(ev_file, "w") as f:
             json.dump(fake_evidence, f, indent=2)
 
-        ver = verify_evidence(ev_file, db_path)
+        ver = verify_evidence(ev_file, db_path, secret_key=secret_key)
         blocked = not ver["valid"] and ver.get("reason") == "INVALID_RECEIPT_SIGNATURE"
         return {
             "attack_id": 1,
@@ -69,8 +103,8 @@ def run_attacks(base_dir: Path) -> dict:
         db_path = att_dir / "witness.db"
         init_db(db_path)
 
-        execute_runner("A", "tx-replay-02", "v2", 10, 100, db_path, att_dir)
-        replay_res = execute_runner("A", "tx-replay-02", "v2", 10, 100, db_path, att_dir)
+        execute_runner("A", "tx-replay-02", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
+        replay_res = execute_runner("A", "tx-replay-02", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
 
         blocked = not replay_res["success"] and replay_res["status_code"] == "REPLAY_DETECTED"
         return {
@@ -90,56 +124,75 @@ def run_attacks(base_dir: Path) -> dict:
 
         import multiprocessing
 
-        def worker_proc(queue, arm, tx_id, auth_ver, qty, price, db, out):
-            res = execute_runner(arm, tx_id, auth_ver, qty, price, db, out)
-            queue.put(res)
+        contexts_to_test = ["spawn", "forkserver", "fork"]
+        context_reports = {}
+        overall_blocked = True
 
-        q = multiprocessing.Queue()
-        p1 = multiprocessing.Process(target=worker_proc, args=(q, "B", "tx-concurrent-03", "v2", 5, 100, db_path, att_dir))
-        p2 = multiprocessing.Process(target=worker_proc, args=(q, "B", "tx-concurrent-03", "v2", 5, 100, db_path, att_dir))
+        for ctx_name in contexts_to_test:
+            try:
+                ctx = multiprocessing.get_context(ctx_name)
+            except (ValueError, KeyError, AttributeError) as e:
+                context_reports[ctx_name] = {"status": "UNSUPPORTED", "reason": str(e)}
+                continue
 
-        p1.start()
-        p2.start()
-        p1.join(timeout=5.0)
-        p2.join(timeout=5.0)
+            ctx_db_path = att_dir / f"witness_{ctx_name}.db"
+            init_db(ctx_db_path)
+            ctx_out_dir = att_dir / f"out_{ctx_name}"
+            ctx_out_dir.mkdir(parents=True, exist_ok=True)
 
-        results_list = []
-        while not q.empty():
-            results_list.append(q.get())
+            try:
+                q = ctx.Queue()
+                p1 = ctx.Process(target=_mp_worker_proc, args=(q, "B", "tx-concurrent-03", "v2", 5, 100, ctx_db_path, ctx_out_dir, secret_key))
+                p2 = ctx.Process(target=_mp_worker_proc, args=(q, "B", "tx-concurrent-03", "v2", 5, 100, ctx_db_path, ctx_out_dir, secret_key))
 
-        # Also test revocation racing with transaction admission across separate OS processes
-        def proc_revoke(db):
-            revoke_authority(db, "v2")
+                p1.start()
+                p2.start()
+                p1.join(timeout=10.0)
+                p2.join(timeout=10.0)
 
-        def proc_submit(queue, db, out):
-            res = execute_runner("B", "tx-race-rev-03", "v2", 5, 100, db, out)
-            queue.put(res)
+                results_list = []
+                while not q.empty():
+                    results_list.append(q.get())
 
-        q_race = multiprocessing.Queue()
-        p_sub = multiprocessing.Process(target=proc_submit, args=(q_race, db_path, att_dir))
-        p_rev = multiprocessing.Process(target=proc_revoke, args=(db_path,))
+                # Also test revocation racing with transaction admission across separate OS processes
+                q_race = ctx.Queue()
+                p_sub = ctx.Process(target=_mp_proc_submit, args=(q_race, "B", "tx-race-rev-03", "v2", 5, 100, ctx_db_path, ctx_out_dir, secret_key))
+                p_rev = ctx.Process(target=_mp_proc_revoke, args=(ctx_db_path,))
 
-        p_sub.start()
-        p_rev.start()
-        p_sub.join(timeout=5.0)
-        p_rev.join(timeout=5.0)
+                p_sub.start()
+                p_rev.start()
+                p_sub.join(timeout=10.0)
+                p_rev.join(timeout=10.0)
 
-        race_res = q_race.get() if not q_race.empty() else None
+                race_res = q_race.get() if not q_race.empty() else None
 
-        successes = [r for r in results_list if r["success"]]
-        blocked_replays = [
-            r for r in results_list
-            if not r["success"] and r.get("status_code") in ("REPLAY_DETECTED", "INTEGRITY_ERROR", "DATABASE_LOCKED")
-        ]
+                successes = [r for r in results_list if r["success"]]
+                blocked_replays = [
+                    r for r in results_list
+                    if not r["success"] and r.get("status_code") in ("REPLAY_DETECTED", "INTEGRITY_ERROR", "DATABASE_LOCKED")
+                ]
 
-        blocked = (len(successes) == 1 and len(blocked_replays) == 1)
+                ctx_blocked = (len(successes) == 1 and len(blocked_replays) == 1)
+                if not ctx_blocked:
+                    overall_blocked = False
+
+                context_reports[ctx_name] = {
+                    "status": "EXECUTED",
+                    "blocked": ctx_blocked,
+                    "successes": len(successes),
+                    "blocked_replays": len(blocked_replays),
+                    "revocation_race_result": race_res.get("status_code") if race_res else "UNKNOWN"
+                }
+            except Exception as e:
+                context_reports[ctx_name] = {"status": "FAILED", "error": str(e)}
+                overall_blocked = False
+
         return {
             "attack_id": 3,
             "name": "Duplicate transaction submission from concurrent processes",
-            "blocked": blocked,
-            "verdict": "BLOCKED" if blocked else "ALLOWED",
-            "details": f"Successes: {len(successes)}, Blocked concurrent attempts: {len(blocked_replays)}",
-            "revocation_race_result": race_res.get("status_code") if race_res else "UNKNOWN"
+            "blocked": overall_blocked,
+            "verdict": "BLOCKED" if overall_blocked else "FAILED",
+            "context_reports": context_reports
         }
 
     # Attack 4: Authorization revocation immediately before effect admission
@@ -149,7 +202,7 @@ def run_attacks(base_dir: Path) -> dict:
         init_db(db_path)
         revoke_authority(db_path, "v2")
 
-        res = execute_runner("A", "tx-rev-04", "v2", 10, 100, db_path, att_dir)
+        res = execute_runner("A", "tx-rev-04", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
         blocked = not res["success"] and res["status_code"] == "REVOCATION_DETECTED"
         return {
             "attack_id": 4,
@@ -167,8 +220,8 @@ def run_attacks(base_dir: Path) -> dict:
         init_db(db_path)
 
         po_data = {"item": "Widget-X", "quantity": 10, "unit_price": 100, "currency": "USD"}
-        succ1, res1, stat1 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data)
-        succ2, res2, stat2 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data)
+        succ1, res1, stat1 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data, secret_key=secret_key)
+        succ2, res2, stat2 = submit_transaction(db_path, "tx-interrupted-05", "v2", po_data, secret_key=secret_key)
 
         blocked = (succ1 and (not succ2) and stat2 == "REPLAY_DETECTED" and "existing_receipt" in res2)
         return {
@@ -197,7 +250,7 @@ def run_attacks(base_dir: Path) -> dict:
         total_amount = 500
 
         receipt_id = compute_receipt_signature(
-            secret_key=DEFAULT_SECRET_KEY,
+            secret_key=secret_key,
             tx_id=tx_id,
             authority_version=authority_version,
             effect_id=effect_id,
@@ -227,7 +280,7 @@ def run_attacks(base_dir: Path) -> dict:
         with open(phantom_file, "w") as f:
             json.dump(phantom_evidence, f, indent=2)
 
-        ver = verify_evidence(phantom_file, db_path)
+        ver = verify_evidence(phantom_file, db_path, secret_key=secret_key)
         blocked = not ver["valid"] and ver.get("reason") == "TRANSACTION_NOT_IN_WITNESS_STORE"
         return {
             "attack_id": 6,
@@ -273,7 +326,7 @@ def run_attacks(base_dir: Path) -> dict:
         with open(tamp_file, "w") as f:
             json.dump(tampered_evidence, f, indent=2)
 
-        ver = verify_evidence(tamp_file, db_path)
+        ver = verify_evidence(tamp_file, db_path, secret_key=b"trusted-verifier-key-32bytes!!")
         blocked = not ver["valid"] and ver.get("reason") == "INVALID_RECEIPT_SIGNATURE"
         return {
             "attack_id": 7,
@@ -297,34 +350,42 @@ def run_attacks(base_dir: Path) -> dict:
         db_path = att_dir / "witness.db"
         init_db(db_path)
 
-        # Take snapshot before transaction
-        snapshot_db = att_dir / "witness_snapshot.db"
-        shutil.copyfile(db_path, snapshot_db)
+        # Step 1: Take consistent snapshot before transaction using SQLite backup API
+        snapshot_pre = att_dir / "witness_snapshot_pre.db"
+        backup_db(db_path, snapshot_pre)
 
-        # Step 1: Execute original transaction
-        ev1 = execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir)
+        # Step 2: Execute original transaction and backup post-execution state
+        ev1 = execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
         ev_file = att_dir / "evidence_tx-rollback-08.json"
 
-        # Verifying evidence against snapshot DB fails because tx is absent from snapshot
-        ver_snap = verify_evidence(ev_file, snapshot_db)
+        snapshot_post = att_dir / "witness_snapshot_post.db"
+        backup_db(db_path, snapshot_post)
 
-        # Step 2: Restore older witness snapshot (rollback witness storage)
-        shutil.copyfile(snapshot_db, db_path)
+        # Verifying evidence against pre-execution snapshot DB fails because tx is absent
+        ver_snap_pre = verify_evidence(ev_file, snapshot_pre, secret_key=secret_key)
 
-        # Step 3: Re-submit the same transaction ID to the rolled-back witness database
-        ev2 = execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir)
+        # Step 3: Restore pre-execution snapshot (rollback witness storage) using backup API
+        backup_db(snapshot_pre, db_path)
 
-        # Since witness DB was rolled back, ev2 succeeds! This proves rollback vulnerability.
+        # Step 4: Re-submit the same transaction ID to the rolled-back witness database
+        ev2 = execute_runner("A", "tx-rollback-08", "v2", 10, 100, db_path, att_dir, secret_key=secret_key)
+
+        # Since witness DB was rolled back, ev2 succeeds! This proves transaction reuse.
         rollback_reused_tx = ev2["success"]
+        blocked = not rollback_reused_tx
 
         return {
             "attack_id": 8,
             "name": "Witness storage rollback or restoration from an old snapshot",
-            "blocked": False,
-            "verdict": "VULNERABLE_TO_ROLLBACK_REUSE",
-            "reason": "WITNESS_ROLLBACK_ALLOWED_TX_REUSE",
+            "blocked": blocked,
+            "verdict": "VULNERABLE_TO_ROLLBACK_REUSE" if not blocked else "BLOCKED",
+            "reason": "WITNESS_ROLLBACK_ALLOWED_TX_REUSE" if not blocked else "ROLLBACK_PREVENTED",
             "message": "Isolated witness store accepted previously committed transaction ID after DB snapshot rollback. Requires external monotonic checkpoint or transparency log to prevent.",
-            "verifier_snapshot_check": ver_snap.get("reason")
+            "verifier_snapshot_check": ver_snap_pre.get("reason"),
+            "preserved_snapshots": {
+                "pre_execution_db": str(snapshot_pre),
+                "post_execution_db": str(snapshot_post)
+            }
         }
 
     # Attack 9: Conflicting authority versions
@@ -333,7 +394,7 @@ def run_attacks(base_dir: Path) -> dict:
         db_path = att_dir / "witness.db"
         init_db(db_path)
 
-        res = execute_runner("B", "tx-conflict-09", "v1", 10, 100, db_path, att_dir)
+        res = execute_runner("B", "tx-conflict-09", "v1", 10, 100, db_path, att_dir, secret_key=secret_key)
         blocked = not res["success"] and res["status_code"] == "REVOCATION_DETECTED"
         return {
             "attack_id": 9,
@@ -351,7 +412,7 @@ def run_attacks(base_dir: Path) -> dict:
         bad_db.chmod(0o444)
 
         try:
-            success, res, status = submit_transaction(bad_db, "tx-fail-10", "v2", {"item": "Test", "unit_price": 10, "quantity": 1})
+            success, res, status = submit_transaction(bad_db, "tx-fail-10", "v2", {"item": "Test", "unit_price": 10, "quantity": 1}, secret_key=secret_key)
             blocked = not success
         except Exception as e:
             blocked = True

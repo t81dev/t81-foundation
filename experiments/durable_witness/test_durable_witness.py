@@ -9,11 +9,14 @@ from witness import init_db, submit_transaction, revoke_authority
 from runner import execute_runner
 from verify import verify_evidence
 
+TEST_SECRET_KEY = b"test-secret-key-for-durable-witness-32bytes"
+
 class TestDurableWitness(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(tempfile.mkdtemp())
         self.db_path = self.test_dir / "witness.db"
         self.out_dir = self.test_dir / "out"
+        self.secret_key = TEST_SECRET_KEY
         init_db(self.db_path)
 
     def tearDown(self):
@@ -27,13 +30,14 @@ class TestDurableWitness(unittest.TestCase):
             quantity=5,
             unit_price=100,
             db_path=self.db_path,
-            output_dir=self.out_dir
+            output_dir=self.out_dir,
+            secret_key=self.secret_key
         )
         self.assertTrue(evidence["success"])
         self.assertEqual(evidence["status_code"], "SUCCESS")
 
         evidence_file = self.out_dir / "evidence_tx-001.json"
-        ver = verify_evidence(evidence_file, self.db_path)
+        ver = verify_evidence(evidence_file, self.db_path, secret_key=self.secret_key)
         self.assertTrue(ver["valid"])
 
     def test_successful_transaction_arm_b(self):
@@ -44,22 +48,23 @@ class TestDurableWitness(unittest.TestCase):
             quantity=5,
             unit_price=100,
             db_path=self.db_path,
-            output_dir=self.out_dir
+            output_dir=self.out_dir,
+            secret_key=self.secret_key
         )
         self.assertTrue(evidence["success"])
         self.assertEqual(evidence["status_code"], "SUCCESS")
 
         evidence_file = self.out_dir / "evidence_tx-002.json"
-        ver = verify_evidence(evidence_file, self.db_path)
+        ver = verify_evidence(evidence_file, self.db_path, secret_key=self.secret_key)
         self.assertTrue(ver["valid"])
 
     def test_replay_rejected_across_restart(self):
         # First execution
-        ev1 = execute_runner("A", "tx-replay", "v2", 5, 100, self.db_path, self.out_dir)
+        ev1 = execute_runner("A", "tx-replay", "v2", 5, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
         self.assertTrue(ev1["success"])
 
         # Second execution with same tx_id (simulating process restart)
-        ev2 = execute_runner("A", "tx-replay", "v2", 5, 100, self.db_path, self.out_dir)
+        ev2 = execute_runner("A", "tx-replay", "v2", 5, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
         self.assertFalse(ev2["success"])
         self.assertEqual(ev2["status_code"], "REPLAY_DETECTED")
 
@@ -68,7 +73,7 @@ class TestDurableWitness(unittest.TestCase):
         revoke_authority(self.db_path, "v2")
 
         # Submission under revoked version v2
-        ev = execute_runner("A", "tx-revoked", "v2", 5, 100, self.db_path, self.out_dir)
+        ev = execute_runner("A", "tx-revoked", "v2", 5, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
         self.assertFalse(ev["success"])
         self.assertEqual(ev["status_code"], "REVOCATION_DETECTED")
 
@@ -81,7 +86,7 @@ class TestDurableWitness(unittest.TestCase):
         transaction was NEVER committed to the witness store (phantom evidence).
         """
         import hashlib, json
-        from witness import compute_receipt_signature, DEFAULT_SECRET_KEY
+        from witness import compute_receipt_signature
 
         po_data = {"item": "Phantom-Widget", "quantity": 1, "unit_price": 500, "currency": "USD"}
         canonical_po_bytes = json.dumps(po_data, sort_keys=True).encode("utf-8")
@@ -96,7 +101,7 @@ class TestDurableWitness(unittest.TestCase):
 
         # Construct receipt with known secret key (producer forged or offline generator)
         receipt_id = compute_receipt_signature(
-            secret_key=DEFAULT_SECRET_KEY,
+            secret_key=self.secret_key,
             tx_id=tx_id,
             authority_version=authority_version,
             effect_id=effect_id,
@@ -128,14 +133,45 @@ class TestDurableWitness(unittest.TestCase):
             json.dump(phantom_evidence, f, indent=2)
 
         # WITHOUT DB: Offline verification claims valid!
-        offline_ver = verify_evidence(evidence_file, db_path=None)
+        offline_ver = verify_evidence(evidence_file, db_path=None, secret_key=self.secret_key)
         self.assertTrue(offline_ver["valid"])
         self.assertFalse(offline_ver["witness_verified"])
 
         # WITH DB: Witness store verification detects phantom receipt!
-        online_ver = verify_evidence(evidence_file, db_path=self.db_path)
+        online_ver = verify_evidence(evidence_file, db_path=self.db_path, secret_key=self.secret_key)
         self.assertFalse(online_ver["valid"])
         self.assertEqual(online_ver["reason"], "TRANSACTION_NOT_IN_WITNESS_STORE")
+
+    def test_hmac_boundary_shifting_substitutions_fail_verification(self):
+        """Regression test proving that boundary-shifting field substitutions cannot preserve valid HMAC signature."""
+        from witness import compute_receipt_signature
+
+        key = b"test-secret-key-32bytes-for-unit-test!!"
+        sig_base = compute_receipt_signature(
+            secret_key=key,
+            tx_id="tx:1",
+            authority_version="v2",
+            effect_id="eff1",
+            payload_hash="hash1",
+            total_amount=100,
+            timestamp="2026-10-24T12:00:00Z",
+            witness_id="durable-witness-v1"
+        )
+
+        # Attempt boundary shifting substitution that might succeed under colon-delimited string
+        # e.g., tx_id="tx", authority_version=":1:v2" vs tx_id="tx:1", authority_version="v2"
+        sig_shifted = compute_receipt_signature(
+            secret_key=key,
+            tx_id="tx",
+            authority_version=":1:v2",
+            effect_id="eff1",
+            payload_hash="hash1",
+            total_amount=100,
+            timestamp="2026-10-24T12:00:00Z",
+            witness_id="durable-witness-v1"
+        )
+
+        self.assertNotEqual(sig_base, sig_shifted, "Boundary shifting field substitution must produce distinct HMAC signatures")
 
     def test_database_record_vs_authenticated_effect_observation(self):
         """Demonstrate required investigation 5:
@@ -146,11 +182,11 @@ class TestDurableWitness(unittest.TestCase):
         not physical external world execution (e.g. shipping or payment disbursement).
         """
         # Execute transaction in DB
-        ev = execute_runner("A", "tx-effect-obs", "v2", 10, 100, self.db_path, self.out_dir)
+        ev = execute_runner("A", "tx-effect-obs", "v2", 10, 100, self.db_path, self.out_dir, secret_key=self.secret_key)
         self.assertTrue(ev["success"])
 
         # Check DB record
-        ver = verify_evidence(self.out_dir / "evidence_tx-effect-obs.json", self.db_path)
+        ver = verify_evidence(self.out_dir / "evidence_tx-effect-obs.json", self.db_path, secret_key=self.secret_key)
         self.assertTrue(ver["valid"])
         self.assertTrue(ver["witness_verified"])
 
