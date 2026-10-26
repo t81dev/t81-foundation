@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Committed Git mutation tests for Scope A preparation; no policy activation."""
 import hashlib
+import contextlib
+import io
 import importlib.util
 import json
 from pathlib import Path
@@ -9,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 CHECKER = ROOT / 'scripts/governance/check_root_structure.py'
@@ -179,6 +182,11 @@ class RootLayout(unittest.TestCase):
         (self.repo / 'skills/new-file').write_text('new'); self.commit()
         self.reject('preservation identity mismatch: skills')
 
+    def test_preservation_directory_content_modified(self):
+        target = next(p for p in (self.repo / 'skills').rglob('*') if p.is_file())
+        target.write_bytes(target.read_bytes() + b'\nmutation')
+        self.commit(); self.reject('preservation identity mismatch: skills')
+
     def test_preservation_missing(self):
         (self.repo / 'symbolic_algebraic_exported.tisc').unlink(); self.commit()
         self.reject('missing preservation entry: symbolic_algebraic_exported.tisc')
@@ -235,7 +243,25 @@ class RootLayout(unittest.TestCase):
 
     def test_malformed_git_data(self):
         for raw in [b'bad', b'bad\tname\0', b'100644 tree ' + b'a' * 40 + b'\tx\0', b'100644 blob ' + b'a' * 40 + b'\tx\0' + b'100644 blob ' + b'a' * 40 + b'\tx\0']:
-            with self.subTest(raw=raw), self.assertRaises(module.Invalid): module.parse_tree(raw)
+            with self.subTest(raw=raw):
+                with self.assertRaises(module.Invalid): module.parse_tree(raw)
+                with (patch.object(module, 'resolve', return_value=('a' * 40, 'b' * 40)),
+                      patch.object(module, 'git', return_value=raw),
+                      patch.object(sys, 'argv', [str(CHECKER), '--structural', '--repo-root', str(self.repo)]),
+                      contextlib.redirect_stdout(io.StringIO())):
+                    self.assertNotEqual(module.main(), 0)
+
+    def test_malformed_contract_entry(self):
+        self.contract_edit(lambda x: x['entries'].__setitem__(0, 42)); self.commit()
+        self.reject('invalid contract type')
+
+    def test_workflow_deletion_requires_coverage(self):
+        target = self.repo / '.github/workflows/trusted.yml'
+        target.parent.mkdir(parents=True, exist_ok=True); target.write_text('fixture')
+        self.commit(); self.approve_fixture(); target.unlink(); self.commit()
+        approval = json.loads(self.trust.read_text()); approval['approved_commit'] = self.cmd(self.repo, 'rev-parse', 'HEAD')
+        self.trust.write_text(json.dumps(approval))
+        self.reject('artifact coverage mismatch', '--authorization', '--trusted-approval', str(self.trust))
 
     def test_unsupported_schema_revision(self):
         path = self.repo / SCHEMA; data = json.loads(path.read_text()); data['$schema'] = 'unsupported'; path.write_text(json.dumps(data)); self.commit()

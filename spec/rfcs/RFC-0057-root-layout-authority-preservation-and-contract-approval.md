@@ -1,10 +1,10 @@
 # RFC-0057: Root Layout Authority, Preservation Exceptions, and Contract Revision Approval
 
-**Status:** draft  
-**Type:** standards-track  
-**Applies-To:** Root governance; SPEC_AUTHORITY_MODEL.md §4.F  
-**Created:** 2026-10-26  
-**Updated:** 2026-10-26  
+**Status:** draft
+**Type:** standards-track
+**Applies-To:** Root governance; SPEC_AUTHORITY_MODEL.md §4.F
+**Created:** 2026-10-26
+**Updated:** 2026-10-26
 **Discussion:** https://github.com/t81dev/t81-foundation/pull/579#issuecomment-6419311331
 
 ---

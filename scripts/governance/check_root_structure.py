@@ -319,6 +319,8 @@ def main():
     parser.add_argument('--revision', default='HEAD')
     parser.add_argument('--trusted-approval', type=Path)
     args = parser.parse_args()
+    if args.trusted_approval and not args.authorization:
+        parser.error('--trusted-approval requires --authorization')
     if not args.structural and not args.authorization:
         if args.revision != 'HEAD' or args.trusted_approval or args.repo_root.resolve() != Path(__file__).resolve().parents[2]:
             parser.error('explicit preparation mode required for additional arguments')
@@ -339,7 +341,7 @@ def main():
             return 1
         print(f'committed root structure PASSED: {commit}; preservation-only exceptions: {preserved}; NOT POLICY AUTHORIZATION')
         return 0
-    except (Invalid, OSError, ValueError, TypeError, KeyError, UnicodeError, RecursionError) as error:
+    except (Invalid, OSError, ValueError, TypeError, KeyError, AttributeError, UnicodeError, RecursionError) as error:
         print(f'root validation FAILED: {error}')
         return 1
 
