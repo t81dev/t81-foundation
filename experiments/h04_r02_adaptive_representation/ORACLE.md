@@ -19,3 +19,9 @@ tie-breaking convention. Default ledger sequence parity is checked directly.
 Theoretical range and packing assumptions are separately derived in
 [MATHEMATICS.md](MATHEMATICS.md). No second model process or independent lab is
 claimed: these are separate code paths executed in one audit session.
+
+
+The precision correction uses exact Fraction costs inside suffix optimization.
+`evaluate(..., exact=True)` returns an exact total; `crossover(trace)` performs
+rational full-total comparisons. This oracle deliberately retains common costs
+that C++ cancels analytically. See [PRECISION_CORRECTION.md](PRECISION_CORRECTION.md).

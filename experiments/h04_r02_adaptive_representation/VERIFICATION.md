@@ -83,7 +83,7 @@ Main and the existing PRs were not uniformly green at inspection.
 Reexecuting R01's own independent verifier does not independently prove every
 R01 assumption. There are no new execution/energy/bandwidth measurements here.
 
-## Relevant output SHA-256
+## Original integration output SHA-256 (head 13f8377f; correction below)
 
 - `results.json`: `b503e0c6eda24e6f282606721a8f66dcbc0f11baff05cd98c73279399e1c84e2`
 - `packing_results.json`: `770b50b7836dcee0a4675de89494d370b4e2f55a47b1518d3d1848aaff02efb3`
@@ -91,3 +91,17 @@ R01 assumption. There are no new execution/energy/bandwidth measurements here.
 Complete logs and source/snapshot/output hashes are in `evidence/`. To reproduce
 elsewhere, replace the local Asio source path with a clean asio-1-30-2 checkout
 or allow CMake to fetch that dependency. Use fresh build directories.
+
+
+## PR #572 precision correction
+
+Fresh clean and ASan/UBSan builds each pass all 3 H04 CTests; the standalone
+Python audit passes 9/9, including 49 new shared-overhead scale configurations.
+The first Python audit run correctly failed artifact parity after one crossover
+changed at its final floating-point bits. The executable regenerated that field;
+all final checks pass. Full commands, initial/final logs, reproducer and CI
+snapshot details: [PRECISION_CORRECTION.md](PRECISION_CORRECTION.md).
+
+Current `results.json` SHA-256: `5ea3ed12b16d94a9cdc86fccf808091da614d1b4f4ac6edc45e2330c7987e6e9`.
+The original evidence manifest is preserved as
+`history/manifest-13f8377f.json`; the current manifest records this correction.

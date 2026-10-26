@@ -3,6 +3,8 @@
 
 This is a symbolic cost model over int64 traces, not an arithmetic benchmark.
 """
+from copy import copy
+from fractions import Fraction
 import json
 import math
 from typing import List, Dict
@@ -45,11 +47,17 @@ class IndependentOracle:
         self.conversion_cost = conversion_cost
         self.binary_tier0_bits = binary_tier0_bits
 
-    def evaluate(self, arm, trace):
+    def evaluate(self, arm, trace, *, exact=False):
         validate_trace(trace)
         binary, adaptive = arm in ("FB", "AB"), arm in ("AB", "AT")
         widths = [self.binary_tier0_bits,16,32,64] if binary else TERNARY_TRITS
         ratio = 1 if binary else self.c3_over_c2
+        # Retain shared overhead here, unlike C++ cancellation, but compare
+        # exact rationals so it cannot swallow small schedule differences.
+        exact_ratio = Fraction(ratio)
+        exact_transition = Fraction(self.transition_cost_per_level)
+        exact_metadata = Fraction(self.metadata_bits)
+        exact_conversion = Fraction(self.conversion_cost)
         n = len(trace)
         blocks = [trace[i:i+self.block_size] for i in range(0,n,self.block_size)]
         path = [3] * n
@@ -69,9 +77,9 @@ class IndependentOracle:
                 current = {}
                 for t in allowed[j]:
                     cost, tail = min(
-                        (c + (0 if u is None else abs(u-t)*self.transition_cost_per_level), seq)
+                        (c + (0 if u is None else abs(u-t)*exact_transition), seq)
                         for u,(c,seq) in suffix.items())
-                    local = len(blocks[j])*(widths[t]*ratio+self.conversion_cost)+self.metadata_bits
+                    local = len(blocks[j])*(widths[t]*exact_ratio+exact_conversion)+exact_metadata
                     current[t] = (local+cost, [t]+tail)
                 suffix = current
             _, modes = min(suffix.values())
@@ -80,12 +88,39 @@ class IndependentOracle:
         delta = sum(abs(a-b) for a,b in zip(path,path[1:])) if adaptive else 0
         meta = len(blocks)*self.metadata_bits if adaptive else 0
         checks = n if adaptive else 0
+        total = (slots*exact_ratio + (len(blocks)*exact_metadata if adaptive else 0)
+                 + delta*exact_transition + checks*exact_conversion) if exact else (
+                     slots*ratio+meta+delta*self.transition_cost_per_level+checks*self.conversion_cost)
         return dict(arm=arm, total_elements=n, tier_sequence=path, symbol_slots=slots,
                     weighted_symbol_cost=slots*ratio, metadata_cost=meta,
                     transition_count=sum(a!=b for a,b in zip(path,path[1:])) if adaptive else 0,
                     transition_level_delta=delta, transition_cost=delta*self.transition_cost_per_level,
                     selector_checks=checks,
-                    total_cost=slots*ratio+meta+delta*self.transition_cost_per_level+checks*self.conversion_cost)
+                    total_cost=total)
+
+    def crossover(self, trace):
+        """Independent exact-total bisection, including (not subtracting) overhead.
+
+        Exact rational comparisons deliberately differ from C++'s analytical
+        cancellation. The bracket is refined with 80 exact rational bisections.
+        """
+        if not trace:
+            return Fraction(0)
+        target = self.evaluate("AB", trace, exact=True)["total_cost"]
+        candidate = copy(self)
+        lo, hi = Fraction(0), Fraction(1)
+        candidate.c3_over_c2 = hi
+        while candidate.evaluate("AT", trace, exact=True)["total_cost"] < target:
+            hi *= 2
+            candidate.c3_over_c2 = hi
+        for _ in range(80):
+            mid = (lo+hi)/2
+            candidate.c3_over_c2 = mid
+            if candidate.evaluate("AT", trace, exact=True)["total_cost"] < target:
+                lo = mid
+            else:
+                hi = mid
+        return (lo+hi)/2
 
     def evaluate_fixed_binary(self, trace): return self.evaluate("FB", trace)
     def evaluate_fixed_ternary(self, trace): return self.evaluate("FT", trace)

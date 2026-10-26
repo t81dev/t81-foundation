@@ -52,3 +52,13 @@ the reviewed integration branch after CI, then closing #570/#571 as superseded.
 No existing PR was merged or closed. Next action: predeclare and run the matched
 codec/access experiment in RESULTS.md; stop if equal-domain binary coding or
 access/conversion overhead removes the claimed benefit.
+
+
+## 2026-10-25 — PR #572 precision follow-up
+
+Reproduced the automated review's large shared-overhead defect on 13f8377f.
+C++ now cancels schedule-independent overhead before optimization/crossover;
+Python independently retains it in exact rational comparisons. The 49 added
+adversarial cases and clean/sanitized suites pass; see PRECISION_CORRECTION.md.
+One default crossover changed only in its final floating-point bits. Scientific
+classification is unchanged. Existing PRs remain open pending fresh review/CI.

@@ -109,3 +109,13 @@ For comparison, the original scaled-header implementation on constant-small
 would have AT=(600+200)*r+50, so its actual total-cost threshold was 1.25.
 The original published 5/3 was inconsistent even with that original model.
 The corrected 4/3 follows the declared equal binary-header contract.
+
+
+## Numerical precision correction (PR #572)
+
+B*m+N*kappa is shared by all adaptive schedules and both arms. The executable
+cancels this term before DP comparisons and crossover optimization, adding it
+only to reported totals. Subtracting it from rounded full totals would be too
+late. The Python suffix oracle instead retains the shared term in exact rational
+comparisons, independently validating cancellation. See
+[PRECISION_CORRECTION.md](PRECISION_CORRECTION.md) for adversarial scales and logs.

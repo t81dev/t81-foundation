@@ -125,6 +125,62 @@ class Audit(unittest.TestCase):
                 self.assertEqual((min(values),max(values)),(-(3**n-1)//2,(3**n-1)//2))
         self.assertEqual((3**41-1)//2,18236498188585393201)
 
+    def test_shared_overhead_cancels_before_optimization(self):
+        # Includes the exact review reproducer, conversion-only losses of
+        # significance, partial shared blocks, and large transition/ratio scales.
+        cases = [
+            ([0], 1, 8, 1, 1),
+            ([0], 1, 10, 1, 1),
+            ([0,128,0], 1, 8, 5, 1.6),
+            ([0,88574,0], 1, 8, 7, 1),
+            ([0,128,0], 2, 10, 100, 1.6),
+            ([0,88574,0], 1, 8, 1e20, 1e-200),
+            ([0,88574,0], 1, 8, 1e-200, 1e200),
+        ]
+        overheads = [(0,0), (1e-300,1e-300), (1e20,0), (0,1e20),
+                     (1e100,1e-100), (1e-100,1e100), (1e300,1e300)]
+        for trace,block,bits,transition,ratio in cases:
+            baseline = None
+            for metadata,conversion in overheads:
+                with self.subTest(trace=trace,block=block,bits=bits,
+                                  transition=transition,ratio=ratio,
+                                  metadata=metadata,conversion=conversion):
+                    row = self.run_cpp(trace, block_size=block, binary_tier0_bits=bits,
+                                       transition_cost=transition, ratio=ratio,
+                                       metadata_bits=metadata, conversion_cost=conversion)['workloads']['custom']
+                    oracle = IndependentOracle(symbol_cost_ratio=ratio, block_size=block,
+                                               binary_tier0_bits=bits, transition_cost_per_level=transition,
+                                               metadata_bits=metadata, conversion_cost=conversion)
+                    # Rational enumeration includes the full shared costs, so
+                    # this independently checks analytical cancellation too.
+                    kw = dict(block=block,bits=bits,transition=Fraction(transition),
+                              metadata=Fraction(metadata),conversion=Fraction(conversion))
+                    abcost,_ = exhaustive(trace,**kw)
+                    _,paths = exhaustive(trace,ternary=True,**kw)
+                    exact_crossing = max((abcost-overhead)/slots for _,slots,overhead,_ in paths)
+                    self.assertAlmostEqual(row['total_break_even_c3_c2'],float(exact_crossing),places=12)
+                    self.assertAlmostEqual(float(oracle.crossover(trace)),float(exact_crossing),places=12)
+                    signature = (row['total_break_even_c3_c2'],
+                                 row['AB']['tier_sequence'],row['AT']['tier_sequence'])
+                    if baseline is None: baseline = signature
+                    self.assertEqual(signature,baseline)
+                    for arm in ['AB','AT']:
+                        cost,_ = exhaustive(trace,ternary=arm=='AT',
+                                            ratio=Fraction(ratio) if arm=='AT' else 1,**kw)
+                        expected = oracle.evaluate(arm,trace,exact=True)
+                        self.assertEqual(expected['total_cost'],cost)
+                        ledger = row[arm]
+                        # Inspect actual emitted events in exact arithmetic,
+                        # rather than subtracting a rounded full total.
+                        actual = (ledger['symbol_slots']*(Fraction(ratio) if arm=='AT' else 1)
+                                  + ledger['transition_level_delta']*Fraction(transition)
+                                  + ((len(trace)+block-1)//block)*Fraction(metadata)
+                                  + len(trace)*Fraction(conversion))
+                        self.assertEqual(actual,cost)
+                        self.assertEqual(ledger['symbol_slots'],expected['symbol_slots'])
+                        self.assertEqual(ledger['transition_level_delta'],expected['transition_level_delta'])
+                        self.assertEqual(ledger['total_cost'],oracle.evaluate(arm,trace)['total_cost'])
+
     def test_invalid_inputs_fail(self):
         for key,value in [('block-size','0'),('block-size','-1'),('ratio','nan'),('ratio','inf'),('ratio','-1'),('transition-cost','-1'),('binary-tier0-bits','9'),('trace',str(2**63)),('trace','1,'),('unknown','x')]:
             result = subprocess.run([str(BINARY),'--'+key,value],capture_output=True)

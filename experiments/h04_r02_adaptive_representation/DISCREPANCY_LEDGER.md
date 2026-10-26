@@ -23,6 +23,8 @@ those reports. Classification D applies to the original inference, not all H04.
 | INT-07 | Documentation inconsistency | Methodology/oracle docs still scale headers; original oracle CTest only prints output, not a comparison. Correct contracts and add executable comparison. | Audit CTest, independent enumeration |
 | INT-08 | Implementation defect | Experiment lacked an explicit C++ standard requirement, relying on extensions on this macOS compiler. Require cxx_std_17 on this target only. Small phased traces also risk division by zero; clamp phase length. | Warning-free target rebuild and source portability review |
 
+| INT-09 | Implementation defect | Full-total DP/crossover comparisons lose payload differences at huge shared metadata/conversion costs (review #572). Cancel common overhead before C++ comparisons; retain it with exact rational arithmetic in Python. | 49 adversarial-scale configurations, exact oracle and exhaustive schedule checks; see PRECISION_CORRECTION.md |
+
 ## PR integration recommendation
 
 Integrate the independently tested branch instead of merging #570 and #571

@@ -102,8 +102,7 @@ struct TraceLedger {
 
 class Evaluator {
 public:
-  static TraceLedger evaluate_trace(Arm arm, const std::vector<int64_t>& trace,
-                                    const CostParameters& params) {
+  static void validate_parameters(const CostParameters& params) {
     if (params.block_size <= 0 ||
         (params.binary_tier0_bits != 8 && params.binary_tier0_bits != 10) ||
         !std::isfinite(params.symbol_cost_ratio) || params.symbol_cost_ratio < 0 ||
@@ -113,6 +112,11 @@ public:
       throw std::invalid_argument(
           "finite nonnegative costs, positive block size, and 8/10-bit tier 0 required");
     }
+  }
+
+  static TraceLedger evaluate_trace(Arm arm, const std::vector<int64_t>& trace,
+                                    const CostParameters& params) {
+    validate_parameters(params);
     TraceLedger ledger;
     ledger.total_elements = static_cast<int64_t>(trace.size());
     if (trace.empty()) return ledger;
@@ -144,8 +148,9 @@ public:
         }
         std::array<double, 4> next = {inf, inf, inf, inf};
         for (int t = required; t < 4; ++t) {
-          const double local = (end - begin) * (width(t) * ratio + params.conversion_cost) +
-                               params.metadata_bits_per_block;
+          // B*m + N*kappa is identical for every feasible schedule. Keep it
+          // out of the DP so large common costs cannot erase payload differences.
+          const double local = (end - begin) * width(t) * ratio;
           for (int u = 0; u < 4; ++u) {
             const double candidate =
                 prev[u] + local + (j == 0 ? 0 : std::abs(t - u) * params.transition_cost_per_level);
@@ -187,7 +192,13 @@ public:
 };
 
 inline double total_crossover(const std::vector<int64_t>& trace, CostParameters params) {
+  Evaluator::validate_parameters(params);
   if (trace.empty()) return 0.0;  // no unique crossing: explicit empty-trace convention
+  // Cancel the common additive overhead analytically, before floating-point
+  // evaluation. Subtracting it from already rounded totals cannot recover the
+  // payload/transition differences (e.g. metadata=1e20 on a one-value trace).
+  params.metadata_bits_per_block = 0.0;
+  params.conversion_cost = 0.0;
   const double target = Evaluator::evaluate_trace(Arm::AB, trace, params).total_cost;
   double lo = 0.0, hi = 1.0;
   params.symbol_cost_ratio = hi;
