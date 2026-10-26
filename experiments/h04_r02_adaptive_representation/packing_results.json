@@ -1,0 +1,77 @@
+{
+  "count_header_bytes": 8,
+  "metadata_in_payload": false,
+  "rows": [
+    {
+      "values": 0,
+      "base243_payload_bytes": 0,
+      "binary10_payload_bytes": 0,
+      "base243_framed_bytes": 8,
+      "binary10_framed_bytes": 8
+    },
+    {
+      "values": 1,
+      "base243_payload_bytes": 2,
+      "binary10_payload_bytes": 2,
+      "base243_framed_bytes": 10,
+      "binary10_framed_bytes": 10
+    },
+    {
+      "values": 2,
+      "base243_payload_bytes": 3,
+      "binary10_payload_bytes": 3,
+      "base243_framed_bytes": 11,
+      "binary10_framed_bytes": 11
+    },
+    {
+      "values": 3,
+      "base243_payload_bytes": 4,
+      "binary10_payload_bytes": 4,
+      "base243_framed_bytes": 12,
+      "binary10_framed_bytes": 12
+    },
+    {
+      "values": 4,
+      "base243_payload_bytes": 5,
+      "binary10_payload_bytes": 5,
+      "base243_framed_bytes": 13,
+      "binary10_framed_bytes": 13
+    },
+    {
+      "values": 5,
+      "base243_payload_bytes": 6,
+      "binary10_payload_bytes": 7,
+      "base243_framed_bytes": 14,
+      "binary10_framed_bytes": 15
+    },
+    {
+      "values": 10,
+      "base243_payload_bytes": 12,
+      "binary10_payload_bytes": 13,
+      "base243_framed_bytes": 20,
+      "binary10_framed_bytes": 21
+    },
+    {
+      "values": 100,
+      "base243_payload_bytes": 120,
+      "binary10_payload_bytes": 125,
+      "base243_framed_bytes": 128,
+      "binary10_framed_bytes": 133
+    },
+    {
+      "values": 729,
+      "base243_payload_bytes": 875,
+      "binary10_payload_bytes": 912,
+      "base243_framed_bytes": 883,
+      "binary10_framed_bytes": 920
+    },
+    {
+      "values": 1000,
+      "base243_payload_bytes": 1200,
+      "binary10_payload_bytes": 1250,
+      "base243_framed_bytes": 1208,
+      "binary10_framed_bytes": 1258
+    }
+  ],
+  "scope": "actual encoded lengths and round trips; no execution performance measurement"
+}
