@@ -62,7 +62,9 @@ class RootLayout(unittest.TestCase):
         cls.cmd(root, 'config', 'user.email', 'fixture@example.invalid')
         cls.cmd(root, 'config', 'commit.gpgsign', 'false')
         cls.cmd(root, 'config', 'core.autocrlf', 'false')
-        cls.cmd(root, 'config', 'core.filemode', 'true')
+        # Preserve explicit index modes across platforms; mode-mutation tests use
+        # update-index, rather than relying on filesystem executable support.
+        cls.cmd(root, 'config', 'core.filemode', 'false')
         cls.cmd(root, 'add', '-f', '.')
         # Explicit modes also work when filesystem executable bits are unavailable.
         for entry in cls.original['entries']:
