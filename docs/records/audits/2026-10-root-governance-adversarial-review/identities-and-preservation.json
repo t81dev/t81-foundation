@@ -1,0 +1,115 @@
+{
+  "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+  "preserved": [
+    {
+      "path": "Makefile",
+      "mode": "100644",
+      "oid": "233ead3b180bc198631b270a3ab05f3cebf52571",
+      "kind": "blob"
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "mode": "100644",
+      "oid": "e556cd7b21b5d4fa3ef6192c72da4434ccf36d24",
+      "kind": "blob"
+    },
+    {
+      "path": "SYSTEMS_AND_SUBSYSTEMS_REPORT.md",
+      "mode": "100644",
+      "oid": "dc9d4d0b8b97314eac3427739e24a18935e10ed6",
+      "kind": "blob"
+    },
+    {
+      "path": "build.log",
+      "mode": "100644",
+      "oid": "09014f9343e05e47e902f74a58b3bb7c68918a83",
+      "kind": "blob"
+    },
+    {
+      "path": "customer_tools",
+      "mode": "040000",
+      "oid": "c6632381f381275ac2be21d2d9b133246900e02c",
+      "kind": "tree"
+    },
+    {
+      "path": "execution_reports",
+      "mode": "040000",
+      "oid": "8e7d9568b38b2df24c3f7c43898ebbfeca0cc4a3",
+      "kind": "tree"
+    },
+    {
+      "path": "import.apl",
+      "mode": "100644",
+      "oid": "bfc41f84d39dbde59fd55c44318d6d73545259c5",
+      "kind": "blob"
+    },
+    {
+      "path": "market-demos",
+      "mode": "040000",
+      "oid": "5d599548f0d0111ec847904a4e0dd0ead99f09ef",
+      "kind": "tree"
+    },
+    {
+      "path": "market_analysis",
+      "mode": "040000",
+      "oid": "4850b47267d06575adf10177c3f503e03d8e62ba",
+      "kind": "tree"
+    },
+    {
+      "path": "record_hash.txt",
+      "mode": "100644",
+      "oid": "bf884759c9f5796e800f44041a043c1b045dae46",
+      "kind": "blob"
+    },
+    {
+      "path": "skills",
+      "mode": "040000",
+      "oid": "99b046ab070a99e82fddd489bd80b70cdb62b3c9",
+      "kind": "tree"
+    },
+    {
+      "path": "strategic_docs",
+      "mode": "040000",
+      "oid": "439d66c2d34337e0018c351780463d3815f27c4f",
+      "kind": "tree"
+    },
+    {
+      "path": "symbolic_algebraic.tisc",
+      "mode": "100644",
+      "oid": "eb294c2abde70a653207d3ebc3e96cb33318bdcc",
+      "kind": "blob"
+    },
+    {
+      "path": "symbolic_algebraic_exported.tisc",
+      "mode": "100644",
+      "oid": "eb294c2abde70a653207d3ebc3e96cb33318bdcc",
+      "kind": "blob"
+    },
+    {
+      "path": "test_input.txt",
+      "mode": "100644",
+      "oid": "d8b669cf4b6e6f4dca8a46683fdf360d45e3569f",
+      "kind": "blob"
+    },
+    {
+      "path": "test_record.json",
+      "mode": "100644",
+      "oid": "aecb51ae63aa82d82d0eb589afaf34dbd841defc",
+      "kind": "blob"
+    },
+    {
+      "path": "tiny-model-policy.apl",
+      "mode": "100644",
+      "oid": "0b70acbcbda1aeed8c043a1f24520d31709445af",
+      "kind": "blob"
+    }
+  ],
+  "legacy_byte_identical": true,
+  "workflows_actions_unchanged": true,
+  "digests": {
+    "docs/governance/root-layout-contract.json": "852d199aa1369cecf7088b18cd139f218c143820bda6e5922c1a22752710fb11",
+    "docs/governance/root-layout-contract.schema.json": "dd3ba6135dd9c783ed64182e7c18d4e2dad6fb01e102e64d2bfdde6dbb054950",
+    "scripts/governance/check_root_structure.py": "364ea5ce881a5b4e08a5089cdbd3fca56f94b788e5f3e7e3b5769b97464eb84b",
+    "scripts/governance/check_root_structure_legacy.py": "c438964b3ab47b776520ee4453a10b48e9b1b2816bb0d1c982a21caa0ded7c96"
+  }
+}

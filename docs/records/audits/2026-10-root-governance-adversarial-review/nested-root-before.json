@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "tests/ci/check_root_structure_test.py",
+    "RootLayout.test_nested_repo_root_cannot_hide_outer_violation"
+  ],
+  "exit": 1,
+  "stdout": "",
+  "stderr": "test_nested_repo_root_cannot_hide_outer_violation (__main__.RootLayout.test_nested_repo_root_cannot_hide_outer_violation) ... FAIL\n\n======================================================================\nFAIL: test_nested_repo_root_cannot_hide_outer_violation (__main__.RootLayout.test_nested_repo_root_cannot_hide_outer_violation)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 328, in test_nested_repo_root_cannot_hide_outer_violation\n    self.reject('repository root must be Git working-tree top level',\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                '--structural', '--repo-root', str(nested))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 103, in reject\n    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 == 0 : committed root structure PASSED: bfbe7b637e21c4e4f3d4701b6e74f29efa47442a; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n\n\n----------------------------------------------------------------------\nRan 1 test in 3.793s\n\nFAILED (failures=1)\n"
+}

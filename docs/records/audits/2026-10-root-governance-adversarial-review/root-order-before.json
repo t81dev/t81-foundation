@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "tests/ci/check_root_structure_test.py",
+    "RootLayout.test_unsorted_raw_root_tree_rejected"
+  ],
+  "exit": 1,
+  "stdout": "",
+  "stderr": "test_unsorted_raw_root_tree_rejected (__main__.RootLayout.test_unsorted_raw_root_tree_rejected) ... FAIL\n\n======================================================================\nFAIL: test_unsorted_raw_root_tree_rejected (__main__.RootLayout.test_unsorted_raw_root_tree_rejected)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 401, in test_unsorted_raw_root_tree_rejected\n    self.reject('noncanonical Git root ordering')\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 104, in reject\n    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 == 0 : committed root structure PASSED: f62d8f446a4d366b1e53fa3405ed17755836a710; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n\n\n----------------------------------------------------------------------\nRan 1 test in 3.657s\n\nFAILED (failures=1)\n"
+}

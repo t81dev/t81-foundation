@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "tests/ci/check_root_structure_test.py",
+    "RootLayout.test_cmake_current_source_dir_cannot_hide_preserved_root"
+  ],
+  "exit": 1,
+  "stdout": "",
+  "stderr": "test_cmake_current_source_dir_cannot_hide_preserved_root (__main__.RootLayout.test_cmake_current_source_dir_cannot_hide_preserved_root) ... FAIL\n\n======================================================================\nFAIL: test_cmake_current_source_dir_cannot_hide_preserved_root (__main__.RootLayout.test_cmake_current_source_dir_cannot_hide_preserved_root)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 337, in test_cmake_current_source_dir_cannot_hide_preserved_root\n    self.reject('CMake input absent from required contract: market-demos')\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 103, in reject\n    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 == 0 : committed root structure PASSED: 6b2b395980851a613d7dbb1cf300b85fc038f8b6; preservation-only exceptions: 17; NOT POLICY AUTHORIZATION\n\n\n----------------------------------------------------------------------\nRan 1 test in 4.026s\n\nFAILED (failures=1)\n"
+}

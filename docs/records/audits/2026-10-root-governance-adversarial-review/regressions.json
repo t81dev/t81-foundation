@@ -1,0 +1,64 @@
+[
+  {
+    "command": [
+      "python3",
+      "tests/ci/check_root_structure_test.py"
+    ],
+    "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_authorization_absent (__main__.RootLayout.test_authorization_absent) ... ok\ntest_authorization_candidate_local (__main__.RootLayout.test_authorization_candidate_local) ... ok\ntest_authorization_invalid (__main__.RootLayout.test_authorization_invalid) ... ok\ntest_authorization_valid_external_operator_fixture (__main__.RootLayout.test_authorization_valid_external_operator_fixture) ... ok\ntest_cmake_comments_do_not_create_dependencies (__main__.RootLayout.test_cmake_comments_do_not_create_dependencies) ... ok\ntest_cmake_current_source_dir_cannot_hide_preserved_root (__main__.RootLayout.test_cmake_current_source_dir_cannot_hide_preserved_root) ... ok\ntest_cmake_literal_source_list_cannot_hide_preserved_root (__main__.RootLayout.test_cmake_literal_source_list_cannot_hide_preserved_root) ... ok\ntest_computed_cmake_dependency_rejected (__main__.RootLayout.test_computed_cmake_dependency_rejected) ... ok\ntest_contract_matches_immutable_approved_proposal (__main__.RootLayout.test_contract_matches_immutable_approved_proposal) ... ok\ntest_directory_mode_cannot_disguise_blob_object (__main__.RootLayout.test_directory_mode_cannot_disguise_blob_object) ... ok\ntest_directory_replaces_file (__main__.RootLayout.test_directory_replaces_file) ... ok\ntest_duplicate_contract_key (__main__.RootLayout.test_duplicate_contract_key) ... ok\ntest_each_security_artifact_mutation (__main__.RootLayout.test_each_security_artifact_mutation) ... ok\ntest_file_mode_cannot_disguise_tree_object (__main__.RootLayout.test_file_mode_cannot_disguise_tree_object) ... ok\ntest_file_replaces_directory (__main__.RootLayout.test_file_replaces_directory) ... ok\ntest_generated_artifact (__main__.RootLayout.test_generated_artifact) ... ok\ntest_git_replace_cannot_forge_authorization_digest (__main__.RootLayout.test_git_replace_cannot_forge_authorization_digest) ... ok\ntest_git_replace_cannot_hide_unknown_root (__main__.RootLayout.test_git_replace_cannot_hide_unknown_root) ... ok\ntest_gitlink_substitution (__main__.RootLayout.test_gitlink_substitution) ... ok\ntest_head_worktree_divergence (__main__.RootLayout.test_head_worktree_divergence) ... ok\ntest_invalid_contract_path (__main__.RootLayout.test_invalid_contract_path) ... ok\ntest_invalid_revision (__main__.RootLayout.test_invalid_revision) ... ok\ntest_local_action_content_cannot_self_authorize (__main__.RootLayout.test_local_action_content_cannot_self_authorize) ... ok\ntest_malformed_contract_entry (__main__.RootLayout.test_malformed_contract_entry) ... ok\ntest_malformed_git_data (__main__.RootLayout.test_malformed_git_data) ... ok\ntest_missing_cmake_contract_dependency (__main__.RootLayout.test_missing_cmake_contract_dependency) ... ok\ntest_missing_required_directory (__main__.RootLayout.test_missing_required_directory) ... ok\ntest_missing_required_file (__main__.RootLayout.test_missing_required_file) ... ok\ntest_missing_root_blob_object_rejected (__main__.RootLayout.test_missing_root_blob_object_rejected) ... ok\ntest_nested_repo_root_cannot_hide_outer_violation (__main__.RootLayout.test_nested_repo_root_cannot_hide_outer_violation) ... ok\ntest_no_argument_default_is_original_gate (__main__.RootLayout.test_no_argument_default_is_original_gate) ... ok\ntest_non_utf8_git_name_rejected (__main__.RootLayout.test_non_utf8_git_name_rejected) ... ok\ntest_noncanonical_raw_git_mode_rejected (__main__.RootLayout.test_noncanonical_raw_git_mode_rejected) ... ok\ntest_nonfinite_constants_all_rejected (__main__.RootLayout.test_nonfinite_constants_all_rejected) ... ok\ntest_nonfinite_schema_json_is_rejected (__main__.RootLayout.test_nonfinite_schema_json_is_rejected) ... ok\ntest_preservation_directory_content_modified (__main__.RootLayout.test_preservation_directory_content_modified) ... ok\ntest_preservation_file_modified (__main__.RootLayout.test_preservation_file_modified) ... ok\ntest_preservation_missing (__main__.RootLayout.test_preservation_missing) ... ok\ntest_preservation_renamed (__main__.RootLayout.test_preservation_renamed) ... ok\ntest_preservation_subtree_extended (__main__.RootLayout.test_preservation_subtree_extended) ... ok\ntest_required_workflows_and_actions_are_unchanged (__main__.RootLayout.test_required_workflows_and_actions_are_unchanged) ... ok\ntest_symlink_substitution (__main__.RootLayout.test_symlink_substitution) ... ok\ntest_unapproved_commit (__main__.RootLayout.test_unapproved_commit) ... ok\ntest_unknown_directory (__main__.RootLayout.test_unknown_directory) ... ok\ntest_unknown_file (__main__.RootLayout.test_unknown_file) ... ok\ntest_unsorted_raw_root_tree_rejected (__main__.RootLayout.test_unsorted_raw_root_tree_rejected) ... ok\ntest_unsupported_schema_keyword (__main__.RootLayout.test_unsupported_schema_keyword) ... ok\ntest_unsupported_schema_revision (__main__.RootLayout.test_unsupported_schema_revision) ... ok\ntest_unusual_unknown_root_names_rejected (__main__.RootLayout.test_unusual_unknown_root_names_rejected) ... ok\ntest_valid_approved_layout (__main__.RootLayout.test_valid_approved_layout) ... ok\ntest_workflow_addition_requires_coverage (__main__.RootLayout.test_workflow_addition_requires_coverage) ... ok\ntest_workflow_deletion_requires_coverage (__main__.RootLayout.test_workflow_deletion_requires_coverage) ... ok\ntest_wrong_executable_mode (__main__.RootLayout.test_wrong_executable_mode) ... ok\n\n----------------------------------------------------------------------\nRan 53 tests in 31.980s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/test_failure_propagation.py",
+      "--output-dir",
+      "/private/tmp/t81-root-review-failure-controls"
+    ],
+    "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+    "exit": 0,
+    "stdout": "{\"cases\": 47, \"failures\": 0, \"evidence\": \"/private/tmp/t81-root-review-failure-controls\"}\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "tests/ci/check_architecture_targets_test.py"
+    ],
+    "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_annotated_benchmark_row_is_checked (__main__.TargetSync.test_annotated_benchmark_row_is_checked) ... ok\ntest_comments_cannot_declare_targets (__main__.TargetSync.test_comments_cannot_declare_targets) ... ok\ntest_computed_subdirectory_is_not_guessed (__main__.TargetSync.test_computed_subdirectory_is_not_guessed) ... ok\ntest_computed_target_is_not_guessed (__main__.TargetSync.test_computed_target_is_not_guessed) ... ok\ntest_missing_or_empty_expectations_fail (__main__.TargetSync.test_missing_or_empty_expectations_fail) ... ok\ntest_missing_reachable_file_is_diagnostic_failure (__main__.TargetSync.test_missing_reachable_file_is_diagnostic_failure) ... ok\ntest_missing_required_benchmark_file_still_fails (__main__.TargetSync.test_missing_required_benchmark_file_still_fails) ... ok\ntest_nested_source_declarations (__main__.TargetSync.test_nested_source_declarations) ... ok\ntest_obsolete_python_name_still_fails (__main__.TargetSync.test_obsolete_python_name_still_fails) ... ok\ntest_optional_pybind_module_name_is_not_exempt (__main__.TargetSync.test_optional_pybind_module_name_is_not_exempt) ... ok\ntest_quoted_multiline_paths_and_case_insensitive_commands (__main__.TargetSync.test_quoted_multiline_paths_and_case_insensitive_commands) ... ok\ntest_quoted_or_bracket_messages_cannot_declare_targets (__main__.TargetSync.test_quoted_or_bracket_messages_cannot_declare_targets) ... ok\ntest_removed_subdirectory_edge_does_not_scan_orphaned_source (__main__.TargetSync.test_removed_subdirectory_edge_does_not_scan_orphaned_source) ... ok\ntest_removed_target_cannot_be_satisfied_by_disconnected_copy (__main__.TargetSync.test_removed_target_cannot_be_satisfied_by_disconnected_copy) ... ok\ntest_renamed_target_fails_with_exact_name (__main__.TargetSync.test_renamed_target_fails_with_exact_name) ... ok\ntest_source_edge_cannot_escape_repository (__main__.TargetSync.test_source_edge_cannot_escape_repository) ... ok\ntest_unbalanced_cmake_command_fails (__main__.TargetSync.test_unbalanced_cmake_command_fails) ... ok\ntest_uninvoked_function_and_macro_cannot_declare_targets (__main__.TargetSync.test_uninvoked_function_and_macro_cannot_declare_targets) ... ok\n\n----------------------------------------------------------------------\nRan 18 tests in 0.938s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "tests/ci/governance_deadlock_test.py"
+    ],
+    "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_current_layout_without_obsolete_core_tree (__main__.GovernanceTests.test_current_layout_without_obsolete_core_tree) ... ok\ntest_each_required_contract_remains_enforced (__main__.GovernanceTests.test_each_required_contract_remains_enforced) ... ok\ntest_independent_summary_cases (__main__.GovernanceTests.test_independent_summary_cases) ... ok\ntest_old_copy_cannot_replace_missing_current_source (__main__.GovernanceTests.test_old_copy_cannot_replace_missing_current_source) ... ok\ntest_readme_boundary_and_its_removal (__main__.GovernanceTests.test_readme_boundary_and_its_removal) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 1.877s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "tests/ci/workflow_supply_chain_test.py"
+    ],
+    "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "test_current_actions_and_permissions_pass (__main__.SupplyChainTests.test_current_actions_and_permissions_pass) ... ok\ntest_every_new_pin_matches_verified_identity (__main__.SupplyChainTests.test_every_new_pin_matches_verified_identity) ... ok\ntest_expanded_scopes_and_job_overrides_fail_budget (__main__.SupplyChainTests.test_expanded_scopes_and_job_overrides_fail_budget) ... ok\ntest_missing_explicit_permissions_fails_audit (__main__.SupplyChainTests.test_missing_explicit_permissions_fails_audit) ... ok\ntest_mutable_or_malformed_action_references_fail (__main__.SupplyChainTests.test_mutable_or_malformed_action_references_fail) ... ok\ntest_smoke_has_no_publish_credentials_or_write_scopes (__main__.SupplyChainTests.test_smoke_has_no_publish_credentials_or_write_scopes) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 1.970s\n\nOK\n"
+  },
+  {
+    "command": [
+      "python3",
+      "scripts/ci/check_tisc_freeze_integrity.py"
+    ],
+    "commit": "fb15c4e1185410db5737a4d5fdb4af753d7c0016",
+    "exit": 0,
+    "stdout": "Checking /private/tmp/t81-root-governance-validator/spec/tisc/opcode-registry.md...\nSUCCESS: TISC v1.1.0 Freeze Integrity Verified.\n- Count: 209 opcodes\n- Bitwise Ops: Verified\n- Reserved Range: Clean\n",
+    "stderr": ""
+  }
+]

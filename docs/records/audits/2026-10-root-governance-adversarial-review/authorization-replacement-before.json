@@ -1,0 +1,10 @@
+{
+  "command": [
+    "python3",
+    "tests/ci/check_root_structure_test.py",
+    "RootLayout.test_git_replace_cannot_forge_authorization_digest"
+  ],
+  "exit": 1,
+  "stdout": "",
+  "stderr": "test_git_replace_cannot_forge_authorization_digest (__main__.RootLayout.test_git_replace_cannot_forge_authorization_digest) ... FAIL\n\n======================================================================\nFAIL: test_git_replace_cannot_forge_authorization_digest (__main__.RootLayout.test_git_replace_cannot_forge_authorization_digest)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 331, in test_git_replace_cannot_forge_authorization_digest\n    self.reject('unapproved artifact revision: ' + module.CHECKER,\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                '--authorization', '--trusted-approval', str(self.trust))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/t81-root-governance-validator/tests/ci/check_root_structure_test.py\", line 103, in reject\n    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0 == 0 : authorization prototype PASSED: e11e7a518f0da43ff054ce6cdd647769a7eb8805; operator-authenticated external input assumed; NOT ACTIVATION\n\n\n----------------------------------------------------------------------\nRan 1 test in 3.580s\n\nFAILED (failures=1)\n"
+}
