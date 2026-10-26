@@ -114,7 +114,9 @@ jobs:
         run: python3 scripts/ci/check_ai_experiment_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Enforce architecture coherence invariants
-        run: python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+        run: |
+          python3 tests/ci/governance_deadlock_test.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Enforce workflow action pinning policy
         run: |

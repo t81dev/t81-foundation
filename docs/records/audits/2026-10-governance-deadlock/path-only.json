@@ -1,0 +1,5 @@
+{
+  "experiment": "original checker with only three VM paths relocated; original root-only CMake inspection",
+  "exit": 1,
+  "stdout": "architecture coherence check: FAILED\n1. missing kernel PolicyEngine source in build graph: /kernel/axion/policy_engine\\.cpp/\n"
+}

@@ -8,6 +8,16 @@
 
 T81 Foundation is an experimental scientific research project and systems engineering substrate investigating the boundaries of **deterministic execution, policy-governed computation, content-addressed artifact provenance, and alternative computational representations** (including balanced ternary, Base-81 trytes, and packed low-bit tensors).
 
+Determinism guarantees are limited to explicitly verified surfaces in the
+[Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md),
+under their stated input, configuration, numeric, and supported-platform
+constraints. Reproducing an experiment does not establish bit-identical model
+outputs or deterministic execution on an unverified backend. Model sampling,
+external inference engines, network behavior, execution timing, and unverified
+accelerators do not inherit the deterministic core's guarantees. Policy
+authorization and recorded provenance do not establish a result's correctness
+or prove an architectural research hypothesis.
+
 Rather than claiming a settled architecture or production operating system, T81 operates as an **empirical research program** that formulates falsifiable hypotheses, implements executable reference systems, runs comparative benchmarks, and preserves both positive and negative results.
 
 ---
