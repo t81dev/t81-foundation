@@ -103,7 +103,9 @@ jobs:
           echo "All required directories present." 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Verify ARCHITECTURE.md target table matches CMake
-        run: python3 scripts/ci/check_architecture_targets.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+        run: |
+          python3 tests/ci/check_architecture_targets_test.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/ci/check_architecture_targets.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Verify TISC v1.1.0 Freeze Integrity
         run: python3 scripts/ci/check_tisc_freeze_integrity.py 2>&1 | tee -a .github/logs/spec-and-docs.log
