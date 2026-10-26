@@ -29,6 +29,7 @@ class RootLayout(unittest.TestCase):
         cls.template = tempfile.TemporaryDirectory()
         root = Path(cls.template.name)
         cls.original = json.loads((ROOT / CONTRACT).read_text())
+        preserved_modes = {}
         for entry in cls.original['entries']:
             path = root / entry['path']
             if 'object' in entry:
@@ -39,6 +40,7 @@ class RootLayout(unittest.TestCase):
                     meta, name = row.split(b'\t', 1)
                     mode, kind, oid = meta.decode().split()
                     assert kind == 'blob'
+                    preserved_modes[name.decode()] = mode
                     target = root / name.decode()
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_bytes(subprocess.check_output(['git', 'cat-file', 'blob', oid], cwd=ROOT))
@@ -70,6 +72,8 @@ class RootLayout(unittest.TestCase):
         for entry in cls.original['entries']:
             if entry['kind'] == 'file':
                 cls.cmd(root, 'update-index', '--chmod=' + ('+x' if entry['mode'] == '100755' else '-x'), entry['path'])
+        for path, mode in preserved_modes.items():
+            cls.cmd(root, 'update-index', '--chmod=' + ('+x' if mode == '100755' else '-x'), path)
         cls.cmd(root, 'commit', '-qm', 'valid fixture')
 
     @classmethod
