@@ -47,12 +47,27 @@ inputs exclusively from that tree. Require exact regular-file or tree modes;
 reject symlinks, gitlinks, unknown entries, missing inputs, malformed data,
 unsupported schemas and file/directory substitutions. Sort diagnostics.
 
+Disable Git replacement objects and require the checkout's actual root. Read raw
+root tree modes and ordering rather than ls-tree's normalized modes, and independently
+verify the existence and actual kinds of referenced root objects. Pathspecs are literal
+and tree reads are independent of the caller's cwd prefix. Reject non-standard
+JSON constants as well as duplicate keys.
+
 The implementation inventories literal reachable add_subdirectory edges and
-literal target source paths, including PROJECT_SOURCE_DIR references and optional
-branches. Referenced root directories must be required, not merely preserved.
+literal target source paths, including semicolon lists, PROJECT_SOURCE_DIR,
+CMAKE_SOURCE_DIR and CMAKE_CURRENT_SOURCE_DIR prefixes and optional branches.
+Referenced root directories must be required, not merely preserved.
 Computed subdirectory edges fail rather than being guessed. It is not a complete
 CMake evaluator: include-loaded factories, indirect source variables and macro
 invocations need additional approved coverage before broader drift guarantees.
+
+Adversarial fixtures confirm that a local include, invoked macro, or indirect
+source variable can reference a preserved root without detection by this bounded
+inventory. Structural success must not be used as a complete CMake dependency
+certificate. Review of an approval bound to a candidate commit must cover those
+constructs; accepting this limited profile does not authorize their automatic
+approval. Extending or rejecting such constructs is separate from implementing a
+complete CMake interpreter and must be settled before broader claims/activation.
 
 ### Preservation-only exceptions
 
@@ -77,6 +92,10 @@ version, purpose (scope-a-preparation-review), approved_commit, approver and
 artifacts (path-to-SHA-256 map). The operator must independently authenticate and
 protect that file, the evaluator, its invocation and result publication. Its
 location and an approver string are **not** cryptographic authentication.
+An attacker allowed to supply a forged external manifest or run a modified
+candidate evaluator can manufacture apparent success; the prototype does not
+prevent either action. Independence of the input, evaluator and invocation is
+an integration prerequisite, not a property established by an external pathname.
 The prototype has no signing keys, credentials, approval-service deployment or
 required-check integration. It must never be treated as human approval merely
 because a generated fixture passes it.

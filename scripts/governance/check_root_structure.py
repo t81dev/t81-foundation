@@ -38,11 +38,18 @@ def unique_object(pairs):
 
 
 def json_read(raw):
-    return json.loads(raw, object_pairs_hook=unique_object)
+    def invalid_constant(value):
+        raise Invalid(f'non-finite JSON constant: {value}')
+    return json.loads(raw, object_pairs_hook=unique_object, parse_constant=invalid_constant)
 
 
-def git(repo, *args):
-    result = subprocess.run(['git', *args], cwd=repo, capture_output=True)
+def git(repo, *args, input=None):
+    # Replacements can make an immutable OID return unrelated objects. Pathspecs
+    # and cwd prefixes must not reinterpret committed input paths either.
+    if args and args[0] == 'ls-tree':
+        args = (args[0], '--full-tree', *args[1:])
+    result = subprocess.run(['git', '--no-replace-objects', '--literal-pathspecs', *args],
+                            cwd=repo, capture_output=True, input=input)
     if result.returncode:
         raise Invalid('Git operation failed: ' + result.stderr.decode('utf-8', errors='replace').strip())
     return result.stdout
@@ -74,6 +81,53 @@ def parse_tree(raw):
                 or kind != {'040000': 'tree', '160000': 'commit'}.get(mode, 'blob')):
             raise Invalid('malformed Git tree metadata')
         entries[path] = (mode, kind, oid)
+    return entries
+
+
+def root_entries(repo, tree):
+    """Read raw root modes: ls-tree normalizes invalid modes such as 100664.
+
+    ls-tree also infers object type from mode, so independently verify that the
+    referenced object exists and really is a blob/tree/commit of that type.
+    """
+    raw = git(repo, 'cat-file', 'tree', tree)
+    entries = {}
+    position = 0
+    previous_key = None
+    modes = {'40000': ('040000', 'tree'), '100644': ('100644', 'blob'),
+             '100755': ('100755', 'blob'), '120000': ('120000', 'blob'),
+             '160000': ('160000', 'commit')}
+    while position < len(raw):
+        end = raw.find(b'\0', position)
+        if end < 0 or end + 21 > len(raw):
+            raise Invalid('malformed raw Git root tree')
+        try:
+            raw_mode, name = raw[position:end].split(b' ', 1)
+            raw_mode = raw_mode.decode('ascii')
+            name = name.decode('utf-8')
+        except (ValueError, UnicodeError) as error:
+            raise Invalid('malformed raw Git root entry') from error
+        if raw_mode not in modes:
+            raise Invalid(f'noncanonical Git root mode: {raw_mode!r}')
+        if not name or '/' in name or name in {'.', '..'} or name in entries:
+            raise Invalid('malformed raw Git root name')
+        mode, kind = modes[raw_mode]
+        sort_key = name.encode('utf-8') + (b'/' if kind == 'tree' else b'')
+        if previous_key is not None and sort_key <= previous_key:
+            raise Invalid('noncanonical Git root ordering')
+        previous_key = sort_key
+        entries[name] = (mode, kind, raw[end + 1:end + 21].hex())
+        position = end + 21
+    if entries:
+        names = sorted(entries)
+        query = ''.join(entries[name][2] + '\n' for name in names).encode('ascii')
+        metadata = git(repo, 'cat-file', '--batch-check=%(objectname) %(objecttype)', input=query).decode('ascii').splitlines()
+        if len(metadata) != len(names):
+            raise Invalid('malformed Git object metadata')
+        for name, actual in zip(names, metadata):
+            _, kind, oid = entries[name]
+            if actual != f'{oid} {kind}':
+                raise Invalid(f'Git root object type/missing object: {name!r}')
     return entries
 
 
@@ -228,9 +282,15 @@ def cmake_dependencies(repo, tree, contract):
                     raise Invalid(f'unsupported computed CMake subdirectory: {path}: {first}')
                 references.append((str(PurePosixPath(path).parent / first), True))
             if command in {'add_library', 'add_executable', 'target_sources'}:
-                for arg in args[1:]:
+                # Literal CMake lists contain multiple paths, not one pathname
+                # whose first root can stand in for all following sources.
+                for arg in (item for value in args[1:] for item in value.split(';')):
                     if arg.startswith('${PROJECT_SOURCE_DIR}/'):
                         references.append((arg[len('${PROJECT_SOURCE_DIR}/'):], False))
+                    elif arg.startswith('${CMAKE_SOURCE_DIR}/'):
+                        references.append((arg[len('${CMAKE_SOURCE_DIR}/'):], False))
+                    elif arg.startswith('${CMAKE_CURRENT_SOURCE_DIR}/'):
+                        references.append((str(PurePosixPath(path).parent / arg[len('${CMAKE_CURRENT_SOURCE_DIR}/'):]), False))
                     elif '$' not in arg and '/' in arg and re.search(r'\.(cpp|cc|c|hpp|h)$', arg):
                         references.append((str(PurePosixPath(path).parent / arg), False))
             for reference, directory in references:
@@ -255,7 +315,7 @@ def cmake_dependencies(repo, tree, contract):
 
 def structural(repo, tree):
     contract = load_contract(repo, tree)
-    actual = parse_tree(git(repo, 'ls-tree', '-z', tree))
+    actual = root_entries(repo, tree)
     expected = {e['path']: e for e in contract['entries']}
     errors = []
     for path in sorted(set(actual) | set(expected)):
@@ -329,6 +389,9 @@ def main():
         import check_root_structure_legacy
         return check_root_structure_legacy.main()
     try:
+        root = Path(git(args.repo_root, 'rev-parse', '--show-toplevel').decode().strip()).resolve()
+        if args.repo_root.resolve() != root:
+            raise Invalid('repository root must be Git working-tree top level')
         commit, tree = resolve(args.repo_root, args.revision)
         if args.authorization:
             authorization(args.repo_root, commit, tree, args.trusted_approval)
