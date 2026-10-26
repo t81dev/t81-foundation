@@ -1,0 +1,1349 @@
+{
+  "schema_version": 1,
+  "status": "PROPOSED_NOT_AUTHORIZED",
+  "baseline": "f4ffa85bf0bcaf028b51462113bf19c2eebb0091",
+  "activation_authority": null,
+  "default_unknown_entry": "reject",
+  "symlinks": "reject",
+  "contract_revision_guard": "Requires independently trusted policy/checker digests; candidate-local approval fields are not authority",
+  "required_directories": [
+    {
+      "path": ".devcontainer",
+      "type": "directory",
+      "role": "Development container configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Development container configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "07ae2b8cfb624acd0a953c529785c3910dbbd074"
+      }
+    },
+    {
+      "path": ".github",
+      "type": "directory",
+      "role": "CI workflows and ownership configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus CI workflows and ownership configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "9edfcb67842b745283faba7d94a9109c8851e237"
+      }
+    },
+    {
+      "path": ".t81",
+      "type": "directory",
+      "role": "Runtime/project configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Runtime/project configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "9cc7960aebd23a0e31d4c9c3eb0e05fdfc9d09bf"
+      }
+    },
+    {
+      "path": "artifacts",
+      "type": "directory",
+      "role": "Existing tracked artifact container; generated contents require separate review",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Existing tracked artifact container; generated contents require separate review"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "6f642326b70a97e01f6188e1a37edc38e2540aa5"
+      }
+    },
+    {
+      "path": "benchmarks",
+      "type": "directory",
+      "role": "Benchmark sources and declared workloads",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Benchmark sources and declared workloads"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "fe263cffcb19eaeb8ec192c4421f585835f349a9"
+      }
+    },
+    {
+      "path": "cmake",
+      "type": "directory",
+      "role": "Delegated build configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Delegated build configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "63afaf99524c73f4355b62bad51f0fb8a0855602"
+      }
+    },
+    {
+      "path": "codec",
+      "type": "directory",
+      "role": "Representation codecs",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Representation codecs"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "cc7dadf4419e1b78eb1aef456c0d4217178c2768"
+      }
+    },
+    {
+      "path": "contracts",
+      "type": "directory",
+      "role": "Runtime and integration contracts",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Runtime and integration contracts"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "5cb5a7e1f99a7b7320aba28e383ce97a9851d3f4"
+      }
+    },
+    {
+      "path": "crypto",
+      "type": "directory",
+      "role": "Cryptographic implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Cryptographic implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "34ab4804e0a7cbfd148e90531c163ed6c9e8e644"
+      }
+    },
+    {
+      "path": "development_tests",
+      "type": "directory",
+      "role": "Required Direct API test source mixed with generated files",
+      "evidence": [
+        "src/direct_api/CMakeLists.txt uses development_tests/test_real_direct_api.cpp"
+      ],
+      "authority": "Active dependency, with mixed outputs; D1/D4 pending",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "4c8145cc4f32e5515f9b37b38ee507066c45cf79"
+      }
+    },
+    {
+      "path": "docs",
+      "type": "directory",
+      "role": "Architecture, governance and descriptive documentation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Architecture, governance and descriptive documentation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "123d12f6cb8b785c7b80fc172a96c7522d0b82a9"
+      }
+    },
+    {
+      "path": "drivers",
+      "type": "directory",
+      "role": "Emulator/device support",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Emulator/device support"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "b98046150dbd4cb94dc079fa583390dc7488c757"
+      }
+    },
+    {
+      "path": "examples",
+      "type": "directory",
+      "role": "Examples and executable demonstrations",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Examples and executable demonstrations"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "21572390c0acbacc0c19a19e131567211da8a7b2"
+      }
+    },
+    {
+      "path": "experimental",
+      "type": "directory",
+      "role": "Explicit experimental implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Explicit experimental implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "81f3557f244b5fdb6f9a6eb9d3bf68645ba3c2e6"
+      }
+    },
+    {
+      "path": "experiments",
+      "type": "directory",
+      "role": "Optional buildable research with retained evidence",
+      "evidence": [
+        "CMakeLists.txt:31-50 and :1362-1369 reference optional architecture/provenance/radix/matvec/H04-R02 research"
+      ],
+      "authority": "Active optional-profile dependency; required for repository completeness, not default runtime execution; D1 pending",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "fea5468fafbdec382ad7d324908eac4d9ca905ed"
+      }
+    },
+    {
+      "path": "ffi",
+      "type": "directory",
+      "role": "Foreign language bindings and package sources",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Foreign language bindings and package sources"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "2c5e2cdb8d905effd24a3a14e345601749ed42e4"
+      }
+    },
+    {
+      "path": "fs",
+      "type": "directory",
+      "role": "CanonFS implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus CanonFS implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "89f332a950f6f0b4bb1633e4c9b73e8eb07c5f98"
+      }
+    },
+    {
+      "path": "include",
+      "type": "directory",
+      "role": "Public headers and configuration input",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Public headers and configuration input"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "c363f364dbf4c3bcf49aeb9d267b28cc714a9b23"
+      }
+    },
+    {
+      "path": "inference",
+      "type": "directory",
+      "role": "Inference implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Inference implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "78f2a997aeb34b220920de811be26d4f5da25e5c"
+      }
+    },
+    {
+      "path": "isa",
+      "type": "directory",
+      "role": "Instruction encoding and numerical types",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Instruction encoding and numerical types"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "ae4ff2f879bdfa7867efcad4d02df577100f719e"
+      }
+    },
+    {
+      "path": "kernel",
+      "type": "directory",
+      "role": "Axion and kernel implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Axion and kernel implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "0f6bfa026d7226587d3c2ed8e3b919650d829fe8"
+      }
+    },
+    {
+      "path": "lang",
+      "type": "directory",
+      "role": "Language implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Language implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "0fa6fbcc5545b6fafd5d6c4b1dd3188b151d39d3"
+      }
+    },
+    {
+      "path": "logs",
+      "type": "directory",
+      "role": "Existing tracked log container; generated contents require separate review",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Existing tracked log container; generated contents require separate review"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "ee924e6ed9aaa1cae7a6b39fe4d5ad8c79b9ea39"
+      }
+    },
+    {
+      "path": "scripts",
+      "type": "directory",
+      "role": "CI and maintenance scripts",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus CI and maintenance scripts"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "1efd253393427059c753ab77f75d3c3a5bcb5707"
+      }
+    },
+    {
+      "path": "spec",
+      "type": "directory",
+      "role": "Normative specification corpus",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Normative specification corpus"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "feb4b8635fee78c66536369cad9799d0675af4dc"
+      }
+    },
+    {
+      "path": "src",
+      "type": "directory",
+      "role": "CMake delegation and live Direct API source",
+      "evidence": [
+        "CMakeLists.txt:27 unconditionally adds src; src/CMakeLists.txt delegates live targets"
+      ],
+      "authority": "Active dependency; D1 approval/scope decision pending",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "caf3b456af3152aa35b0dafb331d00136b65ad23"
+      }
+    },
+    {
+      "path": "ternaryos",
+      "type": "directory",
+      "role": "Earlier-maturity systems implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Earlier-maturity systems implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "f26dbea577f1b1f4dc9a6b397def8e67288314fc"
+      }
+    },
+    {
+      "path": "tests",
+      "type": "directory",
+      "role": "Tests and fixtures",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Tests and fixtures"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "c6f7eb5f55965edd9b56a4ff9131c1fef60dbeb0"
+      }
+    },
+    {
+      "path": "third_party",
+      "type": "directory",
+      "role": "External dependency inputs",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus External dependency inputs"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "f36e32334c35909edd4cb2f82201863e1ac94d00"
+      }
+    },
+    {
+      "path": "tools",
+      "type": "directory",
+      "role": "CLI/model/editor tools",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus CLI/model/editor tools"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "5f539d657cf29a971965317545ee48fbb8e029ee"
+      }
+    },
+    {
+      "path": "vm",
+      "type": "directory",
+      "role": "VM implementation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus VM implementation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "8de30425c1995c8fdb29ae2a12e721ebd0834f71"
+      }
+    }
+  ],
+  "required_files": [
+    {
+      "path": ".clang-format",
+      "type": "file",
+      "role": "Formatting configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Formatting configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "3fd3e818f6f302999a315e31e3af0f3cbd929425"
+      }
+    },
+    {
+      "path": ".clang-tidy",
+      "type": "file",
+      "role": "Static analysis configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Static analysis configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "b16e28f9dec7af73d9d7e3b042dbde8ec8d61f5a"
+      }
+    },
+    {
+      "path": ".cursorrules",
+      "type": "file",
+      "role": "Editor contributor guidance",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Editor contributor guidance"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "c1ed6d288c6dc8cc0d19305c71e5d5b624328a6a"
+      }
+    },
+    {
+      "path": ".editorconfig",
+      "type": "file",
+      "role": "Editor configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Editor configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "7076bbd3543f011fb7451a02227246873438fc5f"
+      }
+    },
+    {
+      "path": ".gitattributes",
+      "type": "file",
+      "role": "Git content handling",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Git content handling"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "880cb58f4ac3d88ce2fbff8a0f529a9726aa6c46"
+      }
+    },
+    {
+      "path": ".gitignore",
+      "type": "file",
+      "role": "Generated/untracked output exclusions",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Generated/untracked output exclusions"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "6e1244a32bfb7c73e7a6bf6864f77193876fc8cc"
+      }
+    },
+    {
+      "path": ".gitmodules",
+      "type": "file",
+      "role": "External dependency declarations",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus External dependency declarations"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "3d6e12f136f3b8595af91e82ef692c391c3736da"
+      }
+    },
+    {
+      "path": ".pre-commit-config.yaml",
+      "type": "file",
+      "role": "Commit-time checks",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Commit-time checks"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "b71ed156dd99807517d4e2c6acb86bb5e53a4ba6"
+      }
+    },
+    {
+      "path": "AGENTS.md",
+      "type": "file",
+      "role": "Contributor working instructions",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Contributor working instructions"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "b56ea5f4baf5f8ee58b46e994fd3178f01b2a9ef"
+      }
+    },
+    {
+      "path": "BUILD.bazel",
+      "type": "file",
+      "role": "Alternative build declaration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Alternative build declaration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "7d45eccc414b598829378750d47c9aabad282390"
+      }
+    },
+    {
+      "path": "CMakeDoxyfile.in",
+      "type": "file",
+      "role": "API documentation input",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus API documentation input"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "9cec68f7cd66616bf484fa5aacae667c5ae58e31"
+      }
+    },
+    {
+      "path": "CMakeLists.txt",
+      "type": "file",
+      "role": "Authoritative current CMake build graph",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Authoritative current CMake build graph"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "1ac9e49f017064c51742606c8fa9d496faf4f525"
+      }
+    },
+    {
+      "path": "CMakePresets.json",
+      "type": "file",
+      "role": "Build presets",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Build presets"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "a820065436c52778a7d9426be839f504e89a1da0"
+      }
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "type": "file",
+      "role": "Contributor conduct",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Contributor conduct"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "8d70b05aa4609a36bf9afb2be6b219ab3fcab4fa"
+      }
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "type": "file",
+      "role": "Contribution process",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Contribution process"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "cae2a058e2f9c287127318e47e6e47c04da15581"
+      }
+    },
+    {
+      "path": "Dockerfile",
+      "type": "file",
+      "role": "Container build input",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Container build input"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "1162d906b21c4c1a3e0663b5ff61873709783ffe"
+      }
+    },
+    {
+      "path": "LICENSE",
+      "type": "file",
+      "role": "License text",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus License text"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "7296381e718b50633cae6aacb790e05c64a85f04"
+      }
+    },
+    {
+      "path": "README.es.md",
+      "type": "file",
+      "role": "Spanish translation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Spanish translation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "3c7d89318e913afd27284d002a6a3512192c5398"
+      }
+    },
+    {
+      "path": "README.md",
+      "type": "file",
+      "role": "Public project entry point",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Public project entry point"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "a49327d6eaf5ac128d03013935db95ec9558d49f"
+      }
+    },
+    {
+      "path": "README.pt-BR.md",
+      "type": "file",
+      "role": "Portuguese translation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Portuguese translation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "7d5d9bfbb4862601fe31881c2de97cc5eff32b41"
+      }
+    },
+    {
+      "path": "README.ru.md",
+      "type": "file",
+      "role": "Russian translation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Russian translation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "d47bf54a7dced2bd1e74bdf2d23f53f8692c072d"
+      }
+    },
+    {
+      "path": "README.zh-CN.md",
+      "type": "file",
+      "role": "Chinese translation",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Chinese translation"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "05eb282e48155b9b7e498d5ccab50c9e4c358caa"
+      }
+    },
+    {
+      "path": "SECURITY.md",
+      "type": "file",
+      "role": "Security reporting",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Security reporting"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "07ef66d5f28716236baabaded373c1755d6ff1d6"
+      }
+    },
+    {
+      "path": "SUPPORT_TAXONOMY.md",
+      "type": "file",
+      "role": "Support classification",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Support classification"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "77c33456592cc8b3b6c4fa06cbad8fec745235da"
+      }
+    },
+    {
+      "path": "T81_CAPABILITIES_REPORT.md",
+      "type": "file",
+      "role": "Existing descriptive capabilities report",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Existing descriptive capabilities report"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "e66d9bd9e51e3b5d994ca39e78bca93a61e6f4e0"
+      }
+    },
+    {
+      "path": "_config.yml",
+      "type": "file",
+      "role": "Documentation site configuration",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Documentation site configuration"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "d929e4fc4375ccbea716559d43e67cb60084585a"
+      }
+    },
+    {
+      "path": "install.ps1",
+      "type": "file",
+      "role": "Windows installer",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Windows installer"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "6ad049ec0d5023ad70ec1c267948285b63fd28b9"
+      }
+    },
+    {
+      "path": "install.sh",
+      "type": "file",
+      "role": "POSIX installer",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus POSIX installer"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "f11003ddb7957b47681b36876f8661d5af423437"
+      }
+    },
+    {
+      "path": "pyproject.toml",
+      "type": "file",
+      "role": "Python packaging manifest",
+      "evidence": [
+        "Existing EXPECTED_TOP_LEVEL plus Python packaging manifest"
+      ],
+      "authority": "Inherited operational expectation only; proposed carry-forward, subject to D2",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "921933fd4a6c087448ea01fdc349c148ce27f2c0"
+      }
+    }
+  ],
+  "approved_optional_entries": [],
+  "grandfathered_historical_entries": [],
+  "prohibited_generated_artifacts": [
+    {
+      "path": "build.log",
+      "reason": "Generated transcript; unresolved retention at baseline"
+    },
+    {
+      "path": "Makefile",
+      "reason": "Generated CMake output; unresolved retention at baseline"
+    },
+    {
+      "path": "CMakeCache.txt",
+      "reason": "Generated configure cache"
+    },
+    {
+      "path": "CMakeFiles",
+      "reason": "Generated build state"
+    },
+    {
+      "path": "cmake_install.cmake",
+      "reason": "Generated installation program"
+    },
+    {
+      "path": "compile_commands.json",
+      "reason": "Generated compilation database; root approval would require explicit review"
+    },
+    {
+      "path": "node_modules",
+      "reason": "Installed JavaScript dependencies"
+    },
+    {
+      "path": "__pycache__",
+      "reason": "Python cache"
+    },
+    {
+      "path": ".DS_Store",
+      "reason": "Operating-system metadata"
+    }
+  ],
+  "unresolved_entries": [
+    {
+      "path": "Makefile",
+      "type": "file",
+      "role": "CMake-generated root build output already allowlisted",
+      "evidence": [
+        "f5e81baeda567f6d342f4f5fef462150fecb653d 2026-03-17 feat: QEMU testing"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Decide whether generated machine-specific build file is retained evidence, supported interface, or disposable output; existing allowlisting is not provenance authority.",
+      "recommended_disposition": "Preserve now; prefer future exclusion of generated root Makefiles after confirming no supported consumer and a separately approved disposition.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "233ead3b180bc198631b270a3ab05f3cebf52571"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "233ead3b180bc198631b270a3ab05f3cebf52571",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "PROJECT_STRUCTURE.md",
+      "type": "file",
+      "role": "Historical descriptive layout guide",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Confirm whether this root guide is retained at root, superseded, or later relocated with history; it cannot authorize the layout itself.",
+      "recommended_disposition": "Keep bytes while reviewing; recommend a pinned preservation exception if retained, then reconcile stale scope in separately authorized work.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "e556cd7b21b5d4fa3ef6192c72da4434ccf36d24"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "e556cd7b21b5d4fa3ef6192c72da4434ccf36d24",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "SYSTEMS_AND_SUBSYSTEMS_REPORT.md",
+      "type": "file",
+      "role": "Historical April report",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify owner and retention purpose, and decide root preservation versus later archival; do not approve maturity claims by placement.",
+      "recommended_disposition": "Preserve dated report as evidence pending a content-pinned exception.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "dc9d4d0b8b97314eac3427739e24a18935e10ed6"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "dc9d4d0b8b97314eac3427739e24a18935e10ed6",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "build.log",
+      "type": "file",
+      "role": "Generated build transcript",
+      "evidence": [
+        "4299504f7bdc46397a515ca6a81dc5f992cf26af 2026-04-01 Fix CMake build errors due to missing example sources"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Determine whether a reproducibility claim relies on this exact transcript and name the evidence owner before any disposition.",
+      "recommended_disposition": "Prefer later removal from root only after provenance/retention review; until then preserve exact blob.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "09014f9343e05e47e902f74a58b3bb7c68918a83"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "09014f9343e05e47e902f74a58b3bb7c68918a83",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "customer_tools",
+      "type": "directory",
+      "role": "Research/demo support source",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Confirm ownership, historical purpose and root placement for ROI calculators.",
+      "recommended_disposition": "Keep source intact; propose a pinned historical subtree exception, without financial/clinical validation claims.",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "c6632381f381275ac2be21d2d9b133246900e02c"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "040000",
+        "expected_object": "c6632381f381275ac2be21d2d9b133246900e02c",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "execution_reports",
+      "type": "directory",
+      "role": "Historical verification and weekly reports",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify evidence retention obligation and root versus archive location for each report.",
+      "recommended_disposition": "Preserve subtree; consider pinned historical exception before any separate archival proposal.",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "8e7d9568b38b2df24c3f7c43898ebbfeca0cc4a3"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "040000",
+        "expected_object": "8e7d9568b38b2df24c3f7c43898ebbfeca0cc4a3",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "import.apl",
+      "type": "file",
+      "role": "Unresolved policy input",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Establish exact consumer and whether wildcard policy is an intentional fixture or scratch input.",
+      "recommended_disposition": "Preserve policy; do not make it a production default or authorize deletion.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "bfc41f84d39dbde59fd55c44318d6d73545259c5"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "bfc41f84d39dbde59fd55c44318d6d73545259c5",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "market-demos",
+      "type": "directory",
+      "role": "Demo source mixed with tracked binary",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Decide source retention and classify customer_demo_system binary as retained fixture or disposable output.",
+      "recommended_disposition": "Preserve all bytes now; consider exact subtree exception and separately review binary disposition.",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "5d599548f0d0111ec847904a4e0dd0ead99f09ef"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "040000",
+        "expected_object": "5d599548f0d0111ec847904a4e0dd0ead99f09ef",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "market_analysis",
+      "type": "directory",
+      "role": "Historical roadmaps",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify owner and retained historical scope, including root placement.",
+      "recommended_disposition": "Preserve exact subtree while considering archival in separate authorized work.",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "4850b47267d06575adf10177c3f503e03d8e62ba"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "040000",
+        "expected_object": "4850b47267d06575adf10177c3f503e03d8e62ba",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "record_hash.txt",
+      "type": "file",
+      "role": "Unresolved provenance reference output",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Resolve referenced content and execution lineage, identify witness owner, then decide fixture/retained evidence/disposable status.",
+      "recommended_disposition": "Preserve reference; provenance resolution precedes any move or removal.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "bf884759c9f5796e800f44041a043c1b045dae46"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "bf884759c9f5796e800f44041a043c1b045dae46",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "skills",
+      "type": "directory",
+      "role": "Experimental OpenClaw source/documentation",
+      "evidence": [
+        "6222c8212b7975d0a05cdcd71cc5b81eab076bab 2026-04-05 Enhance T81 OpenClaw skills documentation with comprehensive details"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Confirm root placement and owner; decide whether this is active integration or preserved experiment without implying command support.",
+      "recommended_disposition": "Preserve subtree; recommend explicitly experimental, pinned preservation pending current-use review.",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "99b046ab070a99e82fddd489bd80b70cdb62b3c9"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "040000",
+        "expected_object": "99b046ab070a99e82fddd489bd80b70cdb62b3c9",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "strategic_docs",
+      "type": "directory",
+      "role": "Historical strategy documents",
+      "evidence": [
+        "8d56582d6fdc80649932ccd414c82631dc464f5c 2026-04-04 feat: implement production-grade bundle-batch integration framework"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify historical owner and retention policy; approve root preservation or propose later archive.",
+      "recommended_disposition": "Preserve exact subtree until decision.",
+      "baseline_git": {
+        "mode": "040000",
+        "object_type": "tree",
+        "oid": "439d66c2d34337e0018c351780463d3815f27c4f"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "040000",
+        "expected_object": "439d66c2d34337e0018c351780463d3815f27c4f",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "symbolic_algebraic.tisc",
+      "type": "file",
+      "role": "Unresolved compiled bytecode fixture/output",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify producing source/toolchain and original/import role; decide evidence status jointly with exported pair.",
+      "recommended_disposition": "Preserve original bytes and relationship; no deduplication.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "eb294c2abde70a653207d3ebc3e96cb33318bdcc"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "eb294c2abde70a653207d3ebc3e96cb33318bdcc",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "symbolic_algebraic_exported.tisc",
+      "type": "file",
+      "role": "Unresolved exported bytecode evidence/output",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Determine whether original/export equality is intentional interchange evidence and record reproduction path.",
+      "recommended_disposition": "Preserve exported bytes and relationship even when content hashes match.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "eb294c2abde70a653207d3ebc3e96cb33318bdcc"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "eb294c2abde70a653207d3ebc3e96cb33318bdcc",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "test_input.txt",
+      "type": "file",
+      "role": "Unresolved fixture/scratch input",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify consuming experiment and whether root path is part of a retained procedure.",
+      "recommended_disposition": "Preserve input until fixture authority is established.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "d8b669cf4b6e6f4dca8a46683fdf360d45e3569f"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "d8b669cf4b6e6f4dca8a46683fdf360d45e3569f",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "test_record.json",
+      "type": "file",
+      "role": "Unresolved fixture/scratch host-action record",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Identify producer, schema version and consumer; determine whether it is evidence or merely an illustrative test record.",
+      "recommended_disposition": "Preserve bytes; no claim of production provenance.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "aecb51ae63aa82d82d0eb589afaf34dbd841defc"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "aecb51ae63aa82d82d0eb589afaf34dbd841defc",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    },
+    {
+      "path": "tiny-model-policy.apl",
+      "type": "file",
+      "role": "Unresolved model-specific policy input",
+      "evidence": [
+        "cc74c53ea9099aee262eb779e5ecd3f54138f36a 2026-04-05 Experiment with T81 OpenClaw skills integration"
+      ],
+      "authority": "No retention/root disposition authorization established; D3/D4 pending",
+      "maintainer_decision": "Resolve model hash and consuming experiment; decide retained fixture versus scratch status.",
+      "recommended_disposition": "Preserve model reference and policy until lineage review.",
+      "baseline_git": {
+        "mode": "100644",
+        "object_type": "blob",
+        "oid": "0b70acbcbda1aeed8c043a1f24520d31709445af"
+      },
+      "preservation_candidate": {
+        "status": "NOT_GRANTED",
+        "expected_mode": "100644",
+        "expected_object": "0b70acbcbda1aeed8c043a1f24520d31709445af",
+        "allowed_operation_if_separately_approved": "preserve_exact_content_only",
+        "require_presence": true,
+        "owner": null,
+        "approval_evidence": null,
+        "review_trigger": "Any proposed change to this entry or root contract"
+      }
+    }
+  ],
+  "obsolete_required_files": [
+    {
+      "path": "package-lock.json",
+      "evidence": "cb54c175 explicitly deletes it; documentation.yml uses docs/site/search",
+      "proposed_action": "Remove root requirement only; no new manifest or npm authority granted"
+    },
+    {
+      "path": "package.json",
+      "evidence": "cb54c175 explicitly deletes it; documentation.yml uses docs/site/search",
+      "proposed_action": "Remove root requirement only; no new manifest or npm authority granted"
+    }
+  ]
+}

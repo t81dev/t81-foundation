@@ -1,0 +1,52 @@
+[
+  {
+    "number": 574,
+    "url": "https://github.com/t81dev/t81-foundation/pull/574",
+    "state": "open",
+    "merged": false,
+    "head": "10df367102151b087ee64b1fbb737c471f4c87fb",
+    "head_branch": "corrective/ci-failure-propagation",
+    "base": "01c85019319fd020922402ba356878e392cb2231",
+    "base_branch": "main"
+  },
+  {
+    "number": 575,
+    "url": "https://github.com/t81dev/t81-foundation/pull/575",
+    "state": "open",
+    "merged": false,
+    "head": "b06f8520d02fd68301a5ae06777beb03b73c8eb5",
+    "head_branch": "corrective/architecture-target-discovery",
+    "base": "10df367102151b087ee64b1fbb737c471f4c87fb",
+    "base_branch": "corrective/ci-failure-propagation"
+  },
+  {
+    "number": 576,
+    "url": "https://github.com/t81dev/t81-foundation/pull/576",
+    "state": "open",
+    "merged": false,
+    "head": "41fa126cc82df6ed54b095d8dd67bfe066252066",
+    "head_branch": "corrective/governance-deadlock",
+    "base": "b06f8520d02fd68301a5ae06777beb03b73c8eb5",
+    "base_branch": "corrective/architecture-target-discovery"
+  },
+  {
+    "number": 577,
+    "url": "https://github.com/t81dev/t81-foundation/pull/577",
+    "state": "open",
+    "merged": false,
+    "head": "b6a20706b3b37eebbfb5ab0293a88306a3dae29a",
+    "head_branch": "corrective/workflow-supply-chain",
+    "base": "41fa126cc82df6ed54b095d8dd67bfe066252066",
+    "base_branch": "corrective/governance-deadlock"
+  },
+  {
+    "number": 578,
+    "url": "https://github.com/t81dev/t81-foundation/pull/578",
+    "state": "open",
+    "merged": false,
+    "head": "f4ffa85bf0bcaf028b51462113bf19c2eebb0091",
+    "head_branch": "corrective/root-layout-authority",
+    "base": "b6a20706b3b37eebbfb5ab0293a88306a3dae29a",
+    "base_branch": "corrective/workflow-supply-chain"
+  }
+]
