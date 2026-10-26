@@ -349,5 +349,75 @@ class TestDurableWitness(unittest.TestCase):
         ev2 = execute_runner("A", "tx-rollback-limit", "v2", 5, 100, self.db_path, self.out_dir)
         self.assertTrue(ev2["success"], "Confirmed limitation: local SQLite DB alone cannot detect external snapshot rollback")
 
+    def test_missing_arm_a_executable_produces_guest_execution_failed(self):
+        """Missing Arm A binary produces GUEST_EXECUTION_FAILED and no receipt or DB commitment."""
+        missing_bin = self.test_dir / "non_existent_arm_a"
+        ev = execute_runner(
+            arm="A",
+            tx_id="tx-missing-bin",
+            authority_version="v2",
+            quantity=5,
+            unit_price=100,
+            db_path=self.db_path,
+            output_dir=self.out_dir,
+            arm_a_bin=missing_bin,
+            allow_simulation=False
+        )
+        self.assertFalse(ev["success"])
+        self.assertEqual(ev["status_code"], "GUEST_EXECUTION_FAILED")
+        self.assertIsNone(ev["receipt"])
+        self.assertFalse(ev.get("simulated", False))
+
+        evidence_file = self.out_dir / "evidence_tx-missing-bin.json"
+        ver = verify_evidence(evidence_file, self.db_path)
+        self.assertFalse(ver["valid"])
+
+    def test_failing_arm_a_executable_cannot_generate_committed_transaction(self):
+        """A failing Arm A binary (non-zero exit) cannot produce a committed transaction or receipt."""
+        failing_bin = self.test_dir / "failing_arm_a"
+        with open(failing_bin, "w") as f:
+            f.write("#!/bin/sh\nexit 1\n")
+        failing_bin.chmod(0o755)
+
+        ev = execute_runner(
+            arm="A",
+            tx_id="tx-failing-bin",
+            authority_version="v2",
+            quantity=5,
+            unit_price=100,
+            db_path=self.db_path,
+            output_dir=self.out_dir,
+            arm_a_bin=failing_bin,
+            allow_simulation=False
+        )
+        self.assertFalse(ev["success"])
+        self.assertEqual(ev["status_code"], "GUEST_EXECUTION_FAILED")
+        self.assertIsNone(ev["receipt"])
+
+        import sqlite3
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.execute("SELECT count(*) FROM transactions WHERE tx_id = ?", ("tx-failing-bin",))
+        count = cur.fetchone()[0]
+        conn.close()
+        self.assertEqual(count, 0)
+
+    def test_explicit_simulation_mode_is_distinguishable(self):
+        """Explicitly requested simulation mode succeeds when binary is missing but tags simulated: True."""
+        missing_bin = self.test_dir / "non_existent_arm_a"
+        ev = execute_runner(
+            arm="A",
+            tx_id="tx-simulated",
+            authority_version="v2",
+            quantity=5,
+            unit_price=100,
+            db_path=self.db_path,
+            output_dir=self.out_dir,
+            arm_a_bin=missing_bin,
+            allow_simulation=True
+        )
+        self.assertTrue(ev["success"])
+        self.assertEqual(ev["status_code"], "SUCCESS")
+        self.assertTrue(ev.get("simulated"))
+
 if __name__ == "__main__":
     unittest.main()

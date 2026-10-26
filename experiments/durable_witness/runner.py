@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys
 import json
+import os
 import shutil
 import tempfile
 import subprocess
@@ -10,37 +11,44 @@ from pathlib import Path
 import wasmtime
 from witness import init_db, submit_transaction, DEFAULT_SECRET_KEY
 
-def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int) -> int:
-    """Run T81 Arm A C++ binary to compute total and enforce bounded execution."""
-    if arm_a_bin and arm_a_bin.exists():
-        # Create temporary contract file and store for Arm A binary
-        tmp_dir = Path(tempfile.mkdtemp())
-        try:
-            input_json = tmp_dir / "input.json"
-            store_dir = tmp_dir / "store"
-            store_dir.mkdir(parents=True, exist_ok=True)
+def run_arm_a(arm_a_bin: Path, quantity: int, unit_price: int, allow_simulation: bool = False) -> tuple[int, bool]:
+    """Run T81 Arm A C++ binary to compute total and enforce bounded execution.
 
-            contract_payload = {
-                "max_unit_price": 1000,
-                "max_total_amount": 50000,
-                "items": [{"quantity": quantity, "unit_price": unit_price}]
-            }
-            with open(input_json, "w") as f:
-                json.dump(contract_payload, f)
+    Returns:
+        tuple[int, bool]: (calculated_total, is_simulated)
+    """
+    if arm_a_bin:
+        bin_path = Path(arm_a_bin)
+        if bin_path.exists():
+            if not os.access(bin_path, os.X_OK):
+                raise PermissionError(f"Arm A binary exists but is not executable: {bin_path}")
 
-            if store_dir.exists():
-                shutil.rmtree(store_dir)
-            cmd = [str(arm_a_bin), "approved", str(input_json), str(store_dir)]
-            res = subprocess.run(cmd, capture_output=True, text=True)
-            if res.returncode != 0:
-                raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
+            tmp_dir = Path(tempfile.mkdtemp())
+            try:
+                input_json = tmp_dir / "input.json"
+                store_dir = tmp_dir / "store"
 
-            return quantity * unit_price
-        finally:
-            shutil.rmtree(tmp_dir, ignore_errors=True)
+                contract_payload = {
+                    "max_unit_price": 1000,
+                    "max_total_amount": 50000,
+                    "items": [{"quantity": quantity, "unit_price": unit_price}]
+                }
+                with open(input_json, "w") as f:
+                    json.dump(contract_payload, f)
 
-    # Arm A fallback calculation when optional C++ binary is not compiled
-    return quantity * unit_price
+                cmd = [str(bin_path), "approved", str(input_json), str(store_dir)]
+                res = subprocess.run(cmd, capture_output=True, text=True)
+                if res.returncode != 0:
+                    raise RuntimeError(f"Arm A binary execution failed (exit code {res.returncode}): {res.stderr.strip()}")
+
+                return quantity * unit_price, False
+            finally:
+                shutil.rmtree(tmp_dir, ignore_errors=True)
+
+    if allow_simulation:
+        return quantity * unit_price, True
+
+    raise FileNotFoundError(f"Native Arm A executable missing or inaccessible at path: {arm_a_bin}")
 
 def run_arm_b(wat_file: Path, quantity: int, unit_price: int) -> int:
     """Run Wasmtime Arm B guest WASM with host submit import."""
@@ -73,7 +81,8 @@ def execute_runner(
     output_dir: Path,
     arm_a_bin: Path = None,
     wat_file: Path = None,
-    contract_limits: dict = None
+    contract_limits: dict = None,
+    allow_simulation: bool = False
 ) -> dict:
     output_dir.mkdir(parents=True, exist_ok=True)
     init_db(db_path)
@@ -87,6 +96,7 @@ def execute_runner(
 
     guest_failed = False
     guest_error_msg = None
+    is_simulated = False
 
     try:
         if arm == "A":
@@ -96,10 +106,13 @@ def execute_runner(
                 if not default_bin.exists():
                     default_bin = Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a"
                 arm_a_bin = default_bin
-            total_amount = run_arm_a(arm_a_bin, quantity, unit_price)
+            total_amount, is_simulated = run_arm_a(arm_a_bin, quantity, unit_price, allow_simulation=allow_simulation)
+        elif arm == "A_SIMULATED":
+            total_amount, is_simulated = run_arm_a(arm_a_bin, quantity, unit_price, allow_simulation=True)
         elif arm == "B":
             wat_path = wat_file or (Path(__file__).parent / "guest.wat")
             total_amount = run_arm_b(wat_path, quantity, unit_price)
+            is_simulated = False
         else:
             raise ValueError(f"Unknown arm {arm}")
     except Exception as e:
@@ -113,6 +126,7 @@ def execute_runner(
             "authority_version": authority_version,
             "po_data": po_data,
             "total_amount": 0,
+            "simulated": False,
             "success": False,
             "status_code": "GUEST_EXECUTION_FAILED",
             "receipt": None,
@@ -136,6 +150,7 @@ def execute_runner(
             "authority_version": authority_version,
             "po_data": po_data,
             "total_amount": total_amount,
+            "simulated": is_simulated,
             "success": success,
             "status_code": status_code,
             "receipt": result if success else None,
@@ -150,7 +165,7 @@ def execute_runner(
 
 def main():
     parser = argparse.ArgumentParser(description="Durable Witness Workload Runner")
-    parser.add_argument("--arm", choices=["A", "B"], required=True, help="Execution Arm")
+    parser.add_argument("--arm", choices=["A", "A_SIMULATED", "B"], required=True, help="Execution Arm")
     parser.add_argument("--tx-id", required=True, help="Transaction ID")
     parser.add_argument("--authority-version", default="v2", help="Authority Policy Version")
     parser.add_argument("--quantity", type=int, default=10, help="Item quantity")
@@ -158,6 +173,7 @@ def main():
     parser.add_argument("--db-path", type=Path, required=True, help="Path to witness SQLite DB")
     parser.add_argument("--output-dir", type=Path, required=True, help="Output evidence directory")
     parser.add_argument("--arm-a-bin", type=Path, default=None, help="Path to Arm A binary")
+    parser.add_argument("--allow-simulation", action="store_true", help="Allow software simulation if Arm A binary is missing")
     args = parser.parse_args()
 
     evidence = execute_runner(
@@ -168,7 +184,8 @@ def main():
         unit_price=args.unit_price,
         db_path=args.db_path,
         output_dir=args.output_dir,
-        arm_a_bin=args.arm_a_bin
+        arm_a_bin=args.arm_a_bin,
+        allow_simulation=args.allow_simulation
     )
 
     print(json.dumps(evidence, indent=2))

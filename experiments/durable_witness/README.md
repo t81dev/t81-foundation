@@ -4,12 +4,15 @@ This isolated experiment demonstrates a minimal durable authorization-and-effect
 
 ## Scope & Bounded Corrective Implementation
 
-The bounded corrections in `witness.py` and `verify.py` ensure:
-1. Stored authority policy limits are strictly enforced during transaction execution. Caller-provided limits can further restrict policy bounds but cannot relax stored DB authority rules.
-2. Malformed or invalid transaction inputs (negative prices/quantities, floats, booleans) are rejected cleanly with `INVALID_TRANSACTION_INPUT`.
-3. Database paths explicitly supplied to `verify_evidence` that do not exist or cannot be inspected trigger verification failure with `MISSING_WITNESS_DATABASE`.
-4. Verification status flags explicitly separate cryptographic authenticity (`crypto_authentic`), policy authorization (`authorization_valid`), witness store commitment (`witness_committed`), and external physical occurrence (`effect_observed`).
-5. Detached/offline signature verification returns `DETACHED_OFFLINE_SIGNATURE_ONLY` (`valid: False`, `witness_committed: False`) to prevent offline signature validity from being promoted into a witness-backed success claim.
+The bounded corrections in `runner.py`, `witness.py`, and `verify.py` ensure:
+1. **Execution Provenance**: Native Arm A execution must explicitly fail (`GUEST_EXECUTION_FAILED`, `receipt: None`) when the Arm A binary is missing, inaccessible, or fails. Missing or failing native execution cannot generate a witness receipt or committed transaction.
+2. **Explicit Simulation Isolation**: If simulation is explicitly enabled (`allow_simulation=True` or `arm="A_SIMULATED"`), the output evidence is explicitly tagged with `"simulated": True` to prevent simulation results from being presented as native execution or cross-platform parity evidence.
+3. **Stored Authority Policy Limits**: Stored authority policy limits are strictly enforced during transaction execution. Caller-provided limits can further restrict policy bounds but cannot relax stored DB authority rules.
+4. **Input Validation**: Malformed or invalid transaction inputs (negative prices/quantities, floats, booleans) are rejected cleanly with `INVALID_TRANSACTION_INPUT`.
+5. **Database Inspection Safeguard**: Database paths explicitly supplied to `verify_evidence` that do not exist or cannot be inspected trigger verification failure with `MISSING_WITNESS_DATABASE`.
+6. **Verification Claim Boundaries**: Verification status flags explicitly disaggregate cryptographic authenticity (`crypto_authentic`), historical policy authorization (`authorization_valid`), current authority status (`current_authority_active`), witness store commitment (`witness_committed`), and external physical occurrence (`effect_observed`).
+7. **Historical Authorization Inference**: Historical authorization is inferred from trusted committed records in the witness store, not independently reconstructed from immutable historical policy snapshots.
+8. **Documented Rollback Limitation**: Restoring an older SQLite database snapshot allows reusing transaction IDs unless an external monotonic checkpoint or transparency log is integrated.
 
 ## Directory Structure
 

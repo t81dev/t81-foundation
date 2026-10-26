@@ -11,7 +11,9 @@ from verify import verify_evidence
 
 def run_experiment(output_dir: Path, repetitions: int = 30, arm_a_bin: Path = None) -> dict:
     if arm_a_bin is None:
-        default_bin = Path("/tmp/t81-challenge-build/t81_architecture_arm_a")
+        default_bin = Path("build/t81_architecture_arm_a")
+        if not default_bin.exists():
+            default_bin = Path(__file__).resolve().parents[2] / "build" / "t81_architecture_arm_a"
         if default_bin.exists():
             arm_a_bin = default_bin
     if output_dir.exists():
