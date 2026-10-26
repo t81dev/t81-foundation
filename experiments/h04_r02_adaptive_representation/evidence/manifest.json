@@ -97,9 +97,9 @@
       "bytes": 638,
       "sha256": "f84737e5ce4ccd88fd820281828af797ad3cbf3d48100fd5ea8abaed58d9b244"
     },
-    "experiments/h04_r02_adaptive_representation/evidence/configure.txt": {
-      "bytes": 2643,
-      "sha256": "fd2dddf4d66ba9d4c8834f7a94651e66a408e659b70a1439e8eb35e5f4eca333"
+    "experiments/h04_r02_adaptive_representation/evidence/configure.txt.gz": {
+      "bytes": 866,
+      "sha256": "4ac5efea6307a0129f2a7a74d212c4f9b252360153d2fbef7f598a9cfde3dc26"
     },
     "experiments/h04_r02_adaptive_representation/evidence/ctest-final.txt": {
       "bytes": 476,
