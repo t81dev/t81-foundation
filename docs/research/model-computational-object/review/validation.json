@@ -1,0 +1,138 @@
+{
+  "scope": "fixture integrity, raw-byte profiles, Draft 2020-12 structural validation and finite table consistency; NOT candidate enforcement or mutation execution",
+  "python": "3.14.3",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "jsonschema": "4.26.0",
+  "meta_schemas_validated": 4,
+  "schema_boundary_probes": 22,
+  "schema_probe_results": [
+    {
+      "name": "request request_id newline",
+      "valid": false
+    },
+    {
+      "name": "request model_ref newline",
+      "valid": false
+    },
+    {
+      "name": "request additional field",
+      "valid": false
+    },
+    {
+      "name": "request missing required",
+      "valid": false
+    },
+    {
+      "name": "request duplicate refs",
+      "valid": false
+    },
+    {
+      "name": "request empty refs",
+      "valid": false
+    },
+    {
+      "name": "response request_id newline",
+      "valid": false
+    },
+    {
+      "name": "response model_ref newline",
+      "valid": false
+    },
+    {
+      "name": "response additional field",
+      "valid": false
+    },
+    {
+      "name": "response missing required",
+      "valid": false
+    },
+    {
+      "name": "response duplicate refs",
+      "valid": false
+    },
+    {
+      "name": "response empty refs",
+      "valid": false
+    },
+    {
+      "name": "budget 1.0",
+      "valid": true
+    },
+    {
+      "name": "budget Boolean",
+      "valid": false
+    },
+    {
+      "name": "budget tiny positive",
+      "valid": false
+    },
+    {
+      "name": "budget out of range",
+      "valid": false
+    },
+    {
+      "name": "rationale 512 code points",
+      "valid": true
+    },
+    {
+      "name": "rationale 513 code points",
+      "valid": false
+    },
+    {
+      "name": "rationale 512 non-BMP code points",
+      "valid": true
+    },
+    {
+      "name": "underflow fractional deadline",
+      "valid": false
+    },
+    {
+      "name": "integral decimal deadline",
+      "valid": true
+    },
+    {
+      "name": "wrong binding is schema-valid",
+      "valid": true
+    }
+  ],
+  "corpus_cases": 60,
+  "profiles": {
+    "request:ok": 60,
+    "response:byte_limit": 1,
+    "response:depth_limit": 1,
+    "response:duplicate_key": 1,
+    "response:json_syntax": 2,
+    "response:not_observed": 3,
+    "response:ok": 50,
+    "response:unicode_scalar": 1,
+    "response:utf8": 1
+  },
+  "schema_results": {
+    "request:invalid": 1,
+    "request:valid": 59,
+    "response:invalid": 8,
+    "response:not_run": 10,
+    "response:valid": 42
+  },
+  "guard_assignments": 729,
+  "guard_summary_counts": {
+    "D": 665,
+    "U": 63,
+    "P": 1
+  },
+  "guard_domains": {
+    "completed": 162,
+    "binding-prefix": 1,
+    "abstract-only": 566
+  },
+  "event_plans": 24,
+  "reachable_event_plans": 4,
+  "invalid_event_plans": 20,
+  "binary_float_underflow_demo": {
+    "default_parser_schema_valid": true,
+    "exact_parser_schema_valid": false
+  },
+  "authorization_annotations": "design expectations; not executable semantic verification",
+  "candidate_runs": 0,
+  "mutation_runs": 0
+}

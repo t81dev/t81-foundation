@@ -1,5 +1,9 @@
 # Formal candidate: untrusted model, trusted effect boundary
 
+For frozen corpus revision 1, [ORACLE_SPEC.md](ORACLE_SPEC.md) and
+[CORPUS.md](CORPUS.md) resolve/supersede ambiguous staged and temporal details
+below. [AUDIT.md](AUDIT.md) records each correction; original schemas are retained.
+
 Status: proposed mathematical contract, not an implemented T81 language type or
 production security contract. The experiment in [EXPERIMENT_PROPOSAL.md](EXPERIMENT_PROPOSAL.md)
 uses synthetic responses only. Existing Axion's five verdicts are not remapped
@@ -68,8 +72,8 @@ modify the verifier or become its policy input by asserting that it is trusted.
 
 ## 3. Exact request and response shapes
 
-These embedded JSON Schemas use Draft 2020-12. They are a proposed frozen fixture
-contract. No remote schema resolution or execution is permitted. In addition to
+These embedded JSON Schemas use Draft 2020-12. They are the structurally reviewed corpus revision 1 fixture
+contract, with fixed identifier lengths added after the independent audit. No remote schema resolution or execution is permitted. In addition to
 schema validation, reject duplicate JSON keys, non-UTF-8, trailing material,
 non-JSON numbers, nesting beyond 4 containers, more than 8,192 input bytes or
 4,096 response bytes. Process exactly one complete object; never repair invalid
@@ -83,20 +87,66 @@ Request schema:
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "request_id", "model_ref", "operation", "artifact_ref", "policy_ref", "evidence_refs", "budget_units", "deadline_tick"],
+  "required": [
+    "schema",
+    "request_id",
+    "model_ref",
+    "operation",
+    "artifact_ref",
+    "policy_ref",
+    "evidence_refs",
+    "budget_units",
+    "deadline_tick"
+  ],
   "properties": {
-    "schema": {"const": "mco.request.v1"},
-    "request_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
-    "model_ref": {"$ref": "#/$defs/ref"},
-    "operation": {"const": "append_report"},
-    "artifact_ref": {"$ref": "#/$defs/ref"},
-    "policy_ref": {"$ref": "#/$defs/ref"},
-    "evidence_refs": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"$ref": "#/$defs/ref"}},
-    "budget_units": {"type": "integer", "minimum": 1, "maximum": 8},
-    "deadline_tick": {"type": "integer", "minimum": 0, "maximum": 65535}
+    "schema": {
+      "const": "mco.request.v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "minLength": 32,
+      "maxLength": 32
+    },
+    "model_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "operation": {
+      "const": "append_report"
+    },
+    "artifact_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "policy_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "budget_units": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "deadline_tick": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    }
   },
   "$defs": {
-    "ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+    "ref": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71
+    }
   }
 }
 ```
@@ -108,18 +158,59 @@ Untrusted model response schema:
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "request_id", "request_ref", "model_ref", "recommendation", "evidence_refs", "rationale"],
+  "required": [
+    "schema",
+    "request_id",
+    "request_ref",
+    "model_ref",
+    "recommendation",
+    "evidence_refs",
+    "rationale"
+  ],
   "properties": {
-    "schema": {"const": "mco.response.v1"},
-    "request_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
-    "request_ref": {"$ref": "#/$defs/ref"},
-    "model_ref": {"$ref": "#/$defs/ref"},
-    "recommendation": {"enum": ["endorse", "reject", "review"]},
-    "evidence_refs": {"type": "array", "minItems": 1, "maxItems": 3, "uniqueItems": true, "items": {"$ref": "#/$defs/ref"}},
-    "rationale": {"type": "string", "maxLength": 512}
+    "schema": {
+      "const": "mco.response.v1"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$",
+      "minLength": 32,
+      "maxLength": 32
+    },
+    "request_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "model_ref": {
+      "$ref": "#/$defs/ref"
+    },
+    "recommendation": {
+      "enum": [
+        "endorse",
+        "reject",
+        "review"
+      ]
+    },
+    "evidence_refs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/ref"
+      }
+    },
+    "rationale": {
+      "type": "string",
+      "maxLength": 512
+    }
   },
   "$defs": {
-    "ref": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+    "ref": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "minLength": 71,
+      "maxLength": 71
+    }
   }
 }
 ```

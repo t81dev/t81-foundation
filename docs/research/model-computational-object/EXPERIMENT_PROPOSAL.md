@@ -1,7 +1,9 @@
 # One discriminator: model proposal to append a verified test summary
 
-Status: proposal only; no implementation, model call, adversarial run or benchmark
-was performed. This document preregisters a bounded test before implementation.
+Status: specification with frozen corpus revision 1; no candidate implementation,
+model call, enforcement run or benchmark was performed. Data/schema review is
+reported in [AUDIT.md](AUDIT.md). The exact corpus and independent oracle design
+are in [CORPUS.md](CORPUS.md) and [ORACLE_SPEC.md](ORACLE_SPEC.md). This document preregisters a bounded test before implementation.
 Schemas and semantics are in [FORMAL_MODEL.md](FORMAL_MODEL.md); threat assumptions
 are in [THREAT_MODEL.md](THREAT_MODEL.md).
 
@@ -70,7 +72,7 @@ an estimate of real-world attack frequency.
 2. **Raw-byte suite:** a balanced 60-case initial corpus, 5 cases in each of the
    12 families below. Before either arm is implemented, author and pin the exact
    request/response bytes, context snapshots and expected outcomes; independently
-   review them. The current family plan is not a frozen executable dataset.
+   review them. That family plan was not frozen at cd7d4620; revision 1 now pins all 60 cases.
 3. **Temporal suite:** all 24 permutations of four labeled events: an already
    validated proposal's final recheck, revocation, sink-admission attempt and a
    duplicate-admission attempt. The sink rechecks current authority/freshness
@@ -139,5 +141,12 @@ not detected, the harness is invalid, not a successful candidate.
   and mutation check passes, the exact corpus is pinned and isolation/resource
   controls for that provider have been separately reviewed.
 
-The experiment has not yet been run. It is ready for corpus specification and
-independent review, not for a live autonomous agent or a production rollout.
+The candidate experiment has not yet been run. The frozen corpus and independent
+oracle design are ready for external review; no live agent or rollout is implied.
+
+
+The original 24-order ambiguity is resolved to R<A<B: four reachable plans and
+twenty explicitly invalid orders. See CORPUS.md; invalid plans are not zero-row
+successful safety runs. MUTATION_EXPECTATIONS.md distinguishes a specified
+mutation witness from an actually killed mutant. ANALYZABILITY.md requires
+external reconstruction without trusting model explanations.

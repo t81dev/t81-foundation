@@ -98,3 +98,32 @@ reconstructed from prior assistant prose.
 - No CMake/CTest, synthetic corpus, new model execution or performance benchmark
   was run for this documentation-only investigation. Mathematical table/proof
   statements are derivations, not measured test results.
+
+
+## 2026-10-25 — Independent corpus and oracle design (from cd7d4620)
+
+The earlier corpus/schema-tooling gaps are now resolved for specification review.
+Read AUDIT.md for the exact findings, CORPUS.md for frozen bytes/contexts and
+ORACLE_SPEC.md for staged independent reconstruction. Added ANALYZABILITY.md
+and MUTATION_EXPECTATIONS.md. All files remain within this research packet.
+
+An isolated venv installed jsonschema 4.26.0 with resolved versions pinned in
+review/requirements.txt. All four original/current schemas pass meta-validation;
+22 boundary probes and structural expectations for 60 cases pass. Fixed-length
+identifier constraints correct the reproduced trailing-newline regex weakness.
+Exact numeric review avoids underflow and preserves mathematical integer semantics.
+This is structural/profile/data review, not 60 executed authorization successes.
+
+All 729 abstract assignments and all 24 plans are explicit data. There are four
+reachable R<A<B plans and twenty invalid plans, which execute no prefix and
+are not counted as successful zero-row safety runs. The current checker
+confirms mathematical/table and fixture consistency; candidate runs=0 and
+mutation runs=0. Expected transition records are not observed execution logs.
+
+Recommendation remains REVISE; proceed to external specification review only.
+No missing property beyond ordinary typed services/reference monitors was found.
+Unresolved: independently implemented parser/oracle, actual A/B and mutation runs,
+trusted provider observation, host/store assumptions and physical resource bounds.
+No change to PR #572, H04, H01–H08, ISA or production authorization. PR #573
+remains draft; no PR merged or closed. Preserve corpus revision 1 and publish
+an explicit revision/ledger entry if a later review changes its semantics.

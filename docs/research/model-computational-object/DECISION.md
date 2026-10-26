@@ -20,7 +20,7 @@ radix-superiority interpretations. This is not closure of Track R or H01–H08.
 | Comparable components and composites exist | Primary prior art covers registries, inference servers, effects, capabilities, monitors, actors and evidence; global novelty absence is not proven |
 | T81 contains reusable boundary surfaces | Source inspection at 01c85019, with substantial implementation-specific limits. Existing reports are not newly reproduced tests here. |
 | T81 uniquely improves model invocation or security | Not established. Existing descriptor/conventional comparisons are a warning against claiming uniqueness from packaging. |
-| A local finite experiment is well posed | Proposed schemas, state machine, oracle, safety checks and falsifiers; exact 60-case raw corpus still needs to be authored and pinned |
+| A local finite experiment is well posed | Proposed schemas, state machine, oracle, safety checks and falsifiers; revision 1 now freezes the exact 60-case corpus; see CORPUS.md |
 | CPU, memory-bandwidth, energy or human-review benefit | Unmeasured. No speculative benchmark or line-count argument supplies evidence. |
 
 The closest existing abstraction is a versioned typed service/actor behind a
@@ -78,3 +78,15 @@ if the conventional service already provides all useful properties, if the
 oracle shares the candidate's assumptions unchecked, or if scope requires real
 system control. Preserve null and negative results. Do not replace the independent
 H04 continuation with this optional governance experiment.
+
+
+## Corpus/oracle design review continuation
+
+The cd7d4620 next action is complete as a specification/data task: exact fixtures,
+Draft 2020-12 structural review, staged oracle semantics, temporal reachability,
+mutation obligations and independent reconstruction requirements are recorded in
+[AUDIT.md](AUDIT.md). Candidate/semantic and mutation execution counts remain zero.
+No missing property beyond ordinary typed services/reference monitors was found.
+Recommendation remains REVISE; proceed to external corpus/oracle review, not an
+OS/runtime implementation. Another parser/oracle and actual conformance runs
+remain unresolved. The original next-action text above records the earlier plan.

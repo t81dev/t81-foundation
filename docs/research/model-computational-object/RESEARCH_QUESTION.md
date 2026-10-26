@@ -83,3 +83,9 @@ burden beyond established composition; a common wrapper name is insufficient.
 Read [PRIOR_ART.md](PRIOR_ART.md), then [FORMAL_MODEL.md](FORMAL_MODEL.md),
 [THREAT_MODEL.md](THREAT_MODEL.md), [EXPERIMENT_PROPOSAL.md](EXPERIMENT_PROPOSAL.md)
 and [DECISION.md](DECISION.md). [HANDOFF.md](HANDOFF.md) records provenance and limits.
+
+
+Corpus/oracle design continuation from cd7d4620: [AUDIT.md](AUDIT.md),
+[CORPUS.md](CORPUS.md), [ORACLE_SPEC.md](ORACLE_SPEC.md), and
+[ANALYZABILITY.md](ANALYZABILITY.md). The additions freeze specification data;
+they do not supply candidate enforcement or semantic novelty evidence.

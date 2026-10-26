@@ -95,3 +95,11 @@ explicitly rather than assumed from storing an object there. Likewise existing
 witness code has a signing-helper/test-secret TCB; a receipt checked with a shared
 secret cannot prove an independent observer or correctness of LLM reasoning.
 These are source-level boundaries, not new exploitation results.
+
+
+Corpus revision 1 now supplies explicit adversarial fixture bytes and expected
+outcomes; this is data review, not executed attack blocking. AUDIT.md and
+ORACLE_SPEC.md clarify wire/schema/authorization layers and final owner checks.
+The registry-corruption case is synthetic lookup fault injection; it does not
+assert exploitation of the trusted fixture store. ANALYZABILITY.md specifies
+independent reconstruction and retains the host/observer trust limitations.
