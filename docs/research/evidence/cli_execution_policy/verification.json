@@ -1,0 +1,249 @@
+{
+  "source_commit": "0482235f0886bce73b88c0fc82cddf07bb78da16",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]"
+  },
+  "commands": [
+    {
+      "command": [
+        "cmake",
+        "--version"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "ninja",
+        "--version"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "1.13.2\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "c++",
+        "--version"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "cmake",
+        "-S",
+        ".",
+        "-B",
+        "/private/tmp/t81-cli-policy-build",
+        "-G",
+        "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DT81_BUILD_TESTS=ON",
+        "-DT81_BUILD_EXAMPLES=OFF",
+        "-DT81_BUILD_BENCHMARKS=OFF",
+        "-DT81_BUILD_TUI=OFF",
+        "-DT81_BUILD_FUZZ_TESTS=OFF",
+        "-DT81_ENABLE_TERNARYOS=OFF",
+        "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "-- [t81] T81_ENABLE_DPE=ON -- building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)\n-- Configuring done (1.2s)\n-- Generating done (0.3s)\n-- Build files have been written to: /private/tmp/t81-cli-policy-build\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "cmake",
+        "--build",
+        "/private/tmp/t81-cli-policy-build",
+        "--parallel",
+        "4",
+        "--target",
+        "t81",
+        "t81_vm_predispatch_policy_deny_logging_test",
+        "t81_vm_policy_parse_fail_closed_test",
+        "axion_policy_allow_deny_determinism_test",
+        "t81_cli_contract_test"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "ninja: no work to do.\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/private/tmp/t81-cli-policy-build",
+        "--output-on-failure",
+        "-R",
+        "^(t81_cli_execution_policy_test|t81_vm_predispatch_policy_deny_logging_test|t81_vm_policy_parse_fail_closed_test|axion_policy_allow_deny_determinism_test)$"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "Test project /private/tmp/t81-cli-policy-build\n    Start 150: t81_vm_predispatch_policy_deny_logging_test\n1/4 Test #150: t81_vm_predispatch_policy_deny_logging_test ...   Passed    0.01 sec\n    Start 171: t81_vm_policy_parse_fail_closed_test\n2/4 Test #171: t81_vm_policy_parse_fail_closed_test ..........   Passed    0.01 sec\n    Start 246: axion_policy_allow_deny_determinism_test\n3/4 Test #246: axion_policy_allow_deny_determinism_test ......   Passed    0.01 sec\n    Start 292: t81_cli_execution_policy_test\n4/4 Test #292: t81_cli_execution_policy_test .................   Passed    0.60 sec\n\n100% tests passed, 0 tests failed out of 4\n\nTotal Test time (real) =   0.64 sec\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "ctest",
+        "--test-dir",
+        "/private/tmp/t81-cli-policy-build",
+        "--output-on-failure",
+        "-R",
+        "^t81_cli_contract_test_runner$"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 8,
+      "stdout": "Test project /private/tmp/t81-cli-policy-build\n    Start 294: t81_cli_contract_test_runner\n1/1 Test #294: t81_cli_contract_test_runner .....***Failed    0.20 sec\n[cli] /private/tmp/t81-cli-policy-build/t81 help compile\n[cli] /private/tmp/t81-cli-policy-build/t81 code check /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-cli-contract-invalid-2728942806026145182.t81\n[cli] /private/tmp/t81-cli-policy-build/t81 --help\n[cli] /private/tmp/t81-cli-policy-build/t81 help advanced\n[cli] /private/tmp/t81-cli-policy-build/t81 help benchmark\n[cli] /private/tmp/t81-cli-policy-build/t81 bench\n[cli] /private/tmp/t81-cli-policy-build/t81 help model\ntest check failed: (fs::exists(safetensors_fixture)) at /private/tmp/t81-cli-policy-fix/tests/cpp/cli_contract_test.cpp:491\n\n\n0% tests passed, 1 tests failed out of 1\n\nTotal Test time (real) =   0.21 sec\n\nThe following tests FAILED:\n\t294 - t81_cli_contract_test_runner (Failed)\n",
+      "stderr": "Errors while running CTest\n"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/ci/check_cli_docs_parity.py",
+        "--t81-bin",
+        "/private/tmp/t81-cli-policy-build/t81",
+        "--manual",
+        "docs/user-guide/reference/cli-user-manual.md"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "cli docs parity: ok (topics=24, manual_lines=225)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/ci/check_tisc_freeze_integrity.py"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "Checking /private/tmp/t81-cli-policy-fix/spec/tisc/opcode-registry.md...\nSUCCESS: TISC v1.1.0 Freeze Integrity Verified.\n- Count: 209 opcodes\n- Bitwise Ops: Verified\n- Reserved Range: Clean\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_root_structure.py"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "root structure check PASSED\n- entries checked: 81\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_active_docs_link_hygiene.py"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "active docs link hygiene check PASSED\n- no legacy docs/guides path references found on the active docs surface\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_overclaim_guardrails.py"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "overclaim guardrails check PASSED\n- scanned active README/docs/book markdown surfaces for banned overclaim phrases\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_determinism_claims.py"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "determinism claims boundary check: pass\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_docs_structure.py"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 1,
+      "stdout": "docs structure check FAILED\n- missing directory: book/book-en\n- missing directory: book/book-cn\n- missing directory: book/book-es\n- missing directory: book/book-pt\n- missing directory: book/book-ru\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+        "903ea2fe653df0d636e0543f9788dd8442738045",
+        "--",
+        "tools/cli/core/driver.cpp",
+        "tools/cli/core/main.cpp",
+        "vm/vm.cpp",
+        "include/t81/axion/policy.hpp",
+        "kernel/axion/policy_engine.cpp"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/private/tmp/t81-clang-format18/bin/clang-format",
+        "--dry-run",
+        "--Werror",
+        "--lines=1407:1432",
+        "tools/cli/core/driver.cpp"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/private/tmp/t81-clang-format18/bin/clang-format",
+        "--dry-run",
+        "--Werror",
+        "--lines=6965:6965",
+        "tools/cli/core/main.cpp"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/private/tmp/t81-cli-policy-fix",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "source_sha256": {
+    "tools/cli/core/main.cpp": "34a667aa6e5c42f671ce684e6d98f11ca5753f7d0b485260bb18d958da9757b6",
+    "tools/cli/core/driver.cpp": "98f8261850ae2cb357f7d593ee240ab7a52ac2a68cfdce98cdfb1070c57dc1e0",
+    "tests/python/test_cli_execution_policy.py": "6cf71b9b5443a71e5d8497b85307920da7e8b2c2186cbf4edf4ece77ce569ee0",
+    "CMakeLists.txt": "a3374bae9cacca1690e9f13b786148fda16ed3b9eebef98dd67dc3c5d0bcfa6b"
+  },
+  "asio_version_header_sha256": "deaf37654f0e1931af56692f3b0f7b458527cafd63f162cca50bd3ee455bd4ac",
+  "optional_whole_file_format": {
+    "base": "tools/cli/core/driver.cpp: exit 1\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:8:1: error: code should be clang-formatted [-Wclang-format-violations]\n#include \"tools/cli/debugger.hpp\"\n^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1081:44: error: code should be clang-formatted [-Wclang-format-violations]\n            const std::string& source_name,\n                                           ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1082:68: error: code should be clang-formatted [-Wclang-format-violations]\n            std::shared_ptr<t81::weights::ModelFile> weights_model, bool announce_success) {\n                                                                   ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1480:99: error: code should be clang-formatted [-Wclang-format-violations]\n                   \"use --trace to inspect execution flow or a workflow that exports/materializes tensors\\n\";\n                                                                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1481:16: error: code should be clang-formatted [-Wclang-format-violations]\n      std::cerr << \"next (progress): none on this path; the result remains a runtime tensor handle\\n\";\n               ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1482:95: error: code should be clang-formatted [-Wclang-format-violations]\n      std::cerr << \"next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events\\n\";\n                                                                                              ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1667:14: error: code should be clang-formatted [-Wclang-format-violations]\n    std::cout << \"Result:      manifest/provenance refs are reusable handles for later export or audit\\n\";\n             ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:1669:99: error: code should be clang-formatted [-Wclang-format-violations]\n      std::cout << \"Next (progress): t81 canonfs export <manifest-ref> --out <dir> to materialize the imported tree\\n\";\n                                                                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/driver.cpp:2065:31: error: code should be clang-formatted [-Wclang-format-violations]\n    options.policy_evaluator =\n                              ^\n\ntools/cli/core/main.cpp: exit 1\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:58:1: error: code should be clang-formatted [-Wclang-format-violations]\n#include \"tools/cli/logging.hpp\"\n^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:2722:36: error: code should be clang-formatted [-Wclang-format-violations]\n  if (subcommand == \"read-field\" &&\n                                   ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3132:72: error: code should be clang-formatted [-Wclang-format-violations]\nstd::string require_string_field(const t81::weights::JsonValue& object,\n                                                                       ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3143:67: error: code should be clang-formatted [-Wclang-format-violations]\nuint64_t require_uint_field(const t81::weights::JsonValue& object,\n                                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3158:57: error: code should be clang-formatted [-Wclang-format-violations]\n    throw std::runtime_error(std::string(command_name) + \": manifest tensor shape must be an array\");\n                                                        ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3163:56: error: code should be clang-formatted [-Wclang-format-violations]\n    if (!entry.is_number || entry.number_value < 1.0 || std::floor(entry.number_value) != entry.number_value) {\n                                                       ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3185:71: error: code should be clang-formatted [-Wclang-format-violations]\nLoadedModelArtifact load_model_manifest_artifact(const fs::path& path, std::string_view command_name) {\n                                                                      ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3191:93: error: code should be clang-formatted [-Wclang-format-violations]\n    throw std::runtime_error(std::string(command_name) + \": unsupported manifest schema '\" + schema +\n                                                                                            ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3191:102: error: code should be clang-formatted [-Wclang-format-violations]\n    throw std::runtime_error(std::string(command_name) + \": unsupported manifest schema '\" + schema +\n                                                                                                     ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3226:17: error: code should be clang-formatted [-Wclang-format-violations]\n    info.shape =\n                ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3227:92: error: code should be clang-formatted [-Wclang-format-violations]\n        manifest_shape_from_json(require_object_field(tensor_value, \"shape\", command_name), command_name);\n                                                                                           ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3244:67: error: code should be clang-formatted [-Wclang-format-violations]\nt81::weights::ModelFile load_model_artifact(const fs::path& input,\n                                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3262:53: error: code should be clang-formatted [-Wclang-format-violations]\nbool resolve_model_input_and_format(fs::path& input,\n                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3263:57: error: code should be clang-formatted [-Wclang-format-violations]\n                                    std::string& format,\n                                                        ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3268:20: error: code should be clang-formatted [-Wclang-format-violations]\n    auto resolved =\n                   ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3269:85: error: code should be clang-formatted [-Wclang-format-violations]\n        t81::cli::resolve_repo_model_path(input.string(), {\".gguf\", \".safetensors\"}, &resolution_error);\n                                                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3287:67: error: code should be clang-formatted [-Wclang-format-violations]\nt81::weights::ModelFile load_model_artifact(const fs::path& input,\n                                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3293:32: error: code should be clang-formatted [-Wclang-format-violations]\n      throw std::runtime_error(std::string(command_name) +\n                               ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3293:59: error: code should be clang-formatted [-Wclang-format-violations]\n      throw std::runtime_error(std::string(command_name) +\n                                                          ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3294:104: error: code should be clang-formatted [-Wclang-format-violations]\n                               \": --format safetensors requires a .safetensors input file. Run 't81 \" +\n                                                                                                       ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3320:51: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_import_json(const fs::path& input,\n                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3357:97: error: code should be clang-formatted [-Wclang-format-violations]\n    std::cout << \"      \\\"sparsity\\\": \" << std::fixed << std::setprecision(6) << tensor.sparsity << \"\\n\";\n                                                                                                ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3369:53: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_import_report(const fs::path& input,\n                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3402:53: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_manifest_json(const fs::path& input,\n                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3576:61: error: code should be clang-formatted [-Wclang-format-violations]\nbool shape_matches_normalized(std::span<const uint64_t> lhs,\n                                                            ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3640:85: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_string_array(std::string_view key, const std::vector<std::string>& values, int indent = 2) {\n                                                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3652:43: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_string_map(std::string_view key,\n                                          ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3675:52: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_diff_json(const fs::path& lhs_path,\n                                                   ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3677:62: error: code should be clang-formatted [-Wclang-format-violations]\n                          const t81::weights::ModelFile& lhs,\n                                                             ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3682:63: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                              ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3682:107: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                                                                          ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3683:57: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                        ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3683:89: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                                                        ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3725:63: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_diff_normalized_json(const fs::path& lhs_path,\n                                                              ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3727:69: error: code should be clang-formatted [-Wclang-format-violations]\n                                     const LoadedModelArtifact& lhs,\n                                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3787:54: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_diff_report(const fs::path& lhs_path,\n                                                     ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3789:64: error: code should be clang-formatted [-Wclang-format-violations]\n                            const t81::weights::ModelFile& lhs,\n                                                               ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3794:63: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                              ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3794:107: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                                                                          ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3795:57: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                        ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3795:89: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                                                        ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3927:85: error: code should be clang-formatted [-Wclang-format-violations]\n  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit, \"weights import\")) {\n                                                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3989:85: error: code should be clang-formatted [-Wclang-format-violations]\n  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit, \"model import\")) {\n                                                                                    ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:3994:20: error: code should be clang-formatted [-Wclang-format-violations]\n    const auto mf = load_model_artifact(opts.input, opts.format, \"model import\", \"help model import\");\n                   ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:4058:67: error: code should be clang-formatted [-Wclang-format-violations]\n        error(\"model diff: unsupported mode '\" + comparison_mode +\n                                                                  ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:4137:84: error: code should be clang-formatted [-Wclang-format-violations]\n      emit_model_diff_report(lhs_path, rhs_path, lhs.model, rhs.model, tensor_diff, provenance_diff);\n                                                                                   ^\n/private/tmp/t81-cli-policy-fix/tools/cli/core/main.cpp:4519:67: error: code should be clang-formatted [-Wclang-format-violations]\n  if (args.command_args.empty() || args.command_args[0] == \"-h\" || args.command_args[0] == \"--help\") {\n                                                                  ^\n",
+    "corrected": "tools/cli/core/driver.cpp:8:1: error: code should be clang-formatted [-Wclang-format-violations]\n#include \"tools/cli/debugger.hpp\"\n^\ntools/cli/core/driver.cpp:1081:44: error: code should be clang-formatted [-Wclang-format-violations]\n            const std::string& source_name,\n                                           ^\ntools/cli/core/driver.cpp:1082:68: error: code should be clang-formatted [-Wclang-format-violations]\n            std::shared_ptr<t81::weights::ModelFile> weights_model, bool announce_success) {\n                                                                   ^\ntools/cli/core/driver.cpp:1493:99: error: code should be clang-formatted [-Wclang-format-violations]\n                   \"use --trace to inspect execution flow or a workflow that exports/materializes tensors\\n\";\n                                                                                                  ^\ntools/cli/core/driver.cpp:1494:16: error: code should be clang-formatted [-Wclang-format-violations]\n      std::cerr << \"next (progress): none on this path; the result remains a runtime tensor handle\\n\";\n               ^\ntools/cli/core/driver.cpp:1495:95: error: code should be clang-formatted [-Wclang-format-violations]\n      std::cerr << \"next (inspect): rerun with --trace to inspect the executed tensor ops and Axion events\\n\";\n                                                                                              ^\ntools/cli/core/driver.cpp:1680:14: error: code should be clang-formatted [-Wclang-format-violations]\n    std::cout << \"Result:      manifest/provenance refs are reusable handles for later export or audit\\n\";\n             ^\ntools/cli/core/driver.cpp:1682:99: error: code should be clang-formatted [-Wclang-format-violations]\n      std::cout << \"Next (progress): t81 canonfs export <manifest-ref> --out <dir> to materialize the imported tree\\n\";\n                                                                                                  ^\ntools/cli/core/driver.cpp:2078:31: error: code should be clang-formatted [-Wclang-format-violations]\n    options.policy_evaluator =\n                              ^\ntools/cli/core/main.cpp:58:1: error: code should be clang-formatted [-Wclang-format-violations]\n#include \"tools/cli/logging.hpp\"\n^\ntools/cli/core/main.cpp:2722:36: error: code should be clang-formatted [-Wclang-format-violations]\n  if (subcommand == \"read-field\" &&\n                                   ^\ntools/cli/core/main.cpp:3132:72: error: code should be clang-formatted [-Wclang-format-violations]\nstd::string require_string_field(const t81::weights::JsonValue& object,\n                                                                       ^\ntools/cli/core/main.cpp:3143:67: error: code should be clang-formatted [-Wclang-format-violations]\nuint64_t require_uint_field(const t81::weights::JsonValue& object,\n                                                                  ^\ntools/cli/core/main.cpp:3158:57: error: code should be clang-formatted [-Wclang-format-violations]\n    throw std::runtime_error(std::string(command_name) + \": manifest tensor shape must be an array\");\n                                                        ^\ntools/cli/core/main.cpp:3163:56: error: code should be clang-formatted [-Wclang-format-violations]\n    if (!entry.is_number || entry.number_value < 1.0 || std::floor(entry.number_value) != entry.number_value) {\n                                                       ^\ntools/cli/core/main.cpp:3185:71: error: code should be clang-formatted [-Wclang-format-violations]\nLoadedModelArtifact load_model_manifest_artifact(const fs::path& path, std::string_view command_name) {\n                                                                      ^\ntools/cli/core/main.cpp:3191:93: error: code should be clang-formatted [-Wclang-format-violations]\n    throw std::runtime_error(std::string(command_name) + \": unsupported manifest schema '\" + schema +\n                                                                                            ^\ntools/cli/core/main.cpp:3191:102: error: code should be clang-formatted [-Wclang-format-violations]\n    throw std::runtime_error(std::string(command_name) + \": unsupported manifest schema '\" + schema +\n                                                                                                     ^\ntools/cli/core/main.cpp:3226:17: error: code should be clang-formatted [-Wclang-format-violations]\n    info.shape =\n                ^\ntools/cli/core/main.cpp:3227:92: error: code should be clang-formatted [-Wclang-format-violations]\n        manifest_shape_from_json(require_object_field(tensor_value, \"shape\", command_name), command_name);\n                                                                                           ^\ntools/cli/core/main.cpp:3244:67: error: code should be clang-formatted [-Wclang-format-violations]\nt81::weights::ModelFile load_model_artifact(const fs::path& input,\n                                                                  ^\ntools/cli/core/main.cpp:3262:53: error: code should be clang-formatted [-Wclang-format-violations]\nbool resolve_model_input_and_format(fs::path& input,\n                                                    ^\ntools/cli/core/main.cpp:3263:57: error: code should be clang-formatted [-Wclang-format-violations]\n                                    std::string& format,\n                                                        ^\ntools/cli/core/main.cpp:3268:20: error: code should be clang-formatted [-Wclang-format-violations]\n    auto resolved =\n                   ^\ntools/cli/core/main.cpp:3269:85: error: code should be clang-formatted [-Wclang-format-violations]\n        t81::cli::resolve_repo_model_path(input.string(), {\".gguf\", \".safetensors\"}, &resolution_error);\n                                                                                    ^\ntools/cli/core/main.cpp:3287:67: error: code should be clang-formatted [-Wclang-format-violations]\nt81::weights::ModelFile load_model_artifact(const fs::path& input,\n                                                                  ^\ntools/cli/core/main.cpp:3293:32: error: code should be clang-formatted [-Wclang-format-violations]\n      throw std::runtime_error(std::string(command_name) +\n                               ^\ntools/cli/core/main.cpp:3293:59: error: code should be clang-formatted [-Wclang-format-violations]\n      throw std::runtime_error(std::string(command_name) +\n                                                          ^\ntools/cli/core/main.cpp:3294:104: error: code should be clang-formatted [-Wclang-format-violations]\n                               \": --format safetensors requires a .safetensors input file. Run 't81 \" +\n                                                                                                       ^\ntools/cli/core/main.cpp:3320:51: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_import_json(const fs::path& input,\n                                                  ^\ntools/cli/core/main.cpp:3357:97: error: code should be clang-formatted [-Wclang-format-violations]\n    std::cout << \"      \\\"sparsity\\\": \" << std::fixed << std::setprecision(6) << tensor.sparsity << \"\\n\";\n                                                                                                ^\ntools/cli/core/main.cpp:3369:53: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_import_report(const fs::path& input,\n                                                    ^\ntools/cli/core/main.cpp:3402:53: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_manifest_json(const fs::path& input,\n                                                    ^\ntools/cli/core/main.cpp:3576:61: error: code should be clang-formatted [-Wclang-format-violations]\nbool shape_matches_normalized(std::span<const uint64_t> lhs,\n                                                            ^\ntools/cli/core/main.cpp:3640:85: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_string_array(std::string_view key, const std::vector<std::string>& values, int indent = 2) {\n                                                                                    ^\ntools/cli/core/main.cpp:3652:43: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_string_map(std::string_view key,\n                                          ^\ntools/cli/core/main.cpp:3675:52: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_diff_json(const fs::path& lhs_path,\n                                                   ^\ntools/cli/core/main.cpp:3677:62: error: code should be clang-formatted [-Wclang-format-violations]\n                          const t81::weights::ModelFile& lhs,\n                                                             ^\ntools/cli/core/main.cpp:3682:63: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                              ^\ntools/cli/core/main.cpp:3682:107: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                                                                          ^\ntools/cli/core/main.cpp:3683:57: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                        ^\ntools/cli/core/main.cpp:3683:89: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                                                        ^\ntools/cli/core/main.cpp:3725:63: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_diff_normalized_json(const fs::path& lhs_path,\n                                                              ^\ntools/cli/core/main.cpp:3727:69: error: code should be clang-formatted [-Wclang-format-violations]\n                                     const LoadedModelArtifact& lhs,\n                                                                    ^\ntools/cli/core/main.cpp:3787:54: error: code should be clang-formatted [-Wclang-format-violations]\nvoid emit_model_diff_report(const fs::path& lhs_path,\n                                                     ^\ntools/cli/core/main.cpp:3789:64: error: code should be clang-formatted [-Wclang-format-violations]\n                            const t81::weights::ModelFile& lhs,\n                                                               ^\ntools/cli/core/main.cpp:3794:63: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                              ^\ntools/cli/core/main.cpp:3794:107: error: code should be clang-formatted [-Wclang-format-violations]\n                         lhs.total_trits == rhs.total_trits && lhs.tensors.size() == rhs.tensors.size() &&\n                                                                                                          ^\ntools/cli/core/main.cpp:3795:57: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                        ^\ntools/cli/core/main.cpp:3795:89: error: code should be clang-formatted [-Wclang-format-violations]\n                         tensor_diff.lhs_only.empty() && tensor_diff.rhs_only.empty() &&\n                                                                                        ^\ntools/cli/core/main.cpp:3927:85: error: code should be clang-formatted [-Wclang-format-violations]\n  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit, \"weights import\")) {\n                                                                                    ^\ntools/cli/core/main.cpp:3989:85: error: code should be clang-formatted [-Wclang-format-violations]\n  if (!resolve_model_input_and_format(opts.input, opts.format, opts.format_explicit, \"model import\")) {\n                                                                                    ^\ntools/cli/core/main.cpp:3994:20: error: code should be clang-formatted [-Wclang-format-violations]\n    const auto mf = load_model_artifact(opts.input, opts.format, \"model import\", \"help model import\");\n                   ^\ntools/cli/core/main.cpp:4058:67: error: code should be clang-formatted [-Wclang-format-violations]\n        error(\"model diff: unsupported mode '\" + comparison_mode +\n                                                                  ^\ntools/cli/core/main.cpp:4137:84: error: code should be clang-formatted [-Wclang-format-violations]\n      emit_model_diff_report(lhs_path, rhs_path, lhs.model, rhs.model, tensor_diff, provenance_diff);\n                                                                                   ^\ntools/cli/core/main.cpp:4519:67: error: code should be clang-formatted [-Wclang-format-violations]\n  if (args.command_args.empty() || args.command_args[0] == \"-h\" || args.command_args[0] == \"--help\") {\n                                                                  ^\n"
+  }
+}

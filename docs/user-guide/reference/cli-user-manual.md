@@ -623,6 +623,23 @@ t81 vm explain-trap <file.tisc> [--policy <policy.apl>] [--json]
 ```
 
 VM-oriented entry points for execution, replay-safe trace capture, debugging, and final-state reporting.
+
+For `vm run`, `vm trace`, and `code run` (both `.t81` and `.tisc`), an explicit
+`--policy <file.apl>` overrides any embedded policy. The requested file must be
+readable, parse as an Axion policy, and be installed before VM execution; otherwise
+the command exits with status 1. An empty file is invalid. A policy denial returns
+`SecurityFault` (status 13); a zero instruction budget denies the first instruction
+before dispatch. Policies that allow some instructions may deny later, after those
+instructions have executed. `code run` may compile source before policy validation.
+
+The shared parser accepts `--policy` after the domain (`t81 vm --policy p.apl run
+program.tisc`), after the action, or after the input. It is not supported before
+`vm` or `code`; unsupported placement and a missing option value fail with status 1.
+Without `--policy`, the program's embedded policy and existing VM defaults are
+preserved. Omitting the option does not install an additional policy and does not
+bypass the VM's existing operation-specific checks. These policies govern VM
+execution; they do not constitute an operating-system sandbox.
+
 `vm step --json` uses schema `t81.vm-step.v1`.
 `vm regs --json` uses schema `t81.vm-regs.v1`.
 `vm stack --json` uses schema `t81.vm-stack.v1`.

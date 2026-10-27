@@ -1404,18 +1404,31 @@ int run_tisc(const fs::path& path, const std::optional<fs::path>& policy_path, b
   }
 
   if (policy_path) {
-    std::ifstream ifs(*policy_path);
-    if (ifs) {
-      std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
-      program.axion_policy_text = content;
-      verbose("Axion policy loaded from " + policy_path->string());
-    } else {
+    std::ifstream ifs(*policy_path, std::ios::binary);
+    if (!ifs) {
       error("Could not open policy file: " + policy_path->string());
+      return 1;
     }
+    std::string content((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+    if (ifs.bad()) {
+      error("Could not read policy file: " + policy_path->string());
+      return 1;
+    }
+    auto policy = t81::axion::parse_policy(content);
+    if (!policy.has_value()) {
+      error("Could not parse policy file: " + policy_path->string() + ": " + policy.error());
+      return 1;
+    }
+    program.axion_policy_text = std::move(content);
+    verbose("Axion policy loaded from " + policy_path->string());
   }
 
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
+  if (policy_path && !vm->state().policy.has_value()) {
+    error("Could not apply requested policy: " + policy_path->string());
+    return 1;
+  }
 
   verbose("Executing...");
   auto result = vm->run_to_halt();
