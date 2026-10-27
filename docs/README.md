@@ -1,5 +1,7 @@
 # T81 Foundation Documentation
 
+For the research mission, start with the [root README](../README.md), [Master Continuity Charter](research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md), and [hypothesis register](research/continuity/HYPOTHESIS_REGISTER_v1.json). The handoff and roadmap below cover supporting maintenance. The [root alignment audit](research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) distinguishes current entry points from historical claims.
+
 This directory is the canonical documentation surface below `/spec` and
 `docs/architecture/OVERVIEW.md`.
 
@@ -37,25 +39,31 @@ the broader documentation tree:
 ## Documentation Structure
 
 ### 📚 User Documentation
+
 - [User Guide](user-guide/) - Getting started, tutorials, how-to guides, reference
 
-### 🔧 Developer Documentation  
+### 🔧 Developer Documentation
+
 - [Developer Guide](developer-guide/) - Building, contributing, internals, tools
 
 ### 📋 Process & Planning
+
 - [Process](process/) - RFCs, proposals, roadmaps, policies, migration
 
 ### 🏛️ Core Documentation
+
 - [Architecture](architecture/) - High-level architecture and ADR system
 - [Governance](governance/) - Governance policy and authority model
 - [Status](status/) - Project status and control center
 
 ### 🔬 Research & Reference
+
 - [Explanation](explanation/) - Conceptual documentation and whitepapers
 - [Reference](reference/) - Technical reference and changelogs
 - [Research](research/) - Research papers and formal verification
 
 ### 📊 Archives & Records
+
 - [Records](records/) - Audit trails, archived artifacts, and inventory records
 
 ## Records and Site Build

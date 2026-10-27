@@ -1,5 +1,7 @@
 # AGENTS.md — Operational Contract for AI Coding Agents in T81 Foundation
 
+> **Historical agent contract — qualified October 27, 2026.** Use the [root AGENTS.md](../../../AGENTS.md) for current contributor instructions and research boundaries. The historical body below is retained for traceability; its unrestricted subsystem suggestions, maturity framing, and treatment of Hanoi as an oracle are not current guidance. This notice does not amend normative specifications or governance activation.
+
 You are an AI agent (Grok 4, Claude 3.5/4, o3, Gemini 2, Cursor, Aider, etc.) contributing to the **T81 Foundation** — a constitutionally governed, ternary-native, cognition-first computing stack.
 
 Your mandate: extend, harden, and accelerate this project **without ever violating determinism, ternary purity, or the immutable specification**.

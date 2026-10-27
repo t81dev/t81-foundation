@@ -2,33 +2,37 @@
 
 > **Source of Truth:** This document defines the **supported versions** and **vulnerability reporting process**.
 
-**Last Updated:** February 10, 2026
+**Last Updated:** October 27, 2026
 
-## 1. NIST Compliance & High-Assurance AI Infrastructure
+## 1. Research Scope and Security Evidence
 
-We are aligning the T81 Foundation stack with **NIST SP 800-218 (SSDF)** and **NIST SP 800-53** controls. This is critical for maintaining a high-assurance, auditable AI infrastructure.
+T81 Foundation is an experimental systems research platform. Its policy and integrity mechanisms have bounded implementations and tests; this document does not certify production readiness, NIST compliance, comprehensive isolation, or comparative security superiority.
 
-Our core security postures include:
-- **Deterministic Execution:** Bit-exact reproducibility enforcing strict supply-chain and execution trace verification.
-- **Opcode-Level Policy Enforcement:** The Axion kernel enforces security and alignment policies directly at the VM instruction level.
-- **Signed Releases & SBOM:** Release artifacts are cryptographically signed and accompanied by Software Bill of Materials (SBOM) for complete supply-chain provenance.
-- **Formal Threat Model:** A robust, continually updated threat model (`docs/governance/DETERMINISM_THREAT_MODEL.md`) paired with a Coordinated Vulnerability Disclosure (CVD) policy.
+Evaluate each claim against its actual execution boundary:
+
+- **Policy enforcement:** VM pre-dispatch and configured storage authorization have dedicated denial tests. Task admission, VM engines, low-level driver hooks, and host-side effects are distinct boundaries. The VM can default to an allow-all engine; low-level drivers expose bootstrap modes. Tests of one configured path do not establish universal bypass resistance. See [VM dispatch](vm/vm.cpp), [storage contract](include/t81/canonfs/canon_driver.hpp), and [bounded evidence](docs/research/consolidation/README.md).
+- **Integrity:** content hashes and read verification can detect changed bytes relative to a trusted reference. They do not authenticate the producer, establish truthful provenance, or prove execution correctness. CanonFS read verification is configuration-dependent.
+- **Determinism:** reproducible execution is scoped to specified operations, inputs, companion artifacts, configuration, and platforms. It is distinct from authorization, authentication, sandbox isolation, or malicious-host resistance.
+- **Release evidence:** the [release workflow](.github/workflows/release.yml) defines artifact packaging and SBOM generation. Inspect the actual release artifacts and trust chain; workflow configuration alone does not prove signing or complete supply-chain provenance for every release.
+
+Consult the [determinism threat model](docs/governance/DETERMINISM_THREAT_MODEL.md), [surface register](docs/governance/GOVERNANCE_SURFACE_REGISTER.md), and [disclosure procedure](docs/governance/INCIDENT_RESPONSE.md). No promotion of a surface or change to the threat model is made here.
 
 ## 2. Supported Versions
 
-We support the **current MAJOR version** and the **immediate previous MAJOR version** for critical security fixes.
+The declared maintenance policy covers v1.x; older releases are unsupported as listed below. This is a maintenance commitment, not an independent security certification of every release or experiment.
 
-| Version | Supported | Notes |
-| :--- | :--- | :--- |
-| **v1.x** | ✅ Yes | **Active:** Critical fixes and feature updates. |
-| **v0.x** | ❌ No | **End of Life:** No longer supported. |
-| **< v1.0** | ❌ No | Deprecated. |
+| Version    | Supported | Notes                                           |
+| :--------- | :-------- | :---------------------------------------------- |
+| **v1.x**   | ✅ Yes    | **Active:** Critical fixes and feature updates. |
+| **v0.x**   | ❌ No     | **End of Life:** No longer supported.           |
+| **< v1.0** | ❌ No     | Deprecated.                                     |
 
 ## 3. Reporting a Vulnerability
 
 Please report vulnerabilities privately through GitHub Security Advisories.
 
 If advisory reporting is unavailable, open a private maintainer contact with:
+
 - affected component/path,
 - impact summary,
 - minimal reproduction,
@@ -39,6 +43,7 @@ Do **not** publish exploit details in public issues before a fix is available.
 ## 4. Scope
 
 Security-relevant areas include:
+
 - VM execution and memory safety boundaries,
 - Axion policy enforcement surfaces,
 - CanonFS persistence and trace integrity,

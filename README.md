@@ -14,15 +14,15 @@ The project originated in discrete mathematics, positional number systems, Knuth
 
 > **Central question:** Can alternative computational representations, deterministic execution, and explicit governance—individually **or in combination**—deliver measurable advantages over functionally equivalent conventional systems? If so, under what workloads, assumptions, hardware, and assurance requirements?
 
----
+______________________________________________________________________
 
 ## 1. Research Scope
 
 T81 pursues three connected lines of inquiry:
 
 1. **Computational representation:** What mathematical or physical properties of balanced ternary, Base-81 groupings, low-bit tensors, and adaptive representations are useful? When do encoding and conversion costs outweigh those properties?
-2. **Execution and assurance:** Which guarantees can be implemented and verified for deterministic computation, artifact identity, policy enforcement, evidence generation, and replay? How do conventional systems compare when held to the same requirements?
-3. **Architectural composition:** Do integrated execution, representation, storage, and governance mechanisms confer measurable benefits beyond those of their individual components? What integration boundaries are real, and which remain experimental or absent?
+1. **Execution and assurance:** Which guarantees can be implemented and verified for deterministic computation, artifact identity, policy enforcement, evidence generation, and replay? How do conventional systems compare when held to the same requirements?
+1. **Architectural composition:** Do integrated execution, representation, storage, and governance mechanisms confer measurable benefits beyond those of their individual components? What integration boundaries are real, and which remain experimental or absent?
 
 These questions are deliberately distinct. A successful policy test is not evidence of ternary arithmetic efficiency. A compact ternary encoding is not proof of faster inference. A passing end-to-end workflow is not, by itself, proof of a system-level advantage.
 
@@ -30,20 +30,20 @@ These questions are deliberately distinct. A successful policy test is not evide
 
 The original H01–H08 identifiers remain defined by the [Master Continuity Charter](docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md). Later numbered *Scientific Investigations* are experimental work packages, **not replacements for these canonical hypothesis identifiers**.
 
-| Track | Hypothesis | Research question | Evidence boundary |
-| --- | --- | --- | --- |
-| Representation | **H01 — Native Ternary Cost & Density** | Can native ternary storage or logic reduce normalized cost at equal information capacity? | Mathematical capacity properties do not establish physical cost; software CPU results are workload-specific. |
-| Representation | **H02 — Balanced Ternary Arithmetic** | Do symmetric digits improve arithmetic, signed operations, or rounding? | Algebraic properties are established; tested binary-CPU implementations have not shown speed superiority. |
-| Representation | **H03 — Base-81 Digit Grouping** | Can grouped trits improve storage or interfaces? | Representation benefits must include packing, decoding, and data-movement costs. |
-| Representation | **H04 — Adaptive Representation Tiering** | When can T81/T243/T729 tiering improve total cost? | Conditional modeling results require workload-specific validation. |
-| Representation | **H05 — Three-State Algebra Primitives** | Can three-valued primitives reduce circuit or system cost? | RTL and VM experiments are not native ternary silicon evidence. |
-| Representation | **H06 — Ternary AI Inference** | Can ternary weights or activations improve accuracy-constrained inference? | Storage savings are distinguishable from accuracy, throughput, and energy claims. |
-| Foundation | **H07 — Governed Execution & Auditability** | Can governed execution improve reproducibility, control, and audit? | Capabilities must be compared with conventional implementations providing equivalent guarantees. |
-| Methodology | **H08 — AI-Assisted Research Iteration** | Can auditable AI-assisted iteration improve research quality? | Traceability and generated artifacts do not substitute for independent experimental validation. |
+| Track          | Hypothesis                                  | Research question                                                                         | Evidence boundary                                                                                            |
+| -------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Representation | **H01 — Native Ternary Cost & Density**     | Can native ternary storage or logic reduce normalized cost at equal information capacity? | Mathematical capacity properties do not establish physical cost; software CPU results are workload-specific. |
+| Representation | **H02 — Balanced Ternary Arithmetic**       | Do symmetric digits improve arithmetic, signed operations, or rounding?                   | Algebraic properties are established; tested binary-CPU implementations have not shown speed superiority.    |
+| Representation | **H03 — Base-81 Digit Grouping**            | Can grouped trits improve storage or interfaces?                                          | Representation benefits must include packing, decoding, and data-movement costs.                             |
+| Representation | **H04 — Adaptive Representation Tiering**   | When can T81/T243/T729 tiering improve total cost?                                        | Conditional modeling results require workload-specific validation.                                           |
+| Representation | **H05 — Three-State Algebra Primitives**    | Can three-valued primitives reduce circuit or system cost?                                | RTL and VM experiments are not native ternary silicon evidence.                                              |
+| Representation | **H06 — Ternary AI Inference**              | Can ternary weights or activations improve accuracy-constrained inference?                | Storage savings are distinguishable from accuracy, throughput, and energy claims.                            |
+| Foundation     | **H07 — Governed Execution & Auditability** | Can governed execution improve reproducibility, control, and audit?                       | Capabilities must be compared with conventional implementations providing equivalent guarantees.             |
+| Methodology    | **H08 — AI-Assisted Research Iteration**    | Can auditable AI-assisted iteration improve research quality?                             | Traceability and generated artifacts do not substitute for independent experimental validation.              |
 
 **Additional system-level question (Investigation 08, H-S1):** Does integration create a measurable computational, assurance, or compositional advantage? H-S1 is **not** the charter's H08 and remains **inconclusive** pending valid matched controls and ablations.
 
----
+______________________________________________________________________
 
 ## 2. Why T81 Is a Research Instrument
 
@@ -53,22 +53,22 @@ A conventional software stack can implement many of the same mechanisms. That is
 
 ### What makes the research program distinctive
 
-| Research capability | Experimental use | Required caution |
-| --- | --- | --- |
-| Shared TISC semantics and T81VM execution | Hold program behavior constant while changing representations or execution strategies | ISA stability does not establish equal implementation quality |
-| Balanced-ternary and Base-81 prototypes | Compare arithmetic, packing, conversion, and data movement under controlled workloads | Software emulation costs must not be extrapolated to hypothetical silicon |
-| CanonFS artifact identity | Pin experimental inputs, outputs, and evidence to exact content | Hashes establish content identity, not the truth or provenance of claims |
-| Axion authorization experiments | Test policy enforcement, denials, and accountable execution | Equivalent binary/conventional controls are necessary |
-| Research regressions and historical source lineage | Preserve failures and reproduce or falsify prior results | A passing regression is narrower than independent scientific replication |
-| Candidate integration paths | Test whether composing mechanisms produces measurable interactions | Conceptual adjacency is not a verified end-to-end call path |
+| Research capability                                | Experimental use                                                                      | Required caution                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Shared TISC semantics and T81VM execution          | Hold program behavior constant while changing representations or execution strategies | ISA stability does not establish equal implementation quality             |
+| Balanced-ternary and Base-81 prototypes            | Compare arithmetic, packing, conversion, and data movement under controlled workloads | Software emulation costs must not be extrapolated to hypothetical silicon |
+| CanonFS artifact identity                          | Pin experimental inputs, outputs, and evidence to exact content                       | Hashes establish content identity, not the truth or provenance of claims  |
+| Axion authorization experiments                    | Test policy enforcement, denials, and accountable execution                           | Equivalent binary/conventional controls are necessary                     |
+| Research regressions and historical source lineage | Preserve failures and reproduce or falsify prior results                              | A passing regression is narrower than independent scientific replication  |
+| Candidate integration paths                        | Test whether composing mechanisms produces measurable interactions                    | Conceptual adjacency is not a verified end-to-end call path               |
 
 ### Novelty and provenance
 
 T81 combines several categories of work that should not be conflated:
 
 1. **Established foundations:** balanced ternary mathematics, virtual machines, content addressing, deterministic execution techniques, and policy enforcement all have prior art.
-2. **Project-specific engineering:** TISC semantics, T81VM, T81Lang, Axion, CanonFS, and the associated experimental harnesses constitute implementations whose design and behavior can be inspected and tested. Their existence alone does not establish scientific novelty.
-3. **Open architectural hypotheses:** adaptive representation tiering, ternary-native datapaths, assurance-aware execution composition, and potential system-level interactions remain questions to test, not discoveries to advertise.
+1. **Project-specific engineering:** TISC semantics, T81VM, T81Lang, Axion, CanonFS, and the associated experimental harnesses constitute implementations whose design and behavior can be inspected and tested. Their existence alone does not establish scientific novelty.
+1. **Open architectural hypotheses:** adaptive representation tiering, ternary-native datapaths, assurance-aware execution composition, and potential system-level interactions remain questions to test, not discoveries to advertise.
 
 Any future claim of novelty should identify its closest prior art, precise difference, reproducible artifact, and experimentally meaningful consequence. Novel source code is not necessarily a novel computational principle.
 
@@ -78,23 +78,23 @@ The research program distinguishes **representation** (how values are encoded), 
 
 For example, a compact weight encoding can reduce raw storage without improving end-to-end inference latency; a policy denial can be correct without requiring TISC; and a ternary gate-count estimate can be promising without demonstrating energy savings in fabricated hardware.
 
----
+______________________________________________________________________
 
 ## 3. Implemented Research Components
 
 The repository contains C++23 components, CLI tools, tests, and experimental implementations. The following labels describe **reported implementation scope**, not a blanket production-readiness certification.
 
-| Component | Role | Representative evidence | Important limit |
-| --- | --- | --- | --- |
-| **TISC ISA v1.9.0** | Frozen instruction semantics and opcode registry | [`spec/tisc/opcode-registry.md`](spec/tisc/opcode-registry.md), `include/t81/isa/opcodes.hpp` | A frozen software ISA does not imply native hardware or performance advantage. |
-| **T81VM** | Interpreter for TISC programs and deterministic execution profiles | `src/vm/vm.cpp`, VM determinism tests | Guarantees are scoped to tested operations, platforms, and determinism contracts. |
-| **T81Lang** | Parsing, intermediate representation, and compilation tooling | `src/lang/`, `t81 code build` | Research language tooling, not an established general-purpose ecosystem. |
-| **Axion** | Policy evaluation and execution authorization | `src/axion/`, controlled authorization tests | Tested fail-closed behavior is not universal bypass resistance or comparative superiority. |
-| **CanonFS** | Content-addressed artifacts, integrity checking, and interchange | `src/core/fs/`, [RFC-00D1](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md) | Content identity does not by itself prove authenticity, correctness, or trust in the producer. |
-| **Arithmetic and representation experiments** | Balanced ternary operations, packed weights, exact conversion prototypes | `experiments/`, `benchmarks/`, research reports | Conversion cost, portability, and conventional binary controls remain central. |
-| **Model intake** | GGUF/Safetensors metadata and tensor inspection | `src/tools/model/` | Header inspection is not general-purpose LLM execution. |
-| **Accountable evidence** | Detached evidence artifacts and verification protocols | `examples/governance/`, [RFC-00D4](spec/rfcs/RFC-00D4-accountable-decision-bundle.md) | Evidence protocols can be implemented independently of T81VM. |
-| **Witness and hardware prototypes** | Experimental receipts, trust mechanisms, and RTL datapaths | `experiments/` and associated PRs | Experimental code is not automatically production-integrated or physically validated. |
+| Component                                     | Role                                                                     | Representative evidence                                                                       | Important limit                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **TISC ISA v1.9.0**                           | Frozen instruction semantics and opcode registry                         | [`spec/tisc/opcode-registry.md`](spec/tisc/opcode-registry.md), `include/t81/isa/opcodes.hpp` | A frozen software ISA does not imply native hardware or performance advantage.                 |
+| **T81VM**                                     | Interpreter for TISC programs and deterministic execution profiles       | `vm/vm.cpp`, VM determinism tests                                                             | Guarantees are scoped to tested operations, platforms, and determinism contracts.              |
+| **T81Lang**                                   | Parsing, intermediate representation, and compilation tooling            | `lang/frontend/`, `src/lang/CMakeLists.txt`, `t81 code build`                                 | Research language tooling, not an established general-purpose ecosystem.                       |
+| **Axion**                                     | Policy evaluation and execution authorization                            | `kernel/axion/`, `src/axion/CMakeLists.txt`, controlled authorization tests                   | Tested fail-closed behavior is not universal bypass resistance or comparative superiority.     |
+| **CanonFS**                                   | Content-addressed artifacts, integrity checking, and interchange         | `fs/`, [RFC-00D1](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)               | Content identity does not by itself prove authenticity, correctness, or trust in the producer. |
+| **Arithmetic and representation experiments** | Balanced ternary operations, packed weights, exact conversion prototypes | `experiments/`, `benchmarks/`, research reports                                               | Conversion cost, portability, and conventional binary controls remain central.                 |
+| **Model intake**                              | GGUF/Safetensors metadata and tensor inspection                          | `tools/model/`                                                                                | Header inspection is not general-purpose LLM execution.                                        |
+| **Accountable evidence**                      | Detached evidence artifacts and verification protocols                   | `examples/governance/`, [RFC-00D4](spec/rfcs/RFC-00D4-accountable-decision-bundle.md)         | Evidence protocols can be implemented independently of T81VM.                                  |
+| **Witness and hardware prototypes**           | Experimental receipts, trust mechanisms, and RTL datapaths               | `experiments/` and associated PRs                                                             | Experimental code is not automatically production-integrated or physically validated.          |
 
 A useful distinction when reading the repository:
 
@@ -105,7 +105,7 @@ A useful distinction when reading the repository:
 
 No single test count, badge, or README diagram establishes all four levels.
 
----
+______________________________________________________________________
 
 ## 4. Architecture: Components and Integration Boundaries
 
@@ -137,11 +137,11 @@ The following diagram is a **conceptual map**, not a claim that every edge is ex
 
 Evidence of integration must come from **actual call paths and executable tests**, not simply from the presence of adjacent subsystems.
 
-Investigation 08 identified candidate connections among TISC, T81VM, T81Lang, Axion, CanonFS, and the `t81 ai task assess-fixed` workflow. However, its benchmark baseline and several proposed ablations were not functionally equivalent. Consequently, the investigation **does not establish** an integrated performance, assurance, or compositional advantage. See [Investigation 08](docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md) and [PR #596](https://github.com/t81dev/t81-foundation/pull/596); the report's positive comparative verdicts require correction or qualification.
+Investigation 08 identified candidate connections among TISC, T81VM, T81Lang, Axion, CanonFS, and the `t81 ai task assess-fixed` workflow. However, its benchmark baseline and several proposed ablations were not functionally equivalent. Consequently, the investigation **does not establish** an integrated performance, assurance, or compositional advantage. See [Investigation 08](docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md) and the merged [PR #597 corrections](docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md). The corrected baseline still branches on input words rather than interpreting model weights; selected output parity does not establish equivalent computation or comparative assurance. The [alignment audit](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) records the remaining evidence limits.
 
 The central architectural research task is to establish a verified end-to-end path and compare it with a conventional implementation performing **the same computation, authorization, persistence, integrity checks, and replay**.
 
----
+______________________________________________________________________
 
 ## 5. Experimental Evidence and Limits
 
@@ -171,7 +171,7 @@ Investigations 01–04 explored binary64/ternary conversion boundaries, exact-ra
 
 [PR #595](https://github.com/t81dev/t81-foundation/pull/595) compared a general INT8 multiplier design, an optimized binary design for weights in `{-1, 0, +1}`, and an H-T1 sign/mask datapath. At `N = 64`, the report gives estimated generic synthesis areas of **36,547.5**, **6,564.5**, and **5,980.5**, respectively. The H-T1 design therefore showed approximately **1.10× lower area** than the optimized binary control, not an established intrinsic ternary advantage.
 
-The report did **not** measure frequency, throughput-normalized area efficiency, or energy. Subsequent code review identified testbench parameterization and synthesis-failure handling defects and challenged the use of raw gate area to trigger a broader research stopping criterion. The findings are **bounded and provisional**; they do not terminate all possible ternary hardware research.
+The report did **not** measure frequency, throughput-normalized area efficiency, or energy. Subsequent code review identified testbench parameterization and synthesis-failure handling defects and challenged the use of raw gate area to trigger a broader research stopping criterion. [PR #597](https://github.com/t81dev/t81-foundation/pull/597) corrected the parameter overrides and synthesis-failure handling, and retained frequency, throughput, and energy as unmeasured. The findings remain **bounded**; they do not terminate all possible ternary hardware research.
 
 See [`experiments/ternary_hardware_feasibility/FINDINGS_REPORT.md`](experiments/ternary_hardware_feasibility/FINDINGS_REPORT.md).
 
@@ -181,9 +181,9 @@ See [`experiments/ternary_hardware_feasibility/FINDINGS_REPORT.md`](experiments/
 
 **Scientific disposition: INCONCLUSIVE.** Its reported latency ratios are **not valid matched architectural performance comparisons**. Neither a system-level advantage nor a system-level disadvantage has been established by that experiment.
 
-See [`docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md`](docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md). Its original claims must be read alongside the review defects until corrected evidence supersedes them.
+See [`docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md`](docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md). Read it alongside the [corrective assessment](docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md). PR #597 marked C–F unimplemented, but its baseline still hard-codes classifications and its harness does not measure Config A re-execution. Comparative assurance remains unestablished.
 
----
+______________________________________________________________________
 
 ## 6. What T81 Does Not Yet Establish
 
@@ -199,7 +199,7 @@ T81 is **not** presently demonstrated to be:
 
 These are **evidence boundaries**, not declarations that future research is impossible. Conversely, untested possibilities should not be advertised as demonstrated capabilities.
 
----
+______________________________________________________________________
 
 ## 7. Reproduce the Existing Work
 
@@ -225,8 +225,10 @@ ctest --test-dir build --output-on-failure
 
 ### Research regressions
 
+This opt-in slice requires Ninja and OpenSSL 3 with Ed25519 support. Use a separate build directory: the runner selects its own CMake generator and flags. For offline configuration, append `--asio-source /path/to/asio-1-30-2`. It runs regressions rather than reproducing historical timings.
+
 ```bash
-python3 scripts/ci/run_research_regressions.py --build-dir build
+python3 scripts/ci/run_research_regressions.py --build-dir build-research
 ```
 
 ### CanonFS import, export, and policy-denial example
@@ -250,34 +252,34 @@ The final command is intended to exercise a denial path; a nonzero exit may be e
 
 **Reproducibility principle:** Run the original scripts and inspect their raw outputs, tool versions, inputs, and controls. A committed report is evidence of a reported result, not independent proof that its interpretation is correct.
 
----
+______________________________________________________________________
 
 ## 8. Research Lineage
 
 T81's development has evolved through several connected stages:
 
 1. **Discrete mathematics and Knuth-inspired investigation:** Positional representations, balanced ternary arithmetic, and alternative computational processes.
-2. **Hanoi CWEB experiments:** Early algorithmic exploration, later subjected to source-lineage reconstruction and arithmetic correctness probes; historical code is not presumed correct merely because it is foundational.
-3. **TISC, T81VM, and T81Lang:** Formalization of a software instruction set, executable interpreter, and language toolchain.
-4. **Axion, CanonFS, and evidence protocols:** Experiments in governed execution, reproducible artifacts, identity, and verification.
-5. **Comparative scientific investigations:** Independent numerical oracles, optimized binary baselines, software performance studies, hardware RTL feasibility, and integrated-system evaluation.
+1. **Hanoi CWEB experiments:** Early algorithmic exploration, later subjected to source-lineage reconstruction and arithmetic correctness probes; historical code is not presumed correct merely because it is foundational.
+1. **TISC, T81VM, and T81Lang:** Formalization of a software instruction set, executable interpreter, and language toolchain.
+1. **Axion, CanonFS, and evidence protocols:** Experiments in governed execution, reproducible artifacts, identity, and verification.
+1. **Comparative scientific investigations:** Independent numerical oracles, optimized binary baselines, software performance studies, hardware RTL feasibility, and integrated-system evaluation.
 
 The evolution of the project is part of its research record. Earlier ideas may be revised or rejected without erasing their provenance.
 
----
+______________________________________________________________________
 
 ## 9. Open Problems and Future Experimental Opportunities
 
 The following are **research directions**, not implemented capabilities or predictions of success. They are intended to expand the hypothesis space while keeping the evidence standard unchanged.
 
-| Opportunity | Falsifiable question | Minimum credible experiment |
-| --- | --- | --- |
-| Native multi-valued hardware | Can a physically realistic three-state device or circuit outperform a matched binary design at equal information capacity and reliability? | Characterized device assumptions, synthesis or measured silicon, normalized area/energy/delay, variability and interface overhead |
-| Workload-specific balanced ternary arithmetic | Are there signed, accumulation, rounding, or decision workloads where balanced ternary lowers total cost? | Correctness oracle, optimized binary baseline, conversion included, multiple workload sizes |
-| Adaptive T81/T243/T729 representation tiers | Can tier transitions reduce end-to-end resource use compared with a fixed representation? | Explicit transition policy, measured switching costs, fixed-tier controls and ablations |
-| Low-bit inference and data movement | Do ternary weights improve total inference efficiency at a fixed accuracy target? | Matched quantization quality, optimized low-bit binary baselines, memory/latency/energy accounting |
-| Deterministic, auditable execution | Which assurance guarantees can be obtained with acceptable overhead? | Same workload and guarantees in T81 and a conventional stack; fault injection and independent verification |
-| Composition effects | Does combining identity, policy, execution, and replay produce a measurable benefit beyond individual mechanisms? | Verified end-to-end trace, equivalent conventional control, valid component ablations |
+| Opportunity                                   | Falsifiable question                                                                                                                       | Minimum credible experiment                                                                                                       |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Native multi-valued hardware                  | Can a physically realistic three-state device or circuit outperform a matched binary design at equal information capacity and reliability? | Characterized device assumptions, synthesis or measured silicon, normalized area/energy/delay, variability and interface overhead |
+| Workload-specific balanced ternary arithmetic | Are there signed, accumulation, rounding, or decision workloads where balanced ternary lowers total cost?                                  | Correctness oracle, optimized binary baseline, conversion included, multiple workload sizes                                       |
+| Adaptive T81/T243/T729 representation tiers   | Can tier transitions reduce end-to-end resource use compared with a fixed representation?                                                  | Explicit transition policy, measured switching costs, fixed-tier controls and ablations                                           |
+| Low-bit inference and data movement           | Do ternary weights improve total inference efficiency at a fixed accuracy target?                                                          | Matched quantization quality, optimized low-bit binary baselines, memory/latency/energy accounting                                |
+| Deterministic, auditable execution            | Which assurance guarantees can be obtained with acceptable overhead?                                                                       | Same workload and guarantees in T81 and a conventional stack; fault injection and independent verification                        |
+| Composition effects                           | Does combining identity, policy, execution, and replay produce a measurable benefit beyond individual mechanisms?                          | Verified end-to-end trace, equivalent conventional control, valid component ablations                                             |
 
 **Hardware uncertainty is not hardware evidence.** Binary CPUs are appropriate for studying semantics, conversion overhead, algorithmic behavior, and software integration. They are not sufficient to settle the efficiency of future native ternary devices. Conversely, a hypothetical device cannot be used to claim current speed or energy advantages without a transparent, validated physical cost model.
 
@@ -289,13 +291,13 @@ For each new investigation, record the hypothesis and possible falsifier; establ
 
 A successful T81 investigation need not demonstrate a universal architecture. It may establish a **narrow, reproducible advantage** for a specific workload, reveal an unexpected limitation, produce a better experimental method, or show that a proposed mechanism adds no value under realistic constraints. Each outcome improves the research program if the evidence is trustworthy.
 
----
+______________________________________________________________________
 
 ## 10. Research Priorities
 
-**Immediate priority: restore experimental validity for Investigations 07 and 08.** Correct the hardware verification and synthesis harnesses; withdraw unsupported stopping claims; and establish a truly matched end-to-end conventional baseline or explicitly record why it is unavailable.
+**Immediate priority: resolve remaining experimental validity limits for Investigations 07 and 08.** PR #597 corrected hardware harness defects and marked unavailable ablations explicitly. Preserve those corrections and the negative findings; establish a genuinely matched end-to-end conventional baseline before drawing integrated performance or assurance conclusions.
 
-Once those corrections are reviewed, the next research choice should be based on evidence rather than an assumed architectural destination. Candidate directions include:
+With those corrections recorded, the next research choice should be based on evidence rather than an assumed architectural destination. Candidate directions include:
 
 - **Integrated-system equivalence and ablation:** Verify one real path through model execution, policy, artifact identity, and replay, then compare equivalent guarantees and costs.
 - **Cross-platform determinism:** Test precisely scoped numerical and execution traces across supported targets, with measured performance overhead.
@@ -303,7 +305,7 @@ Once those corrections are reviewed, the next research choice should be based on
 
 Prefer experimental infrastructure that can support competing hypotheses over features that presuppose one architectural destination. Avoid adding production features merely to make an experiment succeed. An **INCONCLUSIVE** result with a documented missing integration seam is preferable to a misleading positive or negative claim.
 
----
+______________________________________________________________________
 
 ## 11. Primary References
 
@@ -318,7 +320,7 @@ Prefer experimental infrastructure that can support competing hypotheses over fe
 - [Investigation 07 — PR #595](https://github.com/t81dev/t81-foundation/pull/595)
 - [Investigation 08 — PR #596](https://github.com/t81dev/t81-foundation/pull/596)
 
----
+______________________________________________________________________
 
 ## 12. Contributing
 

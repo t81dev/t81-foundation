@@ -1,5 +1,7 @@
 # T81 Foundation Project Profile
 
+> **Historical runtime profile — qualified October 27, 2026.** This body preserves the earlier runtime-oriented framing. Its comparative descriptions of mainstream systems and statements of uncommon assurance are not established by this profile. Use the [current README](../../README.md), [continuity charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md), and [alignment audit](../research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) for research positioning and evidence limits. Normative contracts and surface classifications remain unchanged.
+
 ## 1. Executive Positioning
 
 T81 Foundation delivers bit-exact, policy-enforced deterministic execution for governed computation surfaces, with a ternary-native data model and immutable provenance substrate in CanonFS.
