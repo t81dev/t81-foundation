@@ -1,0 +1,9 @@
+let k: i32 = 0;
+let a: bool = false;
+let b: i32 = 0;
+let c: i32 = 0;
+let result = run(k, a, b, c);
+fn run(k: i32, a: bool, b: i32, c: i32) -> i32 {
+if k == 0 { return (a && ((1 / c) == b)) as i32; }
+return (a || ((1 / c) == b)) as i32;
+}
