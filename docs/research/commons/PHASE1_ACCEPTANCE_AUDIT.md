@@ -225,3 +225,42 @@ Merged PR #615 claimed clean-environment test execution while referencing non-ex
 2. **Draft PR Status Preserved:** Draft PRs #609, #610, and #612–#614 remain **unmerged draft PRs**. No automatic merge or promotion has occurred.
 3. **Governance Activation Unchanged:** Governance activation remains **inactive/pending**. Canonical H01–H08 definitions remain unchanged.
 4. **Platform Testing Record:** Verified platform testing was conducted on **Linux x86_64**. Cross-platform testing on macOS or Windows remains unverified.
+
+---
+
+### 11.3 Corrective Resolution of PR #618 Codex Review Findings (PR #619 Verification)
+
+**Attribution:** Implementation-Author Execution & Verification Report
+**Scope:** Corrective resolution of PR #618 Codex findings, verification of original PR #607 historical source bytes, SHA-256 calculation, and clean checkout fetch procedure.
+
+**Environment Parameters:**
+- **Operating System / Architecture:** Linux 6.6.137+ x86_64
+- **Python Runtime:** Python 3.12.13
+- **Git Binary Version:** git version 2.46.2
+- **Python Dependencies:** `jsonschema==4.23.0` (`tools/research_commons/requirements.txt`)
+
+**Off-Main Pinned Revisions & Fetch Prerequisites:**
+In a fresh local checkout or shallow clone, pinned historical Git objects may be absent from local object storage. Execute the following explicit fetch commands prior to index validation:
+```sh
+# Baseline snapshot & corrected PR #608 source (initiative-608)
+git fetch origin 3d395cb604ddd49da3354d17f0505f2ed033757e
+# Original PR #607 merged commit source (initiative)
+git fetch origin 274421fd8e85c5b9bb4f165fce190715530f4e85
+# Unmerged draft PR #610 proposed corrections (initiative-610-proposed)
+git fetch origin d1eee548d4658df37b35d0cc3781b5a77cbae96b
+# Historical PR #605 E1 experiment sources (e1-*)
+git fetch origin 827d2accbf8ccb56afe3fe8d96dfb7251f249d7d
+```
+
+**Verification Analysis:**
+1. **Original PR #607 Source Verification:** Pinned `initiative` source in `manifest.v1.json` to original merged PR #607 commit SHA `274421fd8e85c5b9bb4f165fce190715530f4e85` with independently calculated content SHA-256 `bc412bb46f8393a90f7f776826b389a57a9e051f3c5595c9f5c13de20512bb1d`.
+2. **Historical Separation from PR #608:** Confirmed separate entry `initiative-608` pinned to revision `3d395cb604ddd49da3354d17f0505f2ed033757e` with content SHA-256 `0116bfeeb223b41e1944136840973cca878f7a3fb9c65ff68deb435c7dee514e`.
+3. **Reproduced Test Execution Results:**
+
+| Target Suite / Command | Tested Environment | Command Line | Exit Code | Result Summary | Evidence Digest |
+| :--- | :--- | :--- | :---: | :--- | :--- |
+| **Research Commons Contract** | Linux x86_64 / Py3.12 | `python3 -m unittest discover -s tests/research_commons -p "test_*.py"` | `0` | **20/20 PASSED** (18.6s) | N/A |
+| **Initiative Reconciliation** | Linux x86_64 / Py3.12 | `python3 -m unittest discover -s tests/python -p "test_initiative_reconciliation.py"` | `0` | **4/4 PASSED** (0.02s) | N/A |
+| **Commons Index Validation** | Linux x86_64 / Py3.12 | `python3 tools/research_commons/commons.py --validate` | `0` | **PASSED** (`valid_index`) | SHA-256: `a1fa8d17672d35364cd630ba8deba3498d18432095f3bf079ac7ad800aa0d6da` |
+
+4. **Independent Acceptance Disclaimer:** This implementation-author execution is recorded for audit traceability. Independent acceptance remains subject to separate reviewer verification.

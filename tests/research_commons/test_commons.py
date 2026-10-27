@@ -242,7 +242,13 @@ class DiscoveryContract(unittest.TestCase):
         self.assertIn('initiative-608', history['D-607-IDS']['superseded_by_refs'])
         self.assertEqual(history['D-608-H07-H08']['status'], 'unresolved')
         self.assertEqual(self.index.sources['initiative']['revision'],
-                         '2231f74d63b40f9e2fef8f81a4793af4c6c5d19c')
+                         '274421fd8e85c5b9bb4f165fce190715530f4e85')
+        self.assertEqual(self.index.sources['initiative']['sha256'],
+                         'bc412bb46f8393a90f7f776826b389a57a9e051f3c5595c9f5c13de20512bb1d')
+        self.assertEqual(self.index.sources['initiative-608']['sha256'],
+                         '0116bfeeb223b41e1944136840973cca878f7a3fb9c65ff68deb435c7dee514e')
+        self.assertNotEqual(self.index.sources['initiative']['sha256'],
+                            self.index.sources['initiative-608']['sha256'])
         for ref in ('initiative-610-proposed', 'reconciliation-610-proposed'):
             self.assertEqual(self.index.sources[ref]['role'], 'proposal')
         self.modified(lambda m: next(s for s in m['sources']

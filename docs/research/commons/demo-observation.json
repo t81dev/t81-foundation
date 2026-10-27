@@ -1,6 +1,6 @@
 {
   "scope": "Implementation-author API demonstration and fresh-client test target; no independent-model review or experiment execution. PR610 remains unmerged.",
-  "manifest_sha256": "0e99f1bcf8039d05a209178ca2122d69eb68ae5881c77fd33abb4eedaa19601c",
+  "manifest_sha256": "a1fa8d17672d35364cd630ba8deba3498d18432095f3bf079ac7ad800aa0d6da",
   "observations": [
     {
       "request": {
@@ -8,7 +8,7 @@
         "operation": "list_research_tracks",
         "arguments": {}
       },
-      "response_sha256": "6d1d3760e505dacd41658e7843001af2f211ed98422ddaba5302885b1ecaa8d5",
+      "response_sha256": "e0762080c7ae45aa61f57b607e32bf28be4aaedd42ba2c2ac73daf95a6d359c5",
       "result_type": "list"
     },
     {
@@ -17,7 +17,7 @@
         "operation": "list_hypotheses",
         "arguments": {}
       },
-      "response_sha256": "3e0b5e583c592985fbf763d24bebb7177d439e3c25bfde6ddaf41498a3827540",
+      "response_sha256": "6dd472911464593a7746aa57dc074adf572ed2f7a6222e689b52b9cad4efff12",
       "result_type": "list"
     },
     {
@@ -28,7 +28,7 @@
           "hypothesis_id": "H08"
         }
       },
-      "response_sha256": "08f4a0c87c1b1c167525c67a8feb294dee6e9cf8bcfdf3c05e5f6c90881b2978",
+      "response_sha256": "27230148283b5479abe8e5e3775acc84257413055aceedf0d90bf0f918b10b65",
       "result_type": "dict"
     },
     {
@@ -39,7 +39,7 @@
           "evidence_id": "register"
         }
       },
-      "response_sha256": "931d7876b4b321350cf09bca7c1595485885f22f1cda6afa98624bc8fa766eb1",
+      "response_sha256": "ac86399a26e582041f5488032ed10d5dd77ce220ed9641c2db9304579ed633c4",
       "result_type": "dict"
     },
     {
@@ -50,7 +50,7 @@
           "hypothesis_id": "H08"
         }
       },
-      "response_sha256": "c2220882b473bf789600dd6d45d01293a631139916214c8688448ed7cf285142",
+      "response_sha256": "7d3cd73271a4654a3750dd4a7d159f12a754e1ef3ddb5b8bea8e54d13b64de75",
       "result_type": "dict"
     },
     {
@@ -59,7 +59,7 @@
         "operation": "list_open_research_questions",
         "arguments": {}
       },
-      "response_sha256": "3cb2e280895c38c00fd354384cab3dbafa70b73cd7bea48aa5a153292239a5ac",
+      "response_sha256": "710b341989d79408fe57557c8ca9ce924294a9e7f4a7e2fcfae7ac7b916ef3d3",
       "result_type": "list"
     }
   ],
