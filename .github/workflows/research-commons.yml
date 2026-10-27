@@ -35,8 +35,19 @@ jobs:
         run: git fetch origin 827d2accbf8ccb56afe3fe8d96dfb7251f249d7d
       - name: Explicit setup of unmerged PR610 proposal evidence (not main)
         run: git fetch origin d1eee548d4658df37b35d0cc3781b5a77cbae96b
+      - name: Explicit setup of historical PR607 source (preserve original)
+        run: git fetch origin 274421fd8e85c5b9bb4f165fce190715530f4e85
       - name: Install schema validator
         run: python -m pip install -r tools/research_commons/requirements.txt
+      - name: Regenerate implementation-author receipt in CI workspace
+        run: python -B tools/research_commons/regenerate_demo_receipt.py --output docs/research/commons/demo-observation.json
+      - name: Upload regenerated receipt for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: commons-receipt-${{ matrix.os }}-py${{ matrix.python }}
+          path: docs/research/commons/demo-observation.json
+          if-no-files-found: error
       - name: Validate immutable discovery index
         run: python -B tools/research_commons/commons.py --validate
       - name: Verify discovery contracts
