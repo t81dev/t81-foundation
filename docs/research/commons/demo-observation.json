@@ -1,0 +1,71 @@
+{
+  "scope": "Implementation-author API demonstration and fresh-client test target; no independent-model review or experiment execution. PR610 remains unmerged.",
+  "manifest_sha256": "a3ee2d288ac7b00176beae32f854c373194b11556d83293396bbcd7c02d688bf",
+  "observations": [
+    {
+      "request": {
+        "protocol": "t81.research-commons.v1",
+        "operation": "list_research_tracks",
+        "arguments": {}
+      },
+      "response_sha256": "65f22b8fed14c949fdcce348f48a694b153812c5124e4523e1663e58ac363502",
+      "result_type": "list"
+    },
+    {
+      "request": {
+        "protocol": "t81.research-commons.v1",
+        "operation": "list_hypotheses",
+        "arguments": {}
+      },
+      "response_sha256": "fc9020dfdcec640a066adf527915737bcc2119fd255b1395ff00c9e1a64ab0d6",
+      "result_type": "list"
+    },
+    {
+      "request": {
+        "protocol": "t81.research-commons.v1",
+        "operation": "get_hypothesis",
+        "arguments": {
+          "hypothesis_id": "H08"
+        }
+      },
+      "response_sha256": "dfbd76bfa2cce8163f0f017d4fdadb5ade069197dd48922d8e8050cf24a01428",
+      "result_type": "dict"
+    },
+    {
+      "request": {
+        "protocol": "t81.research-commons.v1",
+        "operation": "get_evidence",
+        "arguments": {
+          "evidence_id": "register"
+        }
+      },
+      "response_sha256": "08a2713b6c04cec1a8f5dfb52b77055a60b6f60bafeed322c3a4716ea73d7b0c",
+      "result_type": "dict"
+    },
+    {
+      "request": {
+        "protocol": "t81.research-commons.v1",
+        "operation": "get_reproduction_instructions",
+        "arguments": {
+          "hypothesis_id": "H08"
+        }
+      },
+      "response_sha256": "d7cc90cb4f847c30a52841ced83552468ec97385ac8e1f9b592ad5aa39f50295",
+      "result_type": "dict"
+    },
+    {
+      "request": {
+        "protocol": "t81.research-commons.v1",
+        "operation": "list_open_research_questions",
+        "arguments": {}
+      },
+      "response_sha256": "374e2492bc0e21bc6aa533a2076a34971bbafffd5f9aa89d0a8b2b267fa1488a",
+      "result_type": "list"
+    }
+  ],
+  "proposal_validation": {
+    "status": "valid_proposal_shape",
+    "execution": "unavailable",
+    "limitation": "Shape/reference checks establish neither authorization authenticity nor scientific acceptance."
+  }
+}

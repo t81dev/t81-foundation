@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:t81:research-commons:request:v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "t81.research-commons.v1"
+        },
+        "operation": {
+          "const": "list_research_tracks"
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "t81.research-commons.v1"
+        },
+        "operation": {
+          "const": "list_hypotheses"
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "t81.research-commons.v1"
+        },
+        "operation": {
+          "const": "get_hypothesis"
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "hypothesis_id": {
+              "enum": [
+                "H01",
+                "H02",
+                "H03",
+                "H04",
+                "H05",
+                "H06",
+                "H07",
+                "H08"
+              ]
+            }
+          },
+          "required": [
+            "hypothesis_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "t81.research-commons.v1"
+        },
+        "operation": {
+          "const": "get_evidence"
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "evidence_id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "evidence_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "t81.research-commons.v1"
+        },
+        "operation": {
+          "const": "get_reproduction_instructions"
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {
+            "hypothesis_id": {
+              "enum": [
+                "H01",
+                "H02",
+                "H03",
+                "H04",
+                "H05",
+                "H06",
+                "H07",
+                "H08"
+              ]
+            }
+          },
+          "required": [
+            "hypothesis_id"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "t81.research-commons.v1"
+        },
+        "operation": {
+          "const": "list_open_research_questions"
+        },
+        "arguments": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "operation",
+        "arguments"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

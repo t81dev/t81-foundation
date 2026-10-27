@@ -42,3 +42,9 @@ Research inquiries in T81 are organized into three coordinated tracks governed b
 
 Operational index only. Authority hierarchy remains:
 /spec > docs/architecture/OVERVIEW.md > /docs > /book.
+
+## Research Commons discovery
+
+The [read-only Research Commons](commons/README.md) indexes canonical H01–H08,
+negative evidence, reproduction instructions and unresolved discrepancies with
+pinned source identities. It preserves the authoritative research record.

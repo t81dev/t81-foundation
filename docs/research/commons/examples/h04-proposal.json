@@ -1,0 +1,55 @@
+{
+  "id": "example-h04-proposal",
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "status": "proposed",
+  "hypothesis_id": "H04",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "Implementation author; illustrative proposal, no independent verification"
+  },
+  "repository_revision": "274421fd8e85c5b9bb4f165fce190715530f4e85",
+  "evidence": [
+    {
+      "source_ref": "h04-refinement",
+      "relationship": "context",
+      "scope": "Specified four-arm discriminator"
+    },
+    {
+      "source_ref": "h04-r02",
+      "relationship": "contradictory",
+      "scope": "Reported symbolic-model negative; not all workloads"
+    },
+    {
+      "source_ref": "h04-limitations",
+      "relationship": "unresolved",
+      "scope": "Mode granularity and physical coefficients remain limited"
+    }
+  ],
+  "uncertainty": "Illustrative unexecuted proposal discovered solely from pinned repository evidence. No measured advantage claimed.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": null
+  },
+  "research_question": "Does any preregistered equal-domain trace family retain a ternary radix benefit against adaptive binary after transition and conversion accounting?",
+  "falsification_criterion": "Reject scoped advantage if AT fails to beat AB in the declared model region, fails the exact range oracle, or the effect vanishes after equal packing/control costs.",
+  "matched_control": "FB, AB, FT, AT with identical value domains, trace information and symmetric packing; adaptation-disabled and mode-relabeling controls.",
+  "method": "First audit R02 formulas against the R01 specification and exact independent oracle. Preregister new domains and trace distributions only after resolving discrepancies; preserve original results.",
+  "measurement_plan": "Report vector of exact storage/metadata/conversion/selection counts and full parameter sweep. No p-values for exact model counts; dimensional coefficients require independent data. No device or timing inference.",
+  "expected_artifacts": [
+    "Preregistered protocol",
+    "Independent exact oracle and negative controls",
+    "Full trace ledger and parameter sweep",
+    "Raw commands, environment, hashes and failure log"
+  ],
+  "resource_requirements": [
+    "Human-reviewed scope and bounded local CPU/scratch budget",
+    "Separate scratch checkout/output directory"
+  ],
+  "security_requirements": [
+    "No network or model credentials required for model-only proposal",
+    "No changes to ISA, VM, policy, CanonFS, historical outcomes or governance"
+  ]
+}

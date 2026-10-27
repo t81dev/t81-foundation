@@ -164,3 +164,43 @@ A good contribution usually makes at least one of these noticeably better withou
 - When in doubt, reduce ambiguity rather than add surface area.
 
 For autonomous agents: reference the current priority lanes and stable surfaces when proposing or making changes. Prefer edits that reduce maintainer memory load. If a change would expand a draft area, narrow the scope first instead of broadening the implementation opportunistically.
+
+## Research Commons onboarding and contributions
+
+The [Research Commons](docs/research/commons/README.md) indexes authoritative
+research, historical negative results and unresolved discrepancies. Its
+[versioned manifest](docs/research/commons/manifest.v1.json) pins each source by
+commit, path and hash. The CLI is offline and read-only; use its six discovery
+operations to inspect evidence before proposing work. Source paths resolve at
+their pinned revisions, including evidence merged outside main. The dated
+canonical register supplies H01–H08; newer initiative ledgers do not redefine
+those identities. See the [fresh-agent example](docs/research/commons/ONBOARDING_EXAMPLE.md).
+
+For a new experiment, prepare an experiment-proposal document under the Commons
+schema: canonical hypothesis, actual author/agent attribution (unknown model
+identity stays null), exact revision, falsifier, equivalent optimized control,
+independent oracle, methods, measurement/uncertainty plan, expected raw artifacts,
+resource/security budget and explicit human authorization status. Preserve the
+proposal separately from accepted findings. Discovery grants no execution rights.
+
+For adversarial review, disclose your relationship to the author and prior
+context. Inspect source call paths, exact domains, baseline competence, conversion
+costs, omitted failures and whether assertions actually executed. Attempt to
+falsify the claim; report inconclusive or blocked checks rather than guessing.
+Use independent-review, reproducibility-report and discrepancy schemas to retain
+commands, environments, evidence hashes, failures and limits. Repeated AI
+summaries, separate role labels, commit authorship and self-authored passing tests
+are not independent scientific validation. Claim independent execution only when
+it actually happened and retain its raw evidence.
+
+Append negative and inconclusive outcomes with their tested scope; preserve raw
+records and link corrections/superseding fields rather than replacing failures.
+Do not promote modeled results into hardware measurements or source existence
+into tested behavior. Hashes establish content identity, not truth or authenticity.
+
+Human decisions govern research direction, experiment/resource authorization,
+RFC acceptance, security boundaries, governance activation, official publication,
+merges and changes to protected/frozen artifacts. The Commons cannot perform
+these operations. Existing explicit session authorization still governs ordinary
+implementation work; a proposed record or an `authorized` JSON field cannot
+substitute for the applicable human decision or activate Protocol 001.
