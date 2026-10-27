@@ -1,0 +1,117 @@
+{
+  "audit_source_commit": "26b10e7f28262965d2b502a91c446837c08fd5f4",
+  "binaryen_npm": {
+    "integrity": "sha512-4Usg7yEvwO3FMso3Oov6qkOOHSod1IEv+boKkh77kTljM+eNBouqCTbqWswGzbG+vDNO/b/v2C4gfEh1WgB9Lg==",
+    "resolved": "https://registry.npmjs.org/binaryen/-/binaryen-132.0.0.tgz",
+    "version": "132.0.0"
+  },
+  "generation_and_primary_gate_source_commit": "410049655db27626d07cb2c0d0a67ba8e90470eb",
+  "hardware": {
+    "cpu": "Apple M2",
+    "memory_bytes": 8589934592,
+    "physical_cores": 8,
+    "source": "sysctl -n hw.memsize hw.physicalcpu machdep.cpu.brand_string (read with sandbox escalation)"
+  },
+  "raw_observation_disposition": {
+    "authored_store_isolation": "Initial authored runs used default store; no store opcodes. Independent replay uses an empty temporary store for every authored and compiled case.",
+    "commands.json": "Original complete primary-run command records.",
+    "independent-replay.json": "249 fresh-process TISC replays with corrected fault-step count, state storage fields, checked flags and boolean RHS ordering. All results/faults unchanged.",
+    "raw-parity.json": "Original 4722 parity observations. dynamic_instructions on four faulting TISC observations undercounts by one; superseded for that field by independent-replay.json."
+  },
+  "source_files": {
+    "CMakeLists.txt": "01ccdf88d30e3ee8dd4f2d08813cd0b2137b9bb52bb1a66df5d5a807053c9f3a",
+    "ENTRY_CONTRACT.md": "4ed3eb8b11d79be11360309cf1b7dd6d2da7472086627b715dc0c9aa839bb812",
+    "audit.py": "b7339c1df5df80a71d1a11927b828b21b28670ff9719bbd03bf3f4bb116d33d0",
+    "driver.cpp": "a1a697168bef42b0c65b0214961675ef2669a3aa2c28a63a5f3037750f2be8d1",
+    "oracle.py": "7cd63b54dc6e83758e580afbe92bdf667fc49ad28a365cc80d016f76b3ed4b10",
+    "run.py": "c51db7853076a9eecd3766f4304c0c575ae045b8903a6339edf6237f2a077a14"
+  },
+  "tools": {
+    "clang": {
+      "argv": [
+        "clang",
+        "--version"
+      ],
+      "binary": {
+        "bytes": 139112,
+        "path": "/opt/homebrew/Cellar/llvm/22.1.1/bin/clang-22",
+        "sha256": "7e5bc6170b8a2f2e6c9583e4544bdce89ad6a66e51be2d81e55dedd991bff19e"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Homebrew clang version 22.1.1\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg\n"
+    },
+    "cmake": {
+      "argv": [
+        "cmake",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n"
+    },
+    "host_cxx": {
+      "argv": [
+        "/usr/bin/c++",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n"
+    },
+    "ninja": {
+      "argv": [
+        "ninja",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "1.13.2\n"
+    },
+    "node": {
+      "argv": [
+        "node",
+        "--version"
+      ],
+      "binary": {
+        "bytes": 68384,
+        "path": "/opt/homebrew/Cellar/node/25.9.0_1/bin/node",
+        "sha256": "a46ed02589ca3af795237111ff854262064f8ff5c5b58d75c1509f37311eb15e"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "v25.9.0\n"
+    },
+    "npm": {
+      "argv": [
+        "npm",
+        "--version"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "11.12.1\n"
+    },
+    "os": {
+      "argv": [
+        "sw_vers"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t26.5.2\nBuildVersion:\t\t25F84\n"
+    },
+    "wasm-ld": {
+      "argv": [
+        "wasm-ld",
+        "--version"
+      ],
+      "binary": {
+        "bytes": 59040,
+        "path": "/opt/homebrew/Cellar/lld/22.1.1/bin/lld",
+        "sha256": "40dabccffe9f0ce63d0bc977ec15dcd9e67579faccdba65548ee0a6098a1322c"
+      },
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "Homebrew LLD 22.1.1\n"
+    }
+  }
+}
