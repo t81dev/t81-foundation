@@ -156,3 +156,17 @@ these collectors. The missing contract fixture and output-schema discrepancies
 remain unresolved. An independent human should review the exact source pins,
 negative receipts, baseline competence, host permissions, and remediation scope
 before accepting the audit or exposing any interface to external agents.
+
+## Publication baseline check
+
+While this audit was being published, main advanced to
+`903ea2fe653df0d636e0543f9788dd8442738045` (PR611 research acceptance/integration
+material). The evidence baseline remains the original `fabc7aa9`; no measurements
+were silently repinned. A Git tree comparison of `skills`, `tools/cli`,
+`tools/model`, `vm`, `fs`, `kernel`, `include`, `spec`, `tests/cpp` and root
+`CMakeLists.txt` found **no changes** between those two revisions. Thus the
+operational source paths behind the recorded findings are unchanged at that
+publication snapshot. Later research/Commons material was not re-audited or
+promoted into independent findings. Descriptions of draft Commons above refer
+to the explicitly pinned source record; current PR/main status must be checked
+separately. PR609 and PR610 were not modified by this audit.
