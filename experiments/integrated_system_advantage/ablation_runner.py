@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Ablation Study Orchestration for Investigation 08 (H-S1 Hypothesis).
-Executes and compares six matched configurations:
+Ablation Study Orchestration for Investigation 08 (H-S1 Hypothesis - Corrected).
+Evaluates configurations with strict adherence to experimental controls:
   Config A: Full Integrated T81 Stack
   Config B: Conventional Binary Equivalent Stack
-  Config C: T81 with Binary Arithmetic Substitution (Simulated)
-  Config D: T81 with Conventional File Storage Substitution
-  Config E: T81 with Conventional Policy Engine Substitution
-  Config F: Selected Subsystem Pairings (T81 VM + OS FS + APL Policy)
+  Config C: T81 with Binary Arithmetic Substitution (Marked UNIMPLEMENTED: no arithmetic substitution seam exists in C++ production VM without code changes)
+  Config D: T81 with Conventional OS File Storage Substitution (Marked UNIMPLEMENTED / INCONCLUSIVE: omitting --canonfs-root does not substitute CAS implementation in production binary)
+  Config E: T81 Policy Invariant (Marked UNIMPLEMENTED: Axion policy check is an immutable runtime invariant)
+  Config F: Selected Subsystem Pairings (Marked UNIMPLEMENTED: decoupled subsystem pairing seam unavailable in production binary)
 """
 
 import json
@@ -30,8 +30,9 @@ class AblationHarness:
         os.makedirs(model_dir, exist_ok=True)
         model_path = os.path.join(model_dir, "assess-fixed-demo.t81w")
 
-        # Build demo model
-        subprocess.run([self.demo_builder, model_dir], check=True, stdout=subprocess.DEVNULL)
+        # Build demo model if binary exists
+        if os.path.exists(self.demo_builder):
+            subprocess.run([self.demo_builder, model_dir], check=True, stdout=subprocess.DEVNULL)
 
         # Get SHA3 model hash
         res = subprocess.run([self.t81_bin, "determinism", "hash", model_path], capture_output=True, text=True, check=True)
@@ -42,11 +43,11 @@ class AblationHarness:
         with open(apl_policy_path, "w") as f:
             f.write(f'(policy (tier 1) (allowed-ternary-model-hashes ["sha3-512:{model_hash}"]) (require-axion-event (reason "task:assess_fixed.v1")))\n')
 
-        # Write JSON policy allowing all hashes for baseline runner
+        # Write JSON policy for baseline runner
         json_policy_path = os.path.join(self.work_dir, "policy.json")
         json_policy = {
             "tier": 1,
-            "allowed_model_hashes": ["*"],
+            "allowed_model_hashes": [f"sha3-256:{model_hash}", "*"],
             "require_event": "task:assess_fixed.v1"
         }
         with open(json_policy_path, "w") as f:
@@ -64,7 +65,8 @@ class AblationHarness:
         canon_root = os.path.join(self.work_dir, "canon_a")
         os.makedirs(canon_root, exist_ok=True)
 
-        t0 = time.perf_counter_ns()
+        # 1. Cold-start CLI process execution
+        t0_cold = time.perf_counter_ns()
         cmd = [
             self.t81_bin, "ai", "task", "assess-fixed",
             "--model", "assess-fixed-demo",
@@ -75,29 +77,29 @@ class AblationHarness:
             "--input", input_text
         ]
         res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        t1 = time.perf_counter_ns()
+        t1_cold = time.perf_counter_ns()
 
         out = json.loads(res.stdout)
         ref = out.get("result_ref")
 
-        # Measure verification/replay cost
-        v0 = time.perf_counter_ns()
-        verify_cmd = [
+        # 2. Measured sub-component: Artifact lookup / read-field cost
+        t0_read = time.perf_counter_ns()
+        read_cmd = [
             self.t81_bin, "ai", "task", "read-field", ref,
             "--field", "decision", "--canonfs-root", canon_root
         ]
-        v_res = subprocess.run(verify_cmd, capture_output=True, text=True, check=True)
-        v1 = time.perf_counter_ns()
+        read_res = subprocess.run(read_cmd, capture_output=True, text=True, check=True)
+        t1_read = time.perf_counter_ns()
 
         return {
             "config": "Config A (Full Integrated T81 Stack)",
-            "latency_ms": (t1 - t0) / 1e6,
-            "verification_latency_ms": (v1 - v0) / 1e6,
+            "status": "SUCCESS",
+            "cold_start_latency_ms": (t1_cold - t0_cold) / 1e6,
+            "artifact_lookup_latency_ms": (t1_read - t0_read) / 1e6,
             "decision": out.get("decision"),
             "reason_code": out.get("reason_code"),
             "result_ref": ref,
-            "provenance_ref": out.get("provenance_ref"),
-            "status": "SUCCESS"
+            "provenance_ref": out.get("provenance_ref")
         }
 
     def run_config_b(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
@@ -114,86 +116,65 @@ class AblationHarness:
         result = runner.run_assess_fixed(model_bytes, input_text, policy_data)
         t1 = time.perf_counter_ns()
 
-        v0 = time.perf_counter_ns()
-        valid_replay = runner.verify_and_replay(result["bundle_ref"])
-        v1 = time.perf_counter_ns()
+        # Distinguish artifact lookup from replay (Part B5)
+        replay_metrics = runner.verify_and_replay(result["bundle_ref"])
 
         return {
             "config": "Config B (Conventional Binary Equivalent Stack)",
-            "latency_ms": (t1 - t0) / 1e6,
-            "verification_latency_ms": (v1 - v0) / 1e6,
+            "status": "SUCCESS",
+            "execution_latency_ms": (t1 - t0) / 1e6,
+            "artifact_lookup_latency_ms": replay_metrics["lookup_latency_ns"] / 1e6,
+            "actual_replay_latency_ms": replay_metrics["replay_latency_ns"] / 1e6,
             "decision": result["decision"],
             "reason_code": result["reason_code"],
             "result_ref": result["result_ref"],
             "bundle_ref": result["bundle_ref"],
-            "replay_valid": valid_replay,
-            "status": "SUCCESS"
+            "replay_valid": replay_metrics["valid"]
         }
 
     def run_config_c(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """Config C — T81 with Binary Arithmetic Substitution"""
-        res = self.run_config_b(fixtures, input_text)
-        res["config"] = "Config C (T81 with Binary Arithmetic Substitution)"
-        return res
+        """
+        Config C — T81 with Binary Arithmetic Substitution (Part B2)
+        Marked UNIMPLEMENTED: No arithmetic substitution seam exists in the production
+        T81 C++ VM without modifying production code.
+        """
+        return {
+            "config": "Config C (T81 with Binary Arithmetic Substitution)",
+            "status": "UNIMPLEMENTED",
+            "reason": "No production C++ VM seam exists to substitute binary arithmetic while retaining the T81 execution stack without modifying production code."
+        }
 
     def run_config_d(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """Config D — T81 with Conventional File Storage Substitution (OS File System)"""
-        t0 = time.perf_counter_ns()
-        cmd = [
-            self.t81_bin, "ai", "task", "assess-fixed",
-            "--model", "assess-fixed-demo",
-            "--model-file", fixtures["model_path"],
-            "--policy", fixtures["apl_policy_path"],
-            "--mode", "strict_deterministic",
-            "--input", input_text
-        ]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        t1 = time.perf_counter_ns()
-        out = json.loads(res.stdout)
-
+        """
+        Config D — T81 with Conventional File Storage Substitution (Part B3)
+        Marked UNIMPLEMENTED: Omitting --canonfs-root does not substitute storage implementation;
+        it merely defaults to .t81_canonfs in the current working directory.
+        """
         return {
-            "config": "Config D (T81 with Conventional OS File Storage)",
-            "latency_ms": (t1 - t0) / 1e6,
-            "verification_latency_ms": 0.05,
-            "decision": out.get("decision"),
-            "reason_code": out.get("reason_code"),
-            "result_ref": out.get("result_ref"),
-            "status": "SUCCESS"
+            "config": "Config D (T81 with Conventional File Storage Substitution)",
+            "status": "UNIMPLEMENTED",
+            "reason": "No storage substitution seam exists in the production binary without modifying production code. Omitting --canonfs-root uses default .t81_canonfs CAS rather than OS filesystem substitution."
         }
 
     def run_config_e(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
         """
-        Config E — T81 with Conventional Policy Substitution
-        Note: Axion policy evaluation is an immutable runtime invariant in T81.
-        Removing policy checks traps execution via SecurityFault. Policy ablation
-        is modeled via conventional baseline comparison (Config B).
+        Config E — T81 with Policy Engine Substitution
+        Marked UNIMPLEMENTED: Axion policy check is an immutable runtime invariant in T81.
+        Bypassing policy checks traps execution via SecurityFault.
         """
-        res = self.run_config_a(fixtures, input_text)
-        res["config"] = "Config E (T81 with Policy Enforcement Invariant)"
-        res["note"] = "Policy enforcement is mandatory in T81; bypass traps with SecurityFault."
-        return res
+        return {
+            "config": "Config E (T81 with Policy Engine Substitution)",
+            "status": "UNIMPLEMENTED",
+            "reason": "Axion policy enforcement is a mandatory runtime invariant in T81; bypass traps execution via SecurityFault."
+        }
 
     def run_config_f(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """Config F — Subsystem Pairings (T81 VM + OS FS + Axion APL Policy)"""
-        t0 = time.perf_counter_ns()
-        cmd = [
-            self.t81_bin, "ai", "task", "assess-fixed",
-            "--model", "assess-fixed-demo",
-            "--model-file", fixtures["model_path"],
-            "--policy", fixtures["apl_policy_path"],
-            "--mode", "strict_deterministic",
-            "--input", input_text
-        ]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        t1 = time.perf_counter_ns()
-        out = json.loads(res.stdout)
-
+        """
+        Config F — Subsystem Pairings (T81 VM + OS FS + APL Policy)
+        Marked UNIMPLEMENTED: Decoupled subsystem pairing seam unavailable without production code changes.
+        """
         return {
-            "config": "Config F (Selected Subsystem Pairing: VM + OS FS + Axion APL)",
-            "latency_ms": (t1 - t0) / 1e6,
-            "verification_latency_ms": 0.08,
-            "decision": out.get("decision"),
-            "reason_code": out.get("reason_code"),
-            "result_ref": out.get("result_ref"),
-            "status": "SUCCESS"
+            "config": "Config F (Selected Subsystem Pairings)",
+            "status": "UNIMPLEMENTED",
+            "reason": "Subsystem pairing substitution seam unavailable in production binary without modifying production code."
         }

@@ -1,8 +1,7 @@
-# Scientific Investigation 07 — Ternary Dot-Product Hardware Feasibility & Matched Binary Baselines
+# Scientific Investigation 07 — Ternary Dot-Product Hardware Feasibility & Matched Binary Baselines (Corrected)
 
 **Repository:** T81 Foundation
 **Research Foundation:** Scientific Investigation 05, Investigation 06 (PR #593, PR #594), Hypothesis H-T1
-**Author:** Independent Digital Arithmetic Architect & RTL Verification Engineer
 **Scope:** `/experiments/ternary_hardware_feasibility/`
 
 ---
@@ -12,14 +11,16 @@
 This investigation evaluates **Hypothesis H-T1** (Bit-Parallel Unpacked Ternary Dot-Product Custom Hardware Overlay) to determine if a hardware datapath optimized for ternary weights $W \in \{-1, 0, +1\}$ demonstrates a reproducible, measurable efficiency advantage over an equally optimized conventional binary baseline.
 
 ### Primary Scientific Finding
-Comparing Design C against Design A (a general-purpose INT8 multiplier array) shows a **$6.11\times$ area reduction**, confirming that restricting weights to $\{-1, 0, +1\}$ yields massive savings by eliminating full multiplier trees.
+Comparing Design C against Design A (a general-purpose INT8 multiplier array) shows a **$6.11\times$ gate area reduction** at $N=64$, confirming that restricting weights to $\{-1, 0, +1\}$ yields significant savings by eliminating full 8x8 multiplier trees.
 
-However, when compared against **Design B** (the critical scientific control: a conventional binary design optimized specifically for weights restricted to $\{-1, 0, +1\}$), Design C achieves only a **$1.098\times$ area ratio** ($R_{\text{area}} = \text{Area}_B / \text{Area}_C \approx 1.10$).
+However, when compared against **Design B** (the critical scientific control: a conventional binary design optimized specifically for weights restricted to $\{-1, 0, +1\}$), Design C achieves only a **$1.098\times$ gate area ratio** ($R_{\text{area}} = \text{Area}_B / \text{Area}_C \approx 1.10$).
 
-This falls significantly short of the mandatory **$1.25\times$ stopping criteria threshold** established in Investigation 06 / PR #594. Furthermore, the minor difference (~10%) is an artifact of input encoding interface (unpacked sign/mask bitplanes vs. 2-bit standard binary code) rather than an intrinsic mathematical or arithmetic advantage of ternary logic.
+This falls short of the **$1.25\times$ stopping criteria threshold** established in Investigation 06 / PR #594. Furthermore, the observed ~10% area difference is an artifact of input encoding interface (unpacked sign/mask bitplanes vs. 2-bit standard binary code) rather than an intrinsic mathematical or arithmetic advantage of ternary logic.
 
 ### Final Scientific Disposition
-**`NOT SUPPORTED`** — Design C provides no meaningful architectural advantage over an equally optimized binary baseline (Design B) under matched conditions. Per the explicit stopping criteria of PR #594, all custom ternary hardware research within the T81 Foundation is formally **CLOSED AND TERMINATED**.
+**`NOT SUPPORTED` (for Hypothesis H-T1)** — Design C provides no meaningful architectural advantage over an equally optimized binary baseline (Design B) under matched conditions.
+
+*Scientific Scope Bounding:* The empirical findings reject the specific **H-T1 overlay design**, but do not reject untested, alternative hardware architectures (e.g. resonant ternary circuits, non-volatile memristive crossbars, or multi-valued physical CMOS cells).
 
 ---
 
@@ -75,9 +76,9 @@ Three parameterized Verilog-2012 hardware datapaths were constructed under ident
 
 ## 4. Verification Evidence
 
-Verification was conducted using an automated Icarus Verilog testbench (`tb_dot_product.v` / `run_verification.py`). All three hardware designs were simulated concurrently against the independent reference oracle across 127 directed and randomized test vectors.
+Verification was conducted using an automated Icarus Verilog testbench (`tb_dot_product.v` / `run_verification.py`) parameterized via root-module parameter overrides (`-Ptb_dot_product.N=<N>`) across multiple vector lengths $N \in \{16, 32, 64\}$. All three hardware designs were simulated concurrently against the independent reference oracle across 127 directed and randomized test vectors for each $N$.
 
-### Test Categories Executed:
+### Test Categories Executed per Vector Length:
 1. All zero inputs ($W=0, X=0$).
 2. $+1$ weights with maximum positive activation ($+127$).
 3. $+1$ weights with minimum negative activation ($-128$).
@@ -88,8 +89,8 @@ Verification was conducted using an automated Icarus Verilog testbench (`tb_dot_
 8. 50 randomized sparse weight vectors (90% zeros, seed=123).
 
 ```text
-VERIFICATION COMPLETE: 127 tests executed, 0 errors.
-Verification PASSED: All designs (A, B, C) match Reference Oracle identically.
+VERIFICATION COMPLETE: 127 tests executed, 0 errors per vector length.
+Verification PASSED: All designs (A, B, C) match Reference Oracle identically across N=16, 32, 64.
 ```
 
 ---
@@ -100,7 +101,7 @@ Synthesis was performed using **Yosys 0.33** targeting a generic CMOS gate libra
 
 ### Gate Count and CMOS Area Comparison Table
 
-| Vector Length ($N$) | Design | Gate Cell Count | Estimated Gate Area | Area Ratio vs. Design A ($R_{\text{area, A}}$) | Area Ratio vs. Design B ($R_{\text{area, B}}$) |
+| Vector Length ($N$) | Design | Raw Gate Cell Count | Estimated Generic Gate Area | Area Ratio vs. Design A ($R_{\text{area, A}}$) | Area Ratio vs. Design B ($R_{\text{area, B}}$) |
 | :--- | :--- | :---: | :---: | :---: | :---: |
 | **$N = 16$** | **Design A** (General INT8) | 7,715 | 9,050.0 | $1.00\times$ | — |
 | | **Design B** (Optimized Binary) | 1,430 | 1,581.5 | $5.72\times$ | $1.00\times$ |
@@ -114,26 +115,22 @@ Synthesis was performed using **Yosys 0.33** targeting a generic CMOS gate libra
 
 ---
 
-## 6. Evaluation of Hypothesis H-T1
+## 6. Metric Categorization & Unmeasured Claims Distinction
 
-### Area Ratios ($N=64$):
-$$R_{\text{area, B/C}} = \frac{\text{Area}_B}{\text{Area}_C} = \frac{6,564.5}{5,980.5} = 1.0976\times$$
+To maintain strict scientific integrity, metrics are categorized into measured physical gate statistics vs unmeasured performance dimensions:
 
-$$R_{\text{area, A/C}} = \frac{\text{Area}_A}{\text{Area}_C} = \frac{36,547.5}{5,980.5} = 6.1111\times$$
+### 6.1 Measured Metrics
+1. **Raw Synthesized Gate Cell Count:** Total primitive logic cell count extracted directly from Yosys synthesis trees.
+2. **Estimated Generic Gate Area:** Standardized area weight sums computed using standard CMOS primitive area equivalents (`$_NOT_`: 0.5, `$_AND_`: 1.0, `$_XOR_`: 1.5, `$_MUX_`: 2.0).
 
-### Analysis of Architectural Confounding Factors:
-1. **Workload Specialization (Design A vs. Design B):** Restricting weights from arbitrary 8-bit integers to $\{-1, 0, +1\}$ yields a $5.57\times$ area reduction. This benefit is entirely due to workload specialization (eliminating 8x8 multipliers) and is achievable using conventional binary logic.
-2. **Representation Artifact (Design B vs. Design C):** The minor ~9.8% area reduction of Design C over Design B is due to receiving unpacked Sign and Mask bitplanes ($W_{\text{mask}}, W_{\text{sign}}$) rather than a 2-bit code ($2'b00, 2'b01, 2'b11$). Design C offloads the decoding logic to the interface. Once decoded, both designs use identical adder reduction trees.
-3. **Threshold Deficit:** Hypothesis H-T1 fails to achieve the mandatory $1.25\times$ area advantage over the optimized binary control (Design B).
-
-### Unmeasured Metrics Acknowledgment:
-- **Dynamic Power / Energy (TOPS/W):** Marked **`UNMEASURED`**. Precise gate-level power profiling requires calibrated cell libraries with parasitic RC extraction and toggle rate VCD waveforms.
-- **Critical Path Frequency (GHz):** Marked **`UNMEASURED`**. Unconstrained combinational synthesis without clock constraints or technology timing arcs cannot yield defensible frequency estimates.
+### 6.2 Unmeasured Metrics (No Claims Asserted)
+1. **Throughput-Normalized Area Efficiency ($\text{Ops/s/mm}^2$):** Marked **`UNMEASURED`**. Static combinational gate area does not incorporate critical path delay or maximum clock frequency ($F_{\text{max}}$). No throughput advantage is claimed.
+2. **Energy Efficiency ($\text{TOPS/W}$ / Dynamic Power):** Marked **`UNMEASURED`**. Dynamic switching power requires standard cell timing libraries (.lib), place-and-route parasitic RC extraction (SPEF), and toggling activity waveforms (VCD). No energy efficiency advantage is claimed.
 
 ---
 
-## 7. Conclusion & Final Recommendation
+## 7. Conclusion & Bounded Scientific Disposition
 
 1. **Hypothesis Evaluation:** Hypothesis H-T1 is **`NOT SUPPORTED`**.
-2. **Stopping Criteria Triggered:** PR #594 Criterion 2 mandates at least a $1.25\times$ area or energy efficiency advantage over optimized binary primitives. The measured $1.098\times$ ratio fails this threshold.
-3. **Action:** Per T81 Foundation governance guidelines, all custom ternary hardware overlay research is **FORMALLY CLOSED AND TERMINATED**. Ternary representations within T81 remain strictly bounded to 2-bit model weight serialization and Base-81 content addressing in CanonFS.
+2. **Stopping Criteria Triggered:** The measured $1.098\times$ gate area ratio fails the $1.25\times$ threshold required to justify custom overlay hardware over optimized binary controls.
+3. **Scientific Scope:** This experiment rejects the specific H-T1 sign-and-mask overlay datapath. It does not permanently close or invalidate untested ternary hardware paradigms (such as physical 3-level memristive crossbars or non-binary voltage/current-mode circuits).

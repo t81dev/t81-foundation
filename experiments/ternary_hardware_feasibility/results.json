@@ -1,6 +1,6 @@
 {
   "investigation": "Scientific Investigation 07",
-  "title": "Ternary Dot-Product Hardware Feasibility and Matched Binary Baselines",
+  "title": "Ternary Dot-Product Hardware Feasibility and Matched Binary Baselines (Corrected)",
   "hypothesis": "H-T1 (Bit-Parallel Ternary Dot-Product Hardware)",
   "mathematical_contract": {
     "operation": "Y = sum_{i=0}^{N-1} W_i * X_i",
@@ -10,7 +10,7 @@
     "min_required_acc_width_N4096_bits": 21
   },
   "scientific_disposition": "NOT SUPPORTED",
-  "summary": "Design C (H-T1 sign-and-mask ternary overlay) yields a minor gate area reduction (~1.09x - 1.10x) over Design B (optimized binary ternary-weight MAC) due to logic representation, but falls far short of the mandatory stopping criteria threshold (1.25x area or energy efficiency advantage). Furthermore, the structural difference between Design B and Design C is an artifact of sign-and-mask vs two's complement decoding input format rather than a true ternary arithmetic advantage. When evaluated against the critical scientific control (Design B), Design C fails to demonstrate a defensible ternary hardware advantage.",
+  "summary": "Design C (H-T1 sign-and-mask ternary overlay) yields a minor gate area reduction (~1.09x - 1.10x) over Design B (optimized binary ternary-weight MAC) due to logic representation, but falls short of the mandatory stopping criteria threshold (1.25x area or energy efficiency advantage). Furthermore, the structural difference between Design B and Design C is an artifact of sign-and-mask vs two's complement decoding input format rather than a true ternary arithmetic advantage. When evaluated against the critical scientific control (Design B), Design C fails to demonstrate a defensible ternary hardware advantage. This finding rejects the H-T1 overlay implementation specifically without rejecting untested non-binary hardware architectures.",
   "metrics_summary": {
     "N_64": {
       "Design_A_General_INT8_MAC": {
@@ -62,8 +62,9 @@
     }
   },
   "unmeasured_or_unsupported_metrics": [
+    "Throughput-normalized area efficiency (Ops/s/mm2) — UNMEASURED (requires dynamic frequency constraints and timing delay arcs)",
     "Silicon physical power (TOPS/W) — UNMEASURED (requires calibrated layout parasitic extraction and dynamic activity waveforms)",
     "Critical path frequency (GHz) — UNMEASURED (unconstrained combinational synthesis without cell library delay timing arcs)"
   ],
-  "recommendation": "STOP all custom ternary hardware research in T81 Foundation per Stopping Criterion 2 of PR #594 / Audit 06."
+  "recommendation": "Reject Hypothesis H-T1 sign-and-mask overlay datapath. Do not assert dynamic power or throughput claims without corresponding measurements."
 }

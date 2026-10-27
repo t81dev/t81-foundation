@@ -2,6 +2,7 @@
   "16": {
     "design_a_general_mac": {
       "name": "Design_A_General_INT8_MAC",
+      "status": "SUCCESS",
       "gate_cells": 7715,
       "gate_area": 9050.0,
       "cell_breakdown": {
@@ -18,6 +19,7 @@
     },
     "design_b_optimized_binary": {
       "name": "Design_B_Optimized_Binary",
+      "status": "SUCCESS",
       "gate_cells": 1430,
       "gate_area": 1581.5,
       "cell_breakdown": {
@@ -34,6 +36,7 @@
     },
     "design_c_ht1_ternary": {
       "name": "Design_C_HT1_Ternary",
+      "status": "SUCCESS",
       "gate_cells": 1188,
       "gate_area": 1436.5,
       "cell_breakdown": {
@@ -51,6 +54,7 @@
   "32": {
     "design_a_general_mac": {
       "name": "Design_A_General_INT8_MAC",
+      "status": "SUCCESS",
       "gate_cells": 15419,
       "gate_area": 18062.5,
       "cell_breakdown": {
@@ -67,6 +71,7 @@
     },
     "design_b_optimized_binary": {
       "name": "Design_B_Optimized_Binary",
+      "status": "SUCCESS",
       "gate_cells": 2927,
       "gate_area": 3240.5,
       "cell_breakdown": {
@@ -83,6 +88,7 @@
     },
     "design_c_ht1_ternary": {
       "name": "Design_C_HT1_Ternary",
+      "status": "SUCCESS",
       "gate_cells": 2442,
       "gate_area": 2951.0,
       "cell_breakdown": {
@@ -101,6 +107,7 @@
   "64": {
     "design_a_general_mac": {
       "name": "Design_A_General_INT8_MAC",
+      "status": "SUCCESS",
       "gate_cells": 31173,
       "gate_area": 36547.5,
       "cell_breakdown": {
@@ -117,6 +124,7 @@
     },
     "design_b_optimized_binary": {
       "name": "Design_B_Optimized_Binary",
+      "status": "SUCCESS",
       "gate_cells": 5924,
       "gate_area": 6564.5,
       "cell_breakdown": {
@@ -133,6 +141,7 @@
     },
     "design_c_ht1_ternary": {
       "name": "Design_C_HT1_Ternary",
+      "status": "SUCCESS",
       "gate_cells": 4948,
       "gate_area": 5980.5,
       "cell_breakdown": {
