@@ -22,10 +22,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           fetch-depth: 0
-      - name: Install validator Python dependency
+      - name: Checkout exact cumulative candidate\n        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6\n        with:\n          ref: b6a20706b3b37eebbfb5ab0293a88306a3dae29a\n          path: candidate\n          fetch-depth: 0\n      - name: Install validator Python dependency
         run: python3 -m pip install --user PyYAML==6.0.3
       - name: Replay all 27 validators independently
-        run: python3 scripts/ci/replay_governance_integration.py --output governance-integration-replay.json
+        run: cd candidate && python3 ../scripts/ci/replay_governance_integration.py --output ../governance-integration-replay.json
       - name: Upload exact replay receipts
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
