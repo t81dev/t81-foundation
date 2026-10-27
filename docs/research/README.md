@@ -20,6 +20,8 @@ Research inquiries in T81 are organized into three coordinated tracks governed b
 
 ## Key Research Consolidations & Decisions
 
+- **[T81 Human–AI Research Initiative](/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md)** — Core charter, multi-AI collaboration protocol, 12-month research roadmap, independent research assessment, publication strategy, and 30-day action plan.
+
 - **[Checked conversion contract proposal](../../experiments/checked_float_contract/README.md)** — Draft numerical semantics, independent bidirectional corpus, compatibility/decision record and bounded plan; no production replacement or new determinism claim.
 
 - **[Native float conversion audit](../../experiments/float_conversion_audit/README.md)** — Exact binary64 reference, preserved numerical failures and explicit exclusion from evidence v2; production conversion remains unresolved.
