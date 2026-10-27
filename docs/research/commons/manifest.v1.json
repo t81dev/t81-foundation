@@ -233,9 +233,9 @@
     {
       "id": "initiative",
       "path": "docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
-      "revision": "903ea2fe653df0d636e0543f9788dd8442738045",
-      "sha256": "0116bfeeb223b41e1944136840973cca878f7a3fb9c65ff68deb435c7dee514e",
-      "url": "https://github.com/t81dev/t81-foundation/blob/903ea2fe653df0d636e0543f9788dd8442738045/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "revision": "274421fd8e85c5b9bb4f165fce190715530f4e85",
+      "sha256": "bc412bb46f8393a90f7f776826b389a57a9e051f3c5595c9f5c13de20512bb1d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/274421fd8e85c5b9bb4f165fce190715530f4e85/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
       "role": "disputed",
       "uncertainty": "Historical PR607: canonical-ID redefinitions and comparative-assurance wording superseded by PR608; PR608 still overstates H07/H08. Never use this historical source as the canonical register."
     },
