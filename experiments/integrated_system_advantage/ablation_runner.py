@@ -1,180 +1,132 @@
 #!/usr/bin/env python3
-"""
-Ablation Study Orchestration for Investigation 08 (H-S1 Hypothesis - Corrected).
-Evaluates configurations with strict adherence to experimental controls:
-  Config A: Full Integrated T81 Stack
-  Config B: Conventional Binary Equivalent Stack
-  Config C: T81 with Binary Arithmetic Substitution (Marked UNIMPLEMENTED: no arithmetic substitution seam exists in C++ production VM without code changes)
-  Config D: T81 with Conventional OS File Storage Substitution (Marked UNIMPLEMENTED / INCONCLUSIVE: omitting --canonfs-root does not substitute CAS implementation in production binary)
-  Config E: T81 Policy Invariant (Marked UNIMPLEMENTED: Axion policy check is an immutable runtime invariant)
-  Config F: Selected Subsystem Pairings (Marked UNIMPLEMENTED: decoupled subsystem pairing seam unavailable in production binary)
-"""
-
+"""Bounded implementation observations, not an architectural speed comparison."""
+import hashlib
 import json
 import os
+from pathlib import Path
+import random
+import statistics
 import subprocess
+import sys
+import tempfile
 import time
-from typing import Dict, Any
-from baseline_stack import ConventionalTaskRunner
+
+from baseline_stack import canon_sha3_256_ref
+
+HERE = Path(__file__).resolve().parent
+
 
 class AblationHarness:
-    def __init__(self, repo_root: str, work_dir: str):
-        self.repo_root = os.path.abspath(repo_root)
-        self.work_dir = os.path.abspath(work_dir)
-        self.t81_bin = os.path.join(self.repo_root, "build", "t81")
-        self.demo_builder = os.path.join(self.repo_root, "build", "t81_make_assess_fixed_demo")
-        os.makedirs(self.work_dir, exist_ok=True)
+    def __init__(self, repo_root, work_dir, build_dir=None):
+        self.repo_root = Path(repo_root).resolve()
+        self.work_dir = Path(work_dir).resolve()
+        self.work_dir.mkdir(parents=True, exist_ok=True)
+        self.build_dir = Path(build_dir or os.environ.get('T81_BUILD_DIR', self.repo_root/'build'))
+        ext = '.exe' if os.name == 'nt' else ''
+        self.t81_bin = str(self.build_dir/('t81'+ext))
+        self.demo_builder = str(self.build_dir/('t81_make_assess_fixed_demo'+ext))
+        self.worker = str(HERE/'baseline_worker.py')
 
-    def prepare_fixtures(self) -> Dict[str, str]:
-        model_dir = os.path.join(self.work_dir, "model")
-        os.makedirs(model_dir, exist_ok=True)
-        model_path = os.path.join(model_dir, "assess-fixed-demo.t81w")
+    def prepare_fixtures(self):
+        # Caller owns an invocation-specific directory; never reuse an old model silently.
+        model_dir = Path(tempfile.mkdtemp(prefix='fixtures-', dir=self.work_dir))
+        subprocess.run([self.demo_builder, str(model_dir)], check=True, capture_output=True)
+        model = model_dir/'assess-fixed-demo.t81w'
+        policy = model_dir/'allow.apl'
+        fingerprint = 'sha3-512:'+hashlib.sha3_512(model.read_bytes()).hexdigest()
+        policy.write_bytes((f'(policy (tier 1) (allowed-ternary-model-hashes ["{fingerprint}"]) '
+                          '(require-axion-event (reason "task:assess_fixed.v1")))\n').encode('utf-8'))
+        return dict(model_path=str(model), tokenizer_path=str(model_dir/'tokenizer.json'),
+                    apl_policy_path=str(policy), model_hash=fingerprint)
 
-        # Build demo model if binary exists
-        if os.path.exists(self.demo_builder):
-            subprocess.run([self.demo_builder, model_dir], check=True, stdout=subprocess.DEVNULL)
+    def _launch(self, command):
+        start = time.perf_counter_ns()
+        result = subprocess.run(command, capture_output=True, text=True, timeout=180)
+        elapsed = time.perf_counter_ns()-start
+        if result.returncode:
+            raise RuntimeError(f'{command[0]} exit {result.returncode}: {result.stderr}')
+        return json.loads(result.stdout), elapsed
 
-        # Get SHA3 model hash
-        res = subprocess.run([self.t81_bin, "determinism", "hash", model_path], capture_output=True, text=True, check=True)
-        model_hash = res.stdout.strip().split()[0]
+    def run_config_a(self, fixtures, input_text, canon_root):
+        command = [self.t81_bin, 'ai', 'task', 'assess-fixed', '--model-file', fixtures['model_path'],
+                   '--model', 'investigation08', '--policy', fixtures['apl_policy_path'],
+                   '--canonfs-root', str(canon_root), '--mode', 'strict_deterministic', '--input', input_text]
+        result, wall = self._launch(command)
+        # Separate fresh-process artifact retrieval, with byte-identity verification.
+        lookup_start = time.perf_counter_ns()
+        for key in ('result_ref', 'provenance_ref'):
+            with tempfile.TemporaryDirectory(dir=self.work_dir) as tmp:
+                target = Path(tmp)/'artifact.json'
+                subprocess.run([self.t81_bin, 'canonfs', 'get', result[key], '--out', str(target),
+                                '--canonfs-root', str(canon_root)], check=True, capture_output=True, timeout=30)
+                if canon_sha3_256_ref(target.read_bytes()) != result[key]:
+                    raise ValueError('T81 artifact identity mismatch')
+        lookup_wall = time.perf_counter_ns()-lookup_start
+        replayed, replay_wall = self._launch(command)
+        if any(result[key] != replayed[key] for key in ('result_ref','provenance_ref','model_hash','policy_result')):
+            raise ValueError('T81 rerun differs')
+        return dict(arm='T81 C++ CLI', end_to_end_process_ns=wall,
+                    phase_timings_ns=dict(process_initialization=None, model_loading=None,
+                                          computational_execution=None, policy_evaluation=None, artifact_persistence=None),
+                    phase_limit='CLI exposes no internal phase clocks; do not infer phase costs from wall time.',
+                    artifact_lookup_process_ns=lookup_wall, replay_process_ns=replay_wall,
+                    replay_kind='fresh CLI re-execution using original fixture files; not standalone CAS model recovery',
+                    verified=True, result_ref=result['result_ref'], provenance_ref=result['provenance_ref'],
+                    model_hash=result['model_hash'], decision=result['decision'], policy_result=result['policy_result'])
 
-        # Write APL policy
-        apl_policy_path = os.path.join(self.work_dir, "policy.apl")
-        with open(apl_policy_path, "w") as f:
-            f.write(f'(policy (tier 1) (allowed-ternary-model-hashes ["sha3-512:{model_hash}"]) (require-axion-event (reason "task:assess_fixed.v1")))\n')
+    def run_config_b(self, fixtures, input_text, cas_root):
+        command = [sys.executable, self.worker, 'run', '--store', str(cas_root),
+                   '--model', fixtures['model_path'], '--policy', fixtures['apl_policy_path'],
+                   '--tokenizer', fixtures['tokenizer_path'], '--input', input_text]
+        result, wall = self._launch(command)
+        replayed, replay_wall = self._launch([sys.executable, self.worker, 'replay', '--store', str(cas_root),
+                                             '--bundle', result['bundle_ref']])
+        return dict(arm='pure Python conventional implementation', end_to_end_process_ns=wall,
+                    phase_timings_ns=result['timings_ns'],
+                    module_initialization_ns=result['worker_module_initialization_ns'],
+                    process_boundary_residual_ns=wall-result['worker_total_ns'],
+                    residual_limit='Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.',
+                    artifact_lookup_ns=replayed['lookup_latency_ns'], replay_execution_ns=replayed['replay_latency_ns'],
+                    replay_process_ns=replay_wall, replay_kind='independent persisted-input CAS recovery and re-execution',
+                    verified=replayed['valid'], result_ref=result['result_ref'], bundle_ref=result['bundle_ref'],
+                    model_hash=result['model_hash'], decision=result['decision'], policy_result=result['policy_result'])
 
-        # Write JSON policy for baseline runner
-        json_policy_path = os.path.join(self.work_dir, "policy.json")
-        json_policy = {
-            "tier": 1,
-            "allowed_model_hashes": [f"sha3-256:{model_hash}", "*"],
-            "require_event": "task:assess_fixed.v1"
-        }
-        with open(json_policy_path, "w") as f:
-            json.dump(json_policy, f)
-
-        return {
-            "model_path": model_path,
-            "model_hash": model_hash,
-            "apl_policy_path": apl_policy_path,
-            "json_policy_path": json_policy_path
-        }
-
-    def run_config_a(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """Config A — Full Integrated T81 Stack"""
-        canon_root = os.path.join(self.work_dir, "canon_a")
-        os.makedirs(canon_root, exist_ok=True)
-
-        # 1. Cold-start CLI process execution
-        t0_cold = time.perf_counter_ns()
-        cmd = [
-            self.t81_bin, "ai", "task", "assess-fixed",
-            "--model", "assess-fixed-demo",
-            "--model-file", fixtures["model_path"],
-            "--policy", fixtures["apl_policy_path"],
-            "--canonfs-root", canon_root,
-            "--mode", "strict_deterministic",
-            "--input", input_text
-        ]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        t1_cold = time.perf_counter_ns()
-
-        out = json.loads(res.stdout)
-        ref = out.get("result_ref")
-
-        # 2. Measured sub-component: Artifact lookup / read-field cost
-        t0_read = time.perf_counter_ns()
-        read_cmd = [
-            self.t81_bin, "ai", "task", "read-field", ref,
-            "--field", "decision", "--canonfs-root", canon_root
-        ]
-        read_res = subprocess.run(read_cmd, capture_output=True, text=True, check=True)
-        t1_read = time.perf_counter_ns()
-
-        return {
-            "config": "Config A (Full Integrated T81 Stack)",
-            "status": "SUCCESS",
-            "cold_start_latency_ms": (t1_cold - t0_cold) / 1e6,
-            "artifact_lookup_latency_ms": (t1_read - t0_read) / 1e6,
-            "decision": out.get("decision"),
-            "reason_code": out.get("reason_code"),
-            "result_ref": ref,
-            "provenance_ref": out.get("provenance_ref")
-        }
-
-    def run_config_b(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """Config B — Conventional Binary Equivalent Stack"""
-        cas_root = os.path.join(self.work_dir, "cas_b")
-        runner = ConventionalTaskRunner(cas_root)
-
-        with open(fixtures["model_path"], "rb") as f:
-            model_bytes = f.read()
-        with open(fixtures["json_policy_path"], "r") as f:
-            policy_data = json.load(f)
-
-        t0 = time.perf_counter_ns()
-        result = runner.run_assess_fixed(model_bytes, input_text, policy_data)
-        t1 = time.perf_counter_ns()
-
-        # Distinguish artifact lookup from replay (Part B5)
-        replay_metrics = runner.verify_and_replay(result["bundle_ref"])
-
-        return {
-            "config": "Config B (Conventional Binary Equivalent Stack)",
-            "status": "SUCCESS",
-            "execution_latency_ms": (t1 - t0) / 1e6,
-            "artifact_lookup_latency_ms": replay_metrics["lookup_latency_ns"] / 1e6,
-            "actual_replay_latency_ms": replay_metrics["replay_latency_ns"] / 1e6,
-            "decision": result["decision"],
-            "reason_code": result["reason_code"],
-            "result_ref": result["result_ref"],
-            "bundle_ref": result["bundle_ref"],
-            "replay_valid": replay_metrics["valid"]
-        }
-
-    def run_config_c(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """
-        Config C — T81 with Binary Arithmetic Substitution (Part B2)
-        Marked UNIMPLEMENTED: No arithmetic substitution seam exists in the production
-        T81 C++ VM without modifying production code.
-        """
-        return {
-            "config": "Config C (T81 with Binary Arithmetic Substitution)",
-            "status": "UNIMPLEMENTED",
-            "reason": "No production C++ VM seam exists to substitute binary arithmetic while retaining the T81 execution stack without modifying production code."
-        }
-
-    def run_config_d(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """
-        Config D — T81 with Conventional File Storage Substitution (Part B3)
-        Marked UNIMPLEMENTED: Omitting --canonfs-root does not substitute storage implementation;
-        it merely defaults to .t81_canonfs in the current working directory.
-        """
-        return {
-            "config": "Config D (T81 with Conventional File Storage Substitution)",
-            "status": "UNIMPLEMENTED",
-            "reason": "No storage substitution seam exists in the production binary without modifying production code. Omitting --canonfs-root uses default .t81_canonfs CAS rather than OS filesystem substitution."
-        }
-
-    def run_config_e(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """
-        Config E — T81 with Policy Engine Substitution
-        Marked UNIMPLEMENTED: Axion policy check is an immutable runtime invariant in T81.
-        Bypassing policy checks traps execution via SecurityFault.
-        """
-        return {
-            "config": "Config E (T81 with Policy Engine Substitution)",
-            "status": "UNIMPLEMENTED",
-            "reason": "Axion policy enforcement is a mandatory runtime invariant in T81; bypass traps execution via SecurityFault."
-        }
-
-    def run_config_f(self, fixtures: Dict[str, str], input_text: str) -> Dict[str, Any]:
-        """
-        Config F — Subsystem Pairings (T81 VM + OS FS + APL Policy)
-        Marked UNIMPLEMENTED: Decoupled subsystem pairing seam unavailable without production code changes.
-        """
-        return {
-            "config": "Config F (Selected Subsystem Pairings)",
-            "status": "UNIMPLEMENTED",
-            "reason": "Subsystem pairing substitution seam unavailable in production binary without modifying production code."
-        }
+    def run_paired_benchmarks(self, fixtures, input_text, iterations=30, seed=602):
+        if iterations < 1:
+            raise ValueError('positive iteration count required')
+        rng = random.Random(seed)
+        observations = []
+        # Unique directory per invocation AND per observation/arm, including populated trials.
+        invocation = Path(tempfile.mkdtemp(prefix='trials-', dir=self.work_dir))
+        for condition in ('empty_store', 'populated_store'):
+            for index in range(iterations):
+                pair = Path(tempfile.mkdtemp(prefix=f'{condition}-{index}-', dir=invocation))
+                roots = {arm: pair/arm for arm in ('A','B')}
+                for root in roots.values():
+                    root.mkdir(exist_ok=False)
+                initial_counts = {arm: len(list(root.rglob('*'))) for arm,root in roots.items()}
+                if any(initial_counts.values()):
+                    raise ValueError('trial roots are not empty')
+                functions = dict(A=self.run_config_a, B=self.run_config_b)
+                # Prepopulate both arms before every populated observation, outside timing records.
+                if condition == 'populated_store':
+                    for arm in ('A','B'):
+                        functions[arm](fixtures, input_text, roots[arm])
+                before = {arm: len(list(root.rglob('*'))) for arm,root in roots.items()}
+                order = ['A','B']; rng.shuffle(order)
+                results = {arm:functions[arm](fixtures,input_text,roots[arm]) for arm in order}
+                if any(results['A'][key] != results['B'][key] for key in ('result_ref','model_hash','decision','policy_result')):
+                    raise ValueError('observation parity failed; stop measurement')
+                observations.append(dict(condition=condition,index=index,order=order,
+                                         roots={k:str(v) for k,v in roots.items()},
+                                         entries_before=before,initial_entries=initial_counts,arms=results))
+        summaries = {}
+        for condition in ('empty_store','populated_store'):
+            summaries[condition] = {}
+            for arm in ('A','B'):
+                values = [row['arms'][arm]['end_to_end_process_ns'] for row in observations if row['condition']==condition]
+                summaries[condition][arm] = dict(count=len(values),mean_ns=statistics.mean(values),
+                                                sample_stddev_ns=statistics.stdev(values) if len(values)>1 else None,
+                                                min_ns=min(values),max_ns=max(values))
+        return dict(seed=seed, invocation=str(invocation), observations=observations,summaries=summaries,
+                    performance_disposition='INCONCLUSIVE: pure Python versus optimized C++ CLI; different replay guarantees and uninstrumented T81 phases; no architectural advantage/disadvantage inference')

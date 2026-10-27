@@ -135,3 +135,4 @@ generate_dummy_safetensors
 # ── Model Files (too large for GitHub) ───────────────────────
 models/
 build-win/
+experiments/integrated_system_advantage/work/
