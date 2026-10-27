@@ -8,8 +8,9 @@ certify findings or run experiments.
 
 ## Current integration dependency
 
-The active index pins merged PR608 at
-`fabc7aa90f70ead227ec257a1ae6833fa16ced40`. **PR610 is still an unmerged
+The active index pins its main baseline at
+`903ea2fe653df0d636e0543f9788dd8442738045` and retains the original PR607 source at
+`274421fd8e85c5b9bb4f165fce190715530f4e85` separately from PR608. **PR610 is still an unmerged
 draft**, checked 2026-10-27. Its correction at
 `d1eee548d4658df37b35d0cc3781b5a77cbae96b` is indexed only as proposed evidence,
 not main or an accepted finding. PR609 remains draft pending human review/merge
@@ -35,6 +36,8 @@ the discovery interface:
 python -m pip install -r tools/research_commons/requirements.txt
 # Needed in clones that do not contain PR605's separate merged proposal history:
 git fetch origin 827d2accbf8ccb56afe3fe8d96dfb7251f249d7d
+# Explicit setup for the original PR607 source (do not replace with PR608):
+git fetch origin 274421fd8e85c5b9bb4f165fce190715530f4e85
 # Explicit setup for the UNMERGED correction snapshot, not an update of main:
 git fetch origin d1eee548d4658df37b35d0cc3781b5a77cbae96b
 python -B tools/research_commons/commons.py --validate
@@ -119,3 +122,27 @@ adjudication; authorization is `not_requested`.
 The [onboarding demonstration](ONBOARDING_EXAMPLE.md) uses only these contracts
 and repository evidence. See [implementation and limits](IMPLEMENTATION_REPORT.md)
 for exactly what was tested.
+
+
+## PR616 receipt regeneration (pending acceptance)
+
+The checked-in `demo-observation.json` predates the PR616 historical-source
+restoration and its digest values are stale on this draft branch. The CI workflow
+explicitly fetches the original PR607 commit, regenerates the receipt in the
+**ephemeral CI workspace**, runs the contract suite against it, and uploads
+that generated receipt as an artifact. The artifact is implementation-author
+response evidence, **not** a raw independent scientific reproduction.
+
+To reproduce locally after the explicit setup above:
+
+```sh
+python -B tools/research_commons/regenerate_demo_receipt.py --output docs/research/commons/demo-observation.json
+python -B tools/research_commons/commons.py --validate
+python -B -m unittest discover -s tests/research_commons -v
+```
+
+A reviewer must inspect the uploaded receipt, independently run these commands
+in a clean checkout, and commit the reviewed receipt before merging. CI workspace
+regeneration is not a substitute for updating the committed receipt. Record the
+actual checkout SHA, Python/Git versions, exit codes and raw stdout/stderr before
+promoting any verification claim.
