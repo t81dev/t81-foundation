@@ -1,5 +1,15 @@
 # System Status
 
+## Evidence review — 2026-10-27
+
+Current implementation and evidence are centralized in [IMPLEMENTATION_MATRIX](IMPLEMENTATION_MATRIX.md); current operational health is in [PROJECT_CONTROL_CENTER](PROJECT_CONTROL_CENTER.md). The April component health/milestone narrative below is **Historical**, including Stable, PASS and test-count labels. It does not establish a current release GO or all-platform test pass.
+
+The current baseline includes merged #597 and #600. It has governed non-DCP CanonFS and bounded inference implementations, with important limits: configured storage authorization requires external serialization; content integrity does not establish authentic or true provenance; task admission does not establish propagation of every APL constraint into the probe engine. Research comparative conclusions require the qualifications in the [audit report](STATUS_RECONCILIATION_2026-10-27.md#scientific-reassessment). The legacy `docs/status/EXPERIMENTAL_SURFACE_INVENTORY.md` reference below now resolves conceptually to the [extension profile](EXTENSION_PROFILE.md); historical paths are not current build instructions.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Active
 Last Updated: 2026-04-01
 Owner: Status / Governance

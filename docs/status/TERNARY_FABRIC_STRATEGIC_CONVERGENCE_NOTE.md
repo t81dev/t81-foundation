@@ -1,5 +1,15 @@
 # Ternary Fabric Strategic Convergence Note
 
+## Evidence review — 2026-10-27
+
+Purpose: preserve the architectural non-merge decision and revisit conditions, not attest the external repository's current implementation. The non-merge policy below is retained; its external capability inventory is Historical/unverified in this audit. T81 remains an experimental research platform with an implemented governed runtime; a future backend requires an actual consumer, equivalent semantics and scoped evidence.
+
+[Investigation 07](../../experiments/ternary_hardware_feasibility/FINDINGS_REPORT.md) reports provisional gate-area results against optimized binary, with timing/energy unmeasured. [Investigation 08](../research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md) does not establish integrated-system superiority; its text-rule comparator remains insufficient. These findings neither justify acceleration integration nor reject all future native ternary devices. Any future backend remains outside current verified scope until explicit governance promotion.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 This note records the current architectural decision for how T81 relates to
 the separate `t81dev/ternary-fabric` repository.
 

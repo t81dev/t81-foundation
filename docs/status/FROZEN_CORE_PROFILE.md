@@ -1,5 +1,15 @@
 # Frozen Core Profile
 
+## Evidence review — 2026-10-27
+
+Purpose: preserve the frozen-profile record without changing its activation boundary or guarantees. Its original body is retained verbatim. There is an authority/path ambiguity: it calls itself authoritative and lists legacy `core/types`, `core/isa`, `core/vm` plus all public headers, while the [surface register](../governance/GOVERNANCE_SURFACE_REGISTER.md) explicitly says membership in `include/t81/` alone grants no DCP status. Do not interpret moved source or new headers as promotion.
+
+Current implementation locations are `include/t81/types/`, `isa/`, `vm/`; JIT is `vm/jit/`. [TISC spec](../../spec/tisc-spec.md) declares v1.9.0; the profile and checker retain older v1.1.0 terminology. This audit records that discrepancy without revising frozen semantics or resolving authority through editorial fiat. The [registers](../governance/DETERMINISM_SURFACE_REGISTRY.md) retain their existing Verified/Partial assignments. Passing a single-host checker is not fresh cross-platform replay evidence. Original dated PASS entries below remain Historical.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Constitutional — Do Not Edit Without Major Version Bump
 Last Updated: 2026-03-19
 Authority: `spec/tisc-spec.md` > `docs/product/DETERMINISTIC_CORE_PROFILE.md` > this document

@@ -1,5 +1,23 @@
 # Roadmap for the T81 Deterministic Ternary Stack
 
+## Evidence review — 2026-10-27
+
+Purpose: current forward plan. Research sequencing follows the [Master Continuity Charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md); runtime/CanonFS maintenance supports those experiments. The old March decade plan below is **Historical / Specified aspiration**, including compliance/PQC/hardware targets, not an active delivery commitment or validated advantage. Its external standards timelines were not revalidated and must not be used as current legal guidance.
+
+| Sequence                      | Smallest finishable next result                                                                                                                       | Stop / decision condition                                                                                                                               |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Evidence foundation           | Resolve reproducibility/CI/test signaling defects in separate focused changes; keep governed runtime and RFC-00D1 contracts buildable.                | No target claim when the assertion did not run; record pre-existing failure separately.                                                                 |
+| H04 radix × adaptation        | Review pending H04-R02 work against fixed/adaptive binary and ternary exact trace controls, including mode packing and conversion.                    | Reject scoped advantage if optimized adaptive binary matches/beats it or overhead removes benefit. Pending #570–#572/#571 are not merged findings here. |
+| Integrated-system comparison  | Replace text-rule Investigation 08 baseline with model execution at equivalent authorization/evidence semantics; match cold/steady/replay boundaries. | Keep comparative assurance and integration Inconclusive until matched controls exist.                                                                   |
+| Hardware feasibility          | Constrain timing and technology, optimize binary control, account for interface conversion and activity/energy.                                       | Reject the tested H-T1 overlay at its declared threshold; do not terminate unrelated native-device hypotheses.                                          |
+| Inference / object interfaces | Name one unmet consumer and measure task quality and end-to-end cost before expanding native decoding or descriptors.                                 | Freeze extra abstraction if conventional composition meets the same requirement with less work.                                                         |
+
+No TCP/IP breadth, new universal object runtime, fourth bounded composition or hardware backend is authorized by this roadmap. Future implementation still requires the existing contracts and governance process. See [TASKS](TASKS.md) for immediate acceptance signals.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-03-26
 Owner: @t81dev
 

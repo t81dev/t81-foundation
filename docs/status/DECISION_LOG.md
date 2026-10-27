@@ -1,5 +1,15 @@
 # Decision Log
 
+## Evidence review — 2026-10-27
+
+Purpose: preserve accepted decisions, dates, approvers, alternatives and rationale. Every original entry below is retained verbatim. Existing numbering is ambiguous: DEC-003, DEC-004 and DEC-006 each occur more than once, and entries are not fully date-sorted. Cite title plus date, not ID alone. Renumbering or retroactively inventing approvers would damage provenance.
+
+Historical “100% test coverage,” CI green and GO statements report the decision's then-stated basis; passing a suite is not coverage measurement or current release readiness. DEC-006's release entry itself says final approval was pending; this audit does not resolve that approval ambiguity. The v1 freeze decision does not supersede the current v1.9.0 specification. This October editorial review is not a new governance decision and does not change activation or promotion.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Active
 Last Updated: 2026-03-19
 Owner: Project Management / Governance

@@ -1,5 +1,15 @@
 # Bounded AI OS-Object Family Status
 
+## Evidence review — 2026-10-27
+
+Purpose: admitted bounded family, invariant and admission navigation. The family remains implemented; its baseline/admission contracts and roles below are retained. **Supported within tested scope** applies to recorded canonical identity checks, not a universal guarantee for arbitrary consumers or policies.
+
+[Shared task admission](../../tools/cli/ai/ai_cli_shared.cpp#L1124) and [probe execution](../../vm/decoder.cpp#L1065) are distinct boundaries: model hash and marker admission precede the probe, which builds its own interpreter. Cross-root byte identity does not prove policy propagation, provenance truth, signature authenticity or comparative security. This audit did not rerun the family composition suite and does not extend its membership or governance status. Investigation 08's matching `greet hello` output is insufficient to establish equivalent computation against its text-rule baseline.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 This note summarizes the current bounded deterministic AI OS-object family in
 one maintainer-facing place.
 

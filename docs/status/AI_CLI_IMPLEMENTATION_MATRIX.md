@@ -1,5 +1,17 @@
 # AI CLI Implementation Matrix
 
+## Evidence review — 2026-10-27
+
+Purpose remains the command-level reality check; implementation labels below retain their local real/scaffold/stub meanings and map to **Implemented** commands, not Tested or Measured performance.
+
+Current source review confirms [benchmark values are fixed](../../tools/cli/ai/ai_cli_shared.cpp#L3195), non-native inference uses a `deterministic:` prompt digest, and native execution delegates to [vm/decoder.cpp](../../vm/decoder.cpp). The API also implements `DecoderMode::NarrowGreedyLlamaDenseV1`, full-vocabulary argmax with lowest-token tie breaking, and intermediate-state carry; [decoder tests](../../tests/cpp/vm_decoder_test.cpp) exercise this narrow path. Thus the old “true greedy decode missing” claim is superseded at this API boundary; general model-quality and architecture completeness remain unverified. The old four-step description is a historical probe envelope, not a universal current decoder limit: [decode_state.hpp](../../include/t81/vm/decode_state.hpp) now defines reusable `IntermediateDecodeState`, and the decoder has explicit transition/state APIs. The old checklist's intermediate-state extraction items are partly superseded; general model architecture support, quality and long-horizon behavior remain unverified here.
+
+For fixed tasks, [run_fixed_label_task](../../tools/cli/ai/ai_cli_shared.cpp#L1124) parses APL, binds a single model hash and requires the task marker before probing. [run_native_vm_probe](../../vm/decoder.cpp#L1065) constructs its own interpreter; that admission check alone does not prove that every task policy constraint is installed in the probe engine. `ready`/`guarded`/`degraded` are payload states, not production or security certifications. Checked-in probes and contract tests are reproduction inputs; external tiny-model downloads were not executed in this audit.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-03-29
 Authority: `tools/cli/ai/ai_cli_shared.cpp`, `tools/cli/core/main.cpp`, related tests and examples
 

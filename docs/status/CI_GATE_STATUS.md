@@ -1,5 +1,32 @@
 # CI Gate Status
 
+## Evidence review — 2026-10-27
+
+Last Updated: 2026-10-27
+
+Purpose: CI topology and observed health, separate from historical incidents. Live branch protection was read during this audit: `quality gate / required` and `Analyze (cpp)` are required, strict=true. At audited main, [CI run 40452152063](https://github.com/t81dev/t81-foundation/actions/runs/40452152063), [CodeQL 40452152004](https://github.com/t81dev/t81-foundation/actions/runs/40452152004), format, documentation and cross-platform runs were queued. No current all-green/GO assertion is justified.
+
+The retained table titled “Informational Gates” is **incorrect for aggregate dependencies**. [ci.yml quality-gate](../../.github/workflows/ci.yml#L1528) requires success from `spec-and-docs`, `determinism-slice`, `determinism-repeatability`, `build-and-test`, `t3k-cross-arch-bit-identity`, `t81lang-cross-arch-bit-identity`, `cxx-standard-compat`, `static-analysis`, `sanitizers`, `fuzzing`, `formal-verification`, `benchmarks`, and `tritwise-determinism`. They are indirectly blocking even if not separate branch-protection contexts.
+
+| Lane                                     | Current definition / limit                                                                                                             |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Required aggregate and CodeQL            | Success required on candidate SHA; no local research-suite substitute.                                                                 |
+| ARMv9 / oneAPI / Ascend                  | Explicitly advisory/conditional `continue-on-error` jobs; not equivalent to supported-platform passes.                                 |
+| Cross-repo runtime contract              | Separate workflow and approval semantics; not collapsed into local CTest.                                                              |
+| AI Experiments                           | Path-filtered workflow; freshness precedes build; many downstream steps require `has_target == true`. Skips are not executed evidence. |
+| Research slice                           | Eight explicit opt-in regression CTests; distinct from ordinary CI and historical repeated measurements.                               |
+| Specialist benchmarks / packaging / QEMU | Independent trigger/configuration surfaces; check relevant runs, not inferred from main aggregate.                                     |
+
+The architecture checker currently **FAILS**, superseding the old Pass cell: it misses nine target declarations under delegated `src/` CMake and documents stale `t81_python` instead of `_t81`. Both checker and architecture table are unchanged in this PR; pending #575 remains open/draft. The old February/March pass cells, no-flake statement and repro ledger are **Historical**, not fresh current verification. The freeze script's v1.1.0 output is legacy checker naming; current ISA specification is v1.9.0. The October 21 failed freshness run remains historical evidence; merged #538 subsequently repaired the bounded configured storage hook, not whole-system authorization.
+
+See [validation](STATUS_RECONCILIATION_2026-10-27.md#validation) for exact local outcomes, failures and unexecuted checks.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+The default [compiler policy](../../cmake/Compiler.cmake) adds `NDEBUG` globally, so assertion-only C++ checks can be disabled even outside the usual release flags. This audit verified that generated decoder-test flags required an explicit temporary `-UNDEBUG` override; its assertions-enabled execution remained incomplete. Record assertion execution separately from CTest process success.
+
+## Retained record
+
 Status: Active
 Last Updated: 2026-10-21
 Owner: @t81dev

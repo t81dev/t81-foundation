@@ -1,5 +1,15 @@
 # Governance Review Cadence
 
+## Evidence review — 2026-10-27
+
+Purpose: preserve the review procedure and distinguish it from completed evidence. Checklists and promotion rules below are unchanged; unmarked boxes are not proof that a review occurred. March schedules and TG pass labels are Historical. No October governance decision or release approval is invented.
+
+The old §5 Beta/Draft “current state” conflicts with the [stable language spec](../../spec/t81lang-spec.md) and retained March stable promotion record in [T81LANG_PROMOTION_GATE](T81LANG_PROMOTION_GATE.md); governed non-DCP / Partial compiler emission remains unchanged. The March 15 generated snapshot actually records TG-01 Fail/Not Ready and is preserved. Required contexts were re-read from live branch protection; internal required quality-gate dependencies are described in [CI_GATE_STATUS](CI_GATE_STATUS.md), not all informational as old status prose suggested. Legacy `core/` and `runtime/jit/` paths require source mapping, not boundary expansion.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-03-19
 Owner: @t81dev
 

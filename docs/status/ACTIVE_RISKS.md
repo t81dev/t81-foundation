@@ -1,5 +1,26 @@
 # Active Risks
 
+## Evidence review — 2026-10-27
+
+Purpose: active risk register; historical closed rows remain below and are not reopened or recertified by this audit.
+
+| ID   | Active risk                                          | Evidence / impact                                                                                                          | Mitigation / status                                                                                      |
+| ---- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| R-22 | Comparative research overclaim                       | Investigation 08 baseline chooses text-rule outputs; 07 has no timing/energy.                                              | Require matched model/control protocol; Inconclusive comparative advantage.                              |
+| R-23 | Validation can pass without target assertion success | Traceability void helpers return on errors; CI has logged pipelines and conditional target steps.                          | Repair/check failure propagation separately; report executed assertions, not job color alone.            |
+| R-24 | Architecture-target checker discrepancy              | Ten reported missing names: nine outside scan, stale `t81_python` versus `_t81`.                                           | Reproduced on unchanged main; pending #575 is not a merged fix.                                          |
+| R-25 | Authorization/integrity conflation                   | Empty driver hook allows explicit bootstrap; task admission/probe engine differ; hashes do not establish provenance truth. | Maintain configured boundary tests and external serialization; audit each actual side-effect path.       |
+| R-26 | Current CI health unknown while queued               | Main quality/CodeQL runs queued at API read.                                                                               | No current release GO; inspect required contexts after completion.                                       |
+| R-27 | Dependency security inventory incomplete             | Historical “none tracked” is not a vulnerability scan; optional components and source pins vary.                           | Inventory from build configuration and separately run dependency/advisory audit before assurance claims. |
+
+Owner for follow-up remains maintainer review; this audit creates no new staffing or due-date commitment. Existing R-05–R-09 remain relevant. R-01's old closure records a claim checker, not proof that overclaim can never recur; R-22/R-25 track current interpretation risks. See [CI](CI_GATE_STATUS.md), [dependencies](DEPENDENCY_HEALTH.md) and [audit evidence](STATUS_RECONCILIATION_2026-10-27.md).
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+The default [compiler policy](../../cmake/Compiler.cmake) adds `NDEBUG` globally, so assertion-only C++ checks can be disabled even outside the usual release flags. This audit verified that generated decoder-test flags required an explicit temporary `-UNDEBUG` override; its assertions-enabled execution remained incomplete. Record assertion execution separately from CTest process success.
+
+## Retained record
+
 Last Updated: 2026-04-01
 Owner: @t81dev
 Cadence: Weekly refresh

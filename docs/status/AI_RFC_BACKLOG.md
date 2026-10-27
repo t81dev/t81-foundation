@@ -1,5 +1,17 @@
 # AI RFC Backlog
 
+## Evidence review — 2026-10-27
+
+Last Updated: 2026-10-27
+
+Purpose: AI sequencing and historical closure inventory. The priority table below is **Historical**, not a current all-RFC compliance or KMS deployment attestation. RFC-00A0/A1/A5/A8 were superseded in the catalog; historical implementation rows do not reactivate them. Inspect [RFC index](../../spec/rfcs/index.md) before choosing work.
+
+The October 21 breach/freshness incident remains preserved. Its statement that production hardening is under test is superseded for the bounded configured storage repair: the [consolidation ledger](../research/consolidation/README.md) records merged #538 and externally serialized denial tests. It does not close malicious-host, multi-process or whole-system security questions. Runtime/backend command coverage is not proof that scaffolded `benchmark run` measures execution. Immediate research priorities follow the [Master Continuity Charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md); maintenance follows [TASKS](TASKS.md). Open PR research and fixes are listed separately in the [audit report](STATUS_RECONCILIATION_2026-10-27.md).
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-10-21
 Owner: @t81dev
 Scope: AI integration RFC implementation sequencing and compliance tracking

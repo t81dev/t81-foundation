@@ -1,5 +1,13 @@
 # Determinism Audit Log
 
+## Evidence review — 2026-10-27
+
+Purpose: append-only audit history. All original entries, findings, failures and dated test counts below are retained verbatim. They remain Historical rather than current cross-platform or release certification. Current evidence is in the [implementation matrix](IMPLEMENTATION_MATRIX.md) and [CI status](CI_GATE_STATUS.md).
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-03-22
 Owner: @t81dev
 
@@ -11,6 +19,15 @@ Entries are append-only. Do not edit past entries.
 ---
 
 ## Log
+
+### 2026-10-27 — Documentation evidence reconciliation
+
+Scope: all 31 tracked status documents at audited main; source review of VM, decoder, task admission, CanonFS and CI. No implementation patch or registry transition.
+
+Findings: JIT “MATCHING” did not establish full equivalence; traceability failures do not propagate through the test's void helpers; architecture-target checker fails unchanged; stale broad policy/immutability claims require explicit configured/trusted-host boundaries. Historical Track L BigInt-reference timings are not a matched optimized binary comparison. Investigation 08 has a text-rule comparator and unimplemented ablations.
+
+Remaining open: matched cross-platform artifacts, traceability test repair, checker repair, equivalent conventional model/replay benchmark. Checks actually executed are recorded in the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md#validation). Historical negative arithmetic and governance results remain unchanged.
+
 
 ### 2026-03-22 — VM Fuzzer: Three-Wave int-Narrowing OOB Security Fix
 

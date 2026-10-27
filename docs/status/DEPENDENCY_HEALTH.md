@@ -1,5 +1,25 @@
 # Dependency Health
 
+## Evidence review — 2026-10-27
+
+Purpose: source/configuration inventory, not a current vulnerability attestation. Old versions, “Latest,” full-SHA universality and “none tracked” statements below are **Historical / unverified as current health claims**. No CVE scan or external advisory review was performed; absence of recorded advisories does not establish safety.
+
+| Dependency/configuration        | Current source evidence                                                                                                           | Limit                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| CMake / presets                 | Root declares 3.16; preset schema is 3; documented research path uses 3.25+.                                                      | Declared minimum is not proof all presets work at 3.16.                                                    |
+| C++                             | [Options](../../cmake/Options.cmake) defaults C++23 with C++20 fallback option.                                                   | Compiler compatibility requires actual configured builds, not old recommendations.                         |
+| Python                          | Package metadata declares >=3.9; research runner requires modern Python features and docs say >=3.10; CI selects its own version. | Package installation minimum and tooling runtime are distinct.                                             |
+| Asio                            | [CMake](../../CMakeLists.txt) pins `asio-1-30-2`; reused local source for offline audit build.                                    | Build dependency even when a narrow target is selected; old network-only description is incomplete.        |
+| llama.cpp                       | Optional OFF by default; internal/build-only export guard. [Vendored adapter](../../tools/model/llama_cpp_adapter.cpp).           | Old short SHA is retained as historical assertion, not freshly authenticated upstream pin or safe version. |
+| Other optional/build components | Inspect [CMake tree](../../src/) and root options for TUI/benchmark/bindings dependencies.                                        | Old table is not a complete software bill of materials.                                                    |
+| Workflow actions                | [action audit](../../scripts/ci/audit_workflow_actions.py), [permission audit](../../scripts/ci/audit_workflow_permissions.py).   | Policy and actual compliance differ; pending #577 is not merged. Current outcomes in report.               |
+
+No dependency was upgraded. Linux/macOS/Windows/ARM64 workflow configuration was inspected; execution in this audit is macOS ARM64 only. Existing governance classifications and dependency upgrade rules are unchanged.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Active
 Last Updated: 2026-03-14
 Owner: @t81dev
