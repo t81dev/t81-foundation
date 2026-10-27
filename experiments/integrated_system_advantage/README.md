@@ -84,3 +84,23 @@ Earlier committed observations are retained byte for byte in `historical/`, with
 source commits and invalidation reasons. They are not silently regenerated or
 promoted by passing the new gate. See `CORRECTIVE_REVIEW.md` for the actual review
 head, commands, outcomes, remaining limitations and scientific disposition.
+
+## Phase-level cost attribution follow-up
+
+[Execution path](PHASE_CALL_PATH.md), [measurement methodology](PHASE_METHODOLOGY.md),
+and [phase cost report](PHASE_COST_REPORT.md) document the opt-in instrumentation
+follow-up stacked on #602. [Raw phase evidence](phase-evidence-2026-10-27/manifest.json)
+retains five OFF/ON/conventional triples, four loaded-model native repetitions per
+build, and a separate same-binary recording control. The OFF/ON corpus passes
+with identical semantic fingerprints; all timing totals are independently checked.
+
+Normal builds keep `T81_ENABLE_INVESTIGATION08_TIMING=OFF`. For research, build a
+second variant with that option ON and set `T81_I08_TIMING_OUT` to a unique
+sidecar path. Timing is never inserted into deterministic results or provenance.
+Startup/shutdown remain unavailable as isolated phases; a warmed native probe is
+not a warmed full CLI. Net observer perturbation is reported, not hidden.
+
+The dominant measured components in this tiny fixture are attention operations,
+state serialization, vector addition and scoring. These findings do not establish
+an architectural advantage, a native-ternary limit, or a completed Investigation 08.
+Use the phase runner and report for the actual boundaries, variability and gaps.

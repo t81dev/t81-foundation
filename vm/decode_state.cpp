@@ -1,3 +1,4 @@
+#include "internal/investigation08_timing.hpp"
 #include "t81/vm/decode_state.hpp"
 #include "t81/crypto/sha3.hpp"
 
@@ -15,8 +16,11 @@ std::string sha3_hex_text(std::string_view text) {
 }
 
 std::string tensor_signature_sha256(const t81::T729DynamicTensor& tensor) {
+  T81_I08_SCOPE("output_selection.state_signature");
   std::ostringstream out(std::ios::binary);
+  t81::research::i08::Scope i08_serialize("output_selection.state_serialization");
   tensor.serialize(out);
+  i08_serialize.stop();
   const std::string bytes = out.str();
   return sha3_hex_text(bytes);
 }

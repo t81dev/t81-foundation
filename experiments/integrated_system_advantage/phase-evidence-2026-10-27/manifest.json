@@ -1,0 +1,19 @@
+{
+  "source_checkpoint": "e2d605db6777973355a319deed345df64a0449b2",
+  "main_at_start": "c930b8c2ee7478782bf3c6d231bdd59984595ef2",
+  "predecessor_unmerged": "7c61afa3ba0e97c3c800ca5cde567cf374d7a5cc",
+  "architectural_disposition": "INCONCLUSIVE",
+  "control_note": "Same-binary control added after the primary negative ON-minus-OFF result; exploratory and no exclusions.",
+  "scripts_sha256": {
+    "phase_recording_control.py": "0705ce165a075653da856540f3db4e4d319041b2627c3ac39febcae9c9e38185",
+    "summarize_phase_costs.py": "d5990adc7cc9136d726f2c895a021e21668499cfb67f32b6233b2e3e9df8b5ed"
+  },
+  "files": {
+    "environment.json": "0178b1bda6f97309542585a70c27f1c0fc082ba1b9cb70ddc246730bee25e9ec",
+    "observations.json": "95d903ae15ec1d38d02cd301335ea14a98f327fca702adf961a80b74acddf29c",
+    "recording-control.json": "6b6863760fd872a65e5084de84f4b581c683a5f72b4c9b21cb1f73880361faa6",
+    "source-identities.json": "f077705b174c003427d4884a7690188c0cde11d9db7322536b40404cb8ab8be7",
+    "summary.json": "7edfdbdd2d1dd669b7ada95ec0df8b96a70b2882c02db600d4a8d968ee8ba443",
+    "validation.tar.gz": "4f7f85069a8672f08889cba7ad9134cd4aa8663f4b884f33ba55cf60bb8a0d03"
+  }
+}

@@ -1,0 +1,733 @@
+{
+  "phase_exclusive_ns": {
+    "application": {
+      "n": 5,
+      "mean_ns": 202300.2,
+      "median_ns": 19293,
+      "sample_stddev_ns": 252882.08834889828,
+      "min_ns": 15042,
+      "max_ns": 480041,
+      "raw_ns": [
+        15042,
+        478584,
+        480041,
+        19293,
+        18541
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "artifact.persistence": {
+      "n": 5,
+      "mean_ns": 1205774.8,
+      "median_ns": 833958,
+      "sample_stddev_ns": 836063.0611800165,
+      "min_ns": 591041,
+      "max_ns": 2602167,
+      "raw_ns": [
+        2602167,
+        650166,
+        833958,
+        1351542,
+        591041
+      ],
+      "descriptive_tail_indices": [
+        0
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "cli.ai_dispatch": {
+      "n": 5,
+      "mean_ns": 66333.2,
+      "median_ns": 7708,
+      "sample_stddev_ns": 81232.80386457185,
+      "min_ns": 5708,
+      "max_ns": 156167,
+      "raw_ns": [
+        5708,
+        154458,
+        156167,
+        7708,
+        7625
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "cli.argument_parsing": {
+      "n": 5,
+      "mean_ns": 61691.8,
+      "median_ns": 9625,
+      "sample_stddev_ns": 72623.56112653798,
+      "min_ns": 8584,
+      "max_ns": 152625,
+      "raw_ns": [
+        9625,
+        128792,
+        152625,
+        8833,
+        8584
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "decoder.compilation_binding": {
+      "n": 5,
+      "mean_ns": 1440908.2,
+      "median_ns": 706416,
+      "sample_stddev_ns": 1045144.4188638239,
+      "min_ns": 650208,
+      "max_ns": 2646209,
+      "raw_ns": [
+        650208,
+        2523000,
+        2646209,
+        678708,
+        706416
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "decoder.execution": {
+      "n": 5,
+      "mean_ns": 38916.6,
+      "median_ns": 37625,
+      "sample_stddev_ns": 8963.374213988836,
+      "min_ns": 29209,
+      "max_ns": 53666,
+      "raw_ns": [
+        53666,
+        29209,
+        37707,
+        36376,
+        37625
+      ],
+      "descriptive_tail_indices": [
+        0,
+        1
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "decoder.output_interpretation": {
+      "n": 5,
+      "mean_ns": 73974.6,
+      "median_ns": 56459,
+      "sample_stddev_ns": 27887.978741744624,
+      "min_ns": 48708,
+      "max_ns": 107167,
+      "raw_ns": [
+        56459,
+        101331,
+        107167,
+        48708,
+        56208
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "decoder.probe": {
+      "n": 5,
+      "mean_ns": 4324.8,
+      "median_ns": 4375,
+      "sample_stddev_ns": 298.054021949042,
+      "min_ns": 3875,
+      "max_ns": 4625,
+      "raw_ns": [
+        4541,
+        4375,
+        4208,
+        3875,
+        4625
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "decoder.program_construction": {
+      "n": 5,
+      "mean_ns": 129716.8,
+      "median_ns": 35876,
+      "sample_stddev_ns": 132401.86643019802,
+      "min_ns": 30751,
+      "max_ns": 278749,
+      "raw_ns": [
+        30751,
+        270667,
+        278749,
+        32541,
+        35876
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "model.file_read": {
+      "n": 5,
+      "mean_ns": 42941.8,
+      "median_ns": 42291,
+      "sample_stddev_ns": 2656.2241434035645,
+      "min_ns": 40750,
+      "max_ns": 47459,
+      "raw_ns": [
+        40750,
+        47459,
+        42875,
+        42291,
+        41334
+      ],
+      "descriptive_tail_indices": [
+        1
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "model.loading": {
+      "n": 5,
+      "mean_ns": 4558,
+      "median_ns": 3750,
+      "sample_stddev_ns": 2192.9924760472845,
+      "min_ns": 3126,
+      "max_ns": 8374,
+      "raw_ns": [
+        3750,
+        8374,
+        4374,
+        3126,
+        3166
+      ],
+      "descriptive_tail_indices": [
+        1
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "model.parsing_validation": {
+      "n": 5,
+      "mean_ns": 66283.6,
+      "median_ns": 39125,
+      "sample_stddev_ns": 39708.40563155363,
+      "min_ns": 34542,
+      "max_ns": 112917,
+      "raw_ns": [
+        34542,
+        112917,
+        106417,
+        38417,
+        39125
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "output_selection.scoring": {
+      "n": 5,
+      "mean_ns": 486562557.8,
+      "median_ns": 486024331,
+      "sample_stddev_ns": 1137895.1236758158,
+      "min_ns": 485326544,
+      "max_ns": 488059000,
+      "raw_ns": [
+        487437622,
+        486024331,
+        485326544,
+        485965292,
+        488059000
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "output_selection.selection": {
+      "n": 5,
+      "mean_ns": 416.6,
+      "median_ns": 458,
+      "sample_stddev_ns": 241.32198407936232,
+      "min_ns": 166,
+      "max_ns": 667,
+      "raw_ns": [
+        667,
+        167,
+        166,
+        458,
+        625
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "output_selection.state_serialization": {
+      "n": 5,
+      "mean_ns": 768599058.8,
+      "median_ns": 768607666,
+      "sample_stddev_ns": 828458.1079877848,
+      "min_ns": 767630835,
+      "max_ns": 769798124,
+      "raw_ns": [
+        767630835,
+        769798124,
+        768607666,
+        768892502,
+        768066167
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "output_selection.state_signature": {
+      "n": 5,
+      "mean_ns": 30550.2,
+      "median_ns": 30335,
+      "sample_stddev_ns": 831.2729395330995,
+      "min_ns": 29665,
+      "max_ns": 31667,
+      "raw_ns": [
+        29956,
+        31128,
+        30335,
+        29665,
+        31667
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "policy.admission": {
+      "n": 5,
+      "mean_ns": 90166.2,
+      "median_ns": 50791,
+      "sample_stddev_ns": 57697.778823798755,
+      "min_ns": 43499,
+      "max_ns": 154125,
+      "raw_ns": [
+        43499,
+        154125,
+        152459,
+        49957,
+        50791
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "policy.apl_parsing": {
+      "n": 5,
+      "mean_ns": 87308.4,
+      "median_ns": 15334,
+      "sample_stddev_ns": 100140.04227480633,
+      "min_ns": 12458,
+      "max_ns": 197000,
+      "raw_ns": [
+        12458,
+        197000,
+        197000,
+        15334,
+        14750
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "policy.model_fingerprint": {
+      "n": 5,
+      "mean_ns": 193816.8,
+      "median_ns": 80000,
+      "sample_stddev_ns": 163459.7569577907,
+      "min_ns": 65459,
+      "max_ns": 374083,
+      "raw_ns": [
+        65459,
+        374083,
+        371458,
+        80000,
+        78084
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "policy.vm_evaluation": {
+      "n": 5,
+      "mean_ns": 156407,
+      "median_ns": 160919,
+      "sample_stddev_ns": 43434.352124787125,
+      "min_ns": 102911,
+      "max_ns": 204998,
+      "raw_ns": [
+        122671,
+        190536,
+        204998,
+        160919,
+        102911
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "task.assess_fixed": {
+      "n": 5,
+      "mean_ns": 1784442,
+      "median_ns": 1399959,
+      "sample_stddev_ns": 1057629.994436854,
+      "min_ns": 838000,
+      "max_ns": 2921168,
+      "raw_ns": [
+        838000,
+        2921168,
+        2911042,
+        852041,
+        1399959
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.attention": {
+      "n": 5,
+      "mean_ns": 4216.6,
+      "median_ns": 2958,
+      "sample_stddev_ns": 3308.8709252553203,
+      "min_ns": 1792,
+      "max_ns": 10000,
+      "raw_ns": [
+        2584,
+        10000,
+        3749,
+        2958,
+        1792
+      ],
+      "descriptive_tail_indices": [
+        1
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.attention.kernel": {
+      "n": 5,
+      "mean_ns": 3980711249.8,
+      "median_ns": 3978093875,
+      "sample_stddev_ns": 5246351.987052403,
+      "min_ns": 3975493333,
+      "max_ns": 3987150416,
+      "raw_ns": [
+        3987150416,
+        3975493333,
+        3978093875,
+        3985507000,
+        3977311625
+      ],
+      "descriptive_tail_indices": [
+        0
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.embedding": {
+      "n": 5,
+      "mean_ns": 114206,
+      "median_ns": 85910,
+      "sample_stddev_ns": 40353.560053606176,
+      "min_ns": 83209,
+      "max_ns": 164669,
+      "raw_ns": [
+        83209,
+        151535,
+        164669,
+        85707,
+        85910
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.embedding.native_attempt": {
+      "n": 5,
+      "mean_ns": 30843.6,
+      "median_ns": 20085,
+      "sample_stddev_ns": 19227.704056907056,
+      "min_ns": 13668,
+      "max_ns": 54172,
+      "raw_ns": [
+        13668,
+        54172,
+        49166,
+        20085,
+        17127
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.projection": {
+      "n": 5,
+      "mean_ns": 34283.2,
+      "median_ns": 31792,
+      "sample_stddev_ns": 4322.613873572332,
+      "min_ns": 30042,
+      "max_ns": 38999,
+      "raw_ns": [
+        38999,
+        31792,
+        38916,
+        30042,
+        31667
+      ],
+      "descriptive_tail_indices": [
+        0,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.projection.native_attempt": {
+      "n": 5,
+      "mean_ns": 4066.6,
+      "median_ns": 3709,
+      "sample_stddev_ns": 940.7764346538448,
+      "min_ns": 2874,
+      "max_ns": 5166,
+      "raw_ns": [
+        3709,
+        2874,
+        3709,
+        5166,
+        4875
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tensor_execution.vector_add": {
+      "n": 5,
+      "mean_ns": 598613350.2,
+      "median_ns": 598584167,
+      "sample_stddev_ns": 1614500.235848295,
+      "min_ns": 597039792,
+      "max_ns": 601017250,
+      "raw_ns": [
+        601017250,
+        598584167,
+        597251042,
+        597039792,
+        599174500
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tokenization.encoding": {
+      "n": 5,
+      "mean_ns": 54649.8,
+      "median_ns": 55541,
+      "sample_stddev_ns": 8783.056939357732,
+      "min_ns": 44083,
+      "max_ns": 64125,
+      "raw_ns": [
+        44083,
+        62041,
+        64125,
+        47459,
+        55541
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "tokenization.input_normalization": {
+      "n": 5,
+      "mean_ns": 783.4,
+      "median_ns": 667,
+      "sample_stddev_ns": 451.0574242820974,
+      "min_ns": 375,
+      "max_ns": 1375,
+      "raw_ns": [
+        667,
+        375,
+        375,
+        1125,
+        1375
+      ],
+      "descriptive_tail_indices": [],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "vm.execution": {
+      "n": 5,
+      "mean_ns": 2455336,
+      "median_ns": 3153372,
+      "sample_stddev_ns": 1521785.4506081007,
+      "min_ns": 789468,
+      "max_ns": 3794791,
+      "raw_ns": [
+        831164,
+        3707885,
+        3794791,
+        3153372,
+        789468
+      ],
+      "descriptive_tail_indices": [
+        0,
+        4
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "vm.initialization": {
+      "n": 5,
+      "mean_ns": 153683.4,
+      "median_ns": 26500,
+      "sample_stddev_ns": 178061.79445153303,
+      "min_ns": 19417,
+      "max_ns": 366709,
+      "raw_ns": [
+        19417,
+        329666,
+        366709,
+        26500,
+        26125
+      ],
+      "descriptive_tail_indices": [
+        1,
+        2
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    }
+  },
+  "application_window_ns": {
+    "n": 5,
+    "mean_ns": 5843019116.8,
+    "median_ns": 5842627834,
+    "sample_stddev_ns": 4313900.199780901,
+    "min_ns": 5836854125,
+    "max_ns": 5848893542,
+    "raw_ns": [
+      5848893542,
+      5842627834,
+      5842483291,
+      5844236792,
+      5836854125
+    ],
+    "descriptive_tail_indices": [
+      0,
+      4
+    ],
+    "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+  },
+  "wall_ns": {
+    "OFF": {
+      "n": 5,
+      "mean_ns": 5986431825.2,
+      "median_ns": 5983849250,
+      "sample_stddev_ns": 9742657.269878516,
+      "min_ns": 5978766167,
+      "max_ns": 6003441375,
+      "raw_ns": [
+        5982035542,
+        5978766167,
+        5983849250,
+        5984066792,
+        6003441375
+      ],
+      "descriptive_tail_indices": [
+        4
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "ON": {
+      "n": 5,
+      "mean_ns": 5854420416.4,
+      "median_ns": 5857133833,
+      "sample_stddev_ns": 4812006.65342332,
+      "min_ns": 5846377458,
+      "max_ns": 5857701458,
+      "raw_ns": [
+        5857133833,
+        5857407625,
+        5857701458,
+        5853481708,
+        5846377458
+      ],
+      "descriptive_tail_indices": [
+        3,
+        4
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    },
+    "conventional": {
+      "n": 5,
+      "mean_ns": 105570625.2,
+      "median_ns": 103536000,
+      "sample_stddev_ns": 7215055.251878997,
+      "min_ns": 100757042,
+      "max_ns": 118289542,
+      "raw_ns": [
+        118289542,
+        103613625,
+        101656917,
+        100757042,
+        103536000
+      ],
+      "descriptive_tail_indices": [
+        0
+      ],
+      "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+    }
+  },
+  "combined_process_boundary_residual_ns": {
+    "n": 5,
+    "mean_ns": 11401299.6,
+    "median_ns": 9523333,
+    "sample_stddev_ns": 3322326.182037038,
+    "min_ns": 8240291,
+    "max_ns": 15218167,
+    "raw_ns": [
+      8240291,
+      14779791,
+      15218167,
+      9244916,
+      9523333
+    ],
+    "descriptive_tail_indices": [
+      1,
+      2
+    ],
+    "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+  },
+  "paired_instrumentation_wall_difference_ns": {
+    "n": 5,
+    "mean_ns": -132011408.8,
+    "median_ns": -126147792,
+    "sample_stddev_ns": 14388154.6230577,
+    "min_ns": -157063917,
+    "max_ns": -121358542,
+    "raw_ns": [
+      -124901709,
+      -121358542,
+      -126147792,
+      -130585084,
+      -157063917
+    ],
+    "descriptive_tail_indices": [
+      4
+    ],
+    "tail_rule": "post-collection descriptive 3*MAD flag only; no samples excluded or formal outlier inference"
+  },
+  "warm_native_probe_intervals_ns": [
+    5898643000,
+    5898574458,
+    5894560750,
+    5892344875
+  ],
+  "warm_note": "First versus later repetitions reuse a loaded model but repeat compilation/VM creation; no isolated OFF per-call clocks.",
+  "interpretation": "Exploratory descriptive implementation costs; no architectural advantage/disadvantage or native-hardware inference."
+}

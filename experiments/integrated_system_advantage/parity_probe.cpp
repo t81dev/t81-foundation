@@ -1,3 +1,4 @@
+#include "../../vm/internal/investigation08_timing.hpp"
 // Opt-in research instrumentation of existing production compiler/VM operations.
 #include <iostream>
 #include <map>
@@ -17,11 +18,23 @@ void array(const auto& values) {
   std::cout << ']';
 }
 int main(int argc, char** argv) {
+  [[maybe_unused]] t81::research::i08::Session i08_session;
   try {
-    if (argc != 4) throw std::runtime_error("usage: probe model tokenizer prompt");
+    if (argc != 4 && argc != 5)
+      throw std::runtime_error("usage: probe model tokenizer prompt [repetitions]");
+    const int repetitions = argc == 5 ? std::stoi(argv[4]) : 1;
+    if (repetitions < 1 || repetitions > 20) throw std::runtime_error("repetitions out of range");
     auto model = std::make_shared<t81::weights::ModelFile>(t81::weights::load_t81w(argv[1]));
-    auto probe = t81::vm::run_native_vm_probe(t81::vm::make_initial_probe_request(
-        model, t81::vm::detect_architecture_profile(*model), argv[3], argv[2]));
+    t81::vm::DecodeProbe probe;
+    for (int repetition = 0; repetition < repetitions; ++repetition) {
+      T81_I08_SCOPE("warm.native_probe_iteration");
+      auto next = t81::vm::run_native_vm_probe(t81::vm::make_initial_probe_request(
+          model, t81::vm::detect_architecture_profile(*model), argv[3], argv[2]));
+      if (repetition && (next.stdout_text != probe.stdout_text ||
+                         next.selected_token_id != probe.selected_token_id))
+        throw std::runtime_error("warm probe changed numerical output");
+      probe = std::move(next);
+    }
     if (!probe.ok) throw std::runtime_error("probe failed: " + probe.trap);
     std::ostringstream source;
     source << "@ternary_inference\n@tier(2)\nfn main() -> i32 {\n"

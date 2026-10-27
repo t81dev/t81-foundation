@@ -1,3 +1,4 @@
+#include "internal/investigation08_timing.hpp"
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -6408,6 +6409,7 @@ public:
         // RFC-0034 §5.17 — Ternary-Native Inference Operations
         // -----------------------------------------------------------------------
         case t81::tisc::Opcode::TWMATMUL: {
+          T81_I08_SCOPE("tensor_execution.projection");
           // TWMATMUL RD, R_ACT, R_WT — ternary-weight matmul; T81BigInt accumulator.
           if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
             trap = Trap::DecodeFault;
@@ -6555,6 +6557,7 @@ public:
           break;
         }
         case t81::tisc::Opcode::TATTN: {
+          T81_I08_SCOPE("tensor_execution.attention");
           // TATTN RD, R_Q, PACK(R_K, R_V) — ternary Q/K attention.
           if (!reg_ok(insn.a) || !reg_ok(insn.b)) {
             trap = Trap::DecodeFault;
@@ -6622,6 +6625,7 @@ public:
             break;
           }
           try {
+            T81_I08_SCOPE("tensor_execution.attention.kernel");
             auto result = t81::ops::tattn(*q_t, *k_t, *v_t);
             t81::axion::Verdict verdict{t81::axion::VerdictKind::Allow,
                                         "TATTN ternary QK attention (RFC-0034)"};
@@ -6640,6 +6644,7 @@ public:
           break;
         }
         case t81::tisc::Opcode::TWEMBED: {
+          T81_I08_SCOPE("tensor_execution.embedding");
           // TWEMBED RD, R_TABLE, R_IDX — row-gather from T81Qutrit embedding table.
           if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
             trap = Trap::DecodeFault;
@@ -6704,6 +6709,7 @@ public:
           break;
         }
         case t81::tisc::Opcode::TERNACCUM: {
+          T81_I08_SCOPE("output_selection.scoring");
           // TERNACCUM RD, R_WT, R_ACT — scalar ternary dot product → T81BigInt handle.
           if (!reg_ok(insn.a) || !reg_ok(insn.b) || !reg_ok(insn.c)) {
             trap = Trap::DecodeFault;
@@ -7249,6 +7255,7 @@ public:
   }
 
   std::expected<void, Trap> run_to_halt(std::size_t max_steps) override {
+    T81_I08_SCOPE("vm.execution");
     for (std::size_t i = 0; i < max_steps && !state_.halted; ++i) {
       auto result = step();
       if (!result.has_value()) {
@@ -7367,6 +7374,7 @@ private:
       std::string_view syscall, std::size_t prog_counter, t81::tisc::Opcode opcode,
       std::string_view payload = {},
       std::optional<std::size_t> instruction_count_override = std::nullopt) {
+    T81_I08_SCOPE("policy.vm_evaluation");
     if (syscall == t81::axion::reasons::kMetaRead) {
       // Internal MetaRead check could go here
     }

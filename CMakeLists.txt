@@ -20,6 +20,10 @@ configure_file(
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Options.cmake)
+option(T81_ENABLE_INVESTIGATION08_TIMING "Enable private opt-in Investigation 08 elapsed-time sidecars" OFF)
+if(T81_ENABLE_INVESTIGATION08_TIMING)
+  add_compile_definitions(T81_INVESTIGATION08_TIMING)
+endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Compiler.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)

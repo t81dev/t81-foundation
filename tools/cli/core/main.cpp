@@ -1,3 +1,4 @@
+#include "../../../vm/internal/investigation08_timing.hpp"
 /**
  * @file main.cpp
  * @brief T81 Foundation Command-Line Interface
@@ -10659,6 +10660,7 @@ std::optional<std::string> removed_help_topic_recommendation(std::string_view to
 // Main
 // ──────────────────────────────────────────────────────────────
 int main(int argc, char* argv[]) {
+  [[maybe_unused]] t81::research::i08::Session i08_session;
   g_json_error_mode = false;
   g_json_error_emitted = false;
   for (int i = 1; i < argc; ++i) {
@@ -10672,7 +10674,9 @@ int main(int argc, char* argv[]) {
     if (argc > 1) {
       entered_command = argv[1];
     }
+    t81::research::i08::Scope i08_cli("cli.argument_parsing");
     auto args = parse_args(argc, argv);
+    i08_cli.stop();
 
     if (entered_command != "help" && entered_command != "version") {
       auto removed = removed_alias_recommendation(entered_command);

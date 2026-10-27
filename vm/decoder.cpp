@@ -1,3 +1,4 @@
+#include "internal/investigation08_timing.hpp"
 #include "t81/vm/decoder.hpp"
 
 #include "t81/cli/driver.hpp"
@@ -433,6 +434,7 @@ std::vector<std::string> apply_bpe_merges(
 
 std::vector<int> lookup_tokenizer_prompt_token_ids(const fs::path& tokenizer_path,
                                                    std::string_view prompt) {
+  T81_I08_SCOPE("tokenization.encoding");
   std::ifstream in(tokenizer_path, std::ios::binary);
   if (!in) {
     return {};
@@ -611,6 +613,7 @@ bool inject_tensor_binding(t81::tisc::Program& program,
 }
 
 void apply_selection_policy(DecodeProbe& result) {
+  T81_I08_SCOPE("output_selection.selection");
   if (result.sampled_token_ids.empty() || result.sampled_token_scores.empty()) {
     return;
   }
@@ -759,6 +762,7 @@ void populate_sampled_logits(DecodeProbe& result) {
 }
 
 BuiltDecodeProgram build_decode_program(const DecodeRequest& request) {
+  T81_I08_SCOPE("decoder.program_construction");
   BuiltDecodeProgram built;
   DecodeProbe& result = built.probe;
   if (!request.model) {
@@ -1017,6 +1021,7 @@ BuiltDecodeProgram build_decode_program(const DecodeRequest& request) {
            << "}\n";
   }
 
+  t81::research::i08::Scope i08_compile("decoder.compilation_binding");
   built.program = t81::cli::build_program_from_source(source.str(), "<t81 decode>", request.model);
   if (!built.program.has_value()) {
     result.trap = "compile_failure";
@@ -1037,6 +1042,7 @@ BuiltDecodeProgram build_decode_program(const DecodeRequest& request) {
 
 DecodeExecutionResult execute_decode_program(const BuiltDecodeProgram& built,
                                             const DecodeRequest& request) {
+  T81_I08_SCOPE("decoder.execution");
   DecodeExecutionResult execution;
   if (!built.program.has_value()) {
     execution.trap = built.probe.trap.empty() ? "missing_program" : built.probe.trap;
@@ -1062,8 +1068,10 @@ DecodeExecutionResult execute_decode_program(const BuiltDecodeProgram& built,
     execution.hidden_tensor_blend_used = true;
   }
 
+  t81::research::i08::Scope i08_init("vm.initialization");
   auto vm = t81::vm::make_interpreter_vm();
   vm->load_program(program);
+  i08_init.stop();
   const auto run = vm->run_to_halt();
   for (std::size_t i = 0; i < vm->state().printed_output.size(); ++i) {
     if (i != 0) {
@@ -1094,6 +1102,7 @@ DecodeExecutionResult execute_decode_program(const BuiltDecodeProgram& built,
 
 DecodeProbe interpret_decode_execution(const BuiltDecodeProgram& built,
                                       const DecodeExecutionResult& execution) {
+  T81_I08_SCOPE("decoder.output_interpretation");
   DecodeProbe result = built.probe;
   if (!execution.ok) {
     result.trap = execution.trap;
@@ -1138,6 +1147,7 @@ DecodeProbe interpret_decode_execution(const BuiltDecodeProgram& built,
 }
 
 DecodeProbe run_native_vm_probe_impl(const DecodeRequest& request) {
+  T81_I08_SCOPE("decoder.probe");
   const BuiltDecodeProgram built = build_decode_program(request);
   if (!built.program.has_value()) {
     return built.probe;

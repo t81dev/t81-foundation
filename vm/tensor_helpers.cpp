@@ -1,3 +1,4 @@
+#include "internal/investigation08_timing.hpp"
 #include "internal/tensor_helpers.hpp"
 
 #include <algorithm>
@@ -146,6 +147,7 @@ void account_tensor_allocation(State& state, std::size_t tensor_elements) {
 
 std::optional<t81::T729DynamicTensor> decode_native_tensor(const t81::weights::NativeTensor& native,
                                                            TensorDecodeMode mode) {
+  T81_I08_SCOPE("tensor_execution.native_materialization");
   const auto shared_mode = mode == TensorDecodeMode::StrictCanonical
                                ? t81::tensor_native::DecodeMode::StrictCanonical
                                : t81::tensor_native::DecodeMode::Lenient;
@@ -376,6 +378,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_tact_direct(
 std::optional<t81::v1::T81BigInt> native_tensor_ternaccum_direct(
     const t81::weights::NativeTensor& native, const std::vector<std::int8_t>& trits,
     const t81::T729DynamicTensor& activations) {
+  T81_I08_SCOPE("output_selection.scoring.native_attempt");
   if (native.format != t81::weights::NativeFormat::BalancedTernary) {
     return std::nullopt;
   }
@@ -845,6 +848,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_rope_direct(
 
 std::optional<t81::T729DynamicTensor> native_tensor_twembed_direct(
     const t81::weights::NativeTensor& native, std::int64_t index) {
+  T81_I08_SCOPE("tensor_execution.embedding.native_attempt");
   if (native.format != t81::weights::NativeFormat::BalancedTernary || native.shape.size() != 2) {
     return std::nullopt;
   }
@@ -919,6 +923,7 @@ std::optional<t81::T729DynamicTensor> native_tensor_twembed_direct(
 std::optional<t81::T729DynamicTensor> native_tensor_twmatmul_direct(
     const t81::T729DynamicTensor& activations, const t81::weights::NativeTensor& weights,
     const std::vector<std::int8_t>& weight_trits) {
+  T81_I08_SCOPE("tensor_execution.projection.native_attempt");
   if (weights.format != t81::weights::NativeFormat::BalancedTernary ||
       activations.rank() != 2 || weights.shape.size() != 2) {
     return std::nullopt;
@@ -1471,6 +1476,7 @@ bool tensor_set_at(t81::T729DynamicTensor& tensor, std::int64_t index, float val
 
 std::expected<t81::T729DynamicTensor, t81::vm::Trap> tensor_vec_binary_checked(
     const t81::T729DynamicTensor& lhs, const t81::T729DynamicTensor& rhs, bool multiply) {
+  T81_I08_SCOPE("tensor_execution.vector_add");
   if (!tensor_elementwise_compatible(lhs, rhs)) {
     return std::expected<t81::T729DynamicTensor, t81::vm::Trap>(t81::unexpect,
                                                                 t81::vm::Trap::ShapeFault);
