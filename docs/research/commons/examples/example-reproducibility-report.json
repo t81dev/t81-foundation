@@ -1,0 +1,52 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H04",
+  "repository_revision": "274421fd8e85c5b9bb4f165fce190715530f4e85",
+  "evidence": [
+    {
+      "source_ref": "h04-refinement",
+      "relationship": "context",
+      "scope": "Specified four-arm discriminator"
+    },
+    {
+      "source_ref": "h04-r02",
+      "relationship": "contradictory",
+      "scope": "Reported symbolic-model negative; not all workloads"
+    },
+    {
+      "source_ref": "h04-limitations",
+      "relationship": "unresolved",
+      "scope": "Mode granularity and physical coefficients remain limited"
+    }
+  ],
+  "uncertainty": "Illustrative unexecuted proposal discovered solely from pinned repository evidence. No measured advantage claimed.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": null
+  },
+  "attribution": {
+    "name": "Unassigned contributor (schema example)",
+    "kind": "unknown",
+    "model": null,
+    "role": "Illustrative draft, no independent review or execution performed"
+  },
+  "target": "h04-r02",
+  "environment": "Unassigned example; no experiment executed",
+  "commands": [
+    "Planned: inspect pinned model, oracle and controls before selecting a reproduction command"
+  ],
+  "artifact_identities": [
+    {
+      "path": "experiments/h04_r02_adaptive_representation/RESULTS.md",
+      "sha256": "7524c9466784378ce15f776be2407c520e6d222af2c181570481e3d67f87ca07"
+    }
+  ],
+  "outcome": "blocked",
+  "failures": [
+    "Illustrative report awaiting authorized execution and independent environment"
+  ],
+  "scope": "Template referencing existing source identity, not newly generated output",
+  "id": "example-reproducibility-report",
+  "schema": "t81.research-commons.reproducibility-report.v1"
+}

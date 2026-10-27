@@ -1,0 +1,809 @@
+{
+  "schema": "t81.research-commons.manifest.v1",
+  "version": "1.0.0",
+  "repository": "https://github.com/t81dev/t81-foundation",
+  "baseline_revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+  "scope": "Curated read-only snapshot of merged PR608. PR610 is an unmerged proposal; corrected-initiative integration awaits its human-reviewed merge. Canonical register dispositions remain dated 2026-10-25, with no independent scientific verification or live CI claim.",
+  "sources": [
+    {
+      "id": "charter",
+      "path": "docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "bb073bafcd00a81d6790558d05ab60b2e53eee9a8724e19563228983bc575ca7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md",
+      "role": "authority",
+      "uncertainty": "Continuity and research intent, not implementation certification."
+    },
+    {
+      "id": "register",
+      "path": "docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "af8ca65dcef136f294eb33010b5a6621875a52db4f3e60b94a4e28db5318a1c1",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/HYPOTHESIS_REGISTER_v1.json",
+      "role": "authority",
+      "uncertainty": "Historical dispositions as of 2026-10-25; later evidence is linked separately."
+    },
+    {
+      "id": "research-charter",
+      "path": "docs/research/RESEARCH_CHARTER.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "a89e4c4338fc8b91412a862db24512d44f38d07f84f3e2c45b195c18fc49b4fa",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/RESEARCH_CHARTER.md",
+      "role": "authority",
+      "uncertainty": "Research directive; does not amend canonical hypothesis identities."
+    },
+    {
+      "id": "agent-rules",
+      "path": "AGENTS.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "b84c2b899b09efa8b8e418a22d966a64049c2b9d0cc411ebb12b018c5fd90255",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/AGENTS.md",
+      "role": "governance",
+      "uncertainty": "Rules at the pinned baseline; current checkout may add onboarding guidance."
+    },
+    {
+      "id": "authority-model",
+      "path": "docs/governance/SPEC_AUTHORITY_MODEL.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "1592ee73a96456cc167e31c419c0f4677f9f6d7c7fa6ea3542fc926d8548aab5",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/governance/SPEC_AUTHORITY_MODEL.md",
+      "role": "governance",
+      "uncertainty": "Specification authority is distinct from measured behavior."
+    },
+    {
+      "id": "lineage",
+      "path": "docs/research/continuity/LINEAGE.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "23a8ac97fb993059a81c1829929e6b1ede94ad66279b10be0c928f955c24d5cc",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/LINEAGE.md",
+      "role": "reported",
+      "uncertainty": "Pinned source archaeology; no new independent reproduction here."
+    },
+    {
+      "id": "source-pins",
+      "path": "docs/research/continuity/evidence/source-pins.json",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "55184b2d252a1f5b501c30d05381404797ff0bf82e3a4180de34ba509d2780cc",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/evidence/source-pins.json",
+      "role": "identity",
+      "uncertainty": "External repositories are not automatically fetched or verified."
+    },
+    {
+      "id": "continuity-handoff",
+      "path": "docs/research/continuity/SESSION_HANDOFF.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "3e239914d6f63704989c18eccbb7098345ab52ff9af4b125dbbda7e3c200a6fc",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/SESSION_HANDOFF.md",
+      "role": "reported",
+      "uncertainty": "Historical session and PR status; not live readiness."
+    },
+    {
+      "id": "storage-model",
+      "path": "docs/research/continuity/evidence/storage-boundary-results.json",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "bf125deb36d73129f154a7074e2888cf4c159c78cd48b2b504a061d1d83de885",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/evidence/storage-boundary-results.json",
+      "role": "modeled",
+      "uncertainty": "Conditional exact model, not device measurement."
+    },
+    {
+      "id": "storage-probe",
+      "path": "docs/research/continuity/probes/storage_boundary.py",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "138da102790dc642b691c6cf97c01f42a9d5e7477ad96cfaa82341bc7c7097da",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/probes/storage_boundary.py",
+      "role": "reproduction",
+      "uncertainty": "Instructions/source only; Commons never executes this probe."
+    },
+    {
+      "id": "hanoi-negative",
+      "path": "docs/research/continuity/evidence/hanoi-arithmetic-results.json",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "2957f5f37c29ce57a881f8968c597e24a91e0145dc13f36e39094cdccb192aa3",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/evidence/hanoi-arithmetic-results.json",
+      "role": "negative",
+      "uncertainty": "Recorded isolated counterexamples, not a full Hanoi build or new replication."
+    },
+    {
+      "id": "hanoi-probe",
+      "path": "docs/research/continuity/probes/reproduce_hanoi_arithmetic.py",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "adc3ad2728ceebd1787b2c411fcf997b8b5c3d42027f408b9593b69f1bc5b040",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/probes/reproduce_hanoi_arithmetic.py",
+      "role": "reproduction",
+      "uncertainty": "Requires separate pinned Hanoi checkout and C compiler; writes output only if separately executed."
+    },
+    {
+      "id": "h04-refinement",
+      "path": "docs/research/continuity/H04_RADIX_ADAPTATION_DISCRIMINATOR.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "cc392a610aff47da79f25e22dc95f976b553798bcd4416bbed6aa004ca02475b",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/H04_RADIX_ADAPTATION_DISCRIMINATOR.md",
+      "role": "proposal",
+      "uncertainty": "H04-R01 refinement, not replacement of historical H04."
+    },
+    {
+      "id": "h04-r02",
+      "path": "experiments/h04_r02_adaptive_representation/RESULTS.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "7524c9466784378ce15f776be2407c520e6d222af2c181570481e3d67f87ca07",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/experiments/h04_r02_adaptive_representation/RESULTS.md",
+      "role": "reported",
+      "uncertainty": "Reported four-arm symbolic model, not hardware or general software performance."
+    },
+    {
+      "id": "h04-limitations",
+      "path": "experiments/h04_r02_adaptive_representation/LIMITATIONS.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "788a1b8c5ba95e50eaffb16459ffcb164defc872ba9eab6de331600bfed87f2e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/experiments/h04_r02_adaptive_representation/LIMITATIONS.md",
+      "role": "reported",
+      "uncertainty": "Explicit model/domain limits."
+    },
+    {
+      "id": "h04-handoff",
+      "path": "experiments/h04_r02_adaptive_representation/HANDOFF.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "5c52ab7fef516f431801128de0f3e1b3d2a94ed97418546a92b946402bf1c730",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/experiments/h04_r02_adaptive_representation/HANDOFF.md",
+      "role": "disputed",
+      "uncertainty": "Its blanket software-CPU conclusion exceeds model scope; preserve but do not adopt."
+    },
+    {
+      "id": "arithmetic-report",
+      "path": "docs/research/TERNARY_ARITHMETIC_AND_RADIX_COMPARISON.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "bf5a373fa9955d13d3bd54daa94c4c53b9579575d9ded09ae92c770b82fbfc65",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/TERNARY_ARITHMETIC_AND_RADIX_COMPARISON.md",
+      "role": "negative",
+      "uncertainty": "Reported bounded software arithmetic comparison; not all hardware or algorithms."
+    },
+    {
+      "id": "matvec-report",
+      "path": "docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "7e9ac13e3e21877e80d06b84a5b186b4f96f315bcc1e3fd2d680a98d9823cab9",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md",
+      "role": "negative",
+      "uncertainty": "Reported scoped AVX2 throughput negative; compact storage is separate from speed/accuracy."
+    },
+    {
+      "id": "corrective-07-08",
+      "path": "docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "26e94e6628513faf12b155cc2efaf79a285043c12f9dcc91d728defb229b467c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md",
+      "role": "disputed",
+      "uncertainty": "Retains SUPPORTED assurance wording; alignment audit restricts comparative interpretation."
+    },
+    {
+      "id": "alignment-audit",
+      "path": "docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "3a0e00b0fad45770a7f3adb0161c80fab7eb4ec107712a56928baffa5e3d71fe",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md",
+      "role": "reported",
+      "uncertainty": "Documents unequal baseline computation; not a new performance or security certification."
+    },
+    {
+      "id": "audit-capabilities",
+      "path": "docs/research/CAPABILITY_BASELINE.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "a23fad22e209db5e1b00f3c2c455d82267029c1105831d8446c5a9b0d62cb195",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/CAPABILITY_BASELINE.md",
+      "role": "disputed",
+      "uncertainty": "PR606 historical audit: reported test/comparative labels and version/encoding ambiguities require source checks."
+    },
+    {
+      "id": "audit-matrix",
+      "path": "docs/research/RFC_EVIDENCE_MATRIX.csv",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "20569fcac45f5dc8430a37baa847764ed890035f1be3580d238c04146f57cc78",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/RFC_EVIDENCE_MATRIX.csv",
+      "role": "disputed",
+      "uncertainty": "PR606 source pointers and labels are claims; some paths are missing and comparative controls unverified."
+    },
+    {
+      "id": "audit-coverage",
+      "path": "docs/research/TISC_T81LANG_COVERAGE.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "0940c24a2ed70603e0355a0a02df191266eceb93e97b25fd622d9ff1522e40e6",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/TISC_T81LANG_COVERAGE.md",
+      "role": "reported",
+      "uncertainty": "PR606 compiler coverage narrative; not independent execution proof."
+    },
+    {
+      "id": "audit-gaps",
+      "path": "docs/research/RESEARCH_GAPS.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "e0a3183d8a63a52df9ca10535d512b4584e293de47cf3afcccb60f9828805239",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/RESEARCH_GAPS.md",
+      "role": "disputed",
+      "uncertainty": "PR606 omits E1 merged on another branch; 1.585x compression claim confuses entropy with 2-bit packing."
+    },
+    {
+      "id": "audit-reproduction",
+      "path": "docs/research/AUDIT_REPRODUCIBILITY.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "60b529e1a4f45cddfc84a0af2dcf695b92f6eb0ec8ddaf3e7be98a878e7b218e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/AUDIT_REPRODUCIBILITY.md",
+      "role": "reproduction",
+      "uncertainty": "PR606 reports commands and 408 passing tests; no retained raw runs independently verified here."
+    },
+    {
+      "id": "initiative",
+      "path": "docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "revision": "274421fd8e85c5b9bb4f165fce190715530f4e85",
+      "sha256": "bc412bb46f8393a90f7f776826b389a57a9e051f3c5595c9f5c13de20512bb1d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/274421fd8e85c5b9bb4f165fce190715530f4e85/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "role": "disputed",
+      "uncertainty": "Historical PR607: canonical-ID redefinitions and comparative-assurance wording superseded by PR608; PR608 still overstates H07/H08. Never use this historical source as the canonical register."
+    },
+    {
+      "id": "rfc-index",
+      "path": "spec/rfcs/index.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "cb68e230b6b0d19dc37f06f0d60d170b7173af2876542daac462fa00771b592d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/spec/rfcs/index.md",
+      "role": "specification",
+      "uncertainty": "Acceptance status is not implementation or measurement evidence."
+    },
+    {
+      "id": "rfc-00d1",
+      "path": "spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "7164f6d46740f32d96419df46a8e04152e272700834e4e564f49c66ce03ea77b",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md",
+      "role": "specification",
+      "uncertainty": "Draft overall, narrow implemented seed only."
+    },
+    {
+      "id": "e1-readme",
+      "path": "experiments/investigation09_e1/README.md",
+      "revision": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d",
+      "sha256": "371ffa89d1709f85685df55acd3106bb998808d2073af5bb5dd371533cb075e7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/827d2accbf8ccb56afe3fe8d96dfb7251f249d7d/experiments/investigation09_e1/README.md",
+      "role": "negative",
+      "uncertainty": "PR605 scoped footprint negative on macOS ARM64; no timing/energy or new independent reproduction here."
+    },
+    {
+      "id": "e1-hashes",
+      "path": "experiments/investigation09_e1/evidence-2026-10-27/SHA256SUMS.json",
+      "revision": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d",
+      "sha256": "59e6aab6fc811d945d758cfdb5cb3ef7ecca9076ba3376830b33027312b43316",
+      "url": "https://github.com/t81dev/t81-foundation/blob/827d2accbf8ccb56afe3fe8d96dfb7251f249d7d/experiments/investigation09_e1/evidence-2026-10-27/SHA256SUMS.json",
+      "role": "identity",
+      "uncertainty": "Identifies archived raw evidence; hash identity is not scientific validation."
+    },
+    {
+      "id": "e1-ledger",
+      "path": "experiments/investigation09_e1/evidence-2026-10-27/ledger.json",
+      "revision": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d",
+      "sha256": "10ffd375024629b5d4c326b142dff3d4a7c2fd570df6301d23f4689f349bfde3",
+      "url": "https://github.com/t81dev/t81-foundation/blob/827d2accbf8ccb56afe3fe8d96dfb7251f249d7d/experiments/investigation09_e1/evidence-2026-10-27/ledger.json",
+      "role": "reported",
+      "uncertainty": "Recorded exact byte/state/support ledger for the E1 entry contract."
+    },
+    {
+      "id": "e1-entry",
+      "path": "experiments/investigation09_e1/ENTRY_CONTRACT.md",
+      "revision": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d",
+      "sha256": "4ed3eb8b11d79be11360309cf1b7dd6d2da7472086627b715dc0c9aa839bb812",
+      "url": "https://github.com/t81dev/t81-foundation/blob/827d2accbf8ccb56afe3fe8d96dfb7251f249d7d/experiments/investigation09_e1/ENTRY_CONTRACT.md",
+      "role": "specification",
+      "uncertainty": "Experiment ABI overhead is scoped to valid typed inputs, not a production boundary."
+    },
+    {
+      "id": "e1-protocol",
+      "path": "docs/research/INVESTIGATION_09_TISC_T81LANG_ADVANTAGE_PROPOSAL.md",
+      "revision": "827d2accbf8ccb56afe3fe8d96dfb7251f249d7d",
+      "sha256": "00e4ca3e26e30d5f6924f95094b566d54d1783963a82965b3a3a1e350356953b",
+      "url": "https://github.com/t81dev/t81-foundation/blob/827d2accbf8ccb56afe3fe8d96dfb7251f249d7d/docs/research/INVESTIGATION_09_TISC_T81LANG_ADVANTAGE_PROPOSAL.md",
+      "role": "proposal",
+      "uncertainty": "Preregistered Investigation09; does not redefine H01-H08."
+    },
+    {
+      "id": "emitter",
+      "path": "isa/binary_emitter.cpp",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "b300cc06a8e6327726d7137f714d6a1b416477d301f2602b0f5efc52d8c3e790",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/isa/binary_emitter.cpp",
+      "role": "implementation",
+      "uncertainty": "Saved-file serialization differs from compact encode API; source existence is not a measured advantage."
+    },
+    {
+      "id": "continuity-hashes",
+      "path": "docs/research/continuity/evidence/manifest.json",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "674d11b6f1f321f45919fc86ecf6e0e6c432a1098ab7a7dcfba2d3ef0e038eee",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/continuity/evidence/manifest.json",
+      "role": "disputed",
+      "uncertainty": "Historical manifest charter hash differs from actual committed charter bytes. No protected artifact rewritten."
+    },
+    {
+      "id": "initiative-608",
+      "path": "docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "3cf9915e1af2b4d396d20725048cfd080958a8b7812e9b40cd628a4e444d17d8",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "role": "disputed",
+      "uncertainty": "Merged main restores formal IDs, chronology and other reconciliation changes, but H07/H08 established assertions and nonexistent freeze-test citation remain unsupported. PR610 correction is unmerged."
+    },
+    {
+      "id": "reconciliation-608",
+      "path": "docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md",
+      "revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+      "sha256": "07bf57a04b4162ee99bfa0ee95814abaf717e9ea74ce9a1ac4faa2247fb085cb",
+      "url": "https://github.com/t81dev/t81-foundation/blob/fabc7aa90f70ead227ec257a1ae6833fa16ced40/docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md",
+      "role": "reported",
+      "uncertainty": "Merged reconciliation report; its reported test results are not independent verification by Commons."
+    },
+    {
+      "id": "initiative-610-proposed",
+      "path": "docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "revision": "d1eee548d4658df37b35d0cc3781b5a77cbae96b",
+      "sha256": "0116bfeeb223b41e1944136840973cca878f7a3fb9c65ff68deb435c7dee514e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/d1eee548d4658df37b35d0cc3781b5a77cbae96b/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "role": "proposal",
+      "uncertainty": "UNMERGED PR610 proposed correction. Quotes dated H07 B/C and H08 C/E register dispositions and actual freeze checker. Not part of main; canonical authority remains the register."
+    },
+    {
+      "id": "reconciliation-610-proposed",
+      "path": "docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md",
+      "revision": "d1eee548d4658df37b35d0cc3781b5a77cbae96b",
+      "sha256": "5efd716d07b1d37d1d92f42a5a0c06411d745ec35ac5c7e3f249fc734364b0a7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/d1eee548d4658df37b35d0cc3781b5a77cbae96b/docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md",
+      "role": "proposal",
+      "uncertainty": "UNMERGED PR610 append-only correction and implementation test report, not independent scientific replication or accepted findings."
+    }
+  ],
+  "tracks": [
+    {
+      "id": "R",
+      "name": "Representation and invention",
+      "source_refs": [
+        "charter",
+        "initiative-608"
+      ],
+      "hypothesis_ids": [
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06"
+      ]
+    },
+    {
+      "id": "F",
+      "name": "Foundation and evidence apparatus",
+      "source_refs": [
+        "charter",
+        "initiative-608"
+      ],
+      "hypothesis_ids": [
+        "H07"
+      ]
+    },
+    {
+      "id": "M",
+      "name": "AI-assisted research methodology",
+      "source_refs": [
+        "charter",
+        "initiative-608"
+      ],
+      "hypothesis_ids": [
+        "H08"
+      ]
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "H01",
+      "source_ref": "register",
+      "pointer": "/entries/0",
+      "evidence_refs": [
+        "charter",
+        "storage-model",
+        "storage-probe"
+      ]
+    },
+    {
+      "id": "H02",
+      "source_ref": "register",
+      "pointer": "/entries/1",
+      "evidence_refs": [
+        "hanoi-negative",
+        "hanoi-probe",
+        "arithmetic-report"
+      ]
+    },
+    {
+      "id": "H03",
+      "source_ref": "register",
+      "pointer": "/entries/2",
+      "evidence_refs": [
+        "charter",
+        "arithmetic-report",
+        "e1-readme"
+      ]
+    },
+    {
+      "id": "H04",
+      "source_ref": "register",
+      "pointer": "/entries/3",
+      "evidence_refs": [
+        "h04-refinement",
+        "h04-r02",
+        "h04-limitations",
+        "h04-handoff"
+      ]
+    },
+    {
+      "id": "H05",
+      "source_ref": "register",
+      "pointer": "/entries/4",
+      "evidence_refs": [
+        "charter",
+        "corrective-07-08",
+        "e1-readme"
+      ]
+    },
+    {
+      "id": "H06",
+      "source_ref": "register",
+      "pointer": "/entries/5",
+      "evidence_refs": [
+        "matvec-report"
+      ]
+    },
+    {
+      "id": "H07",
+      "source_ref": "register",
+      "pointer": "/entries/6",
+      "evidence_refs": [
+        "research-charter",
+        "corrective-07-08",
+        "alignment-audit",
+        "initiative-608",
+        "initiative-610-proposed",
+        "reconciliation-610-proposed"
+      ]
+    },
+    {
+      "id": "H08",
+      "source_ref": "register",
+      "pointer": "/entries/7",
+      "evidence_refs": [
+        "charter",
+        "initiative",
+        "initiative-608",
+        "initiative-610-proposed",
+        "reconciliation-610-proposed"
+      ]
+    }
+  ],
+  "reproductions": [
+    {
+      "id": "hanoi-isolated",
+      "hypothesis_ids": [
+        "H02"
+      ],
+      "source_refs": [
+        "hanoi-negative",
+        "hanoi-probe",
+        "source-pins",
+        "continuity-handoff"
+      ],
+      "instructions": "Read the pinned probe and handoff. In a separately authorized environment run: python3 docs/research/continuity/probes/reproduce_hanoi_arithmetic.py --hanoi-root <checkout-at-59205d76db4aca3da7c0bdc521924b8f9bc52cc3> --output-dir <new-output-directory>. Exit zero means expected counterexamples collected, not arithmetic correctness.",
+      "requirements": [
+        "Python3",
+        "Git",
+        "C11 compiler",
+        "separate pinned Hanoi checkout",
+        "writable scratch output"
+      ],
+      "execution_status": "not_run_by_commons"
+    },
+    {
+      "id": "h04-design",
+      "hypothesis_ids": [
+        "H04"
+      ],
+      "source_refs": [
+        "h04-refinement",
+        "h04-r02",
+        "h04-limitations"
+      ],
+      "instructions": "Retrieve the design, R02 results and limitations. R01 in the canonical register is a selected specification; R02 is separate later model evidence. Specify equivalent domains, units and adaptive binary controls before proposing execution.",
+      "requirements": [
+        "Independent oracle",
+        "matched fixed/adaptive binary and ternary controls",
+        "explicit human authorization before execution"
+      ],
+      "execution_status": "not_run_by_commons"
+    },
+    {
+      "id": "e1-footprint",
+      "hypothesis_ids": [
+        "H03",
+        "H05"
+      ],
+      "source_refs": [
+        "e1-readme",
+        "e1-entry",
+        "e1-protocol",
+        "e1-hashes",
+        "e1-ledger"
+      ],
+      "instructions": "Retrieve e1-readme for exact pinned rebuild/audit commands and dependency versions. Create a separate checkout at its source revision; retain a new output directory. Do not rerun via Commons. Original packet is on the PR605 merged proposal history, absent from the pinned main tree.",
+      "requirements": [
+        "Clang wasm32 linker",
+        "Python and Wasmtime 50.0.1",
+        "Binaryen 132.0.0",
+        "CMake/Ninja",
+        "Node/npm",
+        "human-approved installation/network/resources"
+      ],
+      "execution_status": "not_run_by_commons"
+    },
+    {
+      "id": "audit-reported",
+      "hypothesis_ids": [],
+      "source_refs": [
+        "audit-reproduction",
+        "audit-capabilities",
+        "audit-matrix"
+      ],
+      "instructions": "Retrieve audit-reproduction for reported commands, then verify every target and path at c930b8c2ee7478782bf3c6d231bdd59984595ef2. Report blocked/missing assertions and retain raw logs; do not inherit reported pass counts.",
+      "requirements": [
+        "Pinned source checkout",
+        "recorded build tools",
+        "independent raw logs"
+      ],
+      "execution_status": "not_run_by_commons"
+    }
+  ],
+  "open_questions": [
+    {
+      "id": "Q-H04",
+      "kind": "research",
+      "hypothesis_ids": [
+        "H04"
+      ],
+      "question": "Can a fully costed adaptive ternary model beat an equally capable adaptive binary policy under equal domains, packing and transition accounting?",
+      "source_refs": [
+        "register",
+        "h04-refinement",
+        "h04-r02",
+        "h04-limitations"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-ASSURANCE",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H07"
+      ],
+      "question": "Investigation08 tested enforcement is not comparative assurance evidence: the conventional control does not interpret model weights. PR608 H07 runtime-independence assertions remain unsupported; retain the canonical register limitations.",
+      "source_refs": [
+        "alignment-audit",
+        "corrective-07-08",
+        "initiative",
+        "initiative-608"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-606-ENCODING",
+      "kind": "discrepancy",
+      "hypothesis_ids": [],
+      "question": "PR606 describes a 13-byte encoding API and ISA v1.1.0. E1 records 18-byte saved instruction records plus framing; distinguish APIs and inspect source/version contracts before inference.",
+      "source_refs": [
+        "audit-capabilities",
+        "audit-reproduction",
+        "e1-readme",
+        "emitter"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-606-DENSITY",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H06"
+      ],
+      "question": "PR606 gaps claims 1.585x compression of 2-bit weights versus 8-bit. Raw 8/2 packing is 4x before overhead; log2(3) is entropy per trit, not that compression factor.",
+      "source_refs": [
+        "audit-gaps",
+        "matvec-report"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-606-PATHS",
+      "kind": "discrepancy",
+      "hypothesis_ids": [],
+      "question": "Audit source/test paths and reported pass counts need independent checking; no raw logs here certify the reported 408-test run. Index audit documents as reported claims, not validated findings.",
+      "source_refs": [
+        "audit-matrix",
+        "audit-reproduction"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-605-BRANCH",
+      "kind": "limitation",
+      "hypothesis_ids": [
+        "H03",
+        "H05"
+      ],
+      "question": "E1 is merged into a proposal branch, absent from pinned main. Discover its negative result via its own immutable revision; do not infer an unmerged result or silently copy its artifacts.",
+      "source_refs": [
+        "e1-readme",
+        "e1-protocol",
+        "audit-gaps"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-H04-SCOPE",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H04"
+      ],
+      "question": "R02 handoff extrapolates a symbolic-model result to all software ternary optimization; its own limitations and original H04 leave broader claims open.",
+      "source_refs": [
+        "h04-handoff",
+        "h04-limitations",
+        "register"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "Q-H08",
+      "kind": "research",
+      "hypothesis_ids": [
+        "H08"
+      ],
+      "question": "Does adversarial AI review improve error rates or reproduction yield versus matched human-only or alternative-assisted work, with independent verification?",
+      "source_refs": [
+        "register",
+        "initiative"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-CONTINUITY-HASH",
+      "kind": "discrepancy",
+      "hypothesis_ids": [],
+      "question": "Continuity evidence/manifest.json lists charter SHA-256 e56d1cb5..., but the committed charter hashes to bb073baf... at the pinned baseline. Preserve both; investigate packaging/history before asserting packet-wide integrity.",
+      "source_refs": [
+        "continuity-hashes",
+        "charter"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-608-H07-H08",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H07",
+        "H08"
+      ],
+      "question": "Merged PR608 labels H07/H08 established despite canonical B/C and C/E evidence and untested benefit. PR610 proposes a correction but is NOT MERGED; use only the dated canonical register for dispositions.",
+      "source_refs": [
+        "register",
+        "initiative-608",
+        "initiative-610-proposed",
+        "reconciliation-610-proposed"
+      ],
+      "status": "unresolved"
+    },
+    {
+      "id": "D-608-FREEZE",
+      "kind": "discrepancy",
+      "hypothesis_ids": [],
+      "question": "PR608 cites a nonexistent freeze CTest. PR610 proposes the actual Python registry checker and separates registry integrity from executable semantics, but that correction is not merged.",
+      "source_refs": [
+        "initiative-608",
+        "initiative-610-proposed"
+      ],
+      "status": "unresolved"
+    }
+  ],
+  "governance": {
+    "source_refs": [
+      "charter",
+      "research-charter",
+      "agent-rules",
+      "authority-model",
+      "initiative",
+      "initiative-608",
+      "reconciliation-608"
+    ],
+    "human_authorization_required": [
+      "Experiment execution and external API/resource use are outside this interface.",
+      "Research direction, RFC acceptance, security boundaries, governance activation and publication require human decisions.",
+      "PR merging and modifications to frozen or accepted artifacts require applicable explicit authorization."
+    ],
+    "contribution_status": "proposals_only; review and reproduction reports do not activate governance"
+  },
+  "integration": {
+    "status": "awaiting_pr610_merge",
+    "checked_on": "2026-10-27",
+    "main_revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+    "pending_pr": 610,
+    "pending_revision": "d1eee548d4658df37b35d0cc3781b5a77cbae96b",
+    "source_refs": [
+      "initiative-608",
+      "reconciliation-608",
+      "initiative-610-proposed",
+      "reconciliation-610-proposed"
+    ],
+    "required_action": "Keep PR609 draft. After human review and PR610 merge, verify the actual merge commit, refresh main/source pins, supersede the PR608 discrepancy, regenerate receipts and rerun checks. No automatic merge or fetch is authorized by this data."
+  },
+  "discrepancy_history": [
+    {
+      "id": "D-607-IDS",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08"
+      ],
+      "question": "PR607 section4.2 redefines H01-H08. Use the continuity charter/register identities; H08 is methodology and H-S1 is a separate investigation. Human reconciliation of the newer ledger remains pending.",
+      "source_refs": [
+        "charter",
+        "register",
+        "initiative"
+      ],
+      "status": "superseded",
+      "superseded_by_refs": [
+        "initiative-608",
+        "reconciliation-608"
+      ],
+      "resolution_limit": "PR608 restores formal canonical IDs, but its H07/H08 established dispositions remain unsupported; see D-608-H07-H08. PR610 is unmerged."
+    },
+    {
+      "id": "D-ASSURANCE",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H07"
+      ],
+      "question": "SUPPORTED tested enforcement in Investigation08 does not establish comparative assurance advantage: the conventional control branches on words rather than interpreting weights. PR607 comparatively validated wording remains unsupported.",
+      "source_refs": [
+        "alignment-audit",
+        "corrective-07-08",
+        "initiative"
+      ],
+      "status": "superseded",
+      "superseded_by_refs": [
+        "initiative-608"
+      ],
+      "resolution_limit": "PR608 removed PR607 comparatively validated wording, but does not establish comparative assurance or runtime independence. The underlying evidence question remains open under D-ASSURANCE and D-608-H07-H08."
+    },
+    {
+      "id": "D-608-H07-H08",
+      "kind": "discrepancy",
+      "hypothesis_ids": [
+        "H07",
+        "H08"
+      ],
+      "question": "Merged PR608 labels H07/H08 established despite canonical B/C and C/E evidence and untested benefit. PR610 proposes a correction but is NOT MERGED; use only the dated canonical register for dispositions.",
+      "source_refs": [
+        "register",
+        "initiative-608",
+        "initiative-610-proposed",
+        "reconciliation-610-proposed"
+      ],
+      "status": "unresolved"
+    }
+  ]
+}

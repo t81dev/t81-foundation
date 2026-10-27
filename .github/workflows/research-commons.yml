@@ -1,0 +1,43 @@
+name: Research Commons discovery contracts
+
+on:
+  pull_request:
+    paths:
+      - 'tools/research_commons/**'
+      - 'tests/research_commons/**'
+      - 'docs/research/commons/**'
+      - 'docs/research/continuity/**'
+      - 'docs/architecture/adr/ADR-0006-research-commons-discovery.md'
+      - '.github/workflows/research-commons.yml'
+      - 'AGENTS.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discovery:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14, windows-latest]
+        python: ['3.9', '3.13']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Explicit setup of separately merged PR605 evidence
+        run: git fetch origin 827d2accbf8ccb56afe3fe8d96dfb7251f249d7d
+      - name: Explicit setup of unmerged PR610 proposal evidence (not main)
+        run: git fetch origin d1eee548d4658df37b35d0cc3781b5a77cbae96b
+      - name: Install schema validator
+        run: python -m pip install -r tools/research_commons/requirements.txt
+      - name: Validate immutable discovery index
+        run: python -B tools/research_commons/commons.py --validate
+      - name: Verify discovery contracts
+        run: python -B -m unittest discover -s tests/research_commons -v
