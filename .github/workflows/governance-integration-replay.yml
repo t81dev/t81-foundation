@@ -1,0 +1,35 @@
+name: Governance Integration Replay (diagnostic only)
+
+on:
+  push:
+    branches:
+      - audit/governance-integration-574-577
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  replay:
+    name: Independent 27-command governance replay
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          fetch-depth: 0
+      - name: Install validator Python dependency
+        run: python3 -m pip install --user PyYAML==6.0.3
+      - name: Replay all 27 validators independently
+        run: python3 scripts/ci/replay_governance_integration.py --output governance-integration-replay.json
+      - name: Upload exact replay receipts
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: governance-integration-replay
+          path: governance-integration-replay.json
+          if-no-files-found: warn
