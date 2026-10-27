@@ -65,6 +65,7 @@ EXPECTED_TOP_LEVEL = {
     "isa",
     "_config.yml",
     "AGENTS.md",
+    "BALANCED_TERNARY_COMPARATIVE_RESEARCH.md",
     "Dockerfile",
 }
 
