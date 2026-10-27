@@ -1,0 +1,15 @@
+{
+  "tools/cli/core/main.cpp": "3fd6d29abba2bfe4db1420aadb4c7bb851d3cd370dd5f758d868fd5bd95c2511",
+  "tools/cli/ai/ai_cli_shared.cpp": "644bb7e15e26510f57db1749fe96520297df934689bf39eeda0d0d9b8a718dfc",
+  "tools/model/weights.cpp": "fae4291c9132971c3bbac47cc1e5fbae38be860e71a62205d58e45e9d9c0fe2c",
+  "vm/decoder.cpp": "e2f95461575cadbe2143d3be726b7ccbab264cfc036fda225fe3901f334e28b0",
+  "vm/decode_state.cpp": "82d5e857725a7109f47f451dafe3d917487fe6e8a037987d073e19720ea056af",
+  "vm/vm.cpp": "106bec5eb255376968f48858979fa4d3103d44805e79cee42f8c0c1e0f6e870c",
+  "vm/tensor_helpers.cpp": "56a63237df1f65b954a1a97bcb4e983a95f164de8cffdc3d177857ea23420e06",
+  "fs/persistent_driver.cpp": "54cd88e3a609ab060c28b3f002ad76559d39b72c69e9a6caae5430d09588de23",
+  "vm/internal/investigation08_timing.hpp": "dabd2b4d697cf913270e00dd70a5ed8b1566f7f7b1322bb8432c805e24883fa2",
+  "experiments/integrated_system_advantage/phase_experiment.py": "4ef3a488e562008d5256aa7f15132b04ec413418771d34410f9af0ee415edda7",
+  "experiments/integrated_system_advantage/phase_records.py": "ec5146f22e0469d4f384d11141c080790aacc6e045acd8b03d638813fe6c4178",
+  "experiments/integrated_system_advantage/parity_probe.cpp": "c401b29fd33eaa499fa3e2ac4718f281098f237e2d07f09c06c7f68aa254f4a9",
+  "experiments/integrated_system_advantage/test_differential_parity.py": "ee6fe00cb4b4405b0cecb7f148fdbab92fdfd4f85e3dd1963ad4a692c965f8f8"
+}

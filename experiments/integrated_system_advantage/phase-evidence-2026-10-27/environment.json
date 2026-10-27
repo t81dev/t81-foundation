@@ -1,0 +1,8 @@
+{
+  "hardware": {"cpu": "Apple M2", "memory_bytes": 8589934592, "logical_cpus": 8, "model": "Mac14,2"},
+  "compiler": "Apple clang 21.0.0 (clang-2100.1.1.101), /usr/bin/c++, arm64-apple-darwin25.5.0",
+  "cmake": "4.3.0",
+  "python": "3.14.3",
+  "hardware_read_command": "/usr/sbin/sysctl -n machdep.cpu.brand_string hw.memsize hw.ncpu hw.model",
+  "isolation_limit": "Fresh process and store, not CPU affinity, thermal, OS page-cache or system-load isolation."
+}
