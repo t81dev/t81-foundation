@@ -1,0 +1,1718 @@
+{
+  "scope": "Wrapper-only fake-CLI probes, not successful T81 operations or security certification",
+  "repository_revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "python": "3.14.3",
+  "bash": "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin25)",
+  "observations": [
+    {
+      "id": "skills/ai-tasks/assess.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/ai-tasks/assess.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "ai",
+        "task",
+        "assess",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/ai-tasks/chain.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/ai-tasks/chain.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "ai",
+        "task",
+        "assess",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/ai-tasks/classify.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/ai-tasks/classify.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "ai",
+        "task",
+        "assess",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/ai-tasks/history.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/ai-tasks/history.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "ai",
+        "task",
+        "assess",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/ai-tasks/route.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/ai-tasks/route.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "ai",
+        "task",
+        "assess",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/ai-tasks/status.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/ai-tasks/status.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "ai",
+        "task",
+        "assess",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/bundle-from-execution.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/bundle-from-execution.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/bundle-info.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/bundle-info.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/create-bundle.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/create-bundle.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/extract-bundle.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/extract-bundle.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/merge-bundles.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/merge-bundles.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/sign-bundle.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/sign-bundle.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-creator/verify-bundle.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-creator/verify-bundle.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "create",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-validator/check-determinism.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-validator/check-determinism.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "validate",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store"
+      ],
+      "created_paths": [
+        "capture",
+        "store"
+      ]
+    },
+    {
+      "id": "skills/bundle-validator/validate.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-validator/validate.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "validate",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/bundle-validator/verify-provenance.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/bundle-validator/verify-provenance.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "bundle",
+        "validate",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-export/export-batch.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-export/export-batch.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "export",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-export/export-with-meta.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-export/export-with-meta.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "export",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-export/export.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-export/export.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "export",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-export/list.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-export/list.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "export",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-export/search.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-export/search.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "export",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-export/verify-export.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-export/verify-export.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "export",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/canonfs-import/import.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-import/import.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/compliance-demo.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/compliance-demo.sh",
+        "--iterations",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/demo-determinism.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/demo-determinism.sh",
+        "--iterations",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/demo-governance.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/demo-governance.sh",
+        "--iterations",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/demo-policy.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/demo-policy.sh",
+        "--iterations",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/interactive-policy.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/interactive-policy.sh",
+        "--iterations",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/tutorial-policy.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/tutorial-policy.sh",
+        "--iterations",
+        "1"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/batch-load.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/batch-load.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/convert-model.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/convert-model.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/load-gguf.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/load-gguf.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/load-hf.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/load-hf.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/load-safetensors.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/load-safetensors.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/probe-model.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/probe-model.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/model-loader/validate-model.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/model-loader/validate-model.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "model",
+        "load-hf",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/policy-checker/check.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/check.sh",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "axion",
+        "check",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/policy-checker/list-policies.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/list-policies.sh",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "axion",
+        "check",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/policy-checker/simulate.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/simulate.sh",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "axion",
+        "check",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/policy-checker/test-rule.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/test-rule.sh",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "axion",
+        "check",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/policy-checker/validate-policy.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "axion",
+        "check",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-compiler/analyze.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/analyze.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-compiler/build-batch.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/build-batch.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-compiler/build.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/build.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-compiler/compile.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/compile.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-compiler/disasm.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/disasm.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-compiler/optimize.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/optimize.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/analyze-violations.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/analyze-violations.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/breakpoint.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/breakpoint.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/continue.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/continue.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/debug.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/debug.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/inspect.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/inspect.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/profile.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/profile.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/step.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/step.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81-debugger/trace.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-debugger/trace.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "debug",
+        "start",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--trace-level",
+        "basic",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/t81vm-runner/debug.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81vm-runner/debug.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/private/tmp/t81-operational-audit/skills/t81vm-runner/run.sh: line 182: RECURSIVE: unbound variable\n",
+      "fake_cli_arguments": [],
+      "created_paths": []
+    },
+    {
+      "id": "skills/t81vm-runner/inspect.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81vm-runner/inspect.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/private/tmp/t81-operational-audit/skills/t81vm-runner/run.sh: line 182: RECURSIVE: unbound variable\n",
+      "fake_cli_arguments": [],
+      "created_paths": []
+    },
+    {
+      "id": "skills/t81vm-runner/run-batch.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81vm-runner/run-batch.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/private/tmp/t81-operational-audit/skills/t81vm-runner/run.sh: line 182: RECURSIVE: unbound variable\n",
+      "fake_cli_arguments": [],
+      "created_paths": []
+    },
+    {
+      "id": "skills/t81vm-runner/run.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81vm-runner/run.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/private/tmp/t81-operational-audit/skills/t81vm-runner/run.sh: line 182: RECURSIVE: unbound variable\n",
+      "fake_cli_arguments": [],
+      "created_paths": []
+    },
+    {
+      "id": "skills/t81vm-runner/trace.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81vm-runner/trace.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "/private/tmp/t81-operational-audit/skills/t81vm-runner/run.sh: line 182: RECURSIVE: unbound variable\n",
+      "fake_cli_arguments": [],
+      "created_paths": []
+    },
+    {
+      "id": "skills/tensor-ops/tensor-batch.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/tensor-ops/tensor-batch.sh",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "tensor",
+        "math",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--precision",
+        "ternary",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/tensor-ops/tensor-convert.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/tensor-ops/tensor-convert.sh",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "tensor",
+        "math",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--precision",
+        "ternary",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/tensor-ops/tensor-math.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/tensor-ops/tensor-math.sh",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "tensor",
+        "math",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--precision",
+        "ternary",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/tensor-ops/tensor-reshape.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/tensor-ops/tensor-reshape.sh",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "tensor",
+        "math",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--precision",
+        "ternary",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/tensor-ops/tensor-stats.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/tensor-ops/tensor-stats.sh",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "tensor",
+        "math",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--precision",
+        "ternary",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/tensor-ops/tensor-validate.sh",
+      "kind": "ordinary_unmodified_wrapper",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/tensor-ops/tensor-validate.sh",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "tensor",
+        "math",
+        "add",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--precision",
+        "ternary",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/compliance-demo.sh",
+      "kind": "empty_argument_mode_probe_fake_cli",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/compliance-demo.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/demo-determinism.sh",
+      "kind": "empty_argument_mode_probe_fake_cli",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/demo-determinism.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/demo-governance.sh",
+      "kind": "empty_argument_mode_probe_fake_cli",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/demo-governance.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/demo-policy.sh",
+      "kind": "empty_argument_mode_probe_fake_cli",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/demo-policy.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/interactive-policy.sh",
+      "kind": "empty_argument_mode_probe_fake_cli",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/interactive-policy.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "skills/governance-demo/tutorial-policy.sh",
+      "kind": "empty_argument_mode_probe_fake_cli",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/governance-demo/tutorial-policy.sh"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "wrapper-prepolicy-mkdir",
+      "kind": "missing_policy_wrapper_preflight",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-import/import.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/fixture.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/prepolicy-store",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/missing.apl"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Policy file not found: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/missing.apl\n",
+      "fake_cli_arguments": [],
+      "created_paths": [
+        "prepolicy-store"
+      ]
+    },
+    {
+      "id": "eval-ordinary-execution",
+      "kind": "ordinary_wrapper_benign_shell_expansion_probe",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-import/import.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/input$(printf AUDIT_CANARY)"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/inputAUDIT_CANARY",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    },
+    {
+      "id": "eval-conditional-source",
+      "kind": "conditional_source_semantics_not_normal_entrypoint",
+      "argv": [
+        "/bin/bash",
+        "-c",
+        "if source \"$1\" \"${@:2}\"; then exit 0; else exit $?; fi",
+        "import.sh",
+        "/private/tmp/t81-operational-audit/skills/canonfs-import/import.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/input$(printf AUDIT_CANARY)"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": "",
+      "fake_cli_arguments": [
+        "canonfs",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/inputAUDIT_CANARY",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-skills-audit-5qmfszhn/store"
+      ],
+      "created_paths": [
+        "capture"
+      ]
+    }
+  ],
+  "script_sha256": {
+    "skills/ai-tasks/assess.sh": "698d0a83ea3e364a30d7c7d40d2ccf747a9dbadb299affb848b081d43957fabb",
+    "skills/ai-tasks/chain.sh": "bfd1e58859d62c9e89127a0f1043d5bb946280ecf0c22028b8bd73b69fd62627",
+    "skills/ai-tasks/classify.sh": "b321f97864cad65044512a859cb585898eab8b1f7fcbce3a35edcf8580782d47",
+    "skills/ai-tasks/history.sh": "5ef4eff856baf30dd92d4b2be3f3731d11f749042dcd98469baba783ff460347",
+    "skills/ai-tasks/route.sh": "637eccdc965ce43b885032cadfdb60cc6d2ef1256452e413542ac7783d06bc89",
+    "skills/ai-tasks/status.sh": "1e36e62a7fff1efbb14d0ffd7a9b16f026038410a9282827acb2ef5f96465013",
+    "skills/bundle-creator/bundle-from-execution.sh": "845b36013805c8eb9ba48183467d6e4cdd36c9dfbb7e1ef57802347690a7c6fd",
+    "skills/bundle-creator/bundle-info.sh": "4f2fb1ed0a1cb078f596ad7ab96c8c1792fd8524282c4c0b5a47db9d2c49509d",
+    "skills/bundle-creator/create-bundle.sh": "cfb1ea8560f9d9d82cc1d15e1014f72dd04f307179f568db59635e896cf9d676",
+    "skills/bundle-creator/extract-bundle.sh": "49e1d1ebc16a85119ee6e42496ea3c75b829746511de139425ac47ef093a1f0a",
+    "skills/bundle-creator/merge-bundles.sh": "0e0d86d8e27aab56082b31081d389f5c249c0c62918926500677b1eebc3048c2",
+    "skills/bundle-creator/sign-bundle.sh": "558f29bade510152a74de1354410c7a65d7b0aef73c20ff62657ef4366f00d20",
+    "skills/bundle-creator/verify-bundle.sh": "4e9728ba61d6da527035b61e64ac711e0c084d4607a13de1838da09fc6be7bf1",
+    "skills/bundle-validator/check-determinism.sh": "b70eebb2198365bb59360ea4685349a8797a3f22020a70098b4343c16d1ebdc7",
+    "skills/bundle-validator/validate.sh": "e1b73da821aca05b23a143d653c6b1a7059719abe4f8665b48dfd518a34dee5a",
+    "skills/bundle-validator/verify-provenance.sh": "f139ead2d720255037433834f23f4a9de5269b673bcdf40b7adb225d77a02d78",
+    "skills/canonfs-export/export-batch.sh": "917dda45612d9987e41861c82845a629a79af35cac2edc8d4a265597fd9737a6",
+    "skills/canonfs-export/export-with-meta.sh": "a9b174dc29123d44996d4c1799694ac8fc9efd8462f820c25f3b246a20e8854a",
+    "skills/canonfs-export/export.sh": "2e35a9960ef30e296326822134db09566a1bef8d239f73c9e8a5340eaf579aea",
+    "skills/canonfs-export/list.sh": "0932a00d3c2da8b298b8dcf63dad4af526c7deea649e581871a76eb75cf0afb2",
+    "skills/canonfs-export/search.sh": "9aeea60d46ad16224e85833cabfacb738eca50b1a462242954456b5622a6e565",
+    "skills/canonfs-export/verify-export.sh": "6c09585af0d3c110d8a569513a14304572c0316b1a46591ce4a695b0cb721de0",
+    "skills/canonfs-import/import.sh": "dc9a9f5c74b3bed2a3e7fac1bb0d0f50fc745e08e17dc50280928bb51ea4ac87",
+    "skills/governance-demo/compliance-demo.sh": "4134267dce54ca36228c7221451292eba3aa41d0bbeda72590ea7d4adf2d61de",
+    "skills/governance-demo/demo-determinism.sh": "f2c1cb811a38a7ad5887840d4e28f6fc3c727e11ab03db8815d303644366163a",
+    "skills/governance-demo/demo-governance.sh": "6135f31511ae4e3f5adb8f981de04134c6ec391529258ba3239dc5b341ed8876",
+    "skills/governance-demo/demo-policy.sh": "ca545025d9cee62897cc4bb2a35de79d4bb85707e6128b1e9a0d731d1fec449e",
+    "skills/governance-demo/interactive-policy.sh": "0ed6c5bec730376f22256dbb7bb618376ecfc3d84445af2ba27cb37a8352ef0e",
+    "skills/governance-demo/tutorial-policy.sh": "da3f72f06a51010d2a5246e73fad2b4bd463cca7e42ce93352c8ef9fe673c68e",
+    "skills/model-loader/batch-load.sh": "dda8c137e9ed87f9786560b8ef321f4040754f6e1b9ec95a874d1588d7b0c133",
+    "skills/model-loader/convert-model.sh": "e04ff731faedb16f2e27a7db4f02cca3ba3564f696c076b7777539de0ef69f9b",
+    "skills/model-loader/load-gguf.sh": "edc5a11ddcf9abf4f064cafa82dcc2bf399b84b87b3ac86fe95160b0fe35eb5f",
+    "skills/model-loader/load-hf.sh": "9ae795ef4928bd6d8c57bf03f3596208d1ace7c859885a169460a01d350737bc",
+    "skills/model-loader/load-safetensors.sh": "3940cc7a7bafd34db80530392645c9b42c0b9196690df6476bda9f35a871bbf9",
+    "skills/model-loader/probe-model.sh": "8284ab4d0cd7f83878f60830d26cb99fa1423e56c73791e23755044b23e6d41d",
+    "skills/model-loader/validate-model.sh": "aff876ddea7b5987f5998397eb9e9a990cc079cf16ae8309a5c561b05aa1f312",
+    "skills/policy-checker/check.sh": "6e739396d9da6a960105831e58bc512fd4c5d4e165f94cee9478bbff92f187c0",
+    "skills/policy-checker/list-policies.sh": "c6df9d12a6c9789d2452c8003f0603c0a62b9ed4d0882135f8afcf80b3b96655",
+    "skills/policy-checker/simulate.sh": "55f506a290e755af8a264a17a081ffb174c1c7c1ad0f0bde29b2d8174193fd70",
+    "skills/policy-checker/test-rule.sh": "5ba6ce41502725d0317ad959a4fa459128295136cd3acad701ad68e64ab19970",
+    "skills/policy-checker/validate-policy.sh": "5f1a98ea61ff1e215762f6d6d3e12fb5a1a5c1aceff850c88acf1a00d9a56e6a",
+    "skills/t81-compiler/analyze.sh": "44cd94e737af7c0906d9bfab9ef501338fa3b8fe1557b7e595fb4649182c31ad",
+    "skills/t81-compiler/build-batch.sh": "ca4ae9886c9139b9e1d242aebf63d475dc2e49b75054e2ad9f8392c55446dee2",
+    "skills/t81-compiler/build.sh": "19fade219e17365088e89ed1d06dd73f1a0f9e98bf260d939303104148c46d0e",
+    "skills/t81-compiler/compile.sh": "4a26b9df4416e80025f0644158f995578493d07ab139c98a1851d68f18c5e933",
+    "skills/t81-compiler/disasm.sh": "13918e491887713e20fb5f290f85f4d9400fea1aca2d3a25f2b8b73d858eaab4",
+    "skills/t81-compiler/optimize.sh": "83db74f90c7ad97606b7c774a81228b060d8e8ace6fceb710f41bb8128f72c06",
+    "skills/t81-debugger/analyze-violations.sh": "28a1d41c9a2190bb565d4ec5d0b60d8b743c273ba9acc0d5b43d9c196c46305f",
+    "skills/t81-debugger/breakpoint.sh": "cc22e9ebb1eec5542b93e98ce793319e9d0a6815816bb8475f485b89aae47916",
+    "skills/t81-debugger/continue.sh": "9b6388c00901ec0cb2610e2d6b1819fecda0a45291fb35fd71f83124c9ee1447",
+    "skills/t81-debugger/debug.sh": "1356d0ad5d68533fee46bfae3b3c9db53ebf10dee826318865ad5518124ffa68",
+    "skills/t81-debugger/inspect.sh": "cb8fae335dbda76c33c5b47bf27f3ee4ee8b60d6c7b6961acf8e4070ce864772",
+    "skills/t81-debugger/profile.sh": "b4e46f582d108173e4aec2356124f3ed935564c7360653c8b5db534e7384f654",
+    "skills/t81-debugger/step.sh": "e2dc1fefba73fd70e65b81d3177d1866f547d85ac4aeda33c1781b80fed7bd7f",
+    "skills/t81-debugger/trace.sh": "68be79239c179322240ac99ae162fd18dfa66a3059af42732bd9baa8e5e4bbe2",
+    "skills/t81vm-runner/debug.sh": "548bff9e8e9ed180eb5782482fec588e826801519eab1e69de6557eb2bc9da74",
+    "skills/t81vm-runner/inspect.sh": "87ea09694e7819d04c62ab1f2e1849ba308975c1304484126574580aabcde21e",
+    "skills/t81vm-runner/run-batch.sh": "b10fb408513993dcdc252b9f1e4000c1fda2d8d9c24535795fb3d298b02eaf29",
+    "skills/t81vm-runner/run.sh": "4a1dc7ef9746377841fab13ed535a528e8f37b681beb0a4c140ed9b0c7ef049b",
+    "skills/t81vm-runner/trace.sh": "f20b4ffdecf38dffe11a6cccc13af0c698c344c9e395da60549ccf85b9f50891",
+    "skills/tensor-ops/tensor-batch.sh": "8053466294eaef5e7557e3359bc527a428e7bf38bbe70a8eb709c6128abcd988",
+    "skills/tensor-ops/tensor-convert.sh": "cd1e5b40effc19dc15efcdc26f1f4996e6ca3b125692c004d681425e773a34d0",
+    "skills/tensor-ops/tensor-math.sh": "b72b213d78b094c71b00a6ad6a8a49b365b9df9847ca91242ca59f13d3703091",
+    "skills/tensor-ops/tensor-reshape.sh": "7f27671f6b50e73f28ff1361393dcf18a82d96c0b5afb52fa69460eff87221a0",
+    "skills/tensor-ops/tensor-stats.sh": "0f3f7d5c825074fcec4ec298fe9cad10e22843f29579bb7c663b74bd14cc83b6",
+    "skills/tensor-ops/tensor-validate.sh": "728b5a1a8124eaeecbb153957e4f99e29096a9b31f117aeaf8ad287ca00f7025"
+  }
+}
