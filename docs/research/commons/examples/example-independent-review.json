@@ -1,0 +1,50 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H04",
+  "repository_revision": "274421fd8e85c5b9bb4f165fce190715530f4e85",
+  "evidence": [
+    {
+      "source_ref": "h04-refinement",
+      "relationship": "context",
+      "scope": "Specified four-arm discriminator"
+    },
+    {
+      "source_ref": "h04-r02",
+      "relationship": "contradictory",
+      "scope": "Reported symbolic-model negative; not all workloads"
+    },
+    {
+      "source_ref": "h04-limitations",
+      "relationship": "unresolved",
+      "scope": "Mode granularity and physical coefficients remain limited"
+    }
+  ],
+  "uncertainty": "Illustrative unexecuted proposal discovered solely from pinned repository evidence. No measured advantage claimed.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": null
+  },
+  "attribution": {
+    "name": "Unassigned contributor (schema example)",
+    "kind": "unknown",
+    "model": null,
+    "role": "Illustrative draft, no independent review or execution performed"
+  },
+  "target": "h04-r02",
+  "independence": {
+    "relationship_to_author": "Unassigned; must disclose before actual review",
+    "prior_context": "Example template only",
+    "independent_execution": false,
+    "limitations": "No review performed in this illustrative record"
+  },
+  "adversarial_checks": [
+    "Check equal capacity domains and independently derive packing/transition formulas"
+  ],
+  "findings": [
+    "Unexecuted example; no review findings asserted"
+  ],
+  "verdict": "inconclusive",
+  "id": "example-independent-review",
+  "schema": "t81.research-commons.independent-review.v1"
+}

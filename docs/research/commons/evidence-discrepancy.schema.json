@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:t81:research-commons:evidence-discrepancy:v1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "t81.research-commons.evidence-discrepancy.v1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "proposed"
+    },
+    "hypothesis_id": {
+      "enum": [
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08"
+      ]
+    },
+    "attribution": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "human",
+            "agent",
+            "unknown"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "model",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "repository_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source_ref": {
+            "type": "string",
+            "minLength": 1
+          },
+          "relationship": {
+            "enum": [
+              "supporting",
+              "contradictory",
+              "context",
+              "unresolved"
+            ]
+          },
+          "scope": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "source_ref",
+          "relationship",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "uncertainty": {
+      "type": "string",
+      "minLength": 1
+    },
+    "human_authorization": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "not_requested",
+            "requested",
+            "authorized",
+            "denied"
+          ]
+        },
+        "human": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "record": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "human",
+        "record"
+      ],
+      "additionalProperties": false
+    },
+    "conflicting_claims": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 2,
+      "uniqueItems": true
+    },
+    "affected_sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "observed_difference": {
+      "type": "string",
+      "minLength": 1
+    },
+    "proposed_resolution": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schema",
+    "id",
+    "status",
+    "hypothesis_id",
+    "attribution",
+    "repository_revision",
+    "evidence",
+    "uncertainty",
+    "human_authorization",
+    "conflicting_claims",
+    "affected_sources",
+    "observed_difference",
+    "proposed_resolution"
+  ],
+  "additionalProperties": false
+}

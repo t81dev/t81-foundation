@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:t81:research-commons:response:v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol",
+    "operation",
+    "baseline_revision",
+    "manifest_sha256",
+    "scope",
+    "result"
+  ],
+  "properties": {
+    "protocol": {
+      "const": "t81.research-commons.v1"
+    },
+    "operation": {
+      "enum": [
+        "list_research_tracks",
+        "list_hypotheses",
+        "get_hypothesis",
+        "get_evidence",
+        "get_reproduction_instructions",
+        "list_open_research_questions"
+      ]
+    },
+    "baseline_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "manifest_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "result": {
+      "type": [
+        "array",
+        "object"
+      ]
+    }
+  }
+}

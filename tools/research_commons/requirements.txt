@@ -1,0 +1,2 @@
+# Installation is explicit setup; the interface performs no network access.
+jsonschema==4.23.0
