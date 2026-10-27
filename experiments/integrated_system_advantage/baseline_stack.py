@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 Conventional Baseline Stack for Investigation 08 (Equivalent Conventional Comparator).
-Provides matched capabilities for comparison with T81:
-1. Content-Addressed Storage (CAS) using SHA-3/256 hashing over standard OS filesystem.
+Provides a bounded, independently implemented comparator for the tested T81 task:
+1. CAS using the reference truncated SHA3-512/Base-81 object identity.
 2. Axion APL Policy Authorization Engine with exact rule matching & single-hash authorization semantics.
 3. Pure Python / Conventional T81W2 binary weight parsing and model checksum validation.
-4. Conventional FP32/INT8 matrix/tensor execution kernel matching 2-layer attention slice.
-5. Structured trace and audit log generation matching T81 artifact schemas.
+4. Pure-Python integer computation for a bounded two-layer attention slice.
+5. Exact task-result serialization plus comparator-specific recovery evidence.
 6. Verification and tamper rejection mechanics separating lookup from re-execution.
 """
 
@@ -46,11 +46,18 @@ def encode_base81(data: bytes) -> str:
     return "".join(BASE81_ALPHABET[d] for d in reversed(digits))
 
 
-def canon_sha3_256_ref(text: str) -> str:
+def canon_sha3_256_ref(text: str | bytes) -> str:
     """Matches T81 canon_sha3_256_ref: sha3-512 truncated to 32 bytes and encoded in Base-81."""
-    digest32 = hashlib.sha3_512(text.encode('utf-8')).digest()[:32]
+    digest32 = hashlib.sha3_512(text.encode('utf-8') if isinstance(text, str) else text).digest()[:32]
     return "sha3-256:" + encode_base81(digest32)
 
+
+def render_result(data):
+    return "{\n" + ",\n".join("  " + json.dumps(k) + ": " + json.dumps(v, ensure_ascii=False)
+                                  for k, v in data.items()) + "\n}\n"
+
+def snap_trit(value):
+    return 1 if value > 0.5 else (-1 if value < -0.5 else 0)
 
 class T81W2Model:
     """Parser and container for T81W2 native binary model weights."""
@@ -120,7 +127,7 @@ class T81W2Model:
                 cursor += 1
 
             trits = read_le64()
-            bytes_len = read_le64()
+            bytes_len = read_le64() if self.format_magic == "T81W2" else ((trits + 47) // 48) * 8
             if cursor + bytes_len > len(payload):
                 raise ValueError("t81w: truncated tensor data")
             tensor_data_bytes = payload[cursor:cursor+bytes_len]
@@ -139,6 +146,8 @@ class T81W2Model:
         """Unpack balanced ternary trits from 64-bit limbs into list of int8 trits (-1, 0, 1)."""
         data_bytes = tensor_dict["data_bytes"]
         total_trits = tensor_dict["trits"]
+        if tensor_dict["format"] != 0 or len(data_bytes) % 8 or len(data_bytes) < ((total_trits + 47) // 48) * 8:
+            raise ValueError("unsupported or truncated balanced-ternary tensor")
         out = []
         trit_map = [-1, 0, 1]
 
@@ -168,11 +177,16 @@ class ConventionalCAS:
         os.makedirs(self.objects_dir, exist_ok=True)
 
     def put(self, data: bytes) -> str:
-        ref = canon_sha3_256_ref(data.decode('utf-8', errors='replace')) if isinstance(data, (bytes, bytearray)) else canon_sha3_256_ref(data)
+        ref = canon_sha3_256_ref(bytes(data))
         digest = ref.split(":", 1)[1]
+        if not digest or any(ch not in BASE81_ALPHABET for ch in digest):
+            raise ValueError("invalid CAS reference")
         obj_path = os.path.join(self.objects_dir, digest)
-        if not os.path.exists(obj_path):
-            with open(obj_path, "wb") as f:
+        if os.path.exists(obj_path):
+            if self.get(ref) != data:
+                raise ValueError("existing CAS object differs")
+        else:
+            with open(obj_path, "xb") as f:
                 f.write(data)
         return ref
 
@@ -180,13 +194,15 @@ class ConventionalCAS:
         if not ref.startswith("sha3-256:"):
             return None
         digest = ref.split(":", 1)[1]
+        if not digest or any(ch not in BASE81_ALPHABET for ch in digest):
+            raise ValueError("invalid CAS reference")
         obj_path = os.path.join(self.objects_dir, digest)
         if not os.path.exists(obj_path):
             return None
         with open(obj_path, "rb") as f:
             data = f.read()
         # Verify content hash on read
-        actual_ref = canon_sha3_256_ref(data.decode('utf-8', errors='replace'))
+        actual_ref = canon_sha3_256_ref(data)
         if actual_ref != ref:
             raise ValueError("CAS corruption / tamper detected on read")
         return data
@@ -199,27 +215,54 @@ class ConventionalPolicyEngine:
         self.allowed_model_hashes: List[str] = []
         self.required_axion_events: List[str] = []
 
-        if isinstance(policy_input, dict):
-            self.allowed_model_hashes = policy_input.get("allowed_model_hashes", policy_input.get("allowed_ternary_model_hashes", []))
-            self.required_axion_events = policy_input.get("require_axion_events", policy_input.get("required_axion_events", []))
-            self.raw_text = json.dumps(policy_input)
-        elif isinstance(policy_input, str):
-            self.raw_text = policy_input
-            self._parse_apl(policy_input)
-        else:
-            raise TypeError("Policy input must be str (APL text) or dict")
+        if not isinstance(policy_input, str):
+            raise TypeError("bounded comparator requires original APL text")
+        self.raw_text = policy_input
+        self._parse_apl(policy_input)
 
     def _parse_apl(self, apl_text: str):
-        # Parse allowed-ternary-model-hashes
-        match = re.search(r'\(allowed-ternary-model-hashes\s*\[(.*?)\]\)', apl_text, re.DOTALL)
-        if match:
-            raw_list = match.group(1)
-            hashes = re.findall(r'"([^"]+)"', raw_list)
-            self.allowed_model_hashes = hashes
-
-        # Parse require-axion-event (reason "...")
-        events = re.findall(r'\(require-axion-event\s*\(reason\s*"([^"]+)"\)\)', apl_text)
-        self.required_axion_events = events
+        # Deliberately bounded independent parser. Unsupported clauses fail explicitly;
+        # this is not an implementation of all Axion policy semantics.
+        tokens = re.findall(r'"(?:\\.|[^"\\])*"|[()\[\]]|[^\s()\[\]]+', apl_text)
+        cursor = 0
+        class Symbol(str):
+            pass
+        def parse():
+            nonlocal cursor
+            if cursor >= len(tokens):
+                raise ValueError("unterminated APL")
+            token = tokens[cursor]
+            cursor += 1
+            if token in ("(", "["):
+                end = ")" if token == "(" else "]"
+                values = []
+                while cursor < len(tokens) and tokens[cursor] != end:
+                    values.append(parse())
+                if cursor == len(tokens):
+                    raise ValueError("unterminated APL list")
+                cursor += 1
+                return values
+            if token in (")", "]"):
+                raise ValueError("unexpected APL delimiter")
+            return json.loads(token) if token.startswith('"') else Symbol(token)
+        tree = parse()
+        if cursor != len(tokens) or not isinstance(tree, list) or not tree or tree[0] != "policy":
+            raise ValueError("expected one policy expression")
+        for clause in tree[1:]:
+            if not isinstance(clause, list) or not clause:
+                raise ValueError("invalid APL clause")
+            if clause[0] == "tier" and len(clause) == 2 and str(clause[1]).isdigit():
+                continue
+            if clause[0] == "allowed-ternary-model-hashes" and len(clause) == 2 and isinstance(clause[1], list):
+                if any(type(value) is not str for value in clause[1]):
+                    raise ValueError("model hashes require quoted strings")
+                self.allowed_model_hashes.extend(clause[1])
+            elif clause[0] == "require-axion-event" and len(clause) == 2 and isinstance(clause[1], list) and len(clause[1]) == 2 and clause[1][0] == "reason":
+                if type(clause[1][1]) is not str:
+                    raise ValueError("reason requires quoted string")
+                self.required_axion_events.append(clause[1][1])
+            else:
+                raise ValueError("unsupported APL clause: " + str(clause[0]))
 
     def evaluate(self, model_hash: str, required_task_marker: str = "task:assess_fixed.v1") -> Tuple[bool, str]:
         """
@@ -286,53 +329,87 @@ def select_prompt_seeded_token_ids(prompt: str, vocab_size: int, sample_window: 
 
 class ConventionalTaskRunner:
     """
-    Conventional task runner performing independently-implemented, computationally equivalent
-    execution to T81's assess-fixed task.
+    Pure-Python implementation of the supported assess-fixed slice.
+    Equivalence is tested on the declared corpus, not assumed for arbitrary models/policies.
     """
     def __init__(self, cas_root: str):
         self.cas = ConventionalCAS(cas_root)
 
-    def _tokenize(self, prompt: str, tokenizer_data: Optional[Dict[str, Any]]) -> List[int]:
+    def _tokenize(self, prompt: str, tokenizer_data: Optional[Dict[str, Any] | str]) -> List[int]:
         """Independent tokenizer matching T81 BPE / sentencepiece fallback lookup."""
+        if isinstance(tokenizer_data, str):
+            # The reference's small tokenizer reader removes a backslash and keeps
+            # the next character; it does not decode JSON Unicode escapes. Preserve
+            # lexical input so escaped and literal vocab/merge spellings match it.
+            raw = re.sub(r'"((?:\\.|[^"\\])*)"',
+                         lambda m: json.dumps(re.sub(r"\\(.)", r"\1", m.group(1)), ensure_ascii=False),
+                         tokenizer_data)
+            tokenizer_data = json.loads(raw)
         if not tokenizer_data or "model" not in tokenizer_data or "vocab" not in tokenizer_data["model"]:
             return []
 
         vocab = tokenizer_data["model"]["vocab"]
-        words = prompt.strip().split()
-        matched_tokens = []
-
-        for word in words:
-            if word in vocab:
-                matched_tokens.append(vocab[word])
-            elif f"▁{word}" in vocab:
-                matched_tokens.append(vocab[f"▁{word}"])
-
-        if matched_tokens:
-            return matched_tokens
-
-        # Fallback direct prompt match
+        ranks = {pair: index for index, pair in enumerate(tokenizer_data["model"].get("merges", []))}
+        normalized = "▁" + prompt.replace(" ", "▁")
+        matched = []
+        # Mirror reference split_normalized_prompt_words (whitespace only).
+        for word in filter(None, re.split(r"(?=▁)", normalized)):
+            pieces = list(word)
+            while len(pieces) >= 2 and ranks:
+                pairs = [(ranks[pieces[i]+" "+pieces[i+1]], i) for i in range(len(pieces)-1)
+                         if pieces[i]+" "+pieces[i+1] in ranks]
+                if not pairs:
+                    break
+                _, index = min(pairs)
+                lhs, rhs = pieces[index:index+2]
+                merged = []
+                i = 0
+                while i < len(pieces):
+                    if i+1 < len(pieces) and pieces[i:i+2] == [lhs, rhs]:
+                        merged.append(lhs+rhs); i += 2
+                    else:
+                        merged.append(pieces[i]); i += 1
+                pieces = merged
+            matched.extend(vocab[piece] for piece in pieces if piece in vocab)
+        if matched:
+            return matched
         if prompt in vocab:
             return [vocab[prompt]]
-        if f"▁{prompt}" in vocab:
-            return [vocab[f"▁{prompt}"]]
-
-        return []
+        if "▁"+prompt in vocab:
+            return [vocab["▁"+prompt]]
+        for word in filter(None, re.split(r'[ \t\r\n\v\f]+', prompt)):
+            if word in vocab:
+                matched.append(vocab[word])
+            elif "▁"+word in vocab:
+                matched.append(vocab["▁"+word])
+        return matched
 
     def run_assess_fixed(
         self,
         model_bytes: bytes,
         input_text: str,
         policy_input: Any,
-        tokenizer_data: Optional[Dict[str, Any]] = None,
+        tokenizer_data: Optional[Dict[str, Any] | str] = None,
         mode: str = "strict_deterministic"
     ) -> Dict[str, Any]:
         start_time = time.perf_counter_ns()
+        timings = {}
+        policy_start = time.perf_counter_ns()
+        if not input_text:
+            raise ValueError("assess-fixed requires exactly one nonempty input")
 
         # Mode check matching T81 CLI contract
         if mode != "strict_deterministic":
             raise ValueError("error: assess-fixed requires --mode strict_deterministic")
 
-        # 1. Parse T81W2 model and verify checksum
+        model_hash = "sha3-512:" + hashlib.sha3_512(model_bytes).hexdigest()
+        policy_engine = ConventionalPolicyEngine(policy_input)
+        authorized, reason = policy_engine.evaluate(model_hash, "task:assess_fixed.v1")
+        if not authorized:
+            raise PermissionError(f"SecurityFault: assess-fixed denied ({reason})")
+        timings["policy_evaluation_ns"] = time.perf_counter_ns() - policy_start
+        load_start = time.perf_counter_ns()
+        # Parse T81W2 model and verify checksum
         try:
             model = T81W2Model(model_bytes)
         except Exception as e:
@@ -357,15 +434,8 @@ class ConventionalTaskRunner:
         if len(lm_head_tensor["shape"]) != 2 or lm_head_tensor["shape"][1] != 16:
             raise ValueError("error: assess-fixed supports only llama-dense-v1 narrow greedy decode")
 
-        model_hash = f"sha3-512:{model.file_checksum}"
-        model_ref = self.cas.put(model_bytes)
-
-        # 2. Authorization check
-        policy_engine = ConventionalPolicyEngine(policy_input)
-        authorized, reason = policy_engine.evaluate(model_hash, "task:assess_fixed.v1")
-        if not authorized:
-            raise PermissionError(f"SecurityFault: assess-fixed denied ({reason})")
-
+        timings["model_loading_ns"] = time.perf_counter_ns() - load_start
+        compute_start = time.perf_counter_ns()
         # 3. Text normalization and Tokenization
         normalized_input = normalize_task_input_text(input_text)
         input_hash = canon_sha3_256_ref(normalized_input)
@@ -381,14 +451,35 @@ class ConventionalTaskRunner:
         # 4. Model execution: 2-layer attention slice with ternary snapping and integer accumulation
         embed_t = model.tensors["model.embed_tokens.weight"]
         embed_trits = T81W2Model.unpack_trits(embed_t)
-        hidden_dim = embed_t["shape"][1] # 16
+        hidden_dim = embed_t["shape"][1] # bounded reference task width
+        if hidden_dim != 16 or embed_t["shape"][0] <= 0:
+            raise ValueError("unsupported embedding shape")
+        for name in required_tensors[1:-1]:
+            if model.tensors[name]["shape"] != [16, 16]:
+                raise ValueError("unsupported projection shape")
+        for tensor in model.tensors.values():
+            if tensor["format"] != 0:
+                raise ValueError("unsupported model tensor format")
         vocab_size = lm_head_tensor["shape"][0] # 64
-        sample_window_size = 8
+        sample_window_size = min(8, vocab_size)
+        if vocab_size <= 0:
+            raise ValueError("empty output vocabulary")
 
         if prompt_tokens:
             seed_token_id = prompt_tokens[-1]
+            if any(t < 0 or t >= embed_t["shape"][0] for t in prompt_tokens):
+                raise ValueError("embedding token out of range")
             emb = [embed_trits[seed_token_id * hidden_dim + i] for i in range(hidden_dim)]
             context_tokens = prompt_tokens[:-1]
+            if len(context_tokens) > 3:
+                anchor = prompt_tokens[0]
+                recent = [anchor] + [t for t in context_tokens[-2:] if t != anchor]
+                for token in context_tokens[-3:]:
+                    if len(recent) < 3 and token not in recent:
+                        recent.append(token)
+                context_tokens = recent
+            if any(t < 0 or t >= embed_t["shape"][0] for t in prompt_tokens):
+                raise ValueError("embedding token out of range")
             for ctx_tok in context_tokens:
                 ctx_piece = [embed_trits[ctx_tok * hidden_dim + i] for i in range(hidden_dim)]
                 emb = [emb[i] + ctx_piece[i] for i in range(hidden_dim)]
@@ -414,9 +505,9 @@ class ConventionalTaskRunner:
         k0_trits = T81W2Model.unpack_trits(model.tensors["model.layers.0.self_attn.k_proj.weight"])
         v0_trits = T81W2Model.unpack_trits(model.tensors["model.layers.0.self_attn.v_proj.weight"])
 
-        q0 = [sum(emb[i] * q0_trits[j * hidden_dim + i] for i in range(hidden_dim)) for j in range(hidden_dim)]
-        k0 = [sum(emb[i] * k0_trits[j * hidden_dim + i] for i in range(hidden_dim)) for j in range(hidden_dim)]
-        v0 = [sum(emb[i] * v0_trits[j * hidden_dim + i] for i in range(hidden_dim)) for j in range(hidden_dim)]
+        q0 = [sum(snap_trit(emb[i]) * q0_trits[i * hidden_dim + j] for i in range(hidden_dim)) for j in range(hidden_dim)]
+        k0 = [sum(snap_trit(emb[i]) * k0_trits[i * hidden_dim + j] for i in range(hidden_dim)) for j in range(hidden_dim)]
+        v0 = [sum(snap_trit(emb[i]) * v0_trits[i * hidden_dim + j] for i in range(hidden_dim)) for j in range(hidden_dim)]
         attn0 = v0 # 1D vector attention reduction returns v0
 
         # Layer 1 Attention matmuls (q1, k1, v1)
@@ -424,9 +515,9 @@ class ConventionalTaskRunner:
         k1_trits = T81W2Model.unpack_trits(model.tensors["model.layers.1.self_attn.k_proj.weight"])
         v1_trits = T81W2Model.unpack_trits(model.tensors["model.layers.1.self_attn.v_proj.weight"])
 
-        q1 = [sum(attn0[i] * q1_trits[j * hidden_dim + i] for i in range(hidden_dim)) for j in range(hidden_dim)]
-        k1 = [sum(attn0[i] * k1_trits[j * hidden_dim + i] for i in range(hidden_dim)) for j in range(hidden_dim)]
-        v1 = [sum(attn0[i] * v1_trits[j * hidden_dim + i] for i in range(hidden_dim)) for j in range(hidden_dim)]
+        q1 = [sum(snap_trit(attn0[i]) * q1_trits[i * hidden_dim + j] for i in range(hidden_dim)) for j in range(hidden_dim)]
+        k1 = [sum(snap_trit(attn0[i]) * k1_trits[i * hidden_dim + j] for i in range(hidden_dim)) for j in range(hidden_dim)]
+        v1 = [sum(snap_trit(attn0[i]) * v1_trits[i * hidden_dim + j] for i in range(hidden_dim)) for j in range(hidden_dim)]
         attn1 = v1
 
         # lm_head logit scores reduction for sampled candidate tokens
@@ -435,18 +526,26 @@ class ConventionalTaskRunner:
         candidate_scores = []
         for tok_id in sampled_token_ids:
             row_trits = lm_head_trits[tok_id * hidden_dim : (tok_id + 1) * hidden_dim]
-            score = float(sum(row_trits[i] * attn1[i] for i in range(hidden_dim)))
+            score = float(sum(row_trits[i] * snap_trit(attn1[i]) for i in range(hidden_dim)))
             candidate_scores.append((score, tok_id))
 
-        # Selection policy: greedy argmax with lowest token ID tie-breaking
-        best = max(candidate_scores, key=lambda x: (x[0], -x[1]))
+        # assess-fixed uses initial_probe/max_score.v1: first sampled candidate wins ties.
+        best = max(candidate_scores, key=lambda x: x[0])
         selected_score, selected_token_id = best
 
         # Decision mapping
         decision, reason_code = VOCABULARY_MAP.get(selected_token_id, ("UNKNOWN", "UNMAPPED_TOKEN"))
 
-        # 5. Result Artifact & Provenance Artifact creation matching T81 schema exact format
-        result_artifact_str = json.dumps({
+        stages = dict(embedding=emb, q0=q0, k0=k0, v0=v0, attn0=attn0,
+                      q1=q1, k1=k1, v1=v1, attn1=attn1)
+        timings["computational_execution_ns"] = time.perf_counter_ns() - compute_start
+        persistence_start = time.perf_counter_ns()
+        model_ref = self.cas.put(model_bytes)
+        input_ref = self.cas.put(normalized_input.encode("utf-8"))
+        policy_ref = self.cas.put(policy_raw_text.encode("utf-8"))
+        tokenizer_ref = self.cas.put(json.dumps(tokenizer_data, ensure_ascii=False, sort_keys=True).encode("utf-8"))
+        # Result bytes match the CLI; provenance/bundle have comparator-specific contents.
+        result_artifact_str = render_result({
             "schema": "t81.ai.task.assess-fixed.v1",
             "task": "assess_fixed",
             "input_hash": input_hash,
@@ -455,7 +554,7 @@ class ConventionalTaskRunner:
             "reason_code": reason_code,
             "decision_token_ids": [selected_token_id],
             "termination_reason": "single_step_max_score"
-        }, indent=2) + "\n"
+        })
         result_bytes = result_artifact_str.encode('utf-8')
         result_ref = self.cas.put(result_bytes)
 
@@ -476,7 +575,7 @@ class ConventionalTaskRunner:
                 "step": 0,
                 "transition_kind": "prompt_seed_to_bounded_decode_state.v1",
                 "decode_mode_kind": "initial_probe_decode_mode.v1",
-                "selection_policy_kind": "greedy_argmax_lowest_token_id.v1",
+                "selection_policy_kind": "max_score.v1",
                 "candidate_selection_mode": candidate_selection_mode,
                 "candidate_selection_basis": candidate_selection_basis,
                 "selected_token_id": selected_token_id,
@@ -494,6 +593,10 @@ class ConventionalTaskRunner:
             "schema": "t81.ai.task.assess-fixed.bundle.v1",
             "task": "assess_fixed",
             "source_result_ref": result_ref,
+            "model_ref": model_ref,
+            "input_ref": input_ref,
+            "policy_ref": policy_ref,
+            "tokenizer_ref": tokenizer_ref,
             "source_provenance_ref": provenance_ref,
             "model_hash": model_hash,
             "input_hash": input_hash,
@@ -505,6 +608,7 @@ class ConventionalTaskRunner:
         bundle_ref = self.cas.put(bundle_bytes)
 
         end_time = time.perf_counter_ns()
+        timings["artifact_persistence_ns"] = end_time - persistence_start
 
         return {
             "schema": "t81.ai.task-run.assess-fixed.v1",
@@ -524,54 +628,60 @@ class ConventionalTaskRunner:
             "decision_token_ids": [selected_token_id],
             "selected_token_score": selected_score,
             "candidate_scores": candidate_scores,
+            "stages": stages,
+            "timings_ns": timings,
+            "model_ref": model_ref,
             "status": "pass",
             "latency_ns": end_time - start_time
         }
 
-    def verify_and_replay(self, bundle_ref: str, policy_input: Any, tokenizer_data: Optional[Dict[str, Any]] = None, model_bytes_override: Optional[bytes] = None) -> Dict[str, Any]:
+    def verify_and_replay(self, bundle_ref: str) -> Dict[str, Any]:
+        """Recover all inputs by persisted references, verify links, then re-execute.
+
+        A hash-valid but semantically inconsistent bundle is rejected too. No caller
+        supplied model, tokenizer or policy can conceal a missing persisted input.
         """
-        Distinguishes artifact retrieval & integrity checking from re-execution replay.
-        """
-        t_lookup_0 = time.perf_counter_ns()
-        bundle_bytes = self.cas.get(bundle_ref)
-        if not bundle_bytes:
-            return {"valid": False, "lookup_latency_ns": 0, "replay_latency_ns": 0}
-        bundle = json.loads(bundle_bytes.decode('utf-8'))
-
-        result_bytes = self.cas.get(bundle["source_result_ref"])
-        provenance_bytes = self.cas.get(bundle["source_provenance_ref"])
-        if not result_bytes or not provenance_bytes:
-            return {"valid": False, "lookup_latency_ns": 0, "replay_latency_ns": 0}
-
-        result = json.loads(result_bytes.decode('utf-8'))
-        provenance = json.loads(provenance_bytes.decode('utf-8'))
-
-        model_bytes = model_bytes_override
-        if not model_bytes:
-            raw_hash = bundle['model_hash'].split(':', 1)[1]
-            model_bytes = self.cas.get(f"sha3-256:{raw_hash}")
-        if not model_bytes:
-            return {"valid": False, "lookup_latency_ns": 0, "replay_latency_ns": 0}
-        t_lookup_1 = time.perf_counter_ns()
-
-        t_replay_0 = time.perf_counter_ns()
-        input_text = provenance["execution_evidence"]["input_preview"]
-        replayed = self.run_assess_fixed(
-            model_bytes=model_bytes,
-            input_text=input_text,
-            policy_input=policy_input,
-            tokenizer_data=tokenizer_data,
-            mode="strict_deterministic"
-        )
-        t_replay_1 = time.perf_counter_ns()
-
-        valid = (
-            replayed["decision"] == result["decision"] and
-            replayed["reason_code"] == result["reason_code"] and
-            replayed["decision_token_ids"] == result["decision_token_ids"]
-        )
-        return {
-            "valid": valid,
-            "lookup_latency_ns": t_lookup_1 - t_lookup_0,
-            "replay_latency_ns": t_replay_1 - t_replay_0
-        }
+        lookup_start = time.perf_counter_ns()
+        try:
+            def get_json(ref):
+                data = self.cas.get(ref)
+                if data is None:
+                    raise ValueError("missing CAS object")
+                return json.loads(data)
+            bundle = get_json(bundle_ref)
+            result = get_json(bundle["source_result_ref"])
+            provenance = get_json(bundle["source_provenance_ref"])
+            model_bytes = self.cas.get(bundle["model_ref"])
+            input_bytes = self.cas.get(bundle["input_ref"])
+            policy_bytes = self.cas.get(bundle["policy_ref"])
+            if any(data is None for data in (model_bytes, input_bytes, policy_bytes)):
+                raise ValueError("missing replay input")
+            tokenizer = get_json(bundle["tokenizer_ref"])
+            if "sha3-512:" + hashlib.sha3_512(model_bytes).hexdigest() != bundle["model_hash"]:
+                raise ValueError("model identity mismatch")
+            if canon_sha3_256_ref(input_bytes) != bundle["input_hash"]:
+                raise ValueError("input identity mismatch")
+            if provenance["result_ref"] != bundle["source_result_ref"]:
+                raise ValueError("result linkage mismatch")
+            for key in ("model_hash", "input_hash", "decision", "reason_code", "decision_token_ids"):
+                if bundle[key] != result[key]:
+                    raise ValueError("bundle/result mismatch: " + key)
+            for key in ("model_hash", "input_hash"):
+                if provenance[key] != result[key]:
+                    raise ValueError("provenance mismatch: " + key)
+            if provenance["policy_hash"] != canon_sha3_256_ref(policy_bytes):
+                raise ValueError("policy identity mismatch")
+            if provenance["policy_result"] != "allowed":
+                raise ValueError("invalid policy decision")
+            lookup_end = time.perf_counter_ns()
+            replayed = self.run_assess_fixed(model_bytes, input_bytes.decode("utf-8"),
+                                             policy_bytes.decode("utf-8"), tokenizer)
+            valid = all(replayed[k] == bundle[k] for k in
+                        ("model_hash", "input_hash", "decision", "reason_code", "decision_token_ids"))
+            valid = valid and replayed["result_ref"] == bundle["source_result_ref"]
+            valid = valid and replayed["provenance_ref"] == bundle["source_provenance_ref"]
+            return dict(valid=valid, lookup_latency_ns=lookup_end-lookup_start,
+                        replay_latency_ns=time.perf_counter_ns()-lookup_end)
+        except (ValueError, KeyError, TypeError, PermissionError, IndexError) as error:
+            return dict(valid=False, error=str(error), lookup_latency_ns=time.perf_counter_ns()-lookup_start,
+                        replay_latency_ns=None)

@@ -1,0 +1,569 @@
+{
+  "investigation": "08",
+  "timestamp": "2026-10-27T13:20:46.499088+00:00",
+  "architectural_performance_disposition": "INCONCLUSIVE",
+  "assurance_superiority_disposition": "INCONCLUSIVE",
+  "scope": "bounded pure-Python implementation versus production C++ assess-fixed path; not general model equivalence",
+  "gate_exit": 0,
+  "gate_report": {
+    "valid_scenarios": [
+      {
+        "prompt": "greet hello",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+        "stages_compared": true
+      },
+      {
+        "prompt": "hello world",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:1M<≤Y≠kπC≥dAZ8V5<qciL1ωtkOl≠Xxμ≠λGG=w>xH≤",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:BP≠μ≥μlXY×e-<Q>n9AsLZ2iT∞3l7b=YJPVhT=t÷W",
+        "stages_compared": true
+      },
+      {
+        "prompt": "foo bar baz",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:3yMuτ8i7pZjJv7o−gπjn9pXt<DωΓW÷σd9σz7L∞sC−",
+        "stages_compared": true
+      },
+      {
+        "prompt": "123456",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:4otTP0q<lhO9l6fI×jRz9TWwπHB≤to41WYcGn9Dvc",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet hello\r\n",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+        "stages_compared": true
+      },
+      {
+        "prompt": "  greet hello  ",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:21>i≤q−σXS7Jμ≠×hAJ7×iLI≈τ×jRK-≠xj≈μWMYcdy",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet\nhello",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:53za×4aS9u−8∞bxdcVpSV≥kD≠kV1oL<Γfλv≈μAqNQ",
+        "stages_compared": true
+      },
+      {
+        "prompt": "\tgreet hello\t\r\n\n",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:3Zi-ZEs09Za−T1T−σa>6UωhK51WP≠Z-mIMτrlAZMω",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet hello world greet hello world",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:3HτA3S∞N7iλ3h≠62IO8Z=tZHGrHj1ltc3C8jnZ8pu",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:2−9hBqdC≥g1≈zSDA9S1d2LKd8QBirWn×≤sFtL>VN0",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet hello",
+        "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+        "result_ref": "sha3-256:t<Z5LDz<P≠b×R0tZ≠CSΓw5<=ZC7Q≥a5b<Y≈9W÷8x",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet hello",
+        "model_hash": "sha3-512:e996360e3279821292d6a63b7771480c7e814c6f22c4fe73dea7096609f9c67ced9b55020157bc95a644d83c76a22d7ef911fff0f7ec1a81078d2989e56d0e2f",
+        "result_ref": "sha3-256:2VYm<μHUokSC60W-9−P5∞o2M≥YKmUτ<×pXNzλv≈Vj",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet hello",
+        "model_hash": "sha3-512:e76359c1e301cad4668147b6f6b3a845c62f0a961f1efc2e61a704571e18221d3593275c5086f876da0360089d7b6969d52de04ae286ba1ce960176c42fdb0a3",
+        "result_ref": "sha3-256:TuF≠ccjCva5TG≈m<Mτq÷BpL÷N0rhXMτ∞8pR9nqI≠",
+        "stages_compared": true
+      },
+      {
+        "prompt": "greet hello",
+        "model_hash": "sha3-512:f71d3e9d787489cc69140ec7caca3834d08fa4ad12c8c6446beed28cc58890ee47b1e039b88e96e49f4ae6ea5f9f0f9cbcd3db881e07d1a86f9f1f14ce673737",
+        "result_ref": "sha3-256:3sπbVdVF7lH≠8=IvK=b>nvA52πu9Jm10=Ihwailqv",
+        "stages_compared": true
+      }
+    ]
+  },
+  "gate_log": "/tmp/t81-pr602-review/trials/run-hw62o5fr/parity.log",
+  "environment": {
+    "canonfs_read_verify": "1",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "machine": "arm64"
+  },
+  "source_commit": "7972f7ecbcdec9e0f04bd1bba0103e84d3df375e",
+  "source_files_sha256": {
+    "ablation_runner.py": "5a4ce5659069d32b86d53eb8be6eb13f9770fcb85367b7f101c2c054f89abc33",
+    "baseline_stack.py": "ed2c0114fd2f62ba73917261fd4826f6035cba17d0557b36ac1ff83ac2ed1cee",
+    "baseline_worker.py": "0f1b5b5a706169844c13840c78047d9b6119c859cf23d3a480c8d72e85c9ef17",
+    "parity_probe.cpp": "cc9e1432fc0a4ce96a159f424d6ca2c11f6ad8d729034a03ca661817266034e8",
+    "run_experiments.py": "9d747a0645bf13e74f0770d15e47d6500e57a8495c3e236ac225d6fb38465eee",
+    "test_differential_parity.py": "6ec11fb1229e4169c6e8d851b11b85fdc40f81adb037987c5b0cb8f9bcc1ae00"
+  },
+  "binaries_sha256": {
+    "t81": "d6a88ee8b445d09a1c93592c7b75323a590839b17d9427873a208050b5e38c0d",
+    "t81_make_assess_fixed_demo": "e01db7fa001a3145321c90ef7f38a30fe73103bdba149ae8ae0c2f66ede29f73",
+    "t81_investigation08_probe": "5a519e6b38bebea3c6f066c4af50ea5e5f18490b3e63d04b772c24b1b0cbf9a8"
+  },
+  "source_diff_sha256": "ea035ab2898c5f31b7250846c12f44294263bd0b6508e5da7586069f19ba2e8a",
+  "observations": {
+    "seed": 602,
+    "invocation": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0",
+    "observations": [
+      {
+        "condition": "empty_store",
+        "index": 0,
+        "order": [
+          "A",
+          "B"
+        ],
+        "roots": {
+          "A": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/empty_store-0-y1q587ty/A",
+          "B": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/empty_store-0-y1q587ty/B"
+        },
+        "entries_before": {
+          "A": 0,
+          "B": 0
+        },
+        "initial_entries": {
+          "A": 0,
+          "B": 0
+        },
+        "arms": {
+          "A": {
+            "arm": "T81 C++ CLI",
+            "end_to_end_process_ns": 6266796042,
+            "phase_timings_ns": {
+              "process_initialization": null,
+              "model_loading": null,
+              "computational_execution": null,
+              "policy_evaluation": null,
+              "artifact_persistence": null
+            },
+            "phase_limit": "CLI exposes no internal phase clocks; do not infer phase costs from wall time.",
+            "artifact_lookup_process_ns": 26736125,
+            "replay_process_ns": 7512462500,
+            "replay_kind": "fresh CLI re-execution using original fixture files; not standalone CAS model recovery",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "provenance_ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          },
+          "B": {
+            "arm": "pure Python conventional implementation",
+            "end_to_end_process_ns": 124534708,
+            "phase_timings_ns": {
+              "policy_evaluation_ns": 254292,
+              "model_loading_ns": 92083,
+              "computational_execution_ns": 1423500,
+              "artifact_persistence_ns": 2348167,
+              "fixture_loading_ns": 3450583
+            },
+            "module_initialization_ns": 21656875,
+            "process_boundary_residual_ns": 67673917,
+            "residual_limit": "Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.",
+            "artifact_lookup_ns": 2030209,
+            "replay_execution_ns": 4540166,
+            "replay_process_ns": 98193500,
+            "replay_kind": "independent persisted-input CAS recovery and re-execution",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "bundle_ref": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          }
+        }
+      },
+      {
+        "condition": "empty_store",
+        "index": 1,
+        "order": [
+          "B",
+          "A"
+        ],
+        "roots": {
+          "A": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/empty_store-1-q_r53spm/A",
+          "B": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/empty_store-1-q_r53spm/B"
+        },
+        "entries_before": {
+          "A": 0,
+          "B": 0
+        },
+        "initial_entries": {
+          "A": 0,
+          "B": 0
+        },
+        "arms": {
+          "B": {
+            "arm": "pure Python conventional implementation",
+            "end_to_end_process_ns": 109636375,
+            "phase_timings_ns": {
+              "policy_evaluation_ns": 237625,
+              "model_loading_ns": 89458,
+              "computational_execution_ns": 1446458,
+              "artifact_persistence_ns": 2382792,
+              "fixture_loading_ns": 303125
+            },
+            "module_initialization_ns": 21283125,
+            "process_boundary_residual_ns": 62327250,
+            "residual_limit": "Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.",
+            "artifact_lookup_ns": 1844916,
+            "replay_execution_ns": 4916750,
+            "replay_process_ns": 94730375,
+            "replay_kind": "independent persisted-input CAS recovery and re-execution",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "bundle_ref": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          },
+          "A": {
+            "arm": "T81 C++ CLI",
+            "end_to_end_process_ns": 6667717834,
+            "phase_timings_ns": {
+              "process_initialization": null,
+              "model_loading": null,
+              "computational_execution": null,
+              "policy_evaluation": null,
+              "artifact_persistence": null
+            },
+            "phase_limit": "CLI exposes no internal phase clocks; do not infer phase costs from wall time.",
+            "artifact_lookup_process_ns": 17150834,
+            "replay_process_ns": 6366919833,
+            "replay_kind": "fresh CLI re-execution using original fixture files; not standalone CAS model recovery",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "provenance_ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          }
+        }
+      },
+      {
+        "condition": "empty_store",
+        "index": 2,
+        "order": [
+          "A",
+          "B"
+        ],
+        "roots": {
+          "A": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/empty_store-2-1406rbkn/A",
+          "B": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/empty_store-2-1406rbkn/B"
+        },
+        "entries_before": {
+          "A": 0,
+          "B": 0
+        },
+        "initial_entries": {
+          "A": 0,
+          "B": 0
+        },
+        "arms": {
+          "A": {
+            "arm": "T81 C++ CLI",
+            "end_to_end_process_ns": 6987385708,
+            "phase_timings_ns": {
+              "process_initialization": null,
+              "model_loading": null,
+              "computational_execution": null,
+              "policy_evaluation": null,
+              "artifact_persistence": null
+            },
+            "phase_limit": "CLI exposes no internal phase clocks; do not infer phase costs from wall time.",
+            "artifact_lookup_process_ns": 28735875,
+            "replay_process_ns": 6958695125,
+            "replay_kind": "fresh CLI re-execution using original fixture files; not standalone CAS model recovery",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "provenance_ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          },
+          "B": {
+            "arm": "pure Python conventional implementation",
+            "end_to_end_process_ns": 100345084,
+            "phase_timings_ns": {
+              "policy_evaluation_ns": 231000,
+              "model_loading_ns": 90750,
+              "computational_execution_ns": 1463917,
+              "artifact_persistence_ns": 2261333,
+              "fixture_loading_ns": 301583
+            },
+            "module_initialization_ns": 20484041,
+            "process_boundary_residual_ns": 48879126,
+            "residual_limit": "Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.",
+            "artifact_lookup_ns": 2511209,
+            "replay_execution_ns": 4739208,
+            "replay_process_ns": 97462708,
+            "replay_kind": "independent persisted-input CAS recovery and re-execution",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "bundle_ref": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          }
+        }
+      },
+      {
+        "condition": "populated_store",
+        "index": 0,
+        "order": [
+          "A",
+          "B"
+        ],
+        "roots": {
+          "A": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/populated_store-0-lkbzobkw/A",
+          "B": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/populated_store-0-lkbzobkw/B"
+        },
+        "entries_before": {
+          "A": 5,
+          "B": 8
+        },
+        "initial_entries": {
+          "A": 0,
+          "B": 0
+        },
+        "arms": {
+          "A": {
+            "arm": "T81 C++ CLI",
+            "end_to_end_process_ns": 6498014416,
+            "phase_timings_ns": {
+              "process_initialization": null,
+              "model_loading": null,
+              "computational_execution": null,
+              "policy_evaluation": null,
+              "artifact_persistence": null
+            },
+            "phase_limit": "CLI exposes no internal phase clocks; do not infer phase costs from wall time.",
+            "artifact_lookup_process_ns": 20916125,
+            "replay_process_ns": 6535641333,
+            "replay_kind": "fresh CLI re-execution using original fixture files; not standalone CAS model recovery",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "provenance_ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          },
+          "B": {
+            "arm": "pure Python conventional implementation",
+            "end_to_end_process_ns": 142671292,
+            "phase_timings_ns": {
+              "policy_evaluation_ns": 295708,
+              "model_loading_ns": 234584,
+              "computational_execution_ns": 4845542,
+              "artifact_persistence_ns": 5532417,
+              "fixture_loading_ns": 267500
+            },
+            "module_initialization_ns": 22630834,
+            "process_boundary_residual_ns": 70298417,
+            "residual_limit": "Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.",
+            "artifact_lookup_ns": 2063208,
+            "replay_execution_ns": 4808375,
+            "replay_process_ns": 106208709,
+            "replay_kind": "independent persisted-input CAS recovery and re-execution",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "bundle_ref": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          }
+        }
+      },
+      {
+        "condition": "populated_store",
+        "index": 1,
+        "order": [
+          "A",
+          "B"
+        ],
+        "roots": {
+          "A": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/populated_store-1-4kyvvsk6/A",
+          "B": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/populated_store-1-4kyvvsk6/B"
+        },
+        "entries_before": {
+          "A": 5,
+          "B": 8
+        },
+        "initial_entries": {
+          "A": 0,
+          "B": 0
+        },
+        "arms": {
+          "A": {
+            "arm": "T81 C++ CLI",
+            "end_to_end_process_ns": 6443365917,
+            "phase_timings_ns": {
+              "process_initialization": null,
+              "model_loading": null,
+              "computational_execution": null,
+              "policy_evaluation": null,
+              "artifact_persistence": null
+            },
+            "phase_limit": "CLI exposes no internal phase clocks; do not infer phase costs from wall time.",
+            "artifact_lookup_process_ns": 21964417,
+            "replay_process_ns": 7163818584,
+            "replay_kind": "fresh CLI re-execution using original fixture files; not standalone CAS model recovery",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "provenance_ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          },
+          "B": {
+            "arm": "pure Python conventional implementation",
+            "end_to_end_process_ns": 223708875,
+            "phase_timings_ns": {
+              "policy_evaluation_ns": 324125,
+              "model_loading_ns": 130250,
+              "computational_execution_ns": 1626167,
+              "artifact_persistence_ns": 4993791,
+              "fixture_loading_ns": 306916
+            },
+            "module_initialization_ns": 92866208,
+            "process_boundary_residual_ns": 83231375,
+            "residual_limit": "Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.",
+            "artifact_lookup_ns": 2090458,
+            "replay_execution_ns": 4806959,
+            "replay_process_ns": 143183542,
+            "replay_kind": "independent persisted-input CAS recovery and re-execution",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "bundle_ref": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          }
+        }
+      },
+      {
+        "condition": "populated_store",
+        "index": 2,
+        "order": [
+          "A",
+          "B"
+        ],
+        "roots": {
+          "A": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/populated_store-2-9e30ox85/A",
+          "B": "/private/tmp/t81-pr602-review/trials/run-hw62o5fr/trials-tn90ycp0/populated_store-2-9e30ox85/B"
+        },
+        "entries_before": {
+          "A": 5,
+          "B": 8
+        },
+        "initial_entries": {
+          "A": 0,
+          "B": 0
+        },
+        "arms": {
+          "A": {
+            "arm": "T81 C++ CLI",
+            "end_to_end_process_ns": 7772008834,
+            "phase_timings_ns": {
+              "process_initialization": null,
+              "model_loading": null,
+              "computational_execution": null,
+              "policy_evaluation": null,
+              "artifact_persistence": null
+            },
+            "phase_limit": "CLI exposes no internal phase clocks; do not infer phase costs from wall time.",
+            "artifact_lookup_process_ns": 40980042,
+            "replay_process_ns": 6489021708,
+            "replay_kind": "fresh CLI re-execution using original fixture files; not standalone CAS model recovery",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "provenance_ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          },
+          "B": {
+            "arm": "pure Python conventional implementation",
+            "end_to_end_process_ns": 109094625,
+            "phase_timings_ns": {
+              "policy_evaluation_ns": 863334,
+              "model_loading_ns": 271833,
+              "computational_execution_ns": 1853292,
+              "artifact_persistence_ns": 6007791,
+              "fixture_loading_ns": 399458
+            },
+            "module_initialization_ns": 20880083,
+            "process_boundary_residual_ns": 50211042,
+            "residual_limit": "Includes interpreter startup, teardown, output serialization and pipe overhead; not isolated initialization.",
+            "artifact_lookup_ns": 1907292,
+            "replay_execution_ns": 4280166,
+            "replay_process_ns": 97609584,
+            "replay_kind": "independent persisted-input CAS recovery and re-execution",
+            "verified": true,
+            "result_ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+            "bundle_ref": "sha3-256:12hEy7XXπKhyEsf=<w≤Ppτ−ajBUNYJTvvOUBlcXnv",
+            "model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+            "decision": "ALLOW",
+            "policy_result": "allowed"
+          }
+        }
+      }
+    ],
+    "summaries": {
+      "empty_store": {
+        "A": {
+          "count": 3,
+          "mean_ns": 6640633194.666667,
+          "sample_stddev_ns": 361057543.82419497,
+          "min_ns": 6266796042,
+          "max_ns": 6987385708
+        },
+        "B": {
+          "count": 3,
+          "mean_ns": 111505389,
+          "sample_stddev_ns": 12202638.539041096,
+          "min_ns": 100345084,
+          "max_ns": 124534708
+        }
+      },
+      "populated_store": {
+        "A": {
+          "count": 3,
+          "mean_ns": 6904463055.666667,
+          "sample_stddev_ns": 751813389.5713285,
+          "min_ns": 6443365917,
+          "max_ns": 7772008834
+        },
+        "B": {
+          "count": 3,
+          "mean_ns": 158491597.33333334,
+          "sample_stddev_ns": 58922136.08989024,
+          "min_ns": 109094625,
+          "max_ns": 223708875
+        }
+      }
+    },
+    "performance_disposition": "INCONCLUSIVE: pure Python versus optimized C++ CLI; different replay guarantees and uninstrumented T81 phases; no architectural advantage/disadvantage inference"
+  },
+  "fixture_model_hash": "sha3-512:f84c8b2d521d701968c6c2bb76302786765d4cd262fee95e47ab6cd3767009f98d7088a003bdf9123e07aa86d0710017d38370746b962e8249d161ae0c70c925",
+  "disposition": "BOUNDED PARITY PASSED; IMPLEMENTATION OBSERVATIONS ONLY; investigation remains open"
+}

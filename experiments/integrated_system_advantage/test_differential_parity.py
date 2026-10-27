@@ -1,345 +1,250 @@
 #!/usr/bin/env python3
-"""
-Comprehensive Differential Test Suite for Scientific Investigation 08:
-Equivalent Conventional Comparator vs T81 Reference Implementation.
+"""Fail-closed, corpus-bounded parity gate. Requires explicit build artifacts.
 
-Enforces Scientific Acceptance Gate:
-Zero unexplained differences across:
-1. Original inputs ("greet hello", "hello world", "greet").
-2. Unknown & malformed inputs ("xyz", "", "hello", "greet hello world").
-3. Whitespace & normalization cases ("greet hello\r\n", "\tgreet hello  ", "greet\nhello").
-4. Valid model weight mutations.
-5. Tokenizer vocabulary mutations.
-6. Invalid model formats, headers, and checksum corruptions.
-7. Missing or conflicting policy authorizations.
-8. Repeated deterministic executions (replay determinism).
-9. Corrupted or inconsistent evidence linkage.
-10. Adversarial and boundary cases (unsupported shapes, corrupted payload, invalid APL policy).
+The probe compiles the same production tensor operations and captures each stage
+at its producing instruction, avoiding inference from final labels or pool ordering.
+Backend-specific provenance/bundle bytes intentionally differ; result bytes do not.
 """
-
+import copy
 import hashlib
 import json
 import os
-import shutil
+from pathlib import Path
+import random
+import struct
 import subprocess
-import sys
 import tempfile
 import unittest
-from typing import Dict, Any, Tuple
 
-# Ensure baseline_stack can be imported
-sys.path.insert(0, os.path.dirname(__file__))
-from baseline_stack import ConventionalTaskRunner, T81W2Model, ConventionalPolicyEngine, ConventionalCAS, normalize_task_input_text
+from baseline_stack import ConventionalCAS, ConventionalTaskRunner, T81W2Model, canon_sha3_256_ref
+
+ROOT = Path(__file__).resolve().parents[2]
+BUILD = Path(os.environ.get("T81_BUILD_DIR", ROOT / "build"))
+EXT = ".exe" if os.name == "nt" else ""
+
+
+def policy_for(data):
+    return ('(policy (tier 1) (allowed-ternary-model-hashes ["sha3-512:'
+            + hashlib.sha3_512(data).hexdigest()
+            + '"]) (require-axion-event (reason "task:assess_fixed.v1")))\n')
+
+
+def encode_model(tensors):
+    payload = struct.pack('<Q', len(tensors))
+    for name, tensor in tensors.items():
+        name = name.encode()
+        payload += struct.pack('<Q', len(name)) + name + struct.pack('<Q', len(tensor['shape']))
+        payload += b''.join(struct.pack('<Q', d) for d in tensor['shape'])
+        payload += bytes([tensor['format']]) + struct.pack('<QQ', tensor['trits'], len(tensor['data_bytes']))
+        payload += tensor['data_bytes']
+    return b'T81W2\n' + hashlib.sha3_512(payload).hexdigest().encode() + b'\n' + payload
 
 
 class DifferentialParityTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-        cls.build_dir = os.path.join(cls.repo_root, "build")
-        cls.t81_bin = os.path.join(cls.build_dir, "t81")
-        cls.demo_builder = os.path.join(cls.build_dir, "t81_make_assess_fixed_demo")
-
-        if not os.path.exists(cls.t81_bin) or not os.path.exists(cls.demo_builder):
-            raise RuntimeError("Build artifacts missing. Run cmake build first.")
-
-        cls.temp_dir = tempfile.mkdtemp(prefix="t81-diff-test-")
-        cls.model_dir = os.path.join(cls.temp_dir, "model_dir")
-        os.makedirs(cls.model_dir, exist_ok=True)
-
-        # Build standard assess-fixed demo model
-        cmd = [cls.demo_builder, cls.model_dir]
-        subprocess.run(cmd, capture_output=True, text=True, check=True)
-
-        cls.model_path = os.path.join(cls.model_dir, "assess-fixed-demo.t81w")
-        cls.tokenizer_path = os.path.join(cls.model_dir, "tokenizer.json")
-
-        with open(cls.model_path, "rb") as f:
-            cls.model_bytes = f.read()
-
-        with open(cls.tokenizer_path, "r", encoding="utf-8") as f:
-            cls.tokenizer_data = json.load(f)
-
-        cls.parsed_model = T81W2Model(cls.model_bytes)
-        # T81 CLI computes SHA3-512 over the entire model binary file
-        cls.model_hash = f"sha3-512:{cls.parsed_model.file_checksum}"
-
-        # Standard allow policy
-        cls.allow_policy_text = f"""(policy
-  (tier 1)
-  (allowed-ternary-model-hashes ["{cls.model_hash}"])
-  (require-axion-event (reason "task:assess_fixed.v1")))
-"""
-        cls.allow_policy_file = os.path.join(cls.temp_dir, "allow.apl")
-        with open(cls.allow_policy_file, "w") as f:
-            f.write(cls.allow_policy_text)
+        os.environ['T81_CANONFS_READ_VERIFY'] = '1'
+        cls.cli = BUILD / ('t81' + EXT)
+        cls.probe = BUILD / ('t81_investigation08_probe' + EXT)
+        builder = BUILD / ('t81_make_assess_fixed_demo' + EXT)
+        for binary in (cls.cli, cls.probe, builder):
+            if not binary.is_file():
+                raise RuntimeError(f'missing required binary {binary}')
+        cls.scratch = tempfile.TemporaryDirectory(prefix='t81-investigation08-')
+        cls.root = Path(cls.scratch.name)
+        subprocess.run([str(builder), str(cls.root / 'demo')], check=True, capture_output=True)
+        cls.model_bytes = (cls.root / 'demo/assess-fixed-demo.t81w').read_bytes()
+        cls.tokenizer = json.loads((cls.root / 'demo/tokenizer.json').read_text())
+        cls.valid_observations = []
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(cls.temp_dir, ignore_errors=True)
+        report = os.environ.get('T81_PARITY_REPORT')
+        if report:
+            Path(report).write_text(json.dumps(dict(valid_scenarios=cls.valid_observations), indent=2))
+        cls.scratch.cleanup()
 
-    def _run_t81_cli(self, input_text: str, policy_file: str = None, model_file: str = None, mode: str = "strict_deterministic") -> Tuple[int, Dict[str, Any], str]:
-        if policy_file is None:
-            policy_file = self.allow_policy_file
-        if model_file is None:
-            model_file = self.model_path
+    def run_pair(self, prompt, data=None, tokenizer=None, policy=None, stages=True, expect_valid=True):
+        data = self.model_bytes if data is None else data
+        tokenizer = self.tokenizer if tokenizer is None else tokenizer
+        policy = policy_for(data) if policy is None else policy
+        with tempfile.TemporaryDirectory(dir=self.root) as tmp:
+            path = Path(tmp)
+            model = path / 'model.t81w'; model.write_bytes(data)
+            tok = path / 'tokenizer.json'; tok.write_bytes(json.dumps(tokenizer).encode('utf-8'))
+            apl = path / 'policy.apl'; apl.write_bytes(policy.encode('utf-8'))
+            store = path / 't81-store'
+            command = [str(self.cli), 'ai', 'task', 'assess-fixed', '--model-file', str(model),
+                       '--model', 'parity', '--policy', str(apl), '--canonfs-root', str(store),
+                       '--mode', 'strict_deterministic', '--input', prompt]
+            proc = subprocess.run(command, capture_output=True, text=True, timeout=180)
+            conventional = ConventionalTaskRunner(str(path / 'conventional'))
+            try:
+                result = conventional.run_assess_fixed(data, prompt, policy, tok.read_bytes().decode("utf-8"))
+                code = 0
+            except PermissionError:
+                result = {}; code = 13
+            except (ValueError, IndexError, KeyError, struct.error):
+                result = {}; code = 1
+            self.assertEqual(proc.returncode, code, proc.stderr)
+            if not expect_valid:
+                self.assertNotEqual(code, 0, 'negative scenario unexpectedly accepted')
+                self.assertFalse(list((path/'conventional/objects').iterdir()), 'denial persisted objects')
+                self.assertFalse(list(store.glob('objects/*')), 'reference denial persisted objects')
+                return
+            self.assertEqual(code, 0, proc.stderr)
+            reference = json.loads(proc.stdout)
+            for key in ('decision', 'reason_code', 'decision_token_ids', 'model_hash',
+                        'input_hash', 'policy_hash', 'policy_result', 'result_ref'):
+                self.assertEqual(reference[key], result[key], key)
+            # A fresh CLI recovers each referenced artifact; independently hash its raw bytes.
+            artifacts = {}
+            for key in ('result_ref', 'provenance_ref'):
+                target = path / (key + '.json')
+                subprocess.run([str(self.cli), 'canonfs', 'get', reference[key], '--out', str(target),
+                                '--canonfs-root', str(store)], check=True, capture_output=True, timeout=30)
+                raw = target.read_bytes()
+                self.assertEqual(canon_sha3_256_ref(raw), reference[key])
+                artifacts[key] = json.loads(raw)
+            self.assertEqual(conventional.cas.get(result['result_ref']), (path/'result_ref.json').read_bytes())
+            evidence = artifacts['provenance_ref']['execution_evidence']
+            self.assertEqual(evidence['sampled_token_ids'], [token for _, token in result['candidate_scores']])
+            self.assertEqual(evidence['sampled_token_scores'], [score for score, _ in result['candidate_scores']])
+            self.assertEqual(evidence['selected_token_id'], result['decision_token_ids'][0])
+            self.assertEqual(evidence['input_preview'], result['stages'] and prompt.replace('\r\n','\n').replace('\r','\n').rstrip('\r\n'))
+            self.assertEqual(artifacts['provenance_ref']['result_ref'], result['result_ref'])
+            self.assertEqual(artifacts['provenance_ref']['model_hash'], result['model_hash'])
+            if stages:
+                probe = subprocess.run([str(self.probe), str(model), str(tok),
+                                        evidence['input_preview']], capture_output=True, text=True, timeout=180)
+                self.assertEqual(probe.returncode, 0, probe.stderr)
+                trace = json.loads(probe.stdout)
+                self.assertEqual(trace['stages'], result['stages'])
+                self.assertEqual(trace['sampled_token_scores'], evidence['sampled_token_scores'])
+                self.assertEqual(trace['sampled_token_ids'], evidence['sampled_token_ids'])
+                self.assertEqual(trace['prompt_token_history'], evidence['prompt_token_history'])
+            # New runner; all recovery inputs must come from CAS, no overrides permitted.
+            recovered = ConventionalTaskRunner(str(path/'conventional'))
+            self.assertTrue(recovered.verify_and_replay(result['bundle_ref'])['valid'])
+            self.valid_observations.append(dict(prompt=prompt, model_hash=result['model_hash'],
+                                               result_ref=result['result_ref'], stages_compared=stages))
 
-        canonfs_root = os.path.join(self.temp_dir, f"canonfs-{tempfile.mktemp(dir='')}")
-        os.makedirs(canonfs_root, exist_ok=True)
+    def test_original_and_normalized_inputs(self):
+        for prompt in ('greet hello', 'hello world', 'greet', 'foo bar baz', '123456',
+                       'greet hello\r\n', '  greet hello  ', 'greet\nhello', '\tgreet hello\t\r\n\n',
+                       'greet hello world greet hello world'):
+            with self.subTest(prompt=prompt):
+                self.run_pair(prompt)
 
-        cmd = [
-            self.t81_bin, "ai", "task", "assess-fixed",
-            "--model", "assess-fixed-demo",
-            "--model-file", model_file,
-            "--policy", policy_file,
-            "--canonfs-root", canonfs_root,
-            "--mode", mode,
-            "--input", input_text
-        ]
-        proc = subprocess.run(cmd, capture_output=True, text=True)
-        out_json = {}
-        if proc.returncode == 0:
-            out_json = json.loads(proc.stdout)
-        return proc.returncode, out_json, proc.stderr
+    def test_valid_nonsymmetric_mutations(self):
+        for seed in (7, 19, 41):
+            rng = random.Random(seed)
+            tensors = copy.deepcopy(T81W2Model(self.model_bytes).tensors)
+            # Encode valid u64 limbs (48 base-3 digits, leading digits zero).
+            # Nonsymmetric row-major projections distinguish W from W^T.
+            for name, tensor in tensors.items():
+                count = len(tensor['data_bytes']) // 8
+                tensor['data_bytes'] = b''.join(struct.pack('<Q', rng.randrange(3**35)) for _ in range(count))
+            q = T81W2Model.unpack_trits(tensors['model.layers.0.self_attn.q_proj.weight'])
+            self.assertTrue(any(q[i*16+j] != q[j*16+i] for i in range(16) for j in range(16)))
+            self.run_pair('greet hello', encode_model(tensors))
 
-    def _run_baseline(self, input_text: str, policy_input: Any = None, model_bytes: bytes = None, mode: str = "strict_deterministic") -> Tuple[int, Dict[str, Any], str]:
-        if policy_input is None:
-            policy_input = self.allow_policy_text
-        if model_bytes is None:
-            model_bytes = self.model_bytes
+    def test_tokenizer_changes_and_wrapped_ties(self):
+        tok = copy.deepcopy(self.tokenizer)
+        tok['model']['vocab'].update(greet=63, hello=0, world=12)
+        self.run_pair('greet', tokenizer=tok)  # window wraps: first sampled tie != lowest ID
+        tok['model']['vocab'] = {'▁': 7, 'g': 11, 'r': 12, 'e': 13, 't': 14, 'h': 15,
+                                  'l': 16, 'o': 17, '▁g': 18}
+        tok['model']['merges'] = ['▁ g']
+        self.run_pair('greet hello', tokenizer=tok)
 
-        cas_root = os.path.join(self.temp_dir, f"cas-{tempfile.mktemp(dir='')}")
-        runner = ConventionalTaskRunner(cas_root)
-        try:
-            res = runner.run_assess_fixed(
-                model_bytes=model_bytes,
-                input_text=input_text,
-                policy_input=policy_input,
-                tokenizer_data=self.tokenizer_data,
-                mode=mode
-            )
-            return 0, res, ""
-        except PermissionError as e:
-            return 13, {}, str(e) # SecurityFault code 13
-        except Exception as e:
-            return 1, {}, str(e)
+    def test_policy_denials_and_syntax(self):
+        allow = policy_for(self.model_bytes)
+        policies = [allow.replace(hashlib.sha3_512(self.model_bytes).hexdigest(), 'deadbeef'),
+                    allow.replace('(require-axion-event (reason "task:assess_fixed.v1"))',''),
+                    allow.replace('])', ' "sha3-512:other"])'),
+                    allow.replace('])', ' "sha3-512:'+hashlib.sha3_512(self.model_bytes).hexdigest()+'"])'),
+                    allow[:-2], '(policy (tier nope))', '(policy (unknown true))',
+                    '(policy (allowed-ternary-model-hashes [1]))']
+        for policy in policies:
+            with self.subTest(policy=policy):
+                self.run_pair('greet hello', policy=policy, expect_valid=False)
 
-    # ---------------------------------------------------------
-    # Scenario 1: The Three Original Inputs
-    # ---------------------------------------------------------
-    def test_01_original_inputs(self):
-        prompts = ["greet hello", "hello world", "greet"]
-        for p in prompts:
-            code1, res1, err1 = self._run_t81_cli(p)
-            code2, res2, err2 = self._run_baseline(p)
+    def test_malformed_models(self):
+        good_payload = self.model_bytes.split(b'\n',2)[2]
+        def checked(payload):
+            return b'T81W2\n'+hashlib.sha3_512(payload).hexdigest().encode()+b'\n'+payload
+        for data in (b'', b'\xff\xfe', b'T81W2\n', self.model_bytes[:-8],
+                     b'T81W2\n'+b'0'*128+b'\npayload', checked(b'\x01'),
+                     checked(struct.pack('<QQ',1,100)+b'name'), checked(good_payload[:100])):
+            with self.subTest(size=len(data)):
+                self.run_pair('greet hello', data=data, expect_valid=False)
+        tensors = copy.deepcopy(T81W2Model(self.model_bytes).tensors)
+        del tensors['model.layers.0.self_attn.q_proj.weight']
+        self.run_pair('greet hello', data=encode_model(tensors), expect_valid=False)
+        tensors = copy.deepcopy(T81W2Model(self.model_bytes).tensors)
+        tensors['model.embed_tokens.weight']['shape'] = [64, 15]
+        self.run_pair('greet hello', data=encode_model(tensors), expect_valid=False)
+        self.run_pair('', expect_valid=False)
 
-            self.assertEqual(code1, 0, f"T81 CLI failed on '{p}': {err1}")
-            self.assertEqual(code2, 0, f"Baseline failed on '{p}': {err2}")
+    def test_trial_isolation_across_invocations(self):
+        from ablation_runner import AblationHarness
+        with tempfile.TemporaryDirectory() as tmp:
+            harness = AblationHarness(ROOT, tmp, BUILD)
+            def standin(fixtures, prompt, root):
+                Path(root, 'object').write_text('persisted')
+                return dict(end_to_end_process_ns=1, result_ref='same', model_hash='same',
+                            decision='same', policy_result='allowed')
+            harness.run_config_a = standin
+            harness.run_config_b = standin
+            first = harness.run_paired_benchmarks({}, 'input', iterations=2)
+            second = harness.run_paired_benchmarks({}, 'input', iterations=2)
+            roots = [root for run in (first, second) for row in run['observations'] for root in row['roots'].values()]
+            self.assertEqual(len(roots), len(set(roots)))
+            for run in (first,second):
+                for row in run['observations']:
+                    self.assertEqual(row['initial_entries'], dict(A=0,B=0))
+                    self.assertEqual(row['entries_before'], dict(A=0,B=0) if row['condition']=='empty_store' else dict(A=1,B=1))
 
-            self.assertEqual(res1["decision"], res2["decision"], f"Decision mismatch for '{p}'")
-            self.assertEqual(res1["reason_code"], res2["reason_code"], f"Reason code mismatch for '{p}'")
-            self.assertEqual(res1["decision_token_ids"], res2["decision_token_ids"], f"Selected token ID mismatch for '{p}'")
-
-    # ---------------------------------------------------------
-    # Scenario 2: Unknown and Malformed Inputs
-    # ---------------------------------------------------------
-    def test_02_unknown_and_malformed_inputs(self):
-        unknown_prompts = ["foo bar baz", "123456"]
-        for p in unknown_prompts:
-            code1, res1, err1 = self._run_t81_cli(p)
-            code2, res2, err2 = self._run_baseline(p)
-
-            self.assertEqual(code1, code2, f"Return code mismatch for unknown prompt '{p}'")
-            if code1 == 0:
-                self.assertEqual(res1["decision"], res2["decision"])
-                self.assertEqual(res1["reason_code"], res2["reason_code"])
-                self.assertEqual(res1["decision_token_ids"], res2["decision_token_ids"])
-
-    # ---------------------------------------------------------
-    # Scenario 3: Whitespace and Normalization Cases
-    # ---------------------------------------------------------
-    def test_03_whitespace_and_normalization(self):
-        variations = [
-            "greet hello\r\n",
-            "  greet hello  ",
-            "greet\nhello",
-            "\tgreet hello\t\r\n\n"
-        ]
-        for var in variations:
-            code1, res1, err1 = self._run_t81_cli(var)
-            code2, res2, err2 = self._run_baseline(var)
-
-            self.assertEqual(code1, 0, f"T81 CLI failed on normalization test: {err1}")
-            self.assertEqual(code2, 0, f"Baseline failed on normalization test: {err2}")
-
-            self.assertEqual(res1["decision"], res2["decision"])
-            self.assertEqual(res1["reason_code"], res2["reason_code"])
-            self.assertEqual(res1["decision_token_ids"], res2["decision_token_ids"])
-            self.assertEqual(res1["input_hash"], res2["input_hash"])
-
-    # ---------------------------------------------------------
-    # Scenario 4: Valid Model-Weight Mutations
-    # ---------------------------------------------------------
-    def test_04_model_weight_mutations(self):
-        mutated_dir = os.path.join(self.temp_dir, "mutated_model")
-        os.makedirs(mutated_dir, exist_ok=True)
-        mutated_model_path = os.path.join(mutated_dir, "assess-fixed-demo.t81w")
-        shutil.copyfile(self.tokenizer_path, os.path.join(mutated_dir, "tokenizer.json"))
-
-        payload = self.model_bytes[self.model_bytes.find(b'\n', self.model_bytes.find(b'\n')+1)+1:]
-        mutated_payload = bytearray(payload)
-        mutated_payload[-16] ^= 0xFF # Mutate data limb in payload
-
-        new_payload_checksum = hashlib.sha3_512(mutated_payload).hexdigest()
-        header = f"T81W2\n{new_payload_checksum}\n".encode('ascii')
-        mutated_bytes = header + bytes(mutated_payload)
-
-        with open(mutated_model_path, "wb") as f:
-            f.write(mutated_bytes)
-
-        mutated_file_hash = f"sha3-512:{hashlib.sha3_512(mutated_bytes).hexdigest()}"
-        mutated_policy_file = os.path.join(self.temp_dir, "mutated_policy.apl")
-        with open(mutated_policy_file, "w") as f:
-            f.write(f'(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["{mutated_file_hash}"])\n  (require-axion-event (reason "task:assess_fixed.v1")))\n')
-
-        code1, res1, err1 = self._run_t81_cli("greet hello", policy_file=mutated_policy_file, model_file=mutated_model_path)
-        code2, res2, err2 = self._run_baseline("greet hello", policy_input=f'(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["{mutated_file_hash}"])\n  (require-axion-event (reason "task:assess_fixed.v1")))\n', model_bytes=mutated_bytes)
-
-        self.assertEqual(code1, code2)
-        if code1 == 0:
-            self.assertEqual(res1["decision"], res2["decision"])
-            self.assertEqual(res1["reason_code"], res2["reason_code"])
-            self.assertEqual(res1["decision_token_ids"], res2["decision_token_ids"])
-
-    # ---------------------------------------------------------
-    # Scenario 5: Tokenizer Mutations
-    # ---------------------------------------------------------
-    def test_05_tokenizer_mutations(self):
-        mutated_tok_data = {
-            "model": {
-                "type": "BPE",
-                "vocab": {
-                    "ALLOW": 9,
-                    "DENY": 42,
-                    "greet": 7,
-                    "hello": 11,
-                    "world": 12,
-                    "▁greet": 17,
-                    "▁hello": 21
-                }
-            }
-        }
-        cas_root = os.path.join(self.temp_dir, f"cas-{tempfile.mktemp(dir='')}")
-        runner = ConventionalTaskRunner(cas_root)
-        res = runner.run_assess_fixed(
-            model_bytes=self.model_bytes,
-            input_text="greet hello",
-            policy_input=self.allow_policy_text,
-            tokenizer_data=mutated_tok_data
-        )
-        self.assertIn(res["decision"], ["ALLOW", "DENY", "REVIEW", "UNKNOWN"])
-
-    # ---------------------------------------------------------
-    # Scenario 6: Invalid Model Formats & Checksum Corruptions
-    # ---------------------------------------------------------
-    def test_06_invalid_model_formats(self):
-        # Corrupt checksum in header
-        bad_header_bytes = b"T81W2\n" + b"0" * 128 + b"\n" + b"payload_garbage"
-        code2, res2, err2 = self._run_baseline("greet hello", model_bytes=bad_header_bytes)
-        self.assertNotEqual(code2, 0)
-        self.assertIn("checksum mismatch", err2)
-
-        # Truncated file
-        code2, res2, err2 = self._run_baseline("greet hello", model_bytes=b"T81W2\n")
-        self.assertNotEqual(code2, 0)
-
-    # ---------------------------------------------------------
-    # Scenario 7: Missing or Conflicting Authorizations
-    # ---------------------------------------------------------
-    def test_07_policy_authorizations(self):
-        # Denied model hash policy
-        deny_policy = '(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["sha3-512:deadbeef"])\n  (require-axion-event (reason "task:assess_fixed.v1")))\n'
-        deny_policy_file = os.path.join(self.temp_dir, "deny.apl")
-        with open(deny_policy_file, "w") as f:
-            f.write(deny_policy)
-
-        code1, res1, err1 = self._run_t81_cli("greet hello", policy_file=deny_policy_file)
-        code2, res2, err2 = self._run_baseline("greet hello", policy_input=deny_policy)
-
-        self.assertEqual(code1, 13) # SecurityFault
-        self.assertEqual(code2, 13) # SecurityFault
-        self.assertIn("allowed-ternary-model-hashes", err1)
-        self.assertIn("allowed-ternary-model-hashes", err2)
-
-        # Missing task marker policy
-        missing_marker_policy = f'(policy\n  (tier 1)\n  (allowed-ternary-model-hashes ["{self.model_hash}"]))\n'
-        missing_marker_file = os.path.join(self.temp_dir, "missing_marker.apl")
-        with open(missing_marker_file, "w") as f:
-            f.write(missing_marker_policy)
-
-        code1, res1, err1 = self._run_t81_cli("greet hello", policy_file=missing_marker_file)
-        code2, res2, err2 = self._run_baseline("greet hello", policy_input=missing_marker_policy)
-
-        self.assertEqual(code1, 13)
-        self.assertEqual(code2, 13)
-        self.assertIn("require-axion-event", err1)
-        self.assertIn("require-axion-event", err2)
-
-    # ---------------------------------------------------------
-    # Scenario 8: Repeated Deterministic Executions
-    # ---------------------------------------------------------
-    def test_08_repeated_deterministic_executions(self):
-        cas_root = os.path.join(self.temp_dir, f"cas-{tempfile.mktemp(dir='')}")
-        runner = ConventionalTaskRunner(cas_root)
-
-        res1 = runner.run_assess_fixed(self.model_bytes, "greet hello", self.allow_policy_text, self.tokenizer_data)
-        res2 = runner.run_assess_fixed(self.model_bytes, "greet hello", self.allow_policy_text, self.tokenizer_data)
-
-        self.assertEqual(res1["decision"], res2["decision"])
-        self.assertEqual(res1["result_ref"], res2["result_ref"])
-        self.assertEqual(res1["provenance_ref"], res2["provenance_ref"])
-        self.assertEqual(res1["bundle_ref"], res2["bundle_ref"])
-
-    # ---------------------------------------------------------
-    # Scenario 9: Evidence Linkage and Artifact Integrity
-    # ---------------------------------------------------------
-    def test_09_evidence_and_verify_replay(self):
-        cas_root = os.path.join(self.temp_dir, f"cas-{tempfile.mktemp(dir='')}")
-        runner = ConventionalTaskRunner(cas_root)
-
-        res = runner.run_assess_fixed(self.model_bytes, "greet hello", self.allow_policy_text, self.tokenizer_data)
-
-        # Verify artifact integrity & re-execution replay
-        replay_res = runner.verify_and_replay(res["bundle_ref"], self.allow_policy_text, self.tokenizer_data, model_bytes_override=self.model_bytes)
-        self.assertTrue(replay_res["valid"])
-        self.assertGreater(replay_res["lookup_latency_ns"], 0)
-        self.assertGreater(replay_res["replay_latency_ns"], 0)
-
-        # Corrupt bundle reference
-        invalid_replay = runner.verify_and_replay("sha3-256:0000000000000000000000000000000000000000000000000000000000000000", self.allow_policy_text, model_bytes_override=self.model_bytes)
-        self.assertFalse(invalid_replay["valid"])
-
-    # ---------------------------------------------------------
-    # Scenario 10: Boundary & Adversarial Cases (Phase 2)
-    # ---------------------------------------------------------
-    def test_10_adversarial_boundary_cases(self):
-        # 1. Invalid execution mode
-        with self.assertRaises(ValueError):
-            cas_root = os.path.join(self.temp_dir, f"cas-{tempfile.mktemp(dir='')}")
-            runner = ConventionalTaskRunner(cas_root)
-            runner.run_assess_fixed(self.model_bytes, "greet hello", self.allow_policy_text, mode="reproducible_nondeterministic")
-
-        # 2. Corrupted CAS payload read
-        cas_root = os.path.join(self.temp_dir, f"cas-{tempfile.mktemp(dir='')}")
-        cas = ConventionalCAS(cas_root)
-        ref = cas.put(b"test data")
-        obj_digest = ref.split(":", 1)[1]
-        obj_path = os.path.join(cas.objects_dir, obj_digest)
-        with open(obj_path, "wb") as f:
-            f.write(b"corrupted data")
-        with self.assertRaises(ValueError):
-            cas.get(ref)
+    def test_binary_identity_tamper_and_independent_recovery(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            cas = ConventionalCAS(tmp)
+            self.assertNotEqual(cas.put(b'\xff'), cas.put(b'\xfe'))
+            ref = cas.put(b'\xff')
+            self.assertEqual(cas.get(ref), b'\xff')
+            # Production CanonFS and the conventional CAS must identify the same bytes.
+            source = Path(tmp)/'binary'; source.write_bytes(b'\xff')
+            stored = subprocess.run([str(self.cli), 'canonfs', 'put-file', str(source),
+                                     '--canonfs-root', str(Path(tmp)/'reference')],
+                                    capture_output=True,text=True,check=True,timeout=30)
+            self.assertEqual(stored.stdout.strip(), ref)
+            target = Path(tmp)/'reference/objects'/(ref.split(':',1)[1]+'.blk')
+            target.write_bytes(b'\xfe')
+            rejected = subprocess.run([str(self.cli), 'canonfs', 'get', ref,
+                                       '--canonfs-root', str(Path(tmp)/'reference')],
+                                      capture_output=True,timeout=30)
+            self.assertNotEqual(rejected.returncode, 0, 'reference accepted tampered binary object')
+            (Path(cas.objects_dir)/ref.split(':',1)[1]).write_bytes(b'\xfe')
+            with self.assertRaises(ValueError): cas.get(ref)
+            with self.assertRaises(ValueError): cas.put(b'\xff')
+        with tempfile.TemporaryDirectory() as tmp:
+            runner = ConventionalTaskRunner(tmp)
+            result = runner.run_assess_fixed(self.model_bytes, 'greet hello', policy_for(self.model_bytes), self.tokenizer)
+            bundle = json.loads(runner.cas.get(result['bundle_ref']))
+            self.assertTrue(ConventionalTaskRunner(tmp).verify_and_replay(result['bundle_ref'])['valid'])
+            replay = subprocess.run([__import__('sys').executable, str(Path(__file__).with_name('baseline_worker.py')),
+                                     'replay','--store',tmp,'--bundle',result['bundle_ref']],
+                                    capture_output=True,text=True,check=True,timeout=30)
+            self.assertTrue(json.loads(replay.stdout)['valid'])
+            for key, value in [('model_hash', 'sha3-512:wrong'), ('source_result_ref', bundle['model_ref']),
+                               ('decision', 'DENY'), ('model_ref', 'sha3-256:missing')]:
+                altered = dict(bundle, **{key:value})
+                ref = runner.cas.put(json.dumps(altered).encode())
+                self.assertFalse(ConventionalTaskRunner(tmp).verify_and_replay(ref)['valid'])
+            model_path = Path(runner.cas.objects_dir)/bundle['model_ref'].split(':',1)[1]
+            model_path.write_bytes(b'invalid binary\xff')
+            self.assertFalse(ConventionalTaskRunner(tmp).verify_and_replay(result['bundle_ref'])['valid'])
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == '__main__':
+    unittest.main(verbosity=2)

@@ -1,103 +1,68 @@
 #!/usr/bin/env python3
-"""
-Main Experiment Runner for Investigation 08 (Equivalent Conventional Comparator).
-Executes baseline and ablation harnesses, evaluates computational parity,
-measures paired operations with fresh process trials, and records machine-readable findings.
-"""
-
+"""Run the full bounded parity gate before any new observations; never overwrite history."""
+import argparse
+from datetime import datetime, timezone
+import hashlib
 import json
 import os
-import sys
+from pathlib import Path
 import platform
-import time
-from datetime import datetime, timezone
+import subprocess
+import sys
+import tempfile
+
 from ablation_runner import AblationHarness
 
+HERE = Path(__file__).resolve().parent
+
+
 def main():
-    print("=== Investigation 08: Equivalent Conventional Comparator & Ablation Experiments ===")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--build-dir', default=os.environ.get('T81_BUILD_DIR', str(HERE.parents[1]/'build')))
+    parser.add_argument('--work-dir', default=str(HERE/'work'))
+    parser.add_argument('--out', required=True, help='new output file; existing files are refused')
+    parser.add_argument('--iterations', type=int, default=30)
+    parser.add_argument('--seed', type=int, default=602)
+    args = parser.parse_args()
+    output = Path(args.out)
+    if output.exists():
+        parser.error('refusing to overwrite previous observations')
+    if args.iterations < 1:
+        parser.error('iterations must be positive')
+    work = Path(args.work_dir); work.mkdir(parents=True, exist_ok=True)
+    os.environ['T81_CANONFS_READ_VERIFY'] = '1'
+    invocation = Path(tempfile.mkdtemp(prefix='run-', dir=work))
+    report = invocation/'parity.json'
+    env = dict(os.environ, T81_CANONFS_READ_VERIFY='1', T81_BUILD_DIR=str(Path(args.build_dir).resolve()), T81_PARITY_REPORT=str(report))
+    gate = subprocess.run([sys.executable, str(HERE/'test_differential_parity.py')], env=env,
+                          capture_output=True, text=True)
+    (invocation/'parity.log').write_text(gate.stdout+gate.stderr)
+    data = dict(investigation='08', timestamp=datetime.now(timezone.utc).isoformat(),
+                architectural_performance_disposition='INCONCLUSIVE',
+                assurance_superiority_disposition='INCONCLUSIVE',
+                scope='bounded pure-Python implementation versus production C++ assess-fixed path; not general model equivalence',
+                gate_exit=gate.returncode, gate_report=json.loads(report.read_text()) if report.exists() else None,
+                gate_log=str(invocation/'parity.log'),
+                environment=dict(canonfs_read_verify='1',platform=platform.platform(),python=sys.version,machine=platform.machine()),
+                source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=HERE,text=True).strip(),
+                source_files_sha256={str(f.relative_to(HERE)):hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted(HERE.glob('*')) if f.suffix in ('.py','.cpp')},
+                binaries_sha256={name:hashlib.sha256((Path(args.build_dir)/(name+('.exe' if os.name=='nt' else ''))).read_bytes()).hexdigest() for name in ('t81','t81_make_assess_fixed_demo','t81_investigation08_probe')},
+                source_diff_sha256=hashlib.sha256(subprocess.check_output(['git','diff','HEAD'],cwd=HERE)).hexdigest(),
+                observations=None)
+    if gate.returncode == 0:
+        harness = AblationHarness(HERE.parents[1], invocation, args.build_dir)
+        fixtures = harness.prepare_fixtures()
+        data['fixture_model_hash'] = fixtures['model_hash']
+        data['observations'] = harness.run_paired_benchmarks(fixtures,'greet hello',args.iterations,args.seed)
+        data['disposition'] = 'BOUNDED PARITY PASSED; IMPLEMENTATION OBSERVATIONS ONLY; investigation remains open'
+    else:
+        data['disposition'] = 'PARITY GATE FAILED; NO MEASUREMENTS AUTHORIZED'
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with output.open('x') as f:
+        json.dump(data,f,indent=2,ensure_ascii=False); f.write('\n')
+    print(data['disposition'])
+    return 0 if gate.returncode == 0 else 1
 
-    repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-    work_dir = os.path.join(os.path.dirname(__file__), "work")
 
-    harness = AblationHarness(repo_root, work_dir)
-    fixtures = harness.prepare_fixtures()
-
-    print(f"Model File: {fixtures['model_path']}")
-    print(f"Model Hash: {fixtures['model_hash']}")
-
-    input_text = "greet hello"
-
-    # Single-pass execution for parity check
-    canon_single = os.path.join(work_dir, "canon_single")
-    cas_single = os.path.join(work_dir, "cas_single")
-    os.makedirs(canon_single, exist_ok=True)
-    os.makedirs(cas_single, exist_ok=True)
-
-    print("\nExecuting Configuration A (Full Integrated T81 Stack)...")
-    res_a = harness.run_config_a(fixtures, input_text, canon_single)
-    print(f"  Status: {res_a['status']}, Cold Start Latency: {res_a['cold_start_latency_ms']:.2f} ms")
-
-    print("\nExecuting Configuration B (Conventional Binary Stack)...")
-    res_b = harness.run_config_b(fixtures, input_text, cas_single)
-    print(f"  Status: {res_b['status']}, Execution Latency: {res_b['execution_latency_ms']:.2f} ms")
-
-    # Verify Computational Equivalence
-    computational_parity = (res_a["decision"] == res_b["decision"] and res_a["reason_code"] == res_b["reason_code"])
-    print(f"\nComputational Equivalence Verification: {'PARITY VERIFIED' if computational_parity else 'MISMATCH'}")
-    print(f"  Config A Decision: {res_a['decision']} ({res_a['reason_code']})")
-    print(f"  Config B Decision: {res_b['decision']} ({res_b['reason_code']})")
-
-    paired_benchmark_results = {}
-    if computational_parity:
-        print("\nExecuting 30 Paired Benchmark Trials (Randomized Order)...")
-        paired_benchmark_results = harness.run_paired_benchmarks(fixtures, input_text, iterations=30)
-        print("  Empty Store Mean Latency:")
-        print(f"    Config A (T81 Process): {paired_benchmark_results['empty_store']['config_a_t81']['mean_ms']:.2f} ms ± {paired_benchmark_results['empty_store']['config_a_t81']['stddev_ms']:.2f} ms")
-        print(f"    Config B (Conventional Python): {paired_benchmark_results['empty_store']['config_b_conventional']['mean_ms']:.2f} ms ± {paired_benchmark_results['empty_store']['config_b_conventional']['stddev_ms']:.2f} ms")
-
-    res_c = harness.run_config_c(fixtures, input_text)
-    res_d = harness.run_config_d(fixtures, input_text)
-    res_e = harness.run_config_e(fixtures, input_text)
-    res_f = harness.run_config_f(fixtures, input_text)
-
-    results_data = {
-        "investigation": "Scientific Investigation 08 — Equivalent Conventional Comparator",
-        "final_disposition": "PARITY VERIFIED — MEASUREMENT COMPLETED" if computational_parity else "PARITY NOT ESTABLISHED — EXPERIMENT STOPPED",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "environment_metadata": {
-            "platform": platform.platform(),
-            "python_version": sys.version,
-            "processor": platform.processor(),
-            "machine": platform.machine()
-        },
-        "computational_equivalence": {
-            "parity_matched": computational_parity,
-            "test_input": input_text,
-            "config_a_output": {"decision": res_a["decision"], "reason_code": res_a["reason_code"]},
-            "config_b_output": {"decision": res_b["decision"], "reason_code": res_b["reason_code"]}
-        },
-        "paired_benchmark_observations": paired_benchmark_results,
-        "hypotheses_evaluation": {
-            "H_S1_Computational_Advantage": "NOT SUPPORTED (Full T81 CLI binary stack incurs process launch and translation overhead over in-process binary baselines)",
-            "H_S1_Assurance_Advantage": "SUPPORTED (T81 provides end-to-end cryptographic content identity, pre-execution Axion policy gating, and bit-exact replay verification)",
-            "H_S1_Compositional_Advantage": "INCONCLUSIVE (Controlled interaction analysis is infeasible without production code modification seams for individual subsystem ablations C, D, E, F)",
-            "H_S1_Ternary_Specific_Advantage": "NOT SUPPORTED / UNIMPLEMENTED (No arithmetic substitution seam exists in C++ production VM; ternary-specific advantage cannot be inferred from an unimplemented ablation)"
-        },
-        "results": {
-            "Config_A": res_a,
-            "Config_B": res_b,
-            "Config_C": res_c,
-            "Config_D": res_d,
-            "Config_E": res_e,
-            "Config_F": res_f
-        }
-    }
-
-    out_file = os.path.join(os.path.dirname(__file__), "results.json")
-    with open(out_file, "w") as f:
-        json.dump(results_data, f, indent=2)
-
-    print(f"\nExperiment execution complete. Output written to {out_file}")
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    sys.exit(main())

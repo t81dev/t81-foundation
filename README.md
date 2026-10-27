@@ -300,7 +300,7 @@ ______________________________________________________________________
 With those corrections recorded, the next research choice should be based on evidence rather than an assumed architectural destination. Candidate directions include:
 
 - **Integrated-system equivalence and ablation:** Verify one real path through model execution, policy, artifact identity, and replay, then compare equivalent guarantees and costs.
-- **Cross-platform determinism:** Test precisely scoped numerical and execution traces across supported targets bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md), with measured performance overhead.
+- **Cross-platform determinism:** Test precisely scoped numerical and execution traces across supported targets, with measured performance overhead.
 - **Representation and hardware hypotheses:** Pursue only bounded experiments with appropriate binary controls, explicit cost models, and falsifiable stopping conditions.
 
 Prefer experimental infrastructure that can support competing hypotheses over features that presuppose one architectural destination. Avoid adding production features merely to make an experiment succeed. An **INCONCLUSIVE** result with a documented missing integration seam is preferable to a misleading positive or negative claim.

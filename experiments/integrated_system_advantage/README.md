@@ -1,45 +1,86 @@
-# Scientific Investigation 08 — Integrated System Advantage Experiment Suite & Conventional Baseline
+# Investigation 08 — conventional comparator corrective gate
 
-This directory contains the executable experiments, independent conventional baseline comparator implementation, differential test suite, and benchmark runners for **Scientific Investigation 08** ("Integrated Architecture, Emergent Advantages, and System-Level Evaluation").
+This is a bounded **pure-Python implementation comparison** with the production
+`t81 ai task assess-fixed` path. It does not establish architectural performance
+or assurance superiority. Investigation 08 remains open; performance, assurance,
+composition, and ternary-specific advantage remain **INCONCLUSIVE**.
 
-## Overview
+The research scripts require Python 3.10 or later. The comparator interprets checked T81W1/T81W2 balanced-ternary models for the
+16-wide, single-row, two-layer attention slice used by the demo. It is not a
+full transformer or general Axion implementation. Its supported APL subset is
+`tier`, `allowed-ternary-model-hashes`, and `require-axion-event (reason ...)`;
+unsupported clauses fail explicitly. The task's admission hash/marker checks
+are distinct from propagation of arbitrary constraints into the VM probe.
 
-The benchmark harness implements and validates an independent conventional baseline comparator against the reference `t81 ai task assess-fixed` T81VM implementation:
+The initial-probe CLI uses eight sampled candidates (or fewer for a small
+vocabulary) and `max_score.v1`, retaining the **first sampled candidate on ties**.
+This differs from the separate full-vocabulary greedy API. Projection matmuls
+use input/output row-major orientation and snap activations before accumulation.
+The single-row attention softmax has one element, so its output is the value row.
 
-- **`baseline_stack.py`**: Pure Python / conventional baseline implementation providing independent T81W2 model weight parsing and SHA3-512 checksum validation, Axion APL policy parser and authorization evaluator, candidate sampling window calculation (`history_seed_window_start`), 2-layer attention slice matrix multiplication kernel with integer accumulation, token-to-decision mapping (`kAssessFixedVocabulary`), CAS object storage, and `verify_and_replay` evidence verification.
-- **`test_differential_parity.py`**: Comprehensive differential regression test suite validating zero semantic mismatches across 10 scenario groups against the compiled `t81` binary.
-- **`ablation_runner.py`**: Orchestrates paired process execution benchmarks across 30+ randomized observations in empty-store and populated-store conditions.
-- **`run_experiments.py`**: Main experiment runner executing the scientific parity gate check, running fresh-process paired benchmarks, and recording machine-readable results in `results.json`.
+The expanded gate compares:
 
-## Scientific Acceptance Gate & Equivalence
+- All nine intermediate tensors, captured at production VM instructions by the
+  opt-in `t81_investigation08_probe`; no assertion-only checks or assumed pool
+  ordering. Candidate IDs/scores also come from the actual decoder and CLI
+  provenance, independently of the Python computation.
+- Labels, selected tokens, normalization, policy decisions, model identities,
+  exact result bytes/references, provenance linkage and integrity, and replay.
+  Provenance and conventional recovery bundles have backend-specific contents;
+  their references are verified against their own bytes, not claimed identical.
+- Original/unknown/whitespace/context inputs, nonsymmetric valid weight mutations,
+  tokenizer changes including BPE pieces and wrapped sampling ties, malformed
+  models/policies, invalid binary objects, tampering and inconsistent links.
+- Exact tokenizer text, including the reference reader's limited escape handling:
+  it removes a backslash and retains the following character rather than decoding
+  Unicode escapes. Literal UTF-8 and escaped JSON can therefore select different
+  tokens. Matching this behavior does not certify general JSON/BPE correctness.
+- New-runner and fresh-process recovery from persisted input/model/policy/tokenizer
+  references, with **no override arguments**. Reference CLI artifact recovery
+  uses fresh `canonfs get` processes. Its timed rerun still needs original fixture
+  files; it is not standalone model recovery from its result object.
+- Store uniqueness across repeated invocations. Every observation has separate
+  arm roots; populated trials are explicitly prepopulated before measurement.
 
-1. **Computational & Behavioral Parity**: Verified zero unexplained differences across:
-   - Classification decision and reason code (`ALLOW:GREETING_PAIR`, `DENY:WORLD_SEQUENCE`, `REVIEW:PREFIX_ONLY`, `UNKNOWN:UNMAPPED_TOKEN`).
-   - Selected decision token ID and candidate score ordering.
-   - Text input string normalization (`normalize_task_input_text`).
-   - Axion APL authorization checking (`policy_allows_single_model_hash` & `policy_requires_task_marker`).
-   - SHA3-512 model fingerprinting and SHA3-256 artifact hashing (`canon_sha3_256_ref` with Base-81 encoding).
-2. **Replay & Evidence Linkage**: Verified that CAS artifact retrieval lookup latency is strictly distinguished from re-execution replay latency.
+Object references retain the reference protocol's `sha3-256:` label: the bytes
+are SHA3-512 hashed, truncated to 32 bytes and Base-81 encoded. Binary bytes are
+never decoded before hashing. Integrity establishes identity, not provenance truth.
+Stores assume a trusted local owner and sequential access; no hostile-host,
+symlink-race, concurrency, durability, or signature-authentication guarantee is made.
 
-## Final Disposition
+Build the research instrumentation explicitly (normal builds leave it off):
 
-**PARITY VERIFIED — MEASUREMENT COMPLETED**
-
-- **Computational Equivalence**: PARITY MATCHED (Zero semantic mismatches across all differential parity test scenarios).
-- **Performance Summary**: Full T81 CLI binary stack process launch incurs translation/process overhead compared to in-process conventional execution (~5,294 ms CLI process launch vs ~2.87 ms in-process execution). Per experimental protocol guidelines, process launch latency differences between Python and C++ binaries are not interpreted as intrinsic T81 architectural advantage.
-
-## Reproduction Commands
-
-To run the differential parity test suite:
-
-```bash
-python3 experiments/integrated_system_advantage/test_differential_parity.py
+```sh
+cmake -S . -B build -G Ninja -DT81_BUILD_TESTS=ON -DT81_BUILD_EXAMPLES=ON -DT81_BUILD_INVESTIGATION08_PROBE=ON
+cmake --build build --parallel 6 --target t81 t81_make_assess_fixed_demo t81_investigation08_probe
+T81_BUILD_DIR=build python3 experiments/integrated_system_advantage/test_differential_parity.py
 ```
 
-To run the paired benchmark suite and update `results.json`:
+Run new observations only through the gate (default 30 observations per condition;
+a smaller declared count is a smoke measurement with correspondingly weak uncertainty):
 
-```bash
-python3 experiments/integrated_system_advantage/run_experiments.py
+```sh
+python3 experiments/integrated_system_advantage/run_experiments.py --build-dir build --iterations 30 --seed 602 --out /tmp/investigation08-new-run.json
 ```
 
-All determinism claims comply with the [Determinism Surface Registry](/docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
+The runner executes the complete parity suite before any timing trials and stops
+on failure. It refuses to overwrite a result file. Both arms launch a fresh process
+for every observation and replay; order is randomized using a recorded seed.
+Raw observations include roots, initial/pre-observation entry counts, ordering,
+identity, verification, wall times and separate measurable phases. Python module
+initialization, fixture/model loading, policy evaluation, computation, persistence,
+lookup, and replay are measured separately. The parent/worker residual includes
+startup, teardown, serialization and pipes; it is not isolated startup cost.
+The existing T81 CLI exposes no phase clocks, so its internal phases are **null /
+unmeasured**. Its process wall time cannot be decomposed into invented costs.
+
+Even with bounded parity, Python loops and optimized C++/SIMD code are different
+implementation conditions. Cache/page residency, OS scheduling and trial order
+remain confounders; fresh stores are not cold OS caches. Report dispersion and
+sample count, retain raw observations, and infer no intrinsic T81 advantage or
+disadvantage. Missing C–F ablation seams remain unimplemented, not negative results.
+
+Earlier committed observations are retained byte for byte in `historical/`, with
+source commits and invalidation reasons. They are not silently regenerated or
+promoted by passing the new gate. See `CORRECTIVE_REVIEW.md` for the actual review
+head, commands, outcomes, remaining limitations and scientific disposition.
