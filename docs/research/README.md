@@ -20,7 +20,8 @@ Research inquiries in T81 are organized into three coordinated tracks governed b
 
 ## Key Research Consolidations & Decisions
 
-- **[T81 Human–AI Research Initiative](/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md)** — Core charter, multi-AI collaboration protocol, 12-month research roadmap, independent research assessment, publication strategy, and 30-day action plan.
+- **[T81 Human–AI Research Initiative](/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md)** — Core charter, multi-AI collaboration protocol, prospective 12-month research roadmap, qualitative technical assessment, publication strategy, and 30-day action plan.
+- **[Human–AI Initiative Governance Reconciliation Report](/docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md)** — Authoritative post-merge reconciliation report of PR #607, restoring canonical H01–H08 definitions, correcting initiative chronology, removing arbitrary maturity scores, scrubbing unsupported model attributions, and aligning claims with primary evidence.
 
 - **[Checked conversion contract proposal](../../experiments/checked_float_contract/README.md)** — Draft numerical semantics, independent bidirectional corpus, compatibility/decision record and bounded plan; no production replacement or new determinism claim.
 

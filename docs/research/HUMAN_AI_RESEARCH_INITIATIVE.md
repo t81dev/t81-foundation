@@ -1,8 +1,8 @@
 # T81 Human–AI Research Initiative
 ## Independent Research Collaboration, Scientific Framework Development, and Deliverable Dossier
 
-**Date:** April 2026
-**Status:** Foundational Research Initiative Charter & Strategic Assessment
+**Date:** October 27, 2026
+**Status:** Foundational Research Initiative Charter & Strategic Assessment (Reconciled)
 **Target Surface:** `/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md`
 **Primary Repository:** [t81dev/t81-foundation](https://github.com/t81dev/t81-foundation)
 **Historical Precursor:** [t81dev/Hanoi](https://github.com/t81dev/Hanoi)
@@ -49,9 +49,9 @@ By enforcing **functional role separation and adversarial incentive alignment**:
 4. An open, reproducible benchmark suite with one-command execution scripts (`run_verification.py`, `run_experiments.py`).
 
 #### 6. Which three research hypotheses deserve the highest priority?
-1. **Hypothesis H-A1 (Accountable Substrate Necessity vs Protocol):** *Does pre-side-effect policy gating require a bespoke C++ VM/ISA, or can standard Wasmtime runtimes paired with RFC-00D4 detached evidence protocols achieve identical security guarantees with $10\times$ lower latency and complexity?*
-2. **Hypothesis H-R1 (Adaptive Radix & Representation Efficiency Bounds):** *Under what specific sparse vector and low-bit matrix multiplication workloads does 2-bit packed ternary SWAR arithmetic outperform bit-aligned INT2/INT4 binary SIMD on commodity AVX2/NEON hardware?*
-3. **Hypothesis H-M1 (Multi-AI Adversarial Falsification Drift):** *Does a structured multi-AI adversarial pipeline (Architect $\to$ Engineer $\to$ Falsifier $\to$ Auditor) significantly reduce ungrounded architectural overclaims compared to single-agent iterative generation?*
+1. **Hypothesis H-INIT-A1 (Accountable Substrate Necessity vs Protocol):** *Does pre-side-effect policy gating require a bespoke C++ VM/ISA, or can standard Wasmtime runtimes paired with RFC-00D4 detached evidence protocols achieve identical security guarantees with $10\times$ lower latency and complexity?*
+2. **Hypothesis H-INIT-R1 (Adaptive Radix & Representation Efficiency Bounds):** *Under what specific sparse vector and low-bit matrix multiplication workloads does 2-bit packed ternary SWAR arithmetic outperform bit-aligned INT2/INT4 binary SIMD on commodity AVX2/NEON hardware?*
+3. **Hypothesis H-INIT-M1 (Multi-AI Adversarial Falsification Drift):** *Does a structured multi-AI adversarial pipeline (Architect $\to$ Engineer $\to$ Falsifier $\to$ Auditor) significantly reduce ungrounded architectural overclaims compared to single-agent iterative generation?*
 
 #### 7. What would justify continuing, redirecting, or terminating a research direction?
 - **Continue:** The hypothesis meets preregistered quantitative thresholds (e.g., $\ge 1.25\times$ efficiency or zero policy bypasses) in reproducible, comparative experiments.
@@ -131,7 +131,9 @@ Execute **Immediate Action Plan Step 1**: Implement C++ production subsystem sub
 
 ---
 
-## Section 3: Deliverable B — Human–AI Collaboration Protocol
+## Section 3: Deliverable B — Human–AI Collaboration Protocol Specification
+
+*Note: The collaboration protocol defined in this section represents a documented procedural specification and governance guideline. It specifies how multi-role AI interactions should be structured to prevent confirmation bias, rather than describing an existing, fully automated C++ or Python software system.*
 
 ### 3.1 Role Architecture & Interactions
 
@@ -180,17 +182,17 @@ To prevent circular confirmation bias ("echo chambers"), AI agents operate accor
 
 ### 3.3 Disagreement Logging & Provenance Schema
 
-All collaborative steps are recorded in machine-readable JSON format:
+All collaborative steps are recorded in machine-readable JSON format. Specific AI model names and prompt hashes are recorded only when independently documented in git commit logs or execution provenance receipts:
 
 ```json
 {
-  "experiment_id": "EXP-2026-08-C1",
+  "experiment_id": "EXP-2026-10-C1",
   "hypothesis_id": "H-S1c",
   "human_pi_authorization": "APPROVED",
   "agent_contributions": [
-    {"role": "AI-Arch", "model": "claude-3-5-sonnet", "artifact": "docs/research/H08_spec.md"},
-    {"role": "AI-Impl", "model": "gpt-4o", "artifact": "experiments/integrated_system_advantage/ablation.cpp"},
-    {"role": "AI-Adv", "model": "claude-3-5-sonnet", "finding": "Missing C++ substitution seam in Config C", "verdict": "REJECT"},
+    {"role": "AI-Arch", "model": "documented_model_id_or_generic", "artifact": "docs/research/H08_spec.md"},
+    {"role": "AI-Impl", "model": "documented_model_id_or_generic", "artifact": "experiments/integrated_system_advantage/ablation.cpp"},
+    {"role": "AI-Adv", "model": "documented_model_id_or_generic", "finding": "Missing C++ substitution seam in Config C", "verdict": "REJECT"},
     {"role": "AI-Aud", "model": "custom-sandbox", "execution_exit_code": 0, "hash_match": true}
   ],
   "reconciled_disposition": "INCONCLUSIVE",
@@ -202,46 +204,57 @@ All collaborative steps are recorded in machine-readable JSON format:
 
 ## Section 4: Deliverable C — Scientific Research Roadmap
 
-### 4.1 12-Month Timeline & Milestones (Q1–Q4)
+### 4.1 Prospective 12-Month Research Roadmap (Q4 2026 – Q3 2027)
 
 ```
-2026 Q2                     2026 Q3                     2026 Q4                     2027 Q1
+2026 Q4                     2027 Q1                     2027 Q2                     2027 Q3
 +---------------------------+---------------------------+---------------------------+---------------------------+
-| Q2 Milestone:             | Q3 Milestone:             | Q4 Milestone:             | Q1 Milestone:             |
+| Q4 2026 Milestone:        | Q1 2027 Milestone:        | Q2 2027 Milestone:        | Q3 2027 Milestone:        |
 | Subsystem Substitution    | Baseline-X Protocol       | Adaptive Radix SIMD       | Academic Peer-Review      |
 | Seams & Ablation Suite    | Evaluation (Wasmtime)     | Bounds & MatVec           | Package & External Audit  |
 | - Config C, D, E, F seams | - RFC-00D4 verifier CLI   | - AVX2/NEON benchmarking  | - OCI reproducibility     |
-| - Resolve H-S1c status    | - Head-to-head comparison | - Falsify/Verify H-R1     | - Journal submission      |
+| - Resolve H-S1c status    | - Head-to-head comparison | - Falsify/Verify H-INIT-R1| - Journal submission      |
 +---------------------------+---------------------------+---------------------------+---------------------------+
 ```
 
-- **Q2 2026 — Subsystem Ablation & Seam Infrastructure:**
+- **Q4 2026 — Subsystem Ablation & Seam Infrastructure:**
   - *Objective:* Add production C++ substitution seams (`--substitute-vm`, `--substitute-fs`, `--substitute-policy`) to resolve Investigation 08's `INCONCLUSIVE` compositional status.
   - *Stopping Criteria:* If subsystem isolation shows zero positive interaction effects over isolated components, declare monolithic integration non-essential.
-- **Q3 2026 — Accountable Substrate vs. Protocol Evaluation (Project Baseline-X):**
+- **Q1 2027 — Accountable Substrate vs. Protocol Evaluation (Project Baseline-X):**
   - *Objective:* Execute comparative benchmarks between T81VM+Axion and Wasmtime+Cosign+RFC-00D4.
   - *Stopping Criteria:* If Baseline-X achieves identical policy guarantees with $>5\times$ lower latency, pivot T81 to a pure protocol/specification standard.
-- **Q4 2026 — Adaptive Radix & Packed Ternary SIMD Bounds:**
+- **Q2 2027 — Adaptive Radix & Packed Ternary SIMD Bounds:**
   - *Objective:* Benchmark 2-bit packed ternary SWAR MatVec against INT2/INT4 binary SIMD on AVX2/NEON.
   - *Stopping Criteria:* If packed ternary yields $<1.10\times$ throughput advantage over INT2, freeze SWAR ternary arithmetic development.
-- **Q1 2027 — External Reproducibility Package & Peer-Review Submission:**
+- **Q3 2027 — External Reproducibility Package & Peer-Review Submission:**
   - *Objective:* Publish complete open-source reproducibility containers and submit preprints to USENIX Security / IEEE Micro.
 
 ---
 
-### 4.2 Canonical Hypothesis Ledger (H01–H08 & H09+)
+### 4.2 Canonical Hypothesis Ledger (H01–H08) & Proposed Initiative Hypotheses
 
-| Hypothesis ID | Canonical Statement | Current Status | Supporting Artifact | Falsification Criterion |
-| :--- | :--- | :--- | :--- | :--- |
-| **H01** | Balanced ternary representation reduces interconnect and gate complexity in arithmetic logic units. | `CONTRADICTED` | `docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md` | Gate area reduction $< 1.25\times$ vs. matched binary control. (Measured: $1.098\times$). |
-| **H02** | Base-81 digit grouping ($81 = 3^4$) eliminates carry-propagation overhead in large-integer additions. | `MEASURED` | `docs/research/TERNARY_ARITHMETIC_AND_RADIX_COMPARISON.md` | Addition latency higher than 64-bit binary adder circuits. |
-| **H03** | Exact rational conversion via ternary fraction representation eliminates floating-point rounding errors. | `TESTED` | `INDEPENDENT_RATIONAL_CONVERSION_VALIDATION.md` | Non-exact conversion or overflow in standard conversion suite. |
-| **H04** | 2-bit packed ternary SWAR vector operations outperform INT8 SIMD in sparse matrix-vector multiplication. | `MEASURED` | `docs/research/PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md` | Throughput lower than AVX2/NEON INT8 LUT decoding. |
-| **H05** | Ternary-native neural inference maintains model accuracy with lower memory bandwidth requirements. | `TESTED` | `docs/research/TERNARY_INFERENCE_CROSS_ARCH_BREAK_EVEN_REPORT.md` | Perplexity degradation $> 5\%$ or memory savings $< 2\times$ vs INT4. |
-| **H06** | Hardware ternary overlays provide measurable performance advantages on FPGA/ASIC targets. | `CONTRADICTED` | `experiments/ternary_hardware_feasibility/FINDINGS_REPORT.md` | Area reduction $< 1.25\times$ or unmeasured dynamic power. |
-| **H07** | Pre-side-effect policy interception with content-addressed storage guarantees accountable execution state. | `COMPARATIVELY VALIDATED` | `docs/research/INVESTIGATIONS_07_08_CORRECTIVE_ASSESSMENT.md` | Unauthorized state mutation occurring prior to policy evaluation. |
-| **H08** | Integrated architecture produces multiplicative security and performance benefits beyond isolated subsystems. | `OPEN` / `INCONCLUSIVE` | `docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md` | Lack of production substitution seams prevents isolated ablation testing. |
-| **H09** | Multi-AI adversarial review pipelines reduce ungrounded architectural overclaims in software research documentation. | `IMPLEMENTED` | `/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md` | Overclaim regression rate $> 0\%$ in automated CI governance audits. |
+#### Master Canonical Hypothesis Register (H01–H08)
+*Governed strictly by the [Master Continuity Charter](continuity/MASTER_CONTINUITY_CHARTER_v1.0.md) and [HYPOTHESIS_REGISTER_v1.json](continuity/HYPOTHESIS_REGISTER_v1.json).*
+
+| Hypothesis ID | Track | Canonical Formal Statement | Reconciled Status & Primary Evidence |
+| :--- | :--- | :--- | :--- |
+| **H01** | Track R | Equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions. | Mathematical density established ($\log_2 3 \approx 1.585$). Software tryte addition on binary ALUs is **falsified for speed and frozen (STOP)** ($10.6\times$ slower than native binary integer addition). Physical hardware claims remain open. |
+| **H02** | Track R | Balanced ternary can improve a specified signed arithmetic or rounding task at equal semantics and cost accounting. | Algebraic symmetry established. Software SWAR SIMD emulation on binary vector units is **falsified for speed and frozen** due to digit-unpacking tax. |
+| **H03** | Track R | Grouping four trits as base-81 can provide a workload-specific interface or execution benefit beyond equivalent binary packing. | 4-trit grouping reduces software tryte addition latency from $105.3\text{ ns}$ to $11.7\text{ ns}$. 2-bit weight MatVec is **validated for storage reduction ($75\%$ DRAM savings)**, but **disproven for CPU MatVec speed** ($75.3\%$ of INT8 AVX2) in L1/L2 cache. |
+| **H04** | Track R | An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload. | Refined by **H04-R01** trace discriminator. Yields **conditional model support with explicit counterexamples** (e.g., $M=256$, $C_3/C_2=1.5$ yields higher cost for ternary), not physical hardware proof. |
+| **H05** | Track R | A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation. | Exploratory. In-VM pre-dispatch policy evaluation (`eval_axion_call`) prevents unauthorized side effects ($0.0\%$ breach rate) in T81VM, but host capability boundaries in Wasm provide equivalent protection. |
+| **H06** | Track R | Ternary weights or activations can improve accuracy-constrained inference versus equally optimized binary low-bit alternatives. | On-disk 2-bit weight format (`.t81w`) validated for storage; CPU speedup disproven on binary SIMD. |
+| **H07** | Track F | Representation-independent governed execution can improve a defined auditability property. | **Established for DCP determinism, CanonFS byte identity, and detached evidence auditability (RFC-00D4)**. Proves accountable computation is a runtime-agnostic protocol, not a custom VM requirement. |
+| **H08** | Track M | AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process. | **Established for prompt-to-code provenance, session continuity, and CanonFS artifact identity**. |
+
+#### Proposed Initiative Hypotheses (H-INIT Namespace)
+*Newly proposed research inquiries under the Human–AI Research Initiative (distinct from canonical H01–H08).*
+
+| Initiative ID | Track | Proposed Hypothesis Statement | Target Surface / Falsifier |
+| :--- | :--- | :--- | :--- |
+| **H-INIT-A1** | Track F | Pre-side-effect policy gating in off-the-shelf Wasm runtimes (Baseline-X) achieves identical security guarantees to bespoke VMs with $\ge 5\times$ lower latency. | Baseline-X exhibits policy bypasses or higher cold-start/steady-state latency than T81VM. |
+| **H-INIT-R1** | Track R | Sparse 2-bit packed ternary SWAR vector arithmetic outperforms bit-aligned INT2/INT4 binary SIMD under severe memory bandwidth constraints ($K \ge 4096$). | Throughput advantage over optimized INT2/INT4 SIMD is $< 1.10\times$ on commodity AVX2/NEON hardware. |
+| **H-INIT-M1** | Track M | Multi-AI adversarial review pipelines reduce ungrounded architectural overclaims in software research documentation. | Overclaim regression rate $> 0\%$ in automated governance audits. |
 
 *Note: All deterministic claims are bounded by the [Determinism Surface Registry](/docs/governance/DETERMINISM_SURFACE_REGISTRY.md).*
 
@@ -265,17 +278,16 @@ T81 combines several established computer science paradigms with novel architect
 
 ---
 
-### 5.2 Technical Maturity Assessment
+### 5.2 Qualitative Implementation & Verification State
 
-```
-Subsystem Maturity Radar:
-- TISC ISA / Core Encoding:       [85%] - Stable v1.9.0, frozen 209 opcodes.
-- Axion Kernel / Policy Engine:   [80%] - Functional pre-side-effect gating, unit tested.
-- CanonFS / Content Store:        [75%] - SHA-3/256 identity, standalone CLI verified.
-- T81VM Execution Engine:         [70%] - Deterministic execution profile verified, CLI cold-start bottleneck.
-- Subsystem Substitution Seams:   [20%] - Unimplemented (Configs C, D, E, F require C++ refactoring).
-- Native Ternary Hardware Target: [15%] - H-T1 overlay rejected; native ASIC unbuilt.
-```
+*In accordance with T81 research governance, subjective numeric percentage scores are replaced by explicit, reproducible implementation and verification states anchored to CTest targets and codebase artifacts.*
+
+- **TISC ISA / Core Encoding:** `FROZEN SPEC & TOOLCHAIN VERIFIED`. TISC ISA frozen at v1.9.0 across 209 opcodes (`include/t81/isa/opcodes.hpp`); validated by CTest opcode conformance suite (`t81_tisc_freeze_integrity_test`).
+- **Axion Kernel / Policy Engine:** `IMPLEMENTED & UNIT TESTED`. Functional pre-side-effect policy interception (`eval_axion_call`); verified by `t81_vm_predispatch_policy_deny_logging_test` and `canonfs_policy_boundary_test`.
+- **CanonFS / Content Store:** `IMPLEMENTED & INTEGRATION TESTED`. SHA-3/256 content-addressed storage and foreign filesystem interchange (RFC-00D1); verified by `canonfs_identity_contract_test` and CTest #84–85.
+- **T81VM Execution Engine:** `IMPLEMENTED WITH COLD-START BOTTLENECK`. Cross-platform deterministic execution profile verified (`vm_determinism_property_test`); CLI cold-start latency ($\sim 5.3\text{ s}$) identified as primary performance tax.
+- **Subsystem Substitution Seams:** `UNIMPLEMENTED IN PRODUCTION C++`. Subsystem substitution flags (`--substitute-vm`, `--substitute-fs`, `--substitute-policy`) for Investigation 08 ablation configs C, D, E, F require C++ driver refactoring.
+- **Native Ternary Hardware Target:** `EMULATED / UNBUILT PHYSICAL SILICON`. Emulated via Verilog/Yosys logic models (`experiments/ternary_hardware_feasibility/`); H-T1 sign-and-mask hardware overlay rejected ($1.098\times$ gate reduction vs. $1.25\times$ required); native physical ASIC unbuilt.
 
 ---
 
@@ -299,7 +311,7 @@ Subsystem Maturity Radar:
 
 ### 5.4 Categorization of Evidence Types
 
-- **Mathematical Proofs:** Exact rational conversion properties (`docs/research/EXACT_RATIONAL_CONVERSION_FEASIBILITY.md`).
+- **Mathematical Derivations & Model Calculations:** Exact rational conversion properties and finite-capacity storage thresholds (`docs/research/EXACT_RATIONAL_CONVERSION_FEASIBILITY.md` and `docs/research/continuity/H04_RADIX_ADAPTATION_DISCRIMINATOR.md`).
 - **Executable Demonstrations:** End-to-end CLI policy interception tests (`tests/cpp/axion_policy_allow_deny_determinism_test.cpp`).
 - **Simulation Results:** Icarus Verilog and Yosys synthesis gate count models (`experiments/ternary_hardware_feasibility/`).
 - **Physical Measurements:** Measured execution latencies and executable binary byte sizes (`experiments/integrated_system_advantage/results.json`).
@@ -368,18 +380,19 @@ Every paper submission will be accompanied by an open-access **Artifact Evaluati
 3. **Action 3: Develop Standalone RFC-00D4 Verifier CLI**
    - *Goal:* Build a lightweight, zero-dependency C++ CLI tool (`t81-evidence-verify`) to validate RFC-00D4 evidence bundles without running the full T81 VM stack.
    - *Success Criteria:* Verification of evidence bundles produced by both T81VM and Wasmtime baselines.
-4. **Action 4: Script Multi-AI Adversarial Review CI Harness**
-   - *Goal:* Automate cross-model evaluation (Claude / GPT / Gemini) for all new RFCs and research documentation.
-   - *Success Criteria:* CI pipeline fails if AI-Adv flags an ungrounded claim or missing benchmark baseline.
+4. **Action 4: Design Multi-AI Adversarial Review Procedural Harness**
+   - *Goal:* Specify procedural guidelines for multi-role cross-review across independent AI agents for new RFCs and research documentation.
+   - *Success Criteria:* Written review protocol verified against PR submission workflows.
 5. **Action 5: Package OCI Reproducibility Container**
    - *Goal:* Create `Dockerfile.reproducibility` pin-specifying all compilers, Yosys, Icarus Verilog, and CMake versions.
    - *Success Criteria:* Clean execution of `run_verification.py` and `run_experiments.py` inside container with 100% test pass rate.
 
 ---
 
-## Section 8: Summary Governance Sign-Off
+## Section 8: Summary Governance Sign-Off & Administrative Intake Record
 
-- **Human Principal Investigator Approval:** `PENDING INITIAL MERGE`
-- **Lead AI Research Architect:** `claude-3-7-sonnet`
+- **Human Principal Investigator Approval Status:** `DOCUMENTATION INTAKE RECORDED (PR #607 MERGE)`
+  - *Note:* Merge of PR #607 constitutes administrative intake and charter registration into the repository documentation structure. It does not imply prior human PI approval or scientific certification of unverified or speculative claims. Specific scientific assertions remain subject to empirical falsification and explicit PI sign-off.
+- **Lead AI Research Assistant Role:** `AI-Architect`
 - **Determinism Boundary Verification:** Confirmed bounded by the [Determinism Surface Registry](/docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
 - **Root Structure Integrity:** Compliant with `scripts/governance/check_root_structure.py`.
