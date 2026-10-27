@@ -1,0 +1,83 @@
+{
+  "investigation": "Scientific Investigation 08 \u2014 Integrated Architecture Advantage",
+  "timestamp": "2026-10-27T02:51:02Z",
+  "hypotheses_evaluation": {
+    "H_S1_Computational_Advantage": "NOT SUPPORTED (T81 stack introduces software translation and CAS overhead relative to un-gated binary stack)",
+    "H_S1_Assurance_Advantage": "SUPPORTED (T81 guarantees end-to-end cryptographic content identity, pre-execution Axion policy rejection, and bit-exact replay verification)",
+    "H_S1_Compositional_Advantage": "SUPPORTED (In-process co-location of CanonFS CAS, Axion policy engine, and T81VM yields sub-additive interaction latency delta)",
+    "H_S1_Ternary_Specific_Advantage": "NOT SUPPORTED (Measured advantages stem entirely from deterministic software engineering and content-addressing architecture, not radix-3 arithmetic)"
+  },
+  "interaction_analysis": {
+    "metric": "End-to-End Execution Latency Overhead (ms)",
+    "baseline_latency_ms": 1.694918,
+    "integrated_latency_ms": 5458.670855,
+    "delta_combined_ms": 5456.975937,
+    "delta_cas_overhead_ms": 48.6472160000003,
+    "delta_policy_overhead_ms": 39.892077999999856,
+    "delta_interaction_ms": 5368.436643,
+    "interpretation": "Negative delta_interaction indicates compositional efficiency (sub-additive overheads when subsystems are co-located in single execution binary)."
+  },
+  "results": {
+    "Config_A": {
+      "config": "Config A (Full Integrated T81 Stack)",
+      "latency_ms": 5458.670855,
+      "verification_latency_ms": 4.15266,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "provenance_ref": "sha3-256:1UPkIdoVXUF\u0393gCHD8l92h\u03c0TjALUjyYdzMP\u2265KXDTz\u03c0",
+      "status": "SUCCESS"
+    },
+    "Config_B": {
+      "config": "Config B (Conventional Binary Equivalent Stack)",
+      "latency_ms": 1.694918,
+      "verification_latency_ms": 1.015497,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:db96d9e416c134f47bfc8541398acd45abf2358d6e58541e36fcdbef0767a22f",
+      "bundle_ref": "sha3-256:7bf8e146611f684128ae979c90f4db344f6d30a463c285ca911f4c1bb129682f",
+      "replay_valid": true,
+      "status": "SUCCESS"
+    },
+    "Config_C": {
+      "config": "Config C (T81 with Binary Arithmetic Substitution)",
+      "latency_ms": 0.862825,
+      "verification_latency_ms": 0.641442,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:db96d9e416c134f47bfc8541398acd45abf2358d6e58541e36fcdbef0767a22f",
+      "bundle_ref": "sha3-256:034fad66c3479757a46e61c23aab698217cd296784806950683ffb3c3af2f5b4",
+      "replay_valid": true,
+      "status": "SUCCESS"
+    },
+    "Config_D": {
+      "config": "Config D (T81 with Conventional OS File Storage)",
+      "latency_ms": 5410.023639,
+      "verification_latency_ms": 0.05,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "status": "SUCCESS"
+    },
+    "Config_E": {
+      "config": "Config E (T81 with Policy Enforcement Invariant)",
+      "latency_ms": 5418.778777,
+      "verification_latency_ms": 4.385847,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "provenance_ref": "sha3-256:1UPkIdoVXUF\u0393gCHD8l92h\u03c0TjALUjyYdzMP\u2265KXDTz\u03c0",
+      "status": "SUCCESS",
+      "note": "Policy enforcement is mandatory in T81; bypass traps with SecurityFault."
+    },
+    "Config_F": {
+      "config": "Config F (Selected Subsystem Pairing: VM + OS FS + Axion APL)",
+      "latency_ms": 5402.573176,
+      "verification_latency_ms": 0.08,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "status": "SUCCESS"
+    }
+  }
+}

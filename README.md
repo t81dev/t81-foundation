@@ -185,7 +185,7 @@ canon_hash="$(./build/t81 canonfs import "$artifact" --canonfs-root "$canon_root
 The immediate research focus is defined by **Candidate 3 (Deterministic AI Execution Parity)**:
 
 - **Scientific Objective:** Validate whether soft-float transcendentals (RFC-0030) and CanonHash-81 trace caching achieve $100\%$ bit-identical trace parity across x86_64, ARM64, and WebAssembly targets with $<5\%$ execution time tax vs native `libm`.
-- **Target Surface:** `tests/determinism/` and `vm/determinism/`.
+- **Target Surface:** `tests/determinism/` and `vm/determinism/` bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
 - **Reassessment Report:** See [`docs/research/T81_FULL_REASSESSMENT_2026-10-25.md`](docs/research/T81_FULL_REASSESSMENT_2026-10-25.md) for full experimental details.
 
 ---
