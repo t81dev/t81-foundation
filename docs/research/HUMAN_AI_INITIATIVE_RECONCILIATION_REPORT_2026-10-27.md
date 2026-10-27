@@ -94,3 +94,91 @@ This report establishes the rationale and primary evidence mappings for every co
 1. **Non-Invasive Documentation Changes:** No production C++ code (`src/`, `include/`), frozen spec contracts (`spec/`), or historical experimental outcomes (`experiments/`) were modified.
 2. **Research Regressions Test Suite:** Executed `python3 scripts/ci/run_research_regressions.py --build-dir build`. Pass rate: 8/8 tests passed (100%).
 3. **Link & Continuity Integrity:** Verified that `docs/research/README.md` and related research indexes properly cross-reference this reconciliation report.
+
+---
+
+## 4. Append-only correction following merged PR #608 review — October 27, 2026
+
+**Reviewed baseline:** `fabc7aa90f70ead227ec257a1ae6833fa16ced40` (merged #608).
+The completed Codex review of `2231f74d63b40f9e2fef8f81a4793af4c6c5d19c`
+identified two P1 findings in the initiative. This entry qualifies the earlier
+reconciliation; Sections 1–3 remain a historical record, including their reported
+validation. No canonical hypothesis, register, source implementation, governance
+activation or historical experimental outcome is changed.
+
+1. **H07/H08 dispositions:** Section 4.2 now preserves each exact register formal
+   claim, `result`, `confidence`, `next_action` and evidence tiers. H07 is B/C
+   (inspected source and historical reports), not a new independent security
+   certification or proof of runtime independence. H08 is C/E (historical reports
+   and proposals), with comparative benefit untested and earlier prompt provenance
+   unavailable. The quoted register snapshot is dated 2026-10-25; its PR/CI
+   metadata and references to its original session are not fresh checks. Matched
+   controls, host-trust limits and independent verification remain necessary.
+2. **Actual freeze verification:** Section 5.2 cites
+   `python3 scripts/ci/check_tisc_freeze_integrity.py`, which checks registry
+   values/count, reserved range and bitwise assignments. It does not execute
+   opcodes or verify compiler/VM semantics. Executable conformance is a separate
+   test surface. The nonexistent CTest citation is removed.
+
+All initiative content outside those three entries and the added qualifications
+was compared with merged #608 and preserved. Chronology, H-INIT namespace,
+qualitative maturity descriptions, procedural-protocol classification, attribution
+corrections and administrative-intake distinction remain unchanged.
+
+### Verification performed for this correction
+
+Local environment: macOS 26.5.2 ARM64; AppleClang 21.0.0; Python 3.14.3;
+CMake 4.3.0; Ninja 1.13.2. Commands ran from the corrective worktree:
+
+```sh
+python3 -B tests/python/test_initiative_reconciliation.py -v
+python3 scripts/ci/run_research_regressions.py --build-dir /private/tmp/t81-pr608-research-build --asio-source /Users/t81dev/Code/t81-foundation/build/_deps/asio-src --jobs 4
+python3 scripts/ci/check_tisc_freeze_integrity.py
+cmake --build /private/tmp/t81-pr608-research-build --target tisc_opcode_family_semantics_test --parallel 4
+ctest --test-dir /private/tmp/t81-pr608-research-build -C Release --output-on-failure --no-tests=error -R '^tisc_opcode_family_semantics_test$'
+python3 scripts/governance/check_overclaim_guardrails.py
+python3 scripts/governance/check_active_docs_link_hygiene.py
+python3 scripts/governance/check_determinism_claims.py
+python3 scripts/governance/check_root_structure.py
+python3 scripts/governance/check_docs_structure.py
+git diff --check
+```
+
+- **PASS:** Four focused documentation tests, also rejecting the merged #608
+  baseline and mutations that restore established statuses, promote tiers,
+  remove provenance limitations or confuse registry checks with conformance.
+  This is a directly runnable check; no production or CI runner code was changed.
+- **PASS:** Fresh configure/build and all eight existing research regression
+  tests; separately, the built opcode-family semantics test passes (1/1).
+  These are current bounded implementation checks, not reruns of historical
+  benchmarks, independent scientific replication, or a promotion of H07/H08.
+- **PASS:** Actual freeze checker (209 opcode values), overclaim guardrails,
+  active-docs link hygiene, determinism claim boundaries, root structure and
+  whitespace. Local Markdown file targets resolve; external URLs/anchors were
+  not crawled. Build logs include duplicate-library linker warnings; they did
+  not prevent the selected builds or tests from passing.
+- **FAIL, pre-existing:** `check_docs_structure.py` expects `book/book-en`,
+  `book/book-cn`, `book/book-es`, `book/book-pt` and `book/book-ru`; all are absent.
+  The checker is byte-identical to the base revision and those paths are also
+  absent in its tree. No directory migration or checker repair is included.
+
+No full CTest suite, cross-platform execution or comparative research validation
+is claimed. Prior report results remain reported evidence with their original
+scope. The canonical register's disposition is unchanged by this correction.
+
+### Readiness for Research Commons Phase 1
+
+Ready to begin bounded, read-only evidence indexing, with the canonical register
+as the field-level authority and reports explicitly labeled by source, date,
+evidence tier and limitations. This correction removes the two reviewed ingestion
+hazards; it does not certify every statement in the initiative or older audits.
+External agents should consume the register's exact claims/dispositions and
+retrieve supporting and contradictory evidence, rather than inherit summary
+labels as established conclusions. Preserve unresolved mismatches as data.
+
+Before presenting a corrected discovery snapshot to external agents, merge/review
+this correction and update its source pins to include it. Research Commons draft
+PR #609 still indexes the earlier #607 snapshot; its historical discrepancy
+entries must be reconciled with #608 and this correction without erasing their
+history. Discovery readiness grants no experiment execution, security
+certification, governance activation or finding of AI-assisted research benefit.

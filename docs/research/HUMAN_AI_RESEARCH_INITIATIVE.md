@@ -244,8 +244,26 @@ All collaborative steps are recorded in machine-readable JSON format. Specific A
 | **H04** | Track R | An explicitly defined adaptive ternary representation policy can beat fixed ternary and an equally capable adaptive binary policy on a specified workload. | Refined by **H04-R01** trace discriminator. Yields **conditional model support with explicit counterexamples** (e.g., $M=256$, $C_3/C_2=1.5$ yields higher cost for ternary), not physical hardware proof. |
 | **H05** | Track R | A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation. | Exploratory. In-VM pre-dispatch policy evaluation (`eval_axion_call`) prevents unauthorized side effects ($0.0\%$ breach rate) in T81VM, but host capability boundaries in Wasm provide equivalent protection. |
 | **H06** | Track R | Ternary weights or activations can improve accuracy-constrained inference versus equally optimized binary low-bit alternatives. | On-disk 2-bit weight format (`.t81w`) validated for storage; CPU speedup disproven on binary SIMD. |
-| **H07** | Track F | Representation-independent governed execution can improve a defined auditability property. | **Established for DCP determinism, CanonFS byte identity, and detached evidence auditability (RFC-00D4)**. Proves accountable computation is a runtime-agnostic protocol, not a custom VM requirement. |
-| **H08** | Track M | AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process. | **Established for prompt-to-code provenance, session continuity, and CanonFS artifact identity**. |
+| **H07** | Track F | Representation-independent governed execution can improve a defined auditability property. | **Register evidence tiers: B, C.** Separate engineering track. PRs #565/#566 remain open/draft: both CodeQL pass, required quality gate fails. Existing source/test reports are not a new independent security certification here. **Confidence:** Current PR metadata checked; prior security tests not rerun in this session. **Next action:** Maintain the bounded CI/security investigation separately; Protocol 001 remains NOT READY. |
+| **H08** | Track M | AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process. | **Register evidence tiers: C, E.** This session records source claims, independent extraction probes and mathematical derivation separately; it is not a controlled study of AI productivity. **Confidence:** Researcher intent authoritative; comparative benefit untested. **Next action:** Append session handoffs and preserve failed claims rather than rewriting the narrative. |
+
+The H07/H08 dispositions above quote the register's **2026-10-25** snapshot;
+its PR/CI metadata is historical, not a current readiness check. Tier **B** means
+source inspected, not executed integration; **C** means historical/user report or
+AI synthesis not independently verified; **E** means proposal/speculation.
+Additional source/test reports retain their own tested scope and do not promote
+these hypotheses to established findings.
+
+- **H07 limits:** The register requires a conventional runtime with an explicit
+  authorization/evidence boundary under equal threat model and host trust.
+  Authorization, evidence integrity, factual validity and consent are different;
+  simulated dispatch supplies no inference-security or malicious-host claim.
+  Existing reports do not prove runtime independence.
+- **H08 limits:** Earlier prompt provenance is not available. Commit authorship
+  does not prove prompt provenance; repeated model summaries are not independent
+  verification. The baseline is human-only or alternative-assisted work under
+  matched tasks and independent verification. Artifact identity and session
+  continuity do not establish improved research trustworthiness or discovery.
 
 #### Proposed Initiative Hypotheses (H-INIT Namespace)
 *Newly proposed research inquiries under the Human–AI Research Initiative (distinct from canonical H01–H08).*
@@ -282,7 +300,7 @@ T81 combines several established computer science paradigms with novel architect
 
 *In accordance with T81 research governance, subjective numeric percentage scores are replaced by explicit, reproducible implementation and verification states anchored to CTest targets and codebase artifacts.*
 
-- **TISC ISA / Core Encoding:** `FROZEN SPEC & TOOLCHAIN VERIFIED`. TISC ISA frozen at v1.9.0 across 209 opcodes (`include/t81/isa/opcodes.hpp`); validated by CTest opcode conformance suite (`t81_tisc_freeze_integrity_test`).
+- **TISC ISA / Core Encoding:** `FROZEN SPEC; REGISTRY INTEGRITY CHECK`. Run `python3 scripts/ci/check_tisc_freeze_integrity.py` to check the registry's 209 unique opcode values, reserved-range boundary and bitwise assignments. This checks registry integrity, not executable opcode conformance or toolchain behavior. Executable semantics require separately built and run tests, such as `tisc_opcode_family_semantics_test`; availability of a test is not a passing result.
 - **Axion Kernel / Policy Engine:** `IMPLEMENTED & UNIT TESTED`. Functional pre-side-effect policy interception (`eval_axion_call`); verified by `t81_vm_predispatch_policy_deny_logging_test` and `canonfs_policy_boundary_test`.
 - **CanonFS / Content Store:** `IMPLEMENTED & INTEGRATION TESTED`. SHA-3/256 content-addressed storage and foreign filesystem interchange (RFC-00D1); verified by `canonfs_identity_contract_test` and CTest #84–85.
 - **T81VM Execution Engine:** `IMPLEMENTED WITH COLD-START BOTTLENECK`. Cross-platform deterministic execution profile verified (`vm_determinism_property_test`); CLI cold-start latency ($\sim 5.3\text{ s}$) identified as primary performance tax.
