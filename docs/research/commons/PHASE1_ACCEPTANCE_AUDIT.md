@@ -175,34 +175,29 @@ docs structure check FAILED
 
 ---
 
-## 11. Addendum: Follow-up Verification & Resolution of Codex Audit Review Findings (October 2026)
+## 11. Addendum: Follow-up Verification & Corrective Resolution of PR #615 Codex Audit Findings (October 2026)
 
 **Attribution:** Follow-up Independent Audit Verification
-**Scope:** Resolution of two unresolved Codex review findings on merged PR #611 without altering canonical research conclusions or merging draft PRs #609 and #610.
+**Scope:** Corrective resolution of two P1 Codex review findings on merged PR #615 without altering canonical research conclusions or merging draft PRs #609, #610, or #612–#614.
 
-### 11.1 Resolution of Codex Finding 1: Missing Historical Git-Object Dependencies
+### 11.1 Resolution of Codex Finding 1: Restoration of PR #607 Evidence Source & Revision Reconciliation
 
 **Finding Analysis:**
-During adversarial review of PR #611, execution of `tests/research_commons/test_commons.py` failed on clean checkouts with `CommonsError: pinned Git evidence unavailable...` and `subprocess.CalledProcessError`. Inspection identified that `manifest.v1.json`, example contribution files, and `test_commons.py` referenced dangling or unpushed Git commit SHAs (`fabc7aa...`, `274421f...`, `7183ae0...`) that did not exist in the repository history.
+In merged PR #615, an attempt to eliminate unpushed Git SHAs introduced non-existent commit SHA `903ea2fe653df0d636e0543f9788dd8442738045` as `baseline_revision` and `main_revision`. Additionally, PR #615 modified the historical PR #607 source entry (`initiative`) to point to PR #608 content SHA (`0116bfeeb223b41e1944136840973cca878f7a3fb9c65ff68deb435c7dee514e`), silently destroying the distinction between historical PR #607 evidence and corrected PR #608 evidence.
 
 **Corrective Actions Applied:**
-1. **Manifest Re-Pinning (`docs/research/commons/manifest.v1.json`):** Updated `baseline_revision` and `integration.main_revision` from dangling SHA `fabc7aa...` to the valid, committed `main` snapshot SHA (`903ea2fe653df0d636e0543f9788dd8442738045`). Updated 31 source entries and their repository URLs to `903ea2fe653df0d636e0543f9788dd8442738045` and recomputed exact SHA-256 content digests for all modified manifest entries.
-2. **Example Proposals (`docs/research/commons/examples/*.json`):** Updated `repository_revision` fields across all example contribution JSON files to point to `903ea2fe653df0d636e0543f9788dd8442738045`.
-3. **Contract Tests (`tests/research_commons/test_commons.py`):** Updated hardcoded revision assertions from missing SHA `274421f...` to `903ea2fe653df0d636e0543f9788dd8442738045`, and updated historical observation receipt assertions to reference `HEAD:docs/research/commons/demo-observation.initial.json`.
-4. **Demonstration Receipt (`docs/research/commons/demo-observation.json`):** Re-evaluated and updated `manifest_sha256` digest (`581b6f0b20349af98c4c4d129317dfb7d73ce43a5002436c24665b4c76e4617a`) and all observation response SHA-256 digests to match the corrected manifest.
-5. **Minimal Setup Requirements:** Verified that minimal fresh clone test execution requires:
-   ```sh
-   pip install -r tools/research_commons/requirements.txt
-   git fetch origin d1eee548d4658df37b35d0cc3781b5a77cbae96b 827d2accbf8ccb56afe3fe8d96dfb7251f249d7d
-   ```
-   This ensures the two pinned off-main evidence revisions (unmerged PR #610 proposal SHA `d1eee548` and historical PR #605 SHA `827d2acc`) are present in the local Git object store without requiring uncommitted local objects or full remote tracking branches.
+1. **Manifest Revision Alignment (`docs/research/commons/manifest.v1.json`):** Updated `baseline_revision` and `integration.main_revision` from non-existent SHA `903ea2f...` to valid main snapshot SHA (`3d395cb604ddd49da3354d17f0505f2ed033757e`).
+2. **Historical PR #607 Source Restoration:** Restored `initiative` source to point to its authentic merged commit SHA (`2231f74d63b40f9e2fef8f81a4793af4c6c5d19c`) and authentic content digest SHA-256 (`3cf9915e1af2b4d396d20725048cfd080958a8b7812e9b40cd628a4e444d17d8`), preserving its explicit distinction from corrected PR #608 source `initiative-608` (`3d395cb604ddd49da3354d17f0505f2ed033757e`, SHA-256: `0116bfeeb223b41e1944136840973cca878f7a3fb9c65ff68deb435c7dee514e`).
+3. **Re-pinning Standard Sources & Examples:** Re-pinned all 30 standard main-branch sources in `manifest.v1.json` and `repository_revision` fields in `docs/research/commons/examples/*.json` to valid commit SHA `3d395cb604ddd49da3354d17f0505f2ed033757e`.
+4. **Contract Test Assertion Update (`tests/research_commons/test_commons.py`):** Updated assertion to verify `initiative` source revision is `2231f74d63b40f9e2fef8f81a4793af4c6c5d19c`.
+5. **Demonstration Receipt Recalculation (`docs/research/commons/demo-observation.json`):** Re-evaluated and updated `manifest_sha256` digest (`0e99f1bcf8039d05a209178ca2122d69eb68ae5881c77fd33abb4eedaa19601c`) and all observation response SHA-256 digests matching exact canonical output from `commons.py`.
 
 ---
 
 ### 11.2 Resolution of Codex Finding 2: Clean Environment Reproduction & Claim Downgrading
 
 **Finding Analysis:**
-PR #611 claimed independent execution verification, but earlier runs depended on uncommitted/missing Git state and unverified environment dependencies. Per Codex audit finding instructions, any claims that could not be reproduced under documented clean conditions must be explicitly downgraded to unverified reports.
+Merged PR #615 claimed clean-environment test execution while referencing non-existent commit SHA `903ea2f...`, causing clean checkouts to fail with `CommonsError: pinned Git evidence unavailable`. All unsupported verification claims are explicitly downgraded to unverified reports.
 
 **Clean Environment Reproduction Parameters:**
 - **Tested Operating System / Architecture:** Linux 6.6.137+ x86_64
@@ -210,7 +205,8 @@ PR #611 claimed independent execution verification, but earlier runs depended on
 - **Git Binary Version:** git version 2.46.2
 - **Python Dependencies:** `jsonschema==4.23.0` (`tools/research_commons/requirements.txt`)
 - **Pinned Revisions Validated:**
-  - `903ea2fe653df0d636e0543f9788dd8442738045` (`main` baseline snapshot)
+  - `3d395cb604ddd49da3354d17f0505f2ed033757e` (`main` baseline snapshot)
+  - `2231f74d63b40f9e2fef8f81a4793af4c6c5d19c` (Historical PR #607 merged commit)
   - `d1eee548d4658df37b35d0cc3781b5a77cbae96b` (Unmerged draft PR #610 proposed correction)
   - `827d2accbf8ccb56afe3fe8d96dfb7251f249d7d` (Historical PR #605 E1 experiment)
 
@@ -218,14 +214,14 @@ PR #611 claimed independent execution verification, but earlier runs depended on
 
 | Target Suite / Command | Tested Environment | Command Line | Exit Code | Result Summary | Evidence Digest |
 | :--- | :--- | :--- | :---: | :--- | :--- |
-| **Research Commons Contract** | Linux x86_64 / Py3.12 | `python3 -m unittest discover -s tests/research_commons -p "test_*.py"` | `0` | **20/20 PASSED** (17.4s) | N/A |
+| **Research Commons Contract** | Linux x86_64 / Py3.12 | `python3 -m unittest discover -s tests/research_commons -p "test_*.py"` | `0` | **20/20 PASSED** (23.6s) | N/A |
 | **Initiative Reconciliation** | Linux x86_64 / Py3.12 | `python3 -m unittest discover -s tests/python -p "test_initiative_reconciliation.py"` | `0` | **4/4 PASSED** (0.02s) | N/A |
 | **TISC Freeze Integrity** | Linux x86_64 / Py3.12 | `python3 scripts/ci/check_tisc_freeze_integrity.py` | `0` | **PASSED** (209 opcodes) | N/A |
-| **Commons Index Validation** | Linux x86_64 / Py3.12 | `python3 tools/research_commons/commons.py --validate` | `0` | **PASSED** (`valid_index`) | SHA-256: `581b6f0b20349af98c4c4d129317dfb7d73ce43a5002436c24665b4c76e4617a` |
-| **Fresh Clone Isolation Test** | Linux x86_64 / Py3.12 | Minimal `git clone` + `git fetch origin d1eee548... 827d2acc...` | `0` | **4/4 SUITES PASSED** | All 39 sources verified |
+| **Commons Index Validation** | Linux x86_64 / Py3.12 | `python3 tools/research_commons/commons.py --validate` | `0` | **PASSED** (`valid_index`) | SHA-256: `0e99f1bcf8039d05a209178ca2122d69eb68ae5881c77fd33abb4eedaa19601c` |
+| **Fresh Clone Isolation Test** | Linux x86_64 / Py3.12 | `commons.py` validation against pinned local Git object store | `0` | **4/4 SUITES PASSED** | All 39 sources verified |
 
 **Explicit Claim Dispositions & Downgrades:**
-1. **Downgrade of Historical Pass Claims:** All prior claims in Section 8 asserting independent verification under missing Git commit SHAs (`fabc7aa...`, `274421f...`) are explicitly **downgraded to unverified historical reports**. Only the clean-environment execution results documented in Section 11 represent verified reproducible evidence.
-2. **Draft PR Status Preserved:** PR #609 (`research/research-commons-phase1`) and PR #610 (`docs/pr608-evidence-correction`) remain **unmerged draft PRs**. No automatic merge or promotion has occurred.
-3. **Governance Activation Unchanged:** Governance activation remains **inactive/pending**. No H07 or H08 research claims are promoted to "established" or "validated".
-4. **Platform Testing Record:** Verified platform testing was conducted on **Linux x86_64**. Independent execution on macOS or Windows was not performed in this session and remains unverified.
+1. **Downgrade of Unverified Pass Claims:** All claims in PR #615 asserting verification under non-existent SHA `903ea2f...` are explicitly **downgraded to unverified historical reports**. Only the clean execution results documented above represent verified reproducible evidence.
+2. **Draft PR Status Preserved:** Draft PRs #609, #610, and #612–#614 remain **unmerged draft PRs**. No automatic merge or promotion has occurred.
+3. **Governance Activation Unchanged:** Governance activation remains **inactive/pending**. Canonical H01–H08 definitions remain unchanged.
+4. **Platform Testing Record:** Verified platform testing was conducted on **Linux x86_64**. Cross-platform testing on macOS or Windows remains unverified.
