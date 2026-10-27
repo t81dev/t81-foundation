@@ -198,11 +198,33 @@ class DiscoveryContract(unittest.TestCase):
         with self.assertRaises(commons.ValidationError):
             self.index.validate_contribution(value)
 
+    def assert_historical_receipt(self, checkout_path, committed, original):
+        # Git objects preserve exact evidence bytes; checkout text may use CRLF.
+        self.assertEqual(committed, original)
+        self.assertEqual(checkout_path.read_text(encoding='utf-8'), original.decode('utf-8'))
+
+    def test_historical_receipt_crlf_checkout_retains_byte_identity(self):
+        original = (commons.DATA / 'demo-observation.initial.json').read_text(
+            encoding='utf-8').encode('utf-8')
+        with tempfile.TemporaryDirectory() as temporary:
+            checkout = Path(temporary) / 'receipt.json'
+            checkout.write_bytes(original.replace(b'\n', b'\r\n'))
+            self.assertNotEqual(checkout.read_bytes(), original)
+            self.assert_historical_receipt(checkout, original, original)
+            with self.assertRaises(AssertionError):
+                self.assert_historical_receipt(checkout, original + b' ', original)
+            checkout.write_bytes(original + b' ')
+            with self.assertRaises(AssertionError):
+                self.assert_historical_receipt(checkout, original, original)
+
     def test_recorded_demonstration_matches_pinned_responses(self):
         receipt = json.loads((commons.DATA / 'demo-observation.json').read_text())
         initial = subprocess.check_output(['git', '-C', str(ROOT), 'show',
             '7183ae0de2a6d069fa1c422af335294909736eff:docs/research/commons/demo-observation.json'])
-        self.assertEqual((commons.DATA / 'demo-observation.initial.json').read_bytes(), initial)
+        preserved = subprocess.check_output(['git', '-C', str(ROOT), 'show',
+            'HEAD:docs/research/commons/demo-observation.initial.json'])
+        self.assert_historical_receipt(commons.DATA / 'demo-observation.initial.json',
+                                       preserved, initial)
         self.assertEqual(receipt['manifest_sha256'], self.index.digest)
         self.assertEqual(len(receipt['observations']), 6)
         for observation in receipt['observations']:

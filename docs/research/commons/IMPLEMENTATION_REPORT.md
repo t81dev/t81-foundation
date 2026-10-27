@@ -228,3 +228,123 @@ assertions, as the fresh-process test demonstrates. Full integration of the
 **corrected initiative on main** remains blocked by unmerged PR610. Neither the
 proposed correction nor successful implementation tests establish H08 comparative
 methodology benefit or authorize experiment execution or governance activation.
+
+## Release-preparation checkpoint — 2026-10-27
+
+PR610 is still open/draft at `d1eee548d4658df37b35d0cc3781b5a77cbae96b`;
+`merged: false`. PR609's reviewed starting head is
+`998de6402e0f2f48cd318ee772cd600178206a46`. No source pin, canonical record,
+manifest identity, active demonstration or proposed-correction status changes
+in this preparation. Runtime/interface code is unchanged.
+
+### Directly related Windows failure and minimal correction
+
+The latest [Commons run 40560202300](https://github.com/t81dev/t81-foundation/actions/runs/40560202300)
+is for `998de640`. Its [Windows Python 3.9 job](https://github.com/t81dev/t81-foundation/actions/runs/40560202300/job/122386838936)
+failed only `test_recorded_demonstration_matches_pinned_responses`: the checked-out
+historical JSON receipt used CRLF, whereas `git show` returned the original LF
+blob. Source validation succeeded (39 sources, unchanged manifest digest); the
+other 18 tests passed. Runner: Windows Server 2025, Git 2.56.0.windows.2,
+Python 3.9.13. This is a test portability regression introduced by the receipt
+preservation assertion, not a demonstrated evidence-identity or runtime failure.
+
+The correction checks the preserved receipt's **committed Git bytes** against the
+original committed bytes, and separately compares the checkout's decoded text
+with universal newline handling. Exact artifact identity is retained. A scratch
+CRLF fixture now passes, while changed committed bytes and changed checkout
+content are both rejected. No JSON receipt or hash was normalized or rewritten;
+no runtime semantics or platform-wide Git configuration was changed.
+
+At inspection, Windows Python 3.13 was in progress; all six Linux x86-64,
+Linux ARM64 and macOS jobs were queued. No result is inferred for those jobs.
+Other current-head workflows (Foundation CI, determinism, CodeQL and format)
+were queued, with optional experimental jobs skipped. These observations
+supersede neither earlier-head successes nor the need to validate the next head.
+A corrected-head Windows pass has **not** yet been established locally.
+
+Commands rerun from the Commons worktree, using the previously recorded local
+environment (macOS ARM64, Python 3.14.3, Git 2.53.0):
+
+```sh
+/private/tmp/t81-commons-venv/bin/python -B tools/research_commons/commons.py --validate
+/private/tmp/t81-commons-venv/bin/python -B -m unittest discover -s tests/research_commons -v
+python3 scripts/ci/check_tisc_freeze_integrity.py
+python3 scripts/governance/check_root_structure.py
+python3 scripts/governance/check_overclaim_guardrails.py
+python3 scripts/governance/check_active_docs_link_hygiene.py
+python3 scripts/governance/check_determinism_claims.py
+python3 scripts/governance/check_docs_structure.py
+git diff --check
+```
+
+Results: **20/20** Commons tests pass after the correction, including the CRLF
+fixture, unchanged deterministic response hashes, canonical H01–H08 fidelity,
+negative-result discovery, pinned identities, fresh-process H08 onboarding and
+read-only/no-network checks. All 39 sources validate with manifest digest
+`a3ee2d288ac7b00176beae32f854c373194b11556d83293396bbcd7c02d688bf`.
+Freeze registry, root structure, overclaim, link hygiene, determinism-boundary
+and whitespace checks pass. Docs structure still fails on the five known absent
+`book/book-*` paths; this pre-existing failure is unchanged and not repaired here.
+No Windows execution is claimed from the local CRLF fixture. Passing these
+implementation checks is not independent scientific replication or evidence of
+H08 methodology benefit.
+
+### Historical baselines remain traceable
+
+| Development record | Immutable commit | Sources | Canonical manifest SHA-256 |
+| --- | --- | ---: | --- |
+| Initial discovery baseline | `7183ae0de2a6d069fa1c422af335294909736eff` | 35 | `81ea5ba5e39d47ffe69bb92e6137c3b0170c176eb8874ac8153a9d5ddd4b7b69` |
+| PR608 / proposed PR610 expansion | `998de6402e0f2f48cd318ee772cd600178206a46` | 39 | `a3ee2d288ac7b00176beae32f854c373194b11556d83293396bbcd7c02d688bf` |
+
+Both manifest versions were read directly from their Git objects and their source
+counts/digests checked during this preparation. `demo-observation.initial.json`
+retains the initial receipt, and the 39-source receipt remains unchanged at
+`998de640`. Future snapshots must preserve these commits and explicitly identify
+which snapshot produced each receipt. Main evidence is still pinned to PR608
+`fabc7aa90f70ead227ec257a1ae6833fa16ced40`, not the unmerged PR610 head.
+
+### Integration and human acceptance plan after PR610 actually merges
+
+1. A human reviews and merges PR610. Then inspect its merged flag, actual merge
+   commit and ancestry on main; do not substitute GitHub's potential/test merge
+   SHA. Fetch that evidence explicitly as operator setup, outside the interface.
+2. Refresh this same PR609 branch against the actual main revision, preserving
+   both historical snapshots above and resolving only directly related conflicts.
+   Recheck the unchanged canonical register/charter hashes and compare corrected
+   H07/H08 statements, evidence tiers, confidence and limitations with the register.
+3. Add separately identified merged-initiative/reconciliation source records at
+   the actual merge commit. Retain the historical PR607, PR608 and PR610-proposal
+   records and their original identities. Mark the remaining PR608 discrepancy
+   superseded only to the extent the merged correction resolves it; keep H08's
+   untested comparative benefit and unrelated open evidence questions explicit.
+4. Update the integration metadata, schema and validator together: they currently
+   deliberately require `awaiting_pr610_merge` and proposed-source roles. A reviewed
+   integrated state must describe verified merged evidence without promoting the
+   canonical hypotheses or relabeling the old proposal snapshot as accepted fact.
+   Do not weaken the missing-reference, exact-identity or read-only checks.
+5. Preserve the 39-source receipt before refreshing active pins, schema-compatible
+   outputs, proposal revision and demonstration hashes. Test history continuity,
+   supersession limits, canonical fidelity, H08 fresh-client discovery and an
+   unapproved proposal, deterministic output and absence of network/write effects.
+6. Run local Commons/governance checks and wait for the **new exact head's** Linux
+   x86-64, Linux ARM64, macOS and Windows jobs on Python 3.9/3.13. Review required
+   repository checks separately. Record failures/blocked environments explicitly;
+   previous-head passes and queued/skipped jobs are not substitutes. Obtain a
+   maintainer disposition for the pre-existing docs-structure failure.
+7. An independent acceptance reviewer inspects evidence-source precedence,
+   historical provenance, test execution integrity and remaining uncertainty.
+   A human decides acceptance and whether to mark PR609 ready/merge. Neither
+   implementation authorship, passing tests nor the integration-status field
+   supplies that approval. Keep it draft until those conditions are met.
+
+Release readiness remains conditional on PR610's actual merge, the reviewed
+snapshot refresh, corrected-head required validation and human acceptance. This
+preparation adds no MCP transport, website, execution capability or write path;
+it does not modify PR610 or the canonical register, or authorize an automatic merge.
+
+Follow-up CI inspection before publishing this correction: the Windows Python
+3.13 job (`122386839630`) also failed the same CRLF-versus-LF receipt assertion,
+with the other 18 tests passing. Linux x86-64 Python 3.13 was in progress; the
+remaining five matrix jobs were queued. Both Windows failures therefore have
+one directly evidenced cause addressed by this test-only fix; remote validation
+of the fixed head remains outstanding.
