@@ -1,0 +1,6 @@
+{
+  "initial_exact_source_equality": false,
+  "platform": "windows",
+  "explanation": "All fourteen recorded source hashes differ from Linux/macOS and exactly match the pinned Git blobs with LF converted to CRLF.",
+  "corrected_check": "Compare raw hashes against the explicit platform checkout encoding; no claim of cross-platform source byte identity."
+}
