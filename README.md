@@ -52,7 +52,7 @@ The repository contains C++23 components, CLI tools, tests, and experimental imp
 | Component | Role | Representative evidence | Important limit |
 | --- | --- | --- | --- |
 | **TISC ISA v1.9.0** | Frozen instruction semantics and opcode registry | [`spec/tisc/opcode-registry.md`](spec/tisc/opcode-registry.md), `include/t81/isa/opcodes.hpp` | A frozen software ISA does not imply native hardware or performance advantage. |
-| **T81VM** | Interpreter for TISC programs and deterministic execution profiles | `src/vm/vm.cpp`, VM determinism tests | Guarantees are scoped to tested operations, platforms, and determinism contracts. |
+| **T81VM** | Interpreter for TISC programs and deterministic execution profiles bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md) | `src/vm/vm.cpp`, VM determinism tests | Guarantees are scoped to tested operations, platforms, and determinism contracts. |
 | **T81Lang** | Parsing, intermediate representation, and compilation tooling | `src/lang/`, `t81 code build` | Research language tooling, not an established general-purpose ecosystem. |
 | **Axion** | Policy evaluation and execution authorization | `src/axion/`, controlled authorization tests | Tested fail-closed behavior is not universal bypass resistance or comparative superiority. |
 | **CanonFS** | Content-addressed artifacts, integrity checking, and interchange | `src/core/fs/`, [RFC-00D1](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md) | Content identity does not by itself prove authenticity, correctness, or trust in the producer. |
@@ -238,7 +238,7 @@ The evolution of the project is part of its research record. Earlier ideas may b
 Once those corrections are reviewed, the next research choice should be based on evidence rather than an assumed architectural destination. Candidate directions include:
 
 - **Integrated-system equivalence and ablation:** Verify one real path through model execution, policy, artifact identity, and replay, then compare equivalent guarantees and costs.
-- **Cross-platform determinism:** Test precisely scoped numerical and execution traces across supported targets, with measured performance overhead.
+- **Cross-platform determinism:** Test precisely scoped numerical and execution traces across supported targets bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md), with measured performance overhead.
 - **Representation and hardware hypotheses:** Pursue only bounded experiments with appropriate binary controls, explicit cost models, and falsifiable stopping conditions.
 
 Avoid adding production features merely to make an experiment succeed. An **INCONCLUSIVE** result with a documented missing integration seam is preferable to a misleading positive or negative claim.

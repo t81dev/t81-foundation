@@ -493,6 +493,8 @@ jobs:
             /tooling/**
             /lang/**
             /examples/**
+            /development_tests/**
+            /models/**
             /src/**
             /tools/**
             /tests/**
