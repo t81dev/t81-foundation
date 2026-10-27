@@ -6962,7 +6962,7 @@ int run_vm_command(const Args& args) {
     return 1;
   }
 
-  std::optional<fs::path> policy_path;
+  std::optional<fs::path> policy_path = args.policy;
   std::optional<fs::path> trace_path = args.output;
   std::optional<std::string> display_program;
   bool as_json = false;
