@@ -233,11 +233,11 @@
     {
       "id": "initiative",
       "path": "docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
-      "revision": "2231f74d63b40f9e2fef8f81a4793af4c6c5d19c",
-      "sha256": "3cf9915e1af2b4d396d20725048cfd080958a8b7812e9b40cd628a4e444d17d8",
-      "url": "https://github.com/t81dev/t81-foundation/blob/2231f74d63b40f9e2fef8f81a4793af4c6c5d19c/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
+      "revision": "274421fd8e85c5b9bb4f165fce190715530f4e85",
+      "sha256": "bc412bb46f8393a90f7f776826b389a57a9e051f3c5595c9f5c13de20512bb1d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/274421fd8e85c5b9bb4f165fce190715530f4e85/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md",
       "role": "disputed",
-      "uncertainty": "Historical PR607: canonical-ID redefinitions and comparative-assurance wording superseded by PR608; PR608 still overstates H07/H08. Never use this historical source as the canonical register."
+      "uncertainty": "Original PR607 evidence, pinned to the historical source bytes; disputed canonical-ID redefinitions and comparative-assurance wording. PR608 is separately indexed. Do not promote this source as canonical authority."
     },
     {
       "id": "rfc-index",
