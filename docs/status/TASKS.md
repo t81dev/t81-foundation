@@ -1,5 +1,23 @@
 # Active Tasks
 
+## Evidence review — 2026-10-27
+
+Purpose: immediate work with acceptance signals. The April “Now/Next/Recently Closed” tables below are Historical; their priorities are superseded by this small current queue, while recorded completed milestones remain intact.
+
+| Priority | Action                                                      | Completion evidence                                                                                                                                       |
+| -------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1        | Reconcile all status documents and open a focused draft PR. | Complete inventory, truthful source/test scope, preserved history/governance and documented validation.                                                   |
+| 2        | Review pending CI/validator changes individually.           | #575 architecture checker, #574 logging and #577 workflow controls remain open; verify their actual merge state and target assertions before adoption.    |
+| 3        | Repair traceability failure propagation separately.         | Negative control exits nonzero; expected corpus passes. No source changes in this documentation task.                                                     |
+| 4        | Maintain CLI/runtime and RFC-00D1 seed.                     | Golden import/export examples, policy denial semantics, schema parity and platform-specific checks where behavior changes.                                |
+| 5        | Prepare one discriminating research protocol.               | Equivalent conventional model execution or H04 exact four-arm accounting; preregister metric, falsifier and stop condition before implementation breadth. |
+
+Passing this documentation review is not release GO, closure of all portability gaps, or comparative scientific validation. The [roadmap](ROADMAP.md) carries research sequencing; [hardening](HARDENING_BACKLOG.md) carries engineering defects.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-04-01
 Owner: @t81dev
 

@@ -1,5 +1,18 @@
 # AI CLI Milestone Evidence
 
+## Evidence review — 2026-10-27
+
+Last Updated: 2026-10-27
+
+Purpose: bounded native milestone evidence, not a general inference completion claim. The October 13 account below is **Historical** where it describes missing reusable extraction: [DecodeState / IntermediateDecodeState](../../include/t81/vm/decode_state.hpp) and [decoder implementation](../../vm/decoder.cpp) now exist outside the CLI. The four-step example remains a bounded example; its token count is not a universal current runtime ceiling.
+
+The readiness scripts are present but were not rerun with downloaded models. Refer to the [CLI matrix](AI_CLI_IMPLEMENTATION_MATRIX.md) for current source-backed behavior. No configured workflow compiles a Markdown document: AI CI checks freshness/contracts and conditionally builds code. The legacy final sentence about deterministic compilation of this document is **Unsupported**. Fixture/JSON parity is distinct from model quality, exhaustive greedy decoding and independent comparative assurance.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+Current decoder API includes `NarrowGreedyLlamaDenseV1` and full-vocabulary argmax; the retained “true greedy decode missing” bullet is superseded for that narrow path. This is not evidence of general model quality or arbitrary architecture support.
+
+## Retained record
+
 Status: Active
 Last Updated: 2026-10-13
 Authority: `tools/cli/ai/ai_cli_shared.cpp`, `tests/cpp/cli_contract_test.cpp`, `examples/model-load-canonfs/`

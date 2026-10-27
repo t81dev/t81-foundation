@@ -1,5 +1,13 @@
 # T81Lang Standard Library Promotion Snapshot
 
+## Evidence review — 2026-10-27
+
+Purpose: February 26 snapshot at `c5c4aa59`, retained verbatim. “Active Snapshot” and module maturity words describe that historical baseline; they are not a fresh October promotion. [Current fixture harness](../../tests/cpp/cli_stdlib_fixtures_test.cpp) includes bounded runtime aliases, so the extension profile's old “no fixtures” description needed qualification. Placeholder time/entropy or no-op async aliases are not host service implementations. Stable language specification does not grant whole-stdlib DCP verification.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Date: 2026-02-26  
 Status: Active Snapshot  
 Baseline: `c5c4aa59`

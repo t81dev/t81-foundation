@@ -1,5 +1,19 @@
 # Extension Profile
 
+## Evidence review — 2026-10-27
+
+Last Updated: 2026-10-27
+
+Purpose: classify non-DCP scope with current path and claim qualifications. Existing assignments are retained; this review grants no promotion. The [surface register](../governance/GOVERNANCE_SURFACE_REGISTER.md) controls class assignment where this older profile disagrees.
+
+Path corrections: kernel/OS sources now live in `ternaryos/`, TUI in `tools/tui/` and model tooling in `tools/model/`; the old register paths require relocation mapping without promotion. JIT implementation is [vm/jit/jit_compiler.cpp](../../vm/jit/jit_compiler.cpp), not `runtime/jit/`; interpreter extensions are in `vm/`, types in `include/t81/types/`, notebooks in `docs/notebooks/`. JIT contains executable trace compilation/fallback paths and equivalence tests: the old “stub” label is superseded, but whole-surface equivalence remains unverified. The old “never deterministic” wording means **no current guarantee** for those excluded surfaces, not proof that future constrained acceleration can never be deterministic. Soft-float versus host FPU, and repeatable recorded network replay versus real network arrival, remain separate.
+
+`std.io/sys/async/agent` have bounded runtime fixtures in [cli_stdlib_fixtures_test.cpp](../../tests/cpp/cli_stdlib_fixtures_test.cpp); the old “no fixture conformance suites” statement is stale. Fixture existence does not promote them. The old Draft language-spec label is superseded by [stable v1.9.0](../../spec/t81lang-spec.md); toolchain emission remains Partial and governed non-DCP.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-10-13
 Owner: @t81dev
 

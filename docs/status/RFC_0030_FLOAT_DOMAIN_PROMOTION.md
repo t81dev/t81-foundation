@@ -1,5 +1,15 @@
 # RFC-0030 Float-Domain Promotion Note
 
+## Evidence review — 2026-10-27
+
+Purpose: preserve the March numeric-class design decision. The decision to retain `HostFloat` and tie `strict_core_eligible()` to numeric class is unchanged. It is a decision about labels/eligibility, not proof that every HostFloat operation uses deterministic arithmetic.
+
+The earlier “non-fixed matmul is deterministic” and “avoid raw host fallback lanes” generalizations are superseded by [current matmul](../../include/t81/tensor/matmul.hpp) and the March 22 Track K/L entry in [audit history](DETERMINISM_AUDIT_LOG.md): HostFloat has an IEEE float fast path. Scope arithmetic guarantees to the selected operation/build/profile and registered soft-float boundary. Storage authority, semantic exactness and arithmetic provenance remain distinct. No numeric-class or frozen semantics change is made.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-03-14
 Owner: @t81dev
 Purpose: define the next design target for deterministic tensor math after the

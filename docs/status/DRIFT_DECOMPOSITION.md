@@ -1,5 +1,15 @@
 # Drift Decomposition
 
+## Evidence review — 2026-10-27
+
+Purpose: spec-to-implementation gaps; the March table below is Historical closure evidence, not a count of today's open defects. Its Draft/Beta spec labels are superseded where current specifications declare v1.9.0 Stable. Legacy paths map to current source without extending DCP.
+
+Current material drift: (1) [traceability test](../../tests/cpp/test_t81lang_traceability_enforcement.cpp) lacks failure propagation, so “traceability closed” is not exhaustive compiler evidence; (2) [JIT](JIT_EQUIVALENCE_GAP.md) remains outside full verified scope; (3) [CanonFS driver](../../include/t81/canonfs/canon_driver.hpp) requires externally serialized policy ownership, and its old universal fail-closed reading was refuted and boundedly repaired; (4) [HostFloat matmul](../../include/t81/tensor/matmul.hpp) has a host arithmetic fast path, limiting the earlier float-domain note's generalization; (5) architecture-target discovery/name drift remains. Use [hardening backlog](HARDENING_BACKLOG.md) for bounded next work. Historical closed milestones remain closed as recorded; this audit does not reset accepted decisions.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-03-19
 Owner: @t81dev
 

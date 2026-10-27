@@ -1,5 +1,25 @@
 # Hardening Backlog
 
+## Evidence review — 2026-10-27
+
+Last Updated: 2026-10-27
+
+Purpose: structural/determinism hardening. Existing closures and measurements below are Historical and preserved; overdue March–June targets are not renewed commitments. BG-10 occurs with two different meanings (type tests versus memory-pool performance); cite full title/date and do not infer 30–50% general benefit without its matched protocol.
+
+| Current item                                         | Acceptance evidence                                                                                        | Relation to old backlog                                                                |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Architecture checker discovery and stale target name | Checker scans delegated `src/` CMake and reconciles `_t81`; base/head comparison and negative target test. | CI-04; open #575, not merged.                                                          |
+| Traceability failure signaling                       | A deliberate compiler/opcode mismatch produces nonzero test exit, then normal scoped corpus passes.        | New validation-integrity gap; [traceability](T81LANG_TRACEABILITY_MATRIX.md).          |
+| Status coherence                                     | Every tracked file reviewed; historical/governance preservation and link/format checks reported.           | DOC-02, this PR; does not close all handoff/translation drift.                         |
+| CanonFS seed upkeep                                  | Existing golden examples and negative contracts aligned with source/schema.                                | RFC-00D1-H1 is partly implemented already; avoid duplicating examples as new progress. |
+| Authorization boundaries                             | Configured denial and current-attempt evidence preserved; bootstrap/external serialization documented.     | October #538 repair is bounded, not a universal security closure.                      |
+
+Research experiments belong in [ROADMAP](ROADMAP.md), not implementation-hardening completion counts.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Last Updated: 2026-10-13
 Owner: @t81dev
 

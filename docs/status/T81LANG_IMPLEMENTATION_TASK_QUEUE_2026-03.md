@@ -1,5 +1,13 @@
 # T81Lang Implementation Task Queue (2026-03)
 
+## Evidence review — 2026-10-27
+
+Purpose: closed March execution queue, retained verbatim including original completion dates and future target dates. It is **Historical**, not active October work; closure of evidence-index tasks does not establish exhaustive compiler correctness or deterministic toolchain promotion. Legacy individual `cli_std_*` tests were consolidated into [cli_stdlib_fixtures_test.cpp](../../tests/cpp/cli_stdlib_fixtures_test.cpp); several old status paths now live in `docs/records/status-history/`. Use [TASKS](TASKS.md), [HARDENING_BACKLOG](HARDENING_BACKLOG.md) and [traceability](T81LANG_TRACEABILITY_MATRIX.md) for current gaps.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Completed (No Active Items)
 Owner: @t81dev
 Last Updated: 2026-03-05

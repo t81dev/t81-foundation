@@ -1,5 +1,15 @@
 # T81Lang Promotion Gate History (Draft -> Stable)
 
+## Evidence review — 2026-10-27
+
+Purpose: historical Draft→Beta→Stable evidence chain. Recorded approver decisions remain unchanged, and [spec/t81lang-spec.md](../../spec/t81lang-spec.md) still declares Stable v1.9.0. The older ready-for-Beta and current-closure sections refer to different checkpoints, not an October reapproval.
+
+The [March 15 snapshot](T81LANG_PROMOTION_GATE_SNAPSHOT.md) says TG-01 Fail / Not Ready despite passing conformance slices. Preserve that negative result; stable closure does not retroactively make it pass. Toolchain-wide determinism remains Partial, governed non-DCP, and the [traceability test limitation](T81LANG_TRACEABILITY_MATRIX.md) remains open. Snapshot generation was not run because it would overwrite historical evidence.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Active
 Owner: @t81dev
 Last Updated: 2026-03-19

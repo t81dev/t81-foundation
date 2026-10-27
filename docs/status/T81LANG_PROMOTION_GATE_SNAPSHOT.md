@@ -1,5 +1,13 @@
 # T81Lang Promotion Gate Snapshot
 
+## Evidence review — 2026-10-27
+
+Purpose: generated March 15, 2026 point-in-time evidence. Original generated output below remains verbatim, including TG-01 Fail, Not Ready, translation-staleness diagnostics and successful selected suites. It is **Historical**; neither the later Stable specification nor this review converts the old failure to success. Current scope is described in [promotion history](T81LANG_PROMOTION_GATE.md) and [traceability matrix](T81LANG_TRACEABILITY_MATRIX.md). No generator was run and no historical test execution is claimed as newly reproduced.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Generated (UTC): 2026-03-15 15:32:32Z
 Generator: `scripts/governance/t81lang_promotion_gate_snapshot.py`
 

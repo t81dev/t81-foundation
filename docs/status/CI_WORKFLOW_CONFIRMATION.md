@@ -1,5 +1,17 @@
 # CI Workflow Confirmation
 
+## Evidence review — 2026-10-27
+
+Last Updated: 2026-10-27
+
+Purpose: workflow/freshness marker, not certification that downstream assertions ran. [ai-experiments-ci.yml](../../.github/workflows/ai-experiments-ci.yml) exists, uses push/PR path filters and checks freshness before code configuration. Many runtime/evidence steps are conditional on `steps.build_ai.outputs.has_target == 'true'`; skipped steps are not Tested.
+
+The October 21 incident below is Historical; the bounded production repair is merged as recorded in the [consolidation ledger](../research/consolidation/README.md). Main CI state and required aggregate dependencies are in [CI_GATE_STATUS](CI_GATE_STATUS.md). Local research regressions are separately scoped in the [audit report](STATUS_RECONCILIATION_2026-10-27.md). Updating this reviewed marker does not establish every AI lane passing or activate a promotion.
+
+Review basis: audited main `c930b8c2ee7478782bf3c6d231bdd59984595ef2`. This editorial review does not grant promotion or release approval. See the [reconciliation report](STATUS_RECONCILIATION_2026-10-27.md) for executed checks and limitations.
+
+## Retained record
+
 Status: Active
 Last Updated: 2026-10-21
 
