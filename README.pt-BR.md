@@ -1,5 +1,9 @@
+<!-- translation_status: outdated; full source translation pending -->
+
+> **Tradução histórica aguardando atualização (2026-10-27).** O [README em inglês](README.md), revisado em `391b9652` (#598), descreve o T81 como uma plataforma experimental de pesquisa. As seções abaixo preservam uma versão anterior; suas afirmações de desempenho, segurança, integração e maturidade não representam garantias atuais. Não foi demonstrada superioridade geral sobre sistemas binários. Consulte a [auditoria de alinhamento](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md).
+
 <p align="center">
-  <img src="assets/banner.png" alt="T81 — Uma Arquitetura de Computação Ternária" width="100%">
+  <img src="docs/assets/banner.png" alt="T81 — Uma Arquitetura de Computação Ternária" width="100%">
 </p>
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
@@ -9,11 +13,7 @@
 
 # T81 — Uma Arquitetura de Computação Ternária
 
-![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
-![Execution](https://img.shields.io/badge/execution-deterministic-green)
-![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 Aproveitando a eficiência teórica da computação em base-e, **T81** é uma arquitetura de computação determinística construída sobre **aritmética ternária balanceada** ({-1, 0, +1}) com um modelo de governança de cadeia completa cobrindo o conjunto de instruções, a máquina virtual, o compilador da linguagem e o ambiente de inferência de IA.

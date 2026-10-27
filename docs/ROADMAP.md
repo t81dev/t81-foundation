@@ -1,5 +1,7 @@
 # T81 Contributor Roadmap
 
+This is the **engineering maintenance roadmap** supporting the [research program](../README.md). Canonical H01–H08 and the Hanoi/CWEB lineage remain in the [continuity charter](research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md). Long-horizon hardware and integration hypotheses are falsifiable research questions, not scheduled deliverables. Historical research decisions retain their original tested scope; this roadmap does not change them.
+
 This is the short roadmap for someone trying to build T81 forward without first absorbing the entire historical planning corpus.
 
 ## Roadmap goal

@@ -1,5 +1,9 @@
+<!-- translation_status: outdated; full source translation pending -->
+
+> **Исторический перевод; требуется обновление (2026-10-27).** [Английский README](README.md), обновлённый в `391b9652` (#598), описывает T81 как экспериментальную исследовательскую платформу. Разделы ниже сохраняют прежнюю версию; утверждения о производительности, безопасности, интеграции и зрелости не являются текущими гарантиями. Общее превосходство над двоичными системами не доказано. См. [аудит документации](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md).
+
 <p align="center">
-  <img src="assets/banner.png" alt="T81 — Троичная вычислительная архитектура" width="100%">
+  <img src="docs/assets/banner.png" alt="T81 — Троичная вычислительная архитектура" width="100%">
 </p>
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
@@ -9,11 +13,7 @@
 
 # T81 — Троичная вычислительная архитектура
 
-![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
-![Execution](https://img.shields.io/badge/execution-deterministic-green)
-![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 Используя теоретическую эффективность вычислений по основанию e, **T81** представляет собой детерминированную вычислительную архитектуру, построенную на **сбалансированной троичной арифметике** ({-1, 0, +1}) с полной моделью управления цепочкой, охватывающей набор инструкций, виртуальную машину, языковой компилятор и среду вывода ИИ.

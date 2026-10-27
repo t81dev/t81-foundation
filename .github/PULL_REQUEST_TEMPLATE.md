@@ -10,6 +10,7 @@ Fixes # (issue)
 - [ ] New feature (non-breaking change which adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
+- [ ] Research experiment, reproduction, or negative/inconclusive finding
 - [ ] Refactoring (no functional change)
 
 ## How Has This Been Tested?
@@ -21,9 +22,21 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 - [ ] Manual Verification (describe below)
 
 **Test Configuration**:
-* OS:
-* Compiler:
-* CMake Version:
+
+- OS:
+- Compiler:
+- CMake Version:
+
+## Research evidence (when applicable)
+
+- Canonical hypothesis parent or explicitly separate question:
+- Source commits, inputs/models, and evidence references:
+- Equivalent conventional baseline, authorization, and verification requirements:
+- Measurement boundaries, environment, repetitions, uncertainty, and raw results:
+- Falsifier, negative/inconclusive findings, and stopping criterion:
+- Checks actually executed, untested assumptions, and limitations:
+
+Generated code, historical reports, and AI-authored summaries are not independent experimental verification. Do not silently rewrite canonical H01–H08 or discard failed results.
 
 ## Checklist:
 

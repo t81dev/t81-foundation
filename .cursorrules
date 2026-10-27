@@ -3,12 +3,13 @@ This file is an adapter; the canonical rules live in AGENTS.md and docs/explanat
 # Cursor Rules for T81 Foundation
 
 # High-level context
-- This repository implements the T81 Foundation: a spec-first, ternary-native computing stack.
+- This repository implements the T81 Foundation: an experimental computing architecture and systems research platform with specified deterministic runtime surfaces.
 - The normative source of truth is the Markdown specification under the spec/ directory.
-- Implementation is in modern C++ under include/t81/ and src/, with tests in tests/cpp/.
+- Public APIs are under include/t81/; implementations include vm/, fs/, kernel/axion/, lang/, and tools/. src/ assembles build targets; see PROJECT_STRUCTURE.md.
 
 # When starting work
-- First, read docs/explanation/ARCHITECTURE.md, AGENTS.md, and spec/index.md to understand the overall structure.
+- First, read README.md, AGENTS.md, docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md, and docs/research/RESEARCH_CHARTER.md. Then inspect the applicable architecture, specifications, source, and tests.
+- Preserve canonical H01–H08 and Hanoi/CWEB history. Record measured, modeled, tested, and unverified claims separately; never fabricate benchmarks, citations, or test results. Preserve negative findings and report untested assumptions.
 - For any file you edit, try to locate its corresponding spec section in spec/ and read it.
 
 # General rules
@@ -16,7 +17,7 @@ This file is an adapter; the canonical rules live in AGENTS.md and docs/explanat
 - Prefer small, incremental refactors over sweeping rewrites.
 - Whenever you change behavior, propose corresponding updates to tests and docs.
 - Avoid adding hidden global state, implicit I/O, or nondeterminism in core execution paths.
-- Treat legacy/hanoivm/src as reference only; new code should target the modern C++ API.
+- Treat historical Hanoi/CWEB artifacts as preserved research evidence, not a validated correctness oracle; new code should target the applicable modern API.
 
 # C++ style
 - Use modern C++ (C++20 or newer) where it clarifies intent.

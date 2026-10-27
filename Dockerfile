@@ -31,7 +31,7 @@ RUN cmake -S . -B build -G Ninja \
 FROM ubuntu:24.04
 
 LABEL org.opencontainers.image.title="T81 Foundation"
-LABEL org.opencontainers.image.description="Deterministic ternary computing — interactive REPL and demo"
+LABEL org.opencontainers.image.description="Experimental computing and systems research — CLI, REPL, and demonstrations"
 LABEL org.opencontainers.image.source="https://github.com/t81dev/t81-foundation"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
 

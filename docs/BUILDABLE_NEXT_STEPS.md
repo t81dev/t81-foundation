@@ -1,5 +1,7 @@
 # T81 Buildable Next Steps
 
+These are bounded **maintenance tasks**, supporting the [research program](../README.md) and its [continuity charter](research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md). Choose research experiments from existing evidence, equivalent controls, and falsifiers; do not infer comparative advantage from these engineering lanes.
+
 These are the best next tasks for a contributor who wants to ship something real instead of only studying the architecture.
 
 ## Priority board
@@ -275,7 +277,7 @@ Key files:
 - [interchange_ops.hpp](../include/t81/canonfs/interchange_ops.hpp)
 - [canonfs_interchange_ops.cpp](../fs/canonfs_interchange_ops.cpp)
 - [examples/storage-and-canonfs/canonfs-interchange/README.md](../examples/storage-and-canonfs/canonfs-interchange/README.md)
-- [driver.cpp](../tools/cli/driver.cpp)
+- [driver.cpp](../tools/cli/core/driver.cpp)
 - [canonfs_interchange_test.cpp](../tests/cpp/canonfs_interchange_test.cpp)
 - [cli_contract_test.cpp](../tests/cpp/cli_contract_test.cpp)
 
