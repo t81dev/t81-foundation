@@ -127,17 +127,19 @@ int main(int argc, char** argv) {
       bool first = true;
       int steps = 4;
       int fault = 0;
-      for (; steps < 4096 && !vm->state().halted; ++steps) {
+      for (; steps < 4096 && !vm->state().halted;) {
         auto pc = vm->state().contexts[0].pc;
         if (pc >= program.insns.size()) throw std::runtime_error("PC outside artifact");
         const auto insn = program.insns[pc];
         auto r = vm->step();
+        ++steps;
         if (!first) std::cout << ',';
         first = false;
         const auto& ctx = vm->state().contexts[0];
         std::cout << "{\"pc\":" << pc << ",\"op\":" << int(insn.opcode) << ",\"a\":" << insn.a
                   << ",\"value\":" << (insn.a >= 0 && insn.a < 243 ? ctx.registers[insn.a] : 0)
-                  << '}';
+                  << ",\"flags\":[" << ctx.flags.zero << ',' << ctx.flags.negative << ','
+                  << ctx.flags.positive << "]}";
         if (!r) {
           fault = int(r.error()) + 1;
           break;
@@ -154,6 +156,13 @@ int main(int argc, char** argv) {
                 << ",\"memory_tag_bytes\":" << s.memory_tags.size() * sizeof(s.memory_tags[0])
                 << ",\"trace_entries\":" << s.trace.size()
                 << ",\"policy_events\":" << s.axion_log.size()
+                << ",\"trace_storage_bytes\":" << s.trace.capacity() * sizeof(t81::vm::TraceEntry)
+                << ",\"policy_storage_bytes\":"
+                << s.axion_log.capacity() * sizeof(t81::vm::AxionEvent)
+                << ",\"state_object_bytes\":" << sizeof(s)
+                << ",\"context_object_bytes\":" << sizeof(ctx)
+                << ",\"flags_bytes\":" << sizeof(ctx.flags)
+                << ",\"instruction_object_bytes\":" << sizeof(t81::tisc::Insn)
                 << ",\"printed_effects\":" << s.printed_output.size() << "}\n";
     }
   } catch (const std::exception& e) {

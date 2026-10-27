@@ -233,7 +233,11 @@ def main():
                 target = artifacts / f"authored-{kernel}-{variant}.tisc"
                 info = json.loads(command([args.driver, "author", target, kernel, variant]))
                 matrix = cases(kernel)
-                result = [json.loads(command([args.driver, "run", target], input=" ".join(map(str, case))+"\n")) for case in matrix]
+                result = []
+                for case in matrix:
+                    with tempfile.TemporaryDirectory(prefix="t81-i09-authored-") as store:
+                        env = dict(os.environ, T81_CANONFS_ROOT=store)
+                        result.append(json.loads(command([args.driver, "run", target], input=" ".join(map(str, case))+"\n", env=env)))
                 gate(kernel, matrix, result, target.name)
                 inventory.append({"module": kernel, "kind": "authored-tisc", "variant": variant,
                                   "path": str(target.relative_to(out)), **info})
