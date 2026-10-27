@@ -15,12 +15,27 @@ import struct
 import subprocess
 import tempfile
 import unittest
+import uuid
 
 from baseline_stack import ConventionalCAS, ConventionalTaskRunner, T81W2Model, canon_sha3_256_ref
 
 ROOT = Path(__file__).resolve().parents[2]
 BUILD = Path(os.environ.get("T81_BUILD_DIR", ROOT / "build"))
 EXT = ".exe" if os.name == "nt" else ""
+
+
+def run_process(command, *args, **kwargs):
+    directory = os.environ.get('T81_I08_TRACE_DIR')
+    sidecar = None
+    if directory and Path(command[0]).name in ('t81'+EXT, 't81_investigation08_probe'+EXT):
+        folder = Path(directory); folder.mkdir(parents=True, exist_ok=True)
+        sidecar = folder/(uuid.uuid4().hex+'.json')
+        kwargs['env'] = dict(kwargs.get('env', os.environ), T81_I08_TIMING_OUT=str(sidecar))
+    result = subprocess.run(command, *args, **kwargs)
+    if sidecar is not None:
+        from phase_records import validate_record
+        validate_record(json.loads(sidecar.read_text()))
+    return result
 
 
 def policy_for(data):
@@ -52,7 +67,7 @@ class DifferentialParityTest(unittest.TestCase):
                 raise RuntimeError(f'missing required binary {binary}')
         cls.scratch = tempfile.TemporaryDirectory(prefix='t81-investigation08-')
         cls.root = Path(cls.scratch.name)
-        subprocess.run([str(builder), str(cls.root / 'demo')], check=True, capture_output=True)
+        run_process([str(builder), str(cls.root / 'demo')], check=True, capture_output=True)
         cls.model_bytes = (cls.root / 'demo/assess-fixed-demo.t81w').read_bytes()
         cls.tokenizer = json.loads((cls.root / 'demo/tokenizer.json').read_text())
         cls.valid_observations = []
@@ -77,7 +92,7 @@ class DifferentialParityTest(unittest.TestCase):
             command = [str(self.cli), 'ai', 'task', 'assess-fixed', '--model-file', str(model),
                        '--model', 'parity', '--policy', str(apl), '--canonfs-root', str(store),
                        '--mode', 'strict_deterministic', '--input', prompt]
-            proc = subprocess.run(command, capture_output=True, text=True, timeout=180)
+            proc = run_process(command, capture_output=True, text=True, timeout=180)
             conventional = ConventionalTaskRunner(str(path / 'conventional'))
             try:
                 result = conventional.run_assess_fixed(data, prompt, policy, tok.read_bytes().decode("utf-8"))
@@ -101,7 +116,7 @@ class DifferentialParityTest(unittest.TestCase):
             artifacts = {}
             for key in ('result_ref', 'provenance_ref'):
                 target = path / (key + '.json')
-                subprocess.run([str(self.cli), 'canonfs', 'get', reference[key], '--out', str(target),
+                run_process([str(self.cli), 'canonfs', 'get', reference[key], '--out', str(target),
                                 '--canonfs-root', str(store)], check=True, capture_output=True, timeout=30)
                 raw = target.read_bytes()
                 self.assertEqual(canon_sha3_256_ref(raw), reference[key])
@@ -115,7 +130,7 @@ class DifferentialParityTest(unittest.TestCase):
             self.assertEqual(artifacts['provenance_ref']['result_ref'], result['result_ref'])
             self.assertEqual(artifacts['provenance_ref']['model_hash'], result['model_hash'])
             if stages:
-                probe = subprocess.run([str(self.probe), str(model), str(tok),
+                probe = run_process([str(self.probe), str(model), str(tok),
                                         evidence['input_preview']], capture_output=True, text=True, timeout=180)
                 self.assertEqual(probe.returncode, 0, probe.stderr)
                 trace = json.loads(probe.stdout)
@@ -125,9 +140,19 @@ class DifferentialParityTest(unittest.TestCase):
                 self.assertEqual(trace['prompt_token_history'], evidence['prompt_token_history'])
             # New runner; all recovery inputs must come from CAS, no overrides permitted.
             recovered = ConventionalTaskRunner(str(path/'conventional'))
-            self.assertTrue(recovered.verify_and_replay(result['bundle_ref'])['valid'])
-            self.valid_observations.append(dict(prompt=prompt, model_hash=result['model_hash'],
-                                               result_ref=result['result_ref'], stages_compared=stages))
+            replay_valid = recovered.verify_and_replay(result['bundle_ref'])['valid']
+            self.assertTrue(replay_valid)
+            if os.environ.get('T81_I08_NONINTERFERENCE') == '1':
+                rerun = run_process(command, capture_output=True,text=True,check=True,timeout=180)
+                repeated = json.loads(rerun.stdout)
+                self.assertEqual(reference, repeated)
+            self.valid_observations.append(dict(prompt=prompt,model_hash=result['model_hash'],
+                result_ref=result['result_ref'],provenance_ref=reference['provenance_ref'],
+                stages=result['stages'] if stages else None,
+                candidate_scores=result['candidate_scores'],policy_hash=result['policy_hash'],
+                policy_result=result['policy_result'],input_hash=result['input_hash'],
+                decision_token_ids=result['decision_token_ids'],verification_valid=True,
+                replay_valid=replay_valid,bundle_ref=result['bundle_ref']))
 
     def test_original_and_normalized_inputs(self):
         for prompt in ('greet hello', 'hello world', 'greet', 'foo bar baz', '123456',
@@ -187,6 +212,17 @@ class DifferentialParityTest(unittest.TestCase):
         self.run_pair('greet hello', data=encode_model(tensors), expect_valid=False)
         self.run_pair('', expect_valid=False)
 
+    def test_phase_record_accounting_negative_controls(self):
+        from phase_records import validate_record
+        base = dict(schema='t81.research.investigation08.phases.v1',events=[
+            dict(id=0,parent=None,name='application',start_ns=0,end_ns=10,inclusive_ns=10,exclusive_ns=6),
+            dict(id=1,parent=0,name='child',start_ns=2,end_ns=6,inclusive_ns=4,exclusive_ns=4)])
+        self.assertEqual(validate_record(base),10)
+        for index,field,value in ((0,'exclusive_ns',10),(1,'parent',1),(1,'end_ns',11),
+                                  (1,'inclusive_ns',3),(1,'start_ns',7)):
+            broken=copy.deepcopy(base);broken['events'][index][field]=value
+            with self.assertRaises(ValueError):validate_record(broken)
+
     def test_trial_isolation_across_invocations(self):
         from ablation_runner import AblationHarness
         with tempfile.TemporaryDirectory() as tmp:
@@ -214,13 +250,13 @@ class DifferentialParityTest(unittest.TestCase):
             self.assertEqual(cas.get(ref), b'\xff')
             # Production CanonFS and the conventional CAS must identify the same bytes.
             source = Path(tmp)/'binary'; source.write_bytes(b'\xff')
-            stored = subprocess.run([str(self.cli), 'canonfs', 'put-file', str(source),
+            stored = run_process([str(self.cli), 'canonfs', 'put-file', str(source),
                                      '--canonfs-root', str(Path(tmp)/'reference')],
                                     capture_output=True,text=True,check=True,timeout=30)
             self.assertEqual(stored.stdout.strip(), ref)
             target = Path(tmp)/'reference/objects'/(ref.split(':',1)[1]+'.blk')
             target.write_bytes(b'\xfe')
-            rejected = subprocess.run([str(self.cli), 'canonfs', 'get', ref,
+            rejected = run_process([str(self.cli), 'canonfs', 'get', ref,
                                        '--canonfs-root', str(Path(tmp)/'reference')],
                                       capture_output=True,timeout=30)
             self.assertNotEqual(rejected.returncode, 0, 'reference accepted tampered binary object')
@@ -232,7 +268,7 @@ class DifferentialParityTest(unittest.TestCase):
             result = runner.run_assess_fixed(self.model_bytes, 'greet hello', policy_for(self.model_bytes), self.tokenizer)
             bundle = json.loads(runner.cas.get(result['bundle_ref']))
             self.assertTrue(ConventionalTaskRunner(tmp).verify_and_replay(result['bundle_ref'])['valid'])
-            replay = subprocess.run([__import__('sys').executable, str(Path(__file__).with_name('baseline_worker.py')),
+            replay = run_process([__import__('sys').executable, str(Path(__file__).with_name('baseline_worker.py')),
                                      'replay','--store',tmp,'--bundle',result['bundle_ref']],
                                     capture_output=True,text=True,check=True,timeout=30)
             self.assertTrue(json.loads(replay.stdout)['valid'])

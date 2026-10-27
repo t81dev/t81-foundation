@@ -1,3 +1,4 @@
+#include "../../vm/internal/investigation08_timing.hpp"
 #include "t81/weights.hpp"
 #include "t81/crypto/sha3.hpp"
 #include "t81/model/gguf_import_bridge.hpp"
@@ -1249,6 +1250,8 @@ void save_t81w(const NativeModel& model, const std::filesystem::path& path) {
 }
 
 ModelFile load_t81w(const std::filesystem::path& path) {
+  T81_I08_SCOPE("model.loading");
+  t81::research::i08::Scope i08_read("model.file_read");
   std::ifstream in(path, std::ios::binary);
   if (!in) throw std::runtime_error("cannot open " + path.string());
 
@@ -1257,10 +1260,12 @@ ModelFile load_t81w(const std::filesystem::path& path) {
   while (in.get(ch)) {
     bytes.push_back(static_cast<std::byte>(static_cast<unsigned char>(ch)));
   }
+  i08_read.stop();
   return load_t81w_bytes(bytes);
 }
 
 ModelFile load_t81w_bytes(std::span<const std::byte> bytes) {
+  T81_I08_SCOPE("model.parsing_validation");
   const auto* raw = reinterpret_cast<const uint8_t*>(bytes.data());
   const std::span<const uint8_t> file(raw, bytes.size());
   auto find_newline = [&](size_t start) -> size_t {

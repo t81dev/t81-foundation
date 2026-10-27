@@ -1,3 +1,4 @@
+#include "../../../vm/internal/investigation08_timing.hpp"
 #include "ai_cli_shared.hpp"
 
 #include "t81/axion/policy.hpp"
@@ -329,6 +330,7 @@ std::string canon_sha3_256_ref(std::string_view text) {
 }
 
 std::string full_sha3_512_file_hex(const fs::path& path, std::string& error) {
+  T81_I08_SCOPE("policy.model_fingerprint");
   std::ifstream in(path, std::ios::binary);
   if (!in) {
     error = "could not read " + path.string();
@@ -1122,6 +1124,7 @@ bool artifact_has_required_contract_fields(std::string_view artifact) {
 }
 
 int run_fixed_label_task(const FixedLabelTaskDescriptor& descriptor, const Options& opts) {
+  T81_I08_SCOPE("task.assess_fixed");
   if (!opts.policy_file) {
     std::cerr << "error: " << descriptor.cli_name << " requires --policy <file>\n";
     return 1;
@@ -1152,6 +1155,7 @@ int run_fixed_label_task(const FixedLabelTaskDescriptor& descriptor, const Optio
     return 1;
   }
 
+  t81::research::i08::Scope i08_normalize("tokenization.input_normalization");
   std::string normalized_input;
   if (has_inline_input) {
     normalized_input = normalize_task_input_text(opts.input_text);
@@ -1165,6 +1169,8 @@ int run_fixed_label_task(const FixedLabelTaskDescriptor& descriptor, const Optio
     }
   }
 
+  i08_normalize.stop();
+  t81::research::i08::Scope i08_admission("policy.admission");
   std::ifstream policy_in(*opts.policy_file);
   if (!policy_in) {
     std::cerr << "error: could not open policy file: " << opts.policy_file->string() << "\n";
@@ -1172,7 +1178,9 @@ int run_fixed_label_task(const FixedLabelTaskDescriptor& descriptor, const Optio
   }
   const std::string policy_text((std::istreambuf_iterator<char>(policy_in)),
                                 std::istreambuf_iterator<char>());
+  t81::research::i08::Scope i08_policy_parse("policy.apl_parsing");
   auto parsed_policy = t81::axion::parse_policy(policy_text);
+  i08_policy_parse.stop();
   if (!parsed_policy) {
     std::cerr << "error: policy parse failed: " << parsed_policy.error() << "\n";
     return 1;
@@ -1197,6 +1205,7 @@ int run_fixed_label_task(const FixedLabelTaskDescriptor& descriptor, const Optio
         std::string(descriptor.task_marker) + "\")");
   }
 
+  i08_admission.stop();
   const auto input_hash = canon_sha3_256_ref(normalized_input);
   const auto policy_hash = canon_sha3_256_ref(policy_text);
   const std::string task_prompt = normalized_input;
@@ -3398,6 +3407,7 @@ void print_usage(std::string_view prog) {
 }
 
 int run(std::string_view prog, const std::vector<std::string_view>& args) {
+  T81_I08_SCOPE("cli.ai_dispatch");
   if (args.empty()) {
     print_usage(prog);
     return 0;

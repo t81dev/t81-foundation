@@ -1,3 +1,4 @@
+#include "../vm/internal/investigation08_timing.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 
 #ifdef _WIN32
@@ -133,6 +134,7 @@ public:
   }
 
   Result<CanonRef> write_object(ObjectType, std::span<const std::byte> bytes) override {
+    T81_I08_SCOPE("artifact.persistence");
     auto hashed = t81::hash::hash_bytes(bytes);
     CanonRef ref{CanonHash{hashed}};
     if (!axion_allow(OpKind::Write, ref)) {
@@ -182,6 +184,7 @@ public:
   }
 
   Result<std::vector<std::byte>> read_object_bytes(const CanonRef& ref) override {
+    T81_I08_SCOPE("artifact.read_verification");
     if (!axion_allow(OpKind::Read, ref)) {
       return Result<std::vector<std::byte>>(t81::unexpect, Error::CapabilityError);
     }
