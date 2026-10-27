@@ -1661,6 +1661,13 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   endforeach()
   # Golden interchange fixtures live in the source tree, including out-of-tree builds.
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  if(UNIX)
+    find_program(T81_SKILL_TEST_BASH NAMES bash REQUIRED)
+    add_test(NAME t81_skill_policy_boundary_test
+      COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/tests/python/test_skill_policy_boundary.py
+        --bash ${T81_SKILL_TEST_BASH} --t81-bin $<TARGET_FILE:t81>)
+    set_tests_properties(t81_skill_policy_boundary_test PROPERTIES TIMEOUT 90)
+  endif()
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
   if(NOT WIN32)
     add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)

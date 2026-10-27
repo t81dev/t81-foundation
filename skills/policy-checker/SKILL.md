@@ -1,6 +1,6 @@
 ---
 name: t81_policy_checker
-description: Check Axion policy compliance for T81 operations and decisions
+description: Parse one local Axion policy and return native validation metadata through validate-policy.sh. Other policy-checker entry points remain unsafe and unsupported for agent exposure.
 metadata:
   openclaw:
     os: ["darwin", "linux"]
@@ -8,144 +8,48 @@ metadata:
       bins: ["t81"]
 ---
 
-# T81 Policy Checker Skill
+# T81 policy syntax validation
 
-This skill evaluates Axion policies for T81 operations, providing deterministic policy validation and compliance checking.
+Use only `validate-policy.sh` for syntax/metadata inspection of an explicitly
+selected local policy. Its fixed invocation is `t81 policy validate <path> --json`.
+It parses policy data; it does not evaluate an operation's authorization, install
+an execution policy, execute programs, or establish policy correctness.
 
-## Usage
-
-When the user needs to validate operations against T81's Axion governance policies, use this skill to perform policy evaluation.
-
-### Commands
-
-**Check policy compliance:**
-```
-check <operation> <resource> [--policy <policy_file>] [--context <context_file>]
+```sh
+/bin/bash skills/policy-checker/validate-policy.sh [--json] [--] <file.apl|file.axionb>
 ```
 
-**Validate policy syntax:**
-```
-validate-policy <policy_file> [--strict]
-```
+Supply exactly one existing readable regular file. `.apl` text and `.axionb`
+compiled policies are supported. JSON output is always enabled; `--json` is an
+optional boolean flag accepted once. Options must precede `--`; exactly one path
+must follow that separator. Use `--` for filenames beginning with `-`. Other flags,
+option values, extra positionals, and operations are rejected, including the old
+unimplemented `--strict`. Native parse/deserialization errors propagate unchanged.
+Wrapper usage/path errors exit 2; absent CLI exits 127; native validation exits 0
+for parse success and 1 for parse failure. A deny-all policy can be syntactically
+valid: parse success is not permission to execute anything.
 
-**Test policy rules:**
-```
-test-rule <policy_file> <rule_name> [--test-data <data_file>]
-```
+Paths containing spaces, quotes, dollar signs, parentheses, backticks, and shell
+metacharacters are literal argv data. Relative paths gain `./` before forwarding
+so the native shared parser cannot treat them as flags. Quote paths when calling
+from a shell; the wrapper cannot undo expansion performed by the caller's shell.
+Agent integrations must pass argv directly rather than composing shell programs.
 
-**List available policies:**
-```
-list-policies [--canonfs-root <path>]
-```
+Input paths may refer to any readable regular file with a supported suffix,
+including symlinks to regular files. There is no workspace containment, symlink
+race protection, size/time limit, or host sandbox. A future integration must apply
+its own file allowlist and resource limits. Treat the local CLI on trusted `PATH`,
+the shell, inherited environment, and host as trusted dependencies.
 
-**Simulate policy decision:**
-```
-simulate <operation> <resource> [--policy <policy_file>] [--dry-run]
-```
+The wrapper creates no directories or files and offers no output/store/network
+flags. The selected native path reads and parses the policy and writes metadata
+to stdout and diagnostics to stderr; it does not import objects or write
+provenance. Caller redirection can write output files. This is a read-only
+application path under those dependencies, not an OS-level no-write guarantee.
 
-### Examples
-
-```bash
-# Check if import operation is allowed
-check import model.t81w --policy security.apl
-
-# Validate policy file syntax
-validate-policy ./policies/secure_model.apl --strict
-
-# Test specific rule with test data
-test-rule security.apl allow_model_import --test-data test_cases.json
-
-# List all policies in CanonFS
-list-policies --canonfs-root ~/.t81_canonfs
-
-# Simulate policy decision without execution
-simulate inference neural_net.t81w --policy inference.apl --dry-run
-```
-
-### Policy Operations
-
-**Supported Operations:**
-- `import` - Import files into CanonFS
-- `export` - Export files from CanonFS  
-- `execute` - Run T81VM operations
-- `inference` - Perform AI inference
-- `bundle_create` - Create decision bundles
-- `bundle_consume` - Consume decision bundles
-
-**Policy Context:**
-Policy evaluation can include context from:
-- User identity and permissions
-- Resource metadata and hashes
-- Temporal constraints and conditions
-- Environment variables and system state
-
-### Output Format
-
-**Policy Allow:**
-```json
-{
-  "decision": "allow",
-  "operation": "import",
-  "resource": "model.t81w",
-  "policy": "security.apl",
-  "reason": "approved_model_hash",
-  "timestamp": "2026-04-04T15:30:00Z",
-  "policy_hash": "CanonHash81..."
-}
-```
-
-**Policy Deny:**
-```json
-{
-  "decision": "deny",
-  "operation": "execute", 
-  "resource": "untrusted_code.tisc",
-  "policy": "security.apl",
-  "reason": "unapproved_code_hash",
-  "timestamp": "2026-04-04T15:30:00Z",
-  "policy_hash": "CanonHash81...",
-  "suggestions": [
-    "Get code approved through security review",
-    "Use approved code from trusted repository"
-  ]
-}
-```
-
-### Policy Language Features
-
-**Axion Policy Syntax:**
-```apl
-# Allow model inference for approved hashes
-allow inference if model.hash in approved_models;
-
-# Deny execution during maintenance windows
-deny execute if time in maintenance_hours;
-
-# Conditional resource access
-allow export if user.role in ["admin", "auditor"] 
-          and resource.classification <= "secret";
-```
-
-**Policy Evaluation:**
-- Deterministic rule evaluation
-- No runtime ambiguity or heuristics
-- Complete audit trail for decisions
-- Cryptographic policy verification
-
-### Error Handling
-
-- Clear error messages for policy syntax issues
-- Detailed explanations for policy denials
-- Suggestions for policy remediation
-- Validation of policy file integrity
-
-### Security Notes
-
-- Policy files are stored immutably in CanonFS
-- Policy evaluation is deterministic and reproducible
-- All policy decisions are logged for audit
-- Policy changes require proper governance
-
-### Integration
-
-This skill wraps T81's Axion policy engine and provides standardized access to policy validation APIs.
+`check.sh`, `simulate.sh`, `test-rule.sh`, and `list-policies.sh` remain unchanged,
+unsafe, and outside this reviewed boundary. Do not dispatch to them or treat their
+historical advertised operations as implemented APIs. The other skill packages
+are also outside this correction. See the
+[boundary report](../../docs/research/SKILL_ARGUMENT_BOUNDARY_REMEDIATION.md) for
+source pins, before/after results, threat model, and unresolved findings.
