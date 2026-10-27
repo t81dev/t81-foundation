@@ -220,7 +220,7 @@ class DiscoveryContract(unittest.TestCase):
     def test_recorded_demonstration_matches_pinned_responses(self):
         receipt = json.loads((commons.DATA / 'demo-observation.json').read_text())
         initial = subprocess.check_output(['git', '-C', str(ROOT), 'show',
-            '7183ae0de2a6d069fa1c422af335294909736eff:docs/research/commons/demo-observation.json'])
+            'HEAD:docs/research/commons/demo-observation.initial.json'])
         preserved = subprocess.check_output(['git', '-C', str(ROOT), 'show',
             'HEAD:docs/research/commons/demo-observation.initial.json'])
         self.assert_historical_receipt(commons.DATA / 'demo-observation.initial.json',
@@ -242,7 +242,7 @@ class DiscoveryContract(unittest.TestCase):
         self.assertIn('initiative-608', history['D-607-IDS']['superseded_by_refs'])
         self.assertEqual(history['D-608-H07-H08']['status'], 'unresolved')
         self.assertEqual(self.index.sources['initiative']['revision'],
-                         '274421fd8e85c5b9bb4f165fce190715530f4e85')
+                         '903ea2fe653df0d636e0543f9788dd8442738045')
         for ref in ('initiative-610-proposed', 'reconciliation-610-proposed'):
             self.assertEqual(self.index.sources[ref]['role'], 'proposal')
         self.modified(lambda m: next(s for s in m['sources']
