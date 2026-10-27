@@ -1,0 +1,1815 @@
+{
+  "scope": "Pinned real CLI, self-authored benign fixtures and scratch filesystem; no external model/API or destructive host operations",
+  "repository_revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+  "binary": "/private/tmp/t81-operational-build/t81",
+  "binary_sha256": "d6a88ee8b445d09a1c93592c7b75323a590839b17d9427873a208050b5e38c0d",
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3"
+  },
+  "observations": [
+    {
+      "id": "advertised-route:ai-tasks.assess",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "ai",
+        "task",
+        "assess",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "T81 AI CLI\nUsage: t81 ai <command> [options]\n\nCommands:\n  backend capabilities\n  backend select --format <fmt> --mode <mode> [--out <file>]\n  model inspect <model-file>\n  verify determinism <model-file>\n  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n  policy test --event-type <type> --model-file <path> --out <file>\n  workflow run <name> --seed <n> --out <file>\n  workflow replay <artifact.json>\n  workflow report <artifact.json>\n  observability trace <artifact.json>\n\nCurrent validated bounded task family:\n  answer-fixed, classify-fixed, route-fixed, assess-fixed\n  These fixed tasks are the current admitted AI OS-object family.\n  `inference run`, `workflow ...`, `benchmark run`, and `policy test`\n  are separate surfaces and should not be read as admitted family members.\n\nCompatibility aliases:\n  run --model <hash>\n  verify <model-file>\n  verify --model <hash>\n  quantize --input <file> [--output <file>]\n  benchmark\n",
+      "stderr": "Unknown command: task\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:ai-tasks.route",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "ai",
+        "task",
+        "route",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "T81 AI CLI\nUsage: t81 ai <command> [options]\n\nCommands:\n  backend capabilities\n  backend select --format <fmt> --mode <mode> [--out <file>]\n  model inspect <model-file>\n  verify determinism <model-file>\n  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n  policy test --event-type <type> --model-file <path> --out <file>\n  workflow run <name> --seed <n> --out <file>\n  workflow replay <artifact.json>\n  workflow report <artifact.json>\n  observability trace <artifact.json>\n\nCurrent validated bounded task family:\n  answer-fixed, classify-fixed, route-fixed, assess-fixed\n  These fixed tasks are the current admitted AI OS-object family.\n  `inference run`, `workflow ...`, `benchmark run`, and `policy test`\n  are separate surfaces and should not be read as admitted family members.\n\nCompatibility aliases:\n  run --model <hash>\n  verify <model-file>\n  verify --model <hash>\n  quantize --input <file> [--output <file>]\n  benchmark\n",
+      "stderr": "Unknown command: task\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:ai-tasks.classify",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "ai",
+        "task",
+        "classify",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "T81 AI CLI\nUsage: t81 ai <command> [options]\n\nCommands:\n  backend capabilities\n  backend select --format <fmt> --mode <mode> [--out <file>]\n  model inspect <model-file>\n  verify determinism <model-file>\n  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n  policy test --event-type <type> --model-file <path> --out <file>\n  workflow run <name> --seed <n> --out <file>\n  workflow replay <artifact.json>\n  workflow report <artifact.json>\n  observability trace <artifact.json>\n\nCurrent validated bounded task family:\n  answer-fixed, classify-fixed, route-fixed, assess-fixed\n  These fixed tasks are the current admitted AI OS-object family.\n  `inference run`, `workflow ...`, `benchmark run`, and `policy test`\n  are separate surfaces and should not be read as admitted family members.\n\nCompatibility aliases:\n  run --model <hash>\n  verify <model-file>\n  verify --model <hash>\n  quantize --input <file> [--output <file>]\n  benchmark\n",
+      "stderr": "Unknown command: task\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:ai-tasks.chain",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "ai",
+        "task",
+        "chain",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "T81 AI CLI\nUsage: t81 ai <command> [options]\n\nCommands:\n  backend capabilities\n  backend select --format <fmt> --mode <mode> [--out <file>]\n  model inspect <model-file>\n  verify determinism <model-file>\n  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n  policy test --event-type <type> --model-file <path> --out <file>\n  workflow run <name> --seed <n> --out <file>\n  workflow replay <artifact.json>\n  workflow report <artifact.json>\n  observability trace <artifact.json>\n\nCurrent validated bounded task family:\n  answer-fixed, classify-fixed, route-fixed, assess-fixed\n  These fixed tasks are the current admitted AI OS-object family.\n  `inference run`, `workflow ...`, `benchmark run`, and `policy test`\n  are separate surfaces and should not be read as admitted family members.\n\nCompatibility aliases:\n  run --model <hash>\n  verify <model-file>\n  verify --model <hash>\n  quantize --input <file> [--output <file>]\n  benchmark\n",
+      "stderr": "Unknown command: task\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:ai-tasks.status",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "ai",
+        "task",
+        "status",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "T81 AI CLI\nUsage: t81 ai <command> [options]\n\nCommands:\n  backend capabilities\n  backend select --format <fmt> --mode <mode> [--out <file>]\n  model inspect <model-file>\n  verify determinism <model-file>\n  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n  policy test --event-type <type> --model-file <path> --out <file>\n  workflow run <name> --seed <n> --out <file>\n  workflow replay <artifact.json>\n  workflow report <artifact.json>\n  observability trace <artifact.json>\n\nCurrent validated bounded task family:\n  answer-fixed, classify-fixed, route-fixed, assess-fixed\n  These fixed tasks are the current admitted AI OS-object family.\n  `inference run`, `workflow ...`, `benchmark run`, and `policy test`\n  are separate surfaces and should not be read as admitted family members.\n\nCompatibility aliases:\n  run --model <hash>\n  verify <model-file>\n  verify --model <hash>\n  quantize --input <file> [--output <file>]\n  benchmark\n",
+      "stderr": "Unknown command: task\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:ai-tasks.history",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "ai",
+        "task",
+        "history",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "T81 AI CLI\nUsage: t81 ai <command> [options]\n\nCommands:\n  backend capabilities\n  backend select --format <fmt> --mode <mode> [--out <file>]\n  model inspect <model-file>\n  verify determinism <model-file>\n  inference run --model <id> --model-file <path> [--format <fmt>] [--mode <mode>] [--max-tokens <n>] --prompt <text> [--out <file>]\n  task answer-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task classify-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task route-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task assess-fixed --model <id> --model-file <path> --policy <policy.apl> (--input <text> | --input-file <path>) [--canonfs-root <path>] [--mode strict_deterministic] [--out <file>]\n  task read-field <artifact-file|sha3-256:ref> --field <name> [--canonfs-root <path>]\n  quantization inspect --model <id> --model-file <path> [--mode <mode>] --out <file>\n  benchmark run --model <id> --model-file <path> [--mode <mode>] --out <file>\n  policy test --event-type <type> --model-file <path> --out <file>\n  workflow run <name> --seed <n> --out <file>\n  workflow replay <artifact.json>\n  workflow report <artifact.json>\n  observability trace <artifact.json>\n\nCurrent validated bounded task family:\n  answer-fixed, classify-fixed, route-fixed, assess-fixed\n  These fixed tasks are the current admitted AI OS-object family.\n  `inference run`, `workflow ...`, `benchmark run`, and `policy test`\n  are separate surfaces and should not be read as admitted family members.\n\nCompatibility aliases:\n  run --model <hash>\n  verify <model-file>\n  verify --model <hash>\n  quantize --input <file> [--output <file>]\n  benchmark\n",
+      "stderr": "Unknown command: task\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.create-bundle",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "create",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.bundle-from-execution",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "from-execution",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.bundle-info",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "info",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.sign-bundle",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "sign",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.verify-bundle",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "verify",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.merge-bundles",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "merge",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-creator.extract-bundle",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "extract",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-validator.validate",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "validate",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-validator.verify-provenance",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "verify-provenance",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-validator.check-determinism",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "check-determinism",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:bundle-validator.validate-batch",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "bundle",
+        "validate-batch",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-export.export",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "export",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs export requires exactly one canonical hash.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs export requires exactly one canonical hash."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-export.export-batch",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "export-batch",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'export-batch'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'export-batch'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-export.verify-export",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "verify-export",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'verify-export'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'verify-export'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-export.list",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "list",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'list'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'list'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-export.search",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "search",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'search'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'search'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-export.export-with-meta",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "export-with-meta",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'export-with-meta'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'export-with-meta'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-import.import",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "import",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs import requires exactly one input path.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs import requires exactly one input path."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-import.import-batch",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "import-batch",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'import-batch'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'import-batch'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:canonfs-import.list",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "list",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown action 'list'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown action 'list'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:governance-demo.demo-governance",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "demo",
+        "governance",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:governance-demo.demo-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "demo",
+        "policy",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:governance-demo.demo-determinism",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "demo",
+        "determinism",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:governance-demo.tutorial-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "demo",
+        "tutorial-policy",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:governance-demo.interactive-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "demo",
+        "interactive-policy",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:governance-demo.compliance-demo",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "demo",
+        "compliance",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.load-hf",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "load-hf",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'load-hf'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'load-hf'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.load-gguf",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "load-gguf",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'load-gguf'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'load-gguf'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.load-safetensors",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "load-safetensors",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'load-safetensors'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'load-safetensors'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.probe-model",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "probe",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'probe'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'probe'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.validate-model",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "validate",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'validate'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'validate'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.convert-model",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "convert",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'convert'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'convert'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:model-loader.batch-load",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "batch-load",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"model: unknown subcommand 'batch-load'. Run 't81 help model'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "model: unknown subcommand 'batch-load'. Run 't81 help model'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:policy-checker.check",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "axion",
+        "check",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown subcommand 'check'. Run 't81 axion --help' for usage.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "axion: unknown subcommand 'check'. Run 't81 axion --help' for usage."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:policy-checker.validate-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "axion",
+        "validate-policy",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown subcommand 'validate-policy'. Run 't81 axion --help' for usage.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "axion: unknown subcommand 'validate-policy'. Run 't81 axion --help' for usage."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:policy-checker.test-rule",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "axion",
+        "test-rule",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown subcommand 'test-rule'. Run 't81 axion --help' for usage.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "axion: unknown subcommand 'test-rule'. Run 't81 axion --help' for usage."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:policy-checker.list-policies",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "axion",
+        "list-policies",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown subcommand 'list-policies'. Run 't81 axion --help' for usage.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "axion: unknown subcommand 'list-policies'. Run 't81 axion --help' for usage."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:policy-checker.simulate",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "axion",
+        "simulate",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion simulate requires a .tisc file argument.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "axion simulate requires a .tisc file argument."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-compiler.build",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "build",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"compile expects a .t81 or .t81w source file\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "compile expects a .t81 or .t81w source file"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-compiler.compile",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "compile",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown code action: compile. Run 't81 help code'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown code action: compile. Run 't81 help code'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-compiler.disasm",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "disasm",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"disasm expects a .tisc file\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "disasm expects a .tisc file"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-compiler.optimize",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "optimize",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown code action: optimize. Run 't81 help code'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown code action: optimize. Run 't81 help code'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-compiler.build-batch",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "build-batch",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown code action: build-batch. Run 't81 help code'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown code action: build-batch. Run 't81 help code'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-compiler.analyze",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "analyze",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown code action: analyze. Run 't81 help code'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown code action: analyze. Run 't81 help code'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.debug",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "start",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.breakpoint",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "breakpoint",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.step",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "step",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.continue",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "continue",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.inspect",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "inspect",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.trace",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "trace",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.analyze-violations",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "analyze-violations",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81-debugger.profile",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "debug",
+        "profile",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Unknown option: --json\"\n}\n",
+      "stderr": "Run '/private/tmp/t81-operational-build/t81 help' for usage.\n",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Unknown option: --json"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81vm-runner.run",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "run",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"vm run requires a .tisc input file.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "vm run requires a .tisc input file."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81vm-runner.debug",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "debug",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"vm debug requires a .tisc input file.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "vm debug requires a .tisc input file."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81vm-runner.run-batch",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "run-batch",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"vm: unknown action 'run-batch'. Run 't81 help vm'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "vm: unknown action 'run-batch'. Run 't81 help vm'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81vm-runner.trace",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "trace",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"vm trace requires a .tisc input file.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "vm trace requires a .tisc input file."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:t81vm-runner.inspect",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "inspect",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"vm: unknown action 'inspect'. Run 't81 help vm'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "vm: unknown action 'inspect'. Run 't81 help vm'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:tensor-ops.tensor-math",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "tensor",
+        "math",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"tensor: unknown subcommand 'math'. Run 't81 help tensor'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "tensor: unknown subcommand 'math'. Run 't81 help tensor'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:tensor-ops.tensor-reshape",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "tensor",
+        "reshape",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"tensor: unknown subcommand 'reshape'. Run 't81 help tensor'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "tensor: unknown subcommand 'reshape'. Run 't81 help tensor'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:tensor-ops.tensor-validate",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "tensor",
+        "validate",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"tensor: unknown subcommand 'validate'. Run 't81 help tensor'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "tensor: unknown subcommand 'validate'. Run 't81 help tensor'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:tensor-ops.tensor-convert",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "tensor",
+        "convert",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"tensor: unknown subcommand 'convert'. Run 't81 help tensor'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "tensor: unknown subcommand 'convert'. Run 't81 help tensor'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:tensor-ops.tensor-stats",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "tensor",
+        "stats",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"tensor: unknown subcommand 'stats'. Run 't81 help tensor'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "tensor: unknown subcommand 'stats'. Run 't81 help tensor'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "advertised-route:tensor-ops.tensor-batch",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "tensor",
+        "batch",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"tensor: unknown subcommand 'batch'. Run 't81 help tensor'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "tensor: unknown subcommand 'batch'. Run 't81 help tensor'."
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "direct.code-build",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "--output",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "Compilation successful \u2192 /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": [
+        "safe.tisc"
+      ]
+    },
+    {
+      "id": "direct.code-disasm",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "disasm",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc"
+      ],
+      "exit_code": 0,
+      "stdout": "; t81 disasm /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc\n; instructions=13 floats=0 fractions=0 symbols=0 tensors=0 shapes=0\n0000: LoadImm a=1 b=4 c=0 lit=0\n0001: Call a=0 b=1 c=0 lit=0\n0002: Pop a=2 b=0 c=0 lit=0\n0003: Halt a=0 b=0 c=0 lit=0\n0004: Pop a=3 b=0 c=0 lit=0\n0005: LoadImm a=4 b=47 c=0 lit=0\n0006: Print a=4 b=0 c=0 lit=0\n0007: LoadImm a=5 b=0 c=0 lit=0\n0008: Push a=5 b=0 c=0 lit=0\n0009: Push a=3 b=0 c=0 lit=0\n0010: Ret a=0 b=0 c=0 lit=0\n0011: Push a=3 b=0 c=0 lit=0\n0012: Ret a=0 b=0 c=0 lit=0\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "direct.vm-run",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/allow.apl"
+      ],
+      "exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "direct.vm-trace",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "trace",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/allow.apl",
+        "--out",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/trace.txt"
+      ],
+      "exit_code": 0,
+      "stdout": "47\nTrace written to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/trace.txt\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": [
+        "trace.txt"
+      ]
+    },
+    {
+      "id": "direct.vm-state",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "state",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.vm-state.v1\",\n  \"ok\": true,\n  \"program\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc\",\n  \"halted\": true,\n  \"pc\": 4,\n  \"sp\": 269,\n  \"memory_words\": 1549,\n  \"trace_entries\": 11,\n  \"axion_events\": 10,\n  \"printed_lines\": 1,\n  \"trap\": null\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.vm-state.v1",
+        "ok": true,
+        "program": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "halted": true,
+        "pc": 4,
+        "sp": 269,
+        "memory_words": 1549,
+        "trace_entries": 11,
+        "axion_events": 10,
+        "printed_lines": 1,
+        "trap": null
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "negative.vm-invalid-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/invalid.apl"
+      ],
+      "exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "negative.code-run-missing-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing.apl"
+      ],
+      "exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "error: Could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing.apl\n",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "negative.missing-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "vm",
+        "run",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing.apl"
+      ],
+      "exit_code": 0,
+      "stdout": "47\nProgram terminated normally (10 axion event(s))\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "wrapper-minimal.canonfs-import",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/canonfs-import/import.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "CanonFS import ok.\nSource:      /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81\nImported:    1 object(s)\nManifest:    sha3-256:2Ncvj\u03bci\u00f7Q4RJU<1lM\u03c9fP\u03c9tm\u2248XNJ\u2260XZ797asveeoL\u03c0\nProvenance:  sha3-256:1SMJuA\u03c4j1x-c\u03c0ItUphu\u2260Jxit\u221eaWedv-\u00f7\u03c3\u03bbayDUh=b\nResult:      manifest/provenance refs are reusable handles for later export or audit\nNext (progress): t81 canonfs export <manifest-ref> --out <dir> to materialize the imported tree\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": [
+        "store/objects/1SMJuA\u03c4j1x-c\u03c0ItUphu\u2260Jxit\u221eaWedv-\u00f7\u03c3\u03bbayDUh=b.blk",
+        "store/objects/2Ncvj\u03bci\u00f7Q4RJU<1lM\u03c9fP\u03c9tm\u2248XNJ\u2260XZ797asveeoL\u03c0.blk",
+        "store/objects/3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP.blk"
+      ]
+    },
+    {
+      "id": "wrapper-minimal.compiler-build",
+      "argv": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/t81-compiler/build.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81"
+      ],
+      "exit_code": 0,
+      "stdout": "Compilation successful \u2192 safe.tisc\n",
+      "stderr": "",
+      "json_payload": null,
+      "changed_paths": []
+    },
+    {
+      "id": "direct.policy-validate",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "policy",
+        "validate",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/allow.apl",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/allow.apl\",\n  \"tier\": 1,\n  \"max_instructions\": null,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.policy-validate.v1",
+        "valid": true,
+        "policy": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/allow.apl",
+        "tier": 1,
+        "max_instructions": null,
+        "max_stack": null,
+        "max_recursion": null
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "direct.canonfs-import",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-import.v1\",\n  \"status\": \"ok\",\n  \"source_kind\": \"host-file\",\n  \"source_ref\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81\",\n  \"imported_objects\": [\n    \"sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP\"\n  ],\n  \"provenance_schema\": \"t81.canonfs-import-provenance.v1\",\n  \"provenance_ref\": \"sha3-256:1SMJuA\u03c4j1x-c\u03c0ItUphu\u2260Jxit\u221eaWedv-\u00f7\u03c3\u03bbayDUh=b\",\n  \"manifest_schema\": \"t81.canonfs-interchange-manifest.v1\",\n  \"manifest_ref\": \"sha3-256:2Ncvj\u03bci\u00f7Q4RJU<1lM\u03c9fP\u03c9tm\u2248XNJ\u2260XZ797asveeoL\u03c0\",\n  \"imported_paths\": [\n    \"safe.t81\"\n  ],\n  \"warnings\": [  ],\n  \"errors\": [  ],\n  \"policy_result\": \"allowed\",\n  \"policy_profile\": \"permissive\",\n  \"normalization_summary\": {\n    \"timestamps\": \"provenance-only\",\n    \"ownership\": \"provenance-only\",\n    \"mode_hint\": \"preserved\"\n  }\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-import.v1",
+        "status": "ok",
+        "source_kind": "host-file",
+        "source_ref": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "imported_objects": [
+          "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP"
+        ],
+        "provenance_schema": "t81.canonfs-import-provenance.v1",
+        "provenance_ref": "sha3-256:1SMJuA\u03c4j1x-c\u03c0ItUphu\u2260Jxit\u221eaWedv-\u00f7\u03c3\u03bbayDUh=b",
+        "manifest_schema": "t81.canonfs-interchange-manifest.v1",
+        "manifest_ref": "sha3-256:2Ncvj\u03bci\u00f7Q4RJU<1lM\u03c9fP\u03c9tm\u2248XNJ\u2260XZ797asveeoL\u03c0",
+        "imported_paths": [
+          "safe.t81"
+        ],
+        "warnings": [],
+        "errors": [],
+        "policy_result": "allowed",
+        "policy_profile": "permissive",
+        "normalization_summary": {
+          "timestamps": "provenance-only",
+          "ownership": "provenance-only",
+          "mode_hint": "preserved"
+        }
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "direct.canonfs-stat",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "stat",
+        "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-stat.v1\",\n  \"ok\": true,\n  \"hash\": \"sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP\",\n  \"canonfs_root\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store\",\n  \"size_bytes\": 42,\n  \"sha3_512\": \"aa3582c21b9f63f35f824f3faf135883fdcef4cb38628346f2070e346e49875f3bf8e30b0cb3fab81331ebd9dd61ad3a984970f21110dbad4c6ea4d3f79fdc2c\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-stat.v1",
+        "ok": true,
+        "hash": "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP",
+        "canonfs_root": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "size_bytes": 42,
+        "sha3_512": "aa3582c21b9f63f35f824f3faf135883fdcef4cb38628346f2070e346e49875f3bf8e30b0cb3fab81331ebd9dd61ad3a984970f21110dbad4c6ea4d3f79fdc2c"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "direct.canonfs-verify",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "verify",
+        "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-verify.v1\",\n  \"ok\": true,\n  \"hash\": \"sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP\",\n  \"canonfs_root\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store\",\n  \"size_bytes\": 42,\n  \"sha3_512\": \"aa3582c21b9f63f35f824f3faf135883fdcef4cb38628346f2070e346e49875f3bf8e30b0cb3fab81331ebd9dd61ad3a984970f21110dbad4c6ea4d3f79fdc2c\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-verify.v1",
+        "ok": true,
+        "hash": "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP",
+        "canonfs_root": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "size_bytes": 42,
+        "sha3_512": "aa3582c21b9f63f35f824f3faf135883fdcef4cb38628346f2070e346e49875f3bf8e30b0cb3fab81331ebd9dd61ad3a984970f21110dbad4c6ea4d3f79fdc2c"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "direct.canonfs-export",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "export",
+        "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP",
+        "--out",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/exported.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-export.v1\",\n  \"status\": \"ok\",\n  \"source_objects\": [\n    \"sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP\"\n  ],\n  \"target_kind\": \"host-file\",\n  \"target_ref\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/exported.t81\",\n  \"provenance_schema\": \"t81.canonfs-export-provenance.v1\",\n  \"provenance_ref\": \"sha3-256:4\u03c3b52P\u00d7\u2265iY\u00d7=DVR2fE2Onz1\u2265>e\u03c0kUjlyYGDdi3i2l\",\n  \"manifest_schema\": null,\n  \"manifest_ref\": null,\n  \"materialized_paths\": [\n    \"exported.t81\"\n  ],\n  \"warnings\": [  ],\n  \"errors\": [  ],\n  \"policy_result\": \"allowed\",\n  \"policy_profile\": \"permissive\",\n  \"materialization_summary\": {\n    \"timestamps\": \"not-restored\",\n    \"ownership\": \"synthesized\",\n    \"mode_hint\": \"preserved\"\n  }\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-export.v1",
+        "status": "ok",
+        "source_objects": [
+          "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP"
+        ],
+        "target_kind": "host-file",
+        "target_ref": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/exported.t81",
+        "provenance_schema": "t81.canonfs-export-provenance.v1",
+        "provenance_ref": "sha3-256:4\u03c3b52P\u00d7\u2265iY\u00d7=DVR2fE2Onz1\u2265>e\u03c0kUjlyYGDdi3i2l",
+        "manifest_schema": null,
+        "manifest_ref": null,
+        "materialized_paths": [
+          "exported.t81"
+        ],
+        "warnings": [],
+        "errors": [],
+        "policy_result": "allowed",
+        "policy_profile": "permissive",
+        "materialization_summary": {
+          "timestamps": "not-restored",
+          "ownership": "synthesized",
+          "mode_hint": "preserved"
+        }
+      },
+      "changed_paths": [
+        "exported.t81",
+        "store/objects/4\u03c3b52P\u00d7\u2265iY\u00d7=DVR2fE2Onz1\u2265>e\u03c0kUjlyYGDdi3i2l.blk"
+      ]
+    },
+    {
+      "id": "negative.export-deny-all",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "export",
+        "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP",
+        "--out",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/denied-export",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/store",
+        "--policy-profile",
+        "deny-all",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-export.v1\",\n  \"status\": \"error\",\n  \"source_objects\": [\n    \"sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP\"\n  ],\n  \"target_kind\": \"host-file\",\n  \"target_ref\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/denied-export\",\n  \"provenance_schema\": \"t81.canonfs-export-provenance.v1\",\n  \"provenance_ref\": \"sha3-256:2\u221eabpRMvtdM\u00f7Bou1L5\u03c9\u2265\u03938pu\u03c9oo-AoIus31\u03bbw\u03c0wO\u00f7\",\n  \"manifest_schema\": null,\n  \"manifest_ref\": null,\n  \"materialized_paths\": [  ],\n  \"warnings\": [  ],\n  \"errors\": [\n    {\"kind\": \"policy-failure\", \"message\": \"policy denied export: policy-profile deny-all denies canonfs.export before host-side materialization\", \"code\": \"canonfs-policy-denied\", \"reason\": \"policy_denied\"}\n  ],\n  \"policy_result\": \"denied\",\n  \"policy_profile\": \"deny-all\",\n  \"materialization_summary\": {\n    \"timestamps\": \"not-restored\",\n    \"ownership\": \"synthesized\",\n    \"mode_hint\": \"preserved\"\n  }\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-export.v1",
+        "status": "error",
+        "source_objects": [
+          "sha3-256:3gZC\u2212uvw-\u03bbZEVIay\u03c3zgEG\u2264D3=Lpy6\u03c0i5fv\u2212\u2265ohCcP"
+        ],
+        "target_kind": "host-file",
+        "target_ref": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/denied-export",
+        "provenance_schema": "t81.canonfs-export-provenance.v1",
+        "provenance_ref": "sha3-256:2\u221eabpRMvtdM\u00f7Bou1L5\u03c9\u2265\u03938pu\u03c9oo-AoIus31\u03bbw\u03c0wO\u00f7",
+        "manifest_schema": null,
+        "manifest_ref": null,
+        "materialized_paths": [],
+        "warnings": [],
+        "errors": [
+          {
+            "kind": "policy-failure",
+            "message": "policy denied export: policy-profile deny-all denies canonfs.export before host-side materialization",
+            "code": "canonfs-policy-denied",
+            "reason": "policy_denied"
+          }
+        ],
+        "policy_result": "denied",
+        "policy_profile": "deny-all",
+        "materialization_summary": {
+          "timestamps": "not-restored",
+          "ownership": "synthesized",
+          "mode_hint": "preserved"
+        }
+      },
+      "changed_paths": [
+        "store/objects/2\u221eabpRMvtdM\u00f7Bou1L5\u03c9\u2265\u03938pu\u03c9oo-AoIus31\u03bbw\u03c0wO\u00f7.blk"
+      ]
+    },
+    {
+      "id": "negative.import-deny-all",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/deny-store",
+        "--policy-profile",
+        "deny-all",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-import.v1\",\n  \"status\": \"error\",\n  \"source_kind\": \"host-file\",\n  \"source_ref\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81\",\n  \"imported_objects\": [  ],\n  \"provenance_schema\": \"t81.canonfs-import-provenance.v1\",\n  \"provenance_ref\": \"sha3-256:4\u2260fZ\u03c0ET=Tyxt326PAGx\u2265bubeBWC7\u03c0c3rDK\u0393aY>wE\u03c4\",\n  \"manifest_schema\": null,\n  \"manifest_ref\": null,\n  \"imported_paths\": [  ],\n  \"warnings\": [  ],\n  \"errors\": [\n    {\"kind\": \"policy-failure\", \"message\": \"policy denied import of safe.t81: policy-profile deny-all denies canonfs.import before CanonFS storage writes\", \"code\": \"canonfs-policy-denied\", \"reason\": \"policy_denied\"}\n  ],\n  \"policy_result\": \"denied\",\n  \"policy_profile\": \"deny-all\",\n  \"normalization_summary\": {\n    \"timestamps\": \"provenance-only\",\n    \"ownership\": \"provenance-only\",\n    \"mode_hint\": \"preserved\"\n  }\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-import.v1",
+        "status": "error",
+        "source_kind": "host-file",
+        "source_ref": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "imported_objects": [],
+        "provenance_schema": "t81.canonfs-import-provenance.v1",
+        "provenance_ref": "sha3-256:4\u2260fZ\u03c0ET=Tyxt326PAGx\u2265bubeBWC7\u03c0c3rDK\u0393aY>wE\u03c4",
+        "manifest_schema": null,
+        "manifest_ref": null,
+        "imported_paths": [],
+        "warnings": [],
+        "errors": [
+          {
+            "kind": "policy-failure",
+            "message": "policy denied import of safe.t81: policy-profile deny-all denies canonfs.import before CanonFS storage writes",
+            "code": "canonfs-policy-denied",
+            "reason": "policy_denied"
+          }
+        ],
+        "policy_result": "denied",
+        "policy_profile": "deny-all",
+        "normalization_summary": {
+          "timestamps": "provenance-only",
+          "ownership": "provenance-only",
+          "mode_hint": "preserved"
+        }
+      },
+      "changed_paths": [
+        "deny-store/objects/4\u2260fZ\u03c0ET=Tyxt326PAGx\u2265bubeBWC7\u03c0c3rDK\u0393aY>wE\u03c4.blk"
+      ]
+    },
+    {
+      "id": "negative.import-missing-policy",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing-policy-store",
+        "--policy",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing.apl",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.canonfs-import.v1\",\n  \"status\": \"error\",\n  \"source_kind\": \"host-file\",\n  \"source_ref\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81\",\n  \"imported_objects\": [  ],\n  \"provenance_schema\": \"t81.canonfs-import-provenance.v1\",\n  \"provenance_ref\": \"\",\n  \"manifest_schema\": null,\n  \"manifest_ref\": null,\n  \"imported_paths\": [  ],\n  \"warnings\": [  ],\n  \"errors\": [\n    {\"kind\": \"source-failure\", \"message\": \"could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing.apl\", \"code\": \"canonfs-import-invalid-policy-document\", \"reason\": \"invalid_policy_document\"}\n  ],\n  \"policy_result\": \"denied\",\n  \"policy_profile\": \"permissive\",\n  \"normalization_summary\": {\n    \"timestamps\": \"provenance-only\",\n    \"ownership\": \"provenance-only\",\n    \"mode_hint\": \"preserved\"\n  }\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.canonfs-import.v1",
+        "status": "error",
+        "source_kind": "host-file",
+        "source_ref": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "imported_objects": [],
+        "provenance_schema": "t81.canonfs-import-provenance.v1",
+        "provenance_ref": "",
+        "manifest_schema": null,
+        "manifest_ref": null,
+        "imported_paths": [],
+        "warnings": [],
+        "errors": [
+          {
+            "kind": "source-failure",
+            "message": "could not open policy file: /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/missing.apl",
+            "code": "canonfs-import-invalid-policy-document",
+            "reason": "invalid_policy_document"
+          }
+        ],
+        "policy_result": "denied",
+        "policy_profile": "permissive",
+        "normalization_summary": {
+          "timestamps": "provenance-only",
+          "ownership": "provenance-only",
+          "mode_hint": "preserved"
+        }
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "direct.model-import",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "model",
+        "import",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/tiny.safetensors",
+        "--json"
+      ],
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.model-import.v1\",\n  \"ok\": true,\n  \"input\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/tiny.safetensors\",\n  \"source_format\": \"safetensors\",\n  \"artifact_format\": \"SafeTensors(float-quantized; profile=native-dense-v1)\",\n  \"tensor_count\": 1,\n  \"parameters\": 1,\n  \"trits\": 1,\n  \"file_size_bytes\": 66,\n  \"provenance\": {\n    \"source_path\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/tiny.safetensors\",\n    \"source_sha3_512\": \"sha3-512:e07b179a81aab4774896070c006824a1221d256a9fdb76b1fffe791ef862f2c7c8c71d1996e3c825dc4e8d9604864c97f2744bbb5172cda61062676f966a319f\"\n  },\n  \"tensors\": [\n    {\n      \"name\": \"w\",\n      \"shape\": [1],\n      \"trits\": 1,\n      \"sparsity\": 1.000000\n    }\n  ]\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.model-import.v1",
+        "ok": true,
+        "input": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/tiny.safetensors",
+        "source_format": "safetensors",
+        "artifact_format": "SafeTensors(float-quantized; profile=native-dense-v1)",
+        "tensor_count": 1,
+        "parameters": 1,
+        "trits": 1,
+        "file_size_bytes": 66,
+        "provenance": {
+          "source_path": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/tiny.safetensors",
+          "source_sha3_512": "sha3-512:e07b179a81aab4774896070c006824a1221d256a9fdb76b1fffe791ef862f2c7c8c71d1996e3c825dc4e8d9604864c97f2744bbb5172cda61062676f966a319f"
+        },
+        "tensors": [
+          {
+            "name": "w",
+            "shape": [
+              1
+            ],
+            "trits": 1,
+            "sparsity": 1.0
+          }
+        ]
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "negative.wrapper-build-flags",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "build",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.t81",
+        "--optimize",
+        "2",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Multiple input files not supported yet\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Multiple input files not supported yet"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "negative.wrapper-disasm-flags",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "code",
+        "disasm",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-native-audit-zi0pfilt/safe.tisc",
+        "--format",
+        "binary",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"Multiple input files not supported yet\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "Multiple input files not supported yet"
+      },
+      "changed_paths": []
+    },
+    {
+      "id": "negative.wrapper-export-verify",
+      "argv": [
+        "/private/tmp/t81-operational-build/t81",
+        "canonfs",
+        "export",
+        "sha3-256:0000000000000000000000000000000000000000000000000000000000000000",
+        "--verify",
+        "--json"
+      ],
+      "exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"canonfs: unknown option '--verify'. Run 't81 help canonfs'.\"\n}\n",
+      "stderr": "",
+      "json_payload": {
+        "schema": "t81.error.v1",
+        "ok": false,
+        "error": "canonfs: unknown option '--verify'. Run 't81 help canonfs'."
+      },
+      "changed_paths": []
+    }
+  ]
+}

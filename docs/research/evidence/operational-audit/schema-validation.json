@@ -1,0 +1,101 @@
+{
+  "scope": "External schema check of retained native documents; failures are preserved audit evidence",
+  "results": [
+    {
+      "observation_id": "direct.canonfs-import",
+      "schema_path": "spec/rfcs/RFC-00D1-canonfs-import-result-schema.json",
+      "schema_sha256": "f6fd3efac3bc4f2fe1a724433dc447c6570e9bb2b4c0e8135125997d0ed83a42",
+      "valid": false,
+      "errors": [
+        {
+          "path": [],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('manifest_schema', 'provenance_schema' were unexpected)"
+        }
+      ]
+    },
+    {
+      "observation_id": "direct.canonfs-export",
+      "schema_path": "spec/rfcs/RFC-00D1-canonfs-export-result-schema.json",
+      "schema_sha256": "9f767d02f3554a40d76eb6efab0190e68cd636ac6cc381abf4d5c561f8f6cbc6",
+      "valid": false,
+      "errors": [
+        {
+          "path": [],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('manifest_schema', 'provenance_schema' were unexpected)"
+        }
+      ]
+    },
+    {
+      "observation_id": "negative.export-deny-all",
+      "schema_path": "spec/rfcs/RFC-00D1-canonfs-export-result-schema.json",
+      "schema_sha256": "9f767d02f3554a40d76eb6efab0190e68cd636ac6cc381abf4d5c561f8f6cbc6",
+      "valid": false,
+      "errors": [
+        {
+          "path": [
+            "errors",
+            0
+          ],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('reason' was unexpected)"
+        },
+        {
+          "path": [],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('manifest_schema', 'provenance_schema' were unexpected)"
+        }
+      ]
+    },
+    {
+      "observation_id": "negative.import-deny-all",
+      "schema_path": "spec/rfcs/RFC-00D1-canonfs-import-result-schema.json",
+      "schema_sha256": "f6fd3efac3bc4f2fe1a724433dc447c6570e9bb2b4c0e8135125997d0ed83a42",
+      "valid": false,
+      "errors": [
+        {
+          "path": [
+            "errors",
+            0
+          ],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('reason' was unexpected)"
+        },
+        {
+          "path": [],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('manifest_schema', 'provenance_schema' were unexpected)"
+        }
+      ]
+    },
+    {
+      "observation_id": "negative.import-missing-policy",
+      "schema_path": "spec/rfcs/RFC-00D1-canonfs-import-result-schema.json",
+      "schema_sha256": "f6fd3efac3bc4f2fe1a724433dc447c6570e9bb2b4c0e8135125997d0ed83a42",
+      "valid": false,
+      "errors": [
+        {
+          "path": [
+            "errors",
+            0
+          ],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('reason' was unexpected)"
+        },
+        {
+          "path": [],
+          "validator": "additionalProperties",
+          "message": "Additional properties are not allowed ('manifest_schema', 'provenance_schema' were unexpected)"
+        }
+      ]
+    },
+    {
+      "observation_id": "direct.model-import",
+      "schema_path": "spec/rfcs/RFC-00D3-model-import-result-schema.json",
+      "schema_sha256": "01fe7320d14da3c8f75883ca2e801fc4f8c5b54acca79aadc57a7fd6d264beaa",
+      "valid": true,
+      "errors": []
+    }
+  ]
+}
