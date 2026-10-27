@@ -8,7 +8,7 @@
 
 T81 Foundation is an open-source **experimental computing architecture and systems research platform** investigating alternative numerical representations—particularly balanced ternary—and their interaction with deterministic execution, programming-language tooling, content-addressed storage, and policy-governed computation.
 
-The project originated in discrete mathematics, positional number systems, and experimental ternary computing. Its development has produced a software instruction-set architecture, virtual machine, language tooling, arithmetic prototypes, storage and identity mechanisms, policy controls, and hardware experiments. These components have **different maturity levels**; their existence does not imply that every proposed end-to-end architecture is implemented or validated.
+The project originated in discrete mathematics, positional number systems, Knuth-inspired investigations of computation, and experimental ternary computing. Its development has produced a software instruction-set architecture, virtual machine, language tooling, arithmetic prototypes, storage and identity mechanisms, policy controls, and hardware experiments. These components have **different maturity levels**; their existence does not imply that every proposed end-to-end architecture is implemented or validated.
 
 **Scientific position:** T81 has demonstrated functional research subsystems and bounded mathematical, computational, and assurance properties. It has **not** demonstrated general ternary superiority over optimized binary systems, native ternary silicon efficiency, or a comparative advantage arising from integration of the complete architecture. Negative results are retained as research evidence, not hidden or generalized beyond their tested conditions.
 
@@ -45,7 +45,42 @@ The original H01–H08 identifiers remain defined by the [Master Continuity Char
 
 ---
 
-## 2. Implemented Research Components
+## 2. Why T81 Is a Research Instrument
+
+T81 provides a common experimental setting in which representation, execution, artifact identity, and authorization can be studied both separately and together. Its value as a research instrument is **not contingent on proving that ternary computing is universally superior**. It depends on whether the project can produce reproducible experiments, independent controls, inspectable traces, and results that discriminate among competing explanations.
+
+A conventional software stack can implement many of the same mechanisms. That is a feature of a good comparison, not a defect: the experimental task is to determine which properties come from the representation, which from implementation choices, and which from governance or composition.
+
+### What makes the research program distinctive
+
+| Research capability | Experimental use | Required caution |
+| --- | --- | --- |
+| Shared TISC semantics and T81VM execution | Hold program behavior constant while changing representations or execution strategies | ISA stability does not establish equal implementation quality |
+| Balanced-ternary and Base-81 prototypes | Compare arithmetic, packing, conversion, and data movement under controlled workloads | Software emulation costs must not be extrapolated to hypothetical silicon |
+| CanonFS artifact identity | Pin experimental inputs, outputs, and evidence to exact content | Hashes establish content identity, not the truth or provenance of claims |
+| Axion authorization experiments | Test policy enforcement, denials, and accountable execution | Equivalent binary/conventional controls are necessary |
+| Research regressions and historical source lineage | Preserve failures and reproduce or falsify prior results | A passing regression is narrower than independent scientific replication |
+| Candidate integration paths | Test whether composing mechanisms produces measurable interactions | Conceptual adjacency is not a verified end-to-end call path |
+
+### Novelty and provenance
+
+T81 combines several categories of work that should not be conflated:
+
+1. **Established foundations:** balanced ternary mathematics, virtual machines, content addressing, deterministic execution techniques, and policy enforcement all have prior art.
+2. **Project-specific engineering:** TISC semantics, T81VM, T81Lang, Axion, CanonFS, and the associated experimental harnesses constitute implementations whose design and behavior can be inspected and tested. Their existence alone does not establish scientific novelty.
+3. **Open architectural hypotheses:** adaptive representation tiering, ternary-native datapaths, assurance-aware execution composition, and potential system-level interactions remain questions to test, not discoveries to advertise.
+
+Any future claim of novelty should identify its closest prior art, precise difference, reproducible artifact, and experimentally meaningful consequence. Novel source code is not necessarily a novel computational principle.
+
+### Experimental interfaces and boundaries
+
+The research program distinguishes **representation** (how values are encoded), **semantics** (what operations mean), **implementation** (how operations execute), **physical substrate** (what hardware realizes them), and **assurance** (which properties can be independently checked). An advantage at one layer must not be silently attributed to another.
+
+For example, a compact weight encoding can reduce raw storage without improving end-to-end inference latency; a policy denial can be correct without requiring TISC; and a ternary gate-count estimate can be promising without demonstrating energy savings in fabricated hardware.
+
+---
+
+## 3. Implemented Research Components
 
 The repository contains C++23 components, CLI tools, tests, and experimental implementations. The following labels describe **reported implementation scope**, not a blanket production-readiness certification.
 
@@ -72,7 +107,7 @@ No single test count, badge, or README diagram establishes all four levels.
 
 ---
 
-## 3. Architecture: Components and Integration Boundaries
+## 4. Architecture: Components and Integration Boundaries
 
 The following diagram is a **conceptual map**, not a claim that every edge is exercised by one verified end-to-end program:
 
@@ -108,7 +143,7 @@ The central architectural research task is to establish a verified end-to-end pa
 
 ---
 
-## 4. Experimental Evidence and Limits
+## 5. Experimental Evidence and Limits
 
 ### Balanced ternary software arithmetic
 
@@ -150,7 +185,7 @@ See [`docs/research/INTEGRATED_SYSTEM_ADVANTAGE_REPORT.md`](docs/research/INTEGR
 
 ---
 
-## 5. What T81 Does Not Yet Establish
+## 6. What T81 Does Not Yet Establish
 
 T81 is **not** presently demonstrated to be:
 
@@ -166,7 +201,7 @@ These are **evidence boundaries**, not declarations that future research is impo
 
 ---
 
-## 6. Reproduce the Existing Work
+## 7. Reproduce the Existing Work
 
 ### Prerequisites
 
@@ -217,7 +252,7 @@ The final command is intended to exercise a denial path; a nonzero exit may be e
 
 ---
 
-## 7. Research Lineage
+## 8. Research Lineage
 
 T81's development has evolved through several connected stages:
 
@@ -231,7 +266,32 @@ The evolution of the project is part of its research record. Earlier ideas may b
 
 ---
 
-## 8. Research Priorities
+## 9. Open Problems and Future Experimental Opportunities
+
+The following are **research directions**, not implemented capabilities or predictions of success. They are intended to expand the hypothesis space while keeping the evidence standard unchanged.
+
+| Opportunity | Falsifiable question | Minimum credible experiment |
+| --- | --- | --- |
+| Native multi-valued hardware | Can a physically realistic three-state device or circuit outperform a matched binary design at equal information capacity and reliability? | Characterized device assumptions, synthesis or measured silicon, normalized area/energy/delay, variability and interface overhead |
+| Workload-specific balanced ternary arithmetic | Are there signed, accumulation, rounding, or decision workloads where balanced ternary lowers total cost? | Correctness oracle, optimized binary baseline, conversion included, multiple workload sizes |
+| Adaptive T81/T243/T729 representation tiers | Can tier transitions reduce end-to-end resource use compared with a fixed representation? | Explicit transition policy, measured switching costs, fixed-tier controls and ablations |
+| Low-bit inference and data movement | Do ternary weights improve total inference efficiency at a fixed accuracy target? | Matched quantization quality, optimized low-bit binary baselines, memory/latency/energy accounting |
+| Deterministic, auditable execution | Which assurance guarantees can be obtained with acceptable overhead? | Same workload and guarantees in T81 and a conventional stack; fault injection and independent verification |
+| Composition effects | Does combining identity, policy, execution, and replay produce a measurable benefit beyond individual mechanisms? | Verified end-to-end trace, equivalent conventional control, valid component ablations |
+
+**Hardware uncertainty is not hardware evidence.** Binary CPUs are appropriate for studying semantics, conversion overhead, algorithmic behavior, and software integration. They are not sufficient to settle the efficiency of future native ternary devices. Conversely, a hypothetical device cannot be used to claim current speed or energy advantages without a transparent, validated physical cost model.
+
+### A disciplined path from idea to result
+
+For each new investigation, record the hypothesis and possible falsifier; establish a correctness oracle; choose the strongest feasible conventional control; match functional and assurance requirements; collect raw results and uncertainty; attempt independent reproduction; and classify the outcome as supported, refuted within scope, or inconclusive. Preserve negative findings and avoid changing acceptance criteria after seeing results.
+
+### What success would look like
+
+A successful T81 investigation need not demonstrate a universal architecture. It may establish a **narrow, reproducible advantage** for a specific workload, reveal an unexpected limitation, produce a better experimental method, or show that a proposed mechanism adds no value under realistic constraints. Each outcome improves the research program if the evidence is trustworthy.
+
+---
+
+## 10. Research Priorities
 
 **Immediate priority: restore experimental validity for Investigations 07 and 08.** Correct the hardware verification and synthesis harnesses; withdraw unsupported stopping claims; and establish a truly matched end-to-end conventional baseline or explicitly record why it is unavailable.
 
@@ -241,11 +301,11 @@ Once those corrections are reviewed, the next research choice should be based on
 - **Cross-platform determinism:** Test precisely scoped numerical and execution traces across supported targets, with measured performance overhead.
 - **Representation and hardware hypotheses:** Pursue only bounded experiments with appropriate binary controls, explicit cost models, and falsifiable stopping conditions.
 
-Avoid adding production features merely to make an experiment succeed. An **INCONCLUSIVE** result with a documented missing integration seam is preferable to a misleading positive or negative claim.
+Prefer experimental infrastructure that can support competing hypotheses over features that presuppose one architectural destination. Avoid adding production features merely to make an experiment succeed. An **INCONCLUSIVE** result with a documented missing integration seam is preferable to a misleading positive or negative claim.
 
 ---
 
-## 9. Primary References
+## 11. Primary References
 
 - [Research charter](docs/research/RESEARCH_CHARTER.md)
 - [Master continuity charter](docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md)
@@ -260,7 +320,7 @@ Avoid adding production features merely to make an experiment succeed. An **INCO
 
 ---
 
-## 10. Contributing
+## 12. Contributing
 
 Contributions are welcome when they improve correctness, reproducibility, experimental controls, source traceability, or clearly scoped research hypotheses. See [CONTRIBUTING.md](CONTRIBUTING.md) and [AGENTS.md](AGENTS.md).
 
