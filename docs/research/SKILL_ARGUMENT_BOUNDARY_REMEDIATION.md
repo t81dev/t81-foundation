@@ -62,6 +62,8 @@ CLI documentation parity passes (24 topics), as do root structure, active docume
 
 The focused hosted workflow exercises fake-backend argument preservation on Linux Bash and macOS Bash independently of the repository's broader build. The UNIX CTest runs both fake and real tests when the CLI is built. Linux real CLI, native Windows, WSL, alternate shells, and OpenClaw gateway behavior have not been exercised locally. Hosted results will be reported separately with their commit pins; no queued CI is counted as a pass.
 
+At 2026-10-27 19:39:44 UTC, the [focused hosted run](https://github.com/t81dev/t81-foundation/actions/runs/40570845536) at documentation/evidence head `50964dd35ad050607c08e5b625cdd7dda2af49ca` still had both jobs queued: macOS job `122424291003`, Linux job `122424291552`. The [CI snapshot](evidence/skill_policy_boundary/ci-snapshot.json) records those identities and the other queued workflows. No Linux Bash pass, hosted macOS pass, or full CI success is claimed. Local Linux Bash/container runtimes were unavailable. The implementation pin and all locally tested wrapper/test bytes remain unchanged; this snapshot is a dated observation of that prior evidence head, not a claim about future runs. Hosted outcomes remain a human acceptance requirement.
+
 ## Threat model and remaining unsafe interfaces
 
 Protects: the selected adapter's own parsing/dispatch boundary against attacker-controlled argument text becoming shell code, word splitting, globbing, unintended CLI options, silent operation substitution, and wrapper-created store/output directories. Negative tests check persistent canary/store creation and unexpected backend calls. The accepted operation is fixed and cannot execute arbitrary host commands or programs.
