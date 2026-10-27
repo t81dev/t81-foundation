@@ -1,0 +1,151 @@
+{
+  "16": {
+    "design_a_general_mac": {
+      "name": "Design_A_General_INT8_MAC",
+      "gate_cells": 7715,
+      "gate_area": 9050.0,
+      "cell_breakdown": {
+        "$_ANDNOT_": 154,
+        "$_AND_": 1341,
+        "$_NAND_": 3385,
+        "$_NOR_": 6,
+        "$_NOT_": 14,
+        "$_ORNOT_": 72,
+        "$_OR_": 59,
+        "$_XNOR_": 224,
+        "$_XOR_": 2460
+      }
+    },
+    "design_b_optimized_binary": {
+      "name": "Design_B_Optimized_Binary",
+      "gate_cells": 1430,
+      "gate_area": 1581.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 5,
+        "$_AND_": 349,
+        "$_NAND_": 535,
+        "$_NOR_": 33,
+        "$_NOT_": 2,
+        "$_ORNOT_": 21,
+        "$_OR_": 180,
+        "$_XNOR_": 60,
+        "$_XOR_": 245
+      }
+    },
+    "design_c_ht1_ternary": {
+      "name": "Design_C_HT1_Ternary",
+      "gate_cells": 1188,
+      "gate_area": 1436.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 98,
+        "$_AND_": 192,
+        "$_NAND_": 389,
+        "$_NOT_": 2,
+        "$_ORNOT_": 3,
+        "$_OR_": 5,
+        "$_XNOR_": 89,
+        "$_XOR_": 410
+      }
+    }
+  },
+  "32": {
+    "design_a_general_mac": {
+      "name": "Design_A_General_INT8_MAC",
+      "gate_cells": 15419,
+      "gate_area": 18062.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 298,
+        "$_AND_": 2668,
+        "$_NAND_": 6810,
+        "$_NOR_": 6,
+        "$_NOT_": 32,
+        "$_ORNOT_": 170,
+        "$_OR_": 116,
+        "$_XNOR_": 395,
+        "$_XOR_": 4924
+      }
+    },
+    "design_b_optimized_binary": {
+      "name": "Design_B_Optimized_Binary",
+      "gate_cells": 2927,
+      "gate_area": 3240.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 5,
+        "$_AND_": 702,
+        "$_NAND_": 1107,
+        "$_NOR_": 65,
+        "$_NOT_": 8,
+        "$_ORNOT_": 49,
+        "$_OR_": 356,
+        "$_XNOR_": 113,
+        "$_XOR_": 522
+      }
+    },
+    "design_c_ht1_ternary": {
+      "name": "Design_C_HT1_Ternary",
+      "gate_cells": 2442,
+      "gate_area": 2951.0,
+      "cell_breakdown": {
+        "$_ANDNOT_": 193,
+        "$_AND_": 384,
+        "$_NAND_": 815,
+        "$_NOR_": 2,
+        "$_NOT_": 6,
+        "$_ORNOT_": 9,
+        "$_OR_": 9,
+        "$_XNOR_": 178,
+        "$_XOR_": 846
+      }
+    }
+  },
+  "64": {
+    "design_a_general_mac": {
+      "name": "Design_A_General_INT8_MAC",
+      "gate_cells": 31173,
+      "gate_area": 36547.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 585,
+        "$_AND_": 5398,
+        "$_NAND_": 13755,
+        "$_NOR_": 14,
+        "$_NOT_": 68,
+        "$_ORNOT_": 309,
+        "$_OR_": 227,
+        "$_XNOR_": 828,
+        "$_XOR_": 9989
+      }
+    },
+    "design_b_optimized_binary": {
+      "name": "Design_B_Optimized_Binary",
+      "gate_cells": 5924,
+      "gate_area": 6564.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 15,
+        "$_AND_": 1403,
+        "$_NAND_": 2250,
+        "$_NOR_": 131,
+        "$_NOT_": 14,
+        "$_ORNOT_": 99,
+        "$_OR_": 717,
+        "$_XNOR_": 236,
+        "$_XOR_": 1059
+      }
+    },
+    "design_c_ht1_ternary": {
+      "name": "Design_C_HT1_Ternary",
+      "gate_cells": 4948,
+      "gate_area": 5980.5,
+      "cell_breakdown": {
+        "$_ANDNOT_": 388,
+        "$_AND_": 773,
+        "$_NAND_": 1665,
+        "$_NOR_": 2,
+        "$_NOT_": 10,
+        "$_ORNOT_": 15,
+        "$_OR_": 20,
+        "$_XNOR_": 360,
+        "$_XOR_": 1715
+      }
+    }
+  }
+}

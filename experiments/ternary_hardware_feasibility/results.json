@@ -1,0 +1,69 @@
+{
+  "investigation": "Scientific Investigation 07",
+  "title": "Ternary Dot-Product Hardware Feasibility and Matched Binary Baselines",
+  "hypothesis": "H-T1 (Bit-Parallel Ternary Dot-Product Hardware)",
+  "mathematical_contract": {
+    "operation": "Y = sum_{i=0}^{N-1} W_i * X_i",
+    "weights": "W_i in {-1, 0, +1}",
+    "activations": "X_i in [-128, 127] (INT8 signed)",
+    "accumulator_width_bits": 32,
+    "min_required_acc_width_N4096_bits": 21
+  },
+  "scientific_disposition": "NOT SUPPORTED",
+  "summary": "Design C (H-T1 sign-and-mask ternary overlay) yields a minor gate area reduction (~1.09x - 1.10x) over Design B (optimized binary ternary-weight MAC) due to logic representation, but falls far short of the mandatory stopping criteria threshold (1.25x area or energy efficiency advantage). Furthermore, the structural difference between Design B and Design C is an artifact of sign-and-mask vs two's complement decoding input format rather than a true ternary arithmetic advantage. When evaluated against the critical scientific control (Design B), Design C fails to demonstrate a defensible ternary hardware advantage.",
+  "metrics_summary": {
+    "N_64": {
+      "Design_A_General_INT8_MAC": {
+        "gate_cells": 31173,
+        "gate_area": 36547.5
+      },
+      "Design_B_Optimized_Binary": {
+        "gate_cells": 5924,
+        "gate_area": 6564.5
+      },
+      "Design_C_HT1_Ternary": {
+        "gate_cells": 4948,
+        "gate_area": 5980.5
+      },
+      "R_area_B_vs_C": 1.0976,
+      "R_area_A_vs_C": 6.1111
+    },
+    "N_32": {
+      "Design_A_General_INT8_MAC": {
+        "gate_cells": 15419,
+        "gate_area": 18062.5
+      },
+      "Design_B_Optimized_Binary": {
+        "gate_cells": 2927,
+        "gate_area": 3240.5
+      },
+      "Design_C_HT1_Ternary": {
+        "gate_cells": 2442,
+        "gate_area": 2951.0
+      },
+      "R_area_B_vs_C": 1.0981,
+      "R_area_A_vs_C": 6.1208
+    },
+    "N_16": {
+      "Design_A_General_INT8_MAC": {
+        "gate_cells": 7715,
+        "gate_area": 9050.0
+      },
+      "Design_B_Optimized_Binary": {
+        "gate_cells": 1430,
+        "gate_area": 1581.5
+      },
+      "Design_C_HT1_Ternary": {
+        "gate_cells": 1188,
+        "gate_area": 1436.5
+      },
+      "R_area_B_vs_C": 1.1009,
+      "R_area_A_vs_C": 6.3000
+    }
+  },
+  "unmeasured_or_unsupported_metrics": [
+    "Silicon physical power (TOPS/W) — UNMEASURED (requires calibrated layout parasitic extraction and dynamic activity waveforms)",
+    "Critical path frequency (GHz) — UNMEASURED (unconstrained combinational synthesis without cell library delay timing arcs)"
+  ],
+  "recommendation": "STOP all custom ternary hardware research in T81 Foundation per Stopping Criterion 2 of PR #594 / Audit 06."
+}
