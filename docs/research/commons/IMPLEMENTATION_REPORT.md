@@ -123,3 +123,108 @@ dated. New evidence/index updates require review; missing #605 objects require
 explicit setup outside the read-only interface. llms.txt was omitted because it
 would duplicate AGENTS and this discovery guide. A future MCP wrapper can reuse
 the contract after its scope and dependencies receive review.
+
+## Evidence integration checkpoint — 2026-10-27 (PR610 not merged)
+
+**Dependency remains open.** GitHub metadata checked during this update reports
+PR610 open/draft, `merged: false`, head
+`d1eee548d4658df37b35d0cc3781b5a77cbae96b`. Its API-generated potential merge
+SHA is not treated as an actual merged revision. No correction from PR610 is
+claimed as part of main, and PR609 remains draft. Completing the corrected-main
+snapshot requires human review/merge of PR610, verification of its actual merge
+commit, a subsequent pin/history/receipt update, and rerun validation. Commons
+never performs that merge or fetches evidence on demand.
+
+The original #609 work at `7183ae0de2a6d069fa1c422af335294909736eff` is
+preserved. Merged main at `fabc7aa90f70ead227ec257a1ae6833fa16ced40`
+(PR608) was merged into the same branch without conflict. The manifest now pins
+that actual main baseline and contains **39** source identities. PR607's original
+initiative at `274421fd8e85c5b9bb4f165fce190715530f4e85` remains available as
+`initiative`; PR608 is `initiative-608`; PR610's actual head objects are available
+only under explicit `*-610-proposed` IDs with role `proposal` and UNMERGED
+uncertainty. The PR608 reconciliation report and PR610 append-only proposal report
+are also separately indexed. E1 remains pinned to its separately merged
+`827d2accbf8ccb56afe3fe8d96dfb7251f249d7d` history.
+
+The index retains three discrepancy-history records, including superseded PR607
+ID/wording assertions with the limits of PR608's reconciliation. PR608's remaining
+H07/H08 discrepancy stays unresolved because its correction is only proposed.
+Eleven current questions remain. `get_hypothesis` exposes the history and pending
+integration state using the existing operation. The six-operation interface,
+request protocol, execution prohibition and offline Git-only reader are retained.
+
+Canonical H01–H08 records are returned verbatim. The register SHA-256 remains
+`af8ca65dcef136f294eb33010b5a6621875a52db4f3e60b94a4e28db5318a1c1`.
+H07 retains B/C evidence, no new independent security certification, the original
+confidence/next action and 2026-10-25 disposition. H08 retains C/E evidence,
+`Researcher intent authoritative; comparative benefit untested.`, unavailable
+earlier prompt provenance and the prohibition on treating repeated model
+summaries as independent verification. No charter/register bytes were edited.
+
+### Commands and actual local results for this update
+
+Same macOS ARM64 / Python 3.14.3 / Git 2.53.0 environment as the initial report.
+Explicit operator setup outside the interface fetched main and the PR610 branch;
+CI setup explicitly fetches the pinned PR610 object in addition to the existing
+PR605 object. Installing or fetching is never a discovery operation.
+
+```sh
+git fetch origin main docs/pr608-evidence-correction
+git merge --no-edit origin/main
+/private/tmp/t81-commons-venv/bin/python -B tools/research_commons/commons.py --validate
+/private/tmp/t81-commons-venv/bin/python -B -m unittest discover -s tests/research_commons -v
+/private/tmp/t81-commons-venv/bin/python -B tools/research_commons/commons.py --validate-contribution docs/research/commons/examples/h08-proposal.json
+python3 scripts/ci/check_tisc_freeze_integrity.py
+python3 scripts/governance/check_root_structure.py
+python3 scripts/governance/check_overclaim_guardrails.py
+python3 scripts/governance/check_active_docs_link_hygiene.py
+python3 scripts/governance/check_determinism_claims.py
+python3 scripts/governance/check_docs_structure.py
+git diff --check
+```
+
+- **PASS:** All 39 actual source Git objects, hashes, regular-file paths and
+  evidence references validate. Missing or promoted proposal references fail
+  closed. Active canonical manifest SHA-256:
+  `a3ee2d288ac7b00176beae32f854c373194b11556d83293396bbcd7c02d688bf`.
+- **PASS:** 19 Commons tests, including deterministic responses, retained Hanoi
+  and E1 negatives, verbatim H07/H08 limits, historical/pending source separation,
+  no-network/no-mutation checks and fresh-process H08 onboarding. Initial
+  demonstration bytes remain in `demo-observation.initial.json`, checked against
+  the original commit. The active receipt was regenerated from actual responses.
+- **PASS:** H08 proposal shape/reference validation with `not_requested` human
+  authorization and `execution: unavailable`. The fresh client finds H08 via
+  Track M, checks its actual register evidence, retrieves the unmerged correction
+  as a proposal, and prepares/validates a scratch proposal. Controls include
+  human-only, single-assistant and adversarial-assistant arms, matched budgets,
+  blind independent adjudicators and a held-out confirmatory corpus. This is
+  fresh-process client verification, **not independent-model scientific review**.
+- **PASS:** Freeze registry checker (209 values), root structure, overclaim
+  guardrails, active-docs link hygiene, determinism claim boundaries, 43 local
+  Markdown file targets and whitespace. Registry integrity is not executable opcode conformance. No C++ or historical
+  experiment rerun was needed for this index/interface-data change.
+- **FAIL, pre-existing:** Docs-structure checker still expects the five absent
+  top-level `book/book-{en,cn,es,pt,ru}` directories. This is unchanged from main
+  and was also documented in PR610; unrelated subsystem/checker repair is excluded.
+
+### Cross-platform CI review (original #609 head)
+
+The following observations are for original commit `7183ae0d`, not a claim about
+this new update's remote tests. [Commons run 40558170198](https://github.com/t81dev/t81-foundation/actions/runs/40558170198)
+reports six successful jobs: Linux x86-64, Linux ARM64 and Windows, each on Python
+3.9 and 3.13. Both macOS-14 jobs are queued; their environment and results are
+unverified. No Commons failure was reported at this checkpoint.
+
+[Foundation run 40558169976](https://github.com/t81dev/t81-foundation/actions/runs/40558169976)
+has successful governance-metrics and spec/docs lint jobs, skipped optional
+experimental jobs, and remaining queued jobs. [Determinism run 40558170231](https://github.com/t81dev/t81-foundation/actions/runs/40558170231)
+has Linux/macOS builds in progress; [CodeQL run 40558169931](https://github.com/t81dev/t81-foundation/actions/runs/40558169931)
+is in progress. [Format run 40558169951](https://github.com/t81dev/t81-foundation/actions/runs/40558169951)
+passed. Pending or skipped jobs establish no new correctness or portability
+result. Results for the pushed update must be assessed separately.
+
+External clients can inspect canonical H08 without adopting superseded summary
+assertions, as the fresh-process test demonstrates. Full integration of the
+**corrected initiative on main** remains blocked by unmerged PR610. Neither the
+proposed correction nor successful implementation tests establish H08 comparative
+methodology benefit or authorize experiment execution or governance activation.

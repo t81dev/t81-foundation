@@ -1,6 +1,6 @@
 {
-  "scope": "Implementation-author API demonstration; no independent agent or experiment execution",
-  "manifest_sha256": "81ea5ba5e39d47ffe69bb92e6137c3b0170c176eb8874ac8153a9d5ddd4b7b69",
+  "scope": "Implementation-author API demonstration and fresh-client test target; no independent-model review or experiment execution. PR610 remains unmerged.",
+  "manifest_sha256": "a3ee2d288ac7b00176beae32f854c373194b11556d83293396bbcd7c02d688bf",
   "observations": [
     {
       "request": {
@@ -8,7 +8,7 @@
         "operation": "list_research_tracks",
         "arguments": {}
       },
-      "response_sha256": "f5e57425d829ddd59576f8b1f8eda3a3706305dd8155493c90c7a8a5a804512e",
+      "response_sha256": "65f22b8fed14c949fdcce348f48a694b153812c5124e4523e1663e58ac363502",
       "result_type": "list"
     },
     {
@@ -17,7 +17,7 @@
         "operation": "list_hypotheses",
         "arguments": {}
       },
-      "response_sha256": "7d2386795520aacf5d62b23aabddb580fe7585f4b82db8a25a343021bd7073c0",
+      "response_sha256": "fc9020dfdcec640a066adf527915737bcc2119fd255b1395ff00c9e1a64ab0d6",
       "result_type": "list"
     },
     {
@@ -25,10 +25,10 @@
         "protocol": "t81.research-commons.v1",
         "operation": "get_hypothesis",
         "arguments": {
-          "hypothesis_id": "H04"
+          "hypothesis_id": "H08"
         }
       },
-      "response_sha256": "7f13052a5b9bb7fe412a4c7634529c98ef8803eb972e37edb35440996453c396",
+      "response_sha256": "dfbd76bfa2cce8163f0f017d4fdadb5ade069197dd48922d8e8050cf24a01428",
       "result_type": "dict"
     },
     {
@@ -36,10 +36,10 @@
         "protocol": "t81.research-commons.v1",
         "operation": "get_evidence",
         "arguments": {
-          "evidence_id": "h04-limitations"
+          "evidence_id": "register"
         }
       },
-      "response_sha256": "de3d9c22195a65ee11d5dd842041a0ddd6b01629068e61c06328c647b8eef135",
+      "response_sha256": "08a2713b6c04cec1a8f5dfb52b77055a60b6f60bafeed322c3a4716ea73d7b0c",
       "result_type": "dict"
     },
     {
@@ -47,10 +47,10 @@
         "protocol": "t81.research-commons.v1",
         "operation": "get_reproduction_instructions",
         "arguments": {
-          "hypothesis_id": "H04"
+          "hypothesis_id": "H08"
         }
       },
-      "response_sha256": "00f4a9d1aa51ba52a4f397074998937cc87e9fb55a9d43e908d807b2802fa28b",
+      "response_sha256": "d7cc90cb4f847c30a52841ced83552468ec97385ac8e1f9b592ad5aa39f50295",
       "result_type": "dict"
     },
     {
@@ -59,7 +59,7 @@
         "operation": "list_open_research_questions",
         "arguments": {}
       },
-      "response_sha256": "dee9f904e185b9b23b363436e3dae54acfcbf28b568699fc7289a6e0c0d26cec",
+      "response_sha256": "374e2492bc0e21bc6aa533a2076a34971bbafffd5f9aa89d0a8b2b267fa1488a",
       "result_type": "list"
     }
   ],

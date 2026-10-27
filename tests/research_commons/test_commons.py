@@ -130,7 +130,7 @@ class DiscoveryContract(unittest.TestCase):
 
     def all_requests(self):
         return [request('list_research_tracks'), request('list_hypotheses'),
-                request('get_hypothesis', hypothesis_id='H04'),
+                request('get_hypothesis', hypothesis_id='H08'),
                 request('get_evidence', evidence_id='hanoi-negative'),
                 request('get_reproduction_instructions', hypothesis_id='H02'),
                 request('list_open_research_questions')]
@@ -200,12 +200,77 @@ class DiscoveryContract(unittest.TestCase):
 
     def test_recorded_demonstration_matches_pinned_responses(self):
         receipt = json.loads((commons.DATA / 'demo-observation.json').read_text())
+        initial = subprocess.check_output(['git', '-C', str(ROOT), 'show',
+            '7183ae0de2a6d069fa1c422af335294909736eff:docs/research/commons/demo-observation.json'])
+        self.assertEqual((commons.DATA / 'demo-observation.initial.json').read_bytes(), initial)
         self.assertEqual(receipt['manifest_sha256'], self.index.digest)
         self.assertEqual(len(receipt['observations']), 6)
         for observation in receipt['observations']:
             output = commons.canonical(self.index.dispatch(observation['request']))
             self.assertEqual(hashlib.sha256(output.encode()).hexdigest(),
                              observation['response_sha256'])
+
+    def test_correction_dependency_and_historical_discrepancies(self):
+        integration = self.index.manifest['integration']
+        self.assertEqual(integration['status'], 'awaiting_pr610_merge')
+        self.assertEqual(integration['main_revision'], self.index.manifest['baseline_revision'])
+        self.assertNotEqual(integration['pending_revision'], integration['main_revision'])
+        history = {q['id']: q for q in self.index.manifest['discrepancy_history']}
+        self.assertEqual(history['D-607-IDS']['status'], 'superseded')
+        self.assertIn('initiative-608', history['D-607-IDS']['superseded_by_refs'])
+        self.assertEqual(history['D-608-H07-H08']['status'], 'unresolved')
+        self.assertEqual(self.index.sources['initiative']['revision'],
+                         '274421fd8e85c5b9bb4f165fce190715530f4e85')
+        for ref in ('initiative-610-proposed', 'reconciliation-610-proposed'):
+            self.assertEqual(self.index.sources[ref]['role'], 'proposal')
+        self.modified(lambda m: next(s for s in m['sources']
+                                    if s['id'] == 'initiative-610-proposed').update(role='authority'))
+        self.modified(lambda m: m['discrepancy_history'][0]['superseded_by_refs'].append('missing'))
+
+    def test_h07_h08_exact_dated_dispositions_and_limits(self):
+        for id, tiers in [('H07', ['B', 'C']), ('H08', ['C', 'E'])]:
+            h = self.index.hypothesis(id)
+            self.assertEqual(h['canonical_record'], self.index.entries[id])
+            self.assertEqual(h['historical_disposition_as_of'], '2026-10-25')
+            self.assertEqual(h['canonical_record']['evidence_tiers'], tiers)
+        h08 = self.index.hypothesis('H08')['canonical_record']
+        self.assertIn('comparative benefit untested', h08['confidence'])
+        self.assertIn('earlier prompt provenance not available',
+                      h08['earliest_identified_source']['source'])
+        self.assertIn('Repeated model summaries are not independent verification', h08['assumptions'])
+
+    def test_fresh_process_h08_discovery_and_unapproved_proposal(self):
+        command = [sys.executable, '-B', str(ROOT / 'tools/research_commons/commons.py')]
+        def call(operation, **arguments):
+            run = subprocess.run(command + ['--request', commons.canonical(request(operation, **arguments))],
+                                 text=True, capture_output=True, check=True)
+            self.assertEqual(run.stderr, '')
+            return json.loads(run.stdout)
+        tracks = call('list_research_tracks')['result']
+        self.assertIn('H08', next(t for t in tracks if t['id'] == 'M')['hypothesis_ids'])
+        h = call('get_hypothesis', hypothesis_id='H08')['result']
+        self.assertIn('comparative benefit untested', h['canonical_record']['confidence'])
+        self.assertEqual(h['integration']['status'], 'awaiting_pr610_merge')
+        self.assertTrue(any(q['status'] == 'superseded' for q in h['discrepancy_history']))
+        authority = call('get_evidence', evidence_id=h['authority']['id'])['result']
+        canonical_h08 = next(e for e in json.loads(authority['content'])['entries'] if e['id'] == 'H08')
+        self.assertEqual(h['canonical_record'], canonical_h08)
+        proposed = call('get_evidence', evidence_id='initiative-610-proposed')['result']
+        self.assertEqual(proposed['role'], 'proposal')
+        self.assertIn('UNMERGED', proposed['uncertainty'])
+        proposal = json.loads((commons.DATA / 'examples/h08-proposal.json').read_text())
+        self.assertEqual(proposal['hypothesis_id'], 'H08')
+        self.assertEqual(proposal['repository_revision'], h['integration']['main_revision'])
+        self.assertEqual(proposal['human_authorization']['status'], 'not_requested')
+        self.assertIn('human-only', proposal['matched_control'])
+        self.assertIn('Blind adjudicators independent of generators', proposal['matched_control'])
+        # The client prepares a proposal in scratch; the CLI only reads/validates it.
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / 'proposal.json'
+            path.write_text(commons.canonical(proposal))
+            run = subprocess.run(command + ['--validate-contribution', str(path)],
+                                 text=True, capture_output=True, check=True)
+            self.assertEqual(json.loads(run.stdout)['execution'], 'unavailable')
 
     def test_cli_success_and_fail_closed(self):
         command = [sys.executable, '-B', str(ROOT / 'tools/research_commons/commons.py')]

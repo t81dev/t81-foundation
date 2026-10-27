@@ -66,6 +66,7 @@ class Commons:
         self.hypotheses = self._index(self.manifest['hypotheses'])
         self._index(self.manifest['reproductions'])
         self._index(self.manifest['open_questions'])
+        self._index(self.manifest['discrepancy_history'])
         tracks = self._index(self.manifest['tracks'])
         if set(tracks) != {'R', 'F', 'M'} or set(self.hypotheses) != set(HYPOTHESES):
             raise CommonsError('canonical track/hypothesis identities required')
@@ -94,12 +95,22 @@ class Commons:
                 raise CommonsError('hypothesis pointer reassigns canonical identity')
             self._refs(hypothesis['evidence_refs'])
         groups = (self.manifest['tracks'] + self.manifest['reproductions']
-                  + self.manifest['open_questions'] + [self.manifest['governance']])
+                  + self.manifest['open_questions'] + self.manifest['discrepancy_history']
+                  + [self.manifest['governance'], self.manifest['integration']])
         for record in groups:
             self._refs(record['source_refs'])
+            self._refs(record.get('superseded_by_refs', []))
             for id in record.get('hypothesis_ids', []):
                 if id not in self.hypotheses:
                     raise CommonsError('unknown hypothesis: ' + id)
+        integration = self.manifest['integration']
+        if integration['main_revision'] != self.manifest['baseline_revision']:
+            raise CommonsError('integration main revision differs from baseline')
+        for ref in ('initiative-610-proposed', 'reconciliation-610-proposed'):
+            source = self.sources.get(ref, {})
+            if (source.get('role') != 'proposal'
+                    or source.get('revision') != integration['pending_revision']):
+                raise CommonsError('unmerged correction must remain proposed evidence')
         assigned = [id for track in tracks.values() for id in track['hypothesis_ids']]
         if sorted(assigned) != list(HYPOTHESES):
             raise CommonsError('each canonical hypothesis must have one track')
@@ -165,6 +176,9 @@ class Commons:
         return {'id': id, 'authority': self.sources['register'],
                 'historical_disposition_as_of': self.register['as_of'],
                 'canonical_record': self.entries[id],
+                'integration': self.manifest['integration'],
+                'discrepancy_history': [q for q in self.manifest['discrepancy_history']
+                                        if id in q['hypothesis_ids']],
                 'evidence': [self.sources[ref] for ref in self.hypotheses[id]['evidence_refs']],
                 'open_questions': [q for q in self.manifest['open_questions']
                                    if id in q['hypothesis_ids']]}

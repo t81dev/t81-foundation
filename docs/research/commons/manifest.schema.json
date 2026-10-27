@@ -339,6 +339,148 @@
         "contribution_status"
       ],
       "additionalProperties": false
+    },
+    "integration": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "const": "awaiting_pr610_merge"
+        },
+        "checked_on": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "main_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "pending_pr": {
+          "const": 610
+        },
+        "pending_revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "source_refs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "required_action": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "status",
+        "checked_on",
+        "main_revision",
+        "pending_pr",
+        "pending_revision",
+        "source_refs",
+        "required_action"
+      ],
+      "additionalProperties": false
+    },
+    "discrepancy_history": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "research",
+              "discrepancy",
+              "limitation"
+            ]
+          },
+          "hypothesis_ids": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "H01",
+                "H02",
+                "H03",
+                "H04",
+                "H05",
+                "H06",
+                "H07",
+                "H08"
+              ]
+            },
+            "minItems": 0,
+            "uniqueItems": true
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "status": {
+            "enum": [
+              "superseded",
+              "unresolved"
+            ]
+          },
+          "superseded_by_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "resolution_limit": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "hypothesis_ids",
+          "question",
+          "source_refs",
+          "status"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "superseded"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "superseded_by_refs",
+                "resolution_limit"
+              ]
+            }
+          }
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
     }
   },
   "required": [
@@ -352,7 +494,9 @@
     "hypotheses",
     "reproductions",
     "open_questions",
-    "governance"
+    "governance",
+    "integration",
+    "discrepancy_history"
   ],
   "additionalProperties": false
 }

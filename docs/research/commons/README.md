@@ -6,6 +6,23 @@ A curated, read-only discovery index for T81-ORI. Start with the
 This initial foundation exposes repository evidence and uncertainty. It does not
 certify findings or run experiments.
 
+## Current integration dependency
+
+The active index pins merged PR608 at
+`fabc7aa90f70ead227ec257a1ae6833fa16ced40`. **PR610 is still an unmerged
+draft**, checked 2026-10-27. Its correction at
+`d1eee548d4658df37b35d0cc3781b5a77cbae96b` is indexed only as proposed evidence,
+not main or an accepted finding. PR609 remains draft pending human review/merge
+of PR610 and a subsequent source-pin/receipt refresh. The canonical register
+already supplies the exact dated H07 B/C and H08 C/E records; PR608's stronger
+summary dispositions cannot override them.
+
+`discrepancy_history` retains PR607 identity/wording errors as superseded by
+PR608, with resolution limits. PR608's remaining H07/H08 error is unresolved
+until the proposed correction actually merges. `get_hypothesis` exposes this
+history and the integration dependency alongside the canonical record. No new
+operation or execution capability was added.
+
 ## Setup and discovery
 
 Requires Python 3.9+, Git 2.46+ (a conservative minimum for documented `GIT_NO_LAZY_FETCH` support), and the dependency in
@@ -18,6 +35,8 @@ the discovery interface:
 python -m pip install -r tools/research_commons/requirements.txt
 # Needed in clones that do not contain PR605's separate merged proposal history:
 git fetch origin 827d2accbf8ccb56afe3fe8d96dfb7251f249d7d
+# Explicit setup for the UNMERGED correction snapshot, not an update of main:
+git fetch origin d1eee548d4658df37b35d0cc3781b5a77cbae96b
 python -B tools/research_commons/commons.py --validate
 python -B tools/research_commons/commons.py --request '{"protocol":"t81.research-commons.v1","operation":"list_research_tracks","arguments":{}}'
 ```
@@ -92,6 +111,10 @@ statistics or a competent baseline. Contribution acceptance remains a human act.
 python -B tools/research_commons/commons.py --validate-contribution docs/research/commons/examples/h04-proposal.json
 python -B -m unittest discover -s tests/research_commons -v
 ```
+
+The [H08 proposal](examples/h08-proposal.json) compares human-only, single-assistant
+and adversarial-assistant work under matched budgets and blind independent
+adjudication; authorization is `not_requested`.
 
 The [onboarding demonstration](ONBOARDING_EXAMPLE.md) uses only these contracts
 and repository evidence. See [implementation and limits](IMPLEMENTATION_REPORT.md)

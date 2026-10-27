@@ -1,0 +1,62 @@
+{
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "id": "h08-blind-review-proposal",
+  "status": "proposed",
+  "hypothesis_id": "H08",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "Implementation author preparing an unexecuted onboarding example; not an independent scientific reviewer"
+  },
+  "repository_revision": "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "Canonical H08 C/E evidence, comparative benefit untested and earlier prompt provenance unavailable"
+    },
+    {
+      "source_ref": "initiative",
+      "relationship": "contradictory",
+      "scope": "Superseded PR607 assertions are historical claims, not established methodology benefit"
+    },
+    {
+      "source_ref": "initiative-608",
+      "relationship": "contradictory",
+      "scope": "Merged PR608 established disposition conflicts with the canonical register"
+    },
+    {
+      "source_ref": "initiative-610-proposed",
+      "relationship": "unresolved",
+      "scope": "Unmerged proposed correction, not main or independent validation"
+    }
+  ],
+  "uncertainty": "H08 comparative benefit remains untested. This is a proposed controlled evaluation, not a productivity finding or proof from artifact identity. Reviewer independence, prompt provenance and resource budget need human review.",
+  "human_authorization": {
+    "status": "not_requested",
+    "human": null,
+    "record": null
+  },
+  "research_question": "Does AI-assisted adversarial review reduce independently scored claim errors or improve reproduction yield relative to human-only and alternative-assisted work on matched repository research tasks?",
+  "falsification_criterion": "Reject the preregistered benefit if a held-out matched comparison fails to exceed the declared minimum effect with the planned uncertainty interval, or if any apparent effect requires unverified claims, unequal budgets or evaluator leakage.",
+  "matched_control": "Randomized matched task blocks: human-only, single-assistant, and adversarial-assistant workflows; identical source snapshots, task information, time/resource budgets and scoring rules. Blind adjudicators independent of generators establish source-grounded labels; record their relationships and uncertainty.",
+  "method": "Before execution, preregister task sampling, effect threshold, sample-size rationale, randomization seed, exclusion/stopping rules and evaluator independence. Pilot only for feasibility; freeze a separate held-out confirmatory corpus. Retain prompts and artifacts with actual attribution; do not infer prompt history from commit authorship.",
+  "measurement_plan": "Measure claim-error rates, reproduction yield, correction cost and provenance completeness. Report all task-level observations, between-task variation, paired effect estimates and uncertainty intervals; retain negative, blocked and inconclusive outcomes. Define an independent source/test oracle, blind scoring rubric and contamination checks before collecting outcomes.",
+  "expected_artifacts": [
+    "Preregistered protocol, blinded task allocation and scoring rubric",
+    "Actual prompt/source/commit provenance and attribution with unavailable data marked",
+    "Independent adjudication and raw per-task outcomes including failures",
+    "Resource ledger, uncertainty analysis, hashes and reproduction report"
+  ],
+  "resource_requirements": [
+    "Explicit human-reviewed experiment and reviewer/time budget before execution",
+    "Local scratch workspace for a future approved study; no experiment resources used by this proposal",
+    "External model APIs or human recruitment require separate explicit authorization"
+  ],
+  "security_requirements": [
+    "Discovery interface remains offline and read-only; no experiment execution operation",
+    "Do not send repository data, prompts or credentials to external services without approval",
+    "No changes to accepted records, governance, ISA, VM, Axion or CanonFS"
+  ]
+}

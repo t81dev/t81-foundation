@@ -20,7 +20,8 @@ experiment execution is required. Use the environment/setup in the Commons READM
    result or erase the unresolved original question.
 4. Call `list_open_research_questions`. `Q-H04` asks for equal domains, packing,
    control and transition costs; `D-H04-SCOPE` identifies the overgeneralization.
-   `D-607-IDS` warns against treating #607's throughput definition as canonical H04.
+   The hypothesis's `discrepancy_history` retains `D-607-IDS` as superseded
+   by #608; it records why #607's throughput definition was never canonical H04.
 5. Call `get_reproduction_instructions` with `hypothesis_id: H04`. This returns
    design/review instructions, with execution unavailable. A recipe is not approval.
 6. Inspect [h04-proposal.json](examples/h04-proposal.json). It records the exact
@@ -51,3 +52,40 @@ multiplication failures 140/201 under positional semantics. Retrieval is not a
 new reproduction. Retrieve `e1-readme` for the separately merged E1 footprint
 negative: complete TISC 1,240 bytes versus Wasm 157 bytes at the recorded entry
 contract. Neither result settles all ternary devices or designs.
+
+
+## H08: fresh-client discovery with no prior conversation
+
+Start a new client process with only the Commons README and repository checkout.
+Use `list_research_tracks` to find H08 under Track M, then `get_hypothesis` with
+`hypothesis_id: H08`. Its verbatim canonical record has evidence tiers C/E,
+`confidence: Researcher intent authoritative; comparative benefit untested.`,
+and earlier prompt provenance unavailable. The recorded result explicitly says
+this was not a controlled AI-productivity study. Read the assumptions: commit
+authorship does not prove prompt provenance, and repeated model summaries are
+not independent verification.
+
+Retrieve `register` to check the record independently of this narrative. Retrieve
+`initiative` (historical PR607), `initiative-608` (merged but disputed H07/H08
+summary) and `initiative-610-proposed` (UNMERGED proposed correction). The returned
+roles and uncertainty distinguish them. Superseded history does not erase the
+occurrence of PR607 errors. The remaining PR608 discrepancy and the dependency
+on PR610 are explicit; the proposed correction is not represented as main.
+
+Prepare [h08-proposal.json](examples/h08-proposal.json): human-only,
+single-assistant and adversarial-assistant arms with matched tasks, information
+and resource budgets; blind adjudicators independent of generators; a held-out
+confirmatory corpus, preregistered effect threshold and stopping rules; raw
+failures, uncertainty and actual provenance. It records `not_requested` human
+authorization and claims no methodological benefit or execution.
+
+```sh
+python -B tools/research_commons/commons.py --request '{"protocol":"t81.research-commons.v1","operation":"get_hypothesis","arguments":{"hypothesis_id":"H08"}}'
+python -B tools/research_commons/commons.py --request '{"protocol":"t81.research-commons.v1","operation":"get_evidence","arguments":{"evidence_id":"register"}}'
+python -B tools/research_commons/commons.py --validate-contribution docs/research/commons/examples/h08-proposal.json
+```
+
+The contract test runs discovery/retrieval/validation in fresh CLI processes
+without conversation context and prepares the proposal in scratch. This checks
+client onboarding behavior, not the judgment of a second model, authentic reviewer
+independence, or scientific benefit. No independent-model review is claimed.
