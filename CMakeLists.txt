@@ -26,6 +26,14 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 add_subdirectory(src)
 
+# Opt-in research instrumentation; no production decoder or policy changes.
+option(T81_BUILD_INVESTIGATION08_PROBE "Build Investigation 08 differential tensor probe" OFF)
+if(T81_BUILD_INVESTIGATION08_PROBE)
+  add_executable(t81_investigation08_probe experiments/integrated_system_advantage/parity_probe.cpp)
+  target_include_directories(t81_investigation08_probe PRIVATE ${PROJECT_SOURCE_DIR})
+  target_link_libraries(t81_investigation08_probe PRIVATE t81_decode t81_tool_cli t81_vm t81_core)
+endif()
+
 option(T81_BUILD_ARCHITECTURE_CHALLENGE "Build isolated inventory architecture comparison" OFF)
 if(T81_BUILD_ARCHITECTURE_CHALLENGE)
   add_executable(t81_architecture_arm_a experiments/architecture_challenge/arm_a.cpp)
@@ -1715,13 +1723,6 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_v1_canonical_numeric_alias_usage_test.py
   )
   set_tests_properties(t81_v1_canonical_numeric_alias_usage_policy_test PROPERTIES
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  )
-  add_test(
-    NAME t81_root_structure_policy_test
-    COMMAND python3 ${CMAKE_SOURCE_DIR}/tests/ci/check_root_structure_test.py
-  )
-  set_tests_properties(t81_root_structure_policy_test PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
 endif()

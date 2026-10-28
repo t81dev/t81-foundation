@@ -1,132 +1,15 @@
 {
-  "investigation": "Scientific Investigation 08 \u2014 Integrated Architecture Advantage (Corrected)",
-  "timestamp": "2026-10-28T08:16:37.725587+00:00",
-  "computational_equivalence": {
-    "parity_matched": true,
-    "test_input": "greet hello",
-    "config_a_output": {
-      "decision": "ALLOW",
-      "reason_code": "GREETING_PAIR"
-    },
-    "config_b_output": {
-      "decision": "ALLOW",
-      "reason_code": "GREETING_PAIR"
-    }
-  },
-  "model_architecture_admission_parity": {
-    "authoritative_mandatory_tensors": [
-      "lm_head.weight",
-      "model.embed_tokens.weight",
-      "model.layers.0.mlp.down_proj.weight",
-      "model.layers.0.mlp.gate_proj.weight",
-      "model.layers.0.mlp.up_proj.weight",
-      "model.layers.0.self_attn.k_proj.weight",
-      "model.layers.0.self_attn.o_proj.weight",
-      "model.layers.0.self_attn.q_proj.weight",
-      "model.layers.0.self_attn.v_proj.weight",
-      "model.layers.1.self_attn.k_proj.weight",
-      "model.layers.1.self_attn.q_proj.weight",
-      "model.layers.1.self_attn.v_proj.weight",
-      "model.norm.weight"
-    ],
-    "omitted_tensors_verified": [
-      "model.norm.weight",
-      "model.layers.1.self_attn.q_proj.weight",
-      "model.layers.1.self_attn.k_proj.weight",
-      "model.layers.1.self_attn.v_proj.weight",
-      "lm_head.weight"
-    ],
-    "parity_matched": true,
-    "negative_test_outcomes": [
-      {
-        "missing_tensor": "model.norm.weight",
-        "cli_rejected": true,
-        "comparator_rejected": true,
-        "cas_artifacts_persisted": 0,
-        "parity_matched": true
-      },
-      {
-        "missing_tensor": "model.layers.1.self_attn.q_proj.weight",
-        "cli_rejected": true,
-        "comparator_rejected": true,
-        "cas_artifacts_persisted": 0,
-        "parity_matched": true
-      },
-      {
-        "missing_tensor": "model.layers.1.self_attn.k_proj.weight",
-        "cli_rejected": true,
-        "comparator_rejected": true,
-        "cas_artifacts_persisted": 0,
-        "parity_matched": true
-      },
-      {
-        "missing_tensor": "model.layers.1.self_attn.v_proj.weight",
-        "cli_rejected": true,
-        "comparator_rejected": true,
-        "cas_artifacts_persisted": 0,
-        "parity_matched": true
-      },
-      {
-        "missing_tensor": "lm_head.weight",
-        "cli_rejected": true,
-        "comparator_rejected": true,
-        "cas_artifacts_persisted": 0,
-        "parity_matched": true
-      }
-    ]
-  },
-  "hypotheses_evaluation": {
-    "H_S1_Computational_Advantage": "NOT SUPPORTED (Full T81 CLI binary stack incurs process launch and translation overhead over in-process binary baselines)",
-    "H_S1_Assurance_Advantage": "SUPPORTED (T81 provides end-to-end cryptographic content identity, pre-execution Axion policy gating, and bit-exact replay verification)",
-    "H_S1_Compositional_Advantage": "INCONCLUSIVE (Controlled interaction analysis is infeasible without production code modification seams for individual subsystem ablations C, D, E, F)",
-    "H_S1_Ternary_Specific_Advantage": "NOT SUPPORTED / UNIMPLEMENTED (No arithmetic substitution seam exists in C++ production VM; ternary-specific advantage cannot be inferred from an unimplemented ablation)"
-  },
-  "compositional_interaction_analysis": {
-    "status": "INCONCLUSIVE",
-    "reason": "Controlled interaction metric calculation requires valid ablations for CAS (Config D) and Policy (Config E). Because production code seams do not exist without modifying production code, Configurations C, D, E, F are marked UNIMPLEMENTED and compositional interaction interaction analysis is classified INCONCLUSIVE."
-  },
-  "results": {
-    "Config_A": {
-      "config": "Config A (Full Integrated T81 Stack)",
-      "status": "SUCCESS",
-      "cold_start_latency_ms": 5367.471734,
-      "artifact_lookup_latency_ms": 3.930677,
-      "decision": "ALLOW",
-      "reason_code": "GREETING_PAIR",
-      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
-      "provenance_ref": "sha3-256:1UPkIdoVXUF\u0393gCHD8l92h\u03c0TjALUjyYdzMP\u2265KXDTz\u03c0"
-    },
-    "Config_B": {
-      "config": "Config B (Conventional Binary Equivalent Stack)",
-      "status": "SUCCESS",
-      "execution_latency_ms": 0.658802,
-      "artifact_lookup_latency_ms": 0.214217,
-      "actual_replay_latency_ms": 0.488131,
-      "decision": "ALLOW",
-      "reason_code": "GREETING_PAIR",
-      "result_ref": "sha3-256:db96d9e416c134f47bfc8541398acd45abf2358d6e58541e36fcdbef0767a22f",
-      "bundle_ref": "sha3-256:6c4e087c9e034bc2ac1b1ed51c7888efb3bf93065582f9560bda1d60d4fd576e",
-      "replay_valid": true
-    },
-    "Config_C": {
-      "config": "Config C (T81 with Binary Arithmetic Substitution)",
-      "status": "UNIMPLEMENTED",
-      "reason": "No production C++ VM seam exists to substitute binary arithmetic while retaining the T81 execution stack without modifying production code."
-    },
-    "Config_D": {
-      "config": "Config D (T81 with Conventional File Storage Substitution)",
-      "status": "UNIMPLEMENTED",
-      "reason": "No storage substitution seam exists in the production binary without modifying production code. Omitting --canonfs-root uses default .t81_canonfs CAS rather than OS filesystem substitution."
-    },
-    "Config_E": {
-      "config": "Config E (T81 with Policy Engine Substitution)",
-      "status": "UNIMPLEMENTED",
-      "reason": "Axion policy enforcement is a mandatory runtime invariant in T81; bypass traps execution via SecurityFault."
-    },
-    "Config_F": {
-      "config": "Config F (Selected Subsystem Pairings)",
-      "status": "UNIMPLEMENTED",
-      "reason": "Subsystem pairing substitution seam unavailable in production binary without modifying production code."
-    }
-  }
+  "investigation": "08",
+  "disposition": "BOUNDED CORRECTIVE PARITY PASSED; IMPLEMENTATION OBSERVATIONS ONLY; INVESTIGATION OPEN",
+  "architectural_performance_disposition": "INCONCLUSIVE",
+  "assurance_superiority_disposition": "INCONCLUSIVE",
+  "historical_evidence": "historical/manifest.json",
+  "current_evidence": "observations-2026-10-27-corrective.json",
+  "reason": "Zero unexplained differences in the declared bounded corpus. Python/C++ optimization, phase observability and replay semantics differ; no architectural superiority inference.",
+  "current_evidence_sha256": "303d0aa2f541dd53c9c41f9693fdaa6b44fd952db35f55d9b13079196c684191",
+  "gate_methods": 7,
+  "valid_differential_scenarios": 15,
+  "paired_observations_per_condition": 3,
+  "measured_source_archive": "observations-2026-10-27-sources.tar.gz",
+  "measured_source_archive_sha256": "de625428d51ee368abbf8e808e3c0804c32982a88060d2d722820e685cc46795"
 }
