@@ -12,8 +12,106 @@ Provides matched capabilities for comparison with T81:
 import hashlib
 import json
 import os
+import struct
 import time
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple, Optional, Set
+
+MANDATORY_TENSORS: Set[str] = {
+    "model.embed_tokens.weight",
+    "model.norm.weight",
+    "model.layers.0.self_attn.q_proj.weight",
+    "model.layers.0.self_attn.k_proj.weight",
+    "model.layers.0.self_attn.v_proj.weight",
+    "model.layers.0.self_attn.o_proj.weight",
+    "model.layers.0.mlp.gate_proj.weight",
+    "model.layers.0.mlp.up_proj.weight",
+    "model.layers.0.mlp.down_proj.weight",
+    "model.layers.1.self_attn.q_proj.weight",
+    "model.layers.1.self_attn.k_proj.weight",
+    "model.layers.1.self_attn.v_proj.weight",
+    "lm_head.weight",
+}
+
+
+def validate_model_architecture(model_bytes: bytes) -> Set[str]:
+    """
+    Parses .t81w binary payload, verifies header checksum,
+    and validates that all mandatory architecture admission tensors are present.
+    Returns the set of tensor names.
+    Raises ValueError if format/checksum is invalid or any mandatory tensor is missing.
+    """
+    lines = model_bytes.split(b"\n", 2)
+    if len(lines) < 3:
+        raise ValueError("Invalid .t81w model format: header incomplete")
+
+    magic = lines[0].decode('utf-8', errors='replace').strip()
+    checksum = lines[1].decode('utf-8', errors='replace').strip()
+    payload = lines[2]
+
+    if magic not in ("T81W1", "T81W2"):
+        raise ValueError(f"Invalid .t81w model magic: {magic}")
+
+    calc_hash = hashlib.sha3_512(payload).hexdigest()
+    if calc_hash != checksum:
+        raise ValueError(f"Model checksum mismatch: expected {checksum}, calculated {calc_hash}")
+
+    offset = 0
+    if len(payload) < 8:
+        raise ValueError("Invalid .t81w model payload: truncated tensor count")
+
+    num_tensors = struct.unpack_from("<Q", payload, offset)[0]
+    offset += 8
+    tensor_names = set()
+
+    for _ in range(num_tensors):
+        if offset + 8 > len(payload):
+            raise ValueError("Invalid .t81w model payload: truncated tensor name length")
+        name_len = struct.unpack_from("<Q", payload, offset)[0]
+        offset += 8
+        if offset + name_len > len(payload):
+            raise ValueError("Invalid .t81w model payload: truncated tensor name")
+        name = payload[offset:offset + name_len].decode('utf-8', errors='replace')
+        offset += name_len
+
+        if offset + 8 > len(payload):
+            raise ValueError("Invalid .t81w model payload: truncated rank")
+        rank = struct.unpack_from("<Q", payload, offset)[0]
+        offset += 8
+
+        if offset + 8 * rank > len(payload):
+            raise ValueError("Invalid .t81w model payload: truncated shape")
+        offset += 8 * rank
+
+        if magic == "T81W2":
+            if offset + 1 > len(payload):
+                raise ValueError("Invalid .t81w model payload: truncated format")
+            offset += 1
+
+        if offset + 8 > len(payload):
+            raise ValueError("Invalid .t81w model payload: truncated trits count")
+        trits = struct.unpack_from("<Q", payload, offset)[0]
+        offset += 8
+
+        if magic == "T81W2":
+            if offset + 8 > len(payload):
+                raise ValueError("Invalid .t81w model payload: truncated data length")
+            data_bytes = struct.unpack_from("<Q", payload, offset)[0]
+            offset += 8
+        else:
+            data_bytes = ((trits + 47) // 48) * 8
+
+        if offset + data_bytes > len(payload):
+            raise ValueError("Invalid .t81w model payload: truncated tensor data")
+        offset += data_bytes
+
+        tensor_names.add(name)
+
+    missing = MANDATORY_TENSORS - tensor_names
+    if missing:
+        raise ValueError(f"Model architecture admission rejected: missing mandatory tensor(s) {sorted(missing)}")
+
+    return tensor_names
+
 
 class ConventionalCAS:
     """Conventional Content-Addressed Storage backed by standard OS filesystem."""
@@ -81,6 +179,9 @@ class ConventionalTaskRunner:
         policy_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         start_time = time.perf_counter_ns()
+
+        # 0. Production Architecture-Admission Validation
+        validate_model_architecture(model_bytes)
 
         # 1. Establish canonical identity via CAS
         model_ref = self.cas.put(model_bytes)

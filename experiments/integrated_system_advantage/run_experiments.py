@@ -57,6 +57,80 @@ def main():
     print(f"  Config A Decision: {res_a['decision']} ({res_a['reason_code']})")
     print(f"  Config B Decision: {res_b['decision']} ({res_b['reason_code']})")
 
+    # Verify Model Architecture Admission Parity (Differential Negative Cases)
+    print("\nVerifying Model Architecture Admission Parity (Differential Negative Cases)...")
+    import tempfile
+    import subprocess
+    import hashlib
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "tests", "python")))
+    from baseline_stack import ConventionalTaskRunner, MANDATORY_TENSORS
+    from test_model_admission_parity import parse_t81w, pack_t81w, OMITTED_MANDATORY_TENSORS
+
+    with open(fixtures["model_path"], "rb") as f:
+        valid_model_bytes = f.read()
+
+    magic, tensors = parse_t81w(valid_model_bytes)
+    admission_parity_results = []
+    all_negative_cases_rejected = True
+
+    for tensor_to_remove in OMITTED_MANDATORY_TENSORS:
+        filtered_tensors = [t for t in tensors if t["name"] != tensor_to_remove]
+        modified_bytes = pack_t81w(magic, filtered_tensors)
+        mod_sha512_hash = "sha3-512:" + hashlib.sha3_512(modified_bytes).hexdigest()
+        mod_sha256_hash = "sha3-256:" + hashlib.sha3_256(modified_bytes).hexdigest()
+
+        with tempfile.TemporaryDirectory(prefix=f"admission_{tensor_to_remove}_") as tmpdir:
+            # 1. Conventional Runner test
+            cas_dir = os.path.join(tmpdir, "cas")
+            runner = ConventionalTaskRunner(cas_dir)
+            json_policy = {"allowed_model_hashes": [mod_sha256_hash, "*"], "require_event": "task:assess_fixed.v1"}
+
+            comparator_rejected = False
+            try:
+                runner.run_assess_fixed(modified_bytes, input_text, json_policy)
+            except ValueError as e:
+                comparator_rejected = "Model architecture admission rejected" in str(e)
+
+            cas_objects_count = len(os.listdir(os.path.join(cas_dir, "objects"))) if os.path.exists(os.path.join(cas_dir, "objects")) else 0
+
+            # 2. Production T81 CLI test
+            mod_model_path = os.path.join(tmpdir, "model.t81w")
+            with open(mod_model_path, "wb") as f:
+                f.write(modified_bytes)
+
+            apl_policy_path = os.path.join(tmpdir, "policy.apl")
+            with open(apl_policy_path, "w") as f:
+                f.write(f'(policy (tier 1) (allowed-ternary-model-hashes ["{mod_sha512_hash}"]) (require-axion-event (reason "task:assess_fixed.v1")))\n')
+
+            canon_dir = os.path.join(tmpdir, "canon")
+            cmd = [
+                harness.t81_bin, "ai", "task", "assess-fixed",
+                "--model", "assess-fixed-demo",
+                "--model-file", mod_model_path,
+                "--policy", apl_policy_path,
+                "--canonfs-root", canon_dir,
+                "--mode", "strict_deterministic",
+                "--input", input_text
+            ]
+            cli_res = subprocess.run(cmd, capture_output=True, text=True)
+            cli_rejected = (cli_res.returncode != 0)
+
+            case_passed = comparator_rejected and cli_rejected and (cas_objects_count == 0)
+            if not case_passed:
+                all_negative_cases_rejected = False
+
+            outcome_str = f"REJECTED by both (CLI code {cli_res.returncode}, CAS objects: {cas_objects_count})" if case_passed else "FAIL"
+            print(f"  Missing '{tensor_to_remove}': {outcome_str}")
+            admission_parity_results.append({
+                "missing_tensor": tensor_to_remove,
+                "cli_rejected": cli_rejected,
+                "comparator_rejected": comparator_rejected,
+                "cas_artifacts_persisted": cas_objects_count,
+                "parity_matched": case_passed
+            })
+
+    print(f"Model Architecture Admission Parity Verification: {'PARITY MATCHED (100% Rejection)' if all_negative_cases_rejected else 'MISMATCH'}")
+
     results_data = {
         "investigation": "Scientific Investigation 08 — Integrated Architecture Advantage (Corrected)",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -65,6 +139,12 @@ def main():
             "test_input": input_text,
             "config_a_output": {"decision": res_a["decision"], "reason_code": res_a["reason_code"]},
             "config_b_output": {"decision": res_b["decision"], "reason_code": res_b["reason_code"]}
+        },
+        "model_architecture_admission_parity": {
+            "authoritative_mandatory_tensors": sorted(MANDATORY_TENSORS),
+            "omitted_tensors_verified": OMITTED_MANDATORY_TENSORS,
+            "parity_matched": all_negative_cases_rejected,
+            "negative_test_outcomes": admission_parity_results
         },
         "hypotheses_evaluation": {
             "H_S1_Computational_Advantage": "NOT SUPPORTED (Full T81 CLI binary stack incurs process launch and translation overhead over in-process binary baselines)",

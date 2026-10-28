@@ -42,6 +42,7 @@ Testing/
 *.dSYM/
 
 # Repo-specific binaries & test outputs
+experiments/integrated_system_advantage/work/
 /t81
 /axion_*
 /canonfs_*
