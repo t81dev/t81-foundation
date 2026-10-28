@@ -1,0 +1,1018 @@
+{
+  "label": "EXPLORATORY — NONCONFIRMATORY",
+  "confirmatory": false,
+  "eligible_for_preregistered_dataset": false,
+  "collection_seconds": 133.90869737509638,
+  "observations": [
+    {
+      "pair": 0,
+      "treatment": "C",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:49:49.833291+00:00",
+      "end_utc": "2026-10-28T18:49:55.946508+00:00",
+      "start_ns": 660699175478708,
+      "end_ns": 660705288035375,
+      "elapsed_ns": 6112556667,
+      "pid": 77934,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 0,
+      "treatment": "P",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:49:55.956742+00:00",
+      "end_utc": "2026-10-28T18:50:02.539145+00:00",
+      "start_ns": 660705299015250,
+      "end_ns": 660711880563875,
+      "elapsed_ns": 6581548625,
+      "pid": 77937,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "77937",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-00-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 1,
+      "treatment": "C",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:50:02.548547+00:00",
+      "end_utc": "2026-10-28T18:50:08.629353+00:00",
+      "start_ns": 660711890917666,
+      "end_ns": 660717971107625,
+      "elapsed_ns": 6080189959,
+      "pid": 77972,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 1,
+      "treatment": "P",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:50:08.638201+00:00",
+      "end_utc": "2026-10-28T18:50:15.286450+00:00",
+      "start_ns": 660717980658791,
+      "end_ns": 660724628082625,
+      "elapsed_ns": 6647423834,
+      "pid": 77990,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "77990",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-01-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "treatment": "P",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:50:15.296550+00:00",
+      "end_utc": "2026-10-28T18:50:21.843810+00:00",
+      "start_ns": 660724639103458,
+      "end_ns": 660731185809833,
+      "elapsed_ns": 6546706375,
+      "pid": 78003,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78003",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "treatment": "C",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:50:21.852603+00:00",
+      "end_utc": "2026-10-28T18:50:27.837315+00:00",
+      "start_ns": 660731195252083,
+      "end_ns": 660737179504125,
+      "elapsed_ns": 5984252042,
+      "pid": 78036,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-02-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "treatment": "C",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:50:27.846175+00:00",
+      "end_utc": "2026-10-28T18:50:33.863890+00:00",
+      "start_ns": 660737188912250,
+      "end_ns": 660743206054416,
+      "elapsed_ns": 6017142166,
+      "pid": 78038,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "treatment": "P",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:50:33.876513+00:00",
+      "end_utc": "2026-10-28T18:50:40.355884+00:00",
+      "start_ns": 660743219343875,
+      "end_ns": 660749697923541,
+      "elapsed_ns": 6478579666,
+      "pid": 78041,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78041",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-03-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 4,
+      "treatment": "P",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:50:40.366466+00:00",
+      "end_utc": "2026-10-28T18:50:46.876647+00:00",
+      "start_ns": 660749709385916,
+      "end_ns": 660756218804083,
+      "elapsed_ns": 6509418167,
+      "pid": 78044,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78044",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 4,
+      "treatment": "C",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:50:46.887836+00:00",
+      "end_utc": "2026-10-28T18:50:52.911579+00:00",
+      "start_ns": 660756230854833,
+      "end_ns": 660762254069541,
+      "elapsed_ns": 6023214708,
+      "pid": 78046,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-04-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 5,
+      "treatment": "C",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:50:52.921254+00:00",
+      "end_utc": "2026-10-28T18:50:58.979293+00:00",
+      "start_ns": 660762264362125,
+      "end_ns": 660768321512333,
+      "elapsed_ns": 6057150208,
+      "pid": 78050,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 5,
+      "treatment": "P",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:50:58.989796+00:00",
+      "end_utc": "2026-10-28T18:51:06.435176+00:00",
+      "start_ns": 660768332989958,
+      "end_ns": 660775777843041,
+      "elapsed_ns": 7444853083,
+      "pid": 78051,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78051",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-05-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 6,
+      "treatment": "P",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:51:06.456560+00:00",
+      "end_utc": "2026-10-28T18:51:13.496683+00:00",
+      "start_ns": 660775799863750,
+      "end_ns": 660782839425916,
+      "elapsed_ns": 7039562166,
+      "pid": 78104,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78104",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 6,
+      "treatment": "C",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:51:13.509041+00:00",
+      "end_utc": "2026-10-28T18:51:20.007598+00:00",
+      "start_ns": 660782852446791,
+      "end_ns": 660789350431291,
+      "elapsed_ns": 6497984500,
+      "pid": 78138,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-06-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 7,
+      "treatment": "P",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:51:20.020179+00:00",
+      "end_utc": "2026-10-28T18:51:27.532152+00:00",
+      "start_ns": 660789363679333,
+      "end_ns": 660796875166708,
+      "elapsed_ns": 7511487375,
+      "pid": 78174,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78174",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 7,
+      "treatment": "C",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:51:27.543748+00:00",
+      "end_utc": "2026-10-28T18:51:34.223187+00:00",
+      "start_ns": 660796887359833,
+      "end_ns": 660803566259750,
+      "elapsed_ns": 6678899917,
+      "pid": 78203,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-07-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 8,
+      "treatment": "C",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:51:34.237248+00:00",
+      "end_utc": "2026-10-28T18:51:41.182838+00:00",
+      "start_ns": 660803580960166,
+      "end_ns": 660810526039958,
+      "elapsed_ns": 6945079792,
+      "pid": 78245,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 8,
+      "treatment": "P",
+      "order": [
+        "C",
+        "P"
+      ],
+      "start_utc": "2026-10-28T18:51:41.193938+00:00",
+      "end_utc": "2026-10-28T18:51:48.182858+00:00",
+      "start_ns": 660810537748250,
+      "end_ns": 660817526135291,
+      "elapsed_ns": 6988387041,
+      "pid": 78294,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78294",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-08-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 9,
+      "treatment": "P",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:51:48.194462+00:00",
+      "end_utc": "2026-10-28T18:51:55.487908+00:00",
+      "start_ns": 660817538375041,
+      "end_ns": 660824831227083,
+      "elapsed_ns": 7292852042,
+      "pid": 78322,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-P/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-P/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-P/store"
+      ],
+      "profiler_command": [
+        "/usr/bin/sample",
+        "78322",
+        "5",
+        "1",
+        "-mayDie",
+        "-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-P/sample.txt"
+      ],
+      "profiler_returncode": 0,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    },
+    {
+      "pair": 9,
+      "treatment": "C",
+      "order": [
+        "P",
+        "C"
+      ],
+      "start_utc": "2026-10-28T18:51:55.499274+00:00",
+      "end_utc": "2026-10-28T18:52:03.730347+00:00",
+      "start_ns": 660824843294000,
+      "end_ns": 660833073775083,
+      "elapsed_ns": 8230481083,
+      "pid": 78353,
+      "returncode": 0,
+      "command": [
+        "/private/tmp/t81-pr627-review/acceptance-build/t81",
+        "ai",
+        "task",
+        "assess-fixed",
+        "--model",
+        "investigation08",
+        "--model-file",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-C/model.t81w",
+        "--policy",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-C/policy.apl",
+        "--input",
+        "greet hello",
+        "--mode",
+        "strict_deterministic",
+        "--canonfs-root",
+        "/private/tmp/t81-i08-exploratory/experiments/integrated_system_advantage/controlled_measurement/execution_profile_2026_10_28/run/pair-09-C/store"
+      ],
+      "profiler_command": null,
+      "verified_artifacts": {
+        "result": {
+          "ref": "sha3-256:2G3SτJVsMxμ5RUbLoV<LlUfYQnλ∞Q×RysZ≤RHBYτs",
+          "sha256": "9437f9bff4628929b6677a1fa75cd07061c6adc66dfc0c82bebaf5cd50d70ce9",
+          "bytes": 442
+        },
+        "provenance": {
+          "ref": "sha3-256:1UPkIdoVXUFΓgCHD8l92hπTjALUjyYdzMP≥KXDTzπ",
+          "sha256": "c219cf2ff9432bd7a30c33c0012b46cc1cada4558dc7508c06689c76285f2ebc",
+          "bytes": 1703
+        }
+      }
+    }
+  ]
+}

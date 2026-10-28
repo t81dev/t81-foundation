@@ -1,0 +1,7 @@
+test_files_removed_before_new_process_recovery_and_tamper (__main__.RealWorkflowTests.test_files_removed_before_new_process_recovery_and_tamper) ... ok
+test_policy_denial_and_invalid_model_leave_no_objects (__main__.RealWorkflowTests.test_policy_denial_and_invalid_model_leave_no_objects) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 20.055s
+
+OK
