@@ -1,97 +1,147 @@
 # Scientific Investigation 10A — Physical Storage Evidence Discovery & H01 Assessment
 
 **Repository:** T81 Foundation (`t81dev/t81-foundation`)
-**Document ID:** `docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md`
-**Date:** April 2026
-**Role:** Principal Experimental Systems Engineer and Scientific Reproducibility Lead
-**Investigation Domain:** Hypothesis H01 (Physical Storage Economics of Balanced Ternary Representation)
 
----
+**Original assessment:** PR [#624](https://github.com/t81dev/t81-foundation/pull/624), merge `934b93192a2aa80e352005193ac516e09a90f432`; original document date was April 2026.
 
-## Executive Summary & Non-Duplication Determination
+**Evidence correction:** October 28, 2026.
 
-This assessment performs a bounded scientific investigation into Hypothesis H01: *whether equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions.*
+**Disposition:** **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE.**
 
-### Key Scientific Findings:
-1. **Non-Duplication Verification:** Investigation 10 evaluates physical storage device physics and fabrication-level memory array metrics. Prior investigations evaluated software CPU SIMD instruction performance (Investigation 05 / PRs #544–#549) and gate-level RTL/logic synthesis (Investigation 07 / PR #595). Investigation 10 does not duplicate any completed experiment.
-2. **Primary-Source Benchmark Set:** Evaluated 10 representative, peer-reviewed primary sources across commercial binary baselines (SRAM, SLC/TLC 3D NAND Flash, STT-MRAM), emerging non-volatile multilevel binary/resistive memories (1T1R HfO2 ReRAM, PCM, FeFET), and experimental three-state devices (T-SRAM, multi-conductance RRAM/PCM, anti-ambipolar heterojunction transistors).
-3. **Array-Level Overhead Penalty:** While single-element three-state physics offer a theoretical $1.585\times$ information density multiplier ($\log_2 3 \approx 1.585$ bits/element), physical realization incurs severe sensing, write-verify, multi-voltage reference generation, and read-window margins tax. Multi-level/3-state sensing circuits occupy **$2.5\times \text{ to } 4.0\times$ higher peripheral area** and consume **$3\times \text{ to } 10\times$ higher write energy** with **$10\times \text{ to } 100\times$ write latency degradation** due to iterative write-verify pulse steps.
-4. **Final Disposition:** **`NO-GO` for physical ternary storage claims.** Quantitative modeling of standalone physical ternary storage superior to matched binary or MLC/TLC baselines is scientifically unjustified based on current primary-source device physics.
+H01 asks whether equal-information ternary storage can have lower total physical cost than binary storage under stated device and overhead assumptions. This correction audits all ten source descriptions in #624, withdraws unsupported quantitative and universal conclusions, and preserves their values below as explicitly **UNVERIFIED** claims. It does not establish H01 as experimentally falsified or permanently closed on physical silicon, and does not redirect the research program.
 
----
+## 1. Review boundary and provenance status
 
-## 1. Scope, Bounds, and Non-Duplication Analysis
+The ten entries in #624 were descriptive labels, not complete citations: no exact titles, DOIs, page/table/figure references, raw measurements, or extraction records were supplied. Searches on October 28, 2026 used each attributed organization/author, memory type, venue, year and distinctive numbers, followed by primary publisher, author-institution and conference records. The audit below distinguishes verified publication identity, author-reported measurements at an exact accessible location, unverified attribution, and conditional arithmetic. Failure to identify a citation is not proof that no such publication exists.
 
-### 1.1 Relation to Prior T81 Research Sequence
-- **Investigation 05 (PRs #544–#549):** Focused on CPU software execution (scalar, SWAR, AVX2, ARM NEON). Concluded that bit-shuffle decoding overhead on binary ALUs offsets memory compression savings on host CPUs (**`STOP / FROZEN`**).
-- **Investigation 07 (PR #595):** Evaluated Verilog RTL gate-level logic synthesis (Design A/B/C) on binary ASIC libraries. Concluded that sign-and-mask ternary logic overlays fail the mandatory $1.25\times$ area efficiency threshold (**`NOT SUPPORTED`**).
-- **Investigation 10A (This Investigation):** Evaluates physical cell physics, fabrication nodes, memory bitcells, and array-level peripheral overheads (DAC/ADC, sense amplifiers, write-verify loops) for real physical 3-state devices vs binary/multilevel equivalents.
+**Result:** none of the ten original quantitative rows has been verified as a complete, correctly attributed measurement record. Some related publications are identifiable; they must not be substituted silently for the unspecified originals. Every empirical number retained from #624 in §3 is **UNVERIFIED**, including process labels and overheads, unless a separately scoped primary-source observation in §2 explicitly says otherwise. No device experiment or independent reproduction of a publication's measurements was performed.
 
----
+The review uses the Investigation 10B v1.0 design packet, dated October 28, 2026, supplied in the preceding research-design session. Its Markdown artifact SHA-256 is `4e2737c5ef161cdd023d5fdcedeccbd5b1f51694ac67a49071edbe38eae69579`. It is a proposed preregistration, not an adopted repository specification. The relevant requirements are restated in §6 so this correction does not depend on access to a temporary local file. Canonical [H01](continuity/HYPOTHESIS_REGISTER_v1.json) and the [continuity charter](continuity/MASTER_CONTINUITY_CHARTER_v1.0.md) remain unchanged.
 
-## 2. Primary-Source Representative Benchmark Set
+## 2. Independent publication audit: all ten original entries
 
-The investigation evaluated 10 representative primary sources across commercial binary, multilevel, and experimental ternary storage architectures:
+For an unresolved original citation, full title, complete authors, verified venue/date and DOI are **UNVERIFIED**; an original venue/year below is an attribution being investigated, not a verified bibliographic fact. No exact measurement location can be supplied where none was recovered. Related records are explicitly separated and do not verify the original row's other parameters.
 
-1. **Intel 5nm 6T SRAM Cell (IEDM 2022):** Commercial binary volatile baseline ($0.0199\,\mu\text{m}^2$ cell area, sub-ns read/write latency, $>10^{16}$ endurance).
-2. **Lin et al. 3-State CMOS T-SRAM (IEEE JSSC 2021):** Experimental ternary volatile cell ($0.058\,\mu\text{m}^2$ in 28nm, 10T/dual-rail structure, $2.91\times$ area penalty over 6T SRAM at same node).
-3. **TSMC 22nm 1T1R ReRAM / RRAM Array (IEEE ISSCC 2020):** Commercial binary resistive NVM ($10F^2$ cell area, 10ns read, 50ns write, $10^6$ endurance).
-4. **Fastow et al. Multilevel HfO2 RRAM Array (IEEE TED 2022):** Multilevel 3-state/4-state resistive NVM ($10F^2$ cell area, $1.2\,\mu\text{s}$ write latency due to 6-step write-verify algorithm, $10^4$ endurance).
-5. **Samsung 20nm PRAM / PCM Array (IEEE ISSCC 2014):** Binary Phase Change Memory ($4F^2$ cell area, 20ns read, 100ns write).
-6. **IBM Research Multilevel PCM (IEEE TMAG / Nature Nanotech 2016):** 3-state / 4-state Phase Change Memory ($4F^2$ cell area, $5\,\mu\text{s}$ write-verify latency, iterative crystallization/melt pulses).
-7. **Kioxia / WD 3D NAND SLC Flash (IEEE ISSCC 2023):** Commercial binary NAND Flash ($0.0012\,\mu\text{m}^2/\text{bit}$ effective, $25\,\mu\text{s}$ read, $200\,\mu\text{s}$ program).
-8. **Samsung 3D NAND TLC Flash (IEEE ISSCC 2024):** Commercial 3-bit/cell (8-state) NAND Flash ($0.00021\,\mu\text{m}^2/\text{bit}$ effective, $45\,\mu\text{s}$ read, $650\,\mu\text{s}$ program, 3,000 P/E cycles).
-9. **Ni et al. 28nm HKMG FeFET Memory (IEEE EDL 2018):** Ferroelectric FET 1T memory ($6F^2$ cell area, 10ns read, 100ns write, $10^5$ endurance).
-10. **Kobashi et al. 2D Anti-Ambipolar Transistor Ternary Memory (Nature Electronics 2020):** Emerging 3-state heterojunction device (Single-transistor negative differential resistance, $150F^2$ lab layout, $V_{\text{dd}}$ control window $<0.2\,\text{V}$, high noise sensitivity).
+| ID  | Original attribution in #624                                              | Verification result and exact source location                                                                                                                                                                                                                                                                                                                                                                                               |
+| --- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P01 | Intel 5 nm 6T SRAM, IEDM 2022                                             | Original citation **UNVERIFIED**. A primary conference record attributes the exact area number to TSMC's **3 nm** paper, R1 below: IEDM archive printed p. 56, paper 27.1, final sentence of its abstract. This verifies a differently attributed cell-area report, not Intel latency, energy, endurance or macro overhead.                                                                                                                 |
+| P02 | Lin et al., 3-state CMOS T-SRAM, JSSC 2021                                | Original title/authors/venue/date/DOI **UNVERIFIED**. Searches `Lin ternary SRAM 2021 JSSC`, `Lin 3-State SRAM JSSC`, and `Lin ternary SRAM 2021 28` did not establish the claimed publication. SRAM-based ternary neural computation does not by itself mean three physical storage states. Measurement location: **UNVERIFIED**.                                                                                                          |
+| P03 | TSMC 22 nm 1T1R ReRAM, ISSCC 2020                                         | Original citation **UNVERIFIED**. Primary ISSCC program printed p. 31 lists a related 22 nm ReRAM compute-in-memory paper by Xue and colleagues, R2. The same program p. 29, paper 13.3, separately lists a TSMC **STT-MRAM** paper containing the stated read-speed and endurance values in its title. A name/number resemblance is insufficient to attribute those measurements to ReRAM. Original measurement locations: **UNVERIFIED**. |
+| P04 | Fastow et al., multilevel HfO2 RRAM, TED 2022                             | Original title/authors/venue/date/DOI **UNVERIFIED**. Searches `Fastow RRAM 2022`, `Fastow HfO2 2022`, and `Fastow multilevel RRAM TED` did not establish this record. Measurement location: **UNVERIFIED**.                                                                                                                                                                                                                                |
+| P05 | Samsung 20 nm PRAM, ISSCC 2014                                            | Original citation **UNVERIFIED**. Searches `Samsung 20nm PCM 2014 ISSCC` and `A 20nm 8Gb PRAM ISSCC` surfaced a related **2012** title, “A 20nm 1.8V 8Gb PRAM with 40MB/s program bandwidth.” Its primary IEEE page was bot-gated; the full original citation and all row measurements remain **UNVERIFIED**. No source page/table is asserted.                                                                                             |
+| P06 | IBM multilevel PCM, “IEEE TMAG / Nature Nanotech 2016”                    | Original citation **UNVERIFIED**: neither a unique venue nor a title was given. IBM's author-institution record identifies R3 in **IEEE JETCAS**, a different venue, with an accessible abstract. That abstract reports multilevel feasibility, not the row's area, latency, energy or peripheral figures. Original measurement locations: **UNVERIFIED**.                                                                                  |
+| P07 | Kioxia/WD SLC 3D NAND, ISSCC 2023                                         | Original title/authors/venue/date/DOI **UNVERIFIED**. Searches `Kioxia SLC ISSCC 2023` and `Kioxia 2023 ISSCC 112`, plus the [official 2023 press kit](https://www.isscc.org/s/ISSCC2023-PressKit.pdf), did not establish the stated SLC/layer-count/measurement combination. Measurement location: **UNVERIFIED**.                                                                                                                         |
+| P08 | Samsung TLC 3D NAND, ISSCC 2024                                           | Original title/authors/venue/date/DOI **UNVERIFIED**. Searches `Samsung 176 ISSCC 2024 TLC` and `Samsung 2024 ISSCC NAND 176` did not establish this combination. The indexed conference press kit instead describes a Samsung QLC paper; its direct URL redirected to a service homepage, so it is not treated as inspected measurement evidence. Original measurement location: **UNVERIFIED**.                                           |
+| P09 | Ni et al., 28 nm HKMG FeFET, EDL 2018                                     | Original citation **UNVERIFIED**. The authors' laboratory bibliography identifies R4, a 2018 EDL write-disturb paper. The title/author/year resemblance does not connect the original area/energy/endurance values to that paper. Full-text measurement locations: **UNVERIFIED**.                                                                                                                                                          |
+| P10 | Kobashi et al., 2D anti-ambipolar ternary memory, Nature Electronics 2020 | Original title/authors/venue/date/DOI **UNVERIFIED**. Searches `Kobashi ternary 2020 memory`, `Kobashi anti-ambipolar 2020`, and `Kobashi 2020 Nature Electronics ternary` did not establish this record. Related antiambipolar logic publications are not evidence for this asserted memory macro. Measurement location: **UNVERIFIED**.                                                                                                   |
 
----
+### Identifiable primary records and limits of extraction
 
-## 3. Source-Backed Device Comparison Table
+**R1 — corrected provenance for P01's area number.** Full title: *Critical Process Features Enabling Aggressive Contacted Gate Pitch Scaling for 3nm CMOS Technology and Beyond*. Authors, complete list as printed: Chih-Hao Chang, V. S. Chang, K. H. Pan, K. T. Lai, J. H. Lu, J. A. Ng, C. Y. Chen, B. F. Wu, C. J. Lin, C. S. Liang, C. P. Tsao, Y. S. Mor, C. T. Li, T. C. Lin, C. H. Hsieh, P. N. Chen, H. H. Hsu, J. H. Chen, H. F. Chen, J. Y. Yeh, M. C. Chiang, C. Y. Lin, J. J. Liaw, C. H. Wang, S. B. Lee, C. C. Chen, H. J. Lin, R. Chen, K. W. Chen, C. O. Chui, Y. C. Yeo, K. B. Huang, T. L. Lee, M. H. Tsai, K. S. Chen, Y. C. Lu, S. M. Jang, S.-Y. Wu. Venue: 2022 IEEE International Electron Devices Meeting, paper 27.1; scheduled December 7, 2022. Source: [official IEDM archive](https://ieee-iedm.org/wp-content/uploads/2026/05/2022-IEDM-Archive.pdf#page=56), printed p. 56, paper 27.1 abstract, final sentence: **author-reported 0.0199 µm² HD SRAM cell area**. Affiliation is TSMC. DOI lead `10.1109/IEDM45625.2022.10019565` is **UNVERIFIED against primary DOI metadata in this review**: the IEEE page returned a bot challenge. This does not invalidate the accessible conference abstract, but no additional metric is extracted from the inaccessible paper.
 
-| Device Architecture | Technology Node / Process | Storage Mechanism / State Count | Normalized Cell Area ($F^2$ or $\mu\text{m}^2$) | Read / Write Latency | Read / Write Energy | Endurance (Cycles) | Sensing & Peripheral Area Overhead | Evidence Tier |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Intel 6T SRAM** | 5nm FinFET | Volatile Latch (2 states) | $0.0199\,\mu\text{m}^2$ ($130 F^2$) | $<0.5\,\text{ns} / <0.5\,\text{ns}$ | $1.2\,\text{fJ/bit} / 1.8\,\text{fJ/bit}$ | $>10^{16}$ | Baseline ($15\text{--}20\%$ array area) | **Tier A** |
-| **Lin et al. T-SRAM** | 28nm Planar CMOS | Dual-Latch / 10T (3 states) | $378 F^2$ ($0.058\,\mu\text{m}^2$) | $0.8\,\text{ns} / 1.1\,\text{ns}$ | $3.5\,\text{fJ/trit} / 5.2\,\text{fJ/trit}$ | $>10^{16}$ | $+45\%$ peripheral area (dual reference sense amps) | **Tier B** |
-| **TSMC 1T1R ReRAM** | 22nm ULP CMOS | Resistive Filament (2 states) | $10 F^2$ ($0.0048\,\mu\text{m}^2$) | $10\,\text{ns} / 50\,\text{ns}$ | $8.2\,\text{fJ/bit} / 45\,\text{pJ/bit}$ | $10^6$ | $20\text{--}25\%$ array area (single-ended SA) | **Tier A** |
-| **Fastow Multilevel RRAM** | 40nm CMOS | Resistive Conductance (3 states) | $10 F^2$ ($0.016\,\mu\text{m}^2$) | $25\,\text{ns} / 1.2\,\mu\text{s}$ | $12\,\text{fJ/trit} / 320\,\text{pJ/trit}$ | $10^4$ | $+180\%$ peripheral area (6-step Write-Verify DAC/ADC) | **Tier B** |
-| **Samsung 20nm PRAM** | 20nm CMOS | Phase Change Chalcogenide (2 states) | $4 F^2$ ($0.0016\,\mu\text{m}^2$) | $20\,\text{ns} / 100\,\text{ns}$ | $15\,\text{fJ/bit} / 120\,\text{pJ/bit}$ | $10^8$ | $25\%$ array area | **Tier B** |
-| **IBM Multilevel PCM** | 90nm CMOS | Amorphous/Crystalline (3 states) | $4 F^2$ ($0.032\,\mu\text{m}^2$) | $40\,\text{ns} / 5.0\,\mu\text{s}$ | $28\,\text{fJ/trit} / 850\,\text{pJ/trit}$ | $10^5$ | $+220\%$ peripheral area (Iterative Melt/Crystallize Loop) | **Tier B** |
-| **Kioxia 3D NAND SLC** | 112-Layer BiCS | Floating Gate / Charge Trap (2 states) | $0.0012\,\mu\text{m}^2/\text{bit}$ | $25\,\mu\text{s} / 200\,\mu\text{s}$ | $0.1\,\text{pJ/bit} / 2.5\,\text{nJ/bit}$ | $10^5$ | $10\text{--}15\%$ array area | **Tier A** |
-| **Samsung 3D NAND TLC** | 176-Layer V-NAND | Multilevel Charge Trap (8 states) | $0.00021\,\mu\text{m}^2/\text{bit}$ | $45\,\mu\text{s} / 650\,\mu\text{s}$ | $0.25\,\text{pJ/bit} / 8.0\,\text{nJ/bit}$ | $3 \times 10^3$ | $+300\%$ peripheral area (ISPP Write-Verify & High-Voltage Charge Pumps) | **Tier A** |
-| **Ni et al. FeFET 1T** | 28nm HKMG | Ferroelectric Polarization (2 states) | $6 F^2$ ($0.0047\,\mu\text{m}^2$) | $10\,\text{ns} / 100\,\text{ns}$ | $2.1\,\text{fJ/bit} / 15\,\text{fJ/bit}$ | $10^5$ | $20\%$ array area | **Tier B** |
-| **Kobashi Anti-Ambipolar** | Lab Prototype | Heterojunction NDR (3 states) | $>150 F^2$ (Discrete) | Unmeasured / $>100\,\text{ns}$ | Unmeasured / $>1\,\text{nJ/trit}$ | $<10^3$ | Unsupported / Unintegrated | **Tier C** |
+**R2 — related ReRAM record, not confirmation of P03.** Full title: *15.4 A 22nm 2Mb ReRAM Compute-in-Memory Macro with 121-28TOPS/W for Multibit MAC Computing for Tiny AI Edge Devices*. Authors, complete program list: C.-X. Xue, T.-Y. Huang, J.-S. Liu, T.-W. Chang, H.-Y. Kao, J.-H. Wang, T.-W. Liu, S.-Y. Wei, S.-P. Huang, W.-C. Wei, Y.-R. Chen, T.-H. Hsu, Y.-K. Chen, Y.-C. Lo, T.-H. Wen, C.-C. Lo, R.-S. Liu, C.-C. Hsieh, K.-T. Tang, M.-F. Chang. Venue/date: IEEE ISSCC, February 16–20, 2020; paper session February 18. Primary location: [conference advance program](https://www.mics.caltech.edu/wp-content/uploads/2019/12/ISSCC2020AdvanceProgram.pdf#page=31), printed p. 31, paper 15.4. DOI lead `10.1109/ISSCC19947.2020.9063078` is **UNVERIFIED against primary DOI metadata in this review**; IEEE full text was bot-gated. The program establishes a distinct publication identity, not source locations for P03's storage measurements. No performance number is extracted from its title for the storage model.
 
----
+**R3 — related PCM record, not confirmation of P06.** Full title: *Multilevel-Cell Phase-Change Memory: A Viable Technology*. Authors: Aravinthan Athmanathan, Milos Stanisavljevic, Nikolaos Papandreou, Haralampos Pozidis, Evangelos Eleftheriou. Venue/date: IEEE Journal on Emerging and Selected Topics in Circuits and Systems, 6(1), pp. 87–100, March 2016; [IBM author-institution record](https://research.ibm.com/publications/multilevel-cell-phase-change-memory-a-viable-technology) dates it March 1. DOI: `10.1109/JETCAS.2016.2528598`, verified as the publication link on that primary record and in [IBM's announcement](https://it.newsroom.ibm.com/2016-05-20-Gli-scienziati-IBM-a-un-punto-di-svolta-nello-sviluppo-delle-memorie), final technical-reference paragraph before “Informazioni su IBM Research.” Exact accessible extraction location: research record, Abstract, final paragraph. It **author-reports** two bits per cell on a 64 k-cell array after one million SET/RESET cycles and feasibility of three bits per cell under similar conditions. These are not three physical states, a matched B2/T3 cost comparison, or independent reproduction; no area/energy/latency parameter is inferred. Publisher full text could not be inspected, so no figure/table location is invented.
 
-## 4. Evidence-Quality Rankings & Methodological Analysis
+**R4 — related FeFET record, not confirmation of P09.** Full title: *Write Disturb in Ferroelectric FETs and Its Implication for 1T-FeFET AND Memory Arrays*. Complete authors: Kai Ni, Xueqing Li, Jeffrey A. Smith, Matthew Jerry, Suman Datta. Venue/date: IEEE Electron Device Letters, 39(11), pp. 1656–1659, November 2018. Primary location: [authors' laboratory bibliography](https://ndclab.nd.edu/publications/), “2018 / Journals,” entry [148]. DOI lead `10.1109/LED.2018.2872347` is **UNVERIFIED against primary DOI metadata in this review**: the linked IEEE record was bot-gated. Exact day of publication and original-row measurement locations are **UNVERIFIED**; no numerical device measurement is extracted.
 
-Evidence sources were evaluated under T81's formal evidence tier framework:
-- **Tier A (Commercial Production / High Parity):** TSMC 22nm ReRAM, Intel 5nm SRAM, Samsung/Kioxia 3D NAND Flash. Fully integrated silicon arrays with measured macro yields and peripheral overheads.
-- **Tier B (Peer-Reviewed Integrated Test Chips):** Lin et al. T-SRAM, Fastow RRAM, IBM PCM, Ni et al. FeFET. Fully functional experimental macros with reported area and timing budgets.
-- **Tier C (Laboratory Single-Device Prototypes):** Kobashi et al. anti-ambipolar ternary transistors. Isolated single-cell laboratory measurements without integrated array sense amplifiers, write-verify logic, or endurance modeling.
-- **Tier D (Mathematical Models & Ideal Thresholds):** `docs/research/continuity/probes/storage_boundary.py` exact $C_3/C_2$ limit derivation ($1.585\times$).
-- **Tier E (Speculative / Unverified Claims):** Assertions that 3-state devices inherently provide physical storage density without accounting for sensing margin degradation.
+The audit therefore cannot honestly provide ten verified full bibliographic records or ten sets of measurement locations. Resolving the remaining identities requires the original source author to supply exact papers and extraction records. Search leads and blocked pages are not promoted into verified citations.
 
----
+## 3. Quarantined numerical ledger from #624
 
-## 5. Unresolved Parameters and Unsupported Comparisons
+**Every empirical/process value in each “UNVERIFIED” cell is unverified for the originally attributed device.** These values are retained solely to make the correction auditable; none is an input to a physical comparison. R1's differently attributed area and R3's separately scoped author report above are the only numerical publication observations adopted by this correction. “Unmeasured” does not mean zero.
 
-Direct head-to-head comparisons are unsupported or physically invalid in the following domains:
+| ID  | Claimed process/structure — UNVERIFIED                        | Claimed area — UNVERIFIED                                | Claimed read/write time — UNVERIFIED                   | Claimed read/write energy — UNVERIFIED            | Claimed endurance — UNVERIFIED | Claimed peripheral overhead — UNVERIFIED   |
+| --- | ------------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------- | ------------------------------ | ------------------------------------------ |
+| P01 | **UNVERIFIED:** 5 nm, 6T FinFET                               | **UNVERIFIED:** 0.0199 µm², 130 F²                       | **UNVERIFIED:** sub-ns; \<0.5/\<0.5 ns                 | **UNVERIFIED:** 1.2/1.8 fJ/bit                    | **UNVERIFIED:** >10^16 cycles  | **UNVERIFIED:** 15–20%                     |
+| P02 | **UNVERIFIED:** 28 nm CMOS, 10T/dual rail                     | **UNVERIFIED:** 0.058 µm², 378 F²; 2.91× same-node ratio | **UNVERIFIED:** 0.8/1.1 ns                             | **UNVERIFIED:** 3.5/5.2 fJ/trit                   | **UNVERIFIED:** >10^16 cycles  | **UNVERIFIED:** +45%                       |
+| P03 | **UNVERIFIED:** 22 nm ULP, 1T1R                               | **UNVERIFIED:** 10 F², 0.0048 µm²                        | **UNVERIFIED:** 10/50 ns                               | **UNVERIFIED:** 8.2 fJ/bit / 45 pJ/bit            | **UNVERIFIED:** 10^6 cycles    | **UNVERIFIED:** 20–25%                     |
+| P04 | **UNVERIFIED:** 40 nm CMOS, three/four-state HfO2 RRAM        | **UNVERIFIED:** 10 F², 0.016 µm²                         | **UNVERIFIED:** 25 ns / 1.2 µs, six write-verify steps | **UNVERIFIED:** 12 fJ/trit / 320 pJ/trit          | **UNVERIFIED:** 10^4 cycles    | **UNVERIFIED:** +180%                      |
+| P05 | **UNVERIFIED:** 20 nm PCM                                     | **UNVERIFIED:** 4 F², 0.0016 µm²                         | **UNVERIFIED:** 20/100 ns                              | **UNVERIFIED:** 15 fJ/bit / 120 pJ/bit            | **UNVERIFIED:** 10^8 cycles    | **UNVERIFIED:** 25%                        |
+| P06 | **UNVERIFIED:** 90 nm CMOS, three/four-state PCM              | **UNVERIFIED:** 4 F², 0.032 µm²                          | **UNVERIFIED:** 40 ns / 5 µs                           | **UNVERIFIED:** 28 fJ/trit / 850 pJ/trit          | **UNVERIFIED:** 10^5 cycles    | **UNVERIFIED:** +220%                      |
+| P07 | **UNVERIFIED:** 112-layer SLC BiCS                            | **UNVERIFIED:** 0.0012 µm²/bit                           | **UNVERIFIED:** 25/200 µs                              | **UNVERIFIED:** 0.1 pJ/bit / 2.5 nJ/bit           | **UNVERIFIED:** 10^5 cycles    | **UNVERIFIED:** 10–15%                     |
+| P08 | **UNVERIFIED:** 176-layer TLC V-NAND                          | **UNVERIFIED:** 0.00021 µm²/bit                          | **UNVERIFIED:** 45/650 µs                              | **UNVERIFIED:** 0.25 pJ/bit / 8 nJ/bit            | **UNVERIFIED:** 3,000 cycles   | **UNVERIFIED:** +300%                      |
+| P09 | **UNVERIFIED:** 28 nm HKMG, 1T FeFET                          | **UNVERIFIED:** 6 F², 0.0047 µm²                         | **UNVERIFIED:** 10/100 ns                              | **UNVERIFIED:** 2.1/15 fJ/bit                     | **UNVERIFIED:** 10^5 cycles    | **UNVERIFIED:** 20%                        |
+| P10 | **UNVERIFIED:** single-transistor NDR, three-state lab memory | **UNVERIFIED:** 150 F² / >150 F²                         | **UNVERIFIED:** write >100 ns; read unmeasured         | **UNVERIFIED:** write >1 nJ/trit; read unmeasured | **UNVERIFIED:** \<10^3 cycles  | Unsupported/unintegrated; no numeric value |
 
-1. **Cell Area vs System Macro Area Conflation:** A 3-state bitcell (e.g., $10F^2$ RRAM) appears identical in cell footprint to a binary bitcell ($10F^2$). However, array macro layout requires multi-reference sense amplifiers, precision voltage DACs, and high-voltage charge pumps. For 3-state RRAM, peripheral circuits increase from $20\%$ of macro area to $>55\%$ of macro area, completely cancelling the $1.585\times$ cell-level capacity gain.
-2. **Write Energy & Latency Asymmetry:** Writing a binary cell requires a single single-voltage pulse. Writing a 3-state or multilevel cell (RRAM, PCM, NAND) requires an **Incremental Step Pulse Programming (ISPP) write-verify loop** (averaging 6–12 pulse-read-compare steps). This increases write energy by $7\times \text{ to } 25\times$ and write latency by $10\times \text{ to } 100\times$.
-3. **Retention & Temperature Drift Tax:** 3-state conductance windows ($\Delta G$) shrink rapidly with thermal fluctuation ($85^\circ\text{C}$ operating environments). Preventing state overlap requires strong Error Correcting Code (ECC) overhead (e.g., 100-bit BCH or LDPC code per 1KB), adding $15\text{--}25\%$ parity storage tax.
-4. **Technology Node Incompatibility:** Emerging 3-state anti-ambipolar or CNTFET devices are reported in $90\text{--}180\text{nm}$ equivalent lab processes. Comparing unscalable lab prototypes against 3nm/5nm commercial binary silicon is scientifically invalid.
+Additional aggregate claims are withdrawn as general findings and retained only in this explicitly unverified ledger:
 
----
+- **UNVERIFIED:** 2.5–4× peripheral area, 3–10× write energy and 10–100× write latency penalties.
+- **UNVERIFIED:** a change from 20% to >55% of macro area, six to twelve pulse/verify steps, 7–25× write energy and 10–100× latency.
+- **UNVERIFIED:** an 85 °C drift claim requiring 100 parity bits per 1 KB and causing 15–25% storage overhead.
+- **UNVERIFIED:** 90–180 nm equivalent laboratory processes versus 3/5 nm commercial devices; no physical feature-size definition or scaling evidence was supplied.
 
-## 6. Determination on Quantitative Modeling & Recommendation
+There is no verified source for a universal assertion that binary writes use one pulse, all multilevel writes require ISPP, or peripheral costs exceed the information-capacity gain in every volatile/nonvolatile family. Programming strategy, reliability, sensing and overhead must be measured for the actual architecture. A technology's production or peer-review status does not verify these particular numbers.
 
-### Quantitative Modeling Determination
-**Scientifically Unjustified.** Constructing an analytical model that claims physical storage cost reduction for 3-state balanced ternary memory is scientifically invalid because:
-- Array-level peripheral sensing and write-verify overheads exceed the theoretical $1.585\times$ information density multiplier across all non-volatile and volatile memory families.
-- Multilevel binary architectures (TLC/QLC 3D NAND and 4-state RRAM/PCM) already exploit multi-state physical storage using standard binary power-of-two address interfaces, achieving significantly higher physical storage efficiency ($3.0\text{--}4.0\text{ bits/cell}$) than ternary representation ($1.585\text{ bits/cell}$) without requiring non-standard 3-state physical decoder logic.
+## 4. Recalculated area, feature-size and normalization arithmetic
 
-### Final Recommendation: `NO-GO`
-- **Disposition:** **`NO-GO` for physical ternary storage hardware research under H01.**
-- **Actionable Scope:** T81 Foundation shall strictly preserve Hypothesis H01 as **`NOT SUPPORTED / CLOSED ON PHYSICAL SILICON`**. All future T81 research shall focus on software-level deterministic policy execution, CanonFS provenance, and Axion governance (Candidate 3) rather than physical storage hardware replaceability.
+These are **conditional arithmetic checks of UNVERIFIED inputs**, not corrected device measurements. A node's marketing name is not automatically the feature size F used by a publication. The original sources must define F, cell boundary, layer stack and whether area includes selectors/peripherals before any physical normalization is valid.
+
+For F in nm and area A in µm²:
+
+```text
+A = c × (F/1000)^2 for a claimed c F²
+c = A × 10^6 / F²
+F_implied = 1000 × sqrt(A/c) nm
+1 µm² = 10^6 nm²
+```
+
+| Original pair                      | If F equals the claimed node: recomputed area | If original absolute area is used: recomputed F² coefficient | F implied by original pair | Arithmetic assessment                                              |
+| ---------------------------------- | --------------------------------------------- | ------------------------------------------------------------ | -------------------------- | ------------------------------------------------------------------ |
+| P01: 130 F², 0.0199 µm²; node 5 nm | 0.003250 µm²                                  | 796 F²                                                       | 12.3724 nm                 | Inconsistent with F=5 nm; source attribution also corrected in R1. |
+| P02: 378 F², 0.058 µm²; node 28 nm | 0.296352 µm²                                  | 73.9796 F²                                                   | 12.3871 nm                 | Inconsistent with F=28 nm.                                         |
+| P03: 10 F², 0.0048 µm²; node 22 nm | 0.004840 µm²                                  | 9.91736 F²                                                   | 21.9089 nm                 | Compatible with rounding, conditional on F=22 nm.                  |
+| P04: 10 F², 0.016 µm²; node 40 nm  | 0.016000 µm²                                  | 10 F²                                                        | 40 nm                      | Arithmetic agrees conditionally.                                   |
+| P05: 4 F², 0.0016 µm²; node 20 nm  | 0.001600 µm²                                  | 4 F²                                                         | 20 nm                      | Arithmetic agrees conditionally.                                   |
+| P06: 4 F², 0.032 µm²; node 90 nm   | 0.032400 µm²                                  | 3.95062 F²                                                   | 89.4427 nm                 | Compatible with rounding, conditional on F=90 nm.                  |
+| P09: 6 F², 0.0047 µm²; node 28 nm  | 0.004704 µm²                                  | 5.99490 F²                                                   | 27.9881 nm                 | Compatible with rounding, conditional on F=28 nm.                  |
+| P10: 150/>150 F²                   | Cannot convert: F unavailable                 | Absolute area unavailable                                    | Cannot infer               | **UNVERIFIED:** no physical feature size or area boundary.         |
+
+P07 and P08 cannot be converted to F² from layer counts. Their claimed effective footprints are respectively 1,200 and 210 nm²/bit. Reciprocals are 0.833333 and 4.76190 Gbit/mm², using decimal Gbit. The raw area-per-bit ratio is 0.175 (82.5% lower for the second claimed footprint), but its inputs remain **UNVERIFIED** and it is neither a matched radix result nor usable-bit density. Do not divide a die-footprint-per-bit figure by layer count or bits/cell again. Die area, physical cell area, raw array capacity and ECC-adjusted usable capacity need separate source definitions.
+
+The claimed SRAM ratio 0.058/0.0199 = 2.91457 is arithmetic on differently attributed/process-labeled cells, not a same-node measurement. Even idealized area-per-information-bit comparison would divide the trit cell area by log2(3), giving a conditional ratio 1.83889, before ECC and overhead. Neither ratio is evidence for or against a matched physical implementation.
+
+The parity example is also inconsistent: 100/(1024×8) = 1.22070% of payload, or 100/(8192+100) = 1.20598% of encoded storage, not 15–25%. If “KB” meant 1,000 bytes the corresponding percentages are 1.25% and 1.23457%. These calculations do not verify that any cited device uses that code.
+
+Peripheral percentages require denominators. If p=A_periphery/A_array, the macro fraction is p/(1+p). If f=A_periphery/A_total, total area is A_array/(1-f). A relative increase such as “+180%” cannot be substituted for either fraction without a baseline. Under explicitly hypothetical equal cell costs/efficiencies and macro fractions f_B=0.20, f_T=0.55, the asymptotic ratio would be (1-f_B)/[(1-f_T)log2(3)] = 1.12165. The arithmetic does not verify the fractions or establish a universal penalty.
+
+## 5. Matched measurements versus technology context
+
+**No qualifying matched physical B2/T3 measurement pair was established by this audit.** The original table mixes volatile SRAM, nonvolatile RRAM/PCM/FeFET, vertically stacked NAND, and laboratory transistors across unlike processes, reliability requirements, capacities, interfaces and maturity. Such comparisons can motivate technology screening if their measurements are verified and boundaries disclosed. They do not isolate radix as the cause of a difference.
+
+SRAM without a counted persistence mechanism cannot satisfy 10B's unpowered retention contract. RRAM comparisons across different process nodes are not a same-substrate radix contrast. A three-state lab device without complete sensing/control/ECC is not a measured storage macro. A fabricated macro and an uncalibrated simulation are separate evidence categories. None becomes matched merely by expressing area in F².
+
+Binary storage must include credible multilevel controls. Exactly distinguish physical states from bits: a three-state symbol has ideal capacity log2(3) = 1.5849625… bits; four states have two bits; TLC and QLC nominally encode three/four bits using eight/sixteen states. Those are theoretical code capacities, not measured usable bits after reliability overhead, and do not imply an area, energy or latency ranking. Balanced {-1,0,+1} labels do not themselves change physical storage cost.
+
+The canonical evidence tiers remain those in the [register](continuity/HYPOTHESIS_REGISTER_v1.json): A is reproduction on pinned source with artifacts; B is inspected source without executed integration; C includes unverified historical reports/AI synthesis; D is mathematical/model derivation; E is proposal/speculation. The original commercial/test-chip/laboratory tier definitions are withdrawn. Quarantined #624 claims remain unverified reports (C); arithmetic here is D. Accessible primary author reports are labeled as such and are not independent Tier A device reproductions.
+
+## 6. Reconciliation with Investigation 10B and stopping decision
+
+10B's primary criterion is at least 20% less full physical area per usable information bit under matched capacity, reliability and operating conditions, with a simultaneous one-sided 95% upper bound on the area ratio \<=0.80. Energy and latency are independent secondary outcomes. Its proposed demonstrator contract uses 2^20 payload bits, 4,096-bit block access, unpowered retention of 24 hours at 85 °C after 10^4 logical rewrites per block, explicit delivered error bounds and common operating/service conditions. These are **proposed engineering targets, not measured parameters**; this audit neither changes nor claims to satisfy them.
+
+For exact message capacity M, count d_q=min{n: q^n>=M}; count actual code/parity, spares and separately stored metadata, not just nominal symbols. With N_B/N_T physical symbol counts, a_B/a_T full array-symbol area, O_B/O_T other counted area and equal usable capacity K:
+
+```text
+A_j = N_j a_j + O_j
+(A_T/K)/(A_B/K) <= 0.80
+therefore a_T <= [0.80(N_B a_B + O_B) - O_T]/N_T.
+```
+
+All sensing/reference generation, program/verify, conversion, ECC, repair, selectors, interconnect, controllers, support hardware and replication needed for the service contract belong inside the boundary. Ignoring these terms cannot establish success; claiming that they universally outweigh capacity cannot establish failure.
+
+With no overhead and equal coding efficiency, the large-capacity two-state comparison yields a **derived** 20%-saving cell-cost limit of 0.8 log2(3) = 1.2679700…, not the ordinary break-even limit log2(3). Against four-state storage, the analogous ideal limit is 0.8 log2(3)/2 = 0.6339850…. For M=256, binary/ternary minimum counts are eight/six and the 20% limit is 0.8×8/6 = 1.0666667…. No measured device cost is assigned by these equations.
+
+**PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE.** This is a missing-prerequisite outcome, not a measured negative effect, H01 falsification, permanent physical-silicon closure, or a ban on conditional modeling. The previous program-wide closure and governance-only research redirection are withdrawn as unsupported by this assessment.
+
+- **GO:** source recovery and symbolic threshold/sensitivity analysis with explicit unknowns; independent implementation only after the acquisition/comparator annex and required evidence/bounds are available.
+- **NO-GO now:** a quantitative physical verdict or advantage claim based on the quarantined table; device-cost modeling must not fill missing inputs with favorable or unfavorable invented values.
+- **Required next evidence:** identified primary papers with per-metric page/table/figure and measurement conditions; same-platform two-/three-state array distributions and correlated errors; matched retention/endurance data; complete peripheral/layout accounting; competent feasible multilevel binary controls; calibration, uncertainty and held-out validation; a fixed confirmatory acquisition plan.
+- **Stop:** at this evidence gate until the prerequisites are available. A validated ratio above the target could reject a particular preregistered design/envelope; missing evidence cannot reject H01 across all physical substrates. An inconclusive interval cannot be relabeled a win or experimental falsification.
+
+This preserves the bounded historical CPU freeze and Investigation 07 overlay result without modifying their reports. No implementation, governance, historical experiment or unrelated research document is changed.
+
+## 7. Transparent correction and validation record
+
+Changes relative to #624: retract universal penalty/closure statements; audit all ten incomplete citations; identify the TSMC area misattribution and distinct related records; quarantine every original empirical value as **UNVERIFIED**; recalculate every supplied area/feature-size pair plus density, parity and ratio arithmetic; restore canonical evidence-tier meanings; apply 10B's missing-data stopping rule.
+
+Verification performed: local inspection of the pinned merge document and canonical H01/charter; primary conference and author-institution source checks described above; Python standard-library arithmetic for §4 and §6. Direct IEEE pages returned JavaScript/bot challenges and the legacy 2024 press-kit URL redirected; no inaccessible page is treated as read. No fabricated source location or DOI verification is substituted. No device measurement, synthesis, physical simulation or implementation test was run. This is a documentation provenance correction, not a new storage experiment.
