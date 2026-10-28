@@ -1,10 +1,18 @@
 # Investigation 08 controlled measurement — proposed preregistration v1
 
-**Status: PROPOSED, NOT APPROVED; confirmatory execution is blocked.**
+**Status: DESIGN CONDITIONALLY ACCEPTED; apparatus awaits independent Jules
+review. Confirmatory execution is NOT AUTHORIZED.**
+The maintainer accepted the six cells, N=60/cell, reciprocal 10% margin,
+simultaneous interval procedure, four-hour cap and append-only retention as the
+planned design, subject to independent statistical validation. Preparation and
+instrumentation-validation tests are authorized; measurement requires a separate
+explicit authorization after Jules review. See [READINESS.md](READINESS.md).
 Prepared October 28, 2026 by OpenAI Codex. This packet requests approval of
 prospective criteria and a matched measurement boundary. It contains no new
 performance observations, timing analysis, or scientific disposition change.
 Approval of a draft PR or a JSON schema check is not experimental authorization.
+The remaining "proposed" wording below preserves the candidate's rationale;
+the numerical design is conditionally accepted, not permission to collect data.
 
 ## Baseline and prior knowledge
 
@@ -40,8 +48,9 @@ or the Hanoi/CWEB lineage.
 
 ## Readiness gates — complete before freezing or timing
 
-1. A maintainer must approve this protocol's scope, sample, materiality margin,
-   analysis and resource budget, recording the approved file hash and commit.
+1. Retain the maintainer's conditional design acceptance recorded above.
+   Independent Jules review must validate the statistical implementation and
+   record the candidate hash/commit, followed by separate measurement authorization.
    Amendments before timing need a new version and approval. After any timed
    observation, retain the original protocol and results; changes are a separate
    prospective experiment, never a replacement for an unfavorable run.
@@ -280,7 +289,7 @@ instructions. Do not create placeholder results, fabricate raw data, or replace
 the older smoke packet. The proposal is the only authorized deliverable at this
 stop point; confirmatory artifacts are explicitly not yet available.
 
-## Interpretation and approval request
+## Interpretation and remaining gates
 
 H-S1a: only the matched implementation workflow wall time is eligible for a
 directional result; pure computational efficiency remains unmeasured without
@@ -291,9 +300,9 @@ evidence. Pure Python versus optimized C++/SIMD and extra public-API processes
 cannot identify an intrinsic architecture or ternary cause. Full Llama inference
 and native ternary hardware remain outside scope.
 
-Maintainer approval is requested for the proposed 10% margin, six cells,
-60 pairs/cell, fixed simultaneous interval/decision rule and four-hour budget,
-plus the bounded research-only obligation/recording extensions described above.
-Until that approval and the readiness gates are complete, the disposition is
-**BLOCKED — PREREQUISITE OR PROTOCOL DEFECT**. This does not reverse comparator
-acceptance or imply a measured negative result.
+The six cells, 60 pairs/cell, reciprocal 10% margin, simultaneous procedure,
+four-hour cap and append-only retention are conditionally accepted as the
+planned design. Independent Jules review of the completed apparatus/statistics
+and separate explicit measurement authorization remain required. Until those
+gates are complete, confirmatory execution stays disabled. This does not reverse
+comparator acceptance or imply a measured negative result.
