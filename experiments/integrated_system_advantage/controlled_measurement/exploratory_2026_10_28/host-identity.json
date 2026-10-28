@@ -1,0 +1,7 @@
+{
+  "label": "EXPLORATORY \u2014 NONCONFIRMATORY",
+  "command": "sysctl -n hw.model hw.memsize machdep.cpu.brand_string",
+  "returncode": 0,
+  "stdout": "Mac14,2\n8589934592\nApple M2\n",
+  "execution": "read-only sandbox escalation; same host; sandboxed sysctl remains recorded as unavailable by collector"
+}
