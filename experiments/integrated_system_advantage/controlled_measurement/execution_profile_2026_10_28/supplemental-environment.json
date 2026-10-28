@@ -1,0 +1,11 @@
+{
+  "label": "EXPLORATORY \u2014 NONCONFIRMATORY",
+  "scope": "parent allowlist read after collection; not a continuous environment monitor",
+  "environment": {
+    "T81_CANONFS_ROOT": null,
+    "T81_CANONFS_READ_VERIFY": null,
+    "T81_TRITWISE_PROFILE": null,
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  }
+}

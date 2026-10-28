@@ -1,0 +1,15 @@
+[invalid usage]: no process id or name or memgraph specified
+
+Usage: sample <pid | partial-process-name> [duration [samplingInterval]] [options...]
+       sample <memgraph>
+
+Specify the duration in seconds;  the default is 10 seconds.
+Specify the samplingInterval in milliseconds;  the default is 1 millisecond.
+
+options: [-wait] [-mayDie] [-fullPaths] [-e] [-file <filename>]
+
+        -wait                wait until the process named (usually by partial name) exists, then start sampling
+        -mayDie              reads symbol information right away
+        -fullPaths           show full paths to source files if debug info is available
+        -e                   open the output in TextEdit
+        -f/-file <filename>  specifies where results should be written
