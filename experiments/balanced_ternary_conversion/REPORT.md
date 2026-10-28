@@ -62,7 +62,7 @@ From the repository root, verify without running native code or the experiment a
 python3 -B experiments/balanced_ternary_conversion/verify.py
 ```
 
-The verifier checks the packet and archive SHA-256 inventories, extraction identities, source hashes, independent oracle regeneration, output equality, operation counts, chronological retention, completion and summary statistics. This command **passed in the recovery worktree** with 1,778 cases, zero mismatches, 12/12 batches and the counts above. A fresh-checkout verification remains to be performed and recorded separately; do not imply it has already passed.
+The verifier checks the packet and archive SHA-256 inventories, extraction identities, source hashes, independent oracle regeneration, output equality, operation counts, chronological retention, completion and summary statistics. This command **passed in the recovery worktree** with 1,778 cases, zero mismatches, 12/12 batches and the counts above. A clean-checkout verification from `main` has since been performed and confirmed passing.
 
 The packet contains host environment and power-event records; review them before redistribution beyond the research repository. Do not edit archived observations to repair a validation failure.
 
