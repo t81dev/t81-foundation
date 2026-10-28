@@ -1,0 +1,4 @@
+2026-10-28 15:24:42 -0400 Sleep               	Entering Sleep state due to 'Idle Sleep':TCPKeepAlive=active Using Batt (Charge:68%) 248 secs
+2026-10-28 15:28:50 -0400 DarkWake            	DarkWake from Deep Idle [CDNP] : due to AOP.OutboxNotEmpty voice_trigger/ Using BATT (Charge:68%) 7 secs
+2026-10-28 15:28:57 -0400 Sleep               	Entering Sleep state due to 'Maintenance Sleep':TCPKeepAlive=active Using Batt (Charge:68%) 6 secs
+2026-10-28 15:29:03 -0400 Wake                	Wake from Deep Idle [CDNVA] : due to MTP.DOCK.CHANNELS.AP0.IRQ RTP.keyboard/UserActivity Assertion Using BATT (Charge:68%)
