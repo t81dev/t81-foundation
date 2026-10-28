@@ -1,0 +1,968 @@
+{
+  "source_commit": "fae432ba22723f16b2f5f9eb11a91a7046b2fb7c",
+  "verification": [
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_root_structure.py"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "root structure check PASSED\n- entries checked: 81\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_active_docs_link_hygiene.py"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "active docs link hygiene check PASSED\n- no legacy docs/guides path references found on the active docs surface\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_overclaim_guardrails.py"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "overclaim guardrails check PASSED\n- scanned active README/docs/book markdown surfaces for banned overclaim phrases\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_determinism_claims.py"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "determinism claims boundary check: pass\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/governance/check_docs_structure.py"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 1,
+      "stdout": "docs structure check FAILED\n- missing directory: book/book-en\n- missing directory: book/book-cn\n- missing directory: book/book-es\n- missing directory: book/book-pt\n- missing directory: book/book-ru\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "/Users/t81dev/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+        "skills/policy-checker"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 1,
+      "stdout": "Name 't81_policy_checker' should be hyphen-case (lowercase letters, digits, and hyphens only)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "/Users/t81dev/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+        "/private/tmp/t81-operational-audit/skills/policy-checker"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 1,
+      "stdout": "Name 't81_policy_checker' should be hyphen-case (lowercase letters, digits, and hyphens only)\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "fabc7aa90f70ead227ec257a1ae6833fa16ced40",
+        "903ea2fe653df0d636e0543f9788dd8442738045",
+        "--",
+        "tools/cli/core/main.cpp",
+        "include/t81/axion/policy.hpp",
+        "kernel/axion/policy_serialization.cpp",
+        "skills"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/ai-tasks/assess.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/ai-tasks/chain.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/ai-tasks/classify.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/ai-tasks/history.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/ai-tasks/route.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/ai-tasks/status.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/bundle-from-execution.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/bundle-info.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/create-bundle.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/extract-bundle.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/merge-bundles.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/sign-bundle.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-creator/verify-bundle.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-validator/check-determinism.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-validator/validate.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/bundle-validator/verify-provenance.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-export/export-batch.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-export/export-with-meta.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-export/export.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-export/list.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-export/search.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-export/verify-export.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/canonfs-import/import.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/governance-demo/compliance-demo.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/governance-demo/demo-determinism.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/governance-demo/demo-governance.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/governance-demo/demo-policy.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/governance-demo/interactive-policy.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/governance-demo/tutorial-policy.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/batch-load.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/convert-model.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/load-gguf.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/load-hf.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/load-safetensors.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/probe-model.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/model-loader/validate-model.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/policy-checker/check.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/policy-checker/list-policies.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/policy-checker/simulate.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/policy-checker/test-rule.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/policy-checker/validate-policy.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-compiler/analyze.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-compiler/build-batch.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-compiler/build.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-compiler/compile.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-compiler/disasm.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-compiler/optimize.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/analyze-violations.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/breakpoint.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/continue.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/debug.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/inspect.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/profile.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/step.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81-debugger/trace.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81vm-runner/debug.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81vm-runner/inspect.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81vm-runner/run-batch.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81vm-runner/run.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/t81vm-runner/trace.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/tensor-ops/tensor-batch.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/tensor-ops/tensor-convert.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/tensor-ops/tensor-math.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/tensor-ops/tensor-reshape.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/tensor-ops/tensor-stats.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/bin/bash",
+        "-n",
+        "skills/tensor-ops/tensor-validate.sh"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/ci/check_cli_docs_parity.py",
+        "--t81-bin",
+        "/private/tmp/t81-skill-boundary-build/t81",
+        "--manual",
+        "docs/user-guide/reference/cli-user-manual.md"
+      ],
+      "cwd": "/private/tmp/t81-skill-boundary",
+      "exit_code": 0,
+      "stdout": "cli docs parity: ok (topics=24, manual_lines=224)\n",
+      "stderr": ""
+    }
+  ],
+  "configure": {
+    "command": [
+      "cmake",
+      "-S",
+      ".",
+      "-B",
+      "/private/tmp/t81-skill-boundary-build",
+      "-G",
+      "Ninja",
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DT81_BUILD_TESTS=ON",
+      "-DT81_BUILD_EXAMPLES=OFF",
+      "-DT81_BUILD_BENCHMARKS=OFF",
+      "-DT81_BUILD_TUI=OFF",
+      "-DT81_BUILD_FUZZ_TESTS=OFF",
+      "-DT81_ENABLE_TERNARYOS=OFF",
+      "-DFETCHCONTENT_SOURCE_DIR_ASIO=/Users/t81dev/Code/t81-foundation/build/_deps/asio-src"
+    ],
+    "exit_code": 0,
+    "combined_output": "-- The C compiler identification is AppleClang 21.0.0.21000101\n-- The CXX compiler identification is AppleClang 21.0.0.21000101\n-- The ASM compiler identification is AppleClang\n-- Found assembler: /usr/bin/cc\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Detecting CXX compiler ABI info\n-- Detecting CXX compiler ABI info - done\n-- Check for working CXX compiler: /usr/bin/c++ - skipped\n-- Detecting CXX compile features\n-- Detecting CXX compile features - done\n-- [t81] T81_ENABLE_DPE=ON -- building DPE task graph (RFC-DPE-0002 through RFC-DPE-0009)\n-- Found Python3: /opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14 (found version \"3.14.3\") found components: Interpreter\n-- Performing Test COMPILER_HAS_AVX2\n-- Performing Test COMPILER_HAS_AVX2 - Failed\n-- Performing Test COMPILER_HAS_FMA\n-- Performing Test COMPILER_HAS_FMA - Failed\n-- Found Doxygen: /opt/homebrew/bin/doxygen (found version \"1.16.1\") found components: doxygen missing components: dot\n-- Configuring done (9.8s)\n-- Generating done (1.8s)\n-- Build files have been written to: /private/tmp/t81-skill-boundary-build\n"
+  },
+  "build": {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/t81-skill-boundary-build",
+      "--parallel",
+      "4",
+      "--target",
+      "t81"
+    ],
+    "exit_code": 0,
+    "combined_output": "[1/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange.cpp.o\n[2/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/bigint.cpp.o\n[3/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/fraction.cpp.o\n[4/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/encoding.cpp.o\n[5/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_json_renderer.cpp.o\n[6/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_engine.cpp.o\n[7/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/in_memory_driver.cpp.o\n[8/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/vm/determinism/canon_hash81.cpp.o\n[9/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_ops.cpp.o\n[10/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/persistent_driver.cpp.o\n[11/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/block_backed_driver.cpp.o\n[12/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81.cpp.o\n[13/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/math/t81_soft_math/t81_soft_math.cpp.o\n[14/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base243.cpp.o\n[15/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_balanced.cpp.o\n[16/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_packed.cpp.o\n[17/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/crypto/sha3.cpp.o\n[18/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/metadata.cpp.o\n[19/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/trit_packing.cpp.o\n[20/93] Building CXX object src/core/CMakeFiles/t81_tracing.dir/__/__/vm/tracing/canonhash81.cpp.o\n[21/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/error.cpp.o\n[22/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/cog/v1/symbolic_graph.cpp.o\n[23/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/hanoi/in_memory_kernel.cpp.o\n[24/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier2/reflective.cpp.o\n[25/93] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/setun/bridge.cpp.o\n[26/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier3/recursive.cpp.o\n[27/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/promotion.cpp.o\n[28/93] Linking CXX static library libt81_core.a\n[29/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/distributed/distributed.cpp.o\n[30/93] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/pretty_printer.cpp.o\n[31/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier4/tier4_loop.cpp.o\n[32/93] Building CXX object src/experimental/CMakeFiles/t81_experimental.dir/__/__/experimental/tiers/cog/tier5/infinite.cpp.o\n[33/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/axion_api.cpp.o\n[34/93] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_emitter.cpp.o\n[35/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/engine.cpp.o\n[36/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ethics.cpp.o\n[37/93] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/binary_io.cpp.o\n[38/93] Building CXX object src/isa/CMakeFiles/t81_isa.dir/__/__/isa/base81_view.cpp.o\n[39/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_engine.cpp.o\n[40/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_serialization.cpp.o\n[41/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/nondeterminism_detector.cpp.o\n[42/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_hooks.cpp.o\n[43/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_model_loader.cpp.o\n[44/93] Linking CXX static library libt81_experimental.a\n[45/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/canonfs_hook.cpp.o\n[46/93] Linking CXX static library libt81_isa.a\n[47/93] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_validator.cpp.o\n[48/93] Linking CXX static library libt81_axion.a\n[49/93] Building CXX object src/isa/CMakeFiles/t81_math_quantization.dir/__/__/isa/math/quantization/ternary_codec.cpp.o\n[50/93] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/lexer.cpp.o\n[51/93] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/builtin_registry.cpp.o\n[52/93] Building CXX object src/ffi/CMakeFiles/t81_ffi.dir/__/__/ffi/ffi_dispatcher.cpp.o\n[53/93] Linking CXX static library libt81_ffi.a\n[54/93] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/symbol_table.cpp.o\n[55/93] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/parser.cpp.o\n[56/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tier_limits.cpp.o\n[57/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/value_ops.cpp.o\n[58/93] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/ir_generator.cpp.o\n[59/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/memory_segments.cpp.o\n[60/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/policy_trace_bridge.cpp.o\n[61/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/runtime_state_helpers.cpp.o\n[62/93] Building CXX object src/lang/CMakeFiles/t81_lang_frontend.dir/__/__/lang/frontend/semantic_analyzer.cpp.o\n[63/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/gc_helpers.cpp.o\n[64/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ffi_dispatcher.cpp.o\n[65/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/vm.cpp.o\n[66/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/ai_backend/backend_adapter.cpp.o\n[67/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/tensor_helpers.cpp.o\n[68/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/vm/decode_state.cpp.o\n[69/93] Building CXX object src/vm/CMakeFiles/t81_vm.dir/__/__/ffi/ffi_dispatcher.cpp.o\n[70/93] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/gguf_import_bridge.cpp.o\n[71/93] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_trace_cache.cpp.o\n[72/93] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/weights_t81w_emitter.cpp.o\n[73/93] Linking CXX static library libt81_math_quantization.a\n[74/93] Linking CXX static library libt81_lang_frontend.a\n[75/93] Building CXX object src/vm/CMakeFiles/t81_jit.dir/__/__/vm/jit/jit_compiler.cpp.o\n[76/93] Linking CXX static library libt81_vm.a\n[77/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/ai/t81_ai_cli.cpp.o\n[78/93] Building CXX object src/tools/CMakeFiles/t81_tool_model.dir/__/__/tools/model/weights.cpp.o\n[79/93] Linking CXX static library libt81_tool_model.a\n[80/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/artifact_family.cpp.o\n[81/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/canonize_tensor.cpp.o\n[82/93] Building CXX object src/tools/CMakeFiles/t81_decode.dir/__/__/vm/decoder.cpp.o\n[83/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/debugger.cpp.o\n[84/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/ai/ai_cli_shared.cpp.o\n[85/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/diagnostics/ternary_codec_metrics.cpp.o\n[86/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/canonfs_tools/canonfs_performance_standalone.cpp.o\n[87/93] Linking CXX static library libt81_decode.a\n[88/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/driver.cpp.o\n[89/93] Building CXX object src/tools/CMakeFiles/t81.dir/__/__/tools/cli/ai/ai_cli_shared.cpp.o\n[90/93] Building CXX object src/tools/CMakeFiles/t81_tool_cli.dir/__/__/tools/cli/core/main.cpp.o\n[91/93] Linking CXX static library libt81_tool_cli.a\n[92/93] Building CXX object src/tools/CMakeFiles/t81.dir/__/__/tools/cli/core/main.cpp.o\n[93/93] Linking CXX executable t81\nld: warning: ignoring duplicate libraries: 'libt81_axion.a', 'libt81_core.a', 'libt81_decode.a', 'libt81_isa.a', 'libt81_lang_frontend.a', 'libt81_math_quantization.a', 'libt81_tool_cli.a', 'libt81_vm.a'\n"
+  },
+  "ctest": {
+    "command": [
+      "ctest",
+      "--test-dir",
+      "/private/tmp/t81-skill-boundary-build",
+      "--output-on-failure",
+      "-R",
+      "^t81_skill_policy_boundary_test$"
+    ],
+    "exit_code": 0,
+    "combined_output": "Test project /private/tmp/t81-skill-boundary-build\n    Start 292: t81_skill_policy_boundary_test\n1/1 Test #292: t81_skill_policy_boundary_test ...   Passed    1.81 sec\n\n100% tests passed, 0 tests failed out of 1\n\nTotal Test time (real) =   1.82 sec\n"
+  },
+  "source_files": {
+    "tools/cli/core/main.cpp": "1a85509b998cbc03307c3cef9cf5b0b890db883c22176c5d8508b52de83eea15",
+    "include/t81/axion/policy.hpp": "0837ae4f890aba03f59c008fd115fb03361ac234a79fb882123d848d14b77fe8",
+    "kernel/axion/policy_serialization.cpp": "8aebee33aa760d4636ce1347032beb148cef204d0d5f3d32658889cb8c3edfc5",
+    "skills/policy-checker/validate-policy.sh": "aabe5b1c2787c4566e6180c0a0cd3444f9737e3e8164f3f4d61047c77fda1c14",
+    "skills/policy-checker/SKILL.md": "24c3503ac2efafc0e1cc9dd23bfe96f962c6ec4dab3db2e62a4a64bac8d5b02a",
+    "tests/python/test_skill_policy_boundary.py": "7ead8636d3c73265f2ed307e03cb22b6e550a2cc40fbaf7d3ab4c02099bfdb9e",
+    ".github/workflows/skill-policy-boundary.yml": "f09ec2764db233681d7f03b5ff5e0ec5b4d8f5e2068b791c51c49adc6e80916d",
+    "CMakeLists.txt": "515d6a5203c1f7e42a9b05ed44c768da08778d4e874ef1cd5fe20bf36ce93657"
+  },
+  "unchanged_unsafe_wrappers": {
+    "skills/ai-tasks/assess.sh": true,
+    "skills/ai-tasks/chain.sh": true,
+    "skills/ai-tasks/classify.sh": true,
+    "skills/ai-tasks/history.sh": true,
+    "skills/ai-tasks/route.sh": true,
+    "skills/ai-tasks/status.sh": true,
+    "skills/bundle-creator/bundle-from-execution.sh": true,
+    "skills/bundle-creator/bundle-info.sh": true,
+    "skills/bundle-creator/create-bundle.sh": true,
+    "skills/bundle-creator/extract-bundle.sh": true,
+    "skills/bundle-creator/merge-bundles.sh": true,
+    "skills/bundle-creator/sign-bundle.sh": true,
+    "skills/bundle-creator/verify-bundle.sh": true,
+    "skills/bundle-validator/check-determinism.sh": true,
+    "skills/bundle-validator/validate.sh": true,
+    "skills/bundle-validator/verify-provenance.sh": true,
+    "skills/canonfs-export/export-batch.sh": true,
+    "skills/canonfs-export/export-with-meta.sh": true,
+    "skills/canonfs-export/export.sh": true,
+    "skills/canonfs-export/list.sh": true,
+    "skills/canonfs-export/search.sh": true,
+    "skills/canonfs-export/verify-export.sh": true,
+    "skills/canonfs-import/import.sh": true,
+    "skills/governance-demo/compliance-demo.sh": true,
+    "skills/governance-demo/demo-determinism.sh": true,
+    "skills/governance-demo/demo-governance.sh": true,
+    "skills/governance-demo/demo-policy.sh": true,
+    "skills/governance-demo/interactive-policy.sh": true,
+    "skills/governance-demo/tutorial-policy.sh": true,
+    "skills/model-loader/batch-load.sh": true,
+    "skills/model-loader/convert-model.sh": true,
+    "skills/model-loader/load-gguf.sh": true,
+    "skills/model-loader/load-hf.sh": true,
+    "skills/model-loader/load-safetensors.sh": true,
+    "skills/model-loader/probe-model.sh": true,
+    "skills/model-loader/validate-model.sh": true,
+    "skills/policy-checker/check.sh": true,
+    "skills/policy-checker/list-policies.sh": true,
+    "skills/policy-checker/simulate.sh": true,
+    "skills/policy-checker/test-rule.sh": true,
+    "skills/t81-compiler/analyze.sh": true,
+    "skills/t81-compiler/build-batch.sh": true,
+    "skills/t81-compiler/build.sh": true,
+    "skills/t81-compiler/compile.sh": true,
+    "skills/t81-compiler/disasm.sh": true,
+    "skills/t81-compiler/optimize.sh": true,
+    "skills/t81-debugger/analyze-violations.sh": true,
+    "skills/t81-debugger/breakpoint.sh": true,
+    "skills/t81-debugger/continue.sh": true,
+    "skills/t81-debugger/debug.sh": true,
+    "skills/t81-debugger/inspect.sh": true,
+    "skills/t81-debugger/profile.sh": true,
+    "skills/t81-debugger/step.sh": true,
+    "skills/t81-debugger/trace.sh": true,
+    "skills/t81vm-runner/debug.sh": true,
+    "skills/t81vm-runner/inspect.sh": true,
+    "skills/t81vm-runner/run-batch.sh": true,
+    "skills/t81vm-runner/run.sh": true,
+    "skills/t81vm-runner/trace.sh": true,
+    "skills/tensor-ops/tensor-batch.sh": true,
+    "skills/tensor-ops/tensor-convert.sh": true,
+    "skills/tensor-ops/tensor-math.sh": true,
+    "skills/tensor-ops/tensor-reshape.sh": true,
+    "skills/tensor-ops/tensor-stats.sh": true,
+    "skills/tensor-ops/tensor-validate.sh": true
+  }
+}

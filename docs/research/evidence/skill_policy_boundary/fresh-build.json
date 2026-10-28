@@ -1,0 +1,1991 @@
+{
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "bash_version_command": [
+      "/bin/bash",
+      "--version"
+    ],
+    "bash_version_exit": 0,
+    "bash_version_stdout": "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin25)\nCopyright (C) 2007 Free Software Foundation, Inc.\n",
+    "bash_version_stderr": ""
+  },
+  "wrapper": "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+  "wrapper_sha256": "aabe5b1c2787c4566e6180c0a0cd3444f9737e3e8164f3f4d61047c77fda1c14",
+  "test_sha256": "7ead8636d3c73265f2ed307e03cb22b6e550a2cc40fbaf7d3ab4c02099bfdb9e",
+  "fixture_text": {
+    "good.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "deny.apl": "(policy (max-instructions 0))\n",
+    "bad.apl": "(policy (tier nope))\n",
+    "empty.apl": "",
+    "invalid.axionb": "not a compiled policy",
+    "space name.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "single'quote.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "double\"quote.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "raw;|&<>*?[]{}!.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "literal$(printf AUDIT_CANARY).apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "dollar$(printf CANARY > canary-dollar).apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "backtick`printf CANARY > canary-backtick`.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "$HOME (data).apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "quote\";printf CANARY > canary-quote;printf \".apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "--help.apl": "(policy (tier 1) (max-instructions 1000))\n"
+  },
+  "binary": "/private/tmp/t81-skill-boundary-build/t81",
+  "binary_sha256": "d6a88ee8b445d09a1c93592c7b75323a590839b17d9427873a208050b5e38c0d",
+  "skipped": [],
+  "records": [
+    {
+      "backend": "fixture-setup",
+      "case": "compile-policy",
+      "command": [
+        "/private/tmp/t81-skill-boundary-build/t81",
+        "policy",
+        "compile",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.axionb"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "exit_code": 0,
+      "stdout": "Compiled policy to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.axionb\n",
+      "stderr": "",
+      "output_sha256": "13291de38fcd19b8a920f74f8fb6c6a2ad136a6cd47ede17a21028655ed4872b"
+    },
+    {
+      "backend": "fake",
+      "case": "normal",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./good.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "json-before",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--json",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./good.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "json-after",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./good.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "absolute",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "symlink-explicitly-allowed",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "linked.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./linked.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:space name.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "space name.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./space name.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:single'quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "single'quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./single'quote.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:double\"quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "double\"quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./double\\\"quote.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:raw;|&<>*?[]{}!.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "raw;|&<>*?[]{}!.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./raw;|&<>*?[]{}!.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:literal$(printf AUDIT_CANARY).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "literal$(printf AUDIT_CANARY).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./literal$(printf AUDIT_CANARY).apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:dollar$(printf CANARY > canary-dollar).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./dollar$(printf CANARY > canary-dollar).apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:backtick`printf CANARY > canary-backtick`.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "backtick`printf CANARY > canary-backtick`.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./backtick`printf CANARY > canary-backtick`.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:$HOME (data).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "$HOME (data).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./$HOME (data).apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:quote\";printf CANARY > canary-quote;printf \".apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./quote\\\";printf CANARY > canary-quote;printf \\\".apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "literal:--help.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./--help.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: usage: validate-policy [--json] [--] <file.apl|file.axionb>\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "empty-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: empty policy path\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "empty-after-separator",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: usage: validate-policy [--json] [--] <file.apl|file.axionb>\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "strict-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--strict"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --strict\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "policy-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--policy",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --policy\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "output-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--output",
+        "must-not-exist"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --output\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "store-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "import",
+        "good.apl",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "boolean-value",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "boolean-assignment",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json=true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --json=true\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "duplicate-flag",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: duplicate --json\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "extra-positional",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "unsupported-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "simulate",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "legacy-dispatch-injection",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "import",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "legacy-unquoted-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "$(printf CANARY > canary-operation)",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "legacy-quote-breakout",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "import",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "no-separator-leading-dash",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --help.apl\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "separator-missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file after --\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "separator-extra",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file after --\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "wrong-suffix",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "program.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy path must end in .apl or .axionb\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "missing-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "directory",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "directory.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "broken-symlink",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "broken.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "fifo",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "fifo.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "unreadable-file",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "unreadable.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "fake",
+      "case": "exit-propagation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "23"
+      },
+      "exit_code": 23,
+      "expected_exit_code": 23,
+      "stdout": "{\"fake_argv\": [\"policy\", \"validate\", \"./good.apl\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "normal",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./good.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "json-before",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--json",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./good.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "json-after",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./good.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "absolute",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs/good.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "symlink-explicitly-allowed",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "linked.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./linked.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:space name.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "space name.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./space name.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:single'quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "single'quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./single'quote.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:double\"quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "double\"quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./double\\\"quote.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:raw;|&<>*?[]{}!.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "raw;|&<>*?[]{}!.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./raw;|&<>*?[]{}!.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:literal$(printf AUDIT_CANARY).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "literal$(printf AUDIT_CANARY).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./literal$(printf AUDIT_CANARY).apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:dollar$(printf CANARY > canary-dollar).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./dollar$(printf CANARY > canary-dollar).apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:backtick`printf CANARY > canary-backtick`.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "backtick`printf CANARY > canary-backtick`.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./backtick`printf CANARY > canary-backtick`.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:$HOME (data).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "$HOME (data).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./$HOME (data).apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:quote\";printf CANARY > canary-quote;printf \".apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./quote\\\";printf CANARY > canary-quote;printf \\\".apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "literal:--help.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./--help.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: usage: validate-policy [--json] [--] <file.apl|file.axionb>\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "empty-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: empty policy path\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "empty-after-separator",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: usage: validate-policy [--json] [--] <file.apl|file.axionb>\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "strict-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--strict"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --strict\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "policy-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--policy",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --policy\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "output-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--output",
+        "must-not-exist"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --output\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "store-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "import",
+        "good.apl",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "boolean-value",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "boolean-assignment",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json=true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --json=true\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "duplicate-flag",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: duplicate --json\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "extra-positional",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "unsupported-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "simulate",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "legacy-dispatch-injection",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "import",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "legacy-unquoted-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "$(printf CANARY > canary-operation)",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "legacy-quote-breakout",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "import",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "no-separator-leading-dash",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: unsupported option: --help.apl\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "separator-missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file after --\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "separator-extra",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "--",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: expected exactly one policy file after --\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "wrong-suffix",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "program.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy path must end in .apl or .axionb\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "missing-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "directory",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "directory.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "broken-symlink",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "broken.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "fifo",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "fifo.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "unreadable-file",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "unreadable.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 2,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "validate-policy: policy must be an existing readable regular file\n",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "compiled-policy",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.axionb"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./good.axionb\",\n  \"tier\": 1,\n  \"max_instructions\": 1000,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "parse-failure:bad.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": false,\n  \"policy\": \"./bad.apl\",\n  \"error\": \"Policy parse error: tier requires integer\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "parse-failure:empty.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "empty.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": false,\n  \"policy\": \"./empty.apl\",\n  \"error\": \"Policy parse error: policy must start with '('\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "parse-failure:invalid.axionb",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "invalid.axionb"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": false,\n  \"policy\": \"./invalid.axionb\",\n  \"error\": \"Policy deserialization error: Unknown policy tag\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "real",
+      "case": "deny-policy-is-data",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "deny.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "stdout": "{\n  \"schema\": \"t81.policy-validate.v1\",\n  \"valid\": true,\n  \"policy\": \"./deny.apl\",\n  \"tier\": 1,\n  \"max_instructions\": 0,\n  \"max_stack\": null,\n  \"max_recursion\": null\n}\n",
+      "stderr": "",
+      "filesystem_changes": {},
+      "failures": []
+    },
+    {
+      "backend": "absent",
+      "case": "missing-cli",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-skill-boundary/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/no-cli",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary z56e_gg5/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 127,
+      "expected_exit_code": 127,
+      "stdout": "",
+      "stderr": "validate-policy: t81 not found on PATH\n",
+      "filesystem_changes": {},
+      "failures": []
+    }
+  ],
+  "failures": []
+}

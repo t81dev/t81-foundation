@@ -1,0 +1,135 @@
+{
+  "observed_at": "2026-10-27T19:39:44Z",
+  "head_commit": "50964dd35ad050607c08e5b625cdd7dda2af49ca",
+  "implementation_commit": "fae432ba22723f16b2f5f9eb11a91a7046b2fb7c",
+  "workflow_runs": [
+    {
+      "id": 40570845232,
+      "name": "T81 Foundation CI",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 3978,
+      "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845232/jobs",
+      "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845232/logs",
+      "workflow_id": 209271454
+    },
+    {
+      "id": 40570845536,
+      "name": "Skill policy argument boundary",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 1,
+      "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845536/jobs",
+      "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845536/logs",
+      "workflow_id": 398650734
+    },
+    {
+      "id": 40570845162,
+      "name": "Cross-Platform Determinism Verification",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 943,
+      "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845162/jobs",
+      "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845162/logs",
+      "workflow_id": 247014897
+    },
+    {
+      "id": 40570845130,
+      "name": "Format Check",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 2479,
+      "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845130/jobs",
+      "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845130/logs",
+      "workflow_id": 233473975
+    },
+    {
+      "id": 40570845280,
+      "name": "CodeQL",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 2799,
+      "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845280/jobs",
+      "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845280/logs",
+      "workflow_id": 210339906
+    },
+    {
+      "id": 40570845122,
+      "name": "AI Experiments CI",
+      "status": "queued",
+      "conclusion": null,
+      "run_number": 317,
+      "jobs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845122/jobs",
+      "logs_url": "https://api.github.com/repos/t81dev/t81-foundation/actions/runs/40570845122/logs",
+      "workflow_id": 241971046
+    }
+  ],
+  "focused_jobs": [
+    {
+      "id": 122424291003,
+      "name": "Fake-backend argv boundary / macos-14",
+      "status": "queued",
+      "conclusion": null,
+      "run_id": 40570845536,
+      "logs_url": null,
+      "steps": null
+    },
+    {
+      "id": 122424291552,
+      "name": "Fake-backend argv boundary / ubuntu-24.04",
+      "status": "queued",
+      "conclusion": null,
+      "run_id": 40570845536,
+      "logs_url": null,
+      "steps": null
+    }
+  ],
+  "foundation_jobs": [
+    {
+      "id": 122424290472,
+      "name": "lint / spec & docs",
+      "status": "queued",
+      "conclusion": null,
+      "run_id": 40570845232,
+      "logs_url": null,
+      "steps": null
+    },
+    {
+      "id": 122424291001,
+      "name": "governance-metrics",
+      "status": "queued",
+      "conclusion": null,
+      "run_id": 40570845232,
+      "logs_url": null,
+      "steps": null
+    },
+    {
+      "id": 122424293081,
+      "name": "experimental architectures / group anchor",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 40570845232,
+      "logs_url": null,
+      "steps": null
+    },
+    {
+      "id": 122424293101,
+      "name": "experimental / ascend cann sanity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 40570845232,
+      "logs_url": null,
+      "steps": null
+    },
+    {
+      "id": 122424293824,
+      "name": "experimental / oneapi sycl sanity",
+      "status": "completed",
+      "conclusion": "skipped",
+      "run_id": 40570845232,
+      "logs_url": null,
+      "steps": null
+    }
+  ],
+  "interpretation": "Queued jobs have no test outcome. Local Linux Bash is unavailable. Hosted fake-backend Bash tests and broader CI remain pending."
+}

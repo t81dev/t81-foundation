@@ -1,0 +1,2488 @@
+{
+  "environment": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "bash_version_command": [
+      "/bin/bash",
+      "--version"
+    ],
+    "bash_version_exit": 0,
+    "bash_version_stdout": "GNU bash, version 3.2.57(1)-release (arm64-apple-darwin25)\nCopyright (C) 2007 Free Software Foundation, Inc.\n",
+    "bash_version_stderr": ""
+  },
+  "wrapper": "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+  "wrapper_sha256": "5f1a98ea61ff1e215762f6d6d3e12fb5a1a5c1aceff850c88acf1a00d9a56e6a",
+  "test_sha256": "7ead8636d3c73265f2ed307e03cb22b6e550a2cc40fbaf7d3ab4c02099bfdb9e",
+  "fixture_text": {
+    "good.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "deny.apl": "(policy (max-instructions 0))\n",
+    "bad.apl": "(policy (tier nope))\n",
+    "empty.apl": "",
+    "invalid.axionb": "not a compiled policy",
+    "space name.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "single'quote.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "double\"quote.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "raw;|&<>*?[]{}!.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "literal$(printf AUDIT_CANARY).apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "dollar$(printf CANARY > canary-dollar).apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "backtick`printf CANARY > canary-backtick`.apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "$HOME (data).apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "quote\";printf CANARY > canary-quote;printf \".apl": "(policy (tier 1) (max-instructions 1000))\n",
+    "--help.apl": "(policy (tier 1) (max-instructions 1000))\n"
+  },
+  "binary": "/private/tmp/t81-operational-build/t81",
+  "binary_sha256": "d6a88ee8b445d09a1c93592c7b75323a590839b17d9427873a208050b5e38c0d",
+  "skipped": [],
+  "records": [
+    {
+      "backend": "fixture-setup",
+      "case": "compile-policy",
+      "command": [
+        "/private/tmp/t81-operational-build/t81",
+        "policy",
+        "compile",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs/good.apl",
+        "-o",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs/good.axionb"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "exit_code": 0,
+      "stdout": "Compiled policy to /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs/good.axionb\n",
+      "stderr": "",
+      "output_sha256": "13291de38fcd19b8a920f74f8fb6c6a2ad136a6cd47ede17a21028655ed4872b"
+    },
+    {
+      "backend": "fake",
+      "case": "normal",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "json-before",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--json",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "json-after",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "absolute",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs/good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "symlink-explicitly-allowed",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "linked.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:space name.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "space name.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:single'quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "single'quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:double\"quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "double\"quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:raw;|&<>*?[]{}!.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "raw;|&<>*?[]{}!.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:literal$(printf AUDIT_CANARY).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "literal$(printf AUDIT_CANARY).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:dollar$(printf CANARY > canary-dollar).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:backtick`printf CANARY > canary-backtick`.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "backtick`printf CANARY > canary-backtick`.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:$HOME (data).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "$HOME (data).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:quote\";printf CANARY > canary-quote;printf \".apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "literal:--help.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "empty-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "empty-after-separator",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "strict-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--strict"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --strict\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "policy-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--policy",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "output-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--output",
+        "must-not-exist"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --output\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "store-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "good.apl",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 2,
+      "stdout": "{\"fake_argv\": [\"axion\", \"check\", \"import\", \"good.apl\", \"--canonfs-root\", \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 0, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "boolean-value",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "boolean-assignment",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json=true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json=true\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "duplicate-flag",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "extra-positional",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 2,
+      "stdout": "{\"fake_argv\": [\"axion\", \"check\", \"good.apl\", \"bad.apl\", \"--canonfs-root\", \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 0, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "unsupported-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "simulate",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 2,
+      "stdout": "{\"fake_argv\": [\"axion\", \"check\", \"simulate\", \"good.apl\", \"--canonfs-root\", \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 0, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "legacy-dispatch-injection",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 2,
+      "stdout": "{\"fake_argv\": [\"axion\", \"check\", \"import\", \"dollar.apl\", \"--canonfs-root\", \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "inputs/canary-dollar": {
+          "before": null,
+          "after": {
+            "kind": "file",
+            "sha256": "fe0344af3e43e190840444ba40c096f59418bf9247c6f3bdc8cd35e4b8f59d2e",
+            "size": 6,
+            "mode": 33188
+          }
+        },
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 0, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "legacy-unquoted-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "$(printf CANARY > canary-operation)",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 2,
+      "stdout": "{\"fake_argv\": [\"axion\", \"check\", \"good.apl\", \"--canonfs-root\", \"/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created\", \"--json\"]}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        },
+        "inputs/canary-operation": {
+          "before": null,
+          "after": {
+            "kind": "file",
+            "sha256": "fe0344af3e43e190840444ba40c096f59418bf9247c6f3bdc8cd35e4b8f59d2e",
+            "size": 6,
+            "mode": 33188
+          }
+        }
+      },
+      "failures": [
+        "exit 0, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "legacy-quote-breakout",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 0,
+      "expected_exit_code": 2,
+      "stdout": "{\"fake_argv\": [\"axion\", \"check\", \"import\", \"quote\"]}\n.apl",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        },
+        "inputs/canary-quote": {
+          "before": null,
+          "after": {
+            "kind": "file",
+            "sha256": "fe0344af3e43e190840444ba40c096f59418bf9247c6f3bdc8cd35e4b8f59d2e",
+            "size": 6,
+            "mode": 33188
+          }
+        }
+      },
+      "failures": [
+        "exit 0, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "no-separator-leading-dash",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --help.apl\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "separator-missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "separator-extra",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "wrong-suffix",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "program.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "missing-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "directory",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "directory.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "broken-symlink",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "broken.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "fifo",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "fifo.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "unreadable-file",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "unreadable.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "fake",
+      "case": "exit-propagation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/fake-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "23"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 23,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 23",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "normal",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "json-before",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--json",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "json-after",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "absolute",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs/good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "symlink-explicitly-allowed",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "linked.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:space name.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "space name.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:single'quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "single'quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:double\"quote.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "double\"quote.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:raw;|&<>*?[]{}!.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "raw;|&<>*?[]{}!.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:literal$(printf AUDIT_CANARY).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "literal$(printf AUDIT_CANARY).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:dollar$(printf CANARY > canary-dollar).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:backtick`printf CANARY > canary-backtick`.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "backtick`printf CANARY > canary-backtick`.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:$HOME (data).apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "$HOME (data).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:quote\";printf CANARY > canary-quote;printf \".apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "literal:--help.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "empty-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "empty-after-separator",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        ""
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "strict-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--strict"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --strict\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "policy-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--policy",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "output-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--output",
+        "must-not-exist"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --output\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "store-unsupported",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "good.apl",
+        "--canonfs-root",
+        "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown argument 'import'. Run 't81 help axion'.\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 1, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "boolean-value",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "boolean-assignment",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json=true"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json=true\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "duplicate-flag",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "--json",
+        "--json"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --json\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "extra-positional",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown argument 'good.apl'. Run 't81 help axion'.\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 1, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "unsupported-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "simulate",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown argument 'simulate'. Run 't81 help axion'.\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 1, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "legacy-dispatch-injection",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "dollar$(printf CANARY > canary-dollar).apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown argument 'import'. Run 't81 help axion'.\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "inputs/canary-dollar": {
+          "before": null,
+          "after": {
+            "kind": "file",
+            "sha256": "fe0344af3e43e190840444ba40c096f59418bf9247c6f3bdc8cd35e4b8f59d2e",
+            "size": 6,
+            "mode": 33188
+          }
+        },
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 1, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "legacy-unquoted-operation",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "$(printf CANARY > canary-operation)",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "{\n  \"schema\": \"t81.error.v1\",\n  \"ok\": false,\n  \"error\": \"axion: unknown argument 'good.apl'. Run 't81 help axion'.\"\n}\n",
+      "stderr": "",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        },
+        "inputs/canary-operation": {
+          "before": null,
+          "after": {
+            "kind": "file",
+            "sha256": "fe0344af3e43e190840444ba40c096f59418bf9247c6f3bdc8cd35e4b8f59d2e",
+            "size": 6,
+            "mode": 33188
+          }
+        }
+      },
+      "failures": [
+        "exit 1, expected 2",
+        "unexpected persistent filesystem change",
+        "backend unexpectedly reached on rejected arguments"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "legacy-quote-breakout",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "import",
+        "quote\";printf CANARY > canary-quote;printf \".apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "error: axion: unknown argument 'import'. Run 't81 help axion'.\n",
+      "filesystem_changes": {
+        "store-must-not-be-created": {
+          "before": null,
+          "after": {
+            "kind": "dir"
+          }
+        }
+      },
+      "failures": [
+        "exit 1, expected 2",
+        "unexpected persistent filesystem change"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "no-separator-leading-dash",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--help.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --help.apl\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "separator-missing",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "separator-extra",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "--",
+        "good.apl",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Unknown option --\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "wrong-suffix",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "program.tisc"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "missing-path",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "missing.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "directory",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "directory.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "broken-symlink",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "broken.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "fifo",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "fifo.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "unreadable-file",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "unreadable.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 2,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 2"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "compiled-policy",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.axionb"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "parse-failure:bad.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "bad.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "parse-failure:empty.apl",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "empty.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "parse-failure:invalid.axionb",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "invalid.axionb"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 1,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "real",
+      "case": "deny-policy-is-data",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "deny.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/real-bin:/bin:/usr/bin",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 1,
+      "expected_exit_code": 0,
+      "stdout": "",
+      "stderr": "Error: Both operation and resource must be specified\nUsage: check <operation> <resource> [--policy <policy_file>] [--context <context_file>]\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 1, expected 0",
+        "missing expected JSON output"
+      ]
+    },
+    {
+      "backend": "absent",
+      "case": "missing-cli",
+      "command": [
+        "/bin/bash",
+        "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh",
+        "good.apl"
+      ],
+      "cwd": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/inputs",
+      "environment_overrides": {
+        "PATH": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/no-cli",
+        "HOME": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/home-must-not-be-created",
+        "T81_CANONFS_ROOT": "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81 skill boundary 3h_v4eeg/store-must-not-be-created",
+        "T81_TEST_BACKEND_EXIT": "0"
+      },
+      "exit_code": 126,
+      "expected_exit_code": 127,
+      "stdout": "",
+      "stderr": "/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh: line 4: dirname: command not found\n/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh: line 4: /check.sh: No such file or directory\n/private/tmp/t81-operational-audit/skills/policy-checker/validate-policy.sh: line 4: exec: /check.sh: cannot execute: No such file or directory\n",
+      "filesystem_changes": {},
+      "failures": [
+        "exit 126, expected 127"
+      ]
+    }
+  ],
+  "failures": [
+    "fake/normal: exit 1, expected 0",
+    "fake/normal: missing expected JSON output",
+    "fake/json-before: exit 1, expected 0",
+    "fake/json-before: missing expected JSON output",
+    "fake/json-after: exit 1, expected 0",
+    "fake/json-after: missing expected JSON output",
+    "fake/absolute: exit 1, expected 0",
+    "fake/absolute: missing expected JSON output",
+    "fake/symlink-explicitly-allowed: exit 1, expected 0",
+    "fake/symlink-explicitly-allowed: missing expected JSON output",
+    "fake/literal:space name.apl: exit 1, expected 0",
+    "fake/literal:space name.apl: missing expected JSON output",
+    "fake/literal:single'quote.apl: exit 1, expected 0",
+    "fake/literal:single'quote.apl: missing expected JSON output",
+    "fake/literal:double\"quote.apl: exit 1, expected 0",
+    "fake/literal:double\"quote.apl: missing expected JSON output",
+    "fake/literal:raw;|&<>*?[]{}!.apl: exit 1, expected 0",
+    "fake/literal:raw;|&<>*?[]{}!.apl: missing expected JSON output",
+    "fake/literal:literal$(printf AUDIT_CANARY).apl: exit 1, expected 0",
+    "fake/literal:literal$(printf AUDIT_CANARY).apl: missing expected JSON output",
+    "fake/literal:dollar$(printf CANARY > canary-dollar).apl: exit 1, expected 0",
+    "fake/literal:dollar$(printf CANARY > canary-dollar).apl: missing expected JSON output",
+    "fake/literal:backtick`printf CANARY > canary-backtick`.apl: exit 1, expected 0",
+    "fake/literal:backtick`printf CANARY > canary-backtick`.apl: missing expected JSON output",
+    "fake/literal:$HOME (data).apl: exit 1, expected 0",
+    "fake/literal:$HOME (data).apl: missing expected JSON output",
+    "fake/literal:quote\";printf CANARY > canary-quote;printf \".apl: exit 1, expected 0",
+    "fake/literal:quote\";printf CANARY > canary-quote;printf \".apl: missing expected JSON output",
+    "fake/literal:--help.apl: exit 1, expected 0",
+    "fake/literal:--help.apl: missing expected JSON output",
+    "fake/missing: exit 1, expected 2",
+    "fake/empty-path: exit 1, expected 2",
+    "fake/empty-after-separator: exit 1, expected 2",
+    "fake/strict-unsupported: exit 1, expected 2",
+    "fake/policy-unsupported: exit 1, expected 2",
+    "fake/output-unsupported: exit 1, expected 2",
+    "fake/store-unsupported: exit 0, expected 2",
+    "fake/store-unsupported: unexpected persistent filesystem change",
+    "fake/store-unsupported: backend unexpectedly reached on rejected arguments",
+    "fake/boolean-value: exit 1, expected 2",
+    "fake/boolean-assignment: exit 1, expected 2",
+    "fake/duplicate-flag: exit 1, expected 2",
+    "fake/extra-positional: exit 0, expected 2",
+    "fake/extra-positional: unexpected persistent filesystem change",
+    "fake/extra-positional: backend unexpectedly reached on rejected arguments",
+    "fake/unsupported-operation: exit 0, expected 2",
+    "fake/unsupported-operation: unexpected persistent filesystem change",
+    "fake/unsupported-operation: backend unexpectedly reached on rejected arguments",
+    "fake/legacy-dispatch-injection: exit 0, expected 2",
+    "fake/legacy-dispatch-injection: unexpected persistent filesystem change",
+    "fake/legacy-dispatch-injection: backend unexpectedly reached on rejected arguments",
+    "fake/legacy-unquoted-operation: exit 0, expected 2",
+    "fake/legacy-unquoted-operation: unexpected persistent filesystem change",
+    "fake/legacy-unquoted-operation: backend unexpectedly reached on rejected arguments",
+    "fake/legacy-quote-breakout: exit 0, expected 2",
+    "fake/legacy-quote-breakout: unexpected persistent filesystem change",
+    "fake/legacy-quote-breakout: backend unexpectedly reached on rejected arguments",
+    "fake/no-separator-leading-dash: exit 1, expected 2",
+    "fake/separator-missing: exit 1, expected 2",
+    "fake/separator-extra: exit 1, expected 2",
+    "fake/wrong-suffix: exit 1, expected 2",
+    "fake/missing-path: exit 1, expected 2",
+    "fake/directory: exit 1, expected 2",
+    "fake/broken-symlink: exit 1, expected 2",
+    "fake/fifo: exit 1, expected 2",
+    "fake/unreadable-file: exit 1, expected 2",
+    "fake/exit-propagation: exit 1, expected 23",
+    "fake/exit-propagation: missing expected JSON output",
+    "real/normal: exit 1, expected 0",
+    "real/normal: missing expected JSON output",
+    "real/json-before: exit 1, expected 0",
+    "real/json-before: missing expected JSON output",
+    "real/json-after: exit 1, expected 0",
+    "real/json-after: missing expected JSON output",
+    "real/absolute: exit 1, expected 0",
+    "real/absolute: missing expected JSON output",
+    "real/symlink-explicitly-allowed: exit 1, expected 0",
+    "real/symlink-explicitly-allowed: missing expected JSON output",
+    "real/literal:space name.apl: exit 1, expected 0",
+    "real/literal:space name.apl: missing expected JSON output",
+    "real/literal:single'quote.apl: exit 1, expected 0",
+    "real/literal:single'quote.apl: missing expected JSON output",
+    "real/literal:double\"quote.apl: exit 1, expected 0",
+    "real/literal:double\"quote.apl: missing expected JSON output",
+    "real/literal:raw;|&<>*?[]{}!.apl: exit 1, expected 0",
+    "real/literal:raw;|&<>*?[]{}!.apl: missing expected JSON output",
+    "real/literal:literal$(printf AUDIT_CANARY).apl: exit 1, expected 0",
+    "real/literal:literal$(printf AUDIT_CANARY).apl: missing expected JSON output",
+    "real/literal:dollar$(printf CANARY > canary-dollar).apl: exit 1, expected 0",
+    "real/literal:dollar$(printf CANARY > canary-dollar).apl: missing expected JSON output",
+    "real/literal:backtick`printf CANARY > canary-backtick`.apl: exit 1, expected 0",
+    "real/literal:backtick`printf CANARY > canary-backtick`.apl: missing expected JSON output",
+    "real/literal:$HOME (data).apl: exit 1, expected 0",
+    "real/literal:$HOME (data).apl: missing expected JSON output",
+    "real/literal:quote\";printf CANARY > canary-quote;printf \".apl: exit 1, expected 0",
+    "real/literal:quote\";printf CANARY > canary-quote;printf \".apl: missing expected JSON output",
+    "real/literal:--help.apl: exit 1, expected 0",
+    "real/literal:--help.apl: missing expected JSON output",
+    "real/missing: exit 1, expected 2",
+    "real/empty-path: exit 1, expected 2",
+    "real/empty-after-separator: exit 1, expected 2",
+    "real/strict-unsupported: exit 1, expected 2",
+    "real/policy-unsupported: exit 1, expected 2",
+    "real/output-unsupported: exit 1, expected 2",
+    "real/store-unsupported: exit 1, expected 2",
+    "real/store-unsupported: unexpected persistent filesystem change",
+    "real/store-unsupported: backend unexpectedly reached on rejected arguments",
+    "real/boolean-value: exit 1, expected 2",
+    "real/boolean-assignment: exit 1, expected 2",
+    "real/duplicate-flag: exit 1, expected 2",
+    "real/extra-positional: exit 1, expected 2",
+    "real/extra-positional: unexpected persistent filesystem change",
+    "real/extra-positional: backend unexpectedly reached on rejected arguments",
+    "real/unsupported-operation: exit 1, expected 2",
+    "real/unsupported-operation: unexpected persistent filesystem change",
+    "real/unsupported-operation: backend unexpectedly reached on rejected arguments",
+    "real/legacy-dispatch-injection: exit 1, expected 2",
+    "real/legacy-dispatch-injection: unexpected persistent filesystem change",
+    "real/legacy-dispatch-injection: backend unexpectedly reached on rejected arguments",
+    "real/legacy-unquoted-operation: exit 1, expected 2",
+    "real/legacy-unquoted-operation: unexpected persistent filesystem change",
+    "real/legacy-unquoted-operation: backend unexpectedly reached on rejected arguments",
+    "real/legacy-quote-breakout: exit 1, expected 2",
+    "real/legacy-quote-breakout: unexpected persistent filesystem change",
+    "real/no-separator-leading-dash: exit 1, expected 2",
+    "real/separator-missing: exit 1, expected 2",
+    "real/separator-extra: exit 1, expected 2",
+    "real/wrong-suffix: exit 1, expected 2",
+    "real/missing-path: exit 1, expected 2",
+    "real/directory: exit 1, expected 2",
+    "real/broken-symlink: exit 1, expected 2",
+    "real/fifo: exit 1, expected 2",
+    "real/unreadable-file: exit 1, expected 2",
+    "real/compiled-policy: exit 1, expected 0",
+    "real/compiled-policy: missing expected JSON output",
+    "real/parse-failure:bad.apl: missing expected JSON output",
+    "real/parse-failure:empty.apl: missing expected JSON output",
+    "real/parse-failure:invalid.axionb: missing expected JSON output",
+    "real/deny-policy-is-data: exit 1, expected 0",
+    "real/deny-policy-is-data: missing expected JSON output",
+    "absent/missing-cli: exit 126, expected 127"
+  ]
+}

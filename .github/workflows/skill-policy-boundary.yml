@@ -1,0 +1,34 @@
+name: Skill policy argument boundary
+
+on:
+  pull_request:
+    paths:
+      - skills/policy-checker/**
+      - tests/python/test_skill_policy_boundary.py
+      - .github/workflows/skill-policy-boundary.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  literal-argv:
+    name: Fake-backend argv boundary / ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Exercise Bash argument boundary (no real CLI)
+        run: python3 tests/python/test_skill_policy_boundary.py --bash /bin/bash --receipt boundary.json
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        if: always()
+        with:
+          name: skill-policy-boundary-${{ matrix.os }}
+          path: boundary.json
