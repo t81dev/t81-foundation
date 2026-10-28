@@ -21,8 +21,6 @@
     "build-metadata.json": "16e2b8709cbab20ee86e2e6b04a7f61acba63da001f7c71e2e740f4add8b2533",
     "build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "data/attempts.jsonl": "12d73e4666f887ea23269bb1fa64361ed536a9a3f06eff34b3b02c02726c9699",
-    "data/benchmark-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "data/benchmark-stdout.txt": "89424d3e556b8604b28335968f9eb7180ddcfaef4ae9823284daefa15be241da",
     "data/corpus.hex": "42272a380aebff59df3a163a60000e5024e48fb0c8b63d37478746bdb6570e7a",
     "data/corpus.json": "12141948a99754c52427a3747360288b8e344ca08c970ac2f3211734df4760cc",
     "data/correctness-stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
