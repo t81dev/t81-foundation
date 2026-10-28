@@ -1,0 +1,55 @@
+{
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "id": "H-CONV-01",
+  "status": "proposed",
+  "hypothesis_id": "H02",
+  "attribution": {
+    "name": "OpenAI Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "experiment author and executor; not independent review"
+  },
+  "repository_revision": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+  "evidence": [
+    {
+      "source_ref": "a9ae2af6a8abce21f2aeefb0b53fb0fe5906d2ca",
+      "relationship": "context",
+      "scope": "Motivating tensor canonical conversion profile; no use of integrated apparatus."
+    },
+    {
+      "source_ref": "Hanoi@59205d76db4aca3da7c0bdc521924b8f9bc52cc3/src/ternary_arithmetic_optimization.cweb",
+      "relationship": "context",
+      "scope": "Historical digit conventions differ; not a conversion specification."
+    }
+  ],
+  "uncertainty": "Finite corpus and one binary host; extracted arithmetic fidelity bounded by tested no-overflow domain. No architectural/radix superiority inference.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": null,
+    "record": "User pasted Foundational Research: Balanced-Ternary Representation and Conversion assignment; standalone experiment, approximately 60 minutes active execution, optional one new draft PR; no PR628 modification."
+  },
+  "research_question": "Does direct rational scaling preserve tensor DFixed binary32 semantics while avoiding repeated wide division?",
+  "falsification_criterion": "Any unexplained output mismatch blocks equivalence/performance claims; no lower operation count or no measured improvement on matched native corpus fails the applicable bounded improvement claim.",
+  "matched_control": "Native existing-algorithm extraction and one direct rational alternative; same compiler, packed-trit arithmetic, representation, input order and checksum obligations.",
+  "method": "Independent Fraction oracle from binary32 bits; extracted fixed/int arithmetic with governance removed; one direct numerator/denominator quotient for negative exponent, original multiply branch otherwise.",
+  "measurement_plan": "One bounded corpus: both signs around all exponent boundaries, specials, fractions, quantization boundaries and 128 seeded finite random patterns. Correctness first. One warmup/candidate; six randomized paired full-corpus batches (three BC/CB), steady-clock integer ns; retain all attempts and mismatches. Stop on non-equivalence or approximate 60-minute active budget.",
+  "expected_artifacts": [
+    "SPEC.md",
+    "corpus and exact oracle outputs",
+    "native sources and extraction provenance",
+    "correctness/mismatches",
+    "raw timing rows if equivalent",
+    "environment/compiler/binary identities",
+    "REPORT.md"
+  ],
+  "resource_requirements": [
+    "Existing AppleClang C++23 compiler",
+    "Python standard library only",
+    "No packages/network required for execution; approximately 60 minutes active cap"
+  ],
+  "security_requirements": [
+    "No VM/CLI/CanonFS/governance dependency or production edits",
+    "Read only source snapshots; write only research packet and temporary build outputs",
+    "No PR628 modification or merge; stop after report"
+  ]
+}

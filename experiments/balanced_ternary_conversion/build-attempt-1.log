@@ -1,0 +1,20 @@
+In file included from experiments/balanced_ternary_conversion/native.cpp:2:
+In file included from experiments/balanced_ternary_conversion/fixed_extracted.hpp:4:
+experiments/balanced_ternary_conversion/ternary_int_extracted.hpp:524:7: error: implicit instantiation of undefined template 'std::basic_istream<char>'
+  524 |     is.read(reinterpret_cast<char*>(&len), sizeof(len));
+      |       ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/istream.h:22:7: note: template is declared here
+   22 | class basic_istream;
+      |       ^
+In file included from experiments/balanced_ternary_conversion/native.cpp:2:
+In file included from experiments/balanced_ternary_conversion/fixed_extracted.hpp:4:
+experiments/balanced_ternary_conversion/ternary_int_extracted.hpp:525:9: error: invalid argument type 'std::istream' (aka 'basic_istream<char>') to unary expression
+  525 |     if (!is) return;
+      |         ^~~
+experiments/balanced_ternary_conversion/ternary_int_extracted.hpp:529:7: error: implicit instantiation of undefined template 'std::basic_istream<char>'
+  529 |     is.read(reinterpret_cast<char*>(data_.data()), static_cast<std::streamsize>(len));
+      |       ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/istream.h:22:7: note: template is declared here
+   22 | class basic_istream;
+      |       ^
+3 errors generated.

@@ -1,0 +1,6 @@
+{
+  "command": "pmset -g log",
+  "selection": "2026-10-28 15:20\u201315:39 America/New_York; exact Sleep/DarkWake/Wake event classes only; unrelated application assertions omitted",
+  "retained_events": 4,
+  "purpose": "post-run validity check; no timing correction or observation exclusion"
+}
