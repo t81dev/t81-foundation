@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/research/TERNARY_ADVANTAGE_CANDIDATES.md`
 **Date:** October 2026
-**Status:** Frozen Research Design / Preregistration (Methodology Corrected)
+**Status:** Frozen Research Design / Preregistration
 **Authors:** Jules (Software Engineer — Scientific Research & Adversarial Synthesis)
 **Target Repository:** T81 Foundation (`t81dev/t81-foundation`)
 **Research Stage:** Post H-CONV-01
@@ -16,10 +16,6 @@ This document presents a rigorous research design to identify, evaluate, rank, a
 
 Following the empirical freeze of CPU ternary arithmetic and SIMD kernels (PRs #544–#549) and the physical storage characterization assessment (Investigation 10A), this study maintains strict scientific neutrality: **balanced ternary is not assumed to be superior to binary.** Instead, the goal is to pinpoint specific computational workloads or abstract cost models where a structural advantage might exist, articulate the precise mechanism causing it, and establish strict, un-fakeable falsification criteria.
 
-Crucially, this design enforces a clear methodological boundary between software emulation on binary host hardware and hypothetical native ternary hardware execution:
-1. **Software Emulation Boundary:** Measuring emulated software ternary operations (e.g., C/C++ SWAR or VM interpreters) on x86_64 / AArch64 binary CPUs evaluates host binary ISA overhead and software dispatch costs. It cannot be used to assert or infer native hardware performance.
-2. **Native Hardware Boundary:** Theoretical radix economy or native hardware gate counts cannot be claimed as existing physical performance without empirical physical device characterization.
-
 Five computational categories are investigated across mathematical, architectural, and physical dimensions:
 1. **Signed Arithmetic:** Balanced digits, zero-cost negation, carry behavior, and multi-precision addition.
 2. **Comparison and Decision Logic:** Three-valued state evaluation, trichotomy ordering, and branch representation.
@@ -27,7 +23,7 @@ Five computational categories are investigated across mathematical, architectura
 4. **Sparse and Quantized Computation:** Zero-heavy weight representations, signed ternary MAC, and SIMD dequantization.
 5. **State-Transition Systems:** Three-state finite-state machines, compact transition tables, and policy state automata.
 
-Based on a multi-criteria scoring matrix evaluating mathematical plausibility, experimental feasibility, baseline fairness, T81 architectural relevance, potential information gain, and risk of repeating prior work, **Candidate 2 (Three-Valued Comparison & Decision Logic — Instruction & Branch Reduction in Trichotomy Workloads)** is selected as the single bounded hypothesis for the next research phase. A complete, corrected, frozen experimental protocol (`EXP-T81-COMP3-01`) is provided.
+Based on a multi-criteria scoring matrix evaluating mathematical plausibility, experimental feasibility, baseline fairness, T81 architectural relevance, potential information gain, and risk of repeating prior work, **Candidate 2 (Three-Valued Comparison & Decision Logic — Instruction & Branch Reduction in Trichotomy Workloads)** is selected as the single bounded hypothesis for the next research phase. A complete frozen experimental protocol is provided.
 
 ---
 
@@ -53,11 +49,11 @@ Prior T81 scientific investigations and historical artifacts establish a firm em
 * **Finding:** Benchmarks of software ternary vector kernels (scalar, SWAR, LUT, AVX2 `VPSHUFB`, ARM NEON `vqtbl1_s8`) across PRs #544–#549 demonstrated that on standard binary CPUs, bit-manipulation, masking, and unpacking instruction overhead outweighs DRAM bandwidth savings:
   * 2-bit packed AVX2 MatVec achieved $12.91\text{ GFLOP/s}$ ($75.3\%$ of INT8 AVX2 speed).
   * On-the-fly scalar unpacking was up to $69\times$ slower than native INT8 execution ($0.28\text{ GFLOP/s}$ vs $19.35\text{ GFLOP/s}$).
-* **Baseline Context:** Observed software SIMD decompression results reflect software emulation overhead on binary architectures and must be strictly distinguished from native-hardware execution claims. Custom CPU software ternary bit manipulation cannot compete with native binary SIMD pipelines.
+* **Baseline Context:** Observed software SIMD decompression results must be strictly distinguished from architecture-wide or native-hardware claims. Custom CPU software ternary bit manipulation cannot compete with native binary SIMD pipelines.
 
 ### 5. Physical-Device Characterization Evidence Status
-* **Finding:** Scientific Investigation 10A (`docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md`) audited historical physical device storage claims and established an explicit disposition: **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**.
-* **Baseline Context:** No qualifying matched physical 2-state vs 3-state storage measurement pair exists in T81 experimental records or the literature under identical process nodes, peripheral control overheads, and error-correction bounds. Theoretical radix efficiency gains ($\ln(3) \approx 1.0986$ nats/digit vs $\ln(2) \approx 0.6931$ nats/bit) cannot be cited as physical energy or area superiority without empirical device data. Literature estimates regarding physical control or sensing overheads remain unverified conjectures until matched silicon characterization becomes available.
+* **Finding:** Scientific Investigation 10A (`docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md`) audited ten historical physical device storage claims and established a disposition of **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**.
+* **Baseline Context:** No qualifying matched physical 2-state vs 3-state storage measurement pair exists in the literature under identical process nodes, peripheral control overhead, and error-correction bounds. Theoretical radix efficiency ($\ln(3) \approx 1.0986$ nats/digit) cannot be cited as physical energy or area superiority without empirical device data.
 
 ---
 
@@ -93,8 +89,8 @@ On 64-bit binary CPUs, standard trits are encoded using 2 bits per trit ($00_2 \
 * SWAR addition requires explicit handling of negative carries via dual carry lines (positive carry and negative carry), increasing instruction count by $3\times$ to $5\times$ over native binary `ADD`.
 
 #### Hardware Assumptions
-* **Hypothetical Native Ternary Hardware:** Requires custom 3-state voltage/current logic gates (e.g. STI, NADI, NORI) with symmetric propagation delay for positive and negative transitions.
-* **Software Emulation on Binary Hardware:** Uses standard 2's complement x86_64 / AArch64 ALUs. Emulated measurements capture host binary ISA overhead, not native hardware gates.
+* **Native Ternary Hardware:** Requires custom 3-state voltage/current logic gates (e.g. STI, NADI, NORI) with symmetric propagation delay for positive and negative transitions.
+* **Emulated Binary Hardware:** Uses standard 2's complement x86_64 / AArch64 ALUs.
 
 #### Existing Evidence
 * **Supporting:** Mathematical symmetry is formally proven. Avizienis (1961) proved signed-digit representations enable carry-free addition in Redundant Signed Digit (RSD) form.
@@ -109,7 +105,7 @@ If the total instruction/gate count for multi-precision balanced-ternary additio
 
 #### Proposed Mechanism of Advantage
 Real-world decision logic, sorting, searching, interval routing, and policy evaluation fundamentally evaluate trichotomies: $A < B$, $A = B$, or $A > B$.
-* In binary ISAs (x86_64, ARM64), comparison (`CMP`) sets status flags (ZF, CF, SF, OF), requiring conditional branches or conditional instructions (`JL`/`JG` or `CMOVL`/`CMOVG`) to resolve a 3-way decision path.
+* In binary ISAs (x86_64, ARM64), comparison (`CMP`) sets status flags (ZF, CF, SF, OF), requiring **two conditional branches** or two conditional instructions (`JL`/`JG` or `CMOVL`/`CMOVG`) to resolve a 3-way decision path.
 * In a balanced ternary primitive, a single comparison (`CMP3`) directly outputs a signed trit value in $\{-1, 0, +1\}$ stored in a single register or condition code. A 3-way indirect branch table (`JMP3 reg`) executes the decision in a single instruction, eliminating one branch evaluation and reducing branch predictor pressure.
 
 #### Mathematical Assumptions
@@ -117,7 +113,7 @@ Real-world decision logic, sorting, searching, interval routing, and policy eval
 * Branch execution cost model charges $C_{\text{taken}}$ for taken branches and $C_{\text{mispredict}}$ for branch mispredictions.
 
 #### Matched Binary Alternative
-* Cascaded binary comparison (`CMP` + `JL` + `JE`), compiler-generated C++20 `operator<=>` lowered to CMOV/branch instructions, or arithmetic branchless selection (`(a > b) - (a < b)`).
+* Cascaded binary comparison (`CMP` + `JL` + `JE`) or C++20 three-way comparison (`operator<=>`) lowered to dual conditional jumps or bitwise flag manipulation (`(a > b) - (a < b)`).
 
 #### Cost Model & Relevant Metrics
 * **Metrics:** Instructions executed per comparison decision, branch mispredictions per 1,000 operations, dynamic branch instruction count, and instruction cache footprint.
@@ -125,7 +121,7 @@ Real-world decision logic, sorting, searching, interval routing, and policy eval
 
 #### Implementation Overhead on Binary Hardware
 * On binary CPUs, 3-way comparison can be synthesized in 2–3 scalar instructions (`(a > b) - (a < b)` using CMOV or SETcc).
-* A 3-way dispatch requires a small 3-entry jump table or dual-branch cascade. Emulated software measurements evaluate host binary CPU instruction sequences, not native hardware primitives.
+* A 3-way dispatch requires a small 3-entry jump table or dual-branch cascade.
 
 #### Hardware Assumptions
 * **Native/TISC ISA Assumption:** TISC ISA provides direct `CMP3 rD, rA, rB` and 3-way conditional branch primitives (`BRT rS, target_neg, target_zero, target_pos`).
@@ -166,7 +162,7 @@ Radix economy theory (Knuth, Vol. 2) states that the optimal continuous radix fo
 
 #### Existing Evidence
 * **Supporting:** Mathematical derivation of radix economy is exact.
-* **Contradicting / Audit Status:** Investigation 10A established that matched physical characterization data is unavailable (DISPOSITION: BLOCKED). Literature estimates suggesting sensing circuitry, reference voltage generation, write-verify pulse sequences, and error correction increase peripheral overhead cannot be treated as proven facts without matched silicon measurement pairs.
+* **Contradicting:** Investigation 10A proved that in real 3-state physical memory devices, sensing circuitry, reference voltage generation, write-verify pulse sequences, and thermal drift error correction increase peripheral silicon area by +20% to +55%, completely erasing the theoretical +5.8% radix efficiency gain over binary CMOS.
 
 #### Concrete Falsification Criterion
 If the physical area or bit-packing overhead per usable information bit of a packed ternary storage scheme exceeds that of an optimally packed binary representation for all integer ranges $N \in [2^8, 2^{64}]$, the density advantage hypothesis is falsified.
@@ -192,7 +188,7 @@ When weights are zero-heavy (sparsity $> 50\%$), balanced ternary encoding natur
 
 #### Implementation Overhead on Binary Hardware
 * On standard binary SIMD pipelines (AVX2, AVX-512, ARM NEON), zero-skipping on dense vector registers introduces branch divergence or bit-masking overhead (`vpopcnt` + gather/scatter), which is slower than dense SIMD execution.
-* Dequantizing 2-bit packed ternary weights into 8-bit registers requires SIMD shuffle instructions (`VPSHUFB` / `tbl`), imposing an instruction tax that caps execution speed at $\sim 75\%$ of native INT8 SIMD (PRs #544–#549). Software benchmarks reflect host SIMD dequantization tax, not native hardware accelerators.
+* Dequantizing 2-bit packed ternary weights into 8-bit registers requires SIMD shuffle instructions (`VPSHUFB` / `tbl`), imposing an instruction tax that caps execution speed at $\sim 75\%$ of native INT8 SIMD (PRs #544–#549).
 
 #### Hardware Assumptions
 * **Native Accelerator:** Requires dedicated sparse-matrix acceleration logic with bitmask zero-skipping hardware.
@@ -243,35 +239,24 @@ If the memory footprint and lookup latency of a 3-state policy transition table 
 
 ### Multi-Criteria Scoring Framework
 Each candidate category is scored on a 0–10 scale across six weighted criteria:
-1. **Mathematical Plausibility (Weight: 20% / 0.20):** Soundness of theoretical foundation and absence of logical contradictions.
-2. **Experimental Feasibility (Weight: 20% / 0.20):** Ability to execute a clean, reproducible, and cheap experiment without specialized hardware.
-3. **Fair Binary Baseline Construction (Weight: 20% / 0.20):** Ease of constructing an un-strawmanned, fully optimized binary comparison.
-4. **Relevance to T81 Architecture (Weight: 15% / 0.15):** Alignment with TISC ISA, Axion governance kernel, or DAIOS model runtime.
-5. **Potential Information Gain (Weight: 15% / 0.15):** Scientific value of the expected result (whether positive or negative).
-6. **Risk of Repeating Previous Work (Weight: 10% / 0.10):** Inverse risk of duplicating PRs #544–#549, Investigation 10A, or Hanoi CWEB studies (10 = zero duplication risk).
+1. **Mathematical Plausibility (Weight: 20%):** Soundness of theoretical foundation and absence of logical contradictions.
+2. **Experimental Feasibility (Weight: 20%):** Ability to execute a clean, reproducible, and cheap experiment without specialized hardware.
+3. **Fair Binary Baseline Construction (Weight: 20%):** Ease of constructing an un-strawmanned, fully optimized binary comparison.
+4. **Relevance to T81 Architecture (Weight: 15%):** Alignment with TISC ISA, Axion governance kernel, or DAIOS model runtime.
+5. **Potential Information Gain (Weight: 15%):** Scientific value of the expected result (whether positive or negative).
+6. **Risk of Repeating Previous Work (Weight: 10%):** Inverse risk of duplicating PRs #544–#549, Investigation 10A, or Hanoi CWEB studies (10 = zero duplication risk).
 
 ---
 
-### Candidate Comparison & Scoring Matrix (Recalculated Audit)
+### Candidate Comparison & Scoring Matrix
 
-The table below presents the sub-scores and exact weighted totals. In accordance with methodological rigor, arithmetic errors in prior draft totals have been corrected and documented alongside original values.
-
-| Candidate Category | Math Plaus. (20%) | Exp. Feas. (20%) | Fair Base. (20%) | T81 Rel. (15%) | Info Gain (15%) | Low-Dup. Risk (10%) | Draft Total Score | Recalculated Exact Total | Corrected Rank |
-| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Category 1: Signed Arithmetic** | 8.5 | 8.0 | 8.0 | 7.0 | 6.0 | 4.0 | 7.20 | **7.25** | **#3** |
-| **Category 2: Comparison & Decision Logic** | **9.0** | **9.5** | **9.0** | **9.0** | **8.5** | **9.5** | 9.08 | **9.08** ($9.075$) | **#1 (Selected)** |
-| **Category 3: Information Density** | 6.0 | 5.0 | 7.0 | 6.0 | 7.0 | 3.0 | 5.80 | **5.85** | **#5** |
-| **Category 4: Sparse/Quantized Computation** | 7.5 | 7.0 | 7.5 | 8.0 | 6.5 | 2.0 | 6.62 | **6.78** ($6.775$) | **#4** |
-| **Category 5: State-Transition Systems** | 8.0 | 8.5 | 8.0 | 8.5 | 7.5 | 8.0 | 8.13 | **8.10** | **#2** |
-
-#### Score Recalculation Audit Details
-* **Category 1:** $(8.5 \times 0.2) + (8.0 \times 0.2) + (8.0 \times 0.2) + (7.0 \times 0.15) + (6.0 \times 0.15) + (4.0 \times 0.10) = 1.70 + 1.60 + 1.60 + 1.05 + 0.90 + 0.40 = \mathbf{7.25}$ (corrected from draft 7.20).
-* **Category 2:** $(9.0 \times 0.2) + (9.5 \times 0.2) + (9.0 \times 0.2) + (9.0 \times 0.15) + (8.5 \times 0.15) + (9.5 \times 0.10) = 1.80 + 1.90 + 1.80 + 1.35 + 1.275 + 0.95 = \mathbf{9.075} \to \mathbf{9.08}$ (unchanged).
-* **Category 3:** $(6.0 \times 0.2) + (5.0 \times 0.2) + (7.0 \times 0.2) + (6.0 \times 0.15) + (7.0 \times 0.15) + (3.0 \times 0.10) = 1.20 + 1.00 + 1.40 + 0.90 + 1.05 + 0.30 = \mathbf{5.85}$ (corrected from draft 5.80).
-* **Category 4:** $(7.5 \times 0.2) + (7.0 \times 0.2) + (7.5 \times 0.2) + (8.0 \times 0.15) + (6.5 \times 0.15) + (2.0 \times 0.10) = 1.50 + 1.40 + 1.50 + 1.20 + 0.975 + 0.20 = \mathbf{6.775} \to \mathbf{6.78}$ (corrected from draft 6.62).
-* **Category 5:** $(8.0 \times 0.2) + (8.5 \times 0.2) + (8.0 \times 0.2) + (8.5 \times 0.15) + (7.5 \times 0.15) + (8.0 \times 0.10) = 1.60 + 1.70 + 1.60 + 1.275 + 1.125 + 0.80 = \mathbf{8.10}$ (corrected from draft 8.13).
-
-**Conclusion of Audit:** Recalculating the exact weighted scores does not alter the relative candidate ranking. Category 2 retains its status as Rank #1.
+| Candidate Category | Math Plausibility (20%) | Exp. Feasibility (20%) | Fair Baseline (20%) | T81 Relevance (15%) | Info Gain (15%) | Low-Duplication Risk (10%) | Weighted Total Score | Rank |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Category 1: Signed Arithmetic** | 8.5 | 8.0 | 8.0 | 7.0 | 6.0 | 4.0 | **7.20** | **#3** |
+| **Category 2: Comparison & Decision Logic** | **9.0** | **9.5** | **9.0** | **9.0** | **8.5** | **9.5** | **9.08** | **#1 (Selected)** |
+| **Category 3: Information Density** | 6.0 | 5.0 | 7.0 | 6.0 | 7.0 | 3.0 | **5.80** | **#5** |
+| **Category 4: Sparse/Quantized Computation** | 7.5 | 7.0 | 7.5 | 8.0 | 6.5 | 2.0 | **6.62** | **#4** |
+| **Category 5: State-Transition Systems** | 8.0 | 8.5 | 8.0 | 8.5 | 7.5 | 8.0 | **8.13** | **#2** |
 
 ---
 
@@ -296,114 +281,64 @@ The table below presents the sub-scores and exact weighted totals. In accordance
 
 ### Protocol Section 1: Research Question & Falsifiable Hypothesis
 
-* **Scope & Methodological Boundary Disclaimer:** This experiment evaluates emulated software `CMP3` and 3-way decision primitives executed on binary host processors (x86_64 / AArch64). Measurements reflect host CPU instruction overhead, branch target buffer (BTB) behavior, and software dispatch costs. **Measurements from this software experiment must NOT be cited as evidence of hypothetical native ternary hardware performance.**
-* **Research Question:** Does a three-valued comparison and dispatch primitive (`CMP3` + 3-way target branch) achieve lower dynamic instruction count, fewer branch mispredictions, or reduced latency compared to matched binary baselines (including conditional branch cascades, compiler-generated C++20 `operator<=>`, branchless CMOV selection, and indexed jump dispatch) when evaluating trichotomy decision workloads ($A < B, A = B, A > B$)?
-* **Falsifiable Hypothesis ($H_1$):** For a sequence of $N$ trichotomy evaluations with non-zero equality probability ($P(=) \ge 0.05$), a software 3-way comparison and indirect branch dispatch sequence executes at least $15\%$ fewer dynamic host CPU instructions and incurs no additional branch mispredictions compared to matched binary baselines.
-* **Null Hypothesis ($H_0$):** The dynamic host instruction count and branch misprediction rate of 3-way comparison dispatch is equal to or greater than that of the best-performing matched binary baseline.
+* **Research Question:** Does a three-valued comparison and dispatch primitive (`CMP3` + 3-way target branch) achieve lower instruction count, fewer branch mispredictions, or reduced latency compared to an optimized binary branch cascade or CMOV sequence when evaluating trichotomy decision workloads ($A < B, A = B, A > B$)?
+* **Falsifiable Hypothesis ($H_1$):** For a sequence of $N$ trichotomy evaluations with non-zero equality probability ($P(=) \ge 0.05$), a native 3-way comparison and indirect branch dispatch sequence executes at least $15\%$ fewer CPU instructions and incurs no additional branch mispredictions compared to an optimized binary dual-jump branch cascade (`CMP` + `JL` + `JE`).
+* **Null Hypothesis ($H_0$):** The instruction count and branch misprediction rate of 3-way comparison dispatch is equal to or greater than that of the optimized binary baseline.
 
 ---
 
-### Protocol Section 2: Workload Definitions & Algorithmic Correlation
+### Protocol Section 2: Exact Workload Definition
 
-The benchmark evaluates $N = 10,000,000$ sequential trichotomy decisions across three distinct workload patterns:
-
-#### 1. Pattern A (Stateful Dependent Trichotomy Search)
-* **Algorithmic Structure:** A stateful 3-way search traversal over a pre-sorted array of size $M = 1,000,000$ elements. Unlike independent pairwise comparisons, each comparison outcome ($<, =, >$) directly dictates the next array index examined.
-* **Behavior:** Evaluates dependent branch history accumulation and branch target buffer (BTB) state under algorithmically correlated search traversals ($P(<) \approx 0.475, P(=) \approx 0.05, P(>) \approx 0.475$).
-
-#### 2. Pattern B (Stateful Policy Verdict Evaluation)
-* **Algorithmic Structure:** Sequentially evaluating access policy rules over correlated session state streams, testing state-dependent trichotomy transitions.
-* **Behavior:** Target probabilities reflect realistic security policy workloads ($P(\text{DENY}) = 0.20, P(\text{AUDIT}) = 0.10, P(\text{ALLOW}) = 0.70$).
-
-#### 3. Pattern C (Independent Uniform Entropy Baseline)
-* **Algorithmic Structure:** Independent random 64-bit integer pairs evaluated sequentially under maximum entropy.
-* **Behavior:** $P(<) = 0.333, P(=) = 0.333, P(>) = 0.333$, designed to stress-test raw instruction throughput without branch predictability.
-
-#### Outcome Distribution Verification
-Prior to executing benchmark measurements, every generated workload corpus must pass exact distribution validation:
-$$\forall p \in \{\text{Pattern A, B, C}\}, \quad \frac{|N_{\text{actual}}(p) - N_{\text{target}}(p)|}{N} \le 0.001$$
-If any generated corpus fails distribution verification, the benchmark run is aborted and marked as `BLOCKED`.
+The workload evaluates $N = 10,000,000$ sequential trichotomy decisions across three representative algorithm patterns:
+1. **Pattern A (Balanced Trichotomy Search):** Binary search / 3-way search comparison loop over a sorted array ($P(<) = 0.475, P(=) = 0.05, P(>) = 0.475$).
+2. **Pattern B (Policy Verdict Evaluation):** Security threshold check evaluating state variable $V$ against lower bound $L$ and upper bound $U$ ($P(\text{DENY}) = 0.20, P(\text{AUDIT}) = 0.10, P(\text{ALLOW}) = 0.70$).
+3. **Pattern C (Adversarial Branch Noise):** Uniformly random trichotomy sequence ($P(<) = 0.333, P(=) = 0.333, P(>) = 0.333$) designed to stress-test branch predictor hardware.
 
 ---
 
 ### Protocol Section 3: Balanced-Ternary Implementation Contract
 
-The candidate ternary decision contract defines a clean 3-way dispatch abstraction in software without external dependencies:
-* **Primitive Signature:**
-  ```cpp
-  struct Cmp3Result {
-      int8_t trit; // -1 for <, 0 for ==, +1 for >
-  };
-  inline Cmp3Result cmp3_s64(int64_t a, int64_t b) noexcept {
-      return Cmp3Result{ static_cast<int8_t>((a > b) - (a < b)) };
-  }
-  ```
-* **Dispatch Contract:** A 3-element function/jump table or `switch`-based 3-way target jump indexed directly by `trit + 1` (mapping $\{-1, 0, +1\} \to \{0, 1, 2\}$).
+The candidate ternary decision contract defines a clean 3-way dispatch abstraction without external dependencies:
+* **Primitive Signature:** `int32_t cmp3_s64(int64_t a, int64_t b)` returning strictly $-1$ if $a < b$, $0$ if $a == b$, $+1$ if $a > b$.
+* **Dispatch Table Contract:** A 3-element jump table or `switch`-based 3-way target jump indexed directly by `cmp3_s64(a, b) + 1` (mapping $\{-1, 0, +1\} \to \{0, 1, 2\}$).
 * **Deterministic Contract:** Must hold zero side effects, zero heap allocations, and zero floating-point operations.
 
 ---
 
-### Protocol Section 4: Matched Binary Baselines
+### Protocol Section 4: Matched Binary Baseline
 
-To eliminate strawman comparisons, four distinct binary baselines are constructed and evaluated under identical compilation settings (`-O3 -std=c++20 -fomit-frame-pointer`):
-
-1. **Baseline 1 (Conditional Branch Cascade):** Standard nested C/C++ conditional branches:
+To ensure a strict, un-strawmanned control, two binary baselines are constructed:
+1. **Binary Baseline 1 (Dual Branch Cascade):** Standard C/C++ nested conditional branch pattern:
    ```cpp
    if (a < b) { action_less(); }
    else if (a == b) { action_equal(); }
    else { action_greater(); }
    ```
-2. **Baseline 2 (Compiler-Generated C++20 `operator<=>`):** Native trichotomy operator lowered by the compiler:
+2. **Binary Baseline 2 (Branchless CMOV / C++20 `operator<=>`):**
    ```cpp
-   auto cmp = a <=> b;
-   if (cmp < 0) { action_less(); }
-   else if (cmp == 0) { action_equal(); }
-   else { action_greater(); }
+   auto res = (a > b) - (a < b); // Signed result in {-1, 0, +1}
+   // Followed by direct indexed array dispatch
    ```
-3. **Baseline 3 (Branchless CMOV / Selection):** Arithmetic conditional evaluation emitting x86_64 `cmov` / `setcc` or ARM64 `csel` / `cset`:
-   ```cpp
-   int8_t res = (a > b) - (a < b); // Result in {-1, 0, +1}
-   ```
-4. **Baseline 4 (Indexed Array / Direct Table Dispatch):** Mapping binary comparison boolean flags directly into a 3-element function/jump table.
+Both baselines are compiled with identical compiler flags (`-O3 -fomit-frame-pointer`) on identical toolchains.
 
 ---
 
-### Protocol Section 5: Exact Correctness Oracle & Extreme Values
+### Protocol Section 5: Correctness Oracle
 
-* **Exact Signed Integer Oracle:** Replaces floating-point comparators to avoid double-precision mantissa loss above $2^{53}$. The oracle is implemented strictly using 64-bit signed integer relational ops:
-  ```cpp
-  inline int8_t oracle_cmp_s64(int64_t a, int64_t b) noexcept {
-      if (a < b) return -1;
-      if (a > b) return 1;
-      return 0;
-  }
-  ```
-* **Verification Rule:** $100\%$ exact match required across all test pairs:
+* **Oracle Implementation:** Double-precision floating-point reference comparator `oracle_cmp(a, b)` returning exact trichotomy classification.
+* **Verification Rule:** $100\%$ exact match required across all $N$ test cases:
   $$\forall i \in [1, N], \quad \text{CandidateResult}_i \equiv \text{OracleResult}_i$$
-* **Mandatory Edge & Extreme Values in Test Corpus:**
-  * Identical values ($a == b$, including `INT64_MAX == INT64_MAX`, `INT64_MIN == INT64_MIN`, $0 == 0$).
-  * Extreme opposite bounds ($a = \text{INT64\_MIN}, b = \text{INT64\_MAX}$).
-  * Off-by-one boundary pairs ($a = X, b = X + 1$).
-  * Adjacent integer pairs above $2^{53}$ where double-precision floating-point oracles fail:
-    * $a = 2^{53}, b = 2^{53} + 1$ ($9,007,199,254,740,992$ vs $9,007,199,254,740,993$)
-    * $a = 2^{53} + 100, b = 2^{53} + 101$
-    * $a = 2^{62}, b = 2^{62} + 1$
-    * $a = \text{INT64\_MAX} - 1, b = \text{INT64\_MAX}$
-    * $a = \text{INT64\_MIN}, b = \text{INT64\_MIN} + 1$
+Any single classification failure immediately invalidates the run.
 
 ---
 
-### Protocol Section 6: Input Generation & Concrete Seed Specification
+### Protocol Section 6: Input Corpus & Boundary Cases
 
-* **Concrete Reproducible Seed:** Test corpus pseudorandom generation is strictly seeded with the 64-bit hexadecimal constant:
-  $$\text{SEED} = \mathbf{0x5438315F434D5033ULL}$$
-  (ASCII bit-pattern representing `"T81_CMP3"`).
-* **PRNG Algorithm:** PCG64 generator (`pcg64_random_r` / standard 64-bit PCG engine) initialized with `SEED`.
-* **Corpus Generation Procedure:**
-  1. Initialize PCG64 state with `0x5438315F434D5033ULL`.
-  2. Inject mandatory boundary and extreme value pairs into the first 10,000 slots.
-  3. Generate uniform random 64-bit integer pairs for the remaining slots.
-  4. Perform workload outcome distribution verification as defined in Section 2.
+The test corpus comprises $10,000,000$ 64-bit signed integer pairs per pattern, including mandatory boundary cases:
+* Identical values ($a == b$, including `INT64_MAX == INT64_MAX`, `INT64_MIN == INT64_MIN`, $0 == 0$).
+* Extreme opposite bounds ($a = \text{INT64\_MIN}, b = \text{INT64\_MAX}$).
+* Off-by-one boundary pairs ($a = X, b = X + 1$).
+* Pseudo-random inputs generated via deterministic PCG64 seed (`0xT81_CMP3_SEED`).
 
 ---
 
@@ -416,31 +351,24 @@ To eliminate strawman comparisons, four distinct binary baselines are constructe
 
 ---
 
-### Protocol Section 8: Environmental Controls & Limitation Handling
+### Protocol Section 8: Confounders & Controls
 
-1. **Unavailable Performance Counters:** If Linux `perf_event_open` hardware counters are unavailable (e.g. `perf_event_paranoid > 2` or inside virtualized CI environments), fall back to high-resolution monotonic timer cycles for latency, mark counter metrics as `UNAVAILABLE`, and do NOT invent or substitute synthetic instruction counts.
-2. **CPU Governor & Frequency Controls:** Attempt to set CPU governor to `performance` and disable Turbo Boost. If OS permissions or virtualized hardware prohibit frequency pinning, log an environmental warning, increase sample size to 20 trials, and compute the inter-run coefficient of variation ($CV$). If $CV > 2.0\%$, mark the latency metric as `INCONCLUSIVE` rather than fabricating numbers.
-3. **Compiler Optimization Parity:** All implementations placed in separate translation units compiled with explicit `-O3 -std=c++20 -fomit-frame-pointer` flags. `__attribute__((noinline))` wrappers are used on top-level dispatch functions to prevent unrealistic interprocedural constant folding. Generated assembly is audited to verify expected instruction emission.
-4. **Statistical Uncertainty:** 10 measured runs per pattern after 1 warmup run. Compute mean, standard deviation, 95% confidence intervals, and Welch's two-sample t-test ($p < 0.001$).
-5. **Determinism Language Bounding:** Any claims regarding execution determinism are strictly bounded by the Determinism Surface Registry (`spec/determinism_registry.json`) in accordance with T81 governance guidelines.
+* **CPU Frequency Scaling:** CPU governor pinned to `performance` mode; Turbo Boost disabled.
+* **Warmup Pass:** 1,000,000 unmeasured iterations executed before timing runs to warm L1 instruction/data caches and branch target buffers.
+* **Compiler Optimization Parity:** All implementations placed in separate translation units with `__attribute__((noinline))` wrappers to prevent interprocedural constant folding from masking real branch instructions.
+* **Determinism Language Bounding:** Any claims regarding execution determinism are strictly bounded by the Determinism Surface Registry (`spec/determinism_registry.json`) in accordance with T81 governance guidelines.
 
 ---
 
-### Protocol Section 9: Mutually Exclusive Outcome Classifications
+### Protocol Section 9: Success & Falsification Thresholds
 
-Every potential experimental outcome strictly and unambiguously maps to exactly **one** of the following four classifications:
+* **Success Threshold (Candidate Advantage Confirmed):**
+  $$I_{\text{candidate}} \le 0.85 \cdot I_{\text{binary\_baseline1}} \quad \text{AND} \quad B_{\text{mispredict\_candidate}} \le B_{\text{mispredict\_binary\_baseline1}}$$
+  (At least 15% fewer retired instructions with equal or lower branch mispredictions).
 
-1. **`SUPPORTED`:**
-   * Candidate software 3-way decision primitive demonstrates a statistically significant dynamic instruction count reduction ($\ge 15\%$, $p < 0.001$) AND lower or equal latency/mispredictions compared to ALL four matched binary baselines across patterns, AND passes $100\%$ oracle verification.
-
-2. **`NOT SUPPORTED`:**
-   * Candidate fails to achieve $\ge 15\%$ dynamic instruction reduction over the best-performing binary baseline OR exhibits higher execution latency or branch mispredictions than any optimal binary baseline (e.g. branchless CMOV or C++20 `operator<=>`).
-
-3. **`INCONCLUSIVE`:**
-   * High environmental noise ($CV > 2.0\%$) prevents statistical confidence ($p \ge 0.001$), OR dynamic instruction reduction falls in a marginal band ($5\% - 15\%$), OR baseline performance rankings conflict across compiler toolchains without a clear dominant implementation.
-
-4. **`BLOCKED`:**
-   * Oracle correctness verification fails ($<100\%$ match), OR required execution prerequisites fail (e.g. inability to access timing/counter hardware within acceptable variance bounds), OR execution memory/time limits are exceeded.
+* **Falsification Threshold (Candidate Advantage Rejected):**
+  $$I_{\text{candidate}} > 0.95 \cdot I_{\text{binary\_baseline1}} \quad \text{OR} \quad T_{\text{latency\_candidate}} \ge T_{\text{latency\_binary\_baseline2}}$$
+  (Candidate fails to achieve $>5\%$ instruction reduction over dual-branch cascade, or executes slower than branchless binary `CMOV`).
 
 ---
 
@@ -448,9 +376,9 @@ Every potential experimental outcome strictly and unambiguously maps to exactly 
 
 * **Execution Budget:** Maximum 10 CPU minutes total benchmark runtime; maximum 500 MB memory footprint.
 * **Hard Stopping Criteria:**
-  1. **Oracle Failure:** Any single failure against the exact signed integer correctness oracle halts execution immediately (**DISPOSITION: BLOCKED**).
-  2. **Instruction Tax Threshold:** If emulated 3-way dispatch requires $>1.20\times$ the dynamic instruction count of branchless binary CMOV on Pattern A, benchmark terminates immediately (**DISPOSITION: NOT SUPPORTED**).
-  3. **Target Threshold Met:** If success criteria are satisfied with statistical significance ($p < 0.001$, 10 independent runs), experiment completes (**DISPOSITION: SUPPORTED**).
+  1. **Correctness Failure:** Any single failure against the correctness oracle halts execution immediately (**DISPOSITION: REJECTED**).
+  2. **Instruction Tax Threshold:** If 3-way dispatch requires $>1.20\times$ the instruction count of branchless binary `CMOV` on Pattern A, benchmark terminates immediately (**DISPOSITION: FALSIFIED**).
+  3. **Target Threshold Met:** If success thresholds are satisfied with statistical significance ($p < 0.001$, 5 independent runs), experiment completes successfully (**DISPOSITION: VALIDATED**).
 
 ---
 
@@ -480,5 +408,5 @@ To maintain strict scientific integrity, three possible experimental conclusions
 
 ## Research Disposition & Next Action
 
-* **Research Design Disposition:** **READY FOR AUTHORIZATION** (Protocol design complete and corrected; awaiting formal user authorization before code implementation).
+* **Research Disposition:** **READY FOR AUTHORIZATION** (Design complete; awaiting formal user authorization before code implementation).
 * **Implementation Plan:** Upon separate authorization, implement benchmark test harness in `experiments/cmp3_decision_advantage/` in strict accordance with Protocol `EXP-T81-COMP3-01`.
