@@ -1,0 +1,67 @@
+=== H04-R02 Adaptive Representation Experiment ===
+
+Workload: adversarial_transition
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 3397 (Slots: 3000, Trans: 99)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 2372 (Slots: 1975, Trans: 99)
+  Payload C3/C2 Break-even: 1.51899
+  Total Cost C3/C2 Break-even: 1.51899
+
+Workload: alternating
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 4147 (Slots: 3600, Trans: 99)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 2897 (Slots: 2350, Trans: 99)
+  Payload C3/C2 Break-even: 1.53191
+  Total Cost C3/C2 Break-even: 1.53191
+
+Workload: boundary_oscillation
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 1549 (Slots: 1200, Trans: 99)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 850 (Slots: 600, Trans: 0)
+  Payload C3/C2 Break-even: 2
+  Total Cost C3/C2 Break-even: 2.165
+
+Workload: constant_large
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 6650 (Slots: 6400, Trans: 0)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 4350 (Slots: 4100, Trans: 0)
+  Payload C3/C2 Break-even: 1.56098
+  Total Cost C3/C2 Break-even: 1.56098
+
+Workload: constant_small
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 1050 (Slots: 800, Trans: 0)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 850 (Slots: 600, Trans: 0)
+  Payload C3/C2 Break-even: 1.33333
+  Total Cost C3/C2 Break-even: 1.33333
+
+Workload: phased
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 3253 (Slots: 3000, Trans: 3)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 2228 (Slots: 1975, Trans: 3)
+  Payload C3/C2 Break-even: 1.51899
+  Total Cost C3/C2 Break-even: 1.51899
+
+Workload: signed_extremes
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 3405 (Slots: 3056, Trans: 50)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 2359 (Slots: 2010, Trans: 50)
+  Payload C3/C2 Break-even: 1.5204
+  Total Cost C3/C2 Break-even: 1.5204
+
+Workload: sparse_large
+  FB Total Cost: 6400 (Slots: 6400)
+  AB Total Cost: 1171 (Slots: 912, Trans: 3)
+  FT Total Cost: 4100 (Slots: 4100)
+  AT Total Cost: 929 (Slots: 670, Trans: 3)
+  Payload C3/C2 Break-even: 1.36119
+  Total Cost C3/C2 Break-even: 1.36119
+
+Results written to JSON: experiments/h04_r02_adaptive_representation/results.json

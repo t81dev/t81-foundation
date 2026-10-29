@@ -1,27 +1,18 @@
-# H04-R02 Limitations and Threats to Validity
+# Remaining limits
 
-**Document ID:** `experiments/h04_r02_adaptive_representation/LIMITATIONS.md`
-**Date:** October 2026
-**Status:** Complete / Final Research Packet
-
----
-
-## 1. Missing Historical Source H04-R01
-
-As verified in the repository audit:
-- The historical experimental implementation commit `def47c680f477bb1a7bb10ebb57e11a0c7b24a6f` on branch `research/h04-r01-trace-ledger` is **absent** from the git object database.
-- `HYPOTHESIS_REGISTER_v1.json` explicitly lists H04-R01 as a "selected specification, not implemented or benchmarked".
-- H04-R02 reconstructed and evaluated the four-arm adaptive trace ledger independently rather than building on an undocumented binary artifact.
-
----
-
-## 2. Scope Limitations
-
-1. **Simulated Symbol Models:**
-   - Evaluates algebraic slot counts, metadata bits, and transition cost parameters. It does not measure actual silicon area, gate delays, or physical power consumption on 3-state hardware devices.
-
-2. **Fixed Mode Granularity:**
-   - Tier limits are fixed to 4 discrete precision modes (8/16/32/64 bits vs 6/11/21/41 trits). Continuous or arbitrary bit/trit length representations are not evaluated.
-
-3. **Arithmetic Operation Tax:**
-   - Focuses on representation and trace switching storage ledger costs. It does not measure the execution throughput penalty of emulating software ternary ALUs on 64-bit binary hardware (which was separately evaluated in `experiments/radix_comparison/` and shown to be $10.6\times$ slower).
+- C++ ledgers model precision assignment on int64 values, not ternary arithmetic.
+  Python rejects outside-int64 inputs even though 41 trits cover a larger range.
+- Four native tier boundaries differ; the 10-bit control is a sensitivity check,
+  not exact equality of native state capacity or globally optimal binary coding.
+- Offline DP sees the full trace; per-value selection costs are stipulated.
+  Real encoder, conversion and causal decision costs remain unmeasured.
+- Base-243 codec measurements are byte counts and round trips, not latency,
+  throughput, energy, or native ternary device measurements. Compression of
+  redundant traces or optimal binary block coding may change storage comparisons.
+- Tests were executed on macOS ARM64. Linux and Windows runtime behavior is not
+  certified by source inspection; CI status is recorded separately.
+- H04-R01 commit def47c68 is recovered locally and archived. Reexecution of its
+  producer/verifier/tests is reported separately from independent re-derivation
+  of all R01 assumptions or reproduction in another laboratory.
+- Historical arithmetic/matvec benchmark ratios are not timings for this codec.
+  No result here justifies ending Track R or asserting physical impossibility.

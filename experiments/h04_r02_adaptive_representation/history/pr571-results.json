@@ -1,0 +1,391 @@
+{
+  "experiment": "t81_h04_r02_adaptive_representation",
+  "classification": "B",
+  "classification_name": "No ternary-specific advantage: Apparent benefits disappear after comparator optimization or overhead accounting",
+  "workloads": {
+    "adversarial_transition": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 3000,
+          "weighted_symbol_cost": 3000,
+          "metadata_cost": 200,
+          "transition_count": 99,
+          "transition_level_delta": 147,
+          "transition_cost": 147,
+          "selector_checks": 100,
+          "total_cost": 3397
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 1975,
+          "weighted_symbol_cost": 1975,
+          "metadata_cost": 200,
+          "transition_count": 99,
+          "transition_level_delta": 147,
+          "transition_cost": 147,
+          "selector_checks": 100,
+          "total_cost": 2372
+        },
+      "payload_break_even_c3_c2": 1.51899,
+      "total_break_even_c3_c2": 1.62025
+    },
+    "alternating": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 3600,
+          "weighted_symbol_cost": 3600,
+          "metadata_cost": 200,
+          "transition_count": 99,
+          "transition_level_delta": 297,
+          "transition_cost": 297,
+          "selector_checks": 100,
+          "total_cost": 4147
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 2350,
+          "weighted_symbol_cost": 2350,
+          "metadata_cost": 200,
+          "transition_count": 99,
+          "transition_level_delta": 297,
+          "transition_cost": 297,
+          "selector_checks": 100,
+          "total_cost": 2897
+        },
+      "payload_break_even_c3_c2": 1.53191,
+      "total_break_even_c3_c2": 1.61702
+    },
+    "boundary_oscillation": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 1200,
+          "weighted_symbol_cost": 1200,
+          "metadata_cost": 200,
+          "transition_count": 99,
+          "transition_level_delta": 99,
+          "transition_cost": 99,
+          "selector_checks": 100,
+          "total_cost": 1549
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 600,
+          "weighted_symbol_cost": 600,
+          "metadata_cost": 200,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 100,
+          "total_cost": 850
+        },
+      "payload_break_even_c3_c2": 2,
+      "total_break_even_c3_c2": 2.33333
+    },
+    "constant_large": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 200,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 100,
+          "total_cost": 6650
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 200,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 100,
+          "total_cost": 4350
+        },
+      "payload_break_even_c3_c2": 1.56098,
+      "total_break_even_c3_c2": 1.60976
+    },
+    "constant_small": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 800,
+          "weighted_symbol_cost": 800,
+          "metadata_cost": 200,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 100,
+          "total_cost": 1050
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 600,
+          "weighted_symbol_cost": 600,
+          "metadata_cost": 200,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 100,
+          "total_cost": 850
+        },
+      "payload_break_even_c3_c2": 1.33333,
+      "total_break_even_c3_c2": 1.66667
+    },
+    "phased": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 3000,
+          "weighted_symbol_cost": 3000,
+          "metadata_cost": 200,
+          "transition_count": 3,
+          "transition_level_delta": 3,
+          "transition_cost": 3,
+          "selector_checks": 100,
+          "total_cost": 3253
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 1975,
+          "weighted_symbol_cost": 1975,
+          "metadata_cost": 200,
+          "transition_count": 3,
+          "transition_level_delta": 3,
+          "transition_cost": 3,
+          "selector_checks": 100,
+          "total_cost": 2228
+        },
+      "payload_break_even_c3_c2": 1.51899,
+      "total_break_even_c3_c2": 1.62025
+    },
+    "signed_extremes": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 3056,
+          "weighted_symbol_cost": 3056,
+          "metadata_cost": 200,
+          "transition_count": 50,
+          "transition_level_delta": 99,
+          "transition_cost": 99,
+          "selector_checks": 100,
+          "total_cost": 3405
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 2010,
+          "weighted_symbol_cost": 2010,
+          "metadata_cost": 200,
+          "transition_count": 50,
+          "transition_level_delta": 99,
+          "transition_cost": 99,
+          "selector_checks": 100,
+          "total_cost": 2359
+        },
+      "payload_break_even_c3_c2": 1.5204,
+      "total_break_even_c3_c2": 1.6199
+    },
+    "sparse_large": {
+      "FB": {
+          "total_elements": 100,
+          "symbol_slots": 6400,
+          "weighted_symbol_cost": 6400,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 6400
+        },
+      "AB": {
+          "total_elements": 100,
+          "symbol_slots": 912,
+          "weighted_symbol_cost": 912,
+          "metadata_cost": 200,
+          "transition_count": 3,
+          "transition_level_delta": 9,
+          "transition_cost": 9,
+          "selector_checks": 100,
+          "total_cost": 1171
+        },
+      "FT": {
+          "total_elements": 100,
+          "symbol_slots": 4100,
+          "weighted_symbol_cost": 4100,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "total_cost": 4100
+        },
+      "AT": {
+          "total_elements": 100,
+          "symbol_slots": 670,
+          "weighted_symbol_cost": 670,
+          "metadata_cost": 200,
+          "transition_count": 3,
+          "transition_level_delta": 9,
+          "transition_cost": 9,
+          "selector_checks": 100,
+          "total_cost": 929
+        },
+      "payload_break_even_c3_c2": 1.36119,
+      "total_break_even_c3_c2": 1.6597
+    }
+  }
+}

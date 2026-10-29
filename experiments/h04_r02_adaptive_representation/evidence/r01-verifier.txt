@@ -1,0 +1,1 @@
+{"verified_arm_evaluations": 384, "verified_disabled_equalities": 192, "verified_operations": 96, "verified_sweep_points": 1596}

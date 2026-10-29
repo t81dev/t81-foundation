@@ -1,0 +1,13 @@
+test_blocks_metadata_and_comparator (__main__.Audit.test_blocks_metadata_and_comparator) ... ok
+test_boundaries_empty_and_large_finite_cost (__main__.Audit.test_boundaries_empty_and_large_finite_cost) ... ok
+test_default_ledgers_and_current_artifact (__main__.Audit.test_default_ledgers_and_current_artifact) ... ok
+test_exhaustive_small_traces (__main__.Audit.test_exhaustive_small_traces) ... ok
+test_invalid_inputs_fail (__main__.Audit.test_invalid_inputs_fail) ... ok
+test_packing_rejects_noncanonical_data (__main__.Audit.test_packing_rejects_noncanonical_data) ... ok
+test_packing_round_trips (__main__.Audit.test_packing_round_trips) ... ok
+test_schedule_change_at_crossover (__main__.Audit.test_schedule_change_at_crossover) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 1.939s
+
+OK

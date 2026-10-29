@@ -5,6 +5,8 @@ add_executable(t81_h04_r02_adaptive
   adaptive_experiment.hpp
 )
 
+target_compile_features(t81_h04_r02_adaptive PRIVATE cxx_std_17)
+
 target_include_directories(t81_h04_r02_adaptive PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(T81_BUILD_TESTS)
@@ -16,4 +18,8 @@ if(T81_BUILD_TESTS)
   add_test(NAME t81_h04_r02_oracle_test
     COMMAND Python3::Interpreter ${CMAKE_CURRENT_SOURCE_DIR}/oracle.py
   )
+  add_test(NAME t81_h04_r02_audit_regression_test
+    COMMAND Python3::Interpreter ${CMAKE_SOURCE_DIR}/tests/ci/h04_r02_audit_regression_test.py
+      --bin-path $<TARGET_FILE:t81_h04_r02_adaptive>)
+  set_tests_properties(t81_h04_r02_audit_regression_test PROPERTIES TIMEOUT 120)
 endif()

@@ -1,0 +1,59 @@
+{
+  "experiment": "t81_h04_r02_adaptive_representation",
+  "evidence_class": "corrected symbolic model; original inference invalid; H04 unresolved",
+  "parameters": {"ratio": 1, "metadata_bits": 1e+20, "transition_cost": 1, "conversion_cost": 0.5, "block_size": 1, "binary_tier0_bits": 8},
+  "workloads": {
+    "custom": {
+      "FB": {
+          "total_elements": 1,
+          "symbol_slots": 64,
+          "weighted_symbol_cost": 64,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "tier_sequence": [3],
+          "total_cost": 64
+        },
+      "AB": {
+          "total_elements": 1,
+          "symbol_slots": 8,
+          "weighted_symbol_cost": 8,
+          "metadata_cost": 1e+20,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 1,
+          "tier_sequence": [0],
+          "total_cost": 1e+20
+        },
+      "FT": {
+          "total_elements": 1,
+          "symbol_slots": 41,
+          "weighted_symbol_cost": 41,
+          "metadata_cost": 0,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 0,
+          "tier_sequence": [3],
+          "total_cost": 41
+        },
+      "AT": {
+          "total_elements": 1,
+          "symbol_slots": 6,
+          "weighted_symbol_cost": 6,
+          "metadata_cost": 1e+20,
+          "transition_count": 0,
+          "transition_level_delta": 0,
+          "transition_cost": 0,
+          "selector_checks": 1,
+          "tier_sequence": [0],
+          "total_cost": 1e+20
+        },
+      "payload_break_even_c3_c2": 1.3333333333333333,
+      "total_break_even_c3_c2": 1.333333333333333
+    }
+  }
+}

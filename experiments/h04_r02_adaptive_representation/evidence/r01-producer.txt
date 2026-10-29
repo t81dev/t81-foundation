@@ -1,0 +1,21 @@
+{
+  "schema": "h04-manifest-v1",
+  "reference_commit": "860558b4ad1cf4160af30860b00b15c46165acd5",
+  "producer_sha256": "79f15c95b6815adbad8d2b14e585c477218c57bcd62e551ab5bb9eb5892bdefe",
+  "encoding": "h04-json-v1",
+  "files": {
+    "ledger.json": {
+      "bytes": 768574,
+      "sha256": "26d27efa2416b0f688c04e3a3caa3b4c973ca158b721e07f54a20bd43bd00bc3"
+    },
+    "analysis.json": {
+      "bytes": 474716,
+      "sha256": "a86248b97569d1ab8f1bb6922e8ef64bb3c3b101d547590be664103fa9c2f3b6"
+    },
+    "controls.json": {
+      "bytes": 406319,
+      "sha256": "1b4809276ae8a9c38ab33de470bc98f1fc0352d55442939b2351d525f294445c"
+    }
+  },
+  "scope": "three data files only; manifest excludes itself"
+}

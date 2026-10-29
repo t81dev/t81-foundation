@@ -148,3 +148,14 @@ Treat T81 as a serious research-grade runtime that needs product discipline, not
 - avoid repo-wide refactors on first contact
 - keep determinism, policy, and CanonFS integrity ahead of convenience
 - prefer making one draft surface clearer over adding a new subsystem
+
+
+## Research evidence update — 2026-10-25
+
+H04-R02's original universal negative inference is superseded by the
+[independent audit and conditional results](../experiments/h04_r02_adaptive_representation/RESULTS.md).
+The research packet distinguishes model costs, actual codec byte counts, and
+unmeasured execution/device performance. H04 remains open; canonical H01–H08 and
+the runtime/CanonFS/Axion contracts are unchanged. The append-only research
+[session handoff](research/continuity/SESSION_HANDOFF.md) records source pins,
+verified corrections and the next bounded experiment.

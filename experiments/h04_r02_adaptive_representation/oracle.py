@@ -1,244 +1,131 @@
 #!/usr/bin/env python3
-"""
-H04-R02 Independent Optimization Oracle and Verification Script.
+"""Independent suffix optimizer; exhaustive rational checks live in the audit tests.
 
-This module provides an independently derived mathematical optimization reference
-using dynamic programming over finite trace domains for adaptive binary (AB)
-and adaptive balanced ternary (AT).
+This is a symbolic cost model over int64 traces, not an arithmetic benchmark.
 """
-
-import sys
+from copy import copy
+from fractions import Fraction
 import json
 import math
-from typing import List, Dict, Any, Tuple
-
-# Precision Tier Capacity Tables
-# Tier 0: 8-bit / 6 trits
-# Tier 1: 16-bit / 11 trits
-# Tier 2: 32-bit / 21 trits
-# Tier 3: 64-bit / 41 trits
+from typing import List, Dict
 
 BINARY_BITS = [8, 16, 32, 64]
 TERNARY_TRITS = [6, 11, 21, 41]
-
-BINARY_MIN = [-128, -32768, -2147483648, -9223372036854775808]
-BINARY_MAX = [127, 32767, 2147483647, 9223372036854775807]
-
-TERNARY_MIN = [-364, -88573, -5230176601, -9223372036854775808]
-TERNARY_MAX = [364, 88573, 5230176601, 9223372036854775807]
-
-
-def get_binary_tier(val: int) -> int:
-    for t in range(4):
-        if BINARY_MIN[t] <= val <= BINARY_MAX[t]:
-            return t
-    return 3
+BINARY_MIN = [-(1 << (b-1)) for b in BINARY_BITS]
+BINARY_MAX = [(1 << (b-1))-1 for b in BINARY_BITS]
+# Mathematical bounds, independently derived; inputs remain int64 for every arm.
+TERNARY_MAX = [(3**n-1)//2 for n in TERNARY_TRITS]
+TERNARY_MIN = [-v for v in TERNARY_MAX]
 
 
-def get_ternary_tier(val: int) -> int:
-    for t in range(4):
-        if TERNARY_MIN[t] <= val <= TERNARY_MAX[t]:
-            return t
-    return 3
+def validate_trace(trace):
+    if any(type(v) is not int or not -(1 << 63) <= v < (1 << 63) for v in trace):
+        raise ValueError("common int64 input domain required")
+
+
+def get_binary_tier(v):
+    validate_trace([v])
+    return next(t for t, (a,b) in enumerate(zip(BINARY_MIN, BINARY_MAX)) if a <= v <= b)
+
+
+def get_ternary_tier(v):
+    validate_trace([v])
+    return next(t for t, (a,b) in enumerate(zip(TERNARY_MIN, TERNARY_MAX)) if a <= v <= b)
 
 
 class IndependentOracle:
-    """
-    Independently derived dynamic programming optimizer for AB and AT cost bounds.
-    Does not call the C++ implementation.
-    """
-
-    def __init__(
-        self,
-        symbol_cost_ratio: float = 1.0,
-        metadata_bits: float = 2.0,
-        block_size: int = 1,
-        transition_cost_per_level: float = 1.0,
-        conversion_cost: float = 0.5,
-    ):
+    def __init__(self, symbol_cost_ratio=1.0, metadata_bits=2.0, block_size=1,
+                 transition_cost_per_level=1.0, conversion_cost=0.5, binary_tier0_bits=8):
+        if (type(block_size) is not int or block_size <= 0 or binary_tier0_bits not in (8,10)
+            or any(not math.isfinite(c) or c < 0 for c in
+                   (symbol_cost_ratio, metadata_bits, transition_cost_per_level, conversion_cost))):
+            raise ValueError("invalid cost parameters")
         self.c3_over_c2 = symbol_cost_ratio
         self.metadata_bits = metadata_bits
         self.block_size = block_size
         self.transition_cost_per_level = transition_cost_per_level
         self.conversion_cost = conversion_cost
+        self.binary_tier0_bits = binary_tier0_bits
 
-    def evaluate_fixed_binary(self, trace: List[int]) -> Dict[str, Any]:
+    def evaluate(self, arm, trace, *, exact=False):
+        validate_trace(trace)
+        binary, adaptive = arm in ("FB", "AB"), arm in ("AB", "AT")
+        widths = [self.binary_tier0_bits,16,32,64] if binary else TERNARY_TRITS
+        ratio = 1 if binary else self.c3_over_c2
+        # Retain shared overhead here, unlike C++ cancellation, but compare
+        # exact rationals so it cannot swallow small schedule differences.
+        exact_ratio = Fraction(ratio)
+        exact_transition = Fraction(self.transition_cost_per_level)
+        exact_metadata = Fraction(self.metadata_bits)
+        exact_conversion = Fraction(self.conversion_cost)
         n = len(trace)
-        symbol_slots = n * 64
-        weighted_cost = float(symbol_slots)
-        return {
-            "arm": "FB",
-            "symbol_slots": symbol_slots,
-            "weighted_symbol_cost": weighted_cost,
-            "metadata_cost": 0.0,
-            "transition_count": 0,
-            "transition_cost": 0.0,
-            "total_cost": weighted_cost,
-        }
+        blocks = [trace[i:i+self.block_size] for i in range(0,n,self.block_size)]
+        path = [3] * n
+        if adaptive and n:
+            # Backwards suffix DP, contrasting with C++ prefix/backpointer DP.
+            allowed = []
+            for values in blocks:
+                if binary:
+                    tiers = [t for t,b in enumerate(widths)
+                             if all(-(1 << (b-1)) <= v < (1 << (b-1)) for v in values)]
+                else:
+                    tiers = [t for t,k in enumerate(widths)
+                             if all(abs(v) <= (3**k-1)//2 for v in values)]
+                allowed.append(tiers)
+            suffix = {None: (0, [])}
+            for j in range(len(blocks)-1,-1,-1):
+                current = {}
+                for t in allowed[j]:
+                    cost, tail = min(
+                        (c + (0 if u is None else abs(u-t)*exact_transition), seq)
+                        for u,(c,seq) in suffix.items())
+                    local = len(blocks[j])*(widths[t]*exact_ratio+exact_conversion)+exact_metadata
+                    current[t] = (local+cost, [t]+tail)
+                suffix = current
+            _, modes = min(suffix.values())
+            path = [t for t,values in zip(modes,blocks) for _ in values]
+        slots = sum(widths[t] for t in path)
+        delta = sum(abs(a-b) for a,b in zip(path,path[1:])) if adaptive else 0
+        meta = len(blocks)*self.metadata_bits if adaptive else 0
+        checks = n if adaptive else 0
+        total = (slots*exact_ratio + (len(blocks)*exact_metadata if adaptive else 0)
+                 + delta*exact_transition + checks*exact_conversion) if exact else (
+                     slots*ratio+meta+delta*self.transition_cost_per_level+checks*self.conversion_cost)
+        return dict(arm=arm, total_elements=n, tier_sequence=path, symbol_slots=slots,
+                    weighted_symbol_cost=slots*ratio, metadata_cost=meta,
+                    transition_count=sum(a!=b for a,b in zip(path,path[1:])) if adaptive else 0,
+                    transition_level_delta=delta, transition_cost=delta*self.transition_cost_per_level,
+                    selector_checks=checks,
+                    total_cost=total)
 
-    def evaluate_fixed_ternary(self, trace: List[int]) -> Dict[str, Any]:
-        n = len(trace)
-        symbol_slots = n * 41
-        weighted_cost = float(symbol_slots) * self.c3_over_c2
-        return {
-            "arm": "FT",
-            "symbol_slots": symbol_slots,
-            "weighted_symbol_cost": weighted_cost,
-            "metadata_cost": 0.0,
-            "transition_count": 0,
-            "transition_cost": 0.0,
-            "total_cost": weighted_cost,
-        }
+    def crossover(self, trace):
+        """Independent exact-total bisection, including (not subtracting) overhead.
 
-    def evaluate_adaptive_binary_dp(self, trace: List[int]) -> Dict[str, Any]:
+        Exact rational comparisons deliberately differ from C++'s analytical
+        cancellation. The bracket is refined with 80 exact rational bisections.
         """
-        DP min-cost calculation over trace for AB.
-        """
-        n = len(trace)
-        if n == 0:
-            return {"arm": "AB", "total_cost": 0.0}
+        if not trace:
+            return Fraction(0)
+        target = self.evaluate("AB", trace, exact=True)["total_cost"]
+        candidate = copy(self)
+        lo, hi = Fraction(0), Fraction(1)
+        candidate.c3_over_c2 = hi
+        while candidate.evaluate("AT", trace, exact=True)["total_cost"] < target:
+            hi *= 2
+            candidate.c3_over_c2 = hi
+        for _ in range(80):
+            mid = (lo+hi)/2
+            candidate.c3_over_c2 = mid
+            if candidate.evaluate("AT", trace, exact=True)["total_cost"] < target:
+                lo = mid
+            else:
+                hi = mid
+        return (lo+hi)/2
 
-        # Required minimum tier for each element
-        req_tiers = [get_binary_tier(v) for v in trace]
-
-        # DP state: dp[i][t] = min cost for prefix i ending at tier t
-        # Cost components for element i:
-        # symbol_cost = BINARY_BITS[t]
-        # metadata = metadata_bits if i % block_size == 0 else 0
-        # selector_cost = conversion_cost
-        # transition_cost = abs(t - prev_t) * transition_cost_per_level
-
-        dp = [{} for _ in range(n)]
-
-        for t in range(req_tiers[0], 4):
-            cost = BINARY_BITS[t] + self.metadata_bits + self.conversion_cost
-            dp[0][t] = (cost, [t])
-
-        for i in range(1, n):
-            req_t = req_tiers[i]
-            meta = self.metadata_bits if (i % self.block_size == 0) else 0.0
-
-            for t in range(req_t, 4):
-                best_cost = float("inf")
-                best_seq = []
-                sym_cost = BINARY_BITS[t] + meta + self.conversion_cost
-
-                for prev_t, (prev_cost, prev_seq) in dp[i - 1].items():
-                    trans_cost = abs(t - prev_t) * self.transition_cost_per_level
-                    tot = prev_cost + sym_cost + trans_cost
-                    if tot < best_cost:
-                        best_cost = tot
-                        best_seq = prev_seq + [t]
-
-                dp[i][t] = (best_cost, best_seq)
-
-        best_final_cost = float("inf")
-        best_final_seq = []
-        for t, (cost, seq) in dp[n - 1].items():
-            if cost < best_final_cost:
-                best_final_cost = cost
-                best_final_seq = seq
-
-        # Calculate exact ledger metrics for the best path
-        symbol_slots = sum(BINARY_BITS[t] for t in best_final_seq)
-        meta_cost = (
-            sum(1 for i in range(n) if i % self.block_size == 0) * self.metadata_bits
-        )
-        trans_count = sum(
-            1 for i in range(1, n) if best_final_seq[i] != best_final_seq[i - 1]
-        )
-        trans_cost = sum(
-            abs(best_final_seq[i] - best_final_seq[i - 1])
-            * self.transition_cost_per_level
-            for i in range(1, n)
-        )
-
-        return {
-            "arm": "AB",
-            "tier_sequence": best_final_seq,
-            "symbol_slots": symbol_slots,
-            "weighted_symbol_cost": float(symbol_slots),
-            "metadata_cost": meta_cost,
-            "transition_count": trans_count,
-            "transition_cost": trans_cost,
-            "total_cost": best_final_cost,
-        }
-
-    def evaluate_adaptive_ternary_dp(self, trace: List[int]) -> Dict[str, Any]:
-        """
-        DP min-cost calculation over trace for AT.
-        """
-        n = len(trace)
-        if n == 0:
-            return {"arm": "AT", "total_cost": 0.0}
-
-        req_tiers = [get_ternary_tier(v) for v in trace]
-
-        dp = [{} for _ in range(n)]
-
-        # Metadata in ternary (scaled by symbol ratio)
-        meta_base = self.metadata_bits * self.c3_over_c2
-
-        for t in range(req_tiers[0], 4):
-            cost = (
-                TERNARY_TRITS[t] * self.c3_over_c2
-                + meta_base
-                + self.conversion_cost
-            )
-            dp[0][t] = (cost, [t])
-
-        for i in range(1, n):
-            req_t = req_tiers[i]
-            meta = meta_base if (i % self.block_size == 0) else 0.0
-
-            for t in range(req_t, 4):
-                best_cost = float("inf")
-                best_seq = []
-                sym_cost = (
-                    TERNARY_TRITS[t] * self.c3_over_c2
-                    + meta
-                    + self.conversion_cost
-                )
-
-                for prev_t, (prev_cost, prev_seq) in dp[i - 1].items():
-                    trans_cost = abs(t - prev_t) * self.transition_cost_per_level
-                    tot = prev_cost + sym_cost + trans_cost
-                    if tot < best_cost:
-                        best_cost = tot
-                        best_seq = prev_seq + [t]
-
-                dp[i][t] = (best_cost, best_seq)
-
-        best_final_cost = float("inf")
-        best_final_seq = []
-        for t, (cost, seq) in dp[n - 1].items():
-            if cost < best_final_cost:
-                best_final_cost = cost
-                best_final_seq = seq
-
-        symbol_slots = sum(TERNARY_TRITS[t] for t in best_final_seq)
-        meta_cost = (
-            sum(1 for i in range(n) if i % self.block_size == 0) * meta_base
-        )
-        trans_count = sum(
-            1 for i in range(1, n) if best_final_seq[i] != best_final_seq[i - 1]
-        )
-        trans_cost = sum(
-            abs(best_final_seq[i] - best_final_seq[i - 1])
-            * self.transition_cost_per_level
-            for i in range(1, n)
-        )
-
-        return {
-            "arm": "AT",
-            "tier_sequence": best_final_seq,
-            "symbol_slots": symbol_slots,
-            "weighted_symbol_cost": float(symbol_slots) * self.c3_over_c2,
-            "metadata_cost": meta_cost,
-            "transition_count": trans_count,
-            "transition_cost": trans_cost,
-            "total_cost": best_final_cost,
-        }
+    def evaluate_fixed_binary(self, trace): return self.evaluate("FB", trace)
+    def evaluate_fixed_ternary(self, trace): return self.evaluate("FT", trace)
+    def evaluate_adaptive_binary_dp(self, trace): return self.evaluate("AB", trace)
+    def evaluate_adaptive_ternary_dp(self, trace): return self.evaluate("AT", trace)
 
 
 def generate_workloads(len_per_family: int = 100) -> Dict[str, List[int]]:
@@ -254,7 +141,7 @@ def generate_workloads(len_per_family: int = 100) -> Dict[str, List[int]]:
 
     # 3. Phased
     phased = []
-    p_len = len_per_family // 4
+    p_len = max(1, len_per_family // 4)
     for i in range(len_per_family):
         p = i // p_len
         if p == 0:
@@ -305,56 +192,11 @@ def generate_workloads(len_per_family: int = 100) -> Dict[str, List[int]]:
     return workloads
 
 
-def calculate_crossover(trace: List[int]) -> Dict[str, float]:
-    """
-    Find break-even symbol cost ratio C3/C2 where AT total cost == AB total cost.
-    """
-    # Binary is fixed for a given trace at c3_over_c2 independent cost
-    oracle_bin = IndependentOracle(
-        symbol_cost_ratio=1.0, metadata_bits=2.0, transition_cost_per_level=0.0, conversion_cost=0.0
-    )
-    ab_res = oracle_bin.evaluate_adaptive_binary_dp(trace)
-    ab_slots = ab_res["symbol_slots"]
-
-    # AT slots
-    oracle_ter = IndependentOracle(
-        symbol_cost_ratio=1.0, metadata_bits=2.0, transition_cost_per_level=0.0, conversion_cost=0.0
-    )
-    at_res = oracle_ter.evaluate_adaptive_ternary_dp(trace)
-    at_slots = at_res["symbol_slots"]
-
-    payload_break_even = ab_slots / at_slots if at_slots > 0 else float("inf")
-
-    return {
-        "ab_slots": ab_slots,
-        "at_slots": at_slots,
-        "payload_break_even_c3_over_c2": payload_break_even,
-    }
-
-
 def main():
-    oracle = IndependentOracle(symbol_cost_ratio=1.0)
-    workloads = generate_workloads(len_per_family=100)
-
-    summary = {}
-    for name, trace in workloads.items():
-        fb = oracle.evaluate_fixed_binary(trace)
-        ab = oracle.evaluate_adaptive_binary_dp(trace)
-        ft = oracle.evaluate_fixed_ternary(trace)
-        at = oracle.evaluate_adaptive_ternary_dp(trace)
-        crossover = calculate_crossover(trace)
-
-        summary[name] = {
-            "FB": fb,
-            "AB": ab,
-            "FT": ft,
-            "AT": at,
-            "crossover": crossover,
-        }
-
-    print(json.dumps(summary, indent=2))
-    return 0
+    oracle = IndependentOracle()
+    print(json.dumps({name: {arm: oracle.evaluate(arm, trace) for arm in ("FB","AB","FT","AT")}
+                      for name,trace in generate_workloads().items()}, indent=2))
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
