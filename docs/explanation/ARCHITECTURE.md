@@ -2,7 +2,11 @@
 
 This document maps the current T81 codebase architecture: build graph, runtime flow, verification surfaces, and cross-repo runtime boundary contracts.
 
-**Status scope:** current `main` branch architecture as of February 17, 2026.
+**Original overview scope:** `main` branch architecture as of February 17, 2026.
+
+**Target-name maintenance — 2026-10-26:** target names and CMake source discovery
+were reconciled in the [focused governance audit](../records/audits/2026-10-architecture-targets/README.md).
+Legacy kind/responsibility descriptions are not certified by the name-sync gate.
 
 ______________________________________________________________________
 
@@ -22,7 +26,12 @@ ______________________________________________________________________
 
 ## 2. Build Graph (Authoritative Targets)
 
-The authoritative build graph is `../../CMakeLists.txt`. It includes static libraries, interface libraries, executables, tests, optional Python bindings, and optional benchmarks.
+The authoritative build graph starts at `../../CMakeLists.txt` and follows its
+`add_subdirectory` entries, including `../../src/CMakeLists.txt` and its component
+directories. It includes static libraries, interface libraries, executables,
+tests, optional Python bindings, and optional benchmarks. The target-name sync
+gate inventories literal declarations across optional/platform branches; it does
+not certify enabled configurations, target kinds, responsibilities, or linkage.
 
 | Target | Kind | Responsibilities | Depends On |
 | --- | --- | --- | --- |
@@ -35,7 +44,7 @@ The authoritative build graph is `../../CMakeLists.txt`. It includes static libr
 | `t81_llvm` | INTERFACE | LLVM-facing facade target (placeholder/adapter layer) | `t81_core` |
 | `t81_tool_cli` | STATIC | CLI orchestration (compile/run/trace/repro/tools) | `t81_lang_frontend`, `t81_isa`, `t81_vm` |
 | `t81` | EXECUTABLE | Main CLI entry point | `t81_lang_frontend`, `t81_isa`, `t81_vm`, `t81_tool_cli` |
-| `t81_python` | MODULE (optional) | `pybind11` Python bindings | `t81_core`, `t81_lang_frontend`, `t81_isa`, `t81_vm` |
+| `_t81` | MODULE (optional) | `pybind11` extension installed inside the `t81` package (`import t81`) | `t81_core`, `t81_lang_frontend`, `t81_isa`, `t81_vm` |
 | `benchmark_runner` (subdir) | EXECUTABLE (optional) | Benchmark suite and docs benchmark generation pipeline | `t81_core`, `t81_lang_frontend`, `t81_isa`, `t81_vm`, Google Benchmark |
 
 Notes:

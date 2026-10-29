@@ -10,6 +10,16 @@ T81 Foundation is an open-source **experimental computing architecture and syste
 
 The project originated in discrete mathematics, positional number systems, Knuth-inspired investigations of computation, and experimental ternary computing. Its development has produced a software instruction-set architecture, virtual machine, language tooling, arithmetic prototypes, storage and identity mechanisms, policy controls, and hardware experiments. These components have **different maturity levels**; their existence does not imply that every proposed end-to-end architecture is implemented or validated.
 
+Determinism guarantees are limited to explicitly verified surfaces in the
+[Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md),
+under their stated input, configuration, numeric, and supported-platform
+constraints. Reproducing an experiment does not establish bit-identical model
+outputs or deterministic execution on an unverified backend. Model sampling,
+external inference engines, network behavior, execution timing, and unverified
+accelerators do not inherit the deterministic core's guarantees. Policy
+authorization and recorded provenance do not establish a result's correctness
+or prove an architectural research hypothesis.
+
 **Scientific position:** T81 has demonstrated functional research subsystems and bounded mathematical, computational, and assurance properties. It has **not** demonstrated general ternary superiority over optimized binary systems, native ternary silicon efficiency, or a comparative advantage arising from integration of the complete architecture. Negative results are retained as research evidence, not hidden or generalized beyond their tested conditions.
 
 > **Central question:** Can alternative computational representations, deterministic execution, and explicit governance—individually **or in combination**—deliver measurable advantages over functionally equivalent conventional systems? If so, under what workloads, assumptions, hardware, and assurance requirements?

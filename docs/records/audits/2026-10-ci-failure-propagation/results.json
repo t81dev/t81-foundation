@@ -1,0 +1,253 @@
+{
+  "baseline_commit": "01c85019319fd020922402ba356878e392cb2231",
+  "baseline_job_id": 121309678929,
+  "baseline_job_conclusion": "success",
+  "baseline_job_url": "https://github.com/t81dev/t81-foundation/actions/runs/40240040326/job/121309678929",
+  "python": "3.14.3",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "underlying_commands": 24,
+  "underlying_passes": 11,
+  "underlying_failures": 13,
+  "masked_failures_before": 13,
+  "exposed_failures_after": 13,
+  "status_agreement": 24,
+  "logs_available": 24,
+  "controls": 47,
+  "control_failures": 0,
+  "workflow_sha256": {
+    "ci.yml": "28d55f793bebb1661d5fa9e6913b33c50a67df528b1972b5a51a9e64f827b96e",
+    "ai-experiments-ci.yml": "e2369b6b63d4b77089a7aa8e2410eddeea17cf14bae0efbc6472c1eaeaaa3de2"
+  },
+  "scope": {
+    "workflows": [
+      {
+        "workflow": "ci.yml",
+        "all_unrelated_fields_unchanged": true
+      },
+      {
+        "workflow": "ai-experiments-ci.yml",
+        "all_unrelated_fields_unchanged": true
+      }
+    ],
+    "bash_scripts_syntax_checked": 61,
+    "stdlib_reader_matches_yaml_runs": true
+  },
+  "commands": [
+    {
+      "command": "python3 scripts/ci/check_architecture_targets.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-00.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/ci/check_tisc_freeze_integrity.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-01.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/ci/check_ai_experiment_boundary.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-02.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/ci/check_architecture_coherence.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-03.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-04.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/ci/audit_workflow_permissions.py --max-missing 0",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-05.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_root_structure.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-06.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_readme_naming.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-07.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_translation_metadata.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-08.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_translation_staleness.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-09.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_translation_semantic_alignment.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-10.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_docs_structure.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-11.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_active_docs_link_hygiene.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-12.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_license_policy.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-13.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_repo_artifact_hygiene.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-14.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_public_api_semver.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-15.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_spec_code_alignment_baseline.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-16.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_stdlib_surface_baseline.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-17.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_stdlib_promotion_snapshot.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-18.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_status_label_coherence.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-19.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_cognitive_tier_boundary.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-20.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_overclaim_guardrails.py",
+      "underlying_exit_before": 0,
+      "old_step_exit": 0,
+      "new_step_exit": 0,
+      "log": "after-21.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_rfc_lifecycle_hygiene.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-22.log",
+      "log_available": true,
+      "status_agrees": true
+    },
+    {
+      "command": "python3 scripts/governance/check_docs_governance_hygiene.py",
+      "underlying_exit_before": 1,
+      "old_step_exit": 0,
+      "new_step_exit": 1,
+      "log": "after-23.log",
+      "log_available": true,
+      "status_agrees": true
+    }
+  ]
+}

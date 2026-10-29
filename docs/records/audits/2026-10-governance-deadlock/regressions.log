@@ -1,0 +1,10 @@
+test_current_layout_without_obsolete_core_tree (__main__.GovernanceTests.test_current_layout_without_obsolete_core_tree) ... ok
+test_each_required_contract_remains_enforced (__main__.GovernanceTests.test_each_required_contract_remains_enforced) ... ok
+test_independent_summary_cases (__main__.GovernanceTests.test_independent_summary_cases) ... ok
+test_old_copy_cannot_replace_missing_current_source (__main__.GovernanceTests.test_old_copy_cannot_replace_missing_current_source) ... ok
+test_readme_boundary_and_its_removal (__main__.GovernanceTests.test_readme_boundary_and_its_removal) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 1.532s
+
+OK

@@ -1,0 +1,23 @@
+test_annotated_benchmark_row_is_checked (__main__.TargetSync.test_annotated_benchmark_row_is_checked) ... ok
+test_comments_cannot_declare_targets (__main__.TargetSync.test_comments_cannot_declare_targets) ... ok
+test_computed_subdirectory_is_not_guessed (__main__.TargetSync.test_computed_subdirectory_is_not_guessed) ... ok
+test_computed_target_is_not_guessed (__main__.TargetSync.test_computed_target_is_not_guessed) ... ok
+test_missing_or_empty_expectations_fail (__main__.TargetSync.test_missing_or_empty_expectations_fail) ... ok
+test_missing_reachable_file_is_diagnostic_failure (__main__.TargetSync.test_missing_reachable_file_is_diagnostic_failure) ... ok
+test_missing_required_benchmark_file_still_fails (__main__.TargetSync.test_missing_required_benchmark_file_still_fails) ... ok
+test_nested_source_declarations (__main__.TargetSync.test_nested_source_declarations) ... ok
+test_obsolete_python_name_still_fails (__main__.TargetSync.test_obsolete_python_name_still_fails) ... ok
+test_optional_pybind_module_name_is_not_exempt (__main__.TargetSync.test_optional_pybind_module_name_is_not_exempt) ... ok
+test_quoted_multiline_paths_and_case_insensitive_commands (__main__.TargetSync.test_quoted_multiline_paths_and_case_insensitive_commands) ... ok
+test_quoted_or_bracket_messages_cannot_declare_targets (__main__.TargetSync.test_quoted_or_bracket_messages_cannot_declare_targets) ... ok
+test_removed_subdirectory_edge_does_not_scan_orphaned_source (__main__.TargetSync.test_removed_subdirectory_edge_does_not_scan_orphaned_source) ... ok
+test_removed_target_cannot_be_satisfied_by_disconnected_copy (__main__.TargetSync.test_removed_target_cannot_be_satisfied_by_disconnected_copy) ... ok
+test_renamed_target_fails_with_exact_name (__main__.TargetSync.test_renamed_target_fails_with_exact_name) ... ok
+test_source_edge_cannot_escape_repository (__main__.TargetSync.test_source_edge_cannot_escape_repository) ... ok
+test_unbalanced_cmake_command_fails (__main__.TargetSync.test_unbalanced_cmake_command_fails) ... ok
+test_uninvoked_function_and_macro_cannot_declare_targets (__main__.TargetSync.test_uninvoked_function_and_macro_cannot_declare_targets) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 1.051s
+
+OK
