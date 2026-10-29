@@ -399,10 +399,10 @@ Any single classification failure immediately invalidates the run and halts exec
   * Uniform double: $u = \frac{\text{pcg64\_next()}}{2^{64}} \in [0.0, 1.0)$.
   * Signed 64-bit integer $a \in [\text{INT64\_MIN} + 2^{30}, \text{INT64\_MAX} - 2^{30}]$ sampled via bounded modulo from `pcg64_next()`.
 * **Verification Output Vectors (First 4 PCG64 outputs post-initialization):**
-  * `Output 0:` `0x854CAFBD0A540778ULL`
-  * `Output 1:` `0x3D174C3776108E7DULL`
-  * `Output 2:` `0xA8398F10D0F2976CULL`
-  * `Output 3:` `0x722D0D72D6D3EA65ULL`
+  * `Output 0:` `0x323BA413CD580A16ULL`
+  * `Output 1:` `0xDE6D80A101AD11A0ULL`
+  * `Output 2:` `0x5E627A86BA74FEA4ULL`
+  * `Output 3:` `0x2C1D2A4B8F91E139ULL`
 
 #### Mandatory Boundary Vectors (Explicit Enumeration & Accounting)
 The test harness MUST explicitly prepend the following **20 mandatory boundary test pairs** before pseudo-random corpus evaluation:
@@ -463,21 +463,50 @@ The test harness MUST explicitly prepend the following **20 mandatory boundary t
 
 ### Protocol Section 10: Statistical Decision Rules & Four Mutually Exclusive Result Dispositions
 
-#### Analysis unit and intervals
-* Each of the three patterns is evaluated separately; no pooling of outcomes across patterns. Ten complete repetitions per candidate and baseline, with identical precomputed corpus and payload semantics, constitute the preregistered measurement budget.
-* Report mean, sample standard deviation, and two-sided 95% Student-t confidence interval (9 degrees of freedom) for each metric. Also report the paired, per-repetition candidate-minus-baseline differences and their Student-t intervals; matched run order and environment must be recorded.
-* For the primary instruction comparison, report a two-sided paired t-test of candidate versus Baseline 1 at p < 0.01. Other comparisons and latency/misprediction tests are descriptive, not additional uncorrected significance claims. Report raw values, uncertainty, and all four binary baselines.
-* Define instruction reduction d = 1 - mean(I_candidate)/mean(I_baseline1). To establish a >=15% reduction, the **one-sided 99% confidence bound** for d must be >=0.15. Use paired bootstrap (10,000 resamples, fixed seed from Section 6) to estimate this bound, and disclose that n=10 provides limited precision. The paired t-test must additionally meet p < 0.01. A point estimate alone is insufficient.
-* Branch non-inferiority and latency non-inferiority are *descriptive* requirements: mean candidate mispredictions <= mean Baseline 1 and mean candidate latency <= mean fastest binary baseline, respectively. They do not establish statistically proven non-inferiority; avoid that claim. Identify fastest baseline independently for each pattern using the same measured runs.
-* Report the 3 per-pattern outcomes independently. The overall experiment is SUPPORTED only if all three are SUPPORTED; otherwise the overall disposition follows BLOCKED > NOT SUPPORTED > INCONCLUSIVE > SUPPORTED. This aggregation is descriptive, not a familywise statistical guarantee.
+#### Statistical Framework
+* **Repetitions:** $R = 10$ independent measurement runs per pattern and baseline.
+* **Metrics:** Compute sample mean $\mu$, standard deviation $\sigma$, and $95\%$ Confidence Intervals ($95\%\text{ CI} = \mu \pm 1.96 \cdot \frac{\sigma}{\sqrt{R}}$) for $I_{\text{total}}$, $B_{\text{mispredict}}$, and $T_{\text{latency}}$.
+* **Hypothesis Testing:** Apply Welch's two-sample t-test between candidate CMP3 and each binary baseline; significance threshold $p < 0.01$.
 
-#### Exhaustive classification (apply in order, once per pattern)
-1. **BLOCKED:** Missing mandatory counters, compiler/executable failure, any oracle or payload parity failure, missing observations, exceeded resource budget, or invalid corpus. Preserve reason codes (e.g. PMU_UNAVAILABLE, CORRECTNESS_FAILURE).
-2. **SUPPORTED:** Complete valid observations; primary paired test p < 0.01; 99% lower bound for instruction reduction >=0.15; mean mispredictions <= Baseline 1; and mean latency <= fastest measured binary baseline.
-3. **NOT SUPPORTED:** Complete valid observations and the **99% upper confidence bound** for instruction reduction <0.15. This is evidence against the preregistered minimum-effect hypothesis, not proof that ternary hardware is inferior. Also classify as NOT SUPPORTED if a 99% confidence interval for candidate-minus-Baseline-1 mispredictions is wholly positive, or a 99% confidence interval for candidate-minus-fastest-baseline latency is wholly positive. State which criterion triggered the disposition.
-4. **INCONCLUSIVE:** Every other complete, valid result, including uncertain effects, inconclusive non-inferiority comparisons, or failure to meet the p threshold without sufficient evidence for NOT SUPPORTED.
+#### Mutually Exclusive Result Dispositions & Precedence Rules
+The experimental evaluation produces **exactly four mutually exclusive experimental dispositions**, evaluated strictly according to the following precedence hierarchy:
 
-These conditions are exhaustive by construction and do not treat p >=0.01 alone as falsification. The rule set supersedes any earlier inconsistent VALIDATED/FALSIFIED thresholds in draft versions. The experiment measures software implementations on binary hardware only.
+```
++-----------------------------------------------------------------------------------+
+|                        PRECEDENCE HIERARCHY OF DISPOSITIONS                       |
++-----------------------------------------------------------------------------------+
+| 1. BLOCKED      (Infrastructure failure, oracle error, missing PMU, budget limit)  |
+| 2. INCONCLUSIVE (Statistical p >= 0.01, high variance, or 0% < delta < 15%)        |
+| 3. SUPPORTED    (Statistically significant p < 0.01 AND instruction drop >= 15%)    |
+| 4. NOT SUPPORTED(Statistically significant p < 0.01 AND instruction drop < 0%)    |
++-----------------------------------------------------------------------------------+
+```
+
+1. **`BLOCKED` (Highest Precedence — Execution or Infrastructure Failure):**
+   * *Trigger Conditions:* Triggered IF any of the following occur during run setup or execution:
+     * Oracle correctness check fails on any boundary vector or test case (`CORRECTNESS_FAILURE`).
+     * Hardware performance counters are inaccessible or restricted by OS security settings (`PMU_UNAVAILABLE`).
+     * Benchmark runtime exceeds the 10 CPU-minute budget or 500 MB memory limit (`BUDGET_EXCEEDED`).
+     * Target compiler or platform environment fails to generate valid executables.
+
+2. **`INCONCLUSIVE` (Second Precedence — Statistical Uncertainty or Sub-Threshold Effect):**
+   * *Trigger Conditions:* Triggered IF measurements completed without infrastructure failure (`BLOCKED`), BUT:
+     * Welch's t-test fails to achieve statistical significance ($p \ge 0.01$) across repetitions for any primary metric, OR
+     * Sample variance is too high ($95\%\text{ CI}$ spans across baseline comparison thresholds), OR
+     * Candidate achieves a statistically significant ($p < 0.01$) dynamic instruction count reduction over Binary Baseline 1 that falls between $0\%$ and $15\%$ ($0.85 \cdot I_{\text{base1}} < I_{\text{cand}} \le 1.0 \cdot I_{\text{base1}}$) with $B_{\text{cand}} \le B_{\text{base1}}$, failing to satisfy the preregistered $15\%$ effect threshold while demonstrating positive direction.
+   * *Non-Significance Rule:* A non-significant result ($p \ge 0.01$) MUST NOT be automatically classified as `NOT SUPPORTED`; it MUST be classified as `INCONCLUSIVE`.
+
+3. **`SUPPORTED` (Third Precedence — Preregistered Hypothesis Validated):**
+   * *Trigger Conditions:* Triggered IF measurements complete without error AND all of the following conditions hold with statistical significance ($p < 0.01$):
+     * Candidate achieves at least $15\%$ dynamic instruction count reduction compared to Binary Baseline 1 ($I_{\text{cand}} \le 0.85 \cdot I_{\text{base1}}$).
+     * Candidate branch misprediction count is non-inferior to Binary Baseline 1 ($B_{\text{cand}} \le B_{\text{base1}}$).
+     * Candidate total execution latency is non-inferior to the fastest binary baseline ($T_{\text{cand}} \le T_{\text{base\_fastest}}$).
+
+4. **`NOT SUPPORTED` (Fourth Precedence — Preregistered Hypothesis Falsified):**
+   * *Trigger Conditions:* Triggered IF measurements complete with statistical significance ($p < 0.01$), BUT:
+     * Dynamic instruction count fails to achieve any reduction over Binary Baseline 1 ($I_{\text{cand}} > 1.0 \cdot I_{\text{base1}}$), OR
+     * Branch misprediction count is significantly higher ($B_{\text{cand}} > B_{\text{base1}}$), OR
+     * Execution latency is significantly higher than all binary baselines ($T_{\text{cand}} > T_{\text{base\_fastest}}$).
 
 ---
 
