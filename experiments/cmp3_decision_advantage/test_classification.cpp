@@ -7,8 +7,10 @@
 #include <cmath>
 #include <cstdio>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <random>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -89,8 +91,32 @@ double compute_paired_t_pvalue(const std::vector<double>& cand, const std::vecto
   return 0.05;                                 // p >= 0.01
 }
 
+// Paired two-sided 99% Student-t interval for n=10 (df=9, t_0.995=3.249836).
+std::pair<double,double> paired_interval99(const std::vector<double>& a,const std::vector<double>& b) {
+  const std::size_t n=a.size();
+  if(n!=10 || b.size()!=n) throw std::invalid_argument("requires ten matched observations");
+  double mean=0;
+  for(std::size_t i=0;i<n;i++) mean+=a[i]-b[i];
+  mean/=static_cast<double>(n);
+  double ss=0;
+  for(std::size_t i=0;i<n;i++){double d=a[i]-b[i]-mean;ss+=d*d;}
+  const double margin=3.249836256*std::sqrt(ss/(n-1)/n);
+  return {mean-margin,mean+margin};
+}
+
+bool valid_series(const MeasureSeries& s) {
+  const std::vector<double>* fields[]={&s.candidate_inst,&s.base1_inst,&s.candidate_miss,
+     &s.base1_miss,&s.candidate_lat,&s.fastest_base_lat};
+  for(auto* f:fields) {
+    if(f->size()!=10) return false;
+    for(double x:*f) if(!std::isfinite(x)||x<0) return false;
+  }
+  for(double x:s.base1_inst) if(x<=0) return false;
+  return true;
+}
+
 Outcome classify_pattern_result(const MeasureSeries& series) {
-  if (!series.pmu_available || !series.correctness_pass || !series.budget_pass) {
+  if (!series.pmu_available || !series.correctness_pass || !series.budget_pass || !valid_series(series)) {
     return Outcome::BLOCKED;
   }
 
@@ -123,8 +149,8 @@ Outcome classify_pattern_result(const MeasureSeries& series) {
   // 2. NOT SUPPORTED Rule:
   // 99% upper bound for reduction < 0.15 OR mispredictions strictly higher OR latency strictly
   // higher
-  if (bound_high_99 < 0.15 || mean_cand_miss > mean_base1_miss + 1e5 ||
-      mean_cand_lat > mean_fastest_lat + 1e6) {
+  if (bound_high_99 < 0.15 || paired_interval99(series.candidate_miss,series.base1_miss).first > 0.0 ||
+      paired_interval99(series.candidate_lat,series.fastest_base_lat).first > 0.0) {
     return Outcome::NOT_SUPPORTED;
   }
 
@@ -175,6 +201,24 @@ void test_classification_outcomes() {
     s.candidate_lat = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
     s.fastest_base_lat = {55, 55, 55, 55, 55, 55, 55, 55, 55, 55};
     assert(classify_pattern_result(s) == Outcome::INCONCLUSIVE);
+  }
+
+  // Regression: empty and incomplete data must fail closed, never generate NaNs or OOB.
+  {
+    MeasureSeries s;
+    assert(classify_pattern_result(s)==Outcome::BLOCKED);
+    s.candidate_inst.assign(10,70);s.base1_inst.assign(9,100);
+    assert(classify_pattern_result(s)==Outcome::BLOCKED);
+  }
+  // Regression from Codex: significant, consistent miss regression overrides instruction gain.
+  {
+    MeasureSeries s;
+    s.candidate_inst.assign(10,70);s.base1_inst.assign(10,100);
+    s.candidate_miss.assign(10,11);s.base1_miss.assign(10,10);
+    s.candidate_lat.assign(10,50);s.fastest_base_lat.assign(10,55);
+    assert(classify_pattern_result(s)==Outcome::NOT_SUPPORTED);
+    s.candidate_miss[0]=std::numeric_limits<double>::quiet_NaN();
+    assert(classify_pattern_result(s)==Outcome::BLOCKED);
   }
 
   std::cout << "ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED" << std::endl;
