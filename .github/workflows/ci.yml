@@ -22,6 +22,10 @@ jobs:
     name: " lint / spec & docs "
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Explicit bash uses -e -o pipefail; implicit Linux bash uses only -e.
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -35,6 +39,9 @@ jobs:
 
       - name: Start log capture
         run: mkdir -p .github/logs && echo "--- Starting log capture ---" > .github/logs/spec-and-docs.log
+
+      - name: Verify CI failure propagation
+        run: python3 scripts/ci/test_failure_propagation.py --output-dir .github/logs/failure-propagation
 
       - name: Install Python tools
         run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
@@ -149,6 +156,15 @@ jobs:
             echo "- **Job**: ${{ github.job }}"
             echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve spec and docs diagnostics
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: spec-and-docs-diagnostics
+          path: .github/logs/
+          include-hidden-files: true
+          if-no-files-found: warn
 
   ############################################################################
   # JOB: architecture-invariants (informational)
@@ -390,6 +406,9 @@ jobs:
     needs: spec-and-docs
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -1219,6 +1238,9 @@ jobs:
     needs: spec-and-docs
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -1257,6 +1279,7 @@ jobs:
             bench.json
             docs/reference/benchmarks.md
             .github/logs/benchmark.log
+          include-hidden-files: true
           if-no-files-found: warn
 
   ############################################################################
