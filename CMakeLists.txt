@@ -550,6 +550,12 @@ if(T81_BUILD_TESTS)
 
   add_executable(tisc_opcode_matrix_test tests/cpp/tisc_opcode_matrix_test.cpp)
   target_link_libraries(tisc_opcode_matrix_test PRIVATE t81_isa)
+  # The opcode contract checks use assert; global release flags define NDEBUG.
+  if(MSVC)
+    target_compile_options(tisc_opcode_matrix_test PRIVATE /UNDEBUG)
+  else()
+    target_compile_options(tisc_opcode_matrix_test PRIVATE -UNDEBUG)
+  endif()
 
   add_executable(t81lang_conformance_baseline_test tests/cpp/t81lang_conformance_baseline_test.cpp)
 add_executable(t81lang_surface_gate_test tests/cpp/t81lang_surface_gate_test.cpp)
