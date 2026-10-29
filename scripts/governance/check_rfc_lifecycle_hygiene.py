@@ -28,6 +28,8 @@ def parse_index_rows(index_text: str) -> list[tuple[str, str, str]]:
 def read_status_from_rfc(text: str) -> str | None:
     top = "\n".join(text.splitlines()[:120])
     patterns = [
+        # Several accepted RFCs use an explicit Field/Value metadata table.
+        re.compile(r"^\s*\|\s*Status\s*\|\s*(?:\*\*)?([A-Za-z-]+)(?:\*\*)?\s*\|\s*$", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?\*\*Status:\*\*\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?\*\*Status\*\*:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?Status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
