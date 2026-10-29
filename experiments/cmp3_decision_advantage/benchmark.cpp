@@ -137,102 +137,47 @@ static std::vector<Pair> generate_corpus(int pattern, std::size_t n) {
   return v;
 }
 
-static u64 dispatch(const Pair& x, int mode, int pattern) {
-  int c = 0;
-  if (pattern == 1) {
-    // Pattern B: Policy Threshold Check (x.a = V)
-    const i64 V = x.a;
-    switch (mode) {
-      case 0: {
-        // Candidate: cmp3_s64 against policy thresholds
-        int z1 = cmp3_s64(V, -100);
-        int z2 = cmp3_s64(V, 100);
-        c = (z1 < 0) ? -1 : ((z2 > 0) ? 1 : 0);
-        break;
-      }
-      case 1: {
-        // Baseline 1: Dual Jump Cascade
-        if (V < -100)
-          c = -1;
-        else if (V > 100)
-          c = 1;
-        else
-          c = 0;
-        break;
-      }
-      case 2: {
-        // Baseline 2: Branchless CMOV / arithmetic
-        c = (V > 100) - (V < -100);
-        break;
-      }
-      case 3: {
-        // Baseline 3: C++20 operator<=>
-        if ((V <=> -100) < 0)
-          c = -1;
-        else if ((V <=> 100) > 0)
-          c = 1;
-        else
-          c = 0;
-        break;
-      }
-      case 4: {
-        // Baseline 4: Switch-Based Jump Table
-        switch (V < -100 ? -1 : (V > 100 ? 1 : 0)) {
-          case -1:
-            c = -1;
-            break;
-          case 1:
-            c = 1;
-            break;
-          default:
-            c = 0;
-            break;
-        }
-        break;
-      }
+// Matched no-inline comparison wrappers. Each mode pays one call boundary.
+// Assembly must still be inspected: the optimizer may lower distinct modes identically.
+__attribute__((noinline)) static int classify0(i64 a,i64 b){return cmp3_s64(a,b);}
+__attribute__((noinline)) static int classify1(i64 a,i64 b){if(a<b)return -1;else if(a==b)return 0;return 1;}
+__attribute__((noinline)) static int classify2(i64 a,i64 b){return (a>b)-(a<b);}
+__attribute__((noinline)) static int classify3(i64 a,i64 b){auto z=a<=>b;return z<0?-1:z>0?1:0;}
+__attribute__((noinline)) static int classify4(i64 a,i64 b){switch(a==b?0:a<b?-1:1){case -1:return -1;case 0:return 0;default:return 1;}}
+
+// Three distinct observable branch targets, each doing the same payload formula.
+__attribute__((noinline)) static u64 target_less(i64 a,i64 b){return payload(a,b,-1);}
+__attribute__((noinline)) static u64 target_equal(i64 a,i64 b){return payload(a,b,0);}
+__attribute__((noinline)) static u64 target_greater(i64 a,i64 b){return payload(a,b,1);}
+using Target=u64(*)(i64,i64);
+static const Target targets[3]={target_less,target_equal,target_greater};
+
+__attribute__((noinline)) static u64 dispatch(const Pair& x,int mode,int pattern){
+  i64 a=x.a,b=x.b;
+  int c=0;
+  if(pattern==1) {
+    // Every implementation must evaluate the two actual policy boundaries.
+    switch(mode){
+      case 0: c=classify0(a,-100)<0?-1:classify0(a,100)>0?1:0;break;
+      case 1: c=a< -100?-1:a>100?1:0;break;
+      case 2: c=(a>100)-(a< -100);break;
+      case 3: c=(a<=>-100)<0?-1:(a<=>100)>0?1:0;break;
+      case 4: c=a< -100?-1:a>100?1:0;break;
+      default: throw std::runtime_error("INVALID_MODE");
     }
   } else {
-    // Pattern A and Pattern C: Trichotomy Comparison (x.a vs x.b)
-    switch (mode) {
-      case 0: {
-        c = cmp3_s64(x.a, x.b);
-        break;
-      }
-      case 1: {
-        if (x.a < x.b)
-          c = -1;
-        else if (x.a == x.b)
-          c = 0;
-        else
-          c = 1;
-        break;
-      }
-      case 2: {
-        c = (x.a > x.b) - (x.a < x.b);
-        break;
-      }
-      case 3: {
-        auto z = x.a <=> x.b;
-        c = (z < 0) ? -1 : ((z > 0) ? 1 : 0);
-        break;
-      }
-      case 4: {
-        switch (x.a == x.b ? 0 : (x.a < x.b ? -1 : 1)) {
-          case -1:
-            c = -1;
-            break;
-          case 0:
-            c = 0;
-            break;
-          default:
-            c = 1;
-            break;
-        }
-        break;
-      }
+    switch(mode){
+      case 0:c=classify0(a,b);break;
+      case 1:c=classify1(a,b);break;
+      case 2:c=classify2(a,b);break;
+      case 3:c=classify3(a,b);break;
+      case 4:c=classify4(a,b);break;
+      default:throw std::runtime_error("INVALID_MODE");
     }
   }
-  return payload(x.a, x.b, c);
+  if(c< -1||c>1)throw std::runtime_error("INVALID_TRICHOTOMY");
+  // An actual three-way target dispatch, not merely computing a verdict.
+  return targets[c+1](a,b);
 }
 
 struct Counters {
