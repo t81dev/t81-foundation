@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/ai-context/RESEARCH_IDENTITY.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Source Snapshot:** `main` at `6864a810693a6034bd28be870ee38a180ba70ba0` (H04 result refreshed 2026-10-29; other claims retain their cited evidence scopes)
 **Status:** Non-normative research-identity navigation; canonical H01–H08 definitions remain in the JSON register
 
 ---
@@ -79,8 +79,8 @@ The project preserves the exact identities, formal claims, baselines, assumption
 - **Assumptions:** Historical 81/243/729 labels do not establish bit widths or equivalent domains; entropy/depth heuristic and promotion logic are distinct source mechanisms.
 - **Measurement:** Factorial radix/adaptation contrasts; storage, selection, switching, and conversion reported separately.
 - **Falsifier:** No advantage over adaptive binary, effect is equally explained by adaptation, or correctness/transition costs remove it.
-- **Result:** **Tier B/D (lineage/model):** Historical Hanoi scheduler thresholds inspected; H04-R01 defines a $2\times2$ discriminator with finite-capacity counterexamples ($M=256$, $C_3/C_2=1.5$ favors binary). An [H04-R02 four-arm packet](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) already exists and reports a conditional negative outcome under binary-encoded trit costs; it was not independently rerun in this index.
-- **Next Action:** Audit H04-R02's oracle, cost units and completed evidence, then choose a distinct, maintainer-approved discriminator if needed. Do not repeat the completed packet.
+- **Result:** **Tier B/D and bounded model recalculation:** Historical Hanoi and H04-R01 remain separate, source-pinned evidence. The original H04-R02 packet had incorrect total crossovers, greedy rather than globally optimal C++ mode selection, inconsistent header units and a >96% attribution valid only for one workload. Corrective [PR #572](https://github.com/t81dev/t81-foundation/pull/572) merged at `6864a810693a6034bd28be870ee38a180ba70ba0`; the revised [H04-R02 result](../../experiments/h04_r02_adaptive_representation/RESULTS.md) uses explicit equal binary metadata, prefix DP, an independently structured Python suffix oracle, a 10-bit comparator, and conditional cost/packing findings. A separate model calculation reproduced 32 totals and eight crossovers; no new CPU/energy/device measurements were collected. **H04 remains unresolved**; neither a universal software impossibility nor physical ternary advantage follows.
+- **Next Action:** Verify final merged-source CI and unresolved review qualifications, then evaluate PR #571 supersession. Require a separately authorized, genuinely distinct falsifier before any additional H04 measurement.
 
 ### Hypothesis H05: Three-State Algebra Primitives & Architectures
 - **Formal Claim:** A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation.
