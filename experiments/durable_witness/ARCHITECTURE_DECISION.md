@@ -26,11 +26,12 @@ A security correctness audit of PR #558 challenged the previously claimed "10/10
 
 ## Audit Findings & Corrected Evidence
 
-1. **HMAC Coverage Defect Fixed**: Original receipts signed only `tx_id:authority_version:effect_id`, leaving `payload_hash`, `total_amount`, `timestamp`, and `witness_id` vulnerable to substitution. Coverage has been expanded to all receipt fields.
-2. **Rollback Vulnerability Demonstrated**: Restoring an older SQLite database snapshot wipes committed transaction history. An attacker can re-submit a previously executed transaction ID and obtain a second valid receipt. Local database state **cannot resist rollback** without an external monotonic checkpoint or append-only transparency log (Attack 8).
-3. **Offline Verification Boundary**: Verifying evidence offline without querying the witness store (`--db`) checks only cryptographic key knowledge, NOT transaction admission. An actor knowing the signing secret can forge valid receipts for unadmitted transactions.
-4. **Database Record vs. Physical Effect**: A witness database row proves an internal state transition occurred inside SQLite. It does **not** prove an external physical effect (e.g. shipping disbursement) occurred without a separate sensor or external audit attestation.
-5. **Runtime Dependency Enforcement**: Arm A silent Python arithmetic fallback was removed. Unavailable native runtimes now explicitly fail or report `SKIPPED`.
+1. **Arm A Execution Provenance Corrected**: Missing, inaccessible, or failing native Arm A binaries explicitly fail with `GUEST_EXECUTION_FAILED` and produce `receipt: None`. Silent fallback calculation was removed. Optional simulation mode must be explicitly selected and is tagged with `"simulated": True`.
+2. **Historical Authorization Inference**: Historical transaction authorization is inferred from trusted committed records in the witness database, not independently reconstructed from immutable historical policy snapshots.
+3. **HMAC Coverage Defect Fixed**: Original receipts signed only `tx_id:authority_version:effect_id`, leaving `payload_hash`, `total_amount`, `timestamp`, and `witness_id` vulnerable to substitution. Coverage has been expanded to all receipt fields.
+4. **Rollback Vulnerability Demonstrated**: Restoring an older SQLite database snapshot wipes committed transaction history. An attacker can re-submit a previously executed transaction ID and obtain a second valid receipt. Local database state **cannot resist rollback** without an external monotonic checkpoint or append-only transparency log (Attack 8).
+5. **Offline Verification Boundary**: Verifying evidence offline without querying the witness store (`--db`) checks only cryptographic key knowledge, NOT transaction admission. An actor knowing the signing secret can forge valid receipts for unadmitted transactions.
+6. **Database Record vs. Physical Effect**: A witness database row proves an internal state transition occurred inside SQLite. It does **not** prove an external physical effect (e.g. shipping disbursement) occurred without a separate sensor or external audit attestation.
 
 ---
 

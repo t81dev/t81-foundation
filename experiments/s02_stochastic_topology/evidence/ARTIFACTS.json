@@ -1,0 +1,13 @@
+{
+  "purpose": "Publication identities; generation.json separately pins source, executable and data bytes.",
+  "sha256": {
+    "results.json": "66187852d4704b37b81ec41a155430b506df951dbdf7f3a6242283b12907a4b7",
+    "results.traces.jsonl.gz": "f5a67dfbf5dd096878977eda48ea5d74cf2b627304c82a572534dde3203cbf57",
+    "analysis.json": "89c568e1f9dec98a71c93848f326bb68bed78f3d05be8d6a8b6685d5a557ffeb",
+    "RESEARCH_REPORT.md": "1c27207265b1d30cbc47d36acafdf7a5359c79dad7743540b53f2af2fec83df6",
+    "evidence/generation.json": "eae5d8ad2661d0e4ab22a65ef75c196aed4850b9138027737b0ae3f94aca0197",
+    "evidence/S02_EVALUATION_RUBRIC.frozen.md": "b220e94331fa59e205929890be1f68f1a876e3d728b32c3535a3012970d87353",
+    "evidence/after/verification.json": "8d61866536242df0c8a9ea0d18ee79a88f39a67c55c2b070625c9cf98e22a907",
+    "historical/pr582/MANIFEST.json": "6cfcb9c407cd51ef1b43bf2469d6f9d9a0929bb9fd449167194593b78f7f3d7b"
+  }
+}

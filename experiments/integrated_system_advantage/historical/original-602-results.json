@@ -1,0 +1,107 @@
+{
+  "investigation": "Scientific Investigation 08 \u2014 Equivalent Conventional Comparator",
+  "final_disposition": "PARITY VERIFIED \u2014 MEASUREMENT COMPLETED",
+  "timestamp": "2026-10-27T05:14:41.758128+00:00",
+  "environment_metadata": {
+    "platform": "Linux-6.8.0-x86_64-with-glibc2.39",
+    "python_version": "3.12.13 (main, Mar  6 2026, 16:37:31) [GCC 13.3.0]",
+    "processor": "x86_64",
+    "machine": "x86_64"
+  },
+  "computational_equivalence": {
+    "parity_matched": true,
+    "test_input": "greet hello",
+    "config_a_output": {
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR"
+    },
+    "config_b_output": {
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR"
+    }
+  },
+  "paired_benchmark_observations": {
+    "empty_store": {
+      "config_a_t81": {
+        "count": 30,
+        "mean_ms": 5291.6824256,
+        "stddev_ms": 39.01445016672745,
+        "min_ms": 5216.883669,
+        "max_ms": 5371.649648
+      },
+      "config_b_conventional": {
+        "count": 30,
+        "mean_ms": 2.794969733333333,
+        "stddev_ms": 0.2195997624241176,
+        "min_ms": 2.387255,
+        "max_ms": 3.236955
+      }
+    },
+    "populated_store": {
+      "config_a_t81": {
+        "count": 30,
+        "mean_ms": 5318.727158666667,
+        "stddev_ms": 52.83386404898488,
+        "min_ms": 5222.46489,
+        "max_ms": 5563.163419
+      },
+      "config_b_conventional": {
+        "count": 30,
+        "mean_ms": 2.5893297333333334,
+        "stddev_ms": 0.62923261139788,
+        "min_ms": 2.127523,
+        "max_ms": 5.593719
+      }
+    }
+  },
+  "hypotheses_evaluation": {
+    "H_S1_Computational_Advantage": "NOT SUPPORTED (Full T81 CLI binary stack incurs process launch and translation overhead over in-process binary baselines)",
+    "H_S1_Assurance_Advantage": "SUPPORTED (T81 provides end-to-end cryptographic content identity, pre-execution Axion policy gating, and bit-exact replay verification)",
+    "H_S1_Compositional_Advantage": "INCONCLUSIVE (Controlled interaction analysis is infeasible without production code modification seams for individual subsystem ablations C, D, E, F)",
+    "H_S1_Ternary_Specific_Advantage": "NOT SUPPORTED / UNIMPLEMENTED (No arithmetic substitution seam exists in C++ production VM; ternary-specific advantage cannot be inferred from an unimplemented ablation)"
+  },
+  "results": {
+    "Config_A": {
+      "config": "Config A (Full Integrated T81 Stack)",
+      "status": "SUCCESS",
+      "cold_start_latency_ms": 5279.933575,
+      "artifact_lookup_latency_ms": 4.469908,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:2G3S\u03c4JVsMx\u03bc5RUbLoV<LlUfYQn\u03bb\u221eQ\u00d7RysZ\u2264RHBY\u03c4s",
+      "provenance_ref": "sha3-256:1UPkIdoVXUF\u0393gCHD8l92h\u03c0TjALUjyYdzMP\u2265KXDTz\u03c0"
+    },
+    "Config_B": {
+      "config": "Config B (Conventional Binary Equivalent Stack)",
+      "status": "SUCCESS",
+      "execution_latency_ms": 3.621739,
+      "artifact_lookup_latency_ms": 0.661578,
+      "actual_replay_latency_ms": 2.20765,
+      "decision": "ALLOW",
+      "reason_code": "GREETING_PAIR",
+      "result_ref": "sha3-256:3lLjS<\u2265IWgfk5>>\u0393FE3nCW<x\u00f7WcrB\u03c9z\u0393OvNPSz3\u2264j",
+      "bundle_ref": "sha3-256:QU\u03c3\u03bbOtgBS\u03bcWiszq\u03c4Jg\u03bbIi\u03c4vioV\u00d7f\u03c3\u03c0\u00f7\u0393nVb\u2265\u2260rDE",
+      "replay_valid": true
+    },
+    "Config_C": {
+      "config": "Config C (T81 with Binary Arithmetic Substitution)",
+      "status": "UNIMPLEMENTED",
+      "reason": "No production C++ VM seam exists to substitute binary arithmetic while retaining the T81 execution stack without modifying production code."
+    },
+    "Config_D": {
+      "config": "Config D (T81 with Conventional File Storage Substitution)",
+      "status": "UNIMPLEMENTED",
+      "reason": "No storage substitution seam exists in the production binary without modifying production code."
+    },
+    "Config_E": {
+      "config": "Config E (T81 with Policy Engine Substitution)",
+      "status": "UNIMPLEMENTED",
+      "reason": "Axion policy enforcement is a mandatory runtime invariant in T81; bypass traps execution via SecurityFault."
+    },
+    "Config_F": {
+      "config": "Config F (Selected Subsystem Pairings)",
+      "status": "UNIMPLEMENTED",
+      "reason": "Subsystem pairing substitution seam unavailable in production binary without modifying production code."
+    }
+  }
+}

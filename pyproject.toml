@@ -7,7 +7,7 @@ build-backend = "scikit_build_core.build"
 [project]
 name = "t81"
 version = "1.9.2"
-description = "Deterministic ternary VM, governed AI inference, and bit-exact reproducibility"
+description = "Experimental computing and systems research: alternative representations, deterministic execution, and policy-governed artifacts"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 requires-python = ">=3.9"

@@ -1,5 +1,9 @@
+<!-- translation_status: outdated; full source translation pending -->
+
+> **历史译文，待更新（2026-10-27）。** [英文 README](README.md) 在 `391b9652`（#598）中将 T81 定位为实验性计算与系统研究平台。以下章节保留旧版内容，其中关于性能、安全性、集成程度和成熟度的表述不代表当前保证。相对于二进制系统的普遍优势尚未得到证明。参见[文档对齐审计](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md)。
+
 <p align="center">
-  <img src="assets/banner.png" alt="T81 — 三元计算架构" width="100%">
+  <img src="docs/assets/banner.png" alt="T81 — 三元计算架构" width="100%">
 </p>
 
 [English](./README.md) | [简体中文](./README.zh-CN.md) | [Español](./README.es.md) | [Русский](./README.ru.md) | [Português](./README.pt-BR.md)
@@ -9,11 +13,7 @@
 
 # T81 — 三元计算架构
 
-![Release](https://img.shields.io/badge/release-v1.9.0--Stable-blue)
-![Tests](https://img.shields.io/badge/tests-369%2F369_passing-brightgreen)
 ![ISA](https://img.shields.io/badge/ISA-v1.9.0_Frozen-blue)
-![Execution](https://img.shields.io/badge/execution-deterministic-green)
-![CI](https://img.shields.io/badge/cross--platform--determinism-verified-brightgreen)
 ![License](https://img.shields.io/badge/license-Apache_2.0-blue)
 
 利用基于 e 的计算的理论效率，**T81** 是一种基于 **平衡三元算术** ({-1, 0, +1}) 构建的确定性计算架构，拥有涵盖指令集、虚拟机、语言编译器和 AI 推理环境的全链条治理模型。

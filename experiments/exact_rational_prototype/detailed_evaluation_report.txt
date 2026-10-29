@@ -1,0 +1,645 @@
+========================================================================
+Detailed Evaluation Report — Corpus & Boundary Verification
+========================================================================
+
+Case ID  : positive-zero-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=exact, value=+0E0, error=null, flags=[]
+Actual   : status=exact, value=+0E0, error=null, flags=[]
+Result   : PASS
+
+Case ID  : negative-zero-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=exact, value=+0E0, error=null, flags=[negative_zero_normalized]
+Actual   : status=exact, value=+0E0, error=null, flags=[negative_zero_normalized]
+Result   : PASS
+
+Case ID  : one-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=exact, value=++00000000000000000000000000E0, error=null, flags=[]
+Actual   : status=exact, value=++00000000000000000000000000E0, error=null, flags=[]
+Result   : PASS
+
+Case ID  : three-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=exact, value=++00000000000000000000000000E1, error=null, flags=[]
+Actual   : status=exact, value=++00000000000000000000000000E1, error=null, flags=[]
+Result   : PASS
+
+Case ID  : half-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : negative-half-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : denorm-min-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : min-normal-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : max-finite-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : inf-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : negative-inf-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : quiet-nan-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : signaling-nan-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : nan-payload-exact_only
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : source-underflow-exact_only
+Operation: from_binary64 (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=underflow, flags=[]
+Actual   : status=error, value=null, error=underflow, flags=[]
+Result   : PASS
+
+Case ID  : source-overflow-exact_only
+Operation: from_binary64 (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=overflow, flags=[]
+Actual   : status=error, value=null, error=overflow, flags=[]
+Result   : PASS
+
+Case ID  : exact-integer-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=exact, value=++000E3, error=null, flags=[]
+Actual   : status=exact, value=++000E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : odd-lower-tie-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : even-lower-tie-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : both-even-binade-tie-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : negative-binade-tie-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : above-midpoint-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : minimum-subnormal-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=exact, value=+000+E-40, error=null, flags=[]
+Actual   : status=exact, value=+000+E-40, error=null, flags=[]
+Result   : PASS
+
+Case ID  : maximum-finite-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=exact, value=+++++E39, error=null, flags=[]
+Actual   : status=exact, value=+++++E39, error=null, flags=[]
+Result   : PASS
+
+Case ID  : below-minimum-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=underflow, flags=[]
+Actual   : status=error, value=null, error=underflow, flags=[]
+Result   : PASS
+
+Case ID  : above-maximum-exact_only
+Operation: quantize_rational (M=4, E=4, mode=exact_only)
+Expected : status=error, value=null, error=overflow, flags=[]
+Actual   : status=error, value=null, error=overflow, flags=[]
+Result   : PASS
+
+Case ID  : zero-to-binary-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=exact, value=0000000000000000, error=null, flags=[]
+Actual   : status=exact, value=0000000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : one-to-binary-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=exact, value=3ff0000000000000, error=null, flags=[]
+Actual   : status=exact, value=3ff0000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : third-to-binary-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : two-subnormal-quanta-exact_only
+Operation: to_binary64 (M=72, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : binary-exact-large-exact_only
+Operation: to_binary64 (M=72, E=9, mode=exact_only)
+Expected : status=exact, value=4340000000000000, error=null, flags=[]
+Actual   : status=exact, value=4340000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : binary-tie-even-lower-exact_only
+Operation: to_binary64 (M=72, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : binary-tie-even-upper-exact_only
+Operation: to_binary64 (M=72, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : binary-significand-carry-exact_only
+Operation: to_binary64 (M=72, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : destination-underflow-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=underflow, flags=[]
+Actual   : status=error, value=null, error=underflow, flags=[]
+Result   : PASS
+
+Case ID  : destination-overflow-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=overflow, flags=[]
+Actual   : status=error, value=null, error=overflow, flags=[]
+Result   : PASS
+
+Case ID  : infinity-to-binary-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : nae-to-binary-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : positive-zero-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=exact, value=+0E0, error=null, flags=[]
+Actual   : status=exact, value=+0E0, error=null, flags=[]
+Result   : PASS
+
+Case ID  : negative-zero-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=exact, value=+0E0, error=null, flags=[negative_zero_normalized]
+Actual   : status=exact, value=+0E0, error=null, flags=[negative_zero_normalized]
+Result   : PASS
+
+Case ID  : one-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=exact, value=++00000000000000000000000000E0, error=null, flags=[]
+Actual   : status=exact, value=++00000000000000000000000000E0, error=null, flags=[]
+Result   : PASS
+
+Case ID  : three-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=exact, value=++00000000000000000000000000E1, error=null, flags=[]
+Actual   : status=exact, value=++00000000000000000000000000E1, error=null, flags=[]
+Result   : PASS
+
+Case ID  : half-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=++++++++++++++++++++++++++++E-1, error=null, flags=[]
+Actual   : status=rounded, value=++++++++++++++++++++++++++++E-1, error=null, flags=[]
+Result   : PASS
+
+Case ID  : negative-half-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=-+++++++++++++++++++++++++++E-1, error=null, flags=[]
+Actual   : status=rounded, value=-+++++++++++++++++++++++++++E-1, error=null, flags=[]
+Result   : PASS
+
+Case ID  : denorm-min-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=++----00++++-0--00-+++0++000E-677, error=null, flags=[]
+Actual   : status=rounded, value=++----00++++-0--00-+++0++000E-677, error=null, flags=[]
+Result   : PASS
+
+Case ID  : min-normal-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=+++-0+-+000+-+++-0+0++0+-0-0E-645, error=null, flags=[]
+Actual   : status=rounded, value=+++-0+-+000+-+++-0+0++0+-0-0E-645, error=null, flags=[]
+Result   : PASS
+
+Case ID  : max-finite-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=++0+-+-00+--+-0+--+0+---000+E646, error=null, flags=[]
+Actual   : status=rounded, value=++0+-+-00+--+-0+--+0+---000+E646, error=null, flags=[]
+Result   : PASS
+
+Case ID  : inf-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : negative-inf-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : quiet-nan-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : signaling-nan-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : nan-payload-nearest_even
+Operation: from_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : source-underflow-nearest_even
+Operation: from_binary64 (M=4, E=4, mode=nearest_even)
+Expected : status=error, value=null, error=underflow, flags=[]
+Actual   : status=error, value=null, error=underflow, flags=[]
+Result   : PASS
+
+Case ID  : source-overflow-nearest_even
+Operation: from_binary64 (M=4, E=4, mode=nearest_even)
+Expected : status=error, value=null, error=overflow, flags=[]
+Actual   : status=error, value=null, error=overflow, flags=[]
+Result   : PASS
+
+Case ID  : exact-integer-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=exact, value=++000E3, error=null, flags=[]
+Actual   : status=exact, value=++000E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : odd-lower-tie-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=rounded, value=++00+E3, error=null, flags=[]
+Actual   : status=rounded, value=++00+E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : even-lower-tie-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=rounded, value=++00+E3, error=null, flags=[]
+Actual   : status=rounded, value=++00+E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : both-even-binade-tie-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=rounded, value=+++++E3, error=null, flags=[]
+Actual   : status=rounded, value=+++++E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : negative-binade-tie-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=rounded, value=-++++E3, error=null, flags=[]
+Actual   : status=rounded, value=-++++E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : above-midpoint-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=rounded, value=++0++E3, error=null, flags=[]
+Actual   : status=rounded, value=++0++E3, error=null, flags=[]
+Result   : PASS
+
+Case ID  : minimum-subnormal-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=exact, value=+000+E-40, error=null, flags=[]
+Actual   : status=exact, value=+000+E-40, error=null, flags=[]
+Result   : PASS
+
+Case ID  : maximum-finite-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=exact, value=+++++E39, error=null, flags=[]
+Actual   : status=exact, value=+++++E39, error=null, flags=[]
+Result   : PASS
+
+Case ID  : below-minimum-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=error, value=null, error=underflow, flags=[]
+Actual   : status=error, value=null, error=underflow, flags=[]
+Result   : PASS
+
+Case ID  : above-maximum-nearest_even
+Operation: quantize_rational (M=4, E=4, mode=nearest_even)
+Expected : status=error, value=null, error=overflow, flags=[]
+Actual   : status=error, value=null, error=overflow, flags=[]
+Result   : PASS
+
+Case ID  : zero-to-binary-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=exact, value=0000000000000000, error=null, flags=[]
+Actual   : status=exact, value=0000000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : one-to-binary-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=exact, value=3ff0000000000000, error=null, flags=[]
+Actual   : status=exact, value=3ff0000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : third-to-binary-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=3fd5555555555555, error=null, flags=[]
+Actual   : status=rounded, value=3fd5555555555555, error=null, flags=[]
+Result   : PASS
+
+Case ID  : two-subnormal-quanta-nearest_even
+Operation: to_binary64 (M=72, E=9, mode=nearest_even)
+Expected : status=rounded, value=0000000000000002, error=null, flags=[]
+Actual   : status=rounded, value=0000000000000002, error=null, flags=[]
+Result   : PASS
+
+Case ID  : binary-exact-large-nearest_even
+Operation: to_binary64 (M=72, E=9, mode=nearest_even)
+Expected : status=exact, value=4340000000000000, error=null, flags=[]
+Actual   : status=exact, value=4340000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : binary-tie-even-lower-nearest_even
+Operation: to_binary64 (M=72, E=9, mode=nearest_even)
+Expected : status=rounded, value=4340000000000000, error=null, flags=[]
+Actual   : status=rounded, value=4340000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : binary-tie-even-upper-nearest_even
+Operation: to_binary64 (M=72, E=9, mode=nearest_even)
+Expected : status=rounded, value=4340000000000002, error=null, flags=[]
+Actual   : status=rounded, value=4340000000000002, error=null, flags=[]
+Result   : PASS
+
+Case ID  : binary-significand-carry-nearest_even
+Operation: to_binary64 (M=72, E=9, mode=nearest_even)
+Expected : status=rounded, value=4350000000000000, error=null, flags=[]
+Actual   : status=rounded, value=4350000000000000, error=null, flags=[]
+Result   : PASS
+
+Case ID  : destination-underflow-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=underflow, flags=[]
+Actual   : status=error, value=null, error=underflow, flags=[]
+Result   : PASS
+
+Case ID  : destination-overflow-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=overflow, flags=[]
+Actual   : status=error, value=null, error=overflow, flags=[]
+Result   : PASS
+
+Case ID  : infinity-to-binary-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : nae-to-binary-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=error, value=null, error=nonfinite_input, flags=[]
+Actual   : status=error, value=null, error=nonfinite_input, flags=[]
+Result   : PASS
+
+Case ID  : empty-bits
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : uppercase-bits
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : too-wide-bits
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : invalid-bit-digit
+Operation: from_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : negative-zero-encoding
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=noncanonical_encoding, flags=[]
+Actual   : status=error, value=null, error=noncanonical_encoding, flags=[]
+Result   : PASS
+
+Case ID  : long-zero-alias
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=noncanonical_encoding, flags=[]
+Actual   : status=error, value=null, error=noncanonical_encoding, flags=[]
+Result   : PASS
+
+Case ID  : unnormalized-mantissa
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=noncanonical_encoding, flags=[]
+Actual   : status=error, value=null, error=noncanonical_encoding, flags=[]
+Result   : PASS
+
+Case ID  : exponent-leading-zero
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=noncanonical_encoding, flags=[]
+Actual   : status=error, value=null, error=noncanonical_encoding, flags=[]
+Result   : PASS
+
+Case ID  : exponent-negative-zero
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=noncanonical_encoding, flags=[]
+Actual   : status=error, value=null, error=noncanonical_encoding, flags=[]
+Result   : PASS
+
+Case ID  : reserved-finite-exponent
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : short-mantissa
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : whitespace
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : invalid-trit
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=invalid_encoding, flags=[]
+Actual   : status=error, value=null, error=invalid_encoding, flags=[]
+Result   : PASS
+
+Case ID  : unsupported-format-3-9
+Operation: from_binary64 (M=3, E=9, mode=exact_only)
+Expected : status=error, value=null, error=unsupported_format, flags=[]
+Actual   : status=error, value=null, error=unsupported_format, flags=[]
+Result   : PASS
+
+Case ID  : unsupported-format-73-9
+Operation: from_binary64 (M=73, E=9, mode=exact_only)
+Expected : status=error, value=null, error=unsupported_format, flags=[]
+Actual   : status=error, value=null, error=unsupported_format, flags=[]
+Result   : PASS
+
+Case ID  : unsupported-format-27-3
+Operation: from_binary64 (M=27, E=3, mode=exact_only)
+Expected : status=error, value=null, error=unsupported_format, flags=[]
+Actual   : status=error, value=null, error=unsupported_format, flags=[]
+Result   : PASS
+
+Case ID  : unsupported-format-27-10
+Operation: from_binary64 (M=27, E=10, mode=exact_only)
+Expected : status=error, value=null, error=unsupported_format, flags=[]
+Actual   : status=error, value=null, error=unsupported_format, flags=[]
+Result   : PASS
+
+Case ID  : unsupported-format-True-9
+Operation: from_binary64 (M=-1, E=9, mode=exact_only)
+Expected : status=error, value=null, error=unsupported_format, flags=[]
+Actual   : status=error, value=null, error=unsupported_format, flags=[]
+Result   : PASS
+
+Case ID  : unsupported-rounding
+Operation: from_binary64 (M=27, E=9, mode=host_default)
+Expected : status=error, value=null, error=unsupported_mode, flags=[]
+Actual   : status=error, value=null, error=unsupported_mode, flags=[]
+Result   : PASS
+
+Case ID  : both-odd-binade-tie-positive-exact_only
+Operation: quantize_rational (M=5, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : both-odd-binade-tie---exact_only
+Operation: quantize_rational (M=5, E=4, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : both-odd-binade-tie-positive-nearest_even
+Operation: quantize_rational (M=5, E=4, mode=nearest_even)
+Expected : status=rounded, value=++++++E4, error=null, flags=[]
+Actual   : status=rounded, value=++++++E4, error=null, flags=[]
+Result   : PASS
+
+Case ID  : both-odd-binade-tie---nearest_even
+Operation: quantize_rational (M=5, E=4, mode=nearest_even)
+Expected : status=rounded, value=-+++++E4, error=null, flags=[]
+Actual   : status=rounded, value=-+++++E4, error=null, flags=[]
+Result   : PASS
+
+Case ID  : common-18-trit-one
+Operation: from_binary64 (M=18, E=9, mode=exact_only)
+Expected : status=exact, value=++00000000000000000E0, error=null, flags=[]
+Actual   : status=exact, value=++00000000000000000E0, error=null, flags=[]
+Result   : PASS
+
+Case ID  : negative-third-exact_only
+Operation: to_binary64 (M=27, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : negative-binary-tie-exact_only
+Operation: to_binary64 (M=72, E=9, mode=exact_only)
+Expected : status=error, value=null, error=inexact, flags=[]
+Actual   : status=error, value=null, error=inexact, flags=[]
+Result   : PASS
+
+Case ID  : negative-third-nearest_even
+Operation: to_binary64 (M=27, E=9, mode=nearest_even)
+Expected : status=rounded, value=bfd5555555555555, error=null, flags=[]
+Actual   : status=rounded, value=bfd5555555555555, error=null, flags=[]
+Result   : PASS
+
+Case ID  : negative-binary-tie-nearest_even
+Operation: to_binary64 (M=72, E=9, mode=nearest_even)
+Expected : status=rounded, value=c340000000000000, error=null, flags=[]
+Actual   : status=rounded, value=c340000000000000, error=null, flags=[]
+Result   : PASS
+
+Counterexample CE-1 (Max Finite Positive (2^53-1)*2^971):
+  exact_only error=inexact
+  nearest_even value=++0+-+-00+--+-0+--+0+---000+E646
+  expected value=++0+-+-00+--+-0+--+0+---000+E646
+  Match: YES
+
+Counterexample CE-2 (Min Positive Subnormal 2^-1074):
+  exact_only error=inexact
+  nearest_even value=++----00++++-0--00-+++0++000E-677
+  expected value=++----00++++-0--00-+++0++000E-677
+  Match: YES
+
+Counterexample CE-3 (Positive One-Half 0.5):
+  exact_only error=inexact
+  nearest_even value=++++++++++++++++++++++++++++E-1
+  expected value=++++++++++++++++++++++++++++E-1
+  Match: YES

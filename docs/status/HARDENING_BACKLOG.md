@@ -1,6 +1,6 @@
 # Hardening Backlog
 
-Last Updated: 2026-10-13
+Last Updated: 2026-10-27
 Owner: @t81dev
 
 **This is not a feature backlog.**

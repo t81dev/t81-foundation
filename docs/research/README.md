@@ -20,6 +20,9 @@ Research inquiries in T81 are organized into three coordinated tracks governed b
 
 ## Key Research Consolidations & Decisions
 
+- **[T81 Human–AI Research Initiative](/docs/research/HUMAN_AI_RESEARCH_INITIATIVE.md)** — Core charter, multi-AI collaboration protocol, prospective 12-month research roadmap, qualitative technical assessment, publication strategy, and 30-day action plan.
+- **[Human–AI Initiative Governance Reconciliation Report](/docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md)** — Authoritative post-merge reconciliation report of PR #607, restoring canonical H01–H08 definitions, correcting initiative chronology, removing arbitrary maturity scores, scrubbing unsupported model attributions, and aligning claims with primary evidence.
+
 - **[Checked conversion contract proposal](../../experiments/checked_float_contract/README.md)** — Draft numerical semantics, independent bidirectional corpus, compatibility/decision record and bounded plan; no production replacement or new determinism claim.
 
 - **[Native float conversion audit](../../experiments/float_conversion_audit/README.md)** — Exact binary64 reference, preserved numerical failures and explicit exclusion from evidence v2; production conversion remains unresolved.
@@ -39,3 +42,9 @@ Research inquiries in T81 are organized into three coordinated tracks governed b
 
 Operational index only. Authority hierarchy remains:
 /spec > docs/architecture/OVERVIEW.md > /docs > /book.
+
+## Research Commons discovery
+
+The [read-only Research Commons](commons/README.md) indexes canonical H01–H08,
+negative evidence, reproduction instructions and unresolved discrepancies with
+pinned source identities. It preserves the authoritative research record.

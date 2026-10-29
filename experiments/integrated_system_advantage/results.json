@@ -1,0 +1,15 @@
+{
+  "investigation": "08",
+  "disposition": "BOUNDED CORRECTIVE PARITY PASSED; IMPLEMENTATION OBSERVATIONS ONLY; INVESTIGATION OPEN",
+  "architectural_performance_disposition": "INCONCLUSIVE",
+  "assurance_superiority_disposition": "INCONCLUSIVE",
+  "historical_evidence": "historical/manifest.json",
+  "current_evidence": "observations-2026-10-27-corrective.json",
+  "reason": "Zero unexplained differences in the declared bounded corpus. Python/C++ optimization, phase observability and replay semantics differ; no architectural superiority inference.",
+  "current_evidence_sha256": "303d0aa2f541dd53c9c41f9693fdaa6b44fd952db35f55d9b13079196c684191",
+  "gate_methods": 7,
+  "valid_differential_scenarios": 15,
+  "paired_observations_per_condition": 3,
+  "measured_source_archive": "observations-2026-10-27-sources.tar.gz",
+  "measured_source_archive_sha256": "de625428d51ee368abbf8e808e3c0804c32982a88060d2d722820e685cc46795"
+}

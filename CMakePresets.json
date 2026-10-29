@@ -47,7 +47,7 @@
     {
       "name": "dev",
       "displayName": "Dev Config (debug + tests + TernaryOS + DPE)",
-      "description": "Local development preset: debug build with tests, TernaryOS, and DPE enabled. Matches the full 405-test suite. Run: cmake --preset dev && cmake --build build-dev && ctest --preset dev",
+      "description": "Local development preset: debug build with tests, TernaryOS, and DPE enabled. Test inventory depends on enabled options. Run: cmake --preset dev && cmake --build build-dev && ctest --preset dev",
       "inherits": "default",
       "binaryDir": "${sourceDir}/build-dev",
       "cacheVariables": {

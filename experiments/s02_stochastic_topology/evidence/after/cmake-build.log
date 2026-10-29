@@ -1,0 +1,7 @@
+[ 33%] Building CXX object CMakeFiles/t81_s02_stochastic_topology.dir/main.cpp.o
+[ 50%] Built target t81_s02_integrity_controls
+[ 66%] Building CXX object CMakeFiles/t81_s02_regression_probe.dir/test_probe.cpp.o
+[ 83%] Linking CXX executable t81_s02_regression_probe
+[ 83%] Built target t81_s02_regression_probe
+[100%] Linking CXX executable t81_s02_stochastic_topology
+[100%] Built target t81_s02_stochastic_topology

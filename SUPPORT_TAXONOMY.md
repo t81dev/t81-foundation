@@ -1,45 +1,38 @@
-# T81 Foundation Support Taxonomy
+# T81 Foundation Support and Surface Classification
 
-This taxonomy explicitly categorizes all top-level directories within the T81 Foundation repository into three strict tiers, governing their relationship to the Deterministic Core Profile (DCP) and standard maintenance guarantees.
+This is a descriptive navigation guide. It does not assign or promote deterministic
+surfaces. The earlier directory-wide three-tier taxonomy conflated file location,
+maintenance, and execution guarantees; use the existing authoritative four-class
+surface model instead.
 
-## Authoritative (DCP Core)
-These directories define the core, bit-exact determinism guarantees of the T81 stack. They are strictly governed, and changes here require formal review and verification.
+## Authoritative classification
 
-* `/core` - The verified execution core (Data Types, ISA, VM).
-* `/spec` - The normative specifications (ISA, VM, Lang, Axion).
-* `/lang` - The T81Lang compiler frontend and standard library.
+[RFC-0048](spec/rfcs/RFC-0048-deterministic-surface-definition-and-governance-boundaries.md)
+defines the classes; the [governance surface register](docs/governance/GOVERNANCE_SURFACE_REGISTER.md)
+and [determinism registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)
+record their application:
 
-## Maintained Support
-These directories provide essential infrastructure, build tools, and verification pathways. They are fully supported but do not define execution semantics.
+1. **Deterministic Core Profile (DCP):** the specifically defined deterministic surfaces with their normative contracts and conformance evidence.
+1. **Governed non-DCP:** policy-bounded surfaces with scoped evidence, without a blanket core determinism claim.
+1. **Experimental:** research implementations or interfaces whose contracts and evidence remain provisional.
+1. **Out of scope:** behavior excluded from the current deterministic/governance claim boundary.
 
-* `/tooling` - Official command-line tools, debuggers, and TUI frontends.
-* `/benchmarks` - Regresssion and performance tracking workloads.
-* `/tests` - Comprehensive test suites (unit, e2e, conformance).
-* `/docs` - System documentation, status boards, and process guides.
-* `/scripts` - CI, governance, and development scripts.
-* `/include` - Public C++ headers for the core API.
+A frozen ISA is not a production-readiness certificate. A passing test, accepted
+RFC, public header, or location outside `experimental/` does not independently
+establish DCP status. Read [SECURITY.md](SECURITY.md) for security evidence limits.
 
-## Experimental / Research (Non-DCP)
-These directories contain research prototypes, advanced conceptual models, and aspirational work. They are explicitly excluded from the Deterministic Core Profile and carry no stability or reproducibility guarantees.
+## Finding the implementation
 
-* `/experimental` - Unverified cognitive tiers, distributed logic, and HanoiVM stubs.
-* `/runtime` - The experimental Trace-JIT compiler and related optimizations.
-* `/experiments` - Exploratory AI and inference integration paths.
-* `/kernel` - Early-stage Axion governance implementation paths and prototypes.
-* `/qemu` - Virtualization targets for TernaryOS boot testing.
-* `/examples` - Non-normative usage demonstrations.
-* `/src` - Partially decoupled stubs (CanonFS, codec logic).
-* `/legacy` - Archived historical code.
-* `/artifacts` - Build output and trace cache.
-* `/assets` - Binary assets (images, logos).
-* `/book` - Narrative user guide.
-* `/cmake` - Build system modules.
-* `/contracts` - Experimental smart-contract mappings.
-* `/internal` - Internal tooling.
-* `/logs` - Audit output.
-* `/notebooks` - Research notebooks.
-* `/pdf` - Rendered documentation.
-* `/third_party` - Embedded dependencies (llama.cpp).
-* `/tools` - Miscellaneous utility scripts.
-* `.devcontainer` - Development environment configuration.
-* `.git`, `.github`, `.t81` - Project management and VCS metadata.
+Use [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) and the CMake targets to trace
+current locations. For example, the interpreter source is `vm/vm.cpp`, CanonFS
+implementations are in `fs/`, Axion is in `kernel/axion/`, and frontend code is
+in `lang/frontend/`; `src/` largely assembles build targets. Some registry path
+labels predate this layout. Preserve their classifications and resolve path drift
+against source, without silently changing governance status.
+
+T81's research mission, canonical H01–H08 lineage, and evidence standards are
+introduced in the [README](README.md) and [continuity charter](docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md).
+Historical market demonstrations, reports, generated logs, and experimental
+hardware proposals are not support or performance guarantees. See the
+[root alignment audit](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md)
+for the inspected snapshot and remaining limitations.

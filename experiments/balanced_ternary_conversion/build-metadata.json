@@ -1,0 +1,26 @@
+{
+  "hypothesis": "H-CONV-01",
+  "native_binary": "/private/tmp/t81-h-conv-native",
+  "native_binary_sha256": "c1495a22392a3198248cce0b1c9f79569172ad0edc74a149bd3880e525998590",
+  "build_command": [
+    "/usr/bin/clang++",
+    "-std=c++23",
+    "-O3",
+    "-DNDEBUG",
+    "-fno-fast-math",
+    "-Wall",
+    "-Wextra",
+    "-Wpedantic",
+    "experiments/balanced_ternary_conversion/native.cpp",
+    "-o",
+    "/private/tmp/t81-h-conv-native"
+  ],
+  "final_build_exit": 0,
+  "hardware_read_only_command": "sysctl -n hw.model hw.memsize machdep.cpu.brand_string",
+  "hardware_stdout": "Mac14,2\n8589934592\nApple M2\n",
+  "first_build": "3 missing <istream> errors retained in build-attempt-1.log; wrapper cat masked compiler failure at shell level; no successful build claim",
+  "preflight_failure": "Missing native executable; retained oracle/corpus preparation in run/ and traceback in preflight-attempt-1.log",
+  "source_revision": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+  "hanoi_revision": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+  "hanoi_path": "src/ternary_arithmetic_optimization.cweb"
+}

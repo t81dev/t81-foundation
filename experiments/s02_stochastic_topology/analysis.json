@@ -1,0 +1,2018 @@
+{
+  "decision": "REVISE",
+  "decision_basis": "Corrected pilot measurements do not satisfy unchanged architectural-evidence gates; no acceptance/rejection of H2 or Track S termination is warranted.",
+  "hypotheses": {
+    "H1": {
+      "status": "DESCRIPTIVE_ONLY",
+      "comparison": "Model C versus zero-T adaptive control; seeded random scan remains; not proof of general architectural exploration efficiency."
+    },
+    "H2": {
+      "status": "UNTESTED",
+      "comparison": "No task/capacity-matched binary-versus-ternary experiment."
+    },
+    "H3": {
+      "status": "DESCRIPTIVE_ONLY",
+      "comparison": "Same-task local versus fixed heuristics; cost proxy and baseline portfolio incomplete, full architectural advantage untested."
+    }
+  },
+  "data_sha256": "66187852d4704b37b81ec41a155430b506df951dbdf7f3a6242283b12907a4b7",
+  "traces_sha256": "f5a67dfbf5dd096878977eda48ea5d74cf2b627304c82a572534dde3203cbf57",
+  "oracle_verification": {
+    "status": "PASS",
+    "rows_verified": 1260,
+    "trajectories_verified": 315,
+    "states_audited": 63315,
+    "distinct_immutable_problems": 15,
+    "max_cpp_python_reference_difference": 0.0,
+    "oracle": "independent Python binary exhaustive enumeration; ternary equality follows multi-affinity and is exhaustively checked separately on tiny cases",
+    "hardware_or_architectural_advantage_verified": false
+  },
+  "scope": {
+    "planned_vertex_matched_rows": 20160,
+    "executed_priced_rows": 1260,
+    "unexecuted_rows": 18900,
+    "fraction_of_planned_vertex_grid": 0.0625,
+    "planned": {
+      "nodes": [
+        8,
+        12,
+        16,
+        24
+      ],
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "temperatures": [
+        0.1,
+        0.5,
+        1,
+        2
+      ],
+      "couplings": [
+        0.5,
+        1,
+        1.5
+      ],
+      "topology_costs": [
+        0,
+        0.5,
+        1,
+        2,
+        5,
+        10
+      ],
+      "arms": 7
+    },
+    "executed": {
+      "nodes": [
+        8,
+        12,
+        16
+      ],
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "temperatures": [
+        0.1,
+        0.5,
+        1
+      ],
+      "couplings": [
+        1
+      ],
+      "topology_costs": [
+        0,
+        0.5,
+        1,
+        5
+      ],
+      "arms": 7
+    },
+    "omitted_values": {
+      "nodes": [
+        24
+      ],
+      "seeds": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "temperatures": [
+        2
+      ],
+      "couplings": [
+        0.5,
+        1.5
+      ],
+      "topology_costs": [
+        2,
+        10
+      ]
+    },
+    "capacity_matched": "UNTESTED; adding unused nodes is not a matched-task comparison",
+    "field_interval_deviation": "Original specification [-1,1]; original methodology/code and corrected pilot [-0.5,0.5]. No claim of testing the wider field distribution."
+  },
+  "simulated_trajectories": 315,
+  "tables": {
+    "original_slice_N16_T0_5": [
+      {
+        "arm": "Model A",
+        "n": 5,
+        "mean_task_gap": 3.137028409360951,
+        "mean_comm_ops": 606.2,
+        "mean_edge_edits": 0,
+        "mean_proxy_cost_0_5": 806.2,
+        "mean_proxy_cost_5": 806.2,
+        "ground_state_occupancy_fraction": 0.062,
+        "mean_network_task_energy_difference": 0.0
+      },
+      {
+        "arm": "Model B",
+        "n": 5,
+        "mean_task_gap": 2.475997641945008,
+        "mean_comm_ops": 605.8,
+        "mean_edge_edits": 0,
+        "mean_proxy_cost_0_5": 805.8,
+        "mean_proxy_cost_5": 805.8,
+        "ground_state_occupancy_fraction": 0,
+        "mean_network_task_energy_difference": 0.0
+      },
+      {
+        "arm": "Model C",
+        "n": 5,
+        "mean_task_gap": 3.137028409360951,
+        "mean_comm_ops": 607.2,
+        "mean_edge_edits": 0.4,
+        "mean_proxy_cost_0_5": 807.4,
+        "mean_proxy_cost_5": 809.2,
+        "ground_state_occupancy_fraction": 0.062,
+        "mean_network_task_energy_difference": 0.0
+      },
+      {
+        "arm": "Model D",
+        "n": 5,
+        "mean_task_gap": 2.0411174529699827,
+        "mean_comm_ops": 606.6,
+        "mean_edge_edits": 0.4,
+        "mean_proxy_cost_0_5": 806.8,
+        "mean_proxy_cost_5": 808.6,
+        "ground_state_occupancy_fraction": 0,
+        "mean_network_task_energy_difference": -0.4
+      },
+      {
+        "arm": "Central heuristic",
+        "n": 5,
+        "mean_task_gap": 14.960334965553473,
+        "mean_comm_ops": 425.4,
+        "mean_edge_edits": 25.6,
+        "mean_proxy_cost_0_5": 638.2,
+        "mean_proxy_cost_5": 753.4,
+        "ground_state_occupancy_fraction": 0,
+        "mean_network_task_energy_difference": -14.399999999999999
+      },
+      {
+        "arm": "Random control",
+        "n": 5,
+        "mean_task_gap": 3.5644278102740654,
+        "mean_comm_ops": 604.2,
+        "mean_edge_edits": 3.2,
+        "mean_proxy_cost_0_5": 805.8,
+        "mean_proxy_cost_5": 820.2,
+        "ground_state_occupancy_fraction": 0.017,
+        "mean_network_task_energy_difference": -1.6
+      },
+      {
+        "arm": "Zero-T control",
+        "n": 5,
+        "mean_task_gap": 3.3341689234192904,
+        "mean_comm_ops": 606,
+        "mean_edge_edits": 1.2,
+        "mean_proxy_cost_0_5": 806.6,
+        "mean_proxy_cost_5": 812,
+        "ground_state_occupancy_fraction": 0,
+        "mean_network_task_energy_difference": -0.4
+      }
+    ]
+  },
+  "paired_descriptive_effects": [
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 1,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 0.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.8600337941917203,
+      "mean_proxy_cost_difference": 0.6,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 4.300168970958602,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 0.6,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.5959268614419454,
+      "mean_proxy_cost_difference": 0.6,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 2.979634307209727,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.48976234217396736,
+      "mean_proxy_cost_difference": -0.8,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 2.448811710869837,
+          "proxy_cost_difference": -4
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.6037373138338239,
+      "mean_proxy_cost_difference": 0.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 3.0186865691691196,
+          "proxy_cost_difference": -6
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 6
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 2
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 1.2,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 6
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 2.6371321546522077,
+      "mean_proxy_cost_difference": 1,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 5.21324386493359,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 3.291577196859743,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 4.680839711467705,
+          "proxy_cost_difference": 2
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 8,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 2,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 9
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 8,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 0,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 8,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.24199274712266855,
+      "mean_proxy_cost_difference": -1.8,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -1.2099637356133428,
+          "proxy_cost_difference": -9
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 12,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": -1.6,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": -8
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 12,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.08354960862112612,
+      "mean_proxy_cost_difference": -1.6,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": -0.41774804310563063,
+          "proxy_cost_difference": -8
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 12,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.32788750261447214,
+      "mean_proxy_cost_difference": -1,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": -1.6394375130723606,
+          "proxy_cost_difference": -5
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 16,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.0,
+      "mean_proxy_cost_difference": 1.2,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 5,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 5
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 16,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.43488018897502484,
+      "mean_proxy_cost_difference": 1,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": -2.1744009448751243,
+          "proxy_cost_difference": 5
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model D",
+      "baseline": "Model B",
+      "num_nodes": 16,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.6629108555515508,
+      "mean_proxy_cost_difference": 2.4,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": -3.314554277757754,
+          "proxy_cost_difference": 12
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 8,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -1.3475956095801602,
+      "mean_proxy_cost_difference": 0.2,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.03912796649604644,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": -3.7554289219416344,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": -3.0216770924552128,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 8,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -1.3552020912273046,
+      "mean_proxy_cost_difference": -0.4,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0010955582603244807,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": -3.7554289219416344,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": -3
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": -3.0216770924552128,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 8,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.8836166657079391,
+      "mean_proxy_cost_difference": -0.2,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 4,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.03912796649604644,
+          "proxy_cost_difference": -2
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.14431126259395377,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": -0.9226458694702933,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 4.256625981997699,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.9006639869222894,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 12,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -1.4910725758118542,
+      "mean_proxy_cost_difference": -0.8,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": -3.350769387763064,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -4.187310521140201,
+          "proxy_cost_difference": -4
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.08271702984399454,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 12,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.778150399725353,
+      "mean_proxy_cost_difference": -0.8,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 1,
+      "higher_task_gap_count": 2,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": -3.350769387763064,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.10047548799786554,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 2.979634307209727,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -3.6200924060712936,
+          "proxy_cost_difference": -4
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 12,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.6811112205882939,
+      "mean_proxy_cost_difference": -2.2,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": -3.350769387763064,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 3.098303013059285,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 2.8766619562855684,
+          "proxy_cost_difference": -3
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -1.6290235438636493,
+          "proxy_cost_difference": -8
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 2.4103840652233295,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 16,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.3533079235833057,
+      "mean_proxy_cost_difference": 0,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 4,
+      "higher_task_gap_count": 0,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -1.7665396179165285,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 16,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.19714051405833963,
+      "mean_proxy_cost_difference": 0.8,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": -2.9159597166499616,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.11856111999328078,
+          "proxy_cost_difference": 6
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.8375322648006449,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -1.7665396179165285,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 2.740703379480866,
+          "proxy_cost_difference": -2
+        }
+      ]
+    },
+    {
+      "candidate": "Model C",
+      "baseline": "Zero-T control",
+      "num_nodes": 16,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 2.3407011502891577,
+      "mean_proxy_cost_difference": 0.6,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 4,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 3.9318250581193848,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": -2.096795666979304,
+          "proxy_cost_difference": 6
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 5.681881892790907,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.19901048601533233,
+          "proxy_cost_difference": -6
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 3.987583981499469,
+          "proxy_cost_difference": 0
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 4.31394758927601,
+      "mean_proxy_cost_difference": -84.8,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 1,
+      "higher_task_gap_count": 4,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": -86
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 9.041590026611134,
+          "proxy_cost_difference": -82
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 3.0516919119168735,
+          "proxy_cost_difference": -68
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 5.506925468020606,
+          "proxy_cost_difference": -92
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 3.969530539831438,
+          "proxy_cost_difference": -96
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 3.0084012038507923,
+      "mean_proxy_cost_difference": -84,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 1,
+      "higher_task_gap_count": 4,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.41892372456842963,
+          "proxy_cost_difference": -86
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 5.193223678796884,
+          "proxy_cost_difference": -82
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 3.0516919119168735,
+          "proxy_cost_difference": -68
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": -92
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 6.378166703971775,
+          "proxy_cost_difference": -92
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 5.3015516202594934,
+      "mean_proxy_cost_difference": -80.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 7.763109402911034,
+          "proxy_cost_difference": -79
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 5.141849842075546,
+          "proxy_cost_difference": -82
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 8.005140938875442,
+          "proxy_cost_difference": -62
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 5.550468456981509,
+          "proxy_cost_difference": -85
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.047189460453935794,
+          "proxy_cost_difference": -94
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 9.9131134703134,
+      "mean_proxy_cost_difference": -147.3,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 7.527221935800856,
+          "proxy_cost_difference": -160.5
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 12.69017699192396,
+          "proxy_cost_difference": -143.5
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 8.865443517667686,
+          "proxy_cost_difference": -129.5
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 5.694235989160806,
+          "proxy_cost_difference": -159.5
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 14.788488917013693,
+          "proxy_cost_difference": -143.5
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 10.695794627116925,
+      "mean_proxy_cost_difference": -144.1,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 7.527221935800856,
+          "proxy_cost_difference": -160.5
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 4.744992036843163,
+          "proxy_cost_difference": -144.5
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 17.77992432996006,
+          "proxy_cost_difference": -127.5
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 9.71992589045654,
+          "proxy_cost_difference": -144.5
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 13.706908942524,
+          "proxy_cost_difference": -143.5
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 6.983489089208269,
+      "mean_proxy_cost_difference": -148.3,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 5.1082982112324276,
+          "proxy_cost_difference": -160.5
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 3.496425919504757,
+          "proxy_cost_difference": -149.5
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 6.432101062495249,
+          "proxy_cost_difference": -121.5
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 8.584095375508237,
+          "proxy_cost_difference": -166.5
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 11.296524877300671,
+          "proxy_cost_difference": -143.5
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 8.573477237605735,
+      "mean_proxy_cost_difference": -168.2,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 4.761302258141566,
+          "proxy_cost_difference": -177
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 9.426390125052126,
+          "proxy_cost_difference": -139
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 13.02346988636828,
+          "proxy_cost_difference": -167
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 5.666871023567289,
+          "proxy_cost_difference": -180
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 9.989352894899415,
+          "proxy_cost_difference": -178
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 11.823306556192522,
+      "mean_proxy_cost_difference": -168,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 11.63813400829548,
+          "proxy_cost_difference": -177
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 10.595110700031686,
+          "proxy_cost_difference": -139
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 17.68343207554922,
+          "proxy_cost_difference": -166
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 9.73476292471021,
+          "proxy_cost_difference": -180
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 9.46509307237601,
+          "proxy_cost_difference": -178
+        }
+      ]
+    },
+    {
+      "candidate": "Central heuristic",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 9.8790119726131,
+      "mean_proxy_cost_difference": -167.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 8.65805631395086,
+          "proxy_cost_difference": -177
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 8.717530061131654,
+          "proxy_cost_difference": -139
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 6.878486431739631,
+          "proxy_cost_difference": -163
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 10.8542250560046,
+          "proxy_cost_difference": -180
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 14.286762000238753,
+          "proxy_cost_difference": -178
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 1.1031987247641095,
+      "mean_proxy_cost_difference": 4.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.8186784590296785,
+          "proxy_cost_difference": 4
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 3.7554289219416344,
+          "proxy_cost_difference": -2
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0.9418862428492343,
+          "proxy_cost_difference": 9
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 8
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 3.400304242041534,
+      "mean_proxy_cost_difference": 4.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 5,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 3.2123792065873413,
+          "proxy_cost_difference": 4
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 3.7554289219416344,
+          "proxy_cost_difference": -2
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 4.03918569314295,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 5.8023347813528705,
+          "proxy_cost_difference": 9
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.192192607182875,
+          "proxy_cost_difference": 8
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 8,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.05500258159916545,
+      "mean_proxy_cost_difference": 4.4,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 1,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.10095985829205567,
+          "proxy_cost_difference": 4
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 0.007322389591795542,
+          "proxy_cost_difference": -2
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 3
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 4.089071739489478,
+          "proxy_cost_difference": 9
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": -3.922341079377502,
+          "proxy_cost_difference": 8
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 1.701134614124713,
+      "mean_proxy_cost_difference": 1.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 2.8030673227366094,
+          "proxy_cost_difference": 5
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 1.5985836764981194,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 4.104022071388837,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": -3
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.9913320714345722,
+      "mean_proxy_cost_difference": 1.4,
+      "lower_task_gap_count": 1,
+      "equal_task_gap_count": 1,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 1.0342589735635173,
+          "proxy_cost_difference": 5
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 1.7478908598163834,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -0.5672181150689077,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 2.7417286388618685,
+          "proxy_cost_difference": -3
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 12,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": -0.6562745826029918,
+      "mean_proxy_cost_difference": 1.4,
+      "lower_task_gap_count": 3,
+      "equal_task_gap_count": 1,
+      "higher_task_gap_count": 1,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 2.8030673227366094,
+          "proxy_cost_difference": 5
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": -3.098303013059285,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": -2.8766619562855684,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -0.10947526640671512,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": -3
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 0.1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 1.3645782126269395,
+      "mean_proxy_cost_difference": -0.4,
+      "lower_task_gap_count": 0,
+      "equal_task_gap_count": 2,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 2.734807014489153,
+          "proxy_cost_difference": -6
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 2.2991812801146665,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 1.7889027685308783,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 0.0,
+          "proxy_cost_difference": 1
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 0.5,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.4273994009131144,
+      "mean_proxy_cost_difference": -0.4,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 2.56218810987,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": -0.4024406746732474,
+          "proxy_cost_difference": -6
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": 0.014495406702213387,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": 3.2958282365514826,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": -3.3330740738848768,
+          "proxy_cost_difference": 1
+        }
+      ]
+    },
+    {
+      "candidate": "Random control",
+      "baseline": "Model A",
+      "num_nodes": 16,
+      "temperature": 1,
+      "n_problem_seeds": 5,
+      "mean_task_gap_difference": 0.9693691660420807,
+      "mean_proxy_cost_difference": -0.4,
+      "lower_task_gap_count": 2,
+      "equal_task_gap_count": 0,
+      "higher_task_gap_count": 3,
+      "paired_outcomes": [
+        {
+          "seed": 1,
+          "task_gap_difference": 0.07280416062298123,
+          "proxy_cost_difference": 1
+        },
+        {
+          "seed": 2,
+          "task_gap_difference": 1.7731158560849707,
+          "proxy_cost_difference": -6
+        },
+        {
+          "seed": 3,
+          "task_gap_difference": -3.506066779909137,
+          "proxy_cost_difference": 2
+        },
+        {
+          "seed": 4,
+          "task_gap_difference": -0.17664733540098254,
+          "proxy_cost_difference": 0
+        },
+        {
+          "seed": 5,
+          "task_gap_difference": 6.683639928812571,
+          "proxy_cost_difference": 1
+        }
+      ]
+    }
+  ],
+  "rubric": [
+    {
+      "gate": "Complete implemented dynamics and task identity",
+      "status": "PASS FOR DOCUMENTED BOUNDED HEURISTICS",
+      "evidence": "Immutable task coefficients and complete state traces independently audited; actual proposals and scheduling documented."
+    },
+    {
+      "gate": "Equilibrium/ergodic sampling guarantees",
+      "status": "NOT CLAIMED",
+      "evidence": "Adaptive arms are nonequilibrium optimizers; occupancy fraction is not ESS. Fixed tiny-state Metropolis controls are checked separately."
+    },
+    {
+      "gate": "Capacity/rule-matched architectural comparison",
+      "status": "NOT MET",
+      "evidence": "Vertex-matched only; H2 explicitly untested; capacity flag rejects."
+    },
+    {
+      "gate": "Complete cost matching",
+      "status": "NOT MET",
+      "evidence": "Three-term proxy omits weighting/timing of full energy scans, global sorting, RNG, setup/validation and graph storage; auxiliary operation counts disclosed."
+    },
+    {
+      "gate": "Strong baseline/ablation portfolio",
+      "status": "NOT MET",
+      "evidence": "Central correlation-ranking heuristic is not a strong optimized topology/inference portfolio; no trained-frozen, matched binary encoding or full factorial."
+    },
+    {
+      "gate": "Independent instances/power/confirmatory statistics",
+      "status": "NOT MET",
+      "evidence": "Five seeds per size; below reviewer planning floor; no pre-unblinding power calculation. Repriced rows/temperature duplicates do not add replication."
+    },
+    {
+      "gate": "Frozen >=20% full-cost materiality and simultaneous 95% interval",
+      "status": "NOT EVALUABLE",
+      "evidence": "Matched quality/full cost, strong baseline and independent-instance power prerequisites absent. Criterion unchanged, not replaced with a favorable endpoint."
+    },
+    {
+      "gate": "Provenance and reproducibility",
+      "status": "PASS FOR RECORDED LOCAL RUN",
+      "evidence": "Original files preserved; all corrected rows, task coefficients, traces, source hashes and verification commands retained."
+    },
+    {
+      "gate": "Physical hardware advantage",
+      "status": "UNTESTED",
+      "evidence": "No measured joules, hardware realization or area/delay data."
+    }
+  ],
+  "rubric_sha256": "b220e94331fa59e205929890be1f68f1a876e3d728b32c3535a3012970d87353",
+  "statistics": "No p-values, confirmatory confidence claims or equivalence conclusions; five-seed descriptive paired outcomes only."
+}

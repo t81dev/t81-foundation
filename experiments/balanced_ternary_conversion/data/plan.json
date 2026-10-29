@@ -1,0 +1,29 @@
+{
+  "hypothesis": "H-CONV-01",
+  "purpose": "standalone_exploratory",
+  "cases": 1778,
+  "order": [
+    "BC",
+    "CB",
+    "BC",
+    "BC",
+    "CB",
+    "CB"
+  ],
+  "warmup_full_corpus_per_candidate": 1,
+  "paired_batches": 6,
+  "max_active_seconds": 3600,
+  "native_binary_sha256": "c1495a22392a3198248cce0b1c9f79569172ad0edc74a149bd3880e525998590",
+  "sources_sha256": {
+    "run.py": "35d67ca9cb2703a2acc7481552a6b4247c382d634cb01178b4919450fa2588ef",
+    "native.cpp": "3bf42c1c55db5a8bb20b7231b20cd307b9e6c78efa55d68369c36809ac8a5adf",
+    "fixed_extracted.hpp": "2f936d4e7caf746cf08b8dec0497f77b3fde5082bc372feeff45c7cf1c0583b8",
+    "hanoi-source.cweb": "d5c4f508231bc714da95bb43dfdbfc8c1556c82cf0ccde1640b3e35694236f45",
+    "ternary_int_extracted.hpp": "9e716dc7ad45ddb97268a9839636ac74bda15322a4abbe8896599e77ef2305e3",
+    "oracle.py": "9a7d2ec0c6a585278ade201ea5d10dd68c48101bf457bd7adad37b55d4ba5f16",
+    "source/T81Int.hpp": "5fc153736af1cc0b6d90597b847bf7196341a2ac47df583418b52e7e972e65f7",
+    "source/tensor.hpp": "2dd365ec9ca11c51358d1b459ea979bfc68758d89b5276d131aa0f4047ea2bde",
+    "source/dmath_types.hpp": "3f482a2f5ce8d7983b248f61a9312742b42a660f9fa3c17b1ca5b6b415b33718"
+  },
+  "timing": "steady_clock inside one native process; entire identical corpus, output checksum consumption included; I/O outside intervals"
+}

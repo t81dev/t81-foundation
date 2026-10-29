@@ -1,0 +1,46 @@
+{
+  "baseline_merge": "551d5075f35355b9ef96d9ce659d71be0891ee27",
+  "before_regression_methods": 5,
+  "before_failures_including_language_subtests": 6,
+  "before_errors": 0,
+  "after_ctest_targets": 6,
+  "after_ctest_failures": 0,
+  "after_ctest_skips": 0,
+  "after_finding_methods": 5,
+  "after_finding_failures": 0,
+  "cpp_assertions": 1026,
+  "oracle_audit": {
+    "status": "PASS",
+    "rows_verified": 1260,
+    "trajectories_verified": 315,
+    "states_audited": 63315,
+    "distinct_immutable_problems": 15,
+    "max_cpp_python_reference_difference": 0.0,
+    "oracle": "independent Python binary exhaustive enumeration; ternary equality follows multi-affinity and is exhaustively checked separately on tiny cases",
+    "hardware_or_architectural_advantage_verified": false
+  },
+  "historical_files_verified_against_git": 11,
+  "frozen_rubric_unchanged": true,
+  "source_and_data_hashes_match": true,
+  "baseline_failing_checks": [
+    "build / windows-x86_64 / clang-cl",
+    "build / linux-x86_64 / gcc",
+    "build / windows-x86_64 / msvc",
+    "build / linux-arm64 / clang",
+    "build / macos-arm64 / clang",
+    "cxx-std / linux-x86_64 / clang / ON",
+    "gate / tritwise-determinism / avx2-asan",
+    "cxx-std / linux-x86_64 / clang / OFF",
+    "governance-metrics"
+  ],
+  "baseline_pending_checks": [
+    "build / linux-x86_64 / clang",
+    "build / macos-x86_64 / gcc",
+    "build / sanitizers",
+    "Analyze (cpp)"
+  ],
+  "modified_scope": "experiments/s02_stochastic_topology only",
+  "decision": "REVISE",
+  "H2": "UNTESTED",
+  "native_platform": "macOS ARM64; Linux/Windows implications inspected, not executed"
+}

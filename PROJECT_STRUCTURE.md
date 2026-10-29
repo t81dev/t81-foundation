@@ -1,133 +1,49 @@
-# T81 Foundation - Project Structure Overview
+# T81 Foundation — Project Structure
 
-## 📁 Organized Directory Structure
+T81 is an experimental computing architecture and systems research platform.
+This map describes checked-in locations, not evidence that every subsystem is
+integrated, production-ready, or comparatively superior. Begin with the
+[README](README.md), [contributor guide](CONTRIBUTING.md), and [agent instructions](AGENTS.md).
 
-The T81 Foundation project has been organized for professional presentation and efficient development:
+## Research and evidence
 
-### 📋 Core Project Files (Root Directory)
-- **README.md** - Main project documentation
-- **CMakeLists.txt** - Build configuration
-- **LICENSE** - Project license
-- **AGENTS.md** - Development guidelines and rules
-- **PROJECT_STRUCTURE.md** - Project organization guide
+- `docs/research/continuity/`: Master Continuity Charter, canonical H01–H08 register, Hanoi/CWEB lineage, and preserved probes.
+- `docs/research/`: investigation reports and [consolidated evidence](docs/research/consolidation/README.md); historical conclusions retain their pinned scope.
+- `experiments/`: bounded experimental implementations, controls, and raw results. Build flags and portability differ by experiment.
+- `experimental/`: research implementations, including the historical `experimental/hanoi/` import. Historical arithmetic is evidence to test, not a correctness oracle.
+- `benchmarks/`: performance workloads; measured results require equivalent baselines and explicit conditions.
+- `examples/`: runnable examples and experiment adapters; their existence does not promote an interface to the deterministic core.
 
-### 🗂️ Organized Subdirectories
+## Implementation and contracts
 
-```
-📁 T81 Foundation/
-├── 📋 README.md                    # Main project documentation
-├── ⚙️ CMakeLists.txt               # Build configuration
-├── 📜 LICENSE                      # Project license
-├── 📋 AGENTS.md                    # Development guidelines
-├── 📋 PROJECT_STRUCTURE.md         # Project organization guide
-├── 📋 strategic_docs/              # Strategic planning documents
-├── 📊 execution_reports/           # Weekly execution summaries
-├── 🏢 market_analysis/             # Market research and roadmaps
-├── 🛠️ customer_tools/              # ROI calculators and customer tools
-├── 🎯 market-demos/               # Market-specific demo applications
-├── 🔧 src/                        # Source code and development files
-├── 📚 include/                    # Header files and API definitions
-├── 🧪 development_tests/          # Development test files
-├── 📖 docs/                       # Documentation
-└── ⚙️ tools/                      # Development tools
-```
+| Location                     | Role                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------- |
+| `spec/`, `spec/rfcs/`        | Specifications and RFCs; distinguish accepted contracts from drafts                               |
+| `include/t81/`               | Public C++ headers and contracts                                                                  |
+| `vm/`                        | Interpreter, decoder, tensor helpers, JIT and execution support                                   |
+| `isa/`, `codec/`, `crypto/`  | ISA support, encodings, and cryptographic mechanisms                                              |
+| `lang/`                      | Frontend, standard library, and language support                                                  |
+| `kernel/axion/`              | Policy parsing, evaluation, and governance mechanisms                                             |
+| `fs/`                        | CanonFS drivers, interchange, identity, and storage operations                                    |
+| `tools/cli/`, `tools/model/` | CLI commands and model artifact tooling                                                           |
+| `src/`                       | Primarily CMake target assembly; also contains experimental implementations such as `direct_api/` |
+| `inference/`, `ffi/`         | Inference support and language/host interfaces; inspect each build and call path                  |
+| `ternaryos/`, `drivers/`     | Systems and hardware/guest support; no general-purpose OS claim follows                           |
 
-#### 📋 strategic_docs/
-Strategic planning and execution documents
-- `CUSTOMER_ACQUISITION_STRATEGY.md` - Customer acquisition plan
-- `CUSTOMER_ENGAGEMENT_STRATEGY.md` - Customer engagement framework
-- `STRATEGIC_EXECUTION_PLAN.md` - Overall strategic execution plan
+Surface status comes from the [governance register](docs/governance/GOVERNANCE_SURFACE_REGISTER.md)
+and [determinism registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md), not directory names.
+The root [support guide](SUPPORT_TAXONOMY.md) explains this distinction.
 
-#### 📊 execution_reports/
-Weekly execution summaries and progress reports
-- `VERIFICATION_REPORT.md` - Performance verification results
-- `WEEK2_EXECUTION_SUMMARY.md` - Week 2 execution summary
-- `WEEK3_EXECUTION_SUMMARY.md` - Week 3 execution summary
-- `WEEK4_EXECUTION_SUMMARY.md` - Week 4 execution summary
+## Build, tests, and documentation
 
-#### 🏢 market_analysis/
-Market research and application roadmaps
-- `INTEGRATION_ROADMAP.md` - Technical integration roadmap
-- `MARKET_APPLICATION_ROADMAP.md` - Market application strategy
+- `CMakeLists.txt`, `cmake/`, `CMakePresets.json`: authoritative build configuration. Use an out-of-source build; the tracked root `Makefile` is generated and contains machine-specific paths.
+- `tests/`: unit, contract, conformance, fixture, and regression tests. Enabled targets depend on CMake options.
+- `scripts/`, `.github/`: validation tooling, workflows, and contributor templates. Workflow definitions are not evidence that a particular run passed.
+- `docs/`: research, governance, references, maintenance handoff, and historical records.
+- `development_tests/`, `execution_reports/`, `strategic_docs/`, `market_analysis/`, `customer_tools/`, `market-demos/`: additional development and historical product/market material. These names and documents do not establish validated customer, performance, or security capabilities.
+- `artifacts/`, `logs/`, root `build.log`, and root sample records: recorded/generated material; inspect provenance before treating it as reproducible evidence.
+- `third_party/`: external dependencies. Some dependencies are fetched during configuration; see [build instructions](CONTRIBUTING.md).
 
-#### 🛠️ customer_tools/
-Customer-facing tools and ROI calculators
-- `roi_calculators/` - Financial analysis tools
-  - `financial_services_roi.py` - Financial services ROI calculator
-  - `healthcare_roi.py` - Healthcare ROI calculator
-
-#### 🎯 market-demos/
-Market-specific demo applications
-- `financial_services/` - HFT trading demo
-  - `trading_demo.cpp` - High-frequency trading demonstration
-- `healthcare/` - Medical diagnosis demo
-  - `diagnosis_demo.cpp` - Medical diagnosis demonstration
-- `legal_services/` - Document analysis demo
-  - `document_analysis_demo.cpp` - Legal document analysis
-  - `legal_demo` - Legal demo executable
-- `industrial/` - Safety monitoring demo
-  - `safety_monitoring_demo.cpp` - Industrial safety monitoring
-  - `industrial_demo` - Industrial demo executable
-- `customer_demo_system.cpp` - Unified customer demo system
-
-#### 🔧 src/
-Source code and development files
-- `direct_api/` - Direct API implementations
-- `real_integration/` - Real T81 integration
-- `simplified_integration/` - Simplified integration approach
-
-#### 📚 include/
-Header files and API definitions
-- `t81/` - T81 API headers
-- `t81/direct_api/` - Direct API definitions
-
-#### 🧪 development_tests/
-Development test files and debugging tools
-- `debug_canonfs.cpp` - CanonFS debugging tool
-- `quick_debug.cpp` - Quick debugging utility
-- `test_direct_api*.cpp` - Direct API test files
-- `test_minimal_direct_api.cpp` - Minimal direct API test
-- `test_real_direct_api.cpp` - Real direct API test
-
-#### 📖 docs/
-Project documentation
-
-#### ⚙️ tools/
-Development tools and utilities
-- `cli/` - Command-line interface tools
-  - `core/` - Essential CLI tools (main, debugger, drivers, engines)
-  - `ai_tools/` - AI and determinism tools (AI systems, training, optimization)
-  - `canonfs_tools/` - CanonFS-specific tools (optimization, performance)
-  - `bundle_tools/` - Bundle management tools (integration, formatting)
-  - `experimental/` - Experimental and testing tools
-  - `ai/` - AI CLI components
-
-## 🎯 Clean Organization Benefits
-
-### Professional Presentation
-- **Clean Root Directory:** Only essential project files visible
-- **Logical Grouping:** Related documents organized together
-- **Easy Navigation:** Clear structure for team members and partners
-
-### Efficient Development
-- **Strategic Planning:** All strategy documents in one place
-- **Progress Tracking:** Execution reports organized by week
-- **Market Focus:** Customer tools and demos clearly separated
-- **Technical Excellence:** Source code properly organized
-
-### Customer Engagement Ready
-- **Professional Appearance:** Clean structure for customer presentations
-- **Easy Access:** Customer tools and demos readily available
-- **Strategic Alignment:** Market analysis and strategy documents organized
-
-## 🚀 Next Steps
-
-The project structure is now organized for:
-- **Customer Demos:** Professional presentation ready
-- **Development:** Efficient code organization
-- **Strategic Planning:** Clear document structure
-- **Team Collaboration:** Logical file organization
-
----
-
-**T81 Foundation - Organized for Excellence and Professional Presentation**
+No files or directories are relocated by this guide. Root additions and governance
+changes remain subject to the [authority model](docs/governance/SPEC_AUTHORITY_MODEL.md).
+See the [root audit](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) for unresolved historical and build-metadata issues.

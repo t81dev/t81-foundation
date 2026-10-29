@@ -1,5 +1,7 @@
 # T81 Foundation Comprehensive Capabilities Report
 
+> **Historical report — qualified October 27, 2026.** The original body is preserved as a dated description, not a current implementation or security certification. Claims of production readiness, universal determinism, complete integration, or capability inferred solely from RFCs require source and test evidence. Use the [current research overview](README.md), [surface register](docs/governance/GOVERNANCE_SURFACE_REGISTER.md), and [alignment audit](docs/research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md) for present interpretation.
+
 **Generated:** 2026-03-19  
 **Scope:** All RFCs in `spec/rfcs/` directory  
 **Total RFCs Analyzed:** 51  

@@ -14,10 +14,12 @@
 
 2. **Durable Witness Audit & Security Corrections**:
    - Expanded HMAC signature coverage in `witness.py` and `verify.py` to sign `witness_id`, `payload_hash`, `total_amount`, and `timestamp` alongside `tx_id`, `authority_version`, and `effect_id`. Tampering with any unsigned metadata field now triggers `INVALID_RECEIPT_SIGNATURE`.
-   - Multi-process concurrency tests (`multiprocessing`) confirmed atomic SQLite uniqueness constraints block duplicate submissions across separate OS processes, and boundary revocation races immediately stop transaction admission.
+   - **Stored Authority Limit Enforcement**: Enforced stored DB authority policy limits in `witness.py`. Caller-provided limits can only further restrict policy bounds (`min(stored, caller)`) and cannot relax stored authority.
+   - **Input Validation**: Malformed or invalid monetary inputs (negative prices, zero quantity, booleans, floats) are rejected cleanly with `INVALID_TRANSACTION_INPUT`.
+   - **Database Inspection Safeguard**: Verifying evidence with an explicitly supplied `--db` path that does not exist or is unreadable fails verification with `MISSING_WITNESS_DATABASE`.
+   - **Status Separation & Offline Verification**: `verify_evidence` explicitly disaggregates `crypto_authentic`, `authorization_valid`, `witness_committed`, and `effect_observed`. Offline/detached signature verification returns `DETACHED_OFFLINE_SIGNATURE_ONLY` (`valid: False`, `witness_committed: False`) to prevent promoting signature validity to store commitment.
    - **Rollback Vulnerability Confirmed**: Restoring an older witness SQLite snapshot wipes transaction history, allowing previously committed transaction IDs to be re-submitted and issued new valid receipts. Local witness database state cannot resist rollback without an external monotonic checkpoint.
-   - **Offline Verification Limitations**: Verifying evidence without `--db` checks cryptographic signature validity, but cannot detect uncommitted "phantom" receipts. Querying the witness store is strictly required.
-   - **DB Record vs Physical Effect**: A database record proves an internal SQLite state transition, but does not authenticate physical external world execution (e.g. shipping disbursement) without separate sensor/audit proof.
+   - **DB Record vs Physical Effect**: A database record proves an internal SQLite state transition (`witness_committed: True`), but does not authenticate physical external world execution (`effect_observed: False`) without separate sensor/audit proof.
 
 ---
 

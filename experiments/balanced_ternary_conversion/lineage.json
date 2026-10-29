@@ -1,0 +1,19 @@
+{
+  "Hanoi": {
+    "revision": "59205d76db4aca3da7c0bdc521924b8f9bc52cc3",
+    "path": "src/ternary_arithmetic_optimization.cweb",
+    "original_git_blob": "7132efaed9346526d1b4ad3bc1c593e0a71ee0d3",
+    "snapshot_sha256": "d5c4f508231bc714da95bb43dfdbfc8c1556c82cf0ccde1640b3e35694236f45",
+    "snapshot_transformation": "One extra trailing LF added by source capture; removing one final LF recovers exact original Git blob. Arithmetic/source content otherwise identical. Snapshot was frozen with this LF before collection.",
+    "executed": false
+  },
+  "current_target": {
+    "revision": "0662e0e637f47168e56ca4ddd66e8ee877473b38",
+    "files": [
+      "include/t81/tensor.hpp",
+      "include/t81/types/T81Int.hpp",
+      "include/t81/types/detail/dmath_types.hpp"
+    ],
+    "scope": "Tensor private DFixed conversion; not public T81Fixed nearest-round constructor or T81Float binary64 conversion"
+  }
+}

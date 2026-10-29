@@ -1,0 +1,33 @@
+{
+  "baseline_merge": "551d5075f35355b9ef96d9ce659d71be0891ee27",
+  "generated_at_utc": "2026-10-26T20:46:33.026283+00:00",
+  "source_sha256": {
+    "stochastic_topology.hpp": "f13443c1eb374dbb2272fe873204732fefa3e1275a2cadfdec67462eec6fd8fb",
+    "main.cpp": "29ecdcd648f046caa184093844f36f6177c434554cbb08631db14650c8d16612",
+    "oracle.py": "90d84eef4db2fc21dfe6a23a92ef426272502a57c0a349f87caa2408d195628a",
+    "test_oracle.py": "20cf643a158e161dc23f24cd603e3ef1b66e9b737e35c4ef8ee08405b2af8f9d",
+    "analyze_results.py": "a4473e2ef124a41f614f09ba2a481a0f844a687787dc3821da85d835e8808ea1",
+    "regenerate.py": "7fbc171e1ce11fcf54b0b3918dd315bb137c97825f2af3bfc494eed8c7b826ee"
+  },
+  "runner_sha256": "d21352cdce7826cdb1f92227e399f70601b9e24e0b2d4f0a87949c4df0268b3d",
+  "runner_path_recorded": "/private/tmp/t81-s02-integrity-build/t81_s02_stochastic_topology",
+  "invocation": "RUNNER <temporary-results.json> <temporary-traces.jsonl>",
+  "stdout": "S02 corrected pilot: 315 trajectories, 1260 priced rows\n",
+  "stderr": "",
+  "python": "3.14.3",
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "result_sha256": "66187852d4704b37b81ec41a155430b506df951dbdf7f3a6242283b12907a4b7",
+  "compressed_trace_sha256": "f5a67dfbf5dd096878977eda48ea5d74cf2b627304c82a572534dde3203cbf57",
+  "uncompressed_trace_sha256": "1f318e82292f78446084fab98665f831e261f8632c96232f58b3beb3c8d4e1fd",
+  "independent_oracle_audit": {
+    "status": "PASS",
+    "rows_verified": 1260,
+    "trajectories_verified": 315,
+    "states_audited": 63315,
+    "distinct_immutable_problems": 15,
+    "max_cpp_python_reference_difference": 0.0,
+    "oracle": "independent Python binary exhaustive enumeration; ternary equality follows multi-affinity and is exhaustively checked separately on tiny cases",
+    "hardware_or_architectural_advantage_verified": false
+  },
+  "physical_performance_claim": false
+}

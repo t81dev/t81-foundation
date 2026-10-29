@@ -1,10 +1,12 @@
 # T81 Handoff
 
+The [current research overview](../README.md) and [Master Continuity Charter](research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md) frame the program. This handoff describes supporting runtime maintenance, not a comparative architecture verdict or a replacement for canonical H01–H08. See the [alignment audit](research/ROOT_DOCUMENTATION_ALIGNMENT_AUDIT.md).
+
 This document is the shortest practical handoff for a new maintainer or serious contributor.
 
 ## T81 in one paragraph
 
-T81 is a deterministic, policy-gated runtime for auditable computation, built on a ternary-native execution model, immutable CanonFS storage, and Axion policy enforcement. The project also includes an in-progress guest OS and bare-metal kernel direction, but the clearest usable value today is: governed execution, reproducible traces, content-addressed artifacts, a small bounded AI OS-object family, and a spec-first architecture that treats determinism as a system property rather than a best-effort runtime flag.
+T81 is an experimental computing architecture and systems research platform investigating alternative representations and governed computation. Its deterministic VM/runtime, CanonFS artifact identity, and Axion policy mechanisms are research instruments with surface-specific evidence. The project also includes an in-progress guest OS and bare-metal kernel direction, but the clearest usable value today is: governed execution, reproducible traces, content-addressed artifacts, a small bounded AI OS-object family, and a spec-first architecture that treats determinism as a system property rather than a best-effort runtime flag.
 
 ## What is real today
 

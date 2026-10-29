@@ -1,0 +1,10689 @@
+{
+  "seed": 20261028,
+  "cases": [
+    {
+      "bits": "00000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "00000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "00000002",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "00400000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "0049ab72",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0049ab73",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0049ab74",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0049ab75",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00565ab9",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "006e812b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "006e812c",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "006e812d",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "006e812e",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "007ffffe",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "007fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "00800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "00800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "009356e5",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "009356e6",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "009356e7",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "009356e8",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00b82c9e",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00b82c9f",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00b82ca0",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00b82ca1",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00dd0258",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00dd0259",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00dd025a",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00dd025b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "00ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "01000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "01000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0100ec08",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0100ec09",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0100ec0a",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0100ec0b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "017fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "01800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "01800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0180ec08",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0180ec09",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0180ec0a",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "0180ec0b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "018a2176",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "018a2177",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "018a2178",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "018a2179",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "01d98bbd",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "01ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "02000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "02000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "022ef730",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "022ef731",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "022ef732",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "022ef733",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "023391e7",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "023391e8",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "023391e9",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "023391ea",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "027fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "02800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "02800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "02ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "03000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "03000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0378dbe4",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "037fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "03800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "03800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "03ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "04000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "04000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "047fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "04800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "04800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "04ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "05000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "05000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "057fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "05800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "05800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "05ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "06000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "06000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "067fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "06800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "06800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "06f24452",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "06ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "07000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "07000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "077fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "07800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "07800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "07ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "08000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "08000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "087fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "08800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "08800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0880a8fd",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "08ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "09000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "09000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "097fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "09800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "09800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "099fdc8f",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "09acaf35",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "09ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0ba165ec",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "0bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0dc4e20f",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "0dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0e7f8fc4",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "0e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "0fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "10000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "10000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "107fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "10800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "10800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "10ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "11000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "11000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "117fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "11800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "11800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "11a8b702",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "11ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "12000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "12000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "127fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "12800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "12800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "12ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "13000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "13000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "137fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "13800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "13800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "13ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "14000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "14000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "147fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "14800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "14800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "14ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "15000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "15000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "155cf521",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "157fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "15800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "15800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "15ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "16000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "16000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "161420b9",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "167fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "16800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "16800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "16ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "17000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "17000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "177fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "17800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "17800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "17ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "18000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "18000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "187fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "18800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "18800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "18ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "19000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "19000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "197fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "19800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "19800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "198c5ccf",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "19ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1c17faa7",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "1c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1dbf12af",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "1dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "1fc236a9",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "1fc236aa",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "1fc236ab",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "1fc236ac",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "1fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "20000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "20000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "207fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "20800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "20800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "20ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "21000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "21000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "217fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "21800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "21800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "21ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "22000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "22000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "221f68b0",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "227fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "22800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "22800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "22881c38",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "22ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "23000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "23000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "237fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "23800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "23800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "23ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "24000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "24000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "243a4440",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "2457322f",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "247fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "24800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "24800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "24ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "25000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "25000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "257fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "25800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "25800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "25ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "26000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "26000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "267fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "26800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "26800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "26ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "27000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "27000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "277fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "27800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "27800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "27dac224",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "27e2160c",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "27ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "28000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "28000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "287fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "28800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "28800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "28ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "29000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "29000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "297fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "29800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "29800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "29a01b17",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "29ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2bfac579",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "2bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2d0b5f94",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "2d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "2fb47940",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "2fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "30000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "30000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "307fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "30800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "30800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "30ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "31000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "31000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "317fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "31800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "31800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "31ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "32000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "32000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "321356e5",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "321356e6",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "321356e7",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "321356e8",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "32360d5d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "327fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "32800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "32800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "32ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "33000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "33000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "337fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "33800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "33800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "33ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "34000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "34000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "343fd35d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "347fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "34800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "34800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "34ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "35000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "35000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "357fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "35800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "35800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "35c246ae",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "35ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "36000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "36000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "364ea053",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "367f6230",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "367fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "36800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "36800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "36f0fac6",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "36ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "37000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "37000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3768da00",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "377fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "37800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "37800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "37ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "38000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "38000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "387fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "38800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "38800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "38ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "39000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "39000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "397fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "39800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "39800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "39ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3b7efb35",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "3b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3bb2fa94",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "3bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3c96a56d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "3cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3e800000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "3e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3eaaaaab",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "3effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3f000000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "3f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "3f351a7d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "3f400000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "3f7ffffe",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "3f7fffff",
+      "tags": [
+        "binary32_exponent_boundary",
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "3f800000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer",
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "3f800001",
+      "tags": [
+        "binary32_exponent_boundary",
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "3f800002",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "3fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "40000000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "40000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "40400000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "407fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "40800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "40800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "40ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "41000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "41000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "417fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "41800000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "41800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "41ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "42000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "42000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "427fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "42800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "42800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "428552d7",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "42ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "43000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "43000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "434a6858",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "437fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "43800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "43800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "43ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "44000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "44000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "447fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "44800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "44800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "44ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "45000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "45000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "457fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "45800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "45800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "45ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "46000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "46000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "467fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "46800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "46800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "46ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "47000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "47000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "477fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "47800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "47800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "47ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "48000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "48000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "487fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "48800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "48800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "48ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "49000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "49000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "497fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "49800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "49800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "49ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4aa21fbb",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "4affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4c645041",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "4c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4c8777ec",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "4cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4e29f5eb",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "4e77c125",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "4e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "4fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "50000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "50000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "507fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "50800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "50800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "50ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "51000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "51000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "517fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "51800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "51800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "51ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "52000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "52000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "527fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "52800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "52800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "52ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "53000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "53000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "537fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "53800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "53800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "53ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "54000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "54000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "54345773",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "547fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "54800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "54800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "54ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "55000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "55000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "550d132c",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "557fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "55800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "55800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "55f22f58",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "55ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "56000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "56000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "567fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "56800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "56800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "56ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "57000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "57000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "577fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "57800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "57800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "57ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "58000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "58000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "587fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "58800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "58800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "58c246ae",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "58ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "59000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "59000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "597fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "59800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "59800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "59ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5a0a1bd0",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "5a53d281",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "5a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5e3182a1",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "5e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "5fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "60000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "60000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "607fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "60800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "60800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "60ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "61000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "61000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "617fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "61800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "61800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "61ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "62000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "62000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "627fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "62800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "62800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "62be5b22",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "62ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "63000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "63000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "637fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "63800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "63800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "63ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "64000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "64000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "647fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "64800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "64800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "64eab85a",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "64ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "65000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "65000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "657fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "65800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "65800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "65ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "66000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "66000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "667fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "66800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "66800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "66ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "67000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "67000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "677c01cf",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "677fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "67800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "67800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "67ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "68000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "68000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6842b8eb",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "687fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "68800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "68800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "68ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "69000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "69000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "697fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "69800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "69800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "69ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6a3b1745",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "6a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6ae68167",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "6affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6b7ee83f",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "6b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "6fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "70000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "70000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "707fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "70800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "70800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "70ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "71000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "71000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "717fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "71800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "71800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "71ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "72000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "72000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "727fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "72800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "72800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "72ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "73000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "73000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "737fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "73800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "73800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "73ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "74000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "74000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "747fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "74800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "74800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "74ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "75000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "75000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "757fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "75800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "75800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "758e5cf0",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "75997e56",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "75ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "76000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "76000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "767fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "76800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "76800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "76badf85",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "76ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "77000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "77000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "777fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "77800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "77800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "77ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "78000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "78000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "787fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "78800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "78800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "78ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "79000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "79000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "797fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "79800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "79800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "79ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7c5b60ed",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "7c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7cd902e1",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "7cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7e35157f",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "7e54c548",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "7e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "7f7fffff",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "7f800000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "7f800001",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "7fc00000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "7fffffff",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "80000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "80000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "80000002",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "80400000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "8049ab72",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8049ab73",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8049ab74",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8049ab75",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8054b2c9",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "806e812b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "806e812c",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "806e812d",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "806e812e",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "807ffffe",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "807fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "80800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "80800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "809356e5",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "809356e6",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "809356e7",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "809356e8",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80b82c9e",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80b82c9f",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80b82ca0",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80b82ca1",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80dd0258",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80dd0259",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80dd025a",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80dd025b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "80ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "81000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "81000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8100ec08",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8100ec09",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8100ec0a",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8100ec0b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "817fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "81800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "81800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8180ec08",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8180ec09",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8180ec0a",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "8180ec0b",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "818a2176",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "818a2177",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "818a2178",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "818a2179",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "81ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "82000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "82000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "822ef730",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "822ef731",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "822ef732",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "822ef733",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "823391e7",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "823391e8",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "823391e9",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "823391ea",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "827fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "82800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "82800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "82df30f2",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "82ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "83000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "83000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "837fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "83800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "83800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "83ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "84000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "84000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "847fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "84800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "84800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "84ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "85000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "85000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "857fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "85800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "85800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "85ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "86000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "86000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "864b32fb",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "867fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "86800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "86800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "86ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "87000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "87000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "877fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "87800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "87800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "87ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "88000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "88000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "887fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "88800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "88800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "88ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "89000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "89000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "897fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "89800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "89800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8984912e",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "89ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8a6acde1",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "8a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8ef89de6",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "8effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "8fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "90000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "90000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9040e1aa",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "907fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "90800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "90800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "90ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "91000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "91000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "917fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "91800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "91800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "91ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "92000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "92000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "927fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "92800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "92800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "92ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "93000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "93000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "937fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "93800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "93800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "93ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "94000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "94000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9407f567",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "947fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "94800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "94800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "94ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "95000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "95000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "956b5ff2",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "957fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "95800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "95800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "95baafc6",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "95c76e16",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "95ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "96000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "96000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "967fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "96800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "96800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "96ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "97000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "97000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "977fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "97800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "97800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "97ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "98000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "98000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "987fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "98800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "98800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "98b0b687",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "98ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "99000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "99000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "997fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "99800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "99800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "99ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9a000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9a000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9a7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9a800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9a800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9affffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9b000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9b000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9b7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9b800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9b800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9bffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9c000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9c000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9c04518c",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "9c7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9c800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9c800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9cffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9d000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9d000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9d7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9d800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9d800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9dffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9e000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9e000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9e384466",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "9e7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9e800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9e800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9effffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9f000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9f000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9f7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9f800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9f800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "9fc236a9",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "9fc236aa",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "9fc236ab",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "9fc236ac",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "9fffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a0000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a0000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a07fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a0800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a0800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a08c0029",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "a0ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a1000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a1000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a17fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a1800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a1800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a1fe4a9d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "a1ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a2000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a2000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a27fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a2800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a2800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a2ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a3000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a3000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a36e6fde",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "a37fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a3800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a3800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a3ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a4000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a4000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a47fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a4800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a4800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a4ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a5000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a5000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a57fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a5800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a5800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a5ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a6000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a6000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a67fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a6800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a6800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a6ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a7000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a7000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a77fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a7800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a7800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a7835647",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "a7ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a8000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a8000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a808be48",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "a87fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a8800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a8800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a8e98bd1",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "a8ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a9000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a9000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a97fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a9800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a9800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "a9ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aa000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aa000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aa7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aa800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aa800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aaffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ab000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ab000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ab7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ab800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ab800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "abffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ac000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ac000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ac7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ac800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ac800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "acffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ad000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ad000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ad7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ad800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ad800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "adffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ae000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ae000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ae7b4701",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "ae7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ae800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ae800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "aeffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "af000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "af000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "af058d90",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "af1ccc2d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "af7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "af800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "af800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "afffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b0000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b0000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b0605946",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "b07fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b0800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b0800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b0986fcc",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "b0ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b1000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b1000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b17fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b1800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b1800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b1ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b2000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b2000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b21356e5",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "b21356e6",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "b21356e7",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "b21356e8",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "b27fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b2800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b2800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b2ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b3000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b3000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b37fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b3800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b3800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b3ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b4000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b4000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b47fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b4800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b4800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b4ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b5000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b5000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b57fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b5800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b5800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b5ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b6000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b6000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b60ad98c",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "b67fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b6800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b6800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b6ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b7000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b7000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b77fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b7800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b7800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b7ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b8000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b8000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b87fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b8800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b8800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b8ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b9000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b9000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b97cebcf",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "b97fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b9800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b9800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "b9a04a29",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "b9ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ba000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ba000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ba7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ba800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ba800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "baffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bb000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bb000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bb7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bb800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bb800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bbbcc7c2",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "bbffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bc000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bc000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bc5ee1fe",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "bc7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bc800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bc800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bcc76bcf",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "bcffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bd000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bd000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bd7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bd800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bd800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bdffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "be000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "be000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "be7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "be800000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "be800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "beaaaaab",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "beffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bf000000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "bf000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "bf400000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "bf7ffffe",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "bf7fffff",
+      "tags": [
+        "binary32_exponent_boundary",
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "bf800000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer",
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "bf800001",
+      "tags": [
+        "binary32_exponent_boundary",
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "bf800002",
+      "tags": [
+        "near_grid_or_half_grid_boundary"
+      ]
+    },
+    {
+      "bits": "bfe006c4",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "bfffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c0000000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "c0000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c005a217",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c0400000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "c07fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c0800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c0800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c0ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c1000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c1000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c1047599",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c17fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c1800000",
+      "tags": [
+        "binary32_exponent_boundary",
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "c1800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c1ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c2000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c2000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c27fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c2800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c2800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c2ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c3000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c3000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c37fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c3800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c3800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c3ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c4000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c4000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c47fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c4800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c4800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c4ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c5000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c5000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c57fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c5800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c5800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c5ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c6000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c6000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c6799b49",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c67fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c6800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c6800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c6d26e82",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c6dbf050",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c6ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c7000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c7000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c77fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c7800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c7800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c7ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c8000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c8000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c87fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c8800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c8800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c8ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c9000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c9000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c9154b3b",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c96f3e52",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "c97fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c9800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c9800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "c9ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ca000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ca000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ca7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ca800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ca800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "caa8e58e",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "caffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cb000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cb000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cb7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cb800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cb800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cbffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cc000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cc000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cc7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cc800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cc800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ccffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cd000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cd000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cd7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cd800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cd800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cdffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ce000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ce000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ce52550d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "ce7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ce800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ce800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ceee2fc4",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "ceffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cf000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cf000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cf7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cf800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cf800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "cfffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d0000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d0000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d07fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d0800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d0800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d0ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d1000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d1000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d17fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d1800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d1800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d1ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d2000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d2000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d2641ad6",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "d27fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d2800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d2800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d2ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d3000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d3000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d336173d",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "d37fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d3800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d3800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d3de192b",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "d3ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d4000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d4000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d47fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d4800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d4800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d4ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d5000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d5000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d57fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d5800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d5800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d5d7ca30",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "d5ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d6000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d6000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d67fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d6800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d6800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d68c9f49",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "d6ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d7000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d7000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d77fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d7800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d7800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d7ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d8000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d8000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d87fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d8800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d8800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d8ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d9000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d9000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d96d8d65",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "d97fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d9800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d9800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "d9ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "da000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "da000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "da487900",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "da7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "da800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "da800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "daffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "db000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "db000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "db7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "db800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "db800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dbffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dc000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dc000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dc7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dc800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dc800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dcffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dd000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dd000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dd379200",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "dd7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dd800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dd800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ddffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "de000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "de000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "de7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "de800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "de800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "deffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "df000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "df000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "df7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "df800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "df800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "dfffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e0000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e0000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e07fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e0800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e0800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e0ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e1000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e1000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e17fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e1800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e1800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e1ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e2000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e2000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e27fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e2800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e2800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e2ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e3000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e3000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e37fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e3800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e3800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e3ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e4000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e4000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e45024f7",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "e47fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e4800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e4800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e4ab8164",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "e4ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e5000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e5000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e57fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e5800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e5800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e5a5dc46",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "e5ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e6000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e6000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e67fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e6800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e6800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e6f7ec77",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "e6ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e7000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e7000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e77fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e7800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e7800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e7ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e8000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e8000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e87fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e8800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e8800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e8ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e9000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e9000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e97fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e9800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e9800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "e9ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ea000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ea000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ea7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ea800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ea800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eaffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eb000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eb000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eb365f62",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "eb7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eb800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eb800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ebffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ec000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ec000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ec7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ec800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ec800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ecffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ed000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ed000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ed13d4eb",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "ed73acd7",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "ed7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ed800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ed800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "edffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ee000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ee000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ee7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ee800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ee800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eeffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ef000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ef000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ef7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ef800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ef800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "eff93249",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "efffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f0000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f0000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f07fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f0800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f0800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f0ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f1000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f1000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f11167bd",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "f17fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f1800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f1800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f1ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f2000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f2000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f232d1e4",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "f27fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f2800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f2800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f2ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f3000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f3000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f37fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f3800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f3800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f3a5dc2b",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "f3ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f4000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f4000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f47fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f4800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f4800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f4ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f5000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f5000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f57fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f5800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f5800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f5ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f6000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f6000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f67fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f6800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f6800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f6ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f7000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f7000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f77fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f7800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f7800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f7ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f8000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f8000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f87fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f8800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f8800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f889dc8c",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "f8f6c236",
+      "tags": [
+        "seeded_random_finite"
+      ]
+    },
+    {
+      "bits": "f8ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f9000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f9000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f97fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f9800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f9800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "f9ffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fa000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fa000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fa7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fa800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fa800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "faffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fb000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fb000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fb7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fb800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fb800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fbffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fc000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fc000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fc7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fc800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fc800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fcffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fd000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fd000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fd7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fd800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fd800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fdffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fe000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fe000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fe7fffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fe800000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "fe800001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "feffffff",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ff000000",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ff000001",
+      "tags": [
+        "binary32_exponent_boundary"
+      ]
+    },
+    {
+      "bits": "ff7fffff",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "ff800000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "ff800001",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "ffc00000",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    },
+    {
+      "bits": "ffffffff",
+      "tags": [
+        "explicit_special_fraction_integer"
+      ]
+    }
+  ]
+}

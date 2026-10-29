@@ -1,0 +1,47 @@
+{
+  "status": "REPRODUCTION OF INVALID ORIGINAL PACKET; NOT VALID HYPOTHESIS EVIDENCE",
+  "ground_states": [
+    {
+      "N": 8,
+      "seed": 1,
+      "independent_original_python_reference": -8.376135997569136,
+      "stored_reference_values": [
+        -8.37614
+      ]
+    },
+    {
+      "N": 8,
+      "seed": 2,
+      "independent_original_python_reference": -9.554696935154245,
+      "stored_reference_values": [
+        -8.37614
+      ]
+    }
+  ],
+  "reported_table_vs_stored_data": {
+    "A": {
+      "energy_error": 2.1915560000000003,
+      "comm_ops": 599.2,
+      "topology_update_ops": 0,
+      "total_cost": 799.2
+    },
+    "Centralized": {
+      "energy_error": 1.42773,
+      "comm_ops": 417,
+      "topology_update_ops": 304,
+      "total_cost": 769
+    }
+  },
+  "restricted_random_indices": {
+    "8": {
+      "draw_triples": 64,
+      "all_u_v_opposite_parity": true,
+      "all_u_w_same_parity": true
+    },
+    "16": {
+      "draw_triples": 64,
+      "all_u_v_opposite_parity": true,
+      "all_u_w_same_parity": true
+    }
+  }
+}

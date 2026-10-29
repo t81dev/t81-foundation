@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="(empty)"
+	tests="6"
+	failures="0"
+	disabled="0"
+	skipped="0"
+	hostname=""
+	time="13"
+	timestamp="2026-10-26T16:46:33"
+	>
+	<testcase name="t81_s02_integrity_controls" classname="t81_s02_integrity_controls" time="0.013276" status="run">
+		<properties/>
+		<system-out>{"status":"PASS","assertions":1026,"scope":"S02 RNG/cache/objective/configuration/cost/trace controls"}
+</system-out>
+	</testcase>
+	<testcase name="t81_s02_stochastic_topology_test" classname="t81_s02_stochastic_topology_test" time="5.93674" status="run">
+		<properties/>
+		<system-out>S02 corrected pilot: 315 trajectories, 1260 priced rows
+{
+  "status": "PASS",
+  "rows_verified": 1260,
+  "trajectories_verified": 315,
+  "states_audited": 63315,
+  "distinct_immutable_problems": 15,
+  "max_cpp_python_reference_difference": 0.0,
+  "oracle": "independent Python binary exhaustive enumeration; ternary equality follows multi-affinity and is exhaustively checked separately on tiny cases",
+  "hardware_or_architectural_advantage_verified": false
+}
+</system-out>
+	</testcase>
+	<testcase name="t81_s02_sampling_controls" classname="t81_s02_sampling_controls" time="0.15472" status="run">
+		<properties/>
+		<system-out>test_bounded_reduction_full_small_word_space (__main__.Sampling.test_bounded_reduction_full_small_word_space) ... ok
+test_fixed_graph_metropolis_target_and_proposal_symmetry (__main__.Sampling.test_fixed_graph_metropolis_target_and_proposal_symmetry) ... ok
+test_indices_not_forced_to_parity_sublattices (__main__.Sampling.test_indices_not_forced_to_parity_sublattices) ... ok
+test_partition_function_known_one_spin (__main__.Sampling.test_partition_function_known_one_spin) ... ok
+test_range_rejects_invalid_request (__main__.Sampling.test_range_rejects_invalid_request) ... ok
+test_rejection_discards_incomplete_interval (__main__.Sampling.test_rejection_discards_incomplete_interval) ... ok
+test_splitmix_reference_vectors (__main__.Sampling.test_splitmix_reference_vectors) ... ok
+test_ternary_endpoint_theorem_by_independent_exhaustion (__main__.Sampling.test_ternary_endpoint_theorem_by_independent_exhaustion) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.015s
+
+OK
+</system-out>
+	</testcase>
+	<testcase name="t81_s02_five_findings" classname="t81_s02_five_findings" time="0.543773" status="run">
+		<properties/>
+		<system-out>test_finding_1_oracle_cache_uses_problem_coefficients (__main__.Integrity.test_finding_1_oracle_cache_uses_problem_coefficients) ... ok
+test_finding_2_task_energy_survives_edge_removal_and_addition (__main__.Integrity.test_finding_2_task_energy_survives_edge_removal_and_addition) ... ok
+test_finding_3_cpp_and_python_integer_sampling (__main__.Integrity.test_finding_3_cpp_and_python_integer_sampling) ... ok
+test_finding_4_table_reproduces_actual_data (__main__.Integrity.test_finding_4_table_reproduces_actual_data) ... ok
+test_finding_5_capacity_hypothesis_not_claimed_tested (__main__.Integrity.test_finding_5_capacity_hypothesis_not_claimed_tested) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.378s
+
+OK
+</system-out>
+	</testcase>
+	<testcase name="t81_s02_reporting_controls" classname="t81_s02_reporting_controls" time="0.219937" status="run">
+		<properties/>
+		<system-out>test_every_published_numeric_cell_matches_raw_rows (__main__.Reporting.test_every_published_numeric_cell_matches_raw_rows) ... ok
+test_frozen_rubric_unchanged (__main__.Reporting.test_frozen_rubric_unchanged) ... ok
+test_original_evidence_exact_and_superseded (__main__.Reporting.test_original_evidence_exact_and_superseded) ... ok
+test_repricing_not_extra_replication (__main__.Reporting.test_repricing_not_extra_replication) ... ok
+test_scope_and_missing_capacity_are_explicit (__main__.Reporting.test_scope_and_missing_capacity_are_explicit) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.042s
+
+OK
+</system-out>
+	</testcase>
+	<testcase name="t81_s02_report_reproducibility" classname="t81_s02_report_reproducibility" time="6.71383" status="run">
+		<properties/>
+		<system-out>{"decision": "REVISE", "rows": 1260, "H2": "UNTESTED", "report_matches_data": true}
+</system-out>
+	</testcase>
+</testsuite>

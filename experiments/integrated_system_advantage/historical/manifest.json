@@ -1,0 +1,23 @@
+[
+  {
+    "path": "historical/base-597-results.json",
+    "source_commit": "c930b8c2ee7478782bf3c6d231bdd59984595ef2",
+    "disposition": "historical; invalid for equivalent-computation/performance inference",
+    "reason": "text-rule or incorrect tensor comparator; lossy binary hashing; override-dependent replay; reused stores; unmatched process boundaries",
+    "sha256": "f5b3c55ef3eb667cdedbcf4ddbcdd55a30393ccb88ffdc617a63821707378c54"
+  },
+  {
+    "path": "historical/original-602-results.json",
+    "source_commit": "d4a86de729ca515228d5b668593c2d0da7b149e4",
+    "disposition": "historical; invalid for equivalent-computation/performance inference",
+    "reason": "text-rule or incorrect tensor comparator; lossy binary hashing; override-dependent replay; reused stores; unmatched process boundaries",
+    "sha256": "c96eab1303eb4773a5a4f12ccb7b4f0e860f6b38936f44ffdb2544b9eb785aed"
+  },
+  {
+    "path": "historical/pre-correction-602-results.json",
+    "source_commit": "7972f7ecbcdec9e0f04bd1bba0103e84d3df375e",
+    "disposition": "historical; invalid for equivalent-computation/performance inference",
+    "reason": "text-rule or incorrect tensor comparator; lossy binary hashing; override-dependent replay; reused stores; unmatched process boundaries",
+    "sha256": "2bcfaf8118853285363b2f40ed581ddfb8e29c8c81f7accc3176f04305db2eba"
+  }
+]
