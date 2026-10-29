@@ -124,6 +124,12 @@ class Audit(unittest.TestCase):
                 self.assertEqual(len(set(values)),3**n)
                 self.assertEqual((min(values),max(values)),(-(3**n-1)//2,(3**n-1)//2))
         self.assertEqual((3**41-1)//2,18236498188585393201)
+        # Prove minimal *signed two's-complement* coverage, not just trit range.
+        # The 41-trit maximum fits signed 65 bits, not signed 64 or 66-minimum.
+        for trits, bits in [(6,10),(11,18),(21,34),(41,65)]:
+            maximum = (3**trits - 1)//2
+            self.assertLessEqual(maximum, 2**(bits-1)-1)
+            self.assertGreater(maximum, 2**(bits-2)-1)
 
     def test_shared_overhead_cancels_before_optimization(self):
         # Includes the exact review reproducer, conversion-only losses of
