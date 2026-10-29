@@ -1178,6 +1178,32 @@ public:
         ctx.flags.positive = !bigint->is_zero() && !bigint->is_negative();
         return;
       }
+      if (tag == ValueTag::FloatHandle) {
+        auto* fp = float_ptr(value);
+        if (fp == nullptr) {
+          ctx.flags.zero = false;
+          ctx.flags.negative = false;
+          ctx.flags.positive = false;
+          return;
+        }
+        ctx.flags.zero = (*fp == 0.0);
+        ctx.flags.negative = (*fp < 0.0);
+        ctx.flags.positive = (*fp > 0.0);
+        return;
+      }
+      if (tag == ValueTag::FractionHandle) {
+        auto* frac = fraction_ptr(value);
+        if (frac == nullptr) {
+          ctx.flags.zero = false;
+          ctx.flags.negative = false;
+          ctx.flags.positive = false;
+          return;
+        }
+        ctx.flags.zero = t81::T81BigInt::is_zero(frac->num);
+        ctx.flags.negative = frac->num.is_negative();
+        ctx.flags.positive = !t81::T81BigInt::is_zero(frac->num) && !frac->num.is_negative();
+        return;
+      }
       update_flags(value);
     };
     auto is_integer_like_tag = [](ValueTag tag) {
@@ -3844,7 +3870,7 @@ public:
           }
           ctx.registers[insn.a] = alloc_float(result);
           ctx.register_tags[insn.a] = ValueTag::FloatHandle;
-          update_flags(ctx.registers[insn.a]);
+          update_flags_for_integer_value(ValueTag::FloatHandle, ctx.registers[insn.a]);
           break;
         }
         case t81::tisc::Opcode::FSin:
@@ -3916,6 +3942,7 @@ public:
           }
           ctx.registers[insn.a] = alloc_float(out.to_double());
           ctx.register_tags[insn.a] = ValueTag::FloatHandle;
+          update_flags_for_integer_value(ValueTag::FloatHandle, ctx.registers[insn.a]);
           break;
         }
         case t81::tisc::Opcode::FracAdd:
@@ -3964,7 +3991,7 @@ public:
             }
             ctx.registers[insn.a] = alloc_fraction(std::move(result));
             ctx.register_tags[insn.a] = ValueTag::FractionHandle;
-            update_flags(ctx.registers[insn.a]);
+            update_flags_for_integer_value(ValueTag::FractionHandle, ctx.registers[insn.a]);
           } catch (...) {
             trap = Trap::DecodeFault;
           }
