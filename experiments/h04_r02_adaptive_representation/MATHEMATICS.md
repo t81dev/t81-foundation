@@ -19,7 +19,7 @@ cannot coincide for positive widths.
 | 6 | 364 | 10 |
 | 11 | 88573 | 18 |
 | 21 | 5230176601 | 34 |
-| 41 | 18236498188585393201 | 66 |
+| 41 | 18236498188585393201 | 65 |
 
 Six trits have 729 states, 8 bits 256, and 10 bits 1024. Six trits cover
 [-364,364]; 8 bits cover [-128,127]; 10 bits cover [-512,511]. The legacy
