@@ -1,0 +1,330 @@
+[
+  {
+    "path": "experiments/cmp3_decision_advantage/README.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/analyze.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/analyze_r1.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline1.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline2.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline3.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline4.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/benchmark.cpp",
+    "status": "M"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/candidate.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/corpus.hpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/dispatch.hpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/VALIDATION.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21-assembly.txt",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21.log",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline1.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline2.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline3.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline4.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/candidate.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/payload.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22-assembly.txt",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22.log",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline1.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline2.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline3.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline4.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/candidate.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/payload.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/CHANGE_INVENTORY.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/RESULTS.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/SOURCE_SHA256.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/VALIDATION.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21.log",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/analyze.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/assembly.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/baseline1.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/baseline2.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/baseline3.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/baseline4.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/benchmark.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/candidate.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/payload.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/apple-clang21/results.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22.log",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/analyze.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/assembly.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/baseline1.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/baseline2.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/baseline3.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/baseline4.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/benchmark.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/candidate.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/payload.s",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/clang22/results.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/provisional/CHANGED_FILES.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/provisional/IMPLEMENTATION_REPORT.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/provisional/ORIGINAL_SOURCE_MANIFEST.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-r1-publication/provisional/PROVISIONAL.patch",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/fixtures/bootstrap_cases.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/fixtures/corpus_0_first8.csv",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/fixtures/corpus_1_first8.csv",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/fixtures/corpus_2_first8.csv",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/fixtures/statistical_cases.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/inspect_assembly.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/payload.cpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/pcg64.hpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/ACTIVATION.json",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/AUTHORITY.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/ORIGINAL_PR635_PROTOCOL.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/r1/FINAL_APPROVAL_RECORD.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/r1/IMPLEMENTATION_REPAIR_PLAN.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/r1/PROPOSED_PROTOCOL_AMENDMENT.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/r1/PROTOCOL_DECISION_MATRIX.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/protocol/r1/STATISTICAL_COUNTEREXAMPLES.md",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/r1_analysis.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/resource_budget.hpp",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/runner_r1.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_classification.cpp",
+    "status": "D"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_corpus.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_protocol_identity.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_r1.py",
+    "status": "A"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/validate.py",
+    "status": "A"
+  }
+]

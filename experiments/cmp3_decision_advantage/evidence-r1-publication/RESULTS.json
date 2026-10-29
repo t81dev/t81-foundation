@@ -1,0 +1,49 @@
+{
+  "clang22": {
+    "driver": {
+      "PASS": 49,
+      "FAIL": 0,
+      "SKIP": 1
+    },
+    "r1_unittest": {
+      "PASS": 40,
+      "FAIL": 0,
+      "SKIP": 1
+    },
+    "protocol_unittest": {
+      "PASS": 5,
+      "FAIL": 0,
+      "SKIP": 0
+    }
+  },
+  "apple-clang21": {
+    "driver": {
+      "PASS": 49,
+      "FAIL": 0,
+      "SKIP": 1
+    },
+    "r1_unittest": {
+      "PASS": 40,
+      "FAIL": 0,
+      "SKIP": 1
+    },
+    "protocol_unittest": {
+      "PASS": 5,
+      "FAIL": 0,
+      "SKIP": 0
+    }
+  },
+  "GNU_GCC": {
+    "status": "UNAVAILABLE",
+    "detail": "/usr/bin/g++ is Apple Clang; versioned GCC and Linux containers absent from available tools"
+  },
+  "Linux": {
+    "status": "UNAVAILABLE",
+    "host": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "PMU": "PMU_UNAVAILABLE",
+    "native_wait4": "SKIP",
+    "affinity_governor_SMT_controls": "UNEXECUTED"
+  },
+  "measurements_collected": false,
+  "measurement_authorized": false
+}

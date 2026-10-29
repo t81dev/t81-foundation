@@ -1,0 +1,5767 @@
+--- a/experiments/cmp3_decision_advantage/README.md
++++ b/experiments/cmp3_decision_advantage/README.md
+@@ -1,33 +1,120 @@
+-# EXP-T81-COMP3-01 implementation
++# EXP-T81-COMP3-01 — provisional r1 implementation patch
+
+-Frozen authority: [TERNARY_ADVANTAGE_CANDIDATES.md](../../docs/research/TERNARY_ADVANTAGE_CANDIDATES.md), Protocol Sections 1–12. Software comparison/dispatch on binary hosts only.
++**M1–M4 formal approval is absent. r1 is not activated.** This local patch targets
++only the finalized proposed r1 packet. Production execution and measurement
++verification deliberately fail closed. No measurements or scientific conclusions
++are provided. The original PR #637 source remains preserved at
++`988b18ca9ebdb4a6fb76fe0be30115470e5637f0`.
+
+-Current validation disposition: **BLOCKED — PMU_UNAVAILABLE** on macOS ARM64. GCC and Linux collection controls remain unvalidated; see [validation evidence](evidence-2026-10-29/VALIDATION.md). No performance conclusion is available.
++Original preregistration: PR #635, commit
++`b37005ceda6a3f4349ec9027b2a9be84ea176aa9`, protocol blob
++`0fbe0b4da1614867bf51b1c3eaf200f82d789a65`. PRs #632/#634 are historical
++predecessors. PR #637's document at the same path differs from #635; it does not
++supply authority to amend that preregistration. Neither portable test passes nor
++this patch constitute maintainer approval. Frozen protocol files and prior
++`evidence-2026-10-29/` artifacts are unchanged; that archive describes its original
++implementation revision, not this patch or conformity to the complete #635.
+
+-Reproduce the portable validation (Python standard library; C++20):
++The five proposed document hashes are pinned in `runner_r1.py`. The finalized
++approval packet is `/private/tmp/t81-comp3-amendment-review/`; its
++`FINAL_APPROVAL_RECORD.md` remains unsigned/not approved. The current user request
++permits provisional local edits and non-performance validation only. Activating,
++committing, publishing or measuring requires further explicit authorization.
++
++Reproduce non-performance validation with Python 3.11+ and an actual C++20 compiler:
+
+ ```sh
+-python3 experiments/cmp3_decision_advantage/validate.py --compiler clang++ --out /tmp/comp3-clang
+-python3 experiments/cmp3_decision_advantage/validate.py --compiler g++ --out /tmp/comp3-gcc
+-python3 experiments/cmp3_decision_advantage/inspect_assembly.py /tmp/comp3-clang/optimized
++PYTHONDONTWRITEBYTECODE=1 python3 experiments/cmp3_decision_advantage/validate.py \
++  --compiler /path/to/clang++ --objdump /path/to/llvm-objdump --out /tmp/comp3-clang
++PYTHONDONTWRITEBYTECODE=1 python3 experiments/cmp3_decision_advantage/validate.py \
++  --compiler /path/to/g++ --objdump /path/to/llvm-objdump --out /tmp/comp3-gcc
+ ```
+
+-Verify that `g++ --version` actually identifies GCC. On macOS `/usr/bin/g++` identifies Apple Clang. The validation script prints every compiler, link, assembly and test command. It builds separate translation units with no LTO, then repeats correctness/analysis checks with ASan and UBSan. Assembly inspection supports GCC/Clang assembly with CFI function boundaries and ARM64 or x86 indirect branches; manual review is still required for each target toolchain.
++`/usr/bin/g++` on this macOS host is Apple Clang, not GNU GCC. The driver logs exact
++commands, builds each translation unit separately without LTO, tests optimized and
++ASan/UBSan binaries, verifies corpus/bootstrap vectors, checks explicit failure
++reasons and invokes the Python regressions and assembly/object inventory. It never
++runs the experimental workload. The optional `--probe-pmu` executable mode opens
++and starts/stops counters without a benchmark workload and discards counter values.
++On unsupported hosts it reports PMU_UNAVAILABLE. Linux failures are infrastructure
++evidence, never performance data or elapsed-time substitutes.
+
+-The candidate and each baseline have separate no-inline A/C and policy entry points. There is one wrapper call per decision and a shared set of three external payload targets. The CMP3 helper is internal and inlined into its dispatch wrapper, avoiding a candidate-only call. Policy entry points evaluate the lower and upper thresholds rather than comparing against zero. Compilers may eliminate redundant comparisons or merge lowering; preserve those observations.
++All five implementations retain comparable no-inline dispatch wrappers and shared
++external less/equal/greater payload targets. Separate untimed classifier probes
++and payload checks distinguish CORRECTNESS_FAILURE from PAYLOAD_PARITY. Pattern B
++classifies the closed interval [-100,100]: below=-1, inside=0, above=+1, with payload
++arguments `(V,0)`. Its oracle is independent piecewise code. Threshold endpoints,
++adjacent values and signed integer extremes are covered. Optimizers may merge
++comparison forms; identical lowering must be retained as evidence.
+
+-Corpus sampling uses the Section 6 seed/stream with portable two-limb PCG64 arithmetic, rejection sampling for bounded modulo, and the top 53 random bits for a uniform representable double in `[0,1)`. A/C sampling covers the full prescribed safe integer interval. Independent Python arbitrary-precision generation checks every pair of the 30,000-pair validation corpus. The 20 mandatory pairs are checked first for each pattern, including payload parity for all five implementations. Additional policy cases cover the thresholds and integer extremes.
++Corpus randomness uses old-state XSL-RR PCG128/64, seed
++`5438315F434D50335F53454544303131`, stream 1/increment 3, multiplier
++`2360ED051FC65DA44385C511560B53A9`. Initialization advances zero, adds seed, advances
++again. Uniform draws use `(next() >> 11) * 2^-53`; bounded draws reject values below
++`2^64 mod n` before modulo. Each pattern starts a fresh generator. Each decision
++draws uniform first; A/C then draw full safe-range operand offset and nonzero k;
++B draws k in 1..1000 even for interval samples, then an additional bounded(201)
++only for an interval sample. Branch cutoffs are the binary64 literals .475/.525
++(A), .20/.30 (B), and binary64 1/3,2/3 (C). `corpus.hpp` and independent
++`test_corpus.py` freeze these conversions and order; the three first-eight CSV
++fixtures come from the pinned proposed packet. Tests compare all 30,000 generated
++pairs as well as the 24 frozen pairs and four output vectors. Reproducibility is
++experiment-scoped, not a deterministic timing or hardware-counter guarantee.
+
+-On a suitable Linux host, after reviewing assembly and validating the Linux controls:
++`r1_analysis.py` retains uint64 counters exactly and rejects invalid domains,
++duplicate/missing observations and incomplete matched series before calculations.
++It implements the proposed paired df=9 instruction test versus Baseline 1, nominal
++one-sided 99% paired bootstrap bounds, exact rational 15% comparisons, and six fixed
++regression contrasts per pattern (18 overall), two-sided Bonferroni alpha .01/18.
++It reports paired 95%, 99% and family intervals and retains nonzero tiny variance.
++Zero differences have p=1; nonzero constant differences use limiting p=0 and point
++intervals, explicitly marked degenerate. Numerical Student-t tails are checked
++against independent quantile landmarks; these checks do not prove calibration.
+
+-```sh
+-/tmp/comp3-gcc/optimized/benchmark --smoke 2>smoke.log
+-/tmp/comp3-gcc/optimized/benchmark >measurements.csv 2>environment-and-order.log
+-/tmp/comp3-gcc/optimized/analyze measurements.csv >analysis.txt
+-```
++Bootstrap resets PCG per pattern; each of 10,000 replicates draws ten bounded(10)
++indices, rejects values below 6, uses paired indices and exact ratio-of-sums
++reductions, and sorts fractions. Ranks 100 and 9900 (indices 99 and 9899) give
++separate nominal one-sided 99% bounds, together a central 98% interval. The full
++100,000-byte index sequence has SHA-256
++`8c5f235bc6d1df1c1fcdca99903abaaaa8201591d5521fe84ba7e72868770b64`.
+
+-The full run fixes N=10,000,000 and ten repetitions; arbitrary smaller budgets cannot produce an experiment result. Smoke uses 10,000 pairs and one repetition, writes no measurement CSV, and cannot be analyzed as a complete experiment. PMU errors return BLOCKED; elapsed time never replaces counters. Linux collection uses a pinned hardware counter group, rejects unscheduled/multiplexed counters, checks ioctl/read results, pins to an allowed core, attempts performance/no-boost settings, restores changed controls, and performs ten million-iteration warmup cycles per implementation. It records the core and actual run order on stderr, rotating implementation order within matched repetition blocks. The retained ten-minute collection budget blocks on overrun. These Linux paths have not been executed in the recorded macOS validation.
++Per-pattern precedence is BLOCKED, then demonstrated-regression NOT SUPPORTED,
++then SUPPORTED if all benefit/mean guards hold, otherwise INCONCLUSIVE. Positive
++sub-15% improvements do not imply NOT SUPPORTED. Overall precedence is BLOCKED >
++NOT SUPPORTED > INCONCLUSIVE > SUPPORTED; all three patterns must support.
++Minimum-effect evidence is reported separately. These are proposed r1 rules, not
++claims about the original #635 design.
+
+-Analyze only a successful full run; retain its compiler/assembly artifacts, complete stderr, exit status, and CSV together. The analyzer cannot authenticate CSV provenance or infer environment/corpus validity from counters. Missing/duplicate rows or mismatched checksums block before calculations. All three patterns and all four baselines require ten finite matched observations per metric. Reports include means, sample standard deviations, 95% Student-t intervals, raw paired differences, primary paired p-values, one-sided 99% bootstrap bounds, paired 99% regression intervals, fastest baseline per pattern, trigger reasons and the prescribed overall precedence.
++`analyze_r1.py` requires a signed completion bundle. Bare CSV has no measurement
++entry point; legacy `analyze.cpp` always rejects. The audit-only `--test-only`
++interface accepts a separately supplied test trust store, Ed25519 role-framed
++canonical records, explicit synthetic kind and test delegation. Ephemeral keys
++exist only within unit-test temporary directories. Even valid test signatures
++always produce measurement BLOCKED. Test-only diagnostic SUPPORTED is never an
++empirical experiment result. Production verification/launch have no test override.
+
+-Bootstrap uses 10,000 paired resamples from the Section 6 PCG64 seed/stream, reset per pattern, with inverse empirical-CDF quantiles at ranks 100 and 9900 (indices 99 and 9899). These are **one-sided** 99% bounds. The df=9 two-sided p-value uses the transformed Student-t tail integral of `sin(theta)^8`, normalized by `35*pi/256`, with 4096-panel Simpson integration; regression intervals use `t(9,.995)=3.2498355415921254`. Equal constant paired differences have p=1; nonzero constant differences have the limiting p=0 and point intervals. No fixed regression allowances or substitute statistical thresholds are used.
++Remaining blockers: the intended Linux/GNU-GCC compiler, PMU, affinity/SMT,
++governor/boost/readback/restoration and native resource paths have not been tested
++on this host. The production T1–T8 supervisor (separate restricted UID and protected
++key, immutable same-file execution, single-process restrictions, atomic capture
++and completion, protected durable journals and pre/post environmental evidence)
++is not implemented end to end. Synthetic signature tests do not establish those
++custody/launch properties. The test journal is not a production crash-durable
++ledger. Normal-exit partial-pattern diagnostic retention is also not implemented;
++this patch conservatively blocks incomplete bundles. Current environmental code
++still lacks the approved full readback/isolation evidence. Production keys, root,
++delegation, campaign and eligibility are unconfigured; do not provision them here.
++
++Resource polling covers collection/generation and run boundaries; proposed limits
++are lifetime CPU user+system 600,000,000 us and peak RSS 500,000,000 bytes, with
++Linux KiB normalized to bytes. Only eventual supervisor final accounting can
++validate the output/exit path. Its native wait4 interface is Linux-only and skipped
++on macOS; synthetic exact-boundary checks are not kernel enforcement evidence.
++
++The actual governance registry is
++`docs/governance/DETERMINISM_SURFACE_REGISTRY.md`; COMP3 has no promoted surface.
++Historical candidate-stage distributions, the architectural falsifier and withdrawn
++Investigation 10A area claims do not govern this experiment or establish hardware
++advantage. Investigation 10A remains PHYSICAL EVALUATION BLOCKED. Frozen history
++is preserved. No T81 runtime, ISA, CanonFS, Axion or governance activation changes
++belong to this patch.
+--- a/experiments/cmp3_decision_advantage/analyze.cpp
++++ b/experiments/cmp3_decision_advantage/analyze.cpp
+@@ -1,122 +1,7 @@
+-// Analyze only complete, matched, protocol-sized CSV observations.
+-#include <array>
+-#include <fstream>
+-#include <iomanip>
+-#include <iostream>
+-#include <sstream>
+-#include <string>
+-#include "statistics.hpp"
+-
+-struct Metrics {
+-  std::vector<double> inst, miss, lat;
+-};
+-using Pattern = std::array<Metrics, 5>;
+-static double mean(const std::vector<double>& x) {
+-  return std::accumulate(x.begin(), x.end(), 0.0) / 10;
+-}
+-static void report(const std::string& label, const std::vector<double>& x,
+-                   const std::vector<double>& reference) {
+-  const auto s = paired_summary(x, reference);
+-  const double m = 2.2621571628540993 * s.sd / std::sqrt(10.0);
+-  std::cout << label << " mean=" << s.mean << " sample_sd=" << s.sd << " ci95=[" << s.mean - m
+-            << ',' << s.mean + m << "] raw=";
+-  for (std::size_t i = 0; i < 10; ++i) std::cout << x[i] - reference[i] << ',';
+-  std::cout << '\n';
+-}
+-int main(int argc, char** argv) try {
+-  if (argc != 2) throw std::invalid_argument("CSV_PATH_REQUIRED");
+-  std::ifstream input(argv[1]);
+-  if (!input) throw std::invalid_argument("MISSING_OBSERVATIONS");
+-  std::string line;
+-  if (!std::getline(input, line) ||
+-      line != "pattern,mode,repetition,instructions,branch_misses,elapsed_ns,checksum")
+-    throw std::invalid_argument("INVALID_CSV_HEADER");
+-  std::array<Pattern, 3> data;
+-  std::array<std::array<std::array<bool, 10>, 5>, 3> seen{};
+-  std::array<std::uint64_t, 3> checksums{};
+-  std::array<bool, 3> checksum_seen{};
+-  while (std::getline(input, line)) {
+-    std::replace(line.begin(), line.end(), ',', ' ');
+-    std::istringstream row(line);
+-    std::size_t p, mode, repetition;
+-    double inst, miss, lat;
+-    std::uint64_t checksum;
+-    std::string extra;
+-    if (!(row >> p >> mode >> repetition >> inst >> miss >> lat >> checksum) || row >> extra ||
+-        p >= 3 || mode >= 5 || repetition >= 10 || seen[p][mode][repetition])
+-      throw std::invalid_argument("INVALID_OR_DUPLICATE_OBSERVATION");
+-    if (checksum_seen[p] && checksum != checksums[p]) throw std::invalid_argument("PAYLOAD_PARITY");
+-    checksum_seen[p] = true;
+-    checksums[p] = checksum;
+-    auto& m = data[p][mode];
+-    if (m.inst.empty()) {
+-      m.inst.resize(10);
+-      m.miss.resize(10);
+-      m.lat.resize(10);
+-    }
+-    m.inst[repetition] = inst;
+-    m.miss[repetition] = miss;
+-    m.lat[repetition] = lat;
+-    seen[p][mode][repetition] = true;
+-  }
+-  for (std::size_t p = 0; p < 3; ++p)
+-    for (std::size_t m = 0; m < 5; ++m) {
+-      for (bool present : seen[p][m])
+-        if (!present) throw std::invalid_argument("MISSING_OBSERVATIONS");
+-      for (const auto* x : {&data[p][m].inst, &data[p][m].miss, &data[p][m].lat})
+-        validate_pair(*x, *x);
+-      for (const auto* v : {&data[p][m].inst, &data[p][m].lat})
+-        for (double x : *v)
+-          if (x <= 0) throw std::invalid_argument("ZERO_INSTRUCTIONS_OR_LATENCY");
+-    }
+-  // No statistical calculations or result output before validating all 150 rows.
+-  std::cout << std::setprecision(17);
+-  Outcome overall = Outcome::SUPPORTED;
+-  for (std::size_t p = 0; p < 3; ++p) {
+-    const auto& d = data[p];
+-    std::size_t fastest = 1;
+-    for (std::size_t m = 2; m < 5; ++m)
+-      if (mean(d[m].lat) < mean(d[fastest].lat)) fastest = m;
+-    MeasureSeries s{d[0].inst, d[1].inst, d[0].miss, d[1].miss, d[0].lat, d[fastest].lat};
+-    const auto outcome = classify_pattern_result(s);
+-    if (outcome == Outcome::NOT_SUPPORTED)
+-      overall = outcome;
+-    else if (outcome == Outcome::INCONCLUSIVE && overall == Outcome::SUPPORTED)
+-      overall = outcome;
+-    std::cout << "pattern=" << p << " outcome=" << outcome_to_string(outcome)
+-              << " fastest=" << fastest << '\n';
+-    const auto bounds = compute_bootstrap_reduction_bounds(s.candidate_inst, s.base1_inst);
+-    std::cout << "instruction_reduction=" << 1 - mean(s.candidate_inst) / mean(s.base1_inst)
+-              << " one_sided99_bounds=[" << bounds.first << ',' << bounds.second
+-              << "] p=" << compute_paired_t_pvalue(s.candidate_inst, s.base1_inst) << '\n';
+-    for (const auto& item :
+-         {std::make_pair("miss", std::make_pair(s.candidate_miss, s.base1_miss)),
+-          std::make_pair("latency", std::make_pair(s.candidate_lat, s.fastest_base_lat))}) {
+-      const auto ci = paired_interval99(item.second.first, item.second.second);
+-      std::cout << item.first << " paired_ci99=[" << ci.first << ',' << ci.second << "]\n";
+-    }
+-    if (outcome == Outcome::NOT_SUPPORTED) {
+-      if (bounds.second < .15) std::cout << "reason=INSTRUCTION_UPPER_BOUND_BELOW_15_PERCENT\n";
+-      if (paired_interval99(s.candidate_miss, s.base1_miss).first > 0)
+-        std::cout << "reason=MISS_REGRESSION\n";
+-      if (paired_interval99(s.candidate_lat, s.fastest_base_lat).first > 0)
+-        std::cout << "reason=LATENCY_REGRESSION\n";
+-    }
+-    for (std::size_t mode = 0; mode < 5; ++mode) {
+-      const std::vector<double> zero(10, 0);
+-      const std::string label = "p" + std::to_string(p) + "m" + std::to_string(mode);
+-      report(label + "_inst", d[mode].inst, zero);
+-      report(label + "_miss", d[mode].miss, zero);
+-      report(label + "_lat", d[mode].lat, zero);
+-      if (mode > 0) {
+-        report(label + "_paired_inst", d[0].inst, d[mode].inst);
+-        report(label + "_paired_miss", d[0].miss, d[mode].miss);
+-        report(label + "_paired_lat", d[0].lat, d[mode].lat);
+-      }
+-    }
+-  }
+-  std::cout << "overall=" << outcome_to_string(overall) << '\n';
+-} catch (const std::exception& e) {
+-  std::cout << "BLOCKED — " << e.what() << '\n';
++#include <cstdio>
++int main() {
++  std::fputs(
++      "BLOCKED LEGACY_ANALYZER_DISABLED_USE_AUTHENTICATED_ANALYZE_R1_PY\n",
++      stderr);
+   return 6;
+ }
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/analyze_r1.py
+@@ -0,0 +1,24 @@
++"""PROVISIONAL r1 analyzer. Only authenticated test-only diagnostics are enabled."""
++import argparse,json
++from r1_analysis import Invalid,diagnose,json_value
++from runner_r1 import verify_test_bundle,verify_measurement_bundle,admit_test_diagnostic
++
++def main():
++    parser=argparse.ArgumentParser()
++    parser.add_argument('--bundle',required=True)
++    parser.add_argument('--trust',required=True)
++    parser.add_argument('--test-only',action='store_true')
++    parser.add_argument('--admit-test-journal')
++    args=parser.parse_args()
++    try:
++        if not args.test_only:
++            verify_measurement_bundle(args.bundle,args.trust)
++        verified=verify_test_bundle(args.bundle,args.trust)
++        result=diagnose(verified['csv'])
++        if args.admit_test_journal: admit_test_diagnostic(verified,args.admit_test_journal)
++        print(json.dumps(json_value(result),sort_keys=True,allow_nan=False))
++        return 0
++    except Invalid as error:
++        print(json.dumps({'measurement_outcome':'BLOCKED','reason':str(error),'provisional':True}))
++        return 6
++if __name__=='__main__':raise SystemExit(main())
+--- a/experiments/cmp3_decision_advantage/baseline1.cpp
++++ b/experiments/cmp3_decision_advantage/baseline1.cpp
+@@ -1,15 +1,33 @@
+ #include "dispatch.hpp"
+-template <bool policy>
+-static inline u64 impl(i64 a, i64 b) {
++template <bool policy> static inline u64 impl(i64 a, i64 b) {
+   if (policy) {
+-    if (a < -100) return target_less(a, b);
+-    if (a > 100) return target_greater(a, b);
++    if (a < -100)
++      return target_less(a, b);
++    if (a > 100)
++      return target_greater(a, b);
+     return target_equal(a, b);
+   }
+-  if (a < b) return target_less(a, b);
+-  if (a == b) return target_equal(a, b);
++  if (a < b)
++    return target_less(a, b);
++  if (a == b)
++    return target_equal(a, b);
+   return target_greater(a, b);
+ }
+
+ NOINLINE u64 baseline1(i64 a, i64 b) { return impl<false>(a, b); }
+ NOINLINE u64 baseline1_policy(i64 a, i64 b) { return impl<true>(a, b); }
++
++NOINLINE int probe_baseline1(i64 a, i64 b, bool policy) {
++  if (policy) {
++    if (a < -100)
++      return -1;
++    if (a > 100)
++      return 1;
++    return 0;
++  }
++  if (a < b)
++    return -1;
++  if (a == b)
++    return 0;
++  return 1;
++}
+--- a/experiments/cmp3_decision_advantage/baseline2.cpp
++++ b/experiments/cmp3_decision_advantage/baseline2.cpp
+@@ -1,9 +1,12 @@
+ #include "dispatch.hpp"
+-template <bool policy>
+-static inline u64 impl(i64 a, i64 b) {
++template <bool policy> static inline u64 impl(i64 a, i64 b) {
+   const int c = policy ? (a > 100) - (a < -100) : (a > b) - (a < b);
+   return targets[c + 1](a, b);
+ }
+
+ NOINLINE u64 baseline2(i64 a, i64 b) { return impl<false>(a, b); }
+ NOINLINE u64 baseline2_policy(i64 a, i64 b) { return impl<true>(a, b); }
++
++NOINLINE int probe_baseline2(i64 a, i64 b, bool policy) {
++  return policy ? (a > 100) - (a < -100) : (a > b) - (a < b);
++}
+--- a/experiments/cmp3_decision_advantage/baseline3.cpp
++++ b/experiments/cmp3_decision_advantage/baseline3.cpp
+@@ -1,17 +1,36 @@
++#include "dispatch.hpp"
+ #include <compare>
+-#include "dispatch.hpp"
+-template <bool policy>
+-static inline u64 impl(i64 a, i64 b) {
++template <bool policy> static inline u64 impl(i64 a, i64 b) {
+   if (policy) {
+-    if ((a <=> -100) < 0) return target_less(a, b);
+-    if ((a <=> 100) > 0) return target_greater(a, b);
++    if ((a <=> -100) < 0)
++      return target_less(a, b);
++    if ((a <=> 100) > 0)
++      return target_greater(a, b);
+     return target_equal(a, b);
+   }
+   const auto c = a <=> b;
+-  if (c < 0) return target_less(a, b);
+-  if (c == 0) return target_equal(a, b);
++  if (c < 0)
++    return target_less(a, b);
++  if (c == 0)
++    return target_equal(a, b);
+   return target_greater(a, b);
+ }
+
+ NOINLINE u64 baseline3(i64 a, i64 b) { return impl<false>(a, b); }
+ NOINLINE u64 baseline3_policy(i64 a, i64 b) { return impl<true>(a, b); }
++
++NOINLINE int probe_baseline3(i64 a, i64 b, bool policy) {
++  if (policy) {
++    if ((a <=> -100) < 0)
++      return -1;
++    if ((a <=> 100) > 0)
++      return 1;
++    return 0;
++  }
++  auto c = a <=> b;
++  if (c < 0)
++    return -1;
++  if (c == 0)
++    return 0;
++  return 1;
++}
+--- a/experiments/cmp3_decision_advantage/baseline4.cpp
++++ b/experiments/cmp3_decision_advantage/baseline4.cpp
+@@ -1,16 +1,29 @@
+ #include "dispatch.hpp"
+-template <bool policy>
+-static inline u64 impl(i64 a, i64 b) {
+-  const int c = policy ? (a < -100 ? -1 : a > 100 ? 1 : 0) : (a == b ? 0 : a < b ? -1 : 1);
++template <bool policy> static inline u64 impl(i64 a, i64 b) {
++  const int c = policy ? (a < -100  ? -1
++                          : a > 100 ? 1
++                                    : 0)
++                       : (a == b  ? 0
++                          : a < b ? -1
++                                  : 1);
+   switch (c) {
+-    case -1:
+-      return target_less(a, b);
+-    case 0:
+-      return target_equal(a, b);
+-    default:
+-      return target_greater(a, b);
++  case -1:
++    return target_less(a, b);
++  case 0:
++    return target_equal(a, b);
++  default:
++    return target_greater(a, b);
+   }
+ }
+
+ NOINLINE u64 baseline4(i64 a, i64 b) { return impl<false>(a, b); }
+ NOINLINE u64 baseline4_policy(i64 a, i64 b) { return impl<true>(a, b); }
++
++NOINLINE int probe_baseline4(i64 a, i64 b, bool policy) {
++  return policy ? (a < -100  ? -1
++                   : a > 100 ? 1
++                             : 0)
++                : (a == b  ? 0
++                   : a < b ? -1
++                           : 1);
++}
+--- a/experiments/cmp3_decision_advantage/benchmark.cpp
++++ b/experiments/cmp3_decision_advantage/benchmark.cpp
+@@ -1,11 +1,12 @@
+ // EXP-T81-COMP3-01: software comparison and dispatch on binary hosts only.
++#include "corpus.hpp"
++#include "dispatch.hpp"
++#include "resource_budget.hpp"
+ #include <algorithm>
+ #include <chrono>
+ #include <cstdio>
+ #include <fstream>
+ #include <string>
+-#include "corpus.hpp"
+-#include "dispatch.hpp"
+ #if defined(__linux__)
+ #include <linux/perf_event.h>
+ #include <sched.h>
+@@ -23,17 +24,21 @@
+     attr.pinned = group < 0 ? 1 : 0;
+     attr.exclude_kernel = 1;
+     attr.exclude_hv = 1;
+-    attr.read_format =
+-        PERF_FORMAT_GROUP | PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
+-    return static_cast<int>(syscall(__NR_perf_event_open, &attr, 0, -1, group, 0));
++    attr.read_format = PERF_FORMAT_GROUP | PERF_FORMAT_TOTAL_TIME_ENABLED |
++                       PERF_FORMAT_TOTAL_TIME_RUNNING;
++    return static_cast<int>(
++        syscall(__NR_perf_event_open, &attr, 0, -1, group, 0));
+   }
+   Counters() {
+     leader = open_counter(PERF_COUNT_HW_INSTRUCTIONS, -1);
+-    if (leader >= 0) branch = open_counter(PERF_COUNT_HW_BRANCH_MISSES, leader);
++    if (leader >= 0)
++      branch = open_counter(PERF_COUNT_HW_BRANCH_MISSES, leader);
+   }
+   ~Counters() {
+-    if (branch >= 0) close(branch);
+-    if (leader >= 0) close(leader);
++    if (branch >= 0)
++      close(branch);
++    if (leader >= 0)
++      close(leader);
+   }
+   bool available() const { return leader >= 0 && branch >= 0; }
+   void start() {
+@@ -47,7 +52,8 @@
+     struct {
+       u64 count, enabled, running, instructions, misses;
+     } values{};
+-    if (read(leader, &values, sizeof(values)) != static_cast<ssize_t>(sizeof(values)) ||
++    if (read(leader, &values, sizeof(values)) !=
++            static_cast<ssize_t>(sizeof(values)) ||
+         values.count != 2)
+       throw std::runtime_error("PMU_READ_FAILURE");
+     if (values.running == 0 || values.enabled != values.running)
+@@ -66,7 +72,8 @@
+       selected = i;
+       break;
+     }
+-  if (selected < 0) throw std::runtime_error("AFFINITY_UNAVAILABLE");
++  if (selected < 0)
++    throw std::runtime_error("AFFINITY_UNAVAILABLE");
+   cpu_set_t one;
+   CPU_ZERO(&one);
+   CPU_SET(selected, &one);
+@@ -77,12 +84,15 @@
+ }
+ struct FrequencyControls {
+   std::vector<std::pair<std::string, std::string>> saved;
+-  bool set(const std::string& path, const std::string& value) {
++  bool set(const std::string &path, const std::string &value) {
+     std::ifstream input(path);
+     std::string old;
+-    if (!(input >> old)) return false;
+-    if (old == value) return true;
+-    if (access(path.c_str(), W_OK) != 0) return false;
++    if (!(input >> old))
++      return false;
++    if (old == value)
++      return true;
++    if (access(path.c_str(), W_OK) != 0)
++      return false;
+     saved.emplace_back(path, old);
+     std::ofstream output(path);
+     output << value;
+@@ -90,21 +100,24 @@
+     return !output.fail();
+   }
+   explicit FrequencyControls(int core) {
+-    const auto governor =
+-        "/sys/devices/system/cpu/cpu" + std::to_string(core) + "/cpufreq/scaling_governor";
++    const auto governor = "/sys/devices/system/cpu/cpu" + std::to_string(core) +
++                          "/cpufreq/scaling_governor";
+     const bool governor_ok = set(governor, "performance");
+     bool boost_ok = set("/sys/devices/system/cpu/intel_pstate/no_turbo", "1");
+-    if (!boost_ok) boost_ok = set("/sys/devices/system/cpu/cpufreq/boost", "0");
++    if (!boost_ok)
++      boost_ok = set("/sys/devices/system/cpu/cpufreq/boost", "0");
+     std::fprintf(stderr, "%s\n",
+-                 governor_ok && boost_ok ? "GOVERNOR_PERFORMANCE_BOOST_DISABLED"
+-                                         : "GOVERNOR_PINNING_SKIPPED_UNPRIVILEGED");
++                 governor_ok && boost_ok
++                     ? "GOVERNOR_PERFORMANCE_BOOST_DISABLED"
++                     : "GOVERNOR_PINNING_SKIPPED_UNPRIVILEGED");
+   }
+   ~FrequencyControls() {
+     for (auto it = saved.rbegin(); it != saved.rend(); ++it) {
+       std::ofstream output(it->first);
+       output << it->second;
+       output.close();
+-      if (output.fail()) std::fprintf(stderr, "CONTROL_RESTORE_FAILED %s\n", it->first.c_str());
++      if (output.fail())
++        std::fprintf(stderr, "CONTROL_RESTORE_FAILED %s\n", it->first.c_str());
+     }
+   }
+ };
+@@ -115,46 +128,85 @@
+ #endif
+
+ static volatile u64 g_sink = 0;
+-static const std::array<Dispatch, 5> modes = {candidate, baseline1, baseline2, baseline3,
+-                                              baseline4};
++static const std::array<Dispatch, 5> modes = {candidate, baseline1, baseline2,
++                                              baseline3, baseline4};
+ static const std::array<Dispatch, 5> policy_modes = {
+-    candidate_policy, baseline1_policy, baseline2_policy, baseline3_policy, baseline4_policy};
+-static const auto& functions(int p) { return p == 1 ? policy_modes : modes; }
++    candidate_policy, baseline1_policy, baseline2_policy, baseline3_policy,
++    baseline4_policy};
++static const auto &functions(int p) { return p == 1 ? policy_modes : modes; }
+ static u64 oracle_payload(Pair x, int p) {
+   const int c = p == 1 ? oracle_pattern_b(x.a) : oracle_pattern_ac(x.a, x.b);
+-  return (static_cast<u64>(x.a) ^ (static_cast<u64>(x.b) << 1)) + static_cast<u64>(c + 2);
+-}
++  return (static_cast<u64>(x.a) ^ (static_cast<u64>(x.b) << 1)) +
++         static_cast<u64>(c + 2);
++}
++static const Classifier probes[] = {probe_candidate, probe_baseline1,
++                                    probe_baseline2, probe_baseline3,
++                                    probe_baseline4};
++static int test_fault = 0;
+ static void verify(Pair x, int p) {
+-  for (auto f : functions(p))
+-    if (f(x.a, x.b) != oracle_payload(x, p)) throw std::runtime_error("PAYLOAD_PARITY");
+-}
+-static u64 run(const std::vector<Pair>& data, Dispatch f) {
++  const int expected =
++      p == 1 ? oracle_pattern_b(x.a) : oracle_pattern_ac(x.a, x.b);
++  for (std::size_t mode = 0; mode < 5; ++mode) {
++    const int got = probes[mode](x.a, x.b, p == 1);
++    if (test_fault == 1 || got != expected)
++      throw std::runtime_error("CORRECTNESS_FAILURE");
++    if (test_fault == 2 || functions(p)[mode](x.a, x.b) != oracle_payload(x, p))
++      throw std::runtime_error("PAYLOAD_PARITY");
++  }
++}
++static u64 run(const std::vector<Pair> &data, Dispatch f) {
+   u64 sum = 0;
+-  for (const auto& x : data) sum += f(x.a, x.b);
++  std::size_t i = 0;
++  for (const auto &x : data) {
++    sum += f(x.a, x.b);
++    if (++i % 100000 == 0)
++      check_resource_budget();
++  }
+   g_sink = sum;
+   return sum;
+ }
+-int main(int argc, char** argv) try {
+-  bool selftest = false, smoke = false, dump = false;
++int main(int argc, char **argv) try {
++  bool selftest = false, smoke = false, dump = false, indices = false,
++       pmu_probe = false;
++  check_resource_budget();
+   for (int i = 1; i < argc; ++i) {
+     const std::string arg = argv[i];
+     if (arg == "--selftest")
+       selftest = true;
+     else if (arg == "--dump-corpus")
+       dump = true;
++    else if (arg == "--dump-bootstrap-indices")
++      indices = true;
++    else if (arg == "--probe-pmu")
++      pmu_probe = true;
++    else if (arg == "--test-fault-correctness")
++      test_fault = 1;
++    else if (arg == "--test-fault-payload")
++      test_fault = 2;
+     else if (arg == "--smoke")
+       smoke = true;
+     else
+       throw std::runtime_error("INVALID_ARGUMENT");
+   }
++  if (test_fault != 0 && !selftest)
++    throw std::runtime_error("TEST_FAULT_REQUIRES_SELFTEST");
++  if (indices) {
++    PCG64 index_rng;
++    for (int i = 0; i < 100000; ++i)
++      std::putchar(static_cast<int>(index_rng.bounded(10)));
++    return 0;
++  }
+   PCG64 g;
+-  for (u64 expected :
+-       {0x854CAFBD0A540778ULL, 0x3D174C3776108E7DULL, 0xA8398F10D0F2976CULL, 0x722D0D72D6D3EA65ULL})
+-    if (g.next() != expected) throw std::runtime_error("PCG_VECTOR_MISMATCH");
++  for (u64 expected : {0x854CAFBD0A540778ULL, 0x3D174C3776108E7DULL,
++                       0xA8398F10D0F2976CULL, 0x722D0D72D6D3EA65ULL})
++    if (g.next() != expected)
++      throw std::runtime_error("PCG_VECTOR_MISMATCH");
+   for (int p = 0; p < 3; ++p) {
+-    for (auto x : mandatory_boundaries()) verify(x, p);
+-    for (i64 a : {std::numeric_limits<i64>::min(), i64{-101}, i64{-100}, i64{-99}, i64{99},
+-                  i64{100}, i64{101}, std::numeric_limits<i64>::max()})
++    for (auto x : mandatory_boundaries())
++      verify(x, p);
++    for (i64 a :
++         {std::numeric_limits<i64>::min(), i64{-101}, i64{-100}, i64{-99},
++          i64{99}, i64{100}, i64{101}, std::numeric_limits<i64>::max()})
+       verify({a, 0}, 1);
+     const auto data = generate_corpus(p, 10000);
+     const auto again = generate_corpus(p, 10000);
+@@ -163,71 +215,94 @@
+         throw std::runtime_error("CORPUS_NONDETERMINISTIC");
+       verify(data[i], p);
+     }
+-    for (auto f : functions(p)) (void)run(data, f);
+-  }
+-  std::fprintf(stderr, "PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000\n");
++    for (auto f : functions(p))
++      (void)run(data, f);
++  }
++  std::fprintf(stderr, "PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 "
++                       "DETERMINISM=30000\n");
+   if (dump) {
+     for (int p = 0; p < 3; ++p)
+-      for (const auto& x : generate_corpus(p, 10000))
+-        std::printf("%d,%lld,%lld\n", p, static_cast<long long>(x.a), static_cast<long long>(x.b));
++      for (const auto &x : generate_corpus(p, 10000))
++        std::printf("%d,%lld,%lld\n", p, static_cast<long long>(x.a),
++                    static_cast<long long>(x.b));
+     return 0;
+   }
+-  if (selftest) return 0;
++  if (selftest)
++    return 0;
++  if (!pmu_probe)
++    throw std::runtime_error("FORMAL_APPROVAL_MISSING_PROVISIONAL_PATCH");
+   Counters perf;
+-  if (!perf.available()) throw std::runtime_error("PMU_UNAVAILABLE");
++  if (!perf.available())
++    throw std::runtime_error("PMU_UNAVAILABLE");
+ #if defined(__linux__)
++  if (pmu_probe) {
++    perf.start();
++    (void)perf.stop();
++    std::fprintf(stderr, "PMU_INFRASTRUCTURE_PROBE_PASS_NO_WORKLOAD\n");
++    return 0;
++  }
++  throw std::runtime_error("FORMAL_APPROVAL_MISSING_PROVISIONAL_PATCH");
+   const int core = setup_cpu_affinity();
+   // Log actual controls; restricted access selects the prescribed fallback.
+   FrequencyControls controls(core);
+-  const auto begin = std::chrono::steady_clock::now();
++
+   if (smoke)
+     std::fprintf(stderr, "SMOKE_ONLY_NOT_PROTOCOL_MEASUREMENTS\n");
+   else
+-    std::puts("pattern,mode,repetition,instructions,branch_misses,elapsed_ns,checksum");
++    std::puts("pattern,mode,repetition,instructions,branch_misses,elapsed_ns,"
++              "checksum");
+   for (int p = 0; p < 3; ++p) {
++    check_resource_budget();
+     const auto data = generate_corpus(p, smoke ? 10000 : 10000000);
+     u64 expected = 0;
+-    for (const auto& x : data) {
++    for (const auto &x : data) {
+       verify(x, p);
+       expected += oracle_payload(x, p);
+     }
+-    const auto& funcs = functions(p);
++    const auto &funcs = functions(p);
+     for (auto f : funcs) {
+       for (int cycle = 0; cycle < 10; ++cycle) {
+         u64 warm = 0;
+         for (std::size_t i = 0; i < 1000000; ++i) {
+-          const auto& x = data[i % data.size()];
++          const auto &x = data[i % data.size()];
+           warm += f(x.a, x.b);
+         }
+         g_sink = warm;
++        check_resource_budget();
+       }
+     }
+     for (int r = 0; r < (smoke ? 1 : 10); ++r) {
+       // Matched repetition blocks; rotate order to distribute order effects.
+       for (std::size_t j = 0; j < 5; ++j) {
+         const std::size_t m = (j + static_cast<std::size_t>(r)) % 5;
+-        std::fprintf(stderr, "RUN_ORDER pattern=%d repetition=%d mode=%zu\n", p, r, m);
++        std::fprintf(stderr, "RUN_ORDER pattern=%d repetition=%d mode=%zu\n", p,
++                     r, m);
+         perf.start();
+         const auto t0 = std::chrono::steady_clock::now();
+         const auto sum = run(data, funcs[m]);
+         const auto t1 = std::chrono::steady_clock::now();
+         const auto counts = perf.stop();
+-        if (sum != expected) throw std::runtime_error("PAYLOAD_PARITY");
+-        const auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count();
+-        std::fprintf(smoke ? stderr : stdout, "%d,%zu,%d,%llu,%llu,%lld,%llu\n", p, m, r,
+-                     static_cast<unsigned long long>(counts.first),
++        if (sum != expected)
++          throw std::runtime_error("PAYLOAD_PARITY");
++        const auto elapsed =
++            std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0)
++                .count();
++        check_resource_budget();
++        std::fprintf(smoke ? stderr : stdout, "%d,%zu,%d,%llu,%llu,%lld,%llu\n",
++                     p, m, r, static_cast<unsigned long long>(counts.first),
+                      static_cast<unsigned long long>(counts.second),
+-                     static_cast<long long>(elapsed), static_cast<unsigned long long>(sum));
+-        if (std::chrono::steady_clock::now() - begin > std::chrono::minutes(10))
+-          throw std::runtime_error("BUDGET_EXCEEDED");
++                     static_cast<long long>(elapsed),
++                     static_cast<unsigned long long>(sum));
++        check_resource_budget();
+       }
+     }
+   }
+ #else
+   (void)smoke;
++  (void)pmu_probe;
+ #endif
+   return 0;
+-} catch (const std::exception& e) {
++} catch (const std::exception &e) {
+   std::fprintf(stderr, "BLOCKED — %s\n", e.what());
+   return 6;
+ }
+--- a/experiments/cmp3_decision_advantage/candidate.cpp
++++ b/experiments/cmp3_decision_advantage/candidate.cpp
+@@ -1,7 +1,6 @@
+ #include "dispatch.hpp"
+ static std::int32_t cmp3_s64(i64 a, i64 b) { return (a > b) - (a < b); }
+-template <bool policy>
+-static inline u64 impl(i64 a, i64 b) {
++template <bool policy> static inline u64 impl(i64 a, i64 b) {
+   const int c = policy ? (cmp3_s64(a, -100) < 0  ? -1
+                           : cmp3_s64(a, 100) > 0 ? 1
+                                                  : 0)
+@@ -11,3 +10,10 @@
+
+ NOINLINE u64 candidate(i64 a, i64 b) { return impl<false>(a, b); }
+ NOINLINE u64 candidate_policy(i64 a, i64 b) { return impl<true>(a, b); }
++
++NOINLINE int probe_candidate(i64 a, i64 b, bool policy) {
++  return policy ? (cmp3_s64(a, -100) < 0  ? -1
++                   : cmp3_s64(a, 100) > 0 ? 1
++                                          : 0)
++                : cmp3_s64(a, b);
++}
+--- a/experiments/cmp3_decision_advantage/corpus.hpp
++++ b/experiments/cmp3_decision_advantage/corpus.hpp
+@@ -1,10 +1,11 @@
+ #pragma once
++#include "pcg64.hpp"
++#include "resource_budget.hpp"
+ #include <array>
+ #include <cstdint>
+ #include <limits>
+ #include <stdexcept>
+ #include <vector>
+-#include "pcg64.hpp"
+ using i64 = std::int64_t;
+ using u64 = std::uint64_t;
+
+@@ -17,7 +18,13 @@
+ static int oracle_pattern_ac(i64 a, i64 b) { return (a > b) - (a < b); }
+
+ // Exact policy threshold check oracle for Pattern B (L = -100, U = +100)
+-static int oracle_pattern_b(i64 v) { return (v > 100) - (v < -100); }
++static int oracle_pattern_b(i64 v) {
++  if (v < -100)
++    return -1;
++  if (v <= 100)
++    return 0;
++  return 1;
++}
+
+ static std::array<Pair, 20> mandatory_boundaries() {
+   using L = std::numeric_limits<i64>;
+@@ -44,7 +51,8 @@
+ }
+
+ static std::vector<Pair> generate_corpus(int pattern, std::size_t n) {
+-  if (pattern < 0 || pattern > 2) throw std::invalid_argument("INVALID_PATTERN");
++  if (pattern < 0 || pattern > 2)
++    throw std::invalid_argument("INVALID_PATTERN");
+   PCG64 g;
+   std::vector<Pair> v;
+   v.reserve(n);
+@@ -52,6 +60,8 @@
+   constexpr u64 span = std::numeric_limits<u64>::max() - (1ULL << 31) + 1;
+
+   for (std::size_t i = 0; i < n; ++i) {
++    if (i % 100000 == 0)
++      check_resource_budget();
+     double u = g.prob();
+
+     if (pattern == 1) {
+@@ -59,11 +69,11 @@
+       i64 V = 0;
+       u64 kb = g.bounded(1000) + 1;
+       if (u < 0.20) {
+-        V = -100 - static_cast<i64>(kb);  // V < L (-100) -> DENY (-1)
++        V = -100 - static_cast<i64>(kb); // V < L (-100) -> DENY (-1)
+       } else if (u < 0.30) {
+-        V = -100 + static_cast<i64>(g.bounded(201));  // L <= V <= U -> AUDIT (0)
++        V = -100 + static_cast<i64>(g.bounded(201)); // L <= V <= U -> AUDIT (0)
+       } else {
+-        V = 100 + static_cast<i64>(kb);  // V > U (+100) -> ALLOW (+1)
++        V = 100 + static_cast<i64>(kb); // V > U (+100) -> ALLOW (+1)
+       }
+       v.push_back({V, 0});
+       continue;
+@@ -77,7 +87,8 @@
+     const u64 k = g.bounded(1ULL << 30) + 1;
+     double cut = (pattern == 0) ? 0.475 : (1.0 / 3.0);
+     double upper = (pattern == 0) ? 0.525 : (2.0 / 3.0);
+-    i64 b = (u < cut) ? (a + static_cast<i64>(k)) : ((u < upper) ? a : (a - static_cast<i64>(k)));
++    i64 b = (u < cut) ? (a + static_cast<i64>(k))
++                      : ((u < upper) ? a : (a - static_cast<i64>(k)));
+     v.push_back({a, b});
+   }
+   return v;
+--- a/experiments/cmp3_decision_advantage/dispatch.hpp
++++ b/experiments/cmp3_decision_advantage/dispatch.hpp
+@@ -23,3 +23,11 @@
+ NOINLINE u64 baseline3_policy(i64, i64);
+ NOINLINE u64 baseline4(i64, i64);
+ NOINLINE u64 baseline4_policy(i64, i64);
++
++// Untimed correctness probes; never used by the measured dispatch loops.
++using Classifier = int (*)(i64, i64, bool);
++NOINLINE int probe_candidate(i64, i64, bool);
++NOINLINE int probe_baseline1(i64, i64, bool);
++NOINLINE int probe_baseline2(i64, i64, bool);
++NOINLINE int probe_baseline3(i64, i64, bool);
++NOINLINE int probe_baseline4(i64, i64, bool);
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/fixtures/bootstrap_cases.json
+@@ -0,0 +1,453 @@
++{
++  "kind": "SYNTHETIC_MATHEMATICAL_AUDIT",
++  "resamples": 10000,
++  "draws_per_resample": 10,
++  "raw_draws": 100000,
++  "rejected_draws": 0,
++  "indices_sha256": "8c5f235bc6d1df1c1fcdca99903abaaaa8201591d5521fe84ba7e72868770b64",
++  "csv_sha256": "00d5c7b2bedb7647edb0f91f36df65d49524608c59c43381f9ac18eb90729b15",
++  "first_three": [
++    [
++      4,
++      1,
++      8,
++      1,
++      7,
++      2,
++      4,
++      2,
++      5,
++      4
++    ],
++    [
++      1,
++      6,
++      1,
++      5,
++      9,
++      9,
++      3,
++      5,
++      6,
++      1
++    ],
++    [
++      2,
++      4,
++      4,
++      4,
++      9,
++      7,
++      6,
++      6,
++      8,
++      8
++    ]
++  ],
++  "last": [
++    5,
++    4,
++    3,
++    9,
++    2,
++    1,
++    3,
++    7,
++    4,
++    0
++  ],
++  "lower_z_sum": -42,
++  "fixtures": {
++    "B_below": {
++      "candidate": [
++        850049,
++        850029,
++        850009,
++        849989,
++        849969,
++        849949,
++        849929,
++        849909,
++        849889,
++        849869
++      ],
++      "baseline1": [
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000
++      ],
++      "lower": {
++        "numerator": 149999,
++        "denominator": 1000000,
++        "decimal": "0.14999899999999999"
++      },
++      "upper": {
++        "numerator": 150083,
++        "denominator": 1000000,
++        "decimal": "0.15008299999999999"
++      },
++      "variance_difference": {
++        "numerator": 11000,
++        "denominator": 3,
++        "decimal": "3666.6666666666665"
++      },
++      "passes_L_15": false,
++      "direction_d": {
++        "numerator": 150041,
++        "denominator": 1000000,
++        "decimal": "0.15004100000000001"
++      },
++      "outcome": "INCONCLUSIVE",
++      "primary_p": 4.5730132308277414e-32
++    },
++    "B_at": {
++      "candidate": [
++        850048,
++        850028,
++        850008,
++        849988,
++        849968,
++        849948,
++        849928,
++        849908,
++        849888,
++        849868
++      ],
++      "baseline1": [
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000
++      ],
++      "lower": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "upper": {
++        "numerator": 37521,
++        "denominator": 250000,
++        "decimal": "0.150084"
++      },
++      "variance_difference": {
++        "numerator": 11000,
++        "denominator": 3,
++        "decimal": "3666.6666666666665"
++      },
++      "passes_L_15": true,
++      "direction_d": {
++        "numerator": 75021,
++        "denominator": 500000,
++        "decimal": "0.15004200000000001"
++      },
++      "outcome": "SUPPORTED",
++      "primary_p": 4.572738934188176e-32
++    },
++    "B_above": {
++      "candidate": [
++        850047,
++        850027,
++        850007,
++        849987,
++        849967,
++        849947,
++        849927,
++        849907,
++        849887,
++        849867
++      ],
++      "baseline1": [
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000
++      ],
++      "lower": {
++        "numerator": 150001,
++        "denominator": 1000000,
++        "decimal": "0.150001"
++      },
++      "upper": {
++        "numerator": 30017,
++        "denominator": 200000,
++        "decimal": "0.150085"
++      },
++      "variance_difference": {
++        "numerator": 11000,
++        "denominator": 3,
++        "decimal": "3666.6666666666665"
++      },
++      "passes_L_15": true,
++      "direction_d": {
++        "numerator": 150043,
++        "denominator": 1000000,
++        "decimal": "0.15004300000000001"
++      },
++      "outcome": "SUPPORTED",
++      "primary_p": 4.572464655829311e-32
++    },
++    "Z_nonzero_constant": {
++      "candidate": [
++        850000,
++        850000,
++        850000,
++        850000,
++        850000,
++        850000,
++        850000,
++        850000,
++        850000,
++        850000
++      ],
++      "baseline1": [
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000
++      ],
++      "lower": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "upper": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "variance_difference": {
++        "numerator": 0,
++        "denominator": 1,
++        "decimal": "0"
++      },
++      "passes_L_15": true,
++      "direction_d": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "outcome": "SUPPORTED",
++      "primary_p": 0.0
++    },
++    "Z_equal_constant": {
++      "candidate": [
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000
++      ],
++      "baseline1": [
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000,
++        1000000
++      ],
++      "lower": {
++        "numerator": 0,
++        "denominator": 1,
++        "decimal": "0"
++      },
++      "upper": {
++        "numerator": 0,
++        "denominator": 1,
++        "decimal": "0"
++      },
++      "variance_difference": {
++        "numerator": 0,
++        "denominator": 1,
++        "decimal": "0"
++      },
++      "passes_L_15": false,
++      "direction_d": {
++        "numerator": 0,
++        "denominator": 1,
++        "decimal": "0"
++      },
++      "outcome": "INCONCLUSIVE",
++      "primary_p": 1.0
++    },
++    "Z_constant_ratio_nondegenerate_difference": {
++      "candidate": [
++        340000,
++        1360000,
++        340000,
++        1360000,
++        340000,
++        1360000,
++        340000,
++        1360000,
++        340000,
++        1360000
++      ],
++      "baseline1": [
++        400000,
++        1600000,
++        400000,
++        1600000,
++        400000,
++        1600000,
++        400000,
++        1600000,
++        400000,
++        1600000
++      ],
++      "lower": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "upper": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "variance_difference": {
++        "numerator": 9000000000,
++        "denominator": 1,
++        "decimal": "9000000000"
++      },
++      "passes_L_15": true,
++      "direction_d": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "outcome": "SUPPORTED",
++      "primary_p": 0.0007389679098032661
++    },
++    "NZ_near_zero_relative_variance": {
++      "candidate": [
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000000,
++        85000000000000001
++      ],
++      "baseline1": [
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000,
++        100000000000000000
++      ],
++      "lower": {
++        "numerator": 37499999999999999,
++        "denominator": 250000000000000000,
++        "decimal": "0.14999999999999999"
++      },
++      "upper": {
++        "numerator": 3,
++        "denominator": 20,
++        "decimal": "0.14999999999999999"
++      },
++      "variance_difference": {
++        "numerator": 1,
++        "denominator": 10,
++        "decimal": "0.10000000000000001"
++      },
++      "passes_L_15": false,
++      "direction_d": {
++        "numerator": 149999999999999999,
++        "denominator": 1000000000000000000,
++        "decimal": "0.14999999999999999"
++      },
++      "outcome": "INCONCLUSIVE",
++      "primary_p": 1.3244924889487092e-151
++    }
++  },
++  "historical_counterexamples": [
++    {
++      "case": "C1_small_positive",
++      "outcome": "INCONCLUSIVE"
++    },
++    {
++      "case": "C2_nonsignificant",
++      "outcome": "INCONCLUSIVE"
++    },
++    {
++      "case": "C3_instruction_regression",
++      "outcome": "NOT SUPPORTED"
++    },
++    {
++      "case": "C4_covariant_pairs",
++      "outcome": "SUPPORTED"
++    },
++    {
++      "case": "C5_original_miss_counterexample",
++      "outcome": "NOT SUPPORTED"
++    },
++    {
++      "case": "C6_equal_counts",
++      "outcome": "INCONCLUSIVE"
++    },
++    {
++      "case": "C7_fastest_latency",
++      "outcome": "NOT SUPPORTED"
++    },
++    {
++      "case": "C8_multiplicity",
++      "outcome": "INCONCLUSIVE"
++    },
++    {
++      "case": "C9_exact_15_percent",
++      "outcome": "SUPPORTED"
++    },
++    {
++      "case": "C10_noisy_misses",
++      "outcome": "INCONCLUSIVE"
++    },
++    {
++      "case": "C11_uncertain_benefit_miss_regression",
++      "outcome": "NOT SUPPORTED"
++    }
++  ],
++  "failures": 0,
++  "coverage_simulations_performed": 0
++}
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/fixtures/corpus_0_first8.csv
+@@ -0,0 +1,9 @@
++pattern,a,b
++0,-4821301073915376003,-4821301073915376003
++0,1774319695089487403,1774319696155907258
++0,-1879593579324016142,-1879593578298510288
++0,-5751958888372994303,-5751958887463579904
++0,4925844535725056191,4925844535834012343
++0,2708308120745615899,2708308120182260125
++0,-2575438545019919633,-2575438544658869838
++0,6916086495609831870,6916086496467543015
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/fixtures/corpus_1_first8.csv
+@@ -0,0 +1,9 @@
++pattern,a,b
++1,1082,0
++1,482,0
++1,643,0
++1,-68,0
++1,-782,0
++1,76,0
++1,1060,0
++1,906,0
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/fixtures/corpus_2_first8.csv
+@@ -0,0 +1,9 @@
++pattern,a,b
++2,-4821301073915376003,-4821301073915376003
++2,1774319695089487403,1774319695089487403
++2,-1879593579324016142,-1879593578298510288
++2,-5751958888372994303,-5751958887463579904
++2,4925844535725056191,4925844535834012343
++2,2708308120745615899,2708308120745615899
++2,-2575438545019919633,-2575438544658869838
++2,6916086495609831870,6916086496467543015
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/fixtures/statistical_cases.json
+@@ -0,0 +1,2865 @@
++{
++  "original_blob": "0fbe0b4da1614867bf51b1c3eaf200f82d789a65",
++  "original_sha256": "990f54a57d7ad34cfcd93c45147e81440ac8f2430eae3271d5f676d6947081f1",
++  "pcg_outputs": [
++    "854CAFBD0A540778",
++    "3D174C3776108E7D",
++    "A8398F10D0F2976C",
++    "722D0D72D6D3EA65"
++  ],
++  "oracle_checks": 8195,
++  "regression_critical_t": 5.211371786975027,
++  "corpora": {
++    "0": {
++      "pairs": [
++        [
++          0,
++          -4821301073915376003,
++          -4821301073915376003
++        ],
++        [
++          0,
++          1774319695089487403,
++          1774319696155907258
++        ],
++        [
++          0,
++          -1879593579324016142,
++          -1879593578298510288
++        ],
++        [
++          0,
++          -5751958888372994303,
++          -5751958887463579904
++        ],
++        [
++          0,
++          4925844535725056191,
++          4925844535834012343
++        ],
++        [
++          0,
++          2708308120745615899,
++          2708308120182260125
++        ],
++        [
++          0,
++          -2575438545019919633,
++          -2575438544658869838
++        ],
++        [
++          0,
++          6916086495609831870,
++          6916086496467543015
++        ]
++      ],
++      "sha256": "84d3308aa5f95e6c9c5c6be22f553438d06ff197a84b2ba4ffdcfb2b84c34735"
++    },
++    "1": {
++      "pairs": [
++        [
++          1,
++          1082,
++          0
++        ],
++        [
++          1,
++          482,
++          0
++        ],
++        [
++          1,
++          643,
++          0
++        ],
++        [
++          1,
++          -68,
++          0
++        ],
++        [
++          1,
++          -782,
++          0
++        ],
++        [
++          1,
++          76,
++          0
++        ],
++        [
++          1,
++          1060,
++          0
++        ],
++        [
++          1,
++          906,
++          0
++        ]
++      ],
++      "sha256": "422efcfa890e9539c4daef38a61af5da5da2d0e80cced1c3f3dc0827c481d860"
++    },
++    "2": {
++      "pairs": [
++        [
++          2,
++          -4821301073915376003,
++          -4821301073915376003
++        ],
++        [
++          2,
++          1774319695089487403,
++          1774319695089487403
++        ],
++        [
++          2,
++          -1879593579324016142,
++          -1879593578298510288
++        ],
++        [
++          2,
++          -5751958888372994303,
++          -5751958887463579904
++        ],
++        [
++          2,
++          4925844535725056191,
++          4925844535834012343
++        ],
++        [
++          2,
++          2708308120745615899,
++          2708308120745615899
++        ],
++        [
++          2,
++          -2575438545019919633,
++          -2575438544658869838
++        ],
++        [
++          2,
++          6916086495609831870,
++          6916086496467543015
++        ]
++      ],
++      "sha256": "e355406b8232716811590e39602b80cfa48f1f5a26b1fe48ec5f6a18c4de90ed"
++    }
++  },
++  "cases": {
++    "C1_small_positive": {
++      "outcome": "INCONCLUSIVE",
++      "paired_p": 0.0,
++      "welch_instruction_p": 1.2572407650281474e-26,
++      "reduction_bound": [
++        0.04997001798920648,
++        0.05003001801080648
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -20,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -20.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            951,
++            949,
++            951,
++            949,
++            951,
++            949,
++            951,
++            949,
++            951,
++            949
++          ],
++          "branch_misses": [
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79
++          ],
++          "elapsed_ns": [
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    },
++    "C2_nonsignificant": {
++      "outcome": "INCONCLUSIVE",
++      "paired_p": 0.16785065605707344,
++      "welch_instruction_p": 0.16785065605707344,
++      "reduction_bound": [
++        -0.01,
++        0.11
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": -50,
++          "sd": 105.40925533894598,
++          "p": 0.16785065605707344,
++          "simultaneous_lower": -223.71239289916755
++        },
++        {
++          "mean_difference": -20,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -20.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            1050,
++            850,
++            1050,
++            850,
++            1050,
++            850,
++            1050,
++            850,
++            1050,
++            850
++          ],
++          "branch_misses": [
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79
++          ],
++          "elapsed_ns": [
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    },
++    "C3_instruction_regression": {
++      "outcome": "NOT SUPPORTED",
++      "paired_p": 0.0,
++      "welch_instruction_p": 1.8531207936620982e-37,
++      "reduction_bound": [
++        -0.20012007204322593,
++        -0.19988007195682592
++      ],
++      "regression_contrasts": [
++        0
++      ],
++      "contrasts": [
++        {
++          "mean_difference": 200,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": 200.0
++        },
++        {
++          "mean_difference": 0,
++          "sd": 0.0,
++          "p": 1.0,
++          "simultaneous_lower": 0.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            1201,
++            1199,
++            1201,
++            1199,
++            1201,
++            1199,
++            1201,
++            1199,
++            1201,
++            1199
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    },
++    "C4_covariant_pairs": {
++      "outcome": "SUPPORTED",
++      "paired_p": 0.0007389679098032661,
++      "welch_instruction_p": 0.4455114542629962,
++      "reduction_bound": [
++        0.2,
++        0.2
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": -200,
++          "sd": 126.49110640673517,
++          "p": 0.0007389679098032661,
++          "simultaneous_lower": -408.4548714790011
++        },
++        {
++          "mean_difference": -20,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -20.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            1280,
++            320,
++            1280,
++            320,
++            1280,
++            320,
++            1280,
++            320,
++            1280,
++            320
++          ],
++          "branch_misses": [
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79
++          ],
++          "elapsed_ns": [
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400,
++            1600,
++            400
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=SUPPORTED fastest=1"
++    },
++    "C5_original_miss_counterexample": {
++      "outcome": "NOT SUPPORTED",
++      "paired_p": 0.0,
++      "welch_instruction_p": null,
++      "reduction_bound": [
++        0.3,
++        0.3
++      ],
++      "regression_contrasts": [
++        1
++      ],
++      "contrasts": [
++        {
++          "mean_difference": -30,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -30.0
++        },
++        {
++          "mean_difference": 1,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": 1.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70
++          ],
++          "branch_misses": [
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11
++          ],
++          "elapsed_ns": [
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    },
++    "C6_equal_counts": {
++      "outcome": "INCONCLUSIVE",
++      "paired_p": 1.0,
++      "welch_instruction_p": null,
++      "reduction_bound": [
++        0.0,
++        0.0
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": 0,
++          "sd": 0.0,
++          "p": 1.0,
++          "simultaneous_lower": 0.0
++        },
++        {
++          "mean_difference": 0,
++          "sd": 0.0,
++          "p": 1.0,
++          "simultaneous_lower": 0.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    },
++    "C7_fastest_latency": {
++      "outcome": "NOT SUPPORTED",
++      "paired_p": 0.0,
++      "welch_instruction_p": 1.2544903973451196e-40,
++      "reduction_bound": [
++        0.29982010793523883,
++        0.3001801080648389
++      ],
++      "regression_contrasts": [
++        3
++      ],
++      "contrasts": [
++        {
++          "mean_difference": -300,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -300.0
++        },
++        {
++          "mean_difference": -20,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -20.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": 50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": 50.0
++        },
++        {
++          "mean_difference": -100,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -100.0
++        },
++        {
++          "mean_difference": -150,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -150.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            701,
++            699,
++            701,
++            699,
++            701,
++            699,
++            701,
++            699,
++            701,
++            699
++          ],
++          "branch_misses": [
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79,
++            81,
++            79
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            601,
++            599,
++            601,
++            599,
++            601,
++            599,
++            601,
++            599,
++            601,
++            599
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99,
++            101,
++            99
++          ],
++          "elapsed_ns": [
++            651,
++            649,
++            651,
++            649,
++            651,
++            649,
++            651,
++            649,
++            651,
++            649
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=2"
++    },
++    "C8_multiplicity": {
++      "outcome": "INCONCLUSIVE",
++      "paired_p": 0.0,
++      "welch_instruction_p": 1.2544903973451196e-40,
++      "reduction_bound": [
++        0.29982010793523883,
++        0.3001801080648389
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": -300,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -300.0
++        },
++        {
++          "mean_difference": 5,
++          "sd": 3.8297084310253524,
++          "p": 0.002564780934564127,
++          "simultaneous_lower": -1.311284654467447
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            701,
++            699,
++            701,
++            699,
++            701,
++            699,
++            701,
++            699,
++            701,
++            699
++          ],
++          "branch_misses": [
++            999,
++            1001,
++            1002,
++            1003,
++            1004,
++            1006,
++            1007,
++            1008,
++            1009,
++            1011
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "elapsed_ns": [
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "elapsed_ns": [
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "elapsed_ns": [
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999,
++            1001,
++            999
++          ],
++          "branch_misses": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "elapsed_ns": [
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549,
++            551,
++            549
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    },
++    "C9_exact_15_percent": {
++      "outcome": "SUPPORTED",
++      "paired_p": 0.0,
++      "welch_instruction_p": null,
++      "reduction_bound": [
++        0.15,
++        0.15
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": -15,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -15.0
++        },
++        {
++          "mean_difference": 0,
++          "sd": 0.0,
++          "p": 1.0,
++          "simultaneous_lower": 0.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            85,
++            85,
++            85,
++            85,
++            85,
++            85,
++            85,
++            85,
++            85,
++            85
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=SUPPORTED fastest=1"
++    },
++    "C10_noisy_misses": {
++      "outcome": "INCONCLUSIVE",
++      "paired_p": 0.0,
++      "welch_instruction_p": null,
++      "reduction_bound": [
++        0.3,
++        0.3
++      ],
++      "regression_contrasts": [],
++      "contrasts": [
++        {
++          "mean_difference": -30,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -30.0
++        },
++        {
++          "mean_difference": 99999990,
++          "sd": 316227766.01683795,
++          "p": 0.3434364419640589,
++          "simultaneous_lower": -421137188.6975027
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        },
++        {
++          "mean_difference": -5,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -5.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70,
++            70
++          ],
++          "branch_misses": [
++            1000000000,
++            0,
++            0,
++            0,
++            0,
++            0,
++            0,
++            0,
++            0,
++            0
++          ],
++          "elapsed_ns": [
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50,
++            50
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100,
++            100
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55,
++            55
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=INCONCLUSIVE fastest=1"
++    },
++    "C11_uncertain_benefit_miss_regression": {
++      "outcome": "NOT SUPPORTED",
++      "paired_p": 0.16785065605707344,
++      "welch_instruction_p": 0.16785065605707344,
++      "reduction_bound": [
++        -0.01,
++        0.11
++      ],
++      "regression_contrasts": [
++        1
++      ],
++      "contrasts": [
++        {
++          "mean_difference": -50,
++          "sd": 105.40925533894598,
++          "p": 0.16785065605707344,
++          "simultaneous_lower": -223.71239289916755
++        },
++        {
++          "mean_difference": 1,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": 1.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        },
++        {
++          "mean_difference": -50,
++          "sd": 0.0,
++          "p": 0.0,
++          "simultaneous_lower": -50.0
++        }
++      ],
++      "exact_series": [
++        {
++          "mode": 0,
++          "instructions": [
++            1050,
++            850,
++            1050,
++            850,
++            1050,
++            850,
++            1050,
++            850,
++            1050,
++            850
++          ],
++          "branch_misses": [
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11,
++            11
++          ],
++          "elapsed_ns": [
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449,
++            451,
++            449
++          ]
++        },
++        {
++          "mode": 1,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 2,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 3,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        },
++        {
++          "mode": 4,
++          "instructions": [
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000,
++            1000
++          ],
++          "branch_misses": [
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10,
++            10
++          ],
++          "elapsed_ns": [
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499,
++            501,
++            499
++          ]
++        }
++      ],
++      "pr637_outcome": "pattern=0 outcome=NOT SUPPORTED fastest=1"
++    }
++  }
++}
+--- a/experiments/cmp3_decision_advantage/inspect_assembly.py
++++ b/experiments/cmp3_decision_advantage/inspect_assembly.py
+@@ -1,46 +1,92 @@
+-"""Static instruction inventory for emitted assembly; never dynamic PMU counts.
+-Usage: python3 inspect_assembly.py <optimized-output-directory>.
+-"""
+-import pathlib
++"""Provisional assembly/basic-block and object inventories; never PMU estimates."""
++import argparse
++import json
++from pathlib import Path
+ import re
+-import sys
++import subprocess
+
++INSTRUCTION = re.compile(r'^\s+([a-z][a-z0-9.]*)(?:\s+(.*))?$')
++LABEL = re.compile(r'^([A-Za-z_.$][\w.$]*):')
++TERMINATOR = re.compile(r'^(?:ret\w*|br|b(?:\.[a-z]+)?|cbz|cbnz|tbz|tbnz|j[a-z]+)(?:\s|$)')
+
+-def functions(path):
+-    result = []
+-    body = None
+-    for line in path.read_text().splitlines():
+-        if line.startswith('\t.cfi_startproc'):
+-            body = []
+-        elif line.startswith('\t.cfi_endproc'):
+-            result.append(body)
+-            body = None
+-        elif body is not None and re.match(r'^\t[a-z][a-z0-9.]*\s', line):
+-            body.append(line.split(';')[0].split('#APP')[0].strip())
++def inventory(text):
++    # Only branch destinations form block boundaries. Mach-O Lloh labels mark
++    # linker optimization hints inside straight-line code, not basic blocks.
++    destinations=set()
++    for raw in text.splitlines():
++        line=raw.split(';',1)[0].strip()
++        if TERMINATOR.match(line) and len(line.split(None,1))==2:
++            target=line.split(None,1)[1].split(',')[-1].strip().split()[0]
++            if re.fullmatch(r'[A-Za-z_.$][\w.$]*',target):destinations.add(target)
++    result=[];function=None;block=None;last_label='unknown';serial=0
++    def begin(label):
++        nonlocal block
++        block={'label':label,'instructions':[]}
++        function['blocks'].append(block)
++    for raw in text.splitlines():
++        label=LABEL.match(raw)
++        if label:
++            last_label=label[1]
++            if function is not None and last_label in destinations:
++                if block and not block['instructions']: block['label']=last_label
++                else: begin(last_label)
++            continue
++        if raw.strip().startswith('.cfi_startproc'):
++            function={'symbol':last_label,'blocks':[]};begin('entry');continue
++        if raw.strip().startswith('.cfi_endproc'):
++            if function is None: raise ValueError('CFI_END_WITHOUT_START')
++            function['blocks']=[b for b in function['blocks'] if b['instructions']]
++            for b in function['blocks']: b['count']=len(b['instructions'])
++            function['total']=sum(b['count'] for b in function['blocks'])
++            result.append(function);function=None;block=None;continue
++        if function is None:continue
++        if '%bb.' in raw:
++            if block and block['instructions']:begin(raw.strip())
++            continue
++        if raw.strip().startswith(('.inst ','.byte ','.long ')):
++            raise ValueError('EMITTED_OPCODE_DIRECTIVE_REQUIRES_OBJECT_REVIEW')
++        # ARM immediates use '#'; only ';' comments are stripped here.
++        line=raw.split(';',1)[0].rstrip()
++        match=INSTRUCTION.match(line)
++        if match is None:continue
++        mnemonic=match[1]
++        if block is None:
++            serial+=1;begin('fallthrough_'+str(serial))
++        block['instructions'].append(line.strip())
++        if TERMINATOR.match(line.strip()):block=None
++    if function is not None:raise ValueError('UNTERMINATED_CFI_FUNCTION')
+     return result
+
++def object_inventory(path,objdump):
++    run=subprocess.run([objdump,'--disassemble','--no-show-raw-insn',str(path)],text=True,capture_output=True,check=True)
++    functions=[];current=None
++    for line in run.stdout.splitlines():
++        label=re.match(r'^\s*[0-9a-f]+\s+<([^>]+)>:',line)
++        if label:
++            current={'symbol':label[1],'instructions':[]};functions.append(current)
++        else:
++            op=re.match(r'^\s*([0-9a-f]+):\s+([a-z][a-z0-9.]*(?:\s+.*)?)$',line)
++            if op and current is not None:current['instructions'].append({'offset':op[1],'instruction':op[2]})
++    for function in functions:function['span_count']=len(function['instructions'])
++    return {'functions':functions,'raw_disassembly':run.stdout,
++            'scope':'Object spans may include alignment padding; no dynamic-count inference.'}
+
+ def main():
+-    directory = pathlib.Path(sys.argv[1])
+-    bodies = {}
+-    for name in ('candidate', 'baseline1', 'baseline2', 'baseline3', 'baseline4', 'payload'):
+-        bodies[name] = functions(directory / (name + '.s'))
+-        print(f'{name}: static_instruction_totals={[len(b) for b in bodies[name]]}')
+-    # Exactly two no-inline dispatch wrappers and three external payload handlers.
+-    assert all(len(bodies[name]) == 2 for name in bodies if name != 'payload')
+-    assert len(bodies['payload']) == 3
+-    for name in ('candidate', 'baseline2'):
+-        for body in bodies[name]:
+-            assert any('targets' in line for line in body), name
+-            assert any(re.match(r'(br\s+x[0-9]+|jmp\s+\*)', line) for line in body), name
+-    for name in ('baseline1', 'baseline3', 'baseline4'):
+-        for body in bodies[name]:
+-            for target in ('target_less', 'target_equal', 'target_greater'):
+-                assert any(target in line for line in body), (name, target)
+-    equal = bodies['candidate'][0] == bodies['baseline2'][0]
+-    print(f'AC_candidate_baseline2_identical_instructions={equal}')
+-    print('Static totals include all basic blocks, including mutually exclusive branches.')
+-    print('These are compiler lowering observations, not ternary advantage evidence.')
+-
+-if __name__ == '__main__':
+-    main()
++    parser=argparse.ArgumentParser()
++    parser.add_argument('directory',type=Path)
++    parser.add_argument('--objdump')
++    args=parser.parse_args()
++    report={}
++    for name in ('candidate','baseline1','baseline2','baseline3','baseline4','payload'):
++        functions=inventory((args.directory/(name+'.s')).read_text())
++        if not functions:raise ValueError('NO_FUNCTION_INVENTORY')
++        report[name]={'assembly':functions}
++        if args.objdump:report[name]['object']=object_inventory(args.directory/(name+'.o'),args.objdump)
++    def ac(name):
++        matches=[f for f in report[name]['assembly'] if 'probe_' not in f['symbol'] and '_policy' not in f['symbol']]
++        if len(matches)!=1:raise ValueError('AMBIGUOUS_AC_SYMBOL')
++        return [i for b in matches[0]['blocks'] for i in b['instructions']]
++    report['AC_candidate_baseline2_identical']=ac('candidate')==ac('baseline2')
++    report['interpretation']='Static source/object lowering only, never measured instruction counts or ternary advantage.'
++    print(json.dumps(report,indent=2))
++if __name__=='__main__':main()
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/r1_analysis.py
+@@ -0,0 +1,200 @@
++"""PROVISIONAL r1 offline mathematics. No measurement authorization is implied.
++Integer raw data and Fraction decisions; the authenticated CLI is analyze_r1.py.
++"""
++import functools
++import math
++import re
++from fractions import Fraction
++
++OUTCOMES = ('BLOCKED', 'NOT SUPPORTED', 'INCONCLUSIVE', 'SUPPORTED')
++HEADER = 'pattern,mode,repetition,instructions,branch_misses,elapsed_ns,checksum'
++U64_MAX = (1 << 64) - 1
++I64_MAX = (1 << 63) - 1
++MINIMUM = Fraction(3, 20)
++REGRESSION_ALPHA = Fraction(1, 1800)  # family alpha .01 / 18
++
++class Invalid(ValueError):
++    pass
++
++class PCG64:
++    """Specified old-state PCG XSL-RR 128/64, arbitrary precision modulo 2^128."""
++    mask = (1 << 128) - 1
++    multiplier = 0x2360ED051FC65DA44385C511560B53A9
++    def __init__(self):
++        seed = 0x5438315F434D50335F53454544303131
++        self.state = ((3 + seed) * self.multiplier + 3) & self.mask
++    def next(self):
++        old = self.state
++        self.state = (old * self.multiplier + 3) & self.mask
++        x = ((old >> 64) ^ old) & U64_MAX
++        rotation = old >> 122
++        return ((x >> rotation) | (x << ((-rotation) & 63))) & U64_MAX
++    def bounded(self, n):
++        if type(n) is not int or not 1 <= n <= U64_MAX:
++            raise Invalid('INVALID_BOUND')
++        threshold = (1 << 64) % n
++        while True:
++            x = self.next()
++            if x >= threshold:
++                return x % n
++
++@functools.cache
++def bootstrap_indices():
++    generator = PCG64()
++    return tuple(tuple(generator.bounded(10) for _ in range(10)) for _ in range(10000))
++
++def validate_series(values, positive=False, maximum=U64_MAX):
++    if len(values) != 10:
++        raise Invalid('TEN_MATCHED_OBSERVATIONS_REQUIRED')
++    if any(type(x) is not int or x < (1 if positive else 0) or x > maximum for x in values):
++        raise Invalid('INVALID_INTEGER_OBSERVATION')
++
++@functools.lru_cache(maxsize=128)
++def reduction_bounds(candidate, baseline):
++    validate_series(candidate, True)
++    validate_series(baseline, True)
++    reductions = []
++    for indices in bootstrap_indices():
++        b = sum(baseline[i] for i in indices)
++        c = sum(candidate[i] for i in indices)
++        reductions.append(Fraction(b - c, b))
++    reductions.sort()
++    return reductions[99], reductions[9899]
++
++@functools.lru_cache(maxsize=1024)
++def student_pvalue(t, df=9):
++    """Two-sided Student-t tail: normalized integral of sin(theta)^(df-1).
++    Composite Simpson quadrature; zero variance is handled before this routine.
++    """
++    if math.isinf(t):
++        return 0.0
++    if t == 0:
++        return 1.0
++    theta = math.atan2(math.sqrt(df), abs(t))
++    panels = 4096
++    h = theta / panels
++    total = math.sin(theta) ** (df - 1)
++    total += sum((4 if i % 2 else 2) * math.sin(i * h) ** (df - 1) for i in range(1, panels))
++    normalizer = math.sqrt(math.pi) * math.gamma(df / 2) / (2 * math.gamma((df + 1) / 2))
++    return min(1.0, max(0.0, total * h / (3 * normalizer)))
++
++@functools.cache
++def critical_value(alpha):
++    low, high = 0.0, 100.0
++    for _ in range(60):
++        middle = (low + high) / 2
++        if student_pvalue(middle) > float(alpha):
++            low = middle
++        else:
++            high = middle
++    return (low + high) / 2
++
++def contrast(a, b):
++    validate_series(a)
++    validate_series(b)
++    differences = [x - y for x, y in zip(a, b)]
++    mean = Fraction(sum(differences), 10)
++    variance = sum((Fraction(x) - mean) ** 2 for x in differences) / 9
++    sd = math.sqrt(variance)
++    se = sd / math.sqrt(10)
++    p = (1.0 if mean == 0 else 0.0) if variance == 0 else student_pvalue(float(mean) / se)
++    margin95 = critical_value(Fraction(1, 20)) * se
++    margin99 = critical_value(Fraction(1, 100)) * se
++    margin_family = critical_value(REGRESSION_ALPHA) * se
++    return {'raw': differences, 'mean': mean, 'sample_variance': variance, 'sample_sd': sd,
++            'p_two_sided': p, 'df': 9, 'degenerate': variance == 0,
++            'ci95': [float(mean) - margin95, float(mean) + margin95],
++            'ci99': [float(mean) - margin99, float(mean) + margin99],
++            'family_interval': [float(mean) - margin_family, float(mean) + margin_family],
++            'demonstrated_regression': mean > 0 and p < float(REGRESSION_ALPHA)}
++
++def classify_pattern(modes):
++    if len(modes) != 5:
++        raise Invalid('ALL_FIVE_IMPLEMENTATIONS_REQUIRED')
++    for mode in modes:
++        if set(mode) != {'instructions', 'branch_misses', 'elapsed_ns'}:
++            raise Invalid('INVALID_METRICS')
++        validate_series(mode['instructions'], True)
++        validate_series(mode['branch_misses'])
++        validate_series(mode['elapsed_ns'], True, I64_MAX)
++    candidate, baseline = modes[:2]
++    ci, bi = tuple(candidate['instructions']), tuple(baseline['instructions'])
++    low, high = reduction_bounds(ci, bi)
++    reduction = Fraction(sum(bi) - sum(ci), sum(bi))
++    primary = contrast(ci, bi)
++    fastest = min(range(1, 5), key=lambda m: (sum(modes[m]['elapsed_ns']), m))
++    regressions = {'instructions_vs_1': primary,
++                   'branch_misses_vs_1': contrast(candidate['branch_misses'], baseline['branch_misses'])}
++    regressions.update({f'latency_vs_{m}': contrast(candidate['elapsed_ns'], modes[m]['elapsed_ns'])
++                        for m in range(1, 5)})
++    assert len(regressions) == 6  # six fixed contrasts per pattern; divisor always 18
++    reasons = [name for name, value in regressions.items() if value['demonstrated_regression']]
++    qualifies = (reduction >= MINIMUM and low >= MINIMUM and primary['p_two_sided'] < .01 and
++                 sum(candidate['branch_misses']) <= sum(baseline['branch_misses']) and
++                 sum(candidate['elapsed_ns']) <= sum(modes[fastest]['elapsed_ns']))
++    outcome = 'NOT SUPPORTED' if reasons else 'SUPPORTED' if qualifies else 'INCONCLUSIVE'
++    reports = []
++    for m, mode in enumerate(modes):
++        reports.append({'mode': m, 'metrics': {metric: contrast(values, [0]*10) for metric, values in mode.items()},
++                        'candidate_minus_baseline': {metric: contrast(candidate[metric], values)
++                          for metric, values in mode.items()} if m else {}})
++    return {'outcome': outcome, 'reasons': reasons, 'fastest_baseline': fastest,
++            'instruction_reduction': reduction, 'bootstrap_lower': low, 'bootstrap_upper': high,
++            'minimum_effect_status': 'ESTABLISHED' if low >= MINIMUM else 'BOUND_BELOW_TARGET' if high < MINIMUM else 'UNRESOLVED',
++            'primary': primary, 'regressions': regressions, 'family_size': 18,
++            'raw_and_intervals': reports, 'coverage': 'NOMINAL_NOT_EMPIRICALLY_CALIBRATED'}
++
++def aggregate(outcomes):
++    if len(outcomes) != 3 or any(x not in OUTCOMES for x in outcomes):
++        raise Invalid('THREE_PATTERN_OUTCOMES_REQUIRED')
++    return min(outcomes, key=OUTCOMES.index)
++
++def parse_csv(raw):
++    if not isinstance(raw, bytes) or len(raw) > 1024 * 1024:
++        raise Invalid('INVALID_CSV_BYTES')
++    try:
++        text = raw.decode('ascii')
++    except UnicodeDecodeError as error:
++        raise Invalid('INVALID_CSV_ENCODING') from error
++    lines = text.split('\n')
++    if lines[-1] != '' or lines[0] != HEADER:
++        raise Invalid('INVALID_CSV_HEADER_OR_TERMINATOR')
++    records, checksums = {}, {}
++    for line in lines[1:-1]:
++        fields = line.split(',')
++        if len(fields) != 7 or any(re.fullmatch(r'(0|[1-9][0-9]*)', s) is None for s in fields):
++            raise Invalid('INVALID_INTEGER_OBSERVATION')
++        if any(len(s) > 20 for s in fields):
++            raise Invalid('INTEGER_OVERFLOW')
++        p, m, r, instructions, misses, elapsed, checksum = map(int, fields)
++        if p >= 3 or m >= 5 or r >= 10:
++            raise Invalid('INVALID_RECORD_ID')
++        if not 0 < instructions <= U64_MAX or not 0 <= misses <= U64_MAX or not 0 < elapsed <= I64_MAX or not 0 <= checksum <= U64_MAX:
++            raise Invalid('INTEGER_OVERFLOW_OR_ZERO')
++        key = (p, m, r)
++        if key in records:
++            raise Invalid('DUPLICATE_OBSERVATION')
++        if p in checksums and checksum != checksums[p]:
++            raise Invalid('PAYLOAD_PARITY')
++        records[key] = (instructions, misses, elapsed)
++        checksums[p] = checksum
++    if len(records) != 150:
++        raise Invalid('MISSING_OBSERVATIONS')
++    return [[{metric: [records[p, m, r][j] for r in range(10)]
++              for j, metric in enumerate(('instructions', 'branch_misses', 'elapsed_ns'))}
++             for m in range(5)] for p in range(3)]
++
++def diagnose(raw):
++    patterns = [classify_pattern(modes) for modes in parse_csv(raw)]
++    return {'kind': 'synthetic_diagnostic', 'patterns': patterns,
++            'diagnostic_outcome': aggregate([p['outcome'] for p in patterns]),
++            'measurement_outcome': 'BLOCKED', 'reason': 'TEST_ONLY_EVIDENCE_NOT_MEASUREMENTS'}
++
++def json_value(value):
++    if isinstance(value, Fraction):
++        return {'numerator': value.numerator, 'denominator': value.denominator}
++    if isinstance(value, dict):
++        return {key: json_value(v) for key, v in value.items()}
++    if isinstance(value, (tuple, list)):
++        return [json_value(v) for v in value]
++    return value
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/resource_budget.hpp
+@@ -0,0 +1,28 @@
++#pragma once
++#include <cstdint>
++#include <stdexcept>
++#if defined(__unix__) || defined(__APPLE__)
++#include <sys/resource.h>
++inline void check_resource_budget() {
++  rusage usage{};
++  if (getrusage(RUSAGE_SELF, &usage) != 0)
++    throw std::runtime_error("RESOURCE_ACCOUNTING_FAILURE");
++  const auto user =
++      static_cast<std::uint64_t>(usage.ru_utime.tv_sec) * 1000000ULL +
++      static_cast<std::uint64_t>(usage.ru_utime.tv_usec);
++  const auto system =
++      static_cast<std::uint64_t>(usage.ru_stime.tv_sec) * 1000000ULL +
++      static_cast<std::uint64_t>(usage.ru_stime.tv_usec);
++#if defined(__APPLE__)
++  const auto rss = static_cast<std::uint64_t>(usage.ru_maxrss);
++#else
++  const auto rss = static_cast<std::uint64_t>(usage.ru_maxrss) * 1024ULL;
++#endif
++  if (user + system > 600000000ULL || rss > 500000000ULL)
++    throw std::runtime_error("BUDGET_EXCEEDED");
++}
++#else
++inline void check_resource_budget() {
++  throw std::runtime_error("RESOURCE_ACCOUNTING_UNAVAILABLE");
++}
++#endif
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/runner_r1.py
+@@ -0,0 +1,273 @@
++"""PROVISIONAL experiment-local verification. Production execution is disabled.
++Test fixtures/signatures never become eligible measurement evidence.
++No key provisioning, daemon, global trust store, or production credentials.
++"""
++import base64
++import contextlib
++import ctypes
++import datetime as dt
++import hashlib
++import json
++import os
++from pathlib import Path
++import re
++import secrets
++import shutil
++import stat
++import subprocess
++import sys
++import tempfile
++from r1_analysis import Invalid, parse_csv
++
++PROVISIONAL = True
++ORIGINAL_BLOB = '0fbe0b4da1614867bf51b1c3eaf200f82d789a65'
++DOCUMENTS = {
++    'PROPOSED_PROTOCOL_AMENDMENT.md': 'f068bb0dab6425029436483f82487e0297cf86c92135935d62d00efbaf04f193',
++    'PROTOCOL_DECISION_MATRIX.md': '26e683aa40c19a72359135696f608004dd45a8d6cf29f4f4a591bbe0ab9f19b3',
++    'STATISTICAL_COUNTEREXAMPLES.md': '64c11fdf13f6daf88fbd660fa72b5a7ba06ab2347d8f553ed9a1cc07f70e496c',
++    'IMPLEMENTATION_REPAIR_PLAN.md': '2674c55f0dc08d55a4561839478869f82389c4fd0524763d4238878448913757',
++    'FINAL_APPROVAL_RECORD.md': '8a5bdd874114e0c990f912dfbb343d65b3bf13ec49d411224ddd2b2835a67124'}
++ROLES = {'APPROVAL': 'maintainer_approval', 'DELEGATION': 'runner_delegation',
++         'ELIGIBILITY': 'eligibility', 'RUN': 'run_completion'}
++
++def canonical(value):
++    def check(x):
++        if type(x) is dict:
++            if any(type(k) is not str or not k.isascii() for k in x):
++                raise Invalid('NONCANONICAL_KEY')
++            for v in x.values(): check(v)
++        elif type(x) in (list, tuple):
++            for v in x: check(v)
++        elif x is not None and type(x) not in (str, int, bool):
++            raise Invalid('NONCANONICAL_VALUE')
++    check(value)
++    return (json.dumps(value, sort_keys=True, ensure_ascii=True, separators=(',', ':'), allow_nan=False)+'\n').encode('ascii')
++
++PACKET_DIGEST = hashlib.sha256(canonical(DOCUMENTS)).hexdigest()
++
++def digest(data): return hashlib.sha256(data).hexdigest()
++
++def strict_json(raw):
++    if len(raw) > 1024 * 1024: raise Invalid('OVERSIZE_RECORD')
++    def unique(pairs):
++        result = {}
++        for k, v in pairs:
++            if k in result: raise Invalid('DUPLICATE_JSON_KEY')
++            result[k] = v
++        return result
++    try:
++        value = json.loads(raw, object_pairs_hook=unique, parse_constant=lambda x: (_ for _ in ()).throw(Invalid('NONFINITE_JSON')))
++        if type(value) is not dict or canonical(value) != raw: raise Invalid('NONCANONICAL_RECORD')
++        return value
++    except (ValueError, TypeError, UnicodeError) as error:
++        raise Invalid('MALFORMED_RECORD') from error
++
++def framed(role, payload):
++    if role not in ROLES: raise Invalid('UNKNOWN_SIGNATURE_ROLE')
++    return f'T81-COMP3-r1/{role}/v1'.encode('ascii')+b'\0'+canonical(payload)
++
++def verify_signature(public_key, role, payload, signature):
++    if len(public_key) != 32 or len(signature) != 64: raise Invalid('INVALID_SIGNATURE_ENCODING')
++    executable = shutil.which('openssl')
++    if executable is None: raise Invalid('SIGNATURE_VERIFIER_UNAVAILABLE')
++    with tempfile.TemporaryDirectory(prefix='comp3-public-verify-') as directory:
++        p = Path(directory)
++        (p/'public.der').write_bytes(bytes.fromhex('302a300506032b6570032100')+public_key)
++        (p/'message').write_bytes(framed(role, payload))
++        (p/'signature').write_bytes(signature)
++        result = subprocess.run([executable, 'pkeyutl', '-verify', '-rawin', '-pubin', '-inkey', str(p/'public.der'),
++                                 '-keyform', 'DER', '-in', str(p/'message'), '-sigfile', str(p/'signature')], capture_output=True)
++    if result.returncode: raise Invalid('UNTRUSTED_SIGNATURE')
++
++def signed_record(folder, basename, role, public_key):
++    try:
++        path = safe_path(folder, basename+'.json')
++        value = strict_json(path.read_bytes())
++        sig = base64.b64decode(safe_path(folder, basename+'.sig').read_bytes(), validate=True)
++    except (OSError, ValueError) as error:
++        raise Invalid('MISSING_OR_MALFORMED_COMPLETION') from error
++    if value.get('record_type') != ROLES[role]: raise Invalid('SIGNATURE_ROLE_MISMATCH')
++    verify_signature(public_key, role, value, sig)
++    return value, digest(path.read_bytes())
++
++def safe_path(folder, name):
++    base = Path(folder).resolve()
++    if type(name) is not str or not name or Path(name).is_absolute() or any(x in ('..', '.', '') for x in name.split('/')):
++        raise Invalid('INVALID_ARTIFACT_PATH')
++    p = base
++    for part in name.split('/'):
++        p /= part
++        if p.is_symlink(): raise Invalid('SYMLINK_ARTIFACT')
++    if not p.is_file() or not p.resolve().is_relative_to(base): raise Invalid('MISSING_ARTIFACT')
++    return p
++
++def instant(text):
++    if type(text) is not str or re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ', text) is None:
++        raise Invalid('INVALID_TIMESTAMP')
++    try: return dt.datetime.strptime(text, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=dt.timezone.utc)
++    except ValueError as error: raise Invalid('INVALID_TIMESTAMP') from error
++
++def public_bytes(value):
++    if type(value) is not str or re.fullmatch('[0-9a-f]{64}', value) is None: raise Invalid('INVALID_PUBLIC_KEY')
++    return bytes.fromhex(value)
++
++def unsigned_integer(x, maximum=(1<<64)-1):
++    if type(x) is not int or not 0 <= x <= maximum: raise Invalid('INVALID_RESOURCE_STATUS')
++    return x
++
++def decode_status(status):
++    unsigned_integer(status, 65535)
++    if os.WIFEXITED(status): return {'exited': True, 'exit_code': os.WEXITSTATUS(status), 'signal': None}
++    if os.WIFSIGNALED(status): return {'exited': False, 'exit_code': None, 'signal': os.WTERMSIG(status)}
++    raise Invalid('INCOMPLETE_TERMINAL_STATUS')
++
++def check_terminal(terminal):
++    if type(terminal) is not dict: raise Invalid('MISSING_TERMINAL_STATUS')
++    expected = decode_status(terminal.get('raw_wait_status'))
++    if any(type(terminal.get(k)) is not type(v) or terminal.get(k) != v for k, v in expected.items()): raise Invalid('CONTRADICTORY_TERMINAL_STATUS')
++    if not expected['exited'] or expected['exit_code'] != 0: raise Invalid('COLLECTOR_FAILED')
++    cpu = unsigned_integer(terminal.get('user_us')) + unsigned_integer(terminal.get('system_us'))
++    rss = unsigned_integer(terminal.get('peak_rss_bytes'))
++    if cpu > 600000000 or rss > 500000000: raise Invalid('BUDGET_EXCEEDED')
++    if terminal.get('accounting') != 'test_only_fixture': raise Invalid('TEST_ACCOUNTING_SCOPE_REQUIRED')
++
++def verify_test_bundle(folder, trust_file, now=None):
++    """Authenticate synthetic diagnostic evidence; NEVER returns measurement eligibility."""
++    try:
++        trust = strict_json(Path(trust_file).read_bytes())
++        if trust.get('kind') != 'test_only_trust': raise Invalid('TEST_TRUST_REQUIRED')
++        root = public_bytes(trust.get('root_public_key_hex'))
++        approval, approval_hash = signed_record(folder, 'approval', 'APPROVAL', root)
++        delegation, delegation_hash = signed_record(folder, 'delegation', 'DELEGATION', root)
++        eligibility, eligibility_hash = signed_record(folder, 'eligibility', 'ELIGIBILITY', root)
++        revoked=trust.get('revoked_delegation_sha256',[])
++        if type(revoked) is not list or any(type(x) is not str or re.fullmatch('[0-9a-f]{64}',x) is None for x in revoked):
++            raise Invalid('MALFORMED_TEST_REVOCATIONS')
++        if delegation_hash in revoked: raise Invalid('REVOKED_DELEGATION')
++        runner = public_bytes(delegation.get('runner_public_key_hex'))
++        run, run_hash = signed_record(folder, 'completion', 'RUN', runner)
++        for record in (approval, delegation, eligibility, run):
++            if record.get('artifact_kind') != 'synthetic' or record.get('packet_digest') != PACKET_DIGEST:
++                raise Invalid('TEST_KIND_OR_PROTOCOL_MISMATCH')
++        if approval.get('decision') != 'APPROVE' or any(approval.get(m) is not True for m in ('M1','M2','M3','M4')):
++            raise Invalid('M1_M4_NOT_APPROVED_IN_TEST_FIXTURE')
++        if approval.get('document_sha256') != DOCUMENTS or approval.get('original_blob') != ORIGINAL_BLOB:
++            raise Invalid('PROTOCOL_IDENTITY_MISMATCH')
++        if approval.get('protocol_revision') != 'EXP-T81-COMP3-01/r1' or approval.get('measurement_authorized') is not False:
++            raise Invalid('TEST_APPROVAL_SCOPE')
++        if delegation.get('runner_role') != 'test': raise Invalid('TEST_RUNNER_ROLE_REQUIRED')
++        if approval.get('delegation_sha256') != delegation_hash: raise Invalid('DELEGATION_MISMATCH')
++        if eligibility.get('approval_sha256') != approval_hash or eligibility.get('delegation_sha256') != delegation_hash:
++            raise Invalid('ELIGIBILITY_MISMATCH')
++        if run.get('approval_sha256') != approval_hash or run.get('delegation_sha256') != delegation_hash or run.get('eligibility_sha256') != eligibility_hash:
++            raise Invalid('COMPLETION_CHAIN_MISMATCH')
++        campaign = approval.get('campaign_id')
++        if type(campaign) is not str or not campaign or any(r.get('campaign_id') != campaign for r in (delegation, eligibility, run)):
++            raise Invalid('CAMPAIGN_MISMATCH')
++        if re.fullmatch('[0-9a-f]{32}', run.get('run_id', '')) is None: raise Invalid('INVALID_RUN_ID')
++        attempt = unsigned_integer(run.get('attempt'))
++        if not 1 <= attempt <= unsigned_integer(delegation.get('max_attempts')): raise Invalid('ATTEMPT_SCOPE')
++        start, finish = instant(run.get('started_at')), instant(run.get('finished_at'))
++        if not max(instant(approval.get('approved_at')), instant(eligibility.get('eligible_at'))) < start <= finish:
++            raise Invalid('PREAPPROVAL_OR_INVALID_RUN_TIME')
++        current = now or dt.datetime.now(dt.timezone.utc)
++        if not instant(delegation.get('not_before')) <= start <= finish <= min(current,instant(delegation.get('not_after'))):
++            raise Invalid('EXPIRED_OR_FUTURE_RUN')
++        if run.get('n') != 10000000 or run.get('repetitions') != 10: raise Invalid('MEASUREMENT_BUDGET_MISMATCH')
++        if run.get('source_commit') != eligibility.get('source_commit') or re.fullmatch('[0-9a-f]{40}',run.get('source_commit','')) is None:
++            raise Invalid('SOURCE_IDENTITY_MISMATCH')
++        check_terminal(run.get('terminal'))  # mandatory BEFORE CSV parsing/statistics
++        if run.get('failure_codes') != []: raise Invalid('RECORDED_COLLECTOR_FAILURE')
++        expected_order = [[p,r,j,(j+r)%5] for p in range(3) for r in range(10) for j in range(5)]
++        if run.get('run_order') != expected_order: raise Invalid('INVALID_MATCHED_RUN_ORDER')
++        if run.get('controls') != {'affinity_verified':True,'test_only':True}: raise Invalid('ENVIRONMENT_CONTROLS_UNVERIFIED')
++        if run.get('pmu') != {'instruction_event':'PERF_COUNT_HW_INSTRUCTIONS','miss_event':'PERF_COUNT_HW_BRANCH_MISSES','scheduled':True,'test_only':True}:
++            raise Invalid('PMU_CONFIGURATION_MISMATCH')
++        artifacts = run.get('artifacts')
++        required = {'csv','stderr','environment','corpus_A','corpus_B','corpus_C','executable','source_manifest','assembly'}
++        if type(artifacts) is not dict or set(artifacts) != required: raise Invalid('INCOMPLETE_ARTIFACT_MANIFEST')
++        for role, entry in artifacts.items():
++            if type(entry) is not dict or set(entry) != {'path','sha256'}: raise Invalid('MALFORMED_ARTIFACT_BINDING')
++            if digest(safe_path(folder,entry['path']).read_bytes()) != entry['sha256']: raise Invalid('MODIFIED_ARTIFACT')
++        inputs = eligibility.get('artifacts')
++        if type(inputs) is not dict or set(inputs) != required - {'csv','stderr','environment'}:
++            raise Invalid('INCOMPLETE_ELIGIBILITY_INPUTS')
++        if any(artifacts[k] != value for k,value in inputs.items()): raise Invalid('ELIGIBLE_ARTIFACT_MISMATCH')
++        raw_csv=safe_path(folder,artifacts['csv']['path']).read_bytes()
++        parse_csv(raw_csv)  # terminal and authentication precede domain/coverage checks
++        actual=[tuple(map(int,line.split(',')[:3])) for line in raw_csv.decode('ascii').splitlines()[1:]]
++        if actual != [(p,m,block) for p,block,position,m in expected_order]:
++            raise Invalid('OBSERVATION_ORDER_MISMATCH')
++        return {'kind':'synthetic_diagnostic','measurement_eligible':False,'run':run,
++                'record_sha256':run_hash,'csv':raw_csv}
++    except (OSError,KeyError,TypeError,ValueError) as error:
++        if isinstance(error,Invalid): raise
++        raise Invalid('MISSING_OR_MALFORMED_COMPLETION') from error
++
++def verify_measurement_bundle(*args, **kwargs):
++    # This is an explicit publication/activation barrier, not a test-key override.
++    raise Invalid('FORMAL_APPROVAL_MISSING_PROVISIONAL_PATCH')
++
++@contextlib.contextmanager
++def locked_journal(path):
++    if os.name != 'posix': raise Invalid('JOURNAL_LOCKING_UNSUPPORTED')
++    import fcntl
++    path = Path(path)
++    if path.is_symlink(): raise Invalid('SYMLINK_JOURNAL')
++    flags = os.O_CREAT | os.O_RDWR | getattr(os,'O_NOFOLLOW',0)
++    fd = os.open(path,flags,0o600)
++    try:
++        fcntl.flock(fd,fcntl.LOCK_EX)
++        info = os.fstat(fd)
++        if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode)&0o077: raise Invalid('UNPROTECTED_TEST_JOURNAL')
++        raw = os.read(fd,1024*1024)
++        journal = strict_json(raw) if raw else {'kind':'test_only_journal','reservations':{},'admissions':{}}
++        if journal.get('kind') != 'test_only_journal': raise Invalid('TEST_JOURNAL_SCOPE')
++        yield journal
++        encoded = canonical(journal)
++        os.lseek(fd,0,0);os.ftruncate(fd,0)
++        offset=0
++        while offset<len(encoded): offset+=os.write(fd,encoded[offset:])
++        os.fsync(fd)
++    finally: os.close(fd)
++
++def reserve_test_run(path,campaign,max_attempts):
++    with locked_journal(path) as j:
++        count=sum(value['campaign_id']==campaign for value in j['reservations'].values())
++        if count>=max_attempts: raise Invalid('ATTEMPT_LIMIT')
++        run_id=secrets.token_hex(16)
++        while run_id in j['reservations']: run_id=secrets.token_hex(16)
++        j['reservations'][run_id]={'campaign_id':campaign,'attempt':count+1}
++    return run_id,count+1
++
++def admit_test_diagnostic(verified,path):
++    if verified.get('kind')!='synthetic_diagnostic' or verified.get('measurement_eligible') is not False: raise Invalid('TEST_ADMISSION_SCOPE')
++    run=verified['run']
++    with locked_journal(path) as j:
++        reservation=j['reservations'].get(run['run_id'])
++        if reservation!={'campaign_id':run['campaign_id'],'attempt':run['attempt']}: raise Invalid('UNRESERVED_RUN_ID')
++        if run['run_id'] in j['admissions']: raise Invalid('REPLAY_DETECTED')
++        j['admissions'][run['run_id']]=verified['record_sha256']
++
++def wait4_linux_native(pid):
++    """Native integer kernel accounting; deliberately unavailable on unverified ABIs."""
++    if sys.platform!='linux' or ctypes.sizeof(ctypes.c_long)!=8: raise Invalid('LINUX_NATIVE_ACCOUNTING_UNAVAILABLE')
++    class Timeval(ctypes.Structure): _fields_=[('sec',ctypes.c_long),('usec',ctypes.c_long)]
++    class Usage(ctypes.Structure):
++        _fields_=[('user',Timeval),('system',Timeval)]+[(k,ctypes.c_long) for k in
++          ('maxrss','ixrss','idrss','isrss','minflt','majflt','nswap','inblock','oublock','msgsnd','msgrcv','nsignals','nvcsw','nivcsw')]
++    library=ctypes.CDLL(None,use_errno=True)
++    wait=library.wait4;wait.argtypes=[ctypes.c_int,ctypes.POINTER(ctypes.c_int),ctypes.c_int,ctypes.POINTER(Usage)];wait.restype=ctypes.c_int
++    status=ctypes.c_int();usage=Usage()
++    while True:
++        result=wait(pid,ctypes.byref(status),0,ctypes.byref(usage))
++        if result==pid: break
++        if result<0 and ctypes.get_errno()==4: continue
++        raise Invalid('SUPERVISOR_WAIT_FAILURE')
++    return {'raw_wait_status':status.value,**decode_status(status.value),
++            'user_us':usage.user.sec*1000000+usage.user.usec,
++            'system_us':usage.system.sec*1000000+usage.system.usec,
++            'peak_rss_bytes':usage.maxrss*1024,'accounting':'linux_wait4_native_integer'}
++
++def run_production(*args, **kwargs):
++    raise Invalid('FORMAL_APPROVAL_MISSING_PROVISIONAL_PATCH')
+--- a/experiments/cmp3_decision_advantage/statistics.hpp
++++ /dev/null
+@@ -1,173 +0,0 @@
+-#pragma once
+-#include <algorithm>
+-#include <cmath>
+-#include <numeric>
+-#include <stdexcept>
+-#include <vector>
+-#include "pcg64.hpp"
+-
+-inline void validate_pair(const std::vector<double>& a, const std::vector<double>& b) {
+-  if (a.size() != 10 || b.size() != 10)
+-    throw std::invalid_argument("TEN_MATCHED_OBSERVATIONS_REQUIRED");
+-  for (const auto* v : {&a, &b})
+-    for (double x : *v)
+-      if (!std::isfinite(x) || x < 0 || x > static_cast<double>(UINT64_MAX))
+-        throw std::invalid_argument("INVALID_OBSERVATION");
+-}
+-struct Summary {
+-  double mean;
+-  double sd;
+-};
+-inline Summary paired_summary(const std::vector<double>& a, const std::vector<double>& b) {
+-  validate_pair(a, b);
+-  long double mean = 0, ss = 0;
+-  for (std::size_t i = 0; i < 10; ++i) mean += static_cast<long double>(a[i]) - b[i];
+-  mean /= 10;
+-  for (std::size_t i = 0; i < 10; ++i) {
+-    const long double d = static_cast<long double>(a[i]) - b[i] - mean;
+-    ss += d * d;
+-  }
+-  return {static_cast<double>(mean), static_cast<double>(std::sqrt(ss / 9))};
+-}
+-enum class Outcome { BLOCKED, SUPPORTED, NOT_SUPPORTED, INCONCLUSIVE };
+-
+-const char* outcome_to_string(Outcome o) {
+-  switch (o) {
+-    case Outcome::BLOCKED:
+-      return "BLOCKED";
+-    case Outcome::SUPPORTED:
+-      return "SUPPORTED";
+-    case Outcome::NOT_SUPPORTED:
+-      return "NOT SUPPORTED";
+-    case Outcome::INCONCLUSIVE:
+-      return "INCONCLUSIVE";
+-  }
+-  return "UNKNOWN";
+-}
+-
+-struct MeasureSeries {
+-  std::vector<double> candidate_inst;
+-  std::vector<double> base1_inst;
+-  std::vector<double> candidate_miss;
+-  std::vector<double> base1_miss;
+-  std::vector<double> candidate_lat;
+-  std::vector<double> fastest_base_lat;
+-  bool pmu_available{true};
+-  bool correctness_pass{true};
+-  bool budget_pass{true};
+-};
+-
+-// Computes 99% bootstrap lower/upper bound for instruction reduction d = 1 - mean(cand)/mean(base1)
+-std::pair<double, double> compute_bootstrap_reduction_bounds(const std::vector<double>& cand,
+-                                                             const std::vector<double>& base1) {
+-  PCG64 rng;
+-  std::size_t n = cand.size();
+-  validate_pair(cand, base1);
+-  for (double x : base1)
+-    if (x <= 0) throw std::invalid_argument("ZERO_BASELINE_INSTRUCTIONS");
+-
+-  constexpr int kResamples = 10000;
+-  std::vector<double> bootstrap_d(kResamples);
+-
+-  for (std::size_t b = 0; b < kResamples; ++b) {
+-    long double sum_c = 0.0L;
+-    long double sum_b = 0.0L;
+-    for (std::size_t i = 0; i < n; ++i) {
+-      std::size_t idx = static_cast<std::size_t>(rng.bounded(n));
+-      sum_c += cand[idx];
+-      sum_b += base1[idx];
+-    }
+-    bootstrap_d[b] = static_cast<double>(1.0L - (sum_c / sum_b));
+-  }
+-
+-  std::sort(bootstrap_d.begin(), bootstrap_d.end());
+-  // Inverse empirical CDF: ceil(q*10000)-1. One-sided 99% bounds at q=.01/.99.
+-
+-  return {bootstrap_d[99], bootstrap_d[9899]};
+-}
+-
+-// Paired Student-t test p-value calculation for 9 degrees of freedom (n=10)
+-double compute_paired_t_pvalue(const std::vector<double>& cand, const std::vector<double>& base1) {
+-  validate_pair(cand, base1);
+-  const auto summary = paired_summary(cand, base1);
+-  if (summary.sd == 0) return summary.mean == 0 ? 1.0 : 0.0;
+-  const double t = std::abs(summary.mean) / (summary.sd / std::sqrt(10.0));
+-  // For df=9, substituting t=3*cot(theta) gives the two-tail
+-  // probability integral sin(theta)^8 / integral_0^(pi/2) sin(theta)^8.
+-  // Composite Simpson integration (4096 panels); analytic normalizer 35*pi/256.
+-  const double theta = std::atan2(3.0, t);
+-  constexpr int panels = 4096;
+-  const double h = theta / panels;
+-  double sum = std::pow(std::sin(theta), 8);
+-  for (int i = 1; i < panels; ++i) sum += (i % 2 == 0 ? 2.0 : 4.0) * std::pow(std::sin(i * h), 8);
+-  return std::clamp(sum * h / 3.0 / (35.0 * std::acos(-1.0) / 256.0), 0.0, 1.0);
+-}
+-
+-// Paired two-sided 99% Student-t interval for n=10 (df=9, t_0.995=3.2498355415921254).
+-std::pair<double, double> paired_interval99(const std::vector<double>& a,
+-                                            const std::vector<double>& b) {
+-  validate_pair(a, b);
+-  const auto summary = paired_summary(a, b);
+-  const double margin = 3.2498355415921254 * summary.sd / std::sqrt(10.0);
+-  return {summary.mean - margin, summary.mean + margin};
+-}
+-
+-bool valid_series(const MeasureSeries& s) {
+-  const std::vector<double>* fields[] = {&s.candidate_inst, &s.base1_inst,    &s.candidate_miss,
+-                                         &s.base1_miss,     &s.candidate_lat, &s.fastest_base_lat};
+-  for (auto* f : fields) {
+-    if (f->size() != 10) return false;
+-    for (double x : *f)
+-      if (!std::isfinite(x) || x < 0 || x > static_cast<double>(UINT64_MAX)) return false;
+-  }
+-  for (const auto* f : {&s.candidate_inst, &s.base1_inst, &s.candidate_lat, &s.fastest_base_lat})
+-    for (double x : *f)
+-      if (x <= 0) return false;
+-  return true;
+-}
+-
+-Outcome classify_pattern_result(const MeasureSeries& series) {
+-  if (!series.pmu_available || !series.correctness_pass || !series.budget_pass ||
+-      !valid_series(series)) {
+-    return Outcome::BLOCKED;
+-  }
+-
+-  double mean_cand_miss =
+-      std::accumulate(series.candidate_miss.begin(), series.candidate_miss.end(), 0.0) /
+-      static_cast<double>(series.candidate_miss.size());
+-  double mean_base1_miss =
+-      std::accumulate(series.base1_miss.begin(), series.base1_miss.end(), 0.0) /
+-      static_cast<double>(series.base1_miss.size());
+-
+-  double mean_cand_lat =
+-      std::accumulate(series.candidate_lat.begin(), series.candidate_lat.end(), 0.0) /
+-      static_cast<double>(series.candidate_lat.size());
+-  double mean_fastest_lat =
+-      std::accumulate(series.fastest_base_lat.begin(), series.fastest_base_lat.end(), 0.0) /
+-      static_cast<double>(series.fastest_base_lat.size());
+-
+-  auto [bound_low_99, bound_high_99] =
+-      compute_bootstrap_reduction_bounds(series.candidate_inst, series.base1_inst);
+-  double p_val = compute_paired_t_pvalue(series.candidate_inst, series.base1_inst);
+-
+-  // 1. SUPPORTED Rule:
+-  // p < 0.01 AND 99% lower bound for instruction reduction >= 0.15 AND mean_miss <= base1 AND
+-  // mean_lat <= fastest_base
+-  if (p_val < 0.01 && bound_low_99 >= 0.15 && mean_cand_miss <= mean_base1_miss &&
+-      mean_cand_lat <= mean_fastest_lat) {
+-    return Outcome::SUPPORTED;
+-  }
+-
+-  // 2. NOT SUPPORTED Rule:
+-  // 99% upper bound for reduction < 0.15 OR mispredictions strictly higher OR latency strictly
+-  // higher
+-  if (bound_high_99 < 0.15 ||
+-      paired_interval99(series.candidate_miss, series.base1_miss).first > 0.0 ||
+-      paired_interval99(series.candidate_lat, series.fastest_base_lat).first > 0.0) {
+-    return Outcome::NOT_SUPPORTED;
+-  }
+-
+-  // 3. INCONCLUSIVE Rule:
+-  // Every other complete valid result
+-  return Outcome::INCONCLUSIVE;
+-}
+--- a/experiments/cmp3_decision_advantage/test_analysis.py
++++ /dev/null
+@@ -1,47 +0,0 @@
+-"""CSV integration regressions; all values are synthetic, never measurements."""
+-import pathlib
+-import subprocess
+-import sys
+-import tempfile
+-
+-HEADER = 'pattern,mode,repetition,instructions,branch_misses,elapsed_ns,checksum\n'
+-
+-def rows():
+-    return [f'{p},{m},{r},{70 if m == 0 else 100},10,{50 if m == 0 else 55},42\n'
+-            for p in range(3) for m in range(5) for r in range(10)]
+-
+-
+-def main():
+-    cases = 0
+-    with tempfile.TemporaryDirectory() as directory:
+-        path = pathlib.Path(directory) / 'synthetic.csv'
+-        def check(lines, expected, code):
+-            nonlocal cases
+-            path.write_text(HEADER + ''.join(lines))
+-            result = subprocess.run([sys.argv[1], str(path)], capture_output=True, text=True)
+-            assert result.returncode == code, result.stdout + result.stderr
+-            assert expected in result.stdout, result.stdout
+-            cases += 1
+-        check(rows(), 'overall=SUPPORTED', 0)
+-        check(rows()[:-1], 'BLOCKED', 6)
+-        check(rows() + rows()[:1], 'BLOCKED', 6)
+-        check([], 'BLOCKED', 6)
+-        data = rows()
+-        data[0] = '0,0,0,nan,10,50,42\n'
+-        check(data, 'BLOCKED', 6)
+-        data = rows()
+-        data[-1] = data[-1].replace(',42\n', ',43\n')
+-        check(data, 'PAYLOAD_PARITY', 6)
+-        data = rows()
+-        for r in range(10):
+-            data[r] = f'0,0,{r},70,11,50,42\n'
+-        check(data, 'reason=MISS_REGRESSION', 0)
+-        # Fastest baseline is selected from all four, independently per pattern.
+-        data = rows()
+-        for r in range(10):
+-            data[40 + r] = f'0,4,{r},100,10,49,42\n'
+-        check(data, 'reason=LATENCY_REGRESSION', 0)
+-    print(f'ANALYSIS_INTEGRATION_PASS cases={cases}')
+-
+-if __name__ == '__main__':
+-    main()
+--- a/experiments/cmp3_decision_advantage/test_classification.cpp
++++ /dev/null
+@@ -1,158 +0,0 @@
+-#include <cassert>
+-#include <iostream>
+-#include <limits>
+-#include "statistics.hpp"
+-void test_classification_outcomes() {
+-  // Scenario 1: BLOCKED due to PMU unavailable
+-  {
+-    MeasureSeries s;
+-    s.pmu_available = false;
+-    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-  }
+-
+-  // Scenario 2: SUPPORTED synthetic inputs (cand inst = 70% of base1 inst)
+-  {
+-    MeasureSeries s;
+-    s.candidate_inst = {70, 70, 70, 70, 70, 70, 70, 70, 70, 70};
+-    s.base1_inst = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+-    s.candidate_miss = {10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
+-    s.base1_miss = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
+-    s.candidate_lat = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
+-    s.fastest_base_lat = {55, 55, 55, 55, 55, 55, 55, 55, 55, 55};
+-    assert(classify_pattern_result(s) == Outcome::SUPPORTED);
+-  }
+-
+-  // Scenario 3: NOT SUPPORTED synthetic inputs (cand inst = 95% of base1 inst, reduction < 15%)
+-  {
+-    MeasureSeries s;
+-    s.candidate_inst = {95, 95, 95, 95, 95, 95, 95, 95, 95, 95};
+-    s.base1_inst = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+-    s.candidate_miss = {10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
+-    s.base1_miss = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
+-    s.candidate_lat = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
+-    s.fastest_base_lat = {55, 55, 55, 55, 55, 55, 55, 55, 55, 55};
+-    assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+-  }
+-
+-  // Scenario 4: INCONCLUSIVE synthetic inputs (cand inst = 84% of base1 inst with higher variance)
+-  {
+-    MeasureSeries s;
+-    s.candidate_inst = {82, 86, 81, 87, 83, 85, 82, 86, 84, 84};
+-    s.base1_inst = {100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
+-    s.candidate_miss = {10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
+-    s.base1_miss = {12, 12, 12, 12, 12, 12, 12, 12, 12, 12};
+-    s.candidate_lat = {50, 50, 50, 50, 50, 50, 50, 50, 50, 50};
+-    s.fastest_base_lat = {55, 55, 55, 55, 55, 55, 55, 55, 55, 55};
+-    assert(classify_pattern_result(s) == Outcome::INCONCLUSIVE);
+-  }
+-
+-  // Regression: empty and incomplete data must fail closed, never generate NaNs or OOB.
+-  {
+-    MeasureSeries s;
+-    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-    s.candidate_inst.assign(10, 70);
+-    s.base1_inst.assign(9, 100);
+-    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-  }
+-  // Regression from Codex: significant, consistent miss regression overrides instruction gain.
+-  {
+-    MeasureSeries s;
+-    s.candidate_inst.assign(10, 70);
+-    s.base1_inst.assign(10, 100);
+-    s.candidate_miss.assign(10, 11);
+-    s.base1_miss.assign(10, 10);
+-    s.candidate_lat.assign(10, 50);
+-    s.fastest_base_lat.assign(10, 55);
+-    assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+-    s.candidate_miss[0] = std::numeric_limits<double>::quiet_NaN();
+-    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-  }
+-
+-  std::cout << "ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED" << std::endl;
+-}
+-
+-void test_adversarial_statistics() {
+-  MeasureSeries good;
+-  good.candidate_inst.assign(10, 70);
+-  good.base1_inst.assign(10, 100);
+-  good.candidate_miss.assign(10, 10);
+-  good.base1_miss.assign(10, 10);
+-  good.candidate_lat.assign(10, 50);
+-  good.fastest_base_lat.assign(10, 55);
+-  const std::vector<double> z(10, 0), one(10, 1);
+-  assert(compute_paired_t_pvalue(z, z) == 1);
+-  assert(compute_paired_t_pvalue(one, z) == 0);
+-  assert(paired_interval99(one, z) == std::make_pair(1.0, 1.0));
+-  assert(paired_interval99(z, z) == std::make_pair(0.0, 0.0));
+-  const auto bounds = compute_bootstrap_reduction_bounds(good.candidate_inst, good.base1_inst);
+-  assert(std::abs(bounds.first - .30) < 1e-15 && bounds.first == bounds.second);
+-  auto s = good;
+-  s.candidate_inst.assign(10, 85);
+-  assert(classify_pattern_result(s) == Outcome::SUPPORTED);  // inclusive 15% boundary
+-  s.candidate_inst.assign(10, 85.0001);
+-  assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+-  // Noise does not become a significant regression through an arbitrary mean allowance.
+-  s = good;
+-  s.candidate_miss.assign(10, 0);
+-  s.candidate_miss[0] = 1e9;
+-  assert(paired_interval99(s.candidate_miss, s.base1_miss).first < 0);
+-  assert(classify_pattern_result(s) == Outcome::INCONCLUSIVE);
+-  s = good;
+-  s.candidate_lat.assign(10, 56);
+-  assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+-  // Every metric must have exactly ten finite, nonnegative observations.
+-  for (int field = 0; field < 6; ++field) {
+-    for (int defect = 0; defect < 7; ++defect) {
+-      s = good;
+-      std::vector<double>* fields[] = {&s.candidate_inst, &s.base1_inst,    &s.candidate_miss,
+-                                       &s.base1_miss,     &s.candidate_lat, &s.fastest_base_lat};
+-      auto& v = *fields[field];
+-      if (defect == 0) v.clear();
+-      if (defect == 1) v.pop_back();
+-      if (defect == 2) v.push_back(1);
+-      if (defect == 3) v[0] = std::numeric_limits<double>::quiet_NaN();
+-      if (defect == 4) v[0] = std::numeric_limits<double>::infinity();
+-      if (defect == 5) v[0] = -1;
+-      if (defect == 6) v[0] = std::numeric_limits<double>::max();
+-      assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-    }
+-  }
+-  s = good;
+-  s.base1_inst[0] = 0;
+-  assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-  for (int flag = 0; flag < 3; ++flag) {
+-    s = good;
+-    if (flag == 0) s.pmu_available = false;
+-    if (flag == 1) s.correctness_pass = false;
+-    if (flag == 2) s.budget_pass = false;
+-    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+-  }
+-  for (int helper = 0; helper < 3; ++helper) {
+-    bool threw = false;
+-    try {
+-      if (helper == 0) (void)compute_bootstrap_reduction_bounds({}, one);
+-      if (helper == 1) (void)compute_paired_t_pvalue(one, {});
+-      if (helper == 2) (void)paired_interval99({}, {});
+-    } catch (const std::invalid_argument&) {
+-      threw = true;
+-    }
+-    assert(threw);
+-  }
+-  // df=9 two-tail quantile landmarks. Invert a series with known SE=1.
+-  std::vector<double> a(10), b(10, 10);
+-  const double sd = std::sqrt(10.0);
+-  const double scale = sd / std::sqrt(82.5 / 9.0);
+-  for (double t : {0.0, 2.2621571628540993, 3.2498355415921254, 4.7809125859335495}) {
+-    for (std::size_t i = 0; i < 10; ++i) a[i] = 10 + t + (static_cast<double>(i) - 4.5) * scale;
+-    const double expected = t == 0 ? 1 : t < 3 ? .05 : t < 4 ? .01 : .001;
+-    assert(std::abs(compute_paired_t_pvalue(a, b) - expected) < 1e-11);
+-    assert(std::abs(compute_paired_t_pvalue(a, b) - compute_paired_t_pvalue(b, a)) < 1e-14);
+-  }
+-  std::cout << "ADVERSARIAL_STATISTICS_PASS invalid_series=42 flags=3 helpers=3 quantiles=4\n";
+-}
+-
+-int main() {
+-  test_adversarial_statistics();
+-  test_classification_outcomes();
+-  return 0;
+-}
+--- a/experiments/cmp3_decision_advantage/test_corpus.py
++++ b/experiments/cmp3_decision_advantage/test_corpus.py
+@@ -1,4 +1,5 @@
+ """Independent arbitrary-precision PCG/corpus differential check (30,000 pairs)."""
++from pathlib import Path
+ import subprocess
+ import sys
+
+@@ -45,5 +46,10 @@
+     run = subprocess.run([sys.argv[1], '--dump-corpus'], text=True, capture_output=True, check=True)
+     actual = [tuple(map(int, line.split(','))) for line in run.stdout.splitlines()]
+     expected = [pair for p in range(3) for pair in corpus(p)]
++    for p in range(3):
++        golden=(Path(__file__).resolve().parent/f'fixtures/corpus_{p}_first8.csv').read_text().splitlines()[1:]
++        golden=[tuple(map(int,line.split(','))) for line in golden]
++        assert expected[p*10000:p*10000+8] == golden
++        assert actual[p*10000:p*10000+8] == golden
+     assert actual == expected
+-    print('INDEPENDENT_CORPUS_PASS pairs=30000')
++    print('INDEPENDENT_CORPUS_PASS pairs=30000 golden_pairs=24')
+--- /dev/null
++++ b/experiments/cmp3_decision_advantage/test_r1.py
+@@ -0,0 +1,338 @@
++"""Non-performance provisional r1 tests. Ephemeral keys are TEST ONLY."""
++import copy
++import datetime as dt
++from fractions import Fraction
++import hashlib
++import itertools
++import json
++import os
++from pathlib import Path
++import shutil
++import signal
++import subprocess
++import sys
++import tempfile
++import unittest
++import base64
++import r1_analysis as a
++import runner_r1 as r
++import inspect_assembly as assembly
++
++ROOT=Path(__file__).resolve().parent
++
++def csv_bytes():
++    return (a.HEADER+'\n'+''.join(f'{p},{m},{i},{70 if m==0 else 100},{8 if m==0 else 10},{50 if m==0 else 55},42\n'
++            for p in range(3) for i in range(10) for j in range(5) for m in [(i+j)%5])).encode()
++
++class Statistics(unittest.TestCase):
++    def test_pcg_golden(self):
++        g=a.PCG64()
++        self.assertEqual([g.next() for _ in range(4)], [0x854CAFBD0A540778,0x3D174C3776108E7D,0xA8398F10D0F2976C,0x722D0D72D6D3EA65])
++    def test_all_100000_indices_independent_jump(self):
++        mask=(1<<128)-1;mul=a.PCG64.multiplier;s0=((3+0x5438315F434D50335F53454544303131)*mul+3)&mask
++        powers=[];mm,bb=mul,3
++        for _ in range(32):powers.append((mm,bb));mm,bb=mm*mm&mask,bb*(mm+1)&mask
++        def raw(index):
++            m,c=1,0;bit=0
++            while index:
++                if index&1:pm,pc=powers[bit];m,c=pm*m&mask,(pm*c+pc)&mask
++                index>>=1;bit+=1
++            s=(m*s0+c)&mask;x=(s>>64)^(s&((1<<64)-1));rot=s>>122
++            return x if rot==0 else ((x>>rot)|((x&((1<<rot)-1))<<(64-rot)))
++        expected=[];j=0
++        while len(expected)<100000:
++            x=raw(j);j+=1
++            if x>=6:expected.append(x%10)
++        actual=bytes(i for row in a.bootstrap_indices() for i in row)
++        self.assertEqual(actual,bytes(expected))
++        self.assertEqual(hashlib.sha256(actual).hexdigest(),'8c5f235bc6d1df1c1fcdca99903abaaaa8201591d5521fe84ba7e72868770b64')
++    def test_rejection_and_invalid_bound(self):
++        class Forced(a.PCG64):
++            def __init__(self):self.outputs=iter([0,5,6,7,9,10])
++            def next(self):return next(self.outputs)
++        g=Forced();self.assertEqual([g.bounded(10) for _ in range(4)],[6,7,9,0])
++        for n in (0,-1,1<<64):
++            with self.subTest(n=n),self.assertRaises(a.Invalid):g.bounded(n)
++    def test_all_eleven_counterexamples(self):
++        cases=json.loads((ROOT/'fixtures/statistical_cases.json').read_text())['cases']
++        self.assertEqual(len(cases),11)
++        for name,case in cases.items():
++            modes=[{k:v[k] for k in ('instructions','branch_misses','elapsed_ns')} for v in case['exact_series']]
++            with self.subTest(case=name):self.assertEqual(a.classify_pattern(modes)['outcome'],case['outcome'])
++    def test_seven_exact_bootstrap_fixtures(self):
++        fixtures=json.loads((ROOT/'fixtures/bootstrap_cases.json').read_text())['fixtures']
++        self.assertEqual(len(fixtures),7)
++        for name,f in fixtures.items():
++            with self.subTest(name=name):
++                low,high=a.reduction_bounds(tuple(f['candidate']),tuple(f['baseline1']))
++                self.assertEqual(low,Fraction(f['lower']['numerator'],f['lower']['denominator']))
++                self.assertEqual(high,Fraction(f['upper']['numerator'],f['upper']['denominator']))
++                self.assertEqual(low>=Fraction(3,20),f['passes_L_15'])
++                got=a.contrast(f['candidate'],f['baseline1'])
++                self.assertEqual(got['sample_variance'],Fraction(f['variance_difference']['numerator'],f['variance_difference']['denominator']))
++    def test_near_zero_not_erased(self):
++        b=[10**17]*10;c=[85*10**15]*9+[85*10**15+1]
++        low,_=a.reduction_bounds(tuple(c),tuple(b))
++        self.assertLess(low,Fraction(3,20));self.assertEqual(float(low),float(Fraction(3,20)))
++        self.assertEqual(a.contrast(c,b)['sample_variance'],Fraction(1,10))
++        self.assertFalse(a.contrast(c,b)['degenerate'])
++    def test_zero_variance_limits(self):
++        equal=a.contrast([10]*10,[10]*10);nonzero=a.contrast([11]*10,[10]*10)
++        self.assertEqual(equal['p_two_sided'],1);self.assertEqual(equal['ci99'],[0,0])
++        self.assertEqual(nonzero['p_two_sided'],0);self.assertEqual(nonzero['family_interval'],[1,1])
++    def test_quantile_landmarks(self):
++        for t,p in [(0,1),(2.2621571628540993,.05),(3.2498355415921254,.01),(4.7809125859335495,.001)]:
++            with self.subTest(t=t):self.assertAlmostEqual(a.student_pvalue(t),p,places=11)
++    def test_family_and_64_aggregate_combinations(self):
++        family=[(p,k,b) for p in range(3) for k,b in [('I',1),('B',1),('T',1),('T',2),('T',3),('T',4)]]
++        self.assertEqual(len(set(family)),18)
++        self.assertAlmostEqual(a.critical_value(a.REGRESSION_ALPHA),5.211371786975027,places=10)
++        for values in itertools.product(a.OUTCOMES,repeat=3):
++            self.assertEqual(a.aggregate(values),next(x for x in ('BLOCKED','NOT SUPPORTED','INCONCLUSIVE','SUPPORTED') if x in values))
++        for v,g,q in itertools.product([False,True],repeat=3):
++            self.assertEqual(sum([not v,v and g,v and not g and q,v and not g and not q]),1)
++    def test_each_of_eighteen_regression_contrasts(self):
++        for pattern in range(3):
++            for name,field,baseline in [('instructions_vs_1','instructions',1),('branch_misses_vs_1','branch_misses',1)]+[(f'latency_vs_{i}','elapsed_ns',i) for i in range(1,5)]:
++                modes=a.parse_csv(csv_bytes())[pattern]
++                for mode in modes:
++                    for key in mode:mode[key]=[100]*10
++                modes[0][field]=[110]*10
++                if field=='elapsed_ns':
++                    for i in range(1,5):modes[i][field]=[110]*10
++                    modes[baseline][field]=[100]*10
++                with self.subTest(pattern=pattern,contrast=name):
++                    result=a.classify_pattern(modes)
++                    self.assertEqual(result['outcome'],'NOT SUPPORTED')
++                    self.assertEqual(result['reasons'],[name])
++    def test_contrast_rejects_invalid_observations(self):
++        for x in (float('nan'),float('inf'),1.0,True,-1,1<<64):
++            with self.subTest(value=x),self.assertRaises(a.Invalid):a.contrast([x]+[1]*9,[1]*10)
++    def test_invalid_series_direct(self):
++        for field in ('instructions','branch_misses','elapsed_ns'):
++            for defect in ('missing','extra','fraction','nan','negative','overflow','bool'):
++                modes=a.parse_csv(csv_bytes())[0];v=modes[0][field]
++                if defect=='missing':v.pop()
++                elif defect=='extra':v.append(1)
++                else:v[0]={'fraction':1.5,'nan':float('nan'),'negative':-1,'overflow':1<<64,'bool':True}[defect]
++                with self.subTest(field=field,defect=defect),self.assertRaises(a.Invalid):a.classify_pattern(modes)
++
++class Parsing(unittest.TestCase):
++    def test_exact_uint64_preservation(self):
++        data=csv_bytes().replace(b',70,',b',18446744073709551615,')
++        self.assertEqual(a.parse_csv(data)[0][0]['instructions'][0],(1<<64)-1)
++    def test_invalid_scalar_spellings(self):
++        for value in (b'1.0',b'1e2',b'-1',b'+1',b'NaN',b'Inf',b'18446744073709551616',b'01',b' 70',b'70 '):
++            with self.subTest(value=value),self.assertRaises(a.Invalid):a.parse_csv(csv_bytes().replace(b',70,',b','+value+b','))
++    def test_csv_missing_duplicate_extra_fields(self):
++        rows=csv_bytes().splitlines(keepends=True)
++        for data in (b''.join(rows[:-1]),b''.join(rows+rows[1:2]),csv_bytes().replace(b',42\n',b',42,0\n'),csv_bytes()[:-1],b'',csv_bytes().replace(b'pattern',b'patte\xffrn')):
++            with self.subTest(length=len(data)),self.assertRaises(a.Invalid):a.parse_csv(data)
++    def test_payload_mismatch_and_duration_domain(self):
++        with self.assertRaisesRegex(a.Invalid,'PAYLOAD_PARITY'):a.parse_csv(csv_bytes().replace(b',42\n',b',43\n',1))
++        for duration in (b'0',b'9223372036854775808'):
++            with self.subTest(duration=duration),self.assertRaises(a.Invalid):a.parse_csv(csv_bytes().replace(b',50,',b','+duration+b','))
++    def test_zero_miss_valid(self):
++        self.assertEqual(a.parse_csv(b'\n'.join(b','.join(row.split(b',')[:4]+[b'0']+row.split(b',')[5:]) if n and row else row for n,row in enumerate(csv_bytes().split(b'\n'))))[0][0]['branch_misses'],[0]*10)
++    def test_test_diagnostic_never_measurement(self):
++        result=a.diagnose(csv_bytes())
++        self.assertEqual(result['diagnostic_outcome'],'SUPPORTED');self.assertEqual(result['measurement_outcome'],'BLOCKED')
++
++class Assembly(unittest.TestCase):
++    def test_operandless_ret_and_basic_blocks(self):
++        text='target:\n\t.cfi_startproc\n\teor x8,x0,x1\n\tadd x0,x8,#1\n\tret\n\t.cfi_endproc\n'
++        parsed=assembly.inventory(text)
++        self.assertEqual(parsed[0]['total'],3);self.assertEqual(parsed[0]['blocks'][0]['count'],3)
++        parsed=assembly.inventory('f:\n\t.cfi_startproc\n\tcmp x0,x1\n\tb.eq L0\n\tnop\n\tret\nL0:\n\tret\n\t.cfi_endproc\n')
++        self.assertEqual([b['count'] for b in parsed[0]['blocks']],[2,2,1])
++    def test_linker_hint_labels_are_not_blocks(self):
++        functions=assembly.inventory('f:\n\t.cfi_startproc\n\tcmp x0,x1\nLloh0:\n\tadrp x2, foo\nLloh1:\n\tldr x2,[x2]\n\tret\n\t.cfi_endproc\n')
++        self.assertEqual([b['count'] for b in functions[0]['blocks']],[4])
++    def test_x86_ret_nop_and_directives(self):
++        text='f:\n\t.cfi_startproc\n\t.cfi_def_cfa_offset 16\n\tnop\n\tretq\n\t.cfi_endproc\n'
++        self.assertEqual(assembly.inventory(text)[0]['total'],2)
++    def test_unterminated_and_opcode_directive(self):
++        for text in ('f:\n\t.cfi_startproc\n\tret\n','f:\n\t.cfi_startproc\n\t.inst 123\n'):
++            with self.assertRaises(ValueError):assembly.inventory(text)
++
++class Evidence(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        if shutil.which('openssl') is None:raise unittest.SkipTest('OpenSSL Ed25519 verifier unavailable')
++        cls.keys=tempfile.TemporaryDirectory(prefix='comp3-TEST-ONLY-keys-')
++        cls.keydir=Path(cls.keys.name)
++        for role in ('TEST-ONLY-root','TEST-ONLY-runner'):
++            key=cls.keydir/(role+'.pem')
++            subprocess.run(['openssl','genpkey','-algorithm','ED25519','-out',str(key)],check=True,capture_output=True)
++            key.chmod(0o600)
++        cls.root_key=cls.keydir/'TEST-ONLY-root.pem';cls.runner_key=cls.keydir/'TEST-ONLY-runner.pem'
++        cls.root_pub=cls.public(cls.root_key);cls.runner_pub=cls.public(cls.runner_key)
++    @classmethod
++    def tearDownClass(cls):cls.keys.cleanup()
++    @staticmethod
++    def public(path):
++        result=subprocess.run(['openssl','pkey','-in',str(path),'-pubout','-outform','DER'],check=True,capture_output=True)
++        assert result.stdout[:12]==bytes.fromhex('302a300506032b6570032100')
++        return result.stdout[-32:]
++    def setUp(self):
++        self.temp=tempfile.TemporaryDirectory(prefix='comp3-TEST-ONLY-evidence-');self.p=Path(self.temp.name)
++        self.trust=self.p/'TEST-ONLY-trust.json'
++        self.trust.write_bytes(r.canonical({'kind':'test_only_trust','root_public_key_hex':self.root_pub.hex()}))
++        self.journal=self.p/'TEST-ONLY-journal.json'
++        run_id,attempt=r.reserve_test_run(self.journal,'TEST-ONLY-campaign',3)
++        common={'artifact_kind':'synthetic','packet_digest':r.PACKET_DIGEST,'campaign_id':'TEST-ONLY-campaign'}
++        self.delegation={**common,'record_type':'runner_delegation','runner_public_key_hex':self.runner_pub.hex(),'runner_role':'test','max_attempts':3,'not_before':'2020-01-01T00:00:00Z','not_after':'2100-01-01T00:00:00Z'}
++        dh=self.write('delegation','DELEGATION',self.delegation,self.root_key)
++        self.approval={**common,'record_type':'maintainer_approval','decision':'APPROVE','M1':True,'M2':True,'M3':True,'M4':True,
++           'document_sha256':r.DOCUMENTS,'original_blob':r.ORIGINAL_BLOB,'protocol_revision':'EXP-T81-COMP3-01/r1','measurement_authorized':False,
++           'delegation_sha256':dh,'approved_at':'2020-01-01T00:00:00Z'}
++        ah=self.write('approval','APPROVAL',self.approval,self.root_key)
++        artifacts={}
++        for name in ('csv','stderr','environment','corpus_A','corpus_B','corpus_C','executable','source_manifest','assembly'):
++            file=self.p/(name+'.fixture')
++            file.write_bytes(csv_bytes() if name=='csv' else b'TEST ONLY synthetic placeholder, not hardware or production artifacts\n')
++            artifacts[name]={'path':file.name,'sha256':r.digest(file.read_bytes())}
++        self.eligibility={**common,'record_type':'eligibility','approval_sha256':ah,'delegation_sha256':dh,
++            'source_commit':'988b18ca9ebdb4a6fb76fe0be30115470e5637f0','eligible_at':'2020-01-01T00:00:01Z',
++            'artifacts':{k:v for k,v in artifacts.items() if k not in ('csv','stderr','environment')}}
++        eh=self.write('eligibility','ELIGIBILITY',self.eligibility,self.root_key)
++        self.run={**common,'record_type':'run_completion','run_id':run_id,'attempt':attempt,
++            'approval_sha256':ah,'delegation_sha256':dh,'eligibility_sha256':eh,'source_commit':self.eligibility['source_commit'],
++            'started_at':'2020-01-01T00:00:02Z','finished_at':'2020-01-01T00:00:03Z','n':10000000,'repetitions':10,
++            'terminal':{'raw_wait_status':0,'exited':True,'exit_code':0,'signal':None,'user_us':1,'system_us':2,'peak_rss_bytes':4096,'accounting':'test_only_fixture'},
++            'run_order':[[p,i,j,(j+i)%5] for p in range(3) for i in range(10) for j in range(5)],
++            'controls':{'affinity_verified':True,'test_only':True},'failure_codes':[],
++            'pmu':{'instruction_event':'PERF_COUNT_HW_INSTRUCTIONS','miss_event':'PERF_COUNT_HW_BRANCH_MISSES','scheduled':True,'test_only':True},'artifacts':artifacts}
++        self.resign()
++    def tearDown(self):self.temp.cleanup()
++    def write(self,name,role,value,key):
++        (self.p/(name+'.json')).write_bytes(r.canonical(value))
++        message=self.p/'TEST-ONLY-signing-input';message.write_bytes(r.framed(role,value))
++        signature=subprocess.run(['openssl','pkeyutl','-sign','-rawin','-inkey',str(key),'-in',str(message)],check=True,capture_output=True).stdout
++        (self.p/(name+'.sig')).write_bytes(base64.b64encode(signature))
++        return r.digest(r.canonical(value))
++    def resign(self):self.write('completion','RUN',self.run,self.runner_key)
++    def verified(self):return r.verify_test_bundle(self.p,self.trust)
++    def test_authentic_test_chain_not_measurement(self):
++        v=self.verified();self.assertFalse(v['measurement_eligible']);self.assertEqual(a.diagnose(v['csv'])['measurement_outcome'],'BLOCKED')
++        with self.assertRaisesRegex(a.Invalid,'FORMAL_APPROVAL'):r.verify_measurement_bundle(self.p,self.trust)
++        with self.assertRaisesRegex(a.Invalid,'FORMAL_APPROVAL'):r.run_production()
++    def test_missing_malformed_or_untrusted_record(self):
++        for defect in ('missing','malformed','signature'):
++            with self.subTest(defect=defect):
++                self.resign()
++                if defect=='missing':(self.p/'completion.sig').unlink()
++                elif defect=='malformed':(self.p/'completion.json').write_bytes(b'not json')
++                else:(self.p/'completion.sig').write_bytes(base64.b64encode(b'\0'*64))
++                with self.assertRaises(a.Invalid):self.verified()
++    def test_modified_csv_and_environment(self):
++        for role in ('csv','environment','executable','corpus_A','source_manifest','assembly'):
++            path=self.p/self.run['artifacts'][role]['path'];old=path.read_bytes()
++            with self.subTest(role=role):
++                path.write_bytes(old+b'tampered\n')
++                with self.assertRaisesRegex(a.Invalid,'MODIFIED_ARTIFACT'):self.verified()
++                path.write_bytes(old)
++    def test_complete_csv_failed_exit_or_signal(self):
++        original=copy.deepcopy(self.run['terminal'])
++        for status in (6<<8,int(signal.SIGKILL)):
++            with self.subTest(status=status):
++                self.run['terminal']={**original,'raw_wait_status':status,**r.decode_status(status)};self.resign()
++                with self.assertRaisesRegex(a.Invalid,'COLLECTOR_FAILED'):self.verified()
++                self.assertEqual(len(a.parse_csv(csv_bytes())),3)
++    def test_budget_equal_and_exceeded(self):
++        original=copy.deepcopy(self.run['terminal'])
++        for field,limit in [('user_us',600000000),('peak_rss_bytes',500000000)]:
++            with self.subTest(field=field):
++                self.run['terminal']={**original,'system_us':0,field:limit};self.resign();self.verified()
++                self.run['terminal'][field]=limit+1;self.resign()
++                with self.assertRaisesRegex(a.Invalid,'BUDGET_EXCEEDED'):self.verified()
++    def test_contradictory_and_incomplete_terminal(self):
++        original=copy.deepcopy(self.run['terminal'])
++        variants=[None,{**original,'raw_wait_status':9},{**original,'user_us':'1.5'},{**original,'peak_rss_bytes':-1}]
++        for value in variants:
++            with self.subTest(value=value):
++                self.run['terminal']=value;self.resign()
++                with self.assertRaises(a.Invalid):self.verified()
++    def test_replay_and_idempotent_read(self):
++        v=self.verified();self.verified();r.admit_test_diagnostic(v,self.journal)
++        self.verified() # read-only re-audit is idempotent
++        with self.assertRaisesRegex(a.Invalid,'REPLAY'):r.admit_test_diagnostic(v,self.journal)
++    def test_reservation_attempt_limit_and_unreserved_id(self):
++        r.reserve_test_run(self.journal,'TEST-ONLY-campaign',3);r.reserve_test_run(self.journal,'TEST-ONLY-campaign',3)
++        with self.assertRaisesRegex(a.Invalid,'ATTEMPT_LIMIT'):r.reserve_test_run(self.journal,'TEST-ONLY-campaign',3)
++        self.run['run_id']='0'*32;self.resign()
++        with self.assertRaisesRegex(a.Invalid,'UNRESERVED'):r.admit_test_diagnostic(self.verified(),self.journal)
++    def test_signed_protocol_scope_and_run_order_failures(self):
++        original=copy.deepcopy(self.run)
++        mutations=[('packet_digest','0'*64),('artifact_kind','measurement'),('eligibility_sha256','0'*64),('source_commit','0'*40),
++                   ('run_order',[]),('n',10000),('repetitions',1),('failure_codes',['CORRECTNESS_FAILURE']),('attempt',4),
++                   ('started_at','2019-01-01T00:00:00Z'),('finished_at','2200-01-01T00:00:00Z'),('controls',{}),('pmu',{})]
++        for key,value in mutations:
++            with self.subTest(key=key):
++                self.run=copy.deepcopy(original);self.run[key]=value;self.resign()
++                with self.assertRaises(a.Invalid):self.verified()
++    def test_missing_approval_and_eligibility(self):
++        for file in ('approval.sig','eligibility.sig','delegation.sig'):
++            p=self.p/file;old=p.read_bytes();p.unlink()
++            with self.subTest(file=file),self.assertRaises(a.Invalid):self.verified()
++            p.write_bytes(old)
++    def test_wrong_root_and_signature_role(self):
++        self.trust.write_bytes(r.canonical({'kind':'test_only_trust','root_public_key_hex':self.runner_pub.hex()}))
++        with self.assertRaisesRegex(a.Invalid,'SIGNATURE'):self.verified()
++        self.trust.write_bytes(r.canonical({'kind':'test_only_trust','root_public_key_hex':self.root_pub.hex()}))
++        self.write('completion','APPROVAL',self.run,self.runner_key)
++        with self.assertRaisesRegex(a.Invalid,'SIGNATURE'):self.verified()
++    def test_revoked_test_delegation(self):
++        trust=r.strict_json(self.trust.read_bytes())
++        trust['revoked_delegation_sha256']=[r.digest((self.p/'delegation.json').read_bytes())]
++        self.trust.write_bytes(r.canonical(trust))
++        with self.assertRaisesRegex(a.Invalid,'REVOKED_DELEGATION'):self.verified()
++    def test_signed_csv_order_must_match_manifest(self):
++        path=self.p/self.run['artifacts']['csv']['path']
++        lines=path.read_bytes().splitlines(keepends=True)
++        lines[1],lines[2]=lines[2],lines[1]
++        path.write_bytes(b''.join(lines))
++        self.run['artifacts']['csv']['sha256']=r.digest(path.read_bytes());self.resign()
++        with self.assertRaisesRegex(a.Invalid,'OBSERVATION_ORDER_MISMATCH'):self.verified()
++    def test_cli_test_only_and_failed_collector(self):
++        command=[sys.executable,str(ROOT/'analyze_r1.py'),'--bundle',str(self.p),'--trust',str(self.trust),'--test-only']
++        result=subprocess.run(command,capture_output=True,check=True)
++        parsed=json.loads(result.stdout)
++        self.assertEqual(parsed['measurement_outcome'],'BLOCKED')
++        self.assertEqual(parsed['diagnostic_outcome'],'SUPPORTED')
++        self.run['terminal'].update(raw_wait_status=6<<8,exit_code=6);self.resign()
++        result=subprocess.run(command,capture_output=True)
++        self.assertEqual(result.returncode,6)
++        self.assertEqual(json.loads(result.stdout)['measurement_outcome'],'BLOCKED')
++        self.assertNotIn(b'SUPPORTED',result.stdout)
++    def test_test_trust_isolation(self):
++        self.trust.write_bytes(r.canonical({'kind':'production_trust','root_public_key_hex':self.root_pub.hex()}))
++        with self.assertRaisesRegex(a.Invalid,'TEST_TRUST_REQUIRED'):self.verified()
++    def test_noncanonical_json_and_duplicate_keys(self):
++        for raw in (b'{"a":1,"a":2}\n',b'{"a":1.0}\n',b'{"a":NaN}\n',b'{ "a":1}\n'):
++            with self.subTest(raw=raw),self.assertRaises(a.Invalid):r.strict_json(raw)
++    def test_path_traversal_and_symlink(self):
++        for name in ('../escape','/tmp/escape','foo/../bar'):
++            with self.subTest(name=name),self.assertRaises(a.Invalid):r.safe_path(self.p,name)
++        (self.p/'linked').symlink_to(self.p/'csv.fixture')
++        with self.assertRaises(a.Invalid):r.safe_path(self.p,'linked')
++    @unittest.skipUnless(os.name=='posix','POSIX wait status requires POSIX')
++    def test_real_exit_and_signal_status(self):
++        for signaled in (False,True):
++            pid=os.fork()
++            if pid==0:
++                if signaled:os.kill(os.getpid(),signal.SIGKILL)
++                os._exit(6)
++            _,status=os.waitpid(pid,0)
++            decoded=r.decode_status(status)
++            self.assertEqual(decoded['signal'],signal.SIGKILL if signaled else None)
++            self.assertEqual(decoded['exit_code'],None if signaled else 6)
++    @unittest.skipUnless(sys.platform=='linux','Linux native integer wait4/rusage ABI unavailable')
++    def test_linux_native_integer_resources(self):
++        pid=os.fork()
++        if pid==0:os._exit(0)
++        record=r.wait4_linux_native(pid)
++        self.assertEqual(record['exit_code'],0)
++        self.assertIs(type(record['user_us']),int);self.assertIs(type(record['peak_rss_bytes']),int)
++
++if __name__=='__main__':unittest.main(verbosity=2)
+--- a/experiments/cmp3_decision_advantage/validate.py
++++ b/experiments/cmp3_decision_advantage/validate.py
+@@ -1,54 +1,82 @@
+-"""Run from any directory: python3 validate.py --compiler clang++ --out /tmp/comp3.
+-Builds every experiment TU with strict warnings, no LTO, assembly, and ASan/UBSan.
+-"""
++"""Provisional non-performance validation; never executes a benchmark workload."""
+ import argparse
+-import pathlib
++import hashlib
++import json
++import os
++from pathlib import Path
+ import subprocess
+ import sys
+
+-ROOT = pathlib.Path(__file__).resolve().parent
+-
+-def run(args, expected=0):
+-    print('+', ' '.join(map(str, args)), flush=True)
+-    result = subprocess.run(list(map(str, args)))
+-    if result.returncode != expected:
+-        raise SystemExit(f'FAIL exit={result.returncode}, expected={expected}')
++ROOT = Path(__file__).resolve().parent
+
+
+ def main():
+-    parser = argparse.ArgumentParser()
++    parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--compiler', required=True)
+-    parser.add_argument('--out', type=pathlib.Path, required=True)
++    parser.add_argument('--out', type=Path, required=True)
++    parser.add_argument('--objdump', required=True)
+     args = parser.parse_args()
+     args.out.mkdir(parents=True, exist_ok=True)
+-    flags = ['-std=c++20', '-O3', '-fomit-frame-pointer', '-fno-lto', '-Wall', '-Wextra',
+-             '-Wpedantic', '-Wconversion', '-Wshadow', '-Werror']
+-    sources = ['benchmark.cpp', 'candidate.cpp', 'baseline1.cpp', 'baseline2.cpp',
+-               'baseline3.cpp', 'baseline4.cpp', 'payload.cpp']
+-    run([args.compiler, '--version'])
++    results = []
++
++    def run(label, command, expected=0, contains=None, binary_hash=None, output=None):
++        command = [str(x) for x in command]
++        print('+', ' '.join(command), flush=True)
++        proc = subprocess.run(command, capture_output=True, env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
++        good = proc.returncode == expected
++        if contains is not None:
++            good = good and contains.encode() in proc.stderr + proc.stdout
++        if binary_hash is not None:
++            good = good and hashlib.sha256(proc.stdout).hexdigest() == binary_hash
++        if output:
++            output.write_bytes(proc.stdout)
++        elif binary_hash is None:
++            print(proc.stdout.decode(errors='replace'), end='')
++        print(proc.stderr.decode(errors='replace'), end='', file=sys.stderr)
++        results.append({'name': label, 'command': command, 'exit_code': proc.returncode, 'status': 'PASS' if good else 'FAIL'})
++        if not good:
++            (args.out/'results.json').write_text(json.dumps(results, indent=2)+'\n')
++            raise SystemExit('FAIL: '+label)
++        return proc
++
++    flags = ['-std=c++20', '-O3', '-fomit-frame-pointer', '-fno-lto', '-Wall', '-Wextra', '-Wpedantic', '-Wconversion', '-Wshadow', '-Werror']
++    sources = ['benchmark.cpp', 'candidate.cpp', 'baseline1.cpp', 'baseline2.cpp', 'baseline3.cpp', 'baseline4.cpp', 'payload.cpp']
++    run('compiler_version', [args.compiler, '--version'])
+     for sanitized in (False, True):
+-        out = args.out / ('sanitized' if sanitized else 'optimized')
++        name = 'sanitized' if sanitized else 'optimized'
++        out = args.out/name
+         out.mkdir(exist_ok=True)
+-        extra = ['-O1', '-g', '-fno-omit-frame-pointer', '-fsanitize=address,undefined',
+-                 '-fno-sanitize-recover=all'] if sanitized else []
+-        for source in sources + ['analyze.cpp', 'test_classification.cpp']:
+-            src = ROOT / source
+-            run([args.compiler, *flags, *extra, '-c', src, '-o', out / (src.stem + '.o')])
++        extra = ['-O1', '-g', '-fno-omit-frame-pointer', '-fsanitize=address,undefined', '-fno-sanitize-recover=all'] if sanitized else []
++        for source in sources+['analyze.cpp']:
++            src = ROOT/source
++            run(name+'_compile_'+source, [args.compiler, *flags, *extra, '-c', src, '-o', out/(src.stem+'.o')])
+             if not sanitized:
+-                run([args.compiler, *flags, '-S', '-fverbose-asm', src, '-o', out / (src.stem + '.s')])
+-        for executable, objects in [('benchmark', sources), ('analyze', ['analyze.cpp']),
+-                                    ('test_classification', ['test_classification.cpp'])]:
+-            run([args.compiler, *extra, '-fno-lto',
+-                 *[out / (pathlib.Path(s).stem + '.o') for s in objects], '-o', out / executable])
+-        run([out / 'benchmark', '--selftest'])
+-        run([out / 'test_classification'])
+-        run([sys.executable, ROOT / 'verify_pcg64.py'])
+-        run([sys.executable, ROOT / 'test_corpus.py', out / 'benchmark'])
+-        run([sys.executable, ROOT / 'test_analysis.py', out / 'analyze'])
+-        # This host intentionally cannot collect Linux PMU counters.
+-        if sys.platform != 'linux':
+-            run([out / 'benchmark', '--smoke'], expected=6)
+-    print('VALIDATION_PASS')
++                run('assembly_'+source, [args.compiler, *flags, '-S', '-fverbose-asm', src, '-o', out/(src.stem+'.s')])
++        for executable, objects in [('benchmark', sources), ('analyze', ['analyze.cpp'])]:
++            run(name+'_link_'+executable, [args.compiler, *extra, '-fno-lto', *[out/(Path(s).stem+'.o') for s in objects], '-o', out/executable])
++        run(name+'_semantic_selftest', [out/'benchmark', '--selftest'], contains='PASS PCG=4')
++        for flag, reason in [('correctness', 'CORRECTNESS_FAILURE'), ('payload', 'PAYLOAD_PARITY')]:
++            run(name+'_fault_'+flag, [out/'benchmark', '--selftest', '--test-fault-'+flag], expected=6, contains=reason)
++        run(name+'_pcg_reference', [sys.executable, ROOT/'verify_pcg64.py'])
++        run(name+'_corpus_differential', [sys.executable, ROOT/'test_corpus.py', out/'benchmark'])
++        run(name+'_bootstrap_indices', [out/'benchmark', '--dump-bootstrap-indices'], binary_hash='8c5f235bc6d1df1c1fcdca99903abaaaa8201591d5521fe84ba7e72868770b64')
++        run(name+'_legacy_analyzer_disabled', [out/'analyze'], expected=6, contains='LEGACY_ANALYZER_DISABLED')
++        run(name+'_workload_authorization_gate', [out/'benchmark'], expected=6, contains='FORMAL_APPROVAL_MISSING')
++    run('python_r1_regressions', [sys.executable, ROOT/'test_r1.py'])
++    run('assembly_inventory', [sys.executable, ROOT/'inspect_assembly.py', args.out/'optimized', '--objdump', args.objdump], output=args.out/'assembly.json')
++    if sys.platform != 'linux':
++        run('pmu_unavailable_probe', [args.out/'optimized/benchmark', '--probe-pmu'], expected=6, contains='PMU_UNAVAILABLE')
++        results.append({'name':'Linux_affinity_governor_boost_native_wait4_PMU', 'status':'SKIP', 'reason':'requires Linux; host is '+sys.platform})
++    else:
++        probe = subprocess.run([args.out/'optimized/benchmark', '--probe-pmu'], capture_output=True)
++        (args.out/'pmu-probe.txt').write_bytes(probe.stderr)
++        status = 'PASS' if probe.returncode == 0 else 'SKIP' if probe.returncode == 6 and b'PMU_UNAVAILABLE' in probe.stderr else 'FAIL'
++        results.append({'name':'PMU_infrastructure_probe', 'status':status, 'reason':probe.stderr.decode(errors='replace')})
++    (args.out/'results.json').write_text(json.dumps(results, indent=2)+'\n')
++    counts = {k:sum(r['status']==k for r in results) for k in ('PASS','FAIL','SKIP')}
++    print(json.dumps(counts))
++    if counts['FAIL']: raise SystemExit(1)
++
+
+ if __name__ == '__main__':
+     main()
