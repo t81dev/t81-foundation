@@ -1,6 +1,7 @@
 # Linux Compiler & Non-Performance Validation Summary (EXP-T81-COMP3-01/r1)
 
 **Date of Execution:** 2026-10-29
+**Validated Commit:** `872ac1b4c8a303fc5417d0b21551a430d0a50200`
 **Environment:**
 - **OS:** Linux devbox `6.8.0 #1 SMP PREEMPT_DYNAMIC` (x86_64 GNU/Linux)
 - **GNU GCC / G++:** `g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0`
@@ -54,11 +55,11 @@
 | Artifact File Path | SHA-256 Digest |
 |:---|:---|
 | `experiments/cmp3_decision_advantage/evidence-r1-publication/provisional/PROVISIONAL.patch` | `1123bd8f4d52ce212b69ce796cc6c806d87cfbf11b3bfd4342c8323a2d2889f3` |
-| `experiments/cmp3_decision_advantage/T1_T8_READINESS_MATRIX.md` | `5e9ce2b794bfd0a851eb3d15dc8254b830d93beed02eb5fbb635db157d3839aa` |
-| `experiments/cmp3_decision_advantage/benchmark.cpp` | `49646b9a812cfda0eb55a73a62ddaa9b027ca8e65f37bc4ee5fb272183321bf4` |
-| `experiments/cmp3_decision_advantage/runner_r1.py` | `ff1f1ee18ebf9bd7f466b04870f722619e07ca4d0b135c34cb8884fe0816f1a8` |
-| `experiments/cmp3_decision_advantage/test_r1.py` | `bd7a1c518fbda02bc158b6883bfd5cbbf748a3c873f2fa1596e2be67dc9e4726` |
-| `experiments/cmp3_decision_advantage/test_protocol_identity.py` | `ebddc31d77cb36fdd0fc2bc04ceee97f1f33f6a29f8f4a0a3fe69edbebd5be80` |
+| `experiments/cmp3_decision_advantage/T1_T8_READINESS_MATRIX.md` | `361d6f7cb0ef0d1802ce4d477c63e85d7a874723bdd33f991524fcdf45947e9b` |
+| `experiments/cmp3_decision_advantage/benchmark.cpp` | `efdf2e96b3bb997b0ecda352333f158e5af9aea37f724d28b8aa2b8f9d2568f0` |
+| `experiments/cmp3_decision_advantage/runner_r1.py` | `c6fe6f6bf6415d11df2f681a1b2152a6a1ad953454d1b25ac94ae65d7b8b0ba2` |
+| `experiments/cmp3_decision_advantage/test_r1.py` | `9b8398199f2505c0340a757d96c175eef7ec0112f38b16da558267d99afbf280` |
+| `experiments/cmp3_decision_advantage/test_protocol_identity.py` | `14ba7874861e36425f5ec4a9ab08d9c32a68cfd8a764a7eab53ee515be36ac3c` |
 
 ---
 
