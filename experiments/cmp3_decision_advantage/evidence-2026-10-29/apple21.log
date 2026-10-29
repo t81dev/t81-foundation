@@ -1,0 +1,75 @@
++ /usr/bin/clang++ --version
+Apple clang version 21.0.0 (clang-2100.1.1.101)
+Target: arm64-apple-darwin25.5.0
+Thread model: posix
+InstalledDir: /Library/Developer/CommandLineTools/usr/bin
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/benchmark.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/benchmark.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/candidate.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/candidate.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline1.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline1.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline2.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline2.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline3.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline3.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline4.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/baseline4.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/payload.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/payload.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/analyze.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/analyze.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_classification.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/test_classification.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_classification.cpp -o /private/tmp/t81-comp3-validation/apple21/optimized/test_classification.s
++ /usr/bin/clang++ -fno-lto /private/tmp/t81-comp3-validation/apple21/optimized/benchmark.o /private/tmp/t81-comp3-validation/apple21/optimized/candidate.o /private/tmp/t81-comp3-validation/apple21/optimized/baseline1.o /private/tmp/t81-comp3-validation/apple21/optimized/baseline2.o /private/tmp/t81-comp3-validation/apple21/optimized/baseline3.o /private/tmp/t81-comp3-validation/apple21/optimized/baseline4.o /private/tmp/t81-comp3-validation/apple21/optimized/payload.o -o /private/tmp/t81-comp3-validation/apple21/optimized/benchmark
++ /usr/bin/clang++ -fno-lto /private/tmp/t81-comp3-validation/apple21/optimized/analyze.o -o /private/tmp/t81-comp3-validation/apple21/optimized/analyze
++ /usr/bin/clang++ -fno-lto /private/tmp/t81-comp3-validation/apple21/optimized/test_classification.o -o /private/tmp/t81-comp3-validation/apple21/optimized/test_classification
++ /private/tmp/t81-comp3-validation/apple21/optimized/benchmark --selftest
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
++ /private/tmp/t81-comp3-validation/apple21/optimized/test_classification
+ADVERSARIAL_STATISTICS_PASS invalid_series=42 flags=3 helpers=3 quantiles=4
+ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py
+Output 0: 0x854CAFBD0A540778 (Expected: 0x854CAFBD0A540778)
+Output 1: 0x3D174C3776108E7D (Expected: 0x3D174C3776108E7D)
+Output 2: 0xA8398F10D0F2976C (Expected: 0xA8398F10D0F2976C)
+Output 3: 0x722D0D72D6D3EA65 (Expected: 0x722D0D72D6D3EA65)
+PCG64_INDEPENDENT_VERIFICATION_SUCCESS
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py /private/tmp/t81-comp3-validation/apple21/optimized/benchmark
+INDEPENDENT_CORPUS_PASS pairs=30000
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_analysis.py /private/tmp/t81-comp3-validation/apple21/optimized/analyze
+ANALYSIS_INTEGRATION_PASS cases=8
++ /private/tmp/t81-comp3-validation/apple21/optimized/benchmark --smoke
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — PMU_UNAVAILABLE
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/benchmark.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/candidate.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline1.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline2.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline3.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline4.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/payload.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/analyze.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_classification.cpp -o /private/tmp/t81-comp3-validation/apple21/sanitized/test_classification.o
++ /usr/bin/clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-validation/apple21/sanitized/benchmark.o /private/tmp/t81-comp3-validation/apple21/sanitized/candidate.o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline1.o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline2.o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline3.o /private/tmp/t81-comp3-validation/apple21/sanitized/baseline4.o /private/tmp/t81-comp3-validation/apple21/sanitized/payload.o -o /private/tmp/t81-comp3-validation/apple21/sanitized/benchmark
++ /usr/bin/clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-validation/apple21/sanitized/analyze.o -o /private/tmp/t81-comp3-validation/apple21/sanitized/analyze
++ /usr/bin/clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-validation/apple21/sanitized/test_classification.o -o /private/tmp/t81-comp3-validation/apple21/sanitized/test_classification
++ /private/tmp/t81-comp3-validation/apple21/sanitized/benchmark --selftest
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
++ /private/tmp/t81-comp3-validation/apple21/sanitized/test_classification
+ADVERSARIAL_STATISTICS_PASS invalid_series=42 flags=3 helpers=3 quantiles=4
+ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py
+Output 0: 0x854CAFBD0A540778 (Expected: 0x854CAFBD0A540778)
+Output 1: 0x3D174C3776108E7D (Expected: 0x3D174C3776108E7D)
+Output 2: 0xA8398F10D0F2976C (Expected: 0xA8398F10D0F2976C)
+Output 3: 0x722D0D72D6D3EA65 (Expected: 0x722D0D72D6D3EA65)
+PCG64_INDEPENDENT_VERIFICATION_SUCCESS
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py /private/tmp/t81-comp3-validation/apple21/sanitized/benchmark
+INDEPENDENT_CORPUS_PASS pairs=30000
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_analysis.py /private/tmp/t81-comp3-validation/apple21/sanitized/analyze
+ANALYSIS_INTEGRATION_PASS cases=8
++ /private/tmp/t81-comp3-validation/apple21/sanitized/benchmark --smoke
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — PMU_UNAVAILABLE
+VALIDATION_PASS

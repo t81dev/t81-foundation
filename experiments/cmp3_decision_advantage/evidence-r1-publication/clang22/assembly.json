@@ -1,0 +1,1301 @@
+{
+  "candidate": {
+    "assembly": [
+      {
+        "symbol": "__Z9candidatexx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, x1",
+              "cset\tw8, gt",
+              "csinv\tw8, w8, wzr, ge",
+              "adrp\tx9, _targets@GOTPAGE",
+              "ldr\tx9, [x9, _targets@GOTPAGEOFF]",
+              "add\tx8, x9, w8, sxtw #3",
+              "ldr\tx2, [x8, #8]",
+              "br\tx2"
+            ],
+            "count": 8
+          }
+        ],
+        "total": 8
+      },
+      {
+        "symbol": "__Z16candidate_policyxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, #101",
+              "mov\tw8, #1",
+              "cinc\tx8, x8, ge",
+              "cmn\tx0, #100",
+              "csel\tx8, xzr, x8, lt",
+              "adrp\tx9, _targets@GOTPAGE",
+              "ldr\tx9, [x9, _targets@GOTPAGEOFF]",
+              "ldr\tx2, [x9, x8, lsl #3]",
+              "br\tx2"
+            ],
+            "count": 9
+          }
+        ],
+        "total": 9
+      },
+      {
+        "symbol": "__Z15probe_candidatexxb",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cbz\tw2, LBB2_2"
+            ],
+            "count": 1
+          },
+          {
+            "label": "fallthrough_1",
+            "instructions": [
+              "mov\tw8, #-1",
+              "cmp\tx0, #100",
+              "cset\tw9, gt",
+              "cmn\tx0, #100",
+              "csel\tw0, w8, w9, lt",
+              "ret"
+            ],
+            "count": 6
+          },
+          {
+            "label": "LBB2_2",
+            "instructions": [
+              "cmp\tx0, x1",
+              "cset\tw8, gt",
+              "csinv\tw0, w8, wzr, ge",
+              "ret"
+            ],
+            "count": 4
+          }
+        ],
+        "total": 11
+      }
+    ],
+    "object": {
+      "functions": [
+        {
+          "symbol": "ltmp0",
+          "instructions": [
+            {
+              "offset": "0",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "4",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "8",
+              "instruction": "csinv\tw8, w8, wzr, ge"
+            },
+            {
+              "offset": "c",
+              "instruction": "adrp\tx9, 0x0 <ltmp0>"
+            },
+            {
+              "offset": "10",
+              "instruction": "ldr\tx9, [x9]"
+            },
+            {
+              "offset": "14",
+              "instruction": "add\tx8, x9, w8, sxtw #3"
+            },
+            {
+              "offset": "18",
+              "instruction": "ldr\tx2, [x8, #0x8]"
+            },
+            {
+              "offset": "1c",
+              "instruction": "br\tx2"
+            }
+          ],
+          "span_count": 8
+        },
+        {
+          "symbol": "__Z16candidate_policyxx",
+          "instructions": [
+            {
+              "offset": "20",
+              "instruction": "cmp\tx0, #0x65"
+            },
+            {
+              "offset": "24",
+              "instruction": "mov\tw8, #0x1                ; =1"
+            },
+            {
+              "offset": "28",
+              "instruction": "cinc\tx8, x8, ge"
+            },
+            {
+              "offset": "2c",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "30",
+              "instruction": "csel\tx8, xzr, x8, lt"
+            },
+            {
+              "offset": "34",
+              "instruction": "adrp\tx9, 0x0 <ltmp0>"
+            },
+            {
+              "offset": "38",
+              "instruction": "ldr\tx9, [x9]"
+            },
+            {
+              "offset": "3c",
+              "instruction": "ldr\tx2, [x9, x8, lsl #3]"
+            },
+            {
+              "offset": "40",
+              "instruction": "br\tx2"
+            }
+          ],
+          "span_count": 9
+        },
+        {
+          "symbol": "__Z15probe_candidatexxb",
+          "instructions": [
+            {
+              "offset": "44",
+              "instruction": "cbz\tw2, 0x60 <__Z15probe_candidatexxb+0x1c>"
+            },
+            {
+              "offset": "48",
+              "instruction": "mov\tw8, #-0x1               ; =-1"
+            },
+            {
+              "offset": "4c",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "50",
+              "instruction": "cset\tw9, gt"
+            },
+            {
+              "offset": "54",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "58",
+              "instruction": "csel\tw0, w8, w9, lt"
+            },
+            {
+              "offset": "5c",
+              "instruction": "ret"
+            },
+            {
+              "offset": "60",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "64",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "68",
+              "instruction": "csinv\tw0, w8, wzr, ge"
+            },
+            {
+              "offset": "6c",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 11
+        }
+      ],
+      "raw_disassembly": "\n/private/tmp/t81-comp3-r1-publication/clang22/optimized/candidate.o:\tfile format mach-o arm64\n\nDisassembly of section __TEXT,__text:\n\n0000000000000000 <ltmp0>:\n       0:      \tcmp\tx0, x1\n       4:      \tcset\tw8, gt\n       8:      \tcsinv\tw8, w8, wzr, ge\n       c:      \tadrp\tx9, 0x0 <ltmp0>\n      10:      \tldr\tx9, [x9]\n      14:      \tadd\tx8, x9, w8, sxtw #3\n      18:      \tldr\tx2, [x8, #0x8]\n      1c:      \tbr\tx2\n\n0000000000000020 <__Z16candidate_policyxx>:\n      20:      \tcmp\tx0, #0x65\n      24:      \tmov\tw8, #0x1                ; =1\n      28:      \tcinc\tx8, x8, ge\n      2c:      \tcmn\tx0, #0x64\n      30:      \tcsel\tx8, xzr, x8, lt\n      34:      \tadrp\tx9, 0x0 <ltmp0>\n      38:      \tldr\tx9, [x9]\n      3c:      \tldr\tx2, [x9, x8, lsl #3]\n      40:      \tbr\tx2\n\n0000000000000044 <__Z15probe_candidatexxb>:\n      44:      \tcbz\tw2, 0x60 <__Z15probe_candidatexxb+0x1c>\n      48:      \tmov\tw8, #-0x1               ; =-1\n      4c:      \tcmp\tx0, #0x64\n      50:      \tcset\tw9, gt\n      54:      \tcmn\tx0, #0x64\n      58:      \tcsel\tw0, w8, w9, lt\n      5c:      \tret\n      60:      \tcmp\tx0, x1\n      64:      \tcset\tw8, gt\n      68:      \tcsinv\tw0, w8, wzr, ge\n      6c:      \tret\n",
+      "scope": "Object spans may include alignment padding; no dynamic-count inference."
+    }
+  },
+  "baseline1": {
+    "assembly": [
+      {
+        "symbol": "__Z9baseline1xx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, x1",
+              "b.ge\tLBB0_2"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_1",
+            "instructions": [
+              "b\t__Z11target_lessxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB0_2",
+            "instructions": [
+              "b.ne\tLBB0_4"
+            ],
+            "count": 1
+          },
+          {
+            "label": "fallthrough_2",
+            "instructions": [
+              "mov\tx1, x0",
+              "b\t__Z12target_equalxx"
+            ],
+            "count": 2
+          },
+          {
+            "label": "LBB0_4",
+            "instructions": [
+              "b\t__Z14target_greaterxx"
+            ],
+            "count": 1
+          }
+        ],
+        "total": 7
+      },
+      {
+        "symbol": "__Z16baseline1_policyxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmn\tx0, #101",
+              "b.gt\tLBB1_2"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_3",
+            "instructions": [
+              "b\t__Z11target_lessxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB1_2",
+            "instructions": [
+              "cmp\tx0, #101",
+              "b.lt\tLBB1_4"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_4",
+            "instructions": [
+              "b\t__Z14target_greaterxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB1_4",
+            "instructions": [
+              "b\t__Z12target_equalxx"
+            ],
+            "count": 1
+          }
+        ],
+        "total": 7
+      },
+      {
+        "symbol": "__Z15probe_baseline1xxb",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "mov\tw8, #-1",
+              "cmp\tx0, x1",
+              "cset\tw9, ne",
+              "csel\tw8, w8, w9, lt",
+              "mov\tw9, #-1",
+              "cmp\tx0, #100",
+              "cset\tw10, gt",
+              "cmn\tx0, #100",
+              "csel\tw9, w9, w10, lt",
+              "cmp\tw2, #0",
+              "csel\tw0, w8, w9, eq",
+              "ret"
+            ],
+            "count": 12
+          }
+        ],
+        "total": 12
+      }
+    ],
+    "object": {
+      "functions": [
+        {
+          "symbol": "ltmp0",
+          "instructions": [
+            {
+              "offset": "0",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "4",
+              "instruction": "b.ge\t0xc <ltmp0+0xc>"
+            },
+            {
+              "offset": "8",
+              "instruction": "b\t0x8 <ltmp0+0x8>"
+            },
+            {
+              "offset": "c",
+              "instruction": "b.ne\t0x18 <ltmp0+0x18>"
+            },
+            {
+              "offset": "10",
+              "instruction": "mov\tx1, x0"
+            },
+            {
+              "offset": "14",
+              "instruction": "b\t0x14 <ltmp0+0x14>"
+            },
+            {
+              "offset": "18",
+              "instruction": "b\t0x18 <ltmp0+0x18>"
+            }
+          ],
+          "span_count": 7
+        },
+        {
+          "symbol": "__Z16baseline1_policyxx",
+          "instructions": [
+            {
+              "offset": "1c",
+              "instruction": "cmn\tx0, #0x65"
+            },
+            {
+              "offset": "20",
+              "instruction": "b.gt\t0x28 <__Z16baseline1_policyxx+0xc>"
+            },
+            {
+              "offset": "24",
+              "instruction": "b\t0x24 <__Z16baseline1_policyxx+0x8>"
+            },
+            {
+              "offset": "28",
+              "instruction": "cmp\tx0, #0x65"
+            },
+            {
+              "offset": "2c",
+              "instruction": "b.lt\t0x34 <__Z16baseline1_policyxx+0x18>"
+            },
+            {
+              "offset": "30",
+              "instruction": "b\t0x30 <__Z16baseline1_policyxx+0x14>"
+            },
+            {
+              "offset": "34",
+              "instruction": "b\t0x34 <__Z16baseline1_policyxx+0x18>"
+            }
+          ],
+          "span_count": 7
+        },
+        {
+          "symbol": "__Z15probe_baseline1xxb",
+          "instructions": [
+            {
+              "offset": "38",
+              "instruction": "mov\tw8, #-0x1               ; =-1"
+            },
+            {
+              "offset": "3c",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "40",
+              "instruction": "cset\tw9, ne"
+            },
+            {
+              "offset": "44",
+              "instruction": "csel\tw8, w8, w9, lt"
+            },
+            {
+              "offset": "48",
+              "instruction": "mov\tw9, #-0x1               ; =-1"
+            },
+            {
+              "offset": "4c",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "50",
+              "instruction": "cset\tw10, gt"
+            },
+            {
+              "offset": "54",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "58",
+              "instruction": "csel\tw9, w9, w10, lt"
+            },
+            {
+              "offset": "5c",
+              "instruction": "cmp\tw2, #0x0"
+            },
+            {
+              "offset": "60",
+              "instruction": "csel\tw0, w8, w9, eq"
+            },
+            {
+              "offset": "64",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 12
+        }
+      ],
+      "raw_disassembly": "\n/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline1.o:\tfile format mach-o arm64\n\nDisassembly of section __TEXT,__text:\n\n0000000000000000 <ltmp0>:\n       0:      \tcmp\tx0, x1\n       4:      \tb.ge\t0xc <ltmp0+0xc>\n       8:      \tb\t0x8 <ltmp0+0x8>\n       c:      \tb.ne\t0x18 <ltmp0+0x18>\n      10:      \tmov\tx1, x0\n      14:      \tb\t0x14 <ltmp0+0x14>\n      18:      \tb\t0x18 <ltmp0+0x18>\n\n000000000000001c <__Z16baseline1_policyxx>:\n      1c:      \tcmn\tx0, #0x65\n      20:      \tb.gt\t0x28 <__Z16baseline1_policyxx+0xc>\n      24:      \tb\t0x24 <__Z16baseline1_policyxx+0x8>\n      28:      \tcmp\tx0, #0x65\n      2c:      \tb.lt\t0x34 <__Z16baseline1_policyxx+0x18>\n      30:      \tb\t0x30 <__Z16baseline1_policyxx+0x14>\n      34:      \tb\t0x34 <__Z16baseline1_policyxx+0x18>\n\n0000000000000038 <__Z15probe_baseline1xxb>:\n      38:      \tmov\tw8, #-0x1               ; =-1\n      3c:      \tcmp\tx0, x1\n      40:      \tcset\tw9, ne\n      44:      \tcsel\tw8, w8, w9, lt\n      48:      \tmov\tw9, #-0x1               ; =-1\n      4c:      \tcmp\tx0, #0x64\n      50:      \tcset\tw10, gt\n      54:      \tcmn\tx0, #0x64\n      58:      \tcsel\tw9, w9, w10, lt\n      5c:      \tcmp\tw2, #0x0\n      60:      \tcsel\tw0, w8, w9, eq\n      64:      \tret\n",
+      "scope": "Object spans may include alignment padding; no dynamic-count inference."
+    }
+  },
+  "baseline2": {
+    "assembly": [
+      {
+        "symbol": "__Z9baseline2xx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, x1",
+              "cset\tw8, gt",
+              "csinv\tw8, w8, wzr, ge",
+              "adrp\tx9, _targets@GOTPAGE",
+              "ldr\tx9, [x9, _targets@GOTPAGEOFF]",
+              "add\tx8, x9, w8, sxtw #3",
+              "ldr\tx2, [x8, #8]",
+              "br\tx2"
+            ],
+            "count": 8
+          }
+        ],
+        "total": 8
+      },
+      {
+        "symbol": "__Z16baseline2_policyxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, #100",
+              "cset\tw8, gt",
+              "cmn\tx0, #100",
+              "adrp\tx9, _targets@GOTPAGE",
+              "ldr\tx9, [x9, _targets@GOTPAGEOFF]",
+              "csetm\tx10, lt",
+              "add\tx9, x9, x10, lsl #3",
+              "add\tx8, x9, w8, uxtw #3",
+              "ldr\tx2, [x8, #8]",
+              "br\tx2"
+            ],
+            "count": 10
+          }
+        ],
+        "total": 10
+      },
+      {
+        "symbol": "__Z15probe_baseline2xxb",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cbz\tw2, LBB2_2"
+            ],
+            "count": 1
+          },
+          {
+            "label": "fallthrough_1",
+            "instructions": [
+              "cmp\tx0, #100",
+              "cset\tw8, gt",
+              "cmn\tx0, #100",
+              "cset\tw9, lt",
+              "sub\tw0, w8, w9",
+              "ret"
+            ],
+            "count": 6
+          },
+          {
+            "label": "LBB2_2",
+            "instructions": [
+              "cmp\tx0, x1",
+              "cset\tw8, gt",
+              "csinv\tw0, w8, wzr, ge",
+              "ret"
+            ],
+            "count": 4
+          }
+        ],
+        "total": 11
+      }
+    ],
+    "object": {
+      "functions": [
+        {
+          "symbol": "ltmp0",
+          "instructions": [
+            {
+              "offset": "0",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "4",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "8",
+              "instruction": "csinv\tw8, w8, wzr, ge"
+            },
+            {
+              "offset": "c",
+              "instruction": "adrp\tx9, 0x0 <ltmp0>"
+            },
+            {
+              "offset": "10",
+              "instruction": "ldr\tx9, [x9]"
+            },
+            {
+              "offset": "14",
+              "instruction": "add\tx8, x9, w8, sxtw #3"
+            },
+            {
+              "offset": "18",
+              "instruction": "ldr\tx2, [x8, #0x8]"
+            },
+            {
+              "offset": "1c",
+              "instruction": "br\tx2"
+            }
+          ],
+          "span_count": 8
+        },
+        {
+          "symbol": "__Z16baseline2_policyxx",
+          "instructions": [
+            {
+              "offset": "20",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "24",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "28",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "2c",
+              "instruction": "adrp\tx9, 0x0 <ltmp0>"
+            },
+            {
+              "offset": "30",
+              "instruction": "ldr\tx9, [x9]"
+            },
+            {
+              "offset": "34",
+              "instruction": "csetm\tx10, lt"
+            },
+            {
+              "offset": "38",
+              "instruction": "add\tx9, x9, x10, lsl #3"
+            },
+            {
+              "offset": "3c",
+              "instruction": "add\tx8, x9, w8, uxtw #3"
+            },
+            {
+              "offset": "40",
+              "instruction": "ldr\tx2, [x8, #0x8]"
+            },
+            {
+              "offset": "44",
+              "instruction": "br\tx2"
+            }
+          ],
+          "span_count": 10
+        },
+        {
+          "symbol": "__Z15probe_baseline2xxb",
+          "instructions": [
+            {
+              "offset": "48",
+              "instruction": "cbz\tw2, 0x64 <__Z15probe_baseline2xxb+0x1c>"
+            },
+            {
+              "offset": "4c",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "50",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "54",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "58",
+              "instruction": "cset\tw9, lt"
+            },
+            {
+              "offset": "5c",
+              "instruction": "sub\tw0, w8, w9"
+            },
+            {
+              "offset": "60",
+              "instruction": "ret"
+            },
+            {
+              "offset": "64",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "68",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "6c",
+              "instruction": "csinv\tw0, w8, wzr, ge"
+            },
+            {
+              "offset": "70",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 11
+        }
+      ],
+      "raw_disassembly": "\n/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline2.o:\tfile format mach-o arm64\n\nDisassembly of section __TEXT,__text:\n\n0000000000000000 <ltmp0>:\n       0:      \tcmp\tx0, x1\n       4:      \tcset\tw8, gt\n       8:      \tcsinv\tw8, w8, wzr, ge\n       c:      \tadrp\tx9, 0x0 <ltmp0>\n      10:      \tldr\tx9, [x9]\n      14:      \tadd\tx8, x9, w8, sxtw #3\n      18:      \tldr\tx2, [x8, #0x8]\n      1c:      \tbr\tx2\n\n0000000000000020 <__Z16baseline2_policyxx>:\n      20:      \tcmp\tx0, #0x64\n      24:      \tcset\tw8, gt\n      28:      \tcmn\tx0, #0x64\n      2c:      \tadrp\tx9, 0x0 <ltmp0>\n      30:      \tldr\tx9, [x9]\n      34:      \tcsetm\tx10, lt\n      38:      \tadd\tx9, x9, x10, lsl #3\n      3c:      \tadd\tx8, x9, w8, uxtw #3\n      40:      \tldr\tx2, [x8, #0x8]\n      44:      \tbr\tx2\n\n0000000000000048 <__Z15probe_baseline2xxb>:\n      48:      \tcbz\tw2, 0x64 <__Z15probe_baseline2xxb+0x1c>\n      4c:      \tcmp\tx0, #0x64\n      50:      \tcset\tw8, gt\n      54:      \tcmn\tx0, #0x64\n      58:      \tcset\tw9, lt\n      5c:      \tsub\tw0, w8, w9\n      60:      \tret\n      64:      \tcmp\tx0, x1\n      68:      \tcset\tw8, gt\n      6c:      \tcsinv\tw0, w8, wzr, ge\n      70:      \tret\n",
+      "scope": "Object spans may include alignment padding; no dynamic-count inference."
+    }
+  },
+  "baseline3": {
+    "assembly": [
+      {
+        "symbol": "__Z9baseline3xx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, x1",
+              "b.ge\tLBB0_2"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_1",
+            "instructions": [
+              "b\t__Z11target_lessxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB0_2",
+            "instructions": [
+              "b.ne\tLBB0_4"
+            ],
+            "count": 1
+          },
+          {
+            "label": "fallthrough_2",
+            "instructions": [
+              "mov\tx1, x0",
+              "b\t__Z12target_equalxx"
+            ],
+            "count": 2
+          },
+          {
+            "label": "LBB0_4",
+            "instructions": [
+              "b\t__Z14target_greaterxx"
+            ],
+            "count": 1
+          }
+        ],
+        "total": 7
+      },
+      {
+        "symbol": "__Z16baseline3_policyxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmn\tx0, #101",
+              "b.le\tLBB1_3"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_3",
+            "instructions": [
+              "cmp\tx0, #101",
+              "b.lt\tLBB1_4"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_4",
+            "instructions": [
+              "b\t__Z14target_greaterxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB1_3",
+            "instructions": [
+              "b\t__Z11target_lessxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB1_4",
+            "instructions": [
+              "b\t__Z12target_equalxx"
+            ],
+            "count": 1
+          }
+        ],
+        "total": 7
+      },
+      {
+        "symbol": "__Z15probe_baseline3xxb",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "mov\tw8, #-1",
+              "cmp\tx0, x1",
+              "cset\tw9, ne",
+              "csel\tw8, w8, w9, lt",
+              "mov\tw9, #-1",
+              "cmp\tx0, #100",
+              "cset\tw10, gt",
+              "cmn\tx0, #100",
+              "csel\tw9, w9, w10, lt",
+              "cmp\tw2, #0",
+              "csel\tw0, w8, w9, eq",
+              "ret"
+            ],
+            "count": 12
+          }
+        ],
+        "total": 12
+      }
+    ],
+    "object": {
+      "functions": [
+        {
+          "symbol": "ltmp0",
+          "instructions": [
+            {
+              "offset": "0",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "4",
+              "instruction": "b.ge\t0xc <ltmp0+0xc>"
+            },
+            {
+              "offset": "8",
+              "instruction": "b\t0x8 <ltmp0+0x8>"
+            },
+            {
+              "offset": "c",
+              "instruction": "b.ne\t0x18 <ltmp0+0x18>"
+            },
+            {
+              "offset": "10",
+              "instruction": "mov\tx1, x0"
+            },
+            {
+              "offset": "14",
+              "instruction": "b\t0x14 <ltmp0+0x14>"
+            },
+            {
+              "offset": "18",
+              "instruction": "b\t0x18 <ltmp0+0x18>"
+            }
+          ],
+          "span_count": 7
+        },
+        {
+          "symbol": "__Z16baseline3_policyxx",
+          "instructions": [
+            {
+              "offset": "1c",
+              "instruction": "cmn\tx0, #0x65"
+            },
+            {
+              "offset": "20",
+              "instruction": "b.le\t0x30 <__Z16baseline3_policyxx+0x14>"
+            },
+            {
+              "offset": "24",
+              "instruction": "cmp\tx0, #0x65"
+            },
+            {
+              "offset": "28",
+              "instruction": "b.lt\t0x34 <__Z16baseline3_policyxx+0x18>"
+            },
+            {
+              "offset": "2c",
+              "instruction": "b\t0x2c <__Z16baseline3_policyxx+0x10>"
+            },
+            {
+              "offset": "30",
+              "instruction": "b\t0x30 <__Z16baseline3_policyxx+0x14>"
+            },
+            {
+              "offset": "34",
+              "instruction": "b\t0x34 <__Z16baseline3_policyxx+0x18>"
+            }
+          ],
+          "span_count": 7
+        },
+        {
+          "symbol": "__Z15probe_baseline3xxb",
+          "instructions": [
+            {
+              "offset": "38",
+              "instruction": "mov\tw8, #-0x1               ; =-1"
+            },
+            {
+              "offset": "3c",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "40",
+              "instruction": "cset\tw9, ne"
+            },
+            {
+              "offset": "44",
+              "instruction": "csel\tw8, w8, w9, lt"
+            },
+            {
+              "offset": "48",
+              "instruction": "mov\tw9, #-0x1               ; =-1"
+            },
+            {
+              "offset": "4c",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "50",
+              "instruction": "cset\tw10, gt"
+            },
+            {
+              "offset": "54",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "58",
+              "instruction": "csel\tw9, w9, w10, lt"
+            },
+            {
+              "offset": "5c",
+              "instruction": "cmp\tw2, #0x0"
+            },
+            {
+              "offset": "60",
+              "instruction": "csel\tw0, w8, w9, eq"
+            },
+            {
+              "offset": "64",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 12
+        }
+      ],
+      "raw_disassembly": "\n/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline3.o:\tfile format mach-o arm64\n\nDisassembly of section __TEXT,__text:\n\n0000000000000000 <ltmp0>:\n       0:      \tcmp\tx0, x1\n       4:      \tb.ge\t0xc <ltmp0+0xc>\n       8:      \tb\t0x8 <ltmp0+0x8>\n       c:      \tb.ne\t0x18 <ltmp0+0x18>\n      10:      \tmov\tx1, x0\n      14:      \tb\t0x14 <ltmp0+0x14>\n      18:      \tb\t0x18 <ltmp0+0x18>\n\n000000000000001c <__Z16baseline3_policyxx>:\n      1c:      \tcmn\tx0, #0x65\n      20:      \tb.le\t0x30 <__Z16baseline3_policyxx+0x14>\n      24:      \tcmp\tx0, #0x65\n      28:      \tb.lt\t0x34 <__Z16baseline3_policyxx+0x18>\n      2c:      \tb\t0x2c <__Z16baseline3_policyxx+0x10>\n      30:      \tb\t0x30 <__Z16baseline3_policyxx+0x14>\n      34:      \tb\t0x34 <__Z16baseline3_policyxx+0x18>\n\n0000000000000038 <__Z15probe_baseline3xxb>:\n      38:      \tmov\tw8, #-0x1               ; =-1\n      3c:      \tcmp\tx0, x1\n      40:      \tcset\tw9, ne\n      44:      \tcsel\tw8, w8, w9, lt\n      48:      \tmov\tw9, #-0x1               ; =-1\n      4c:      \tcmp\tx0, #0x64\n      50:      \tcset\tw10, gt\n      54:      \tcmn\tx0, #0x64\n      58:      \tcsel\tw9, w9, w10, lt\n      5c:      \tcmp\tw2, #0x0\n      60:      \tcsel\tw0, w8, w9, eq\n      64:      \tret\n",
+      "scope": "Object spans may include alignment padding; no dynamic-count inference."
+    }
+  },
+  "baseline4": {
+    "assembly": [
+      {
+        "symbol": "__Z9baseline4xx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, x1",
+              "cset\tw8, gt",
+              "csinv\tw8, w8, wzr, ge",
+              "cbz\tw8, LBB0_3"
+            ],
+            "count": 4
+          },
+          {
+            "label": "fallthrough_1",
+            "instructions": [
+              "cmn\tw8, #1",
+              "b.ne\tLBB0_4"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_2",
+            "instructions": [
+              "b\t__Z11target_lessxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB0_3",
+            "instructions": [
+              "b\t__Z12target_equalxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB0_4",
+            "instructions": [
+              "b\t__Z14target_greaterxx"
+            ],
+            "count": 1
+          }
+        ],
+        "total": 9
+      },
+      {
+        "symbol": "__Z16baseline4_policyxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, #100",
+              "cset\tw8, gt",
+              "cmn\tx0, #100",
+              "csinv\tw8, w8, wzr, ge",
+              "cbz\tw8, LBB1_3"
+            ],
+            "count": 5
+          },
+          {
+            "label": "fallthrough_3",
+            "instructions": [
+              "cmn\tw8, #1",
+              "b.ne\tLBB1_4"
+            ],
+            "count": 2
+          },
+          {
+            "label": "fallthrough_4",
+            "instructions": [
+              "b\t__Z11target_lessxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB1_3",
+            "instructions": [
+              "b\t__Z12target_equalxx"
+            ],
+            "count": 1
+          },
+          {
+            "label": "LBB1_4",
+            "instructions": [
+              "b\t__Z14target_greaterxx"
+            ],
+            "count": 1
+          }
+        ],
+        "total": 10
+      },
+      {
+        "symbol": "__Z15probe_baseline4xxb",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "cmp\tx0, x1",
+              "mov\tw8, #-1",
+              "cneg\tw8, w8, ge",
+              "csel\tw8, wzr, w8, eq",
+              "mov\tw9, #-1",
+              "cmp\tx0, #100",
+              "cset\tw10, gt",
+              "cmn\tx0, #100",
+              "csel\tw9, w9, w10, lt",
+              "cmp\tw2, #0",
+              "csel\tw0, w8, w9, eq",
+              "ret"
+            ],
+            "count": 12
+          }
+        ],
+        "total": 12
+      }
+    ],
+    "object": {
+      "functions": [
+        {
+          "symbol": "ltmp0",
+          "instructions": [
+            {
+              "offset": "0",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "4",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "8",
+              "instruction": "csinv\tw8, w8, wzr, ge"
+            },
+            {
+              "offset": "c",
+              "instruction": "cbz\tw8, 0x1c <ltmp0+0x1c>"
+            },
+            {
+              "offset": "10",
+              "instruction": "cmn\tw8, #0x1"
+            },
+            {
+              "offset": "14",
+              "instruction": "b.ne\t0x20 <ltmp0+0x20>"
+            },
+            {
+              "offset": "18",
+              "instruction": "b\t0x18 <ltmp0+0x18>"
+            },
+            {
+              "offset": "1c",
+              "instruction": "b\t0x1c <ltmp0+0x1c>"
+            },
+            {
+              "offset": "20",
+              "instruction": "b\t0x20 <ltmp0+0x20>"
+            }
+          ],
+          "span_count": 9
+        },
+        {
+          "symbol": "__Z16baseline4_policyxx",
+          "instructions": [
+            {
+              "offset": "24",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "28",
+              "instruction": "cset\tw8, gt"
+            },
+            {
+              "offset": "2c",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "30",
+              "instruction": "csinv\tw8, w8, wzr, ge"
+            },
+            {
+              "offset": "34",
+              "instruction": "cbz\tw8, 0x44 <__Z16baseline4_policyxx+0x20>"
+            },
+            {
+              "offset": "38",
+              "instruction": "cmn\tw8, #0x1"
+            },
+            {
+              "offset": "3c",
+              "instruction": "b.ne\t0x48 <__Z16baseline4_policyxx+0x24>"
+            },
+            {
+              "offset": "40",
+              "instruction": "b\t0x40 <__Z16baseline4_policyxx+0x1c>"
+            },
+            {
+              "offset": "44",
+              "instruction": "b\t0x44 <__Z16baseline4_policyxx+0x20>"
+            },
+            {
+              "offset": "48",
+              "instruction": "b\t0x48 <__Z16baseline4_policyxx+0x24>"
+            }
+          ],
+          "span_count": 10
+        },
+        {
+          "symbol": "__Z15probe_baseline4xxb",
+          "instructions": [
+            {
+              "offset": "4c",
+              "instruction": "cmp\tx0, x1"
+            },
+            {
+              "offset": "50",
+              "instruction": "mov\tw8, #-0x1               ; =-1"
+            },
+            {
+              "offset": "54",
+              "instruction": "cneg\tw8, w8, ge"
+            },
+            {
+              "offset": "58",
+              "instruction": "csel\tw8, wzr, w8, eq"
+            },
+            {
+              "offset": "5c",
+              "instruction": "mov\tw9, #-0x1               ; =-1"
+            },
+            {
+              "offset": "60",
+              "instruction": "cmp\tx0, #0x64"
+            },
+            {
+              "offset": "64",
+              "instruction": "cset\tw10, gt"
+            },
+            {
+              "offset": "68",
+              "instruction": "cmn\tx0, #0x64"
+            },
+            {
+              "offset": "6c",
+              "instruction": "csel\tw9, w9, w10, lt"
+            },
+            {
+              "offset": "70",
+              "instruction": "cmp\tw2, #0x0"
+            },
+            {
+              "offset": "74",
+              "instruction": "csel\tw0, w8, w9, eq"
+            },
+            {
+              "offset": "78",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 12
+        }
+      ],
+      "raw_disassembly": "\n/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline4.o:\tfile format mach-o arm64\n\nDisassembly of section __TEXT,__text:\n\n0000000000000000 <ltmp0>:\n       0:      \tcmp\tx0, x1\n       4:      \tcset\tw8, gt\n       8:      \tcsinv\tw8, w8, wzr, ge\n       c:      \tcbz\tw8, 0x1c <ltmp0+0x1c>\n      10:      \tcmn\tw8, #0x1\n      14:      \tb.ne\t0x20 <ltmp0+0x20>\n      18:      \tb\t0x18 <ltmp0+0x18>\n      1c:      \tb\t0x1c <ltmp0+0x1c>\n      20:      \tb\t0x20 <ltmp0+0x20>\n\n0000000000000024 <__Z16baseline4_policyxx>:\n      24:      \tcmp\tx0, #0x64\n      28:      \tcset\tw8, gt\n      2c:      \tcmn\tx0, #0x64\n      30:      \tcsinv\tw8, w8, wzr, ge\n      34:      \tcbz\tw8, 0x44 <__Z16baseline4_policyxx+0x20>\n      38:      \tcmn\tw8, #0x1\n      3c:      \tb.ne\t0x48 <__Z16baseline4_policyxx+0x24>\n      40:      \tb\t0x40 <__Z16baseline4_policyxx+0x1c>\n      44:      \tb\t0x44 <__Z16baseline4_policyxx+0x20>\n      48:      \tb\t0x48 <__Z16baseline4_policyxx+0x24>\n\n000000000000004c <__Z15probe_baseline4xxb>:\n      4c:      \tcmp\tx0, x1\n      50:      \tmov\tw8, #-0x1               ; =-1\n      54:      \tcneg\tw8, w8, ge\n      58:      \tcsel\tw8, wzr, w8, eq\n      5c:      \tmov\tw9, #-0x1               ; =-1\n      60:      \tcmp\tx0, #0x64\n      64:      \tcset\tw10, gt\n      68:      \tcmn\tx0, #0x64\n      6c:      \tcsel\tw9, w9, w10, lt\n      70:      \tcmp\tw2, #0x0\n      74:      \tcsel\tw0, w8, w9, eq\n      78:      \tret\n",
+      "scope": "Object spans may include alignment padding; no dynamic-count inference."
+    }
+  },
+  "payload": {
+    "assembly": [
+      {
+        "symbol": "__Z11target_lessxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "eor\tx8, x0, x1, lsl #1",
+              "add\tx0, x8, #1",
+              "ret"
+            ],
+            "count": 3
+          }
+        ],
+        "total": 3
+      },
+      {
+        "symbol": "__Z12target_equalxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "eor\tx8, x0, x1, lsl #1",
+              "add\tx0, x8, #2",
+              "ret"
+            ],
+            "count": 3
+          }
+        ],
+        "total": 3
+      },
+      {
+        "symbol": "__Z14target_greaterxx",
+        "blocks": [
+          {
+            "label": "entry",
+            "instructions": [
+              "eor\tx8, x0, x1, lsl #1",
+              "add\tx0, x8, #3",
+              "ret"
+            ],
+            "count": 3
+          }
+        ],
+        "total": 3
+      }
+    ],
+    "object": {
+      "functions": [
+        {
+          "symbol": "ltmp0",
+          "instructions": [
+            {
+              "offset": "0",
+              "instruction": "eor\tx8, x0, x1, lsl #1"
+            },
+            {
+              "offset": "4",
+              "instruction": "add\tx0, x8, #0x1"
+            },
+            {
+              "offset": "8",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 3
+        },
+        {
+          "symbol": "__Z12target_equalxx",
+          "instructions": [
+            {
+              "offset": "c",
+              "instruction": "eor\tx8, x0, x1, lsl #1"
+            },
+            {
+              "offset": "10",
+              "instruction": "add\tx0, x8, #0x2"
+            },
+            {
+              "offset": "14",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 3
+        },
+        {
+          "symbol": "__Z14target_greaterxx",
+          "instructions": [
+            {
+              "offset": "18",
+              "instruction": "eor\tx8, x0, x1, lsl #1"
+            },
+            {
+              "offset": "1c",
+              "instruction": "add\tx0, x8, #0x3"
+            },
+            {
+              "offset": "20",
+              "instruction": "ret"
+            }
+          ],
+          "span_count": 3
+        }
+      ],
+      "raw_disassembly": "\n/private/tmp/t81-comp3-r1-publication/clang22/optimized/payload.o:\tfile format mach-o arm64\n\nDisassembly of section __TEXT,__text:\n\n0000000000000000 <ltmp0>:\n       0:      \teor\tx8, x0, x1, lsl #1\n       4:      \tadd\tx0, x8, #0x1\n       8:      \tret\n\n000000000000000c <__Z12target_equalxx>:\n       c:      \teor\tx8, x0, x1, lsl #1\n      10:      \tadd\tx0, x8, #0x2\n      14:      \tret\n\n0000000000000018 <__Z14target_greaterxx>:\n      18:      \teor\tx8, x0, x1, lsl #1\n      1c:      \tadd\tx0, x8, #0x3\n      20:      \tret\n",
+      "scope": "Object spans may include alignment padding; no dynamic-count inference."
+    }
+  },
+  "AC_candidate_baseline2_identical": true,
+  "interpretation": "Static source/object lowering only, never measured instruction counts or ternary advantage."
+}

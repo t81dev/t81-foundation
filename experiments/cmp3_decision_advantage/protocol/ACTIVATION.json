@@ -1,0 +1,35 @@
+{
+  "schema": "t81.comp3.r1.prospective-activation.v1",
+  "protocol_revision": "EXP-T81-COMP3-01/r1",
+  "status": "APPROVED_PROSPECTIVE_AMENDMENT",
+  "M1": true,
+  "M2": true,
+  "M3": true,
+  "M4": true,
+  "original_commit": "b37005ceda6a3f4349ec9027b2a9be84ea176aa9",
+  "original_blob": "0fbe0b4da1614867bf51b1c3eaf200f82d789a65",
+  "document_sha256": {
+    "PROPOSED_PROTOCOL_AMENDMENT.md": "f068bb0dab6425029436483f82487e0297cf86c92135935d62d00efbaf04f193",
+    "PROTOCOL_DECISION_MATRIX.md": "26e683aa40c19a72359135696f608004dd45a8d6cf29f4f4a591bbe0ab9f19b3",
+    "STATISTICAL_COUNTEREXAMPLES.md": "64c11fdf13f6daf88fbd660fa72b5a7ba06ab2347d8f553ed9a1cc07f70e496c",
+    "IMPLEMENTATION_REPAIR_PLAN.md": "2674c55f0dc08d55a4561839478869f82389c4fd0524763d4238878448913757",
+    "FINAL_APPROVAL_RECORD.md": "8a5bdd874114e0c990f912dfbb343d65b3bf13ec49d411224ddd2b2835a67124"
+  },
+  "implementation_baseline": "988b18ca9ebdb4a6fb76fe0be30115470e5637f0",
+  "integration_parent": "1a71733cdd266a34a174d13185c78e5b6a07c68e",
+  "provisional_patch_sha256": "1123bd8f4d52ce212b69ce796cc6c806d87cfbf11b3bfd4342c8323a2d2889f3",
+  "approval_source": {
+    "kind": "explicit_maintainer_instruction_in_codex_session",
+    "title": "CODEX \u2014 EXP-T81-COMP3-01/r1 APPROVED IMPLEMENTATION PUBLICATION",
+    "recorded_at": "2026-10-29T07:16:59Z"
+  },
+  "authorization": [
+    "prospective_r1_protocol_activation",
+    "scoped_existing_pr_637_commit_push_description",
+    "non_performance_validation"
+  ],
+  "measurement_authorized": false,
+  "production_signing_configured": false,
+  "signed_production_approval_provisioned": false,
+  "implementation_conformance": "PARTIAL_PENDING_LINUX_AND_TRUSTED_RUNNER"
+}

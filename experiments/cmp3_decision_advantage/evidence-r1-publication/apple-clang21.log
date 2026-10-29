@@ -1,0 +1,136 @@
++ /usr/bin/clang++ --version
+Apple clang version 21.0.0 (clang-2100.1.1.101)
+Target: arm64-apple-darwin25.5.0
+Thread model: posix
+InstalledDir: /Library/Developer/CommandLineTools/usr/bin
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/candidate.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/candidate.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline1.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline1.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline2.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline2.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline3.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline3.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline4.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline4.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/payload.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/payload.s
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/analyze.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/analyze.s
++ /usr/bin/clang++ -fno-lto /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark.o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/candidate.o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline1.o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline2.o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline3.o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/baseline4.o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/payload.o -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark
++ /usr/bin/clang++ -fno-lto /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/analyze.o -o /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/analyze
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark --selftest
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark --selftest --test-fault-correctness
+BLOCKED — CORRECTNESS_FAILURE
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark --selftest --test-fault-payload
+BLOCKED — PAYLOAD_PARITY
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py
+Output 0: 0x854CAFBD0A540778 (Expected: 0x854CAFBD0A540778)
+Output 1: 0x3D174C3776108E7D (Expected: 0x3D174C3776108E7D)
+Output 2: 0xA8398F10D0F2976C (Expected: 0xA8398F10D0F2976C)
+Output 3: 0x722D0D72D6D3EA65 (Expected: 0x722D0D72D6D3EA65)
+PCG64_INDEPENDENT_VERIFICATION_SUCCESS
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark
+INDEPENDENT_CORPUS_PASS pairs=30000 golden_pairs=24
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark --dump-bootstrap-indices
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/analyze
+BLOCKED LEGACY_ANALYZER_DISABLED_USE_AUTHENTICATED_ANALYZE_R1_PY
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — MEASUREMENT_NOT_AUTHORIZED_RUNNER_INCOMPLETE
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/candidate.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline1.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline2.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline3.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline4.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/payload.o
++ /usr/bin/clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/analyze.o
++ /usr/bin/clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark.o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/candidate.o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline1.o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline2.o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline3.o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/baseline4.o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/payload.o -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark
++ /usr/bin/clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/analyze.o -o /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/analyze
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark --selftest
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark --selftest --test-fault-correctness
+BLOCKED — CORRECTNESS_FAILURE
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark --selftest --test-fault-payload
+BLOCKED — PAYLOAD_PARITY
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py
+Output 0: 0x854CAFBD0A540778 (Expected: 0x854CAFBD0A540778)
+Output 1: 0x3D174C3776108E7D (Expected: 0x3D174C3776108E7D)
+Output 2: 0xA8398F10D0F2976C (Expected: 0xA8398F10D0F2976C)
+Output 3: 0x722D0D72D6D3EA65 (Expected: 0x722D0D72D6D3EA65)
+PCG64_INDEPENDENT_VERIFICATION_SUCCESS
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark
+INDEPENDENT_CORPUS_PASS pairs=30000 golden_pairs=24
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark --dump-bootstrap-indices
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/analyze
+BLOCKED LEGACY_ANALYZER_DISABLED_USE_AUTHENTICATED_ANALYZE_R1_PY
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/sanitized/benchmark
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — MEASUREMENT_NOT_AUTHORIZED_RUNNER_INCOMPLETE
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_protocol_identity.py
+test_existing_research_protocol_snapshot_unchanged (__main__.ProtocolIdentity.test_existing_research_protocol_snapshot_unchanged) ... ok
+test_five_approved_document_sha256 (__main__.ProtocolIdentity.test_five_approved_document_sha256) ... ok
+test_original_pr635_blob_bytes (__main__.ProtocolIdentity.test_original_pr635_blob_bytes) ... ok
+test_prospective_approval_is_not_measurement_authorization (__main__.ProtocolIdentity.test_prospective_approval_is_not_measurement_authorization) ... ok
+test_provisional_patch_and_report_preserved (__main__.ProtocolIdentity.test_provisional_patch_and_report_preserved) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.001s
+
+OK
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_r1.py
+test_linker_hint_labels_are_not_blocks (__main__.Assembly.test_linker_hint_labels_are_not_blocks) ... ok
+test_operandless_ret_and_basic_blocks (__main__.Assembly.test_operandless_ret_and_basic_blocks) ... ok
+test_unterminated_and_opcode_directive (__main__.Assembly.test_unterminated_and_opcode_directive) ... ok
+test_x86_ret_nop_and_directives (__main__.Assembly.test_x86_ret_nop_and_directives) ... ok
+test_authentic_test_chain_not_measurement (__main__.Evidence.test_authentic_test_chain_not_measurement) ... ok
+test_budget_equal_and_exceeded (__main__.Evidence.test_budget_equal_and_exceeded) ... ok
+test_cli_test_only_and_failed_collector (__main__.Evidence.test_cli_test_only_and_failed_collector) ... ok
+test_complete_csv_failed_exit_or_signal (__main__.Evidence.test_complete_csv_failed_exit_or_signal) ... ok
+test_contradictory_and_incomplete_terminal (__main__.Evidence.test_contradictory_and_incomplete_terminal) ... ok
+test_linux_native_integer_resources (__main__.Evidence.test_linux_native_integer_resources) ... skipped 'Linux native integer wait4/rusage ABI unavailable'
+test_missing_approval_and_eligibility (__main__.Evidence.test_missing_approval_and_eligibility) ... ok
+test_missing_malformed_or_untrusted_record (__main__.Evidence.test_missing_malformed_or_untrusted_record) ... ok
+test_modified_csv_and_environment (__main__.Evidence.test_modified_csv_and_environment) ... ok
+test_noncanonical_json_and_duplicate_keys (__main__.Evidence.test_noncanonical_json_and_duplicate_keys) ... ok
+test_path_traversal_and_symlink (__main__.Evidence.test_path_traversal_and_symlink) ... ok
+test_real_exit_and_signal_status (__main__.Evidence.test_real_exit_and_signal_status) ... ok
+test_replay_and_idempotent_read (__main__.Evidence.test_replay_and_idempotent_read) ... ok
+test_reservation_attempt_limit_and_unreserved_id (__main__.Evidence.test_reservation_attempt_limit_and_unreserved_id) ... ok
+test_revoked_test_delegation (__main__.Evidence.test_revoked_test_delegation) ... ok
+test_signed_csv_order_must_match_manifest (__main__.Evidence.test_signed_csv_order_must_match_manifest) ... ok
+test_signed_protocol_scope_and_run_order_failures (__main__.Evidence.test_signed_protocol_scope_and_run_order_failures) ... ok
+test_test_trust_isolation (__main__.Evidence.test_test_trust_isolation) ... ok
+test_wrong_root_and_signature_role (__main__.Evidence.test_wrong_root_and_signature_role) ... ok
+test_csv_missing_duplicate_extra_fields (__main__.Parsing.test_csv_missing_duplicate_extra_fields) ... ok
+test_exact_uint64_preservation (__main__.Parsing.test_exact_uint64_preservation) ... ok
+test_invalid_scalar_spellings (__main__.Parsing.test_invalid_scalar_spellings) ... ok
+test_payload_mismatch_and_duration_domain (__main__.Parsing.test_payload_mismatch_and_duration_domain) ... ok
+test_test_diagnostic_never_measurement (__main__.Parsing.test_test_diagnostic_never_measurement) ... ok
+test_zero_miss_valid (__main__.Parsing.test_zero_miss_valid) ... ok
+test_all_100000_indices_independent_jump (__main__.Statistics.test_all_100000_indices_independent_jump) ... ok
+test_all_eleven_counterexamples (__main__.Statistics.test_all_eleven_counterexamples) ... ok
+test_contrast_rejects_invalid_observations (__main__.Statistics.test_contrast_rejects_invalid_observations) ... ok
+test_each_of_eighteen_regression_contrasts (__main__.Statistics.test_each_of_eighteen_regression_contrasts) ... ok
+test_family_and_64_aggregate_combinations (__main__.Statistics.test_family_and_64_aggregate_combinations) ... ok
+test_invalid_series_direct (__main__.Statistics.test_invalid_series_direct) ... ok
+test_near_zero_not_erased (__main__.Statistics.test_near_zero_not_erased) ... ok
+test_pcg_golden (__main__.Statistics.test_pcg_golden) ... ok
+test_quantile_landmarks (__main__.Statistics.test_quantile_landmarks) ... ok
+test_rejection_and_invalid_bound (__main__.Statistics.test_rejection_and_invalid_bound) ... ok
+test_seven_exact_bootstrap_fixtures (__main__.Statistics.test_seven_exact_bootstrap_fixtures) ... ok
+test_zero_variance_limits (__main__.Statistics.test_zero_variance_limits) ... ok
+
+----------------------------------------------------------------------
+Ran 41 tests in 5.422s
+
+OK (skipped=1)
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/inspect_assembly.py /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized --objdump /opt/homebrew/opt/llvm/bin/llvm-objdump
++ /private/tmp/t81-comp3-r1-publication/apple-clang21/optimized/benchmark --probe-pmu
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — PMU_UNAVAILABLE
+{"PASS": 49, "FAIL": 0, "SKIP": 1}

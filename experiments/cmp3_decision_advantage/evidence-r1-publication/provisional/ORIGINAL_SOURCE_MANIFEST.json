@@ -1,0 +1,146 @@
+[
+  {
+    "path": "experiments/cmp3_decision_advantage/README.md",
+    "sha256": "c1e19b8462f90f074fc94e12324ed9c6517f8851e76e9084c5d55cefe4cdd18f"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/analyze.cpp",
+    "sha256": "ce598180c15cb13b51ef0233ac02ab2666c9b8d8be4360b3252dbf2ab72d597e"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline1.cpp",
+    "sha256": "99af10b97b547d8d534a005d50a873ae322b34857bc147823c9e8b4486b66042"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline2.cpp",
+    "sha256": "4dd7943d7ea07edcc7da6b342f6b7e4a25253a40b5d01087200e7a77d20d1469"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline3.cpp",
+    "sha256": "66ff953409a985960d389d6673dd8c034361b34f5f90c61264794a559f01de31"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/baseline4.cpp",
+    "sha256": "5703415ce71227f6348899f04929f8c89a401ec285cd2d989293a115148fbe78"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/benchmark.cpp",
+    "sha256": "a40a01de9d25cd183fe84b79e2414cac0cd1a8b2a66f675216d93d1f1110a2ce"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/candidate.cpp",
+    "sha256": "b478c859e6766e84a8df7e1dcdbb827f4018260d76786cee0060deebb863b31b"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/corpus.hpp",
+    "sha256": "fb7ae75a6cef9b54bb79342b189eab3e2b34ef948758b6ddf087e63b2542bf2c"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/dispatch.hpp",
+    "sha256": "e498ea5e76c8475b73f07872900f6e4b41442f4e76821a812f44392779a0d17a"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/VALIDATION.md",
+    "sha256": "2eedbfa54b3c1787d3dd43b1ed4209a1bdd1916b6f5e43abd1459f0372a25538"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21-assembly.txt",
+    "sha256": "1c9ca614f215f28bf603c051035f60ae32d3a50af8495f59d84de309d21511a2"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21.log",
+    "sha256": "c20f70681bcd43702e33fc1afef950c31959289ff6e9b2963b16c3324cdefc02"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline1.s",
+    "sha256": "2e764bd9db233f038818b0b56d6cfc5271481c5075d38a9ddabfc5189e656502"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline2.s",
+    "sha256": "c3d7dcd4e62bb49623fabf06ad372aad45477d6a71165826fbd550b85631affb"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline3.s",
+    "sha256": "8babdf8a3164da7b1d12555e4eb7b0342fea4a374637222fcb9b1850857d9dc4"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/baseline4.s",
+    "sha256": "c9b53c5adb2fe6dff9e275e6d348ce9fc731ea3763289f007feb4223e17facc4"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/candidate.s",
+    "sha256": "97dd9a95360d5f16ce35965bea053a165b5626757dc8be1ed3c813c871c0b245"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/apple21/payload.s",
+    "sha256": "7aecbed600d4515ddcf0908df783b63bf433f6f87cab1ef48b0e59840ee08a40"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22-assembly.txt",
+    "sha256": "1c9ca614f215f28bf603c051035f60ae32d3a50af8495f59d84de309d21511a2"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22.log",
+    "sha256": "b0512073688e2e47a59b60c5e91826309eb7cff94461480206d503bc81f47f25"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline1.s",
+    "sha256": "2e764bd9db233f038818b0b56d6cfc5271481c5075d38a9ddabfc5189e656502"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline2.s",
+    "sha256": "862cee0bdcd7023f29d90a1a51e439e42852088ba4666e15d4a2d58b92f6840b"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline3.s",
+    "sha256": "8babdf8a3164da7b1d12555e4eb7b0342fea4a374637222fcb9b1850857d9dc4"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/baseline4.s",
+    "sha256": "c9b53c5adb2fe6dff9e275e6d348ce9fc731ea3763289f007feb4223e17facc4"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/candidate.s",
+    "sha256": "1288e494f17385c3a36bd3a9951dd56574f1d0430ca14371ba7742bf333734bc"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/evidence-2026-10-29/clang22/payload.s",
+    "sha256": "7aecbed600d4515ddcf0908df783b63bf433f6f87cab1ef48b0e59840ee08a40"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/inspect_assembly.py",
+    "sha256": "07d0439bfa76b4039f3d5ea929e722f82a25be1da37f1443ac78243ecd3dd412"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/payload.cpp",
+    "sha256": "9d8a8beb3f76080127217dd10919208a09e69def6cde182a7f38a8717690189b"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/pcg64.hpp",
+    "sha256": "68cc810b2ea4c3238a946f7f2db5282d0ed4923eb6ddc1228fd4232a2d3defd4"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/statistics.hpp",
+    "sha256": "7f3623192ad9afc5dba80a426fb0d38dd258cd81d54fd23697f2a95f9518f5c3"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_analysis.py",
+    "sha256": "9786314c36d6b6026b6a196144fcab8e089ed5606bbc1b60ce9ce1b5210f43ff"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_classification.cpp",
+    "sha256": "1dac063dec521c07b80d91bad554a72c33fbcd2bf6e7a75c2ba85a2cdb050eac"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/test_corpus.py",
+    "sha256": "36fb069b790deacab2f1f27c951f816d2acf99a7876dfc7528dbb0eb3b75be90"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/validate.py",
+    "sha256": "a3d4891afbbfe85043bfb1b5b00962f2ab1586bee0b925089f57909f3bf26d61"
+  },
+  {
+    "path": "experiments/cmp3_decision_advantage/verify_pcg64.py",
+    "sha256": "f8aca487ac90b0a76b02f7a658d44dff22e6eabeac89fe0cb538d997cb474aea"
+  }
+]

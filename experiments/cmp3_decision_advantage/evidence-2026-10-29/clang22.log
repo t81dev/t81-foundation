@@ -1,0 +1,76 @@
++ clang++ --version
+Homebrew clang version 22.1.1
+Target: arm64-apple-darwin25.5.0
+Thread model: posix
+InstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin
+Configuration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/benchmark.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/benchmark.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/candidate.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/candidate.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline1.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline1.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline2.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline2.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline3.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline3.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline4.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/baseline4.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/payload.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/payload.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/analyze.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/analyze.s
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_classification.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/test_classification.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -S -fverbose-asm /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_classification.cpp -o /private/tmp/t81-comp3-validation/clang22/optimized/test_classification.s
++ clang++ -fno-lto /private/tmp/t81-comp3-validation/clang22/optimized/benchmark.o /private/tmp/t81-comp3-validation/clang22/optimized/candidate.o /private/tmp/t81-comp3-validation/clang22/optimized/baseline1.o /private/tmp/t81-comp3-validation/clang22/optimized/baseline2.o /private/tmp/t81-comp3-validation/clang22/optimized/baseline3.o /private/tmp/t81-comp3-validation/clang22/optimized/baseline4.o /private/tmp/t81-comp3-validation/clang22/optimized/payload.o -o /private/tmp/t81-comp3-validation/clang22/optimized/benchmark
++ clang++ -fno-lto /private/tmp/t81-comp3-validation/clang22/optimized/analyze.o -o /private/tmp/t81-comp3-validation/clang22/optimized/analyze
++ clang++ -fno-lto /private/tmp/t81-comp3-validation/clang22/optimized/test_classification.o -o /private/tmp/t81-comp3-validation/clang22/optimized/test_classification
++ /private/tmp/t81-comp3-validation/clang22/optimized/benchmark --selftest
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
++ /private/tmp/t81-comp3-validation/clang22/optimized/test_classification
+ADVERSARIAL_STATISTICS_PASS invalid_series=42 flags=3 helpers=3 quantiles=4
+ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py
+Output 0: 0x854CAFBD0A540778 (Expected: 0x854CAFBD0A540778)
+Output 1: 0x3D174C3776108E7D (Expected: 0x3D174C3776108E7D)
+Output 2: 0xA8398F10D0F2976C (Expected: 0xA8398F10D0F2976C)
+Output 3: 0x722D0D72D6D3EA65 (Expected: 0x722D0D72D6D3EA65)
+PCG64_INDEPENDENT_VERIFICATION_SUCCESS
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py /private/tmp/t81-comp3-validation/clang22/optimized/benchmark
+INDEPENDENT_CORPUS_PASS pairs=30000
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_analysis.py /private/tmp/t81-comp3-validation/clang22/optimized/analyze
+ANALYSIS_INTEGRATION_PASS cases=8
++ /private/tmp/t81-comp3-validation/clang22/optimized/benchmark --smoke
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — PMU_UNAVAILABLE
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/benchmark.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/candidate.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline1.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline2.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline3.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline4.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/payload.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/analyze.o
++ clang++ -std=c++20 -O3 -fomit-frame-pointer -fno-lto -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -c /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_classification.cpp -o /private/tmp/t81-comp3-validation/clang22/sanitized/test_classification.o
++ clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-validation/clang22/sanitized/benchmark.o /private/tmp/t81-comp3-validation/clang22/sanitized/candidate.o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline1.o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline2.o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline3.o /private/tmp/t81-comp3-validation/clang22/sanitized/baseline4.o /private/tmp/t81-comp3-validation/clang22/sanitized/payload.o -o /private/tmp/t81-comp3-validation/clang22/sanitized/benchmark
++ clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-validation/clang22/sanitized/analyze.o -o /private/tmp/t81-comp3-validation/clang22/sanitized/analyze
++ clang++ -O1 -g -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all -fno-lto /private/tmp/t81-comp3-validation/clang22/sanitized/test_classification.o -o /private/tmp/t81-comp3-validation/clang22/sanitized/test_classification
++ /private/tmp/t81-comp3-validation/clang22/sanitized/benchmark --selftest
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
++ /private/tmp/t81-comp3-validation/clang22/sanitized/test_classification
+ADVERSARIAL_STATISTICS_PASS invalid_series=42 flags=3 helpers=3 quantiles=4
+ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py
+Output 0: 0x854CAFBD0A540778 (Expected: 0x854CAFBD0A540778)
+Output 1: 0x3D174C3776108E7D (Expected: 0x3D174C3776108E7D)
+Output 2: 0xA8398F10D0F2976C (Expected: 0xA8398F10D0F2976C)
+Output 3: 0x722D0D72D6D3EA65 (Expected: 0x722D0D72D6D3EA65)
+PCG64_INDEPENDENT_VERIFICATION_SUCCESS
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py /private/tmp/t81-comp3-validation/clang22/sanitized/benchmark
+INDEPENDENT_CORPUS_PASS pairs=30000
++ /opt/homebrew/opt/python@3.14/bin/python3.14 /Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_analysis.py /private/tmp/t81-comp3-validation/clang22/sanitized/analyze
+ANALYSIS_INTEGRATION_PASS cases=8
++ /private/tmp/t81-comp3-validation/clang22/sanitized/benchmark --smoke
+PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000
+BLOCKED — PMU_UNAVAILABLE
+VALIDATION_PASS

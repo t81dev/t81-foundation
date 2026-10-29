@@ -1,0 +1,9 @@
+candidate: static_instruction_totals=[8, 9]
+baseline1: static_instruction_totals=[7, 7]
+baseline2: static_instruction_totals=[8, 10]
+baseline3: static_instruction_totals=[7, 7]
+baseline4: static_instruction_totals=[9, 10]
+payload: static_instruction_totals=[2, 2, 2]
+AC_candidate_baseline2_identical_instructions=True
+Static totals include all basic blocks, including mutually exclusive branches.
+These are compiler lowering observations, not ternary advantage evidence.

@@ -1,0 +1,453 @@
+{
+  "kind": "SYNTHETIC_MATHEMATICAL_AUDIT",
+  "resamples": 10000,
+  "draws_per_resample": 10,
+  "raw_draws": 100000,
+  "rejected_draws": 0,
+  "indices_sha256": "8c5f235bc6d1df1c1fcdca99903abaaaa8201591d5521fe84ba7e72868770b64",
+  "csv_sha256": "00d5c7b2bedb7647edb0f91f36df65d49524608c59c43381f9ac18eb90729b15",
+  "first_three": [
+    [
+      4,
+      1,
+      8,
+      1,
+      7,
+      2,
+      4,
+      2,
+      5,
+      4
+    ],
+    [
+      1,
+      6,
+      1,
+      5,
+      9,
+      9,
+      3,
+      5,
+      6,
+      1
+    ],
+    [
+      2,
+      4,
+      4,
+      4,
+      9,
+      7,
+      6,
+      6,
+      8,
+      8
+    ]
+  ],
+  "last": [
+    5,
+    4,
+    3,
+    9,
+    2,
+    1,
+    3,
+    7,
+    4,
+    0
+  ],
+  "lower_z_sum": -42,
+  "fixtures": {
+    "B_below": {
+      "candidate": [
+        850049,
+        850029,
+        850009,
+        849989,
+        849969,
+        849949,
+        849929,
+        849909,
+        849889,
+        849869
+      ],
+      "baseline1": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "lower": {
+        "numerator": 149999,
+        "denominator": 1000000,
+        "decimal": "0.14999899999999999"
+      },
+      "upper": {
+        "numerator": 150083,
+        "denominator": 1000000,
+        "decimal": "0.15008299999999999"
+      },
+      "variance_difference": {
+        "numerator": 11000,
+        "denominator": 3,
+        "decimal": "3666.6666666666665"
+      },
+      "passes_L_15": false,
+      "direction_d": {
+        "numerator": 150041,
+        "denominator": 1000000,
+        "decimal": "0.15004100000000001"
+      },
+      "outcome": "INCONCLUSIVE",
+      "primary_p": 4.5730132308277414e-32
+    },
+    "B_at": {
+      "candidate": [
+        850048,
+        850028,
+        850008,
+        849988,
+        849968,
+        849948,
+        849928,
+        849908,
+        849888,
+        849868
+      ],
+      "baseline1": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "lower": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "upper": {
+        "numerator": 37521,
+        "denominator": 250000,
+        "decimal": "0.150084"
+      },
+      "variance_difference": {
+        "numerator": 11000,
+        "denominator": 3,
+        "decimal": "3666.6666666666665"
+      },
+      "passes_L_15": true,
+      "direction_d": {
+        "numerator": 75021,
+        "denominator": 500000,
+        "decimal": "0.15004200000000001"
+      },
+      "outcome": "SUPPORTED",
+      "primary_p": 4.572738934188176e-32
+    },
+    "B_above": {
+      "candidate": [
+        850047,
+        850027,
+        850007,
+        849987,
+        849967,
+        849947,
+        849927,
+        849907,
+        849887,
+        849867
+      ],
+      "baseline1": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "lower": {
+        "numerator": 150001,
+        "denominator": 1000000,
+        "decimal": "0.150001"
+      },
+      "upper": {
+        "numerator": 30017,
+        "denominator": 200000,
+        "decimal": "0.150085"
+      },
+      "variance_difference": {
+        "numerator": 11000,
+        "denominator": 3,
+        "decimal": "3666.6666666666665"
+      },
+      "passes_L_15": true,
+      "direction_d": {
+        "numerator": 150043,
+        "denominator": 1000000,
+        "decimal": "0.15004300000000001"
+      },
+      "outcome": "SUPPORTED",
+      "primary_p": 4.572464655829311e-32
+    },
+    "Z_nonzero_constant": {
+      "candidate": [
+        850000,
+        850000,
+        850000,
+        850000,
+        850000,
+        850000,
+        850000,
+        850000,
+        850000,
+        850000
+      ],
+      "baseline1": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "lower": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "upper": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "variance_difference": {
+        "numerator": 0,
+        "denominator": 1,
+        "decimal": "0"
+      },
+      "passes_L_15": true,
+      "direction_d": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "outcome": "SUPPORTED",
+      "primary_p": 0.0
+    },
+    "Z_equal_constant": {
+      "candidate": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "baseline1": [
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000,
+        1000000
+      ],
+      "lower": {
+        "numerator": 0,
+        "denominator": 1,
+        "decimal": "0"
+      },
+      "upper": {
+        "numerator": 0,
+        "denominator": 1,
+        "decimal": "0"
+      },
+      "variance_difference": {
+        "numerator": 0,
+        "denominator": 1,
+        "decimal": "0"
+      },
+      "passes_L_15": false,
+      "direction_d": {
+        "numerator": 0,
+        "denominator": 1,
+        "decimal": "0"
+      },
+      "outcome": "INCONCLUSIVE",
+      "primary_p": 1.0
+    },
+    "Z_constant_ratio_nondegenerate_difference": {
+      "candidate": [
+        340000,
+        1360000,
+        340000,
+        1360000,
+        340000,
+        1360000,
+        340000,
+        1360000,
+        340000,
+        1360000
+      ],
+      "baseline1": [
+        400000,
+        1600000,
+        400000,
+        1600000,
+        400000,
+        1600000,
+        400000,
+        1600000,
+        400000,
+        1600000
+      ],
+      "lower": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "upper": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "variance_difference": {
+        "numerator": 9000000000,
+        "denominator": 1,
+        "decimal": "9000000000"
+      },
+      "passes_L_15": true,
+      "direction_d": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "outcome": "SUPPORTED",
+      "primary_p": 0.0007389679098032661
+    },
+    "NZ_near_zero_relative_variance": {
+      "candidate": [
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000000,
+        85000000000000001
+      ],
+      "baseline1": [
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000,
+        100000000000000000
+      ],
+      "lower": {
+        "numerator": 37499999999999999,
+        "denominator": 250000000000000000,
+        "decimal": "0.14999999999999999"
+      },
+      "upper": {
+        "numerator": 3,
+        "denominator": 20,
+        "decimal": "0.14999999999999999"
+      },
+      "variance_difference": {
+        "numerator": 1,
+        "denominator": 10,
+        "decimal": "0.10000000000000001"
+      },
+      "passes_L_15": false,
+      "direction_d": {
+        "numerator": 149999999999999999,
+        "denominator": 1000000000000000000,
+        "decimal": "0.14999999999999999"
+      },
+      "outcome": "INCONCLUSIVE",
+      "primary_p": 1.3244924889487092e-151
+    }
+  },
+  "historical_counterexamples": [
+    {
+      "case": "C1_small_positive",
+      "outcome": "INCONCLUSIVE"
+    },
+    {
+      "case": "C2_nonsignificant",
+      "outcome": "INCONCLUSIVE"
+    },
+    {
+      "case": "C3_instruction_regression",
+      "outcome": "NOT SUPPORTED"
+    },
+    {
+      "case": "C4_covariant_pairs",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "case": "C5_original_miss_counterexample",
+      "outcome": "NOT SUPPORTED"
+    },
+    {
+      "case": "C6_equal_counts",
+      "outcome": "INCONCLUSIVE"
+    },
+    {
+      "case": "C7_fastest_latency",
+      "outcome": "NOT SUPPORTED"
+    },
+    {
+      "case": "C8_multiplicity",
+      "outcome": "INCONCLUSIVE"
+    },
+    {
+      "case": "C9_exact_15_percent",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "case": "C10_noisy_misses",
+      "outcome": "INCONCLUSIVE"
+    },
+    {
+      "case": "C11_uncertain_benefit_miss_regression",
+      "outcome": "NOT SUPPORTED"
+    }
+  ],
+  "failures": 0,
+  "coverage_simulations_performed": 0
+}

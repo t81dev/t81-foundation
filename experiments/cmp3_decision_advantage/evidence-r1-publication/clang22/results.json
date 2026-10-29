@@ -1,0 +1,847 @@
+[
+  {
+    "name": "compiler_version",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "--version"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_benchmark.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_benchmark.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_candidate.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/candidate.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_candidate.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/candidate.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_baseline1.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline1.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_baseline1.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline1.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_baseline2.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline2.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_baseline2.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline2.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_baseline3.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline3.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_baseline3.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline3.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_baseline4.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline4.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_baseline4.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline4.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_payload.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/payload.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_payload.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/payload.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_compile_analyze.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/analyze.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_analyze.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-S",
+      "-fverbose-asm",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/analyze.s"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_link_benchmark",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-fno-lto",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/candidate.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline1.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline2.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline3.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/baseline4.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/payload.o",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_link_analyze",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-fno-lto",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/analyze.o",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/analyze"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_semantic_selftest",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark",
+      "--selftest"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_fault_correctness",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark",
+      "--selftest",
+      "--test-fault-correctness"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_fault_payload",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark",
+      "--selftest",
+      "--test-fault-payload"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_pcg_reference",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_corpus_differential",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_bootstrap_indices",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark",
+      "--dump-bootstrap-indices"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_legacy_analyzer_disabled",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/analyze"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "optimized_workload_authorization_gate",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_benchmark.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/benchmark.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_candidate.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/candidate.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/candidate.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_baseline1.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline1.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline1.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_baseline2.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline2.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline2.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_baseline3.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline3.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline3.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_baseline4.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/baseline4.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline4.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_payload.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/payload.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/payload.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_compile_analyze.cpp",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++20",
+      "-O3",
+      "-fomit-frame-pointer",
+      "-fno-lto",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Wconversion",
+      "-Wshadow",
+      "-Werror",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-c",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/analyze.cpp",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/analyze.o"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_link_benchmark",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-fno-lto",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/candidate.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline1.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline2.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline3.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/baseline4.o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/payload.o",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_link_analyze",
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-O1",
+      "-g",
+      "-fno-omit-frame-pointer",
+      "-fsanitize=address,undefined",
+      "-fno-sanitize-recover=all",
+      "-fno-lto",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/analyze.o",
+      "-o",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/analyze"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_semantic_selftest",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark",
+      "--selftest"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_fault_correctness",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark",
+      "--selftest",
+      "--test-fault-correctness"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_fault_payload",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark",
+      "--selftest",
+      "--test-fault-payload"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_pcg_reference",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/verify_pcg64.py"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_corpus_differential",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_corpus.py",
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_bootstrap_indices",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark",
+      "--dump-bootstrap-indices"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_legacy_analyzer_disabled",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/analyze"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "sanitized_workload_authorization_gate",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/sanitized/benchmark"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "protocol_identity_preservation",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_protocol_identity.py"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "python_r1_regressions",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/test_r1.py"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "assembly_inventory",
+    "command": [
+      "/opt/homebrew/opt/python@3.14/bin/python3.14",
+      "/Users/t81dev/Code/t81-foundation/experiments/cmp3_decision_advantage/inspect_assembly.py",
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized",
+      "--objdump",
+      "/opt/homebrew/opt/llvm/bin/llvm-objdump"
+    ],
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "name": "pmu_unavailable_probe",
+    "command": [
+      "/private/tmp/t81-comp3-r1-publication/clang22/optimized/benchmark",
+      "--probe-pmu"
+    ],
+    "exit_code": 6,
+    "status": "PASS"
+  },
+  {
+    "name": "Linux_affinity_governor_boost_native_wait4_PMU",
+    "status": "SKIP",
+    "reason": "requires Linux; host is darwin"
+  }
+]
