@@ -945,3 +945,14 @@ Promotion blocker summary:
 - [RFC-00D1-canonfs-interchange-manifest-schema.json](RFC-00D1-canonfs-interchange-manifest-schema.json)
 - [RFC-00D1-canonfs-import-provenance-schema.json](RFC-00D1-canonfs-import-provenance-schema.json)
 - [RFC-00D1-canonfs-export-provenance-schema.json](RFC-00D1-canonfs-export-provenance-schema.json)
+
+
+### Storage-mapping audit boundary (2026-10-22)
+
+The additive [RFC-00D6](RFC-00D6-canonfs-portable-storage-mapping.md) candidate
+separates native filenames from logical CanonFS identity in an opt-in v2 root.
+It does not alter these v1 interchange result/provenance contracts, references,
+fixtures or the default legacy driver selected by current CLI/core interchange
+paths. A portable-layout selector or migration command is not introduced into
+this stable surface by that audit. Such an extension requires explicit format
+selection, admission/error review and separately approved migration behavior.

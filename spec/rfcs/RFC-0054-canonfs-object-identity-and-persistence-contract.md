@@ -280,3 +280,14 @@ different ObjectTypes produce identical hashes in both drivers (payload-only rul
 `tests/cpp/canonfs_read_verify_test.cpp` and `tests/cpp/canonfs_persistent_driver_test.cpp`
 provide complementary verification of the read-path identity recomputation (`CanonHash-81`
 recomputed on read and compared to the stored reference, failing deterministically on mismatch).
+
+
+## Additive storage-mapping audit (2026-10-22)
+
+[RFC-00D6](RFC-00D6-canonfs-portable-storage-mapping.md) proposes an explicitly
+selected, separate v2 root/factory using filesystem-safe storage keys for the
+same payload identity. It does not replace the legacy layout/default documented
+above or authorize migration of existing stores. The v1 CLI/interchange surface
+and historical evidence remain unchanged; see that draft for marker/read
+compatibility, mixed-version restrictions and the required separate migration
+approval boundary.

@@ -53,6 +53,13 @@ std::unique_ptr<Driver> make_in_memory_driver();
 /// Filesystem-rooted persistent store; survives process restart.
 std::unique_ptr<Driver> make_persistent_driver(std::filesystem::path root);
 
+/// Explicit opt-in storage-map v2. Creates only in an absent/empty root or
+/// reopens a valid v2 root; never converts/falls back to a legacy store.
+/// Logical hashes and Base81 references are unchanged. Requires exclusive
+/// host ownership/serialization, as does the legacy driver. Throws on a foreign,
+/// mixed, incomplete or invalid layout. See RFC-00D6 for compatibility limits.
+std::unique_ptr<Driver> make_portable_persistent_driver(std::filesystem::path root);
+
 /// Block-device-backed persistent store (virtio-blk, hosted image, etc.).
 /// The driver takes ownership of `dev`.  If `rebuild_on_open` is true,
 /// the on-device index is scanned and rebuilt on construction (safe after
