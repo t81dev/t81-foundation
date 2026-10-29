@@ -1,7 +1,7 @@
 # T81 AI Bootstrap — Fast Research Orientation
 
 **Purpose:** Low-context entry point for new ChatGPT, Codex, Jules, and other research sessions.  
-**Snapshot:** 2026-10-29; `main` observed at `5fcc717e92311c4b383b2510223f466baf5a11d3` after PR #638 merged. **Refresh all branch, PR, CI, and authorization state before action.**  
+**Snapshot:** 2026-10-29; `main` observed at `6864a810693a6034bd28be870ee38a180ba70ba0` after corrective [PR #572](https://github.com/t81dev/t81-foundation/pull/572) merged. **Refresh all branch, PR, CI, and authorization state before action.**  
 **Authority:** Non-normative navigation only. This file neither replaces the six-document [continuity package](START_HERE.md) nor grants experimental, governance, security, merge, or publication authority.
 
 ## Mission, in 90 seconds
@@ -19,7 +19,7 @@ Preserve the canonical H01–H08 identities from [the JSON register](../research
 1. **Hanoi arithmetic:** The isolated historical CWEB routines failed 422/547 positional addition cases and 140/201 multiplication cases; this does not falsify balanced ternary mathematics generally. [Evidence index](EVIDENCE_AND_FINDINGS.md).
 2. **Software execution and compactness:** A scoped CPU radix benchmark found packed tryte addition 10.6× slower than its binary ALU comparator; a cache-resident packed MatVec benchmark reached 75.3% of its INT8 AVX2 comparator; a particular TISC artifact was 1,240 bytes versus 157 bytes for conforming Wasm. These results do **not** establish universal performance outcomes for every future workload or substrate. [Evidence index](EVIDENCE_AND_FINDINGS.md).
 3. **H01 physical substrate:** The corrected 10A assessment remains **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**. No measured native three-state silicon advantage follows from 2-bit-encoded RTL. [10A assessment](../research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md).
-4. **H04-R02:** A completed [four-arm packet](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) and [results](../../experiments/h04_r02_adaptive_representation/RESULTS.md) report a conditional negative outcome when trits incur two-bit binary encoding costs. Its reported DP oracle, cost units, capacity tiers, and counterexamples require independent inspection; the packet was **not rerun** for this bootstrap. Do not rebuild this experiment as though it were missing.
+4. **H04-R02 — correction integrated, H04 unresolved:** The original four-arm packet's total-cost crossovers, greedy-global-optimum claim, metadata interpretation and generalized >96% attribution were invalidated. Merged [PR #572](https://github.com/t81dev/t81-foundation/pull/572) supplies corrected [symbolic results](../../experiments/h04_r02_adaptive_representation/RESULTS.md), prefix DP, a separate Python oracle, finite capacity controls and reversible codec bytes. A separate bounded model recalculation matched 32 default totals and eight new crossovers; 14 archived source snapshots matched their pins. This is **not** independent laboratory reproduction, a CPU speed claim, or a native-device advantage. CI for the PR head was still queued at the last check. Preserve the original failures; do not repeat H04-R02 as new work.
 5. **H07 Baseline-X:** The [local precursor](../../examples/governance/accountable-computation/REPORT.md) did **not** deploy the complete Wasmtime/OPA comparator. Its A/B/C negative-case results were 0/150, **90/150**, and 0/150 unauthorized result creations respectively; preserve the B-arm failure. Custom-VM necessity and comparator equivalence remain unresolved; [RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md) is draft.
 
 ## CMP3 current decision boundary — dated observation, not live authority
@@ -31,11 +31,11 @@ Preserve the canonical H01–H08 identities from [the JSON register](../research
 
 ## One next action
 
-**Read-only H04/CMP3 reconciliation.** Pin fresh `main` and PR heads. For H04-R02, inspect the existing oracle and raw results without treating the conditional model verdict as universal. For CMP3, compare #634/#635 original protocol identities and #637 r1 approved-amendment chain against the current harness, independent oracle, statistical thresholds, binary-control equivalence, PMU availability, T1–T8 trust claims, and the corrected 10A limits.
+**Post-merge evidence and PR reconciliation.** Pin current `main` and confirm the final H04 correction checks; do not infer that a merge establishes scientific acceptance. Review whether open [PR #571](https://github.com/t81dev/t81-foundation/pull/571) is wholly superseded by merged #572 before proposing closure. Separately track CMP3 #637's Linux/PMU/T1–T8 readiness; the r1 source record does **not** authorize performance measurement.
 
-**Deliverable:** A source/commit-pinned discrepancy table with columns *claim, exact source, inspected or reproduced, contradiction/gap, decision needed*. End with one human gate: approve a bounded review task, remain blocked, or select a distinct falsifier.
+**Deliverable:** A dated, commit-pinned gate table distinguishing observed source, separately recalculated model arithmetic, executed CI and unverified claims, with one human decision. No new H04 experiment is selected by this index.
 
-**Stop:** Missing source identity, unresolved protocol ancestry, invalid or non-equivalent controls, missing trustworthy artifacts or required PMU, incomplete signed runner/eligibility, or absent human authorization. Do not run performance experiments, merge PRs, change protections, accept RFCs, or activate production policy merely because this bootstrap exists.
+**Stop:** Missing completed checks, unresolved comparator units/controls, unverified trust/PMU eligibility, or absent maintainer authorization. Do not run performance experiments, merge PRs, change protections, accept RFCs, or activate production policy merely because this bootstrap exists.
 
 ## Full context, on demand
 
