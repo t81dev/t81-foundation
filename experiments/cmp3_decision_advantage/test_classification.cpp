@@ -1,164 +1,7 @@
-// Synthetic disposition test suite for EXP-T81-COMP3-01 statistical decision engine.
-// Verifies that outcome classification rules (SUPPORTED, NOT SUPPORTED, INCONCLUSIVE, BLOCKED)
-// are mutually exclusive and exhaustive.
-
-#include <algorithm>
 #include <cassert>
-#include <cmath>
-#include <cstdio>
 #include <iostream>
 #include <limits>
-#include <numeric>
-#include <random>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-enum class Outcome { BLOCKED, SUPPORTED, NOT_SUPPORTED, INCONCLUSIVE };
-
-const char* outcome_to_string(Outcome o) {
-  switch (o) {
-    case Outcome::BLOCKED:
-      return "BLOCKED";
-    case Outcome::SUPPORTED:
-      return "SUPPORTED";
-    case Outcome::NOT_SUPPORTED:
-      return "NOT SUPPORTED";
-    case Outcome::INCONCLUSIVE:
-      return "INCONCLUSIVE";
-  }
-  return "UNKNOWN";
-}
-
-struct MeasureSeries {
-  std::vector<double> candidate_inst;
-  std::vector<double> base1_inst;
-  std::vector<double> candidate_miss;
-  std::vector<double> base1_miss;
-  std::vector<double> candidate_lat;
-  std::vector<double> fastest_base_lat;
-  bool pmu_available{true};
-  bool correctness_pass{true};
-  bool budget_pass{true};
-};
-
-// Computes 99% bootstrap lower/upper bound for instruction reduction d = 1 - mean(cand)/mean(base1)
-std::pair<double, double> compute_bootstrap_reduction_bounds(
-    const std::vector<double>& cand, const std::vector<double>& base1,
-    uint64_t seed = 0x5438315F434D5033ULL) {
-  std::mt19937_64 rng(seed);
-  std::size_t n = cand.size();
-  std::uniform_int_distribution<std::size_t> dist(0, n - 1);
-
-  constexpr int kResamples = 10000;
-  std::vector<double> bootstrap_d(kResamples);
-
-  for (int b = 0; b < kResamples; ++b) {
-    double sum_c = 0.0;
-    double sum_b = 0.0;
-    for (std::size_t i = 0; i < n; ++i) {
-      std::size_t idx = dist(rng);
-      sum_c += cand[idx];
-      sum_b += base1[idx];
-    }
-    bootstrap_d[b] = 1.0 - (sum_c / sum_b);
-  }
-
-  std::sort(bootstrap_d.begin(), bootstrap_d.end());
-  // 0.5% percentile (index 50) for lower bound, 99.5% percentile (index 9950) for upper bound
-  return {bootstrap_d[50], bootstrap_d[9950]};
-}
-
-// Paired Student-t test p-value calculation for 9 degrees of freedom (n=10)
-double compute_paired_t_pvalue(const std::vector<double>& cand, const std::vector<double>& base1) {
-  std::size_t n = cand.size();
-  std::vector<double> diff(n);
-  double sum_d = 0.0;
-  for (std::size_t i = 0; i < n; ++i) {
-    diff[i] = cand[i] - base1[i];
-    sum_d += diff[i];
-  }
-  double mean_d = sum_d / static_cast<double>(n);
-  double sq_sum = 0.0;
-  for (std::size_t i = 0; i < n; ++i) {
-    sq_sum += (diff[i] - mean_d) * (diff[i] - mean_d);
-  }
-  double std_d = std::sqrt(sq_sum / static_cast<double>(n - 1));
-  double t_stat = mean_d / (std_d / std::sqrt(static_cast<double>(n)));
-
-  // Critical t for df=9 at p=0.01 (two-tailed) is ~3.250
-  if (std::abs(t_stat) > 3.250) return 0.005;  // p < 0.01
-  return 0.05;                                 // p >= 0.01
-}
-
-// Paired two-sided 99% Student-t interval for n=10 (df=9, t_0.995=3.249836).
-std::pair<double,double> paired_interval99(const std::vector<double>& a,const std::vector<double>& b) {
-  const std::size_t n=a.size();
-  if(n!=10 || b.size()!=n) throw std::invalid_argument("requires ten matched observations");
-  double mean=0;
-  for(std::size_t i=0;i<n;i++) mean+=a[i]-b[i];
-  mean/=static_cast<double>(n);
-  double ss=0;
-  for(std::size_t i=0;i<n;i++){double d=a[i]-b[i]-mean;ss+=d*d;}
-  const double margin=3.249836256*std::sqrt(ss/(n-1)/n);
-  return {mean-margin,mean+margin};
-}
-
-bool valid_series(const MeasureSeries& s) {
-  const std::vector<double>* fields[]={&s.candidate_inst,&s.base1_inst,&s.candidate_miss,
-     &s.base1_miss,&s.candidate_lat,&s.fastest_base_lat};
-  for(auto* f:fields) {
-    if(f->size()!=10) return false;
-    for(double x:*f) if(!std::isfinite(x)||x<0) return false;
-  }
-  for(double x:s.base1_inst) if(x<=0) return false;
-  return true;
-}
-
-Outcome classify_pattern_result(const MeasureSeries& series) {
-  if (!series.pmu_available || !series.correctness_pass || !series.budget_pass || !valid_series(series)) {
-    return Outcome::BLOCKED;
-  }
-
-  double mean_cand_miss =
-      std::accumulate(series.candidate_miss.begin(), series.candidate_miss.end(), 0.0) /
-      static_cast<double>(series.candidate_miss.size());
-  double mean_base1_miss =
-      std::accumulate(series.base1_miss.begin(), series.base1_miss.end(), 0.0) /
-      static_cast<double>(series.base1_miss.size());
-
-  double mean_cand_lat =
-      std::accumulate(series.candidate_lat.begin(), series.candidate_lat.end(), 0.0) /
-      static_cast<double>(series.candidate_lat.size());
-  double mean_fastest_lat =
-      std::accumulate(series.fastest_base_lat.begin(), series.fastest_base_lat.end(), 0.0) /
-      static_cast<double>(series.fastest_base_lat.size());
-
-  auto [bound_low_99, bound_high_99] =
-      compute_bootstrap_reduction_bounds(series.candidate_inst, series.base1_inst);
-  double p_val = compute_paired_t_pvalue(series.candidate_inst, series.base1_inst);
-
-  // 1. SUPPORTED Rule:
-  // p < 0.01 AND 99% lower bound for instruction reduction >= 0.15 AND mean_miss <= base1 AND
-  // mean_lat <= fastest_base
-  if (p_val < 0.01 && bound_low_99 >= 0.15 && mean_cand_miss <= mean_base1_miss &&
-      mean_cand_lat <= mean_fastest_lat) {
-    return Outcome::SUPPORTED;
-  }
-
-  // 2. NOT SUPPORTED Rule:
-  // 99% upper bound for reduction < 0.15 OR mispredictions strictly higher OR latency strictly
-  // higher
-  if (bound_high_99 < 0.15 || paired_interval99(series.candidate_miss,series.base1_miss).first > 0.0 ||
-      paired_interval99(series.candidate_lat,series.fastest_base_lat).first > 0.0) {
-    return Outcome::NOT_SUPPORTED;
-  }
-
-  // 3. INCONCLUSIVE Rule:
-  // Every other complete valid result
-  return Outcome::INCONCLUSIVE;
-}
-
+#include "statistics.hpp"
 void test_classification_outcomes() {
   // Scenario 1: BLOCKED due to PMU unavailable
   {
@@ -206,25 +49,110 @@ void test_classification_outcomes() {
   // Regression: empty and incomplete data must fail closed, never generate NaNs or OOB.
   {
     MeasureSeries s;
-    assert(classify_pattern_result(s)==Outcome::BLOCKED);
-    s.candidate_inst.assign(10,70);s.base1_inst.assign(9,100);
-    assert(classify_pattern_result(s)==Outcome::BLOCKED);
+    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+    s.candidate_inst.assign(10, 70);
+    s.base1_inst.assign(9, 100);
+    assert(classify_pattern_result(s) == Outcome::BLOCKED);
   }
   // Regression from Codex: significant, consistent miss regression overrides instruction gain.
   {
     MeasureSeries s;
-    s.candidate_inst.assign(10,70);s.base1_inst.assign(10,100);
-    s.candidate_miss.assign(10,11);s.base1_miss.assign(10,10);
-    s.candidate_lat.assign(10,50);s.fastest_base_lat.assign(10,55);
-    assert(classify_pattern_result(s)==Outcome::NOT_SUPPORTED);
-    s.candidate_miss[0]=std::numeric_limits<double>::quiet_NaN();
-    assert(classify_pattern_result(s)==Outcome::BLOCKED);
+    s.candidate_inst.assign(10, 70);
+    s.base1_inst.assign(10, 100);
+    s.candidate_miss.assign(10, 11);
+    s.base1_miss.assign(10, 10);
+    s.candidate_lat.assign(10, 50);
+    s.fastest_base_lat.assign(10, 55);
+    assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+    s.candidate_miss[0] = std::numeric_limits<double>::quiet_NaN();
+    assert(classify_pattern_result(s) == Outcome::BLOCKED);
   }
 
   std::cout << "ALL_SYNTHETIC_CLASSIFICATION_TESTS_PASSED" << std::endl;
 }
 
+void test_adversarial_statistics() {
+  MeasureSeries good;
+  good.candidate_inst.assign(10, 70);
+  good.base1_inst.assign(10, 100);
+  good.candidate_miss.assign(10, 10);
+  good.base1_miss.assign(10, 10);
+  good.candidate_lat.assign(10, 50);
+  good.fastest_base_lat.assign(10, 55);
+  const std::vector<double> z(10, 0), one(10, 1);
+  assert(compute_paired_t_pvalue(z, z) == 1);
+  assert(compute_paired_t_pvalue(one, z) == 0);
+  assert(paired_interval99(one, z) == std::make_pair(1.0, 1.0));
+  assert(paired_interval99(z, z) == std::make_pair(0.0, 0.0));
+  const auto bounds = compute_bootstrap_reduction_bounds(good.candidate_inst, good.base1_inst);
+  assert(std::abs(bounds.first - .30) < 1e-15 && bounds.first == bounds.second);
+  auto s = good;
+  s.candidate_inst.assign(10, 85);
+  assert(classify_pattern_result(s) == Outcome::SUPPORTED);  // inclusive 15% boundary
+  s.candidate_inst.assign(10, 85.0001);
+  assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+  // Noise does not become a significant regression through an arbitrary mean allowance.
+  s = good;
+  s.candidate_miss.assign(10, 0);
+  s.candidate_miss[0] = 1e9;
+  assert(paired_interval99(s.candidate_miss, s.base1_miss).first < 0);
+  assert(classify_pattern_result(s) == Outcome::INCONCLUSIVE);
+  s = good;
+  s.candidate_lat.assign(10, 56);
+  assert(classify_pattern_result(s) == Outcome::NOT_SUPPORTED);
+  // Every metric must have exactly ten finite, nonnegative observations.
+  for (int field = 0; field < 6; ++field) {
+    for (int defect = 0; defect < 7; ++defect) {
+      s = good;
+      std::vector<double>* fields[] = {&s.candidate_inst, &s.base1_inst,    &s.candidate_miss,
+                                       &s.base1_miss,     &s.candidate_lat, &s.fastest_base_lat};
+      auto& v = *fields[field];
+      if (defect == 0) v.clear();
+      if (defect == 1) v.pop_back();
+      if (defect == 2) v.push_back(1);
+      if (defect == 3) v[0] = std::numeric_limits<double>::quiet_NaN();
+      if (defect == 4) v[0] = std::numeric_limits<double>::infinity();
+      if (defect == 5) v[0] = -1;
+      if (defect == 6) v[0] = std::numeric_limits<double>::max();
+      assert(classify_pattern_result(s) == Outcome::BLOCKED);
+    }
+  }
+  s = good;
+  s.base1_inst[0] = 0;
+  assert(classify_pattern_result(s) == Outcome::BLOCKED);
+  for (int flag = 0; flag < 3; ++flag) {
+    s = good;
+    if (flag == 0) s.pmu_available = false;
+    if (flag == 1) s.correctness_pass = false;
+    if (flag == 2) s.budget_pass = false;
+    assert(classify_pattern_result(s) == Outcome::BLOCKED);
+  }
+  for (int helper = 0; helper < 3; ++helper) {
+    bool threw = false;
+    try {
+      if (helper == 0) (void)compute_bootstrap_reduction_bounds({}, one);
+      if (helper == 1) (void)compute_paired_t_pvalue(one, {});
+      if (helper == 2) (void)paired_interval99({}, {});
+    } catch (const std::invalid_argument&) {
+      threw = true;
+    }
+    assert(threw);
+  }
+  // df=9 two-tail quantile landmarks. Invert a series with known SE=1.
+  std::vector<double> a(10), b(10, 10);
+  const double sd = std::sqrt(10.0);
+  const double scale = sd / std::sqrt(82.5 / 9.0);
+  for (double t : {0.0, 2.2621571628540993, 3.2498355415921254, 4.7809125859335495}) {
+    for (std::size_t i = 0; i < 10; ++i) a[i] = 10 + t + (static_cast<double>(i) - 4.5) * scale;
+    const double expected = t == 0 ? 1 : t < 3 ? .05 : t < 4 ? .01 : .001;
+    assert(std::abs(compute_paired_t_pvalue(a, b) - expected) < 1e-11);
+    assert(std::abs(compute_paired_t_pvalue(a, b) - compute_paired_t_pvalue(b, a)) < 1e-14);
+  }
+  std::cout << "ADVERSARIAL_STATISTICS_PASS invalid_series=42 flags=3 helpers=3 quantiles=4\n";
+}
+
 int main() {
+  test_adversarial_statistics();
   test_classification_outcomes();
   return 0;
 }

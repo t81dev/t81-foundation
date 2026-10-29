@@ -1,367 +1,233 @@
-// EXP-T81-COMP3-01: binary-host software trichotomy decision experiment.
-// Evaluates software comparison decision logic under strict protocol constraints.
-// Software emulation on binary host CPUs only; no native ternary hardware claims.
-
+// EXP-T81-COMP3-01: software comparison and dispatch on binary hosts only.
 #include <algorithm>
-#include <array>
 #include <chrono>
-#include <cmath>
-#include <compare>
-#include <cstdint>
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <limits>
-#include <random>
-#include <stdexcept>
+#include <fstream>
 #include <string>
-#include <vector>
-
+#include "corpus.hpp"
+#include "dispatch.hpp"
+#if defined(__linux__)
 #include <linux/perf_event.h>
 #include <sched.h>
 #include <sys/ioctl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
-
-using i64 = std::int64_t;
-using u64 = std::uint64_t;
-using u128 = unsigned __int128;
-
-struct Pair {
-  i64 a;
-  i64 b;
+struct Counters {
+  int leader{-1}, branch{-1};
+  static int open_counter(u64 config, int group) {
+    perf_event_attr attr{};
+    attr.type = PERF_TYPE_HARDWARE;
+    attr.size = sizeof(attr);
+    attr.config = config;
+    attr.disabled = group < 0 ? 1 : 0;
+    attr.pinned = group < 0 ? 1 : 0;
+    attr.exclude_kernel = 1;
+    attr.exclude_hv = 1;
+    attr.read_format =
+        PERF_FORMAT_GROUP | PERF_FORMAT_TOTAL_TIME_ENABLED | PERF_FORMAT_TOTAL_TIME_RUNNING;
+    return static_cast<int>(syscall(__NR_perf_event_open, &attr, 0, -1, group, 0));
+  }
+  Counters() {
+    leader = open_counter(PERF_COUNT_HW_INSTRUCTIONS, -1);
+    if (leader >= 0) branch = open_counter(PERF_COUNT_HW_BRANCH_MISSES, leader);
+  }
+  ~Counters() {
+    if (branch >= 0) close(branch);
+    if (leader >= 0) close(leader);
+  }
+  bool available() const { return leader >= 0 && branch >= 0; }
+  void start() {
+    if (ioctl(leader, PERF_EVENT_IOC_RESET, PERF_IOC_FLAG_GROUP) != 0 ||
+        ioctl(leader, PERF_EVENT_IOC_ENABLE, PERF_IOC_FLAG_GROUP) != 0)
+      throw std::runtime_error("PMU_ENABLE_FAILURE");
+  }
+  std::pair<u64, u64> stop() {
+    if (ioctl(leader, PERF_EVENT_IOC_DISABLE, PERF_IOC_FLAG_GROUP) != 0)
+      throw std::runtime_error("PMU_DISABLE_FAILURE");
+    struct {
+      u64 count, enabled, running, instructions, misses;
+    } values{};
+    if (read(leader, &values, sizeof(values)) != static_cast<ssize_t>(sizeof(values)) ||
+        values.count != 2)
+      throw std::runtime_error("PMU_READ_FAILURE");
+    if (values.running == 0 || values.enabled != values.running)
+      throw std::runtime_error("PMU_NOT_SCHEDULED");
+    return {values.instructions, values.misses};
+  }
 };
+static int setup_cpu_affinity() {
+  cpu_set_t allowed;
+  CPU_ZERO(&allowed);
+  if (sched_getaffinity(0, sizeof(allowed), &allowed) != 0)
+    throw std::runtime_error("AFFINITY_UNAVAILABLE");
+  int selected = -1;
+  for (int i = 0; i < CPU_SETSIZE; ++i)
+    if (CPU_ISSET(i, &allowed)) {
+      selected = i;
+      break;
+    }
+  if (selected < 0) throw std::runtime_error("AFFINITY_UNAVAILABLE");
+  cpu_set_t one;
+  CPU_ZERO(&one);
+  CPU_SET(selected, &one);
+  if (sched_setaffinity(0, sizeof(one), &one) != 0)
+    throw std::runtime_error("AFFINITY_UNAVAILABLE");
+  std::fprintf(stderr, "CPU_CORE=%d\n", selected);
+  return selected;
+}
+struct FrequencyControls {
+  std::vector<std::pair<std::string, std::string>> saved;
+  bool set(const std::string& path, const std::string& value) {
+    std::ifstream input(path);
+    std::string old;
+    if (!(input >> old)) return false;
+    if (old == value) return true;
+    if (access(path.c_str(), W_OK) != 0) return false;
+    saved.emplace_back(path, old);
+    std::ofstream output(path);
+    output << value;
+    output.close();
+    return !output.fail();
+  }
+  explicit FrequencyControls(int core) {
+    const auto governor =
+        "/sys/devices/system/cpu/cpu" + std::to_string(core) + "/cpufreq/scaling_governor";
+    const bool governor_ok = set(governor, "performance");
+    bool boost_ok = set("/sys/devices/system/cpu/intel_pstate/no_turbo", "1");
+    if (!boost_ok) boost_ok = set("/sys/devices/system/cpu/cpufreq/boost", "0");
+    std::fprintf(stderr, "%s\n",
+                 governor_ok && boost_ok ? "GOVERNOR_PERFORMANCE_BOOST_DISABLED"
+                                         : "GOVERNOR_PINNING_SKIPPED_UNPRIVILEGED");
+  }
+  ~FrequencyControls() {
+    for (auto it = saved.rbegin(); it != saved.rend(); ++it) {
+      std::ofstream output(it->first);
+      output << it->second;
+      output.close();
+      if (output.fail()) std::fprintf(stderr, "CONTROL_RESTORE_FAILED %s\n", it->first.c_str());
+    }
+  }
+};
+#else
+struct Counters {
+  bool available() const { return false; }
+};
+#endif
 
 static volatile u64 g_sink = 0;
-
-// PCG64 generator (setseq_xsl_rr_128_64) strictly conforming to Protocol EXP-T81-COMP3-01 §6.
-struct PCG64 {
-  u128 state{0};
-  u128 inc{3};
-
-  static constexpr u128 mult = (u128(0x2360ED051FC65DA4ULL) << 64) | 0x4385C511560B53A9ULL;
-
-  PCG64() {
-    state = state * mult + inc;
-    state += ((u128)0x5438315F434D5033ULL << 64) | 0x5F53454544303131ULL;
-    state = state * mult + inc;
-  }
-
-  u64 next() {
-    u128 old = state;
-    state = old * mult + inc;
-    u64 x = static_cast<u64>(old >> 64) ^ static_cast<u64>(old);
-    unsigned r = static_cast<unsigned>(old >> 122);
-    return (x >> r) | (x << ((-r) & 63));
-  }
-
-  u64 bounded(u64 n) {
-    u64 t = -n % n;
-    for (;;) {
-      u64 x = next();
-      if (x >= t) return x % n;
-    }
-  }
-
-  double prob() { return (next() >> 11) * 0x1.0p-53; }
-};
-
-// Exact integer comparison oracle
-static int oracle_pattern_ac(i64 a, i64 b) { return (a > b) - (a < b); }
-
-// Exact policy threshold check oracle for Pattern B (L = -100, U = +100)
-static int oracle_pattern_b(i64 v) { return (v > 100) - (v < -100); }
-
-__attribute__((noinline)) static int cmp3_s64(i64 a, i64 b) { return (a > b) - (a < b); }
-
-__attribute__((noinline)) static u64 payload(i64 a, i64 b, int verdict) {
-  return (static_cast<u64>(a) ^ (static_cast<u64>(b) << 1)) + static_cast<u64>(verdict + 2);
+static const std::array<Dispatch, 5> modes = {candidate, baseline1, baseline2, baseline3,
+                                              baseline4};
+static const std::array<Dispatch, 5> policy_modes = {
+    candidate_policy, baseline1_policy, baseline2_policy, baseline3_policy, baseline4_policy};
+static const auto& functions(int p) { return p == 1 ? policy_modes : modes; }
+static u64 oracle_payload(Pair x, int p) {
+  const int c = p == 1 ? oracle_pattern_b(x.a) : oracle_pattern_ac(x.a, x.b);
+  return (static_cast<u64>(x.a) ^ (static_cast<u64>(x.b) << 1)) + static_cast<u64>(c + 2);
 }
-
-static std::array<Pair, 20> mandatory_boundaries() {
-  using L = std::numeric_limits<i64>;
-  return {{{0, 0},
-           {42, 42},
-           {-42, -42},
-           {L::max(), L::max()},
-           {L::min(), L::min()},
-           {L::min(), L::max()},
-           {L::max(), L::min()},
-           {100, 101},
-           {101, 100},
-           {-101, -100},
-           {-100, -101},
-           {-1, 0},
-           {0, -1},
-           {0, 1},
-           {1, 0},
-           {-1, 1},
-           {1, -1},
-           {9007199254740993LL, 9007199254740994LL},
-           {9007199254740994LL, 9007199254740993LL},
-           {L::max() - 1, L::max()}}};
+static void verify(Pair x, int p) {
+  for (auto f : functions(p))
+    if (f(x.a, x.b) != oracle_payload(x, p)) throw std::runtime_error("PAYLOAD_PARITY");
 }
-
-static std::vector<Pair> generate_corpus(int pattern, std::size_t n) {
-  PCG64 g;
-  std::vector<Pair> v;
-  v.reserve(n);
-  const i64 low = -(1LL << 62);
-
-  for (std::size_t i = 0; i < n; ++i) {
-    double u = g.prob();
-    u64 k = g.bounded(1ULL << 30) + 1;
-
-    if (pattern == 1) {
-      // Pattern B: Policy Verdict Threshold Evaluation (V vs L=-100, U=+100)
-      i64 V = 0;
-      u64 kb = g.bounded(1000) + 1;
-      if (u < 0.20) {
-        V = -100 - static_cast<i64>(kb);  // V < L (-100) -> DENY (-1)
-      } else if (u < 0.30) {
-        V = -100 + static_cast<i64>(g.bounded(201));  // L <= V <= U -> AUDIT (0)
-      } else {
-        V = 100 + static_cast<i64>(kb);  // V > U (+100) -> ALLOW (+1)
-      }
-      v.push_back({V, 0});
-      continue;
-    }
-
-    // Pattern A and C
-    i64 a = low + static_cast<i64>(g.bounded(1ULL << 63));
-    double cut = (pattern == 0) ? 0.475 : (1.0 / 3.0);
-    double upper = (pattern == 0) ? 0.525 : (2.0 / 3.0);
-    i64 b = (u < cut) ? (a + static_cast<i64>(k)) : ((u < upper) ? a : (a - static_cast<i64>(k)));
-    v.push_back({a, b});
-  }
-  return v;
+static u64 run(const std::vector<Pair>& data, Dispatch f) {
+  u64 sum = 0;
+  for (const auto& x : data) sum += f(x.a, x.b);
+  g_sink = sum;
+  return sum;
 }
-
-// Matched no-inline comparison wrappers. Each mode pays one call boundary.
-// Assembly must still be inspected: the optimizer may lower distinct modes identically.
-__attribute__((noinline)) static int classify0(i64 a,i64 b){return cmp3_s64(a,b);}
-__attribute__((noinline)) static int classify1(i64 a,i64 b){if(a<b)return -1;else if(a==b)return 0;return 1;}
-__attribute__((noinline)) static int classify2(i64 a,i64 b){return (a>b)-(a<b);}
-__attribute__((noinline)) static int classify3(i64 a,i64 b){auto z=a<=>b;return z<0?-1:z>0?1:0;}
-__attribute__((noinline)) static int classify4(i64 a,i64 b){switch(a==b?0:a<b?-1:1){case -1:return -1;case 0:return 0;default:return 1;}}
-
-// Three distinct observable branch targets, each doing the same payload formula.
-__attribute__((noinline)) static u64 target_less(i64 a,i64 b){return payload(a,b,-1);}
-__attribute__((noinline)) static u64 target_equal(i64 a,i64 b){return payload(a,b,0);}
-__attribute__((noinline)) static u64 target_greater(i64 a,i64 b){return payload(a,b,1);}
-using Target=u64(*)(i64,i64);
-static const Target targets[3]={target_less,target_equal,target_greater};
-
-__attribute__((noinline)) static u64 dispatch(const Pair& x,int mode,int pattern){
-  i64 a=x.a,b=x.b;
-  int c=0;
-  if(pattern==1) {
-    // Every implementation must evaluate the two actual policy boundaries.
-    switch(mode){
-      case 0: c=classify0(a,-100)<0?-1:classify0(a,100)>0?1:0;break;
-      case 1: c=a< -100?-1:a>100?1:0;break;
-      case 2: c=(a>100)-(a< -100);break;
-      case 3: c=(a<=>-100)<0?-1:(a<=>100)>0?1:0;break;
-      case 4: c=a< -100?-1:a>100?1:0;break;
-      default: throw std::runtime_error("INVALID_MODE");
-    }
-  } else {
-    switch(mode){
-      case 0:c=classify0(a,b);break;
-      case 1:c=classify1(a,b);break;
-      case 2:c=classify2(a,b);break;
-      case 3:c=classify3(a,b);break;
-      case 4:c=classify4(a,b);break;
-      default:throw std::runtime_error("INVALID_MODE");
-    }
-  }
-  if(c< -1||c>1)throw std::runtime_error("INVALID_TRICHOTOMY");
-  // An actual three-way target dispatch, not merely computing a verdict.
-  return targets[c+1](a,b);
-}
-
-struct Counters {
-  int fd_i{-1};
-  int fd_b{-1};
-
-  static int open_counter(u64 config) {
-    perf_event_attr a{};
-    a.type = PERF_TYPE_HARDWARE;
-    a.size = sizeof(a);
-    a.config = config;
-    a.disabled = 1;
-    a.exclude_kernel = 1;
-    a.exclude_hv = 1;
-    return static_cast<int>(syscall(__NR_perf_event_open, &a, 0, -1, -1, 0));
-  }
-
-  Counters() {
-    fd_i = open_counter(PERF_COUNT_HW_INSTRUCTIONS);
-    fd_b = open_counter(PERF_COUNT_HW_BRANCH_MISSES);
-  }
-
-  ~Counters() {
-    if (fd_i >= 0) close(fd_i);
-    if (fd_b >= 0) close(fd_b);
-  }
-
-  bool available() const { return fd_i >= 0 && fd_b >= 0; }
-
-  void start() {
-    for (int fd : {fd_i, fd_b}) {
-      ioctl(fd, PERF_EVENT_IOC_RESET, 0);
-      ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
-    }
-  }
-
-  std::pair<u64, u64> stop() {
-    for (int fd : {fd_i, fd_b}) {
-      ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
-    }
-    u64 inst = 0;
-    u64 miss = 0;
-    if (read(fd_i, &inst, sizeof(inst)) != sizeof(inst) ||
-        read(fd_b, &miss, sizeof(miss)) != sizeof(miss)) {
-      throw std::runtime_error("PMU_READ_FAILURE");
-    }
-    return {inst, miss};
-  }
-};
-
-static void setup_cpu_affinity() {
-  cpu_set_t cpuset;
-  CPU_ZERO(&cpuset);
-  CPU_SET(0, &cpuset);
-  if (sched_setaffinity(0, sizeof(cpu_set_t), &cpuset) != 0) {
-    std::fprintf(stderr, "GOVERNOR_PINNING_SKIPPED_UNPRIVILEGED\n");
-  }
-}
-
-int main(int argc, char** argv) {
-  std::size_t n = 10000000;
-  int reps = 10;
-  bool selftest = false;
-
-  for (int j = 1; j < argc; ++j) {
-    std::string arg = argv[j];
-    if (arg == "--selftest") {
+int main(int argc, char** argv) try {
+  bool selftest = false, smoke = false, dump = false;
+  for (int i = 1; i < argc; ++i) {
+    const std::string arg = argv[i];
+    if (arg == "--selftest")
       selftest = true;
-    } else if (arg == "--n" && j + 1 < argc) {
-      n = std::stoull(argv[++j]);
-    } else if (arg == "--reps" && j + 1 < argc) {
-      reps = std::stoi(argv[++j]);
-    } else {
-      std::fprintf(stderr, "unknown argument: %s\n", argv[j]);
-      return 2;
-    }
+    else if (arg == "--dump-corpus")
+      dump = true;
+    else if (arg == "--smoke")
+      smoke = true;
+    else
+      throw std::runtime_error("INVALID_ARGUMENT");
   }
-
-  // 1. Verify PCG64 first 4 outputs
   PCG64 g;
-  const u64 expected[] = {0x854CAFBD0A540778ULL, 0x3D174C3776108E7DULL, 0xA8398F10D0F2976CULL,
-                          0x722D0D72D6D3EA65ULL};
-  for (u64 x : expected) {
-    u64 got = g.next();
-    if (got != x) {
-      std::fprintf(stderr, "BLOCKED PCG_VECTOR_MISMATCH expected=%016llx got=%016llx\n",
-                   static_cast<unsigned long long>(x), static_cast<unsigned long long>(got));
-      return 3;
-    }
-  }
-
-  // 2. Verify 20 mandatory boundary vectors
-  for (auto x : mandatory_boundaries()) {
-    int o = oracle_pattern_ac(x.a, x.b);
-    if (cmp3_s64(x.a, x.b) != o) {
-      std::puts("BLOCKED CORRECTNESS_FAILURE");
-      return 4;
-    }
-    for (int m = 0; m < 5; ++m) {
-      if (dispatch(x, m, 0) != payload(x.a, x.b, o)) {
-        std::puts("BLOCKED PAYLOAD_PARITY");
-        return 4;
-      }
-    }
-  }
-
-  // 3. Verify Pattern B policy threshold boundary vectors
-  const i64 test_v_vals[] = {-200, -101, -100, -99, 0, 99, 100, 101, 200};
-  for (i64 v : test_v_vals) {
-    int o_b = oracle_pattern_b(v);
-    Pair px{v, 0};
-    for (int m = 0; m < 5; ++m) {
-      if (dispatch(px, m, 1) != payload(v, 0, o_b)) {
-        std::puts("BLOCKED PATTERN_B_PAYLOAD_PARITY");
-        return 4;
-      }
-    }
-  }
-
-  std::puts("BOUNDARY_AND_PCG_VECTORS_PASS");
-  if (selftest) return 0;
-
-  if (n > 10000000 || reps > 10 || reps < 1) {
-    std::puts("BLOCKED BUDGET_PARAMETERS");
-    return 5;
-  }
-
-  setup_cpu_affinity();
-
-  Counters perf;
-  if (!perf.available()) {
-    std::puts("BLOCKED PMU_UNAVAILABLE");
-    return 6;
-  }
-
-  std::puts("pattern,mode,repetition,instructions,branch_misses,elapsed_ns,checksum");
-  auto begin = std::chrono::steady_clock::now();
-
+  for (u64 expected :
+       {0x854CAFBD0A540778ULL, 0x3D174C3776108E7DULL, 0xA8398F10D0F2976CULL, 0x722D0D72D6D3EA65ULL})
+    if (g.next() != expected) throw std::runtime_error("PCG_VECTOR_MISMATCH");
   for (int p = 0; p < 3; ++p) {
-    auto data = generate_corpus(p, n);
-
-    // Warm-up pass (1,000,000 iterations)
-    std::size_t warmup_n = std::min<std::size_t>(n, 1000000ULL);
-    u64 warmup_sum = 0;
-    for (std::size_t i = 0; i < warmup_n; ++i) {
-      warmup_sum += dispatch(data[i], 0, p);
+    for (auto x : mandatory_boundaries()) verify(x, p);
+    for (i64 a : {std::numeric_limits<i64>::min(), i64{-101}, i64{-100}, i64{-99}, i64{99},
+                  i64{100}, i64{101}, std::numeric_limits<i64>::max()})
+      verify({a, 0}, 1);
+    const auto data = generate_corpus(p, 10000);
+    const auto again = generate_corpus(p, 10000);
+    for (std::size_t i = 0; i < data.size(); ++i) {
+      if (data[i].a != again[i].a || data[i].b != again[i].b)
+        throw std::runtime_error("CORPUS_NONDETERMINISTIC");
+      verify(data[i], p);
     }
-    g_sink = g_sink ^ warmup_sum;
-
-    // Verify corpus correctness against oracle
+    for (auto f : functions(p)) (void)run(data, f);
+  }
+  std::fprintf(stderr, "PASS PCG=4 BOUNDARY=300 POLICY=120 GENERATED=150000 DETERMINISM=30000\n");
+  if (dump) {
+    for (int p = 0; p < 3; ++p)
+      for (const auto& x : generate_corpus(p, 10000))
+        std::printf("%d,%lld,%lld\n", p, static_cast<long long>(x.a), static_cast<long long>(x.b));
+    return 0;
+  }
+  if (selftest) return 0;
+  Counters perf;
+  if (!perf.available()) throw std::runtime_error("PMU_UNAVAILABLE");
+#if defined(__linux__)
+  const int core = setup_cpu_affinity();
+  // Log actual controls; restricted access selects the prescribed fallback.
+  FrequencyControls controls(core);
+  const auto begin = std::chrono::steady_clock::now();
+  if (smoke)
+    std::fprintf(stderr, "SMOKE_ONLY_NOT_PROTOCOL_MEASUREMENTS\n");
+  else
+    std::puts("pattern,mode,repetition,instructions,branch_misses,elapsed_ns,checksum");
+  for (int p = 0; p < 3; ++p) {
+    const auto data = generate_corpus(p, smoke ? 10000 : 10000000);
+    u64 expected = 0;
     for (const auto& x : data) {
-      int expected_v = (p == 1) ? oracle_pattern_b(x.a) : oracle_pattern_ac(x.a, x.b);
-      int cand_v = (p == 1) ? ((cmp3_s64(x.a, -100) < 0) ? -1 : ((cmp3_s64(x.a, 100) > 0) ? 1 : 0))
-                            : cmp3_s64(x.a, x.b);
-      if (cand_v != expected_v) {
-        std::puts("BLOCKED CORRECTNESS_FAILURE");
-        return 4;
+      verify(x, p);
+      expected += oracle_payload(x, p);
+    }
+    const auto& funcs = functions(p);
+    for (auto f : funcs) {
+      for (int cycle = 0; cycle < 10; ++cycle) {
+        u64 warm = 0;
+        for (std::size_t i = 0; i < 1000000; ++i) {
+          const auto& x = data[i % data.size()];
+          warm += f(x.a, x.b);
+        }
+        g_sink = warm;
       }
     }
-
-    for (int m = 0; m < 5; ++m) {
-      for (int r = 0; r < reps; ++r) {
-        u64 sum = 0;
+    for (int r = 0; r < (smoke ? 1 : 10); ++r) {
+      // Matched repetition blocks; rotate order to distribute order effects.
+      for (std::size_t j = 0; j < 5; ++j) {
+        const std::size_t m = (j + static_cast<std::size_t>(r)) % 5;
+        std::fprintf(stderr, "RUN_ORDER pattern=%d repetition=%d mode=%zu\n", p, r, m);
         perf.start();
-        auto t0 = std::chrono::steady_clock::now();
-        for (const auto& x : data) {
-          sum += dispatch(x, m, p);
-        }
-        auto t1 = std::chrono::steady_clock::now();
-        auto [inst, miss] = perf.stop();
-        g_sink = g_sink ^ sum;
-
-        auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count();
-        std::printf("%d,%d,%d,%llu,%llu,%lld,%llu\n", p, m, r,
-                    static_cast<unsigned long long>(inst), static_cast<unsigned long long>(miss),
-                    static_cast<long long>(elapsed), static_cast<unsigned long long>(sum));
-
-        if (std::chrono::steady_clock::now() - begin > std::chrono::minutes(10)) {
-          std::puts("BLOCKED BUDGET_EXCEEDED");
-          return 7;
-        }
+        const auto t0 = std::chrono::steady_clock::now();
+        const auto sum = run(data, funcs[m]);
+        const auto t1 = std::chrono::steady_clock::now();
+        const auto counts = perf.stop();
+        if (sum != expected) throw std::runtime_error("PAYLOAD_PARITY");
+        const auto elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(t1 - t0).count();
+        std::fprintf(smoke ? stderr : stdout, "%d,%zu,%d,%llu,%llu,%lld,%llu\n", p, m, r,
+                     static_cast<unsigned long long>(counts.first),
+                     static_cast<unsigned long long>(counts.second),
+                     static_cast<long long>(elapsed), static_cast<unsigned long long>(sum));
+        if (std::chrono::steady_clock::now() - begin > std::chrono::minutes(10))
+          throw std::runtime_error("BUDGET_EXCEEDED");
       }
     }
   }
-
+#else
+  (void)smoke;
+#endif
   return 0;
+} catch (const std::exception& e) {
+  std::fprintf(stderr, "BLOCKED — %s\n", e.what());
+  return 6;
 }
