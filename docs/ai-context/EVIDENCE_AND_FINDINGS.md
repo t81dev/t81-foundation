@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/ai-context/EVIDENCE_AND_FINDINGS.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Source Snapshot:** `main` at `6864a810693a6034bd28be870ee38a180ba70ba0` (H04 evidence status refreshed 2026-10-29; unaffected findings retain their original pins)
 **Status:** Non-normative index to source-reported findings; no experiments independently rerun in this correction
 
 ---
@@ -19,7 +19,7 @@ This document indexes source-reported benchmark results, mathematical models, ne
 | **Packed Ternary MatVec (H03, H06)** | CPU SIMD Inference | **Tier A** | $75\%$ DRAM memory footprint reduction; VPSHUFB SIMD decode tax limits CPU speed to $75.3\%$ of INT8 AVX2 in cache ($12.91$ vs $17.15\text{ GFLOP/s}$). | **FALSIFIED for CPU MatVec speed**; retained for storage compression. |
 | **Radix Addition Comparison (H01, H02)** | ALU Execution Speed | **Tier A** | Software tryte addition ($11.7\text{ ns}$) is $10.6\times$ slower than native 64-bit binary ALU addition ($1.1\text{ ns}$). | **FALSIFIED & FROZEN** for software CPU ternary arithmetic speedup. |
 | **Adaptive Tiering H04-R01 (H04)** | Radix × Adaptation | **Tier D** | Theoretical $2\times2$ trace model. Counterexample ($M=256$, $C_3/C_2=1.5$) yields higher ternary cost (9 vs 8). | **CONDITIONAL MODEL SUPPORT ONLY**; physical hardware benefit open. |
-| **Adaptive Tiering H04-R02 (H04)** | Four-arm capacity/transition model | **Tier B/C here** | An existing [RESULTS](../../experiments/h04_r02_adaptive_representation/RESULTS.md) and [HANDOFF](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) report completed FB/AB/FT/AT traces across eight workloads; modeled advantage disappears at the binary two-bit-per-trit cost ratio. | **COMPLETED PACKET, NOT INDEPENDENTLY RERUN HERE**; conditional cost-model result, not universal H04 or silicon closure. |
+| **Adaptive Tiering H04-R02 (H04)** | Four-arm symbolic cost / finite packing | **Tier B/D + source-reported tests** | Original total crossovers and greedy-optimum claim invalidated. Merged [PR #572](https://github.com/t81dev/t81-foundation/pull/572) introduces DP, equal binary headers, reoptimized thresholds, 10-bit control and Base-243 byte results. A separate model check matched 32 arm totals and eight corrected crossovers; no independent lab or new performance test. | **CORRECTED MODEL INTEGRATED; H04 UNRESOLVED**. Conditional 8-bit boundary behavior is not a universal no-advantage theorem. |
 | **Ternary Hardware Feasibility Inv 07 (H01, H05)** | RTL Synthesis / Area | **Tier B** | Verilog RTL (`rtl/core/t81_top.sv`) synthesizes using two 2-bit binary signals per trit. | **BOUNDED / NOT SUPPORTED** for native 3-state silicon advantage. |
 | **Physical Storage Evidence Inv 10A (H01)** | Semiconductor Memory | **Tier C** | No matched 3-state semiconductor cell area, energy, or noise-margin data available. | **PHYSICAL EVALUATION BLOCKED** — missing matched device characterization data. |
 | **Integrated System Advantage Inv 08 (H07)** | System Architecture | **Tier A** | Corrective audit established: Computational (NOT SUPPORTED), Assurance (SUPPORTED), Compositional (INCONCLUSIVE), Ternary-Specific (NOT SUPPORTED). | **BOUNDED ASSURANCE SUPPORTED**. |
@@ -84,6 +84,8 @@ This document indexes source-reported benchmark results, mathematical models, ne
 - **Measured Results:** Mathematical model proves ternary requires specific physical element cost thresholds ($C_3/C_2 < \log_2 3 \approx 1.585$) to compete, but finite capacity quantization overhead creates counterexamples (e.g., $M=256$, $C_3/C_2=1.5$ requires 6 trytes = 9 cost units vs binary 8 bits = 8 cost units).
 - **Verdict:** Conditional mathematical model support; physical advantage open.
 
+**H04-R02 correction (merged 2026-10-29):** The source-reported default ledgers were internally reproducible, but its total-cost crossover formula, greedy C++ optimization and metadata scaling invalidated the initial conclusion. [Corrected results](../../experiments/h04_r02_adaptive_representation/RESULTS.md) and [discrepancy ledger](../../experiments/h04_r02_adaptive_representation/DISCREPANCY_LEDGER.md) delimit the new cost model. With equal binary headers, the 127/128 boundary example crosses at $C_3/C_2=2.165$ under the 8-bit tier comparator, but an added 10-bit comparator moves that threshold to $5/3$; these are **symbolic ledger conditions**, not CPU speed or physical device results. The >96% attribution applies only to `constant_small`. Original negative evidence remains archived.
+
 ### 2.8 AI-Assisted Research Methodology (H08)
 - **Source Pin:** `docs/research/continuity/SESSION_HANDOFF.md` and `docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md`.
 - **Setup:** Auditing prompt provenance, AI generated claims, error rates, and session handoffs across iterative research cycles.
@@ -134,5 +136,5 @@ Agents, maintainers, and publications must strictly avoid repeating these unsupp
 
 To separate genuine radix or representation effects from conventional software engineering optimizations, future research must prioritize:
 
-1. **H04-R02 independent verification:** The [four-arm packet](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) already reports completion and a conditional negative result on binary-encoded trits. Inspect its oracle, traces, units and source provenance before considering reproduction or a distinct follow-up. **Do not reconstruct the completed experiment as new work.**
+1. **H04-R02 post-merge gate:** Confirm final CI and source-preservation identities for merged [PR #572](https://github.com/t81dev/t81-foundation/pull/572); review open PR #571 for supersession. Corrected four-arm arithmetic and codec bytes do not establish H04 closure, CPU acceleration, or physical advantage. **Do not reconstruct the completed experiment or commission fresh measurements without a distinct approved falsifier.**
 2. **Track F Determinism Tax Measurement:** Measuring the exact execution overhead of bit-exact soft-float transcendentals ([RFC-0030](../../spec/rfcs/RFC-0030-deterministic-math-subsystem.md)) versus native host `libm` across x86_64, ARM64, and WebAssembly targets.
