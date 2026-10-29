@@ -1,0 +1,47 @@
+name: PR Triage (fail closed)
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+    inputs:
+      apply_closures:
+        description: 'Apply ONLY pinned, ancestry-verified closures (requires authorized JSON entries)'
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  report:
+    if: ${{ github.event_name == 'schedule' || inputs.apply_closures != true }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Generate dry-run ledger
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci/pr_triage.py
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: pr-triage-report
+          path: pr-triage-report.json
+  authorized-closure:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_closures == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Close only strictly verified authorized PRs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 scripts/ci/pr_triage.py --apply
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        if: always()
+        with:
+          name: pr-triage-closure-ledger
+          path: pr-triage-report.json
+          if-no-files-found: warn
