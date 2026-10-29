@@ -1,9 +1,9 @@
 # T81 Research Continuity — START_HERE
 
 **Document ID:** `docs/ai-context/START_HERE.md`
-**Version:** 1.0.0 · **Last Reviewed:** 2026-10-29
-**Source Baseline Commit:** `f6d4d680709c5c6c98b305628e04346f5ef61620`
-**Status:** Authoritative Universal Entry Point for AI Research Agents
+**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
+**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Status:** Non-normative navigation and research handoff index; not an accepted contract or independent verification
 
 ---
 
@@ -22,7 +22,7 @@ The central scientific question of T81 is:
 ### Core Boundaries
 - **Exploratory Science vs. Productization:** The researcher's objective is scientific discovery. Do not confuse working software prototypes with validated physical or computational advantages.
 - **Track R (Scientific Computing & Alternative Representations):** Focuses on radix theory, balanced ternary arithmetic, 3-state algebra, adaptive tiering, and low-bit weight formats.
-- **Track F (Foundation Systems & Governance Engineering):** Focuses on deterministic execution (DCP), soft-float transcendentals ([RFC-0030](../../spec/rfcs/RFC-0030-deterministic-math-subsystem.md)), CanonFS identity ([RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)), and pre-side-effect authorization ([RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)). Track F supports Track R; it does not prove ternary superiority.
+- **Track F (Foundation Systems & Governance Engineering):** Studies scoped deterministic execution (DCP), math surfaces covered by accepted [RFC-0030](../../spec/rfcs/RFC-0030-deterministic-math-subsystem.md), CanonFS identity and the draft [RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md) interchange, and Axion pre-side-effect policy paths. Draft [RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md) is a target-architecture map, not an Axion enforcement contract. Track F supports Track R; it does not prove ternary superiority.
 - **Track M (AI-Assisted Research Methodology):** Tracks prompt-to-code provenance, AI error rates, and research iteration trustworthiness.
 
 ---
@@ -40,16 +40,15 @@ When initializing a new research session, load the six continuity documents in t
 
 ---
 
-## 4. Authority Hierarchy and Canonical Sources
+## 4. Authority Depends on the Question
 
-When documentation or source code appears contradictory, resolve conflicts according to this strict authority hierarchy:
+1. **Scientific identifiers and historical lineage:** The [H01–H08 register](../research/continuity/HYPOTHESIS_REGISTER_v1.json) and [Master Continuity Charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md) govern canonical hypothesis identities, source lineage and historical scope.
+2. **Normative implementation requirements:** Accepted specifications and explicitly adopted contracts define required behavior for their declared surfaces. Draft RFCs—including [RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md) and [RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md)—remain proposals. Implementation code and passing tests cannot override an accepted contract.
+3. **Empirical observations:** Pinned source, independent oracle, raw experimental artifacts, executed assertions, corrective reports and actual CI receipts establish what was observed in the exact tested scope. If observed behavior conflicts with a contract, document the discrepancy and seek correction or authorization; never redefine the contract by inference.
+4. **Current operational decisions:** Dated maintainer approvals and freshly checked GitHub branch/PR state determine what is currently authorized or integrated. A PR description, AI report, or green check alone does not grant permission.
+5. **This continuity package:** A non-normative index to primary records. Its summaries never supersede canonical sources, recorded negative evidence, or acceptance decisions.
 
-1. **Executed Test Code & Empirical Benchmark Artifacts:** Runnable, reproducible tests and benchmark binaries (e.g., `tests/cpp/`, `experiments/radix_comparison/`, `experiments/packed_ternary_matvec/`) override all documentation.
-2. **Master Hypothesis Register & Continuity Charter:** [`docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`](../research/continuity/HYPOTHESIS_REGISTER_v1.json) and [`docs/research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md`](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md) are authoritative for H01–H08 identities, claims, and historical evidence tiers.
-3. **Accepted RFCs in `spec/rfcs/`:** Formally accepted RFCs override general design notes, proposals, or draft RFCs.
-4. **Current Continuity Package (`docs/ai-context/`):** Synthetic research summary overriding outdated high-level README narrative prose.
-5. **Historical Reports & Narrative Markdown:** Legacy summaries, blog posts, and informal session notes (lowest authority).
-
+**Conflict rule:** Separate normative requirements, actual implementation behavior and scientific evidence. Cite both conflicting sources and stop short of declaring either an unauthorized amendment or a new scientific conclusion.
 ---
 
 ## 5. Evidence Classification Rules
@@ -81,7 +80,7 @@ Research agents are strictly forbidden from repeating or generating the followin
 
 1. **PROHIBITED:** Claiming software CPU ternary arithmetic or SWAR tryte packing provides an execution speedup on general-purpose binary CPUs (Falsified: software tryte addition is $10.6\times$ slower than 64-bit binary ALU addition; 2-bit packed MatVec is limited to $75.3\%$ of INT8 AVX2 speed in cache due to SIMD decode tax).
 2. **PROHIBITED:** Claiming T81 is a commercial operating system running on physical ternary microprocessors (Falsified: no physical ternary silicon exists in the repository; all execution uses binary hardware emulation).
-3. **PROHIBITED:** Claiming accountable evidence and policy governance strictly require a custom VM or guest OS (Falsified: Wasmtime + OPA capability baselines in `examples/governance/accountable-computation/` achieve identical $0.0\%$ breach rates and detached evidence auditability).
+3. **PROHIBITED:** Claiming that a custom VM is strictly necessary **or** that Wasmtime + OPA has already demonstrated equivalent safety in the complete Baseline-X protocol. The [bounded precursor report](../../examples/governance/accountable-computation/REPORT.md) did not deploy Wasmtime/OPA; the [claim register](../../experiments/research_001/CLAIM_REGISTER.md) leaves that comparison under active test.
 4. **PROHIBITED:** Redefining, renumbering, or silently closing canonical hypotheses H01–H08.
 
 ---
@@ -92,22 +91,22 @@ Research agents are strictly forbidden from repeating or generating the followin
 1. Load all six `docs/ai-context/` documents in sequence.
 2. Read [`docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md`](ACTIVE_RESEARCH_HANDOFF.md) to identify the primary next research action.
 3. Formulate a falsifiable experiment or bounded implementation task.
-4. Execute verification commands using `run_in_bash_session`.
-5. Verify results using read-only tools (`read_file`, `list_files`).
-6. Append a structured session handoff entry to [`docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md`](ACTIVE_RESEARCH_HANDOFF.md).
+4. Run only task-authorized, available verification commands; log exact commands and failures, or mark them NOT RUN.
+5. Inspect exact source, test output, artifact identities and live PR status with available read-only tools.
+6. Propose a dated handoff entry, and append it only within the authorization scope of the current task. Do not rewrite canonical append-only history.
 
 ### Resolving Contradictions
 If repository files contain conflicting statements:
 1. Do NOT silently choose the convenient version.
 2. Report the explicit contradiction, citing exact file paths and commit SHAs.
-3. Apply the Authority Hierarchy (Section 4) to determine the binding truth.
+3. Apply Section 4 to distinguish normative contract, empirical observation and current approval; do not promote observed defects into contract changes.
 4. Record the contradiction in [`docs/ai-context/ACTIVE_RESEARCH_HANDOFF.md`](ACTIVE_RESEARCH_HANDOFF.md) under "Unresolved Contradictions."
 
 ---
 
 ## 9. Rules for Updating the Continuity Package
 
-- The six files in `docs/ai-context/` are a living research index.
+- The six files in `docs/ai-context/` are a living, non-normative research index.
 - `ACTIVE_RESEARCH_HANDOFF.md` is updated at the conclusion of every research session using the append-only session handoff template.
 - `START_HERE.md`, `RESEARCH_IDENTITY.md`, `SYSTEM_ARCHITECTURE.md`, `EVIDENCE_AND_FINDINGS.md`, and `DECISIONS_AND_GOVERNANCE.md` are modified only when a new empirical finding, accepted RFC, or governance decision supersedes previous state.
 - Never erase historical evidence or negative experimental results when updating documents.

@@ -1,9 +1,9 @@
 # T81 Research Continuity — RESEARCH_IDENTITY
 
 **Document ID:** `docs/ai-context/RESEARCH_IDENTITY.md`
-**Version:** 1.0.0 · **Last Reviewed:** 2026-10-29
-**Source Baseline Commit:** `f6d4d680709c5c6c98b305628e04346f5ef61620`
-**Status:** Authoritative Scientific and Intellectual Identity
+**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
+**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Status:** Non-normative research-identity navigation; canonical H01–H08 definitions remain in the JSON register
 
 ---
 
@@ -79,8 +79,8 @@ The project preserves the exact identities, formal claims, baselines, assumption
 - **Assumptions:** Historical 81/243/729 labels do not establish bit widths or equivalent domains; entropy/depth heuristic and promotion logic are distinct source mechanisms.
 - **Measurement:** Factorial radix/adaptation contrasts; storage, selection, switching, and conversion reported separately.
 - **Falsifier:** No advantage over adaptive binary, effect is equally explained by adaptation, or correctness/transition costs remove it.
-- **Result:** **Tier B:** Historical Hanoi scheduler thresholds inspected. Refined under **H04-R01** ($2\times2$ trace model). H04-R01 proves conditional model support with counterexamples ($M=256$, $C_3/C_2=1.5$ favors binary).
-- **Next Action:** Execute H04-R02 four-arm trace ledger over declared integer trace families.
+- **Result:** **Tier B/D (lineage/model):** Historical Hanoi scheduler thresholds inspected; H04-R01 defines a $2\times2$ discriminator with finite-capacity counterexamples ($M=256$, $C_3/C_2=1.5$ favors binary). An [H04-R02 four-arm packet](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) already exists and reports a conditional negative outcome under binary-encoded trit costs; it was not independently rerun in this index.
+- **Next Action:** Audit H04-R02's oracle, cost units and completed evidence, then choose a distinct, maintainer-approved discriminator if needed. Do not repeat the completed packet.
 
 ### Hypothesis H05: Three-State Algebra Primitives & Architectures
 - **Formal Claim:** A specified three-state primitive can reduce circuit or system cost against an equivalent Boolean implementation.
@@ -88,7 +88,7 @@ The project preserves the exact identities, formal claims, baselines, assumption
 - **Assumptions:** A two-bit binary comparator can encode three outcomes; saturating single-trit ADD differs from positional multi-trit addition.
 - **Measurement:** Gate count/depth, mapped area/energy, and input/output conversion under a common process.
 - **Falsifier:** Equivalent Boolean synthesis matches or beats claimed cost, or semantics differ.
-- **Result:** **Tier B:** Hardware repo implements 8 operations over signed 2-bit trit signals; Hanoi CMP3 handler is null. In-VM policy check (`eval_axion_call`) prevents side effects ($0.0\%$ breach rate under test conditions).
+- **Result:** **Tier B:** Hardware repo implements eight operations over signed two-bit trit signals; Hanoi CMP3 handler is null. Separate policy paths have scoped tests, but the [accountable-computation precursor](../../examples/governance/accountable-computation/REPORT.md) reported unauthorized result creation in its B arm. That evidence cannot certify universal side-effect prevention.
 - **Next Action:** Formalize operation truth table before hardware extensions.
 
 ### Hypothesis H06: Ternary Weights & Activations for AI Inference
@@ -106,8 +106,8 @@ The project preserves the exact identities, formal claims, baselines, assumption
 - **Assumptions:** Authorization, evidence integrity, factual validity, and consent are distinct properties.
 - **Measurement:** Replay, tamper detection, revocation, and pre-side-effect denial under trustworthy execution.
 - **Falsifier:** Conventional baseline meets the defined property at lower cost, or authorization bypass is reproduced.
-- **Result:** **Tier A / B:** Established for DCP determinism, CanonFS byte identity, and detached evidence auditability (RFC-00D4). Accountable computation is proved to be a runtime-agnostic protocol (Wasmtime + OPA matches T81VM $0.0\%$ breach rate).
-- **Next Action:** Maintain bounded security and determinism investigations.
+- **Result:** **Tier B/C in this index:** Scoped deterministic, identity and detached-verification implementations exist; draft [RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md) is not adopted. The [bounded precursor](../../examples/governance/accountable-computation/REPORT.md) did not run Wasmtime + OPA; [CLM-03/04](../../experiments/research_001/CLAIM_REGISTER.md) remain under active test. Broad comparative auditability and custom-VM necessity are **INCONCLUSIVE**.
+- **Next Action:** Preserve the reported local failure cases and complete equivalent conventional security/control experiments before claiming relative advantage.
 
 ### Hypothesis H08: AI-Assisted Research Trustworthiness & Discovery
 - **Formal Claim:** AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process.

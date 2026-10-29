@@ -1,15 +1,15 @@
 # T81 Research Continuity — SYSTEM_ARCHITECTURE
 
 **Document ID:** `docs/ai-context/SYSTEM_ARCHITECTURE.md`
-**Version:** 1.0.0 · **Last Reviewed:** 2026-10-29
-**Source Baseline Commit:** `f6d4d680709c5c6c98b305628e04346f5ef61620`
-**Status:** Authoritative System Architecture & Subsystem Specification
+**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
+**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Status:** Non-normative architecture index; not a complete integration trace or production conformance certificate
 
 ---
 
 ## 1. Subsystem Architecture Map
 
-The T81 architecture organizes execution into explicit, policy-governed layers designed to decouple higher-level AI workflows from host hardware while maintaining bit-exact determinism.
+T81 has documented policy, runtime, model-intake, and artifact surfaces with different maturity levels. The diagram is a **conceptual map**, not one verified end-to-end call path or a universal claim of bit-exact cross-platform behavior.
 
 ```mermaid
 graph TD
@@ -28,9 +28,9 @@ graph TD
         T81VM <--> CanonFS[CanonFS Content-Addressed VFS RFC-00D1]
     end
 
-    CanonFS --> Evidence[Detached Evidence Bundles RFC-00D4]
+    CanonFS -. proposed evidence interface .-> Evidence[Experimental evidence bundles / draft RFC-00D4]
 
-    subgraph "DAIOS Target Architecture (RFC-00D2)"
+    subgraph "DAIOS Draft Target Layers (RFC-00D2)"
         L1[1. Deterministic Execution Substrate - REAL]
         L2[2. Policy & Admission Layer - REAL]
         L3[3. Immutable Artifact & Provenance Layer - REAL]
@@ -55,7 +55,7 @@ graph TD
 ### 2.2 T81VM Virtual Machine Core
 - **Path:** `src/vm/vm.cpp`, `include/t81/vm/vm.hpp`
 - **Role:** Deterministic Core Profile (DCP) execution engine. Decodes TISC bytecode, manages VM memory frames, and enforces pre-dispatch policy checks (`eval_axion_call`).
-- **Maturity:** **BETA RUNTIME**. Delivers cross-platform bit-exact execution parity across x86_64, ARM64, and WebAssembly targets.
+- **Maturity:** **BETA RUNTIME**. Specific deterministic call paths have reported tests; parity across all programs, features and platforms is not established by this index.
 
 ### 2.3 Axion Policy Governance Engine
 - **Path:** `src/axion/`, `include/t81/kernel/axion/`
@@ -86,7 +86,7 @@ graph TD
 
 ## 3. DAIOS Target Architecture & Layering (RFC-00D2)
 
-The Deterministic Artificial Intelligence Operating System ([RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)) establishes a 6-layer architecture map. This map governs planning discipline: **design ahead, implement behind proof**.
+Draft/informational [RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md) **proposes** a six-layer target architecture. It guides planning (*design ahead, implement behind proof*) and does not accept new runtime APIs or certify each layer as integrated.
 
 | Layer ID | Layer Name | Material Implementation Reality | Current Build-Against Scope |
 | :--- | :--- | :--- | :--- |
@@ -108,7 +108,7 @@ The Deterministic Artificial Intelligence Operating System ([RFC-00D2](../../spe
 | **Axion Policy Engine** | `src/axion/` | `spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md` | CTest #154 | **Alpha Governance** |
 | **CanonFS Interchange** | `src/core/fs/` | `spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md` | CTest #84–85 | **Beta Identity FS** |
 | **Soft-Float CORDIC** | `src/core/isa/math/` | `spec/rfcs/RFC-0030-deterministic-math-subsystem.md` | CTest #355 | **Functional / DCP** |
-| **Accountable Evidence** | `examples/governance/` | `spec/rfcs/RFC-00D4-accountable-decision-bundle.md` | CTest #4 | **Research Reference** |
+| **Accountable Evidence** | `examples/governance/` | [RFC-00D4 draft](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md) | Bounded precursor tests; confirm exact CTest invocation | **Experimental / not RFC-conformant by default** |
 | **Ternary Hardware RTL** | `rtl/core/` | `t81-hardware` repo | Verilog / SystemVerilog simulation | **Experimental / RTL** |
 | **2-Bit MatVec SIMD** | `experiments/` | `PACKED_TERNARY_MATVEC_PERFORMANCE_REPORT.md` | `t81_packed_ternary_matvec` | **Experimental / Frozen** |
 

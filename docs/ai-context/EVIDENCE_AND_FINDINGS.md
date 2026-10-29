@@ -1,15 +1,15 @@
 # T81 Research Continuity — EVIDENCE_AND_FINDINGS
 
 **Document ID:** `docs/ai-context/EVIDENCE_AND_FINDINGS.md`
-**Version:** 1.0.0 · **Last Reviewed:** 2026-10-29
-**Source Baseline Commit:** `f6d4d680709c5c6c98b305628e04346f5ef61620`
-**Status:** Authoritative Scientific Evidence Index & Empirical Finding Registry
+**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
+**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Status:** Non-normative index to source-reported findings; no experiments independently rerun in this correction
 
 ---
 
 ## 1. Executive Scientific Evidence Index
 
-This document serves as the authoritative index of empirical benchmark results, mathematical proofs, negative findings, and historical investigation reports across the T81 program.
+This document indexes source-reported benchmark results, mathematical models, negative findings, and historical reports. Evidence tiers below refer to their **originating packets**, not independent reproduction during this documentation correction. For each claim consult its exact oracle, raw artifacts, correction and tested scope.
 
 ### Summary Disposition Table
 | Finding / Investigation | Target Domain | Evidence Tier | Primary Outcome | Scientific Verdict |
@@ -19,11 +19,12 @@ This document serves as the authoritative index of empirical benchmark results, 
 | **Packed Ternary MatVec (H03, H06)** | CPU SIMD Inference | **Tier A** | $75\%$ DRAM memory footprint reduction; VPSHUFB SIMD decode tax limits CPU speed to $75.3\%$ of INT8 AVX2 in cache ($12.91$ vs $17.15\text{ GFLOP/s}$). | **FALSIFIED for CPU MatVec speed**; retained for storage compression. |
 | **Radix Addition Comparison (H01, H02)** | ALU Execution Speed | **Tier A** | Software tryte addition ($11.7\text{ ns}$) is $10.6\times$ slower than native 64-bit binary ALU addition ($1.1\text{ ns}$). | **FALSIFIED & FROZEN** for software CPU ternary arithmetic speedup. |
 | **Adaptive Tiering H04-R01 (H04)** | Radix × Adaptation | **Tier D** | Theoretical $2\times2$ trace model. Counterexample ($M=256$, $C_3/C_2=1.5$) yields higher ternary cost (9 vs 8). | **CONDITIONAL MODEL SUPPORT ONLY**; physical hardware benefit open. |
+| **Adaptive Tiering H04-R02 (H04)** | Four-arm capacity/transition model | **Tier B/C here** | An existing [RESULTS](../../experiments/h04_r02_adaptive_representation/RESULTS.md) and [HANDOFF](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) report completed FB/AB/FT/AT traces across eight workloads; modeled advantage disappears at the binary two-bit-per-trit cost ratio. | **COMPLETED PACKET, NOT INDEPENDENTLY RERUN HERE**; conditional cost-model result, not universal H04 or silicon closure. |
 | **Ternary Hardware Feasibility Inv 07 (H01, H05)** | RTL Synthesis / Area | **Tier B** | Verilog RTL (`rtl/core/t81_top.sv`) synthesizes using two 2-bit binary signals per trit. | **BOUNDED / NOT SUPPORTED** for native 3-state silicon advantage. |
 | **Physical Storage Evidence Inv 10A (H01)** | Semiconductor Memory | **Tier C** | No matched 3-state semiconductor cell area, energy, or noise-margin data available. | **PHYSICAL EVALUATION BLOCKED** — missing matched device characterization data. |
 | **Integrated System Advantage Inv 08 (H07)** | System Architecture | **Tier A** | Corrective audit established: Computational (NOT SUPPORTED), Assurance (SUPPORTED), Compositional (INCONCLUSIVE), Ternary-Specific (NOT SUPPORTED). | **BOUNDED ASSURANCE SUPPORTED**. |
-| **Accountable Computation Baseline-X (H07)** | Governance Protocol | **Tier A** | Wasmtime + OPA host FFI baseline achieves identical $0.0\%$ policy breach rate and $100\%$ evidence auditability. | **ESTABLISHED**: Accountable computation is a protocol, not a custom VM requirement. |
-| **AI Research Methodology (H08)** | Prompt-to-Code Provenance | **Tier C / E** | Systematic provenance tracking, commit logging, and session handoffs. | **ESTABLISHED for research continuity**. |
+| **Accountable Computation precursor (H07)** | Governance / evidence protocol | **Tier B/C here** | Local A/B/C arms reported 0/150, 90/150 and 0/150 unauthorized result creations respectively in the negative-case set; the full Wasmtime/OPA protocol was **not run**. | **INCONCLUSIVE** for custom-VM necessity and conventional parity; draft RFC-00D4 not certified. |
+| **AI Research Methodology (H08)** | Prompt-to-code provenance | **Tier C / E** | Session histories and provenance records exist; no controlled matched productivity study is cited. | **PROCESS DOCUMENTED; comparative benefit UNTESTED**. |
 
 ---
 
@@ -71,15 +72,12 @@ This document serves as the authoritative index of empirical benchmark results, 
   > **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE.**
 - **Scientific Impact:** Prevents converting theoretical radix density ($\log_2 3 \approx 1.585$) into claims of physical silicon hardware superiority without matched semiconductor fabrication measurements.
 
-### 2.6 Accountable Computation Framework (Baseline-X) (H07)
-- **Source Pin:** `examples/governance/accountable-computation/` and `experiments/research_001/`.
-- **Setup:** Empirical evaluation of pre-side-effect policy enforcement under adversarial stress testing comparing T81VM + Axion against Wasmtime + Open Policy Agent (OPA) host FFI boundaries.
-- **Measured Results:**
-  - Both runtimes achieved $0.0\%$ policy breach rate under test conditions.
-  - Both runtimes generated $100\%$ verifiable detached evidence receipts ([RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md)).
-  - Wasmtime baseline required $10\times$ lower host C++ code footprint.
-- **Verdict:** Establishes that accountable evidence and policy-gated execution are runtime-agnostic protocols, not exclusive capabilities of a custom VM.
-
+### 2.6 Accountable Computation Precursor & Baseline-X (H07)
+- **Sources:** [bounded report](../../examples/governance/accountable-computation/REPORT.md), [Protocol 001 proposal](../../experiments/research_001/RESEARCH_PROPOSAL.md), [claim register](../../experiments/research_001/CLAIM_REGISTER.md), and [draft RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md).
+- **Actually tested:** Three **local precursor** arms: A used conventional local mechanisms, B reused existing T81 paths, and C used experiment-local integration. These were **not** the specified Python/FastAPI/Postgres/OPA, T81VM, and Wasmtime/SQLite/Sigstore deployment arms.
+- **Reported negative-case observations:** Unauthorized result creation was **0/150 in A**, **90/150 in B** and **0/150 in C** under the report's defined cases. The B authorization failures are negative evidence to preserve. The local detached verifier met its bounded sub-second target, but no external host-trust, physical side-effect, or cross-platform guarantee follows.
+- **Unresolved:** The full Wasmtime/OPA comparison, 10× complexity/latency claim, concurrent revocation and RFC-00D4 conformance. The report explicitly calls the broader architectural outcome **INCONCLUSIVE**; CLM-03/04 remain `UNDER_ACTIVE_TEST`.
+- **Interpretation:** A runtime-agnostic evidence protocol is a plausible research direction, **not** an established comparative equivalence or an adopted RFC from this packet.
 ### 2.7 Adaptive Representation Tiering (H04 & H04-R01)
 - **Source Pin:** `docs/research/continuity/H04_RADIX_ADAPTATION_DISCRIMINATOR.md` and `docs/research/continuity/probes/storage_boundary.py`.
 - **Setup:** Formal $2\times2$ factorial matrix (Fixed Binary, Adaptive Binary, Fixed Ternary, Adaptive Ternary) decoupling radix representation from dynamic adaptation.
@@ -95,7 +93,7 @@ This document serves as the authoritative index of empirical benchmark results, 
 
 ## 3. Reproduction Commands
 
-To independently reproduce and verify these scientific findings locally, execute the following commands in the repository root:
+The following are **suggested reproduction commands, not executed during this documentation correction**. Under the normal Ninja/CMake layout, the two experiment executables reside in their experiment build directories. Verify the exact build configuration and prerequisites before interpreting results:
 
 ```bash
 # 1. Build release binaries with test flags enabled
@@ -103,10 +101,10 @@ cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_TESTS=ON
 ninja -C build t81 t81_radix_comparison t81_packed_ternary_matvec
 
 # 2. Run radix addition performance benchmark (H01, H02)
-./build/bin/t81_radix_comparison
+./build/experiments/radix_comparison/t81_radix_comparison
 
 # 3. Run 2-bit packed ternary MatVec benchmark (H03, H06)
-./build/bin/t81_packed_ternary_matvec
+./build/experiments/packed_ternary_matvec/t81_packed_ternary_matvec
 
 # 4. Run exact float conversion audit oracle
 python3 experiments/float_conversion_audit/test_oracle.py
@@ -127,8 +125,8 @@ Agents, maintainers, and publications must strictly avoid repeating these unsupp
    *Correction:* Investigation 09-E1 proved TISC binary artifacts are $7.898\times$ larger than conforming WebAssembly binaries.
 3. **"T81 operates on physical ternary microprocessor hardware."**
    *Correction:* No physical 3-state hardware exists in the repository. All execution relies on binary software emulation or 2-bit binary RTL signals.
-4. **"Accountable computation requires a custom virtual machine or kernel."**
-   *Correction:* Baseline-X proved Wasmtime + OPA provides identical $0.0\%$ policy breach guarantees and detached evidence receipts.
+4. **"Accountable computation requires a custom VM" or "Wasmtime + OPA was already proven equivalent."**
+   *Correction:* Both comparative claims remain **UNRESOLVED**. The [precursor](../../examples/governance/accountable-computation/REPORT.md) did not execute the full Wasmtime/OPA deployment arm; [CLM-03/04](../../experiments/research_001/CLAIM_REGISTER.md) are under active test.
 
 ---
 
@@ -136,5 +134,5 @@ Agents, maintainers, and publications must strictly avoid repeating these unsupp
 
 To separate genuine radix or representation effects from conventional software engineering optimizations, future research must prioritize:
 
-1. **Experiment H04-R02 (Four-Arm Trace Ledger):** Full 4-arm exact trace evaluation (Fixed Binary, Adaptive Binary, Fixed Ternary, Adaptive Ternary) across declared integer trace families to compute the exact symbol, transition, and conversion crossover surface.
+1. **H04-R02 independent verification:** The [four-arm packet](../../experiments/h04_r02_adaptive_representation/HANDOFF.md) already reports completion and a conditional negative result on binary-encoded trits. Inspect its oracle, traces, units and source provenance before considering reproduction or a distinct follow-up. **Do not reconstruct the completed experiment as new work.**
 2. **Track F Determinism Tax Measurement:** Measuring the exact execution overhead of bit-exact soft-float transcendentals ([RFC-0030](../../spec/rfcs/RFC-0030-deterministic-math-subsystem.md)) versus native host `libm` across x86_64, ARM64, and WebAssembly targets.
