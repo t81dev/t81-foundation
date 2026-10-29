@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/ai-context/START_HERE.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Source Snapshot:** `main` at `6864a810693a6034bd28be870ee38a180ba70ba0` (H04 correction/navigation refreshed 2026-10-29; refresh operational state before use)
 **Status:** Non-normative navigation and research handoff index; not an accepted contract or independent verification
 
 ---
@@ -28,6 +28,8 @@ The central scientific question of T81 is:
 ---
 
 ## 3. Document Loading Order
+
+For a low-context orientation, optionally read [BOOTSTRAP.md](BOOTSTRAP.md) first. It is non-normative and does not replace the six-document research loading requirement.
 
 When initializing a new research session, load the six continuity documents in this precise order:
 
