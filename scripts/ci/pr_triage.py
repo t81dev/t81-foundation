@@ -59,6 +59,8 @@ def main():
         number = entry["pr"]
         successor_number = entry["merged_successor"]
         expected = entry["head_sha"]
+        if not isinstance(expected, str) or len(expected) != 40 or any(ch not in "0123456789abcdef" for ch in expected):
+            raise ValueError("authorization must pin a lowercase 40-character commit SHA")
         if number in seen:
             raise ValueError("duplicate closure authorization")
         seen.add(number)
@@ -93,7 +95,7 @@ def main():
                 d["reason"] = "PR changed during audit; no mutation"
                 continue
             comment = (f"Administrative closure: merged PR #{successor_number} contains "
-                       f"this exact PR head \`{expected}\` in its Git ancestry. "
+                       f"this exact PR head `{expected}` in its Git ancestry. "
                        "Closure authorized by docs/governance/pr-triage-closures.json. "
                        "Historical commits remain in Git. No merge or research activation is implied.")
             api("POST", root + f"/issues/{number}/comments", {"body": comment})
