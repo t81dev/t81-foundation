@@ -8,6 +8,21 @@
 
 ---
 
+## Current operational addendum — 2026-10-29, after PR #572 merge
+
+This dated addendum **supersedes Sections 1–4 below as operational guidance** but preserves their earlier observations and append-only session entries verbatim. It is an evidence/navigation update, not a new protocol, measurement authorization, or independent laboratory certification.
+
+- **Baseline:** `main` at `6864a810693a6034bd28be870ee38a180ba70ba0`; corrective [PR #572](https://github.com/t81dev/t81-foundation/pull/572) merged. Original H04-R02 total-cost break-evens, greedy global-optimum claim, metadata interpretation and generalized adaptation attribution were found incorrect. The merged [corrected result](../../experiments/h04_r02_adaptive_representation/RESULTS.md) is a **conditional symbolic model** with a 10-bit binary control and separately measured codec **byte lengths**. H04 is **UNRESOLVED**; neither universal software impossibility nor physical ternary superiority is established.
+- **Verification distinction:** A separate read-only four-tier model recalculation matched 32 corrected default arm totals and eight reoptimized crossovers; 14/14 preserved PR #569/#570/#571 history blobs matched their pinned sources. The new 65-bit covering-width assertion for 41 trits passed as exact integer arithmetic. These checks do **not** replace full CMake/CTest or independent laboratory reproduction.
+- **CI and review:** At the last check, the PR #572 head workflows were queued, no post-merge CI receipt was returned for `6864a810693a6034bd28be870ee38a180ba70ba0`, and the earlier shared-overhead review thread remained unresolved. Treat final CI and review disposition as **UNVERIFIED/PENDING**, not green.
+- **Related PRs:** #570 is closed without merge; #571 was open/unmerged and requires explicit supersession review. CMP3 #637 was open at `42b9f6240b136b19c52476727f9f78d2c2c01c08`. Its prospective M1–M4/r1 authorization is source-recorded, while GNU/Linux, PMU and production T1–T8 trusted-runner/eligibility requirements remain incomplete. **CMP3 MEASUREMENT NOT AUTHORIZED.**
+
+**Current single next action:** Obtain exact final CI/review receipts for merged H04 #572 and decide #571 supersession, while keeping Jules's distinct CMP3 non-performance readiness work separate. After that, the maintainer may select a distinct falsifier or a bounded maintenance task; do not restart completed H04-R02 or activate performance collection.
+
+**Stop gate:** Unknown CI state, unresolved source/contract mismatch, missing comparator parity, missing signed runner/PMU eligibility, or absent maintainer approval means no scientific closure, measurement, policy activation, or merge is inferred.
+
+---
+
 ## 1. Operational Snapshot
 
 ### Current Research Boundary
@@ -124,4 +139,21 @@ RESULT: H04-R02 packet already exists (conditional source-reported outcome); CMP
 CORRECTIONS: RFC-00D2 and RFC-00D4 draft; source-observed behavior does not override accepted normative contracts; experiment executable paths corrected.
 NEXT SINGLE ACTION: Read-only H04/CMP3 evidence and protocol reconciliation, then obtain maintainer decision.
 NO-AUTHORITY ACTIONS: No experimental measurement, security/policy activation, RFC acceptance or merge.
+```
+
+
+### Addendum appended 2026-10-29 (H04 correction integration; no performance rerun)
+
+```text
+DATE / SESSION: 2026-10-29 / PR #572 corrected H04-R02 integration
+REPOSITORIES AND PINS: t81-foundation main 6864a810693a6034bd28be870ee38a180ba70ba0; PR #572 merge; #570 closed unmerged, #571 open at observed review.
+QUESTION: Reconcile original H04-R02 correctness defects and maintain accurate post-merge AI continuity.
+EVIDENCE INSPECTED: PR #572 MATHEMATICS, RESULTS, DISCREPANCY_LEDGER, C++ prefix DP, Python suffix oracle, CTest definitions, preserved history snapshots, GitHub PR heads and workflow state.
+INDEPENDENTLY CHECKED: Four signed-width inequalities (41 trits require 65 signed bits); separate model calculation matched 32 corrected totals and eight crossovers; 14/14 archived historical source blobs matched pinned revisions.
+NOT INDEPENDENTLY RUN: Full current-head CMake/CTest; final GitHub CI; hardware, CPU performance, and laboratory measurements.
+RESULT: Corrective symbolic model integrated; original H04-R02 general negative inference invalidated; H04 unresolved. Model outcomes depend on cost/metadata, binary-tier granularity and access/packing contracts.
+KNOWN DEFECTS / CONFOUNDERS: Original greedy selection, wrong crossovers, scaled-header unit mismatch, one-workload 96% generalization; corrected candidate remains bounded to modeled costs and measured codec bytes.
+CURRENT BLOCKERS: Final CI/review receipt pending; #571 supersession not decided; native device characterization unavailable; CMP3 signed trusted-runner and PMU measurement eligibility absent.
+NEXT SINGLE ACTION: Check final H04 CI and #571 disposition; separately review CMP3 non-performance readiness.
+STOPPING CRITERION: No new performance measurement or H04 closure without accepted protocol, trustworthy evidence and explicit human authorization.
 ```

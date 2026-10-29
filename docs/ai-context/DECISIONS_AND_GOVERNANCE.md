@@ -2,7 +2,7 @@
 
 **Document ID:** `docs/ai-context/DECISIONS_AND_GOVERNANCE.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Source Snapshot:** `main` at `6864a810693a6034bd28be870ee38a180ba70ba0` (H04/PR-status update checked 2026-10-29; other entries remain evidence-bounded)
 **Status:** Non-normative decision and RFC-status index; does not grant acceptance, merge or activation authority
 
 ---
@@ -57,7 +57,8 @@ The AD identifiers below are continuity-index labels, not substitutes for formal
 | **PR #560** | Witness Corrective Hardening | Addressed snapshot rollback vulnerabilities in SQLite witness stores. |
 | **PR #561** | Foundation Phase 2 Advancement | Advanced core runtime interfaces towards DCP determinism targets. |
 | **PR #565 / #566** | Governance Validation & Protocol 001 | Under review; CodeQL passed; marked NOT READY pending evidence gates. |
-| **PRs #632–#637** | EXP-T81-COMP3-01 protocol/harness revisions | **Open/unmerged at this snapshot**, with divergent protocol blobs and incomplete acceptance. #634 head `21095d65cc0c849f5a6f2599a962cbce032b5cea`; #635 `b37005ceda6a3f4349ec9027b2a9be84ea176aa9`; #637 `1a71733cdd266a34a174d13185c78e5b6a07c68e`. Do not infer a frozen approved protocol from PR titles. |
+| **PRs #632–#637** | EXP-T81-COMP3-01 protocol/harness revisions | **Open/unmerged at earlier snapshot**; #637 later head `42b9f6240b136b19c52476727f9f78d2c2c01c08` remains open. Its source records prospective r1/M1–M4 authorization for non-performance validation, **not** measurement eligibility, a signed production approval, or acceptance. Refresh live heads before action. |
+| **PRs #570–#572 (H04)** | H04-R02 correction lineage | #572 **merged** at `6864a810693a6034bd28be870ee38a180ba70ba0` (2026-10-29), integrating corrected DP/crossover/model and historical snapshots; #570 closed unmerged; #571 remained open. Fourteen preserved snapshots matched their pinned Git blobs, but final PR-head CI was queued at inspection and the earlier review thread remained unresolved. Integration is not scientific closure of H04. |
 
 ---
 
