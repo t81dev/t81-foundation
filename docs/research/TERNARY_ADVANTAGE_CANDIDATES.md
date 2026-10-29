@@ -399,10 +399,10 @@ Any single classification failure immediately invalidates the run and halts exec
   * Uniform double: $u = \frac{\text{pcg64\_next()}}{2^{64}} \in [0.0, 1.0)$.
   * Signed 64-bit integer $a \in [\text{INT64\_MIN} + 2^{30}, \text{INT64\_MAX} - 2^{30}]$ sampled via bounded modulo from `pcg64_next()`.
 * **Verification Output Vectors (First 4 PCG64 outputs post-initialization):**
-  * `Output 0:` `0x323BA413CD580A16ULL`
-  * `Output 1:` `0xDE6D80A101AD11A0ULL`
-  * `Output 2:` `0x5E627A86BA74FEA4ULL`
-  * `Output 3:` `0x2C1D2A4B8F91E139ULL`
+  * `Output 0:` `0x854CAFBD0A540778ULL`
+  * `Output 1:` `0x3D174C3776108E7DULL`
+  * `Output 2:` `0xA8398F10D0F2976CULL`
+  * `Output 3:` `0x722D0D72D6D3EA65ULL`
 
 #### Mandatory Boundary Vectors (Explicit Enumeration & Accounting)
 The test harness MUST explicitly prepend the following **20 mandatory boundary test pairs** before pseudo-random corpus evaluation:
