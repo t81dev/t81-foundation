@@ -100,7 +100,12 @@ class GovernanceTests(unittest.TestCase):
         self.assertEqual(self.run_cli(CLAIMS).returncode, 0)
         begin = text.index("Determinism guarantees are limited")
         end = text.index("\n\n", begin)
-        readme.write_text(text[:begin] + text[end:])
+        # Current main has additional registry references outside the paragraph.
+        # Remove every allowed reference so this remains a genuine negative case.
+        without_boundary = (text[:begin] + text[end:]).replace(
+            "docs/governance/DETERMINISM_SURFACE_REGISTRY.md", "removed-registry.md"
+        ).replace("Determinism Surface Registry", "removed boundary reference")
+        readme.write_text(without_boundary)
         result = self.run_cli(CLAIMS)
         self.assertEqual(result.returncode, 1)
         self.assertIn("README.md: claims determinism but omits", result.stderr)

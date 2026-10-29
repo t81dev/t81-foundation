@@ -86,6 +86,15 @@ class SupplyChainTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'reviewed budget'):
                     enforce_budget(self.root)
 
+    def test_existing_main_discovery_workflow_cannot_expand_permissions(self):
+        path = self.root / '.github/workflows/research-commons.yml'
+        original = path.read_text()
+        self.assertIn('contents: read', original)
+        enforce_budget(self.root)
+        path.write_text(original.replace('contents: read', 'contents: write', 1))
+        with self.assertRaisesRegex(ValueError, 'reviewed budget'):
+            enforce_budget(self.root)
+
     def test_every_new_pin_matches_verified_identity(self):
         workflows = '\n'.join(p.read_text() for p in (self.root / '.github/workflows').glob('*.y*ml'))
         for pin in json.loads((FIXTURES / 'pins.json').read_text()):

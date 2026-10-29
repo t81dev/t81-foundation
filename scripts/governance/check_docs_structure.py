@@ -6,11 +6,11 @@ import sys
 from pathlib import Path
 
 BOOK_DIRS = [
-    "book/book-en",
-    "book/book-cn",
-    "book/book-es",
-    "book/book-pt",
-    "book/book-ru",
+    "docs/book/book-en",
+    "docs/book/book-cn",
+    "docs/book/book-es",
+    "docs/book/book-pt",
+    "docs/book/book-ru",
 ]
 REQUIRED_PREFIXES = {f"{n:02d}" for n in range(1, 16)}
 

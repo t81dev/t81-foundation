@@ -132,6 +132,12 @@
       "contents": "read"
     }
   },
+  "research-commons.yml": {
+    "jobs": {},
+    "workflow": {
+      "contents": "read"
+    }
+  },
   "runtime-contract.yml": {
     "jobs": {},
     "workflow": {

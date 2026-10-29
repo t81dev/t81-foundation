@@ -24,6 +24,8 @@ or prove an architectural research hypothesis.
 
 > **Central question:** Can alternative computational representations, deterministic execution, and explicit governance—individually **or in combination**—deliver measurable advantages over functionally equivalent conventional systems? If so, under what workloads, assumptions, hardware, and assurance requirements?
 
+Historical translations: [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Português](README.pt-BR.md) · [Русский](README.ru.md). Translations may lag the current research findings; consult the source evidence linked from this English README.
+
 ______________________________________________________________________
 
 ## 1. Research Scope
