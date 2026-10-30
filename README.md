@@ -10,9 +10,21 @@ T81 Foundation is an open-source **experimental computing architecture and syste
 
 The project originated in discrete mathematics, positional number systems, Knuth-inspired investigations of computation, and experimental ternary computing. Its development has produced a software instruction-set architecture, virtual machine, language tooling, arithmetic prototypes, storage and identity mechanisms, policy controls, and hardware experiments. These components have **different maturity levels**; their existence does not imply that every proposed end-to-end architecture is implemented or validated.
 
+Determinism guarantees are limited to explicitly verified surfaces in the
+[Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md),
+under their stated input, configuration, numeric, and supported-platform
+constraints. Reproducing an experiment does not establish bit-identical model
+outputs or deterministic execution on an unverified backend. Model sampling,
+external inference engines, network behavior, execution timing, and unverified
+accelerators do not inherit the deterministic core's guarantees. Policy
+authorization and recorded provenance do not establish a result's correctness
+or prove an architectural research hypothesis.
+
 **Scientific position:** T81 has demonstrated functional research subsystems and bounded mathematical, computational, and assurance properties. It has **not** demonstrated general ternary superiority over optimized binary systems, native ternary silicon efficiency, or a comparative advantage arising from integration of the complete architecture. Negative results are retained as research evidence, not hidden or generalized beyond their tested conditions.
 
 > **Central question:** Can alternative computational representations, deterministic execution, and explicit governance—individually **or in combination**—deliver measurable advantages over functionally equivalent conventional systems? If so, under what workloads, assumptions, hardware, and assurance requirements?
+
+Historical translations: [简体中文](README.zh-CN.md) · [Español](README.es.md) · [Português](README.pt-BR.md) · [Русский](README.ru.md). Translations may lag the current research findings; consult the source evidence linked from this English README.
 
 ______________________________________________________________________
 
@@ -84,17 +96,19 @@ ______________________________________________________________________
 
 The repository contains C++23 components, CLI tools, tests, and experimental implementations. The following labels describe **reported implementation scope**, not a blanket production-readiness certification.
 
-| Component                                     | Role                                                                     | Representative evidence                                                                       | Important limit                                                                                |
-| --------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| **TISC ISA v1.9.0**                           | Frozen instruction semantics and opcode registry                         | [`spec/tisc/opcode-registry.md`](spec/tisc/opcode-registry.md), `include/t81/isa/opcodes.hpp` | A frozen software ISA does not imply native hardware or performance advantage.                 |
-| **T81VM**                                     | Interpreter for TISC programs and deterministic execution profiles (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) | `vm/vm.cpp`, VM determinism tests | Guarantees are scoped to tested operations, platforms, and determinism contracts.              |
-| **T81Lang**                                   | Parsing, intermediate representation, and compilation tooling            | `lang/frontend/`, `src/lang/CMakeLists.txt`, `t81 code build`                                 | Research language tooling, not an established general-purpose ecosystem.                       |
-| **Axion**                                     | Policy evaluation and execution authorization                            | `kernel/axion/`, `src/axion/CMakeLists.txt`, controlled authorization tests                   | Tested fail-closed behavior is not universal bypass resistance or comparative superiority.     |
-| **CanonFS**                                   | Content-addressed artifacts, integrity checking, and interchange         | `fs/`, [RFC-00D1](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)               | Content identity does not by itself prove authenticity, correctness, or trust in the producer. |
-| **Arithmetic and representation experiments** | Balanced ternary operations, packed weights, exact conversion prototypes | `experiments/`, `benchmarks/`, research reports                                               | Conversion cost, portability, and conventional binary controls remain central.                 |
-| **Model intake**                              | GGUF/Safetensors metadata and tensor inspection                          | `tools/model/`                                                                                | Header inspection is not general-purpose LLM execution.                                        |
-| **Accountable evidence**                      | Detached evidence artifacts and verification protocols                   | `examples/governance/`, [RFC-00D4](spec/rfcs/RFC-00D4-accountable-decision-bundle.md)         | Evidence protocols can be implemented independently of T81VM.                                  |
-| **Witness and hardware prototypes**           | Experimental receipts, trust mechanisms, and RTL datapaths               | `experiments/` and associated PRs                                                             | Experimental code is not automatically production-integrated or physically validated.          |
+Maturity mirrors canonical metadata for T81VM, T81Lang, and Axion. Other implementation surfaces are not assessed in this table.
+
+| Component                                     | Role                                                                     | Maturity | Representative evidence                                                                       | Important limit                                                                                |
+| --------------------------------------------- | ------------------------------------------------------------------------ | -------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| **TISC ISA v1.9.0**                           | Frozen instruction semantics and opcode registry                         | Frozen | [`spec/tisc/opcode-registry.md`](spec/tisc/opcode-registry.md), `include/t81/isa/opcodes.hpp` | A frozen software ISA does not imply native hardware or performance advantage.                 |
+| **T81VM**                                     | Interpreter for TISC programs and deterministic execution profiles (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) | Stable | `vm/vm.cpp`, VM determinism tests | Guarantees are scoped to tested operations, platforms, and determinism contracts.              |
+| **T81Lang**                                   | Parsing, intermediate representation, and compilation tooling            | Stable | `lang/frontend/`, `src/lang/CMakeLists.txt`, `t81 code build`                                 | Research language tooling, not an established general-purpose ecosystem.                       |
+| **Axion**                                     | Policy evaluation and execution authorization                            | Stable | `kernel/axion/`, `src/axion/CMakeLists.txt`, controlled authorization tests                   | Tested fail-closed behavior is not universal bypass resistance or comparative superiority.     |
+| **CanonFS**                                   | Content-addressed artifacts, integrity checking, and interchange         | Not assessed here | `fs/`, [RFC-00D1](spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)               | Content identity does not by itself prove authenticity, correctness, or trust in the producer. |
+| **Arithmetic and representation experiments** | Balanced ternary operations, packed weights, exact conversion prototypes | Not assessed here | `experiments/`, `benchmarks/`, research reports                                               | Conversion cost, portability, and conventional binary controls remain central.                 |
+| **Model intake**                              | GGUF/Safetensors metadata and tensor inspection                          | Not assessed here | `tools/model/`                                                                                | Header inspection is not general-purpose LLM execution.                                        |
+| **Accountable evidence**                      | Detached evidence artifacts and verification protocols                   | Not assessed here | `examples/governance/`, [RFC-00D4](spec/rfcs/RFC-00D4-accountable-decision-bundle.md)         | Evidence protocols can be implemented independently of T81VM.                                  |
+| **Witness and hardware prototypes**           | Experimental receipts, trust mechanisms, and RTL datapaths               | Not assessed here | `experiments/` and associated PRs                                                             | Experimental code is not automatically production-integrated or physically validated.          |
 
 A useful distinction when reading the repository:
 

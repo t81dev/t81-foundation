@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+VALID_LABELS = {"stable", "beta", "alpha", "experimental", "concept", "partial"}
 
 README = REPO_ROOT / "README.md"
 MATRIX = REPO_ROOT / "docs/status/IMPLEMENTATION_MATRIX.md"
@@ -23,18 +24,6 @@ def _normalize(label: str) -> str:
     cleaned = re.sub(r":[^:]+:", "", cleaned)
     cleaned = cleaned.replace("⚠️", "").replace("🚧", "").replace("✅", "").replace("🧪", "")
     cleaned = " ".join(cleaned.split())
-    if "beta" in cleaned:
-        return "beta"
-    if "alpha" in cleaned:
-        return "alpha"
-    if "stable" in cleaned:
-        return "stable"
-    if "experimental" in cleaned:
-        return "experimental"
-    if "concept" in cleaned:
-        return "concept"
-    if "partial" in cleaned:
-        return "partial"
     return cleaned
 
 
@@ -53,11 +42,32 @@ def _parse_markdown_table(path: Path) -> list[list[str]]:
 
 def _component_labels_from_readme(path: Path) -> dict[str, str]:
     labels: dict[str, str] = {}
-    for row in _parse_markdown_table(path):
-        if len(row) < 2:
+    rows = _parse_markdown_table(path)
+    if not rows:
+        return labels
+    header_row = None
+    header_idx = None
+    for idx, row in enumerate(rows):
+        normalized_row = [h.strip().lower() for h in row]
+        if "component" in normalized_row and "maturity" in normalized_row:
+            if normalized_row.count("component") != 1 or normalized_row.count("maturity") != 1:
+                raise RuntimeError("README component table has duplicate Component/Maturity columns")
+            header_row = normalized_row
+            header_idx = idx
+            break
+    if not header_row or header_idx is None:
+        return labels
+
+    component_idx = header_row.index("component")
+    maturity_idx = header_row.index("maturity")
+
+    for row in rows[header_idx + 1 :]:
+        if len(row) <= max(component_idx, maturity_idx):
             continue
-        comp = re.sub(r"[*`]", "", row[0]).strip().lower()
-        maturity = row[1]
+        comp = re.sub(r"[*`]", "", row[component_idx]).strip().lower()
+        maturity = row[maturity_idx]
+        if comp in labels or (comp in {"axion governance kernel", "axion kernel"} and "axion" in labels):
+            raise RuntimeError(f"README has duplicate component status rows for: {comp}")
         if comp in {"t81vm", "t81lang"}:
             labels[comp] = _normalize(maturity)
         elif comp in {"axion", "axion governance kernel", "axion kernel"}:
@@ -103,19 +113,25 @@ def _component_labels_from_matrix(path: Path) -> dict[str, str]:
 def _load_canonical() -> dict[str, dict[str, str]]:
     payload = json.loads(CANONICAL.read_text(encoding="utf-8"))
     components = payload.get("components", {})
-    if not isinstance(components, dict):
-        raise RuntimeError("canonical status file missing 'components' object")
+    if not isinstance(components, dict) or not components:
+        raise RuntimeError("canonical status file requires a nonempty 'components' object")
     normalized: dict[str, dict[str, str]] = {}
     for key, value in components.items():
         if not isinstance(value, dict):
             raise RuntimeError(f"component '{key}' entry must be an object")
-        maturity = str(value.get("maturity", "")).strip()
-        spec_authority = str(value.get("spec_authority", "")).strip()
-        spec_path = str(value.get("spec_path", "")).strip()
+        for field in ("maturity", "spec_authority", "spec_path"):
+            if not isinstance(value.get(field), str):
+                raise RuntimeError(f"component '{key}' field '{field}' must be a string")
+        maturity = value["maturity"].strip()
+        spec_authority = value["spec_authority"].strip()
+        spec_path = value["spec_path"].strip()
         if not maturity or not spec_authority or not spec_path:
             raise RuntimeError(
                 f"component '{key}' must define maturity, spec_authority, and spec_path"
             )
+        for field, label in (("maturity", maturity), ("spec_authority", spec_authority)):
+            if _normalize(label) not in VALID_LABELS:
+                raise RuntimeError(f"component '{key}' has invalid {field} label: {label!r}")
         normalized[key] = {
             "maturity": _normalize(maturity),
             "spec_authority": _normalize(spec_authority),
@@ -152,7 +168,11 @@ def main() -> int:
         print(f"status label coherence check FAILED: {exc}")
         return 1
 
-    readme = _component_labels_from_readme(README)
+    try:
+        readme = _component_labels_from_readme(README)
+    except RuntimeError as exc:
+        print(f"status label coherence check FAILED: {exc}")
+        return 1
     matrix = _component_labels_from_matrix(MATRIX)
     system = _component_labels_from_system_status(SYSTEM_STATUS)
 

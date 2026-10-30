@@ -6,12 +6,12 @@ from pathlib import Path
 
 ALIGNMENT_BASELINE: dict[str, list[str]] = {
     "spec/tisc-spec.md": [
-        "core/isa/encoding.cpp",
+        "isa/encoding.cpp",
         "tests/cpp/tisc_opcode_matrix_test.cpp",
         "scripts/ci/check_tisc_freeze_integrity.py",
     ],
     "spec/t81vm-spec.md": [
-        "core/vm/vm.cpp",
+        "vm/vm.cpp",
         "tests/cpp/vm_determinism_property_test.cpp",
         "tests/cpp/jit_trace_equivalence_test.cpp",
     ],

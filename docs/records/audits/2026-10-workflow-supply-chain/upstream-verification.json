@@ -1,0 +1,417 @@
+[
+  {
+    "repository": "actions/upload-artifact",
+    "ref": "v7",
+    "kind": "tag",
+    "sha": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+    "release_tag": "v7.0.2",
+    "release_url": "https://github.com/actions/upload-artifact/releases/tag/v7.0.2",
+    "release_published_at": "2026-10-07T10:08:14Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+        "type": "commit",
+        "url": "https://api.github.com/repos/actions/upload-artifact/git/commits/cf430e030ddbb5b0abf93d22962f4752f3646cd9"
+      }
+    ],
+    "commit_url": "https://github.com/actions/upload-artifact/commit/cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqxhhUCRC1aQ7uu5UhlAAAFDAQAJwWYDxZdGkPSQ25O6wIxEt0\naSZRY1HDZn9wnwxfqP/baHLGYyuqhzIPe3OXU8/tnA4R1q4vEkpB3eXnQQJ6dV9s\nq3Wg/k9FLYHYnREsmXVBGGPwqhxPhL5rypMCaGGRhEPDY4OSncd2X/hlKzLoEAOD\nO3hdUAsSUtdUCDAyLMUupk+hPhH8DwouW0ROZFWss4ykEX72AHvIz8WTN/UAz9/g\nStKyrgjKXlpbz3pJVLZnBbPdHDvPssJ/TvWzH2p89uFsAcL7OqksvJe4f0AjLbdM\nVYfXl26LfHTY1l9SGE8w1s+pomvxg1U9iuHMDfrLL3zCKzfqalSZ2IiioMQt5ylt\n46I+XxZu0jfdgEihOByQ3cjUiMOm/ZRTbbU0XBr/lsETJFrakymrxft9lY//tH51\nJp26GGniC4NPFT9fLYR8+v/+Q2bU8OK227AjHIa6YUrvq6N9pKKKiH2AmbJvd9GN\nZZzuQuwtHEi8riY/mVdXuu/BJ/7C22iZGimTwPtwIcYaN6vRW8o5+hELYuB3aCNG\nWgeXn3kg//qmN3xvdy41BKUBntMkqTExCNqw4Atm0X2jaAt05Xnhn2dfjx7HwmG5\neDKkvDoQrdk9zNgjSoLIz5nsWzEQIi90SZNXINVD4nWKGx2d0pJweDMF2OLWvKv/\nZ0PIZJaIJN5/YHfytX08\n=P7GX\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree df84027e80651ef90737ddee32cb089085a42a4f\nparent 4687c1bbaa0a58abb517d90b4bbade6754c80c1a\nparent c2acdedd35a8824a1552c7137f8c18288c3ea469\nauthor tunc-d <46646394+tunc-d@users.noreply.github.com> 1791367252 +0200\ncommitter GitHub <noreply@github.com> 1791367252 +0200\n\nMerge pull request #822 from actions/tunc-d-prepare-upload-v7-0-2\n\nprepare v7.0.2 release",
+      "verified_at": "2026-10-07T10:00:52Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "cf430e030ddbb5b0abf93d22962f4752f3646cd9\trefs/tags/v7\n",
+      "stderr": ""
+    },
+    "action_yml": "name: 'Upload a Build Artifact'\ndescription: 'Upload a build artifact that can be used by subsequent workflow steps'\nauthor: 'GitHub'\ninputs:\n  name:\n    description: 'Artifact name. If the `archive` input is `false`, the name of the file uploaded will be the artifact name.'\n    default: 'artifact'\n  path:\n    description: 'A file, directory or wildcard pattern that describes what to upload.'\n    required: true\n  if-no-files-found:\n    description: >\n      The desired behavior if no files are found using the provided path.\n\n      Available Options:\n        warn: Output a warning but do not fail the action\n        error: Fail the action with an error message\n        ignore: Do not output any warnings or errors, the action does not fail\n    default: 'warn'\n  retention-days:\n    description: >\n      Duration after which artifact will expire in days. 0 means using default retention.\n\n      Minimum 1 day.\n      Maximum 90 days unless changed from the repository settings page.\n  compression-level:\n    description: >\n      The level of compression for Zlib to be applied to the artifact archive.\n      The value can range from 0 to 9:\n      - 0: No compression\n      - 1: Best speed\n      - 6: Default compression (same as GNU Gzip)\n      - 9: Best compression\n      Higher levels will result in better compression, but will take longer to complete.\n      For large files that are not easily compressed, a value of 0 is recommended for significantly faster uploads.\n    default: '6'\n  overwrite:\n    description: >\n      If true, an artifact with a matching name will be deleted before a new one is uploaded.\n      If false, the action will fail if an artifact for the given name already exists.\n      Does not fail if the artifact does not exist.\n    default: 'false'\n  include-hidden-files:\n    description: >\n      If true, hidden files will be included in the artifact.\n      If false, hidden files will be excluded from the artifact.\n    default: 'false'\n  archive:\n    description: >\n      If true, the artifact will be archived (zipped) before uploading.\n      If false, the artifact will be uploaded as-is without archiving.\n      When `archive` is `false`, only a single file can be uploaded. The name of the file will be used as the artifact name (ignoring the `name` parameter).\n    default: 'true'\n\noutputs:\n  artifact-id:\n    description: >\n      A unique identifier for the artifact that was just uploaded. Empty if the artifact upload failed.\n\n      This ID can be used as input to other APIs to download, delete or get more information about an artifact: https://docs.github.com/en/rest/actions/artifacts\n  artifact-url:\n    description: >\n      A download URL for the artifact that was just uploaded. Empty if the artifact upload failed.\n\n      This download URL only works for requests Authenticated with GitHub. Anonymous downloads will be prompted to first login. \n      If an anonymous download URL is needed than a short time restricted URL can be generated using the download artifact API: https://docs.github.com/en/rest/actions/artifacts#download-an-artifact    \n\n      This URL will be valid for as long as the artifact exists and the workflow run and repository exists. Once an artifact has expired this URL will no longer work.\n      Common uses cases for such a download URL can be adding download links to artifacts in descriptions or comments on pull requests or issues.\n  artifact-digest:\n    description: >\n      SHA-256 digest for the artifact that was just uploaded. Empty if the artifact upload failed.\nruns:\n  using: 'node24'\n  main: 'dist/upload/index.js'\n",
+    "advisories": []
+  },
+  {
+    "repository": "docker/build-push-action",
+    "ref": "v7",
+    "kind": "tag",
+    "sha": "c3c9e263c25d99ce0380d002d59b67737d91b0dc",
+    "release_tag": "v7.4.0",
+    "release_url": "https://github.com/docker/build-push-action/releases/tag/v7.4.0",
+    "release_published_at": "2026-09-15T08:22:01Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "c3c9e263c25d99ce0380d002d59b67737d91b0dc",
+        "type": "commit",
+        "url": "https://api.github.com/repos/docker/build-push-action/git/commits/c3c9e263c25d99ce0380d002d59b67737d91b0dc"
+      }
+    ],
+    "commit_url": "https://github.com/docker/build-push-action/commit/c3c9e263c25d99ce0380d002d59b67737d91b0dc",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqqPPACRC1aQ7uu5UhlAAAX8QQAJ1dVN4ndKrbgnepKFhSyd9Z\n4Qh3NvJ1PQOzIoN85bwqJS7lR5U4mwtxHYxfcr1XIjIxiBRKGl4YSn+TdvH2IPHx\n5jjM/32QGCoZNYO88TM14H87K/ybJAaMS3NF9jD0hdFr2qe8vgqO41glkYfhugiT\nOX1zw7jQPELQxcRgMgHoF4TRbKzaoHpKbwAcSJ7fyU37ceP+e441LJRJy6I7U4Lh\niPseOrDonyKVjG+y7A1gQzEVyMSHVmLOk9ya+G4wcpGNS/ZmKl8s2Vqc4oeXW8dQ\n45uSpKrctyZa04gqgb63wOCSrPLyCe1+Zc/LMNrsofseFk4V0lUCEmqXFo5r3wEV\nE5PVPAjcUqx0R7ZwDZraCPiLTc0hW/9aBrxpmIQdJm+R6xTx+sFYfgFxeUVdTF8k\ny3Si/IMmmZJuYKfcZuC1sF+ASxS0Tmwj5lwfwuxMcF1ZqrlIux/MWSA90sAESA2+\n8wGZcZJn2OKJB2jdEW3NE1FkJaGVb9cPBnWswJL6kb1nW5FJ2gimHU8chYlFsr95\nN1MqmqKX57o1rxqM416d8KypeI42y0mueHc/v7oeQH8MIvgt2/fVYO4MmuL9qDUk\nLq6ED7Fjh5+Rx8M2P+m3B1EOhX3P3PfbU8/hT3+UvAx86evZm8zZ9YEnY3TA55n8\nDK8tJTqyYDJBUnJrWJod\n=0lNT\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 39b8e0e901329272bf50cfb164ccedb081c85e74\nparent 379bf63a979bd70751945601fa04c50674509952\nparent 459b6741834dcd35f946352017e7675bd2089d42\nauthor CrazyMax <1951866+crazy-max@users.noreply.github.com> 1789457344 +0200\ncommitter GitHub <noreply@github.com> 1789457344 +0200\n\nMerge pull request #1621 from docker/dependabot/npm_and_yarn/docker/actions-toolkit-0.100.0\n\nchore(deps): Bump @docker/actions-toolkit from 0.99.0 to 0.100.0",
+      "verified_at": "2026-09-15T07:29:04Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "c3c9e263c25d99ce0380d002d59b67737d91b0dc\trefs/tags/v7\n",
+      "stderr": ""
+    },
+    "action_yml": "# https://help.github.com/en/articles/metadata-syntax-for-github-actions\nname: Build and push Docker images\ndescription: Build and push Docker images with Buildx\nauthor: docker\nbranding:\n  icon: 'anchor'\n  color: 'blue'\n\ninputs:\n  add-hosts:\n    description: \"List of a customs host-to-IP mapping (e.g., docker:10.180.0.1)\"\n    required: false\n  allow:\n    description: \"List of extra privileged entitlement (e.g., network.host,security.insecure)\"\n    required: false\n  annotations:\n    description: \"List of annotation to set to the image\"\n    required: false\n  attests:\n    description: \"List of attestation parameters (e.g., type=sbom,generator=image)\"\n    required: false\n  build-args:\n    description: \"List of build-time variables\"\n    required: false\n  build-contexts:\n    description: \"List of additional build contexts (e.g., name=path)\"\n    required: false\n  builder:\n    description: \"Builder instance\"\n    required: false\n  cache-from:\n    description: \"List of external cache sources for buildx (e.g., user/app:cache, type=local,src=path/to/dir)\"\n    required: false\n  cache-to:\n    description: \"List of cache export destinations for buildx (e.g., user/app:cache, type=local,dest=path/to/dir)\"\n    required: false\n  call:\n    description: \"Set method for evaluating build (e.g., check)\"\n    required: false\n  cgroup-parent:\n    description: \"Optional parent cgroup for the container used in the build\"\n    required: false\n  context:\n    description: \"Build's context is the set of files located in the specified PATH or URL\"\n    required: false\n  file:\n    description: \"Path to the Dockerfile\"\n    required: false\n  labels:\n    description: \"List of metadata for an image\"\n    required: false\n  load:\n    description: \"Load is a shorthand for --output=type=docker\"\n    required: false\n    default: 'false'\n  network:\n    description: \"Set the networking mode for the RUN instructions during build\"\n    required: false\n  no-cache:\n    description: \"Do not use cache when building the image\"\n    required: false\n    default: 'false'\n  no-cache-filters:\n    description: \"Do not cache specified stages\"\n    required: false\n  outputs:\n    description: \"List of output destinations (format: type=local,dest=path)\"\n    required: false\n  platforms:\n    description: \"List of target platforms for build\"\n    required: false\n  provenance:\n    description: \"Generate provenance attestation for the build (shorthand for --attest=type=provenance)\"\n    required: false\n  pull:\n    description: \"Always attempt to pull all referenced images\"\n    required: false\n    default: 'false'\n  push:\n    description: \"Push is a shorthand for --output=type=registry\"\n    required: false\n    default: 'false'\n  sbom:\n    description: \"Generate SBOM attestation for the build (shorthand for --attest=type=sbom)\"\n    required: false\n  secrets:\n    description: \"List of secrets to expose to the build (e.g., key=string, GIT_AUTH_TOKEN=mytoken)\"\n    required: false\n  secret-envs:\n    description: \"List of secret env vars to expose to the build (e.g., key=envname, MY_SECRET=MY_ENV_VAR)\"\n    required: false\n  secret-files:\n    description: \"List of secret files to expose to the build (e.g., key=filename, MY_SECRET=./secret.txt)\"\n    required: false\n  shm-size:\n    description: \"Size of /dev/shm (e.g., 2g)\"\n    required: false\n  ssh:\n    description: \"List of SSH agent socket or keys to expose to the build\"\n    required: false\n  tags:\n    description: \"List of tags\"\n    required: false\n  target:\n    description: \"Sets the target stage to build\"\n    required: false\n  ulimit:\n    description: \"Ulimit options (e.g., nofile=1024:1024)\"\n    required: false\n  github-token:\n    description: \"GitHub Token used to authenticate against a repository for Git context\"\n    default: ${{ github.token }}\n    required: false\n\noutputs:\n  imageid:\n    description: 'Image ID'\n  digest:\n    description: 'Image digest'\n  metadata:\n    description: 'Build result metadata'\n\nruns:\n  using: 'node24'\n  main: 'dist/index.cjs'\n  post: 'dist/index.cjs'\n",
+    "advisories": []
+  },
+  {
+    "repository": "docker/login-action",
+    "ref": "v4",
+    "kind": "tag",
+    "sha": "81c6f93d4bc991e510b342a00b419b3bb4efc5c6",
+    "release_tag": "v4.7.0",
+    "release_url": "https://github.com/docker/login-action/releases/tag/v4.7.0",
+    "release_published_at": "2026-10-23T15:22:45Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "81c6f93d4bc991e510b342a00b419b3bb4efc5c6",
+        "type": "commit",
+        "url": "https://api.github.com/repos/docker/login-action/git/commits/81c6f93d4bc991e510b342a00b419b3bb4efc5c6"
+      }
+    ],
+    "commit_url": "https://github.com/docker/login-action/commit/81c6f93d4bc991e510b342a00b419b3bb4efc5c6",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq23ktCRC1aQ7uu5UhlAAApHsQAG5+ZW1upekLpof8snhtB+eb\nANtfEfMmhS5E5KI6q92dCzYhjPCZIeaj0zjSVLVzyolVjBDIinTvVapLZYX7qfu9\n0yTWE46jrEHWbiSwmpFicHoCfwf5KkMKJUvXxt6IRFdfiIJtJEQjiTt2cpSg4Zrv\n8dBIbgGbXShW4Hk1L3LlZqW7ZK6lrSMK2LMykFSAVlYiFhswgqupK0Qr+IanqV32\nFhgIJ8zxm13oBL4jsF1UZoLVIl8siePL8C18W2hx8FjMLMwp3KBQAIJNYXkD0nmK\n19P0aa2VHcw12EBaZjFFfqvHM3JKPPhjLzT9H5EbHCHpijS7YVsRYbik3maT5OT4\n4aWl/D9tc3aEigXmY2X5Em37z2Vw7VLGY6GxJRR4XsQ9fOl5lYxjwkpSvzxWuBPl\nE5Gaq0jZJB9jnG+ZpIflp7ULO5uhxjICCu1H/6foKm3nQ+AuMz3cpb3WHdBa3FVW\n4bnO28QHEuxZ8Txdm8OfKEUiLuT+iXzeVal3m/E1Ht8Quw5/xUOC7ggKKtDjdS6z\nwEMBuVTlD4aVdwoy5re+cikWeqQS1tt9HrvpMfjVbI8ep/s4VpFOq1v+4FOeEaMQ\nIxDwx3s6OvhRbUWc5QtHfWWrRYdMYlufgFngT60bZNxpB5IP8SDZfMJ1O31WP8IZ\nL5QMgj1lXOx7J2z7keD/\n=dK5R\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree c4305952823acb3e055207f9d24cc68f81035df8\nparent 1b16c8d1815e1d951d87a3522ff48a76d073735a\nparent ac86b5e9e9d2db43b12b2d3afb9140a427d69d65\nauthor CrazyMax <1951866+crazy-max@users.noreply.github.com> 1792768301 +0200\ncommitter GitHub <noreply@github.com> 1792768301 +0200\n\nMerge pull request #1100 from docker/dependabot/npm_and_yarn/docker/actions-toolkit-0.107.0\n\nbuild(deps): bump @docker/actions-toolkit from 0.94.0 to 0.107.0",
+      "verified_at": "2026-10-23T15:11:41Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "81c6f93d4bc991e510b342a00b419b3bb4efc5c6\trefs/tags/v4\n",
+      "stderr": ""
+    },
+    "action_yml": "# https://help.github.com/en/articles/metadata-syntax-for-github-actions\nname: 'Docker Login'\ndescription: 'GitHub Action to login against a Docker registry'\nauthor: 'docker'\nbranding:\n  icon: 'anchor'\n  color: 'blue'\n\ninputs:\n  registry:\n    description: 'Server address of Docker registry. If not set then will default to Docker Hub'\n    required: false\n  username:\n    description: 'Username used to log against the Docker registry'\n    required: false\n  password:\n    description: 'Password or personal access token used to log against the Docker registry'\n    required: false\n  ecr:\n    description: 'Specifies whether the given registry is ECR (auto, true or false)'\n    required: false\n  scope:\n    description: 'Scope for the authentication token'\n    required: false\n  logout:\n    description: 'Log out from the Docker registry at the end of a job'\n    default: 'true'\n    required: false\n  registry-auth:\n    description: 'Raw authentication to registries, defined as YAML objects'\n    required: false\n\nruns:\n  using: 'node24'\n  main: 'dist/index.cjs'\n  post: 'dist/index.cjs'\n",
+    "advisories": []
+  },
+  {
+    "repository": "docker/metadata-action",
+    "ref": "v6",
+    "kind": "tag",
+    "sha": "dc802804100637a589fabce1cb79ff13a1411302",
+    "release_tag": "v6.2.0",
+    "release_url": "https://github.com/docker/metadata-action/releases/tag/v6.2.0",
+    "release_published_at": "2026-07-02T08:55:18Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "dc802804100637a589fabce1cb79ff13a1411302",
+        "type": "commit",
+        "url": "https://api.github.com/repos/docker/metadata-action/git/commits/dc802804100637a589fabce1cb79ff13a1411302"
+      }
+    ],
+    "commit_url": "https://github.com/docker/metadata-action/commit/dc802804100637a589fabce1cb79ff13a1411302",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqRiX2CRC1aQ7uu5UhlAAAn8YQADJnRsdzCJZD3AyOR2sGtfbu\n81R1P0tURyLH/HBAGehY2iUDOSXn11TSa0wKd1+Vry5E8912Hj+OuROOQ1TipWpN\nmPzCF65+maMnH2asAamp1mqNag0+pmjLG0DJgAGf/KscuNPs+yw8uPf7Y2+qpZm0\nyqxPdkV3Kw5TOur+CW3BYuVyryU4elg1ooX8bDUsGUC7UQoMtDy4Nz3StY3rz9lh\n1CUbIS1GvslLGjVD0hBskj8TxQhowb87A//jb6PimAFDceBvm9pfoewUoXMqnS1Q\nMRKnLN1LAH7s5Co23R8mzv0Z+qMPQo0tbESQKMcadqTNpZE7Y3fNmM2zg7FwdRK1\nvtHcTxFLPajdrp7cL45bRv77oxkNRiXy2bNHCt3sezXxEDDd3hM84V5vGquMmdNJ\nAoc0fppkyh+DXlR2z+jiDLQQk9ZKSjdbsj66cU8SugTA01m5l8TFchizDah4Ve18\nLFo+y+Vi1YK79VZ9kPnE97kRQISnY8ixzhsmyL/VgjMTZ98ONnoSuBXGdm6nfXj6\nZ6jjAE/Yr42GqOUNmfD07agOIE6lx55FJuHEQVxWA8QSK3oESzz3dEiv4b35lrkK\nRpEjBmv6XvM9OzhBHHadG19O6CRu29eVxu7s6K1tLYBvq29jkabuZxIaQ6pgA5ZX\nArS7qrRG0PQFEcFWvoY5\n=8/Zz\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 7d406b1630ec1cb85c1b73511b8130022d0468df\nparent 1d1c89551edb081628e818368680beffb2bbccee\nparent 2b9fe830efc58cb7b0fab7c94300b1afa01864db\nauthor CrazyMax <1951866+crazy-max@users.noreply.github.com> 1782982134 +0200\ncommitter GitHub <noreply@github.com> 1782982134 +0200\n\nMerge pull request #696 from docker/dependabot/npm_and_yarn/docker/actions-toolkit-0.92.0\n\nchore(deps): Bump @docker/actions-toolkit from 0.91.0 to 0.92.0",
+      "verified_at": "2026-07-02T08:48:55Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "dc802804100637a589fabce1cb79ff13a1411302\trefs/tags/v6\n",
+      "stderr": ""
+    },
+    "action_yml": "# https://help.github.com/en/articles/metadata-syntax-for-github-actions\nname: 'Docker Metadata action'\ndescription: \"GitHub Action to extract metadata (tags, labels) for Docker\"\nauthor: 'docker'\nbranding:\n  icon: 'anchor'\n  color: 'blue'\n\ninputs:\n  context:\n    description: 'Where to get context data. Allowed options are \"workflow\"  (default), \"git\".'\n    default: \"workflow\"\n    required: true\n  images:\n    description: 'List of Docker images to use as base name for tags'\n    required: false\n  tags:\n    description: 'List of tags as key-value pair attributes'\n    required: false\n  flavor:\n    description: 'Flavors to apply'\n    required: false\n  labels:\n    description: 'List of custom labels'\n    required: false\n  annotations:\n    description: 'List of custom annotations'\n    required: false\n  sep-tags:\n    description: 'Separator to use for tags output (default \\n)'\n    required: false\n  sep-labels:\n    description: 'Separator to use for labels output (default \\n)'\n    required: false\n  sep-annotations:\n    description: 'Separator to use for annotations output (default \\n)'\n    required: false\n  bake-target:\n    description: 'Bake target name (default docker-metadata-action)'\n    required: false\n  github-token:\n    description: 'GitHub Token as provided by secrets'\n    default: ${{ github.token }}\n    required: true\n\noutputs:\n  version:\n    description: 'Generated Docker image version'\n  tags:\n    description: 'Generated Docker tags'\n  tag-names:\n    description: 'Generated Docker tag names without image base name'\n  labels:\n    description: 'Generated Docker labels'\n  annotations:\n    description: 'Generated annotations'\n  json:\n    description: 'JSON output of tags and labels'\n  bake-file-tags:\n    description: 'Bake definition file with tags'\n  bake-file-labels:\n    description: 'Bake definition file with labels'\n  bake-file-annotations:\n    description: 'Bake definition file with annotations'\n  bake-file:\n    description: 'Bake definition file with tags and labels'\n\nruns:\n  using: 'node24'\n  main: 'dist/index.cjs'\n",
+    "advisories": []
+  },
+  {
+    "repository": "docker/setup-buildx-action",
+    "ref": "v4",
+    "kind": "tag",
+    "sha": "f87e5991a6d7451dcb8d9637bfbc97413f497069",
+    "release_tag": "v4.4.1",
+    "release_url": "https://github.com/docker/setup-buildx-action/releases/tag/v4.4.1",
+    "release_published_at": "2026-09-16T07:50:21Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "f87e5991a6d7451dcb8d9637bfbc97413f497069",
+        "type": "commit",
+        "url": "https://api.github.com/repos/docker/setup-buildx-action/git/commits/f87e5991a6d7451dcb8d9637bfbc97413f497069"
+      }
+    ],
+    "commit_url": "https://github.com/docker/setup-buildx-action/commit/f87e5991a6d7451dcb8d9637bfbc97413f497069",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqqkmhCRC1aQ7uu5UhlAAASG0QAInYaUTzg1F3EubW+CRbuY2+\n9rOsV5/RLZup0a68NcW1X6ZOv9Kp76Gpm4PKMsQo6PZ7C3SqewS7X00wlk6qxeaE\n+z27Htl0b3EhBK7IcP/R5xtAtytY9cBJsoPA920pD6ECP8ydP3YisfewOFFYgKnq\ngrHgZ7whBwwJ0QqAWOKgguS9Fmer7J9YGesLoRnD7DCJrXXuUUtNzG+2HiPcnaes\nh/2q6e2uAOpLwZT8rLfGA1TkqBG/aYX0nyiCRFEevFeJUUJWZTkRtWK68+whppSS\niWVSFGr51Gwg6nvDeohin4wDYgewKYwh3sogK9TlODVyqC2PCcvHYib7AGBcLtCt\noVxRdCl1RKqXP+Evy6BfRiaAvZr75njznpTbpWAOsNBm+uhCqqDNIiFeGwKExZ6/\n1DoM5yLmreG61TbPYRL2fh/HO28P/NVuvD4b8a51WlHJ2ah67GMALtf/5gCIEPeu\nl2zkYRe09nyCqtXuGmglR//9YnP7VN77xRUEdOZXTnUg+j5vueZ7wCn7XltEa2Yy\nd4oe9xmOA4XZOwX09WdqsnIdtYeib2nzQOzou5Gvm5PaCbx571cSV0IA6im1yXRe\ni7j0Rbdi24NRWgIvJgbMOTDwzyJEpS1jITebrEEanqd5VJMYWklXROjYq8cAi3K3\ntzjeztKMMJAuS5+uKtCL\n=BzPa\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree b929d111ec30d04920d8e560e6c43e9602748558\nparent 594f3bf4285d9ea8dc53c9a0c9c4092420091003\nparent e7002743e035c0054da46ca559364576b2fce022\nauthor CrazyMax <1951866+crazy-max@users.noreply.github.com> 1789544865 +0200\ncommitter GitHub <noreply@github.com> 1789544865 +0200\n\nMerge pull request #624 from crazy-max/skip-pull-with-endpoint\n\nskip BuildKit image pre-pulls for explicit endpoints",
+      "verified_at": "2026-09-16T07:47:46Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "f87e5991a6d7451dcb8d9637bfbc97413f497069\trefs/tags/v4\n",
+      "stderr": ""
+    },
+    "action_yml": "# https://help.github.com/en/articles/metadata-syntax-for-github-actions\nname: 'Docker Setup Buildx'\ndescription: 'Set up Docker Buildx'\nauthor: 'docker'\nbranding:\n  icon: 'anchor'\n  color: 'blue'\n\ninputs:\n  version:\n    description: 'Buildx version. (eg. v0.3.0)'\n    required: false\n  driver:\n    description: 'Sets the builder driver to be used'\n    default: 'docker-container'\n    required: false\n  driver-opts:\n    description: 'List of additional driver-specific options. (eg. image=moby/buildkit:master)'\n    required: false\n  buildkitd-flags:\n    description: 'BuildKit daemon flags'\n    required: false\n  buildkitd-config:\n    description: 'BuildKit daemon config file'\n    required: false\n  buildkitd-config-inline:\n    description: 'Inline BuildKit daemon config'\n    required: false\n  use:\n    description: 'Switch to this builder instance'\n    default: 'true'\n    required: false\n  name:\n    description: 'Name of the builder. If not specified, one will be generated or if it already exists, it will be used instead of creating a new one.'\n    required: false\n  endpoint:\n    description: 'Optional address for docker socket or context from `docker context ls`'\n    required: false\n  platforms:\n    description: 'Fixed platforms for current node. If not empty, values take priority over the detected ones'\n    required: false\n  append:\n    description: 'Append additional nodes to the builder'\n    required: false\n  keep-state:\n    description: 'Keep BuildKit state on cleanup. This is only useful on persistent self-hosted runners.'\n    default: 'false'\n    required: false\n  cache-binary:\n    description: 'Cache buildx binary to GitHub Actions cache backend'\n    default: 'true'\n    required: false\n  cleanup:\n    description: 'Cleanup temp files and remove builder at the end of a job'\n    default: 'true'\n    required: false\n\noutputs:\n  name:\n    description: 'Builder name'\n  driver:\n    description: 'Builder driver'\n  platforms:\n    description: 'Builder node platforms (preferred or available)'\n  nodes:\n    description: 'Builder nodes metadata'\n  endpoint:\n    description: 'Builder node endpoint (deprecated, use nodes output instead)'\n  status:\n    description: 'Builder node status (deprecated, use nodes output instead)'\n  flags:\n    description: 'Builder node flags (deprecated, use nodes output instead)'\n\nruns:\n  using: 'node24'\n  main: 'dist/index.cjs'\n  post: 'dist/index.cjs'\n",
+    "advisories": []
+  },
+  {
+    "repository": "docker/setup-qemu-action",
+    "ref": "v4",
+    "kind": "tag",
+    "sha": "99012661954931238ded8c8b007157a8430204e1",
+    "release_tag": "v4.4.0",
+    "release_url": "https://github.com/docker/setup-qemu-action/releases/tag/v4.4.0",
+    "release_published_at": "2026-09-15T09:42:21Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "99012661954931238ded8c8b007157a8430204e1",
+        "type": "commit",
+        "url": "https://api.github.com/repos/docker/setup-qemu-action/git/commits/99012661954931238ded8c8b007157a8430204e1"
+      }
+    ],
+    "commit_url": "https://github.com/docker/setup-qemu-action/commit/99012661954931238ded8c8b007157a8430204e1",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJqqRGuCRC1aQ7uu5UhlAAAqisQAGvZDLfdxt4XmQJvC7t/TTxH\nhVeLOgSb8gxNOs2f2pLDaWQ9acwBQ9knecOqkpjqi5yvjmYmo2U6XnkBsxysYm6p\nTMIfnelDW/FEA1lPflszZvAsfna+PykCEPieAFJvmEnIDggi5A1vTSEbcUPGfkkL\nHWGBpcb3Nvxg4ax6by5F8b0Sru/PRYbJJS0f6is90BisM4E9taR0H4B5ucqNAeW7\n4luO5/GrszFvT9NgaJ8fzr9m/zXLpGvX67d+n4bMNHjipNT+Q2RwwQ9oQClFLdhy\n59nMD62KDIg/nWzhbywIA5C0GypNZMW0HP4oOvO22XmFDn5F/t+tpAhQp/qa9R2c\nWnG1t5oUgXz/OpKAKmlKXk1EkZSDQw8TWHfrskCIZz7xC7msKHIxQkDptn+5Ua2y\nWfIIB42Pn9DEaZPodWjw38H0ftP1lrOuhD1HHfMF0H8ai+t/ejdPbR7zlsNNApBJ\nM3TUtlrGUhCU0UfvFPAUEi0qh6s0pNP5YtOvON7gByC5hGesrxx0ZJ5Upf4SiSOe\nuXyWRvWibGxhhY0dMZsf3a0Xb4LnKnflJbZHg+TTds/oNiv4LEB9HODVJANn0luD\n1zWbVJ/MVtmTsKb6ZHSyY2ar/r6UbcXr+PB++6pNjnl533Bq0NNxi5wBK5aphdUB\nGwe5HdrPfSeHrNAE64C8\n=L1ww\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree b0356f1bf1603fcb7bbacdacf2452ab1f6ae437a\nparent 9364d8b005eaf92e44e311ad68698e0e4d1fc775\nparent ca47ead02ebf25a66886fb0c6bb627965814134e\nauthor CrazyMax <1951866+crazy-max@users.noreply.github.com> 1789465006 +0200\ncommitter GitHub <noreply@github.com> 1789465006 +0200\n\nMerge pull request #342 from docker/dependabot/npm_and_yarn/js-yaml-4.3.2\n\nbuild(deps): bump js-yaml from 4.3.1 to 4.3.2",
+      "verified_at": "2026-09-15T09:36:46Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "99012661954931238ded8c8b007157a8430204e1\trefs/tags/v4\n",
+      "stderr": ""
+    },
+    "action_yml": "# https://help.github.com/en/articles/metadata-syntax-for-github-actions\nname: 'Docker Setup QEMU'\ndescription: 'Install QEMU static binaries'\nauthor: 'docker'\nbranding:\n  icon: 'anchor'\n  color: 'blue'\n\ninputs:\n  image:\n    description: 'QEMU static binaries Docker image (e.g. tonistiigi/binfmt:latest)'\n    default: 'docker.io/tonistiigi/binfmt:latest'\n    required: false\n  platforms:\n    description: 'Platforms to install (e.g. arm64,riscv64,arm)'\n    default: 'all'\n    required: false\n  reset:\n    description: 'Uninstall current emulators before installation'\n    default: 'false'\n    required: false\n  cache-image:\n    description: 'Cache binfmt image to GitHub Actions cache backend'\n    default: 'true'\n    required: false\n\noutputs:\n  platforms:\n    description: 'Available platforms (comma separated)'\n\nruns:\n  using: 'node24'\n  main: 'dist/index.cjs'\n  post: 'dist/index.cjs'\n",
+    "advisories": []
+  },
+  {
+    "repository": "pypa/gh-action-pypi-publish",
+    "ref": "release/v1",
+    "kind": "branch",
+    "sha": "7245906fb61fa33a13554f9d5fb856fe61758086",
+    "release_tag": "v1.14.3",
+    "release_url": "https://github.com/pypa/gh-action-pypi-publish/releases/tag/v1.14.3",
+    "release_published_at": "2026-10-20T18:53:36Z",
+    "release_tag_object_chain": [
+      {
+        "sha": "aef6c9b6e301dc803e1bc9133e9ce67ae9b0906b",
+        "type": "tag",
+        "url": "https://api.github.com/repos/pypa/gh-action-pypi-publish/git/tags/aef6c9b6e301dc803e1bc9133e9ce67ae9b0906b"
+      },
+      {
+        "sha": "7245906fb61fa33a13554f9d5fb856fe61758086",
+        "type": "commit",
+        "url": "https://api.github.com/repos/pypa/gh-action-pypi-publish/git/commits/7245906fb61fa33a13554f9d5fb856fe61758086"
+      }
+    ],
+    "commit_url": "https://github.com/pypa/gh-action-pypi-publish/commit/7245906fb61fa33a13554f9d5fb856fe61758086",
+    "commit_signature": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJq155jCRC1aQ7uu5UhlAAAy1cQABRoDVkkG5ycKiNDJlHRj3Nl\nYd+TB8CQdNsKVmbuYjC9R9Z6k8fT4JZPNeaplKM/8Quha6FwvKV/94CcEXgDOQUP\nIzKYl5gdB9zqILX9p0m2//OSyncBvkWfAw+EkYVLxj2wg6f8fT3lRx4PyECENpgJ\nu6UdgyQl38S3nhC5EODfPbOEz/ZSB2HN0g2L2FglA8IvWXVvNhD11iS5H1DfGIBb\nZExBn7oOqf1rnFhd/yDKGXuNtWuudbuICeHSOH98p9jF+l+/jSp6qGNhDa36IGdj\n//u788Nu2uqWYDq9Es4iGa3uwSER4duSc9aARk09N69hBgjasD7BZdiDpbd+YEiX\nAuXM3LBlxkWiGqL8jLf+iV6TKrbyYeNokWtmSM/lTTL148DMKS41Qnrck50bBdu1\n8nBHIP7c5GItS+JDev1UD35XWX0f0w7gd5I16gIVPsAXbCFfgpLtagu6zsCxGkzu\nhz8cbsAhPbn6Qo+cLsb3DS3Ite/271TS87QNeg0zfxHbX7jEIRHuRBlawvJERp3C\njtNmGeZmAQxUP5I+PhAgFhvO8VwwjNtPFvvvBY2edq3EM7SPx1H6kLe6+p/mwzV3\n1WBOSBCMYHo2mOYNabKBx8yi57hHjhC4ktKKiRqzuiDq+Ik4L+CdLD34KVZ9aAc8\nMurTAjnCq9MsczGB3D/h\n=oXhP\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree feaf10b230562ef7599fe45f3485e2f0b17815c0\nparent f68fee44f9faa979857cda34894b750df5f571ca\nparent 331eccb0e13a5c1124ed9f414a079ef2bef1095f\nauthor \ud83c\uddfa\ud83c\udde6 Sviatoslav Sydorenko (\u0421\u0432\u044f\u0442\u043e\u0441\u043b\u0430\u0432 \u0421\u0438\u0434\u043e\u0440\u0435\u043d\u043a\u043e) <sviat@redhat.com> 1792515683 +0200\ncommitter GitHub <noreply@github.com> 1792515683 +0200\n\nMerge pull request #427 from sethmlarson/certifi-sigstore\n\nUpgrade certifi and sigstore",
+      "verified_at": "2026-10-20T17:01:24Z"
+    },
+    "git_ls_remote": {
+      "exit": 0,
+      "stdout": "7245906fb61fa33a13554f9d5fb856fe61758086\trefs/heads/release/v1\n",
+      "stderr": ""
+    },
+    "action_yml": "---\nname: pypi-publish\ndescription: Upload Python distribution packages to PyPI\ninputs:\n  user:\n    description: PyPI user\n    required: false\n    default: __token__\n  password:\n    description: Password for your PyPI user or an access token\n    required: false\n  repository-url:  # Canonical alias for `repository_url`\n    description: The repository URL to use\n    required: false\n  repository_url:  # DEPRECATED ALIAS; TODO: Remove in v3+\n    description: >-\n      [DEPRECATED]\n      The repository URL to use\n    deprecationMessage: >-\n      The inputs have been normalized to use kebab-case.\n      Use `repository-url` instead.\n    required: false\n    default: https://upload.pypi.org/legacy/\n  packages-dir:  # Canonical alias for `packages_dir`\n    description: The target directory for distribution\n    required: false\n    # default: dist  # TODO: uncomment once alias removed\n  packages_dir:  # DEPRECATED ALIAS; TODO: Remove in v3+\n    description: >-\n      [DEPRECATED]\n      The target directory for distribution\n    deprecationMessage: >-\n      The inputs have been normalized to use kebab-case.\n      Use `packages-dir` instead.\n    required: false\n    default: dist\n  verify-metadata:  # Canonical alias for `verify_metadata`\n    description: Check metadata before uploading\n    required: false\n    # default: 'true'  # TODO: uncomment once alias removed\n  verify_metadata:  # DEPRECATED ALIAS; TODO: Remove in v3+\n    description: >-\n      [DEPRECATED]\n      Check metadata before uploading\n    deprecationMessage: >-\n      The inputs have been normalized to use kebab-case.\n      Use `verify-metadata` instead.\n    required: false\n    default: 'true'\n  skip-existing:  # Canonical alias for `skip_existing`\n    description: >-\n      Do not fail if a Python package distribution\n      exists in the target package index\n    required: false\n    # default: 'false'  # TODO: uncomment once alias removed\n  skip_existing:  # DEPRECATED ALIAS; TODO: Remove in v3+\n    description: >-\n      [DEPRECATED]\n      Do not fail if a Python package distribution\n      exists in the target package index\n    deprecationMessage: >-\n      The inputs have been normalized to use kebab-case.\n      Use `skip-existing` instead.\n    required: false\n    default: 'false'\n  verbose:\n    description: Show verbose output.\n    required: false\n    default: 'true'\n  print-hash:  # Canonical alias for `print_hash`\n    description: Show hash values of files to be uploaded\n    required: false\n    # default: 'false'  # TODO: uncomment once alias removed\n  print_hash:  # DEPRECATED ALIAS; TODO: Remove in v3+\n    description: >-\n      [DEPRECATED]\n      Show hash values of files to be uploaded\n    deprecationMessage: >-\n      The inputs have been normalized to use kebab-case.\n      Use `print-hash` instead.\n    required: false\n    default: 'true'\n  attestations:\n    description: >-\n      Enable support for PEP 740 attestations.\n      Only works with PyPI and TestPyPI via Trusted Publishing.\n    required: false\n    default: 'true'\nbranding:\n  color: yellow\n  icon: upload-cloud\nruns:\n  using: composite\n  steps:\n  - name: Fail-fast in unsupported environments\n    if: runner.os != 'Linux'\n    run: |\n      >&2 echo This action is only able to run under GNU/Linux environments\n      exit 1\n    shell: bash -eEuo pipefail {0}\n  - name: Reset path if needed\n    run: | # zizmor: ignore[github-env] PATH is not user-controlled\n      # Reset path if needed\n      # https://github.com/pypa/gh-action-pypi-publish/issues/112\n      if [[ $PATH != *\"/usr/bin\"* ]]; then\n        echo \"\\$PATH=$PATH. Resetting \\$PATH for GitHub Actions.\"\n        PATH=\"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"\n        echo \"PATH=$PATH\" >>\"$GITHUB_ENV\"\n        echo \"$PATH\" >>\"$GITHUB_PATH\"\n        echo \"\\$PATH reset. \\$PATH=$PATH\"\n      fi\n    shell: bash\n  - name: Discover pre-installed Python\n    id: pre-installed-python\n    run: |\n      # \ud83d\udd0e Discover pre-installed Python\n      echo \"python-path=$(command -v python3 || :)\" | tee -a \"${GITHUB_OUTPUT}\"\n    shell: bash\n  - name: Install Python 3\n    if: steps.pre-installed-python.outputs.python-path == ''\n    id: new-python\n    # yamllint disable-line rule:line-length\n    uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0\n    with:\n      python-version: 3.x\n  - name: Create Docker container action\n    run: |\n      # Create Docker container action\n      ${{\n        steps.pre-installed-python.outputs.python-path == ''\n        && steps.new-python.outputs.python-path\n        || steps.pre-installed-python.outputs.python-path\n      }} '${{ github.action_path }}/create-docker-action.py'\n    env:\n      # Set repo and ref from which to run Docker container action\n      # to handle cases in which `github.action_` context is not set\n      # https://github.com/actions/runner/issues/2473\n      REF: >-\n        ${{\n          github.action_ref\n          || github.event.pull_request.head.ref\n          || github.ref_name\n        }}\n      REPO: >-\n        ${{\n          github.action_repository\n          || github.event.pull_request.head.repo.full_name\n          || github.repository\n        }}\n      REPO_ID: >-\n        ${{\n          github.event.pull_request.base.repo.id\n          || github.repository_id\n        }}\n    shell: bash\n  - name: Run Docker container\n    # The generated trampoline action must exist in the allowlisted\n    # runner-defined working directory so it can be referenced by the\n    # relative path starting with `./`.\n    #\n    # This mutates the end-user's workspace slightly but uses a path\n    # that is unlikely to clash with somebody else's use.\n    #\n    # We cannot use randomized paths because the composite action\n    # syntax does not allow accessing variables in `uses:`. This\n    # means that we end up having to hardcode this path both here and\n    # in `create-docker-action.py`.\n    uses: ./.github/.tmp/.generated-actions/run-pypi-publish-in-docker-container\n    with:\n      user: ${{ inputs.user }}\n      password: ${{ inputs.password }}\n      repository-url: ${{ inputs.repository-url || inputs.repository_url }}\n      packages-dir: ${{ inputs.packages-dir || inputs.packages_dir }}\n      verify-metadata: ${{ inputs.verify-metadata || inputs.verify_metadata }}\n      skip-existing: ${{ inputs.skip-existing || inputs.skip_existing }}\n      verbose: ${{ inputs.verbose }}\n      print-hash: ${{ inputs.print-hash || inputs.print_hash }}\n      attestations: ${{ inputs.attestations }}\n",
+    "advisories": [
+      {
+        "ghsa_id": "GHSA-5xjx-3w67-w9x9",
+        "cve_id": null,
+        "url": "https://api.github.com/repos/pypa/gh-action-pypi-publish/security-advisories/GHSA-5xjx-3w67-w9x9",
+        "html_url": "https://github.com/pypa/gh-action-pypi-publish/security/advisories/GHSA-5xjx-3w67-w9x9",
+        "summary": "Revocation of CA in the chain that Sigstore uses in Trusted Publishing and Digital Attestations for PyPI",
+        "description": "### Summary\r\n\r\nThe [pypi-publish action][pypi-publish] versions before 1.14.2 used to bundle the `emSign` root CA trust store certificate through the `certifi` distribution. It has since been removed through the bundle and the new version no longer includes them.\r\n\r\n[pypi-publish]: https://github.com/marketplace/actions/pypi-publish\r\n\r\n### Details\r\n\r\nThe `certifi`-provided TLS trust store is typically used by many projects in the Python ecosystem, including Sigstore that [pypi-publish] relies on for Trusted Publishing and Digital Attestations.\r\n\r\n### Related\r\n\r\nThe external compromise is being tracked at https://emudhra.we-have-a-problem.com",
+        "severity": "critical",
+        "author": null,
+        "publisher": {
+          "login": "webknjaz",
+          "id": 578543,
+          "node_id": "MDQ6VXNlcjU3ODU0Mw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/578543?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/webknjaz",
+          "html_url": "https://github.com/webknjaz",
+          "followers_url": "https://api.github.com/users/webknjaz/followers",
+          "following_url": "https://api.github.com/users/webknjaz/following{/other_user}",
+          "gists_url": "https://api.github.com/users/webknjaz/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/webknjaz/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/webknjaz/subscriptions",
+          "organizations_url": "https://api.github.com/users/webknjaz/orgs",
+          "repos_url": "https://api.github.com/users/webknjaz/repos",
+          "events_url": "https://api.github.com/users/webknjaz/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/webknjaz/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "identifiers": [
+          {
+            "value": "GHSA-5xjx-3w67-w9x9",
+            "type": "GHSA"
+          }
+        ],
+        "state": "published",
+        "created_at": null,
+        "updated_at": "2026-10-21T17:44:51Z",
+        "published_at": "2026-10-21T17:37:47Z",
+        "closed_at": null,
+        "withdrawn_at": null,
+        "submission": null,
+        "vulnerabilities": [
+          {
+            "package": {
+              "ecosystem": "actions",
+              "name": "pypa/gh-action-pypi-publish"
+            },
+            "vulnerable_version_range": "<= 1.14.2",
+            "patched_versions": ">= 1.14.3",
+            "vulnerable_functions": []
+          }
+        ],
+        "cvss_severities": {
+          "cvss_v3": {
+            "vector_string": null,
+            "score": null
+          },
+          "cvss_v4": {
+            "vector_string": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:H/VA:N/SC:N/SI:N/SA:N",
+            "score": 9.3
+          }
+        },
+        "cwes": [],
+        "cwe_ids": [],
+        "credits": [],
+        "credits_detailed": [],
+        "collaborating_users": null,
+        "collaborating_teams": null,
+        "private_fork": null,
+        "comments": 8,
+        "cvss": {
+          "vector_string": null,
+          "score": null
+        }
+      },
+      {
+        "ghsa_id": "GHSA-vxmw-7h4f-hqxh",
+        "cve_id": null,
+        "url": "https://api.github.com/repos/pypa/gh-action-pypi-publish/security-advisories/GHSA-vxmw-7h4f-hqxh",
+        "html_url": "https://github.com/pypa/gh-action-pypi-publish/security/advisories/GHSA-vxmw-7h4f-hqxh",
+        "summary": "Injectable expression expansions in action steps",
+        "description": "### Summary\r\n\r\n`gh-action-pypi-publish` makes use of GitHub Actions expression expansions (i.e. `${{ ... }}`) in contexts that are potentially attacker controllable. Depending on the trigger used to invoke `gh-action-pypi-publish`, this may allow an attacker to execute arbitrary code within the context of a workflow step that invokes `gh-action-pypi-publish`.\r\n\r\n### Details\r\n\r\n`gh-action-pypi-publish` contains a composite action step, `set-repo-and-ref`, that makes use of expression expansions:\r\n\r\n```yaml\r\n  - name: Set repo and ref from which to run Docker container action\r\n    id: set-repo-and-ref\r\n    run: |\r\n      # Set repo and ref from which to run Docker container action\r\n      # to handle cases in which `github.action_` context is not set\r\n      # https://github.com/actions/runner/issues/2473\r\n      REF=${{ env.ACTION_REF || env.PR_REF || github.ref_name }}\r\n      REPO=${{ env.ACTION_REPO || env.PR_REPO || github.repository }}\r\n      REPO_ID=${{ env.PR_REPO_ID || github.repository_id }}\r\n      echo \"ref=$REF\" >>\"$GITHUB_OUTPUT\"\r\n      echo \"repo=$REPO\" >>\"$GITHUB_OUTPUT\"\r\n      echo \"repo-id=$REPO_ID\" >>\"$GITHUB_OUTPUT\"\r\n    shell: bash\r\n    env:\r\n      ACTION_REF: ${{ github.action_ref }}\r\n      ACTION_REPO: ${{ github.action_repository }}\r\n      PR_REF: ${{ github.event.pull_request.head.ref }}\r\n      PR_REPO: ${{ github.event.pull_request.head.repo.full_name }}\r\n      PR_REPO_ID: ${{ github.event.pull_request.base.repo.id }}\r\n```\r\n\r\nPermalink: https://github.com/pypa/gh-action-pypi-publish/blob/db8f07d3871a0a180efa06b95d467625c19d5d5f/action.yml#L114-L125\r\n\r\nIn normal intended operation, these expansions are used to establish a correct priority for outputs like `ref` and `repo-id`. \r\n\r\nHowever, these expansions have a side effect: because they're done with `${{ ... }}` and not with `${...}` (i.e. normal shell interpolation), they can *bypass normal shell quoting rules*. In particular, if both `env.ACTION_REF` and `env.PR_REF` evaluate to empty strings, then the expression falls back to `github.ref_name`, which can be an attacker controlled string via a branch or tag name. \r\n\r\nFor example, if the attacker is able to set a branch name to something like `innocent;cat${IFS}/etc/passwd`, then the `REF` line may expand as:\r\n\r\n```bash\r\nREF=innocent;cat${IFS}/etc/passwd\r\n```\r\n\r\nwhich would set `REF` to `innocent` and then run the attacker's code.\r\n\r\nAdditional information about dangerous expansions can be found in [zizmor's `template-injection` rule documentation](https://woodruffw.github.io/zizmor/audits/#template-injection).\r\n\r\n### Impact\r\n\r\nThe impact of this vulnerability is very low: the expression in question is unlikely to be evaluated in normal operation, since `env.ACTION_REF` should always take precedence.\r\n\r\nIn particular, the action is **not** vulnerable in many popular configurations, i.e. those where `pull_request` or `release` or a `push: tags` event is used to call the action.\r\n",
+        "severity": "low",
+        "author": null,
+        "publisher": {
+          "login": "webknjaz",
+          "id": 578543,
+          "node_id": "MDQ6VXNlcjU3ODU0Mw==",
+          "avatar_url": "https://avatars.githubusercontent.com/u/578543?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/webknjaz",
+          "html_url": "https://github.com/webknjaz",
+          "followers_url": "https://api.github.com/users/webknjaz/followers",
+          "following_url": "https://api.github.com/users/webknjaz/following{/other_user}",
+          "gists_url": "https://api.github.com/users/webknjaz/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/webknjaz/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/webknjaz/subscriptions",
+          "organizations_url": "https://api.github.com/users/webknjaz/orgs",
+          "repos_url": "https://api.github.com/users/webknjaz/repos",
+          "events_url": "https://api.github.com/users/webknjaz/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/webknjaz/received_events",
+          "type": "User",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "identifiers": [
+          {
+            "value": "GHSA-vxmw-7h4f-hqxh",
+            "type": "GHSA"
+          }
+        ],
+        "state": "published",
+        "created_at": null,
+        "updated_at": "2025-09-04T01:35:10Z",
+        "published_at": "2025-09-04T01:35:10Z",
+        "closed_at": null,
+        "withdrawn_at": null,
+        "submission": null,
+        "vulnerabilities": [
+          {
+            "package": {
+              "ecosystem": "actions",
+              "name": "pypa/gh-action-pypi-publish"
+            },
+            "vulnerable_version_range": "<= v1.12.4",
+            "patched_versions": "> v1.12.4",
+            "vulnerable_functions": []
+          }
+        ],
+        "cvss_severities": {
+          "cvss_v3": {
+            "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+            "score": null
+          },
+          "cvss_v4": {
+            "vector_string": null,
+            "score": null
+          }
+        },
+        "cwes": [
+          {
+            "cwe_id": "CWE-77",
+            "name": "Improper Neutralization of Special Elements used in a Command ('Command Injection')"
+          }
+        ],
+        "cwe_ids": [
+          "CWE-77"
+        ],
+        "credits": [
+          {
+            "login": "woodruffw",
+            "type": "reporter"
+          }
+        ],
+        "credits_detailed": [
+          {
+            "user": {
+              "login": "woodruffw",
+              "id": 3059210,
+              "node_id": "MDQ6VXNlcjMwNTkyMTA=",
+              "avatar_url": "https://avatars.githubusercontent.com/u/3059210?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/woodruffw",
+              "html_url": "https://github.com/woodruffw",
+              "followers_url": "https://api.github.com/users/woodruffw/followers",
+              "following_url": "https://api.github.com/users/woodruffw/following{/other_user}",
+              "gists_url": "https://api.github.com/users/woodruffw/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/woodruffw/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/woodruffw/subscriptions",
+              "organizations_url": "https://api.github.com/users/woodruffw/orgs",
+              "repos_url": "https://api.github.com/users/woodruffw/repos",
+              "events_url": "https://api.github.com/users/woodruffw/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/woodruffw/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "type": "reporter",
+            "state": "accepted"
+          }
+        ],
+        "collaborating_users": null,
+        "collaborating_teams": null,
+        "private_fork": null,
+        "comments": 3,
+        "cvss": {
+          "vector_string": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:N",
+          "score": null
+        }
+      }
+    ]
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "repository": "actions/upload-artifact",
+    "original_ref": "v7",
+    "ref_kind": "tag",
+    "sha": "cf430e030ddbb5b0abf93d22962f4752f3646cd9",
+    "release": "v7.0.2"
+  },
+  {
+    "repository": "docker/build-push-action",
+    "original_ref": "v7",
+    "ref_kind": "tag",
+    "sha": "c3c9e263c25d99ce0380d002d59b67737d91b0dc",
+    "release": "v7.4.0"
+  },
+  {
+    "repository": "docker/login-action",
+    "original_ref": "v4",
+    "ref_kind": "tag",
+    "sha": "81c6f93d4bc991e510b342a00b419b3bb4efc5c6",
+    "release": "v4.7.0"
+  },
+  {
+    "repository": "docker/metadata-action",
+    "original_ref": "v6",
+    "ref_kind": "tag",
+    "sha": "dc802804100637a589fabce1cb79ff13a1411302",
+    "release": "v6.2.0"
+  },
+  {
+    "repository": "docker/setup-buildx-action",
+    "original_ref": "v4",
+    "ref_kind": "tag",
+    "sha": "f87e5991a6d7451dcb8d9637bfbc97413f497069",
+    "release": "v4.4.1"
+  },
+  {
+    "repository": "docker/setup-qemu-action",
+    "original_ref": "v4",
+    "ref_kind": "tag",
+    "sha": "99012661954931238ded8c8b007157a8430204e1",
+    "release": "v4.4.0"
+  },
+  {
+    "repository": "pypa/gh-action-pypi-publish",
+    "original_ref": "release/v1",
+    "ref_kind": "branch",
+    "sha": "7245906fb61fa33a13554f9d5fb856fe61758086",
+    "release": "v1.14.3"
+  }
+]

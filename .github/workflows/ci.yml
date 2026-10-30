@@ -22,6 +22,10 @@ jobs:
     name: " lint / spec & docs "
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Explicit bash uses -e -o pipefail; implicit Linux bash uses only -e.
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -36,8 +40,11 @@ jobs:
       - name: Start log capture
         run: mkdir -p .github/logs && echo "--- Starting log capture ---" > .github/logs/spec-and-docs.log
 
+      - name: Verify CI failure propagation
+        run: python3 scripts/ci/test_failure_propagation.py --output-dir .github/logs/failure-propagation
+
       - name: Install Python tools
-        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc 2>&1 | tee -a .github/logs/spec-and-docs.log
+        run: pip install mdformat mdformat-gfm mdformat-frontmatter mdformat-toc PyYAML==6.0.3 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Check Markdown links (lychee)
         uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2
@@ -96,7 +103,9 @@ jobs:
           echo "All required directories present." 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Verify ARCHITECTURE.md target table matches CMake
-        run: python3 scripts/ci/check_architecture_targets.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+        run: |
+          python3 tests/ci/check_architecture_targets_test.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/ci/check_architecture_targets.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Verify TISC v1.1.0 Freeze Integrity
         run: python3 scripts/ci/check_tisc_freeze_integrity.py 2>&1 | tee -a .github/logs/spec-and-docs.log
@@ -105,10 +114,13 @@ jobs:
         run: python3 scripts/ci/check_ai_experiment_boundary.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Enforce architecture coherence invariants
-        run: python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+        run: |
+          python3 tests/ci/governance_deadlock_test.py 2>&1 | tee -a .github/logs/spec-and-docs.log
+          python3 scripts/ci/check_architecture_coherence.py 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Enforce workflow action pinning policy
         run: |
+          python3 tests/ci/workflow_supply_chain_test.py 2>&1 | tee -a .github/logs/spec-and-docs.log
           python3 scripts/ci/audit_workflow_actions.py --max-tagged 0 --max-unknown 0 2>&1 | tee -a .github/logs/spec-and-docs.log
 
       - name: Enforce workflow permissions policy
@@ -149,6 +161,15 @@ jobs:
             echo "- **Job**: ${{ github.job }}"
             echo "- **Run**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preserve spec and docs diagnostics
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        with:
+          name: spec-and-docs-diagnostics
+          path: .github/logs/
+          include-hidden-files: true
+          if-no-files-found: warn
 
   ############################################################################
   # JOB: architecture-invariants (informational)
@@ -390,6 +411,9 @@ jobs:
     needs: spec-and-docs
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout repository
@@ -1219,6 +1243,9 @@ jobs:
     needs: spec-and-docs
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -1257,6 +1284,7 @@ jobs:
             bench.json
             docs/reference/benchmarks.md
             .github/logs/benchmark.log
+          include-hidden-files: true
           if-no-files-found: warn
 
   ############################################################################
@@ -1521,6 +1549,70 @@ jobs:
         run: |
           set -eo pipefail
           atc --version
+
+  # Manual execution coverage for the seven newly pinned action versions.
+  # No dependency on spec/docs; no package publication or repository writes.
+  workflow-action-smoke:
+    name: "security / immutable action smoke"
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - name: Prepare disposable local endpoints
+        id: endpoints
+        run: |
+          python3 tests/ci/workflow_action_smoke.py prepare
+          python3 tests/ci/workflow_action_smoke.py serve > .github/logs/supply-smoke/server.log 2>&1 &
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8787/health; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:8787/health
+          gateway=$(docker network inspect bridge --format '{{(index .IPAM.Config 0).Gateway}}')
+          echo "pypi=http://${gateway}:8787/legacy/" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+        with:
+          platforms: aarch64
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: 127.0.0.1:8787
+          username: smoke
+          password: disposable-local-fixture
+      - uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        id: smoke-meta
+        with:
+          images: t81-ci-smoke
+          tags: type=raw,value=smoke
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .github/logs/supply-smoke
+          push: false
+          load: true
+          tags: ${{ steps.smoke-meta.outputs.tags }}
+      - name: Check built image and emulation
+        run: |
+          docker image inspect t81-ci-smoke:smoke
+          test -e /proc/sys/fs/binfmt_misc/qemu-aarch64
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+        with:
+          user: smoke
+          password: disposable-local-fixture
+          repository-url: ${{ steps.endpoints.outputs.pypi }}
+          packages-dir: .github/logs/supply-smoke/dist
+          attestations: false
+      - name: Verify local upload evidence
+        run: python3 tests/ci/workflow_action_smoke.py check
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: workflow-action-smoke
+          path: .github/logs/supply-smoke
+          include-hidden-files: true
+          if-no-files-found: error
 
   ############################################################################
   # JOB: quality-gate

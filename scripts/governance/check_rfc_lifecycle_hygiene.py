@@ -28,6 +28,8 @@ def parse_index_rows(index_text: str) -> list[tuple[str, str, str]]:
 def read_status_from_rfc(text: str) -> str | None:
     top = "\n".join(text.splitlines()[:120])
     patterns = [
+        # Several accepted RFCs use an explicit Field/Value metadata table.
+        re.compile(r"^\s*\|\s*Status\s*\|\s*(?:\*\*)?([A-Za-z-]+)(?:\*\*)?\s*\|\s*$", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?\*\*Status:\*\*\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?\*\*Status\*\*:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
         re.compile(r"^\s*(?:[-*]\s+)?Status:\s*([A-Za-z-]+)", re.IGNORECASE | re.MULTILINE),
@@ -68,12 +70,24 @@ def main() -> int:
         return 1
 
     for rfc_id, index_status, notes in rows:
-        matches = sorted(RFC_ROOT.glob(f"{rfc_id}-*.md"))
-        if not matches:
+        all_matches = sorted(RFC_ROOT.glob(f"{rfc_id}-*.md"))
+        if not all_matches:
             issues.append(f"missing RFC file for index entry: {rfc_id}")
             continue
 
-        path = matches[0]
+        primary_matches = [
+            m for m in all_matches
+            if not m.name.endswith("-template.md") and not m.name.endswith("-profile.md")
+        ]
+        if len(primary_matches) == 1:
+            path = primary_matches[0]
+        elif len(primary_matches) == 0:
+            issues.append(f"{rfc_id}: ambiguity rejection - no primary RFC document found among matches: {[m.name for m in all_matches]}")
+            continue
+        else:
+            issues.append(f"{rfc_id}: ambiguity rejection - multiple primary RFC documents found: {[m.name for m in primary_matches]}")
+            continue
+
         text = path.read_text(encoding="utf-8", errors="ignore")
 
         file_status = read_status_from_rfc(text)
