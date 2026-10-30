@@ -1,0 +1,10 @@
+{
+  "total_tracked_files": 4080,
+  "inventoried_files": 4080,
+  "coverage_percentage": 100.0,
+  "exact_sha_matches": 4080,
+  "sha_mismatches": 0,
+  "relationships_count": 6059,
+  "stratified_audit_count": 37,
+  "stratified_audit_errors": 0
+}
