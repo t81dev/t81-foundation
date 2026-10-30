@@ -114,6 +114,7 @@ Auxiliary note:
 | RFC-00D1 | CanonFS Foreign File System Interchange | draft | Defines CanonFS import/export as a governed interchange boundary with provenance, normalization, and explicit round-trip limits; RFC remains draft overall, but a narrow seed contract is now stable enough to build against: `canonfs import` / `canonfs export`, the v1 import/export/provenance/manifest JSON schemas, `host-file` / `host-directory`, and the current policy-profile names. Deferred questions still include symlink posture, archive/bundle export, text-output contract status, and schema-catalog promotion. |
 | RFC-00D2 | DAIOS Target Architecture and Sequencing | draft | Informational planning RFC that defines the target DAIOS layers and sequencing rule while explicitly preserving the current runtime-first posture: architecture ahead, implementation behind proof. It does not promote new APIs or authorize broad subsystem expansion. |
 | RFC-00D5 | Checked Floating-Point Conversion | draft | [Proposed numerical contract](RFC-00D5-checked-floating-point-conversion.md): checked binary64 bridges, finite representation, exact/rounded/error outcomes and migration decisions. No production or ISA changes; maintainer approval pending. |
+| RFC-00E9 | Proposed C++ SDK 2.0.0 Compatibility Transition | draft | [A.1 decision proposal](RFC-00E9-cpp-sdk-2-compatibility-transition.md); no approval, implementation, version/lock change or release authorization; preserves PR #649 frozen head. |
 
 ## Series Planning
 
