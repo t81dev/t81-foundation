@@ -11,10 +11,15 @@
 #include <chrono>
 #include <functional>
 #include <unordered_map>
-#include "t81/experimental/llama_cpp_adapter.hpp"
 #include "t81/codec/enhanced_gguf_parser.hpp"
 #include "t81/codec/advanced_ternary_quantization.hpp"
 #include "t81/memory/advanced_memory_manager.hpp"
+
+namespace t81::experimental {
+class LlamaCppAdapter;
+struct LlamaCppInferenceRequest;
+struct LlamaCppInferenceReceipt;
+}
 
 namespace t81::inference {
 
@@ -147,6 +152,7 @@ public:
     size_t size() const;
     bool empty() const;
     bool full() const;
+    void set_max_size(size_t max_size);
     
     // Statistics
     struct QueueStats {
@@ -242,9 +248,9 @@ private:
     BatchInferenceResult process_adaptive_batch(const BatchInferenceRequest& batch);
     
     // Preprocessing and postprocessing
-    std::vector<LlamaCppInferenceRequest> preprocess_batch(const BatchInferenceRequest& batch);
+    std::vector<t81::experimental::LlamaCppInferenceRequest> preprocess_batch(const BatchInferenceRequest& batch);
     std::vector<EnhancedInferenceResult> postprocess_batch(
-        const std::vector<LlamaCppInferenceReceipt>& receipts,
+        const std::vector<t81::experimental::LlamaCppInferenceReceipt>& receipts,
         const BatchInferenceRequest& original_batch);
     
     void update_batch_stats(const BatchInferenceResult& result);
@@ -273,7 +279,7 @@ public:
     void wait_for_completion();
     
     // Configuration
-    void set_queue_size(size_t size) { queue_->max_size_ = size; }
+    void set_queue_size(size_t size) { queue_->set_max_size(size); }
     void set_batch_processor(std::unique_ptr<BatchProcessor> processor);
     
     // Statistics

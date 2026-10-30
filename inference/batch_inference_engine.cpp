@@ -13,7 +13,9 @@ InferenceQueue::InferenceQueue(size_t max_size) : max_size_(max_size) {}
 bool InferenceQueue::enqueue(const EnhancedInferenceRequest& request) {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     
-    if (size() >= max_size_) {
+    size_t current = realtime_queue_.size() + high_queue_.size() + normal_queue_.size() +
+                     low_queue_.size() + background_queue_.size();
+    if (current >= max_size_) {
         stats_.max_size_reached++;
         return false;
     }
@@ -92,18 +94,30 @@ size_t InferenceQueue::size() const {
 }
 
 bool InferenceQueue::empty() const {
-    return size() == 0;
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    return realtime_queue_.empty() && high_queue_.empty() && normal_queue_.empty() &&
+           low_queue_.empty() && background_queue_.empty();
 }
 
 bool InferenceQueue::full() const {
-    return size() >= max_size_;
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    size_t current = realtime_queue_.size() + high_queue_.size() + normal_queue_.size() +
+                     low_queue_.size() + background_queue_.size();
+    return current >= max_size_;
+}
+
+void InferenceQueue::set_max_size(size_t max_size) {
+    std::lock_guard<std::mutex> lock(queue_mutex_);
+    max_size_ = max_size;
+    queue_cv_.notify_all();
 }
 
 InferenceQueue::QueueStats InferenceQueue::get_stats() const {
     std::lock_guard<std::mutex> lock(queue_mutex_);
     
     QueueStats stats = stats_;
-    stats.current_size = size();
+    stats.current_size = realtime_queue_.size() + high_queue_.size() + normal_queue_.size() +
+                         low_queue_.size() + background_queue_.size();
     
     // Count by priority
     stats.priority_counts[InferencePriority::REALTIME] = realtime_queue_.size();

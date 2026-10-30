@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>
+#include <chrono>
 #include "t81/ternary.hpp"
 
 namespace t81::codec {
@@ -209,8 +210,8 @@ namespace ternary_utils {
     bool is_valid_ternary(const std::vector<TernaryType>& input);
     
     // Convert to/from T81 native ternary format
-    std::vector<t81::Ternary> to_t81_ternary(const std::vector<int8_t>& input);
-    std::vector<int8_t> from_t81_ternary(const std::vector<t81::Ternary>& input);
+    std::vector<t81::Trit> to_t81_ternary(const std::vector<int8_t>& input);
+    std::vector<int8_t> from_t81_ternary(const std::vector<t81::Trit>& input);
     
     // Statistical analysis
     float calculate_ternary_balance(const std::vector<int8_t>& input);
