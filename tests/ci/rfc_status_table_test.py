@@ -51,5 +51,58 @@ class TableStatus(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("invalid parsed status 'invented'", result.stdout)
 
+class PrimarySelection(unittest.TestCase):
+    def setUp(self):
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        self.root = Path(temp.name)
+        script = self.root / 'scripts/governance' / SCRIPT.name
+        script.parent.mkdir(parents=True)
+        shutil.copyfile(SCRIPT, script)
+        self.rfcs = self.root / 'spec/rfcs'
+        self.rfcs.mkdir(parents=True)
+        (self.rfcs / 'index.md').write_text('| RFC-0001 | Fixture | accepted | |\n')
+
+    def run_check(self):
+        return subprocess.run([sys.executable, 'scripts/governance/' + SCRIPT.name],
+                              cwd=self.root, capture_output=True, text=True, timeout=10)
+
+    def add(self, name, status='accepted'):
+        (self.rfcs / ('RFC-0001-' + name + '.md')).write_text('**Status:** ' + status + '\n')
+
+    def test_one_primary_with_draft_companions_passes(self):
+        self.add('main')
+        self.add('a-template', 'draft')
+        self.add('b-profile', 'draft')
+        result = self.run_check()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_multiple_primaries_are_rejected_even_with_matching_status(self):
+        self.add('a-main')
+        self.add('b-main')
+        result = self.run_check()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('multiple primary RFC documents', result.stdout)
+
+    def test_conflicting_primaries_cannot_hide_behind_sort_order(self):
+        self.add('a-main')
+        self.add('z-main', 'draft')
+        result = self.run_check()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('multiple primary RFC documents', result.stdout)
+
+    def test_companions_cannot_substitute_for_primary(self):
+        self.add('a-template')
+        self.add('b-profile')
+        result = self.run_check()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('no primary RFC document', result.stdout)
+
+    def test_missing_primary_and_companions_fails(self):
+        result = self.run_check()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('missing RFC file', result.stdout)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
