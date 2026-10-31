@@ -117,3 +117,23 @@ To amend or supersede a formally accepted architectural decision without erasing
 **Maintainer decision boundary:** The nine reported governance failures include unresolved authority questions (root layout, API lock and RFC status). No AI agent may resolve them by silently changing expected outputs, weakening validators, changing protected branch rules, or treating a draft as accepted. A new independently executed 27-command inventory on the exact #577 cumulative head, plus full hosted CI and CodeQL evidence, is the next verification gate. The source of the historical 18/9 count is [#617](https://github.com/t81dev/t81-foundation/pull/617), not an independent rerun in this addendum.
 
 **Operational change discipline:** For administrative PR cleanup, close only after verified content-level supersession and a reasoned public comment; closure is not a merge or scientific acceptance. No unattended GitHub Actions triage automation is authorized. Preserve append-only history, raw negative evidence, and exact approval boundaries.
+
+---
+
+## 8. Operational governance and publication boundaries — 2026-10-31
+
+**Checked main:** `f775680aba7db200691c0f4e2a3174b0e7e51581`. All entries below are *current-state observations*, not newly accepted decisions. Preserve the older dated record above.
+
+| Workstream | Checked or reported status | Maintainer gate |
+| :--- | :--- | :--- |
+| Archaeology [#651](https://github.com/t81dev/t81-foundation/pull/651) | Open, unmerged; head `caf9b3fc`; original inventory and unresolved scientific provenance | Avoid merging #651 alongside replacement #653 as duplicate independent authority. |
+| Correction [#653](https://github.com/t81dev/t81-foundation/pull/653) | Open, unmerged; head `2229abf2`; CLM-003 still contains universal-negative wording at the inspected head | Require H04-R02 semantic correction, no unpinned Tier A, deterministic regeneration, independent regression review before disposition. |
+| Original ADM-2 [#652](https://github.com/t81dev/t81-foundation/pull/652) | Open, unmerged; head `e2e5a25b`; combined maintenance/header-isolation history | Retain for historical traceability; do not merge the combined candidate. |
+| Local ADM-2 candidate A | Codex reports `repair/adm2-baseline@0c22ac3`; not remotely published | Independent ancestry/diff and Linux/Windows/CI checks before integration. |
+| Local ADM-2 candidate B | Codex reports `repair/adm2-m1@826887b`; stacked after A, not remotely published | Preserve compiler-versus-operational distinction; no engine activation. |
+| Governance [#649](https://github.com/t81dev/t81-foundation/pull/649) | Draft, unmerged; head `3a28eae9` | Separate governance review; no check relaxation or automatic activation. |
+| SDK proposal [#650](https://github.com/t81dev/t81-foundation/pull/650) | Draft, unmerged; head `137faac2` | No SDK version, RFC-00E9 acceptance or API-lock change without authorization. |
+
+**Known reproduced-on-author-host diagnostics (Codex report, not independently rerun here):** Existing API lock checks fail on pinned baseline, A and B with version 1.9.1 versus 1.9.0 and digest mismatch; architecture-target discovery misses ten documented targets on all three. The inference worker fails to process a queued request in its reported diagnostic. Do not repair these through unrelated validator changes or include the runtime worker fixes in the ADM-2 M1 header-isolation scope.
+
+**Autonomous AI optimization governance proposal (not accepted):** AI may investigate alternate algorithms/backend implementations with pinned experiments and deterministic equivalence checks under accepted RFC-0042–0049 and RFC-0051; changing normative semantics, stable APIs, protected checks, policy enforcement, or published evidence remains a separately approved architectural proposal. A future AI optimization protocol is **idea-stage only**, not an accepted RFC or operational self-modification authority. Experiments never auto-promote to integrated contracts.
