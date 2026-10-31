@@ -155,3 +155,38 @@ NO-AUTHORITY ACTIONS: No experimental measurement, security/policy activation, R
 **STOP / HUMAN DECISION:** Any proposed fix that redefines root authority, changes public API lock, edits accepted RFC or RFC status, relaxes required checks, rewrites historical evidence, or grants performance/measurement authority requires separate explicit maintainer approval. No new PR, CI automation, merge, measurement, or branch-protection change is authorized by this documentation update.
 
 **Evidence tier:** PR status, changed-file lists and Git blob comparisons were inspected through the GitHub connector (Tier B for source identity). Reported validation outcomes and historical tests are Tier C until independently executed on pinned source. This update performed no build, benchmark, PMU run or 27-command validation.
+
+---
+
+## 9. Operational reconciliation — 2026-10-31
+
+**Authority:** Newer non-normative snapshot appended without removing the historical Section 7 log or October 29 instructions. Checked GitHub `main@f775680aba7db200691c0f4e2a3174b0e7e51581`; future readers **must refresh** the PR heads, checks and maintainer authorization before acting. No build, code benchmark, scientific oracle or sanitizer was executed in this documentation update.
+
+### Current parallel workstreams
+
+**A. Research archaeology / evidence classification.** [PR #651](https://github.com/t81dev/t81-foundation/pull/651) is open/unmerged at `caf9b3fcf1d39d65d51af5311c729f705581f56f`. [PR #653](https://github.com/t81dev/t81-foundation/pull/653) is open/unmerged at `2229abf23b5f8618eca7a532e71966b32e79eb98`. #653 aims to correct #651; do not merge both overlapping inventories independently. This session directly inspected #653 `CLAIMS.jsonl`: `CLM-003` still says there is no AT advantage under symmetric metadata scaling despite the corrected H04-R02 conditional `boundary_oscillation` model result `AT=1210 < AB=1250`, `r=1.60`, reported crossover `5/3`, and non-equivalent native capacities. Classification D methodological limits remain; hardware/general advantage is not proven. Independently inspect `HISTORY.jsonl`, `tools/archaeology_classifier.py`, `FILES.jsonl`, generated summaries and regression tests before accepting any Tier A claims. **Status: SEMANTIC ACCEPTANCE BLOCKED** until provenance and conditional-result tests pass.
+
+**B. ADM-2 engineering recovery.** [PR #652](https://github.com/t81dev/t81-foundation/pull/652) is open/unmerged at `e2e5a25b17ab37198e5fe2d53b68792963fd088f`. Codex reports unpublished local repair branches: A `repair/adm2-baseline@0c22ac323484e37cc85f95201bd4dc01729dedb4`, direct child of main; B `repair/adm2-m1@826887b40c62de9c6c903f319bbfbe905baa9911`, stacked after A. Codex-authored report `ADM2_BASELINE_RECOVERY.md` records focused host macOS ARM64 CTests, full C++20/C++23 engine TU compilation, queue TSan/ASan/UBSan and `SnapshotRef` source-compatibility checks; not independently replayed here. Local baseline/A/B API-lock and architecture-discovery failures were reported as inherited; platform checks Linux/Windows remain unexecuted on the candidates. The inherited worker remains functionally blocked (`start()` / `stop()` lifecycle state; double dequeue; single-request fallback re-enqueue), so do not claim inference runtime execution or authorize activation. **Status: LOCAL ENGINEERING ACCEPTANCE REPORTED; PUBLICATION/INTEGRATION HOLD.**
+
+**C. Governance / SDK status.** [#649](https://github.com/t81dev/t81-foundation/pull/649) draft/unmerged at `3a28eae9c11bbd18b09b71509fa7f74e0584bc24`; [#650](https://github.com/t81dev/t81-foundation/pull/650) draft/unmerged at `137faac2830f9f21b66667a3cb103df79b550e0d`. No RFC-00E9 acceptance, public API-lock revision, required-check relaxation, or merge is granted.
+
+**D. Scientific boundaries.** H01 Investigation 10A: **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**. H04-R02: conditional abstract-cost AT result survives corrected accounting at a specific parameter; original methodological verdict Classification D. CMP3/r1: no new trustworthy PMU/trusted-runner authorization or measurement is established by this update. Preserve all historical negative results and scope labels.
+
+### Bounded next actions and stopping conditions
+
+1. **Jules / research archaeology:** Fix #653's CLM-003/HISTORY inconsistency; eliminate any path-based Tier A promotion, require pinned execution receipts, regenerate records deterministically, add numerical and provenance regression tests. Stop before merge; obtain independent review of the actual final head.
+2. **Codex / ADM-2:** Audit exact A/B parent-to-child diffs, test registration and evidence receipts; run approved Linux and Windows checks and attribute failures against pinned baseline. Prepare stacked draft publication only after maintainer authorization; preserve #652 history. Worker lifecycle repair must be a separate bounded task with a failing test first.
+3. **Maintainer:** Decide independent PR disposition and whether to approve separate publication. No automatic RFC acceptance, governance activation, API-lock regeneration, performance measurement, or protected branch operation.
+
+### Session receipt (non-experimental)
+
+```text
+DATE / SESSION: 2026-10-31 / AI context operational reconciliation
+PINNED MAIN: f775680aba7db200691c0f4e2a3174b0e7e51581
+PR HEADS CHECKED: #651 caf9b3fc; #652 e2e5a25b; #653 2229abf2; #649 3a28eae9; #650 137faac2
+SOURCE INSPECTED: docs/ai-context/*; #653 CLAIMS.jsonl; Codex-authored ADM2_BASELINE_RECOVERY.md supplied in chat
+EXECUTED BUILD / ORACLE / BENCHMARK: none
+RESULT: Updated non-normative status and evidence boundary; no change to scientific or governance authority
+NEXT ACTION: independent source-level #653 acceptance review, separate A/B portability and publication gates
+STOP: no merge, no RFC acceptance, no protected check changes, no measurement authorization
+```
