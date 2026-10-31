@@ -155,3 +155,23 @@ NO-AUTHORITY ACTIONS: No experimental measurement, security/policy activation, R
 **STOP / HUMAN DECISION:** Any proposed fix that redefines root authority, changes public API lock, edits accepted RFC or RFC status, relaxes required checks, rewrites historical evidence, or grants performance/measurement authority requires separate explicit maintainer approval. No new PR, CI automation, merge, measurement, or branch-protection change is authorized by this documentation update.
 
 **Evidence tier:** PR status, changed-file lists and Git blob comparisons were inspected through the GitHub connector (Tier B for source identity). Reported validation outcomes and historical tests are Tier C until independently executed on pinned source. This update performed no build, benchmark, PMU run or 27-command validation.
+
+---
+
+## 9. Operational update — 2026-10-30, Repository Archaeology & Durable Context (Mission T81-RA-001)
+
+```text
+DATE / SESSION: 2026-10-30 / Mission T81-RA-001 Repository Archaeology
+REPOSITORIES AND PINNED COMMITS: t81-foundation main f775680aba7db200691c0f4e2a3174b0e7e51581 (tree 6d9cabb6bcd84689b05b955b091d3d25772cc8a3)
+QUESTION: Complete, bounded, non-invasive source-grounded reconstruction of all 4,080 tracked repository artifacts into durable AI context.
+EVIDENCE INSPECTED: All 4,080 tracked git artifacts enumerated via git ls-tree -r -z HEAD; C++ includes; markdown link graphs; specification and research claim registers.
+WHAT WAS REPRODUCED:
+1. Created docs/ai-context/archaeology/ (README.md, STATE.json, HANDOFF.md, BUDGET.jsonl, OPEN_QUESTIONS.jsonl).
+2. Generated complete structured inventories in docs/records/inventories/repository-archaeology/ (FILES.jsonl [4,080 entries], RELATIONSHIPS.jsonl [6,059 edges], HISTORY.jsonl [6 lineages], CLAIMS.jsonl [5 claims], RELOCATION_CANDIDATES.jsonl [10 candidates], COVERAGE.json, METHOD.md, VALIDATION.md, EXECUTIVE_SUMMARY.md).
+3. Verified 100% path & Git object SHA match; validated JSONL schemas; executed 37-record stratified sample audit (0 errors); passed scripts/governance/check_root_structure.py (81/81 entries).
+4. Reconciled PR #651 Codex findings: preserved Investigation 10A inconclusive disposition (matched characterization data unavailable), preserved H04-R02 conditional model limitations and Classification D audit reclassification, separated test assertions from executed evidence, and fixed RFC normative authority classification using authoritative in-file status headers.
+RESULT: Durable repository context established. Mechanical file coverage distinguished from ongoing scientific tracks. No source files modified or relocated. Root structure policy preserved.
+LIMITATIONS / UNRESOLVED: Remote PR heads (#649, #650) not refreshed due to offline/shallow container environment. Relocation of 8 root pollution files remains BLOCKED pending maintainer authorization under SPEC_AUTHORITY_MODEL §4.F. Active research tracks (Track R/F/M) remain governed by Master Continuity Charter.
+NEXT RECOMMENDED ACTION: Maintainers review relocation candidates in docs/records/inventories/repository-archaeology/RELOCATION_CANDIDATES.jsonl.
+NO-AUTHORITY ACTIONS: No merges, releases, governance activation, source-code refactors, or historical-record rewrites.
+```
