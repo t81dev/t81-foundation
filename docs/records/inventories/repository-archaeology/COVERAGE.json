@@ -1,0 +1,39 @@
+{
+  "total_tracked_files": 4080,
+  "inventoried_files": 4080,
+  "mechanical_coverage_percentage": 100.0,
+  "semantic_verification_scope": "Stratified manual and automated audit across categories",
+  "exact_sha_matches": 4080,
+  "sha_mismatches": 0,
+  "relationships_count": 6059,
+  "stratified_audit_count": 37,
+  "stratified_audit_errors": 0,
+  "classification_counts": {
+    "authorities": {
+      "DESCRIPTIVE": 1733,
+      "DRAFT_PROPOSAL": 14,
+      "EXPERIMENTAL_EVIDENCE": 422,
+      "GOVERNANCE_VALIDATOR": 113,
+      "IMPLEMENTATION": 493,
+      "NORMATIVE_CONTRACT": 98,
+      "SPECIFICATION": 92,
+      "TEST_ASSERTION": 1091,
+      "UTILITY": 24
+    },
+    "lifecycles": {
+      "CURRENT": 3914,
+      "DRAFT": 18,
+      "GENERATED": 23,
+      "HISTORICAL": 110,
+      "NEEDS_REVIEW": 4,
+      "SUPERSEDED": 11
+    },
+    "evidence_tiers": {
+      "NONE": 3231,
+      "Tier A": 153,
+      "Tier B": 579,
+      "Tier C": 103,
+      "Tier E": 14
+    }
+  }
+}
