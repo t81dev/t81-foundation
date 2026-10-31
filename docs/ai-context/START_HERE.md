@@ -122,3 +122,17 @@ For any new ChatGPT, Codex or Jules session, **read the latest dated sections be
 2. [DECISIONS_AND_GOVERNANCE.md — Section 7](DECISIONS_AND_GOVERNANCE.md#7-dated-governance-and-pr-disposition-addendum--2026-10-29) records checked PR dispositions and explicit maintainer decision boundaries.
 
 These are **non-normative operational overlays**, not amendments to the H01–H08 register, RFC acceptance records, or archived experimental results. The snapshot SHA in this document's header is historical; refresh the current `main` SHA, relevant PR heads and hosted check results before acting. Do not use stale PR status statements from earlier sections as current truth.
+
+---
+
+## 11. Operational reading order — 2026-10-31
+
+**Verified repository reference for this documentation update:** `main@f775680aba7db200691c0f4e2a3174b0e7e51581`. This section is a non-normative overlay, not an alteration of accepted RFCs or historical research.
+
+1. Read [BOOTSTRAP.md](BOOTSTRAP.md#2026-10-31-fast-current-state-overlay) for the short current-state overlay after the foundational six-file orientation.
+2. Read [ACTIVE_RESEARCH_HANDOFF.md](ACTIVE_RESEARCH_HANDOFF.md#9-operational-reconciliation--2026-10-31) for newer PR and task status; older 2026-10-29 next actions are dated history, not automatic instructions.
+3. Source-check every assertion against the pinned experiment or PR head. **Do not treat path-based archaeology Tier A tags, PR body summaries, or an unmerged implementation as independently reproduced evidence.**
+4. **H04-R02:** original methodology received Classification D; the corrected conditional abstract-cost observation `boundary_oscillation`, 10-bit Tier-0 control, `AT=1210 < AB=1250` at `r=1.60`, crossover `5/3`, remains distinct from native-capacity parity or physical hardware superiority. Do not assert a universal negative.
+5. **Tier A standard for new claims:** exact source revision, executed command/configuration, environment, input identities, output/exit receipt, and precisely bounded scope; independent replay status must be disclosed. A file path or a test's existence is not execution proof. Historical Tier A entries in this package are source-reported until their receipts are independently checked.
+
+The PR head and authorization status can change after this snapshot; refresh before use.
