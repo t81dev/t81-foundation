@@ -62,3 +62,9 @@ Append a dated session entry to the handoff **only when the task authorizes repo
 - **Research correction:** Investigation 10A stays **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**. H04-R02 retains a conditional model result `AT=1210 < AB=1250` at `r=1.60` for `boundary_oscillation` under the specified 10-bit Tier-0 control, with unequal 6-trit versus 10-bit native capacity and Classification D methodological limitations. This is **not native hardware proof**.
 
 **Next bounded decision:** Independently reconcile #653's actual changed files and source-based claim tiers; independently review local ADM-2 A/B candidate reports and platform/governance blockers before authorizing publication. Keep the two workstreams separate. No merge, performance measurement, RFC acceptance, or protection change is implied.
+
+---
+
+## 2026-10-31 incremental handoff note — ADM-2
+
+A subsequent operator report describes two **local, unpushed and unmerged** candidates: baseline maintenance `repair/adm2-baseline` at `0c22ac323484e37cc85f95201bd4dc01729dedb4`, based on `f775680aba7db200691c0f4e2a3174b0e7e51581`, and ADM-2 M1 `repair/adm2-m1` at `826887b40c62de9c6c903f319bbfbe905baa9911` (two commits after A). Reported macOS ARM64 validation: A, two selected CTests; B, five selected CTests; engine translation unit compilation. These are **operator-reported local results**, not independently inspected repository artifacts or cross-platform qualification. No merge, publication, activation or performance advantage follows. Obtain local patch/commit evidence before integrating this work. Older CMP3 statuses above remain dated snapshots.
