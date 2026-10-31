@@ -136,3 +136,9 @@ These are **non-normative operational overlays**, not amendments to the H01–H0
 5. **Tier A standard for new claims:** exact source revision, executed command/configuration, environment, input identities, output/exit receipt, and precisely bounded scope; independent replay status must be disclosed. A file path or a test's existence is not execution proof. Historical Tier A entries in this package are source-reported until their receipts are independently checked.
 
 The PR head and authorization status can change after this snapshot; refresh before use.
+
+---
+
+## 2026-10-31 continuity reconciliation
+
+The `Source Snapshot` above is a historical observation, not the live repository head. `BOOTSTRAP.md` and `ACTIVE_RESEARCH_HANDOFF.md` have independently dated observations; their differing commit pins must not be silently combined into one state. Refresh `main`, open PR heads, CI receipts, and authorization records before action. The ADM-2 local candidate report described below is not merged evidence.
