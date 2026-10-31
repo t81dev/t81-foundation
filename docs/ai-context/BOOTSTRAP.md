@@ -49,3 +49,16 @@ This short file supports orientation and task routing. **Before conducting a res
 6. [ACTIVE_RESEARCH_HANDOFF](ACTIVE_RESEARCH_HANDOFF.md)
 
 Append a dated session entry to the handoff **only when the task authorizes repository edits**. Leave historical negative results and accepted contract identities untouched.
+
+---
+
+## 2026-10-31 fast current-state overlay
+
+**Checked `main`:** `f775680aba7db200691c0f4e2a3174b0e7e51581`. This update overrides the *operational next-action* advice in the older dated CMP3 section above, without erasing its historical content.
+
+- **Archaeology:** [#651](https://github.com/t81dev/t81-foundation/pull/651) remains open and unmerged at `caf9b3fcf1d39d65d51af5311c729f705581f56f`. [#653](https://github.com/t81dev/t81-foundation/pull/653) is open/unmerged at `2229abf23b5f8618eca7a532e71966b32e79eb98`; it is intended to correct #651, not a separately accepted inventory. Direct file inspection at that #653 head still found `CLM-003` claiming no AT advantage under symmetric metadata scaling; **do not accept this as a universal scientific result.** The proposed elimination of path-inferred Tier A must also be independently rechecked in classifier, regenerated inventory, and tests.
+- **ADM-2:** [#652](https://github.com/t81dev/t81-foundation/pull/652) remains open/unmerged at `e2e5a25b17ab37198e5fe2d53b68792963fd088f`. Codex reported **local-only** candidates A `0c22ac323484e37cc85f95201bd4dc01729dedb4` (baseline maintenance) and B `826887b40c62de9c6c903f319bbfbe905baa9911` (header isolation, stacked on A). These commits/branches were not published; do not treat them as remotely verified or integrated. Codex's attached `ADM2_BASELINE_RECOVERY.md` reports focused macOS ARM64 CTests, C++20/23 engine translation-unit compilation, TSan and ASan/UBSan queue checks, and bounded `SnapshotRef` source compatibility. It also reports worker lifecycle/request-delivery failures, unresolved Linux/Windows checks, and inherited API-lock/architecture failures. No inference execution readiness, broad ABI certification, or green integration gate is claimed.
+- **Governance/API:** [#649](https://github.com/t81dev/t81-foundation/pull/649) and [#650](https://github.com/t81dev/t81-foundation/pull/650) remain draft/unmerged; proposed SDK compatibility transition RFC-00E9 and API-lock changes are not accepted by these documents.
+- **Research correction:** Investigation 10A stays **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**. H04-R02 retains a conditional model result `AT=1210 < AB=1250` at `r=1.60` for `boundary_oscillation` under the specified 10-bit Tier-0 control, with unequal 6-trit versus 10-bit native capacity and Classification D methodological limitations. This is **not native hardware proof**.
+
+**Next bounded decision:** Independently reconcile #653's actual changed files and source-based claim tiers; independently review local ADM-2 A/B candidate reports and platform/governance blockers before authorizing publication. Keep the two workstreams separate. No merge, performance measurement, RFC acceptance, or protection change is implied.
