@@ -137,3 +137,9 @@ To amend or supersede a formally accepted architectural decision without erasing
 **Known reproduced-on-author-host diagnostics (Codex report, not independently rerun here):** Existing API lock checks fail on pinned baseline, A and B with version 1.9.1 versus 1.9.0 and digest mismatch; architecture-target discovery misses ten documented targets on all three. The inference worker fails to process a queued request in its reported diagnostic. Do not repair these through unrelated validator changes or include the runtime worker fixes in the ADM-2 M1 header-isolation scope.
 
 **Autonomous AI optimization governance proposal (not accepted):** AI may investigate alternate algorithms/backend implementations with pinned experiments and deterministic equivalence checks under accepted RFC-0042–0049 and RFC-0051; changing normative semantics, stable APIs, protected checks, policy enforcement, or published evidence remains a separately approved architectural proposal. A future AI optimization protocol is **idea-stage only**, not an accepted RFC or operational self-modification authority. Experiments never auto-promote to integrated contracts.
+
+---
+
+## 2026-10-31 authorization clarification
+
+Reported local ADM-2 candidates (`0c22ac323484e37cc85f95201bd4dc01729dedb4` and `826887b40c62de9c6c903f319bbfbe905baa9911`) are **not** evidence of acceptance, activation, merge or release. Selected local macOS ARM64 tests cannot authorize an expanded runtime contract. Reconcile actual GitHub PR heads, accepted RFCs, explicit maintainer decisions, and independent CI before promoting any claim. Previously recorded CMP3 approvals and blockers remain scoped to their own dated artifacts.
