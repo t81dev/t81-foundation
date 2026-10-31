@@ -1,5 +1,22 @@
 # T81 Capability Contract & Governance
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Capability Contract & Governance](#t81-capability-contract-&-governance)
+  - [Capability Contract](#capability-contract)
+    - [1. Determinism](#1-determinism)
+    - [2. Stability](#2-stability)
+    - [3. Security](#3-security)
+    - [4. Contract Authority](#4-contract-authority)
+  - [Governance Model](#governance-model)
+    - [Roles](#roles)
+    - [Decision Making](#decision-making)
+
+<!-- T81-TOC:END -->
+
+
 ## Capability Contract
 
 The T81 Foundation is committed to providing a stable, secure, and deterministic platform. This contract defines the guarantees we provide to users and developers.

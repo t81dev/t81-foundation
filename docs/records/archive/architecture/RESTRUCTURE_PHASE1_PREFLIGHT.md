@@ -1,5 +1,20 @@
 # Restructure Phase 1: Preflight Inventory
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Restructure Phase 1: Preflight Inventory](#restructure-phase-1-preflight-inventory)
+  - [1. Phase 1 Move Map](#1-phase-1-move-map)
+  - [2. Include Rewrite Map](#2-include-rewrite-map)
+    - [Pattern A: `t81/core/...` → `t81/types/...`](#pattern-a-`t81core`-→-`t81types`)
+    - [Pattern B: `data_types/...` → `t81/types/...` (Legacy)](#pattern-b-`data_types`-→-`t81types`-legacy)
+  - [3. Build Reference Map](#3-build-reference-map)
+  - [4. Risk Notes](#4-risk-notes)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-02-24
 **Status:** Pre-execution Analysis
 

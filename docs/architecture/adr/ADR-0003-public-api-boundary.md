@@ -1,5 +1,22 @@
 # ADR-0003: Public API Boundary at `include/t81/**`
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0003: Public API Boundary at `include/t81/**`](#adr-0003-public-api-boundary-at-`includet81**`)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Consequences](#consequences)
+  - [References](#references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Accepted
 Date: 2026-02-25
 Version: 1.0.0

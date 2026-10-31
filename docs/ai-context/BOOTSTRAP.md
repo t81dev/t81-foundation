@@ -1,5 +1,21 @@
 # T81 AI Bootstrap — Fast Research Orientation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 AI Bootstrap — Fast Research Orientation](#t81-ai-bootstrap-—-fast-research-orientation)
+  - [Mission, in 90 seconds](#mission-in-90-seconds)
+  - [Evidence boundaries worth carrying forward](#evidence-boundaries-worth-carrying-forward)
+  - [CMP3 current decision boundary — dated observation, not live authority](#cmp3-current-decision-boundary-—-dated-observation-not-live-authority)
+  - [One next action](#one-next-action)
+  - [Full context, on demand](#full-context-on-demand)
+  - [2026-10-31 fast current-state overlay](#2026-10-31-fast-current-state-overlay)
+  - [2026-10-31 incremental handoff note — ADM-2](#2026-10-31-incremental-handoff-note-—-adm-2)
+
+<!-- T81-TOC:END -->
+
+
 **Purpose:** Low-context entry point for new ChatGPT, Codex, Jules, and other research sessions.  
 **Snapshot:** 2026-10-29; `main` observed at `5fcc717e92311c4b383b2510223f466baf5a11d3` after PR #638 merged. **Refresh all branch, PR, CI, and authorization state before action.**  
 **Authority:** Non-normative navigation only. This file neither replaces the six-document [continuity package](START_HERE.md) nor grants experimental, governance, security, merge, or publication authority.

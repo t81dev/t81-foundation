@@ -1,5 +1,31 @@
 # T81 — Ternary Advantage Decision Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 — Ternary Advantage Decision Matrix](#t81-—-ternary-advantage-decision-matrix)
+  - [1. Decision](#1-decision)
+  - [2. Evidence and interpretation rules](#2-evidence-and-interpretation-rules)
+    - [Primary repository sources inspected](#primary-repository-sources-inspected)
+  - [3. H01–H08 decision register](#3-h01–h08-decision-register)
+  - [4. Candidate-level comparison](#4-candidate-level-comparison)
+  - [5. H04 next-step specification: model audit only](#5-h04-next-step-specification-model-audit-only)
+    - [Question](#question)
+    - [Required arms](#required-arms)
+    - [Accounting](#accounting)
+    - [Adversarial workload families](#adversarial-workload-families)
+    - [Sensitivity and falsification](#sensitivity-and-falsification)
+    - [Avoid redundant work](#avoid-redundant-work)
+  - [6. Experiment authorization decision](#6-experiment-authorization-decision)
+    - [Minimal deliverable](#minimal-deliverable)
+    - [Stopping criteria](#stopping-criteria)
+  - [7. Parallel engineering status (not scientific evidence)](#7-parallel-engineering-status-not-scientific-evidence)
+  - [8. Review checklist](#8-review-checklist)
+
+<!-- T81-TOC:END -->
+
+
 **Draft:** 2026-10-29  
 **Proposed repository destination:** `docs/research/TERNARY_ADVANTAGE_DECISION_MATRIX.md`  
 **Status:** Research decision draft; not a protocol amendment, measurement authorization, or completed experiment.

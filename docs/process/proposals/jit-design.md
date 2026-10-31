@@ -1,5 +1,19 @@
 # HanoiVM JIT Design: Trace-Based Deterministic Execution
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [HanoiVM JIT Design: Trace-Based Deterministic Execution](#hanoivm-jit-design-trace-based-deterministic-execution)
+  - [1. Objectives](#1-objectives)
+  - [2. Approach: Trace-Based Specialization](#2-approach-trace-based-specialization)
+  - [3. Determinism & Safety](#3-determinism-&-safety)
+  - [4. Prototype Scope](#4-prototype-scope)
+  - [5. Implementation Roadmap](#5-implementation-roadmap)
+
+<!-- T81-TOC:END -->
+
+
 This document outlines the design for the HanoiVM Just-In-Time (JIT) compiler, focused on deterministic execution of compute-intensive TISC bytecode.
 
 ## 1. Objectives

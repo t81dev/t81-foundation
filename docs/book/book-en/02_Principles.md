@@ -1,5 +1,28 @@
 # Chapter 2: Core Principles and Invariants
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Chapter 2: Core Principles and Invariants](#chapter-2-core-principles-and-invariants)
+  - [2.1 The Determinism Invariant](#21-the-determinism-invariant)
+    - [2.1.1 Determinism Surfaces and Attack Vectors](#211-determinism-surfaces-and-attack-vectors)
+  - [2.2 Ternary Logic (Base-3)](#22-ternary-logic-base-3)
+  - [2.3 Auditability and the Axion Trace](#23-auditability-and-the-axion-trace)
+  - [2.4 The Nine Principles (Ethics Enforcement)](#24-the-nine-principles-ethics-enforcement)
+  - [2.5 Verification Checklist](#25-verification-checklist)
+  - [2.6 Formal Audit Matrix](#26-formal-audit-matrix)
+    - [Try It](#try-it)
+    - [Role-Based Learning Path](#role-based-learning-path)
+    - [Worked Example](#worked-example)
+    - [Hands-On Lab](#hands-on-lab)
+    - [Expected Outcomes](#expected-outcomes)
+    - [Chapter Summary](#chapter-summary)
+    - [Read Next](#read-next)
+
+<!-- T81-TOC:END -->
+
+
 Principles become valuable only when they change choices in difficult moments. This chapter explains how T81 principles are applied when speed, convenience, and assurance goals conflict.
 
 ## 2.1 The Determinism Invariant

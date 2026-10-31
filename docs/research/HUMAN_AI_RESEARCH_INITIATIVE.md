@@ -1,4 +1,57 @@
 # T81 Human–AI Research Initiative
+
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Human–AI Research Initiative](#t81-human–ai-research-initiative)
+  - [Independent Research Collaboration, Scientific Framework Development, and Deliverable Dossier](#independent-research-collaboration-scientific-framework-development-and-deliverable-dossier)
+  - [Section 1: Critical Assessment of Initiative Feasibility & Assignment 10 Answers](#section-1-critical-assessment-of-initiative-feasibility-&-assignment-10-answers)
+    - [1.1 Feasibility Assessment](#11-feasibility-assessment)
+    - [1.2 Assignment Answers (Questions 1–10)](#12-assignment-answers-questions-1–10)
+      - [1. What would make this a legitimate and scientifically credible human–AI research initiative?](#1-what-would-make-this-a-legitimate-and-scientifically-credible-human–ai-research-initiative?)
+      - [2. What is the most defensible scientific contribution already visible in T81?](#2-what-is-the-most-defensible-scientific-contribution-already-visible-in-t81?)
+      - [3. What evidence is missing before the project can make stronger claims?](#3-what-evidence-is-missing-before-the-project-can-make-stronger-claims?)
+      - [4. How should independent AI systems collaborate without reinforcing one another's mistakes?](#4-how-should-independent-ai-systems-collaborate-without-reinforcing-one-another's-mistakes?)
+      - [5. What research governance is necessary before inviting outside contributors?](#5-what-research-governance-is-necessary-before-inviting-outside-contributors?)
+      - [6. Which three research hypotheses deserve the highest priority?](#6-which-three-research-hypotheses-deserve-the-highest-priority?)
+      - [7. What would justify continuing, redirecting, or terminating a research direction?](#7-what-would-justify-continuing-redirecting-or-terminating-a-research-direction?)
+      - [8. How should the human researcher's original contributions and AI assistance be documented?](#8-how-should-the-human-researcher's-original-contributions-and-ai-assistance-be-documented?)
+      - [9. What institutional or academic relationships would be valuable, and what prerequisites should exist before approaching them?](#9-what-institutional-or-academic-relationships-would-be-valuable-and-what-prerequisites-should-exist-before-approaching-them?)
+      - [10. What should we do first?](#10-what-should-we-do-first?)
+  - [Section 2: Deliverable A — Research Initiative Charter](#section-2-deliverable-a-—-research-initiative-charter)
+    - [2.1 Name, Mission, and Scope](#21-name-mission-and-scope)
+    - [2.2 Governance Structure & Roles](#22-governance-structure-&-roles)
+    - [2.3 Scientific Principles & Rules of Engagement](#23-scientific-principles-&-rules-of-engagement)
+    - [2.4 Research Ethics & Transparency](#24-research-ethics-&-transparency)
+  - [Section 3: Deliverable B — Human–AI Collaboration Protocol Specification](#section-3-deliverable-b-—-human–ai-collaboration-protocol-specification)
+    - [3.1 Role Architecture & Interactions](#31-role-architecture-&-interactions)
+    - [3.2 Protocol Safeguards & Anti-Echo-Chamber Controls](#32-protocol-safeguards-&-anti-echo-chamber-controls)
+    - [3.3 Disagreement Logging & Provenance Schema](#33-disagreement-logging-&-provenance-schema)
+  - [Section 4: Deliverable C — Scientific Research Roadmap](#section-4-deliverable-c-—-scientific-research-roadmap)
+    - [4.1 Prospective 12-Month Research Roadmap (Q4 2026 – Q3 2027)](#41-prospective-12-month-research-roadmap-q4-2026-–-q3-2027)
+    - [4.2 Canonical Hypothesis Ledger (H01–H08) & Proposed Initiative Hypotheses](#42-canonical-hypothesis-ledger-h01–h08-&-proposed-initiative-hypotheses)
+      - [Master Canonical Hypothesis Register (H01–H08)](#master-canonical-hypothesis-register-h01–h08)
+      - [Proposed Initiative Hypotheses (H-INIT Namespace)](#proposed-initiative-hypotheses-h-init-namespace)
+  - [Section 5: Deliverable D — Independent Research Assessment](#section-5-deliverable-d-—-independent-research-assessment)
+    - [5.1 Scientific Originality Evaluation](#51-scientific-originality-evaluation)
+    - [5.2 Qualitative Implementation & Verification State](#52-qualitative-implementation-&-verification-state)
+    - [5.3 Synthesis of Existing Research Evidence](#53-synthesis-of-existing-research-evidence)
+      - [Investigation 07: Ternary Dot-Product Hardware Feasibility](#investigation-07-ternary-dot-product-hardware-feasibility)
+      - [Investigation 08: Integrated Architecture Advantage](#investigation-08-integrated-architecture-advantage)
+      - [Investigation 09-E1: TISC Executable Size vs. Wasm Baseline](#investigation-09-e1-tisc-executable-size-vs-wasm-baseline)
+    - [5.4 Categorization of Evidence Types](#54-categorization-of-evidence-types)
+  - [Section 6: Deliverable E — Publication and External Collaboration Strategy](#section-6-deliverable-e-—-publication-and-external-collaboration-strategy)
+    - [6.1 Peer-Reviewed Publication Route](#61-peer-reviewed-publication-route)
+    - [6.2 Reproducibility Package Standards](#62-reproducibility-package-standards)
+    - [6.3 External Academic & Community Engagement](#63-external-academic-&-community-engagement)
+  - [Section 7: Deliverable F — Immediate Action Plan (Next 30 Days)](#section-7-deliverable-f-—-immediate-action-plan-next-30-days)
+    - [7.1 Top 5 Action Items](#71-top-5-action-items)
+      - [Detailed Action Descriptions:](#detailed-action-descriptions)
+  - [Section 8: Summary Governance Sign-Off & Administrative Intake Record](#section-8-summary-governance-sign-off-&-administrative-intake-record)
+
+<!-- T81-TOC:END -->
+
 ## Independent Research Collaboration, Scientific Framework Development, and Deliverable Dossier
 
 **Date:** October 27, 2026

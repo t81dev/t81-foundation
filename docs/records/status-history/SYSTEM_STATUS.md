@@ -1,5 +1,19 @@
 # System Status
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [System Status](#system-status)
+  - [Purpose](#purpose)
+  - [Component Health](#component-health)
+  - [Program Risks (Current)](#program-risks-current)
+  - [Control References](#control-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-21
 Owner: Status / Governance

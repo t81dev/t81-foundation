@@ -1,5 +1,53 @@
 # Comprehensive Guide: Integrating llama.cpp with the T81 Stack
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Comprehensive Guide: Integrating llama.cpp with the T81 Stack](#comprehensive-guide-integrating-llamacpp-with-the-t81-stack)
+  - [Executive Summary](#executive-summary)
+    - [Current State Analysis](#current-state-analysis)
+  - [Integration Strategies](#integration-strategies)
+    - [1. Minimal Integration: Embed llama.cpp as Backend](#1-minimal-integration-embed-llamacpp-as-backend)
+      - [Architecture](#architecture)
+      - [Implementation Steps](#implementation-steps)
+      - [Build Instructions](#build-instructions)
+- [Enable llama.cpp support](#enable-llamacpp-support)
+- [Run minimal integration demo](#run-minimal-integration-demo)
+      - [Challenges & Mitigations](#challenges-&-mitigations)
+    - [2. Moderate Integration: Native Ternary Operations](#2-moderate-integration-native-ternary-operations)
+      - [Architecture](#architecture)
+      - [Implementation Steps](#implementation-steps)
+      - [Quantization Schemes](#quantization-schemes)
+      - [Build Instructions](#build-instructions)
+- [Build with ternary extensions](#build-with-ternary-extensions)
+- [Run ternary inference demo](#run-ternary-inference-demo)
+      - [Challenges & Mitigations](#challenges-&-mitigations)
+    - [3. Deep Integration: Governed LLM Module](#3-deep-integration-governed-llm-module)
+      - [Architecture](#architecture)
+      - [Implementation Steps](#implementation-steps)
+      - [Build Instructions](#build-instructions)
+- [Build full governed LLM](#build-full-governed-llm)
+- [Run conformance tests](#run-conformance-tests)
+- [Run governed LLM demo](#run-governed-llm-demo)
+      - [Challenges & Mitigations](#challenges-&-mitigations)
+  - [Self-Learning and Exploration Framework](#self-learning-and-exploration-framework)
+    - [AI Self-Exploration Scripts](#ai-self-exploration-scripts)
+- [scripts/ai_self_discovery.py](#scriptsai_self_discoverypy)
+    - [Automated Improvement Suggestions](#automated-improvement-suggestions)
+- [scripts/ai_optimization_advisor.py](#scriptsai_optimization_advisorpy)
+  - [Testing and Validation Framework](#testing-and-validation-framework)
+    - [Determinism Verification](#determinism-verification)
+- [Run determinism tests](#run-determinism-tests)
+    - [Performance Benchmarking](#performance-benchmarking)
+- [Run performance benchmarks](#run-performance-benchmarks)
+    - [Policy Compliance Testing](#policy-compliance-testing)
+- [Test policy enforcement](#test-policy-enforcement)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Author:** AI Systems Integration Expert  
 **Date:** March 4, 2026  
 **Target:** T81 Foundation v1.x with llama.cpp integration  

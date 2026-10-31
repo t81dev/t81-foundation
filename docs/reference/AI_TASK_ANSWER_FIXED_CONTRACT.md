@@ -1,5 +1,25 @@
 # `answer_fixed.v1` Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [`answer_fixed.v1` Contract](#`answer_fixedv1`-contract)
+  - [Command Shape](#command-shape)
+  - [Policy Semantics](#policy-semantics)
+  - [Execution Mode](#execution-mode)
+  - [Vocabulary](#vocabulary)
+  - [Input Normalization](#input-normalization)
+  - [Result Artifact](#result-artifact)
+  - [Provenance Artifact](#provenance-artifact)
+  - [CanonFS Storage Guarantees](#canonfs-storage-guarantees)
+  - [CLI Output Contract](#cli-output-contract)
+  - [Failure Contract](#failure-contract)
+  - [Reusable Skeleton For Future AI Tasks](#reusable-skeleton-for-future-ai-tasks)
+
+<!-- T81-TOC:END -->
+
+
 `answer_fixed.v1` is the first governed, deterministic AI task primitive in T81.
 
 Canonical runnable example:

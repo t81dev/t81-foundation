@@ -1,5 +1,17 @@
 # Formal Θ-Overlay Soundness Proofs
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Formal Θ-Overlay Soundness Proofs](#formal-θ-overlay-soundness-proofs)
+  - [The Semantic Boundary](#the-semantic-boundary)
+    - [Soundness Property Mapping](#soundness-property-mapping)
+    - [Formal Verification Logic](#formal-verification-logic)
+
+<!-- T81-TOC:END -->
+
+
 This document formalizes the mapping of the system's "Nine Theta Principles" to explicit runtime bounds evaluated actively by the Axion Governance Kernel during all execution paths in the T81 architecture, ensuring robust policy encapsulation.
 
 ## The Semantic Boundary

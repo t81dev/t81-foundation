@@ -1,5 +1,17 @@
 # Fundación T81 — Monografía Técnica Definitiva
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Fundación T81 — Monografía Técnica Definitiva](#fundación-t81-—-monografía-técnica-definitiva)
+  - [Prefacio](#prefacio)
+  - [Cómo Leer Este Libro](#cómo-leer-este-libro)
+  - [Navegación](#navegación)
+
+<!-- T81-TOC:END -->
+
+
 ## Prefacio
 
 Hay dos formas de construir sistemas.

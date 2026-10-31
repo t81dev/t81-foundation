@@ -1,5 +1,24 @@
 # DPE Comparative Benchmark Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [DPE Comparative Benchmark Evidence](#dpe-comparative-benchmark-evidence)
+  - [Scope](#scope)
+  - [Build Conditions](#build-conditions)
+  - [Command](#command)
+  - [Benchmarks Exercised](#benchmarks-exercised)
+  - [Observed Result](#observed-result)
+  - [Aggregate Category Summary](#aggregate-category-summary)
+  - [What This Proves](#what-this-proves)
+  - [What This Does Not Prove](#what-this-does-not-prove)
+  - [Known Caveats](#known-caveats)
+  - [Recommended Next Measurements](#recommended-next-measurements)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-19  
 Status: Active  
 Owner: @t81dev

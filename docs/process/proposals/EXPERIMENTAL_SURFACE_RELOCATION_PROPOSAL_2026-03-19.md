@@ -1,5 +1,39 @@
 # Experimental Surface Relocation Proposal
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Experimental Surface Relocation Proposal](#experimental-surface-relocation-proposal)
+  - [Problem Statement](#problem-statement)
+  - [Goals](#goals)
+  - [Non-Goals](#non-goals)
+  - [Decision Summary](#decision-summary)
+    - [Ready To Move Out Of `experimental/`](#ready-to-move-out-of-`experimental`)
+      - [1. DPE (Parallel Execution)](#1-dpe-parallel-execution)
+      - [2. Narrow T81Graph Surface](#2-narrow-t81graph-surface)
+  - [Not Ready To Move](#not-ready-to-move)
+    - [Hanoi VM](#hanoi-vm)
+    - [Cognitive Tiers Broadly](#cognitive-tiers-broadly)
+    - [Distributed Compute](#distributed-compute)
+    - [Trace-JIT](#trace-jit)
+  - [Rollout Plan](#rollout-plan)
+    - [Phase 1: DPE Relocation](#phase-1-dpe-relocation)
+    - [Phase 2: Narrow T81Graph Runtime Extraction](#phase-2-narrow-t81graph-runtime-extraction)
+    - [Phase 3: Governance and Boundary Cleanup](#phase-3-governance-and-boundary-cleanup)
+  - [Required Tests Before And After Move](#required-tests-before-and-after-move)
+    - [DPE](#dpe)
+    - [T81Graph](#t81graph)
+  - [Risks](#risks)
+    - [Risk 1: False Promotion Signaling](#risk-1-false-promotion-signaling)
+    - [Risk 2: Over-Promotion Of Cognitive Tiers](#risk-2-over-promotion-of-cognitive-tiers)
+    - [Risk 3: Include-Path Breakage](#risk-3-include-path-breakage)
+  - [Recommendation](#recommendation)
+  - [Open Questions](#open-questions)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** 2026-03-19  
 **Status:** Proposed  
 **Owner:** @t81dev

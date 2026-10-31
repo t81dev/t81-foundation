@@ -5,13 +5,13 @@
 ## Table of Contents
 
 - [T81 C++ Migration Roadmap](#t81-c++-migration-roadmap)
-  - [Phase 0 — Compatibility (**DONE**)](#phase-0-%E2%80%94-compatibility-**done**)
-  - [Phase 1 — Core Data Types (**DONE**)](#phase-1-%E2%80%94-core-data-types-**done**)
-  - [Phase 2 — IO & Codec Surfaces (**DONE**)](#phase-2-%E2%80%94-io-&-codec-surfaces-**done**)
-  - [Phase 3 — IR Surface (**DONE, EXPANDABLE**)](#phase-3-%E2%80%94-ir-surface-**done-expandable**)
-  - [Phase 4 — Axion Façade (**IN PROGRESS**)](#phase-4-%E2%80%94-axion-fa%C3%A7ade-**in-progress**)
-  - [Phase 5 — De-risked Deprecation (**ONGOING**)](#phase-5-%E2%80%94-de-risked-deprecation-**ongoing**)
-  - [Phase 6 — Build & CI Matrix (**ONGOING**)](#phase-6-%E2%80%94-build-&-ci-matrix-**ongoing**)
+  - [Phase 0 — Compatibility (**DONE**)](#phase-0-—-compatibility-**done**)
+  - [Phase 1 — Core Data Types (**DONE**)](#phase-1-—-core-data-types-**done**)
+  - [Phase 2 — IO & Codec Surfaces (**DONE**)](#phase-2-—-io-&-codec-surfaces-**done**)
+  - [Phase 3 — IR Surface (**DONE, EXPANDABLE**)](#phase-3-—-ir-surface-**done-expandable**)
+  - [Phase 4 — Axion Façade (**IN PROGRESS**)](#phase-4-—-axion-façade-**in-progress**)
+  - [Phase 5 — De-risked Deprecation (**ONGOING**)](#phase-5-—-de-risked-deprecation-**ongoing**)
+  - [Phase 6 — Build & CI Matrix (**ONGOING**)](#phase-6-—-build-&-ci-matrix-**ongoing**)
   - [Canonical Test Vectors](#canonical-test-vectors)
   - [Open Items (Migration-Focused)](#open-items-migration-focused)
     - [BigInt / Numerics](#bigint--numerics)
@@ -19,10 +19,12 @@
     - [Tensor](#tensor)
     - [IR](#ir)
     - [Axion](#axion)
-  - [“How to Resume Work” Checklist](#%E2%80%9Chow-to-resume-work%E2%80%9D-checklist)
-  - [What’s New Since Last Revision](#what%E2%80%99s-new-since-last-revision)
+  - [“How to Resume Work” Checklist](#“how-to-resume-work”-checklist)
+  - [What’s New Since Last Revision](#what’s-new-since-last-revision)
 
 <!-- T81-TOC:END -->
+
+
 
 This document tracks migration of legacy `.cweb` code to the new header-first C++ API.
 

@@ -1,5 +1,21 @@
 # T81Lang Parser Regression Audit Report (Bitwise/Precedence Changes)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Parser Regression Audit Report (Bitwise/Precedence Changes)](#t81lang-parser-regression-audit-report-bitwiseprecedence-changes)
+  - [1. Summary](#1-summary)
+  - [2. Parser Change Surface Review](#2-parser-change-surface-review)
+  - [3. Regression Corpus](#3-regression-corpus)
+  - [4. Snapshot / Structural Test Additions](#4-snapshot--structural-test-additions)
+  - [5. Spec/Docs Consistency Check](#5-specdocs-consistency-check)
+  - [6. Validation Results](#6-validation-results)
+  - [7. Remaining Risks and Follow-up TODOs](#7-remaining-risks-and-follow-up-todos)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Summary
 
 This audit verified the parser's implementation of the new T81Lang bitwise and logical operators, specifically checking for correct precedence, associativity, and non-regression of existing expression parsing.

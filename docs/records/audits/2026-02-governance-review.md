@@ -1,5 +1,19 @@
 # Governance Review (2026-02)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Governance Review (2026-02)](#governance-review-2026-02)
+  - [Summary](#summary)
+  - [Checklist Results](#checklist-results)
+  - [Exceptions](#exceptions)
+    - [EX-2026-02-01 Legacy Path Scan Coverage Gap](#ex-2026-02-01-legacy-path-scan-coverage-gap)
+  - [Actions](#actions)
+
+<!-- T81-TOC:END -->
+
+
 Review Date (UTC): 2026-02-25
 Reviewer: @t81dev
 Cadence Source: `docs/governance/MONTHLY_GOVERNANCE_REVIEW_CHECKLIST.md`

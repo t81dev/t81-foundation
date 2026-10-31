@@ -1,5 +1,16 @@
 # Append-only research session handoff
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Append-only research session handoff](#append-only-research-session-handoff)
+  - [2026-10-25 — Charter v1.0 continuation / register 1.0.0](#2026-10-25-—-charter-v10-continuation--register-100)
+  - [2026-10-25 — H04-R02 independent audit and integration](#2026-10-25-—-h04-r02-independent-audit-and-integration)
+
+<!-- T81-TOC:END -->
+
+
 ## 2026-10-25 — Charter v1.0 continuation / register 1.0.0
 
 **DATE / SESSION:** 2026-10-25, America/New_York. First source-grounded continuation of the supplied master charter. This file is separate so the original charter remains byte-for-byte intact; append future entries rather than rewriting this result.

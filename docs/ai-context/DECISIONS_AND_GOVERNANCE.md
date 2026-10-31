@@ -1,5 +1,27 @@
 # T81 Research Continuity — DECISIONS_AND_GOVERNANCE
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — DECISIONS_AND_GOVERNANCE](#t81-research-continuity-—-decisions_and_governance)
+  - [1. Documented Decisions, Contracts and Deferred Questions](#1-documented-decisions-contracts-and-deferred-questions)
+    - [1.1 Contract and Planning Inventory (Not a Record of New Acceptance)](#11-contract-and-planning-inventory-not-a-record-of-new-acceptance)
+    - [1.2 Rejected, Inconclusive and Deferred Alternatives](#12-rejected-inconclusive-and-deferred-alternatives)
+  - [2. Active RFC Status Catalog](#2-active-rfc-status-catalog)
+  - [3. Consequential Pull Request Lineage](#3-consequential-pull-request-lineage)
+  - [4. Governance Boundaries & Human Authorization Requirements](#4-governance-boundaries-&-human-authorization-requirements)
+    - [4.1 Local Prototype vs. Independent Enforcement](#41-local-prototype-vs-independent-enforcement)
+    - [4.2 Explicit Human Approval Thresholds](#42-explicit-human-approval-thresholds)
+  - [5. Constraints on Automated Research Agents](#5-constraints-on-automated-research-agents)
+  - [6. How to Amend or Supersede Documented Decisions](#6-how-to-amend-or-supersede-documented-decisions)
+  - [7. Dated governance and PR disposition addendum — 2026-10-29](#7-dated-governance-and-pr-disposition-addendum-—-2026-10-29)
+  - [8. Operational governance and publication boundaries — 2026-10-31](#8-operational-governance-and-publication-boundaries-—-2026-10-31)
+  - [2026-10-31 authorization clarification](#2026-10-31-authorization-clarification)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/ai-context/DECISIONS_AND_GOVERNANCE.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
 **Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)

@@ -1,5 +1,63 @@
 # JIT Equivalence Gap Analysis
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [JIT Equivalence Gap Analysis](#jit-equivalence-gap-analysis)
+  - [Executive Summary](#executive-summary)
+  - [1. Current JIT Implementation Status](#1-current-jit-implementation-status)
+    - [1.1 JIT Infrastructure](#11-jit-infrastructure)
+    - [1.2 Current JIT Capabilities](#12-current-jit-capabilities)
+    - [1.3 Current Limitations](#13-current-limitations)
+  - [2. Equivalence Proof Obligations](#2-equivalence-proof-obligations)
+    - [2.1 Semantic Equivalence Requirements](#21-semantic-equivalence-requirements)
+      - [2.1.1 Functional Equivalence](#211-functional-equivalence)
+      - [2.1.2 Performance Equivalence](#212-performance-equivalence)
+      - [2.1.3 Policy Equivalence](#213-policy-equivalence)
+    - [2.2 Proof Framework Requirements](#22-proof-framework-requirements)
+      - [2.2.1 Formal Verification](#221-formal-verification)
+      - [2.2.2 Empirical Verification](#222-empirical-verification)
+      - [2.2.3 Audit Trail](#223-audit-trail)
+  - [3. Scaffolding Implementation Plan](#3-scaffolding-implementation-plan)
+    - [Phase 1: Trace Comparison Infrastructure (Week 1-2)](#phase-1-trace-comparison-infrastructure-week-1-2)
+      - [3.1 Deterministic Trace Capture](#31-deterministic-trace-capture)
+      - [3.2 State Hashing](#32-state-hashing)
+      - [3.3 Trace Comparison Engine](#33-trace-comparison-engine)
+    - [Phase 2: Equivalence Test Suite (Week 3-4)](#phase-2-equivalence-test-suite-week-3-4)
+      - [3.4 Test Matrix](#34-test-matrix)
+      - [3.5 Golden Fixture Generation](#35-golden-fixture-generation)
+- [Generate reference traces](#generate-reference-traces)
+      - [3.6 Continuous Integration](#36-continuous-integration)
+    - [Phase 3: Advanced Equivalence (Week 5-6)](#phase-3-advanced-equivalence-week-5-6)
+      - [3.7 Optimization Verification](#37-optimization-verification)
+      - [3.8 Policy Integration Testing](#38-policy-integration-testing)
+      - [3.9 Edge Case Coverage](#39-edge-case-coverage)
+  - [4. Implementation Artifacts](#4-implementation-artifacts)
+    - [4.1 New Test Files](#41-new-test-files)
+    - [4.2 Infrastructure Components](#42-infrastructure-components)
+    - [4.3 CI Integration](#43-ci-integration)
+  - [5. Success Metrics](#5-success-metrics)
+    - [5.1 Quantitative Metrics](#51-quantitative-metrics)
+    - [5.2 Qualitative Metrics](#52-qualitative-metrics)
+  - [6. Risk Assessment](#6-risk-assessment)
+    - [6.1 Technical Risks](#61-technical-risks)
+    - [6.2 Project Risks](#62-project-risks)
+  - [7. Governance and Promotion Path](#7-governance-and-promotion-path)
+    - [7.1 Current Status (Experimental)](#71-current-status-experimental)
+    - [7.2 Promotion Path (Future)](#72-promotion-path-future)
+      - [Phase 1: Equivalence Foundation (Current Sprint)](#phase-1-equivalence-foundation-current-sprint)
+      - [Phase 2: Comprehensive Verification (Future)](#phase-2-comprehensive-verification-future)
+      - [Phase 3: DCP Consideration (Future, NOT guaranteed)](#phase-3-dcp-consideration-future-not-guaranteed)
+    - [7.3 Promotion Gates](#73-promotion-gates)
+  - [8. Documentation Requirements](#8-documentation-requirements)
+    - [8.1 Technical Documentation](#81-technical-documentation)
+    - [8.2 User Documentation](#82-user-documentation)
+  - [9. Conclusion](#9-conclusion)
+
+<!-- T81-TOC:END -->
+
+
 **Generated:** 2026-03-06  
 **Purpose:** Define the proof obligations and scaffolding required for JIT to enter Deterministic Core Profile (DCP)  
 **Status:** Gap Analysis - No JIT promotion intended without full equivalence proofs

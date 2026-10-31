@@ -1,5 +1,21 @@
 # Cross-Cutting: Determinism Boundaries and Gates
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Cross-Cutting: Determinism Boundaries and Gates](#cross-cutting-determinism-boundaries-and-gates)
+  - [Purpose](#purpose)
+  - [Boundary Model](#boundary-model)
+  - [Verified/Bounded Surfaces](#verifiedbounded-surfaces)
+  - [Determinism Gates](#determinism-gates)
+  - [Non-DCP / Non-Guaranteed Areas](#non-dcp--non-guaranteed-areas)
+  - [Indeterminate](#indeterminate)
+  - [Evidence](#evidence)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active  
 Last Verified (UTC): 2026-02-26
 

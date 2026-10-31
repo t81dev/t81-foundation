@@ -1,5 +1,44 @@
 # T81 Research Commons — Independent Phase 1 Acceptance Audit Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Commons — Independent Phase 1 Acceptance Audit Report](#t81-research-commons-—-independent-phase-1-acceptance-audit-report)
+  - [1. Executive Summary & Audit Mandate](#1-executive-summary-&-audit-mandate)
+  - [2. Objective 1: PR #610 Evidence Reconciliation Audit](#2-objective-1-pr-#610-evidence-reconciliation-audit)
+    - [Verified Findings:](#verified-findings)
+  - [3. Objective 2 & 3: PR #609 Architecture, Pinned Identities & Evidence Distinction](#3-objective-2-&-3-pr-#609-architecture-pinned-identities-&-evidence-distinction)
+    - [Architectural Verification:](#architectural-verification)
+  - [4. Objective 4: Falsification of Read-Only & Security Boundary Claims](#4-objective-4-falsification-of-read-only-&-security-boundary-claims)
+    - [Security Inspection Results:](#security-inspection-results)
+  - [5. Objective 5: Fresh-Context H08 Discovery Test](#5-objective-5-fresh-context-h08-discovery-test)
+    - [Response Evaluation:](#response-evaluation)
+    - [Challenge to False Premise:](#challenge-to-false-premise)
+  - [6. Objective 6 & 7: Epistemic Analysis & Implementation vs. Validation](#6-objective-6-&-7-epistemic-analysis-&-implementation-vs-validation)
+    - [Identified Epistemic Risks:](#identified-epistemic-risks)
+    - [Implementation Correctness vs. Scientific Validation:](#implementation-correctness-vs-scientific-validation)
+  - [7. Objective 8: Pre-Existing Docs-Structure Checker Review](#7-objective-8-pre-existing-docs-structure-checker-review)
+    - [Audit Findings on Failure:](#audit-findings-on-failure)
+  - [8. Reproduced Test Suite & Execution Evidence](#8-reproduced-test-suite-&-execution-evidence)
+  - [9. Itemized Findings & Required Corrections](#9-itemized-findings-&-required-corrections)
+    - [Critical Findings: None.](#critical-findings-none)
+    - [Major Findings:](#major-findings)
+    - [Minor Findings:](#minor-findings)
+  - [10. Explicit Final Acceptance Verdict](#10-explicit-final-acceptance-verdict)
+    - [Verdict: **CONDITIONAL GO**](#verdict-**conditional-go**)
+  - [11. Addendum: Follow-up Verification & Corrective Resolution of PR #615 Codex Audit Findings (October 2026)](#11-addendum-follow-up-verification-&-corrective-resolution-of-pr-#615-codex-audit-findings-october-2026)
+    - [11.1 Resolution of Codex Finding 1: Restoration of PR #607 Evidence Source & Revision Reconciliation](#111-resolution-of-codex-finding-1-restoration-of-pr-#607-evidence-source-&-revision-reconciliation)
+    - [11.2 Resolution of Codex Finding 2: Clean Environment Reproduction & Claim Downgrading](#112-resolution-of-codex-finding-2-clean-environment-reproduction-&-claim-downgrading)
+    - [11.3 Corrective Resolution of PR #618 Codex Review Findings (PR #619 Verification)](#113-corrective-resolution-of-pr-#618-codex-review-findings-pr-#619-verification)
+- [Baseline snapshot & corrected PR #608 source (initiative-608)](#baseline-snapshot-&-corrected-pr-#608-source-initiative-608)
+- [Original PR #607 merged commit source (initiative)](#original-pr-#607-merged-commit-source-initiative)
+- [Unmerged draft PR #610 proposed corrections (initiative-610-proposed)](#unmerged-draft-pr-#610-proposed-corrections-initiative-610-proposed)
+- [Historical PR #605 E1 experiment sources (e1-*)](#historical-pr-#605-e1-experiment-sources-e1-*)
+
+<!-- T81-TOC:END -->
+
+
 **Audit Target:** Draft PR #609 (`research/research-commons-phase1`) and Draft PR #610 (`docs/pr608-evidence-correction`)
 **Auditor Role:** Independent Adversarial Scientific Auditor
 **Date:** October 27, 2026

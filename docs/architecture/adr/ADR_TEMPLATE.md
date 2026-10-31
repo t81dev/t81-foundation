@@ -1,5 +1,22 @@
 # ADR-XXXX: <Short Decision Title>
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-XXXX: <Short Decision Title>](#adr-xxxx-<short-decision-title>)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Consequences](#consequences)
+  - [References](#references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Proposed | Accepted | Superseded
 Date: YYYY-MM-DD
 Version: 1.0.0

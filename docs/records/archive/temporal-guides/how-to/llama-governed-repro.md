@@ -1,5 +1,23 @@
 # Llama.cpp Governed Reproducibility Runbook
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Llama.cpp Governed Reproducibility Runbook](#llamacpp-governed-reproducibility-runbook)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Canonize Model Bytes (Raw)](#step-1-canonize-model-bytes-raw)
+  - [Step 2: Create Policy Allowlist](#step-2-create-policy-allowlist)
+  - [Step 3: Run Governed Inference by CanonFS Hash](#step-3-run-governed-inference-by-canonfs-hash)
+  - [Step 4: Capture Reproducibility Baseline](#step-4-capture-reproducibility-baseline)
+  - [Failure Modes](#failure-modes)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-02-25
 

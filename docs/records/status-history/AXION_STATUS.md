@@ -1,5 +1,26 @@
 # Axion Governance Kernel Status
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Axion Governance Kernel Status](#axion-governance-kernel-status)
+  - [Purpose](#purpose)
+  - [Current Posture](#current-posture)
+  - [Spec Coverage Table](#spec-coverage-table)
+  - [Recent Advances (Evidence Loop Closure - Corrected, 2026-03-06)](#recent-advances-evidence-loop-closure---corrected-2026-03-06)
+  - [Recent Advances (Evidence Loop Closure, 2026-03-06)](#recent-advances-evidence-loop-closure-2026-03-06)
+  - [Recent Advances (Phase 3 Conformance Expansion, 2026-02-26..28)](#recent-advances-phase-3-conformance-expansion-2026-02-2628)
+  - [Open Coverage Gaps (Priority Ordered)](#open-coverage-gaps-priority-ordered)
+  - [Beta Promotion Gate Criteria (Updated)](#beta-promotion-gate-criteria-updated)
+  - [Planning Milestones (Active)](#planning-milestones-active)
+  - [Governance Notes](#governance-notes)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-10
 Owner: @t81dev

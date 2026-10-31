@@ -1,5 +1,28 @@
 # Financial Services Vertical Demo Brief
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Financial Services Vertical Demo Brief](#financial-services-vertical-demo-brief)
+  - [Purpose](#purpose)
+  - [Industry Problem](#industry-problem)
+  - [Target Buyer](#target-buyer)
+  - [One-Line Positioning](#one-line-positioning)
+  - [Internal Hard Positioning](#internal-hard-positioning)
+  - [Demo Claim](#demo-claim)
+  - [Demo Narrative](#demo-narrative)
+  - [Demo Spine](#demo-spine)
+  - [Preferred Current Chain](#preferred-current-chain)
+  - [What To Show Explicitly](#what-to-show-explicitly)
+  - [What This Demo Does Not Claim](#what-this-demo-does-not-claim)
+  - [Success Condition](#success-condition)
+  - [Failure Modes](#failure-modes)
+  - [Suggested Follow-On](#suggested-follow-on)
+
+<!-- T81-TOC:END -->
+
+
 ## Purpose
 
 This brief defines one narrow industry-facing demo for T81's current strongest

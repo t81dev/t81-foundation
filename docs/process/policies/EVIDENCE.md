@@ -1,5 +1,17 @@
 # Evidence Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Evidence Matrix](#evidence-matrix)
+  - [1. Core Claims](#1-core-claims)
+  - [2. Artifacts & Reproducibility](#2-artifacts-&-reproducibility)
+  - [3. Coverage Analysis](#3-coverage-analysis)
+
+<!-- T81-TOC:END -->
+
+
 > **Source of Truth:** This document maps our **claims** to their **specifications**, **tests**, and **CI artifacts**. It serves as a proof-of-correctness index.
 
 **Last Updated:** March 8, 2026

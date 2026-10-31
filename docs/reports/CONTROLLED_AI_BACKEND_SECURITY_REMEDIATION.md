@@ -1,5 +1,20 @@
 # Controlled AI backend authorization remediation
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Controlled AI backend authorization remediation](#controlled-ai-backend-authorization-remediation)
+  - [Reproduction before source edits](#reproduction-before-source-edits)
+  - [Correction and demonstrated guarantees](#correction-and-demonstrated-guarantees)
+  - [Registered tests and actual results](#registered-tests-and-actual-results)
+  - [Environment and exact commands](#environment-and-exact-commands)
+- [Before source edits; cached archives came from the unchanged merged #563 build.](#before-source-edits-cached-archives-came-from-the-unchanged-merged-#563-build)
+  - [Compatibility, assumptions and unresolved limits](#compatibility-assumptions-and-unresolved-limits)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-10-24 (America/New_York). Status: draft security correction.
 Base: `f6d4d680709c5c6c98b305628e04346f5ef61620` (merged PR #563).
 

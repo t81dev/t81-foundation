@@ -1,5 +1,32 @@
 # Stable Baseline Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Stable Baseline Contract](#stable-baseline-contract)
+  - [Purpose](#purpose)
+  - [Contract Enforcement](#contract-enforcement)
+  - [Scope](#scope)
+  - [Frozen Laws](#frozen-laws)
+    - [1. Policy Before Side Effects](#1-policy-before-side-effects)
+    - [2. Deny Means No Artifact Mutation For The Denied Action](#2-deny-means-no-artifact-mutation-for-the-denied-action)
+    - [3. Deterministic Result Identity](#3-deterministic-result-identity)
+  - [Deterministic Identity Clarification](#deterministic-identity-clarification)
+    - [4. CanonFS-Backed Provenance And Artifact Identity](#4-canonfs-backed-provenance-and-artifact-identity)
+    - [5. Fixed Object Law](#5-fixed-object-law)
+    - [6. Canonical Bundle Law](#6-canonical-bundle-law)
+  - [Bundle Structural Integrity](#bundle-structural-integrity)
+  - [Policy Evaluation Boundary](#policy-evaluation-boundary)
+  - [Admitted Family Only](#admitted-family-only)
+  - [Admitted Family Freeze Clause](#admitted-family-freeze-clause)
+  - [What Is Guaranteed](#what-is-guaranteed)
+  - [What Is Explicitly Excluded](#what-is-explicitly-excluded)
+  - [Reference Surfaces Frozen With This Baseline](#reference-surfaces-frozen-with-this-baseline)
+
+<!-- T81-TOC:END -->
+
+
 This document defines the current stable baseline contract for the bounded
 deterministic AI OS-object family in T81.
 

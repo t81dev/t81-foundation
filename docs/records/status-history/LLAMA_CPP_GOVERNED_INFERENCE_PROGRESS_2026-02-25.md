@@ -1,5 +1,21 @@
 # Llama.cpp Governed Inference Progress (2026-02-25)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Llama.cpp Governed Inference Progress (2026-02-25)](#llamacpp-governed-inference-progress-2026-02-25)
+  - [Objective](#objective)
+  - [Completed This Session](#completed-this-session)
+  - [Verified Commands](#verified-commands)
+  - [Known Gaps vs AGI How-To Intent](#known-gaps-vs-agi-how-to-intent)
+  - [Current Working Tree Impact](#current-working-tree-impact)
+  - [Recommended Next Pickup Steps](#recommended-next-pickup-steps)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: In Progress
 Last Updated: 2026-02-26
 Owner: t81dev

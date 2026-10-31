@@ -1,5 +1,17 @@
 # Fresh-agent onboarding example
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Fresh-agent onboarding example](#fresh-agent-onboarding-example)
+  - [Discover an unresolved question](#discover-an-unresolved-question)
+  - [Challenge a different claim](#challenge-a-different-claim)
+  - [H08: fresh-client discovery with no prior conversation](#h08-fresh-client-discovery-with-no-prior-conversation)
+
+<!-- T81-TOC:END -->
+
+
 This is a reproducible example for a new, independent agent. It is authored by
 the implementation agent, not a claim that a second model or human has performed
 an independent review. No previous conversation, model identity, API key or

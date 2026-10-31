@@ -1,5 +1,54 @@
 # T81 CLI User Manual
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 CLI User Manual](#t81-cli-user-manual)
+  - [1. Quick Start](#1-quick-start)
+  - [1.1 Reviewer Notes](#11-reviewer-notes)
+  - [2. Global Options](#2-global-options)
+  - [3. Command Tiers](#3-command-tiers)
+  - [4. Commands](#4-commands)
+    - [4.1 Domain-First Groups](#41-domain-first-groups)
+    - [4.2 `project`](#42-`project`)
+    - [4.10a `memory-stats`](#410a-`memory-stats`)
+    - [4.11 `test`](#411-`test`)
+    - [4.12 `doctor`](#412-`doctor`)
+    - [4.12a `env check` / `env paths` / `env diag` / `env toolchain`](#412a-`env-check`--`env-paths`--`env-diag`--`env-toolchain`)
+    - [4.13 `fmt`](#413-`fmt`)
+    - [4.14 `pkg` (labs)](#414-`pkg`-labs)
+    - [4.15 `benchmark`](#415-`benchmark`)
+    - [4.16 `weights`](#416-`weights`)
+    - [4.17 `model`](#417-`model`)
+    - [4.18 `policy`](#418-`policy`)
+    - [4.17a `axion`](#417a-`axion`)
+    - [4.18 `trace`](#418-`trace`)
+    - [4.18a `canonfs`](#418a-`canonfs`)
+    - [4.18b `determinism`](#418b-`determinism`)
+    - [4.18c `vm`](#418c-`vm`)
+    - [4.18d `tisc`](#418d-`tisc`)
+    - [4.18e `ir`](#418e-`ir`)
+    - [4.18f `tier`](#418f-`tier`)
+    - [4.19 `llama-run` (experimental)](#419-`llama-run`-experimental)
+    - [4.20 `completion`](#420-`completion`)
+    - [4.21 `c`](#421-`c`)
+    - [4.22 `llvm`](#422-`llvm`)
+    - [4.23 `mlir`](#423-`mlir`)
+    - [4.24 `man`](#424-`man`)
+    - [4.25 `feedback`](#425-`feedback`)
+  - [5. Help Contract](#5-help-contract)
+  - [6. Exit and Output Behavior](#6-exit-and-output-behavior)
+  - [7. Known Command Validation Rules](#7-known-command-validation-rules)
+  - [8. Notes on Documentation Scope](#8-notes-on-documentation-scope)
+    - [4.22 `rust`](#422-`rust`)
+    - [4.23 `llvm`](#423-`llvm`)
+    - [4.23 `python`](#423-`python`)
+    - [4.24 `llvm`](#424-`llvm`)
+
+<!-- T81-TOC:END -->
+
+
 This is the operator manual for the `t81` CLI.
 Everything in this document is intended to match the current shipped binary behavior.
 

@@ -1,5 +1,29 @@
 # Capítulo 5: Instalação e Verificação de Build
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Capítulo 5: Instalação e Verificação de Build](#capítulo-5-instalação-e-verificação-de-build)
+  - [5.1 Pré-requisitos](#51-pré-requisitos)
+    - [Plataformas Suportadas](#plataformas-suportadas)
+    - [Requisitos da Toolchain](#requisitos-da-toolchain)
+  - [5.2 Compilando a partir da Fonte](#52-compilando-a-partir-da-fonte)
+    - [5.2.1 O Fluxo de Trabalho CMake](#521-o-fluxo-de-trabalho-cmake)
+- [1. Clonar o repositório](#1-clonar-o-repositório)
+- [2. Configurar (Modo Release recomendado para desempenho)](#2-configurar-modo-release-recomendado-para-desempenho)
+- [3. Compilar o executável principal](#3-compilar-o-executável-principal)
+    - [5.2.2 Opções de Build](#522-opções-de-build)
+  - [5.3 Verificando o Build](#53-verificando-o-build)
+    - [5.3.1 Executando Testes Unitários](#531-executando-testes-unitários)
+    - [5.3.2 O Portão de Determinismo (Determinism Gate)](#532-o-portão-de-determinismo-determinism-gate)
+- [Executar o repro gate](#executar-o-repro-gate)
+    - [5.3.3 Verificando Metas de Arquitetura](#533-verificando-metas-de-arquitetura)
+  - [5.4 Solução de Problemas](#54-solução-de-problemas)
+
+<!-- T81-TOC:END -->
+
+
 ## 5.1 Pré-requisitos
 
 **Status: Padronizado**

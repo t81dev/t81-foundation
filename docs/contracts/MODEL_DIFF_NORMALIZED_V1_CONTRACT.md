@@ -1,5 +1,21 @@
 # Model Diff Normalized v1 Contract
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Model Diff Normalized v1 Contract](#model-diff-normalized-v1-contract)
+  - [Stable v1 Surface](#stable-v1-surface)
+    - [Supported operation](#supported-operation)
+    - [Schema identifier](#schema-identifier)
+  - [Result Documents](#result-documents)
+    - [Success result](#success-result)
+    - [Failure result](#failure-result)
+  - [Semantics](#semantics)
+
+<!-- T81-TOC:END -->
+
+
 This document is the authoritative contributor-facing contract for the current
 JSON surface emitted by:
 

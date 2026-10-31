@@ -1,5 +1,20 @@
 # Migration Guide: RFC 0040 SWAR Formalization
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Migration Guide: RFC 0040 SWAR Formalization](#migration-guide-rfc-0040-swar-formalization)
+  - [1. Overview](#1-overview)
+  - [2. C++ API Migration](#2-c++-api-migration)
+  - [3. VM / TISC Migration](#3-vm--tisc-migration)
+  - [4. Setun Authoring Migration](#4-setun-authoring-migration)
+  - [5. Compatibility Expectations](#5-compatibility-expectations)
+  - [6. Non-Goals](#6-non-goals)
+
+<!-- T81-TOC:END -->
+
+
 **Target Audience:** C++ integrators, VM authors, assembly/tooling authors
 **Date:** 2026-03-18
 

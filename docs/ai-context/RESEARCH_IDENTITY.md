@@ -1,5 +1,36 @@
 # T81 Research Continuity — RESEARCH_IDENTITY
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — RESEARCH_IDENTITY](#t81-research-continuity-—-research_identity)
+  - [1. Primary Scientific Mission & Central Questions](#1-primary-scientific-mission-&-central-questions)
+    - [Central Scientific Question](#central-scientific-question)
+    - [Companion Question](#companion-question)
+  - [2. Intellectual Lineage & Historical Evolution](#2-intellectual-lineage-&-historical-evolution)
+    - [Phase 1: Donald Knuth, Discrete Mathematics, and CWEB Lineage](#phase-1-donald-knuth-discrete-mathematics-and-cweb-lineage)
+      - [Hanoi Archaeology & Findings](#hanoi-archaeology-&-findings)
+    - [Phase 2: Base-81 Ecosystem & TISC ISA Design](#phase-2-base-81-ecosystem-&-tisc-isa-design)
+    - [Phase 3: Modern T81 Foundation Stack](#phase-3-modern-t81-foundation-stack)
+  - [3. Canonical Hypotheses Register (H01–H08)](#3-canonical-hypotheses-register-h01–h08)
+    - [Hypothesis H01: Native Ternary Storage & Logic Cost Reduction](#hypothesis-h01-native-ternary-storage-&-logic-cost-reduction)
+    - [Hypothesis H02: Balanced Ternary Signed Arithmetic & Rounding](#hypothesis-h02-balanced-ternary-signed-arithmetic-&-rounding)
+    - [Hypothesis H03: Base-81 Digit Grouping & Representation Interface](#hypothesis-h03-base-81-digit-grouping-&-representation-interface)
+    - [Hypothesis H04: Adaptive Representation Policy Tiering](#hypothesis-h04-adaptive-representation-policy-tiering)
+    - [Hypothesis H05: Three-State Algebra Primitives & Architectures](#hypothesis-h05-three-state-algebra-primitives-&-architectures)
+    - [Hypothesis H06: Ternary Weights & Activations for AI Inference](#hypothesis-h06-ternary-weights-&-activations-for-ai-inference)
+    - [Hypothesis H07: Representation-Independent Governed Execution](#hypothesis-h07-representation-independent-governed-execution)
+    - [Hypothesis H08: AI-Assisted Research Trustworthiness & Discovery](#hypothesis-h08-ai-assisted-research-trustworthiness-&-discovery)
+  - [4. The Three Research Tracks](#4-the-three-research-tracks)
+  - [5. Scientific Success and Failure Criteria](#5-scientific-success-and-failure-criteria)
+    - [Success Criteria](#success-criteria)
+    - [Failure Criteria (Falsification Thresholds)](#failure-criteria-falsification-thresholds)
+  - [2026-10-31 reconciliation note](#2026-10-31-reconciliation-note)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/ai-context/RESEARCH_IDENTITY.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
 **Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)

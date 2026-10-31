@@ -1,5 +1,25 @@
 # PackedTritVector Phase 2E Compliance Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [PackedTritVector Phase 2E Compliance Audit](#packedtritvector-phase-2e-compliance-audit)
+  - [1. Deterministic Backend Compliance](#1-deterministic-backend-compliance)
+    - [1.1 Functional Purity](#11-functional-purity)
+    - [1.2 Undefined Behavior Safety](#12-undefined-behavior-safety)
+    - [1.3 Memory Safety](#13-memory-safety)
+    - [1.4 Padding and Representation](#14-padding-and-representation)
+    - [1.5 Endianness](#15-endianness)
+  - [2. Threshold Dispatch and Performance](#2-threshold-dispatch-and-performance)
+    - [2.1 Threshold Logic](#21-threshold-logic)
+    - [2.2 Regression Prevention](#22-regression-prevention)
+  - [3. Backend Comparison Table (Preliminary)](#3-backend-comparison-table-preliminary)
+  - [4. Conclusion](#4-conclusion)
+
+<!-- T81-TOC:END -->
+
+
 ## 1. Deterministic Backend Compliance
 
 This section certifies the compliance of the Phase 2E `ComputeTritVector` implementation, specifically the introduction of the ARM NEON backend and threshold-based dispatch logic.

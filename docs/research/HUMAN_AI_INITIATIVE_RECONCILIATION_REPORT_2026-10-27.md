@@ -1,5 +1,28 @@
 # T81 Research Governance — Human–AI Initiative Reconciliation Report (PR #607)
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Governance — Human–AI Initiative Reconciliation Report (PR #607)](#t81-research-governance-—-human–ai-initiative-reconciliation-report-pr-#607)
+  - [1. Executive Summary & Purpose](#1-executive-summary-&-purpose)
+  - [2. Reconciled Corrections & Primary Evidence Mappings](#2-reconciled-corrections-&-primary-evidence-mappings)
+    - [Correction 1: Restoration of Canonical H01–H08 & Namespace Separation](#correction-1-restoration-of-canonical-h01–h08-&-namespace-separation)
+    - [Correction 2: Initiative Chronology & Prospective 12-Month Roadmap](#correction-2-initiative-chronology-&-prospective-12-month-roadmap)
+    - [Correction 3: Removal of Unsubstantiated Maturity Percentages](#correction-3-removal-of-unsubstantiated-maturity-percentages)
+    - [Correction 4: Distinguish Documented Protocol from Implemented System](#correction-4-distinguish-documented-protocol-from-implemented-system)
+    - [Correction 5: Scientific Assessment Audit & Claim Scoping](#correction-5-scientific-assessment-audit-&-claim-scoping)
+    - [Correction 6: Scrubbing Unsupported AI Model Attributions](#correction-6-scrubbing-unsupported-ai-model-attributions)
+    - [Correction 7: Reconciliation of Human Authorization Record](#correction-7-reconciliation-of-human-authorization-record)
+    - [Correction 8: Preservation of Three Research Tracks](#correction-8-preservation-of-three-research-tracks)
+  - [3. Verification & Compliance Confirmation](#3-verification-&-compliance-confirmation)
+  - [4. Append-only correction following merged PR #608 review — October 27, 2026](#4-append-only-correction-following-merged-pr-#608-review-—-october-27-2026)
+    - [Verification performed for this correction](#verification-performed-for-this-correction)
+    - [Readiness for Research Commons Phase 1](#readiness-for-research-commons-phase-1)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/research/HUMAN_AI_INITIATIVE_RECONCILIATION_REPORT_2026-10-27.md`
 **Date:** October 27, 2026
 **Status:** Authoritative Reconciliation Report

@@ -1,5 +1,22 @@
 # ADR-0001: Dependency Firewall as Governance Boundary
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [ADR-0001: Dependency Firewall as Governance Boundary](#adr-0001-dependency-firewall-as-governance-boundary)
+  - [Purpose](#purpose)
+  - [Scope](#scope)
+  - [Context](#context)
+  - [Decision](#decision)
+  - [Alternatives Considered](#alternatives-considered)
+  - [Consequences](#consequences)
+  - [References](#references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Accepted
 Date: 2026-02-25
 Version: 1.0.0

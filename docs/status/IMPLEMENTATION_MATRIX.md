@@ -1,5 +1,19 @@
 # Implementation Matrix
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Implementation Matrix](#implementation-matrix)
+  - [Matrix](#matrix)
+  - [Governed AGI Surface Taxonomy](#governed-agi-surface-taxonomy)
+  - [Update Rules](#update-rules)
+  - [Cross-References](#cross-references)
+  - [Versioning Statement](#versioning-statement)
+
+<!-- T81-TOC:END -->
+
+
 Status: Active
 Last Updated: 2026-03-22
 Owner: @t81dev

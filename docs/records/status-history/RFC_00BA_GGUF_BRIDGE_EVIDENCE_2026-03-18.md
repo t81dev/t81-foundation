@@ -1,5 +1,17 @@
 # RFC-00BA GGUF Bridge Evidence Snapshot
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [RFC-00BA GGUF Bridge Evidence Snapshot](#rfc-00ba-gguf-bridge-evidence-snapshot)
+  - [Verified](#verified)
+  - [Observed](#observed)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 Date: 2026-03-18
 Host: macOS ARM64
 Build: `Release`, `-DT81_ENABLE_LLAMA_CPP=ON`

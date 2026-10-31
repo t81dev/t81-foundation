@@ -1,5 +1,24 @@
 # T81Lang Stable Promotion Evidence
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang Stable Promotion Evidence](#t81lang-stable-promotion-evidence)
+  - [Executive Summary](#executive-summary)
+  - [Promotion Gate Criteria](#promotion-gate-criteria)
+  - [Changes Made for Stable Promotion](#changes-made-for-stable-promotion)
+    - [1. §3.2 VM I/O Channels — stub resolved](#1-§32-vm-io-channels-—-stub-resolved)
+    - [2. Spec version bump: v1.2 Draft → v1.3 Stable](#2-spec-version-bump-v12-draft-→-v13-stable)
+  - [Translation Staleness Waiver (TG-01)](#translation-staleness-waiver-tg-01)
+  - [Spec Completeness at Promotion](#spec-completeness-at-promotion)
+  - [Test Evidence](#test-evidence)
+  - [Deterministic Compilation Profile (§5)](#deterministic-compilation-profile-§5)
+  - [Cross-References](#cross-references)
+
+<!-- T81-TOC:END -->
+
+
 **Promotion Date:** 2026-03-16
 **Surface:** T81Lang Compiler + Specification
 **Prior Status:** Beta (promoted 2026-03-15)

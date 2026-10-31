@@ -1,5 +1,15 @@
 # AI Opcode Phase 1 Conformance Report
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [AI Opcode Phase 1 Conformance Report](#ai-opcode-phase-1-conformance-report)
+  - [RFC-0027 / RFC-0031 Cross-Reference Notes](#rfc-0027--rfc-0031-cross-reference-notes)
+
+<!-- T81-TOC:END -->
+
+
 **Promoted from:** `experiments/ai/opcodes/IMPLEMENTATION_REPORT.md`
 **Promoted per:** RFC-0032 §6.10 (Phase 2), effective 2026-03-15
 **Cross-references:** RFC-0026 §5.15, RFC-0027, RFC-0031 §Deterministic AI Arithmetic Contract

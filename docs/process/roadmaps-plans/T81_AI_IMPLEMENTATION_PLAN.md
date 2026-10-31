@@ -1,5 +1,48 @@
 # T81 AI Integration Implementation Plan
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 AI Integration Implementation Plan](#t81-ai-integration-implementation-plan)
+  - [Executive Summary](#executive-summary)
+  - [Implementation Phases Overview](#implementation-phases-overview)
+    - [Phase 1: AI Foundation (Weeks 1-6)](#phase-1-ai-foundation-weeks-1-6)
+    - [Phase 2: AI Integration Layer (Weeks 7-18)](#phase-2-ai-integration-layer-weeks-7-18)
+    - [Phase 3: AI Experience Layer (Weeks 19-24)](#phase-3-ai-experience-layer-weeks-19-24)
+    - [Phase 4: Experimental Optimization (Ongoing)](#phase-4-experimental-optimization-ongoing)
+  - [Developer Workflow](#developer-workflow)
+    - [1. Issue Assignment Process](#1-issue-assignment-process)
+    - [2. Determinism Validation Requirements](#2-determinism-validation-requirements)
+    - [3. Code Review Process](#3-code-review-process)
+    - [4. Integration Testing](#4-integration-testing)
+  - [CLI Implementation Priority](#cli-implementation-priority)
+    - [Core Commands (Phase 3)](#core-commands-phase-3)
+- [Essential for AI development workflow](#essential-for-ai-development-workflow)
+    - [Advanced Commands (Phase 3+)](#advanced-commands-phase-3+)
+- [Enhanced developer experience](#enhanced-developer-experience)
+  - [Risk Management](#risk-management)
+    - [High-Risk Items](#high-risk-items)
+    - [Medium-Risk Items](#medium-risk-items)
+    - [Low-Risk Items](#low-risk-items)
+  - [Success Metrics](#success-metrics)
+    - [Phase 1 Success Criteria](#phase-1-success-criteria)
+    - [Phase 2 Success Criteria](#phase-2-success-criteria)
+    - [Phase 3 Success Criteria](#phase-3-success-criteria)
+    - [Phase 4 Success Criteria](#phase-4-success-criteria)
+  - [Timeline and Milestones](#timeline-and-milestones)
+  - [Quality Gates](#quality-gates)
+    - [Before Phase Promotion](#before-phase-promotion)
+    - [Continuous Requirements](#continuous-requirements)
+  - [Repository Structure Impact](#repository-structure-impact)
+    - [Experimental Phase (All RFCs)](#experimental-phase-all-rfcs)
+    - [Extension Phase (Post-Promotion)](#extension-phase-post-promotion)
+    - [Core Integration (Selective)](#core-integration-selective)
+  - [Conclusion](#conclusion)
+
+<!-- T81-TOC:END -->
+
+
 ## Executive Summary
 
 This plan transforms the T81 AI Integration RFC stack (RFC-00A0 through RFC-00A8) into actionable GitHub project management artifacts. The implementation is organized into four phases with clear deliverables, timelines, and risk mitigation strategies.

@@ -1,5 +1,22 @@
 # Root Documentation Alignment Audit
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [Root Documentation Alignment Audit](#root-documentation-alignment-audit)
+  - [1. Baseline and authority](#1-baseline-and-authority)
+  - [2. Root file audit](#2-root-file-audit)
+  - [3. Related files and material inconsistencies](#3-related-files-and-material-inconsistencies)
+  - [4. Evidence supporting corrections](#4-evidence-supporting-corrections)
+  - [5. Deliberately unchanged claims and artifacts](#5-deliberately-unchanged-claims-and-artifacts)
+  - [6. Unresolved questions and excluded follow-up](#6-unresolved-questions-and-excluded-follow-up)
+  - [7. Validation results](#7-validation-results)
+  - [8. Final review correction](#8-final-review-correction)
+
+<!-- T81-TOC:END -->
+
+
 **Date:** October 27, 2026\
 **Inspected baseline:** `391b9652502b2712e6838b132bc498e2c1f4f2ba` (`origin/main`, README revision #598), including corrective PR #597.\
 **Scope:** repository entry points, all 44 tracked root files, directly related contributor adapters and maintenance documentation. This is a documentation audit, not an independent certification of architecture, performance, security, or historical reports.

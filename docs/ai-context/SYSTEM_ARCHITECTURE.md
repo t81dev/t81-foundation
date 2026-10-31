@@ -1,5 +1,27 @@
 # T81 Research Continuity — SYSTEM_ARCHITECTURE
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Research Continuity — SYSTEM_ARCHITECTURE](#t81-research-continuity-—-system_architecture)
+  - [1. Subsystem Architecture Map](#1-subsystem-architecture-map)
+  - [2. Core Subsystems and Responsibilities](#2-core-subsystems-and-responsibilities)
+    - [2.1 TISC Instruction Set Architecture (v1.9.0)](#21-tisc-instruction-set-architecture-v190)
+    - [2.2 T81VM Virtual Machine Core](#22-t81vm-virtual-machine-core)
+    - [2.3 Axion Policy Governance Engine](#23-axion-policy-governance-engine)
+    - [2.4 CanonFS Content-Addressed Identity File System](#24-canonfs-content-addressed-identity-file-system)
+    - [2.5 T81Lang Tooling & Compiler](#25-t81lang-tooling-&-compiler)
+    - [2.6 Deterministic Soft-Float Subsystem (RFC-0030)](#26-deterministic-soft-float-subsystem-rfc-0030)
+    - [2.7 AI Model Intake & Tensor Bridge](#27-ai-model-intake-&-tensor-bridge)
+  - [3. DAIOS Target Architecture & Layering (RFC-00D2)](#3-daios-target-architecture-&-layering-rfc-00d2)
+  - [4. Implementation Maturity Matrix](#4-implementation-maturity-matrix)
+  - [5. Architectural Limitations & Integration Gaps](#5-architectural-limitations-&-integration-gaps)
+  - [2026-10-31 architecture boundary note](#2026-10-31-architecture-boundary-note)
+
+<!-- T81-TOC:END -->
+
+
 **Document ID:** `docs/ai-context/SYSTEM_ARCHITECTURE.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
 **Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)

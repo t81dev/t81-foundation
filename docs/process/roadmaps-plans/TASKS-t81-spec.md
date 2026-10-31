@@ -1,5 +1,27 @@
 # T81 Implementation Tracking – t81-spec.md Coverage
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81 Implementation Tracking – t81-spec.md Coverage](#t81-implementation-tracking-–-t81-specmd-coverage)
+  - [1. Balanced Ternary Primitives & Arithmetic (section 2–3)](#1-balanced-ternary-primitives-&-arithmetic-section-2–3)
+  - [2. T81 Types & Cell Semantics (section 4)](#2-t81-types-&-cell-semantics-section-4)
+  - [3. T81Lang Syntax & Semantics (section 5–7)](#3-t81lang-syntax-&-semantics-section-5–7)
+  - [4. HanoiVM / TISC Instruction Set (section 8–10)](#4-hanoivm--tisc-instruction-set-section-8–10)
+  - [5. CanonFS & Tensor Storage (section 11)](#5-canonfs-&-tensor-storage-section-11)
+  - [6. Axion Governance Kernel & Safety Invariants (section 12)](#6-axion-governance-kernel-&-safety-invariants-section-12)
+  - [7. Algebraic Extensions & Data Structures](#7-algebraic-extensions-&-data-structures)
+  - [Cross-cutting / Later Phases](#cross-cutting--later-phases)
+  - [8. RFC Implementation Tracking (Full List)](#8-rfc-implementation-tracking-full-list)
+    - [Foundation & Architecture (RFC-0000 to RFC-0008)](#foundation-&-architecture-rfc-0000-to-rfc-0008)
+    - [Axion & Policy (RFC-0009, 0022, 0025, etc.)](#axion-&-policy-rfc-0009-0022-0025-etc)
+    - [Neural & Agentic Primitives (RFC-0012, 0013, 0014, 0015)](#neural-&-agentic-primitives-rfc-0012-0013-0014-0015)
+    - [Advanced Features & Hardware (RFC-0016 to RFC-0024)](#advanced-features-&-hardware-rfc-0016-to-rfc-0024)
+
+<!-- T81-TOC:END -->
+
+
 **Status legend**:
 - [ ] Not started
 - [x] Implemented & lightly tested

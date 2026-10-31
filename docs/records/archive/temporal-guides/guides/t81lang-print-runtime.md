@@ -1,5 +1,20 @@
 # T81Lang `print(...)` Runtime Behavior
 
+<!-- T81-TOC:BEGIN -->
+
+## Table of Contents
+
+- [T81Lang `print(...)` Runtime Behavior](#t81lang-`print`-runtime-behavior)
+  - [Scope](#scope)
+  - [Contract](#contract)
+  - [Execution Model](#execution-model)
+  - [Canonical Output Forms](#canonical-output-forms)
+  - [Test Coverage](#test-coverage)
+  - [Determinism Gate](#determinism-gate)
+
+<!-- T81-TOC:END -->
+
+
 This guide documents the current deterministic runtime behavior of the T81Lang
 `print(...)` builtin.
 
