@@ -190,3 +190,18 @@ RESULT: Updated non-normative status and evidence boundary; no change to scienti
 NEXT ACTION: independent source-level #653 acceptance review, separate A/B portability and publication gates
 STOP: no merge, no RFC acceptance, no protected check changes, no measurement authorization
 ```
+
+---
+
+## 2026-10-31 handoff delta — ADM-2 candidate report
+
+**Source:** subsequent operator-provided local development report; not independently fetched from GitHub. Two candidates were prepared but neither pushed nor merged:
+
+| Candidate | Local branch | Reported final commit | Reported validation |
+| --- | --- | --- | --- |
+| A: baseline maintenance | `repair/adm2-baseline` | `0c22ac323484e37cc85f95201bd4dc01729dedb4` | 2 selected macOS ARM64 CTests |
+| B: ADM-2 M1 | `repair/adm2-m1` | `826887b40c62de9c6c903f319bbfbe905baa9911` | 5 selected macOS ARM64 CTests |
+
+A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reportedly has two commits after A. The engine translation unit reportedly compiles. **No independent inspection, cross-platform validation, push, merge, activation, or performance measurement is established.**
+
+**Next action:** obtain the local branch diffs and test receipts; compare against fresh `main` and accepted contracts. Keep CMP3/H04 research reconciliation distinct from ADM-2 engineering, and do not relaunch completed experiments. Earlier sections retain their explicitly dated October 29 status, not a claim about current live PR state.
