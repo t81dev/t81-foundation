@@ -20,9 +20,8 @@ class ContractError(ValueError):
 
 # Independent semantic oracle: no encoding or adapter helper calls.
 def oracle(values, catalog=CATALOG):
-    if tuple(catalog) != CATALOG:
-        raise ContractError("INVALID_CATALOG")
-    if len(values) != 4:
+    catalog = check_catalog(catalog)
+    if type(values) not in (tuple, list) or len(values) != 4:
         raise ContractError("INVALID_LENGTH")
     if any(type(v) is not int or v not in (-1, 0, 1) for v in values):
         raise ContractError("INVALID_TRIT")
@@ -38,12 +37,25 @@ def oracle(values, catalog=CATALOG):
 
 
 def check_catalog(catalog):
-    if tuple(catalog) != CATALOG:
+    # Validate every row before evaluation; Python bool/float equality must not
+    # admit non-trits, and one-shot iterables must not be consumed silently.
+    if type(catalog) not in (tuple, list) or len(catalog) != 40:
         raise ContractError("INVALID_CATALOG")
+    normalized = []
+    for pattern in catalog:
+        if type(pattern) not in (tuple, list) or len(pattern) != 4:
+            raise ContractError("INVALID_CATALOG")
+        if any(type(v) is not int or v not in TRITS for v in pattern):
+            raise ContractError("INVALID_CATALOG")
+        normalized.append(tuple(pattern))
+    normalized = tuple(normalized)
+    if normalized != CATALOG:
+        raise ContractError("INVALID_CATALOG")
+    return normalized
 
 
 def check_trits(values):
-    if len(values) != 4:
+    if type(values) not in (tuple, list) or len(values) != 4:
         raise ContractError("INVALID_LENGTH")
     if any(type(v) is not int or v not in TRITS for v in values):
         raise ContractError("INVALID_TRIT")
@@ -55,6 +67,8 @@ def encode_bytes(values):
 
 
 def decode_bytes(payload):
+    if type(payload) not in (bytes, bytearray, tuple, list):
+        raise ContractError("INVALID_ENCODING")
     if len(payload) != 4:
         raise ContractError("INVALID_LENGTH")
     if any(type(v) is not int or v not in (0, 1, 2) for v in payload):
@@ -63,7 +77,7 @@ def decode_bytes(payload):
 
 
 def filter_bytes(payload, catalog=CATALOG):
-    check_catalog(catalog)
+    catalog = check_catalog(catalog)
     decode_bytes(payload)
     result = []
     for i, pattern in enumerate(catalog):
@@ -90,7 +104,7 @@ def decode_swar(payload):
 
 
 def filter_swar(payload, catalog=CATALOG):
-    check_catalog(catalog)
+    catalog = check_catalog(catalog)
     decode_swar(payload)
     result = []
     for i, pattern in enumerate(catalog):
@@ -102,19 +116,25 @@ def filter_swar(payload, catalog=CATALOG):
     return result
 
 
+def require(condition, detail=None):
+    """Always-active correctness assertion, including under python -O."""
+    if not condition:
+        raise AssertionError(detail)
+
+
 def expect_error(code, func, *args):
     try:
         func(*args)
     except ContractError as exc:
-        assert exc.code == code, (code, exc.code)
-        return
+        require(exc.code == code, (code, exc.code))
+        return 1
     raise AssertionError("Expected " + code)
 
 
 def run():
     domain = tuple(itertools.product(TRITS, repeat=4))
-    assert len(domain) == 81 and CATALOG == domain[:40]
-    assert len(set(CATALOG)) == 40
+    require(len(domain) == 81 and CATALOG == domain[:40])
+    require(len(set(CATALOG)) == 40)
     observations = []
     bytes_seen, swar_seen = set(), set()
     decisions = 0
@@ -122,53 +142,47 @@ def run():
         expected = oracle(values)
         b = encode_bytes(values)
         s = encode_swar(values)
-        assert decode_bytes(b) == values
-        assert decode_swar(s) == values
-        assert filter_bytes(b) == expected
-        assert filter_swar(s) == expected
+        require(decode_bytes(b) == values)
+        require(decode_swar(s) == values)
+        require(filter_bytes(b) == expected)
+        require(filter_swar(s) == expected)
         for i, pattern in enumerate(CATALOG):
-            assert (i in expected) == (values == pattern)
+            require((i in expected) == (values == pattern))
             decisions += 1
         bytes_seen.add(b)
         swar_seen.add(s)
         observations.append({"input": values, "matches": expected, "byte": list(b), "swar": s})
-    assert len(bytes_seen) == len(swar_seen) == 81
+    require(len(bytes_seen) == len(swar_seen) == 81)
     malformed = 0
     for position in range(4):
         for code in (3, 7, 255):
             b = [0, 0, 0, 0]
             b[position] = code
-            expect_error("INVALID_ENCODING", decode_bytes, b)
-            expect_error("INVALID_ENCODING", filter_bytes, b)
-            malformed += 2
+            malformed += expect_error("INVALID_ENCODING", decode_bytes, b)
+            malformed += expect_error("INVALID_ENCODING", filter_bytes, b)
         for payload in range(256):
             if ((payload >> (position*2)) & 3) == 3:
-                expect_error("INVALID_ENCODING", decode_swar, payload)
-                expect_error("INVALID_ENCODING", filter_swar, payload)
-                malformed += 2
+                malformed += expect_error("INVALID_ENCODING", decode_swar, payload)
+                malformed += expect_error("INVALID_ENCODING", filter_swar, payload)
     for values in ((), (-1,), (-1, 0, 1, 0, 1)):
         for func in (oracle, encode_bytes, encode_swar, decode_bytes, filter_bytes):
-            expect_error("INVALID_LENGTH", func, values)
-            malformed += 1
+            malformed += expect_error("INVALID_LENGTH", func, values)
     for position in range(4):
         for bad in (-2, 2, True):
             values = [0, 0, 0, 0]
             values[position] = bad
             for func in (oracle, encode_bytes, encode_swar):
-                expect_error("INVALID_TRIT", func, values)
-                malformed += 1
+                malformed += expect_error("INVALID_TRIT", func, values)
     for catalog in (CATALOG[:-1], tuple(reversed(CATALOG)), CATALOG[:-1] + (CATALOG[0],)):
-        expect_error("INVALID_CATALOG", oracle, (0, 0, 0, 0), catalog)
-        expect_error("INVALID_CATALOG", filter_bytes, b"\x01"*4, catalog)
-        expect_error("INVALID_CATALOG", filter_swar, 85, catalog)
-        malformed += 3
+        malformed += expect_error("INVALID_CATALOG", oracle, (0, 0, 0, 0), catalog)
+        malformed += expect_error("INVALID_CATALOG", filter_bytes, b"\x01"*4, catalog)
+        malformed += expect_error("INVALID_CATALOG", filter_swar, 85, catalog)
     for bad in (-1, 256, 3.0, True):
-        expect_error("INVALID_ENCODING", decode_swar, bad)
-        expect_error("INVALID_ENCODING", filter_swar, bad)
-        malformed += 2
+        malformed += expect_error("INVALID_ENCODING", decode_swar, bad)
+        malformed += expect_error("INVALID_ENCODING", filter_swar, bad)
     raw = json.dumps(observations, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return {
-        "protocol": "T81-AIOPT-001-M1-v0.1.0",
+        "protocol": "T81-AIOPT-001-M1-v0.1.1",
         "inputs": 81,
         "catalog_size": 40,
         "predicate_decisions": decisions,

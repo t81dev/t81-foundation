@@ -1,7 +1,7 @@
 # T81-AIOPT-001 — Fixed-Catalog Ternary Pattern Filtering
 
 **Status:** PROPOSED / RECONSTRUCTED PROTOCOL — not an accepted historical specification  
-**Version:** 0.1.0 (2026-11-01)  
+**Version:** 0.1.1 (2026-11-01; verification clarification below)
 **Milestone:** M1, independent correctness only  
 **Repository scope:** isolated research experiment; no runtime, ISA, Axion, CanonFS, or governance-contract changes
 
@@ -48,6 +48,37 @@ Errors must distinguish at least:
 - `INVALID_CATALOG` for catalog size/order/content that differs from C40.
 
 The oracle's semantic result is authoritative for valid input; invalid-input handling must be independently asserted against the declared API contract. Exact error names may be implemented in the experiment language but must remain stable within the milestone.
+
+### Verification clarification v0.1.1 (prospective, not historical acceptance)
+
+Independent probes at b83414f0 showed that Python equality accepted Boolean/float
+catalog entries, catalog generators were consumed before evaluation, and None
+containers escaped as TypeError. The mathematical domain, C40, encodings and
+acceptance thresholds above are unchanged. To resolve the previously unspecified
+Python container/error boundary before corrected testing:
+
+- Semantic vectors: exact built-in tuple or list, length four; unsupported
+  containers or wrong length yield INVALID_LENGTH. Elements must be exact Python
+  int values in T; bool, float and int subclasses are not semantic trits.
+- Catalogs: exact built-in tuple or list of forty tuple/list rows. Every row has
+  exactly four exact integer trits and must equal C40 in order after structural
+  normalization. Unsupported outer/row objects, one-shot iterators/generators,
+  invalid values, duplicates, size/order/content errors yield INVALID_CATALOG.
+  Evaluation must use the validated immutable snapshot, with no partial results.
+- Byte payloads: exact built-in bytes, bytearray, tuple or list. Unsupported
+  containers yield INVALID_ENCODING; supported containers of wrong length yield
+  INVALID_LENGTH; non-integer, Boolean or out-of-range elements yield
+  INVALID_ENCODING. SWAR payloads remain exact Python int in [0,255], with no
+  two-bit code 3; all other types/ranges/codes yield INVALID_ENCODING.
+- Filter error precedence: validate the entire catalog first; then container,
+  length and elements in that order. Encoders/decoders use their own corresponding
+  input rules. Invalid payloads never short-circuit validation of a bad catalog.
+- Harness checks must execute under Python -O too. Reported malformed counts
+  count completed error-expectation calls, including documented duplicates;
+  independently instrument the calls, rather than deriving totals from comments.
+
+These are independently motivated API clarifications/tightening, not new
+matching semantics or a retroactive declaration that this proposal was accepted.
 
 ## 6. Test and evidence requirements
 
