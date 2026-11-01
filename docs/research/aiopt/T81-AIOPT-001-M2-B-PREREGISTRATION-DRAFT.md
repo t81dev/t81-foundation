@@ -100,3 +100,28 @@ No P1 is marked resolved solely by authoring this document. A reviewer must vali
 - **Stop/INVALID:** Semantics mismatch, noncanonical format accepted, unobservable retained-byte dependency, comparator inequivalence, unregistered tuning, or missing authorization. Preserve negative and inconclusive evidence.
 
 **Final disposition: `M2_B_POLYNOMIAL_PROTOCOL_REVISION_DRAFT — SEVEN_P1_GATES_OPEN — NO_EXECUTION_AUTHORIZED`.**
+
+
+## 10. Scope correction after research-question reevaluation (2026-11-01)
+
+**Superseding interpretation:** This document is a **candidate design for supporting systems lanes S (adaptive representation) and A (algorithm routing)**, not an accepted experiment for T (ternary-specific advantage). The research-question separation is recorded in [PR #671](https://github.com/t81dev/t81-foundation/pull/671). No reviewer has established that the polynomial operation is the right workload, that a performance crossover exists, or that the experiment is worth its cost.
+
+### A. Claim separation required before acceptance
+
+- **S:** Hold the evaluation algorithm fixed while changing only the representation, or explicitly describe unavoidable format-specific processing and bound the resulting combined claim. Compare to the best fixed format and simple causal heuristic. Count encoding, decoding, observation, transitions, and retained memory.
+- **A:** Hold input representation and lifecycle fixed while changing only the evaluation algorithm (dense Horner, sparse gap-Horner, sparse power evaluation as applicable). Charge index construction and power computation. A speedup here is **algorithmic**, not ternary.
+- **T:** Requires a separately justified non-equivalent ternary-specific mechanism with matched binary semantics, capacity, algorithms, and resource accounting. Merely renaming two-bit codewords cannot isolate T. No T experiment is specified or authorized in this PR.
+
+### B. Lifecycle decision is not yet justified
+
+The producer–consumer retention requirement in §5 is a **proposed synthetic contract**, not an established real-world necessity. Before accepting it, identify a plausible persistence, communication, or repeated-query use case and define object lifetime, reuse count, ownership, allocations and whether producer and consumer are separated in time/process. If the research target is computation directly on available vectors, use direct computation as the primary reference rather than mandating serialize–retain–decode. Do not choose a lifecycle post hoc to manufacture a positive result.
+
+### C. Workload and experiment selection gate
+
+Before freezing this preregistration, document (i) why modular polynomial evaluation is representative or a valuable synthetic probe, (ii) whether the proposed sparse evaluation is algorithmically fair, (iii) whether a cheaper analytical study can reject the hypothesis without a benchmark, (iv) what scientific finding remains if the strongest binary-coded baseline wins, and (v) the smallest falsifiable comparison with an explicit resource cap. If these cannot be answered, mark the polynomial proposal **REJECTED_AS_PRIMARY** while preserving it as a documented alternative. Do not substitute another workload without a new review decision.
+
+### D. Current acceptance state
+
+The seven P1 findings in [#673](https://github.com/t81dev/t81-foundation/pull/673) remain open. Statistical method, trace identity, fixed selectors, threshold, hardware and approval are unpinned. **No implementation, benchmarks, activation, or merge authorization is conferred.**
+
+**Revised disposition:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — POLYNOMIAL_WORKLOAD_UNACCEPTED — SEVEN_P1_GATES_OPEN — EXECUTION_BLOCKED`.
