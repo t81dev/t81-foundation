@@ -42,7 +42,7 @@ def validate_input_values(values: Sequence[int]) -> List[int]:
 
 
 def parse_framing(blob: bytes, k: int, A: int, access_mode: str) -> Tuple[int, int, List[int], int]:
-    """Parse common header and index, validating framing.
+    """Parse common header and index, validating framing before allocations.
 
     Returns:
         (N, B, block_offsets, D)
@@ -55,6 +55,15 @@ def parse_framing(blob: bytes, k: int, A: int, access_mode: str) -> Tuple[int, i
             raise CodecError(f"Extra trailing bytes for N=0: length {len(blob)} != 8")
         return 0, 0, [], 8
 
+    # Prevent unreasonable / overflow allocations if N is huge or malformed
+    # For any arm, each block of k symbols requires at least 1 byte of payload,
+    # and if RA-INDEXED, 8 bytes of index.
+    # Total wire bytes must be at least 8 + (N//k)*1.
+    # If N exceeds what could possibly fit in len(blob), reject immediately before calculating B or iterating.
+    min_possible_wire = 8 + (N * 6) // 8  # absolute minimal theoretical lower bound
+    if N > 2**48 or min_possible_wire > len(blob):
+        raise CodecError(f"Declared count N={N} exceeds maximum possible count for blob length {len(blob)}")
+
     B = (N + k - 1) // k
     header_bytes = 8
     index_bytes = 8 * B if access_mode == "RA-INDEXED" else 0
@@ -63,13 +72,6 @@ def parse_framing(blob: bytes, k: int, A: int, access_mode: str) -> Tuple[int, i
     if len(blob) < H:
         raise CodecError(f"Truncated frame: expected at least {H} bytes for header/index, got {len(blob)}")
 
-    block_offsets: List[int] = []
-    if access_mode == "RA-INDEXED":
-        for j in range(B):
-            off_bytes = blob[8 + 8 * j : 8 + 8 * (j + 1)]
-            (off,) = struct.unpack('<Q', off_bytes)
-            block_offsets.append(off)
-
     D = align_up(H, A)
     # Check alignment gap bytes between H and D
     if D > H:
@@ -77,6 +79,13 @@ def parse_framing(blob: bytes, k: int, A: int, access_mode: str) -> Tuple[int, i
             raise CodecError(f"Truncated frame before data start: length {len(blob)} < {D}")
         if any(b != 0 for b in blob[H:D]):
             raise CodecError("Nonzero padding in header alignment gap")
+
+    block_offsets: List[int] = []
+    if access_mode == "RA-INDEXED":
+        for j in range(B):
+            off_bytes = blob[8 + 8 * j : 8 + 8 * (j + 1)]
+            (off,) = struct.unpack('<Q', off_bytes)
+            block_offsets.append(off)
 
     return N, B, block_offsets, D
 
@@ -410,7 +419,8 @@ def decode(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED")
 def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> int:
     """Random access query for x_i without decoding preceding blocks.
 
-    Work and touched bytes are strictly bounded by block size k and independent of N.
+    Work, memory allocation, and touched bytes are strictly bounded by block size k,
+    computed in O(1) space without allocating or reconstructing an O(B) list of block offsets.
     """
     if len(blob) < 8:
         raise CodecError("Blob smaller than header")
@@ -418,46 +428,66 @@ def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode
     if not (0 <= index < N):
         raise CodecError(f"Index out of bounds: index={index}, N={N}")
 
+    min_possible_wire = 8 + (N * 6) // 8
+    if N > 2**48 or min_possible_wire > len(blob):
+        raise CodecError(f"Declared count N={N} exceeds maximum possible count for blob length {len(blob)}")
+
     B = (N + k - 1) // k
     j = index // k
     pos_in_block = index % k
     m_j = min(k, N - j * k)
 
-    layout = compute_layout(N, k, A, access_mode, arm)
-    if len(blob) != layout["total_bytes"]:
-        raise CodecError(f"Invalid frame total bytes: expected {layout['total_bytes']}, got {len(blob)}")
+    # Determine data start D and block offset in O(1) space
+    header_bytes = 8
+    index_bytes = 8 * B if access_mode == "RA-INDEXED" else 0
+    H = header_bytes + index_bytes
+    D = align_up(H, A)
 
-    if access_mode == "RA-INDEXED":
-        # Read offset from index
-        off_entry = blob[8 + 8 * j : 8 + 8 * (j + 1)]
-        (block_offset,) = struct.unpack('<Q', off_entry)
-        if block_offset != layout["block_offsets"][j]:
-            raise CodecError("Invalid block offset in index")
-    else:
-        # Compute canonical block offset in O(1)
-        raw_full = {
-            "B10": L_B10,
-            "T243": L_T243,
-            "B243-CLONE": L_T243,
-            "B729": L_B729,
-        }[arm](k)
-        stride = align_up(raw_full, A)
-        block_offset = layout["data_offset"] + j * stride
-
-    raw_l = {
+    raw_func = {
         "B10": L_B10,
         "T243": L_T243,
         "B243-CLONE": L_T243,
         "B729": L_B729,
-    }[arm](m_j)
-    aligned_l = align_up(raw_l, A)
+    }[arm]
+    raw_full = raw_func(k)
+    stride = align_up(raw_full, A)
+    raw_j = raw_func(m_j)
+    aligned_j = align_up(raw_j, A)
+
+    # Compute expected total length in O(1) to validate frame bounds
+    if B == 1:
+        expected_total = D + aligned_j
+    else:
+        last_m = N - (B - 1) * k
+        aligned_last = align_up(raw_func(last_m), A)
+        expected_total = D + (B - 1) * stride + aligned_last
+
+    if len(blob) != expected_total:
+        raise CodecError(f"Invalid frame total bytes: expected {expected_total}, got {len(blob)}")
+
+    # Compute block offset in O(1) space without reconstructing all offsets
+    expected_offset_j = D + j * stride
+
+    if access_mode == "RA-INDEXED":
+        # Read only the 8-byte index entry for block j directly at offset 8 + 8*j
+        idx_pos = 8 + 8 * j
+        if len(blob) < idx_pos + 8:
+            raise CodecError("Index entry truncated")
+        (block_offset,) = struct.unpack('<Q', blob[idx_pos : idx_pos + 8])
+        if block_offset != expected_offset_j:
+            raise CodecError(f"Non-canonical block offset in index: {block_offset} != {expected_offset_j}")
+    else:
+        block_offset = expected_offset_j
+
+    if block_offset + aligned_j > len(blob):
+        raise CodecError("Block offset out of bounds of blob")
 
     # Validate alignment padding of target block
-    pad_data = blob[block_offset + raw_l : block_offset + aligned_l]
+    pad_data = blob[block_offset + raw_j : block_offset + aligned_j]
     if any(b != 0 for b in pad_data):
         raise CodecError("Nonzero padding in target block alignment")
 
-    block_data = blob[block_offset : block_offset + raw_l]
+    block_data = blob[block_offset : block_offset + raw_j]
 
     # Direct digit extraction for B10 and T243 without full block decode
     if arm == "B10":
@@ -501,7 +531,7 @@ def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode
         return u - 364
 
     elif arm == "B729":
-        # B729 decodes the block to extract the element
+        # B729 decodes only the target block (bounded by k) to extract the element
         vals = decode_block_b729(block_data, m_j)
         return vals[pos_in_block]
 

@@ -15,6 +15,15 @@ from .codec import (
     decode,
     random_access,
 )
+from .independent_witness import (
+    KAV_VALUES_3,
+    KAV_EXPECTED_B10_BLOB,
+    KAV_EXPECTED_T243_BLOB,
+    KAV_EXPECTED_B729_BLOB,
+    independent_decode_raw_b10,
+    independent_decode_raw_t243,
+    independent_decode_raw_b729,
+)
 
 __all__ = [
     "align_up",
@@ -29,4 +38,11 @@ __all__ = [
     "encode",
     "decode",
     "random_access",
+    "KAV_VALUES_3",
+    "KAV_EXPECTED_B10_BLOB",
+    "KAV_EXPECTED_T243_BLOB",
+    "KAV_EXPECTED_B729_BLOB",
+    "independent_decode_raw_b10",
+    "independent_decode_raw_t243",
+    "independent_decode_raw_b729",
 ]

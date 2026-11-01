@@ -218,7 +218,7 @@ class TestH04R03MatchedCodec(unittest.TestCase):
                     encode(bad, arm=arm, k=5, A=1)
 
     def test_09_adversarial_malformed_frames_and_corruptions(self):
-        """Reject truncated frames, corrupted headers, nonzero padding, and bad bytes."""
+        """Reject truncated frames, corrupted headers, nonzero padding, huge uint64 counts, and bad bytes."""
         vals = [10, -20, 30, -40, 50, -60]
 
         for arm in ["B10", "T243", "B729"]:
@@ -245,6 +245,20 @@ class TestH04R03MatchedCodec(unittest.TestCase):
             self.assertEqual(len(zero_blob), 8)
             with self.assertRaises(CodecError):
                 decode(zero_blob + b'\x01', arm=arm, k=5, A=8, access_mode="RA-INDEXED")
+
+            # 6. Maximum uint64 count (2^64 - 1) before allocation
+            max_u64_blob = struct.pack('<Q', 2**64 - 1) + b'\x00' * 32
+            with self.assertRaises(CodecError):
+                decode(max_u64_blob, arm=arm, k=5, A=8, access_mode="RA-INDEXED")
+            with self.assertRaises(CodecError):
+                random_access(max_u64_blob, 0, arm=arm, k=5, A=8, access_mode="RA-INDEXED")
+
+            # 7. Declared N = 10,000,000 but blob length is only 20 bytes
+            huge_n_blob = struct.pack('<Q', 10_000_000) + b'\x00' * 12
+            with self.assertRaises(CodecError):
+                decode(huge_n_blob, arm=arm, k=5, A=8, access_mode="RA-INDEXED")
+            with self.assertRaises(CodecError):
+                random_access(huge_n_blob, 0, arm=arm, k=5, A=8, access_mode="RA-INDEXED")
 
     def test_10_adversarial_t243_forbidden_bytes(self):
         """Reject T243 payload bytes in [243, 255]."""
@@ -302,6 +316,77 @@ class TestH04R03MatchedCodec(unittest.TestCase):
                 random_access(blob, 3, arm=arm, k=5, A=1)
             with self.assertRaises(CodecError):
                 random_access(blob, 100, arm=arm, k=5, A=1)
+
+    def test_16_deterministic_operation_count_random_access(self):
+        """Verify deterministic bounded-byte touch count for random access."""
+        class InstrumentedBuffer:
+            def __init__(self, data: bytes):
+                self._data = data
+                self.touched_bytes = 0
+                self.slice_count = 0
+
+            def __len__(self):
+                return len(self._data)
+
+            def __getitem__(self, item):
+                self.slice_count += 1
+                if isinstance(item, slice):
+                    start = item.start or 0
+                    stop = item.stop if item.stop is not None else len(self._data)
+                    self.touched_bytes += max(0, stop - start)
+                else:
+                    self.touched_bytes += 1
+                return self._data[item]
+
+        # Test across two vastly different sequence lengths N=10 and N=1000
+        # For fixed k=5, touched bytes in random_access must remain bounded by k and independent of N
+        k = 5
+        A = 8
+        for arm in ["B10", "T243"]:
+            buf_small = InstrumentedBuffer(encode(generate_workload("cycle", 10), arm=arm, k=k, A=A))
+            buf_large = InstrumentedBuffer(encode(generate_workload("cycle", 1000), arm=arm, k=k, A=A))
+
+            # Query index 7 in both buffers (block 1, pos 2)
+            val_small = random_access(buf_small, 7, arm=arm, k=k, A=A)
+            touched_small = buf_small.touched_bytes
+
+            val_large = random_access(buf_large, 7, arm=arm, k=k, A=A)
+            touched_large = buf_large.touched_bytes
+
+            self.assertEqual(val_small, val_large)
+            # Touched bytes must be identical and independent of N
+            self.assertEqual(touched_small, touched_large)
+            # B10 and T243 touch <= 32 bytes (header + alignment + at most 3 payload bytes)
+            self.assertLessEqual(touched_large, 32)
+
+    def test_15_known_answer_vectors_and_independent_decoders(self):
+        """Verify hard-coded known-answer vectors and independent decoder routines."""
+        from experiments.h04_r03_matched_codec.independent_witness import (
+            KAV_VALUES_3,
+            KAV_EXPECTED_B10_BLOB,
+            KAV_EXPECTED_T243_BLOB,
+            KAV_EXPECTED_B729_BLOB,
+            independent_decode_raw_b10,
+            independent_decode_raw_t243,
+            independent_decode_raw_b729,
+        )
+
+        # 1. Check generated blobs match exact independently derived KAV wire blobs
+        b10_blob = encode(KAV_VALUES_3, arm="B10", k=5, A=8, access_mode="RA-FIXED")
+        t243_blob = encode(KAV_VALUES_3, arm="T243", k=5, A=8, access_mode="RA-FIXED")
+        clone_blob = encode(KAV_VALUES_3, arm="B243-CLONE", k=5, A=8, access_mode="RA-FIXED")
+        b729_blob = encode(KAV_VALUES_3, arm="B729", k=5, A=8, access_mode="RA-FIXED")
+
+        self.assertEqual(b10_blob, KAV_EXPECTED_B10_BLOB)
+        self.assertEqual(t243_blob, KAV_EXPECTED_T243_BLOB)
+        self.assertEqual(clone_blob, KAV_EXPECTED_T243_BLOB)  # Clone must match T243 KAV
+        self.assertEqual(b729_blob, KAV_EXPECTED_B729_BLOB)
+
+        # 2. Check independent decoders directly on raw payloads
+        self.assertEqual(independent_decode_raw_b10(b10_blob[8:12], 3), KAV_VALUES_3)
+        self.assertEqual(independent_decode_raw_t243(t243_blob[8:12], 3), KAV_VALUES_3)
+        self.assertEqual(independent_decode_raw_t243(clone_blob[8:12], 3), KAV_VALUES_3)
+        self.assertEqual(independent_decode_raw_b729(b729_blob[8:12], 3), KAV_VALUES_3)
 
 
 if __name__ == '__main__':
