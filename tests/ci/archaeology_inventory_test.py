@@ -9,9 +9,16 @@ Verifies:
    without universal advantage, universal disadvantage, or hardware superiority claims.
 3. No file receives a Tier A rating without explicit pinned execution provenance across
    experiments/, tests/, scripts, historical reports, and generated artifacts.
-4. Unit tests for has_pinned_execution_provenance(): complete qualifying receipts attain Tier A,
-   incomplete receipts and generic source/docs cannot.
-5. RFC authority classification derives from authentic Status metadata rather than
+4. Unit tests for structured provenance contract (verify_provenance_contract):
+   - Rejects fabricated receipts containing expected keywords without valid contract schema.
+   - Rejects receipts with missing or malformed commit SHAs.
+   - Rejects receipts with missing source linkage or empty source paths.
+   - Rejects receipts with missing command invocations.
+   - Rejects receipts with missing output identities or empty output mappings.
+   - Classifies syntactically complete unverified receipts as candidates for verification (NONE).
+   - Promotes to Tier A only upon verified independent execution.
+5. Directory membership in historical/archive affects lifecycle only, not evidence tier.
+6. RFC authority classification derives from authentic Status metadata rather than
    filename assumptions (e.g., verifying RFC-00C8 is recognized as Accepted / NORMATIVE_CONTRACT).
 """
 
@@ -25,7 +32,11 @@ import tempfile
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
-from tools.archaeology_classifier import has_pinned_execution_provenance, classify_artifact
+from tools.archaeology_classifier import (
+    has_pinned_execution_provenance,
+    verify_provenance_contract,
+    classify_artifact,
+)
 
 
 def test_investigation_10a_disposition() -> None:
@@ -105,62 +116,129 @@ def test_no_unsupported_tier_a_assignments() -> None:
     )
 
 
-def test_has_pinned_execution_provenance_unit() -> None:
-    """Unit tests for has_pinned_execution_provenance():
-    Verifies that complete qualifying receipts can attain Tier A, and incomplete receipts cannot.
+def test_archive_path_membership_affects_lifecycle_only() -> None:
+    """Verifies that membership in an archive or historical directory/filename
+    affects artifact lifecycle only (marking it HISTORICAL) and does not automatically
+    mutate or promote the evidence tier.
+    """
+    # 1. A documentation file in archive should have lifecycle HISTORICAL and tier NONE
+    c1 = classify_artifact("docs/archive/old_spec.md", 500)
+    assert c1["lifecycle"] == "HISTORICAL"
+    assert c1["evidence_tier"] == "NONE", f"Expected tier NONE, got {c1['evidence_tier']}"
+
+    # 2. A source code file in historical directory should have lifecycle HISTORICAL and tier Tier B (implementation)
+    c2 = classify_artifact("experiments/s02_stochastic_topology/historical/pr582/main.cpp", 1000)
+    assert c2["lifecycle"] == "HISTORICAL"
+    assert c2["evidence_tier"] == "Tier B", f"Expected tier Tier B, got {c2['evidence_tier']}"
+
+    # 3. An experimental results JSON in historical directory should have lifecycle HISTORICAL and tier NONE (unverified data)
+    c3 = classify_artifact("experiments/s02_stochastic_topology/historical/pr582/results.json", 2000)
+    assert c3["lifecycle"] == "HISTORICAL"
+    assert c3["evidence_tier"] == "NONE", f"Expected tier NONE, got {c3['evidence_tier']}"
+
+
+def test_structured_provenance_contract_unit() -> None:
+    """Unit tests for verify_provenance_contract() and has_pinned_execution_provenance():
+    Verifies that:
+    1. Fabricated files containing keywords but not valid JSON/contract are rejected.
+    2. Missing or malformed commit SHAs are rejected.
+    3. Missing or empty source linkage is rejected.
+    4. Missing or empty commands list is rejected.
+    5. Missing or empty output identities are rejected.
+    6. Well-formed receipts without independent execution are candidates for verification (NONE).
+    7. Fully verified execution receipts attain Tier A.
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
 
-        # 1. Negative: Source code file (.cpp) even with complete info must NOT be promoted to Tier A
-        cpp_file = tmp_path / "test.cpp"
-        cpp_file.write_text("""
-        // Execution Receipt
-        // Git commit: f775680aba7db200691c0f4e2a3174b0e7e51581
-        // Environment: Linux x86_64 toolchain
-        // Command: cmake --build build
-        // Input: input.bin
-        // Output: result.bin
-        // Scope: unit test
+        # 1. Keyword stuffing in non-JSON file
+        fake_txt = tmp_path / "fake_receipt.txt"
+        fake_txt.write_text("""
+        schema: t81.provenance.v1
+        pinned_commit: f775680aba7db200691c0f4e2a3174b0e7e51581
+        source_linkage: src/vm/vm.cpp
+        command: cmake --build build
+        environment: Linux x86_64
+        output_identities: results.json
+        verified_execution: INDEPENDENTLY_REPRODUCED_TIER_A
         """, encoding="utf-8")
-        assert not has_pinned_execution_provenance(str(cpp_file)), "Source code .cpp should not be Tier A receipt"
+        res1 = verify_provenance_contract(str(fake_txt))
+        assert not res1["valid_contract"]
+        assert not has_pinned_execution_provenance(str(fake_txt))
 
-        # 2. Negative: Missing commit SHA
-        incomplete_file1 = tmp_path / "receipt_no_sha.json"
-        incomplete_file1.write_text(json.dumps({
-            "receipt": "execution receipt",
-            "environment": "linux x86_64",
-            "command": "python3 run.py",
-            "input": "data.raw",
-            "output": "result.json",
-            "scope": "run test"
+        # 2. JSON with invalid/unrelated SHA length
+        bad_sha = tmp_path / "bad_sha.json"
+        bad_sha.write_text(json.dumps({
+            "schema": "t81.provenance.v1",
+            "pinned_commit": "not_a_valid_sha_hash",
+            "source_linkage": ["src/vm/vm.cpp"],
+            "commands": ["cmake --build build"],
+            "environment": {"os": "linux", "arch": "x86_64"},
+            "outputs": {"results.json": "sha256:abc"}
         }), encoding="utf-8")
-        assert not has_pinned_execution_provenance(str(incomplete_file1)), "Missing SHA should fail"
+        res2 = verify_provenance_contract(str(bad_sha))
+        assert not res2["valid_contract"]
+        assert "pinned_commit" in res2["error"]
 
-        # 3. Negative: Missing commands
-        incomplete_file2 = tmp_path / "receipt_no_cmd.json"
-        incomplete_file2.write_text(json.dumps({
-            "receipt": "execution receipt",
-            "commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
-            "environment": "linux x86_64",
-            "input": "data.raw",
-            "output": "result.json",
-            "scope": "run test"
+        # 3. Missing source linkage
+        no_src = tmp_path / "no_src.json"
+        no_src.write_text(json.dumps({
+            "schema": "t81.provenance.v1",
+            "pinned_commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+            "source_linkage": [],
+            "commands": ["cmake --build build"],
+            "environment": {"os": "linux", "arch": "x86_64"},
+            "outputs": {"results.json": "sha256:abc"}
         }), encoding="utf-8")
-        assert not has_pinned_execution_provenance(str(incomplete_file2)), "Missing command should fail"
+        res3 = verify_provenance_contract(str(no_src))
+        assert not res3["valid_contract"]
+        assert "source_linkage" in res3["error"]
 
-        # 4. Positive: Complete qualifying execution receipt
-        complete_receipt = tmp_path / "qualifying_receipt.json"
-        complete_receipt.write_text(json.dumps({
-            "execution_receipt": "verified",
-            "provenance_commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
-            "environment": "Linux x86_64 release toolchain",
-            "command": "cmake --build build && python3 runner.py",
-            "input_source": "dataset_v1.tar.gz",
-            "output_result": "observed_measurements.json",
-            "scope": "reproducible benchmark verification"
+        # 4. Missing outputs / output identities
+        no_out = tmp_path / "no_out.json"
+        no_out.write_text(json.dumps({
+            "schema": "t81.provenance.v1",
+            "pinned_commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+            "source_linkage": ["src/vm/vm.cpp"],
+            "commands": ["cmake --build build"],
+            "environment": {"os": "linux", "arch": "x86_64"},
+            "outputs": {}
         }), encoding="utf-8")
-        assert has_pinned_execution_provenance(str(complete_receipt)), "Complete qualifying receipt must pass"
+        res4 = verify_provenance_contract(str(no_out))
+        assert not res4["valid_contract"]
+        assert "outputs" in res4["error"]
+
+        # 5. Candidate for verification (well-formed, but unverified execution -> tier NONE)
+        candidate = tmp_path / "candidate_receipt.json"
+        candidate.write_text(json.dumps({
+            "schema": "t81.provenance.v1",
+            "pinned_commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+            "source_linkage": ["src/vm/vm.cpp"],
+            "commands": ["cmake --build build"],
+            "environment": {"os": "linux", "arch": "x86_64"},
+            "outputs": {"results.json": "sha256:abc123def456"}
+        }), encoding="utf-8")
+        res5 = verify_provenance_contract(str(candidate))
+        assert res5["valid_contract"]
+        assert res5["candidate_for_verification"]
+        assert not res5["verified_tier_a"]
+        assert not has_pinned_execution_provenance(str(candidate))
+
+        # 6. Full independently executed verified provenance -> attains Tier A
+        verified = tmp_path / "verified_receipt.json"
+        verified.write_text(json.dumps({
+            "schema": "t81.provenance.v1",
+            "pinned_commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
+            "source_linkage": ["src/vm/vm.cpp"],
+            "commands": ["cmake --build build"],
+            "environment": {"os": "linux", "arch": "x86_64"},
+            "outputs": {"results.json": "sha256:abc123def456"},
+            "verified_execution": "INDEPENDENTLY_REPRODUCED_TIER_A"
+        }), encoding="utf-8")
+        res6 = verify_provenance_contract(str(verified))
+        assert res6["valid_contract"]
+        assert res6["verified_tier_a"]
+        assert has_pinned_execution_provenance(str(verified))
 
 
 def test_rfc_authority_classification() -> None:
@@ -196,8 +274,10 @@ def main() -> int:
     print(" - test_h04_r02_limitations_and_exact_numerical_results: PASSED")
     test_no_unsupported_tier_a_assignments()
     print(" - test_no_unsupported_tier_a_assignments: PASSED")
-    test_has_pinned_execution_provenance_unit()
-    print(" - test_has_pinned_execution_provenance_unit: PASSED")
+    test_archive_path_membership_affects_lifecycle_only()
+    print(" - test_archive_path_membership_affects_lifecycle_only: PASSED")
+    test_structured_provenance_contract_unit()
+    print(" - test_structured_provenance_contract_unit: PASSED")
     test_rfc_authority_classification()
     print(" - test_rfc_authority_classification: PASSED")
     print("All archaeology inventory regression tests passed.")
