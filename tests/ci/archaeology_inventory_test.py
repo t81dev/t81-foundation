@@ -224,9 +224,11 @@ def test_structured_provenance_contract_unit() -> None:
         assert not res5["verified_tier_a"]
         assert not has_pinned_execution_provenance(str(candidate))
 
-        # 6. Full independently executed verified provenance -> attains Tier A
-        verified = tmp_path / "verified_receipt.json"
-        verified.write_text(json.dumps({
+        # 6. Adversarial test: Self-attested JSON claims (e.g. verified_execution)
+        # must NEVER independently establish Tier A promotion without external verification.
+        # It must remain candidate_for_verification (NONE) rather than verified Tier A.
+        self_attested = tmp_path / "self_attested_receipt.json"
+        self_attested.write_text(json.dumps({
             "schema": "t81.provenance.v1",
             "pinned_commit": "f775680aba7db200691c0f4e2a3174b0e7e51581",
             "source_linkage": ["src/vm/vm.cpp"],
@@ -235,10 +237,11 @@ def test_structured_provenance_contract_unit() -> None:
             "outputs": {"results.json": "sha256:abc123def456"},
             "verified_execution": "INDEPENDENTLY_REPRODUCED_TIER_A"
         }), encoding="utf-8")
-        res6 = verify_provenance_contract(str(verified))
+        res6 = verify_provenance_contract(str(self_attested))
         assert res6["valid_contract"]
-        assert res6["verified_tier_a"]
-        assert has_pinned_execution_provenance(str(verified))
+        assert res6["candidate_for_verification"]
+        assert not res6["verified_tier_a"], "Self-attested receipt must NOT attain Tier A"
+        assert not has_pinned_execution_provenance(str(self_attested)), "has_pinned_execution_provenance must return False for self-attested receipt"
 
 
 def test_rfc_authority_classification() -> None:

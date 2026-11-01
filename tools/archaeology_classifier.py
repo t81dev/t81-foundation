@@ -88,20 +88,20 @@ def verify_provenance_contract(path: str) -> Dict[str, Any]:
         return {"valid_contract": False, "candidate_for_verification": False, "verified_tier_a": False, "error": "Missing or empty outputs"}
 
     # 7. Independent execution verification status
-    # Per contract: receipts without executed independent verification in the static analysis
-    # session are classified as candidates for verification (NONE) rather than verified Tier A.
-    verified_execution = data.get("verified_execution") or data.get("reproduction_status")
-    is_verified = (verified_execution == "INDEPENDENTLY_REPRODUCED_TIER_A")
-
+    # Per contract: Self-attested fields inside a receipt (such as verified_execution or reproduction_status)
+    # never establish execution verification. A JSON status string must never independently establish Tier A.
+    # All structured receipts remain candidates for verification (evidence_tier: NONE) until external
+    # independent reproducibility is established by a separate verified process.
     return {
         "valid_contract": True,
         "candidate_for_verification": True,
-        "verified_tier_a": is_verified,
+        "verified_tier_a": False,
         "error": None
     }
 
 def has_pinned_execution_provenance(path: str) -> bool:
-    """Returns True ONLY if artifact satisfies structured provenance contract AND has verified execution."""
+    """Returns True ONLY if artifact satisfies structured provenance contract AND has verified execution.
+    Self-attested JSON claims inside an artifact never grant verified Tier A."""
     res = verify_provenance_contract(path)
     return res["verified_tier_a"]
 
