@@ -219,3 +219,20 @@ A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reported
 **Workstream separation:** (1) scientific report and primary-source citation audit; (2) PR #660 evidence-inventory corrections; (3) separate baseline CI maintenance to unblock #658. None automatically authorizes the others. Preserve negative results and existing research scope. **No merge, benchmark, Phase C, protection bypass, or production claim is implied.**
 
 **Next AI-instance action:** Refresh main/PR heads and CI, read the canonical register and primary experiment packets, then advance the comprehensive report without inventing independent reproduction or re-running completed investigations by default.
+
+---
+
+## 2026-11-01 AIOPT-001 M2 handoff — latest inspected GitHub snapshot
+
+| PR | Role | Inspected head | Disposition |
+| --- | --- | --- | --- |
+| [#665](https://github.com/t81dev/t81-foundation/pull/665) | M1 correctness candidate | `e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db` (earlier observation) | Local correctness evidence; independent acceptance not established |
+| [#669](https://github.com/t81dev/t81-foundation/pull/669) | M2 adversarial design assessment | `30bef63a433f95c8be7356a75d8f6971255b569a` (earlier observation) | Merged assessment, **not** experiment authorization |
+| [#671](https://github.com/t81dev/t81-foundation/pull/671) | B/C decision and S/A/T separation | `8892d094b6ec62728eb783cd7fb735cf3d57de5f` | Open/draft; recommendation only |
+| [#672](https://github.com/t81dev/t81-foundation/pull/672) | Revised polynomial protocol | `13e1828cc4f6cbeba1b37c18345eb68a5da98147` | Open/draft; workload **unaccepted** |
+| [#673](https://github.com/t81dev/t81-foundation/pull/673) | Codex independent protocol audit | `b8ab59ccb8183db9476d47259bd43de1ea34522a` | Open/draft; `PROTOCOL_REVISION_REQUIRED`, seven P1 blockers |
+| [#674](https://github.com/t81dev/t81-foundation/pull/674) | Jules adversarial workload critique, qualified | `4ab1fca95a8747d33d414d3e59fe8ed014c105f7` | Open/non-draft; polynomial redesign proposed, not validated |
+
+**What changed:** Original #672 encode/store/decode/reduce `(sum, nonzero_count)` task was challenged because input inspection can compute outputs and bypass the intended consumer. The revised proposal evaluates exact signed-trit coefficient polynomials modulo `2^64`, but sparse exponentiation versus Horner introduces an algorithm/representation confound. The draft now separates S (causal representation choice), A (algorithm routing), and T (genuinely ternary-specific mechanism). The latter has **no approved experiment**. Even at 5% density, proposed sparse payload can exceed two-bit packed payload for the earlier lengths, so no format crossover or speedup is guaranteed.
+
+**Open gates:** Choose whether M2 is bounded S/A research or deferred pending a T hypothesis; justify a real producer/consumer lifecycle; separate format from algorithm comparisons; freeze a trace, selectors, byte grammar, hardware, statistical method and practical threshold; independently clear seven P1 findings; reconcile M1; obtain explicit commit-scoped authorization. Do not implement, benchmark, merge, or claim radix superiority from these draft documents. These observations are dated; refresh actual GitHub heads and CI.
