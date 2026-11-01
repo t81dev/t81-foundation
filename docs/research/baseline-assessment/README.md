@@ -40,7 +40,7 @@ Every total below is computed under the explicit counting rubrics defined in [ME
 | **Major Subsystems Audited** | **10** | Core architectural divisions in codebase | 10 audited (Core Arith, Compiler, VM, Axion, CanonFS, Tensor/SIMD, DPE, TernaryOS, Crypto, Cognitive) |
 | **Engineering Capabilities** | **23** | Major architectural capabilities mapped | **21 Tested, 1 Implemented, 1 Specified** (18 Integrated, 4 Experimental, 1 Unintegrated) |
 | **Benchmark Families Audited** | **26** | 17 compiled Google Benchmark suites + 9 formal experiment harnesses | **16 Executed, 9 Source-Only, 1 Blocked (Physical Storage)** |
-| **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **9 Tier 1 (Source-Only), 6 Tier 2 (Insufficient Provenance), 9 Tier 3 (Attributable Evidence), 0 Tier 4 (Independently Reproduced), 1 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
+| **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **9 Tier 1 (Source-Only), 6 Tier 2 (Insufficient Provenance), 8 Tier 3 (Attributable Evidence), 0 Tier 4 (Independently Reproduced), 2 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
 | **Canonical Hypotheses (H01–H08)**| **8** | Canonical H01–H08 hypothesis register | **1 Operational/Comparative Untested (H07), 1 Methodological Framework Active/Comparative Untested (H08), 2 Refuted in tested scope (H04, H06 measured ARM64 kernels), 2 Conditional (H02, H03), 1 Blocked (H01), 1 Plausible/Unverified (H05)** |
 
 ---
