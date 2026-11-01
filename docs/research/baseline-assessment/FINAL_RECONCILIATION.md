@@ -38,10 +38,20 @@ Crucially, this reconciliation:
 | **FINDING-07 (RFC Counting Rules)** | Frontmatter status counts (83 accepted, 11 superseded, 11 unparsed, 8 draft) inconsistent with catalog table counts (94 accepted, 11 superseded, 5 draft) | `spec/rfcs/index.md`, `spec/rfcs/RFC-*.md`, `scripts/governance/check_rfc_lifecycle_hygiene.py` | **DOCUMENTED COUNTING RULES**: Catalog table has 110 entries; RFC files total 113 (111 unique IDs due to 2 companion profiles + 1 uncataloged `RFC-00D4`). The 11 unparsed files use markdown table formatting (`\| Status \| Accepted \|`) not matched by line-prefix regex. | `METHODOLOGY.md`, `README.md` | Ran deterministic parser script evaluating table syntax vs header prefix syntax | Governance script `check_rfc_lifecycle_hygiene.py` rejects table syntax until updated |
 | **FINDING-08 (Direct API Speedup Simulation)** | EXP-DIRECT-API-SPEEDUP was Tier 3 (Attributable Evidence); claimed 864.4x speedup of Direct API over CLI baseline | `src/test_production_direct_api.cpp` (lines 184, 187: hardcoded `std::this_thread::sleep_for(2650us)` + `200us`) | **SIMULATED WORKLOAD (Tier 2)**: Direct API benchmark uses hardcoded sleep loops simulating execution duration rather than running real T81 model inference or policy checks; downgraded from Tier 3 to Tier 2 | `BENCHMARK_LEDGER.csv`, `METHODOLOGY.md`, `README.md` | Inspected C++ harness source code in `src/test_production_direct_api.cpp` | Real model inference latency unmeasured in harness; reflects mock sleep loop only |
 | **FINDING-09 (H04-R01 Artifact Attribution)** | EXP-H04-R01 was Tier 3; attributed 4-arm adaptive trace sweep to `experiments/radix_comparison/results.json` | `docs/research/continuity/H04_RADIX_ADAPTATION_DISCRIMINATOR.md`; `experiments/radix_comparison/results.json` | **UNEXECUTED / PROPOSED (Tier 1)**: H04-R01 is explicitly a selected specification, not benchmarked; `radix_comparison/results.json` is a separate 64-bit microbenchmark across radices 2/3/9/27/81, not the 4-arm adaptive sweep | `BENCHMARK_LEDGER.csv`, `METHODOLOGY.md`, `HYPOTHESIS_STATUS.md`, `README.md` | Inspected JSON schema of `results.json` vs protocol specification in `H04_RADIX_ADAPTATION_DISCRIMINATOR.md` | 4-arm adaptive capacity protocol was never executed in tree at baseline |
-| **FINDING-10 (H04-R02 Historical vs Model)** | EXP-H04-R02 conflated invalid historical reports with corrected results; did not separate physical-data limits | `experiments/h04_r02_adaptive_representation/` (`HISTORICAL_RESULTS.md`, `CORRECTED_RESULTS.md`, `LIMITATIONS.md`) | **SEPARATED INVALID HISTORICAL FROM SYMBOLIC MODEL (Tier 5)**: Disentangled historical Classification D defects from corrected symbolic model (AT=1210 < AB=1250 on boundary_oscillation under 10-bit Tier-0 control); explicitly preserved physical limits (offline DP, stipulated selection costs, unequal capacity) | `BENCHMARK_LEDGER.csv`, `HYPOTHESIS_STATUS.md` | Inspected `DISCREPANCY_LEDGER.md` and `LIMITATIONS.md` | Real encoder, conversion, and hardware silicon costs remain unmeasured |
+| **FINDING-10 (H04-R02 Historical vs Model)** | EXP-H04-R02 conflated invalid historical reports with corrected results; did not separate physical-data limits | `experiments/h04_r02_adaptive_representation/` (`HISTORICAL_RESULTS.md`, `CORRECTED_RESULTS.md`, `LIMITATIONS.md`) | **SEPARATED HISTORICAL CLASSIFICATION D FROM CORRECTED SYMBOLIC ORACLE (Tier 3 for corrected model only)**: Disentangled historical Classification D defects from corrected symbolic model (AT=1210 < AB=1250 on boundary_oscillation under 10-bit Tier-0 control); explicitly preserved physical limits (offline DP, stipulated selection costs, unequal capacity) | `BENCHMARK_LEDGER.csv`, `HYPOTHESIS_STATUS.md` | Inspected `DISCREPANCY_LEDGER.md` and `LIMITATIONS.md` | Real encoder, conversion, and hardware silicon costs remain unmeasured |
 | **FINDING-11 (H06 Scope Restriction)** | H06 declared universally refuted on binary silicon based on microbenchmark | `benchmarks/results/inference_comparison.md` (ARM64 NEON dot product 72.2 vs 4.96 Gops/s) | **RESTRICTED TO MEASURED ARM64 KERNELS**: INT8 14.5x advantage is strictly restricted to measured ARM64 CPU vector kernel microbenchmarks; model-level inference, non-ARM64 platforms, and custom hardware architectures left unresolved | `HYPOTHESIS_STATUS.md`, `GAPS_AND_PRIORITIES.md`, `README.md` | Inspected raw benchmark data in `inference_comparison.md` | End-to-end full model inference benchmarks across heterogeneous hardware remain open |
 
 ---
+
+### H04-R02 evidence identities (non-interchangeable)
+
+- **Historical H04-R02 / Classification D:** `HISTORICAL_RESULTS.md` and discrepancy records describe invalid historical methodology. These results remain superseded and must not be cited as evidence for a ternary performance advantage.
+- **Corrected H04-R02 / symbolic oracle:** `CORRECTED_RESULTS.md`, `oracle.py`, and `LIMITATIONS.md` support a scoped, executable mathematical model (Tier 3 attributable model evidence). The `boundary_oscillation` example AT=1210 versus AB=1250 at r=1.60 uses stipulated costs, offline optimization and unequal native state capacities; it is not matched hardware performance evidence.
+- **Counting rule:** One corrected H04-R02 experiment family occupies the Tier 3 ledger row. Historical invalid artifacts are recorded here separately and are not counted as another benchmark family.
+
+### H04-R01 archive verification outstanding
+
+Codex identified `experiments/h04_r02_adaptive_representation/evidence/h04-r01-def47c68.tar.gz` as a possible historical H04-R01 evidence archive. The current Tier 1 row describes the specified four-arm protocol and must **not** be interpreted as proof that no historical experiment was executed. Archive contents and their relationship to that protocol require direct verification before any broader H04-R01 execution claim is made.
 
 ## 3. Evidence Classification Tiers (Reconciled)
 
@@ -51,9 +61,9 @@ Across the 26 audited benchmark families in `BENCHMARK_LEDGER.csv`:
 | :--- | :--- | :--- | :--- |
 | **Tier 1 (Source-Only / Proposed)** | Benchmark suite or protocol defined in tree; no raw execution results or primary artifacts archived | **9** | `BM_Base81SIMD`, `BM_DPE`, `BM_DeterminismValidation`, `BM_GovernedWorkflows`, `BM_LlamaGguf`, `BM_NativeWeightsExecution`, `BM_TensorPromotion`, `EXP-H09-E1`, `EXP-H04-R01` |
 | **Tier 2 (Executed, Insufficient Provenance)** | Candidate runs preserved, but binary comparators missing/below resolution, measurements unauthorized, simulated workloads, or evidence unresolved | **6** | `BM_PackedTritVector`, `BM_DispatchOverhead`, `BM_VMSimulation`, `EXP-CMP3-R1` (PMU_UNAVAILABLE), `EXP-FLOAT-CONVERSION` (UNRESOLVED), `EXP-DIRECT-API-SPEEDUP` (SIMULATED) |
-| **Tier 3 (Executed with Attributable Evidence)** | Attributed raw execution logs, machine metadata, or mathematical oracle evaluations in tree | **8** | `BM_CanonFS`, `BM_InferenceComparison`, `BM_Lexer`, `BM_LimbMul`, `BM_TensorMatMul`, `BM_TritwiseWorkloads`, `EXP-S02`, `EXP-DURABLE-WITNESS` |
+| **Tier 3 (Executed with Attributable Evidence)** | Attributed raw execution logs, machine metadata, or mathematical oracle evaluations in tree | **9** | `BM_CanonFS`, `BM_InferenceComparison`, `BM_Lexer`, `BM_LimbMul`, `BM_TensorMatMul`, `BM_TritwiseWorkloads`, `EXP-S02`, `EXP-DURABLE-WITNESS`, `EXP-H04-R02` (corrected symbolic oracle only) |
 | **Tier 4 (Independently Reproduced)** | Attributable multi-runner execution reproduction across distinct physical machines, operating systems, and compilers | **0** | *None qualify at baseline (downgraded CMP3 and Float Conversion to Tier 2)* |
-| **Tier 5 (Methodologically Invalid / Superseded)** | Demonstrated by adversarial audit to suffer from fatal methodology defects or capacity asymmetry | **2** | `BM_LlamaKernels` (invalid unvectorized baseline artifact), `EXP-H04-R02` (Classification D: capacity asymmetry, metadata scaling defect) |
+| **Tier 5 (Methodologically Invalid / Superseded)** | Demonstrated by adversarial audit to suffer from fatal methodology defects or capacity asymmetry | **1** | `BM_LlamaKernels` (invalid unvectorized baseline artifact). Historical `EXP-H04-R02` Classification D artifacts are a distinct invalid evidence identity, not the corrected model's family classification. |
 | **Tier 6 (Blocked / Incomplete)** | Empirical characterization blocked by absence of matched physical hardware data | **1** | `EXP-INV-10A` (physical solid-state ternary storage assessment) |
 | **Total** | | **26** | **16 Executed, 9 Source-Only, 1 Blocked** |
 
@@ -101,9 +111,9 @@ print(Counter(x['Classification_Tier'] for x in r))
 # Output:
 # Counter({
 #   'Tier 1 (Source-Only / Proposed)': 9,
-#   'Tier 3 (Executed with Attributable Evidence)': 8,
+#   'Tier 3 (Executed with Attributable Evidence)': 9,
 #   'Tier 2 (Executed, Insufficient Provenance)': 6,
-#   'Tier 5 (Methodologically Invalid / Superseded)': 2,
+#   'Tier 5 (Methodologically Invalid / Superseded)': 1,
 #   'Tier 6 (Blocked / Incomplete)': 1
 # })
 
