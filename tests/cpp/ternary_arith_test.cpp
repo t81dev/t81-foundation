@@ -80,6 +80,81 @@ int main() {
     assert(acc == 0);
   }
 
+  // --- regression: INT64_MIN and INT64_MAX exact roundtrips ---
+  {
+    [[maybe_unused]] const auto max_trits = encode_i64(INT64_MAX);
+    assert(decode_i64(max_trits) == INT64_MAX);
+
+    [[maybe_unused]] const auto min_trits = encode_i64(INT64_MIN);
+    assert(decode_i64(min_trits) == INT64_MIN);
+
+    // Boundary check: INT64_MAX - 1 and INT64_MIN + 1
+    assert(decode_i64(encode_i64(INT64_MAX - 1)) == (INT64_MAX - 1));
+    assert(decode_i64(encode_i64(INT64_MIN + 1)) == (INT64_MIN + 1));
+  }
+
+  // --- regression: redundant leading-zero trits (at end of LSB-first vector) ---
+  {
+    // Small numbers with up to 60 redundant leading zeros
+    for (int64_t base_val : {0, 1, -1, 42, -42, 123456789, -123456789}) {
+      auto ds = encode_i64(base_val);
+      for (size_t zeros = 1; zeros <= 60; ++zeros) {
+        ds.push_back(Trit::Zero);
+        assert(decode_i64(ds) == base_val);
+      }
+    }
+
+    // INT64_MAX and INT64_MIN with redundant leading zeros
+    auto max_ds = encode_i64(INT64_MAX);
+    for (size_t zeros = 1; zeros <= 10; ++zeros) {
+      max_ds.push_back(Trit::Zero);
+      assert(decode_i64(max_ds) == INT64_MAX);
+    }
+
+    auto min_ds = encode_i64(INT64_MIN);
+    for (size_t zeros = 1; zeros <= 10; ++zeros) {
+      min_ds.push_back(Trit::Zero);
+      assert(decode_i64(min_ds) == INT64_MIN);
+    }
+
+    // All zero vector with many trits
+    std::vector<Trit> many_zeros(50, Trit::Zero);
+    assert(decode_i64(many_zeros) == 0);
+  }
+
+  // --- regression: positive and negative overflow saturation ---
+  {
+    // Positive overflow: values > INT64_MAX clamp to INT64_MAX
+    // INT64_MAX is 9223372036854775807.
+    // 3^40 = 12157665459056928801 > INT64_MAX. A single trit Pos at index 40:
+    std::vector<Trit> pow40_pos(41, Trit::Zero);
+    pow40_pos[40] = Trit::Pos;
+    assert(decode_i64(pow40_pos) == INT64_MAX);
+
+    // INT64_MAX + 1: immediately beyond positive signed 64-bit limit
+    auto one_trit = encode_i64(1);
+    auto max_plus_1 = add(encode_i64(INT64_MAX), one_trit);
+    assert(decode_i64(max_plus_1) == INT64_MAX);
+
+    // Multiple higher powers of 3
+    std::vector<Trit> huge_pos(64, Trit::Pos);
+    assert(decode_i64(huge_pos) == INT64_MAX);
+
+    // Negative overflow: values < INT64_MIN clamp to INT64_MIN
+    // -3^40 < INT64_MIN. A single trit Neg at index 40:
+    std::vector<Trit> pow40_neg(41, Trit::Zero);
+    pow40_neg[40] = Trit::Neg;
+    assert(decode_i64(pow40_neg) == INT64_MIN);
+
+    // INT64_MIN - 1: immediately beyond negative signed 64-bit limit
+    auto min_minus_1 = add(encode_i64(INT64_MIN), encode_i64(-1));
+    assert(decode_i64(min_minus_1) == INT64_MIN);
+
+    // Multiple higher powers of -3
+    std::vector<Trit> huge_neg(64, Trit::Neg);
+    assert(decode_i64(huge_neg) == INT64_MIN);
+  }
+
   std::cout << "ternary_arith ok\n";
   return 0;
 }
