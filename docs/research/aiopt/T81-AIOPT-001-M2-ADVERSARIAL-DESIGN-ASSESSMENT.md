@@ -137,7 +137,7 @@ On general-purpose x86_64/ARM64 binary processors, a word-parallel 2-bit packed 
 
 #### 2. Appropriate Binary Baselines
 1. **Scalar Byte Baseline:** Reference loop comparing `int8_t` values with explicit branch checks.
-2. **Bit-Sliced Binary Baseline:** Two 64-bit words per position (`care_mask`, `val_mask`), checking 64 patterns in parallel via bitwise operations.
+2. **Bit-Sliced Binary Baseline:** Three per-position requirement bitplanes (`is_neg`, `is_zero`, `is_pos`) with one bit per catalog pattern. All three zero represents wildcard. For input state q, the mismatch bits are `(is_neg | is_zero | is_pos) & ~is_q`; intersect their complement with the current candidate bitset. Include three-plane storage, transposition and multi-match output costs. Any two-plane alternative requires an explicit four-state encoding and verified equivalent predicate.
 3. **Inverted Index / Pre-Filtered Baseline:** Per-position sparse index filtering candidates before full evaluation.
 4. **SIMD Byte Vectorized Baseline:** AVX2/NEON vector compare using `_mm256_cmpeq_epi8` with wildcard blend.
 
@@ -252,9 +252,9 @@ Candidate C introduces three distinct, uninvestigated scientific deltas:
 - Single-vector latency ($B = 1$) and batched throughput ($B = 32$).
 
 #### 7. Bounded Failure and Inconclusive Criteria
-- **Bounded Negative Finding:** If the packed ternary implementation fails to achieve a preregistered improvement threshold (e.g., $\ge 10\%$) in absolute end-to-end wall-clock latency over the fastest conventional binary baseline (such as INT8 VNNI) on the tested configurations with non-overlapping $99\%$ bootstrap confidence intervals, record a **bounded negative outcome restricted strictly to the tested workload, matrix shapes, and microarchitecture**. (Crucially: this does **not** formally falsify all potential CPU ternary advantages universally, but conclusively establishes the boundary for the tested implementation).
-- **Supported in Tested Scope:** Packed ternary achieves $\ge 10\%$ lower end-to-end wall-clock latency on memory-bound or sparse shapes ($2048 \times 2048, Z \ge 0.50$) with correct outputs and complete cost accounting.
-- **Inconclusive:** Confidence intervals span both negligible and meaningful improvements, or outcomes contradict between x86_64 VNNI and ARM64 NEON platforms.
+- **Bounded Negative Finding:** The confidence interval for paired relative end-to-end improvement must exclude the preregistered practical-improvement threshold from above, with adequate power and measurement validity. A point estimate below threshold, failure to reject a null or non-overlap of separate latency intervals is insufficient. Conclusions remain restricted to the tested workload, implementation, comparator and microarchitecture.
+- **Supported in Tested Scope:** The paired comparative-effect interval establishes the preregistered end-to-end improvement threshold with correct outputs and full cost accounting, on the tested shapes and verified memory-residency regime.
+- **Inconclusive:** The comparative-effect interval spans the practical-improvement threshold, precision or power is inadequate, or platform differences lack a preregistered interpretation.
 
 #### 8. Resource Requirements
 - C++20 implementation with SIMD intrinsics (AVX2, AVX-512 VNNI, ARM NEON).
@@ -311,7 +311,7 @@ To ensure methodological fairness and prevent the errors of past benchmarks, any
 
 1. **Workload Bounding:**
    - Single precision dot product: Matrix $W \in \{-1, 0, +1\}^{M \times K}$, Vector $X \in \{-128, \dots, +127\}^K$, Accumulator $Y \in \mathbb{Z}^{M}$.
-   - Matrix shapes: Exactly one small cache-resident shape ($M = 256, K = 256$) and one memory-bound shape ($M = 2048, K = 2048$).
+   - Matrix shapes: One nominal cache-resident control ($M = 256, K = 256$) and one larger candidate ($M = 2048, K = 2048$). Do not presume the larger case is DRAM-bound: INT8 weights occupy 4 MiB and 2-bit packed weights about 1 MiB, potentially fitting in last-level cache. Inspect the target hardware cache hierarchy and verify memory traffic; if DRAM behavior is essential, preregister a larger hardware-relative working set or controlled streaming/cold-cache protocol. Otherwise report the actual cache-residency regime.
    - Weight sparsity: Exactly two fixed levels: $Z = 0.33$ (uniform random trits) and $Z = 0.60$ (sparse BitNet distribution).
 2. **Comparators:**
    - **Baseline 1:** Reference unrolled scalar loop in C++.
@@ -322,7 +322,7 @@ To ensure methodological fairness and prevent the errors of past benchmarks, any
    - **Mandatory Cost Accounting:** Must explicitly include input quantization/conversion time, matrix transposition/repacking overhead amortized over a predeclared reuse count $R$, memory footprint in bytes, and output writeback.
    - **Secondary Diagnostic Metrics:** Hardware PMU counters (`instructions`, `cycles`, `L1-dcache-load-misses`, `LLC-load-misses`) via `perf_event_open`. 'Cycles per non-zero MAC' is strictly a diagnostic ratio, not the primary evaluation metric.
 4. **Scope-Bounded Falsification Rule:**
-   - If the packed ternary implementation fails to achieve a preregistered improvement threshold (e.g., $\ge 10\%$) in absolute end-to-end wall-clock latency over the fastest conventional binary baseline on the $2048 \times 2048$ memory-bound shape under $99\%$ bootstrap confidence intervals, record a **bounded negative outcome restricted strictly to the tested workload, matrix shapes, and microarchitecture**.
+   - Define paired relative end-to-end improvement as `1 - (ternary latency / best fair binary latency)`. Preregister the practical threshold (proposed 10%), sampling, confidence level and multiplicity correction. Support requires the effect interval's lower bound to exceed the threshold; a bounded negative requires its upper bound below the threshold with adequate power and valid measurement; otherwise report inconclusive. Separate latency intervals or failure to reject a null are insufficient. Restrict findings to the measured implementations, workloads, hardware and verified cache regime.
    - Under no circumstances shall a negative outcome on this bounded configuration be extrapolated to claim universal impossibility across all potential hardware architectures or untested algorithmic formulations.
 
 ---
