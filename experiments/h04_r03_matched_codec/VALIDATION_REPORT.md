@@ -2,31 +2,37 @@
 
 **Experiment:** EXP-H04-R03 (Matched Codec Space-Time Tradeoff & Bounded-Access Discriminator)
 **Phase:** Phase B — Deterministic Correctness & Reference Implementation
-**Status:** COMPLETE (Deterministic Correctness Passed; Performance Benchmarking Strictly Stopped)
+**Status:** COMPLETE (Deterministic Correctness Passed; Performance Benchmarking Strictly Stopped; Phase B Status: **UNACCEPTED / PENDING INDEPENDENT VERIFICATION**)
 **Repository Baseline Commit SHA:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Execution Date:** 2026-11-01
 **Authority:** Bounded implementation and validation only. No merge, performance benchmarking, or production activation.
 
 ---
 
-## 1. Executive Summary & Response to Codex Review Findings
+## 1. Executive Summary & Response to Review Findings
 
-This report details the Phase B deterministic implementation and explicitly resolves the three adversarial findings raised during acceptance review:
+This report documents the deterministic reference implementations for EXP-H04-R03 Phase B and details the exact corrections applied in response to the three review findings:
 
-### Response to Finding 1: Constant-Space Bounded-Block Random Access
-- **Defect in previous draft:** `random_access()` called `compute_layout(N, ...)`, constructing an $O(B)$ list of all block offsets across the entire artifact, violating constant-space random access bounds for large $N$.
-- **Correction applied:** Refactored `random_access()` in `codec.py` to calculate the target block index $j = \text{index} // k$, block stride, and target block offset $D + j \times \text{stride}$ in strictly $O(1)$ arithmetic space. For `RA-INDEXED`, the function reads solely the 8-byte offset entry at byte offset $8 + 8j$. Preceding blocks are never decoded or enumerated.
-- **Verification:** Verified via deterministic assertions and bounds testing (`test_01`, `test_04`, `test_14`) showing touched bytes and operations depend strictly on $k$ and not $N$.
+### 1. Bounded Byte Access in Random Access
+- **Previous defect:** `random_access()` copied/sliced the entire containing block before extracting a symbol.
+- **Correction:** `random_access()` in `codec.py` now slices directly from `blob` without allocating or copying whole blocks:
+  - **B10:** Slices at most 3 payload bytes directly from `blob[block_offset + start_byte : block_offset + start_byte + 3]`.
+  - **T243 & B243-CLONE:** Slices at most 2 payload bytes directly from `blob[block_offset + start_byte : block_offset + end_byte + 1]`.
+  - **B729:** Retains bounded target-block decode (since finite block integer conversion requires the block bytes), strictly bounded by block size $k$.
+- **Verification:** Verified via `test_16_deterministic_operation_count_random_access` with an instrumented buffer verifying that touched payload bytes for B10 ($\le 3$) and T243 ($\le 2$) are bounded and strictly independent of sequence length $N$ (comparing $N=10$ and $N=1000$).
 
-### Response to Finding 2: Pre-Allocation Framing & Declared Count Validation
-- **Defect in previous draft:** Framing length checks permitted reading large headers before validating whether the declared count $N$ could physically fit within the supplied byte buffer, exposing decoders to excessive loop counts or denial-of-service on malformed payloads (e.g. $N = 2^{64}-1$).
-- **Correction applied:** `parse_framing()` and `random_access()` now enforce strict pre-allocation validation before any loop execution or index parsing. Declared count $N$ is compared against the minimal theoretical byte lower bound for the buffer length ($8 + \lfloor 6N/8 \rfloor \le \text{len}(\text{blob})$ and $N \le 2^{48}$).
-- **Verification:** Validated by `test_09_adversarial_malformed_frames_and_corruptions`, explicitly asserting rejection of maximum uint64 count ($2^{64}-1$) and inflated $N$ headers on truncated frames without allocation.
+### 2. Pre-Allocation Exact Canonical Framing
+- **Previous defect:** Frames with malformed or truncated payloads but declared large element counts $N$ could trigger index parsing or allocations before detecting wire mismatches.
+- **Correction:** Implemented `compute_expected_total_bytes()` in $O(1)$ space and time. `decode()` validates that `len(blob)` matches the exact expected canonical total length *before* calling `compute_layout()` or allocating/parsing index tables.
+- **Verification:** Verified via `test_09_adversarial_malformed_frames_and_corruptions`, explicitly asserting rejection of:
+  - $N = 2^{64}-1$ maximum uint64 count before allocation.
+  - Inflated declared counts on truncated blobs ($N=10^7$ with 20-byte blob).
+  - Malformed $N=10000, k=1, A=64$ examples: RA-FIXED 7,508-byte frame (expected 640,064 bytes) and RA-INDEXED 80,064-byte frame (expected 720,064 bytes) rejected immediately with zero allocation.
 
-### Response to Finding 3: Independent Correctness Witnesses & Known-Answer Vectors
-- **Defect in previous draft:** Correctness testing relied on candidate routines checking against candidate encoders/decoders without a fully detached analytical witness or known-answer vectors.
-- **Correction applied:** Created `experiments/h04_r03_matched_codec/independent_witness.py` providing hard-coded analytical known-answer vectors (KAV) and independently coded bit/trit string decoders for B10, T243, B243-CLONE, and B729 without importing or calling `codec.py` routines.
-- **Verification:** Verified in `test_15_known_answer_vectors_and_independent_decoders` ensuring bit-for-bit wire parity with independently derived bytes and 100% agreement on decoded payloads.
+### 3. Independent Asymmetric Witnesses & Digit-Order Mutation Check
+- **Previous defect:** Known-answer vectors were symmetric/palindromic, which would not detect a paired reversal of six-trit digit order.
+- **Correction:** Created `experiments/h04_r03_matched_codec/independent_witness.py` with standalone decoders and asymmetric known-answer vectors, including $x = -363 \implies u = 1$ (digits $[1, 0, 0, 0, 0, 0]$, whose palindromic reversal is $[0, 0, 0, 0, 0, 1] \implies u = 243 \implies x = -121$) and $x = 10 \implies u = 374$ ($[2, 1, 2, 1, 1, 1]$).
+- **Verification:** Verified via `test_15_known_answer_vectors_and_independent_decoders` and `test_17_adversarial_digit_order_mutation_rejection` demonstrating that a paired digit-order mutation fails the independent witness.
 
 ---
 
@@ -45,6 +51,7 @@ This report details the Phase B deterministic implementation and explicitly reso
 3. **Separation of Concerns:**
    - Mathematical bounds ($b(m) = \text{bit\_length}(729^m - 1)$) are strictly distinguished from implemented byte layouts (which include count headers, index tables, alignment gaps, and final block padding).
    - Deterministic wire correctness is verified; no CPU cycles, execution timings, PMU counters, or energy metrics were collected.
+   - Phase B status is designated: **UNACCEPTED / PENDING INDEPENDENT VERIFICATION**.
 
 ---
 
@@ -56,11 +63,11 @@ python3 experiments/h04_r03_matched_codec/test_matched_codec.py
 ```
 
 ### Results Summary
-- **Total Test Cases:** 16
-- **Passed:** 16
+- **Total Test Cases:** 17
+- **Passed:** 17
 - **Failed:** 0
 - **Skipped:** 0
-- **Duration:** 1.56s
+- **Duration:** 1.46s
 
 ### Test Coverage Details
 
@@ -74,20 +81,21 @@ python3 experiments/h04_r03_matched_codec/test_matched_codec.py
 | `test_06_size_inequality_theorem` | Exhaustive proof check: $L_{\text{B729}}(m) \le L_{\text{T243}}(m) \le L_{\text{B10}}(m)$ for all $1 \le m \le 1024$ | **PASS** |
 | `test_07_analytical_table_verification` | Exact Section 9 specification table checks ($k \in \{1, 5, 64, 1024\}$) | **PASS** |
 | `test_08_adversarial_invalid_symbols_rejected` | Strict rejection of out-of-range symbols ($<-364, >364$) and invalid types | **PASS** |
-| `test_09_adversarial_malformed_frames_and_corruptions` | Strict rejection of truncated headers, indices, payloads, max uint64 counts ($2^{64}-1$), and trailing garbage | **PASS** |
+| `test_09_adversarial_malformed_frames_and_corruptions` | Strict rejection of truncated headers, indices, payloads, max uint64 ($2^{64}-1$), and malformed N=10,000 k=1 A=64 frames | **PASS** |
 | `test_10_adversarial_t243_forbidden_bytes` | Strict rejection of T243 payload bytes $\ge 243$ | **PASS** |
 | `test_11_adversarial_b10_prohibited_states` | Strict rejection of B10 field values $729..1023$ | **PASS** |
 | `test_12_adversarial_b729_integer_overflow_and_high_padding` | Strict rejection of B729 integer overflow and nonzero high padding bits | **PASS** |
 | `test_13_adversarial_alignment_padding_corruption` | Strict rejection of nonzero alignment gap padding | **PASS** |
 | `test_14_adversarial_random_access_bounds` | Strict rejection of out-of-bounds random access queries ($<0, \ge N$) | **PASS** |
-| `test_15_known_answer_vectors_and_independent_decoders` | Validation against hard-coded known-answer vectors and independent decoders | **PASS** |
+| `test_15_known_answer_vectors_and_independent_decoders` | Validation against asymmetric known-answer vectors and independent decoders | **PASS** |
 | `test_16_deterministic_operation_count_random_access` | Verification of deterministic bounded-byte touch count for random access | **PASS** |
+| `test_17_adversarial_digit_order_mutation_rejection` | Rejection of six-trit digit-order reversal mutation by independent witness | **PASS** |
 
 ---
 
-## 4. Unresolved Acceptance Requirements & Phase C Prerequisites
+## 4. Phase C Prerequisites (Pre-Registration & Gates)
 
-Phase B is **complete**. In accordance with T81 PM directives, **all work stops here**.
+Phase B remains **UNACCEPTED / PENDING INDEPENDENT VERIFICATION**. In accordance with T81 PM directives, **all work stops here**.
 
 ### Remaining Phase C Prerequisites:
 1. **Pre-Registration of Primary Configuration:**

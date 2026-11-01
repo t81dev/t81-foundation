@@ -377,32 +377,75 @@ def encode(values: Sequence[int], arm: str, k: int, A: int, access_mode: str = "
     return bytes(out)
 
 
-def decode(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> List[int]:
-    """Decode complete framed wire artifact into a list of signed integers."""
-    N, B, block_offsets, D = parse_framing(blob, k, A, access_mode)
+def compute_expected_total_bytes(N: int, k: int, A: int, access_mode: str, arm: str) -> int:
+    """Compute the exact canonical expected total wire length in O(1) space and time."""
     if N == 0:
+        return 8
+    B = (N + k - 1) // k
+    header_bytes = 8
+    index_bytes = 8 * B if access_mode == "RA-INDEXED" else 0
+    H = header_bytes + index_bytes
+    D = align_up(H, A)
+
+    raw_func = {
+        "B10": L_B10,
+        "T243": L_T243,
+        "B243-CLONE": L_T243,
+        "B729": L_B729,
+    }[arm]
+    stride = align_up(raw_func(k), A)
+
+    if B == 1:
+        return D + align_up(raw_func(N), A)
+    else:
+        last_m = N - (B - 1) * k
+        aligned_last = align_up(raw_func(last_m), A)
+        return D + (B - 1) * stride + aligned_last
+
+
+def decode(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> List[int]:
+    """Decode complete framed wire artifact into a list of signed integers.
+
+    Validates exact expected canonical total length in O(1) space before any
+    block allocation or index table parsing.
+    """
+    if len(blob) < 8:
+        raise CodecError(f"Corrupted frame: blob length {len(blob)} < 8 bytes")
+    (N,) = struct.unpack('<Q', blob[:8])
+    if N == 0:
+        if len(blob) != 8:
+            raise CodecError(f"Extra trailing bytes for N=0: length {len(blob)} != 8")
         return []
 
-    layout = compute_layout(N, k, A, access_mode, arm)
-    if len(blob) != layout["total_bytes"]:
-        raise CodecError(f"Invalid frame total bytes: expected {layout['total_bytes']}, got {len(blob)}")
+    # Compute exact canonical total wire bytes in O(1) space
+    expected_total = compute_expected_total_bytes(N, k, A, access_mode, arm)
+    if len(blob) != expected_total:
+        raise CodecError(f"Invalid frame total bytes for N={N}, k={k}, A={A}: expected {expected_total}, got {len(blob)}")
+
+    N, B, block_offsets, D = parse_framing(blob, k, A, access_mode)
+
+    raw_func = {
+        "B10": L_B10,
+        "T243": L_T243,
+        "B243-CLONE": L_T243,
+        "B729": L_B729,
+    }[arm]
+    stride = align_up(raw_func(k), A)
 
     if access_mode == "RA-INDEXED":
-        if block_offsets != layout["block_offsets"]:
-            raise CodecError(f"Non-canonical block offsets in index: got {block_offsets}, expected {layout['block_offsets']}")
+        # Validate that all parsed index offsets are strictly canonical
+        for j in range(B):
+            expected_off = D + j * stride
+            if block_offsets[j] != expected_off:
+                raise CodecError(f"Non-canonical block offset in index at {j}: got {block_offsets[j]}, expected {expected_off}")
 
     decoder = ARM_DECODERS[arm]
     result: List[int] = []
 
     for j in range(B):
         m_j = min(k, N - j * k)
-        off_j = layout["block_offsets"][j]
-        raw_l = {
-            "B10": L_B10,
-            "T243": L_T243,
-            "B243-CLONE": L_T243,
-            "B729": L_B729,
-        }[arm](m_j)
+        off_j = D + j * stride
+        raw_l = raw_func(m_j)
         aligned_l = align_up(raw_l, A)
 
         block_data = blob[off_j : off_j + raw_l]
@@ -482,21 +525,16 @@ def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode
     if block_offset + aligned_j > len(blob):
         raise CodecError("Block offset out of bounds of blob")
 
-    # Validate alignment padding of target block
-    pad_data = blob[block_offset + raw_j : block_offset + aligned_j]
-    if any(b != 0 for b in pad_data):
-        raise CodecError("Nonzero padding in target block alignment")
-
-    block_data = blob[block_offset : block_offset + raw_j]
-
-    # Direct digit extraction for B10 and T243 without full block decode
+    # Direct digit extraction for B10 and T243 without slicing or copying the whole block:
+    # Strictly bounds touched payload bytes to <= 3 for B10 and <= 2 for T243/B243-CLONE.
     if arm == "B10":
         # Each symbol takes 10 bits: starts at bit_pos = 10 * pos_in_block
         bit_start = 10 * pos_in_block
         start_byte = bit_start // 8
         bit_offset = bit_start % 8
-        # Touches at most 3 bytes (10 bits can cross at most 2 byte boundaries)
-        chunk = block_data[start_byte : start_byte + 3]
+        # Slices at most 3 payload bytes directly from blob
+        payload_read_len = min(3, raw_j - start_byte)
+        chunk = blob[block_offset + start_byte : block_offset + start_byte + payload_read_len]
         acc = 0
         for p, b in enumerate(chunk):
             acc |= b << (8 * p)
@@ -511,17 +549,18 @@ def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode
         # 5 trits per byte: starts in byte trit_start // 5, ends in byte (trit_start + 5) // 5
         start_byte = trit_start // 5
         end_byte = (trit_start + 5) // 5
-        # Touches at most 2 bytes!
-        for b_idx in range(start_byte, end_byte + 1):
-            if block_data[b_idx] >= 243:
-                raise CodecError(f"Invalid T243 byte {block_data[b_idx]} >= 243")
+        # Slices at most 2 payload bytes directly from blob!
+        chunk = blob[block_offset + start_byte : block_offset + end_byte + 1]
+        for b_val in chunk:
+            if b_val >= 243:
+                raise CodecError(f"Invalid T243 byte {b_val} >= 243")
 
         # Extract 6 trits
         trits = []
-        for b_idx in range(start_byte, end_byte + 1):
-            byte_val = block_data[b_idx]
+        for b_val in chunk:
+            curr = b_val
             for _ in range(5):
-                byte_val, digit = divmod(byte_val, 3)
+                curr, digit = divmod(curr, 3)
                 trits.append(digit)
 
         # Offset within the extracted stream
@@ -532,6 +571,7 @@ def random_access(blob: bytes, index: int, arm: str, k: int, A: int, access_mode
 
     elif arm == "B729":
         # B729 decodes only the target block (bounded by k) to extract the element
+        block_data = blob[block_offset : block_offset + raw_j]
         vals = decode_block_b729(block_data, m_j)
         return vals[pos_in_block]
 

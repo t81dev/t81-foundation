@@ -260,6 +260,21 @@ class TestH04R03MatchedCodec(unittest.TestCase):
             with self.assertRaises(CodecError):
                 random_access(huge_n_blob, 0, arm=arm, k=5, A=8, access_mode="RA-INDEXED")
 
+            # 8. Specific Codex adversarial cases: N=10,000, k=1, A=64
+            # RA-FIXED expected total is 640064 bytes; test with malformed 7508-byte blob
+            malformed_fixed = struct.pack('<Q', 10000) + b'\x00' * (7508 - 8)
+            with self.assertRaises(CodecError):
+                decode(malformed_fixed, arm=arm, k=1, A=64, access_mode="RA-FIXED")
+            with self.assertRaises(CodecError):
+                random_access(malformed_fixed, 0, arm=arm, k=1, A=64, access_mode="RA-FIXED")
+
+            # RA-INDEXED expected total is 720064 bytes; test with malformed 80064-byte blob (header+index only)
+            malformed_indexed = struct.pack('<Q', 10000) + b'\x00' * (80064 - 8)
+            with self.assertRaises(CodecError):
+                decode(malformed_indexed, arm=arm, k=1, A=64, access_mode="RA-INDEXED")
+            with self.assertRaises(CodecError):
+                random_access(malformed_indexed, 0, arm=arm, k=1, A=64, access_mode="RA-INDEXED")
+
     def test_10_adversarial_t243_forbidden_bytes(self):
         """Reject T243 payload bytes in [243, 255]."""
         vals = [0, 0, 0, 0, 0]
@@ -318,7 +333,7 @@ class TestH04R03MatchedCodec(unittest.TestCase):
                 random_access(blob, 100, arm=arm, k=5, A=1)
 
     def test_16_deterministic_operation_count_random_access(self):
-        """Verify deterministic bounded-byte touch count for random access."""
+        """Verify deterministic bounded-byte touch count for random access across k, A, and modes."""
         class InstrumentedBuffer:
             def __init__(self, data: bytes):
                 self._data = data
@@ -338,40 +353,56 @@ class TestH04R03MatchedCodec(unittest.TestCase):
                     self.touched_bytes += 1
                 return self._data[item]
 
-        # Test across two vastly different sequence lengths N=10 and N=1000
-        # For fixed k=5, touched bytes in random_access must remain bounded by k and independent of N
-        k = 5
-        A = 8
-        for arm in ["B10", "T243"]:
-            buf_small = InstrumentedBuffer(encode(generate_workload("cycle", 10), arm=arm, k=k, A=A))
-            buf_large = InstrumentedBuffer(encode(generate_workload("cycle", 1000), arm=arm, k=k, A=A))
+        # Validate bounded byte access across grid parameters
+        for k in [1, 5, 64, 1024]:
+            for A in [1, 8, 64]:
+                for mode in ["RA-FIXED", "RA-INDEXED"]:
+                    for arm in ["B10", "T243", "B243-CLONE"]:
+                        buf_small = InstrumentedBuffer(encode(generate_workload("cycle", 2000), arm=arm, k=k, A=A, access_mode=mode))
+                        buf_large = InstrumentedBuffer(encode(generate_workload("cycle", 3000), arm=arm, k=k, A=A, access_mode=mode))
 
-            # Query index 7 in both buffers (block 1, pos 2)
-            val_small = random_access(buf_small, 7, arm=arm, k=k, A=A)
-            touched_small = buf_small.touched_bytes
+                        query_idx = min(7, k - 1)
+                        val_s = random_access(buf_small, query_idx, arm=arm, k=k, A=A, access_mode=mode)
+                        touched_s = buf_small.touched_bytes
 
-            val_large = random_access(buf_large, 7, arm=arm, k=k, A=A)
-            touched_large = buf_large.touched_bytes
+                        val_l = random_access(buf_large, query_idx, arm=arm, k=k, A=A, access_mode=mode)
+                        touched_l = buf_large.touched_bytes
 
-            self.assertEqual(val_small, val_large)
-            # Touched bytes must be identical and independent of N
-            self.assertEqual(touched_small, touched_large)
-            # B10 and T243 touch <= 32 bytes (header + alignment + at most 3 payload bytes)
-            self.assertLessEqual(touched_large, 32)
+                        self.assertEqual(val_s, val_l)
+                        self.assertEqual(touched_s, touched_l, f"Work depends on N for {arm} k={k} A={A} {mode}")
+                        # In RA-INDEXED, reads 8-byte count + 8-byte index entry + payload slice
+                        # In RA-FIXED, reads 8-byte count + payload slice
+                        # Payload slice alone is strictly <= 3 bytes for B10, <= 2 bytes for T243/B243-CLONE
+                        max_expected_bytes = 8 + (8 if mode == "RA-INDEXED" else 0) + (3 if arm == "B10" else 2)
+                        self.assertLessEqual(touched_l, max_expected_bytes)
 
     def test_15_known_answer_vectors_and_independent_decoders(self):
         """Verify hard-coded known-answer vectors and independent decoder routines."""
         from experiments.h04_r03_matched_codec.independent_witness import (
+            KAV_ASYMMETRIC_VAL_1,
+            KAV_ASYMMETRIC_B10_BLOB,
+            KAV_ASYMMETRIC_T243_BLOB,
+            KAV_ASYMMETRIC_B729_BLOB,
             KAV_VALUES_3,
             KAV_EXPECTED_B10_BLOB,
             KAV_EXPECTED_T243_BLOB,
             KAV_EXPECTED_B729_BLOB,
+            KAV_ASYMMETRIC_VALS_2,
+            KAV_ASYMMETRIC_2_B10_BLOB,
+            KAV_ASYMMETRIC_2_T243_BLOB,
+            KAV_ASYMMETRIC_2_B729_BLOB,
             independent_decode_raw_b10,
             independent_decode_raw_t243,
             independent_decode_raw_b729,
         )
 
-        # 1. Check generated blobs match exact independently derived KAV wire blobs
+        # 1. Asymmetric vector 1: [-363] -> u=1 (non-palindromic [1,0,0,0,0,0])
+        self.assertEqual(encode(KAV_ASYMMETRIC_VAL_1, arm="B10", k=1, A=1), KAV_ASYMMETRIC_B10_BLOB)
+        self.assertEqual(encode(KAV_ASYMMETRIC_VAL_1, arm="T243", k=1, A=1), KAV_ASYMMETRIC_T243_BLOB)
+        self.assertEqual(encode(KAV_ASYMMETRIC_VAL_1, arm="B243-CLONE", k=1, A=1), KAV_ASYMMETRIC_T243_BLOB)
+        self.assertEqual(encode(KAV_ASYMMETRIC_VAL_1, arm="B729", k=1, A=1), KAV_ASYMMETRIC_B729_BLOB)
+
+        # 2. Vector 2: [-364, 0, 364]
         b10_blob = encode(KAV_VALUES_3, arm="B10", k=5, A=8, access_mode="RA-FIXED")
         t243_blob = encode(KAV_VALUES_3, arm="T243", k=5, A=8, access_mode="RA-FIXED")
         clone_blob = encode(KAV_VALUES_3, arm="B243-CLONE", k=5, A=8, access_mode="RA-FIXED")
@@ -379,14 +410,44 @@ class TestH04R03MatchedCodec(unittest.TestCase):
 
         self.assertEqual(b10_blob, KAV_EXPECTED_B10_BLOB)
         self.assertEqual(t243_blob, KAV_EXPECTED_T243_BLOB)
-        self.assertEqual(clone_blob, KAV_EXPECTED_T243_BLOB)  # Clone must match T243 KAV
+        self.assertEqual(clone_blob, KAV_EXPECTED_T243_BLOB)
         self.assertEqual(b729_blob, KAV_EXPECTED_B729_BLOB)
 
-        # 2. Check independent decoders directly on raw payloads
+        # 3. Asymmetric vector 3: [-363, 10]
+        self.assertEqual(encode(KAV_ASYMMETRIC_VALS_2, arm="B10", k=5, A=1), KAV_ASYMMETRIC_2_B10_BLOB)
+        self.assertEqual(encode(KAV_ASYMMETRIC_VALS_2, arm="T243", k=5, A=1), KAV_ASYMMETRIC_2_T243_BLOB)
+        self.assertEqual(encode(KAV_ASYMMETRIC_VALS_2, arm="B243-CLONE", k=5, A=1), KAV_ASYMMETRIC_2_T243_BLOB)
+        self.assertEqual(encode(KAV_ASYMMETRIC_VALS_2, arm="B729", k=5, A=1), KAV_ASYMMETRIC_2_B729_BLOB)
+
+        # 4. Check independent decoders directly on raw payloads
         self.assertEqual(independent_decode_raw_b10(b10_blob[8:12], 3), KAV_VALUES_3)
         self.assertEqual(independent_decode_raw_t243(t243_blob[8:12], 3), KAV_VALUES_3)
         self.assertEqual(independent_decode_raw_t243(clone_blob[8:12], 3), KAV_VALUES_3)
         self.assertEqual(independent_decode_raw_b729(b729_blob[8:12], 3), KAV_VALUES_3)
+
+    def test_17_adversarial_digit_order_mutation_rejection(self):
+        """Ensure a paired six-trit digit-order mutation fails the independent witness."""
+        from experiments.h04_r03_matched_codec.independent_witness import (
+            KAV_ASYMMETRIC_VAL_1,
+            KAV_ASYMMETRIC_T243_BLOB,
+            independent_decode_raw_t243,
+        )
+
+        # Mutated encoder reversing ordinary 6-trit digit order:
+        # u=1 -> trits normally [1, 0, 0, 0, 0, 0].
+        # In reversed order: [0, 0, 0, 0, 0, 1].
+        # Group 0 (5 trits): [0, 0, 0, 0, 0] -> byte 0x00.
+        # Group 1 (6th trit): [1, 0, 0, 0, 0] -> byte 0x01.
+        mutated_wire = struct.pack('<Q', 1) + bytes([0x00, 0x01])
+
+        # 1. Mutated wire must not match canonical KAV
+        self.assertNotEqual(mutated_wire, KAV_ASYMMETRIC_T243_BLOB)
+
+        # 2. Independent decoder rejects or decodes into wrong value
+        decoded_val = independent_decode_raw_t243(mutated_wire[8:], 1)
+        self.assertNotEqual(decoded_val, KAV_ASYMMETRIC_VAL_1)
+        # Expected reversed value: u = 243 -> x = 243 - 364 = -121
+        self.assertEqual(decoded_val, [-121])
 
 
 if __name__ == '__main__':
