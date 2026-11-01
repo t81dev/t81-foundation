@@ -68,3 +68,9 @@ Append a dated session entry to the handoff **only when the task authorizes repo
 ## 2026-10-31 incremental handoff note — ADM-2
 
 A subsequent operator report describes two **local, unpushed and unmerged** candidates: baseline maintenance `repair/adm2-baseline` at `0c22ac323484e37cc85f95201bd4dc01729dedb4`, based on `f775680aba7db200691c0f4e2a3174b0e7e51581`, and ADM-2 M1 `repair/adm2-m1` at `826887b40c62de9c6c903f319bbfbe905baa9911` (two commits after A). Reported macOS ARM64 validation: A, two selected CTests; B, five selected CTests; engine translation unit compilation. These are **operator-reported local results**, not independently inspected repository artifacts or cross-platform qualification. No merge, publication, activation or performance advantage follows. Obtain local patch/commit evidence before integrating this work. Older CMP3 statuses above remain dated snapshots.
+
+---
+
+## 2026-11-01 urgent AIOPT M2 orientation
+
+For current work, read [ACTIVE_RESEARCH_HANDOFF.md](ACTIVE_RESEARCH_HANDOFF.md), then PRs [#671](https://github.com/t81dev/t81-foundation/pull/671), [#672](https://github.com/t81dev/t81-foundation/pull/672), [#673](https://github.com/t81dev/t81-foundation/pull/673), [#674](https://github.com/t81dev/t81-foundation/pull/674). All four were observed open/unmerged on 2026-11-01. M2 is **not authorized**. The original sum/count serialization workload was rejected as insufficiently discriminating; modular polynomial evaluation is a **candidate only**. Do not confuse algorithm routing with representation selection or either with ternary-specific physical advantage. Seven P1 acceptance gates remain open. Next task: maintainer selects a bounded S/A study versus deferring M2 pending a defensible T-specific hypothesis; then independent protocol review before any implementation/benchmark approval. Refresh PR heads and CI; preserve all prior negative evidence.
