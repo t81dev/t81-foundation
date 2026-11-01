@@ -205,3 +205,17 @@ STOP: no merge, no RFC acceptance, no protected check changes, no measurement au
 A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reportedly has two commits after A. The engine translation unit reportedly compiles. **No independent inspection, cross-platform validation, push, merge, activation, or performance measurement is established.**
 
 **Next action:** obtain the local branch diffs and test receipts; compare against fresh `main` and accepted contracts. Keep CMP3/H04 research reconciliation distinct from ADM-2 engineering, and do not relaunch completed experiments. Earlier sections retain their explicitly dated October 29 status, not a claim about current live PR state.
+
+---
+
+## 2026-10-31 research assessment and integration handoff (dated; refresh before action)
+
+**Primary research deliverable:** Complete the comprehensive T81 scientific/architectural report with commit-pinned evidence, historical lineage, hypothesis-by-hypothesis results, negative findings, comparative limitations, AI-assisted research methodology, and a prioritized decisive-experiment agenda. A provisional assessment exists outside the repository, but is **not** an independently audited publication. Do not delay drafting for unrelated CI maintenance; do not publish unverified counts as final.
+
+**PR #658 — H04-R03 Phase B:** Deterministic correctness accepted at `983e258ed4b57b4cd6e010f036c1eb8656856e88`; current head observed `0a48054510e79e753d5152ccb3f9f130c17bbafd`. The reported integration gate is **BLOCKED** by broader required CI failures, attributed in an operator report to baseline fixture, Windows CMake, GCC GoogleBenchmark, macOS toolchain, and sanitizer issues. See [integration-only directive](https://github.com/t81dev/t81-foundation/pull/658#issuecomment-6552858759) and [separate CI maintenance directive](https://github.com/t81dev/t81-foundation/pull/658#issuecomment-6552913472). Those comments authorize neither a merge nor Phase C. Do not reopen accepted scientific correctness to resolve unrelated CI.
+
+**PR #660 — baseline research inventory:** Head observed `114a5ef82960366d2326dc8d404ef4fcbe3da4ff`, open/unmerged. Independent Codex review of the earlier `aa8fe207ceacfc08dd0364cd48c6bd8a612d44a7` returned substantive findings; [six-item correction directive](https://github.com/t81dev/t81-foundation/pull/660#issuecomment-6552761518) is outstanding as of this snapshot. Treat RFC/capability/benchmark counts and evidence tiers as provisional pending final-SHA review.
+
+**Workstream separation:** (1) scientific report and primary-source citation audit; (2) PR #660 evidence-inventory corrections; (3) separate baseline CI maintenance to unblock #658. None automatically authorizes the others. Preserve negative results and existing research scope. **No merge, benchmark, Phase C, protection bypass, or production claim is implied.**
+
+**Next AI-instance action:** Refresh main/PR heads and CI, read the canonical register and primary experiment packets, then advance the comprehensive report without inventing independent reproduction or re-running completed investigations by default.
