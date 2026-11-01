@@ -160,3 +160,14 @@ The `Source Snapshot` above is a historical observation, not the live repository
 **Read first for current M2:** [active handoff](ACTIVE_RESEARCH_HANDOFF.md), [decision gate #671](https://github.com/t81dev/t81-foundation/pull/671), [candidate protocol #672](https://github.com/t81dev/t81-foundation/pull/672), [Codex audit #673](https://github.com/t81dev/t81-foundation/pull/673), and [Jules review #674](https://github.com/t81dev/t81-foundation/pull/674). These PRs were observed open and unmerged on 2026-11-01; refresh before relying on status.
 
 **Disposition:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — EXECUTION_BLOCKED`. Distinguish S (adaptive software representation), A (algorithm routing), and T (ternary-specific attribution). T is the long-horizon scientific objective; positive S/A findings do not establish T. Polynomial evaluation in #672 is a proposed, **unaccepted** S/A workload, not an approved benchmark. The seven P1 blockers in #673 remain open. No experimental execution, CI bypass, governance activation or merge is authorized by these notes.
+
+
+---
+
+## 2026-11-01 urgent operational overlay — arithmetic decoder PR #675
+
+Before beginning backend-equivalence Phase 14 or relying on earlier arithmetic acceptance reports, read the latest [ACTIVE_RESEARCH_HANDOFF.md](ACTIVE_RESEARCH_HANDOFF.md#2026-11-01-arithmetic-decoder-acceptance-gate--pr-675-source-inspected-not-run) entry.
+
+At inspected [PR #675](https://github.com/t81dev/t81-foundation/pull/675) head `d4c053c9405a078cb588e7227507c61449c7587e`, Jules added 41-trit cancellation regressions but did **not** replace the early-saturating Horner decoder. This is a source-inspected mathematical correctness blocker; the new tests were not executed by the documentation review. The PR is open and unmerged, and its Foundation CI failed at the inspected head. **Do not merge, claim correctness, or advance to Phase 14 implementation until the decoder's cancellation behavior is independently reproduced, corrected and validated.**
+
+This dated navigation overlay does not change canonical hypothesis status, RFC authority, accepted governance, or the historical source snapshot above.
