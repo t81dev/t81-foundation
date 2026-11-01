@@ -161,3 +161,13 @@ The project preserves the exact identities, formal claims, baselines, assumption
 ## 2026-10-31 reconciliation note
 
 Research identity and canonical H01–H08 hypothesis identifiers are unchanged. ADM-2 candidate implementation work and CMP3 protocol reconciliation are engineering/research activities, not new proof of ternary representation advantage. Preserve the canonical hypothesis register and separate local operator reports from independently reproduced results.
+
+---
+
+## 2026-10-31 comprehensive assessment: interpretive synthesis (non-normative)
+
+The research program has evolved from Knuth/discrete-mathematics and Hanoi/CWEB investigations into a multi-track experimental framework: representation science (R), deterministic governed systems engineering (F), and AI-assisted research methodology (M). This is an **interpretation of the documented lineage**, not a new hypothesis, RFC, or claim of product readiness.
+
+**The governing discrimination question** is whether a measured advantage arises from *ternary representation itself*, or from compression, adaptive precision, caching, SIMD, policy enforcement, or other representation-independent design choices. A mathematical radix property is not a physical or software speedup. Negative matched comparisons constrain tested implementations/workloads; they do not falsify all future ternary substrates.
+
+**Canonical identities:** H07 asks about comparative auditability against equivalently authorized/evidenced conventional runtime alternatives; tested policy behavior is not comparative superiority or security certification. H08 asks whether AI-assisted scientific research improves discovery/trustworthiness under independent audit; do not conflate it with H09-E1 recursive-cognition investigations. The JSON register remains authoritative if this synthesis differs.
