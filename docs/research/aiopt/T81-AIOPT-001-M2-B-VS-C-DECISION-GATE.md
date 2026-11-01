@@ -73,3 +73,28 @@ Codex's [seven-P1 protocol audit #673](https://github.com/t81dev/t81-foundation/
 The proposed polynomial operation is exact evaluation of coefficients in {-1,0,+1} modulo 2^64. Horner and sparse indexed evaluation must be treated as different algorithms; their performance contrast does not isolate ternary representation. The revised protocol therefore requires crossed/competent algorithm-and-format baselines, canonical wire contracts, observable producer/consumer lifecycle, causal selectors, held-out trace design, complete cost accounting, and a pinned statistical procedure. Neither the 10% nor the 15% improvement margin is approved.
 
 **Updated decision status:** `B_POLYNOMIAL_DESIGN_REVIEW_RECOMMENDED`; `C_RETAINED_PENDING_NOVELTY_AUDIT`; `SEVEN_P1_GATES_OPEN`; `M2_NOT_APPROVED`. This does not merge, activate, implement or authorize measurements. Acceptance of #671, #672, #673 or #674 as documentation cannot substitute for separate written experimental authorization.
+
+
+## Research-question separation decision proposal (2026-11-01)
+
+**Disposition: `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED`.** The recommendation for Candidate B remains a recommendation for **design review only**, not an approval of the polynomial workload, a ternary-specific hypothesis, or implementation.
+
+### Separate claims and evidence requirements
+
+| Lane | Falsifiable question | Required comparator | Permitted conclusion |
+| --- | --- | --- | --- |
+| **S — adaptive software representation** | Does causal format selection improve complete end-to-end cost on a prespecified workload? | Best competent fixed format, simple causal heuristic, matched lifecycle, all selection/conversion costs | Bounded adaptive software benefit on the measured platform/trace; **not** radix superiority |
+| **A — algorithm routing** | Does choosing among exact evaluation algorithms improve end-to-end cost? | Same canonical input/representation with fixed Horner, gap-Horner, sparse-power controls where applicable | Bounded algorithm-selection benefit; **not** format or ternary attribution |
+| **T — ternary-specific attribution** | Does a genuinely ternary-specific encoding or arithmetic mechanism beat an equivalently optimized binary-coded mechanism at matched semantics/capacity? | Matched binary controls, explicit non-equivalent mechanism, identical algorithm and lifecycle | Only the narrowly isolated mechanism's advantage; two-bit trit storage alone cannot establish it |
+
+**Primary long-horizon scientific objective:** T, but no currently proposed Candidate B protocol isolates T. S and A are supporting systems studies and must not be promoted to T evidence. No invented ternary-specific mechanism is authorized by this decision note.
+
+### Decision before protocol freeze
+
+1. Retain the polynomial workload in #672 as an **unaccepted candidate for S/A**, not as a mandatory M2 workload.
+2. Require a written workload justification grounded in a plausible use case. If the producer must serialize, retain and later consume bytes, identify the real storage/transport boundary and reuse count; otherwise compare direct evaluation and do not impose artificial serialization to make adaptation attractive.
+3. Require factorial or explicitly restricted comparisons separating algorithm from format. Where crossing is infeasible, label the result combined routing only.
+4. A T-specific experiment requires a separate preregistered mechanism and attribution design; neither positive S nor A results close H04/H08.
+5. The maintainer must explicitly choose whether M2 is a bounded S/A investigation or is deferred pending a defensible T-specific hypothesis. Until then, do not freeze trace/threshold or authorize correctness implementation or measurement.
+
+**Authorization:** None. The seven P1 gates in #673 remain open; the corrective reviews #673/#674 are evidence, not approval. Preserve all earlier versions in Git history.
