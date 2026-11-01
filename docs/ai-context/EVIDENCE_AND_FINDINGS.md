@@ -154,3 +154,19 @@ This is a **non-normative correction to the interpretation of earlier Tier A and
 ## 2026-10-31 evidence addendum — local candidate status
 
 An operator reported ADM-2 local branch validation: `repair/adm2-baseline` (two selected CTests), `repair/adm2-m1` (five selected CTests), and engine translation-unit compilation on macOS ARM64. Neither local branch was pushed or merged in that report. **Evidence classification: unverified operator report**, not independent reproduction, complete CI, or performance measurement. No earlier negative result, H01 physical blocker, H04-R02 conditional outcome, or CMP3 evidence disposition is superseded.
+
+---
+
+## 2026-10-31 synthesis update: accepted correctness versus unresolved advantage
+
+### H04-R03 Phase B (commit-scoped acceptance)
+
+[PR #658](https://github.com/t81dev/t81-foundation/pull/658) contains an independently accepted **deterministic-correctness** implementation at exact SHA `983e258ed4b57b4cd6e010f036c1eb8656856e88` (acceptance [record](https://github.com/t81dev/t81-foundation/pull/658#issuecomment-6552493684)). Reported acceptance gates: 96 configurations / 1,896 random-access queries, 200 malformed-frame cases, 12 arm/vector witness combinations with 2,916 full-domain single-symbol checks, and 17/17 deterministic tests passing. The later PR head `0a48054510e79e753d5152ccb3f9f130c17bbafd` changed witness commentary and validation reporting, not codec logic, according to the [integration assessment](https://github.com/t81dev/t81-foundation/pull/658). **This is not throughput, PMU, native ternary silicon, compactness superiority, or Phase C authorization.** H04-R02's Classification D remains unchanged. Integration is separately blocked by broader required CI failures as reported in the integration assessment; refresh before using that status.
+
+### Comprehensive assessment boundary
+
+The provisional comprehensive assessment is a **secondary synthesis**, not a replacement for canonical experiment packets. Its defensible high-level conclusion is: substantial experimental systems engineering has been achieved, while generalized ternary advantage has **not** been demonstrated. Keep the historical Hanoi arithmetic failures, TISC/Wasm artifact ratio, H01 physical-characterization blocker, H06 scoped hardware comparisons, H07 conventional comparator gap, and H08 matched-methodology-study gap visible.
+
+### PR #660 baseline-assessment evidence warning
+
+[PR #660](https://github.com/t81dev/t81-foundation/pull/660), head observed `114a5ef82960366d2326dc8d404ef4fcbe3da4ff`, is **open and not independently accepted** as of this dated observation. Codex reviewed preceding head `aa8fe207ceacfc08dd0364cd48c6bd8a612d44a7` and flagged benchmark family attribution, oracle-versus-independent-reproduction tiering, RFC implementation overclaims, invalid source/test paths, inconsistent counts, and incomplete extraction reproducibility. A [bounded correction directive](https://github.com/t81dev/t81-foundation/pull/660#issuecomment-6552761518) requests reconciliation. Do not promote provisional counts (including six claimed Tier 4 families or implementation maturity totals) into established facts without a final-SHA independent audit. **CTest declarations are not passed executions; mathematical oracles are not independent workload reproduction.**
