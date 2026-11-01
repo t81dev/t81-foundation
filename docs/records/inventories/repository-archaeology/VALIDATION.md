@@ -7,7 +7,7 @@
 ## Automated Verification Suite
 
 1. **Path and Git Object Integrity Check:**
-   - **Command:** `python3 -c "import subprocess, json; ..."` comparing `FILES.jsonl` against `git ls-tree -r -z HEAD`.
+   - **Command:** `python3 -c "import subprocess, json; ..."` comparing `FILES.jsonl` against `git ls-tree -r -z 6d9cabb6bcd84689b05b955b091d3d25772cc8a3` (pinned baseline tree from commit `f775680aba7db200691c0f4e2a3174b0e7e51581`).
    - **Result:** PASSED.
    - **Total tracked paths:** 4,080.
    - **Unique inventoried paths:** 4,080 (100.0% mechanical coverage).
