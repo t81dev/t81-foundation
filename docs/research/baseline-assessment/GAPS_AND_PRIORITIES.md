@@ -82,4 +82,4 @@ To maximize engineering impact while respecting the research continuity charter,
 ### Non-Priorities (Explicitly Deprioritized Lanes)
 - **Do NOT expand Cognitive Tiers (T4–T6):** Speculative multi-agent recursion lacks primary empirical execution evidence and poses high theoretical coordination tax; halt speculative multi-agent recursion.
 - **Do NOT build full TCP/IP stack (RFC-00D0):** Maintain network wire compatibility as design-led; do not write broad freestanding networking stacks.
-- **Do NOT claim ternary AI inference superiority on binary silicon:** INT8 SIMD is empirically 14.5x faster; restrict ternary neural claims to dedicated hardware research.
+- **Do NOT claim ternary AI inference superiority on binary silicon:** INT8 SIMD is empirically 14.5x faster on measured ARM64 NEON dot-product kernels; leave broader model-level and dedicated hardware conclusions unresolved pending full-model evaluation.
