@@ -16,9 +16,9 @@ This document defines the evidence-based methodology, taxonomy, counting rules, 
 ### Methodological Limitations & Explicit Downgrade
 To maintain strict epistemic integrity, the methodology makes the following explicit admissions:
 1. **Recountable Totals vs. Adjudicated Classifications:** Metric enumerations (file counts, catalog entries, registered CTest targets, benchmark family counts) are independently recountable via deterministic shell commands. However, capability maturities, evidence tiers, and RFC statuses require qualitative and manual adjudication against primary code, test definitions, and commits.
-2. **Declaration vs. Passing Evidence:** Enumerating 159 `add_test()` declarations across CMakeLists.txt files establishes that test targets are formally registered; it does NOT constitute independent execution proof that all tests pass across all platforms in historical CI runs.
-3. **Oracle Correctness vs. Independent Multi-Runner Reproduction:** Validating mathematical logic against an independent mathematical oracle script (such as Python scripts in EXP-H04-R01, EXP-S02, EXP-DURABLE-WITNESS) verifies model consistency and arithmetic correctness; it does NOT constitute independent multi-runner execution reproduction across distinct physical machines, operating systems, and compilers. Only benchmarks with attributable multi-environment evidence (such as EXP-CMP3-R1 and EXP-FLOAT-CONVERSION) are classified as Tier 4 (Independently Reproduced).
-4. **Temporal Baseline:** All data, statuses, and metrics are evaluated **as of pinned historical baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`**. Post-baseline events (e.g., PR #658 Phase B acceptance) are explicitly treated as dated post-baseline deltas.
+2. **Declared vs. Registered vs. Executed vs. Passed Tests:** Enumerating 159 static `add_test()` declarations across CMakeLists.txt files establishes that test targets are declared in build manifests. It does NOT establish that all declared tests are registered in every CTest configuration, executed in CI, or passing. Furthermore, external PR #662 reports that up to 26 tests were omitted from dynamic CTest discovery at this exact baseline and that certain CI regex patterns returned success while executing zero tests. Claims regarding DPE, TernaryOS, and Axion coverage are strictly scoped to declared target definitions, with runtime-wide verification pending independent adversarial reproduction.
+3. **Oracle Correctness vs. Multi-Runner Reproduction:** Validating mathematical logic against an independent mathematical oracle script (such as Python scripts in EXP-H04-R01, EXP-S02, EXP-DURABLE-WITNESS) verifies model consistency and arithmetic correctness; it does NOT constitute independent multi-runner execution reproduction across distinct physical machines, operating systems, and compilers. Only benchmarks with attributable multi-environment evidence in tree (EXP-CMP3-R1 across Apple Clang21 / Linux Clang22 and EXP-FLOAT-CONVERSION across macOS ARM64 / Linux CI) are categorized as Tier 4, and their cross-environment execution status is treated as reported pending fresh independent adversarial rerun.
+4. **Temporal Baseline:** All data, statuses, and metrics are evaluated **as of pinned historical baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`**. Post-baseline events (e.g., PR #658 Phase B acceptance, PR #662 test discovery audits) are explicitly treated as dated post-baseline deltas.
 
 ---
 
@@ -64,9 +64,9 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - **BLOCKED:** 1 investigation (EXP-INV-10A physical storage data unavailable).
 - **Classification Rubric & Grounded Counts (Tiers 1–6):**
   - **Tier 1 (Source-Only / Proposed):** 7 suites.
-  - **Tier 2 (Executed, Insufficient Provenance):** 1 suite (BM_PackedTritVector: candidate executed in `benchmark_raw.txt`, but comparator columns marked 'not-implemented').
-  - **Tier 3 (Executed with Attributable Evidence):** 13 families with attributed raw logs, machine metadata, or mathematical oracle evaluations (BM_CanonFS, BM_DispatchOverhead, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_TensorMatMul, BM_TritwiseWorkloads, BM_VMSimulation, EXP-H04-R01, EXP-S02, EXP-H09-E1, EXP-DURABLE-WITNESS, EXP-DIRECT-API-SPEEDUP).
-  - **Tier 4 (Independently Reproduced):** 2 families with verified execution runs across distinct physical machines, OSs, or compilers (EXP-CMP3-R1 across Apple Clang21 and Linux Clang22; EXP-FLOAT-CONVERSION across macOS ARM64 and Linux CI).
+  - **Tier 2 (Executed, Insufficient Provenance):** 3 suites (BM_PackedTritVector, BM_DispatchOverhead, BM_VMSimulation: candidate runs preserved, but binary comparators are explicitly marked missing or below timer resolution).
+  - **Tier 3 (Executed with Attributable Evidence):** 11 families with attributed raw logs, machine metadata, or mathematical oracle evaluations (BM_CanonFS, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_TensorMatMul, BM_TritwiseWorkloads, EXP-H04-R01, EXP-S02, EXP-H09-E1, EXP-DURABLE-WITNESS, EXP-DIRECT-API-SPEEDUP).
+  - **Tier 4 (Independently Reproduced):** 2 families with reported cross-environment artifacts in tree (EXP-CMP3-R1 across Apple Clang21 and Linux Clang22; EXP-FLOAT-CONVERSION across macOS ARM64 and Linux CI).
   - **Tier 5 (Methodologically Invalid / Superseded):** 2 families shown by adversarial audit to suffer from fatal methodology defects (BM_LlamaKernels, EXP-H04-R02).
   - **Tier 6 (Blocked / Incomplete):** 1 family (EXP-INV-10A physical solid-state storage data unavailable).
 
@@ -100,7 +100,7 @@ To ensure full transparency, every metric is verifiable using standard commands 
    "
    ```
 
-2. **Verify Registered CTest Targets:**
+2. **Verify Declared CTest Targets:**
    ```bash
    python3 -c "
    import re, glob
@@ -110,7 +110,7 @@ To ensure full transparency, every metric is verifiable using standard commands 
        content = open(cf, errors='ignore').read()
        tests.update(re.findall(r'add_test\s*\(\s*NAME\s+([A-Za-z0-9_\-]+)', content))
        tests.update(re.findall(r'add_test\s*\(\s*([A-Za-z0-9_\-]+)\s+COMMAND', content))
-   print('Total add_test targets:', len(tests)) # 159
+   print('Total declared add_test targets:', len(tests)) # 159
    "
    ```
 

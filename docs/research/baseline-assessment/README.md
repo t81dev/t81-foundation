@@ -5,7 +5,7 @@
 **Repository:** `https://github.com/t81dev/t81-foundation`
 **Current Baseline Commit:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Baseline Tree SHA:** `68fa5529b9d8244ba31c0f543006dee9283b248f`
-**Temporal Validity:** All classifications and metrics are evaluated **as of pinned historical baseline `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`**, not live GitHub status. Dated post-baseline developments (such as PR #658 acceptance) are recorded explicitly as post-baseline deltas.
+**Temporal Validity:** All classifications and metrics are evaluated **as of pinned historical baseline `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`**, not live GitHub status. Dated post-baseline developments (such as PR #658 acceptance and PR #662 dynamic discovery audits) are recorded explicitly as post-baseline deltas.
 **Date:** November 2026
 **Mode:** Read-only investigation with a bounded documentation deliverable
 
@@ -18,7 +18,7 @@ This baseline assessment provides a comprehensive, ground-truth reconstruction o
 T81 Foundation is an experimental computing architecture and systems research platform investigating balanced ternary representations, deterministic execution, content-addressed artifacts, language tooling, and policy-governed computation. Over months of intensive development, extensive work has been completed across RFC specification, C++ runtime engineering, compiler construction, and empirical experimentation.
 
 This assessment establishes:
-1. **Deterministic Core Profile (DCP) is Operational:** TISC ISA v1.9.0 bytecode execution, bit-exact replay, deterministic mark-sweep GC, and Axion fail-closed policy enforcement are implemented and tested across 159 CMake test targets. In operational tests, bit-exact replay and fail-closed checks are verified, though comparative auditability advantages against competitive conventional baselines with boundary logging remain untested.
+1. **Deterministic Core Profile (DCP) is Operational:** TISC ISA v1.9.0 bytecode execution, bit-exact replay, deterministic mark-sweep GC, and Axion fail-closed policy enforcement are implemented, with 159 static test targets declared in CMake. However, static declaration does not guarantee runtime registration or execution; external PR #662 reports 26 tests omitted from CTest discovery at this exact baseline and identifies edge-case host JIT policy bypasses. Bit-exact replay is verified on tested suites, but comparative auditability advantages over conventional boundary baselines remain untested.
 2. **Binary Silicon Heavily Outperforms Emulated Ternary:** On conventional CPUs, highly optimized binary hardware accelerators (such as ARM NEON INT8 `sdot`) outperform ternary arithmetic by up to 14.5x. Early claims of "74x ternary AI speedup" were methodologically invalid artifacts comparing against unvectorized FP32 scalar baselines.
 3. **Physical Storage Advantage is Unverified:** Investigation 10A demonstrated that all 10 literature citations cited for solid-state ternary memory density were unverified in primary literature. Hypothesis H01 remains blocked by unavailable matched characterization data, rather than experimentally falsified.
 4. **Adaptive Representation Advantage is Conditional:** In H04-R01 and H04-R02, apparent adaptive ternary advantages over fixed binary stem from adaptive precision rather than ternary radix superiority. Under strictly equalized capacity bounds, adaptive binary matches or outperforms adaptive ternary across all tested symbol cost ratios. As a dated post-baseline delta, EXP-H04-R03 Phase B was independently accepted at PR #658 head `983e258ed4b57b4cd6e010f036c1eb8656856e88` under matched 729-state domains; Phase C benchmarking remains unauthorized.
@@ -40,7 +40,7 @@ Every total below is computed under the explicit counting rubrics defined in [ME
 | **Major Subsystems Audited** | **10** | Core architectural divisions in codebase | 10 audited (Core Arith, Compiler, VM, Axion, CanonFS, Tensor/SIMD, DPE, TernaryOS, Crypto, Cognitive) |
 | **Engineering Capabilities** | **23** | Major architectural capabilities mapped | **21 Tested, 1 Implemented, 1 Specified** (18 Integrated, 4 Experimental, 1 Unintegrated) |
 | **Benchmark Families Audited** | **26** | 17 compiled Google Benchmark suites + 9 formal experiment harnesses | **18 Executed, 7 Source-Only, 1 Blocked (Physical Storage)** |
-| **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **7 Tier 1 (Source-Only), 1 Tier 2 (Unverified Baseline), 13 Tier 3 (Attributable Evidence), 2 Tier 4 (Independently Reproduced), 2 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
+| **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **7 Tier 1 (Source-Only), 3 Tier 2 (Insufficient Provenance), 11 Tier 3 (Attributable Evidence), 2 Tier 4 (Independently Reproduced), 2 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
 | **Canonical Hypotheses (H01–H08)**| **8** | Canonical H01–H08 hypothesis register | **1 Operational/Comparative Untested (H07), 1 Methodological Framework Active/Comparative Untested (H08), 2 Refuted in tested scope (H04, H06), 2 Conditional (H02, H03), 1 Blocked (H01), 1 Plausible/Unverified (H05)** |
 
 ---
