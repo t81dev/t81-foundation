@@ -2,10 +2,12 @@
 
 **Document ID:** `docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md`
 **Date:** November 2026
-**Status:** Independent Peer Review & Scientific Assessment
+**Status:** AI-assisted mathematical source assessment; independent experimental replication not established
 **Review Target:** T81-AIOPT-001 Milestone M1 (PR #665; branch `research/aiopt-001-m1-protocol`)
-**Investigator:** Jules (Independent Scientific Reviewer)
+**Investigator:** Jules (AI-assisted scientific analyst; not an authenticated independent human reviewer)
 **Scientific Disposition:** `M2_REDESIGN_REQUIRED`
+
+**Review provenance:** The initial Jules assessment did not pin an inspected M1 SHA, preserve an execution log, or establish that Jules executed M1. Independent experimental reproduction and independent-person peer review are **not claimed**. The exact inspected M1 revision is unverified from the initial review record. Subsequent Codex verification at `e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db` reports local tests, explicitly without independent-person scientific acceptance; this is later context, not execution by Jules. The mathematical critique addresses the stated C40 semantics and does not depend on executing M1.
 
 ---
 
@@ -34,7 +36,7 @@ Milestone M1 of T81-AIOPT-001 proposes an isolated, correctness-only verificatio
 
 ### Disposition
 
-**`M2_REDESIGN_REQUIRED`**: Milestone M1 successfully demonstrates fail-closed correctness and mutual consistency among its three adapters. However, the protocol cannot proceed to M2 as currently conceived. Measuring execution time or training a selection agent on this workload would benchmark loop overhead and compiler register allocation rather than representation efficiency. Milestone M2 requires complete redesign around meaningful vector lengths, wildcard/don't-care predicates, conventional lookup-table/bitset comparators, and a realistic search space.
+**`M2_REDESIGN_REQUIRED`**: Milestone M1 specifies fail-closed correctness and mutual consistency among its three adapters; those properties were not independently reproduced by this scientific review. However, the protocol cannot proceed to M2 as currently conceived. Measuring execution time or training a selection agent on this workload would benchmark loop overhead and compiler register allocation rather than representation efficiency. Milestone M2 requires complete redesign around meaningful vector lengths, wildcard/don't-care predicates, conventional lookup-table/bitset comparators, and a realistic search space.
 
 ---
 
@@ -135,7 +137,7 @@ The T81 Foundation maintains a formal hypothesis register (`docs/research/contin
 
 ### 3.2 Interaction with H04 (Adaptive Representation) & H04-R02 Findings
 - **Claim:** An explicitly defined adaptive representation policy can outperform fixed representations when evaluated against equally optimized baselines.
-- **Historical Evidence:** Experiment H04-R02 (`experiments/h04_r02_adaptive_representation/`) established under adversarial audit that apparent ternary compression gains disappeared when compared against an Adaptive Binary (AB) control with symmetric metadata. Over 96% of observed variance was driven by tier adaptation rather than ternary radix.
+- **Historical Evidence:** Corrected H04-R02 (`experiments/h04_r02_adaptive_representation/RESULTS.md`) invalidates the original inference and retains conditional symbolic-model ternary advantages. For the matched 10-bit control, the AT window narrows to `r < 5/3`, including `r = 1.60`; modeled winners depend on metadata, mode boundaries, transition and conversion assumptions. The historical 96% figure applies to one ratio-1 trace, not general observed variance. Actual encoded byte lengths were measured, but no new CPU performance, bandwidth, area or energy advantage or loss was established. H04 remains unresolved.
 - **M1 Relationship:** T81-AIOPT-001 purports to study representation selection (byte vs. SWAR). However, M1 does not adapt dynamically. Encoding is fixed a priori. If an adaptive switching policy were introduced, the switching overhead (encoding, validation, branch dispatch) would dwarf the computation cost by orders of magnitude for a 4-trit vector.
 
 ### 3.3 Prior CPU Ternary Arithmetic Closure (PRs #544–#549)
@@ -327,9 +329,12 @@ To eliminate the degeneracy of M1, M2 must evaluate a parameterized workload spa
 - **Metric:** Execution latency per batch (nanoseconds), reported as median and 99th percentile (tail latency). Secondary metrics: CPU cycles via PMU (`perf_event_open`), L1 data cache misses, and instructions per cycle (IPC).
 - **Statistical Significance:** Mann-Whitney $U$ test with Bonferroni correction for multiple hypothesis testing; significance threshold $\alpha = 0.01$. Confidence intervals computed via 10,000 bootstrap resamples.
 
-### 6.7 Stopping & Falsification Criteria
-- **Early Stopping:** If at $L = 16$ and $L = 64$ conventional binary bitset/SIMD outperforms packed SWAR by $>2.0\times$ across all catalog sizes $M$, testing on larger grids must be halted immediately.
-- **Definitive Falsification:** If $H_0$ cannot be rejected on any tested configuration, the hypothesis that packed ternary SWAR provides software performance advantages on general-purpose CPUs must be formally declared falsified for pattern filtering workloads.
+### 6.7 Stopping, Negative Evidence and Inconclusive Outcomes
+- **Early stopping (proposal only):** A sustained conventional-baseline advantage at L=16 and L=64 may prompt a documented resource review; it must not automatically close untested larger configurations. Record stopped configurations as NOT TESTED.
+- **Positive evidence:** A predeclared workload shows a practically meaningful advantage against the strongest fair conventional comparator, with appropriate confidence bounds and multiplicity-adjusted inference.
+- **Bounded negative evidence:** For actually tested configurations, an adequately powered confidence interval excludes the preregistered practically meaningful improvement threshold. Report uncertainty, sample size, conditions, and scope.
+- **Inconclusive:** When uncertainty spans both negligible and meaningful improvement, or power is insufficient, record INCONCLUSIVE. Failure to reject a null hypothesis is not proof of equivalence or absence of advantage.
+- **Preregistration required:** Effect-size thresholds, confidence procedure, power, workload grid, and stopping rules must be independently reviewed before any M2 execution.
 
 ---
 
