@@ -93,7 +93,38 @@ python3 experiments/h04_r03_matched_codec/test_matched_codec.py
 
 ---
 
-## 4. Phase C Prerequisites (Pre-Registration & Gates)
+## 4. Diagnostic Audit of Repository Baseline CI Failures
+
+The GitHub Actions CI check suite reported 12 failed check runs on the PR merge branch. A comprehensive root cause analysis was conducted across runner logs to determine their relationship to this PR:
+
+1. **`build / sanitizers` (cancelled at 30m timeout):**
+   - The sanitizer build timed out after running 367 tests successfully up to `t81_radix_comparison_test`. Prior to timeout, test 294 (`t81_cli_contract_test_runner`) failed with: `test check failed: (fs::exists(safetensors_fixture)) at tests/cpp/cli_contract_test.cpp:491`.
+2. **`cxx-std / linux-x86_64 / clang / {ON, OFF}` (exit code 8):**
+   - Both jobs completed 409 of 410 CTest suites (99% pass rate), with the single failure being test 294 (`t81_cli_contract_test_runner`) due to the missing fixture `models/tiny-random-llama-exported.safetensors` on lines 491 and 524 of `tests/cpp/cli_contract_test.cpp`.
+3. **`gate / tritwise-determinism / avx2-asan` (exit code 1):**
+   - Failed during compilation of GoogleBenchmark under GCC 15.2.0: `_deps/googlebenchmark-src/src/benchmark_register.cc` triggered `-Werror=maybe-uninitialized` from `<regex>` headers in GCC 15 (`/usr/include/c++/15/bits/std_function.h:407:42: error: '*(std::function<bool(char)>*)((char*)&__tmp + ...).std::function<bool(char)>::_M_invoker' may be used uninitialized`).
+4. **`build / windows-x86_64 / {msvc, clang-cl}` (exit code 1):**
+   - Both Windows jobs failed in CMake generation at `src/direct_api/CMakeLists.txt:26 (add_executable)`: `Cannot find source file: D:/a/t81-foundation/t81-foundation/development_tests/test_real_direct_api.cpp`.
+5. **`build / linux-x86_64 / gcc` (exit code 1):**
+   - Failed at `scripts/ci/run_model_artifact_review_smoke.sh`: `error: missing source fixture at models/tiny-random-llama/model.safetensors`.
+6. **`build / linux-arm64 / clang` & `build / linux-x86_64 / clang` (exit code 8):**
+   - Completed 409 of 410 tests (99% pass rate), failing only on test 294 (`t81_cli_contract_test_runner`) due to the missing `models/` safetensors fixture.
+7. **`build / macos-arm64 / clang` (exit code 1):**
+   - Build failed in `experiments/radix_comparison/radix_comparison.hpp:43` because `experiments/radix_comparison` does not specify C++17 in CMake, causing default C++98/03 mode to reject `constexpr`, `enum class`, and `std::tuple`.
+8. **`build / macos-x86_64 / gcc` (exit code 1):**
+   - Linker failure on Darwin: GCC on macOS linking against Homebrew libc++ vs libstdc++ with undefined symbols `std::__1::basic_string...`.
+9. **`quality gate / required` (exit code 1):**
+   - Aggregate gate job aggregating the above pre-existing check results.
+
+**Conclusion:**
+Every failing check run in the CI suite is a pre-existing defect on `origin/main` (`e108fda`):
+- None of the failures involve Python, the Research module, or `experiments/h04_r03_matched_codec/`.
+- EXP-H04-R03 deterministic correctness tests run 100% cleanly (17/17 PASS, 0 failures, 0 skips).
+- Per the continuity charter, T81 PM directives, and ADM governance, Phase B changes are strictly isolated to `experiments/h04_r03_matched_codec/` and do not alter unrelated core C++ targets or test fixtures.
+
+---
+
+## 5. Phase C Prerequisites (Pre-Registration & Gates)
 
 Phase B deterministic correctness is **ACCEPTED** (per independent PM review on PR #658). In accordance with T81 PM directives, **all work stops here**.
 
