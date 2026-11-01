@@ -62,3 +62,14 @@ C may be preferable if a scoped audit shows a novel **sparsity/zero-skipping mec
 **M2_NOT_APPROVED.**
 
 Next authorized action proposed: one maintainer review of this decision gate and one tightly specified B protocol, with no implementation or benchmarking until explicit approval.
+
+
+---
+
+## Post-review reconciliation (2026-11-01; proposal only)
+
+Codex's [seven-P1 protocol audit #673](https://github.com/t81dev/t81-foundation/pull/673) and Jules's [adversarial workload review #674](https://github.com/t81dev/t81-foundation/pull/674) agree that the original decode/reduce workload in PR #672 is not acceptable as a confirmatory M2 protocol. The original B preference was **for design review**, not a finding of scientific superiority. The prior minimal design above is superseded **as a proposed workload** by the revised polynomial-evaluation draft in [PR #672](https://github.com/t81dev/t81-foundation/pull/672), not by an accepted protocol.
+
+The proposed polynomial operation is exact evaluation of coefficients in {-1,0,+1} modulo 2^64. Horner and sparse indexed evaluation must be treated as different algorithms; their performance contrast does not isolate ternary representation. The revised protocol therefore requires crossed/competent algorithm-and-format baselines, canonical wire contracts, observable producer/consumer lifecycle, causal selectors, held-out trace design, complete cost accounting, and a pinned statistical procedure. Neither the 10% nor the 15% improvement margin is approved.
+
+**Updated decision status:** `B_POLYNOMIAL_DESIGN_REVIEW_RECOMMENDED`; `C_RETAINED_PENDING_NOVELTY_AUDIT`; `SEVEN_P1_GATES_OPEN`; `M2_NOT_APPROVED`. This does not merge, activate, implement or authorize measurements. Acceptance of #671, #672, #673 or #674 as documentation cannot substitute for separate written experimental authorization.
