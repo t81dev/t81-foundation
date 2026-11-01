@@ -142,3 +142,13 @@ The PR head and authorization status can change after this snapshot; refresh bef
 ## 2026-10-31 continuity reconciliation
 
 The `Source Snapshot` above is a historical observation, not the live repository head. `BOOTSTRAP.md` and `ACTIVE_RESEARCH_HANDOFF.md` have independently dated observations; their differing commit pins must not be silently combined into one state. Refresh `main`, open PR heads, CI receipts, and authorization records before action. The ADM-2 local candidate report described below is not merged evidence.
+
+---
+
+## 2026-10-31 research synthesis and publication boundary
+
+**Current publication posture:** A provisional comprehensive research assessment has been prepared in the research conversation; it is **not** a canonical, independently audited repository publication. Do not cite an unpublished local PDF/Markdown draft as primary evidence. The source hierarchy in §4 still governs every claim.
+
+**New-instance reading rule:** Read the canonical [hypothesis register](../research/continuity/HYPOTHESIS_REGISTER_v1.json), [continuity charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md), and [evidence index](EVIDENCE_AND_FINDINGS.md) before synthesizing T81's achievements. Read [active handoff](ACTIVE_RESEARCH_HANDOFF.md) for dated PR dispositions, then refresh GitHub. **Scientific acceptance, repository integration, and production readiness are distinct states.**
+
+**Executive synthesis:** T81 is an experimental computing and governed-execution research framework, not proof of generalized ternary superiority. It has working, scoped software and correctness evidence, important negative results, and unresolved physical and comparative hypotheses. Its next publication should explain both demonstrated engineering and what remains unproven. PR #660's benchmark/RFC classifications are not an accepted denominator until corrected and independently checked.
