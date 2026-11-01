@@ -6,13 +6,12 @@
 #include "t81/ternary/arith.hpp"
 
 // Ensure assertions are ALWAYS evaluated, even in NDEBUG / Release builds
-#define ALWAYS_ASSERT(cond)                                                          \
-  do {                                                                               \
-    if (!(cond)) {                                                                   \
-      std::cerr << "Assertion failed: " #cond " at " << __FILE__ << ":" << __LINE__ \
-                << std::endl;                                                        \
-      std::abort();                                                                  \
-    }                                                                                \
+#define ALWAYS_ASSERT(cond)                                                                       \
+  do {                                                                                            \
+    if (!(cond)) {                                                                                \
+      std::cerr << "Assertion failed: " #cond " at " << __FILE__ << ":" << __LINE__ << std::endl; \
+      std::abort();                                                                               \
+    }                                                                                             \
   } while (0)
 
 using namespace t81;
@@ -101,6 +100,35 @@ int main() {
     std::vector<Trit> trits_neg_41(41, Trit::Zero);
     trits_neg_41[0] = Trit::Neg;
     ALWAYS_ASSERT(decode_i64(trits_neg_41) == -1);
+  }
+
+  // --- regression: cancellation-aware evaluation ---
+  {
+    // Positive cancellation vector:
+    // Exactly 41 trits: index 40 is Pos (+3^40), indices 0..39 are Neg (-sum_{i=0}^{39} 3^i)
+    // Mathematical value = 3^40 - (3^40 - 1)/2 = (3^40 + 1)/2 = 6078832729528464401
+    std::vector<Trit> cancel_pos(41, Trit::Neg);
+    cancel_pos[40] = Trit::Pos;
+    ALWAYS_ASSERT(decode_i64(cancel_pos) == INT64_C(6078832729528464401));
+
+    // Immediate neighbors of positive cancellation vector
+    // Add +1 at index 0 (so index 0 is Zero): 6078832729528464402
+    auto cancel_pos_plus1 = cancel_pos;
+    cancel_pos_plus1[0] = Trit::Zero;
+    ALWAYS_ASSERT(decode_i64(cancel_pos_plus1) == INT64_C(6078832729528464402));
+
+    // Negative cancellation vector:
+    // Exactly 41 trits: index 40 is Neg (-3^40), indices 0..39 are Pos (+sum_{i=0}^{39} 3^i)
+    // Mathematical value = -(3^40 + 1)/2 = -6078832729528464401
+    std::vector<Trit> cancel_neg(41, Trit::Pos);
+    cancel_neg[40] = Trit::Neg;
+    ALWAYS_ASSERT(decode_i64(cancel_neg) == -INT64_C(6078832729528464401));
+
+    // Immediate neighbors of negative cancellation vector
+    // Subtract 1 at index 0 (so index 0 is Zero): -6078832729528464402
+    auto cancel_neg_minus1 = cancel_neg;
+    cancel_neg_minus1[0] = Trit::Zero;
+    ALWAYS_ASSERT(decode_i64(cancel_neg_minus1) == -INT64_C(6078832729528464402));
   }
 
   // --- regression: INT64_MIN and INT64_MAX exact roundtrips ---
