@@ -29,12 +29,13 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - *Discrepancy Explanation:* Two RFC IDs have two markdown files each:
     1. `RFC-0055`: `RFC-0055-native-ternary-hardware-target-and-interop-contract.md` (contract) and `RFC-0055-hardware-target-profile-template.md` (companion profile template).
     2. `RFC-0056`: `RFC-0056-google-axion-t81-integration.md` (contract) and `RFC-0056-google-axion-hardware-profile.md` (companion target profile).
-- **Catalog Indexed Denominator:** Total RFC entries listed in the markdown table of `spec/rfcs/index.md`.
-  - **Count:** 110 entries.
+- **Catalog Indexed Entries Denominator:** Total RFC entries listed in the markdown table of `spec/rfcs/index.md`.
+  - **Count:** 110 catalog entries.
+  - *Breakdown by catalog row:* 94 accepted, 11 superseded, 5 draft.
   - *Delta against Files:* `RFC-00D4` exists in `spec/rfcs/` (`spec/rfcs/RFC-00D4-accountable-decision-bundle.md`) but was omitted from the catalog table in `index.md`.
-- **Status Categories:**
-  - **Catalog Status:** The status explicitly assigned in `spec/rfcs/index.md` (`accepted`: 96, `superseded`: 11, `draft`: 5, `not-in-catalog`: 1).
-  - **Frontmatter Status:** The status declared in the metadata/frontmatter of the RFC markdown file (`accepted`: 82, `superseded`: 11, `unparsed`: 11, `draft`: 8, `status`: 1).
+- **Status Categories Reconciled:**
+  - **Catalog Status Mapped Across All 113 Files:** 96 accepted (94 index rows + 2 companion template/profile files for RFC-0055 and RFC-0056), 11 superseded, 5 draft, 1 uncataloged (`RFC-00D4`) = 113 rows in `RFC_MATRIX.csv`.
+  - **Frontmatter Status Across All 113 Files:** 82 accepted, 11 superseded, 11 unparsed, 8 draft, 1 status = 113 files.
   - **Reconciled Maturity:** Realization maturity determined from primary source and test existence (`80 Tested, 17 Specified, 11 Superseded, 5 Implemented`).
 
 ### 2.2 Engineering Capabilities Inventory
@@ -63,12 +64,12 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - 17 Google Benchmark suites located in `benchmarks/BM_*.cpp`.
   - 9 formal empirical experiment harnesses located in `experiments/`, `execution_reports/`, and `docs/research/`.
 - **Classification Rubric (Tiers 1–6):**
-  - **Tier 1 (Source-Only / Proposed):** Benchmark source code exists in repository, but no raw execution results or environment metadata are recorded in tree (9 suites).
-  - **Tier 2 (Executed, Insufficient Provenance):** Workload executed and raw candidate values present, but comparator baseline is missing, unparsed, or marked not-implemented (1 suite).
-  - **Tier 3 (Executed with Attributable Evidence):** Executed run with recorded raw output, machine metadata, compiler flags, and deterministic inputs preserved in tree (7 suites).
-  - **Tier 4 (Independently Reproduced):** Workload executed across multiple independent environments (e.g., Apple Silicon ARM64 and Linux x86_64) or validated against an independent mathematical oracle (6 suites).
-  - **Tier 5 (Methodologically Invalid / Superseded):** Prior benchmark or experiment shown by adversarial audit to suffer from fatal methodology defects (e.g., comparator capacity asymmetry, metadata scaling errors, unoptimized controls, missing conversion costs) (2 suites).
-  - **Tier 6 (Blocked / Incomplete):** Benchmark cannot be executed due to missing physical devices, uncharacterized hardware, or unavailable datasets (1 suite).
+  - **Tier 1 (Source-Only / Proposed):** Benchmark source code exists in repository, but no raw execution results or environment metadata are recorded in tree (9 suites: BM_Base81SIMD, BM_DPE, BM_DeterminismValidation, BM_GovernedWorkflows, BM_LlamaGguf, BM_NativeWeightsExecution, BM_PackedTritVector, BM_TensorMatMul, BM_TensorPromotion).
+  - **Tier 2 (Executed, Insufficient Provenance):** Workload executed and raw candidate values present, but comparator baseline is missing, unparsed, or marked not-implemented (1 suite: BM_TritwiseWorkloads in `benchmarks/results/archive/benchmark_raw.txt`).
+  - **Tier 3 (Executed with Attributable Evidence):** Executed run with recorded raw output, machine metadata, compiler flags, and deterministic inputs preserved in tree (7 suites: BM_CanonFS, BM_DispatchOverhead, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_VMSimulation, EXP-DIRECT-API-SPEEDUP).
+  - **Tier 4 (Independently Reproduced):** Workload executed across multiple independent environments (e.g., Apple Silicon ARM64 and Linux x86_64) or validated against an independent mathematical oracle (6 suites: EXP-H04-R01, EXP-S02, EXP-H09-E1, EXP-CMP3-R1, EXP-DURABLE-WITNESS, EXP-FLOAT-CONVERSION).
+  - **Tier 5 (Methodologically Invalid / Superseded):** Prior benchmark or experiment shown by adversarial audit to suffer from fatal methodology defects (e.g., comparator capacity asymmetry, metadata scaling errors, unoptimized controls, missing conversion costs) (2 suites: BM_LlamaKernels, EXP-H04-R02).
+  - **Tier 6 (Blocked / Incomplete):** Benchmark cannot be executed due to missing physical devices, uncharacterized hardware, or unavailable datasets (1 suite: EXP-INV-10A).
 
 ### 2.4 Scientific Hypotheses Inventory (H01–H08)
 - **Canonical Register Denominator:** The 8 canonical hypotheses defined in `docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`.
@@ -84,10 +85,50 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
 
 ---
 
-## 3. Reproducible Extraction Pipeline & Method
+## 3. Reproducible Extraction Pipeline & Commands
 
-All data entered into the baseline assessment CSV ledgers and status registers are extracted directly from primary artifacts via reproducible inline Python inspection workflows executed in the repository environment:
-1. **RFC Extraction:** Traverses all files in `spec/rfcs/RFC-*.md`, extracting metadata lines (`Title`, `Status`, `Created`), cross-referencing with catalog rows in `spec/rfcs/index.md`, and checking source file paths against the repository tree.
-2. **Capability Audit:** Inspects directory structures across `include/t81/`, `src/`, `vm/`, `fs/`, `lang/`, `ternaryos/`, checking C++ header interfaces and CTest `add_test()` declarations across all CMakeLists.txt files.
-3. **Benchmark Verification:** Inspects every single raw artifact (`benchmarks/results/archive/*`, `benchmarks/results/inference_comparison.md`, `experiments/**/results*.json`, `execution_reports/VERIFICATION_REPORT.md`), matching each benchmark suite to either an exact raw evidence artifact or downgrading to `SOURCE_ONLY`.
-4. **Governance Invariant Checking:** Verifies zero top-level repository drift via `python3 scripts/governance/check_root_structure.py` and runs CSV parser assertions validating row and column integrity.
+To ensure full transparency and auditability, every metric and table is verifiable using standard POSIX shell and Python commands executed from the repository root:
+
+1. **Verify RFC Files and Denominators:**
+   ```bash
+   python3 -c "
+   import glob, re
+   files = sorted(glob.glob('spec/rfcs/RFC-*.md'))
+   print('RFC files count:', len(files)) # 113
+   index_text = open('spec/rfcs/index.md').read()
+   index_rows = re.findall(r'\|\s*(RFC-[0-9A-Za-z\-]+)\s*\|', index_text)
+   print('Index table count:', len(index_rows)) # 110
+   "
+   ```
+
+2. **Verify Registered CTest Targets:**
+   ```bash
+   python3 -c "
+   import re, glob
+   cmake_files = glob.glob('**/CMakeLists.txt', recursive=True) + ['CMakeLists.txt']
+   tests = set()
+   for cf in set(cmake_files):
+       content = open(cf, errors='ignore').read()
+       tests.update(re.findall(r'add_test\s*\(\s*NAME\s+([A-Za-z0-9_\-]+)', content))
+       tests.update(re.findall(r'add_test\s*\(\s*([A-Za-z0-9_\-]+)\s+COMMAND', content))
+   print('Total add_test targets:', len(tests)) # 159
+   "
+   ```
+
+3. **Verify Benchmark Artifacts & Ledgers:**
+   ```bash
+   python3 -c "
+   import csv
+   with open('docs/research/baseline-assessment/BENCHMARK_LEDGER.csv') as f:
+       rows = list(csv.DictReader(f))
+   print('Benchmark families count:', len(rows)) # 26
+   from collections import Counter
+   print('Tiers:', Counter(r['Classification_Tier'] for r in rows))
+   "
+   ```
+
+4. **Verify Top-Level Repository Invariants:**
+   ```bash
+   python3 scripts/governance/check_root_structure.py
+   python3 tests/ci/check_root_structure_test.py
+   ```

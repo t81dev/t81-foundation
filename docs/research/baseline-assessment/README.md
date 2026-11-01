@@ -33,10 +33,10 @@ Every total below is computed under the explicit counting rubrics defined in [ME
 | Category / Metric | Total Count | Counting Rule / Ground-Truth Denominator | Key Breakdown |
 | :--- | :---: | :--- | :--- |
 | **Total RFC Markdown Files** | **113** | Markdown files matching `spec/rfcs/RFC-*.md` | 111 unique RFC IDs (RFC-0055 and RFC-0056 have companion profile templates) |
-| **Catalog Indexed RFCs** | **110** | RFCs listed in markdown table of `spec/rfcs/index.md` | 94 accepted, 11 superseded, 5 draft (RFC-00D4 omitted from index) |
+| **Catalog Indexed RFC Entries** | **110** | RFC rows listed in catalog table of `spec/rfcs/index.md` | **94 accepted, 11 superseded, 5 draft** (RFC-00D4 omitted from index) |
+| **Catalog Status Mapped to Files** | **113** | Catalog status mapped to all 113 markdown files | **96 accepted (94 + 2 companion files), 11 superseded, 5 draft, 1 uncataloged (RFC-00D4)** |
+| **Frontmatter Status of Files** | **113** | Top-level metadata / frontmatter in RFC file | **82 accepted, 11 superseded, 11 unparsed, 8 draft, 1 status** |
 | **Reconciled RFC Maturity** | **113** | Ground-truth lifecycle based on actual code & tests | **80 Tested, 17 Specified, 11 Superseded, 5 Implemented** |
-| **RFC Status (Catalog)** | **113** | Explicit status in catalog table | **96 accepted, 11 superseded, 5 draft, 1 uncataloged (RFC-00D4)** |
-| **RFC Status (Frontmatter)**| **113** | Top-level metadata / frontmatter in RFC file | **82 accepted, 11 superseded, 11 unparsed, 8 draft, 1 status** |
 | **Major Subsystems Audited** | **10** | Core architectural divisions in codebase | 10 audited (Core Arith, Compiler, VM, Axion, CanonFS, Tensor/SIMD, DPE, TernaryOS, Crypto, Cognitive) |
 | **Engineering Capabilities** | **23** | Major architectural capabilities mapped | **16 Tested, 4 Experimental, 2 Implemented, 1 Specified** |
 | **Benchmark Families Audited** | **26** | 17 compiled Google Benchmark suites + 9 formal experiment harnesses | **16 Executed (with raw logs/reports), 9 Source-Only, 1 Blocked (Physical Storage)** |
