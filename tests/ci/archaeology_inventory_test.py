@@ -244,6 +244,44 @@ def test_structured_provenance_contract_unit() -> None:
         assert not has_pinned_execution_provenance(str(self_attested)), "has_pinned_execution_provenance must return False for self-attested receipt"
 
 
+
+def test_test_target_relationships_reconciliation() -> None:
+    """Verifies that all 1,091 test-target relationship edges in RELATIONSHIPS.jsonl:
+    1. Eliminate all references to the undefined placeholder 't81_foundation_under_test'.
+    2. Only mark relationships as VERIFIED when backed by an actual declared CMake target.
+    3. Downgrade fuzz inputs, fixtures, and uncompiled test sources to INFERRED.
+    """
+    rel_path = REPO_ROOT / "docs/records/inventories/repository-archaeology/RELATIONSHIPS.jsonl"
+    assert rel_path.exists(), f"Missing {rel_path}"
+
+    test_target_count = 0
+    t81_foundation_count = 0
+    verified_count = 0
+    inferred_count = 0
+
+    with open(rel_path, "r", encoding="utf-8") as f:
+        for line in f:
+            rec = json.loads(line)
+            if rec.get("type") == "TEST_TARGET":
+                test_target_count += 1
+                target = rec.get("target")
+                status = rec.get("verification_status")
+                if target == "t81_foundation_under_test":
+                    t81_foundation_count += 1
+                if status == "VERIFIED":
+                    verified_count += 1
+                    # Must have CMake target declaration detection method and locator
+                    assert rec.get("detection_method") == "CMAKE_TARGET_DECLARATION"
+                    assert "CMakeLists.txt:" in rec.get("evidence_locator", "")
+                elif status == "INFERRED":
+                    inferred_count += 1
+
+    assert test_target_count == 1091, f"Expected 1,091 TEST_TARGET records, got {test_target_count}"
+    assert t81_foundation_count == 0, f"Found {t81_foundation_count} edges to t81_foundation_under_test"
+    assert verified_count > 0, "Expected positive verified CMake test targets"
+    assert inferred_count > 0, "Expected positive inferred test fixture/corpus targets"
+    assert verified_count + inferred_count == 1091
+
 def test_rfc_authority_classification() -> None:
     files_path = REPO_ROOT / "docs/records/inventories/repository-archaeology/FILES.jsonl"
     assert files_path.exists(), f"Missing {files_path}"
@@ -281,6 +319,8 @@ def main() -> int:
     print(" - test_archive_path_membership_affects_lifecycle_only: PASSED")
     test_structured_provenance_contract_unit()
     print(" - test_structured_provenance_contract_unit: PASSED")
+    test_test_target_relationships_reconciliation()
+    print(" - test_test_target_relationships_reconciliation: PASSED")
     test_rfc_authority_classification()
     print(" - test_rfc_authority_classification: PASSED")
     print("All archaeology inventory regression tests passed.")

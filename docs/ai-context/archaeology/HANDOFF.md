@@ -15,7 +15,7 @@ This document provides a fresh AI agent with immediate, compact context to resum
    - Artifact types, lifecycles, normative authorities, and independently verified evidence tiers are strictly separated.
    - Test files in `tests/` provide `TEST_ASSERTION` specifications and are distinguished from executed evidence runs (`evidence_tier: NONE` for test definitions).
    - RFC authorities are determined from authoritative in-file `Status:` metadata rather than filename prefix heuristics, accurately recognizing accepted RFCs (e.g. `RFC-00C8`) as `NORMATIVE_CONTRACT` and marking ambiguous items as `NEEDS_REVIEW`.
-3. **Relationship Graph:** 6,059 typed relationship edges (C++ `#include`, Markdown hyperlinks, test assertions) persisted in `RELATIONSHIPS.jsonl`.
+3. **Relationship Graph:** 6,059 typed relationship edges (C++ `#include`, Markdown hyperlinks, 1,091 test-target edges reconciled to 390 verified CMake targets and 701 inferred fixtures/corpus items, eliminating placeholder targets) persisted in `RELATIONSHIPS.jsonl`.
 4. **Historical Lineages & Claims Reconciled:**
    - Preserved Investigation 10A inconclusive disposition: `PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE` due to unverified literature claims, rather than an unsupported claim of physical silicon falsification.
    - Preserved H04-R02 exact conditional boundary_oscillation result (AT=1210 < AB=1250 at r=1.60, crossover 5/3 under 10-bit Tier-0 control), noting unequal native capacity (6 trits < 10 bits) and Classification D methodological audit reclassification, without claiming universal advantage or hardware superiority.
