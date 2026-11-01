@@ -75,7 +75,6 @@ T81 is studying representation advantage (Track R), bounded deterministic/policy
 When completing a research session, append a new entry using this standardized template:
 
 ```text
-================================================================================
 DATE / SESSION: YYYY-MM-DD / Session Name
 REPOSITORIES AND PINNED COMMITS: t81-foundation@<commit-sha>
 QUESTION OR HYPOTHESIS TESTED: [H01-H08 identifier and formal question]
@@ -87,7 +86,6 @@ KNOWN DEFECTS / CONFOUNDERS: [Identified confounders or test failures]
 OPEN PRS AND CI STATUS: [Branch heads and PR review status verified via git]
 NEXT SINGLE ACTION: [Concrete next falsifiable task]
 STOPPING CRITERION: [Explicit halt condition]
-================================================================================
 ```
 
 ---
@@ -95,7 +93,6 @@ STOPPING CRITERION: [Explicit halt condition]
 ## 7. Canonical Session Log (Append-Only)
 
 ```text
-================================================================================
 DATE / SESSION: 2026-10-29 / AI Research Continuity System Construction
 REPOSITORIES AND PINNED COMMITS: t81-foundation@f6d4d680709c5c6c98b305628e04346f5ef61620
 QUESTION OR HYPOTHESIS TESTED: Construction of durable 6-document research continuity package in docs/ai-context/ covering H01-H08, TISC ISA, Axion, CanonFS, and DAIOS (RFC-00D2).
@@ -107,7 +104,6 @@ KNOWN DEFECTS / CONFOUNDERS: MatVec 2-bit packing saves 75% memory footprint but
 OPEN PRS AND CI STATUS: Main branch clean. PR #565/#566 under review (CodeQL pass, NOT READY). PR #634 merged.
 NEXT SINGLE ACTION: Execute Experiment H04-R02 (Four-Arm Exact Trace Ledger & Crossover Analysis).
 STOPPING CRITERION: Halt if adaptive ternary yields higher total cost than adaptive binary across parameter sweep.
-================================================================================
 ```
 
 ### Correction appended 2026-10-29 (documentation review; no experiment rerun)

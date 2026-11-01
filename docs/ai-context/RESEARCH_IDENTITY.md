@@ -155,3 +155,9 @@ The project preserves the exact identities, formal claims, baselines, assumption
 1. **Software CPU Speed Claims:** Software ternary arithmetic or SWAR tryte unpacking on binary ALUs is deemed **FALSIFIED and FROZEN** for CPU execution speed.
 2. **Overhead Overhead Domination:** Any theoretical radix advantage that vanishes after accounting for index decoding, digit packing, or conversion overhead is deemed **NOT SUPPORTED**.
 3. **Unchecked Overclaims:** Asserting that a software prototype or CI green check proves physical silicon superiority is deemed a **SCIENTIFIC VIOLATION**.
+
+---
+
+## 2026-10-31 reconciliation note
+
+Research identity and canonical H01–H08 hypothesis identifiers are unchanged. ADM-2 candidate implementation work and CMP3 protocol reconciliation are engineering/research activities, not new proof of ternary representation advantage. Preserve the canonical hypothesis register and separate local operator reports from independently reproduced results.
