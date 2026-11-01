@@ -170,3 +170,15 @@ The provisional comprehensive assessment is a **secondary synthesis**, not a rep
 ### PR #660 baseline-assessment evidence warning
 
 [PR #660](https://github.com/t81dev/t81-foundation/pull/660), head observed `114a5ef82960366d2326dc8d404ef4fcbe3da4ff`, is **open and not independently accepted** as of this dated observation. Codex reviewed preceding head `aa8fe207ceacfc08dd0364cd48c6bd8a612d44a7` and flagged benchmark family attribution, oracle-versus-independent-reproduction tiering, RFC implementation overclaims, invalid source/test paths, inconsistent counts, and incomplete extraction reproducibility. A [bounded correction directive](https://github.com/t81dev/t81-foundation/pull/660#issuecomment-6552761518) requests reconciliation. Do not promote provisional counts (including six claimed Tier 4 families or implementation maturity totals) into established facts without a final-SHA independent audit. **CTest declarations are not passed executions; mathematical oracles are not independent workload reproduction.**
+
+---
+
+## 2026-11-01 AIOPT-001 M1/M2 evidence boundary
+
+- **M1 [#665](https://github.com/t81dev/t81-foundation/pull/665):** source-reported finite correctness checks for a 4-trit fixed-catalog exact match. The 40 distinct singleton patterns reduce to an ordinal membership/range test; no AI-guided advantage, performance gain, or independent-person replication established. [#666](https://github.com/t81dev/t81-foundation/pull/666) and [#667](https://github.com/t81dev/t81-foundation/pull/667) retain scientific/reconciliation gates.
+- **M2 [#669](https://github.com/t81dev/t81-foundation/pull/669):** merged design assessment comparing wildcard matching, adaptive representation and ternary GEMV; comparative rankings are planning judgments, not measurements or approval.
+- **M2 [#673](https://github.com/t81dev/t81-foundation/pull/673):** seven P1 protocol blockers include workload observability, trace adaptation opportunity, canonical representation grammar, comparator/heuristic fairness, binary attribution, statistical specification, and threshold/governance gates.
+- **M2 [#674](https://github.com/t81dev/t81-foundation/pull/674):** Jules proposed modular polynomial evaluation, but its earlier numerical timing/oracle predictions and guaranteed crossover assertions were unmeasured and subsequently qualified. Horner versus sparse indexed evaluation changes algorithm as well as format.
+- **Current [#672](https://github.com/t81dev/t81-foundation/pull/672):** candidate polynomial design only; no validated result, no frozen protocol, no execution. The historical H04-R02 conditional `AT=1210 U < AB=1250 U` at r=1.60 remains **symbolic**, not a CPU speedup. Historical negative CPU packed-ternary comparisons remain workload-specific.
+
+**Evidence verdict:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — NO MEASURED ADVANTAGE`. Never elevate draft hypotheses, review estimates, or documentation edits to measured evidence. Distinguish S (adaptive representation), A (algorithm selection), T (ternary-specific attribution).
