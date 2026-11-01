@@ -152,3 +152,11 @@ The `Source Snapshot` above is a historical observation, not the live repository
 **New-instance reading rule:** Read the canonical [hypothesis register](../research/continuity/HYPOTHESIS_REGISTER_v1.json), [continuity charter](../research/continuity/MASTER_CONTINUITY_CHARTER_v1.0.md), and [evidence index](EVIDENCE_AND_FINDINGS.md) before synthesizing T81's achievements. Read [active handoff](ACTIVE_RESEARCH_HANDOFF.md) for dated PR dispositions, then refresh GitHub. **Scientific acceptance, repository integration, and production readiness are distinct states.**
 
 **Executive synthesis:** T81 is an experimental computing and governed-execution research framework, not proof of generalized ternary superiority. It has working, scoped software and correctness evidence, important negative results, and unresolved physical and comparative hypotheses. Its next publication should explain both demonstrated engineering and what remains unproven. PR #660's benchmark/RFC classifications are not an accepted denominator until corrected and independently checked.
+
+---
+
+## 2026-11-01 active AIOPT M2 research boundary
+
+**Read first for current M2:** [active handoff](ACTIVE_RESEARCH_HANDOFF.md), [decision gate #671](https://github.com/t81dev/t81-foundation/pull/671), [candidate protocol #672](https://github.com/t81dev/t81-foundation/pull/672), [Codex audit #673](https://github.com/t81dev/t81-foundation/pull/673), and [Jules review #674](https://github.com/t81dev/t81-foundation/pull/674). These PRs were observed open and unmerged on 2026-11-01; refresh before relying on status.
+
+**Disposition:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — EXECUTION_BLOCKED`. Distinguish S (adaptive software representation), A (algorithm routing), and T (ternary-specific attribution). T is the long-horizon scientific objective; positive S/A findings do not establish T. Polynomial evaluation in #672 is a proposed, **unaccepted** S/A workload, not an approved benchmark. The seven P1 blockers in #673 remain open. No experimental execution, CI bypass, governance activation or merge is authorized by these notes.
