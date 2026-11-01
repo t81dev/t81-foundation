@@ -1,71 +1,102 @@
-# T81-AIOPT-001 — Candidate B M2 Preregistration Draft
+# T81-AIOPT-001 — M2 Candidate B Polynomial Protocol Revision
 
-**State: PROPOSED; DESIGN ONLY; NOT ACCEPTED; NO EXECUTION AUTHORIZED**  
+**Status: REVISION PROPOSED / DESIGN ONLY / NOT PREREGISTERED / NO IMPLEMENTATION OR MEASUREMENT AUTHORIZED**  
 **Date:** 2026-11-01  
-**Depends on:** [Decision gate PR #671](https://github.com/t81dev/t81-foundation/pull/671) (open/unaccepted at drafting); [adversarial assessment PR #669](https://github.com/t81dev/t81-foundation/pull/669); [H04-R02 corrected results](../../../experiments/h04_r02_adaptive_representation/CORRECTED_RESULTS.md).  
-**Scope:** One small, exact, deterministic adaptive-representation experiment. This draft does not select B by authority, supersede PR #668, or authorize implementation, measurements, CI activation, or production changes.
+**Replaces:** This PR's original `encode → decode → (sum, nonzero_count)` workload, which remains recoverable in Git history.  
+**Review basis:** [Codex acceptance audit #673](https://github.com/t81dev/t81-foundation/pull/673) (seven P1 blockers), [Jules adversarial review #674](https://github.com/t81dev/t81-foundation/pull/674), [B/C decision #671](https://github.com/t81dev/t81-foundation/pull/671), [merged design assessment #669](https://github.com/t81dev/t81-foundation/pull/669), and [H04-R02 corrected results](../../../experiments/h04_r02_adaptive_representation/CORRECTED_RESULTS.md).
 
-## 1. What this experiment can and cannot establish
+## 1. Research question and limitations
 
-**Question:** On a controlled sequence of integer vectors, can a *causal* format selector reduce complete encode/store/read/compute costs relative to the best fixed representation, when every decision, conversion, and output cost is charged?
+**Proposed question:** Can a causal representation/algorithm routing policy improve *complete-trace* exact polynomial-evaluation latency over the best fixed, competent representation/algorithm strategy, after charging observation, encoding, storage, conversion, precomputation, dispatch and output costs?
 
-H04-R02 established conditional differences in an **abstract symbolic cost model**, not CPU speedup. The corrected 10-bit Tier-0 `boundary_oscillation` control reports AB=1250 U and AT=1210 U at r=1.60. This is motivation for testing adaptation, not a predicted result. A win by a format selector alone **does not establish ternary-specific hardware or arithmetic advantage**. A separate matched binary-coded control is necessary for ternary attribution.
+This is an experiment in **adaptive software representation and algorithm selection**. It does **not** directly test native ternary hardware, balanced-radix physical optimality, energy savings, AI learning, or general-purpose inference acceleration. An adaptive win is not a ternary-specific win. H04-R02's AT=1210 U versus AB=1250 U at r=1.60 is a conditional *symbolic model* result, not a CPU prediction.
 
-## 2. Frozen operation and correctness contract (proposed)
+**Current status:** The polynomial workload is a *candidate*, not an accepted scientific replacement. A reviewer must determine whether its algorithm/format tradeoffs are nontrivial, fair, and worth implementing.
 
-Input is an ordered trace of signed integer vectors `v_t`, with each element in `{-1,0,+1}`. At each time t, the system must serialize the vector into the selected format, retain its bytes, decode it, and compute two outputs: `sum(v_t)` in a signed 64-bit accumulator and `nonzero_count(v_t)` as an unsigned count. It must emit the exact ordered pair `(sum, nonzero_count)` for every t. All arms process the **same trace**, preserve input order, and return bit-identical outputs. This is a **representation-and-transition** experiment, not an inference throughput claim. The decode+reduction task is intentionally simple; reviewers must reject the protocol if it is too degenerate to discriminate the desired hypothesis.
+## 2. Exact mathematical operation
 
-Three candidate formats, fully specified before execution:
-- **Dense:** one signed 8-bit value per element.
-- **Packed:** two bits per element, with explicit canonical map `-1 -> 00`, `0 -> 01`, `+1 -> 10`, and `11` invalid. Pad final byte with `00` but ignore padding using the stored logical length.
-- **Sparse:** unsigned canonical little-endian 32-bit count and 32-bit indices for nonzeros, followed by signed 8-bit values; indices strictly increasing and less than logical length. All per-vector metadata and framing are included in byte counts and timed paths.
+For each record `t`, input is a coefficient vector `c_t` of length `L` over `{-1,0,+1}` and an unsigned 64-bit evaluation point `x_t`. Produce exactly one unsigned 64-bit output
 
-**Shared framing:** each record carries an unsigned 32-bit logical length and an unsigned 32-bit payload length, in little-endian, before the format-specific payload. Format identity requires an additional byte in adaptive streams; fixed-format streams may omit it only if their fixed identity is known out-of-band, with that assumption documented and the adaptive overhead still charged. No input length exceeds `2^32-1`. Reject invalid trits, malformed payloads, out-of-range indices, duplicates, noncanonical packed symbols, and truncation. Reject integer overflow rather than wrapping; the proposed trace lengths below are far below overflow.
+`y_t = Σ(i=0..L-1) c_t[i] * x_t^i (mod 2^64)`.
 
-The independent scalar reference reduces the original input vector without encoding or decoding. Each format must round-trip to the exact original vector and produce the oracle pair. Failure blocks timing and preserves the failing seed/trace.
+All additions, subtractions, and multiplications are modulo `2^64`, using unsigned 64-bit arithmetic; do not invoke signed-overflow behavior. Interpret -1 as additive inverse modulo `2^64`. The empty polynomial evaluates to zero, including at x=0. Define x^0=1 even for x=0. Evaluation at x=0 returns c[0] modulo `2^64` when L>0. Include x=0,1,2,2^64-1, random odd/even x, all-zero/all-positive/alternating-sign vectors, long zero runs, and boundary lengths in correctness tests. An independent coefficient-array oracle must not share the production evaluator's dispatch logic.
 
-## 3. Trace generator and arms
+All arms receive the **same** coefficient vectors, evaluation points, ordering and outputs. Reject invalid trits, malformed encodings, noncanonical bytes, out-of-range/duplicate sparse indices, trailing bytes and length arithmetic overflow before accepting the record. Define fail-closed behavior consistently.
 
-**Primary confirmatory trace (proposed):** 1,024 vectors; each vector length 256 or 4,096, and nonzero density 0.05 or 0.95. Four regimes of 256 vectors each, in this order: short-sparse, long-dense, long-sparse, short-dense. Positions and nonzero signs are generated by a specified deterministic PRNG and a fixed seed committed **before execution**. No timing-based tuning of the trace. A reviewer must pin PRNG algorithm, seed, exact density rounding and complete trace digest before protocol acceptance.
+## 3. Canonical representation contracts — proposed, reviewable
 
-**Secondary diagnostic traces (not confirmatory unless separately preregistered):** constant sparse, constant dense, alternating sparse/dense every vector, and adversarial near-threshold sequences. Trace count, seeds, and order must be pinned before execution.
+Every stored record has a common little-endian header `L:u32le | payload_len:u32le | x:u64le` (16 bytes). The record's format is known by a fixed-arm stream type; a mixed adaptive stream adds one explicit `format_tag:u8` (0=dense, 1=packed, 2=sparse) after the header. A format-specific payload follows immediately, with no implicit padding or trailing bytes. Any shared stream envelope, allocator alignment, record index or additional tag must be separately accounted for in real memory and time.
 
-**Arms:** dense-only, packed-only, sparse-only, a predeclared threshold heuristic, and a deterministic adaptive policy. Both selector arms may observe only causal, actually computed descriptors (length, nonzero count/density, prior state). Charge descriptor extraction and any scan required to compute density. Specify selector logic and hysteresis **before** measuring; no learned/AI selector is part of this protocol. An offline hindsight oracle may be computed after timing for diagnostic upper-bound context only and cannot be the winning comparator.
+- **Dense:** exactly L bytes, each one of `FF` (-1), `00` (0), `01` (+1). Reject other byte values.
+- **Packed:** exactly `ceil(L/4)` bytes. Element i occupies bits `2*(i mod 4)` and `2*(i mod 4)+1` of byte `floor(i/4)`; `00`=-1, `01`=0, `10`=+1; `11` invalid anywhere. Unused high two-bit pairs in the last byte must be `00` and are **not semantic coefficients**. Require exact length and canonical padding.
+- **Sparse:** `K:u32le`, then K strictly increasing `index:u32le`, then K signed-value bytes (`FF` or `01` only). Indices are less than L, zeros forbidden, and K<=L. Exact payload size `4+5*K`; no trailing bytes. Require `4+5*K <= 2^32-1`, hence K<=858993458, and checked wider intermediate arithmetic before allocation. Missing indices imply zero coefficients.
 
-**Strongest fixed baseline:** the fastest *complete-trace* result among all three fixed arms, not the fastest format chosen separately for each vector. Report selection uncertainty and avoid post-hoc cherry-picking. A predeclared validation/holdout split or multiplicity-aware comparison is required before approval.
+For all formats require `0<=L<=2^32-1` and `payload_len<=2^32-1`; reject a record if its selected format cannot encode it within these bounds. The small proposed study domain below is far narrower. Reject unknown format tags, invalid lengths, truncation, noncanonical padding and excess bytes; no partial output for a failed record. Empty streams are valid and produce no outputs. These are proposed wire contracts, not implemented/validated codecs.
 
-**Binary attribution control:** a conventional binary-coded, semantically equivalent two-bit representation with the same byte budget as packed ternary (where feasible) and a matching decode+reduce kernel. Because both encode exactly three states in two bits, any performance difference is implementation-dependent, not evidence of nonbinary hardware. If no meaningful distinct comparator is available, report only format/adaptation effects, not ternary-specific effects.
+**Illustrative storage ledger (no speed claims):** fixed-arm bytes per record are dense `16+L`, packed `16+ceil(L/4)`, sparse `20+5K`; mixed adaptive adds one tag byte per record. For L=4096 and K=205, sparse payload is 1029 bytes versus packed 1024 bytes; a 5% sparse record does not automatically favor sparse storage.
 
-## 4. Cost model and measured quantities
+## 4. Algorithm controls — separate algorithm from representation
 
-Primary measure: wall-clock **complete-trace elapsed time** from receiving all input vectors through descriptor extraction, format selection, encoding, storage, decoding, reductions and ordered output writeback. Account for allocation, framing, transitions and cache state. Do not time just the selector or packed kernel and call it end-to-end.
+Each applicable format must be tested with a competent algorithm, not automatically assigned the most favorable one:
 
-Secondary: per-record latency distribution, bytes stored (including framing, indices and tags), selector/descriptor overhead, encode/decode costs, transition count, memory allocations and peak resident memory. Separate total execution time from storage footprint; do not combine into an invented scalar utility. Reuse count is one encode/decode/reduce per record unless a different count is explicitly preregistered.
+1. **Dense Horner:** process coefficients in descending index order, `acc = acc*x + c_i (mod 2^64)`.
+2. **Packed Horner:** decode each coefficient and apply the same Horner recurrence.
+3. **Sparse gap-Horner:** process nonzero coefficients in descending index order; multiply by `x^gap` to skip missing coefficients and finish with the remaining low-order power. Verify the exact exponent/gap convention against the oracle.
+4. **Sparse power evaluation:** compute `Σ c_i*x^i` using a declared exponentiation strategy. Charge any power table, memoization, index traversal and reuse.
+5. **Equivalent binary-coded controls:** since packed ternary is already a binary two-bit encoding of three states, include a semantically identical two-bit mapping/control where meaningful. Do not claim radix-specific benefit from an equivalent relabeling.
 
-## 5. Preregistered decision rule — pending reviewer approval
+**Fairness requirement:** Compare *algorithm and representation* as distinct factors. Where feasible, allow both dense and sparse decoded streams to use Horner and sparse algorithms with all required conversions charged. A fixed arm may choose a preregistered representation/algorithm combination; an adaptive arm cannot claim a ternary-specific gain from switching between fundamentally different algorithms. If full crossing is infeasible, restrict conclusions to the combined routing system.
 
-Let `I = 1 - T_adaptive/T_best_fixed` where both T values measure the same complete trace. Proposed practical threshold `delta = 0.10` (10% improvement); not yet approved. Compare against the threshold heuristic as a **separate secondary** contrast. Specify paired run-block randomization, warmup policy, confidence interval construction, sample size/power, platform/compiler/CPU settings, and treatment of the fastest-of-three baseline before approval.
+A competent **direct evaluation from the original input** is a diagnostic lower-bound control. It must not be described as an equivalent stored-representation comparator if the primary contract requires retention and later decoding.
 
-- **SUPPORTED (bounded):** the lower bound of the adjusted confidence interval for `I` exceeds `delta`, correctness holds, and all costs are included.
-- **BOUNDED NEGATIVE:** the upper bound is below `delta`, with adequate power and valid measurement.
-- **INCONCLUSIVE:** the interval spans `delta`, assumptions fail, hardware noise prevents precision, or comparator fairness is not demonstrated.
-- **INVALID:** correctness, deterministic replay, preregistration, or matched-output checks fail.
+## 5. Producer–consumer lifecycle and causal selection
 
-Failure to establish a gain is **not** evidence of universal inferiority. A positive result supports only this format-selection workload on the tested hardware, not generic AI acceleration, native ternary hardware, or improved energy efficiency.
+**Proposed lifecycle:** A producer receives all input records, encodes each according to the selected arm and writes its complete canonical bytes into a retained buffer. The original coefficient arrays are then unavailable to the timed consumer. The consumer traverses the retained records in order, validates/decodes as needed, evaluates P(x), and writes outputs. End-to-end timing includes producer, descriptor scan, encoding, retention, consumer and output. Do not allow the producer to cache y, precompute the evaluation, or pass a hidden coefficient-array pointer to the consumer. An independent checksum/round-trip validation and a correctness oracle confirm that the consumer depends on retained bytes. Compiler optimizations are allowed only when they preserve this observable contract.
 
-## 6. Approval blockers and resource limits
+**Proposed switching semantics:** Independent records select an encoding at production time; there is **no persistent object conversion** unless a separately specified stateful-reuse variant is approved. Selector state, hysteresis and record transitions must be charged and reset per trace. Do not call per-record dispatch persistent representation migration.
 
-The following must be resolved **before implementation or benchmark authorization**:
-1. PR #671 decision gate accepted by maintainer; M1 acceptance status and review lineage reconciled.
-2. Confirm the frozen decode+reduction operation is scientifically nondegenerate; otherwise revise this protocol *without* quietly running a different operation.
-3. Specify canonical sparse payload layout precisely (including where count/indices/values reside), PRNG, seeds, trace digest, selector logic and threshold.
-4. Specify actual CPU, compiler, timing methodology, run-block count, statistical procedure, multiplicity and noise controls.
-5. Obtain explicit written authorization naming the accepted protocol commit and permitted scope.
+**Permitted causal features:** L, x and descriptors actually computed from the current coefficients at decision time (e.g., K), with scan cost charged. No generator labels, future records, oracle timing, precomputed phase identity or validation-set outcomes. All arms get identical input semantics; fixed arms are not forced to scan for unused descriptors.
 
-**Resource cap (proposal):** one platform, one primary trace, three fixed arms plus two causal selectors, correctness-only validation before any measurement, and no automated sweep. Any additional platform or workload requires separate approval. Preserve raw results and negative outcomes without overwriting historical evidence.
+## 6. Proposed workloads and selectors — NOT FROZEN
 
-## Disposition
+**Proposed bounded primary study:** one platform, one deterministic trace with 1024 records; lengths from {257, 1024, 4095}, density levels from {0, .02, .10, .40, .90, 1}, and evaluation points including 0,1,2 and random odd/even values. Include stationary, alternating, near-crossover and unpredictable mixed regimes without assuming any format crossover exists. The final trace composition, PRNG algorithm, seeds, density rounding, sign distribution, x distribution, record ordering and digest **must be pinned before protocol acceptance**. This paragraph is a design space, not a frozen confirmatory sample or permission to optimize the trace against results.
 
-**M2_B_PROTOCOL_DRAFTED — NOT PREREGISTERED / NOT ACCEPTED / NOT AUTHORIZED.**
+**Fixed comparators:** each competent format/algorithm pair on the *entire* trace, with identical lifecycle. Report every fixed arm, and compare to the best fixed expected complete-trace time using prespecified selection or simultaneous inference; do not cherry-pick a favorable fixed arm.
 
-Next action is a single scientific and governance review of this draft, not implementation.
+**Causal selectors:** (a) predeclared density/length threshold heuristic, (b) deterministic analytical cost-model selector using only causal features and a frozen calibration set, (c) optional policy with hysteresis if it has a justified stateful benefit. Define thresholds, ties, feature scans, calibration split and resets before measurement. A hindsight oracle is noncausal diagnostic context only. No learned or AI selector is proposed or authorized.
+
+**Holdout:** A separate, preregistered confirmation trace or strict holdout design is necessary if any thresholds, kernels or format choices are tuned. Do not report training/calibration results as confirmatory evidence.
+
+## 7. Measurement and inference — specification still required
+
+**Primary metric:** elapsed wall-clock time per complete trace, including producer and consumer, allocations, metadata/feature extraction, storage, precomputation, conversion, selector decisions, kernel execution and ordered output. Report storage bytes and memory residency separately; do not combine them into an invented scalar objective.
+
+**Proposed primary effect:** `I=1 - μ_adaptive / μ_best_fixed`, where μ denotes expected complete-trace time on the prespecified platform/trace and `best_fixed` is the fastest true fixed-arm mean. A 10% practical improvement threshold in earlier PRs and 15% in Jules's review are **both unapproved**. Maintainer must justify and select a threshold before confirmation. Any incremental claim for a sophisticated selector additionally requires a preregistered comparison with the strongest simple causal heuristic.
+
+**Decision rule:** With a prespecified multiplicity-aware confidence interval on the comparative effect, SUPPORT only if its lower bound exceeds the accepted practical threshold; BOUNDED NEGATIVE only if its upper bound falls below that threshold with adequate power and valid measurement; otherwise INCONCLUSIVE. Correctness/comparator/provenance failure is INVALID, not negative. A result conditional on one fixed trace cannot be generalized to all workload distributions.
+
+**Unresolved preregistration requirements:** CPU model, ISA, compiler/version/flags, OS, timer and overhead, warmups, number of paired run blocks, block/session independence, balanced randomized arm order, sample size/power assumptions, noise and exclusion policy, exact estimator and CI algorithm, resampling unit and seed, multiple-comparison adjustment, fixed-arm selection treatment, raw-run schema, trace digest and stopping rule. These are **approval blockers**, not optional execution details. A variance pilot, if needed, requires separate authorization and cannot contaminate the confirmation trace.
+
+## 8. Reconciliation of PR #673's seven P1 blockers
+
+| Audit finding | Revision response | Gate |
+| --- | --- | --- |
+| P1-01 degenerate sum/count and bypassable decoder | Replace with polynomial evaluation; freeze producer/consumer and prohibit hidden precomputed outputs | **Open:** verify nondegeneracy and observable consumer dependency |
+| P1-02 tailored trace/no demonstrated crossover | Broaden proposed regimes and x values; do not assert crossovers; define dispatch versus migration | **Open:** freeze trace and analytical justification |
+| P1-03 wire grammar/size limits | Explicit byte grammar, padding, sparse indices, tags, checked limits | **Open:** independent formal grammar and boundary-case review |
+| P1-04 best-fixed/heuristic fairness | Factor algorithm and representation; competent fixed arms, causal heuristic and cost-model controls | **Open:** pin implementations and policies |
+| P1-05 no ternary-specific attribution | Explicitly narrow claim to adaptive software routing; matched binary-coded controls | **Open:** attribution and comparison design review |
+| P1-06 incomplete statistics | Define estimand, valid decision categories, holdout and required statistical checklist | **Open:** numerical procedure and environment |
+| P1-07 threshold/upstream authority | Treat 10%/15% as unapproved; preserve M1 and B/C acceptance dependencies | **Open:** maintainer decision and explicit commit-scoped authorization |
+
+No P1 is marked resolved solely by authoring this document. A reviewer must validate each correction and accept the completed protocol.
+
+## 9. Explicit gates and stopping conditions
+
+- **G0 — Continuity:** Reconcile M1 #665, scientific review #666, and reconciliation #667. No M1 performance claims.
+- **G1 — Research selection:** Maintainer formally decides B versus C and whether the polynomial redesign is worth the resource cost. PR #671 is a recommendation, not an authorization.
+- **G2 — Protocol acceptance:** Freeze operation, grammar, algorithms, trace, selectors, comparator fairness, statistical method, platform and commit SHA; obtain independent technical review.
+- **G3 — Explicit execution authority:** Separate written approval specifying allowed correctness implementation and whether any benchmark may run, with resource cap. A merge, CI success or AI recommendation is not approval.
+- **Stop/INVALID:** Semantics mismatch, noncanonical format accepted, unobservable retained-byte dependency, comparator inequivalence, unregistered tuning, or missing authorization. Preserve negative and inconclusive evidence.
+
+**Final disposition: `M2_B_POLYNOMIAL_PROTOCOL_REVISION_DRAFT — SEVEN_P1_GATES_OPEN — NO_EXECUTION_AUTHORIZED`.**
