@@ -57,8 +57,10 @@ t81::cog::TierId tier_from_rank(int rank) {
       return t81::cog::TierId::Tier4;
     case 5:
       return t81::cog::TierId::Tier5;
+    case 6:
+      return t81::cog::TierId::Tier6;
     default:
-      return rank < 1 ? t81::cog::TierId::Tier0 : t81::cog::TierId::Tier5;
+      return rank < 1 ? t81::cog::TierId::Tier0 : t81::cog::TierId::Tier6;
   }
 }
 

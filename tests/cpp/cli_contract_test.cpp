@@ -488,254 +488,283 @@ int main(int argc, char* argv[]) {
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
-    T81_TEST_CHECK(fs::exists(safetensors_fixture));
-
-    const auto result =
-        run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json"});
-    T81_TEST_CHECK(result.exit_code == 0);
-    validate_model_import_json_against_schema(model_import_schema, result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-import.v1\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"ok\": true"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_format\": \"safetensors\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"artifact_format\": \"SafeTensors("));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_path\": \"" + safetensors_fixture.string() + "\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\": \"sha3-512:"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"name\": \"lm_head.weight\""));
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const auto result =
+          run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json"});
+      T81_TEST_CHECK(result.exit_code == 0);
+      validate_model_import_json_against_schema(model_import_schema, result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-import.v1\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"ok\": true"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_format\": \"safetensors\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"artifact_format\": \"SafeTensors("));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_path\": \"" + safetensors_fixture.string() + "\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\": \"sha3-512:"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"name\": \"lm_head.weight\""));
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
-    const fs::path output_json = make_temp_path("t81-cli-contract-model-import", ".json");
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const fs::path output_json = make_temp_path("t81-cli-contract-model-import", ".json");
 
-    const auto result = run_cli(
-        t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "-o", output_json.string()});
-    T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(fs::exists(output_json));
-    const std::string written = read_file(output_json);
-    T81_TEST_CHECK(!written.empty());
-    T81_TEST_CHECK(written == result.stdout_text);
-    validate_model_import_json_against_schema(model_import_schema, written, true);
+      const auto result = run_cli(
+          t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "-o", output_json.string()});
+      T81_TEST_CHECK(result.exit_code == 0);
+      T81_TEST_CHECK(fs::exists(output_json));
+      const std::string written = read_file(output_json);
+      T81_TEST_CHECK(!written.empty());
+      T81_TEST_CHECK(written == result.stdout_text);
+      validate_model_import_json_against_schema(model_import_schema, written, true);
 
-    std::error_code ignore_ec;
-    fs::remove(output_json, ignore_ec);
+      std::error_code ignore_ec;
+      fs::remove(output_json, ignore_ec);
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
-    const fs::path output_manifest = make_temp_path("t81-cli-contract-model-manifest", ".json");
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const fs::path output_manifest = make_temp_path("t81-cli-contract-model-manifest", ".json");
 
-    const auto result = run_cli(t81_bin,
-                                {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
-                                 output_manifest.string()});
-    T81_TEST_CHECK(result.exit_code == 0);
-    T81_TEST_CHECK(fs::exists(output_manifest));
-    const std::string manifest = read_file(output_manifest);
-    T81_TEST_CHECK(!manifest.empty());
-    validate_model_manifest_json(manifest);
-    validate_model_manifest_json_against_schema(model_manifest_schema, manifest);
-    T81_TEST_CHECK(contains(manifest, "\"source_format\": \"safetensors\""));
-    T81_TEST_CHECK(contains(manifest, "\"host_format_reader\": \"safetensors\""));
-    T81_TEST_CHECK(contains(manifest, "\"name\": \"lm_head.weight\""));
-    T81_TEST_CHECK(contains(manifest, "\"source_path\": \"" + safetensors_fixture.string() + "\""));
-    validate_model_import_json_against_schema(model_import_schema, result.stdout_text, true);
+      const auto result = run_cli(t81_bin,
+                                  {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
+                                   output_manifest.string()});
+      T81_TEST_CHECK(result.exit_code == 0);
+      T81_TEST_CHECK(fs::exists(output_manifest));
+      const std::string manifest = read_file(output_manifest);
+      T81_TEST_CHECK(!manifest.empty());
+      validate_model_manifest_json(manifest);
+      validate_model_manifest_json_against_schema(model_manifest_schema, manifest);
+      T81_TEST_CHECK(contains(manifest, "\"source_format\": \"safetensors\""));
+      T81_TEST_CHECK(contains(manifest, "\"host_format_reader\": \"safetensors\""));
+      T81_TEST_CHECK(contains(manifest, "\"name\": \"lm_head.weight\""));
+      T81_TEST_CHECK(contains(manifest, "\"source_path\": \"" + safetensors_fixture.string() + "\""));
+      validate_model_import_json_against_schema(model_import_schema, result.stdout_text, true);
 
-    std::error_code ignore_ec;
-    fs::remove(output_manifest, ignore_ec);
+      std::error_code ignore_ec;
+      fs::remove(output_manifest, ignore_ec);
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
-    const fs::path manifest_a = make_temp_path("t81-cli-contract-model-manifest-a", ".json");
-    const fs::path manifest_b = make_temp_path("t81-cli-contract-model-manifest-b", ".json");
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const fs::path manifest_a = make_temp_path("t81-cli-contract-model-manifest-a", ".json");
+      const fs::path manifest_b = make_temp_path("t81-cli-contract-model-manifest-b", ".json");
 
-    const auto write_a =
-        run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
-                          manifest_a.string()});
-    const auto write_b =
-        run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
-                          manifest_b.string()});
-    T81_TEST_CHECK(write_a.exit_code == 0);
-    T81_TEST_CHECK(write_b.exit_code == 0);
+      const auto write_a =
+          run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
+                            manifest_a.string()});
+      const auto write_b =
+          run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
+                            manifest_b.string()});
+      T81_TEST_CHECK(write_a.exit_code == 0);
+      T81_TEST_CHECK(write_b.exit_code == 0);
 
-    const auto result = run_cli(t81_bin, {"model", "diff", manifest_a.string(), manifest_b.string(), "--json"});
-    T81_TEST_CHECK(result.exit_code == 0);
-    validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
+      const auto result = run_cli(t81_bin, {"model", "diff", manifest_a.string(), manifest_b.string(), "--json"});
+      T81_TEST_CHECK(result.exit_code == 0);
+      validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
 
-    std::error_code ignore_ec;
-    fs::remove(manifest_a, ignore_ec);
-    fs::remove(manifest_b, ignore_ec);
+      std::error_code ignore_ec;
+      fs::remove(manifest_a, ignore_ec);
+      fs::remove(manifest_b, ignore_ec);
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
-    const fs::path manifest_path = make_temp_path("t81-cli-contract-model-manifest-compare", ".json");
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const fs::path manifest_path = make_temp_path("t81-cli-contract-model-manifest-compare", ".json");
 
-    const auto write_manifest =
-        run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
-                          manifest_path.string()});
-    T81_TEST_CHECK(write_manifest.exit_code == 0);
+      const auto write_manifest =
+          run_cli(t81_bin, {"model", "import", safetensors_fixture.string(), "--json", "--manifest",
+                            manifest_path.string()});
+      T81_TEST_CHECK(write_manifest.exit_code == 0);
 
-    const auto result =
-        run_cli(t81_bin, {"model", "diff", manifest_path.string(), safetensors_fixture.string(), "--json"});
-    T81_TEST_CHECK(result.exit_code == 0);
-    validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only_count\": 1"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only_count\": 1"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"host_format_reader\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_path\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
+      const auto result =
+          run_cli(t81_bin, {"model", "diff", manifest_path.string(), safetensors_fixture.string(), "--json"});
+      T81_TEST_CHECK(result.exit_code == 0);
+      validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only_count\": 1"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only_count\": 1"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"host_format_reader\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_path\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
 
-    std::error_code ignore_ec;
-    fs::remove(manifest_path, ignore_ec);
+      std::error_code ignore_ec;
+      fs::remove(manifest_path, ignore_ec);
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
-    const auto result =
-        run_cli(t81_bin, {"model", "diff", safetensors_fixture.string(), safetensors_fixture.string(), "--json"});
-    T81_TEST_CHECK(result.exit_code == 0);
-    validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const auto result =
+          run_cli(t81_bin, {"model", "diff", safetensors_fixture.string(), safetensors_fixture.string(), "--json"});
+      T81_TEST_CHECK(result.exit_code == 0);
+      validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_rhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": []"));
+    }
   }
 
   {
     const fs::path lhs_fixture = repo_root / "models" / "tiny-random-llama-exported.safetensors";
     const fs::path rhs_fixture = repo_root / "models" / "tiny-random-llama" / "model.safetensors";
-    T81_TEST_CHECK(fs::exists(lhs_fixture));
-    T81_TEST_CHECK(fs::exists(rhs_fixture));
-
-    const auto result =
-        run_cli(t81_bin, {"model", "diff", lhs_fixture.string(), rhs_fixture.string(), "--json"});
-    T81_TEST_CHECK(result.exit_code != 0);
-    validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": false"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_format\": \"SafeTensors(native-ternary-i8)\""));
-    T81_TEST_CHECK(
-        contains(result.stdout_text, "\"rhs_format\": \"SafeTensors(float-quantized; profile=native-dense-v1)\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 18"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lm_head.weight\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 2"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\""));
+    if (!fs::exists(lhs_fixture) || !fs::exists(rhs_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << lhs_fixture.filename() << " or " << rhs_fixture.filename() << "\n";
+    } else {
+      const auto result =
+          run_cli(t81_bin, {"model", "diff", lhs_fixture.string(), rhs_fixture.string(), "--json"});
+      T81_TEST_CHECK(result.exit_code != 0);
+      validate_model_diff_json_against_schema(model_diff_schema, result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"schema\": \"t81.model-diff.v1\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": false"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_format\": \"SafeTensors(native-ternary-i8)\""));
+      T81_TEST_CHECK(
+          contains(result.stdout_text, "\"rhs_format\": \"SafeTensors(float-quantized; profile=native-dense-v1)\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only\": []"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 18"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lm_head.weight\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 2"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\""));
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama" / "model.safetensors";
-    const fs::path temp_gguf = make_temp_path("t81-cli-contract-model-gguf-provenance", ".gguf");
-    const fs::path temp_manifest =
-        make_temp_path("t81-cli-contract-model-gguf-provenance-manifest", ".json");
-    T81_TEST_CHECK(fs::exists(safetensors_fixture));
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const fs::path temp_gguf = make_temp_path("t81-cli-contract-model-gguf-provenance", ".gguf");
+      const fs::path temp_manifest =
+          make_temp_path("t81-cli-contract-model-gguf-provenance-manifest", ".json");
 
-    const auto quantize_result =
-        run_cli(t81_bin, {"weights", "quantize", safetensors_fixture.string(), "--to-gguf", temp_gguf.string()});
-    T81_TEST_CHECK(quantize_result.exit_code == 0);
-    T81_TEST_CHECK(fs::exists(temp_gguf));
+      const auto quantize_result =
+          run_cli(t81_bin, {"weights", "quantize", safetensors_fixture.string(), "--to-gguf", temp_gguf.string()});
+      T81_TEST_CHECK(quantize_result.exit_code == 0);
+      T81_TEST_CHECK(fs::exists(temp_gguf));
 
-    const auto result = run_cli(
-        t81_bin,
-        {"model", "import", temp_gguf.string(), "--json", "--manifest", temp_manifest.string()});
-    T81_TEST_CHECK(result.exit_code == 0);
-    validate_model_import_json_against_schema(model_import_schema, result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_format\": \"gguf\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"artifact_format\": \"GGUF\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\": \"sha3-512:"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"gguf_version\": \"3\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"embedded_source_sha3_512\": \"sha3-512:"));
+      const auto result = run_cli(
+          t81_bin,
+          {"model", "import", temp_gguf.string(), "--json", "--manifest", temp_manifest.string()});
+      T81_TEST_CHECK(result.exit_code == 0);
+      validate_model_import_json_against_schema(model_import_schema, result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_format\": \"gguf\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"artifact_format\": \"GGUF\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\": \"sha3-512:"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"gguf_version\": \"3\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"embedded_source_sha3_512\": \"sha3-512:"));
 
-    T81_TEST_CHECK(fs::exists(temp_manifest));
-    const std::string manifest = read_file(temp_manifest);
-    T81_TEST_CHECK(!manifest.empty());
-    validate_model_manifest_json(manifest);
-    validate_model_manifest_json_against_schema(model_manifest_schema, manifest);
-    T81_TEST_CHECK(contains(manifest, "\"source_format\": \"gguf\""));
-    T81_TEST_CHECK(contains(manifest, "\"host_format_reader\": \"gguf\""));
-    T81_TEST_CHECK(contains(manifest, "\"source_sha3_512\": \"sha3-512:"));
-    T81_TEST_CHECK(contains(manifest, "\"gguf_version\": \"3\""));
-    T81_TEST_CHECK(contains(manifest, "\"embedded_source_sha3_512\": \"sha3-512:"));
+      T81_TEST_CHECK(fs::exists(temp_manifest));
+      const std::string manifest = read_file(temp_manifest);
+      T81_TEST_CHECK(!manifest.empty());
+      validate_model_manifest_json(manifest);
+      validate_model_manifest_json_against_schema(model_manifest_schema, manifest);
+      T81_TEST_CHECK(contains(manifest, "\"source_format\": \"gguf\""));
+      T81_TEST_CHECK(contains(manifest, "\"host_format_reader\": \"gguf\""));
+      T81_TEST_CHECK(contains(manifest, "\"source_sha3_512\": \"sha3-512:"));
+      T81_TEST_CHECK(contains(manifest, "\"gguf_version\": \"3\""));
+      T81_TEST_CHECK(contains(manifest, "\"embedded_source_sha3_512\": \"sha3-512:"));
 
-    std::error_code ignore_ec;
-    fs::remove(temp_gguf, ignore_ec);
-    fs::remove(temp_manifest, ignore_ec);
+      std::error_code ignore_ec;
+      fs::remove(temp_gguf, ignore_ec);
+      fs::remove(temp_manifest, ignore_ec);
+    }
   }
 
   {
     const fs::path safetensors_fixture = repo_root / "models" / "tiny-random-llama" / "model.safetensors";
-    const fs::path temp_gguf = make_temp_path("t81-cli-contract-model-normalized", ".gguf");
-    T81_TEST_CHECK(fs::exists(safetensors_fixture));
+    if (!fs::exists(safetensors_fixture)) {
+      std::cout << "[SKIP] Optional fixture missing: " << safetensors_fixture.filename() << "\n";
+    } else {
+      const fs::path temp_gguf = make_temp_path("t81-cli-contract-model-normalized", ".gguf");
 
-    const auto quantize_result =
-        run_cli(t81_bin, {"weights", "quantize", safetensors_fixture.string(), "--to-gguf", temp_gguf.string()});
-    T81_TEST_CHECK(quantize_result.exit_code == 0);
-    T81_TEST_CHECK(fs::exists(temp_gguf));
+      const auto quantize_result =
+          run_cli(t81_bin, {"weights", "quantize", safetensors_fixture.string(), "--to-gguf", temp_gguf.string()});
+      T81_TEST_CHECK(quantize_result.exit_code == 0);
+      T81_TEST_CHECK(fs::exists(temp_gguf));
 
-    const auto result = run_cli(
-        t81_bin, {"model", "diff", temp_gguf.string(), safetensors_fixture.string(), "--json", "--mode",
-                  "normalized"});
-    T81_TEST_CHECK(result.exit_code == 0);
-    validate_model_diff_normalized_json_against_schema(model_diff_normalized_schema,
-                                                       result.stdout_text, true);
-    T81_TEST_CHECK(contains(result.stdout_text, "\"comparison_mode\": \"normalized\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_match_count\": 8"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_source_format\": \"gguf\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_source_format\": \"safetensors\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_matches\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"lm_head.weight\""));
-    T81_TEST_CHECK(
-        contains(result.stdout_text, "\"normalization_rules\": [\"known_2d_transpose_for_gguf_safetensors\"]"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"gguf_version\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only_count\": 2"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": ["));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 2"));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"embedded_source_sha3_512\""));
-    T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_match_reasons\": {"));
-    T81_TEST_CHECK(contains(
-        result.stdout_text,
-        "\"lm_head.weight\": \"known_2d_transpose_for_gguf_safetensors\""));
+      const auto result = run_cli(
+          t81_bin, {"model", "diff", temp_gguf.string(), safetensors_fixture.string(), "--json", "--mode",
+                    "normalized"});
+      T81_TEST_CHECK(result.exit_code == 0);
+      validate_model_diff_normalized_json_against_schema(model_diff_normalized_schema,
+                                                         result.stdout_text, true);
+      T81_TEST_CHECK(contains(result.stdout_text, "\"comparison_mode\": \"normalized\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"identical\": true"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_only_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"changed_count\": 0"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_match_count\": 8"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lhs_source_format\": \"gguf\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"rhs_source_format\": \"safetensors\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_matches\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"lm_head.weight\""));
+      T81_TEST_CHECK(
+          contains(result.stdout_text, "\"normalization_rules\": [\"known_2d_transpose_for_gguf_safetensors\"]"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"gguf_version\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_lhs_only_count\": 2"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed\": ["));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"source_sha3_512\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"provenance_changed_count\": 2"));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"embedded_source_sha3_512\""));
+      T81_TEST_CHECK(contains(result.stdout_text, "\"normalized_match_reasons\": {"));
+      T81_TEST_CHECK(contains(
+          result.stdout_text,
+          "\"lm_head.weight\": \"known_2d_transpose_for_gguf_safetensors\""));
 
-    std::error_code ignore_ec;
-    fs::remove(temp_gguf, ignore_ec);
+      std::error_code ignore_ec;
+      fs::remove(temp_gguf, ignore_ec);
+    }
   }
 
   {

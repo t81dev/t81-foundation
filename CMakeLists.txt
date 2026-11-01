@@ -421,6 +421,10 @@ if(T81_BUILD_TESTS)
   add_executable(t81_vm_fault_test tests/cpp/vm_fault_test.cpp)
   target_link_libraries(t81_vm_fault_test PRIVATE t81_vm t81_core)
 
+  add_executable(t81_vm_value_ops_boundary_test tests/cpp/vm_value_ops_boundary_test.cpp)
+  target_link_libraries(t81_vm_value_ops_boundary_test PRIVATE t81_vm t81_core)
+  target_include_directories(t81_vm_value_ops_boundary_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
   add_executable(t81_vm_deterministic_fault_test tests/cpp/test_vm_deterministic_fault.cpp)
   target_link_libraries(t81_vm_deterministic_fault_test PRIVATE t81_vm t81_core)
 
@@ -1503,6 +1507,7 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     t81_vm_predispatch_policy_deny_logging_test
     t81_vm_ai_predispatch_deny_audit_test
     t81_vm_fault_test
+    t81_vm_value_ops_boundary_test
     t81_vm_deterministic_fault_test
     t81_vm_fault_family_determinism_matrix_test
     t81_vm_memory_test

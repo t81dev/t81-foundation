@@ -184,6 +184,10 @@ bool T81DirectAPI::load_model_cached(const std::string& path) {
   try {
     // Load model using T81 weights API
     auto model_file = t81::weights::load_t81w(path);
+    if (model_file.native.empty()) {
+      return false;
+    }
+
     cached_model_ = model_file.native;
     cached_model_path_ = path;
 
