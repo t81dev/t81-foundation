@@ -20,8 +20,8 @@
 ### Primary Question
 **Can the proposed Candidate B adaptive-representation experiment establish anything more meaningful than the observation that different data representations work better for different workloads?**
 
-### Definitive Verdict: No
-The Candidate B protocol proposed in PR #672 cannot establish any new, non-trivial scientific knowledge. Under rigorous analysis, the experiment reduces to a circular, degenerate demonstration of basic compression economics: if an artificial trace is explicitly assembled by concatenating blocks of extreme sparsity ($5\%$ nonzeros) and extreme density ($95\%$ nonzeros), a switching mechanism between a sparse container and a dense container will trivially outperform a single static format forced across both extremes.
+### Provisional Verdict: Current Workload Is Not Yet Scientifically Discriminating
+The Candidate B protocol proposed in PR #672 does not yet establish a sufficiently discriminating scientific question. Whether a corrected, tightly bounded serialization experiment adds useful systems knowledge remains open. Under rigorous analysis, the experiment reduces to a circular, degenerate demonstration of basic compression economics: if an artificial trace is explicitly assembled by concatenating blocks of extreme sparsity ($5\%$ nonzeros) and extreme density ($95\%$ nonzeros), a switching mechanism between a sparse container and a dense container might outperform a single static format under some implementation and hardware conditions; the crossover and end-to-end advantage are not established without measurements.
 
 This outcome is scientifically empty for four reasons:
 1. **Workload Degeneracy:** The proposed compute operation—serializing a vector, decoding it, and computing `(sum, nonzero_count)`—has virtually zero operational intensity. It does not exercise computational execution, but merely measures memory write/read bandwidth and loop dispatch.
@@ -78,7 +78,7 @@ To evaluate whether Candidate B provides new scientific information, we must del
 | **Hanoi / CWEB Lineage** | Historically posited seamless kernel-level ternary computing, AI optimization, and custom accelerators without reproducible physical verification. | "Provides a rigorous, falsifiable preregistration draft." | **Methodological improvement only.** PR #672 is disciplined in its caveats, but rigorous execution of an uninformative premise still yields uninformative data. |
 
 ### Conclusion on Novelty
-The experiment as drafted in PR #672 cannot discover any new scientific principle. It conflates the validation of a software state-machine with empirical proof of a computational advantage.
+The experiment as drafted in PR #672 has not established sufficient novelty or a nondegenerate workload; it could still yield bounded systems evidence after repair. It conflates the validation of a software state-machine with empirical proof of a computational advantage.
 
 ---
 
@@ -102,12 +102,12 @@ PR #672 defines the primary confirmatory trace as:
 - Regime 3: 256 vectors, length 4,096, density $5\%$ ($0.05$)
 - Regime 4: 256 vectors, length 256, density $95\%$ ($0.95$)
 
-This trace is constructed with extreme bimodal polarization:
+This trace is constructed with extreme bimodal polarization. The following are illustrative payload calculations, not latency measurements; sparse record headers and per-record framing must also be charged:
 - At $D = 0.05$, a vector of length 4,096 has only $\approx 204$ nonzeros. A sparse representation requires $\approx 204 \times (4 + 1) = 1,020\text{ bytes}$, whereas dense INT8 requires $4,096\text{ bytes}$ and packed 2-bit requires $1,024\text{ bytes}$.
 - At $D = 0.95$, a vector of length 4,096 has $\approx 3,891$ nonzeros. A sparse representation requires $3,891 \times 5 = 19,455\text{ bytes}$ ($4.75\times$ larger than dense INT8!).
-- A single fixed format forced across all four regimes will incur massive penalties: fixed-sparse will suffer catastrophic blowup in Regimes 2 and 4, while fixed-dense will waste memory traffic in Regimes 1 and 3.
+- A single fixed format could incur penalties across these regimes, but no measured latency crossover or selector benefit has been established: fixed-sparse will suffer catastrophic blowup in Regimes 2 and 4, while fixed-dense will waste memory traffic in Regimes 1 and 3.
 
-**The Degeneracy:** The experiment constructs a scenario where fixed baselines are mathematically crippled by design, and then celebrates the fact that a switching selector achieves a $>10\%$ speedup. This does not prove that adaptation has high scientific efficacy; it proves that bimodal torture-testing of fixed representations produces bimodal inefficiency.
+**Design risk:** The trace accentuates format differences, but does not guarantee a >10% speedup. Under the proposed sparse grammar (4-byte count, 4-byte indices, 1-byte values), at L=4096 and K=205, sparse payload is 1,029 bytes versus 1,024 packed bytes; at L=256 and K=13, sparse payload is 69 bytes versus 64 packed bytes. Actual latency crossings must be established, not assumed. This does not prove that adaptation has high scientific efficacy; it proves that bimodal torture-testing of fixed representations produces bimodal inefficiency.
 
 ### 3.3 Representation Equivalence and Ordinary Compression Analogy
 Does Candidate B expose anything unique to ternary representations?
@@ -128,12 +128,12 @@ Candidate B proposes comparing a "deterministic adaptive policy" against fixed f
 1. **The Trivial Density Threshold:**
    If the selector is provided with or computes the non-zero density $D$, the decision rule is trivial:
    $$\text{Format} = \begin{cases} \text{Sparse}, & \text{if } D \le \theta_{\text{sparse}} \\ \text{Packed}, & \text{if } \theta_{\text{sparse}} < D \le \theta_{\text{dense}} \\ \text{Dense}, & \text{otherwise} \end{cases}$$
-   On modern x86/ARM processors, the crossover points $\theta$ are static constants determined by memory bus width and vector decode costs (typically $\theta_{\text{sparse}} \approx 0.12$ to $0.15$). A static branch or lookup on this threshold executes in $<2\text{ ns}$.
+   On modern x86/ARM processors, the crossover points $\theta$ are static constants determined by memory bus width and vector decode costs (typically $\theta_{\text{sparse}} \approx 0.12$ to $0.15$). A static branch or lookup may be inexpensive, but its actual cost, including density observation, must be measured; no sub-2 ns result is established here.
 
 2. **The Offline Hindsight Oracle:**
    An offline oracle computes the exact minimum execution time across all candidate formats for each vector:
    $$T_{\text{oracle}} = \sum_{t=1}^N \min_{m \in \{\text{dense, packed, sparse}\}} T_m(v_t)$$
-   In PR #672, the oracle is relegated to an "unattainable upper bound." But in reality, on the proposed primary trace, the trivial density threshold will achieve $\ge 98\%$ of the hindsight oracle’s performance because the regimes are separated by a massive gap ($5\%$ vs $95\%$).
+   In PR #672, the oracle is relegated to an "unattainable upper bound." But in reality, on the proposed primary trace, a trivial density threshold may approach the hindsight oracle’s performance because the regimes are separated by a massive gap ($5\%$ vs $95\%$).
 
 3. **Deterministic Cost-Model Selector:**
    A deterministic analytical model estimates cost based on input length $L$ and density $D$:
@@ -143,8 +143,8 @@ Candidate B proposes comparing a "deterministic adaptive policy" against fixed f
 ### 4.2 The "AI" / Learned Selector Fallacy
 Why is an AI-driven or learned selector completely unwarranted here?
 - **Decision Complexity:** The decision space is tiny (choose 1 of 3 formats) based on two scalar inputs ($L$ and $D$).
-- **Inference Tax:** Even the smallest neural network or decision forest requires thousands of CPU cycles to evaluate. When the total time to encode, decode, and reduce a 256-element vector is on the order of 200–500 nanoseconds, executing an ML inference routine (even a micro-MLP taking $1\text{ }\mu\text{s}$) will introduce an overhead larger than the entire computation being optimized!
-- **Scientific Value:** Introducing a learned selector into this micro-workload adds no scientific insight; it merely serves as "AI-washing" to fit a research marketing label.
+- **Inference Tax:** Even a learned model incurs inference and feature-extraction costs that must be measured for the specific implementation. When the total time to encode, decode, and reduce a 256-element vector is on the order of 200–500 nanoseconds, executing an ML inference routine (a hypothetical micro-MLP taking $1\text{ }\mu\text{s}$) will introduce an overhead larger than the entire computation being optimized!
+- **Scientific Value:** Introducing a learned selector into this micro-workload adds no scientific insight; its incremental scientific value would require a measured win over competent causal heuristic and cost-model selectors.
 
 ### 4.3 Summary of Comparator Ranking
 
@@ -233,7 +233,7 @@ To inform governance decisions, the table below provides a rigorous comparative 
 | **4. Selector & Dispatch State Machine** | 2 days (Threshold heuristic + cost model) | 3 days (Descriptor scanner + transition cache) | N/A (Static matrix layout) |
 | **5. Statistical & Measurement Harness** | 3 days (Wall-clock timer, trace runner) | 3 days (Run-block randomization, warmup, CI gates) | 5 days (PMU cycle counters, cache flush, DRAM isolation) |
 | **6. Total Estimated Engineering Effort** | **10 Person-Days** | **15–18 Person-Days** | **21–27 Person-Days** |
-| **Scientific Information Value (Bits/Cost)** | **Near Zero** (Degenerate result) | **High** (Resolves dynamic Horner vs Sparse tradeoffs) | **Moderate** (High risk of repeating PR #549 AVX2 results) |
+| **Scientific Information Value (Bits/Cost)** | **Uncertain / likely limited** (current workload) | **Potentially informative** (requires comparator design) | **Uncertain** (requires novelty audit) |
 
 Path B requires approximately 5–8 person-days of additional development over the trivial PR #672 draft, but increases the scientific value from near-zero to high by avoiding workload degeneracy.
 
@@ -266,3 +266,20 @@ TASK: Author revised Candidate B protocol draft specifying Sparse-Trit Polynomia
       Evaluation (Horner vs Sparse Exponentiation) with exact modular 2^64 semantics,
       strictly maintaining NO EXECUTION and NO BENCHMARKING authorization until approved.
 ```
+
+
+---
+
+## 10. Scientific corrections and unresolved design risks (2026-11-01)
+
+This section bounds the original adversarial critique; any earlier numerical prediction or categorical statement that conflicts with it is **not verified evidence**.
+
+1. **No guaranteed win or crossover.** Extreme-density traces can bias a comparison but do not guarantee an adaptive speedup. Under the sparse byte grammar audited in PR #673, sparse can be *larger* than packed even at 5% nonzeros for the proposed primary lengths. Format-size calculations alone cannot establish execution latency.
+2. **No unsupported timing/oracle numbers.** Claims of sub-2-ns threshold selection, approximately 98–99% oracle efficiency, fixed nanosecond selector rankings, or a universal learned-model inference tax were not benchmarked. The illustrative selector-ranking diagram in §4 is qualitative only; its numerical annotations must not be used as evidence or acceptance thresholds.
+3. **Algorithm versus representation confound.** Proposed polynomial evaluation compares Horner iteration with sparse indexed exponentiation, which are **different algorithms**. Both algorithms must be available to semantically equivalent binary-coded and ternary-coded inputs where feasible, with identical input/output contracts and full preprocessing/index/power-table costs. A speedup of sparse exponentiation over Horner is not a ternary-specific speedup.
+4. **Modular correctness and algorithm controls.** Define all arithmetic in the ring Z/(2^64)Z using unsigned 64-bit operations and a separately checked oracle. Compare sparse Horner with gap exponentiation (multiplying by x^gap between nonzeros), sparse power-table evaluation, dense Horner and packed Horner; count power-table construction, reuse and memory. Specify x=0, x=1, x=-1 modulo 2^64, zero polynomial, long zero runs, duplicate/invalid indices, and overflow-free modular semantics. Sparse exponentiation is not automatically faster at low density.
+5. **Causal observation and lifecycle.** Freeze how the selector learns density, whether the original vector remains available, how representation conversion occurs, and whether the workload represents persistent objects or independent records. Include competent fixed and heuristic controls and holdout evaluation.
+6. **Statistical and historical scope.** Proposed 15% improvement and engineering-day estimates are subjective planning assumptions, not empirical thresholds. Prior CPU MatVec losses and H04 symbolic conditional advantages are bounded to their tested configurations/models. Neither implies universal CPU inferiority nor predicts this experiment.
+7. **Authority.** PR #673's seven P1 blockers remain open until addressed in a revised protocol. This adversarial review recommends a *candidate redesign* only. No protocol acceptance, implementation, benchmark, merge or activation follows from this document.
+
+**Corrected disposition:** `B_WORKLOAD_REDESIGN_RECOMMENDED — POLYNOMIAL_PROPOSAL_UNVALIDATED — M2_EXECUTION_BLOCKED`.
