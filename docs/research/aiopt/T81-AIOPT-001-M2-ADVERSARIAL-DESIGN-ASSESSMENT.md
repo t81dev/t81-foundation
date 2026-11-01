@@ -4,7 +4,7 @@
 **Date:** 2026-11-01
 **Role:** Independent Experimental-Design Critic
 **Scope:** Critical evaluation of the M2 research premise, adjudication of ternary computational advantage, proposal of three competing experimental protocols, comparative ranking, and recommendation of the minimum viable experiment.
-**Authority / Status:** CRITICAL DESIGN ASSESSMENT / NON-NORMATIVE RESEARCH EVALUATION (No execution, benchmarking, or code mutation authorized).
+**Authority / Status:** CRITICAL DESIGN ASSESSMENT / NON-NORMATIVE RESEARCH EVALUATION (No execution, benchmarking, or code mutation authorized; Candidate C is an unaccepted candidate design; M2 execution remains blocked).
 
 ---
 
@@ -20,13 +20,13 @@ This assessment delivers an adversarial critique of the foundational research qu
 **No.** Wildcard ternary pattern matching over linear arrays on general-purpose binary CPUs **cannot establish a ternary-specific computational advantage**.
 
 The central vulnerability of the proposed M2 protocol is a category error: it conflates **representation density** (the physical space required to store 3-state or 4-state symbols) with **ternary computation** (algorithmic or operational properties unique to base-3 algebra). On binary architectures:
-1. **Bit-Sliced Binary Dominance:** Any wildcard ternary matching rule over $\{-1, 0, +1, *\}$ can be mapped into two parallel binary bitplanes (e.g., `pos_mask` and `neg_mask`, or `value_bits` and `care_mask`). In bit-sliced format, $N$ patterns can be checked across $W$ vector lanes using 2–3 bitwise ALU operations (`AND`, `XOR`, `TEST`) per 64-bit word or 512-bit vector register. Packed 2-bit ternary SWAR structures require serial unpacking or complex multi-instruction bit-manipulation shuffles (`vpshufb`, shifts, masks) that consistently lag behind native bit-parallel binary logic.
-2. **Algorithmic Collapse via Preprocessing:** In real-world pattern matching, static or infrequently updated catalogs are never scanned linearly at $O(M)$ cost. Trie indexing, Aho-Corasick automata, hash filtering, or inverted indices collapse matching latency to $O(L)$ or $O(1)$ amortized lookups, entirely eliminating the loop overhead that M2 seeks to measure.
-3. **Absence of Ternary-Native Semantics:** Wildcard pattern filtering does not exercise balanced ternary algebraic properties (such as sign symmetry, carry-free addition, or exact symmetric rounding). It is merely 4-state symbol equality with a "don't care" mask.
+1. **Bit-Sliced Binary Baseline Competitiveness:** Any wildcard ternary matching rule over $\{-1, 0, +1, *\}$ can be mapped into two parallel binary bitplanes (e.g., `pos_mask` and `neg_mask`, or `value_bits` and `care_mask`). In bit-sliced format, $N$ patterns can be checked across $W$ vector lanes using bitwise ALU operations (`AND`, `XOR`, `TEST`) per 64-bit word or 512-bit vector register. While bit-sliced layouts require catalog transposition and output materialization overhead, packed 2-bit ternary SWAR structures require serial unpacking or complex multi-instruction bit-manipulation shuffles (`vpshufb`, shifts, masks) that face structural instruction-tax hurdles on general binary ALUs.
+2. **Indexing and Preprocessing Tradeoffs:** In real-world pattern matching, static or infrequently updated catalogs are rarely scanned linearly at $O(M)$ cost. Depending on pattern correlation, wildcard density, and memory budgets, inverted indices, decision trees, or tries can narrow candidate sets significantly, although arbitrary wildcard patterns with high multi-hit rates introduce state-space and preprocessing overheads that must be explicitly accounted for.
+3. **Absence of Ternary-Native Semantics:** Wildcard pattern filtering does not exercise balanced ternary algebraic properties (such as sign symmetry, carry-free addition, or exact symmetric rounding). It is fundamentally 4-state symbol equality with a "don't care" mask.
 
 ### Strategic Recommendation
 
-Milestone M2 must be **substantially redesigned and redirected**. Rather than executing synthetic microbenchmarks on linear wildcard filtering, the project should pursue **Candidate C: Ternary-Quantized Matrix-Vector Inner Product with Zero-Skipping (T-GEMV)** as the smallest scientifically decisive experiment, while retaining **Candidate B: Adaptive Representation Selection** as a secondary algorithmic investigation for memory-constrained regimes.
+Milestone M2 should be **substantially redesigned and redirected**. Rather than executing synthetic microbenchmarks on linear wildcard filtering, the project should evaluate **Candidate C: Ternary-Quantized Matrix-Vector Inner Product with Zero-Skipping (T-GEMV)** as the most scientifically decisive candidate for future maintainer consideration, while retaining **Candidate B: Adaptive Representation Selection** as a secondary algorithmic investigation for memory-constrained regimes. **Candidate C is not yet approved as an accepted successor workload; M2 execution remains formally blocked.**
 
 ---
 
@@ -39,7 +39,7 @@ To ground this critique in verifiable project history rather than conjecture, th
 | **M1 Protocol & Implementation** | PR #665 (`e113e75f9bbbcc3ed0cc75f1ed15ff188ee062db`) | Verified Correctness (Tier C local evidence) | Evaluates 4-trit vectors against 40 fixed patterns ($C_{40}$). Agreement verified across 81 inputs (3,240 decisions). Proves functional isomorphism of byte, integer, and SWAR encodings. Does **not** measure performance or lane-level SIMD arithmetic. |
 | **M1 Scientific Review** | PR #666 (`b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe`) | Analytical Review / Audit | Assigned disposition `M2_REDESIGN_REQUIRED`. Proved $C_{40}$ is mathematically degenerate: Lane 0 contains zero positive trits; patterns are mutually exclusive; problem reduces to an $O(1)$ scalar range check (`index < 40`). |
 | **M1/M2 Reconciliation Gate** | PR #667 (`1edf70bbffc9168c27be5c6c19cf97388f6991a4`) | Governance Policy Gate | Enforced separation between M1 correctness and M2 authorization. Bounded M2 to design-only; prohibited execution without explicit maintainer preregistration. Mandated fair binary baselines and complete cost accounting. |
-| **Proposed M2 Protocol Draft** | PR #668 (`8683819docs/research/aiopt/T81-AIOPT-001-M2-PROTOCOL-DRAFT.md`) | Proposed Protocol (Unexecuted) | Proposes grid: $L \in \{16, 64, 256, 1024\}$, $M \in \{16, 256, 4096\}$, $D \in \{0.25, 0.50, 0.90, 1.00\}$. Suggests SWAR 2-bit vs INT8/bitset comparators. Premised on finding a 10% end-to-end advantage for packed ternary. |
+| **Proposed M2 Protocol Draft** | PR #668 (`86838191420ecc7ccdca02e41f4e009c6375417a`) | Proposed Protocol (Unexecuted) | Proposes grid: $L \in \{16, 64, 256, 1024\}$, $M \in \{16, 256, 4096\}$, $D \in \{0.25, 0.50, 0.90, 1.00\}$. Suggests SWAR 2-bit vs INT8/bitset comparators. Premised on finding a 10% end-to-end advantage for packed ternary. |
 | **H04-R02 Adaptive Representation** | `experiments/h04_r02_adaptive_representation/` | Reclassified Audit (Classification D) | Corrected in `CORRECTED_RESULTS.md`: Original universal ternary advantage claims falsified due to metadata scaling errors. Under 10-bit Tier-0 control on `boundary_oscillation`, symbolic model yields $AT = 1210 < AB = 1250$ at $r = 1.60$ with crossover $5/3$. Proves conditional mathematical advantage under specific cost models, but does not demonstrate physical CPU speedup. |
 | **CPU Ternary Closure** | PRs #544–#549 (`docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`) | Empirical Benchmark & Decision Record | Rigorous CPU kernel optimization frozen. Proved binary 64-bit ALU is $10.6\times$ faster than software Radix-81 tryte addition ($1.1\text{ ns}$ vs $11.7\text{ ns}$). Packed 2-bit AVX2 MatVec reached $75.3\%$ of INT8 AVX2 speed; decode instruction tax on binary ALUs offsets bandwidth savings. |
 | **Hanoi / CWEB Lineage** | `experiments/balanced_ternary_conversion/hanoi-source.cweb` | Historical Ancestry | Original literate CWEB source claimed kernel-level ternary coprocessor, AI optimization, and GPU acceleration. Audit revealed aspirational claims without reproducible physical execution. Serves as a historical baseline of unverified narrative claims now replaced by rigorous empirical standards. |
@@ -52,31 +52,29 @@ The proposed M2 protocol asks: *"Under identical wildcard ternary matching seman
 
 We challenge the scientific and technical validity of this premise across six critical dimensions.
 
-### 3.1 Binary Bitset and Bit-Sliced Superiority
+### 3.1 Binary Bitset and Bit-Sliced Competitiveness
 
 The proposal assumes that because ternary trits have 3 states (or 4 states with wildcard: $\{-1, 0, +1, *\}$), a 2-bit packed ternary representation is structurally suited to the problem.
 
-This assumption fails under basic bitwise algorithmic analysis. Consider an alphabet of 4 symbols:
+This assumption must be contrasted against bit-sliced binary designs. Consider an alphabet of 4 symbols:
 - $N$ (Negative / -1)
 - $Z$ (Zero / 0)
 - $P$ (Positive / +1)
 - $W$ (Wildcard / *)
 
-In a **bit-sliced binary representation**, a catalog of $M$ patterns of length $L$ is transposed into two binary bit vectors per pattern position $i \in [0, L-1]$:
+In a **bit-sliced binary representation**, a catalog of $M$ patterns of length $L$ can be stored as transposed binary bit vectors per pattern position $i \in [0, L-1]$:
 1. `is_pos[i]`: Bitmask of patterns requiring $+1$ at position $i$.
 2. `is_neg[i]`: Bitmask of patterns requiring $-1$ at position $i$.
 3. `is_zero[i]`: Bitmask of patterns requiring $0$ at position $i$.
 
-Because $W$ matches anything, a pattern with a wildcard at position $i$ simply sets all three masks to 0.
+Because $W$ matches anything, a pattern with a wildcard at position $i$ sets all three state bits to 0 (unconstrained).
 
 When an input vector $x$ arrives:
-- For each position $i$, depending on whether $x[i]$ is $+1, -1,$ or $0$, we select the corresponding mask and accumulate candidates with a single bitwise `AND`:
+- For each position $i$, depending on whether $x[i]$ is $+1, -1,$ or $0$, we can filter candidate patterns using bitwise operations:
   $$\text{match\_mask} \gets \text{match\_mask} \ \& \ (\sim\text{req\_mask}[i] \ | \ \text{match\_bits}(x[i]))$$
-- Alternatively, using standard 2-bit mask encoding:
-  $$\text{mismatch} = (\text{input\_bits} \oplus \text{pattern\_bits}) \ \& \ \text{care\_mask}$$
-On modern 64-bit binary ALUs, a bit-sliced binary filter evaluates **64 patterns simultaneously per instruction**. On AVX-512, it evaluates **512 patterns per instruction**.
+On modern 64-bit binary ALUs, a bit-sliced binary filter evaluates up to 64 patterns in parallel per word operation. On AVX-512, it evaluates up to 512 patterns per vector instruction.
 
-In contrast, a packed 2-bit ternary format packs 4 trits per byte (or 32 trits per 64-bit word). Comparing a packed 2-bit vector requires shifting, masked equality tests, and horizontal folding to detect whether any lane mismatched. Packed ternary operates **across lanes within a single vector**, whereas bit-sliced binary operates **across patterns across vectors**. Bit-sliced binary matching achieves $O(L \cdot \lceil M/64 \rceil)$ instructions with zero branching and minimal memory accesses, completely outclassing packed ternary SWAR scans.
+**Bounded Caveat:** Bit-sliced matching is not an unconstrained panacea. It requires upfront transposition of the catalog into bitplane format, and when multiple matches occur, reconstructing the list of matching indices from a bitmask requires bit-scan / population count loops that incur material output materialization cost. However, in terms of core comparison filtering, packed 2-bit SWAR operates *across lanes within a single vector*, requiring shifts, masks, and horizontal reductions, whereas bit-sliced binary operates *across patterns across vectors*, presenting a highly formidable conventional baseline.
 
 ### 3.2 Representation Density vs. Ternary Computation
 
@@ -85,17 +83,14 @@ Any potential speedup observed in a naive packed ternary scan arises strictly fr
 - However, binary bitsets also achieve 2 bits per trit (or fewer when entropy/wildcard compression is applied).
 - Confusing memory footprint reduction with "ternary computational advantage" repeats the methodological error identified during the CPU Ternary Research Closure (PRs #544–#549), where 2-bit packed MatVec appeared competitive only when DRAM bandwidth was saturated, while incurring severe compute instruction penalties.
 
-### 3.3 Algorithmic Collapse via Indexing and Preprocessing
+### 3.3 Indexing, Preprocessing, and Algorithmic Realism
 
 In real-world applications (network packet classification, rule-based inference, firewall filtering, symbol resolution):
 - The catalog $M$ is known in advance or updated asynchronously.
-- Evaluating a query does **not** perform an $O(M)$ linear scan over the entire catalog.
-- Instead, the catalog is preprocessed into:
-  - **Inverted Indices:** Subsetting candidate patterns by checking non-wildcard positions.
-  - **Decision Trees / Tries:** Branching on salient trit positions to terminate search in $O(L)$ or $O(\text{depth})$ steps.
-  - **Lookup Tables (LUTs):** For small or dense prefixes, resolving matches in $O(1)$.
-
-Measuring linear scan throughput over $M \in \{16, 256, 4096\}$ benchmarks an algorithm that no competent software engineer would deploy for static rule sets. Once an inverted index or trie is introduced, the inner loop is dominated by pointer chasing or sparse bitmask operations, where ternary packing provides no structural advantage.
+- Evaluating a query does not necessarily require an exhaustive $O(M)$ linear scan over the entire catalog.
+- Instead, catalogs can be preprocessed into inverted indices, decision trees, or tries to narrow candidates.
+- **Complexity Boundaries:** For general wildcard catalogs with high wildcard density ($D > 0.5$) and frequent overlapping matches, tries and decision trees can suffer exponential state explosion ($O(2^L)$ or $O(3^L)$ states), making linear bit-sliced scanning preferable. Conversely, for structured or low-wildcard catalogs, indexing dramatically reduces the number of candidate evaluations.
+- In either regime, testing purely unindexed linear scans over $M \in \{16, 256, 4096\}$ risks benchmarking a strawman implementation unless candidate filtering and complete preprocessing cost accounting are strictly evaluated.
 
 ### 3.4 Workload Non-Representativeness
 
@@ -148,7 +143,7 @@ On general-purpose x86_64/ARM64 binary processors, a word-parallel 2-bit packed 
 
 #### 3. Expected Sources of Overhead
 - In packed 2-bit SWAR: Shifting, masking, invalid code checks ($10_2$), and horizontal reduction to extract boolean matches.
-- In bit-sliced binary: Transposition overhead during catalog initialization (must be accounted for separately).
+- In bit-sliced binary: Transposition overhead during catalog initialization and output bit-index extraction (must be accounted for separately).
 - Memory bandwidth: Memory bus saturation at $M = 4096, L = 1024$.
 
 #### 4. Required Correctness Evidence
@@ -224,55 +219,65 @@ Directly investigates the "AI-driven adaptive representation" premise of T81 wit
 ### Candidate C: Ternary-Native Structural Workload (Ternary MatVec with Zero-Skipping)
 
 #### 1. Scientific Hypothesis
-In quantized matrix-vector inner products where matrix weights are ternary ($W \in \{-1, 0, +1\}$) and activation vectors are 8-bit integers ($X \in \mathbb{Z}^L$), exploiting the algebraic symmetry of balanced ternary via branchless sign-accumulation and zero-skipping provides higher arithmetic efficiency per byte of memory bandwidth than standard INT8 multiplication on general-purpose binary CPUs.
+In quantized matrix-vector inner products where matrix weights are ternary ($W \in \{-1, 0, +1\}$) and activation vectors are 8-bit integers ($X \in \mathbb{Z}^L$), exploiting the algebraic symmetry of balanced ternary via branchless sign-accumulation and zero-skipping provides higher arithmetic efficiency per byte of memory bandwidth than standard INT8 multiplication on general-purpose binary CPUs under memory-constrained or sparse conditions.
 
-#### 2. Appropriate Binary Baselines
+#### 2. Specific Delta Versus Prior CPU Experiments (PRs #544–#549)
+Prior experiments in PRs #544–#549 established that:
+- Radix-81 stack addition is $10.6\times$ slower than 64-bit binary ALU addition.
+- AVX2 2-bit MatVec (`matvec_ternary_2bit_avx2`) reaches $75.3\%$ of INT8 AVX2 speed when using `vpshufb` nibble-parallel lookup tables on dense matrices, because decode instructions negate bandwidth savings.
+
+Candidate C introduces three distinct, uninvestigated scientific deltas:
+1. **Dynamic Zero-Skipping:** Unlike PR #549's dense `vpshufb` table lookups which decoded all trits unconditionally, Candidate C evaluates whether high weight sparsity ($Z \ge 0.50$, typical of BitNet b1.58) allows branchless zero-bypassing, skipping both computation and memory traffic.
+2. **Branchless Sign Accumulation:** PR #544 tested software tryte arithmetic with redundant digit canonicalization. Candidate C tests whether ternary signs ($+1, -1$) can be accumulated directly into INT32 accumulators using sign-extension masks (`P` adds, `N` subtracts, `Z` no-ops) without full multiplication instructions.
+3. **Modern Microarchitectural Comparators:** Prior tests compared generic AVX2 against scalar loops. Candidate C explicitly benchmarks against modern AVX-512 VNNI (`vpdpbusd`) and ARM NEON dot-product (`sdot`) instructions with explicit memory-bandwidth saturation tracking.
+
+#### 3. Appropriate Binary Baselines
 1. **INT8 GEMV (BLAS / MKL / Eigen):** Native `gemv` using 8-bit integer multiply-accumulate (`vpdpbusd` / VNNI / NEON `sdot`).
 2. **Binary BitNet GEMV:** Standard 2-bit unpacked dequantization into INT8 registers followed by vector MAC.
 3. **Sparse CSR Binary GEMV:** Traditional sparse matrix encoding storing indices of non-zero entries.
 
-#### 3. Expected Sources of Overhead
-- Branch prediction penalties if zero-skipping uses conditional branches (must mandate branchless masking).
+#### 4. Expected Sources of Overhead
+- Branch mispredictions if zero-skipping uses conditional jumps (requires branchless bitmasking).
 - Register unpacking and lane alignment when extracting non-zero signs.
-- Memory bandwidth saturation on large matrices ($> 4096 \times 4096$).
+- Format conversion and transpose costs if matrix is not pre-packaged.
 
-#### 4. Required Correctness Evidence
-- Exact integer arithmetic equivalence: $\sum W_{ij} X_j$ must match the 64-bit scalar reference for every row.
-- Zero-drift guarantee: Balanced ternary accumulation guarantees zero bias when weights are mean-zero.
+#### 5. Required Correctness Evidence
+- Exact integer arithmetic equivalence: $\sum W_{ij} X_j$ must match the 64-bit scalar reference for every row across all tested inputs.
+- Symmetric roundoff / truncation tracking: Validate that balanced ternary symmetric accumulation maintains bounded numerical error.
 - Known-answer test vectors derived from real open-weights BitNet b1.58 models.
 
-#### 5. Minimum Meaningful Experimental Scope
-- Matrix dimensions: $M \times K \in \{256 \times 256, 1024 \times 1024, 4096 \times 4096\}$.
+#### 6. Minimum Meaningful Experimental Scope
+- Matrix dimensions: $M \times K \in \{256 \times 256, 1024 \times 1024, 2048 \times 2048\}$.
 - Weight sparsity (fraction of zeros): $Z \in \{0.33 \text{ (uniform)}, 0.60 \text{ (high-sparsity BitNet)}\}$.
 - Single-vector latency ($B = 1$) and batched throughput ($B = 32$).
 
-#### 6. Failure and Inconclusive Criteria
-- **Falsification (Binary VNNI Superiority):** Hardware INT8 dot-product instructions (`vpdpbusd` / `sdot`) process 4–16 multiply-accumulates in 1 cycle, making them faster than ternary zero-skipping even with $60\%$ zeros.
-- **Ternary Advantage Supported:** Ternary zero-skipping achieves higher throughput than INT8 VNNI on memory-bound or sparse matrices by saving $>50\%$ memory bandwidth without compute decode stalls.
-- **Inconclusive:** Results diverge between architectures supporting VNNI/DOTPROD and legacy architectures lacking integer dot-product extensions.
+#### 7. Bounded Failure and Inconclusive Criteria
+- **Bounded Negative Finding:** If the packed ternary implementation fails to achieve a preregistered improvement threshold (e.g., $\ge 10\%$) in absolute end-to-end wall-clock latency over the fastest conventional binary baseline (such as INT8 VNNI) on the tested configurations with non-overlapping $99\%$ bootstrap confidence intervals, record a **bounded negative outcome restricted strictly to the tested workload, matrix shapes, and microarchitecture**. (Crucially: this does **not** formally falsify all potential CPU ternary advantages universally, but conclusively establishes the boundary for the tested implementation).
+- **Supported in Tested Scope:** Packed ternary achieves $\ge 10\%$ lower end-to-end wall-clock latency on memory-bound or sparse shapes ($2048 \times 2048, Z \ge 0.50$) with correct outputs and complete cost accounting.
+- **Inconclusive:** Confidence intervals span both negligible and meaningful improvements, or outcomes contradict between x86_64 VNNI and ARM64 NEON platforms.
 
-#### 7. Resource Requirements
-- C++20 implementation with optional SIMD intrinsics (AVX2, AVX-512 VNNI, ARM NEON).
-- Dedicated physical x86_64 and ARM64 machines with cycle-level PMU counters (`perf_event_open`).
+#### 8. Resource Requirements
+- C++20 implementation with SIMD intrinsics (AVX2, AVX-512 VNNI, ARM NEON).
+- Dedicated bare-metal x86_64 and ARM64 machines with CPU frequency pinning and core isolation.
 - Development effort: Medium-High.
 
-#### 8. Relationship to T81 Long-Term Objectives
+#### 9. Relationship to T81 Long-Term Objectives
 Directly aligns with modern neural network inference (LLM quantization, BitNet b1.58). Connects T81's ternary foundations to real-world AI efficiency, providing decisive evidence on whether ternary representations have a legitimate software role in neural computation.
 
 ---
 
 ## 5. Comparative Decision Matrix & Candidate Ranking
 
-Each candidate is evaluated across seven objective criteria established in Section 4 of the task directive.
+Each candidate is evaluated across seven objective criteria. The weights assigned to each dimension represent subjective research governance priorities reflecting the project's emphasis on scientific rigor and actionable knowledge.
 
 ### Evaluation Criteria Definitions
-1. **Scientific Information Gained:** Degree to which the experiment produces generalizable, non-trivial knowledge about computation.
-2. **Distinguishing Ternary-Specific Effects:** Capability to isolate base-3 / balanced algebraic properties from generic bit-packing.
-3. **Fairness of Comparison:** Rigor with which binary baselines are allowed their optimal algorithmic formulations.
-4. **Implementation Complexity:** Architectural and engineering effort required to implement and verify the test harness.
-5. **Computational & Agent Cost:** Wall-clock time, CI resource consumption, and engineering cycles required.
-6. **Reproducibility:** Determinism, portability across platforms, and robustness against microarchitectural noise.
-7. **Risk of Repeating Prior Art:** Probability of duplicating answered questions from PRs #544–#549 or H04-R02.
+1. **Scientific Information Gained (20%):** Degree to which the experiment produces generalizable, non-trivial knowledge about computation.
+2. **Distinguishing Ternary-Specific Effects (20%):** Capability to isolate base-3 / balanced algebraic properties from generic bit-packing.
+3. **Fairness of Comparison (15%):** Rigor with which binary baselines are allowed their optimal algorithmic formulations.
+4. **Implementation Complexity (10%):** Architectural and engineering effort required to implement and verify the test harness.
+5. **Computational & Agent Cost (10%):** Wall-clock time, CI resource consumption, and engineering cycles required.
+6. **Reproducibility (15%):** Determinism, portability across platforms, and robustness against microarchitectural noise.
+7. **Risk of Repeating Prior Art (10%):** Probability of duplicating answered questions from PRs #544–#549 or H04-R02.
 
 ### Decision Matrix
 
@@ -286,32 +291,39 @@ Each candidate is evaluated across seven objective criteria established in Secti
 | **6. Reproducibility (15%)** | **High (8/10):** Deterministic random seeds and known-answer vectors. | **High (8/10):** Fully deterministic state-machine workloads. | **High (9/10):** Standardized matrix multiplication oracles. |
 | **7. Prior Art Duplication Risk (10%)** | **Severe (2/10):** Duplicates PR #549 CPU freeze conclusions on SWAR tax. | **Low (7/10):** Extends H04-R02 from abstract cost models to execution code. | **Low (8/10):** Breaks past synthetic trytes to real-world quantized AI tensor ops. |
 | **Weighted Score (100%)** | **4.25 / 10** | **6.65 / 10** | **8.45 / 10** |
-| **Rank** | **Rank 3 (Reject)** | **Rank 2 (Viable Secondary)** | **Rank 1 (Recommended)** |
+| **Rank** | **Rank 3 (Reject)** | **Rank 2 (Viable Secondary)** | **Rank 1 (Recommended Candidate)** |
+
+*Note: Dimension weights represent explicit research governance choices prioritizing architectural relevance and scientific discriminative power.*
 
 ---
 
 ## 6. Recommended Minimum Meaningful Experiment
 
-### Formal Recommendation: Adopt Candidate C (T-GEMV Zero-Skipping) as the Successor to M1
+### Recommendation: Pivot Away from Wildcard Pattern Filtering
 
-We recommend **abandoning the wildcard pattern filtering track (M2 as currently drafted in PR #668)** and replacing it with **Candidate C: Ternary Matrix-Vector Inner Product with Zero-Skipping**.
+We recommend **abandoning the wildcard pattern filtering track (M2 as currently drafted in PR #668)**. If maintainers authorize further research into software ternary representations, we recommend evaluating **Candidate C: Ternary Matrix-Vector Inner Product with Zero-Skipping**.
 
-### Minimum Viable Experimental Specification
+**Formal Research Governance Status:** Candidate C is a proposed alternative design submitted for independent review. **It is not an approved or accepted successor workload, and no benchmark or execution of Candidate C is authorized by this assessment.**
 
-To prevent scope creep, the successor experiment must be bounded to the smallest scientifically decisive configuration:
+### Minimum Viable Experimental Specification for Candidate C
+
+To ensure methodological fairness and prevent the errors of past benchmarks, any future protocol for Candidate C must adhere to the following controls:
 
 1. **Workload Bounding:**
    - Single precision dot product: Matrix $W \in \{-1, 0, +1\}^{M \times K}$, Vector $X \in \{-128, \dots, +127\}^K$, Accumulator $Y \in \mathbb{Z}^{M}$.
-   - Matrix dimension: Exactly one small cache-resident shape ($M = 256, K = 256$) and one memory-bound shape ($M = 2048, K = 2048$).
-   - Weight distribution: Fixed ternary distribution with $50\%$ zeros, $25\%$ positive ones, $25\%$ negative ones.
+   - Matrix shapes: Exactly one small cache-resident shape ($M = 256, K = 256$) and one memory-bound shape ($M = 2048, K = 2048$).
+   - Weight sparsity: Exactly two fixed levels: $Z = 0.33$ (uniform random trits) and $Z = 0.60$ (sparse BitNet distribution).
 2. **Comparators:**
    - **Baseline 1:** Reference unrolled scalar loop in C++.
-   - **Baseline 2:** Native INT8 dot product (AVX2 / NEON) treating ternary weights as regular `int8_t` values.
+   - **Baseline 2:** Optimized INT8 dot product (AVX2 / AVX-512 VNNI / ARM NEON) treating ternary weights as unpacked `int8_t` values.
    - **Ternary Candidate:** Packed 2-bit storage with branchless zero-skipping and sign-selection.
-3. **Primary Metric:**
-   - Execution cycles per non-zero multiply-accumulate (MAC), captured via hardware performance counters (`perf_event_open`).
-4. **Falsification Threshold:**
-   - If Packed Ternary fails to beat Native INT8 on the memory-bound matrix ($2048 \times 2048$), the hypothesis that software ternary representation provides computational advantages in CPU inference is formally falsified across the project.
+3. **Primary Metric & Full Cost Accounting:**
+   - **Primary Metric:** Absolute end-to-end wall-clock latency per batch and amortized query throughput (queries/sec), measured with nanosecond precision under core isolation.
+   - **Mandatory Cost Accounting:** Must explicitly include input quantization/conversion time, matrix transposition/repacking overhead amortized over a predeclared reuse count $R$, memory footprint in bytes, and output writeback.
+   - **Secondary Diagnostic Metrics:** Hardware PMU counters (`instructions`, `cycles`, `L1-dcache-load-misses`, `LLC-load-misses`) via `perf_event_open`. 'Cycles per non-zero MAC' is strictly a diagnostic ratio, not the primary evaluation metric.
+4. **Scope-Bounded Falsification Rule:**
+   - If the packed ternary implementation fails to achieve a preregistered improvement threshold (e.g., $\ge 10\%$) in absolute end-to-end wall-clock latency over the fastest conventional binary baseline on the $2048 \times 2048$ memory-bound shape under $99\%$ bootstrap confidence intervals, record a **bounded negative outcome restricted strictly to the tested workload, matrix shapes, and microarchitecture**.
+   - Under no circumstances shall a negative outcome on this bounded configuration be extrapolated to claim universal impossibility across all potential hardware architectures or untested algorithmic formulations.
 
 ---
 
@@ -323,6 +335,7 @@ To preserve scientific rigor, we document the unresolved assumptions underlying 
 2. **Compiler Auto-Vectorization Artifacts:** Compilers (GCC 14/15, Clang 18) may auto-vectorize byte-level scalar loops into efficient SIMD sequences while failing to vectorize custom bit-manipulation loops. Benchmark measurements must inspect generated assembly to ensure that observed differences reflect data representation rather than compiler optimization limitations.
 3. **PMU Noise on Virtualized Runners:** GitHub Actions and virtualized cloud VMs do not provide deterministic PMU hardware counter access. Confirmatory benchmarks require bare-metal execution with pinned CPU frequencies.
 4. **Cacheline Boundary Striding:** In packed representations, accessing unaligned bits across byte or word boundaries introduces masking overhead. Memory layouts must enforce 64-byte cacheline alignment.
+5. **Multi-Hit Output Materialization:** In wildcard matching problems with high hit counts, the cost of allocating and writing match lists can dwarf comparison time. Any benchmarking must separate matching predicate latency from output collection.
 
 ---
 
@@ -338,13 +351,14 @@ In compliance with T81 research standards, the statements in this report are cat
 - H04-R02 original universal advantage claims were invalid due to scaling defects; conditional symbolic model results survive under specific parameters (Classification D audit).
 
 ### Analytical Findings
-- Bit-sliced binary pattern matching evaluates 64 patterns simultaneously per word, structurally outperforming packed 2-bit SWAR lane filtering.
+- Bit-sliced binary pattern matching evaluates up to 64 patterns simultaneously per 64-bit word, presenting a highly formidable baseline against packed 2-bit SWAR lane filtering.
 - Linear pattern filtering on static catalogs is an unrepresentative benchmark that conflates representation efficiency with naive algorithmic choice.
 - Evaluating $M \in \{16, \dots, 4096\}$ wildcard patterns does not exercise balanced ternary algebraic properties.
 
 ### Speculative Projections
 - Whether dedicated hardware memristor crossbars could execute wildcard ternary matching faster than binary TCAMs (unsupported by physical empirical evidence; see Investigation 10A).
-- Whether an adaptive representation selector could amortize its dispatch overhead in real-time inference workloads.
+- Whether dynamic representation selection overhead can be fully amortized in real-time inference workloads.
+- The precise break-even sparsity threshold where ternary zero-skipping outperforms INT8 VNNI on modern AVX-512 processors.
 
 ---
 
@@ -352,4 +366,4 @@ In compliance with T81 research standards, the statements in this report are cat
 
 The proposed M2 experiment (PR #668) asks the wrong research question on the wrong workload. Attempting to demonstrate a ternary computational advantage via wildcard pattern filtering over linear arrays on binary CPUs will produce an easily anticipated negative result, repeating lessons already established in PRs #544–#549.
 
-The project should formally close Milestone M1 as a successful functional verification exercise, reject the linear pattern-matching premise of M2, and pivot research resources toward **Candidate C: Ternary-Quantized Matrix-Vector Inner Product with Zero-Skipping**, which directly engages the modern architectural frontier of efficient AI inference.
+The project should formally close Milestone M1 as a successful functional verification exercise, reject the linear pattern-matching premise of M2, and submit **Candidate C: Ternary-Quantized Matrix-Vector Inner Product with Zero-Skipping** for independent maintainer review as the only candidate offering a genuine scientific delta. All execution of M2 remains formally blocked pending governance authorization.
