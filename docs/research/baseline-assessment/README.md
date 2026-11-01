@@ -34,13 +34,13 @@ Every total below is computed under the explicit counting rubrics defined in [ME
 | :--- | :---: | :--- | :--- |
 | **Total RFC Markdown Files** | **113** | Markdown files matching `spec/rfcs/RFC-*.md` | 111 unique RFC IDs (RFC-0055 and RFC-0056 have companion profile templates) |
 | **Catalog Indexed RFC Entries** | **110** | RFC rows listed in catalog table of `spec/rfcs/index.md` | **94 accepted, 11 superseded, 5 draft** (RFC-00D4 omitted from index) |
-| **Catalog Status Mapped to Files** | **113** | Catalog status mapped to all 113 markdown files | **96 accepted (94 + 2 companion files), 11 superseded, 5 draft, 1 uncataloged (RFC-00D4)** |
-| **Frontmatter Status of Files** | **113** | Top-level metadata / frontmatter in RFC file | **82 accepted, 11 superseded, 11 unparsed, 8 draft, 1 status** |
-| **Reconciled RFC Maturity** | **113** | Ground-truth lifecycle based on actual code & tests | **80 Tested, 17 Specified, 11 Superseded, 5 Implemented** |
+| **Catalog Status Mapped to Files** | **113** | Catalog status mapped to all 113 markdown files | **96 accepted (94 index rows + 2 companion files), 11 superseded, 5 draft, 1 uncataloged (RFC-00D4)** |
+| **Frontmatter Status of Files** | **113** | Top-level metadata / frontmatter in RFC file | **83 accepted, 11 superseded, 11 unparsed, 8 draft** |
+| **Reconciled RFC Maturity** | **113** | Ground-truth lifecycle based on actual code & tests | **79 Tested, 23 Specified, 11 Superseded** |
 | **Major Subsystems Audited** | **10** | Core architectural divisions in codebase | 10 audited (Core Arith, Compiler, VM, Axion, CanonFS, Tensor/SIMD, DPE, TernaryOS, Crypto, Cognitive) |
-| **Engineering Capabilities** | **23** | Major architectural capabilities mapped | **16 Tested, 4 Experimental, 2 Implemented, 1 Specified** |
-| **Benchmark Families Audited** | **26** | 17 compiled Google Benchmark suites + 9 formal experiment harnesses | **16 Executed (with raw logs/reports), 9 Source-Only, 1 Blocked (Physical Storage)** |
-| **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **9 Tier 1 (Source-Only), 1 Tier 2 (Unverified Baseline), 7 Tier 3 (Attributable Log), 6 Tier 4 (Reproduced), 2 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
+| **Engineering Capabilities** | **23** | Major architectural capabilities mapped | **21 Tested, 1 Implemented, 1 Specified** (18 Integrated, 4 Experimental, 1 Unintegrated) |
+| **Benchmark Families Audited** | **26** | 17 compiled Google Benchmark suites + 9 formal experiment harnesses | **18 Executed, 7 Source-Only, 1 Blocked (Physical Storage)** |
+| **Benchmark Quality Tiers** | **26** | Grounded six-tier evidence classification rubric | **7 Tier 1 (Source-Only), 1 Tier 2 (Unverified Baseline), 13 Tier 3 (Attributable Evidence), 2 Tier 4 (Independently Reproduced), 2 Tier 5 (Invalid/Superseded), 1 Tier 6 (Blocked)** |
 | **Canonical Hypotheses (H01–H08)**| **8** | Canonical H01–H08 hypothesis register | **1 Operational/Comparative Untested (H07), 1 Methodological Framework Active/Comparative Untested (H08), 2 Refuted in tested scope (H04, H06), 2 Conditional (H02, H03), 1 Blocked (H01), 1 Plausible/Unverified (H05)** |
 
 ---
