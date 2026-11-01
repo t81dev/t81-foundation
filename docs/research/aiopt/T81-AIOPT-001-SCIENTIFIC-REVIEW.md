@@ -18,7 +18,7 @@ Milestone M1 of T81-AIOPT-001 proposes an isolated, correctness-only verificatio
 ### Core Review Findings
 
 1. **Exact Representation Equivalence Only (Correctness Is Not Optimization):**
-   M1 establishes that three distinct binary memory representations of ternary vectors can compute identical predicate outputs across the finite domain of 81 inputs. It does not—and mathematically cannot—demonstrate computational speedup, representation superiority, hardware efficiency, or AI-guided optimization.
+   M1 defines a finite correctness contract for equivalent representations; subsequent Codex local verification reports matching predicate outputs, but Jules did not independently execute or reproduce those tests. It does not—and mathematically cannot—demonstrate computational speedup, representation superiority, hardware efficiency, or AI-guided optimization.
 
 2. **Severe Degeneracy of the Proposed Workload:**
    Because all patterns in $C_{40}$ are fully specified without wildcards, the 40 patterns are mutually exclusive singletons. Consequently, for any valid input $x \in X$, the output set of matching indices has cardinality $|M(x)| \le 1$. Specifically, $|M(x)| = 1$ for exactly 40 inputs and $|M(x)| = 0$ for 41 inputs. Furthermore, because $C_{40}$ is defined as the prefix of the lexicographical enumeration of $X$, the match function collapses mathematically to:
@@ -26,7 +26,7 @@ Milestone M1 of T81-AIOPT-001 proposes an isolated, correctness-only verificatio
    Evaluating this problem via an $O(|C|)$ linear scan over 40 patterns in a loop (whether scalar, byte, or SWAR) evaluates an algorithm that is asymptotically and practically obsolete compared to a 1-cycle $O(1)$ scalar integer comparison or direct array lookup.
 
 3. **Absence of SWAR Vectorization Advantage:**
-   In M1, the SWAR adapter serializes pattern matching across 40 iterations. The SWAR predicate `((payload ^ target) & 0xFF) == 0` evaluates an exact 8-bit integer equality `payload == target`. The SWAR encoding performs zero parallel lane filtering; it merely functions as an 8-bit integer hash code.
+   In M1, the SWAR adapter serializes pattern matching across 40 iterations. The SWAR predicate `((payload ^ target) & 0xFF) == 0` evaluates an exact 8-bit integer equality `payload == target`. The SWAR encoding performs no parallel lane filtering in this predicate; it functions as an injective 8-bit packed code for the 81 valid vectors.
 
 4. **Severe Selection Bias in $C_{40}$:**
    Truncating the lexicographical enumeration at 40 patterns introduces extreme structural asymmetry. In $C_{40}$, position 0 contains 27 $-1$ trits, 13 $0$ trits, and exactly 0 $+1$ trits. The $+1$ state is completely absent from the leading lane, invalidating any claim that $C_{40}$ represents balanced ternary behavior.
@@ -141,7 +141,7 @@ The T81 Foundation maintains a formal hypothesis register (`docs/research/contin
 - **M1 Relationship:** T81-AIOPT-001 purports to study representation selection (byte vs. SWAR). However, M1 does not adapt dynamically. Encoding is fixed a priori. If an adaptive switching policy were introduced, the switching overhead (encoding, validation, branch dispatch) would dwarf the computation cost by orders of magnitude for a 4-trit vector.
 
 ### 3.3 Prior CPU Ternary Arithmetic Closure (PRs #544–#549)
-- **Established Finding:** In PR #549 (`docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`), CPU-based ternary kernel optimization was formally **frozen**. That comprehensive investigation proved that software-emulated ternary bitwise operations (scalar, SWAR, LUT, AVX2 VPSHUFB) cannot match native binary SIMD instructions on general-purpose CPUs.
+- **Established Finding:** In PR #549 (`docs/research/TERNARY_RESEARCH_CLOSURE_AND_NEXT_HYPOTHESIS.md`), CPU-based ternary kernel optimization was formally **frozen**. That historical synthesis reports specific measured CPU-kernel comparisons and records a program-level freeze on further custom ternary CPU-kernel optimization. Its negative comparisons are bounded by the tested kernels, workloads, architectures and execution conditions; they do not mathematically prove that no future packed-ternary algorithm can outperform a binary alternative on any CPU workload.
 - **M1 Hazard:** T81-AIOPT-001 risks reopening this frozen line of inquiry under the guise of "AI optimization" without introducing any new architectural mechanism to circumvent the fundamental limits established in PR #549.
 
 ### 3.4 Interaction with H08 (AI-Assisted Research Trustworthiness)
