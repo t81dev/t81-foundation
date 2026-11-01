@@ -1,0 +1,40 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H08",
+  "repository_revision": "32d7f9a885d527772227d0d13d108f5de3483497",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": "GPT-6",
+    "role": "Correctness reviewer and corrective implementation author; prior related context disclosed"
+  },
+  "evidence": [
+    {
+      "source_ref": "https://github.com/t81dev/t81-foundation/blob/b83414f0b04563cecae1c3741ceba7692dd81a11/experiments/aiopt_001_fixed_catalog/m1.py",
+      "relationship": "contradictory",
+      "scope": "Original catalog and optimized-mode validation defects; valid matching outputs already agreed with arithmetic reference"
+    },
+    {
+      "source_ref": "https://github.com/t81dev/t81-foundation/blob/32d7f9a885d527772227d0d13d108f5de3483497/experiments/aiopt_001_fixed_catalog/verify_m1.py",
+      "relationship": "supporting",
+      "scope": "Separate arithmetic verification and preserved local observations, not independent human acceptance"
+    }
+  ],
+  "uncertainty": "One native macOS ARM64/Python 3.14.3 environment; prior related conversation; no independent human scientific review, performance or broad H08 benefit established.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "Requesting user; personal name not supplied",
+    "record": "Current conversation: T81-AIOPT-001-M1-VERIFY, completed by user-provided Jules_Instruct.txt; authorization is scoped to correctness verification/corrections and existing-branch push, not M2 or acceptance"
+  },
+  "schema": "t81.research-commons.evidence-discrepancy.v1",
+  "id": "T81-AIOPT-001-M1-VERIFY-discrepancy",
+  "conflicting_claims": [
+    "Baseline -O summary reports 162 adapter comparisons, 162 roundtrips and 3240 predicate checks",
+    "Instrumentation observes zero valid byte/SWAR filter invocations in that -O runner"
+  ],
+  "affected_sources": [
+    "https://github.com/t81dev/t81-foundation/blob/b83414f0b04563cecae1c3741ceba7692dd81a11/experiments/aiopt_001_fixed_catalog/m1.py"
+  ],
+  "observed_difference": "assert expressions disappear with -O while manual counters and oracle-derived result digest remain unchanged. 604 malformed-call total is itself correct; error-category checks also disappeared under -O.",
+  "proposed_resolution": "Retain baseline outputs; replace elidable assertions with always-active checks; instrument execution and preserve four final fresh-process outputs. Correction implemented at 32d7f9a885d527772227d0d13d108f5de3483497; maintainer acceptance not supplied."
+}

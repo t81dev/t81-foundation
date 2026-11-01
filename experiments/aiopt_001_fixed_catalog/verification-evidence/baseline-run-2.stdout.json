@@ -1,0 +1,1 @@
+{"adapter_oracle_filter_comparisons":162,"catalog_size":40,"inputs":81,"malformed_assertions":604,"platform":"macOS-26.5.2-arm64-arm-64bit-Mach-O","predicate_decisions":3240,"protocol":"T81-AIOPT-001-M1-v0.1.0","python":"3.14.3","roundtrips":162,"sha256_results":"21bd3c7f69e35d32cd5d5b847f34e0e1f2c5218e76d1ffb0db7327bde47966c9","status":"LOCAL_TESTS_PASS"}
