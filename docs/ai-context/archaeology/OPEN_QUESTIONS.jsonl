@@ -1,0 +1,1 @@
+{"question_id": "OQ-001", "topic": "PR #649 and #650 state", "detail": "Repository checkout is shallow (depth=1). Remote PR heads cannot be queried without network/gh CLI. Pinned baseline is f775680.", "status": "OPEN", "impact": "LOW"}
