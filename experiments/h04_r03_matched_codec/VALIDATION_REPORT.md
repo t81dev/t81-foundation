@@ -2,7 +2,7 @@
 
 **Experiment:** EXP-H04-R03 (Matched Codec Space-Time Tradeoff & Bounded-Access Discriminator)
 **Phase:** Phase B — Deterministic Correctness & Reference Implementation
-**Status:** COMPLETE (Deterministic Correctness Passed; Performance Benchmarking Strictly Stopped; Phase B Status: **UNACCEPTED / PENDING INDEPENDENT VERIFICATION**)
+**Status:** COMPLETE (Deterministic Correctness Passed; Performance Benchmarking Strictly Stopped; Phase B Status: **ACCEPTED — DETERMINISTIC CORRECTNESS VERIFIED**)
 **Repository Baseline Commit SHA:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Execution Date:** 2026-11-01
 **Authority:** Bounded implementation and validation only. No merge, performance benchmarking, or production activation.
@@ -51,7 +51,7 @@ This report documents the deterministic reference implementations for EXP-H04-R0
 3. **Separation of Concerns:**
    - Mathematical bounds ($b(m) = \text{bit\_length}(729^m - 1)$) are strictly distinguished from implemented byte layouts (which include count headers, index tables, alignment gaps, and final block padding).
    - Deterministic wire correctness is verified; no CPU cycles, execution timings, PMU counters, or energy metrics were collected.
-   - Phase B status is designated: **UNACCEPTED / PENDING INDEPENDENT VERIFICATION**.
+  - Phase B status is designated: **ACCEPTED — DETERMINISTIC CORRECTNESS VERIFIED** (per independent PM acceptance review).
 
 ---
 
@@ -95,7 +95,7 @@ python3 experiments/h04_r03_matched_codec/test_matched_codec.py
 
 ## 4. Phase C Prerequisites (Pre-Registration & Gates)
 
-Phase B remains **UNACCEPTED / PENDING INDEPENDENT VERIFICATION**. In accordance with T81 PM directives, **all work stops here**.
+Phase B deterministic correctness is **ACCEPTED** (per independent PM review on PR #658). In accordance with T81 PM directives, **all work stops here**.
 
 ### Remaining Phase C Prerequisites:
 1. **Pre-Registration of Primary Configuration:**
