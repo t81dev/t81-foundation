@@ -5,7 +5,7 @@ import re
 from datetime import date
 from pathlib import Path
 
-root = Path(__file__).resolve().parents[2]
+root = Path(__file__).resolve().parents[1]
 state = json.loads((root / "docs/ai-context/CURRENT_STATE.json").read_text())
 schema = json.loads((root / "docs/ai-context/CURRENT_STATE.schema.json").read_text())
 
