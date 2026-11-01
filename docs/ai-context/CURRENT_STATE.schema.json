@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "T81 operational state v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "purpose",
+    "repository",
+    "scientific_boundaries",
+    "workstreams",
+    "open_pr_observations",
+    "authorization",
+    "next_gate"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "purpose": {
+      "type": "string",
+      "pattern": "^Non-normative"
+    },
+    "repository": {
+      "type": "object",
+      "required": [
+        "name",
+        "base_branch",
+        "observed_head",
+        "head_source",
+        "observed_date",
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "base_branch": {
+          "type": "string"
+        },
+        "observed_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "head_source": {
+          "type": "string"
+        },
+        "observed_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "scientific_boundaries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "source",
+          "verification"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "verification": {
+            "enum": [
+              "source_reported",
+              "independently_reproduced",
+              "unverified"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "workstreams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "priority",
+          "state",
+          "next"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "next": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "open_pr_observations": {
+      "type": "object",
+      "required": [
+        "source",
+        "observed_date",
+        "scope",
+        "count",
+        "critical"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "observed_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "authorization": {
+      "type": "object",
+      "required": [
+        "protocol_amendment",
+        "merge",
+        "performance_measurement",
+        "production_activation"
+      ],
+      "properties": {
+        "protocol_amendment": {
+          "const": "not_granted_by_this_index",
+          "description": "This index grants no protocol amendment authority; consult the applicable human decision."
+        },
+        "merge": {
+          "const": false
+        },
+        "performance_measurement": {
+          "const": false
+        },
+        "production_activation": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "next_gate": {
+      "type": "string"
+    }
+  }
+}

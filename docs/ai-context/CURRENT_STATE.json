@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at": "2026-10-31",
+  "purpose": "Non-normative operational index; never grants authorization",
+  "repository": {
+    "name": "t81dev/t81-foundation",
+    "base_branch": "main",
+    "observed_head": "e108fdad078f4d6dfcc427f1fd419ecbe48b4e05",
+    "head_source": "https://api.github.com/repos/t81dev/t81-foundation/branches/main",
+    "observed_date": "2026-10-31",
+    "status": "observed_not_permanently_current"
+  },
+  "scientific_boundaries": [
+    {
+      "id": "H01",
+      "status": "physical_evaluation_blocked",
+      "source": "docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md",
+      "verification": "source_reported"
+    },
+    {
+      "id": "H04-R02",
+      "status": "conditional_model_counterexample_not_hardware_proof",
+      "source": "experiments/h04_r02_adaptive_representation/CORRECTED_RESULTS.md",
+      "verification": "source_reported"
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "continuity",
+      "priority": "P0",
+      "state": "in_progress",
+      "next": "Review draft state-index PR"
+    },
+    {
+      "id": "scientific_discovery",
+      "priority": "P1",
+      "state": "pending",
+      "next": "Rank remaining discriminating hypotheses"
+    },
+    {
+      "id": "ADM-2",
+      "priority": "P2",
+      "state": "review_required",
+      "source": "https://github.com/t81dev/t81-foundation/pull/652",
+      "next": "Reconcile local candidate evidence and platform blockers"
+    },
+    {
+      "id": "archaeology",
+      "priority": "P2",
+      "state": "review_required",
+      "source": "https://github.com/t81dev/t81-foundation/pull/653",
+      "next": "Verify classifier, inventory and CLM-003 correction"
+    }
+  ],
+  "open_pr_observations": {
+    "source": "https://api.github.com/repos/t81dev/t81-foundation/pulls?state=open&per_page=100",
+    "observed_date": "2026-10-31",
+    "scope": "first 100 returned",
+    "count": 49,
+    "critical": [
+      653,
+      652,
+      651,
+      650,
+      649,
+      648,
+      646,
+      645
+    ]
+  },
+  "authorization": {
+    "protocol_amendment": "not_granted_by_this_index",
+    "merge": false,
+    "performance_measurement": false,
+    "production_activation": false
+  },
+  "next_gate": "Review provenance and select one scientific falsifier"
+}
