@@ -4,7 +4,7 @@
 
 **Ternary computation · Alternative representations · Deterministic systems · Experimental computer architecture**
 
-[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/)
+[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/explanation/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/)
 
 ---
 
@@ -156,7 +156,7 @@ This is a conceptual organization of the research program, not a claim that ever
 | Component | Research role |
 |---|---|
 | **TISC** | Experimental instruction-set semantics |
-| **T81VM** | Virtual-machine execution and determinism |
+| **T81VM** | Virtual-machine execution and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
 | **T81Lang** | Language frontend and compilation infrastructure |
 | **T81 Core** | Numerical types, containers, and representation primitives |
 | **Axion** | Policy evaluation and controlled authorization |
