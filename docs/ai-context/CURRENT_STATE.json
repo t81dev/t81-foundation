@@ -69,7 +69,7 @@
     ]
   },
   "authorization": {
-    "protocol_amendment": "user_delegated_with_reason",
+    "protocol_amendment": "not_granted_by_this_index",
     "merge": false,
     "performance_measurement": false,
     "production_activation": false

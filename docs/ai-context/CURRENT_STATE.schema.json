@@ -23,7 +23,8 @@
       "format": "date"
     },
     "purpose": {
-      "type": "string"
+      "type": "string",
+      "pattern": "^Non-normative"
     },
     "repository": {
       "type": "object",
@@ -44,13 +45,15 @@
         },
         "observed_head": {
           "type": "string",
-          "pattern": "^[0-9a-f]{40}$"
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
         },
         "head_source": {
           "type": "string"
         },
         "observed_date": {
-          "type": "string"
+          "type": "string",
+          "format": "date"
         },
         "status": {
           "type": "string"
@@ -133,7 +136,8 @@
           "type": "string"
         },
         "observed_date": {
-          "type": "string"
+          "type": "string",
+          "format": "date"
         },
         "scope": {
           "type": "string"
@@ -161,7 +165,8 @@
       ],
       "properties": {
         "protocol_amendment": {
-          "type": "string"
+          "const": "not_granted_by_this_index",
+          "description": "This index grants no protocol amendment authority; consult the applicable human decision."
         },
         "merge": {
           "const": false
