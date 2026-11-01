@@ -3,6 +3,7 @@
 **Document Identifier:** T81-BASELINE-001-HYPOTHESES
 **Repository Baseline Commit:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Tree SHA:** `68fa5529b9d8244ba31c0f543006dee9283b248f`
+**Temporal Validity:** Reconciled as of pinned baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05` (not live GitHub status)
 **Date:** November 2026
 **Status:** Authoritative Reconciliation
 
@@ -10,19 +11,20 @@
 
 ## 1. Executive Summary
 
-This document synthesizes the empirical evidence, adversarial audit findings, corrected mathematical interpretations, and current scientific dispositions for the 8 canonical hypotheses (H01–H08) of the T81 Foundation research program, as well as auxiliary scientific investigations (Investigation 07, 08, 10A, S02, H09, and H04-R01/R02/R03).
+This document synthesizes the empirical evidence, adversarial audit findings, corrected mathematical interpretations, and current scientific dispositions for the 8 canonical hypotheses (H01–H08) of the T81 Foundation research program, as defined in `docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`, as well as auxiliary scientific investigations (Investigation 07, 08, 10A, S02, H09, and H04-R01/R02/R03).
 
-A core objective of this assessment is to prevent historical AI overstatements, model hallucinations, and unverified literature attributions from being promoted into factual scientific claims.
+A core directive of this assessment is to preserve the exact formal definitions of canonical hypotheses without conflation, distinguish software runtime mechanisms from physical or comparative advantages, preserve negative and inconclusive results, and avoid promoting speculative or unverified claims.
 
 ---
 
 ## 2. Canonical Hypotheses Reconciliation (H01–H08)
 
 ### Hypothesis H01: Physical Storage Density
-- **Original Claim:** Equal-information balanced ternary physical storage can achieve lower total physical cost (area, energy, or raw cell footprint) than binary storage on solid-state devices.
-- **Experimental Method & Baseline:** Theoretical cell count formula $\lceil \log_3 M \rceil$ compared against binary $\lceil \log_2 M \rceil$, plus comparative evaluation against 10 published solid-state memory technologies (SRAM, ReRAM, PCM, FeFET, NAND).
-- **Binary Control:** Optimally packed binary representation of $M$ states under equivalent endurance, sensing margins, and error correction (ECC).
-- **Adversarial Audit & Findings:** Scientific Investigation 10A (`docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md`) conducted an exhaustive audit of the 10 literature citations cited in earlier research. None of the 10 original quantitative rows was verified as a complete, correctly attributed measurement record. Several citations attributed cell sizes to wrong processes or different papers entirely (e.g., TSMC 3nm SRAM misattributed to Intel 5nm; STT-MRAM numbers misattributed to ReRAM).
+- **Canonical Formal Claim:** Equal-information ternary storage can have lower total physical cost than binary.
+- **Baseline:** Optimally packed binary representation of the same $M$ states; same reliability, access and endurance.
+- **Assumptions:** $C_2$ and $C_3$ have the same physical cost unit; include sensing, ECC, control, and peripheral overheads.
+- **Measurement & Falsifier:** Exact $\lceil \log_b M \rceil$ counts and sensitivity over measured device costs; area/energy/retention. Falsified if no cost reduction over matched binary anywhere in the preregistered plausible parameter space.
+- **Adversarial Audit & Findings:** Scientific Investigation 10A (`docs/research/INVESTIGATION_10A_PHYSICAL_STORAGE_EVIDENCE_ASSESSMENT.md`) conducted an exhaustive audit of the 10 solid-state memory citations (P01–P10) cited in earlier research. None of the 10 original quantitative rows was verified as a complete, correctly attributed measurement record. Several citations attributed cell sizes to wrong processes or different papers entirely (e.g., TSMC 3nm SRAM misattributed to Intel 5nm; STT-MRAM numbers misattributed to ReRAM).
 - **Corrected Scientific Disposition:** **PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE**.
   - *Critical Distinction:* H01 is not experimentally falsified on physical silicon; rather, matched empirical characterization data does not exist in the repository or cited literature to evaluate the claim.
 - **Remaining Discriminating Experiment:** Investigation 10B preregistered hardware characterization on accessible physical test macros with verified noise margins, endurance, and peripheral circuitry overheads.
@@ -30,9 +32,9 @@ A core objective of this assessment is to prevent historical AI overstatements, 
 ---
 
 ### Hypothesis H02: Signed Arithmetic & Symmetric Rounding
-- **Original Claim:** Balanced ternary representations inherently improve signed arithmetic efficiency, eliminate rounding bias, and reduce carry chain propagation compared to binary two's-complement.
-- **Experimental Method & Baseline:** Verification of balanced ternary addition/multiplication algorithms and round-to-nearest behavior against exact integer oracles and IEEE 754 floating-point standards.
-- **Binary Control:** Two's-complement arithmetic with round-to-nearest-even (IEEE 754).
+- **Canonical Formal Claim:** Balanced ternary can improve a specified signed arithmetic or rounding cost over two's-complement.
+- **Baseline:** Exact integer oracle, competitive binary signed arithmetic and standard round-to-nearest-even (IEEE 754).
+- **Assumptions:** Hardware/gate model or software instruction model specified before measurement; symmetric range $[-N, +N]$ without asymmetric overflow penalty.
 - **Adversarial Audit & Findings:** Isolated historical CWEB routines in early Hanoi prototypes failed balanced positional invariants on negative overflow boundaries. While symmetric rounding around zero is an exact mathematical property of balanced ternary digits $\{-1, 0, +1\}$, binary hardware emulation on modern superscalar CPUs requires branchy or multi-instruction SWAR/SIMD emulation, eliminating any instruction cycle advantage.
 - **Corrected Scientific Disposition:** **CONDITIONAL MATHEMATICAL PROPERTY — REFUTED AS HARDWARE SPEEDUP ON BINARY SILICON**.
 - **Remaining Discriminating Experiment:** Formal gate-level ASIC/FPGA synthesis measuring carry-chain propagation delay and logic depth against optimized Brent-Kung/Kogge-Stone binary adders.
@@ -40,31 +42,30 @@ A core objective of this assessment is to prevent historical AI overstatements, 
 ---
 
 ### Hypothesis H03: Base-81 Architectural Interoperability
-- **Original Claim:** Grouping four trits into a Base-81 symbol ($3^4 = 81$) provides an optimal architectural boundary for human readability, compact byte-aligned serialization, and efficient instruction encoding.
-- **Experimental Method & Baseline:** Benchmarking Base-81 encoding/decoding throughput and serialization density against binary bit-packing and Base-64/Hex encoding.
-- **Binary Control:** Standard 8-bit byte representations and Base-64 serialization.
-- **Adversarial Audit & Findings:** Four-trit grouping is mathematically sound ($81 < 256$, fitting inside an 8-bit unsigned byte with 175 unused states). However, packing 4 trits per byte achieves an information efficiency of only $\log_2(81) / 8 \approx 6.34 / 8 = 79.2\%$, meaning 20.8% of the byte capacity is wasted compared to dense packing (5 trits in 8 bits yields $3^5 = 243 < 256$, achieving $7.92 / 8 = 99.1\%$ efficiency).
+- **Canonical Formal Claim:** Grouping four trits as base-81 can provide a workload-specific interface or compaction advantage over unaligned ternary.
+- **Baseline:** Ungrouped ternary, binary bit-packed and binary limb representations under the same operations.
+- **Assumptions:** Four trits fit within an unsigned byte ($3^4 = 81 < 256$); byte-addressable host interconnects and serialization boundaries.
+- **Adversarial Audit & Findings:** Four-trit grouping is mathematically sound and practical for byte-aligned serial streams. However, packing 4 trits per byte achieves an information efficiency of only $\log_2(81) / 8 \approx 6.34 / 8 = 79.2\%$, meaning 20.8% of the byte capacity is wasted compared to dense packing (5 trits in 8 bits yields $3^5 = 243 < 256$, achieving $7.92 / 8 = 99.1\%$ efficiency).
 - **Corrected Scientific Disposition:** **PARTIALLY SUPPORTED (CONVENIENCE ENCODING) — REFUTED AS OPTIMAL STORAGE DENSITY**.
 - **Remaining Discriminating Experiment:** Benchmark dense 5-trit packing (RFC-0044) vs 4-trit Base-81 in high-throughput network and memory serialization pipelines.
 
 ---
 
 ### Hypothesis H04: Adaptive Representation & Codec Advantage
-- **Original Claim:** Dynamically adapting precision between binary and balanced ternary representations yields superior space-time efficiency compared to fixed representations across diverse data distributions.
-- **Experimental Method & Baseline:** Evaluated across four arms: Fixed Binary (FB), Adaptive Binary (AB), Fixed Ternary (FT), and Adaptive Balanced Ternary (AT) across multiple synthetic workload traces.
-- **Binary Control:** Matched adaptive binary representation with identical thresholding and block-framing overheads.
+- **Canonical Formal Claim:** An explicitly defined adaptive ternary representation policy can beat fixed binary, adaptive binary or fixed ternary under a stated cost model.
+- **Baseline:** Fixed binary, adaptive binary, fixed ternary, adaptive ternary across matched capacity bounds ($3^k \ge 2^b + 1$).
 - **Adversarial Audit & Findings:**
   1. *H04-R01 (Radix × Adaptation Discriminator):* Proved that AT's apparent advantage over FB was entirely an artifact of adaptive precision. When compared against an equivalent Adaptive Binary (AB) control, AB matched or outperformed AT across all traces and symbol cost ratios $C_3/C_2 \in [1.0, 2.5]$.
-  2. *H04-R02 (Adaptive Representation Audit):* Reclassified to **Classification D (Invalid Experimental Methodology)** due to metadata scaling defects, division math errors, and comparator capacity asymmetry (comparing a 6-trit domain with 729 states against a 10-bit domain with 1024 states). Under corrected 10-bit Tier-0 control on `boundary_oscillation`, AT=1210 < AB=1250 at $r=1.60$ with crossover $5/3$, but this conditional result does not establish hardware superiority.
+  2. *H04-R02 (Adaptive Representation Audit):* Reclassified to **Classification D (Invalid Experimental Methodology)** due to metadata scaling defects, division math errors, and comparator capacity asymmetry (comparing a 6-trit domain with 729 states against a 10-bit domain with 1024 states). Under corrected 10-bit Tier-0 control on `boundary_oscillation`, AT=1210 < AB=1250 at $r=1.60$ with crossover $5/3$, but this conditional result does not establish hardware superiority or universal advantage.
 - **Corrected Scientific Disposition:** **REFUTED WITHIN GENERAL SCOPE — CONDITIONAL ON RESTRICTED MATHEMATICAL DOMAINS WITH UNEQUAL CAPACITY**.
-- **Remaining Discriminating Experiment:** EXP-H04-R03 (Phase B Deterministic Correctness) with strictly matched state domains ($[-364, +364]$ across 729 states) and bounded-access touch-count assertions.
+- **Remaining Discriminating Experiment / Post-Baseline Status:** EXP-H04-R03 (Phase B Deterministic Correctness) was independently reviewed and accepted at PR #658 head `983e258ed4b57b4cd6e010f036c1eb8656856e88` as a dated post-baseline delta, enforcing strictly matched 729-state domains ($[-364, +364]$) and bounded-access touch-count assertions. Phase C benchmarking remains unauthorized.
 
 ---
 
 ### Hypothesis H05: Three-State Circuit & Primitive Efficiency
-- **Original Claim:** Native three-state logic primitives (e.g., ternary multiplexers, consensus gates) reduce total transistor count and interconnect wiring complexity compared to equivalent Boolean gate networks.
-- **Experimental Method & Baseline:** Gate-level synthesis of 8 ternary arithmetic primitives against standard CMOS Boolean cell libraries.
-- **Binary Control:** Optimized CMOS Boolean synthesis using Synopsys/Yosys on equivalent multi-bit functions.
+- **Canonical Formal Claim:** A specified three-state primitive can reduce circuit or system cost against a Boolean baseline for the same function.
+- **Baseline:** Boolean synthesis for exactly the same function, I/O states, process corner and frequency.
+- **Assumptions:** Physical multi-valued logic implementation or matched FPGA/ASIC cell library.
 - **Adversarial Audit & Findings:** Simulation in software does not account for static power leakage, reduced noise margins, or intermediate voltage rail stabilization in multi-valued logic (MVL). Standard silicon processes impose severe energy penalties when driving non-rail intermediate states.
 - **Corrected Scientific Disposition:** **THEORETICALLY PLAUSIBLE AT ABSTRACT LEVEL — UNVERIFIED ON PHYSICAL SILICON**.
 - **Remaining Discriminating Experiment:** Physical CMOS ASIC tape-out or FPGA LUT emulation with calibrated power and noise margin measurements.
@@ -72,36 +73,35 @@ A core objective of this assessment is to prevent historical AI overstatements, 
 ---
 
 ### Hypothesis H06: Ternary Neural Network Inference Advantage
-- **Original Claim:** Quantizing deep learning weights to balanced ternary values $\{-1, 0, +1\}$ eliminates expensive floating-point multiplications, reducing memory bandwidth and accelerating inference.
-- **Experimental Method & Baseline:** Kernel benchmarks comparing ternary dot products and GEMM against FP32, FP16, and INT8 implementations.
-- **Binary Control:** Vectorized INT8 matrix multiplication (using AVX2 VNNI / ARM NEON `sdot`).
+- **Canonical Formal Claim:** Ternary weights or activations can improve accuracy-constrained inference efficiency over low-bit binary.
+- **Baseline:** Matched INT8/low-bit kernels and models at equal task accuracy, runtime, memory and energy.
 - **Adversarial Audit & Findings:** While ternary dot products replace multiplications with conditional additions or zero-skips, modern binary CPUs possess highly optimized hardware SIMD matrix multipliers. As shown in `benchmarks/results/inference_comparison.md`, INT8 dot product achieves 72.2 Gops/s on ARM64 NEON compared to only 4.96 Gops/s for T81 Ternary NEON—making INT8 **14.5x faster** than ternary on binary silicon. Early claims of a "74.6x speedup" were methodologically invalid artifacts of comparing against an unvectorized scalar FP32 baseline.
 - **Corrected Scientific Disposition:** **REFUTED ON BINARY SILICON — CONDITIONAL ON SPECIALIZED HARDWARE WITHOUT HARDWARE MULTIPLIERS**.
-- **Remaining Discriminating Experiment:** ASIC/FPGA matrix-vector accelerator implementing native ternary add-accumulate arrays.
+- **Remaining Discriminating Experiment:** Dedicated ASIC/FPGA matrix-vector accelerator implementing native ternary add-accumulate arrays.
 
 ---
 
-### Hypothesis H07: Deterministic Policy-Governed Execution
-- **Original Claim:** Embedding declarative policy enforcement (Axion) and content-addressed storage (CanonFS) directly into the execution runtime guarantees verifiable audit trails without sacrificing deterministic replay.
-- **Experimental Method & Baseline:** End-to-end VM execution tracking instruction step counts, memory hashes, and policy interception logs across repeated runs on x86_64 and ARM64.
-- **Binary Control:** Conventional non-deterministic execution environments with external logging side-effects.
-- **Adversarial Audit & Findings:** Extensively tested across 27-program conformance suites, `BM_DeterminismValidation`, and CanonFS CLI contract tests. Bit-exact replay and fail-closed policy enforcement are fully verified. However, this is an architecture/software engineering achievement, entirely independent of ternary arithmetic.
-- **Corrected Scientific Disposition:** **CONFIRMED & PRODUCTION-VERIFIED (AS SOFTWARE RUNTIME ARCHITECTURE)**.
-- **Remaining Discriminating Experiment:** Stress testing under high concurrency in the freestanding TernaryOS EL0 userland.
+### Hypothesis H07: Representation-Independent Governed Execution
+- **Canonical Formal Claim:** Representation-independent governed execution can improve a defined auditability property.
+- **Baseline:** Conventional runtime plus explicit authorization/evidence boundary; equal threat model and host trust.
+- **Assumptions:** Authorization, evidence integrity, factual validity and consent are different; no inference-security or malicious-host claims from simulated dispatch.
+- **Evidence Collected & Status:** Demonstrated as an operational software runtime mechanism: 27-program conformance suites, `BM_DeterminismValidation`, and CanonFS CLI contract tests demonstrate bit-exact replay and fail-closed policy enforcement. However, this is an architecture/software engineering contract, not an established comparative advantage over a conventional baseline with an evidence boundary, nor a production security certification. PRs #565/#566 remain open/draft.
+- **Corrected Scientific Disposition:** **DEMONSTRATED IN OPERATIONAL TESTS — COMPARATIVE AUDITABILITY ADVANTAGE UNTESTED AGAINST COMPETITIVE BOUNDARY CONTROL**.
+- **Remaining Discriminating Experiment:** Formal comparative benchmark measuring verification latency and tamper detection cost against an equivalent conventional boundary-audited runtime.
 
 ---
 
-### Hypothesis H08: Recursive Cognitive Self-Improvement & Meta-Reasoning
-- **Original Claim:** Multi-tier cognitive architectures with self-reflective observation rings enable autonomous, bounded self-improvement and superior task routing.
-- **Experimental Method & Baseline:** Experiment H09-E1 evaluating Compositional Graph Routing (CGR) across 4 arms: Arm A (Fixed), Arm B (Adaptive), Arm C (Recursive Intelligence), Arm D (Centralized Planner).
-- **Binary Control:** Centralized optimization planner (Arm D) with deterministic heuristic search.
-- **Adversarial Audit & Findings:** Experiment H09-E1 demonstrated that Arm C (Recursive Intelligence) incurred a catastrophic **>96% management overhead tax**, remaining 7x to 66x more computationally expensive than the centralized planner across all overhead regimes.
-- **Corrected Scientific Disposition:** **REFUTED WITHIN EXPERIMENTAL SCOPE (RECOMMENDATION: STOP)**.
-- **Remaining Discriminating Experiment:** No further experiments recommended until management tax can be bounded mathematically.
+### Hypothesis H08: AI-Assisted Research Trustworthiness
+- **Canonical Formal Claim:** AI-assisted iteration improves research trustworthiness or discovery under an independently auditable process.
+- **Baseline:** Human-only or alternative-assisted work under matched tasks and independent verification.
+- **Assumptions:** Commit authorship does not prove prompt provenance; repeated model summaries are not independent verification.
+- **Evidence Collected & Status:** The research continuity charters, research commons catalogs, and discrepancy ledgers document source claims, extraction probes, and adversarial reviews. However, no controlled comparative study comparing AI-assisted vs human-only error rates, yields, or correction costs has been performed. *(Note: Experiment H09-E1 on recursive cognition is an architectural experiment on process routing, not an evaluation of H08's research methodology hypothesis).*
+- **Corrected Scientific Disposition:** **UNTESTED (METHODOLOGICAL FRAMEWORK ACTIVE; COMPARATIVE TRUSTWORTHINESS OPEN)**.
+- **Remaining Discriminating Experiment:** Controlled preregistered study comparing reproduction yield and error rates between human and AI-assisted extraction under independent adversarial audit.
 
 ---
 
-## 3. Supplementary Investigations Status
+## 3. Supplementary Investigations & Experiments Status
 
 | Investigation ID | Focus Domain | Key Finding / Outcome | Current Status |
 | :--- | :--- | :--- | :--- |
@@ -111,3 +111,5 @@ A core objective of this assessment is to prevent historical AI overstatements, 
 | **Experiment S02** | Stochastic State-Topology Computation | Evaluated binary/ternary spin models; corrected report revised STOP to REVISE (H2 untested). | REVISED (OPEN PILOT) |
 | **Experiment CMP3-R1** | 3-Way Branchless Comparison | PMU cycle benchmarks showed ARM64 parity with `csel`/`cset`; no speedup on superscalar CPUs. | COMPLETED (PARITY) |
 | **Durable Witness** | Detached Evidence Verification | Disaggregated crypto, authority, witness, and effect verification flags. | COMPLETED & VERIFIED |
+| **Experiment H09-E1** | Recursive Process Intelligence | CGR benchmark showed Arm C incurs >96% management overhead tax (7x–66x worse). | STOP RECOMMENDATION |
+| **Experiment H04-R03** | Matched Codec Correctness | Phase B deterministic correctness independently accepted at PR #658 head `983e258ed4`. | POST-BASELINE DELTA (PHASE C UNAUTHORIZED) |

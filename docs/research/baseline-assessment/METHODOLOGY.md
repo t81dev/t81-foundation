@@ -3,6 +3,7 @@
 **Document Identifier:** T81-BASELINE-001-METHODOLOGY
 **Repository Baseline Commit:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Tree SHA:** `68fa5529b9d8244ba31c0f543006dee9283b248f`
+**Temporal Validity:** Evaluated as of pinned baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Date:** November 2026
 **Status:** Canonical Assessment Methodology
 
@@ -11,6 +12,8 @@
 ## 1. Scope and Objective
 
 This document defines the rigorous, evidence-based methodology, taxonomy, counting rules, and verification criteria used in the T81 Foundation Baseline Assessment (`T81-BASELINE-001`). The goal of this assessment is to reconstruct the true state of T81 research, specifications, engineering implementations, and benchmark evidence directly from primary repository artifacts, distinguishing verified implementations from aspirational design documents or generated summaries.
+
+All data, statuses, and metrics are evaluated **as of pinned historical baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`**. Post-baseline events (e.g. PR #658 acceptance) are explicitly treated as dated post-baseline deltas.
 
 ---
 
@@ -28,11 +31,11 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
     2. `RFC-0056`: `RFC-0056-google-axion-t81-integration.md` (contract) and `RFC-0056-google-axion-hardware-profile.md` (companion target profile).
 - **Catalog Indexed Denominator:** Total RFC entries listed in the markdown table of `spec/rfcs/index.md`.
   - **Count:** 110 entries.
-  - *Delta against Files:* `RFC-00D4` exists in `spec/rfcs/` but was omitted from the catalog table in `index.md`.
+  - *Delta against Files:* `RFC-00D4` exists in `spec/rfcs/` (`spec/rfcs/RFC-00D4-accountable-decision-bundle.md`) but was omitted from the catalog table in `index.md`.
 - **Status Categories:**
-  - **Catalog Status:** The status explicitly assigned in `spec/rfcs/index.md` (`accepted`, `superseded`, `draft`, `proposed`, `integrated`, `rejected`).
-  - **Frontmatter Status:** The status declared in the YAML frontmatter or top-level metadata block of the individual RFC markdown file.
-  - **Reconciled Status:** The ground-truth lifecycle state determined after inspecting the normative contract, linked code, and tests.
+  - **Catalog Status:** The status explicitly assigned in `spec/rfcs/index.md` (`accepted`: 96, `superseded`: 11, `draft`: 5, `not-in-catalog`: 1).
+  - **Frontmatter Status:** The status declared in the metadata/frontmatter of the RFC markdown file (`accepted`: 82, `superseded`: 11, `unparsed`: 11, `draft`: 8, `status`: 1).
+  - **Reconciled Maturity:** Realization maturity determined from primary source and test existence (`80 Tested, 17 Specified, 11 Superseded, 5 Implemented`).
 
 ### 2.2 Engineering Capabilities Inventory
 - **Subsystem Denominator:** 10 primary architectural domains:
@@ -56,34 +59,35 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
   - **BLOCKED:** Implementation cannot proceed due to missing physical hardware, unverified literature assumptions, or upstream defects.
 
 ### 2.3 Benchmark Families Inventory
-- **Benchmark Family Denominator:** Discrete benchmark suites located across `benchmarks/BM_*.cpp`, `experiments/`, and historical test runners.
-  - **Count:** 17 compiled Google Benchmark suites in `benchmarks/BM_*.cpp` plus 9 formal empirical experiment benchmark harnesses in `experiments/`.
+- **Benchmark Family Denominator:** 26 total identifiable benchmark families across the repository:
+  - 17 Google Benchmark suites located in `benchmarks/BM_*.cpp`.
+  - 9 formal empirical experiment harnesses located in `experiments/`, `execution_reports/`, and `docs/research/`.
 - **Classification Rubric (Tiers 1–6):**
-  - **Tier 1 (Source-Only / Proposed):** Benchmark source code or execution script exists in repository, but no raw execution results or environment metadata are recorded.
-  - **Tier 2 (Executed, Insufficient Provenance):** Numerical results are quoted in markdown or summaries, but raw logs, command lines, compiler flags, or seeds are missing or untraceable.
-  - **Tier 3 (Executed with Attributable Evidence):** Executed run with recorded raw output, machine metadata, compiler flags, and deterministic inputs preserved in tree.
-  - **Tier 4 (Independently Reproduced):** Workload executed across multiple independent environments (e.g., Apple Silicon ARM64 and Linux x86_64) or validated against an independent mathematical oracle.
-  - **Tier 5 (Methodologically Invalid / Superseded):** Prior benchmark or experiment shown by adversarial audit to suffer from fatal methodology defects (e.g., comparator capacity asymmetry, metadata scaling errors, unoptimized controls, missing conversion costs).
-  - **Tier 6 (Blocked / Incomplete):** Benchmark cannot be executed due to missing physical devices, uncharacterized hardware, or unavailable datasets.
+  - **Tier 1 (Source-Only / Proposed):** Benchmark source code exists in repository, but no raw execution results or environment metadata are recorded in tree (9 suites).
+  - **Tier 2 (Executed, Insufficient Provenance):** Workload executed and raw candidate values present, but comparator baseline is missing, unparsed, or marked not-implemented (1 suite).
+  - **Tier 3 (Executed with Attributable Evidence):** Executed run with recorded raw output, machine metadata, compiler flags, and deterministic inputs preserved in tree (7 suites).
+  - **Tier 4 (Independently Reproduced):** Workload executed across multiple independent environments (e.g., Apple Silicon ARM64 and Linux x86_64) or validated against an independent mathematical oracle (6 suites).
+  - **Tier 5 (Methodologically Invalid / Superseded):** Prior benchmark or experiment shown by adversarial audit to suffer from fatal methodology defects (e.g., comparator capacity asymmetry, metadata scaling errors, unoptimized controls, missing conversion costs) (2 suites).
+  - **Tier 6 (Blocked / Incomplete):** Benchmark cannot be executed due to missing physical devices, uncharacterized hardware, or unavailable datasets (1 suite).
 
 ### 2.4 Scientific Hypotheses Inventory (H01–H08)
 - **Canonical Register Denominator:** The 8 canonical hypotheses defined in `docs/research/continuity/HYPOTHESIS_REGISTER_v1.json`.
-- **Disposition Rubric:**
-  - **SUPPORTED:** Empirical evidence under competent controls confirms the hypothesis within tested scope.
-  - **REFUTED (Within Tested Scope):** Empirical evidence under matched controls falsifies the claimed advantage within the tested domain.
-  - **CONDITIONAL:** Advantage appears only under specific non-universal parameter regimes (e.g., specific symbol cost ratios $C_3/C_2$ or particular boundary oscillations) while failing elsewhere.
-  - **BLOCKED / UNVERIFIED:** Empirical evaluation cannot be completed due to unverified literature data, missing hardware, or uncharacterized physical technology.
-  - **METHODOLOGICALLY DEFECTIVE (Classification D):** Prior supporting claims were invalidated due to experimental or computational defects.
+- **Dispositions:**
+  - H01: PHYSICAL EVALUATION BLOCKED — MATCHED CHARACTERIZATION DATA UNAVAILABLE.
+  - H02: CONDITIONAL MATHEMATICAL PROPERTY — REFUTED AS HARDWARE SPEEDUP ON BINARY SILICON.
+  - H03: PARTIALLY SUPPORTED (CONVENIENCE ENCODING) — REFUTED AS OPTIMAL STORAGE DENSITY.
+  - H04: REFUTED WITHIN GENERAL SCOPE — CONDITIONAL ON RESTRICTED MATHEMATICAL DOMAINS WITH UNEQUAL CAPACITY.
+  - H05: THEORETICALLY PLAUSIBLE AT ABSTRACT LEVEL — UNVERIFIED ON PHYSICAL SILICON.
+  - H06: REFUTED ON BINARY SILICON — CONDITIONAL ON SPECIALIZED HARDWARE WITHOUT HARDWARE MULTIPLIERS.
+  - H07: DEMONSTRATED IN OPERATIONAL TESTS — COMPARATIVE AUDITABILITY ADVANTAGE UNTESTED AGAINST COMPETITIVE BOUNDARY CONTROL.
+  - H08: UNTESTED (METHODOLOGICAL FRAMEWORK ACTIVE; COMPARATIVE TRUSTWORTHINESS OPEN).
 
 ---
 
-## 3. Evidence Extraction & Verification Pipeline
+## 3. Reproducible Extraction Pipeline & Method
 
-All data entered into the baseline assessment CSV ledgers and status registers are extracted via automated scripts:
-1. `parse_rfcs.py` traverses all files in `spec/rfcs/`, cross-referencing catalog entries in `spec/rfcs/index.md` with file headers, implementation files, and test definitions.
-2. `parse_capabilities.py` verifies file existence across `include/`, `src/`, `vm/`, `fs/`, `lang/`, `ternaryos/`, and checks CMake `add_test()` declarations.
-3. `parse_benchmarks.py` maps benchmark suites to raw results in `benchmarks/results/archive/` and `experiments/*/results.json`.
-4. Integrity is verified using Python scripts asserting:
-   - Zero missing or broken relative links.
-   - Exact column counts across all CSV files.
-   - Zero unregistered top-level files per `scripts/governance/check_root_structure.py`.
+All data entered into the baseline assessment CSV ledgers and status registers are extracted directly from primary artifacts via reproducible inline Python inspection workflows executed in the repository environment:
+1. **RFC Extraction:** Traverses all files in `spec/rfcs/RFC-*.md`, extracting metadata lines (`Title`, `Status`, `Created`), cross-referencing with catalog rows in `spec/rfcs/index.md`, and checking source file paths against the repository tree.
+2. **Capability Audit:** Inspects directory structures across `include/t81/`, `src/`, `vm/`, `fs/`, `lang/`, `ternaryos/`, checking C++ header interfaces and CTest `add_test()` declarations across all CMakeLists.txt files.
+3. **Benchmark Verification:** Inspects every single raw artifact (`benchmarks/results/archive/*`, `benchmarks/results/inference_comparison.md`, `experiments/**/results*.json`, `execution_reports/VERIFICATION_REPORT.md`), matching each benchmark suite to either an exact raw evidence artifact or downgrading to `SOURCE_ONLY`.
+4. **Governance Invariant Checking:** Verifies zero top-level repository drift via `python3 scripts/governance/check_root_structure.py` and runs CSV parser assertions validating row and column integrity.

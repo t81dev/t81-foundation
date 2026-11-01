@@ -3,6 +3,7 @@
 **Document Identifier:** T81-BASELINE-001-GAPS
 **Repository Baseline Commit:** `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Tree SHA:** `68fa5529b9d8244ba31c0f543006dee9283b248f`
+**Temporal Validity:** Evaluated as of pinned baseline commit `e108fdad078f4d6dfcc427f1fd419ecbe48b4e05`
 **Date:** November 2026
 **Status:** Authoritative Engineering & Research Guidance
 
@@ -10,11 +11,11 @@
 
 ## 1. Ten Most Consequential Evidence Gaps
 
-Based on the exhaustive audit of repository source, tests, benchmarks, and research records, the following ten evidence gaps represent the most critical blockers to scientific validity, architectural integrity, and production readiness:
+Based on the exhaustive audit of repository source, tests, benchmarks, and research records as of baseline commit `e108fdad`, the following ten evidence gaps represent the most critical blockers to scientific validity, architectural integrity, and production readiness:
 
 ### 1. Physical Solid-State Storage & Device Characterization Gap (H01)
 - **The Gap:** Investigation 10A demonstrated that all 10 historical solid-state memory citations (P01–P10) cited in earlier research were unverified in the primary literature. There is zero empirical physical device characterization data (noise margins, write endurance, sense-amp energy overhead) in the repository.
-- **Consequence:** Claims of ternary storage density superiority over binary silicon remain ungrounded theoretical conjectures.
+- **Consequence:** Claims of ternary storage density superiority over binary silicon remain ungrounded theoretical conjectures; H01 remains blocked.
 
 ### 2. Binary Hardware Accelerator Competitiveness Deficit (H06)
 - **The Gap:** On modern binary processors, INT8 SIMD instructions (e.g. ARM NEON `sdot`, Intel VNNI) achieve 72.2 Gops/s, outperforming T81 ternary NEON kernels (4.96 Gops/s) by 14.5x. Early claims of 74.6x speedups were artifacts of comparing against unvectorized FP32 scalar baselines.
@@ -22,9 +23,9 @@ Based on the exhaustive audit of repository source, tests, benchmarks, and resea
 
 ### 3. Asymmetric State-Domain Comparisons in Representation Benchmarks (H04)
 - **The Gap:** In H04-R02, the apparent adaptive balanced ternary (AT) advantage on `boundary_oscillation` relied on comparing a 6-trit domain (729 states) against a 10-bit domain (1024 states) with metadata scaling defects (Classification D).
-- **Consequence:** When capacity domains are strictly equalized, adaptive binary matches or outperforms adaptive ternary across all tested symbol cost ratios.
+- **Consequence:** When capacity domains are strictly equalized, adaptive binary matches or outperforms adaptive ternary across all tested symbol cost ratios. *(Note: EXP-H04-R03 Phase B resolves this via matched 729-state domains, independently accepted at PR #658 head `983e258ed4b57b4cd6e010f036c1eb8656856e88` as a dated post-baseline delta; Phase C benchmarking remains unauthorized).*
 
-### 4. Recursive Cognition Coordination & Management Tax (>96% Overhead) (H08 / H09)
+### 4. Recursive Cognition Coordination & Management Tax (>96% Overhead) (Track R / H09)
 - **The Gap:** Experiment H09-E1 proved that recursive multi-tier cognitive agent loops (Arm C) incur an overhead penalty exceeding 96% of total compute, rendering them 7x to 66x more expensive than a simple centralized planner.
 - **Consequence:** Cognitive tiers T4–T6 (T2187–T19683) remain speculative abstractions with severe negative scaling properties.
 
@@ -65,12 +66,11 @@ To maximize engineering impact while respecting the research continuity charter,
   - Optimize the CAS read path to reduce the 420x throughput overhead gap against memory-mapped baselines.
   - Finalize golden import/export fixtures under `examples/`.
 
-### Priority 2: Execute EXP-H04-R03 (Phase B Deterministic Correctness)
-- **Rationale:** Resolves the H04-R02 Classification D controversy by enforcing strictly matched 729-state domains ($[-364, +364]$) across all 4 arms.
+### Priority 2: Maintain Post-Baseline EXP-H04-R03 Correctness Discipline
+- **Rationale:** EXP-H04-R03 Phase B deterministic correctness has been independently accepted at PR #658 head `983e258ed4b57b4cd6e010f036c1eb8656856e88` as a dated post-baseline delta, enforcing strictly matched 729-state domains ($[-364, +364]$) across all 4 arms.
 - **Action Items:**
-  - Enforce pre-allocation bounds and block-framing assertions.
-  - Validate O(1)-space bounded-block random access via deterministic touch-count assertions without reconstructing offset tables.
-  - Strictly prohibit speculative performance or hardware superiority claims.
+  - Maintain deterministic touch-count assertions and bounds checks.
+  - Strictly adhere to stopping criteria: do NOT run unauthorized performance benchmarks (Phase C) or make speculative hardware claims.
 
 ### Priority 3: Maintain Operational Stability of Deterministic Core Profile (DCP)
 - **Rationale:** Deterministic execution and Axion policy enforcement are the crown jewels of T81 Foundation—empirically verified, bit-exact, and tested across architectures.
