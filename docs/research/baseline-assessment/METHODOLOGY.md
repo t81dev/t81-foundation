@@ -66,9 +66,9 @@ To ensure full reproducibility and eliminate ambiguity, every quantitative metri
 - **Classification Rubric & Grounded Counts (Tiers 1–6):**
   - **Tier 1 (Source-Only / Proposed):** 9 families (7 Google Benchmark suites lacking raw execution logs in tree, EXP-H09-E1 CGR protocol proposal, and EXP-H04-R01 4-arm theoretical protocol).
   - **Tier 2 (Executed, Insufficient Provenance):** 6 families (BM_PackedTritVector, BM_DispatchOverhead, BM_VMSimulation: candidate runs preserved, but binary comparators missing/below timer resolution; EXP-CMP3-R1: PMU measurements unauthorized and uncollected, linux=null; EXP-FLOAT-CONVERSION: conversion status UNRESOLVED, platform divergence, 10k claim unpersisted; EXP-DIRECT-API-SPEEDUP: test harness relies on simulated sleep loops rather than real inference/policy evaluation).
-  - **Tier 3 (Executed with Attributable Evidence):** 8 families with attributed raw logs, machine metadata, or mathematical oracle evaluations (BM_CanonFS, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_TensorMatMul, BM_TritwiseWorkloads, EXP-S02, EXP-DURABLE-WITNESS).
+  - **Tier 3 (Executed with Attributable Evidence):** 9 families with attributed raw logs, machine metadata, or mathematical oracle evaluations (BM_CanonFS, BM_InferenceComparison, BM_Lexer, BM_LimbMul, BM_TensorMatMul, BM_TritwiseWorkloads, EXP-S02, EXP-DURABLE-WITNESS, EXP-H04-R02 corrected symbolic oracle only).
   - **Tier 4 (Independently Reproduced):** 0 families (no benchmark family possesses multi-runner independent reproduction across physical machines and compilers in baseline).
-  - **Tier 5 (Methodologically Invalid / Superseded):** 2 families shown by adversarial audit to suffer from fatal methodology defects (BM_LlamaKernels, EXP-H04-R02).
+  - **Tier 5 (Methodologically Invalid / Superseded):** 1 family (BM_LlamaKernels). Historical EXP-H04-R02 Classification D artifacts remain invalid, but are recorded as a separate historical evidence identity rather than invalidating the corrected symbolic oracle family.
   - **Tier 6 (Blocked / Incomplete):** 1 family (EXP-INV-10A physical solid-state storage data unavailable).
 
 ### 2.4 Scientific Hypotheses Inventory (H01–H08)
