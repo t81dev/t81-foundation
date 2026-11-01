@@ -143,3 +143,11 @@ To amend or supersede a formally accepted architectural decision without erasing
 ## 2026-10-31 authorization clarification
 
 Reported local ADM-2 candidates (`0c22ac323484e37cc85f95201bd4dc01729dedb4` and `826887b40c62de9c6c903f319bbfbe905baa9911`) are **not** evidence of acceptance, activation, merge or release. Selected local macOS ARM64 tests cannot authorize an expanded runtime contract. Reconcile actual GitHub PR heads, accepted RFCs, explicit maintainer decisions, and independent CI before promoting any claim. Previously recorded CMP3 approvals and blockers remain scoped to their own dated artifacts.
+
+---
+
+## 2026-11-01 AIOPT M2 — question separation, not authorization
+
+**Decision posture:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED`. [#671](https://github.com/t81dev/t81-foundation/pull/671) records a *proposed* division into S (adaptive software format selection), A (algorithm routing), and T (ternary-specific attribution). T remains the central long-horizon research objective. A gain in S or A is not proof of T; binary two-bit encoding of three states does not isolate ternary physical benefit. The polynomial design in [#672](https://github.com/t81dev/t81-foundation/pull/672) is unaccepted. [#673](https://github.com/t81dev/t81-foundation/pull/673) has seven P1 protocol acceptance blockers, and [#674](https://github.com/t81dev/t81-foundation/pull/674) is adversarial critique, not authorization.
+
+**No authority transferred:** Updating these documents or accepting review commentary does not accept M1, select B/C, freeze M2, authorize correctness implementation or measurement, merge PRs, modify protected governance, or establish deployment. An explicit maintainer research selection, independently accepted preregistration and separate commit-scoped execution approval remain necessary.
