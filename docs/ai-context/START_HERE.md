@@ -142,3 +142,7 @@ The PR head and authorization status can change after this snapshot; refresh bef
 ## 2026-10-31 continuity reconciliation
 
 The `Source Snapshot` above is a historical observation, not the live repository head. `BOOTSTRAP.md` and `ACTIVE_RESEARCH_HANDOFF.md` have independently dated observations; their differing commit pins must not be silently combined into one state. Refresh `main`, open PR heads, CI receipts, and authorization records before action. The ADM-2 local candidate report described below is not merged evidence.
+
+## Operational state index (2026-10-31)
+
+Read [CURRENT_STATE.json](CURRENT_STATE.json) after this introduction to locate observed repository state, active workstreams, and explicit authorization boundaries. Validate its shape with `python3 scripts/validate_current_state.py` from repository root. Its [schema](CURRENT_STATE.schema.json) is structural only: a passing validation does **not** authenticate sources, prove current freshness, or authorize experiments, merges, production activation, or governance changes. Verify live GitHub heads, checks, source receipts, and approval before action. The canonical hypothesis register, accepted RFCs, and original experimental artifacts retain their respective authority. Dated observations in the JSON file must not be silently treated as live status.
