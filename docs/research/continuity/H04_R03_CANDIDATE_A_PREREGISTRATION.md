@@ -79,7 +79,7 @@ The study establishes four explicit comparison arms. Three arms use accepted Pha
 | **Arm 1** | **T243** | Base-243 Packing | $\lceil 6m / 5 \rceil$ | Accepted (Phase B) | Target ternary codec |
 | **Arm 2** | **B10** | Packed 10-bit Binary | $\lceil 10m / 8 \rceil$ | Accepted (Phase B) | Baseline fixed-field binary control |
 | **Arm 3** | **B729** | Whole-Block Enumerative Binary | $\lceil \text{bit\_length}(729^m - 1) / 8 \rceil$ | Accepted (Phase B) | Strongest compaction binary control |
-| **Arm 4** | **B729-µ5** | 5-Value Microblock Binary | See Section 4 ($\lceil 6m / 5 \rceil$ for full µ-blocks) | **PROPOSED** | Bounded-access matched-density binary control |
+| **Arm 4** | **B729-µ5** | 5-Value Microblock Binary | See Section 4 ($\lceil 6m / 5 \rceil$ for full µ-blocks) | **PROPOSED SPECIFICATION** | Bounded-access matched-density binary control |
 
 ### 3.1 Arm 1: T243 (Accepted Phase B Reference)
 - Groups base-3 digits into chunks of 5 trits per byte ($3^5 = 243 \le 256$).
@@ -104,7 +104,8 @@ The study establishes four explicit comparison arms. Three arms use accepted Pha
 
 ## 4. Proposed B729-µ5 Microblock Specification
 
-**Status:** PROPOSED ARCHITECTURAL SPECIFICATION. Not previously accepted under Phase B. Requires independent implementation, validation, and witness verification before eligibility for measurement.
+**Status:** PROPOSED ARCHITECTURAL SPECIFICATION. Not previously accepted under Phase B.
+**Critical Governance Boundary:** Recognition of B729-µ5 as a valid, mathematically sound theoretical comparator design is **strictly distinct** from authorizing its concrete software implementation, benchmark harness creation, or performance measurement under Phase C.
 
 ### 4.1 Mathematical Foundations & Density Equivalence
 For any alphabet of 729 states, grouping into chunks of $M = 5$ values yields:
@@ -190,7 +191,7 @@ Decoders and random access readers must enforce fail-closed rejection:
 3. **Alignment Gap & Tail Padding:** Zero padding in alignment gaps ($D - H$) and end-of-block alignment must be strictly zero.
 
 ### 4.7 Independent Correctness Obligations
-Before any benchmark execution:
+Prior to any Phase C benchmark execution or measurement authorization:
 1. An independent witness implementation (`independent_witness_b729_u5.py`) must be authored without shared code.
 2. Exhaustive round-trip tests must pass for all $729^1 = 729$ single symbols, all $729^2 = 531,441$ pairs of symbols, and boundary sequences across all block sizes.
 3. Adversarial test cases verifying non-zero padding rejection, integer overflow rejection, and asymmetric digit reversal rejection must pass 100%.
@@ -199,7 +200,7 @@ Before any benchmark execution:
 
 ## 5. Frozen Synthetic Workload & Deterministic Dataset
 
-To prevent dataset shopping and post-hoc configuration selection, both the input dataset and the query schedule are frozen deterministically:
+To prevent dataset shopping and post-hoc configuration selection, exactly **one** deterministic symbol-generation algorithm and one independent query generator are frozen:
 
 ### 5.1 Primary Workload Parameters
 - **Dataset Size ($N$):** $N = 2^{20} = 1,048,576$ logical symbols.
@@ -209,52 +210,67 @@ To prevent dataset shopping and post-hoc configuration selection, both the input
 - **Access Protocol:** **RA-FIXED** (no index table; analytical $O(1)$ block addressing).
 - **Query Count ($Q$):** $Q = N = 1,048,576$ queries.
 
-### 5.2 Deterministic Input Dataset Specification (Full-Domain Control)
+### 5.2 Deterministic Symbol Generation Algorithm (Single Frozen PRNG)
 - **Target Distribution:** Discrete uniform distribution over all 729 states: $x \in [-364, 364]$.
-- **PRNG Algorithm:** SplitMix64 initialization followed by standard xoshiro256++ (or standard Python `random.Random` with pinned 64-bit seed).
+- **PRNG Algorithm:** Exactly 64-bit xoshiro256++ initialized by 64-bit SplitMix64 from a 64-bit seed. No alternative generator (such as Python `random.Random` or MT19937) is permitted.
 - **Dataset Seed:** `DATASET_SEED = 0x5438315F44415441` (ASCII `"T81_DATA"`).
-- **Exact Bounded Rejection Sampling Procedure:**
-  To guarantee zero modular bias across the 729 states from raw 64-bit unsigned integers:
+- **SplitMix64 State Initialization:**
+  Given seed $s$, initialize state four-tuple $[s_0, s_1, s_2, s_3]$ via 4 successive SplitMix64 steps:
   ```python
-  # Unbiased bounded sampling over [0, 728]:
-  # 2^64 = 729 * 25,302,403,348,724,534 + 694
-  # Rejection threshold = 2^64 - (2^64 % 729) = 18,446,744,073,709,550,922
+  def splitmix64(z: int) -> int:
+      z = (z + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+      z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9 & 0xFFFFFFFFFFFFFFFF
+      z = (z ^ (z >> 27)) * 0x94D049BB133111EB & 0xFFFFFFFFFFFFFFFF
+      return z ^ (z >> 31)
+
+  # State initialization:
+  sm = DATASET_SEED
+  s0 = splitmix64(sm); sm = (sm + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+  s1 = splitmix64(sm); sm = (sm + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+  s2 = splitmix64(sm); sm = (sm + 0x9E3779B97F4A7C15) & 0xFFFFFFFFFFFFFFFF
+  s3 = splitmix64(sm)
+  ```
+- **xoshiro256++ Transition & Output:**
+  ```python
+  def next_u64():
+      nonlocal s0, s1, s2, s3
+      res = (rotl((s0 + s3) & 0xFFFFFFFFFFFFFFFF, 23) + s0) & 0xFFFFFFFFFFFFFFFF
+      t = (s1 << 17) & 0xFFFFFFFFFFFFFFFF
+      s2 ^= s0
+      s3 ^= s1
+      s1 ^= s2
+      s0 ^= s3
+      s2 ^= t
+      s3 = rotl(s3, 45)
+      return res
+  ```
+- **Unbiased Rejection Sampling:**
+  ```python
+  # 2^64 = 729 * 25302403348724534 + 694
+  # Rejection threshold = 2^64 - 694 = 18446744073709550922
   LIMIT_729 = 18446744073709550922
 
-  def generate_symbols(N=1048576, seed=0x5438315F44415441):
-      rng = xoshiro256plusplus(seed)
-      symbols = []
-      while len(symbols) < N:
-          raw_u64 = rng.next_u64()
-          if raw_u64 < LIMIT_729:
-              u = raw_u64 % 729
-              symbols.append(u - 364)
-      return symbols
+  symbols = []
+  while len(symbols) < N:
+      val = next_u64()
+      if val < LIMIT_729:
+          u = val % 729
+          symbols.append(u - 364)
   ```
-- **Canonical Byte Serialization & Pinned SHA-256 Digest Procedure:**
-  - Before input mapping, the generated array of $N$ signed integers is packed as a little-endian signed 16-bit array (`<h`):
-    $$\text{Array Bytes} = \text{struct.pack}(f'<{N}h', *symbols)$$
-  - Expected length: exactly $2 \times 1,048,576 = 2,097,152$ bytes.
-  - The SHA-256 digest of this canonical byte sequence is computed and recorded as `CANONICAL_DATASET_SHA256`.
-  - Every authorized benchmark run must verify that `sha256(input_bytes) == CANONICAL_DATASET_SHA256` before admitting execution.
+- **Canonical Serialization & Expected SHA-256 Digest:**
+  - Packed as a contiguous binary blob of little-endian signed 16-bit integers (`<h` format):
+    $$\text{Blob} = \text{struct.pack}(f'<{N}h', *symbols)$$
+  - Length: exactly $2 \times 1,048,576 = 2,097,152$ bytes ($2.0 \text{ MB}$).
+  - Expected digest: The SHA-256 digest of this canonical blob is recorded as `CANONICAL_DATASET_SHA256`.
+  - Every benchmark run must verify `sha256(input_blob) == CANONICAL_DATASET_SHA256` prior to executing Phase 1.
 
 ### 5.3 Independent Query Schedule Generation
 - **Target Distribution:** Discrete uniform distribution over indices $i \in [0, N-1]$ drawn **with replacement**.
-- **Query Seed:** `QUERY_SEED = 0x5438315F51554552` (ASCII `"T81_QUER"`), initialized completely independently of the dataset PRNG stream.
+- **Query Seed:** `QUERY_SEED = 0x5438315F51554552` (ASCII `"T81_QUER"`), initialized completely independently using its own SplitMix64 and xoshiro256++ state stream.
 - **Sampling Procedure:**
-  ```python
-  # Rejection threshold for N = 2^20:
-  # Since 2^64 is an exact multiple of 2^20 (2^44 * 2^20), raw_u64 & 0xFFFFF is perfectly unbiased.
-  def generate_queries(Q=1048576, seed=0x5438315F51554552):
-      rng = xoshiro256plusplus(seed)
-      queries = []
-      for _ in range(Q):
-          idx = rng.next_u64() & 0xFFFFF  # 0 <= idx < 2^20
-          queries.append(idx)
-      return queries
-  ```
+  Because $N = 2^{20}$ divides $2^{64}$ exactly ($2^{64} = 2^{44} \times 2^{20}$), masking `next_u64() & 0xFFFFF` provides a mathematically perfect, unbiased uniform draw over $[0, 2^{20}-1]$ without rejection sampling.
 - **Canonical Serialization & Hash:**
-  Packed as little-endian unsigned 32-bit array (`<I`, exactly 4,194,304 bytes). The SHA-256 digest is verified before each run as `CANONICAL_QUERY_SHA256`.
+  Packed as little-endian unsigned 32-bit integers (`<I`, exactly 4,194,304 bytes). The SHA-256 digest is verified before each run as `CANONICAL_QUERY_SHA256`.
 
 ### 5.4 Synthetic Workload Disclaimer
 **EXPLICIT MANDATORY NOTICE:**
@@ -363,51 +379,37 @@ Testing is restricted to exactly **one dedicated host runner** meeting the follo
 
 To eliminate ambiguity, every valid, stable trial outcome maps deterministically to exactly one of three primary scientific classifications: **ACCEPT**, **REJECT**, or **INCONCLUSIVE**. The label **INVALID** is strictly reserved for protocol violations, verification failures, or uncharged resource leaks.
 
-### 9.1 Distinguishing Advantage Rejection from Inferiority
-- **Rejecting Practical Advantage:** Occurs when the upper confidence bound falls below the win threshold ($\text{CI}_{\text{upper}} < \tau_{\text{win}} = 1.10$). The evidence conclusively rules out a $\ge 10\%$ win, even if T243 is slightly faster or equivalent.
-- **Establishing Inferiority:** Occurs when the upper confidence bound falls below the equivalence threshold ($\text{CI}_{\text{upper}} < \tau_{\text{equiv}} = 0.95$). The evidence conclusively proves T243 is strictly slower than the comparator by $\ge 5\%$.
+### 9.1 Complete Acceptance Predicate
+A trial outcome is classified as **ACCEPT** if and only if **all four** of the following conditions hold simultaneously:
+1. **Lifecycle Advantage vs B729-µ5:** $\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729-}\mu 5))_{\text{lower}} \ge 1.10$.
+2. **Lifecycle Advantage vs B10:** $\text{CI}_{0.95}(\theta_{\text{life}}(\text{B10}))_{\text{lower}} \ge 1.10$.
+3. **Lifecycle Advantage vs B729 (Whole-Block):** $\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729}))_{\text{lower}} \ge 1.10$.
+4. **Query Non-Inferiority vs B729-µ5 and B10:** $\text{CI}_{0.95}(\theta_{\text{query}}(\text{B729-}\mu 5))_{\text{lower}} \ge 0.95$ AND $\text{CI}_{0.95}(\theta_{\text{query}}(\text{B10}))_{\text{lower}} \ge 0.95$.
 
-### 9.2 Complete Decision Criteria
-1. **`ACCEPT` (Practical Advantage Confirmed):**
-   - The lower confidence bound for complete-lifecycle throughput establishes a practical win against **all three** binary baselines:
-     $$\text{CI}_{0.95}(\theta_{\text{life}}(\text{B10}))_{\text{lower}} \ge 1.10 \quad \text{AND} \quad \text{CI}_{0.95}(\theta_{\text{life}}(\text{B729}))_{\text{lower}} \ge 1.10 \quad \text{AND} \quad \text{CI}_{0.95}(\theta_{\text{life}}(\text{B729-}\mu 5))_{\text{lower}} \ge 1.10$$
-   - Secondary random-access query throughput of T243 is non-inferior ($\text{CI}_{\text{lower}} \ge 0.95$) against B729-µ5 and B10.
-   - All deterministic checksums, wire layouts, and memory caps verified without exception.
+### 9.2 Complete Rejection Rules (Distinguishing Advantage Rejection from Inferiority)
+A trial outcome is classified as **REJECT** if any of the following occur:
+1. **Rejection of Practical Advantage:** The upper confidence bound falls below the 10% win threshold against the primary microblock control:
+   $$\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729-}\mu 5))_{\text{upper}} < 1.10$$
+   (The data conclusively rule out a $\ge 10\%$ lifecycle advantage over B729-µ5).
+2. **Lifecycle Inferiority:** The upper confidence bound falls below the non-inferiority margin against any binary control:
+   $$\text{CI}_{0.95}(\theta_{\text{life}}(C))_{\text{upper}} < 0.95 \quad \text{for any } C \in \{\text{B10}, \text{B729}, \text{B729-}\mu 5\}$$
+   (T243 is conclusively slower across the complete lifecycle by $\ge 5\%$).
+3. **Query Inferiority:** The upper confidence bound for query throughput falls below non-inferiority:
+   $$\text{CI}_{0.95}(\theta_{\text{query}}(\text{B729-}\mu 5))_{\text{upper}} < 0.95 \quad \text{OR} \quad \text{CI}_{0.95}(\theta_{\text{query}}(\text{B10}))_{\text{upper}} < 0.95$$
 
-2. **`REJECT` (Hypothesis Falsified / Advantage Disproved):**
-   - Conclusive rejection of practical advantage against the primary microblock control:
-     $$\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729-}\mu 5))_{\text{upper}} < 1.10$$
-   - OR, establishment of lifecycle inferiority against any binary control:
-     $$\text{CI}_{0.95}(\theta_{\text{life}}(C))_{\text{upper}} < 0.95 \quad \text{for any } C \in \{\text{B10}, \text{B729}, \text{B729-}\mu 5\}$$
-   - OR, failure of query non-inferiority against B729-µ5 ($\text{CI}_{0.95}(\theta_{\text{query}}(\text{B729-}\mu 5))_{\text{upper}} < 0.95$).
+### 9.3 Exhaustive Decision Table for Complete Outcome Predicate
 
-3. **`INCONCLUSIVE` (Insufficient Effect Resolution or High Noise):**
-   - The confidence interval straddles the practical advantage threshold:
-     $$\text{CI}_{\text{lower}} < 1.10 \le \text{CI}_{\text{upper}}$$
-     (while satisfying non-inferiority $\text{CI}_{\text{lower}} \ge 0.95$).
-   - OR, run-to-run coefficient of variation (CV) exceeds $5.0\%$ across repetitions.
-
-4. **`INVALID` (Reserved for Protocol & Verification Breach):**
-   - Checksum mismatch between decoded output and reference witness.
-   - Any resident memory overflow ($> 32 \text{ MB}$) or query scratch allocation ($> 64 \text{ KB}$).
-   - Any uncharged block cache, memoization, precomputed offset table, or hidden pointer leak.
-   - Any violation of dataset seed, query schedule, or sample count.
-
-### 9.3 Exhaustive Decision Table for Confidence Interval Profiles
-
-The table below exhaustively categorizes all possible interval relations relative to the key boundaries ($0.95$ and $1.10$):
-
-| Case | 95% Bootstrap Interval $[\text{CI}_{\text{lower}}, \text{CI}_{\text{upper}}]$ vs B729-µ5 | Lifecycle Non-Inferiority vs B10 & B729 | Deterministic Classification | Scientific Interpretation |
-|---|---|---|---|---|
-| **1** | $[1.12, 1.25]$ ($\text{CI}_{\text{lower}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{lower}} \ge 0.95$) | **ACCEPT** | Conclusive practical win ($\ge 10\%$) over competent microblock control. |
-| **2** | $[1.12, 1.25]$ ($\text{CI}_{\text{lower}} \ge 1.10$) | Failed ($\text{CI}_{\text{upper}} < 0.95$) | **REJECT** | Lifecycle non-inferiority failure: faster queries cannot offset large encoding/setup tax. |
-| **3** | $[1.02, 1.08]$ ($\text{CI}_{\text{upper}} < 1.10$, $\text{CI}_{\text{lower}} \ge 0.95$) | Confirmed ($\text{CI}_{\text{lower}} \ge 0.95$) | **REJECT** | Practical advantage conclusively rejected: T243 is marginally faster (2–8%) but fails the 10% threshold. |
-| **4** | $[0.98, 1.03]$ (Entirely within $[0.95, 1.10)$) | Confirmed ($\text{CI}_{\text{lower}} \ge 0.95$) | **REJECT** | Practical advantage conclusively rejected: T243 is equivalent to B729-µ5; no practical advantage. |
-| **5** | $[0.82, 0.92]$ ($\text{CI}_{\text{upper}} < 0.95$) | Any | **REJECT** | Conclusive inferiority: T243 is strictly slower than B729-µ5. |
-| **6** | $[1.05, 1.15]$ (Straddles $1.10$; $\text{CI}_{\text{lower}} \ge 0.95$) | Confirmed ($\text{CI}_{\text{lower}} \ge 0.95$) | **INCONCLUSIVE** | Effect resolution insufficient: interval spans both sub-threshold and win regions. |
-| **7** | $[0.92, 1.04]$ (Straddles $0.95$; $\text{CI}_{\text{upper}} < 1.10$) | Confirmed ($\text{CI}_{\text{lower}} \ge 0.95$) | **REJECT** | Practical advantage rejected ($\text{CI}_{\text{upper}} < 1.10$); inconclusive on strict inferiority. |
-| **8** | Any interval with run-to-run CV $> 5.0\%$ | Any | **INCONCLUSIVE** | Environmental noise excessive; cannot resolve true distribution medians. |
-| **9** | Output checksum mismatch or scratch $> 64 \text{ KB}$ | Any | **INVALID** | Protocol breach / correctness defect. |
+| Case | $\theta_{\text{life}}(\text{B729-}\mu 5)$ 95% CI | $\theta_{\text{life}}(\text{B10})$ 95% CI | $\theta_{\text{life}}(\text{B729})$ 95% CI | Query Non-Inferiority ($\theta_{\text{query}} \ge 0.95$) | Deterministic Classification | Scientific Interpretation |
+|---|---|---|---|---|---|---|
+| **1** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **ACCEPT** | Full acceptance predicate satisfied: $\ge 10\%$ lifecycle win across all controls + query non-inferiority. |
+| **2** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.02, 1.08]$ ($\text{CI}_{\text{U}} < 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Fails lifecycle threshold against B10: advantage over B729-µ5 alone does not satisfy full acceptance predicate. |
+| **3** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Failed ($\text{CI}_{\text{U}} < 0.95$ vs µ5) | **REJECT** | Query non-inferiority failure: T243 random access lookup is conclusively inferior ($\ge 5\%$ slower) to B729-µ5. |
+| **4** | $[1.02, 1.08]$ ($\text{CI}_{\text{U}} < 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage over B729-µ5 conclusively rejected: T243 is marginally faster (2–8%) but fails the 10% threshold. |
+| **5** | $[0.98, 1.03]$ (Within $[0.95, 1.10)$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage over B729-µ5 conclusively rejected: T243 is equivalent to B729-µ5; no practical advantage. |
+| **6** | $[0.82, 0.92]$ ($\text{CI}_{\text{U}} < 0.95$) | Any | Any | Any | **REJECT** | Conclusive lifecycle inferiority: T243 is strictly slower than B729-µ5 across the lifecycle. |
+| **7** | $[1.05, 1.15]$ (Straddles $1.10$) | $\text{CI}_{\text{L}} \ge 1.10$ | $\text{CI}_{\text{L}} \ge 1.10$ | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **INCONCLUSIVE** | Effect resolution insufficient: interval spans both sub-threshold and practical win regions. |
+| **8** | Any valid run set where run-to-run CV $> 5.0\%$ | Any | Any | Any | **INCONCLUSIVE** | Excessive background system noise; unable to resolve true population medians. |
+| **9** | Output checksum mismatch or scratch $> 64 \text{ KB}$ | Any | Any | Any | **INVALID** | Reserved for protocol breach, correctness defect, or uncharged resources. |
 
 ---
 
@@ -415,10 +417,11 @@ The table below exhaustively categorizes all possible interval relations relativ
 
 The following specific design decisions remain unapproved and require explicit maintainer sign-off prior to any Phase C scheduling:
 
-1. **Approval of B729-µ5 Microblock as a Valid Binary Comparator:**
-   - Maintainers must authorize whether B729-µ5 represents a legitimate domain-matched binary baseline or whether comparison must remain limited to whole-block B729.
+1. **Formal Recognition of B729-µ5 as a Valid Theoretical Comparator:**
+   - Maintainers must authorize whether the B729-µ5 microblock specification constitutes a legitimate, domain-matched binary baseline for comparison.
+   - **Boundary Notice:** Recognition of B729-µ5 as a valid comparator design does **not** authorize its concrete software implementation or benchmarking.
 2. **Approval of the 10% Practical Improvement Threshold:**
-   - Maintainers must confirm whether a $10\%$ throughput improvement ($\theta \ge 1.10$) constitutes a sufficient practical advantage to justify non-standard base-3 wire encoding.
+   - Maintainers must confirm whether a $10\%$ lifecycle improvement ($\theta_{\text{life}} \ge 1.10$) constitutes a sufficient practical advantage to justify non-standard base-3 wire encoding.
 3. **Approval of the Single-Host Runner Specification:**
    - Maintainers must verify that the designated single-host runner environment meets reproducibility and cache control requirements.
 
@@ -428,7 +431,7 @@ The following specific design decisions remain unapproved and require explicit m
 
 **EXPLICIT RECOMMENDATION:**
 If any of the following conditions occur during maintainer review:
-1. Maintainers do not approve B729-µ5 as a valid binary control;
+1. Maintainers do not formally recognize B729-µ5 as a valid binary control;
 2. Independent implementation of the B729-µ5 reference codec and witness cannot be completed within minimal source complexity limits;
 3. Dedicated single-host hardware with pinned core affinity and disabled dynamic frequency scaling cannot be secured;
 4. The synthetic nature of the workload is judged of insufficient operational relevance to warrant computational credit expenditure;
@@ -445,7 +448,8 @@ Prior to activating Phase C or merging execution harnesses, maintainers must ver
 - [ ] **Comparator Definition:** All four comparison arms (T243, B10, whole-block B729, B729-µ5) are clearly defined.
 - [ ] **Microblock Specification:** B729-µ5 grammar, tail handling, bounded-byte extraction, and validation rules are fully specified.
 - [ ] **Workload Freeze:** Synthetic parameters ($N=2^{20}, k=64, A=1, \text{RA-FIXED}, Q=N$) are frozen and labeled synthetic.
-- [ ] **Dataset Freeze:** Input symbols and query schedule algorithms, seeds, rejection sampling, and SHA-256 verification procedures are pinned.
+- [ ] **Dataset Freeze:** Input symbols and query schedule algorithm (SplitMix64 + xoshiro256++), seeds, rejection sampling, and SHA-256 verification procedures are pinned.
 - [ ] **Lifecycle Accounting:** Complete 8-phase lifecycle accounting is mandated; scratch and table memory charged.
-- [ ] **Statistical Protocol:** Pinned 30-run paired protocol, 95% bootstrap CIs, upper-bound advantage rejection, and exhaustive decision rules are established.
+- [ ] **Statistical Protocol:** Pinned 30-run paired protocol, 95% bootstrap CIs, upper-bound advantage rejection, and complete acceptance predicate decision table are established.
+- [ ] **Authorization Boundaries:** Formal recognition of B729-µ5 is maintained as distinct from implementation/benchmarking authorization.
 - [ ] **Execution Freeze:** No benchmark harness, timing scripts, C++ test targets, or runner executions have been created or modified in this task.
