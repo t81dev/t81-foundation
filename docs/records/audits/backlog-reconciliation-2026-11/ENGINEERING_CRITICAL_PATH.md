@@ -29,9 +29,9 @@ The following ten pull requests represent the critical path sequence. Merging or
 
 - **Head SHA:** `d4c053c9405a078cb588e7227507c61449c7587e`
 - **Domain / Role:** Codec & Arithmetic Correctness | Foundational Arithmetic Correctness
-- **Technical Justification:** Eliminates integer overflow undefined behavior and premature saturation in decode_i64. Mathematical proof and active sanitizers confirm correctness for all int64 bounds and cancellation vectors.
+- **Technical Justification:** Resolves premature saturation in Horner prefix checks and signed overflow in decode_i64. Bounded mathematical proof and active sanitizers confirm correctness for tested int64 boundaries and cancellation regression vectors (though exhaustive verification across all unconstrained ternary vectors remains an open boundary).
 - **Current Blockers:** None. Baseline CI failures (tiny-random-llama fixture, GCC 15 GoogleBenchmark) are orthogonal.
-- **Recommended Immediate Action:** Approve and merge immediately. Closes Priority 0 gate.
+- **Recommended Immediate Action:** Recommended for maintainer review, conditional on independent final-head verification and maintainer authorization. Addresses Priority 0 gate.
 
 ### Rank 2: PR #652 — Final Publication Corrections: Baseline Maintenance Repair and ADM-2 M1 Header Isolation
 
@@ -39,7 +39,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Build & Header Architecture | Compilation & Clean Build Baseline
 - **Technical Justification:** Decouples experimental headers from public APIs (context.hpp, batch_inference_engine.hpp). Fixes missing <chrono> and unblocks downstream compilation without altering binary layouts.
 - **Current Blockers:** Needs cross-platform build validation check.
-- **Recommended Immediate Action:** Review and merge to unblock standard build pipelines.
+- **Recommended Immediate Action:** Recommended for maintainer review, conditional on verification of downstream CTest matrix and header decoupling.
 
 ### Rank 3: PR #641 — fix(ci): include direct API test source in Windows CI sparse checkout
 
@@ -47,7 +47,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** CI & Toolchain Portability | Windows CI Build Reliability
 - **Technical Justification:** Resolves persistent Windows MSVC/clang-cl CMake failures caused by missing development_tests/test_real_direct_api.cpp in sparse checkout.
 - **Current Blockers:** Draft status; needs marking ready for review.
-- **Recommended Immediate Action:** Mark ready and merge to restore green Windows CI.
+- **Recommended Immediate Action:** Recommended for maintainer review, conditional on verifying sparse checkout configuration across Windows runners.
 
 ### Rank 4: PR #622 — test(ci): add regression tests for root structure validator
 
@@ -55,7 +55,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Governance Enforcement | Repository Hygiene & Boundary Enforcement
 - **Technical Justification:** Adds unit test coverage for scripts/ci/check_root_structure.py, ensuring no root layout violations or spurious top-level directory pollutions escape CI.
 - **Current Blockers:** Requires rebase against main.
-- **Recommended Immediate Action:** Rebase against main, review, and merge.
+- **Recommended Immediate Action:** Recommended for revision/rebase against main, conditional on passing check_root_structure_test.
 
 ### Rank 5: PR #664 — docs(research): final evidence reconciliation for baseline assessment
 
@@ -63,7 +63,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Research Baseline & Evidence Ledger | Authoritative Scientific Baseline
 - **Technical Justification:** Consolidates and supersedes PRs #660 and #663. Reconciles all 26 benchmark families, RFC status, and capability assertions against baseline commit e108fda.
 - **Current Blockers:** Maintainer approval required on reconciled CSV ledgers.
-- **Recommended Immediate Action:** Accept deliverable package and merge; close PRs #660 and #663 as superseded.
+- **Recommended Immediate Action:** Recommended for maintainer review and acceptance, conditional on maintainer sign-off of reconciled evidence matrices.
 
 ### Rank 6: PR #658 — EXP-H04-R03 Phase B Implementation: Deterministic Correctness & Reference Codecs
 
@@ -71,7 +71,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Codec & Matched Tradeoff Research | Verified Space-Time Codec Reference
 - **Technical Justification:** Implements deterministic correctness for matched arms (B10, T243, B243-CLONE, B729) over [-364, 364]. Deterministic correctness accepted (17/17 CTests passing) with strict performance freeze.
 - **Current Blockers:** Blocked by CI failures in main (resolved by PRs #652 and #641).
-- **Recommended Immediate Action:** Merge once PRs #652 and #641 unblock CI; enforce strict execution/benchmark freeze.
+- **Recommended Immediate Action:** Recommended to hold for dependency on build/CI unblocking; deterministic correctness accepted under maintainer review, while benchmark/execution freeze remains strictly enforced.
 
 ### Rank 7: PR #674 — docs: T81-AIOPT-001 M2 Adversarial Workload & Experimental Design Review
 
@@ -79,7 +79,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Scientific Review & AIOPT Gate | Workload Falsification & Design Boundary
 - **Technical Justification:** Rigorously critiques Candidate B polynomial evaluation as experimentally degenerate, rejects learned AI selectors in favor of static cost models, and directs protocol toward bounded SpMV.
 - **Current Blockers:** Maintainer review of decision recommendation.
-- **Recommended Immediate Action:** Review and accept critique; maintain execution freeze on AIOPT M2.
+- **Recommended Immediate Action:** Recommended for maintainer review; maintain execution freeze on AIOPT M2 under unaccepted workload critique.
 
 ### Rank 8: PR #673 — docs(research): independent M2 protocol acceptance audit
 
@@ -87,7 +87,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Scientific Governance & Protocol Audit | Protocol Acceptance Gate
 - **Technical Justification:** Identifies seven P1 blockers in Candidate B preregistration (sparse/dense confounds, missing binary bitset controls, non-equivalent hardware setups). Formally assigns PROTOCOL_REVISION_REQUIRED.
 - **Current Blockers:** Draft status.
-- **Recommended Immediate Action:** Accept audit findings as binding gate criteria.
+- **Recommended Immediate Action:** Recommended for maintainer review as binding protocol revision criteria.
 
 ### Rank 9: PR #666 — docs(research): independent scientific review of T81-AIOPT-001
 
@@ -95,7 +95,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Scientific Integrity & Negative Findings | M1 Correctness Gate Closure
 - **Technical Justification:** Demonstrates that M1 4-trit filtering over 40 lexicographically truncated patterns is domain-trivial and reducible to an O(1) lookup table. Recommends M2_REDESIGN_REQUIRED.
 - **Current Blockers:** None.
-- **Recommended Immediate Action:** Review and merge to document canonical negative result.
+- **Recommended Immediate Action:** Recommended for maintainer review to record canonical negative result on M1 catalog selection.
 
 ### Rank 10: PR #648 — Governance Authority Reconciliation Report
 
@@ -103,7 +103,7 @@ The following ten pull requests represent the critical path sequence. Merging or
 - **Domain / Role:** Governance Architecture | Normative Authority Map
 - **Technical Justification:** Maps normative authority across RFCs, architecture explanations, and governance scripts. Clarifies frozen TISC ISA v1.9.0 and API-lock boundaries, preparing grounds for PR #649.
 - **Current Blockers:** None.
-- **Recommended Immediate Action:** Accept report as authoritative reference.
+- **Recommended Immediate Action:** Recommended for maintainer review as normative authority mapping reference.
 
 ---
 
@@ -127,7 +127,8 @@ To protect project integrity and avoid merge deadlocks, proposed PRs must be str
 
 ## Dependency Blockers & Resolution Sequence
 
-The primary blockage preventing automated merges is the **pre-existing baseline CI failure** on `main` (commit `1737a7f` / `e108fda`):
+### Provisional CI Failure Attribution
+A primary impediment to automated PR qualification across hosted runners is a set of failures observed on GitHub Actions workflows. Based on comparing candidate run logs against baseline commit `1737a7f` (and prior baseline `e108fda`), these failures are provisionally attributed to pre-existing environment and fixture defects rather than new candidate logic, though comprehensive cross-platform qualification on `main` remains incomplete:
 1. `cli_contract_test` / `run_model_artifact_review_smoke.sh`: Fails due to missing fixture `models/tiny-random-llama/model.safetensors`.
 2. GCC 15 Google Benchmark: `-Werror=maybe-uninitialized` in third-party benchmark code.
 3. Windows CI: Missing test source in sparse checkout.
