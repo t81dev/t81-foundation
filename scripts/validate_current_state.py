@@ -41,8 +41,18 @@ def validate(value, rule, schema=None, path="$"):
 
     supported = {"$schema", "$defs", "$ref", "title", "description", "type", "const", "enum",
                  "required", "dependentRequired", "additionalProperties", "properties", "items",
-                 "pattern", "format", "minimum", "maxLength"}
+                 "pattern", "format", "minimum", "maxLength", "oneOf"}
     require(not (rule.keys() - supported), f"{path}: unsupported schema keywords")
+
+    if "oneOf" in rule:
+        matches = 0
+        for alternative in rule["oneOf"]:
+            try:
+                validate(value, alternative, schema, path)
+            except ValueError:
+                continue
+            matches += 1
+        require(matches == 1, f"{path}: expected exactly one revision alternative")
 
     if "const" in rule:
         require(json_equal(value, rule["const"]),
