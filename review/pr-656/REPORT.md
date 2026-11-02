@@ -1,5 +1,19 @@
 # PR #656 implementation validation
 
+## PR #678 replay compatibility correction — 2026-11-02
+
+The historical replay commands below now load both variants with `git show`:
+original inputs at `7daafeb55ae241e21cfbe4bdb4a74bb911595fa7`, corrected v1 inputs
+at `5e4320c10f6b0f1355f792e7176a247e34fbb2c8`. They no longer load the live v2
+state. Use a fresh `--output` path when replaying; keep the original receipt files
+unchanged. Their `source_revision` remains the historical review target; the
+`sources` hashes identify the executed inputs, not the newly corrected v2 files.
+The earlier artifact-identity list resolves at the corrected publication revision
+above; subsequent harness/document edits do not amend that historical receipt.
+The current v2 contract is tested separately by
+`python3 tests/ci/test_current_state_contract.py` (with jsonschema installed for
+oracle/replay checks), as well as the standard and `-O` validator invocations.
+
 Disposition: **request changes at the reviewed head**. The local correction resolves the reproduced defects in the tested corpus; it requires maintainer review and grants no merge or governance approval.
 
 Reviewed PR: https://github.com/t81dev/t81-foundation/pull/656

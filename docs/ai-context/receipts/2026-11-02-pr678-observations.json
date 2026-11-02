@@ -1,0 +1,104 @@
+{
+  "observed_at": "2026-11-02T17:00:31Z",
+  "main": "8e44c0f667c62e0d4143bb93169fc3235d5ebd66",
+  "pull_requests": [
+    {
+      "number": 675,
+      "title": "fix(ternary): correct decode_i64 overflow saturation and add regression tests",
+      "state": "closed",
+      "merged": true,
+      "head": "d4c053c9405a078cb588e7227507c61449c7587e",
+      "head_ref": "jules-decode-i64-correction-8938143780233301149",
+      "base": "1737a7ff5a267590338c0e7b513c95e95ccd6177",
+      "merge": "1d01c62df45c9ebb06f01677e18331ef77e016c5",
+      "url": "https://github.com/t81dev/t81-foundation/pull/675"
+    },
+    {
+      "number": 676,
+      "title": "Engineering Backlog Reconciliation & Critical Path Audit",
+      "state": "closed",
+      "merged": true,
+      "head": "1a2e01bd2e1f90c05b5f7b2cdb27e1420cd13981",
+      "head_ref": "jules-7696573198801402745-c4e310e7",
+      "base": "1d01c62df45c9ebb06f01677e18331ef77e016c5",
+      "merge": "1a6d5a36473004961248f0a85b2e06361ea2a38f",
+      "url": "https://github.com/t81dev/t81-foundation/pull/676"
+    },
+    {
+      "number": 677,
+      "title": "docs(research): specify EXP-H04-R03 Candidate A preregistration design",
+      "state": "closed",
+      "merged": true,
+      "head": "442b1c9d311eb3855b89737a5051978445f1962b",
+      "head_ref": "research/h04-r03-candidate-a-preregistration-8542730694727329359",
+      "base": "1a6d5a36473004961248f0a85b2e06361ea2a38f",
+      "merge": "8e44c0f667c62e0d4143bb93169fc3235d5ebd66",
+      "url": "https://github.com/t81dev/t81-foundation/pull/677"
+    },
+    {
+      "number": 656,
+      "title": "docs(ai-context): introduce machine-readable operational state v1",
+      "state": "open",
+      "merged": false,
+      "head": "5e4320c10f6b0f1355f792e7176a247e34fbb2c8",
+      "head_ref": "research/current-state-v1",
+      "base": "e108fdad078f4d6dfcc427f1fd419ecbe48b4e05",
+      "merge": null,
+      "url": "https://github.com/t81dev/t81-foundation/pull/656"
+    },
+    {
+      "number": 678,
+      "title": "fix(ai-context): implement R1/R2 adoption corrections for PR #656",
+      "state": "open",
+      "merged": false,
+      "head": "792306fff98614285890cf1dfad35cbc92041283",
+      "head_ref": "jules-pr656-r1-r2-adoption-6055531046264886366",
+      "base": "1a6d5a36473004961248f0a85b2e06361ea2a38f",
+      "merge": null,
+      "url": "https://github.com/t81dev/t81-foundation/pull/678"
+    }
+  ],
+  "scope": "Selected PR/API and pinned-source observations; not an exhaustive backlog or independent experimental review.",
+  "collector": "Codex, PR678 corrective implementation author; not an independent reviewer of these corrections",
+  "api_sources": [
+    "https://api.github.com/repos/t81dev/t81-foundation/branches/main",
+    "https://api.github.com/repos/t81dev/t81-foundation/pulls/675",
+    "https://api.github.com/repos/t81dev/t81-foundation/pulls/676",
+    "https://api.github.com/repos/t81dev/t81-foundation/pulls/677",
+    "https://api.github.com/repos/t81dev/t81-foundation/pulls/656",
+    "https://api.github.com/repos/t81dev/t81-foundation/pulls/678"
+  ],
+  "pinned_sources": [
+    {
+      "source_revision": {
+        "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+      },
+      "path": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md",
+      "sha256": "0d3634987b25fae5ce417b045a3d1bbf909e851504c018daacc35dfbe479b4dc"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "8e44c0f667c62e0d4143bb93169fc3235d5ebd66"
+      },
+      "path": "docs/records/audits/backlog-reconciliation-2026-11/ENGINEERING_BACKLOG_AUDIT.md",
+      "sha256": "22101d6051bbfa139615b5dc8559e646cf0deb6b4c5b5510142dd91e6d0bb30f"
+    },
+    {
+      "source_revision": {
+        "commit_sha": "8e44c0f667c62e0d4143bb93169fc3235d5ebd66"
+      },
+      "path": "docs/research/continuity/H04_R03_CANDIDATE_A_PREREGISTRATION.md",
+      "sha256": "f26359145704163c6ce6b1b1d66bc3017edf4927d39cf44a82ade797ad4dacda"
+    }
+  ],
+  "local_repository_cleanup": {
+    "audit": "completed_source_reported",
+    "execution": "reported_completed_not_independently_verified",
+    "receipt": "LOCAL_CLEANUP_FINAL_REPORT.md (external local receipt, not repository evidence)",
+    "source_revision": {
+      "value": null,
+      "reason": "Local cleanup report is outside Git; no repository source revision or independent execution review is available."
+    },
+    "claims_boundary": "The earlier cleanup author reports execution and integrity checks; this index does not independently verify that execution or authenticate the external receipt."
+  }
+}

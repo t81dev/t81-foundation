@@ -82,7 +82,8 @@
         "subject",
         "observed_at",
         "collector",
-        "retained_receipt"
+        "retained_receipt",
+        "source_revision"
       ],
       "properties": {
         "subject": {
@@ -107,29 +108,51 @@
       "additionalProperties": false
     },
     "source_revision_field": {
-      "type": "object",
-      "properties": {
-        "commit_sha": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{40}$",
-          "maxLength": 40
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "commit_sha"
+          ],
+          "properties": {
+            "commit_sha": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$",
+              "maxLength": 40
+            }
+          },
+          "additionalProperties": false
         },
-        "inherit_from": {
-          "type": "string"
+        {
+          "type": "object",
+          "required": [
+            "inherit_from"
+          ],
+          "properties": {
+            "inherit_from": {
+              "const": "repository_observation"
+            }
+          },
+          "additionalProperties": false
         },
-        "value": {
-          "type": "null"
-        },
-        "reason": {
-          "type": "string"
+        {
+          "type": "object",
+          "required": [
+            "value",
+            "reason"
+          ],
+          "properties": {
+            "value": {
+              "type": "null"
+            },
+            "reason": {
+              "type": "string",
+              "pattern": "\\S"
+            }
+          },
+          "additionalProperties": false
         }
-      },
-      "dependentRequired": {
-        "value": [
-          "reason"
-        ]
-      },
-      "additionalProperties": false
+      ]
     },
     "scientific_observation": {
       "type": "object",
