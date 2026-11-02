@@ -1,5 +1,7 @@
 # H04-R03 measurement engine — execution remains frozen
 
+Follow-up: [enforcement and process infrastructure](ENFORCEMENT_AND_PROCESS.md) documents the pinned xxHash64 backend, diagnostic process controller, native ordering fence and explicit unresolved production requirements. Host configuration matching is now separate from qualification; `qualified` remains false. The sections and validation receipt below describe the original PR #682 increment.
+
 This change implements clock-delimited lifecycle operations, a read-only host
 probe, fail-closed qualification checks, paired-order planning, canonical JSON
 artifacts and analysis of synthetic timing records. It does not authorize or
