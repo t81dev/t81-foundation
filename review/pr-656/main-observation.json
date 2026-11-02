@@ -1,7 +1,0 @@
-{
-  "endpoint": "https://api.github.com/repos/t81dev/t81-foundation/branches/main",
-  "retrieved_at": "2026-11-01 00:50:09 UTC",
-  "name": "main",
-  "sha": "e108fdad078f4d6dfcc427f1fd419ecbe48b4e05",
-  "commit_date": "2026-10-31T20:10:02Z"
-}
