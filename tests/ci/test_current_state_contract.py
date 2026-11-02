@@ -204,6 +204,15 @@ class OperationalStateContractTest(unittest.TestCase):
         record = json.loads((ROOT / "docs/ai-context/receipts/2026-11-02-pr678-observations.json").read_text())
         pin = next(x for x in record["pinned_sources"] if x["path"] == receipt)
         self.assertEqual(hashlib.sha256(blob).hexdigest(), pin["sha256"])
+        # Older dated views must not retain the missing-source attribution either.
+        for dated_view in self.state["operational_views"].values():
+            finding = next(x for x in dated_view["scientific_observations"]
+                           if x["id"] == "AIOPT-001-M1")
+            envelope = finding["envelope"]
+            source = envelope["source_revision"]["commit_sha"]
+            content = subprocess.check_output(
+                ["git", "show", f"{source}:{envelope['retained_receipt']}"], cwd=ROOT)
+            self.assertEqual(hashlib.sha256(content).hexdigest(), pin["sha256"])
         prs = {x["pr_number"]: x for x in view["pr_observations"]}
         self.assertEqual([prs[n]["state"] for n in [675, 676, 677, 656, 678]],
                          ["merged", "merged", "merged", "open", "open"])
