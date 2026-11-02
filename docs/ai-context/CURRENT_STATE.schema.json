@@ -6,9 +6,6 @@
     "schema_version",
     "generated_at",
     "purpose",
-    "selected_view",
-    "operational_views",
-    "historical_snapshots",
     "authorization",
     "next_gate"
   ],
@@ -42,6 +39,24 @@
       "additionalProperties": {
         "$ref": "#/$defs/historical_snapshot"
       }
+    },
+    "repository": {
+      "$ref": "#/$defs/historical_repository"
+    },
+    "scientific_boundaries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/historical_scientific_boundary"
+      }
+    },
+    "workstreams": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/workstream_item"
+      }
+    },
+    "open_pr_observations": {
+      "$ref": "#/$defs/historical_open_pr_observations"
     },
     "authorization": {
       "$ref": "#/$defs/governance_authorization"
@@ -81,9 +96,9 @@
       "required": [
         "subject",
         "observed_at",
+        "source_revision",
         "collector",
-        "retained_receipt",
-        "source_revision"
+        "retained_receipt"
       ],
       "properties": {
         "subject": {
@@ -114,26 +129,28 @@
           "required": [
             "commit_sha"
           ],
+          "additionalProperties": false,
           "properties": {
             "commit_sha": {
               "type": "string",
               "pattern": "^[0-9a-f]{40}$",
               "maxLength": 40
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
           "required": [
             "inherit_from"
           ],
+          "additionalProperties": false,
           "properties": {
             "inherit_from": {
-              "const": "repository_observation"
+              "type": "string",
+              "minLength": 1,
+              "pattern": "\\S"
             }
-          },
-          "additionalProperties": false
+          }
         },
         {
           "type": "object",
@@ -141,16 +158,17 @@
             "value",
             "reason"
           ],
+          "additionalProperties": false,
           "properties": {
             "value": {
               "type": "null"
             },
             "reason": {
               "type": "string",
+              "minLength": 1,
               "pattern": "\\S"
             }
-          },
-          "additionalProperties": false
+          }
         }
       ]
     },
@@ -411,6 +429,102 @@
       },
       "additionalProperties": false
     },
+    "historical_repository": {
+      "type": "object",
+      "required": [
+        "name",
+        "base_branch",
+        "observed_head",
+        "head_source",
+        "observed_date",
+        "status"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "base_branch": {
+          "type": "string"
+        },
+        "observed_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "head_source": {
+          "type": "string"
+        },
+        "observed_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "historical_scientific_boundary": {
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "source",
+        "verification"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "verification": {
+          "enum": [
+            "source_reported",
+            "independently_reproduced",
+            "unverified"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "historical_open_pr_observations": {
+      "type": "object",
+      "required": [
+        "source",
+        "observed_date",
+        "scope",
+        "count",
+        "critical"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        },
+        "observed_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "critical": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "historical_snapshot": {
       "type": "object",
       "required": [
@@ -437,69 +551,12 @@
           "pattern": "^Non-normative"
         },
         "repository": {
-          "type": "object",
-          "required": [
-            "name",
-            "base_branch",
-            "observed_head",
-            "head_source",
-            "observed_date",
-            "status"
-          ],
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "base_branch": {
-              "type": "string"
-            },
-            "observed_head": {
-              "type": "string",
-              "pattern": "^[0-9a-f]{40}$",
-              "maxLength": 40
-            },
-            "head_source": {
-              "type": "string"
-            },
-            "observed_date": {
-              "type": "string",
-              "format": "date"
-            },
-            "status": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/historical_repository"
         },
         "scientific_boundaries": {
           "type": "array",
           "items": {
-            "type": "object",
-            "required": [
-              "id",
-              "status",
-              "source",
-              "verification"
-            ],
-            "properties": {
-              "id": {
-                "type": "string"
-              },
-              "status": {
-                "type": "string"
-              },
-              "source": {
-                "type": "string"
-              },
-              "verification": {
-                "enum": [
-                  "source_reported",
-                  "independently_reproduced",
-                  "unverified"
-                ]
-              }
-            },
-            "additionalProperties": false
+            "$ref": "#/$defs/historical_scientific_boundary"
           }
         },
         "workstreams": {
@@ -509,37 +566,7 @@
           }
         },
         "open_pr_observations": {
-          "type": "object",
-          "required": [
-            "source",
-            "observed_date",
-            "scope",
-            "count",
-            "critical"
-          ],
-          "properties": {
-            "source": {
-              "type": "string"
-            },
-            "observed_date": {
-              "type": "string",
-              "format": "date"
-            },
-            "scope": {
-              "type": "string"
-            },
-            "count": {
-              "type": "integer",
-              "minimum": 0
-            },
-            "critical": {
-              "type": "array",
-              "items": {
-                "type": "integer"
-              }
-            }
-          },
-          "additionalProperties": false
+          "$ref": "#/$defs/historical_open_pr_observations"
         },
         "authorization": {
           "$ref": "#/$defs/governance_authorization"
