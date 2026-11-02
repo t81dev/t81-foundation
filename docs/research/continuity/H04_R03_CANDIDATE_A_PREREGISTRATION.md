@@ -379,37 +379,57 @@ Testing is restricted to exactly **one dedicated host runner** meeting the follo
 
 To eliminate ambiguity, every valid, stable trial outcome maps deterministically to exactly one of three primary scientific classifications: **ACCEPT**, **REJECT**, or **INCONCLUSIVE**. The label **INVALID** is strictly reserved for protocol violations, verification failures, or uncharged resource leaks.
 
-### 9.1 Complete Acceptance Predicate
+### 9.1 Deterministic Evaluation Precedence
+To ensure consistent, unambiguous classification, every experimental trial is evaluated according to a strict deterministic priority order:
+
+1. **Step 1: Check Protocol Integrity (`INVALID`):**
+   If any protocol violation, verification failure, memory cap breach, checksum discrepancy, or uncharged resource leak occurs, the trial is immediately classified as **`INVALID`**. No statistical metrics are interpreted.
+2. **Step 2: Check System Stability & Noise (`INCONCLUSIVE`):**
+   If the run is protocol-valid but system execution variability is excessive (measured run-to-run coefficient of variation $\text{CV} > 5.0\%$ across repetitions for any arm), the outcome is classified as **`INCONCLUSIVE`** due to high noise.
+3. **Step 3: Evaluate Conclusive Rejection Predicate (`REJECT`):**
+   If the outcome is valid and stable, check if any conclusive rejection criterion is met (see Section 9.2). If so, the outcome is classified as **`REJECT`**.
+4. **Step 4: Evaluate Complete Acceptance Predicate (`ACCEPT`):**
+   If not rejected, check if all four acceptance conditions are satisfied simultaneously (see Section 9.3). If so, the outcome is classified as **`ACCEPT`**.
+5. **Step 5: Exhaustive Fallback (`INCONCLUSIVE`):**
+   All remaining valid, stable trial outcomes that satisfy neither a conclusive rejection rule nor the complete acceptance predicate are exhaustively classified as **`INCONCLUSIVE`** (indicating insufficient effect resolution).
+
+### 9.2 Complete Rejection Rules (Distinguishing Advantage Rejection from Inferiority)
+Rejection is evaluated against **all three** required binary controls ($C \in \{\text{B10}, \text{B729}, \text{B729-}\mu 5\}$) using upper confidence bounds:
+1. **Rejection of Practical Advantage:**
+   If the upper confidence bound for complete-lifecycle throughput falls below the 10% win threshold against **any** required binary control:
+   $$\text{CI}_{0.95}(\theta_{\text{life}}(C))_{\text{upper}} < 1.10 \quad \text{for any } C \in \{\text{B10}, \text{B729}, \text{B729-}\mu 5\}$$
+   *Scientific Meaning:* The data conclusively rule out a $\ge 10\%$ lifecycle advantage over control $C$. T243 may be marginally faster or equal, but fails the preregistered practical improvement threshold.
+2. **Proof of Performance Inferiority:**
+   If the upper confidence bound falls below the non-inferiority margin against any required binary control:
+   $$\text{CI}_{0.95}(\theta_{\text{life}}(C))_{\text{upper}} < 0.95 \quad \text{for any } C \in \{\text{B10}, \text{B729}, \text{B729-}\mu 5\}$$
+   *Scientific Meaning:* Conclusively proves that T243 is strictly slower than control $C$ across the complete lifecycle by $\ge 5\%$.
+3. **Query Inferiority:**
+   If the upper confidence bound for isolated query throughput falls below non-inferiority against either bounded-access control:
+   $$\text{CI}_{0.95}(\theta_{\text{query}}(\text{B729-}\mu 5))_{\text{upper}} < 0.95 \quad \text{OR} \quad \text{CI}_{0.95}(\theta_{\text{query}}(\text{B10}))_{\text{upper}} < 0.95$$
+   *Scientific Meaning:* Conclusively proves T243 random access lookup is strictly slower than the binary comparator by $\ge 5\%$.
+
+### 9.3 Complete Acceptance Predicate
 A trial outcome is classified as **ACCEPT** if and only if **all four** of the following conditions hold simultaneously:
 1. **Lifecycle Advantage vs B729-µ5:** $\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729-}\mu 5))_{\text{lower}} \ge 1.10$.
 2. **Lifecycle Advantage vs B10:** $\text{CI}_{0.95}(\theta_{\text{life}}(\text{B10}))_{\text{lower}} \ge 1.10$.
 3. **Lifecycle Advantage vs B729 (Whole-Block):** $\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729}))_{\text{lower}} \ge 1.10$.
 4. **Query Non-Inferiority vs B729-µ5 and B10:** $\text{CI}_{0.95}(\theta_{\text{query}}(\text{B729-}\mu 5))_{\text{lower}} \ge 0.95$ AND $\text{CI}_{0.95}(\theta_{\text{query}}(\text{B10}))_{\text{lower}} \ge 0.95$.
 
-### 9.2 Complete Rejection Rules (Distinguishing Advantage Rejection from Inferiority)
-A trial outcome is classified as **REJECT** if any of the following occur:
-1. **Rejection of Practical Advantage:** The upper confidence bound falls below the 10% win threshold against the primary microblock control:
-   $$\text{CI}_{0.95}(\theta_{\text{life}}(\text{B729-}\mu 5))_{\text{upper}} < 1.10$$
-   (The data conclusively rule out a $\ge 10\%$ lifecycle advantage over B729-µ5).
-2. **Lifecycle Inferiority:** The upper confidence bound falls below the non-inferiority margin against any binary control:
-   $$\text{CI}_{0.95}(\theta_{\text{life}}(C))_{\text{upper}} < 0.95 \quad \text{for any } C \in \{\text{B10}, \text{B729}, \text{B729-}\mu 5\}$$
-   (T243 is conclusively slower across the complete lifecycle by $\ge 5\%$).
-3. **Query Inferiority:** The upper confidence bound for query throughput falls below non-inferiority:
-   $$\text{CI}_{0.95}(\theta_{\text{query}}(\text{B729-}\mu 5))_{\text{upper}} < 0.95 \quad \text{OR} \quad \text{CI}_{0.95}(\theta_{\text{query}}(\text{B10}))_{\text{upper}} < 0.95$$
+### 9.4 Exhaustive Decision Table for Complete Outcome Predicate
 
-### 9.3 Exhaustive Decision Table for Complete Outcome Predicate
-
-| Case | $\theta_{\text{life}}(\text{B729-}\mu 5)$ 95% CI | $\theta_{\text{life}}(\text{B10})$ 95% CI | $\theta_{\text{life}}(\text{B729})$ 95% CI | Query Non-Inferiority ($\theta_{\text{query}} \ge 0.95$) | Deterministic Classification | Scientific Interpretation |
+| Priority / Case | $\theta_{\text{life}}(\text{B729-}\mu 5)$ 95% CI | $\theta_{\text{life}}(\text{B10})$ 95% CI | $\theta_{\text{life}}(\text{B729})$ 95% CI | Query Non-Inferiority ($\theta_{\text{query}} \ge 0.95$) | Deterministic Classification | Scientific Interpretation |
 |---|---|---|---|---|---|---|
-| **1** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **ACCEPT** | Full acceptance predicate satisfied: $\ge 10\%$ lifecycle win across all controls + query non-inferiority. |
-| **2** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.02, 1.08]$ ($\text{CI}_{\text{U}} < 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Fails lifecycle threshold against B10: advantage over B729-µ5 alone does not satisfy full acceptance predicate. |
-| **3** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Failed ($\text{CI}_{\text{U}} < 0.95$ vs µ5) | **REJECT** | Query non-inferiority failure: T243 random access lookup is conclusively inferior ($\ge 5\%$ slower) to B729-µ5. |
-| **4** | $[1.02, 1.08]$ ($\text{CI}_{\text{U}} < 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage over B729-µ5 conclusively rejected: T243 is marginally faster (2–8%) but fails the 10% threshold. |
-| **5** | $[0.98, 1.03]$ (Within $[0.95, 1.10)$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage over B729-µ5 conclusively rejected: T243 is equivalent to B729-µ5; no practical advantage. |
-| **6** | $[0.82, 0.92]$ ($\text{CI}_{\text{U}} < 0.95$) | Any | Any | Any | **REJECT** | Conclusive lifecycle inferiority: T243 is strictly slower than B729-µ5 across the lifecycle. |
-| **7** | $[1.05, 1.15]$ (Straddles $1.10$) | $\text{CI}_{\text{L}} \ge 1.10$ | $\text{CI}_{\text{L}} \ge 1.10$ | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **INCONCLUSIVE** | Effect resolution insufficient: interval spans both sub-threshold and practical win regions. |
-| **8** | Any valid run set where run-to-run CV $> 5.0\%$ | Any | Any | Any | **INCONCLUSIVE** | Excessive background system noise; unable to resolve true population medians. |
-| **9** | Output checksum mismatch or scratch $> 64 \text{ KB}$ | Any | Any | Any | **INVALID** | Reserved for protocol breach, correctness defect, or uncharged resources. |
+| **P1 / Case 1** | Any | Any | Any | Any | **INVALID** | Protocol breach, checksum mismatch, scratch $> 64 \text{ KB}$, or uncharged resource leak. |
+| **P2 / Case 2** | Any with CV $> 5.0\%$ | Any with CV $> 5.0\%$ | Any with CV $> 5.0\%$ | Any | **INCONCLUSIVE** | Excessive background system noise; unable to resolve true population medians. |
+| **P3 / Case 3** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.02, 1.08]$ ($\text{CI}_{\text{U}} < 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage conclusively rejected against B10 ($\text{CI}_{\text{U}} < 1.10$): win over B729 controls alone does not satisfy full predicate. |
+| **P3 / Case 4** | $[1.02, 1.08]$ ($\text{CI}_{\text{U}} < 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage conclusively rejected against B729-µ5 ($\text{CI}_{\text{U}} < 1.10$): T243 is marginally faster (2–8%) but fails 10% win threshold. |
+| **P3 / Case 5** | $[0.98, 1.03]$ (Within $[0.95, 1.10)$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **REJECT** | Practical advantage conclusively rejected against B729-µ5 ($\text{CI}_{\text{U}} < 1.10$): T243 is equivalent to B729-µ5; no practical advantage. |
+| **P3 / Case 6** | $[0.82, 0.92]$ ($\text{CI}_{\text{U}} < 0.95$) | Any | Any | Any | **REJECT** | Conclusive lifecycle inferiority against B729-µ5 ($\text{CI}_{\text{U}} < 0.95$): T243 is strictly slower across complete lifecycle. |
+| **P3 / Case 7** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Failed ($\text{CI}_{\text{U}} < 0.95$ vs µ5) | **REJECT** | Query inferiority: T243 random access lookup is conclusively inferior ($\ge 5\%$ slower) to B729-µ5. |
+| **P4 / Case 8** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **ACCEPT** | Full acceptance predicate satisfied: $\ge 10\%$ lifecycle win across all three binary controls + query non-inferiority. |
+| **P5 / Case 9** | $[1.05, 1.15]$ (Straddles $1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **INCONCLUSIVE** | Effect resolution insufficient: interval vs B729-µ5 straddles $1.10$; neither rejected ($\text{CI}_{\text{U}} \ge 1.10$) nor accepted ($\text{CI}_{\text{L}} < 1.10$). |
+| **P5 / Case 10** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.05, 1.15]$ (Straddles $1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Confirmed ($\text{CI}_{\text{L}} \ge 0.95$) | **INCONCLUSIVE** | Effect resolution insufficient: interval vs B10 straddles $1.10$; neither rejected nor accepted. |
+| **P5 / Case 11** | $[1.12, 1.25]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.14, 1.28]$ ($\text{CI}_{\text{L}} \ge 1.10$) | $[1.40, 1.65]$ ($\text{CI}_{\text{L}} \ge 1.10$) | Straddles $0.95$ ($[0.91, 0.99]$) | **INCONCLUSIVE** | Query non-inferiority resolution insufficient: interval straddles $0.95$; neither proven non-inferior nor inferior. |
 
 ---
 
