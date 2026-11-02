@@ -30,47 +30,6 @@ def resolve_ref(ref, schema):
     return defs[target_name]
 
 
-def validate_source_revision(val, path="$"):
-    """Enforce exact mutual exclusivity on source_revision_field:
-
-    Must be an object with exactly one of:
-      1. commit_sha (40 lowercase hex chars)
-      2. inherit_from (non-empty string)
-      3. value == None and non-empty reason string
-    """
-    require(isinstance(val, dict), f"{path}: expected object")
-    require(len(val) > 0, f"{path}: empty source_revision is forbidden")
-
-    has_commit = "commit_sha" in val
-    has_inherit = "inherit_from" in val
-    has_null_val = "value" in val
-    has_reason = "reason" in val
-
-    # Reason cannot exist alone
-    if has_reason and not has_null_val:
-        raise ValueError(f"{path}: reason-only source_revision is forbidden")
-
-    # Mutual exclusivity between alternatives
-    alternatives = [has_commit, has_inherit, has_null_val]
-    require(sum(bool(a) for a in alternatives) == 1,
-            f"{path}: source_revision must have exactly one valid alternative")
-
-    if has_commit:
-        require(set(val.keys()) == {"commit_sha"}, f"{path}: unexpected keys in commit_sha alternative")
-        cs = val["commit_sha"]
-        require(isinstance(cs, str) and re.fullmatch(r"^[0-9a-f]{40}$", cs) is not None,
-                f"{path}: invalid commit_sha format")
-    elif has_inherit:
-        require(set(val.keys()) == {"inherit_from"}, f"{path}: unexpected keys in inherit_from alternative")
-        ih = val["inherit_from"]
-        require(isinstance(ih, str) and len(ih) > 0, f"{path}: empty inherit_from string")
-    elif has_null_val:
-        require(set(val.keys()) == {"value", "reason"}, f"{path}: unavailable source_revision must have value and reason only")
-        require(val["value"] is None, f"{path}: expected null value for unavailable source_revision")
-        rn = val["reason"]
-        require(isinstance(rn, str) and len(rn.strip()) > 0, f"{path}: nonempty reason required")
-
-
 def validate(value, rule, schema=None, path="$"):
     if schema is None:
         schema = rule
@@ -80,15 +39,20 @@ def validate(value, rule, schema=None, path="$"):
         validate(value, resolved, schema, path)
         return
 
-    # Check if this rule is resolving source_revision_field
-    if path.endswith(".source_revision") or path.endswith(".merge_sha"):
-        validate_source_revision(value, path)
-        return
-
     supported = {"$schema", "$defs", "$ref", "title", "description", "type", "const", "enum",
                  "required", "dependentRequired", "additionalProperties", "properties", "items",
-                 "pattern", "format", "minimum", "maxLength", "minLength"}
+                 "pattern", "format", "minimum", "maxLength", "oneOf"}
     require(not (rule.keys() - supported), f"{path}: unsupported schema keywords")
+
+    if "oneOf" in rule:
+        matches = 0
+        for alternative in rule["oneOf"]:
+            try:
+                validate(value, alternative, schema, path)
+            except ValueError:
+                continue
+            matches += 1
+        require(matches == 1, f"{path}: expected exactly one revision alternative")
 
     if "const" in rule:
         require(json_equal(value, rule["const"]),
@@ -132,8 +96,6 @@ def validate(value, rule, schema=None, path="$"):
                     f"{path}: pattern mismatch")
         if "maxLength" in rule:
             require(len(value) <= rule["maxLength"], f"{path}: string too long")
-        if "minLength" in rule:
-            require(len(value) >= rule["minLength"], f"{path}: string too short")
         if "format" in rule:
             fmt = rule["format"]
             if fmt == "date":

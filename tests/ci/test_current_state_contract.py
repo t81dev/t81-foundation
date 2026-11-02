@@ -2,8 +2,6 @@
 
 Covers:
 - Observation envelope missing required fields (subject, observed_at, collector, retained_receipt, source_revision)
-- Enforce exactly one meaningful source_revision alternative (commit_sha, inherit_from, or null value with nonempty reason)
-- Reject omissions, empty objects {}, reason-only objects, and conflicting alternatives
 - Malformed timestamps (missing timezone, invalid offset, non-ISO)
 - Malformed commit SHAs
 - Explicit unknown/unavailable values requiring reasons
@@ -85,45 +83,11 @@ class OperationalStateContractTest(unittest.TestCase):
             self.assertEqual(errors, [])
 
     def test_envelope_missing_required_fields(self):
-        """Observation envelopes require subject, observed_at, source_revision, collector, retained_receipt."""
-        for field in ["subject", "observed_at", "source_revision", "collector", "retained_receipt"]:
+        """Observation envelopes require subject, observed_at, collector, retained_receipt."""
+        for field in ["subject", "observed_at", "collector", "retained_receipt", "source_revision"]:
             bad = copy.deepcopy(self.state)
-            del bad["operational_views"]["2026-11-02"]["repository_observation"]["envelope"][field]
+            del bad["operational_views"][self.state["selected_view"]]["repository_observation"]["envelope"][field]
             self.assert_rejected(bad, "missing required keys")
-
-    def test_source_revision_strict_alternatives(self):
-        """Source revision must contain exactly one valid alternative."""
-        repo_env = self.state["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]
-
-        # Valid alternatives:
-        valid_cases = [
-            {"commit_sha": "a" * 40},
-            {"inherit_from": "repository_observation"},
-            {"value": None, "reason": "not available"},
-        ]
-        for v in valid_cases:
-            good = copy.deepcopy(self.state)
-            good["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]["source_revision"] = v
-            code, stdout, stderr = self.run_validator(good)
-            self.assertEqual(code, 0, f"Valid source_revision failed: {v}, error: {stderr}")
-
-        # Invalid alternatives (must be rejected):
-        invalid_cases = [
-            ({}, "empty source_revision is forbidden"),
-            ({"reason": "only reason"}, "reason-only source_revision is forbidden"),
-            ({"commit_sha": "a" * 40, "inherit_from": "parent"}, "source_revision must have exactly one valid alternative"),
-            ({"commit_sha": "a" * 40, "extra": "key"}, "unexpected keys"),
-            ({"value": None}, "unavailable source_revision must have value and reason only"),
-            ({"value": None, "reason": ""}, "nonempty reason required"),
-            ({"value": None, "reason": "   "}, "nonempty reason required"),
-            ({"inherit_from": ""}, "empty inherit_from string"),
-            ({"inherit_from": 123}, "empty inherit_from string"),
-            ({"commit_sha": "bad_sha"}, "invalid commit_sha format"),
-        ]
-        for inv, err_msg in invalid_cases:
-            bad = copy.deepcopy(self.state)
-            bad["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]["source_revision"] = inv
-            self.assert_rejected(bad, err_msg)
 
     def test_observed_at_timestamp_timezone_required(self):
         """Observed_at timestamps require ISO/RFC 3339 timezone offset ('Z' or '+-HH:MM')."""
@@ -139,14 +103,14 @@ class OperationalStateContractTest(unittest.TestCase):
         ]
         for ts in bad_timestamps:
             bad = copy.deepcopy(self.state)
-            bad["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]["observed_at"] = ts
+            bad["operational_views"][self.state["selected_view"]]["repository_observation"]["envelope"]["observed_at"] = ts
             self.assert_rejected(bad)
 
     def test_observed_at_valid_timezone_offsets(self):
         """Valid timezone offsets (+00:00, -05:00, Z) must be accepted."""
         for ts in ["2026-11-02T05:14:30Z", "2026-11-02T00:14:30-05:00", "2026-11-02T07:14:30+02:00"]:
             good = copy.deepcopy(self.state)
-            good["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]["observed_at"] = ts
+            good["operational_views"][self.state["selected_view"]]["repository_observation"]["envelope"]["observed_at"] = ts
             code, stdout, stderr = self.run_validator(good)
             self.assertEqual(code, 0, f"Expected valid timestamp {ts}, got: {stderr}")
 
@@ -161,7 +125,7 @@ class OperationalStateContractTest(unittest.TestCase):
         ]
         for sha in bad_shas:
             bad = copy.deepcopy(self.state)
-            bad["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]["source_revision"] = {"commit_sha": sha}
+            bad["operational_views"][self.state["selected_view"]]["repository_observation"]["envelope"]["source_revision"]["commit_sha"] = sha
             self.assert_rejected(bad)
 
     def test_unknown_unavailable_source_revision_requires_reason(self):
@@ -173,29 +137,88 @@ class OperationalStateContractTest(unittest.TestCase):
 
         # Missing reason
         bad = copy.deepcopy(self.state)
-        bad["operational_views"]["2026-11-02"]["pr_observations"][2]["merge_sha"] = {"value": None}
+        bad["operational_views"][self.state["selected_view"]]["pr_observations"][2]["merge_sha"] = {"value": None}
         self.assert_rejected(bad)
 
         # Non-null value in unavailable structure
         bad_val = copy.deepcopy(self.state)
-        bad_val["operational_views"]["2026-11-02"]["pr_observations"][2]["merge_sha"] = {"value": "unknown", "reason": "test"}
+        bad_val["operational_views"][self.state["selected_view"]]["pr_observations"][2]["merge_sha"] = {"value": "unknown", "reason": "test"}
         self.assert_rejected(bad_val)
 
     def test_source_revision_inheritance(self):
         """Inherit_from must be a valid string pointing to the parent observation designation."""
         good = copy.deepcopy(self.state)
         # Check scientific observation inherits from repository_observation
-        self.assertEqual(
-            good["operational_views"]["2026-11-02"]["scientific_observations"][0]["envelope"]["source_revision"],
-            {"inherit_from": "repository_observation"}
-        )
+        good["operational_views"][self.state["selected_view"]]["scientific_observations"][0]["envelope"]["source_revision"] = {"inherit_from": "repository_observation"}
         code, stdout, stderr = self.run_validator(good)
         self.assertEqual(code, 0)
 
         # Invalid type for inherit_from
         bad = copy.deepcopy(self.state)
-        bad["operational_views"]["2026-11-02"]["scientific_observations"][0]["envelope"]["source_revision"] = {"inherit_from": 123}
+        bad["operational_views"][self.state["selected_view"]]["scientific_observations"][0]["envelope"]["source_revision"] = {"inherit_from": 123}
         self.assert_rejected(bad)
+
+    def test_revision_alternatives_are_meaningful_and_exclusive(self):
+        for revision in [{}, {"reason": "unknown"}, {"value": None},
+                         {"value": None, "reason": ""},
+                         {"value": None, "reason": "  \n\t"},
+                         {"inherit_from": ""}, {"inherit_from": "unknown"},
+                         {"commit_sha": "a" * 40, "inherit_from": "repository_observation"},
+                         {"commit_sha": "a" * 40, "value": None, "reason": "unknown"}]:
+            with self.subTest(revision=revision):
+                bad = copy.deepcopy(self.state)
+                bad["operational_views"][self.state["selected_view"]]["repository_observation"]["envelope"]["source_revision"] = revision
+                self.assert_rejected(bad)
+        for revision in [{"commit_sha": "a" * 40},
+                         {"inherit_from": "repository_observation"},
+                         {"value": None, "reason": "External receipt has no Git revision."}]:
+            good = copy.deepcopy(self.state)
+            good["operational_views"][self.state["selected_view"]]["scientific_observations"][0]["envelope"]["source_revision"] = revision
+            for flags in [[], ["-O"]]:
+                self.assertEqual(self.run_validator(good, flags)[0], 0)
+            if HAVE_JSONSCHEMA:
+                self.assertEqual(list(self.oracle.iter_errors(good)), [])
+
+    @unittest.skipUnless(HAVE_JSONSCHEMA, "Historical replay requires pinned jsonschema dependency")
+    def test_historical_corrected_replay_uses_pinned_inputs(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp) / "corrected.json"
+            proc = subprocess.run([sys.executable, str(ROOT / "review/pr-656/check.py"),
+                                   "--output", str(output)], cwd=tmp,
+                                  capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            replay = json.loads(output.read_text())
+            retained = json.loads((ROOT / "review/pr-656/corrected-results.json").read_text())
+            self.assertEqual(replay["sources"], retained["sources"])
+            self.assertEqual(len(replay["rows"]), len(retained["rows"]))
+            self.assertTrue(all(row["agreement"] for row in replay["rows"]))
+
+    def test_current_observations_resolve_pinned_receipts(self):
+        import hashlib
+        view = self.state["operational_views"][self.state["selected_view"]]
+        m1 = next(x for x in view["scientific_observations"] if x["id"] == "AIOPT-001-M1")
+        revision = m1["envelope"]["source_revision"]["commit_sha"]
+        receipt = m1["envelope"]["retained_receipt"]
+        blob = subprocess.check_output(["git", "show", f"{revision}:{receipt}"], cwd=ROOT)
+        record = json.loads((ROOT / "docs/ai-context/receipts/2026-11-02-pr678-observations.json").read_text())
+        pin = next(x for x in record["pinned_sources"] if x["path"] == receipt)
+        self.assertEqual(hashlib.sha256(blob).hexdigest(), pin["sha256"])
+        # Older dated views must not retain the missing-source attribution either.
+        for dated_view in self.state["operational_views"].values():
+            finding = next(x for x in dated_view["scientific_observations"]
+                           if x["id"] == "AIOPT-001-M1")
+            envelope = finding["envelope"]
+            source = envelope["source_revision"]["commit_sha"]
+            content = subprocess.check_output(
+                ["git", "show", f"{source}:{envelope['retained_receipt']}"], cwd=ROOT)
+            self.assertEqual(hashlib.sha256(content).hexdigest(), pin["sha256"])
+        prs = {x["pr_number"]: x for x in view["pr_observations"]}
+        self.assertEqual([prs[n]["state"] for n in [675, 676, 677, 656, 678]],
+                         ["merged", "merged", "merged", "open", "open"])
+        self.assertIn("unauthorized", prs[677]["authorization_status"])
+        cleanup = next(x for x in view["workstreams"] if x["id"] == "local_repository_cleanup")
+        self.assertIn("not_independently_verified", cleanup["state"])
 
     def test_historical_snapshot_preservation(self):
         """Historical 2026-10-31 snapshot structure remains intact and valid."""
@@ -234,7 +257,7 @@ class OperationalStateContractTest(unittest.TestCase):
         self.assert_rejected(bad, "unexpected keys")
 
         bad2 = copy.deepcopy(self.state)
-        bad2["operational_views"]["2026-11-02"]["repository_observation"]["envelope"]["unexpected"] = 123
+        bad2["operational_views"][self.state["selected_view"]]["repository_observation"]["envelope"]["unexpected"] = 123
         self.assert_rejected(bad2, "unexpected keys")
 
     def test_malformed_json_and_non_json_constants(self):
