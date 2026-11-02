@@ -1,0 +1,96 @@
+{
+  "observed_at": "2026-11-02T17:07:23.698568+00:00",
+  "attribution": {
+    "author": "Codex",
+    "model": null,
+    "relationship": "Corrective implementation author executing local validation; no independent review of this correction claimed."
+  },
+  "base_revision": "792306fff98614285890cf1dfad35cbc92041283",
+  "source_revision": {
+    "value": null,
+    "reason": "Executed working-tree corrections before commit; exact file hashes below identify sources. Resolve the resulting publication commit from this receipt history."
+  },
+  "environment": {
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "jsonschema": "4.26.0"
+  },
+  "sources": {
+    "docs/ai-context/CURRENT_STATE.json": "f170234fb69e54a427259375ade65c09c071095b7410bebbe06a7ff348bee3d0",
+    "docs/ai-context/CURRENT_STATE.schema.json": "c1b2655842ea6c06790545b0c60efe49d7cc27d9df57694e0b57c36adc7ad958",
+    "docs/ai-context/START_HERE.md": "3755f589fb0294a2ea14c5bf7c1d9fb10b766bfa377471f3b92b2f955093f624",
+    "scripts/validate_current_state.py": "564f5eba8f704539c3a57dec59f2672e2ba96f1cba07097505c6ba11c67f700c",
+    "tests/ci/test_current_state_contract.py": "2d0255c03356be8e570c9dc81314321f6790cbe1b2e7aefd2827cebae8e8ade9",
+    "review/pr-656/check.py": "4d7c585b9b0365140f9f5bf70247e301e51d16ee61f7f4ec3a83187fa4a538d1",
+    "review/pr-656/REPORT.md": "aef726fbf0f7b68df48861b510e8b37b973177ff8d2ce080c5da3bc4f6ad60c1",
+    "docs/ai-context/receipts/2026-11-02-pr678-observations.json": "17a36ead26264c007a42ad7d515192160852894b537d11ba9c5e577bb967a8c0"
+  },
+  "stdlib_commands": [
+    {
+      "command": [
+        "python3",
+        "scripts/validate_current_state.py"
+      ],
+      "exit": 0,
+      "stdout": "CURRENT_STATE: structure valid; provenance and freshness require live verification\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "-O",
+        "scripts/validate_current_state.py"
+      ],
+      "exit": 0,
+      "stdout": "CURRENT_STATE: structure valid; provenance and freshness require live verification\n",
+      "stderr": ""
+    }
+  ],
+  "json_schema": "Draft202012Validator.check_schema plus FormatChecker validation PASS",
+  "contract_suite": {
+    "command": [
+      "/private/tmp/t81-pr656-venv/bin/python",
+      "tests/ci/test_current_state_contract.py",
+      "-v"
+    ],
+    "exit": 0,
+    "stderr": "test_canonical_state_passes (__main__.OperationalStateContractTest.test_canonical_state_passes)\nCanonical checked-in state passes cleanly in both normal and -O mode. ... ok\ntest_current_observations_resolve_pinned_receipts (__main__.OperationalStateContractTest.test_current_observations_resolve_pinned_receipts) ... ok\ntest_envelope_missing_required_fields (__main__.OperationalStateContractTest.test_envelope_missing_required_fields)\nObservation envelopes require subject, observed_at, collector, retained_receipt. ... ok\ntest_historical_corrected_replay_uses_pinned_inputs (__main__.OperationalStateContractTest.test_historical_corrected_replay_uses_pinned_inputs) ... ok\ntest_historical_snapshot_preservation (__main__.OperationalStateContractTest.test_historical_snapshot_preservation)\nHistorical 2026-10-31 snapshot structure remains intact and valid. ... ok\ntest_malformed_json_and_non_json_constants (__main__.OperationalStateContractTest.test_malformed_json_and_non_json_constants)\nValidator rejects malformed JSON and non-JSON constants like NaN. ... ok\ntest_observed_at_timestamp_timezone_required (__main__.OperationalStateContractTest.test_observed_at_timestamp_timezone_required)\nObserved_at timestamps require ISO/RFC 3339 timezone offset ('Z' or '+-HH:MM'). ... ok\ntest_observed_at_valid_timezone_offsets (__main__.OperationalStateContractTest.test_observed_at_valid_timezone_offsets)\nValid timezone offsets (+00:00, -05:00, Z) must be accepted. ... ok\ntest_rejected_unsupported_ref (__main__.OperationalStateContractTest.test_rejected_unsupported_ref)\nThe validator rejects unsupported or non-existent $ref values. ... ok\ntest_revision_alternatives_are_meaningful_and_exclusive (__main__.OperationalStateContractTest.test_revision_alternatives_are_meaningful_and_exclusive) ... ok\ntest_source_revision_commit_sha_validation (__main__.OperationalStateContractTest.test_source_revision_commit_sha_validation)\nCommit SHAs must be exactly 40 lowercase hexadecimal digits. ... ok\ntest_source_revision_inheritance (__main__.OperationalStateContractTest.test_source_revision_inheritance)\nInherit_from must be a valid string pointing to the parent observation designation. ... ok\ntest_unexpected_keys_rejected_at_all_levels (__main__.OperationalStateContractTest.test_unexpected_keys_rejected_at_all_levels)\nObjects with additionalProperties=False reject unexpected keys. ... ok\ntest_unknown_unavailable_source_revision_requires_reason (__main__.OperationalStateContractTest.test_unknown_unavailable_source_revision_requires_reason)\nUnknown or unavailable values with null value require an explanatory reason. ... ok\n\n----------------------------------------------------------------------\nRan 14 tests in 43.457s\n\nOK\n"
+  },
+  "historical_replays": [
+    {
+      "variant": "original",
+      "command": [
+        "/private/tmp/t81-pr656-venv/bin/python",
+        "review/pr-656/check.py",
+        "--original",
+        "--output",
+        "/private/tmp/t81-pr678-validation/original-replay.json"
+      ],
+      "stdout": "original: 131 fixtures; 278 executions; 107 schema/exit or cwd mismatches\n  optimized=False: 9 mismatches\n  optimized=True: 98 mismatches\n",
+      "receipt_sha256": "fdb981d0b71a10b4f69cf2cff2f27588608117c0ac14edecc06854d97ae26b4a",
+      "byte_identical_to_retained": true,
+      "executions": 278,
+      "mismatches": 107
+    },
+    {
+      "variant": "corrected",
+      "command": [
+        "/private/tmp/t81-pr656-venv/bin/python",
+        "review/pr-656/check.py",
+        "--output",
+        "/private/tmp/t81-pr678-validation/corrected-replay.json"
+      ],
+      "stdout": "corrected: 131 fixtures; 278 executions; 0 schema/exit or cwd mismatches\n  optimized=False: 0 mismatches\n  optimized=True: 0 mismatches\n",
+      "receipt_sha256": "53b1d07c583ebb349632f2543805571a77734f99979e53d3751dd57e0c549900",
+      "byte_identical_to_retained": true,
+      "executions": 278,
+      "mismatches": 0
+    }
+  ],
+  "historical_artifact_hashes_verified": 11,
+  "historical_artifact_revision": "5e4320c10f6b0f1355f792e7176a247e34fbb2c8",
+  "historical_snapshots_unchanged": true,
+  "earlier_operational_view_correction": "Only M1 source revision corrected; prior attribution retained in observations receipt, all other earlier-view fields unchanged",
+  "hosted_ci": "Not observed for uncommitted sources; report final-head hosted status after push.",
+  "authorization": "No merge, scientific experiment, Phase C, M2 execution, or governance activation granted."
+}
