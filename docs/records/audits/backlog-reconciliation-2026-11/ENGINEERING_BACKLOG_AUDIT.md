@@ -9,9 +9,33 @@
 
 ## Executive Summary
 
-This audit reconciles all **70 open pull requests** currently outstanding against `t81dev/t81-foundation`.
+### Audit Scope & Live Transition
+This report documents a comprehensive audit of the **70 pull requests** that constituted the open engineering backlog as audited at repository baseline `1737a7ff5a267590338c0e7b513c95e95ccd6177`.
+
+Following the verification and completion of Priority 0, **PR #675 has been merged into main** at commit `1d01c62df45c9ebb06f01677e18331ef77e016c5`. Consequently:
+- **Historical Audit Baseline (70 PRs):** Evaluated and cataloged in the PR register below, capturing the complete state at the time of the review assignment.
+- **Current Live Backlog (69 Open PRs):** PR #675 is closed/merged, leaving 69 active pull requests awaiting resolution, revision, or archiving.
+
+This distinction preserves the complete audit trail while reflecting the latest repository reality.
 Each PR was inspected directly from GitHub API metadata and corroborated against local git commit tree objects.
 The backlog spans core arithmetic codecs, baseline evidence ledgers, repository archaeology, adversarial AI optimization studies, governance enforcement mechanisms, CanonFS transactional semantics, and legacy architectural transitions.
+
+### Separation of Governance and Acceptance States
+In evaluating pull requests across this engineering and research backlog, three orthogonal states must be strictly distinguished:
+
+1. **Scientific & Experimental Correctness:**
+   Attributable verification that an experimental protocol, reference codec, or adversarial analysis mathematically and empirically behaves as asserted under controlled conditions.
+   - *Example:* In PR #658 (EXP-H04-R03 Phase B), deterministic correctness and framing validation over domain `[-364, 364]` are accepted under maintainer review with 17/17 CTests and independent witness verification passing.
+   - *Example:* In PR #666 and PR #674, scientific review formally accepted negative findings and adversarial falsification of trivial pattern-matching and polynomial workloads.
+   - *Boundary:* Scientific acceptance confirms experimental validity within tested bounds; it does **not** assert hardware performance advantage or readiness for unconditional production integration.
+
+2. **CI & Integration Qualification:**
+   Verification that code builds cleanly, links without undefined symbols, and passes all regression suites across the entire supported platform/compiler matrix (Linux GCC/Clang, macOS Clang/GCC, Windows MSVC/clang-cl).
+   - *Boundary:* Broader repository integration may remain blocked by unrelated baseline toolchain, runner, or fixture defects (such as missing `models/tiny-random-llama` or GCC 15 `-Werror=maybe-uninitialized`) even when the candidate's localized scientific correctness is fully accepted.
+
+3. **Maintainer Merge Authorization:**
+   Explicit governance approval by repository maintainers to integrate a PR into the primary branch (`main`).
+   - *Boundary:* Neither passing tests nor peer-reviewed scientific correctness implies merge authorization. Merging requires explicit maintainer sign-off, adherence to frozen governance surfaces (e.g. TISC ISA v1.9.0, API-lock), and active execution freezes (such as the continued execution freeze on AIOPT M2).
 
 ### Disposition Summary
 
@@ -29,7 +53,7 @@ The backlog spans core arithmetic codecs, baseline evidence ledgers, repository 
 
 ## Priority 0 — PR #675 Acceptance Gate Reconciliation
 
-### Disposition: `REVIEW_NOW` (Recommended for Maintainer Review, Conditional on Independent Verification)
+### Disposition: `MERGED` (Merged into Main @ 1d01c62df45c9ebb06f01677e18331ef77e016c5)
 - **PR Number:** #675
 - **Title:** `fix(ternary): correct decode_i64 overflow saturation and add regression tests`
 - **Branch:** `jules-decode-i64-correction-8938143780233301149`
@@ -277,7 +301,7 @@ All regression tests passed cleanly under ASan and UBSan:
 - **Overlapping / Superseding:** None
 - **Known Blockers:** None (baseline CI failures orthogonal)
 - **Validation Evidence & Limitations:** Passing unit tests with active assertions under GCC 13 C++20 and ASan/UBSan; verified mathematical proof of cancellation bounds
-- **Recommended Disposition:** `REVIEW_NOW`
+- **Recommended Disposition:** `MERGED`
 
 ### Domain: CanonFS & Accountable Transactions
 **Total PRs in Domain:** 6
