@@ -29,7 +29,7 @@ The backlog spans core arithmetic codecs, baseline evidence ledgers, repository 
 
 ## Priority 0 — PR #675 Acceptance Gate Reconciliation
 
-### Disposition: `REVIEW_NOW` (Ready for Maintainer Acceptance)
+### Disposition: `REVIEW_NOW` (Recommended for Maintainer Review, Conditional on Independent Verification)
 - **PR Number:** #675
 - **Title:** `fix(ternary): correct decode_i64 overflow saturation and add regression tests`
 - **Branch:** `jules-decode-i64-correction-8938143780233301149`
@@ -48,7 +48,10 @@ A prior handoff note raised concern that prefix saturation checks in Horner's me
    - For $k = 1$: $V_{\min} = 3074457345618258603 \times 3 - 1 = 9223372036854775808 > \text{INT64\_MAX} (9223372036854775807)$.
    - For $k > 1$: $\frac{d V_{\min}}{dk} > 0$, so $V_{\min} > \text{INT64\_MAX}$ strictly for all $k \ge 1$.
 6. By symmetry, for negative saturation: if $R \le -3074457345618258604$, $V_{\max} = R \cdot 3^k + \frac{3^k - 1}{2} \le -9223372036854775811 < \text{INT64\_MIN} (-9223372036854775808)$. For the boundary $R = -3074457345618258603$, if $k=1$ and $d_0 = 1$, $(R+1) \times 3 - 2 = \text{INT64\_MIN}$ exactly without signed integer overflow.
-7. **Conclusion:** Premature saturation cannot occur. The implementation in `arith.hpp` is mathematically optimal, safe against undefined behavior, and completely avoids `__int128`.
+7. **Scope and Bounded Findings:** This mathematical analysis specifically resolves the reported defect where prefix Horner saturation guards triggered prematurely on lower-order cancellations, showing that for intermediate states $R > \lfloor \text{INT64\_MAX} / 3 \rfloor$, $V_{\min} > \text{INT64\_MAX}$ strictly for all remaining lengths $k \ge 1$. This confirms that the specific Horner prefix clamping check in `include/t81/ternary/arith.hpp` does not cause premature saturation on valid int64 cancellations.
+
+#### Disclosed Limitations of #675 Assessment
+While the prefix saturation bound is formally proven and verified against regression vectors (including cancellation cases, 41-trit boundaries, and extrema), this does not constitute an exhaustive mathematical proof of general arithmetic correctness across all possible unconstrained ternary inputs or untested environments. Full decoder correctness remains bounded by the tested specification and suite of concrete regression cases.
 
 #### Verification & Test Execution Evidence
 Executed in container environment (Ubuntu 24.04, GCC 13.3.0, Linux 6.6.137+):
