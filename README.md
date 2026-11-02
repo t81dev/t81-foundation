@@ -1,8 +1,8 @@
 # T81 Foundation
 
-### Exploring computation beyond the binary assumption.
+### Researching alternative representations, adaptive execution, and verifiable computing.
 
-**Ternary computation · Alternative representations · Deterministic systems · Experimental computer architecture**
+**Balanced ternary · Representation-aware AI/ML · Deterministic execution · Experimental architecture**
 
 [Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/explanation/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/)
 
@@ -12,7 +12,9 @@
 
 **T81 Foundation is an open-source experimental computing research program investigating whether alternative computational representations—particularly balanced ternary—can provide measurable advantages over conventional binary systems.**
 
-The project studies computation at several levels: mathematical representation, algorithms, software execution, storage, hardware architecture, and verifiable system behavior.
+The project studies computation at several levels: mathematical representation, algorithms, software execution, storage, hardware architecture, and verifiable system behavior. Its research-first architecture originated in discrete mathematics, CWEB/Hanoi, and investigations of alternative numerical systems before expanding into language, VM, instruction, policy, and research-assurance subsystems.
+
+A second, explicitly experimental direction is **representation-aware adaptive execution**: selecting data representations, algorithms, and execution paths for particular workloads, especially AI/ML, while measuring the full costs of selection, conversion, computation, and accuracy. This is an architectural hypothesis, **not** an established T81 performance advantage.
 
 Its central question is:
 
@@ -109,7 +111,13 @@ It is whether the chosen workload can distinguish meaningful differences between
 
 [Explore T81-AIOPT-001](docs/research/aiopt/)
 
-### 4. Physical ternary computing remains an open question
+### 4. H04-R03: correctness before performance
+
+The H04-R03 matched-codec program compares bounded representation and access alternatives, including a B729-µ5 candidate. Its preregistered protocol and Candidate A implementation/review are tracked in [PR #677](https://github.com/t81dev/t81-foundation/pull/677), [PR #679](https://github.com/t81dev/t81-foundation/pull/679), and [PR #680](https://github.com/t81dev/t81-foundation/pull/680). The independent review reports correctness and protocol acceptance only; as of 2026-11-02, PRs #679 and #680 remain open, and Phase C performance measurement is not authorized or reported. PR status must be refreshed before relying on this snapshot.
+
+An equality of payload lengths is a mathematical property, not a demonstrated latency, energy, or end-to-end benefit. No H04-R03 performance advantage is claimed.
+
+### 5. Physical ternary computing remains an open question
 
 Software-emulated ternary computation is not equivalent to computation on native ternary hardware.
 
@@ -166,6 +174,18 @@ This is a conceptual organization of the research program, not a claim that ever
 These components have different maturity levels. A working implementation is not automatically a validated performance advantage.
 
 ---
+
+## Representation-aware adaptive execution: an open research direction
+
+The historical T81 manuscripts describe an integrated ambition: numerical data types, TISC execution semantics, T81Lang/T81VM, and Axion-mediated decisions about resource use. The [historical PDF collection](docs/pdf/) preserves these proposals; their reported performance figures are **historical, unverified claims**, not current experimental results.
+
+A modern falsifiable version of this ambition asks whether a system can select among exact, floating-point, low-bit, packed ternary, and conventional binary representations for a **real workload**, achieving a net benefit after accounting for accuracy, encoding/decoding, memory traffic, scheduling, and decision overhead. The project must distinguish:
+
+- **T — ternary-specific mechanism:** an advantage attributable to ternary semantics or a physical ternary substrate, not merely a different encoding.
+- **S — software representation choice:** an advantage from selecting a representation, potentially reproducible with binary encodings.
+- **A — algorithm routing:** an advantage from choosing a better algorithm or execution path, independent of radix.
+
+Positive S or A results are useful but do **not** establish T. T81-AIOPT-001 M2 remains a research-design problem rather than an authorized proof of adaptive ternary superiority. For authoritative scope and gates, consult [AI research continuity](docs/ai-context/) and the underlying experiment protocols.
 
 ## Three research tracks
 
@@ -235,7 +255,11 @@ An experimental result must not claim more than its evidence supports.
 
 ---
 
-## The original vision: Hanoi
+## The original vision and historical manuscripts
+
+The [historical PDF archive](docs/pdf/) contains early explorations of Base-81, data types, T81Lang, TISC, Axion, AI/ML, and proposed applications. These documents preserve intellectual lineage and design hypotheses; they are **not** current specifications or verified benchmark reports. A future revision should reconcile claims with primary experiments without overwriting the originals.
+
+### Hanoi
 
 T81's history predates the current Foundation repository.
 
@@ -265,8 +289,8 @@ Verify equivalent semantics and independently reproducible behavior before inter
 **2. Identify discriminating workloads.**  
 Select experiments in which alternative representations have a plausible, measurable consequence beyond ordinary encoding changes.
 
-**3. Investigate conditional advantages.**  
-Study the circumstances under which representation density, access patterns, conversion costs, or adaptive strategies change the outcome.
+**3. Investigate conditional advantages and AI/ML workloads.**  
+Study the circumstances under which representation density, access patterns, conversion costs, model accuracy, or adaptive strategies change the outcome. Compare against equally optimized binary and algorithm-routing baselines.
 
 **4. Preserve physical hardware questions.**  
 Separate limitations of software emulation from the cost and feasibility of native multivalued devices.
@@ -293,6 +317,7 @@ Active proposals and their acceptance status belong in the research records and 
 | [`kernel/axion/`](kernel/axion/) | Authorization and policy components |
 | [`fs/`](fs/) | Artifact identity and storage mechanisms |
 | [`docs/ai-context/`](docs/ai-context/) | Continuity material for AI research collaborators |
+| [`docs/pdf/`](docs/pdf/) | Historical manuscripts and their original research hypotheses |
 
 For build instructions, development dependencies, and available test targets, consult the repository's contributor documentation and CMake configuration. Research results should be reproduced using the environment and commands specified by their individual protocols.
 
@@ -325,6 +350,8 @@ T81 does not currently claim:
 - Universal superiority of ternary computation over binary computation.
 - Demonstrated superiority of native ternary silicon.
 - A general performance advantage for the integrated T81 architecture.
+- A validated adaptive AI optimizer that outperforms strong fixed-policy or algorithm-selection baselines.
+- That historical PDF case-study figures constitute independently reproduced measurements.
 - That ternary model weights inherently accelerate AI inference.
 - That deterministic execution or policy enforcement requires a ternary virtual machine.
 - That an AI-generated experiment is independently validated merely because its tests pass.
