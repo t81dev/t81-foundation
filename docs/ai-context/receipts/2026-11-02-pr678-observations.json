@@ -100,5 +100,19 @@
       "reason": "Local cleanup report is outside Git; no repository source revision or independent execution review is available."
     },
     "claims_boundary": "The earlier cleanup author reports execution and integrity checks; this index does not independently verify that execution or authenticate the external receipt."
-  }
+  },
+  "attribution_corrections": [
+    {
+      "observation": "operational_views.2026-11-02.scientific_observations.AIOPT-001-M1",
+      "prior_source_revision": {
+        "inherit_from": "repository_observation"
+      },
+      "prior_inherited_repository_revision": "1a6d5a36473004961248f0a85b2e06361ea2a38f",
+      "corrected_source_revision": {
+        "commit_sha": "b2b9d3c73df96d6b4227ee0061c56bc2ee04a8fe"
+      },
+      "receipt": "docs/research/aiopt/T81-AIOPT-001-SCIENTIFIC-REVIEW.md",
+      "reason": "The prior inherited main revision does not contain the receipt; only attribution is corrected, preserving the original negative finding and original v1 snapshot. Prior index bytes remain at PR678 reviewed head 792306fff98614285890cf1dfad35cbc92041283."
+    }
+  ]
 }
