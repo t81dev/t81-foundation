@@ -1,0 +1,41 @@
+{
+  "id": "pr-656-implementation-review",
+  "status": "proposed",
+  "hypothesis_id": "H08",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "implementation reviewer and corrective patch author"
+  },
+  "repository_revision": "7daafeb55ae241e21cfbe4bdb4a74bb911595fa7",
+  "evidence": [
+    {
+      "source_ref": "review/pr-656/original-results.json",
+      "relationship": "contradictory",
+      "scope": "Original Python validation bypasses and schema discrepancies"
+    },
+    {
+      "source_ref": "review/pr-656/corrected-results.json",
+      "relationship": "supporting",
+      "scope": "Corrected implementation agrees with the reference schema on the retained corpus"
+    }
+  ],
+  "uncertainty": "Implementation review supporting H08 evidence discipline; no test of H08 comparative scientific benefit. AI-assisted, one local host, no independent human scientific validation or hosted CI.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": null,
+    "record": "Current user request: review PR 656, execute validator and adversarial checks, make only necessary corrective changes on a separate branch; do not merge, modify historical evidence or activate governance."
+  },
+  "schema": "t81.research-commons.evidence-discrepancy.v1",
+  "conflicting_claims": [
+    "Original CLI reports structure valid for schema-invalid inputs, particularly under -O.",
+    "Reference Draft202012Validator with FormatChecker rejects these inputs."
+  ],
+  "affected_sources": [
+    "scripts/validate_current_state.py@7daafeb55ae241e21cfbe4bdb4a74bb911595fa7",
+    "docs/ai-context/CURRENT_STATE.schema.json@7daafeb55ae241e21cfbe4bdb4a74bb911595fa7"
+  ],
+  "observed_difference": "107 schema/exit mismatches in original receipts, zero in corrected receipts for the same 131-fixture corpus. Some invalid observation dates originally pass both because the schema omits date formats.",
+  "proposed_resolution": "Review isolated corrective branch; preserve both original and corrected receipts; do not infer merge or governance permission."
+}

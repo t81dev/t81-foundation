@@ -1,0 +1,531 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "T81 operational state v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "purpose",
+    "selected_view",
+    "operational_views",
+    "historical_snapshots",
+    "authorization",
+    "next_gate"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "1.0.0",
+        "2.0.0"
+      ]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "purpose": {
+      "type": "string",
+      "pattern": "^Non-normative"
+    },
+    "selected_view": {
+      "type": "string"
+    },
+    "operational_views": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/operational_view"
+      }
+    },
+    "historical_snapshots": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/historical_snapshot"
+      }
+    },
+    "authorization": {
+      "$ref": "#/$defs/governance_authorization"
+    },
+    "next_gate": {
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "governance_authorization": {
+      "type": "object",
+      "required": [
+        "protocol_amendment",
+        "merge",
+        "performance_measurement",
+        "production_activation"
+      ],
+      "properties": {
+        "protocol_amendment": {
+          "const": "not_granted_by_this_index",
+          "description": "This index grants no protocol amendment authority; consult the applicable human decision."
+        },
+        "merge": {
+          "const": false
+        },
+        "performance_measurement": {
+          "const": false
+        },
+        "production_activation": {
+          "const": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "observation_envelope": {
+      "type": "object",
+      "required": [
+        "subject",
+        "observed_at",
+        "collector",
+        "retained_receipt"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?(?:Z|[+-](?:[01][0-9]|2[0-3]):[0-5][0-9])\\Z",
+          "maxLength": 35
+        },
+        "source_revision": {
+          "$ref": "#/$defs/source_revision_field"
+        },
+        "collector": {
+          "type": "string"
+        },
+        "retained_receipt": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "source_revision_field": {
+      "type": "object",
+      "properties": {
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "inherit_from": {
+          "type": "string"
+        },
+        "value": {
+          "type": "null"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "dependentRequired": {
+        "value": [
+          "reason"
+        ]
+      },
+      "additionalProperties": false
+    },
+    "scientific_observation": {
+      "type": "object",
+      "required": [
+        "envelope",
+        "id",
+        "status",
+        "verification",
+        "claims_boundary"
+      ],
+      "properties": {
+        "envelope": {
+          "$ref": "#/$defs/observation_envelope"
+        },
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "verification": {
+          "enum": [
+            "source_reported",
+            "independently_reproduced",
+            "unverified",
+            "falsified",
+            "blocked"
+          ]
+        },
+        "claims_boundary": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pr_observation": {
+      "type": "object",
+      "required": [
+        "envelope",
+        "pr_number",
+        "title",
+        "pr_url",
+        "state",
+        "base_repository",
+        "base_sha",
+        "head_repository",
+        "head_sha",
+        "merge_sha",
+        "scientific_acceptance",
+        "integration_readiness",
+        "authorization_status"
+      ],
+      "properties": {
+        "envelope": {
+          "$ref": "#/$defs/observation_envelope"
+        },
+        "pr_number": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "type": "string"
+        },
+        "pr_url": {
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "open",
+            "merged",
+            "closed",
+            "draft"
+          ]
+        },
+        "base_repository": {
+          "type": "string"
+        },
+        "base_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "head_repository": {
+          "type": "string"
+        },
+        "head_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "merge_sha": {
+          "$ref": "#/$defs/source_revision_field"
+        },
+        "scientific_acceptance": {
+          "type": "string"
+        },
+        "integration_readiness": {
+          "type": "string"
+        },
+        "authorization_status": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ci_observation": {
+      "type": "object",
+      "required": [
+        "envelope",
+        "suite_name",
+        "status",
+        "known_baseline_failures"
+      ],
+      "properties": {
+        "envelope": {
+          "$ref": "#/$defs/observation_envelope"
+        },
+        "suite_name": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passing",
+            "failing",
+            "blocked",
+            "unexecuted"
+          ]
+        },
+        "known_baseline_failures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "workstream_item": {
+      "type": "object",
+      "required": [
+        "id",
+        "priority",
+        "state",
+        "next"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "next": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "operational_view": {
+      "type": "object",
+      "required": [
+        "view_date",
+        "freshness",
+        "coverage",
+        "repository_observation",
+        "scientific_observations",
+        "pr_observations",
+        "ci_observations",
+        "workstreams"
+      ],
+      "properties": {
+        "view_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "freshness": {
+          "type": "string"
+        },
+        "coverage": {
+          "type": "object",
+          "required": [
+            "inventory_scope",
+            "coverage_state",
+            "open_pr_count"
+          ],
+          "properties": {
+            "inventory_scope": {
+              "type": "string"
+            },
+            "coverage_state": {
+              "type": "string"
+            },
+            "open_pr_count": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "additionalProperties": false
+        },
+        "repository_observation": {
+          "type": "object",
+          "required": [
+            "envelope",
+            "name",
+            "base_branch",
+            "observed_head"
+          ],
+          "properties": {
+            "envelope": {
+              "$ref": "#/$defs/observation_envelope"
+            },
+            "name": {
+              "type": "string"
+            },
+            "base_branch": {
+              "type": "string"
+            },
+            "observed_head": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$",
+              "maxLength": 40
+            }
+          },
+          "additionalProperties": false
+        },
+        "scientific_observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scientific_observation"
+          }
+        },
+        "pr_observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/pr_observation"
+          }
+        },
+        "ci_observations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ci_observation"
+          }
+        },
+        "workstreams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/workstream_item"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "historical_snapshot": {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "generated_at",
+        "purpose",
+        "repository",
+        "scientific_boundaries",
+        "workstreams",
+        "open_pr_observations",
+        "authorization",
+        "next_gate"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0.0"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date"
+        },
+        "purpose": {
+          "type": "string",
+          "pattern": "^Non-normative"
+        },
+        "repository": {
+          "type": "object",
+          "required": [
+            "name",
+            "base_branch",
+            "observed_head",
+            "head_source",
+            "observed_date",
+            "status"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "base_branch": {
+              "type": "string"
+            },
+            "observed_head": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$",
+              "maxLength": 40
+            },
+            "head_source": {
+              "type": "string"
+            },
+            "observed_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "status": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "scientific_boundaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "status",
+              "source",
+              "verification"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "verification": {
+                "enum": [
+                  "source_reported",
+                  "independently_reproduced",
+                  "unverified"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "workstreams": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/workstream_item"
+          }
+        },
+        "open_pr_observations": {
+          "type": "object",
+          "required": [
+            "source",
+            "observed_date",
+            "scope",
+            "count",
+            "critical"
+          ],
+          "properties": {
+            "source": {
+              "type": "string"
+            },
+            "observed_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "scope": {
+              "type": "string"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "critical": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "authorization": {
+          "$ref": "#/$defs/governance_authorization"
+        },
+        "next_gate": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
