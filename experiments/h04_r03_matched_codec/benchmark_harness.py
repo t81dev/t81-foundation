@@ -11,6 +11,7 @@ during automated test suites or standard CLI execution. Execution of Phase C
 requires explicit maintainer authorization and the '--run-measurement' flag.
 """
 import argparse
+import math
 import random
 import statistics
 import sys
@@ -52,6 +53,10 @@ def compute_bootstrap_ci(
     n = len(x)
     if n != len(y) or n == 0:
         raise ValueError("Inputs x and y must have equal positive length")
+    if type(n_boot) is not int or n_boot < 1:
+        raise ValueError("Positive integer bootstrap count required")
+    if any(not math.isfinite(v) or v <= 0 for v in (*x, *y)):
+        raise ValueError("Timing/throughput observations must be finite and positive")
 
     rng = random.Random(seed)
     obs_ratio = float(statistics.median(x) / statistics.median(y))
@@ -97,6 +102,11 @@ def evaluate_decision_rules(
             "reason": protocol_violation_reason or "Protocol violation or checksum discrepancy",
         }
 
+    if set(cv_values) != set(ARMS) or any(
+        not math.isfinite(v) or v < 0 for v in cv_values.values()
+    ):
+        return {"classification": "INVALID", "reason": "Incomplete or invalid arm CVs"}
+
     # Step 2: System Stability & Noise
     for arm, cv in cv_values.items():
         if cv > 0.05:
@@ -104,6 +114,15 @@ def evaluate_decision_rules(
                 "classification": "INCONCLUSIVE",
                 "reason": f"Excessive run-to-run variation in {arm}: CV = {cv:.2%} > 5.0%",
             }
+
+    if not all(
+        arm in intervals and len(intervals[arm]) == 3
+        and all(math.isfinite(v) and v > 0 for v in intervals[arm])
+        and intervals[arm][1] <= intervals[arm][2]
+        for intervals, arms in ((ci_life, ARMS[1:]), (ci_query, ("B10", "B729-u5")))
+        for arm in arms
+    ):
+        return {"classification": "INVALID", "reason": "Incomplete or invalid confidence intervals"}
 
     # Extract bounds vs T243: theta_life(C) = Median(T_life(C)) / Median(T_life(T243))
     # Note: If theta_life > 1.0, T243 is faster than C.
