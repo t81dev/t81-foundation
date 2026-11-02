@@ -12,14 +12,17 @@ from jsonschema import Draft202012Validator, FormatChecker
 
 ROOT = Path(__file__).resolve().parents[2]
 PIN = '7daafeb55ae241e21cfbe4bdb4a74bb911595fa7'
+CORRECTED_PIN = '5e4320c10f6b0f1355f792e7176a247e34fbb2c8'
 FILES = ['scripts/validate_current_state.py', 'docs/ai-context/CURRENT_STATE.schema.json',
          'docs/ai-context/CURRENT_STATE.json']
 p = argparse.ArgumentParser()
 p.add_argument('--original', action='store_true')
 p.add_argument('--output', required=True)
 a = p.parse_args()
-blobs = {f: subprocess.check_output(['git', 'show', f'{PIN}:{f}'], cwd=ROOT)
-         if a.original else (ROOT / f).read_bytes() for f in FILES}
+# Historical v1 receipts replay their exact inputs, independent of the live v2 index.
+source_pin = PIN if a.original else CORRECTED_PIN
+blobs = {f: subprocess.check_output(['git', 'show', f'{source_pin}:{f}'], cwd=ROOT)
+         for f in FILES}
 state = json.loads(blobs[FILES[2]])
 schema = json.loads(blobs[FILES[1]])
 Draft202012Validator.check_schema(schema)
@@ -101,6 +104,7 @@ with tempfile.TemporaryDirectory(prefix='pr656-fixtures-') as tmp:
                 rows.append(dict(case='cwd-resolution', command=cmd, cwd=str(cwd),
                                  exit=proc.returncode, stdout=proc.stdout, stderr=proc.stderr,
                                  agreement=proc.returncode == 0))
+# Keep the historical receipt shape/target pin; sources contains exact input hashes.
 result = dict(source_revision=PIN, variant='original' if a.original else 'corrected',
               environment=dict(python='.'.join(map(str, sys.version_info[:3])), jsonschema='4.26.0'),
               sources={k:hashlib.sha256(v).hexdigest() for k,v in blobs.items()}, rows=rows)
