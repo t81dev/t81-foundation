@@ -4,7 +4,7 @@
 
 **Ternary computation · Alternative representations · Deterministic systems · Experimental computer architecture**
 
-[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/explanation/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/)
+[Research Charter](docs/research/RESEARCH_CHARTER.md) · [Research Roadmap](docs/ROADMAP.md) · [Architecture](docs/ARCHITECTURE.md) · [AI Research Context](docs/ai-context/)
 
 ---
 
@@ -328,8 +328,6 @@ T81 does not currently claim:
 - That ternary model weights inherently accelerate AI inference.
 - That deterministic execution or policy enforcement requires a ternary virtual machine.
 - That an AI-generated experiment is independently validated merely because its tests pass.
-
-All determinism claims in this README are bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md).
 
 These boundaries are essential to the research.
 
