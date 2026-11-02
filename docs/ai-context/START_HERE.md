@@ -1,5 +1,17 @@
 # T81 Research Continuity — START_HERE
 
+**Latest operational view (2026-11-02):** Read the selected view in
+[`CURRENT_STATE.json`](CURRENT_STATE.json), backed by the bounded
+[PR/source receipt](receipts/2026-11-02-pr678-observations.json), before older status tables.
+Observed main is `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`: #675 is merged with
+arithmetic validation accepted within its declared scope; #676 is merged historical
+backlog-audit evidence; #677 is merged H04-R03 Candidate A preregistration, with
+**Phase C still unauthorized**. #656 remains open pending integration and #678
+remains open with corrections pending acceptance. Local cleanup's audit is reported
+completed; its execution outcome is **not independently verified** by this index.
+The earlier views and snapshots below remain dated history. This update grants no
+merge, measurement, M2 execution or governance authority.
+
 **Document ID:** `docs/ai-context/START_HERE.md`
 **Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
 **Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
