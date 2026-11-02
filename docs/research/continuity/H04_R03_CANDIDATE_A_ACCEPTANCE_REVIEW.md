@@ -1,13 +1,13 @@
 # Independent Acceptance Review: PR #679 (EXP-H04-R03 Candidate A B729-µ5)
 
-**Document:** `docs/research/continuity/H04_R03_CANDIDATE_A_ACCEPTANCE_REVIEW.md`  
-**Date:** 2026-11-02  
-**Target Review:** PR #679 — EXP-H04-R03 Candidate A B729-µ5 Implementation  
-**Reviewed Head Commit:** `e79f26e5a68b3b0a46cf3d50aca035493b8e549b`  
-**Main Integration Commit:** `d8e1376a7a77902cc26269c6e8d4991bcde117a7`  
-**Base Commit (Direct Parent):** `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`  
-**Accepted Phase B Reference:** PR #658, Commit `0a48054510e79e753d5152ccb3f9f130c17bbafd`  
-**Parent Preregistration:** `docs/research/continuity/H04_R03_CANDIDATE_A_PREREGISTRATION.md` (PR #677 / commit `8e44c0f6`)  
+**Document:** `docs/research/continuity/H04_R03_CANDIDATE_A_ACCEPTANCE_REVIEW.md`
+**Date:** 2026-11-02
+**Target Review:** PR #679 — EXP-H04-R03 Candidate A B729-µ5 Implementation
+**Reviewed Head Commit:** `e79f26e5a68b3b0a46cf3d50aca035493b8e549b`
+**Main Integration Commit:** `d8e1376a7a77902cc26269c6e8d4991bcde117a7`
+**Base Commit (Direct Parent):** `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`
+**Accepted Phase B Reference:** PR #658, Commit `0a48054510e79e753d5152ccb3f9f130c17bbafd`
+**Parent Preregistration:** `docs/research/continuity/H04_R03_CANDIDATE_A_PREREGISTRATION.md` (PR #677 / commit `8e44c0f6`)
 **Final Disposition:** **ACCEPT — CORRECTNESS AND PROTOCOL IMPLEMENTATION ONLY (MERGED)**
 
 ---
