@@ -1,0 +1,4 @@
+operator=Jules
+asset=devbox-kvm-unqualified
+scope=correctness-only
+measurement_authorized=false
