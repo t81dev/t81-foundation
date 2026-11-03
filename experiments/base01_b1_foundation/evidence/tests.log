@@ -25,6 +25,6 @@ test_no_workload_promoted_to_measurement (test_foundation.WorkloadTests.test_no_
 test_vm_provisional_scope_and_rejections (test_foundation.WorkloadTests.test_vm_provisional_scope_and_rejections) ... ok
 
 ----------------------------------------------------------------------
-Ran 25 tests in 0.449s
+Ran 25 tests in 0.401s
 
 OK
