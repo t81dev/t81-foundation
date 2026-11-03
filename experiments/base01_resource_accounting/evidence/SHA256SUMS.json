@@ -1,0 +1,21 @@
+{
+  "algorithm": "SHA-256",
+  "excludes": [
+    "evidence/SHA256SUMS.json"
+  ],
+  "files": {
+    ".gitignore": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793",
+    "READINESS.md": "1f142b3690235d2c47601c62f1125afe58a66d7461b48467b34c9312701a057e",
+    "README.md": "2a2247e48bcfa307931f6cd12d8a08a25463ca94b5aee136db09bd7d2aacb906",
+    "SEMANTICS.md": "60d2a7c9673e5d018310b68adc1a0d02d0c8b983d7f1c666767521e963d10766",
+    "collector.py": "e594b3a47cc62c8694a97f2fdb50bbce1837ebcd0c33ffe712d121471619aee7",
+    "evidence/linux-environment.txt": "804bfd373079f21183330d46e88a09340ea7c8f329b2a1e23b0dffc7ed36a7fe",
+    "evidence/linux.json": "78e775fe01b2eb58852f00663571b5f58e745566d348adab0a7dfd55b205073b",
+    "evidence/macos-initial-build-failure.json": "0ae573ed38b5eed719a3ca8b22ae05fe471ef8c534036ca6333abae1871aab29",
+    "evidence/macos.json": "c81fcfca4b1dbc2edf4ea9763e30dcecc46fecdd6e4bee8da146e3ec67fcf011",
+    "evidence/provenance.json": "8593acadf0c8305ec7c8adeb67845f4d54f9d064ccb060d7109e14ae04e9c262",
+    "fixture.c": "5ea5508b2218e4fcdd9e92990141540fdf2515e88f26a2edd1013d6fb55864aa",
+    "test_collector.py": "e61492aa711cfac315675ee03b44348b374cdd4c9a248b5a902bef7eedc73228",
+    "validate.py": "bf430e630c5b77d444040bbba3d4537cd2dbbc0fe9ce4692d87886a3b425aa1f"
+  }
+}

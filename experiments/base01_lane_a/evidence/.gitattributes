@@ -1,0 +1,3 @@
+# Preserve exact tool output; source-generated trailing whitespace is evidence.
+*.log -whitespace
+final/*.txt -whitespace

@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/private/tmp/t81-r75-build",
+  "command": "/usr/bin/c++ -I/private/tmp/t81-base01-audited/include -I/private/tmp/t81-base01-audited/tests/cpp -O3 -DNDEBUG -std=gnu++23 -o CMakeFiles/r75_correctness.dir/probe.cpp.o -c /private/tmp/t81-base01-r75/experiments/base01_r75_semantics/probe.cpp",
+  "file": "/private/tmp/t81-base01-r75/experiments/base01_r75_semantics/probe.cpp",
+  "output": "/private/tmp/t81-r75-build/CMakeFiles/r75_correctness.dir/probe.cpp.o"
+}
+]

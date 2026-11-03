@@ -1,0 +1,373 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "protocol": "BASE-01",
+  "title": "T81 Foundation Reference Performance Baseline Manifest",
+  "version": "0.1.0-draft",
+  "phase": "A",
+  "status": "DRAFT_AUDIT_ONLY",
+  "measurement_authorized": false,
+  "repository": "https://github.com/t81dev/t81-foundation",
+  "revisions": {
+    "inspected_head": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+    "reference_pr_686_draft": "ac7397aa5f8751d34adcb6ce2d38e3141e65b36c",
+    "reference_pr_686_status": "DRAFT_UNMERGED"
+  },
+  "research_boundaries": {
+    "cmp3_decision_advantage": {
+      "status": "FROZEN",
+      "measurement_authorized": false,
+      "reason": "Protocol Section 7 requires formal maintainer Ed25519 signing and R01-R11 repairs; PMU hardware counters blocked."
+    },
+    "h04_r03_phase_c": {
+      "status": "FROZEN",
+      "measurement_authorized": false,
+      "reason": "Linux feasibility audit confirms exact process RSS enforcement is unsatisfied on stock Linux; fail-closed execution freeze enforced."
+    },
+    "h01_physical_storage": {
+      "status": "BLOCKED",
+      "reason": "Matched characterization data unavailable in silicon."
+    },
+    "h02_arithmetic_closure": {
+      "status": "CLOSED_NEGATIVE_FOR_CPU_ARITHMETIC",
+      "reason": "Software ternary arithmetic suffers net slowdown compared to native binary ALUs on conventional CPUs."
+    }
+  },
+  "workloads": [
+    {
+      "id": "WL-ARITH-CODEC-I64",
+      "domain": "Domain A — Arithmetic",
+      "purpose": "Horner MSB-first balanced ternary conversion for signed 64-bit integers on a binary host CPU",
+      "source_files": [
+        "include/t81/ternary/arith.hpp"
+      ],
+      "existing_test_target": "tests/cpp/ternary_arith_test.cpp",
+      "correctness_oracle": "Round-trip identity decode_i64(encode_i64(x)) == x across [-2^63, 2^63-1] and Horner saturation bounds in tests/cpp/ternary_arith_test.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target t81_ternary_arith_test",
+      "proposed_execution_command": "./build/t81_ternary_arith_test",
+      "proposed_measurement_method": "High-resolution monotonic timer (std::chrono::steady_clock) measuring per-conversion latency over 100,000 iterations",
+      "primary_metric": {
+        "name": "latency_per_op",
+        "units": "ns/op"
+      },
+      "secondary_metric": {
+        "name": "throughput",
+        "units": "ops/sec"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 10000,
+        "measured_repetitions": 30,
+        "max_cv_pct": 5.0
+      },
+      "environment_requirements": "Single isolated physical core, CPU frequency governor performance, x86_64 or AArch64",
+      "freeze_overlap": "None. Distinct from H04-R03 and CMP3.",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-ARITH-LIMB-MUL",
+      "domain": "Domain A — Arithmetic",
+      "purpose": "Multi-tryte limb Booth multiplication on a conventional binary host",
+      "source_files": [
+        "include/t81/types/T81Limb.hpp",
+        "benchmarks/BM_LimbMul.cpp"
+      ],
+      "existing_test_target": "tests/cpp/test_t81_limb_booth_mul.cpp",
+      "correctness_oracle": "Limb multiplication correctness assertions in tests/cpp/test_t81_limb_booth_mul.cpp and test_t81_limb_mul_wide_high.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_BENCHMARKS=ON && cmake --build build --target benchmark_runner",
+      "proposed_execution_command": "./build/benchmarks/benchmark_runner --benchmark_filter='^BM_LimbMul_Booth$' --benchmark_min_time=1.0s",
+      "proposed_measurement_method": "Google Benchmark CPU execution timing per iteration batch (4096 ops)",
+      "primary_metric": {
+        "name": "latency_per_op",
+        "units": "ns/op"
+      },
+      "secondary_metric": {
+        "name": "throughput",
+        "units": "Mops/sec"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 5,
+        "measured_repetitions": 10,
+        "max_cv_pct": 3.0
+      },
+      "environment_requirements": "Single thread pinned, CPU frequency locked, binary comparator BM_LimbMul_Booth_Binary excluded",
+      "freeze_overlap": "Investigated under H02; binary speedup claims excluded per closure findings.",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-ARITH-SWAR-TRITWISE",
+      "domain": "Domain A — Arithmetic",
+      "purpose": "Packed 2-bit SWAR logic operations across vector lengths N in [256, 65536]",
+      "source_files": [
+        "include/t81/tritwise/tritwise.hpp",
+        "benchmarks/BM_TritwiseWorkloads.cpp"
+      ],
+      "existing_test_target": "tests/cpp/test_tritwise_backend_equivalence.cpp",
+      "correctness_oracle": "Equivalence verification between SWAR backend, scalar loop, and reference logic in tests/cpp/test_tritwise_backend_equivalence.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_BENCHMARKS=ON && cmake --build build --target benchmark_runner",
+      "proposed_execution_command": "./build/benchmarks/benchmark_runner --benchmark_filter='^BM_(MaskApply|PatternMatch)_Library/'",
+      "proposed_measurement_method": "Google Benchmark wall-clock timing with DoNotOptimize memory barriers",
+      "primary_metric": {
+        "name": "vector_latency",
+        "units": "us"
+      },
+      "secondary_metric": {
+        "name": "throughput",
+        "units": "Megatrits/sec"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 5,
+        "measured_repetitions": 15,
+        "max_cv_pct": 5.0
+      },
+      "environment_requirements": "x86_64 or AArch64 binary host, T81_TRITWISE_PROFILE=OFF asserted",
+      "freeze_overlap": "Historical archive baseline results recorded in benchmarks/results/archive/benchmark_results_release.txt",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-VM-TISC-DETERMINISM-TIERS",
+      "domain": "Domain B — TISC / HanoiVM",
+      "purpose": "TISC interpreter execution latency and state determinism across tiered computational programs",
+      "source_files": [
+        "vm/vm.cpp",
+        "tests/cpp/vm_workload_determinism_tiers_test.cpp"
+      ],
+      "existing_test_target": "tests/cpp/vm_workload_determinism_tiers_test.cpp",
+      "correctness_oracle": "64-bit state signature hash over all 48 registers, tags, PC, SP, trace size, and Axion log count in tests/cpp/vm_workload_determinism_tiers_test.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target t81_vm_workload_determinism_tiers_test",
+      "proposed_execution_command": "./build/t81_vm_workload_determinism_tiers_test",
+      "proposed_measurement_method": "In-process monotonic timer measuring duration per 10,000 interpreter instruction cycles with post-run hash assertion",
+      "primary_metric": {
+        "name": "instruction_latency",
+        "units": "us/1k-insn"
+      },
+      "secondary_metric": {
+        "name": "state_signature",
+        "units": "uint64_hash"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 5,
+        "measured_repetitions": 20,
+        "max_cv_pct": 3.0
+      },
+      "environment_requirements": "Single isolated physical core, Linux/macOS host",
+      "freeze_overlap": "None. Independent of CMP3 and H04-R03.",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-VM-HANOI-COMMAND-SURFACE",
+      "domain": "Domain B — TISC / HanoiVM",
+      "purpose": "Hanoi in-memory kernel lifecycle command execution latency (boot, status, optimize, simulate, snapshot, rollback)",
+      "source_files": [
+        "experimental/hanoi/in_memory_kernel.cpp",
+        "tests/cpp/hanoi_command_surface_test.cpp"
+      ],
+      "existing_test_target": "tests/cpp/hanoi_command_surface_test.cpp",
+      "correctness_oracle": "RFC-0000 Section 7 assertion suite verifying status booleans, snapshot counts, and trace records in tests/cpp/hanoi_command_surface_test.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target t81_hanoi_command_surface_test",
+      "proposed_execution_command": "./build/t81_hanoi_command_surface_test",
+      "proposed_measurement_method": "Monotonic wall-clock measurement per complete lifecycle command sequence",
+      "primary_metric": {
+        "name": "lifecycle_latency",
+        "units": "us/sequence"
+      },
+      "secondary_metric": {
+        "name": "command_success_rate",
+        "units": "pct"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 10,
+        "measured_repetitions": 50,
+        "max_cv_pct": 5.0
+      },
+      "environment_requirements": "Single thread, host OS",
+      "freeze_overlap": "Traced to Hanoi CWEB lineage; hosted C++ implementation isolated from physical/radix claims.",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-VM-CMP3-DECISION",
+      "domain": "Domain B — TISC / HanoiVM",
+      "purpose": "PMU hardware branch misprediction measurement of CMP3 three-state branch vs binary jumps",
+      "source_files": [
+        "experiments/cmp3_decision_advantage/"
+      ],
+      "existing_test_target": "experiments/cmp3_decision_advantage/protocol/r1/",
+      "correctness_oracle": "Unresolved in silicon / PMU unavailable",
+      "proposed_build_command": "NONE",
+      "proposed_execution_command": "NONE",
+      "proposed_measurement_method": "NONE",
+      "primary_metric": {
+        "name": "branch_mispredictions",
+        "units": "events"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 0,
+        "measured_repetitions": 0,
+        "max_cv_pct": 0.0
+      },
+      "environment_requirements": "Bare-metal Linux host with accessible PMU",
+      "freeze_overlap": "EXP-T81-COMP3-01 / Hypothesis H05",
+      "eligibility": "EXCLUDED",
+      "authorization_status": "STRICTLY_BLOCKED"
+    },
+    {
+      "id": "WL-CANONFS-MEM-THROUGHPUT",
+      "domain": "Domain C — CanonFS",
+      "purpose": "In-memory content-addressed block write and read throughput with CanonHash SHA3 verification",
+      "source_files": [
+        "fs/",
+        "benchmarks/BM_CanonFS.cpp"
+      ],
+      "existing_test_target": "tests/cpp/canonfs_driver_test.cpp",
+      "correctness_oracle": "Content-addressable hash invariance and byte-for-byte read equality in tests/cpp/canonfs_driver_test.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_BENCHMARKS=ON && cmake --build build --target benchmark_runner",
+      "proposed_execution_command": "./build/benchmarks/benchmark_runner --benchmark_filter='^BM_CanonFS_(Write|Read)Throughput_InMemory'",
+      "proposed_measurement_method": "Google Benchmark throughput calculation via SetBytesProcessed over 4KiB, 64KiB, 1MiB blocks",
+      "primary_metric": {
+        "name": "throughput",
+        "units": "MB/s"
+      },
+      "secondary_metric": {
+        "name": "latency_per_block",
+        "units": "us"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 5,
+        "measured_repetitions": 15,
+        "max_cv_pct": 5.0
+      },
+      "environment_requirements": "Single isolated thread, sufficient physical memory to avoid page swapping",
+      "freeze_overlap": "Subsystem performance benchmark; independent from H04-R03.",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-CANONFS-PERSISTENT-IO",
+      "domain": "Domain C — CanonFS",
+      "purpose": "Filesystem-backed persistent directory block write, fsync, and read-back latency under Axion policy",
+      "source_files": [
+        "fs/persistent_driver.cpp",
+        "benchmarks/BM_CanonFS.cpp"
+      ],
+      "existing_test_target": "tests/cpp/canonfs_persistent_driver_test.cpp",
+      "correctness_oracle": "Cross-driver instance read-back verification and Axion policy check enforcement in tests/cpp/canonfs_persistent_driver_test.cpp",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release -DT81_BUILD_BENCHMARKS=ON && cmake --build build --target benchmark_runner",
+      "proposed_execution_command": "./build/benchmarks/benchmark_runner --benchmark_filter='^BM_CanonFS_.*_Persistent'",
+      "proposed_measurement_method": "Google Benchmark wall-clock timing including disk sync barriers",
+      "primary_metric": {
+        "name": "write_latency",
+        "units": "us/block"
+      },
+      "secondary_metric": {
+        "name": "throughput",
+        "units": "MB/s"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 5,
+        "measured_repetitions": 20,
+        "max_cv_pct": 8.0
+      },
+      "environment_requirements": "Dedicated isolated scratch filesystem to avoid disk queue contention",
+      "freeze_overlap": "RFC-0021 persistent storage architecture",
+      "eligibility": "CONDITIONAL",
+      "authorization_status": "REQUIRES_DEDICATED_FILESYSTEM_QUALIFICATION"
+    },
+    {
+      "id": "WL-CANONFS-BLOCK-BACKED-POLICY",
+      "domain": "Domain C — CanonFS",
+      "purpose": "Axion authorization check latency on block-backed mutations (Publish, Revoke, Repair)",
+      "source_files": [
+        "fs/block_backed_driver.cpp"
+      ],
+      "existing_test_target": "tests/cpp/canonfs_policy_boundary_test.cpp",
+      "correctness_oracle": "Axion hook callback interception counts in unmerged PR #686",
+      "proposed_build_command": "NONE (unmerged branch)",
+      "proposed_execution_command": "NONE (unmerged branch)",
+      "proposed_measurement_method": "NONE",
+      "primary_metric": {
+        "name": "hook_overhead",
+        "units": "ns"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 0,
+        "measured_repetitions": 0,
+        "max_cv_pct": 0.0
+      },
+      "environment_requirements": "Unmerged PR #686 environment (macOS/Linux)",
+      "freeze_overlap": "C1-M1 Architecture Convergence PR #686",
+      "eligibility": "EXCLUDED",
+      "authorization_status": "UNMERGED_DRAFT_PR"
+    },
+    {
+      "id": "WL-RES-RUSAGE-METRICS",
+      "domain": "Domain D — Resource Consumption",
+      "purpose": "Process-level peak resident set size (ru_maxrss), CPU time (utime+stime), and monotonic wall time",
+      "source_files": [
+        "tests/cpp/test_resource_monitoring.cpp"
+      ],
+      "existing_test_target": "tests/cpp/test_resource_monitoring.cpp",
+      "correctness_oracle": "POSIX getrusage monotonic non-decreasing counter invariants",
+      "proposed_build_command": "cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build --target test_resource_monitoring",
+      "proposed_execution_command": "./build/tests/cpp/test_resource_monitoring",
+      "proposed_measurement_method": "Pre- and post-trial getrusage(RUSAGE_SELF) sampling normalized to KiB",
+      "primary_metric": {
+        "name": "peak_rss",
+        "units": "KiB"
+      },
+      "secondary_metric": {
+        "name": "cpu_time",
+        "units": "seconds"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 1,
+        "measured_repetitions": 30,
+        "max_cv_pct": 5.0
+      },
+      "environment_requirements": "POSIX-compliant kernel (Linux or macOS with unit normalization)",
+      "freeze_overlap": "Directly contextualized by H04-R03 enforcement feasibility findings on Linux RSS tracking",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    },
+    {
+      "id": "WL-RES-ARTIFACT-SIZE",
+      "domain": "Domain D — Resource Consumption",
+      "purpose": "Static compiled binary footprint, section breakdown (.text, .rodata, .data, .bss), and CAS blob sizes",
+      "source_files": [
+        "build/t81",
+        "build/benchmarks/benchmark_runner"
+      ],
+      "existing_test_target": "CMake build targets",
+      "correctness_oracle": "Exact file stat byte count and SHA-256 binary digest verification",
+      "proposed_build_command": "cmake --build build --target t81 benchmark_runner",
+      "proposed_execution_command": "size build/t81 && sha256sum build/t81",
+      "proposed_measurement_method": "Direct filesystem stat and ELF/Mach-O section header inspection",
+      "primary_metric": {
+        "name": "binary_footprint",
+        "units": "bytes"
+      },
+      "secondary_metric": {
+        "name": "text_section_size",
+        "units": "bytes"
+      },
+      "repetition_policy": {
+        "warmup_iterations": 0,
+        "measured_repetitions": 1,
+        "max_cv_pct": 0.0
+      },
+      "environment_requirements": "Host filesystem, consistent Release build without debug symbols",
+      "freeze_overlap": "H03/H04 artifact sizing considerations",
+      "eligibility": "ELIGIBLE",
+      "authorization_status": "PENDING_PHASE_B_AUTHORIZATION"
+    }
+  ],
+  "recommended_minimal_phase_b_workload_set": [
+    "WL-ARITH-CODEC-I64",
+    "WL-VM-TISC-DETERMINISM-TIERS",
+    "WL-CANONFS-MEM-THROUGHPUT",
+    "WL-RES-RUSAGE-METRICS",
+    "WL-RES-ARTIFACT-SIZE"
+  ]
+}
