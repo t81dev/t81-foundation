@@ -1,0 +1,34 @@
+[
+  {
+    "command": [
+      "/private/tmp/t81-base01-source-build/t81_ternary_arith_test"
+    ],
+    "returncode": 0,
+    "stdout": "ternary_arith ok\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-base01-source-build/t81_vm_workload_determinism_tiers_test"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-base01-source-build/t81_canonfs_driver_test"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/private/tmp/t81-base01-source-build/test_resource_monitoring"
+    ],
+    "returncode": 0,
+    "stdout": "Running test_max_tensors...\ntest_max_tensors passed.\nRunning test_max_tensor_elements...\ntest_max_tensor_elements passed.\nRunning test_max_symbolic_nodes...\ntest_max_symbolic_nodes passed.\n",
+    "stderr": ""
+  }
+]

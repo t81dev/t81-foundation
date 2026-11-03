@@ -37,5 +37,15 @@
   "05/runner-compile-commands.json": "6daf7b456cda8e258e0dede2aa74cb62ec565a5371e791e9dde8c0e0ebf80195",
   "05/sha256.json": "fd51af2cc4c91accecc7615b987ad55c6adb5c5f0f431c670c90e53c79e8b678",
   "05/source-cmake-cache.txt": "7eafbb8078cd085cb846d5993d4cee1118becf423d05913eec8e67f1122e701e",
-  "05/source-compile-commands.json": "9dcda0bdb8c2fe19597e0f75fb7bfc53b94a2820ca0cf2211fb6ef5be5a571fd"
+  "05/source-compile-commands.json": "9dcda0bdb8c2fe19597e0f75fb7bfc53b94a2820ca0cf2211fb6ef5be5a571fd",
+  "06-build-configuration-check/artifact-sections.txt": "8508fff8313e53aadbb47df7bdac0e88e61822e254dabf69660d9b5e2f413386",
+  "06-build-configuration-check/artifacts/vm_workload_determinism_signatures.log": "c48bf3a260d6fefa700d8ff107c068662ebb7cc6b975b9f7411ef6f8b44ed954",
+  "06-build-configuration-check/correctness.json": "113495ee40039782edb7fcd3d3e6d6620ef48c842bfbbcd437c4741f51bb18ac",
+  "06-build-configuration-check/native-validation.json": "0b9649ade609175242b599940eba5245e0c48947d09cfbb1d1108d4e0d32345c",
+  "06-build-configuration-check/receipt.json": "296e7f8446da3350e8cce4ff6598831ee7129f8736b50a96ba137739eb5b597a",
+  "06-build-configuration-check/runner-cmake-cache.txt": "50e24bc193c1d8d221df47aff8eef284a1164760ab926217858284bcc17f910e",
+  "06-build-configuration-check/runner-compile-commands.json": "6daf7b456cda8e258e0dede2aa74cb62ec565a5371e791e9dde8c0e0ebf80195",
+  "06-build-configuration-check/sha256.json": "f09d23a90e57607cf423ab49a76d6b46d6acbfd7c5844563bf85589b6eaec767",
+  "06-build-configuration-check/source-cmake-cache.txt": "7eafbb8078cd085cb846d5993d4cee1118becf423d05913eec8e67f1122e701e",
+  "06-build-configuration-check/source-compile-commands.json": "9dcda0bdb8c2fe19597e0f75fb7bfc53b94a2820ca0cf2211fb6ef5be5a571fd"
 }
