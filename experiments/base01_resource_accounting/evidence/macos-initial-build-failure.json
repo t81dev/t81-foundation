@@ -1,0 +1,59 @@
+{
+  "schema": "base01.resource-correctness.v1",
+  "purpose": "collector-correctness-only",
+  "measurement_authorized": false,
+  "performance_samples": [],
+  "audited_source_pin": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "accepted_foundation_pin": "db0e7c8b976991396eed7d14ddc1e889e9c511c2",
+  "host": {
+    "system": "Darwin",
+    "release": "25.5.0",
+    "version": "Darwin Kernel Version 25.5.0: Tue Jun  9 22:27:52 PDT 2026; root:xnu-12377.121.10~1/RELEASE_ARM64_T8112",
+    "architecture": "arm64",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]"
+  },
+  "argv": [
+    "experiments/base01_resource_accounting/validate.py",
+    "--validate-only",
+    "--build-dir",
+    "/private/tmp/t81-resource-macos-build",
+    "--output",
+    "/private/tmp/t81-resource-macos-initial.json"
+  ],
+  "implementation_sha256": {
+    "collector.py": "fd755ddf679d39bfa02c5376694e34cff42b2446dd9684d67bc2d94a2257c6b8",
+    "test_collector.py": "7276243fa3bff15be3521a5cd26829d41b2be9ce1b0e47899301aa9512a3aa0e",
+    "validate.py": "48c8a6a5ec0f34b2deef68d340c3910c126d16c84d9d2581a14f4708d3781759",
+    "fixture.c": "5d3b039fb8e1f5eed5d55ae87c09541d2b9372cb3b00d8928ae8f00609f38464"
+  },
+  "apis": {
+    "os.wait4": true,
+    "os.posix_spawn": true,
+    "getrusage(RUSAGE_SELF)": true,
+    "getrusage(RUSAGE_CHILDREN)": true
+  },
+  "build": {
+    "command": [
+      "/usr/bin/cc",
+      "-std=c11",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "/private/tmp/t81-base01-resource/experiments/base01_resource_accounting/fixture.c",
+      "-o",
+      "/private/tmp/t81-resource-macos-build/fixture"
+    ],
+    "compiler_version": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+    "compile_returncode": 1,
+    "stdout": "",
+    "stderr": "/private/tmp/t81-base01-resource/experiments/base01_resource_accounting/fixture.c:28:18: error: no member named 'ru_maxrss' in 'struct rusage'\n   28 |            usage.ru_maxrss);\n      |            ~~~~~ ^\n1 error generated.\n",
+    "fixture_source_sha256": "5d3b039fb8e1f5eed5d55ae87c09541d2b9372cb3b00d8928ae8f00609f38464"
+  },
+  "status": "build-failed",
+  "tests": {
+    "passed": 0,
+    "failed": 1,
+    "skipped": 0
+  }
+}

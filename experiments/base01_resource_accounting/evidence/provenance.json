@@ -1,0 +1,68 @@
+{
+  "purpose": "collector-correctness-only",
+  "measurement_authorized": false,
+  "performance_samples": [],
+  "implementation_commit": "75bb3a21ae0afc34e96f35ad3db9c81f3cf9ab02",
+  "audited_source_commit": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "audited_source_tree": "890b700cab92b7aa27bbd27ecc9bdb357813230b",
+  "accepted_foundation_commit": "db0e7c8b976991396eed7d14ddc1e889e9c511c2",
+  "accepted_foundation_directory_tree": "5e0dc68381f88788870c38bbaa2acfced79b8485",
+  "linux_execution": "actual Linux x86_64 kernel/userspace under QEMU TCG on macOS ARM64; not native hardware qualification",
+  "qemu_version": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\n",
+  "qemu_command": [
+    "/opt/homebrew/bin/qemu-system-x86_64",
+    "-machine",
+    "q35",
+    "-accel",
+    "tcg",
+    "-m",
+    "768",
+    "-smp",
+    "1",
+    "-nographic",
+    "-no-reboot",
+    "-kernel",
+    "/private/tmp/t81-resource-linux/vmlinuz-virt",
+    "-initrd",
+    "/private/tmp/t81-resource-linux/initramfs-virt",
+    "-append",
+    "console=ttyS0 modules=loop,squashfs,sd-mod,usb-storage alpine_dev=cdrom:iso9660",
+    "-cdrom",
+    "/private/tmp/t81-h04-feasibility-vm/alpine-virt-3.21.9-x86_64.iso",
+    "-netdev",
+    "user,id=n0,hostfwd=tcp:127.0.0.1:2291-:22",
+    "-device",
+    "virtio-net-pci,netdev=n0",
+    "-device",
+    "virtio-rng-pci"
+  ],
+  "boot_artifact_sha256": {
+    "/private/tmp/t81-resource-linux/vmlinuz-virt": "cf36621501708b6c264a8dd5193d4b661551326bb28b3b8b09e90c514854bfd1",
+    "/private/tmp/t81-resource-linux/initramfs-virt": "ec1af4a5653d8db70cee4d5ec8ec005c4586f64284810f5538f7217cdb7e0b79",
+    "/private/tmp/t81-h04-feasibility-vm/alpine-virt-3.21.9-x86_64.iso": "1ceafa2ca068faf2925de977815681c182708f3c6cbfbad137f3ffc9324a03b4"
+  },
+  "source_transport": {
+    "command": "COPYFILE_DISABLE=1 tar -czf /private/tmp/t81-resource-linux/share/source.tar.gz -C /private/tmp/t81-base01-resource experiments/base01_resource_accounting/collector.py experiments/base01_resource_accounting/fixture.c experiments/base01_resource_accounting/test_collector.py experiments/base01_resource_accounting/validate.py",
+    "archive_sha256": "ce5828c6bc8ed0b19c399699a24fba1bf4c3c4d3962da2567eb0ec5c1eda2db2",
+    "guest_download": "wget -q -O source-retained.tar.gz http://10.0.2.2:18791/source.tar.gz",
+    "note": "Only four source files; metadata entries excluded. Exact implementation hashes in OS receipts verify transport independently."
+  },
+  "linux_provisioning_commands": [
+    "ip link set eth0 up",
+    "udhcpc -i eth0 -n",
+    "printf '%s\\n' 'http://10.0.2.2:18791/alpine/v3.21/main' > /etc/apk/repositories",
+    "apk add -q python3 gcc musl-dev openssh"
+  ],
+  "package_transport": "Host loopback mirror forwards only official dl-cdn.alpinelinux.org/alpine/v3.21/main/x86_64/ downloads; stock signed APK packages; no research scripts executed",
+  "scientific_limits": [
+    "OS resource observations are authorized fixture correctness evidence only",
+    "CPU time is not elapsed time; peak RSS is not incremental allocation",
+    "No performance readiness, energy or hardware-advantage claim"
+  ],
+  "development_notes": [
+    "Initial macOS build failure retained unchanged; final builds use _DARWIN_C_SOURCE",
+    "Intermediate log adapter failed due to missing writeln; no complete receipt was created",
+    "An intermediate Linux archive contained AppleDouble metadata; final archive excludes it and source inventory is explicit; final Linux receipt is from a fresh guest",
+    "No existing accepted receipt was modified"
+  ]
+}
