@@ -159,3 +159,45 @@ authorization. Nothing here changes CMP3, H04-R03, Protocol 001, RFC acceptance,
 frozen artifacts, official publication or merge authority.
 
 See `VALIDATION.md` and `evidence/` for commands, failures and actual raw evidence.
+
+## B0 final acceptance addendum
+
+See [B0_ACCEPTANCE.md](B0_ACCEPTANCE.md) for the bounded final integration review.
+PR #687 need not merge first: Lane A bundles its exact pinned manifest snapshot
+and does not load Phase A files from `main`. This is a technical dependency
+statement, not acceptance of every historical Phase A assertion. Runtime
+validation now checks the full snapshot SHA-256, including all classifications,
+source pins, frozen exclusions and `measurement_authorized: false`.
+
+The historical manifest associates `test_resource_monitoring` with POSIX
+accounting. That attribution is incorrect: the executable checks VM resource
+policies and remains supporting regression evidence. The actual B0 validation
+for `WL-RES-RUSAGE-METRICS` is `lane_a.resource_validation()`, which checks two
+`getrusage(RUSAGE_SELF)` observations for nonnegative/nondecreasing CPU and peak
+RSS counters and applies Linux/macOS RSS normalization. It is an API smoke check,
+not an independent accounting oracle, workload-child resource attribution, RSS
+enforcement, or a timing campaign. The retained receipt already scopes this as
+`orchestrator RUSAGE_SELF smoke check only`; historical bytes remain unchanged.
+
+The original seven contract-test results remain historical evidence. Acceptance
+adds four focused checks, including native rejection tests enabled with:
+
+```sh
+BASE01_ACCEPTANCE_NATIVE=/tmp/base01-native-build/base01_lane_a \
+  python3 -B -m unittest discover -s experiments/base01_lane_a -p 'test_*.py' -v
+```
+
+The historical identity test needs the pinned Git objects. They are already
+present in this review environment; a fresh clone may need an explicit read-only
+setup fetch before running that test:
+
+```sh
+git fetch origin ecd66137bacbce50e605cfc1466ec7d36131ba9e
+```
+
+This retrieves historical evidence; it does not merge PR #687, change the source
+pin, or authorize execution. The validator itself never fetches it.
+Without the explicit native executable path the native check reports a skip. Do not
+rerun the general integration workflow: it contains unrelated benchmark jobs.
+This correction uses a `[skip ci]` commit to avoid starting those workflows;
+local B0 checks supply the acceptance evidence, not an overall CI pass.

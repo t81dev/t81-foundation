@@ -14,6 +14,7 @@ import sys
 
 SOURCE_SHA = "cda9135d36144d4de2771af174e52ac7b30a83c9"
 MANIFEST_SHA = "ecd66137bacbce50e605cfc1466ec7d36131ba9e"
+MANIFEST_SHA256 = "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea"
 IDS = ["WL-ARITH-CODEC-I64", "WL-VM-TISC-DETERMINISM-TIERS",
        "WL-CANONFS-MEM-THROUGHPUT", "WL-RES-RUSAGE-METRICS", "WL-RES-ARTIFACT-SIZE"]
 ROOT = Path(__file__).resolve().parent
@@ -52,6 +53,17 @@ def summarize(samples):
     cv = statistics.stdev(samples) / statistics.mean(samples) * 100
     return {"median_ns": statistics.median(samples), "iqr_ns": q3-q1,
             "cv_pct": cv, "status": "UNSTABLE / INCONCLUSIVE" if cv > 5 else "stable"}
+
+
+def verify_manifest(data):
+    # Pin all historical fields (including exclusions/authorization), not just IDs.
+    # Corrections belong in the acceptance addendum, never in this snapshot.
+    if digest(data) != MANIFEST_SHA256:
+        raise ValueError("pinned Phase A manifest identity mismatch")
+    manifest = json.loads(data)
+    if manifest["recommended_minimal_phase_b_workload_set"] != IDS:
+        raise ValueError("manifest allowlist mismatch")
+    return manifest
 
 
 def verify_source(source):
@@ -184,9 +196,8 @@ def validate(args):
     native_build = args.native_build.resolve()
     tree_identity = verify_source(source)
     verify_builds(source, build, native_build)
-    manifest = json.loads((ROOT / "phase-a-manifest.json").read_text())
-    if manifest["recommended_minimal_phase_b_workload_set"] != IDS:
-        raise ValueError("manifest allowlist mismatch")
+    manifest_bytes = (ROOT / "phase-a-manifest.json").read_bytes()
+    verify_manifest(manifest_bytes)
     if os.environ.get("T81_CANONFS_READ_VERIFY", "1") != "1":
         raise ValueError("T81_CANONFS_READ_VERIFY must be unset or 1")
     # New directory and exclusive file creation prevent overwriting prior evidence.
@@ -251,7 +262,7 @@ def validate(args):
               "source_sha": SOURCE_SHA, "source_tracked_bytes_sha256": tree_identity,
               "runner_sha": command(["git", "-C", ROOT, "rev-parse", "HEAD"]).strip(),
               "runner_files": {p.name:digest(p.read_bytes()) for p in sorted(ROOT.iterdir()) if p.is_file()},
-              "manifest_commit": MANIFEST_SHA, "manifest_sha256": digest((ROOT/"phase-a-manifest.json").read_bytes()),
+              "manifest_commit": MANIFEST_SHA, "manifest_sha256": digest(manifest_bytes),
               "host": host_metadata(), "compiler": {"path": compiler, "version": command([compiler,"--version"])},
               "input_identities": {IDS[0]: codec_identity,
                   IDS[1]: digest(canonical([{k:v for k,v in x.items() if k in ("tier","inputs","policy")} for x in results["vm"]])),
