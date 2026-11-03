@@ -1,0 +1,32 @@
+{
+  "scope": "ASan instrumentation of probe/test translation unit only; audited linked archives are uninstrumented",
+  "configure_command": [
+    "cmake",
+    "-S",
+    "experiments/base01_r75_semantics",
+    "-B",
+    "/private/tmp/t81-r75-asan-build",
+    "-G",
+    "Ninja",
+    "-DCMAKE_CXX_COMPILER=/usr/bin/c++",
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_CXX_FLAGS=-fsanitize=address -fno-omit-frame-pointer",
+    "-DAUDITED_SOURCE=/private/tmp/t81-base01-audited",
+    "-DAUDITED_BUILD=/private/tmp/t81-base01-source-build"
+  ],
+  "build_command": [
+    "cmake",
+    "--build",
+    "/private/tmp/t81-r75-asan-build"
+  ],
+  "run_command": [
+    "/private/tmp/t81-r75-asan-build/r75_correctness",
+    "--validate-only"
+  ],
+  "exit_code": 0,
+  "stderr": "",
+  "stdout_sha256": "3bec670484e06760fa78563f81da29f83dcdafe2156669f92eeb558dfc3f5713",
+  "matches_verified_normal_raw": true,
+  "executable_sha256": "181769cbf868c3562ff189f7d1faedf04ce989de36119a001b915d0d07e6b446",
+  "limitation": "Not a sanitizer certification of the VM libraries or other platforms."
+}
