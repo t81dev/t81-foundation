@@ -4,9 +4,12 @@
 **Target Pull Request:** PR #694
 **Observed Head Commit:** `851cfef0ef16a56f59d3e933460af1d949cacdf9`
 **Target Base (`origin/main`):** `cda9135d36144d4de2771af174e52ac7b30a83c9`
+**PR #695 Review Head:** `88d03abda9a1245fdc0767ec2a3e5ef030d3e6d7`
 **Date:** November 3, 2026
 **Auditor:** Jules (AI Senior Software Engineer)
 **Review Type:** Independent Final Integration & Cryptographic Preservation Acceptance Review
+**Retained Audit Evidence Directory:** `docs/research/base01/evidence/`
+**Retained Audit Index:** `docs/research/base01/evidence/SHA256SUMS.json`
 
 ---
 
@@ -22,11 +25,14 @@
 
 PR #694 successfully and losslessly integrates the complete Protocol BASE-01 reference performance baseline package across source PRs #687 through #693.
 
-1. **Blob Equivalence:** Exactly **126/126** tracked file blobs match byte-for-byte across their respective upstream source PR heads with zero collisions and zero modifications to existing main-branch files.
+1. **Blob Equivalence:** Exactly **126/126** tracked file blobs match byte-for-byte across their respective upstream source PR heads with zero collisions and zero modifications to existing main-branch files. Verified in raw evidence file `docs/research/base01/evidence/blob_comparison_126.json`.
 2. **Cryptographic Integrity:** Retained SHA-256 manifests and indexes validate with 100% agreement against actual committed blob contents without regeneration.
-3. **Codex P1 Finding Resolution:** The historical P1 defect regarding corrupted evidence bytes and missing trailing whitespace has been completely corrected across all 8 affected evidence files in commits `d9334a1c` through `851cfef0`. The thread is verified resolved.
-4. **Correctness & Non-Measuring Tests:** All 63 non-measuring unit, contract, and accounting tests executed cleanly across three test packages (**54 passed, 9 skipped, 0 failed**).
-5. **Execution Freeze & Boundary Safety:** All measurement, timing, warmup, trial, and PMU flags fail closed unconditionally (`returncode 2`) before any workload or driver initialization.
+3. **Codex Historical P1 Finding Resolution:** The historical P1 defect regarding corrupted evidence bytes and missing trailing whitespace has been completely corrected across all 8 affected evidence files in commits `d9334a1c` through `851cfef0`. The review thread is verified resolved.
+4. **Correctness & Non-Measuring Tests:** All 63 non-measuring unit, contract, and accounting tests were executed. In the permitted correctness-only environment with native binaries built from audited sources:
+   - All 3 native execution-freeze boundary tests were independently executed and **PASSED**.
+   - Overall test execution: **58 passed, 5 skipped (due to absence of raw native run log `BASE01_FOUNDATION_RAW`), 0 failed**.
+   - Raw execution logs are retained in `docs/research/base01/evidence/`.
+5. **Execution Freeze & Boundary Safety:** All measurement, timing, warmup, trial, and PMU flags fail closed unconditionally (`returncode 2` or `returncode 64`) before any workload or driver initialization, confirmed through both source call-path analysis and live native CLI execution.
 6. **CI & Supply Chain Hygiene:** PR #694 head exhibits **0** CI failures across all active checks. All historical CI failures on `main` are established as inherited baseline environmental gaps.
 
 ---
@@ -69,6 +75,8 @@ PR #694 introduces 126 new files against base `cda9135d36144d4de2771af174e52ac7b
 **Missing in PR #694:** 0
 **Extraneous Files in PR #694:** 0
 **Collision Count across Source PRs:** 0
+
+Full blob comparisons with per-file SHA hashes and upstream PR sources are recorded in `docs/research/base01/evidence/blob_comparison_126.json` (SHA-256: `85c788828f6d9ef0dcb0620f5c83e5f4c53e1561d9abd08445dfffa0ff935d02`).
 
 ---
 
@@ -123,12 +131,13 @@ With the restoration of these 8 files, all historical evidence matches its autho
 
 ## 6. Execution of Non-Measuring Integrity and Correctness Tests
 
-All non-measuring test suites were executed from the isolated checkout tree.
+All non-measuring test suites were executed from the isolated checkout tree. To satisfy Codex review requirements, native boundary checks were explicitly compiled and executed using the permitted correctness-only compiler toolchain (`g++ -std=c++23`) against pristine audited source targets (`t81_core`, `t81_axion`, `t81_isa`, `t81_vm`, `t81_experimental`, `t81_ffi`).
 
 ### 6.1. Suite 1: `experiments/base01_lane_a`
+- **Execution Environment:** `BASE01_ACCEPTANCE_NATIVE=/tmp/t81_base01_lane_a_bld/base01_lane_a`
 - **Command:** `python3 -B -m unittest discover -s experiments/base01_lane_a -p 'test_*.py' -v`
-- **Test Modules:** `test_lane_a.py` (7 tests) and `test_b0_acceptance.py` (4 tests)
-- **Results:**
+- **Retained Log:** `docs/research/base01/evidence/lane_a_test_run.log` (SHA-256: `4f9c8499fb65dbd46851770fbb152a0ba2f67fc8e65dd6d74c01ee08d05a5f6c`)
+- **Results (11 tests ran, 11 passed, 0 skipped, 0 failed):**
   - `test_codec_oracle_rejects_tampering`: **PASS**
   - `test_frozen_and_unknown_flags_rejected`: **PASS**
   - `test_linux_macos_rss_units`: **PASS**
@@ -139,43 +148,51 @@ All non-measuring test suites were executed from the isolated checkout tree.
   - `test_actual_resource_smoke_and_negative_invariants`: **PASS**
   - `test_full_manifest_identity_is_required`: **PASS**
   - `test_retained_evidence_and_historical_implementation_identity`: **PASS**
-  - `test_native_gate_rejects_alternate_arguments_and_environment`: **SKIPPED** (requires `BASE01_ACCEPTANCE_NATIVE`)
-- **Summary:** **11 ran (10 passed, 0 failed, 1 skipped)**
+  - `test_native_gate_rejects_alternate_arguments_and_environment`: **PASS** (independently executed with compiled `base01_lane_a`; verifies that `--measure`, `--trial`, `--warmup`, and environment overrides fail closed with exit code 2 before any work).
 
 ### 6.2. Suite 2: `experiments/base01_b1_foundation`
+- **Execution Environment:** `BASE01_FOUNDATION_NATIVE=/tmp/t81_base01_found_bld/foundation_check`
 - **Command:** `python3 -B -m unittest discover -s experiments/base01_b1_foundation -p 'test_*.py' -v`
-- **Test Modules:** `test_foundation.py` (25 tests)
-- **Results:**
-  - `AccountingTests` (4 tests): **4 PASSED**
-  - `ArtifactTests` (8 tests): **7 PASSED, 1 SKIPPED** (`test_actual_worker_artifact`)
-  - `BoundaryTests` (8 tests): **6 PASSED, 2 SKIPPED** (`test_native_rejects_measurement_before_any_output`, `test_native_rejects_persistent_root_before_work`)
-  - `WorkloadTests` (5 tests): **5 SKIPPED** (native raw evidence required: `BASE01_FOUNDATION_RAW`)
-- **Summary:** **25 ran (17 passed, 0 failed, 8 skipped)**
+- **Retained Log:** `docs/research/base01/evidence/foundation_test_run.log` (SHA-256: `58a053e90c5179b7fec2781affcf8004cf1c478a247cb188838f64f07e206e0c`)
+- **Results (25 tests ran, 20 passed, 5 skipped, 0 failed):**
+  - `AccountingTests` (4 tests): **4 PASSED** (`test_constant_bindings_and_no_sampling`, `test_lifecycle_identity_and_order`, `test_rss_normalization_and_unsupported`, `test_selector_semantics`).
+  - `ArtifactTests` (8 tests): **8 PASSED** (including `test_actual_worker_artifact` which was executed against the built ELF64 native binary).
+  - `BoundaryTests` (8 tests): **8 PASSED** (including `test_native_rejects_measurement_before_any_output` and `test_native_rejects_persistent_root_before_work`, which were executed against `foundation_check`).
+  - `WorkloadTests` (5 tests): **5 SKIPPED** (these tests evaluate raw native run logs when `BASE01_FOUNDATION_RAW` is supplied; since no performance measurements or live campaigns were authorized, they are skipped by design rather than executed).
 
 ### 6.3. Suite 3: `experiments/base01_resource_accounting`
-- **Command:** `python3 -B experiments/base01_resource_accounting/validate.py --validate-only --build-dir /tmp/base01_res_build --output /tmp/base01_res_out.json`
-- **Test Modules:** `test_collector.py` (27 tests) driven by `validate.py` with compiled C11 `fixture.c`
-- **Results:**
-  - `RealAccounting` (11 tests): **11 PASSED** (including `test_success`, `test_parent_child_attribution`, `test_exact_wait4_arguments`)
-  - `Contracts` (16 tests): **16 PASSED** (including `test_native_entry_rejects_unrecognized_modes`, `test_cli_rejects_measurement_before_build_or_execution`)
-- **Summary:** **27 ran (27 passed, 0 failed, 0 skipped)**
+- **Command:** `python3 -B experiments/base01_resource_accounting/validate.py --validate-only --build-dir /tmp/base01_res_build --output docs/research/base01/evidence/resource_accounting_validation.json`
+- **Retained Record:** `docs/research/base01/evidence/resource_accounting_validation.json` (SHA-256: `ab306c3a45738663cca3e97f211a6d81cff7500f9c87a18e5803b45143298e3f`)
+- **Results (27 tests ran, 27 passed, 0 skipped, 0 failed):**
+  - `RealAccounting` (11 tests): **11 PASSED** (verified `os.wait4`, `os.posix_spawn`, nonnegative CPU/RSS bounds, exact child PID wait, and rejection of malformed samples).
+  - `Contracts` (16 tests): **16 PASSED** (including native rejection of `--measure`, `--warmup`, `--campaign`, and validation CLI rejection of unauthorized measurement arguments).
 
 ### 6.4. Aggregate Test Execution Metrics
-- **Total Tests Executed:** 63
-- **Passed:** 54
-- **Skipped:** 9 (expected environment-dependent skips; zero test failures)
+- **Total Tests In Scope:** 63
+- **Passed:** 58 (including all 3 native boundary tests previously skipped)
+- **Skipped:** 5 (WorkloadTests in B1 foundation requiring raw native performance trial logs; appropriately unverified and unexecuted)
 - **Failed / Errored:** 0
 
 ---
 
-## 7. Protocol Boundaries and Invariant Verification
+## 7. Protocol Boundaries, Native Verification Qualification, and Invariant Verification
 
+### 7.1. Qualification of Native Boundary Checks
+To address Codex review finding 2 regarding overbroad assertions:
+1. **Independently Executed Native Boundaries (VERIFIED):**
+   - `test_native_gate_rejects_alternate_arguments_and_environment` in Lane A was executed directly against compiled binary `base01_lane_a`. All ten flag variants (`--measure`, `--measure=true`, `--trial`, `--warmup`, `--cmp3`, `--h04-r03-phase-c`, `--validate-only --measure`, and environment overrides `BASE01_MEASUREMENT_AUTHORIZED=1`) exited immediately with `returncode 2`, printed `only --validate-only is available`, and produced zero output files.
+   - `test_native_rejects_measurement_before_any_output` and `test_native_rejects_persistent_root_before_work` in B1 foundation were executed against `foundation_check`. They confirmed that measurement flags exit with status 2 and that non-in-memory storage drivers are rejected before any memory allocation or work.
+   - `Contracts.test_native_entry_rejects_unrecognized_modes` in Resource Accounting was executed against compiled `fixture`. Modes such as `--measure`, `--warmup`, and `--campaign` exited with `returncode 64` without executing child tasks.
+2. **Workload Qualification Boundaries (UNVERIFIED / EXCLUDED):**
+   - The 5 tests under `WorkloadTests` in `test_foundation.py` verify full native trial evidence records (`native.json.gz`). In this acceptance review, no performance measurement trial was authorized or executed; thus, raw native run verification of live measured performance is explicitly **UNVERIFIED and NOT CLAIMED**.
+   - B1 hardware qualification on physical Linux remains blocked pending maintainer authorization and host qualification (see `docs/runbooks/BASE01_PHYSICAL_LINUX_CORRECTNESS.md`).
+
+### 7.2. Protocol Invariants
 1. **Audited Source Revision Pin:** Verified permanently pinned to `cda9135d36144d4de2771af174e52ac7b30a83c9` across all manifests and runners.
 2. **Phase A Manifest Digest:** Verified permanently pinned to `1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea` at commit `ecd66137bacbce50e605cfc1466ec7d36131ba9e`.
 3. **VM Reference Pin:** Verified pinned to commit `7ef553d221ed668f333ff4429012ee0c9378cd13`.
 4. **Historical Receipt Runner Head:** Pinned to `54c1a92ffe5c19871c3b1a68c71083ac87fc7f0c`.
-5. **Execution Denial Gate:** Every native and Python CLI fails closed (`exitcode 2` or `exitcode 64`) when presented with measurement, timing, warmup, pilot, or trial requests (`--measure`, `--timing`, `--warmup`, `--pilot`, `--trial`, `--campaign`, `--permit`, `--benchmark`).
-6. **No Benchmarks Executed:** Zero benchmark binaries, timer calibrations, CPU PMU performance counters, or B1 hardware campaigns were initiated.
+5. **Execution Denial Gate:** Every native and Python CLI fails closed (`exitcode 2` or `exitcode 64`) when presented with measurement, timing, warmup, pilot, or trial requests.
 
 ---
 
@@ -189,12 +206,31 @@ GitHub Actions check runs for PR head `851cfef0ef16a56f59d3e933460af1d949cacdf9`
 - **Skipped Checks (3):** Optional accelerator sanity checks (`oneapi sycl`, `ascend cann`, `group anchor`).
 
 ### Baseline Failure Attribution
-The base branch `cda9135d36144d4de2771af174e52ac7b30a83c9` (`origin/main`) exhibits 12 historical check failures (`quality gate / required`, multi-platform gcc/clang/clang-cl builds, and `cxx-std / linux-x86_64 / clang`). As documented in the repository memory and baseline assessment ledger, these failures stem from external missing fixtures (`models/tiny-random-llama/model.safetensors`) and toolchain incompatibilities (GCC 13/15 header alloc traits). They are **inherited baseline failures**, not regressions introduced by PR #694. PR #694 touches exclusively new files under `docs/` and `experiments/` and does not alter root build infrastructure or existing workflows.
+The base branch `cda9135d36144d4de2771af174e52ac7b30a83c9` (`origin/main`) exhibits 12 historical check failures (`quality gate / required`, multi-platform gcc/clang/clang-cl builds, and `cxx-std / linux-x86_64 / clang`). As documented in repository memory and the baseline assessment ledger, these failures stem from external missing fixtures (`models/tiny-random-llama/model.safetensors`) and toolchain incompatibilities (GCC 13/15 header alloc traits). They are **inherited baseline failures**, not regressions introduced by PR #694. PR #694 touches exclusively new files under `docs/` and `experiments/` and does not alter root build infrastructure or existing workflows.
 
 ---
 
-## 9. Conclusion and Merge Recommendation
+## 9. Retained Review Evidence Summary
 
-PR #694 represents a complete, mathematically verified, byte-exact, and losslessly integrated delivery of the Protocol BASE-01 performance baseline engineering and evidence foundation. All prior review findings (including Codex's historical P1) are resolved, all cryptographic manifests match, all non-measuring tests pass, and measurement freeze barriers remain strictly enforced.
+All independent execution claims in this report are substantiated by raw records in `docs/research/base01/evidence/`:
+
+| Artifact File | Description | SHA-256 Digest |
+|---|---|---|
+| `environment.json` | Host OS, compiler, Python, and Git commit metadata | `5f736454df5b7d1de0a4a7d10f6a7e90491d475019fb9b3e3f6dab4867b56cf4` |
+| `blob_comparison_126.json` | Full 126/126 blob comparison records vs source PRs | `85c788828f6d9ef0dcb0620f5c83e5f4c53e1561d9abd08445dfffa0ff935d02` |
+| `resource_accounting_validation.json` | Raw output of 27 resource accounting tests | `ab306c3a45738663cca3e97f211a6d81cff7500f9c87a18e5803b45143298e3f` |
+| `lane_a_test_run.log` | Raw unittest log for Lane A (11 passed) | `4f9c8499fb65dbd46851770fbb152a0ba2f67fc8e65dd6d74c01ee08d05a5f6c` |
+| `foundation_test_run.log` | Raw unittest log for B1 Foundation (20 passed, 5 skipped) | `58a053e90c5179b7fec2781affcf8004cf1c478a247cb188838f64f07e206e0c` |
+| `SHA256SUMS.json` | Cryptographic index of all audit evidence records | `cf7d59e7f00207240fbe1a479f1843ba55c812c47d78d4f6dab73706ed03947d` |
+
+---
+
+## 10. Conclusion and Merge Recommendation
+
+PR #694 represents a complete, mathematically verified, byte-exact, and losslessly integrated delivery of the Protocol BASE-01 performance baseline engineering and evidence foundation. All prior review findings (including Codex's historical P1 and PR #695 review feedback) are resolved:
+1. Full raw evidence supporting independent execution has been retained and indexed.
+2. Native boundary tests have been executed and documented, while unexecuted workload trials remain explicitly qualified and unverified.
+3. All 126 historical source-PR files remain untouched.
+4. Measurement freeze barriers remain strictly enforced.
 
 **Recommendation:** **ACCEPT FOR MERGE** by repository maintainers.
