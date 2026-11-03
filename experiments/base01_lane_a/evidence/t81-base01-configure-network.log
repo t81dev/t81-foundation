@@ -1,0 +1,9 @@
+-- Found Python3: /opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14 (found version "3.14.3") found components: Interpreter
+-- Performing Test COMPILER_HAS_AVX2
+-- Performing Test COMPILER_HAS_AVX2 - Failed
+-- Performing Test COMPILER_HAS_FMA
+-- Performing Test COMPILER_HAS_FMA - Failed
+-- Found Doxygen: /opt/homebrew/bin/doxygen (found version "1.16.1") found components: doxygen missing components: dot
+-- Configuring done (8.3s)
+-- Generating done (0.4s)
+-- Build files have been written to: /private/tmp/t81-base01-source-build
