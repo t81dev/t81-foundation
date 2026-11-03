@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "command": [
+    "/opt/homebrew/opt/llvm/bin/llvm-readobj",
+    "--sections",
+    "/private/tmp/t81-b1-foundation-build/foundation_check"
+  ],
+  "tool_version": "Homebrew LLVM version 22.1.1\n  Optimized build.\n",
+  "binary_sha256": "9ff2b8b2a57ee3cdf0deb292bf2df124c6e4adb2f1accd5412792b26d224f5b6",
+  "section_count": 12,
+  "matched_fields": [
+    "name",
+    "segment",
+    "address",
+    "memory_bytes",
+    "file_offset",
+    "type"
+  ],
+  "scope": "static Mach-O metadata only; not resource/performance collection",
+  "supplemental_adapter_initial_attempt": {
+    "status": "FAIL",
+    "reason": "one unnamed LLVM section type is printed as 0x16 without a descriptive name; text adapter corrected; production binary parser unchanged"
+  }
+}

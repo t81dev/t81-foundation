@@ -1,0 +1,19 @@
+{
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "id": "BASE-01-LANE-A-B0",
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {"name": "Codex", "kind": "agent", "model": "GPT-6", "role": "Independent Lane A implementation; author of this apparatus, not independent reviewer of it"},
+  "repository_revision": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "evidence": [{"source_ref": "register", "relationship": "context", "scope": "H07 supporting runtime evidence apparatus only; BASE-01 does not test ternary superiority or redefine canonical hypotheses"}],
+  "uncertainty": "B0 validation only. No measured performance, cross-lane comparison, hardware advantage, or independent scientific validation. Linux and Windows execution unverified.",
+  "human_authorization": {"status": "not_requested", "human": null, "record": "Subsequent B1 measurement authorization has not been requested or granted. The current session explicitly authorizes only implementation, compilation, correctness checks, validation and a draft PR."},
+  "research_question": "Can the five assigned Phase A workloads be prepared for a reproducible conventional binary-host baseline at the exact audited source revision?",
+  "falsification_criterion": "Fail validation on wrong source bytes, changed input identities, oracle disagreement or nonzero correctness exit. Future B1 samples with CV above 5 percent are unstable/inconclusive, not a favorable finding.",
+  "matched_control": "No comparative performance claim is proposed. Exact audited implementation on a binary host is the reference. Any later cross-lane or alternative comparison requires equivalent workload inputs, semantics, assurance, setup and conversion accounting.",
+  "method": "Independent runner, existing audited VM builders and signature oracle, independent Python arbitrary-precision codec oracle, exact CanonFS byte and identity checks. Details in README.md. No Lane B coordination.",
+  "measurement_plan": "Disabled in B0. Proposed 30 fresh-process trials per timed subcase, codec 10000-conversion warm-up, other subcases five warm-up operations on disposable state; monotonic clock, retained raw intervals/counts, median, inclusive IQR and sample CV. Full dispatcher and timer/denominator qualification deferred to separately authorized B1 activation patch.",
+  "expected_artifacts": ["Raw correctness logs", "Native validation outputs", "Input SHA-256 identities", "Host metadata and compiler/build commands", "File and section sizes", "Failure history", "Future B1 raw trial records only after authorization"],
+  "resource_requirements": ["B0: four parallel compiler jobs, one validation process at a time, no performance campaigns", "Future B1: controlled single-core binary host, verified affinity/frequency/load policy, resource budget reviewed before activation"],
+  "security_requirements": ["No CMP3 or H04-R03 Phase C execution or dataset reuse, PMU collection or frozen-artifact edits", "No timing, warm-up or trial execution before explicit subsequent human B1 authorization", "No merges or governance activation"]
+}

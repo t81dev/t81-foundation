@@ -1,0 +1,3 @@
+# Raw build/cache output remains byte-exact, including tool-generated whitespace.
+*.log -whitespace
+final/*.txt -whitespace
