@@ -1,0 +1,7 @@
+[0/1] Re-running CMake...
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /private/tmp/t81-b1-foundation-build
+[1/3] Building CXX object CMakeFiles/foundation_check.dir/native.cpp.o
+[2/3] Linking CXX executable foundation_check
+ld: warning: ignoring duplicate libraries: '/private/tmp/t81-base01-source-build/libt81_axion.a', '/private/tmp/t81-base01-source-build/libt81_core.a', '/private/tmp/t81-base01-source-build/libt81_experimental.a', '/private/tmp/t81-base01-source-build/libt81_ffi.a', '/private/tmp/t81-base01-source-build/libt81_isa.a', '/private/tmp/t81-base01-source-build/libt81_vm.a'
