@@ -1,0 +1,12 @@
+{
+  "url": "https://github.com/t81dev/t81-foundation/pull/695",
+  "number": 695,
+  "title": "Add PR #694 BASE-01 Integration Acceptance Review",
+  "state": "closed",
+  "merged": true,
+  "merged_at": "2026-11-03T20:03:40Z",
+  "merge_commit_sha": "4f9edb9c3d434bbc89331fc1c428e375d71d3fba",
+  "head_sha": "3c615dda721bf7a864e9e3514b1ada23a1e3075c",
+  "base_sha": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+  "scope": "Selected GitHub API metadata observed during audit; not a signature or protocol acceptance."
+}

@@ -1,0 +1,162 @@
+{
+  "main": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+  "sources": [
+    {
+      "path": "docs/research/base01/BASE01_B1_MEASUREMENT_CONTRACT.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "f5f2e27f211c529feee924caeb71589a6aa72a9940b89ea41716fad0dcda098d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_B1_MEASUREMENT_CONTRACT.md"
+    },
+    {
+      "path": "docs/research/base01/BASE01_B1_HOST_QUALIFICATION.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "064bf829381cfef2b7239a2c571b862e3ec83e7b080434b91c57baa8fbf005a1",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_B1_HOST_QUALIFICATION.md"
+    },
+    {
+      "path": "docs/research/base01/BASE01_B1_READINESS_MATRIX.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "4565e2e37189f4332b54a3cf97d20cbf6b01a68afc84a156017dbd80bcdbab0c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_B1_READINESS_MATRIX.md"
+    },
+    {
+      "path": "docs/research/base01/BASE01_MANIFEST.json",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "1367b021f393594e4aab3bc4b52a7b76ca94ee70a49b8f0bda62aea96d46e4ea",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_MANIFEST.json"
+    },
+    {
+      "path": "docs/research/base01/BASE01_GATE_DECISION.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "bc62282cc069ce19b28399d7e37a7b492746610d2553ae15db1e0c06ee76d4fc",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_GATE_DECISION.md"
+    },
+    {
+      "path": "docs/research/base01/BASE01_WORKLOAD_AUDIT.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "e49887dd74b2bc2badd6fc7ccee194a14c83784974571fdad9ba7e7f9e1ffc47",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_WORKLOAD_AUDIT.md"
+    },
+    {
+      "path": "docs/research/base01/BASE01_INTEGRATION_ACCEPTANCE_REVIEW.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "424a27137697f55fdfc3fba3730e019186494dc90dbef01deab8ceeec2624c6b",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_INTEGRATION_ACCEPTANCE_REVIEW.md"
+    },
+    {
+      "path": "docs/research/base01/BASE01_R75_SEMANTIC_QUALIFICATION.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "3a22a10b22667611d8e5db8ac3574276b23f0923b523a75303e2ac0a3791e884",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/research/base01/BASE01_R75_SEMANTIC_QUALIFICATION.md"
+    },
+    {
+      "path": "experiments/base01_lane_a/README.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "532ab7889427f464fbfa8a1c39563c69bb161136a7ce58267abd7aeee2abdd06",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_lane_a/README.md"
+    },
+    {
+      "path": "experiments/base01_lane_a/proposal.json",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "7fd223b187104687f4308da158d4afa03461c7587997fd20dd18bfa70da5eb59",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_lane_a/proposal.json"
+    },
+    {
+      "path": "experiments/base01_lane_a/lane_a.py",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "387e402b6e9f424e9028a488e6508d59c0eee9bef9842db4289bf80fba28bc62",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_lane_a/lane_a.py"
+    },
+    {
+      "path": "experiments/base01_lane_a/runner.cpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "8702df8edeea3aaf097fdb32003f96cb0278ca7c8202bb6c4587c1772ad181f2",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_lane_a/runner.cpp"
+    },
+    {
+      "path": "experiments/base01_lane_a/measurement.hpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "fea092ea2d656482e6488f913481fcb8a3cf5ac21a6cb4502621054152043096",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_lane_a/measurement.hpp"
+    },
+    {
+      "path": "experiments/base01_b1_foundation/harness.py",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "78593c21a639a879cf869b4a9831f5fb5b26dc57f1ee9f38dd6c85ddfd530137",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_b1_foundation/harness.py"
+    },
+    {
+      "path": "experiments/base01_b1_foundation/native.cpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "543ab287e12f4393689e478a5ecf34d9c0e5b39eab0fa1bc161e879cb7984fc4",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_b1_foundation/native.cpp"
+    },
+    {
+      "path": "experiments/base01_b1_foundation/test_foundation.py",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "eb48f2a9debd61155b1661afc925a3c394225245a133f087f53cb1d293cafc69",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_b1_foundation/test_foundation.py"
+    },
+    {
+      "path": "experiments/base01_b1_foundation/AUTHORIZATION_INTERFACE.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "59a413e30cc3620fa7fbfee9dd1a98eebae0b1001225c4d5a7b18cc4cafc8809",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_b1_foundation/AUTHORIZATION_INTERFACE.md"
+    },
+    {
+      "path": "experiments/base01_b1_foundation/RETENTION_AND_BOUNDS.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "7200602e73ddb67059f277350ec589acb7e4b2995b98bb43ff013c2906e7f64c",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_b1_foundation/RETENTION_AND_BOUNDS.md"
+    },
+    {
+      "path": "experiments/base01_resource_accounting/collector.py",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "e594b3a47cc62c8694a97f2fdb50bbce1837ebcd0c33ffe712d121471619aee7",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_resource_accounting/collector.py"
+    },
+    {
+      "path": "experiments/base01_resource_accounting/SEMANTICS.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "60d2a7c9673e5d018310b68adc1a0d02d0c8b983d7f1c666767521e963d10766",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_resource_accounting/SEMANTICS.md"
+    },
+    {
+      "path": "experiments/base01_resource_accounting/READINESS.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "1f142b3690235d2c47601c62f1125afe58a66d7461b48467b34c9312701a057e",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/experiments/base01_resource_accounting/READINESS.md"
+    },
+    {
+      "path": "docs/runbooks/BASE01_PHYSICAL_LINUX_CORRECTNESS.md",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "aa6d6c03f4fdba5ea7252b9de195f589ea3f7b1a7d09299a78ae9b1d0fe96a40",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/docs/runbooks/BASE01_PHYSICAL_LINUX_CORRECTNESS.md"
+    },
+    {
+      "path": "fs/in_memory_driver.cpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "3af54cdf2db616c7c229af89b40b4e1659e3469c7f896eb84d43a9cbdb2690c4",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/fs/in_memory_driver.cpp"
+    },
+    {
+      "path": "include/t81/canonfs/canon_driver.hpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "d4b1f0f50cc6a147906a55e935e8021ed118d6c6dafc26506f358e119a4c02b3",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/include/t81/canonfs/canon_driver.hpp"
+    },
+    {
+      "path": "vm/tracing/canonhash81.cpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "cdc6a4e504c5fbe92b9b53df80ba4b6157162032834e24f6169333780bbd1f5d",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/vm/tracing/canonhash81.cpp"
+    },
+    {
+      "path": "benchmarks/BM_CanonFS.cpp",
+      "revision": "a98b22fb65c80f4225151cbcd5c6934ae076cbe1",
+      "sha256": "6a2849875fa240f31edbd680a4dc78a6034a6e89ed409883d1fd35bea71344b0",
+      "url": "https://github.com/t81dev/t81-foundation/blob/a98b22fb65c80f4225151cbcd5c6934ae076cbe1/benchmarks/BM_CanonFS.cpp"
+    }
+  ],
+  "runtime_paths_equal_measured_revision": true
+}
