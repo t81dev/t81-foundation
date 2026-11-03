@@ -160,7 +160,8 @@ class MeasurementEngineTests(unittest.TestCase):
 
     def test_host_qualification_fail_closed(self):
         snapshot, pins = host_fixture()
-        self.assertTrue(engine.qualify_host(snapshot, pins)["qualified"])
+        self.assertTrue(engine.qualify_host(snapshot, pins)["configuration_matches"])
+        self.assertFalse(engine.qualify_host(snapshot, pins)["qualified"])
         cases = {"system": "Darwin", "machine": "aarch64", "kernel": "unapproved",
                  "swap_bytes": 1, "allocation_limit_bytes": 17 * 1024**3,
                  "isolated": [], "turbo": {}, "affinity": [1], "cpus": {}}
@@ -168,15 +169,15 @@ class MeasurementEngineTests(unittest.TestCase):
             changed = copy.deepcopy(snapshot)
             changed[key] = value
             with self.subTest(key=key):
-                self.assertFalse(engine.qualify_host(changed, pins)["qualified"])
+                self.assertFalse(engine.qualify_host(changed, pins)["configuration_matches"])
         for key, value in (("governor", "powersave"), ("max_khz", 3000000), ("caches", [])):
             changed = copy.deepcopy(snapshot)
             changed["cpus"]["0"][key] = value
-            self.assertFalse(engine.qualify_host(changed, pins)["qualified"])
+            self.assertFalse(engine.qualify_host(changed, pins)["configuration_matches"])
         for key in pins:
             changed = copy.deepcopy(pins)
             del changed[key]
-            self.assertFalse(engine.qualify_host(snapshot, changed)["qualified"], key)
+            self.assertFalse(engine.qualify_host(snapshot, changed)["configuration_matches"], key)
 
     def test_probe_missing_files_does_not_qualify(self):
         with tempfile.TemporaryDirectory() as directory:

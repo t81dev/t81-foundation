@@ -131,7 +131,11 @@ def qualify_host(snapshot, pins):
     require(bool(pins.get("dedicated_host_evidence")), "dedicated host evidence required")
     require(bool(pins.get("cache_reset_procedure")), "approved inter-process cache reset required")
     require(bool(pins.get("memory_enforcement_evidence")), "immediate RSS/scratch enforcement required")
-    return {"qualified": not failures, "failures": failures, "snapshot": snapshot, "pins": pins}
+    unresolved = ["exact continuous RSS enforcement is not demonstrated",
+                  "complete native scratch allocation coverage is not demonstrated",
+                  "launch-time accounting and retention/reclamation host checks remain pending"]
+    return {"configuration_matches": not failures, "qualified": False,
+            "failures": failures, "unresolved": unresolved, "snapshot": snapshot, "pins": pins}
 
 
 def _cpu_list(value):
@@ -234,12 +238,21 @@ class _Lifecycle:
     calculation belongs inside the timed lifecycle. Checksum factory is xxHash64
     supplied by a pinned backend; fake factories are used only in unit tests.
     """
-    def __init__(self, raw, queries, arm, checksum_factory, expected_checksum, n=WORKLOAD_N):
+    def __init__(self, raw, queries, arm, checksum_factory=None, expected_checksum=None,
+                 n=WORKLOAD_N, retention_factory=None):
         if arm not in ARMS or len(raw) != 2 * n:
             raise ProtocolError("invalid arm or input length")
         self.raw, self.queries, self.arm = raw, queries, arm
         self.n, self.k = n, 64
+        if checksum_factory is None:
+            from .checksum import checksum_factory as pinned_factory, witness_record
+            if n != WORKLOAD_N or expected_checksum is not None:
+                raise ProtocolError("canonical witness required for default checksum backend")
+            checksum_factory = pinned_factory()
+            expected_checksum = witness_record()["xxh64"]
         self.checksum_factory, self.expected_checksum = checksum_factory, expected_checksum
+        self.retention_factory, self.retention = retention_factory, None
+        self.retention_evidence = None
         self.mapped = self.frame = self.output = None
         self.query_sink = 0
 
@@ -251,6 +264,8 @@ class _Lifecycle:
             if not -364 <= x <= 364:
                 raise ProtocolError("input outside frozen domain")
             self.mapped.append(x + 364)
+        if self.retention_factory is not None:
+            self.retention = self.retention_factory((self.raw, self.mapped))
 
     def frame_allocation(self):
         self.frame = bytearray(compute_expected_total_bytes(self.n, self.k, 1, "RA-FIXED", self.arm))
@@ -266,8 +281,10 @@ class _Lifecycle:
     def retention_boundary(self):
         self.raw = self.mapped = None
         gc.collect()
-        # CPython's GIL is not a physical CPU/cache memory barrier. Production
-        # qualification must establish a backend barrier; see documented blocker.
+        if self.retention is not None:
+            self.retention_evidence = self.retention.verify_release()
+        # The optional native fence proves ordering only, never physical erasure
+        # or allocator-page reclamation. Unqualified backends remain blocked.
 
     def frame_validation(self):
         if struct.unpack_from("<Q", self.frame)[0] != self.n or len(self.frame) != compute_expected_total_bytes(
@@ -309,13 +326,15 @@ class _Lifecycle:
         gc.collect()
 
 
-def _instrument(lifecycle, clock=time.perf_counter_ns, memory=None):
+def _instrument(lifecycle, clock=None, memory=None):
     """Time actual operations. Tests MUST inject a synthetic clock and memory monitor.
 
     memory is a backend monitor, not a sampled-RSS claim: enter/leave delimit
     phases and its enforcement must run during operations, including transients.
     Missing enforcement fails before a clock read or operation.
     """
+    if clock is None or clock in (time.perf_counter_ns, time.monotonic_ns, time.time_ns, time.process_time_ns):
+        raise ProtocolError("Phase C execution FROZEN; explicit synthetic clock required")
     if memory is None:
         raise ProtocolError("continuous memory enforcement backend required")
     phases, resource_records = {}, []
@@ -361,11 +380,12 @@ def _instrument(lifecycle, clock=time.perf_counter_ns, memory=None):
                 raise ProtocolError("cleanup reclamation or RSS failure")
         except Exception as exc:
             failure = (failure + "; " if failure else "") + f"cleanup: {type(exc).__name__}: {exc}"
-    return {"valid": failure is None, "failure": failure, "phase_ns": phases,
+    return {"evidence": "SYNTHETIC", "valid": failure is None, "failure": failure, "phase_ns": phases,
             "lifecycle_ns": sum(phases[p] for p in PHASES[:7]) if failure is None else None,
             "query_ns": phases.get("random_access"), "resources": resource_records,
             "checksum": getattr(lifecycle, "checksum", None),
             "witness_checksum": getattr(lifecycle, "expected_checksum", None),
+            "retention_evidence": getattr(lifecycle, "retention_evidence", None),
             "query_sink": getattr(lifecycle, "query_sink", None)}
 
 
@@ -426,15 +446,18 @@ def make_artifact(commit, environment, qualification, blocks, order_seed, *, syn
     """
     if len(commit) != 40 or any(c not in "0123456789abcdef" for c in commit):
         raise ProtocolError("full commit SHA required")
-    result = summarize(blocks)
-    if not qualification.get("qualified"):
+    if not synthetic:
+        result = {"decision": {"classification": "INVALID", "reason": "Phase C execution FROZEN"}}
+    elif not qualification.get("qualified"):
         result = {"decision": {"classification": "INVALID", "reason": "host not qualified"}}
+    elif [b.get("order") for b in blocks] != paired_orders(order_seed):
+        result = {"decision": {"classification": "INVALID", "reason": "execution order mismatch"}}
+    else:
+        result = summarize(blocks)
     artifact = {"schema": "t81.h04-r03.measurement.v1", "evidence": "SYNTHETIC" if synthetic else "UNEXECUTED",
                 "execution_frozen": True, "commit": commit, "candidate_a_integration": INTEGRATION_SHA,
                 "preregistration_commit": PREREGISTRATION_SHA, "configuration": CONFIGURATION,
                 "environment": environment, "qualification": qualification, "order_seed": order_seed,
                 "blocks": blocks, "statistics": result}
-    if [b.get("order") for b in blocks] != paired_orders(order_seed):
-        artifact["statistics"] = {"decision": {"classification": "INVALID", "reason": "execution order mismatch"}}
     body = canonical_json(artifact)
     return body, hashlib.sha256(body.encode("ascii")).hexdigest()
