@@ -191,9 +191,10 @@ All raw outputs have been preserved under `docs/research/base01/evidence/physica
 | `SHA256SUMS.json` | Master cryptographic manifest indexing all 21 committed evidence entries | 1 file (3.1 KiB) | Indexed against committed blobs |
 
 ### CMake Cache Provenance and Integrity Disclosures
-- `r75/probe-cache.txt` (`12,908` bytes, SHA-256: `9dafd65126a81ef28ed64f10c3870d8c67801c10c98c982729a59d4840bc7515`) and `r75/source-cache.txt` (`26,319` bytes, SHA-256: `e49852ab6f2dc6bfe5fb4a3600f3b61d84922b0a8a0ab296fa5534dd4185a65d`) represent the **actual CMake configuration caches generated during this virtualized Linux execution**.
+- `r75/probe-cache.txt` (`12,907` bytes, SHA-256: `ecd0830a380bf602221f3b6f5a250035992d609e4f6af416953fbf042e6e4c92`) and `r75/source-cache.txt` (`26,318` bytes, SHA-256: `fd89c2aae36bcf80a6964894b0d74c608cf0368342c6903568a0229df7562b6f`) represent the **actual committed CMake configuration cache artifacts generated during this virtualized Linux execution**.
+- Note on newline normalization: In the raw generation environment, `r75/probe-cache.txt` had 12,908 bytes and `r75/source-cache.txt` had 26,319 bytes due to a trailing second newline, whereas repository git line-ending filters normalized the trailing newline upon commit to 12,907 and 26,318 bytes respectively.
 - They are explicitly distinguished from the historical PR #690 evidence files in `experiments/base01_r75_semantics/evidence/final/` (`probe-cache.txt` SHA-256: `71a28025...`, `source-cache.txt` SHA-256: `7eafbb80...`), which were generated under an earlier macOS ARM64 environment.
-- Both `r75/sha256.json` and `SHA256SUMS.json` record the exact, unmanipulated cryptographic digests of the actual on-disk files generated during this campaign. All 21 entries in `SHA256SUMS.json` validate with 100% agreement against the committed Git blob contents.
+- Both `r75/sha256.json` and `SHA256SUMS.json` record the exact publication manifest digests matching the committed Git tree artifacts byte-for-byte. All 21 entries in `SHA256SUMS.json` validate with 100% agreement against the committed Git blob contents.
 
 ---
 
