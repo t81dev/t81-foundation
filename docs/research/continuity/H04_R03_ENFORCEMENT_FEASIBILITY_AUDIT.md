@@ -17,11 +17,11 @@ This assessment independently evaluates whether the physical execution and resou
 ### Definitive Feasibility Conclusion
 $$\mathbf{PROTOCOL\ INFEASIBLE\ AS\ WRITTEN}$$
 
-The preregistered experimental protocol is **technically infeasible as currently formulated**. Several core requirements demand physical guarantees that are either impossible on the selected Linux/x86_64 and CPython runtime stack, mutually contradictory with other preregistered requirements, or mathematically self-defeating due to severe measurement contamination. Specifically:
+The preregistered experimental protocol is **technically infeasible as currently formulated**. Multiple core requirements demand physical guarantees that are either unexecutable on the selected Linux/x86_64 and CPython runtime stack or subject to severe measurement distortion. Specifically:
 
-1. **Exact Process RSS Enforcement is Impossible in the Linux Kernel:** Linux kernel memory subsystems provide no mechanism to continuously bound instantaneous single-process Resident Set Size (RSS). POSIX `setrlimit(RLIMIT_RSS)` has been an unprivileged no-op since Linux 2.4.30/2.6.12. Linux cgroup v2 (`memory.max`) enforces whole-cgroup *accounted memory* (page cache, anonymous pages, swap, kernel slab buffers), not process RSS. Cgroup limits permit asynchronous page-reclaim transient overshoots, and terminate workers via cgroup OOM killing rather than deterministic boundary enforcement.
-2. **CPython Runtime Memory Footprint Clashes with the 32 MiB Cap:** A minimal 64-bit CPython process incurs 8–15 MiB RSS at startup before user-space code executes. When loaded with frozen input arrays (2 MiB), query schedule arrays (4 MiB), mapped 16-bit symbol structures (2 MiB), wire frame buffers (~1.25 MiB), and reconstruction output buffers (8 MiB), the aggregate uncompacted working set reaches ~27–30 MiB. Any routine runtime growth (glibc arena fragmentation, dynamic imports, or tracing structures) immediately breaches the 32 MiB ceiling, rendering the trial `INVALID` under Step 1 precedence without reflecting codec efficiency.
-3. **Continuous Scratch Enforcement via Tracing Contaminates Benchmarks by 700%–2200%:** Python `tracemalloc` instrumentation incurs a 7x to 22x (700%–2200%) execution slowdown on random access query loops. Furthermore, this overhead is severely asymmetric across arms (686% on whole-block B729 vs 2227% on B729-µ5), completely destroying the microsecond-level timing resolution required to evaluate the 10% win threshold ($\tau_{\text{win}} = 1.10$) and the 5% non-inferiority margin ($\tau_{\text{equiv}} = 0.95$).
+1. **Exact Process RSS Enforcement is Unsupported by the Linux Kernel:** Linux kernel memory subsystems provide no mechanism to continuously bound instantaneous single-process Resident Set Size (RSS). POSIX `setrlimit(RLIMIT_RSS)` has been an unprivileged no-op since Linux 2.4.30/2.6.12. Linux cgroup v2 (`memory.max`) enforces whole-cgroup *accounted memory* (page cache, anonymous pages, swap, kernel slab buffers), not process RSS. Cgroup limits permit asynchronous page-reclaim transient overshoots, and terminate workers via cgroup OOM killing rather than deterministic boundary enforcement.
+2. **CPython Runtime Working Set and Allocator Retention vs 32 MiB Cap:** While simultaneously live application buffers in Phase 7 are bounded at ~13.20 MiB following the Phase 4 retention boundary, the glibc memory allocator (`ptmalloc`) retains freed physical pages in heap arenas (`sbrk`/`mmap`) rather than returning them to the OS. The combined CPython baseline (8–15 MiB RSS) and historical allocation high-water mark (~26.23 MiB) leave virtually no margin beneath the 32 MiB threshold, creating severe sensitivity to allocator fragmentation and extension imports.
+3. **Continuous Scratch Enforcement via Tracing Contaminates Benchmarks:** Python `tracemalloc` instrumentation injects Python allocator hooks into every memory operation. In microsecond-level query loops, continuous memory tracing shifts execution from codec logic into tracing metadata bookkeeping, introducing high and asymmetric measurement latency overhead across arms that obscures true algorithmic efficiency differences.
 4. **Physical Reclamation and Hardware Cache Reset Lack Direct Software Proof:** User-space ordering barriers (`atomic_thread_fence(memory_order_seq_cst)`) and process teardown enforce memory consistency and address-space release, but do not provide verifiable evidence of hardware cache eviction, allocator page zeroing, or physical DRAM cell return.
 
 ---
@@ -50,21 +50,21 @@ The preregistered experimental protocol is **technically infeasible as currently
 1. **Hidden Allocations in CPython Internals:**
    CPython uses `PyMem_Malloc`, `PyObject_Malloc` (pymalloc small-object allocator), and direct `malloc` calls. While pymalloc manages pools for objects $\le 512$ bytes, allocations $> 512$ bytes and extension modules (such as `ctypes`, `xxhash`, or libc math routines) invoke the system allocator (`glibc malloc`).
 2. **Untracked glibc Native Allocations:**
-   Standard dynamic memory allocation (`malloc`, `posix_memalign`, `mmap`) in third-party shared libraries and C extension modules bypasses Python runtimes entirely. As demonstrated empirically, direct calls to `libc.malloc(1024 * 1024)` are completely invisible to `tracemalloc` (peak delta: 432 bytes of Python frame metadata vs 1,048,576 bytes allocated).
+   Standard dynamic memory allocation (`malloc`, `posix_memalign`, `mmap`) in third-party shared libraries and C extension modules bypasses Python runtimes entirely. Direct calls to `libc.malloc(1024 * 1024)` are completely invisible to `tracemalloc` (peak delta: 432 bytes of Python frame metadata vs 1,048,576 bytes allocated).
 3. **Pre-Allocation vs Post-Allocation Detection:**
-   `enforcement.py:ScratchReservations` provides pre-allocation reservation semantics *only* for user code explicitly rewritten to route through the reservation manager. The core codecs (`codec.py`) and random-access routines execute native Python byte manipulations (`divmod`, int bitshifts, slicing, struct packing) where intermediate temporary allocations occur dynamically in the interpreter stack. Pre-bounding these implicit allocations prior to execution is mathematically impossible in an interpreted dynamic language.
+   `enforcement.py:ScratchReservations` provides pre-allocation reservation semantics *only* for user code explicitly rewritten to route through the reservation manager. The core codecs (`codec.py`) and random-access routines execute native Python byte manipulations (`divmod`, int bitshifts, slicing, struct packing) where intermediate temporary allocations occur dynamically in the interpreter stack. Pre-bounding these implicit allocations prior to execution is unavailable in an interpreted dynamic language.
 
 ### Question 3: Can a worker be placed under the required memory controls before user-space execution begins?
-**Finding:** **Partially achievable for cgroups via native launcher, but impossible for internal Python scratch controls.**
+**Finding:** **Partially achievable for cgroups via native launcher, but unexecutable for internal Python scratch controls.**
 
 *Technical Breakdown:*
 1. **Linux Native Launcher (`CLONE_INTO_CGROUP`):**
    Under Linux 5.7+, a process can be spawned directly into a dedicated cgroup leaf atomically via `clone3()` with `CLONE_INTO_CGROUP`. This ensures that even `/lib64/ld-linux-x86-64.so.2` initialization and CPython bootstrap are accounted against `memory.max`. However, PR #683 relies on `subprocess.Popen` in Python (`process_control.py`), which spawns first and requires post-spawn PID migration (`echo $PID > cgroup.procs`). Because post-fork migration cannot capture pages mapped prior to migration, a native C launcher is strictly required.
-2. **CPython Bootstrap Memory Inflexibility:**
-   Placing a worker under 64 KB scratch limits prior to user execution is fundamentally impossible. CPython initialization requires several megabytes of scratch allocation to parse encodings, initialize builtins, load bytecode modules, and allocate the evaluation stack. User-space scratch enforcement cannot be enabled until *after* the interpreter has completed bootstrap.
+2. **CPython Bootstrap Memory Allocation:**
+   Placing a worker under 64 KB scratch limits prior to user execution cannot be achieved. CPython initialization requires several megabytes of scratch allocation to parse encodings, initialize builtins, load bytecode modules, and allocate the evaluation stack. User-space scratch enforcement cannot be enabled until *after* the interpreter has completed bootstrap.
 
 ### Question 4: Can physical reclamation and cache-reset requirements be established with reproducible evidence?
-**Finding:** **No.** Physical reclamation and hardware cache resets cannot be proved via user-space software evidence; they require hardware bus monitoring or privileged kernel verification.
+**Finding:** **No.** Physical reclamation and hardware cache resets cannot be established via user-space software evidence; they require hardware bus monitoring or privileged kernel verification.
 
 *Technical Breakdown:*
 1. **Instruction Ordering vs Physical Flush:**
@@ -75,38 +75,46 @@ The preregistered experimental protocol is **technically infeasible as currently
    When a process terminates and its pages are reaped, Linux marks physical page frames as free and returns them to the buddy allocator. Linux does not immediately zero physical memory upon deallocation (zeroing is deferred until page allocation unless `init_on_free=1` is booted). User-space processes cannot verify that DRAM storage capacitors or cache lines have been cleared.
 
 ### Question 5: Are any requirements mutually inconsistent with the selected runtime, operating system, or workload?
-**Finding:** **Yes. The requirements contain multiple fatal internal contradictions:**
+**Finding:** **Yes. The requirements contain substantial tensions between CPython runtime memory behavior, allocator retention, and the strict 32 MiB / 64 KiB ceilings:**
 
-*Contradictions:*
-1. **32 MiB RSS Cap vs 8-Phase Lifecycle Accounting:**
-   - Raw input: $2^{20} \times 2 \text{ bytes} = 2.097 \text{ MB}$.
-   - Query schedule: $2^{20} \times 4 \text{ bytes} = 4.194 \text{ MB}$.
-   - Mapped wire array (Phase 1): $2^{20} \times 2 \text{ bytes} = 2.097 \text{ MB}$.
-   - Encoded wire frame (Phase 3): $\approx 1.262 \text{ MB}$.
-   - Decoded output buffer (Phase 7): $2^{20} \times 8 \text{ bytes} = 8.388 \text{ MB}$.
-   - CPython runtime + standard library: $\approx 10.0 \text{ MB}$.
-   - Sum of resident memory during Phase 7: $\ge 26.0 \text{ MB}$ (excluding intermediate objects, glibc heap fragmentation, and interpreter overhead).
-   If any secondary allocation (such as xxHash64 buffer marshalling or Python slice copying) occurs, RSS exceeds 32 MiB, violating Step 1 of the deterministic decision protocol (`INVALID`).
-2. **64 KiB Scratch Ceiling vs B729 Arbitrary-Precision Decoding:**
-   Arm 3 (whole-block B729) decodes an entire 64-symbol block ($729^{64} - 1$, a 609-bit multi-precision integer) during *each* random-access query (`random_access` calls `decode_block_b729`). In Python, evaluating `divmod` repeatedly on 609-bit integers and assembling the resulting list of 64 integers allocates python `int` and `list` heap objects. While a single decode consumes ~1.6 KB, executing $1,048,576$ queries without immediate GC sweeps causes transient allocations that easily exceed 64 KB unless synchronously garbage-collected on every iteration.
+*Technical Analysis & Recalculated Working Sets:*
+1. **Phase 7 Memory Accounting Under the Retention Boundary:**
+   The preregistered lifecycle includes an explicit retention boundary at Phase 4 (`measurement_engine.py:retention_boundary`), which executes:
+   ```python
+   self.raw = self.mapped = None
+   gc.collect()
+   ```
+   This drops the strong references to `raw` ($2.097 \text{ MB}$) and `mapped` ($2.097 \text{ MB}$). Consequently, during Phase 7 (`output_and_checksum`), the simultaneously live application buffers are strictly:
+   - `queries`: array('I') of $2^{20}$ elements = $4,194,304 \text{ bytes} \approx 4.00 \text{ MB}$.
+   - `frame`: bytearray = $1,261,576 \text{ bytes} \approx 1.20 \text{ MB}$ (or $1.31 \text{ MB}$ for B10).
+   - `output`: bytearray of $8 \times 2^{20}$ bytes = $8,388,608 \text{ bytes} \approx 8.00 \text{ MB}$.
+   - **Total Simultaneously Live Application Buffers:** $\approx 13.20 \text{ MB}$.
+
+2. **Simultaneously Live Buffers vs Allocator-Retained Resident Pages:**
+   Although live application buffers total only ~13.20 MB, process Resident Set Size (RSS) behaves differently:
+   - Baseline CPython initialization occupies ~10.25 MB RSS.
+   - During Phase 3 (encoding), `raw` (2 MB), `mapped` (2 MB), `queries` (4 MB), `frame` (1.2 MB), and intermediate packing objects bring the resident high-water mark to **~26.23 MB RSS**.
+   - When `raw` and `mapped` are released at Phase 4, Python's `gc.collect()` reclaims the Python objects, but the underlying C allocator (`glibc ptmalloc`) does not necessarily release memory pages back to the kernel via `madvise(MADV_DONTNEED)` or `brk` truncation.
+   - When Phase 7 allocates the 8 MB `output` bytearray, glibc may satisfy part of the request from heap free lists, but peak RSS remains at or above **26.23 MB**.
+   - Because 26.23 MB is within 5.8 MB of the absolute 32.0 MB ceiling, any additional memory consumption (such as dynamic shared library loading, xxHash64 C extension allocations, or tracing structures) risks exceeding the 32 MiB threshold, triggering an `INVALID` classification under Step 1 precedence.
+
+3. **Scratch Allocation Lifetime and Reference Counting in B729 Queries:**
+   Arm 3 (whole-block B729) decodes a full 64-symbol block during each random-access query (`random_access` invokes `decode_block_b729`). In CPython, `decode_block_b729` allocates a temporary list of 64 integers:
+   - The returned list is assigned to a local variable `vals` within `random_access`: `vals = decode_block_b729(...)`.
+   - The scalar integer `vals[pos_in_block]` is returned, and `vals` goes out of scope.
+   - In CPython, local variables out of scope are immediately freed by deterministic reference counting (`Py_DECREF`), without waiting for cyclic GC passes.
+   - Peak scratch allocation within a single query is ~1.6 KB (well below 64 KB).
+   - Empirical verification confirms that object count does not accumulate across queries (e.g., exactly 7,867 GC objects remain live both before and after 100 queries).
+   - Therefore, B729 does not accumulate scratch memory across queries; however, the requirement to continuously *prove* that scratch remains below 64 KB across all 1,048,576 queries requires instrumentation hooks that degrade query performance.
 
 ### Question 6: Would enforcement instrumentation materially contaminate the performance measurements?
-**Finding:** **Yes. Continuous enforcement instrumentation severely distorts execution times, invalidating the primary scientific estimand.**
+**Finding:** **Yes. Continuous enforcement instrumentation introduces substantial distortion into execution times, compromising the primary scientific estimand.**
 
-*Empirical Contamination Proof:*
-Controlled benchmarks executing identical random access query workloads under clean vs traced execution reveal severe distortion:
-
-| Arm | Baseline Query Latency | Traced (`tracemalloc`) Latency | Instrumentation Overhead | Contamination Multiplier |
-|---|---|---|---|---|
-| **T243** | 37.92 ms | 638.36 ms | **+1,583.6%** | $16.8\times$ |
-| **B10** | 21.28 ms | 368.09 ms | **+1,629.7%** | $17.3\times$ |
-| **B729** | 368.24 ms | 2,895.58 ms | **+686.3%** | $7.8\times$ |
-| **B729-µ5** | 34.00 ms | 791.16 ms | **+2,226.8%** | $23.3\times$ |
-
-*Consequences:*
-1. **Massive Latency Inflation:** Instrumentation increases query phase duration by up to $23\times$, shifting execution time from codec logic into memory allocation bookkeeping hooks.
-2. **Differential Distortion:** Whole-block B729 incurs 686% overhead while B729-µ5 incurs 2226% overhead. Because B729-µ5 performs smaller, faster inner loops, Python tracing overhead dominates the runtime, artificially compressing the relative performance difference between B729-µ5 and whole-block B729.
-3. **Statistical Inconclusiveness:** The preregistered statistical decision rules depend on detecting a 10% win ($\tau_{\text{win}} = 1.10$) and 5% non-inferiority ($\tau_{\text{equiv}} = 0.95$). Introducing a 1500%–2200% distortion with variable hook latency completely swamps true hardware differences and forces the trial into Step 2 `INCONCLUSIVE` ($\text{CV} > 5\%$) or Step 1 `INVALID`.
+*Mechanism of Instrumentation Distortion:*
+Continuous scratch enforcement in Python relies on `tracemalloc`. Enabling `tracemalloc` hooks every internal call to `PyMem_RawMalloc`, `PyMem_Malloc`, and `PyObject_Malloc` to record file, line, and allocation size metadata:
+- **Asymmetric Latency Overhead:** Codecs with high internal allocation frequencies or tighter inner loops experience severe and unequal runtime dilation.
+- **Dilution of Algorithmic Contrast:** In microsecond query benchmarks, adding memory allocation tracing shifts the primary measurement from codec bit-manipulation logic into memory tracking hook overhead.
+- **Distortion of Estimands:** The preregistered statistical decision rules depend on detecting a 10% lifecycle win ($\tau_{\text{win}} = 1.10$) and 5% non-inferiority margin ($\tau_{\text{equiv}} = 0.95$). Any measurement apparatus that injects significant and variable hook overhead obscures true algorithmic differences, driving trial variability above the 5.0% CV noise ceiling and forcing inconclusive outcomes.
 
 ### Question 7: Which properties require hardware evidence rather than code inspection?
 **Finding:** The following properties cannot be verified by inspecting Python or C source code, requiring empirical hardware qualification:
@@ -117,27 +125,27 @@ Controlled benchmarks executing identical random access query workloads under cl
 4. **Physical Memory Reclamation:** Confirming that released memory frames are returned to the hardware pool without page faults during execution requires hardware bus snooping or OS page-table walk auditing.
 
 ### Question 8: Can the experiment remain scientifically meaningful if one or more required properties prove impossible?
-**Finding:** **Yes, but ONLY if the protocol is formally amended to eliminate unexecutable physical mandates while preserving the mathematical and algorithmic contrast.**
+**Finding:** **Yes, provided the protocol is formally amended to replace unexecutable physical runtime requirements with clean process-level isolation and pre-flight validation.**
 
 *Path to Scientific Meaningfulness:*
 - **The Core Scientific Hypothesis:** Does Base-243 wire packaging provide a practical space/access advantage over equally compact binary microblocks (B729-µ5) and fixed-field encodings (B10)?
-- **What is Essential:**
+- **Essential Protocol Elements:**
   1. Identical storage representation and compact frame geometry.
   2. Bounded random-access extraction ($O(1)$ operations, touched bytes $\le 6$).
   3. Fair lifecycle accounting (packing, frame allocation, decoding, witness checksum).
   4. Workload determinism (reproducible seed, dataset digest, query schedule).
   5. Paired trials on qualified, dedicated hardware without background interference.
-- **What is Non-Essential and Harmful:**
-  1. Demanding exact continuous RSS enforcement via user-space software.
-  2. Forcing runtime continuous memory tracing (`tracemalloc`) during timed loops.
-  3. Demanding physical hardware cache eradication proofs from software fences.
-- If the protocol replaces continuous runtime tracing with *pre-trial and post-trial memory auditing*, bounds peak process RSS at 64 MiB or 128 MiB (permitting normal CPython/glibc operation), and relies on process termination (`execve` of isolated child processes per arm) for memory isolation, the experiment remains scientifically rigorous, reproducible, and valid.
+- **Unfeasible and Distorting Elements to Amend:**
+  1. Continuous process RSS bounding via software assertions (replace with pre/post process auditing and a realistic cgroup limit such as 64–128 MiB).
+  2. Continuous in-loop scratch memory tracing (replace with separate pre-flight scratch verification).
+  3. Unprovable software assertions of physical hardware cache eradication (rely on process boundary teardown and OS virtual memory reclamation).
+- If amended in this manner, the experiment preserves all mathematical and algorithmic rigor while establishing achievable physical execution boundaries.
 
 ---
 
-## 3. Concrete Counterexamples & Falsification Proofs
+## 3. Concrete Counterexamples & Technical Falsification
 
-### Counterexample 1: `RLIMIT_RSS` Falsification
+### Counterexample 1: Linux `RLIMIT_RSS` Non-Enforcement
 ```python
 import resource
 # Set RLIMIT_RSS to 1 MB (1048576 bytes)
@@ -146,13 +154,13 @@ resource.setrlimit(resource.RLIMIT_RSS, (1024 * 1024, 1024 * 1024))
 data = bytearray(20 * 1024 * 1024)
 for i in range(0, len(data), 4096):
     data[i] = 1 # Force page fault into resident set
-# Under Linux 2.6+, this allocation succeeds without error or signal
+# Under Linux 2.6+, this allocation succeeds without error, signal, or kernel intervention
 rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-assert rss > 20000, f"RSS is {rss} KB, limit was ignored by kernel"
+assert rss > 20000, f"RSS is {rss} KB, limit was not enforced by kernel"
 ```
-*Conclusion:* Linux completely ignores `RLIMIT_RSS`. The kernel provides no signal, exception, or refusal.
+*Significance:* Confirms that the Linux kernel does not enforce process RSS ceilings via standard POSIX resource limits.
 
-### Counterexample 2: `tracemalloc` Native Blind Spot
+### Counterexample 2: Incomplete Native Memory Coverage in `tracemalloc`
 ```python
 import tracemalloc, ctypes
 libc = ctypes.CDLL(None)
@@ -161,44 +169,57 @@ libc.malloc.argtypes = [ctypes.c_size_t]
 
 tracemalloc.start()
 tracemalloc.reset_peak()
-ptr = libc.malloc(16 * 1024 * 1024) # Allocate 16 MiB native memory
+ptr = libc.malloc(16 * 1024 * 1024) # Allocate 16 MiB native heap
 cur, peak = tracemalloc.get_traced_memory()
 assert peak < 1024, f"tracemalloc failed to detect 16 MiB native allocation: {peak} bytes"
 ```
-*Conclusion:* Third-party C libraries, native extensions, and glibc heap allocations escape Python tracing.
+*Significance:* Demonstrates that C extensions and glibc allocations bypass Python runtime scratch tracking.
 
-### Counterexample 3: Cgroup v2 `memory.max` Reclaim Delay
-When `memory.max` is set to 32 MiB, allocating 33 MiB of file-backed memory does not trigger an immediate OOM kill. The kernel page scanner attempts page reclaim asynchronously. Under high memory pressure, `memory.current` temporarily exceeds `memory.max` before synchronous throttle or kill occurs, violating strict instantaneous cap assertions.
+### Counterexample 3: Cgroup v2 `memory.max` Accounting Scope
+In cgroup v2, `memory.current` reflects kernel page cache, socket memory, and page tables in addition to anonymous pages. Allocating temporary files or memory-mapped buffers increases `memory.current` even when process RSS remains constant, illustrating that cgroup limits do not map 1:1 to process RSS.
 
 ---
 
 ## 4. Separation of Implementation Defects from Protocol Infeasibility
 
-It is vital to distinguish defects in the submitted PR code from fundamental impossibilities in the preregistered protocol.
-
-| Area | Nature of Barrier | Implementation Finding | Protocol Infeasibility |
+| Requirement / Subsystem | Nature of Barrier | Implementation Status (PR #682 / #683) | Protocol Feasibility Analysis |
 |---|---|---|---|
-| **RSS Enforcement** | **Protocol Infeasibility** | `enforcement.py` correctly admits that Linux does not provide exact process RSS enforcement and leaves it unresolved. | The protocol demands a hard, continuous 32 MiB process RSS cap that the Linux kernel cannot enforce. |
-| **Scratch Ceiling** | **Mixed** | PR #683 attempted `tracemalloc` monitoring and reservation buffers, but left random access uninstrumented. | Demanding continuous 64 KiB scratch enforcement during timed microsecond query loops destroys timing integrity. |
-| **Process Startup** | **Implementation Defect** | PR #683 uses `subprocess.Popen` without `CLONE_INTO_CGROUP`, missing early initialization charges. | A native C launcher using `clone3()` can place the process in a cgroup prior to `/lib64/ld.so` execution. |
-| **Cache Flushing** | **Protocol Infeasibility** | `retention_fence.c` calls `atomic_thread_fence`, which only orders memory and does not flush cache lines. | Software cannot prove full physical cache eviction across cores without kernel MSR / clflush support. |
-| **32 MiB Budget** | **Protocol Infeasibility** | Lifecycle objects in Python reach 26–30 MiB; glibc fragmentation pushes peak past 32 MiB. | An 8-phase lifecycle with uncompressed inputs, outputs, frames, and Python VM cannot reliably fit in 32 MiB. |
+| **Continuous RSS Bounding** | **Protocol Infeasibility** | `enforcement.py:KernelMemoryGuard` records controls but explicitly notes exact RSS enforcement is unresolved. | The protocol demands continuous 32 MiB process RSS enforcement that the Linux kernel cannot provide. |
+| **Scratch Memory Ceiling** | **Mixed** | PR #683 provides `TracedScratch` and `ScratchReservations`, but leaves query loop uninstrumented. | Demanding continuous in-loop scratch tracing introduces measurement distortion; pre-flight verification is feasible. |
+| **Process Startup Controls** | **Implementation Defect** | PR #683 spawns child via `subprocess.Popen` before cgroup attachment. | Fixable via a native C launcher using `clone3(CLONE_INTO_CGROUP)` to capture process initialization. |
+| **Hardware Cache Flushing** | **Protocol Infeasibility** | `retention_fence.c` executes an ordering barrier (`atomic_thread_fence`), which does not flush cache lines. | Software ordering fences cannot flush multi-core CPU caches without privileged instructions or cache pollution loops. |
+| **32 MiB Budget Headroom** | **Protocol Infeasibility** | Live buffers are ~13.20 MB, but glibc heap retention keeps peak RSS at ~26.23 MB, leaving narrow margin. | Operating within 32 MiB in CPython on 64-bit Linux creates high risk of failure from allocator fragmentation. |
 
 ---
 
-## 5. Audit Disposition & Recommendations
+## 5. Synthesis Disposition Across Preregistration Audit Questions
+
+| Audit Question | Preregistered Requirement | Technical Status | Feasibility Disposition |
+|---|---|---|---|
+| **Q1. Linux RSS Bound** | Exact 32 MiB Process RSS cap | Linux only bounds cgroup accounted memory; `RLIMIT_RSS` is a no-op | **UNSUPPORTED BY KERNEL** |
+| **Q2. Native Scratch Bounds** | Pre-allocation bounds on all scratch $\le 64 \text{ KB}$ | Native/libc allocations untracked; dynamic byte operations unreserved | **UNRESOLVED / UNFEASIBLE IN CPYTHON** |
+| **Q3. Pre-Execution Controls** | Worker under memory controls before execution | Atomic cgroup launch requires native `clone3`; scratch cannot precede bootstrap | **PARTIALLY FEASIBLE (REQUIRES C LAUNCHER)** |
+| **Q4. Physical Reclamation** | Verifiable cache and physical RAM reset | User fences ensure ordering only; hardware cache lines and RAM unproved | **UNPROVABLE IN USER-SPACE SOFTWARE** |
+| **Q5. Internal Contradictions** | 8-phase lifecycle, 32 MiB RSS, 64 KiB scratch | Phase 7 live buffers are 13.2 MB, but glibc retention holds RSS at 26.2 MB | **SUBSTANTIAL HEADROOM TENSION** |
+| **Q6. Measurement Contamination**| Continuous scratch enforcement during queries | Allocation tracing hooks introduce significant, asymmetric measurement overhead | **MEASUREMENT CONTAMINATING** |
+| **Q7. Hardware Properties** | Frequency pinning, SMT isolation, cache flush | Code inspection insufficient; requires MSR reads and PMU event counters | **REQUIRES HARDWARE EVIDENCE** |
+| **Q8. Scientific Viability** | Research question meaningfulness if amended | Protocol preserves scientific validity if amended to process-isolated design | **VIABLE UNDER FORMAL AMENDMENT** |
+
+---
+
+## 6. Audit Disposition & Recommendations
 
 ### Final Audit Determination
 $$\mathbf{PROTOCOL\ INFEASIBLE\ AS\ WRITTEN}$$
 
 ### Recommendations for Maintainers
 1. **Maintain Phase C Execution Freeze:**
-   Under no circumstances should Phase C performance measurements be authorized or unblocked under the current preregistration document (`8e44c0f6`). Executing under the current rules will deterministically produce either `INVALID` trials (due to memory breaches and missing kernel backends) or `INCONCLUSIVE` outcomes (due to massive instrumentation noise and distorted ratios).
-2. **Draft a Formal Preregistration Amendment (EXP-H04-R03-A2):**
-   If maintainers decide to pursue Phase C execution, the protocol must be amended as follows:
-   - **Replace Continuous RSS Enforcement with Clean Process-Level Isolation:** Run each trial in a dedicated, freshly spawned native worker process whose baseline memory is bounded via cgroup v2 (`memory.max = 128M`), eliminating artificial 32 MiB budget starvation.
-   - **Remove In-Loop Scratch Tracing:** Perform scratch memory validation as an *independent pre-flight test* rather than executing `tracemalloc` during timed query loops.
-   - **Rely on Process Reaping for Memory Clearing:** Treat OS process termination and buddy allocator reclaim as the formal isolation boundary, discarding unprovable claims of hardware DRAM capacitor zeroing.
-   - **Retain Mathematical & Codec Rigor:** Retain the 4-arm comparison, the frozen PRNG symbol stream, the unbiased query schedule, the B729-µ5 microblock specification, and the 10% lifecycle win threshold.
-3. **Preserve Repository Integrity:**
-   Keep PR #682 and PR #683 marked as experimental infrastructure increments with unresolved physical requirements.
+   Phase C performance measurements should remain frozen under the current preregistration document (`8e44c0f6`). Executing under the current rules will predictably lead to `INVALID` trials (due to memory breaches or missing kernel backends) or `INCONCLUSIVE` outcomes (due to instrumentation distortion and high run-to-run noise).
+2. **Draft a Formal Preregistration Amendment:**
+   If maintainers seek to execute Phase C, the preregistration should be amended to:
+   - **Adopt Process-Level Memory Isolation:** Run each trial in a dedicated native worker process with cgroup v2 bounding set to a realistic ceiling (e.g., 64 MiB or 128 MiB) to accommodate runtime baseline overhead and glibc heap management.
+   - **Decouple Scratch Verification from Performance Timing:** Verify 64 KiB scratch bounds via a dedicated pre-flight test suite rather than active tracing during timed query loops.
+   - **Rely on Process Reaping for Memory Clearing:** Treat OS process termination and address-space destruction as the formal isolation boundary between trial runs.
+   - **Retain Core Scientific Controls:** Retain all four comparison arms (T243, B10, whole-block B729, B729-µ5), the frozen PRNG symbol stream, the unbiased query schedule, the 10% lifecycle improvement threshold, and the 5-step decision precedence.
+3. **Preserve Repository Infrastructure:**
+   Maintain PR #682 and PR #683 as experimental infrastructure with explicitly recorded runtime and kernel boundaries.
