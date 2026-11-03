@@ -1,6 +1,6 @@
 # BASE-01 B1 CanonFS retained-read budget — proposed amendment A1
 
-**Status: PROPOSED / NOT APPROVED.** This is a design-only request for a human protocol decision. It does not authorize qualification, timed execution, warm-up, pilots, measurement, host provisioning, or any change to the measured source. Until explicitly accepted, the existing B1 measurement contract and its **16 MiB retained-output-per-child ceiling** remain authoritative.
+**Status: HUMAN-DIRECTED PROTOCOL INTEGRATION CANDIDATE — NOT MERGED OR ACTIVATED.** The maintainer instructed integration after Codex's five-finding proposal-level acceptance review (conversation instruction, 2026-11-03). This records direction to prepare the normative-document changes on draft PR #699, not signed measurement authorization or proof of a qualified host. The effective published protocol remains the current default branch until separately reviewed and merged. No qualification, timed execution, warm-up, pilot, measurement, host provisioning, or measured-source change is authorized.
 
 ## Conflict and scope
 
@@ -52,4 +52,4 @@ The 128 MiB budget is a **proposal**, not a demonstrated memory requirement. Bef
 4. Require the dedicated physical Linux host, reviewed dynamic dispatcher, signed permits, and separate qualification/campaign authorization. No protected measurement follows from this design approval.
 5. Retain the physical-host result of PR #698 as **BLOCKED — PHYSICAL HOST UNAVAILABLE**. This amendment does not retroactively qualify a VM or authorize a campaign.
 
-**Disposition:** PROPOSED — AWAITING HUMAN APPROVAL. No experimental evidence or timing result is claimed.
+**Disposition:** PROTOCOL-INTEGRATION CANDIDATE — HUMAN DIRECTION TO PROCEED RECORDED; PENDING PR REVIEW/MERGE. No experimental evidence, timing result, signed permit, or physical-host qualification is claimed. The containment ceiling and its enforcement profile still require a separate human decision.
