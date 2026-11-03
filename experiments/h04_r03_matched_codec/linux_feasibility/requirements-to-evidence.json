@@ -1,0 +1,160 @@
+{
+  "author": "Codex",
+  "baseline": "dbc8c1ac05aebf9f64dccc45968b75e891b6ff21",
+  "codec_arms_executed": false,
+  "freeze_lifted": false,
+  "host_qualified": false,
+  "independent_reproduction": false,
+  "model": null,
+  "overall_disposition": "FEASIBILITY BLOCKED",
+  "phase_c_executed": false,
+  "preregistration": "8e44c0f667c62e0d4143bb93169fc3235d5ebd66",
+  "requirements": [
+    {
+      "claim": "Launch-time containment before worker user-space initialization under the kernel contract",
+      "evidence": [
+        "evidence/diagnostics.final.log",
+        "evidence/kernel-source-manifest.json",
+        "containment_probe.c"
+      ],
+      "id": "F1",
+      "limits": [
+        "Root case in emulated Linux only",
+        "No instruction-by-instruction startup trace or kernel-binary/source rebuild attestation",
+        "Unprivileged delegation and production escape-prevention not tested",
+        "Inherited/shared charges are not reassigned by placement"
+      ],
+      "status": "PARTIALLY DEMONSTRATED"
+    },
+    {
+      "claim": "Exact continuous process RSS <=32 MiB under the frozen worker contract",
+      "evidence": [
+        "evidence/diagnostics.final.log",
+        "REPORT.md#f2--exact-continuous-rss"
+      ],
+      "id": "F2",
+      "limits": [
+        "No conforming backend identified in evaluated stock interfaces",
+        "No claim about every possible custom kernel or closed-world design",
+        "A conservative RLIMIT_AS upper-bound proof and actual frozen-worker admissibility were not tested; no universal impossibility claim"
+      ],
+      "status": "BLOCKED"
+    },
+    {
+      "claim": "Complete <=64 KiB peak-live scratch admission enforcement across interpreter/native/internal paths",
+      "evidence": [
+        "native_scratch_probe.py",
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F3",
+      "limits": [
+        "Counterexample is a synthetic ctypes path, not evidence of a codec cap breach",
+        "Complete actual-worker allocation and lifetime coverage remains unproved"
+      ],
+      "status": "BLOCKED"
+    },
+    {
+      "claim": "Retention and reclamation at all required layers",
+      "evidence": [
+        "evidence/diagnostics.final.log",
+        "containment_probe.c",
+        "native_scratch_probe.py"
+      ],
+      "id": "F4",
+      "limits": [
+        "One Python alias lifetime and one child exit only",
+        "Native free is not allocator release",
+        "Shared residency persists at an observed snapshot",
+        "Complete private physical-page reclamation and CPU cache reset not tested"
+      ],
+      "status": "PARTIALLY DEMONSTRATED"
+    },
+    {
+      "claim": "Dedicated Linux x86_64 host qualification",
+      "evidence": [
+        "evidence/host-environment.json",
+        "evidence/virtual-host-gaps.log",
+        "HOST_QUALIFICATION.md"
+      ],
+      "id": "F5",
+      "limits": [
+        "No qualifying dedicated physical Linux host available",
+        "One emulated vCPU; governor/turbo interfaces unavailable; isolated mask empty"
+      ],
+      "status": "NOT TESTED"
+    }
+  ],
+  "schema": "t81.h04-r03.linux-feasibility.v1",
+  "scoped_observations": [
+    {
+      "claim": "Named finite guest membership checkpoints agree",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F1-checkpoints",
+      "scope": "Observed checkpoints plus documented/source-inspected kernel ordering; not an all-instructions trace",
+      "status": "PROVEN"
+    },
+    {
+      "claim": "RLIMIT_RSS did not prevent an observed over-cap RSS in this run",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F2-RLIMIT-counterexample",
+      "limit_bytes": 33554432,
+      "rss_bytes": 50880512,
+      "status": "PROVEN"
+    },
+    {
+      "cgroup_current_bytes": 245760,
+      "claim": "Cgroup usage bound is not a process RSS bound, even with initial placement",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F2-memcg-counterexample",
+      "limit_bytes": 33554432,
+      "rss_bytes": 50892800,
+      "status": "PROVEN"
+    },
+    {
+      "claim": "Native allocation escaped the observed tracemalloc peak",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F3-tracing-counterexample",
+      "reachability_scope": "synthetic ctypes diagnostic only; no codec executed",
+      "requested_native_bytes": 131072,
+      "scratch_limit_bytes": 65536,
+      "status": "PROVEN",
+      "traced_peak_bytes": 304
+    },
+    {
+      "claim": "The named diagnostic child was normally reaped and its proc entry absent",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F4-process-exit",
+      "scope": "This child did not use CLONE_VM; no universal shared backing reclamation inference",
+      "status": "PROVEN"
+    },
+    {
+      "claim": "A deliberately retained shared backing page was resident after that exit at a mincore snapshot",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F4-shared-residency",
+      "scope": "Snapshot only; no physical-frame identity or continuous residency claim",
+      "status": "PROVEN"
+    },
+    {
+      "claim": "Two native diagnostic builds matched byte-for-byte in the same installed guest environment",
+      "evidence": [
+        "evidence/diagnostics.final.log"
+      ],
+      "id": "F5-native-build",
+      "scope": "Not hermetic or cross-host reproduction",
+      "sha256": "fb004923584b0bee31be1100c41dcc21c4d3c3db70cd1a37f0a6ec0471e1f2d0",
+      "status": "PROVEN"
+    }
+  ]
+}
