@@ -1,5 +1,7 @@
 # T81 Research Continuity — START_HERE
 
+**Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md) first. PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.
+
 **Latest operational view (2026-11-02):** Read the selected view in
 [`CURRENT_STATE.json`](CURRENT_STATE.json), backed by the bounded
 [PR/source receipt](receipts/2026-11-02-pr678-observations.json), before older status tables.
