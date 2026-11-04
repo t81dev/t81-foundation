@@ -13,9 +13,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
-      - name: Preserve exact pinned source and fixture bytes
-        shell: bash
-        run: git config --global core.autocrlf false
       - name: Checkout validation controller
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -24,7 +21,7 @@ jobs:
       - name: Checkout exact PR source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: ca97b9cbdc2c76a6ab5b830a2eb4df0ceae5566c
+          ref: e09540caeb826df7eaeb9e876be5beb745784921
           path: source
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -38,10 +35,10 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
       - name: Linux correctness only
         if: runner.os == 'Linux'
-        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source ca97b9cbdc2c76a6ab5b830a2eb4df0ceae5566c --system Linux --config ${{ matrix.config }} --cc gcc-14 --cxx g++-14 --output evidence
+        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source e09540caeb826df7eaeb9e876be5beb745784921 --system Linux --config ${{ matrix.config }} --cc gcc-14 --cxx g++-14 --output evidence
       - name: Windows correctness only
         if: runner.os == 'Windows'
-        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source ca97b9cbdc2c76a6ab5b830a2eb4df0ceae5566c --system Windows --config ${{ matrix.config }} --cc cl --cxx cl --output evidence
+        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source e09540caeb826df7eaeb9e876be5beb745784921 --system Windows --config ${{ matrix.config }} --cc cl --cxx cl --output evidence
       - name: Publish raw records including failures
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f

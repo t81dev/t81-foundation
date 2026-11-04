@@ -517,6 +517,7 @@ int main() {
     std::ifstream in(restored);
     std::string restored_text;
     std::getline(in, restored_text);
+    in.close();
     if (!expect(restored_text == "canonfs-interchange-ops", "core export_ref payload mismatch")) {
       return 1;
     }
@@ -732,6 +733,7 @@ int main() {
     std::ifstream golden_alpha(golden_out / "alpha.txt");
     std::string golden_alpha_text;
     std::getline(golden_alpha, golden_alpha_text);
+    golden_alpha.close();
     if (!expect(golden_alpha_text == "alpha", "golden example alpha payload mismatch")) {
       return 1;
     }
