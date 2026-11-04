@@ -696,8 +696,13 @@ std::vector<CanonFsListEntry> collect_canonfs_objects(const fs::path& canonfs_ro
     if (entry.path().extension() != ".blk") {
       continue;
     }
+    const auto hash = t81::canonfs::parse_storage_key_v1(entry.path().stem().string());
+    if (!hash) {
+      throw std::runtime_error("CanonFS invalid portable object filename: " +
+                               entry.path().filename().string());
+    }
     CanonFsListEntry item;
-    item.hash = "sha3-256:" + entry.path().stem().string();
+    item.hash = "sha3-256:" + hash->h.to_string();
     std::error_code ec;
     item.size_bytes = entry.file_size(ec);
     if (ec) {
