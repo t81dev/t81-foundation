@@ -464,6 +464,13 @@ bool parse_snapshot_hash(std::string_view snapshot_hash, std::string& error_mess
   return true;
 }
 
+// Filesystem-only representation: public snapshot IDs and manifest hashes stay Base-81.
+// Existing raw-name snapshot directories require an explicit migration boundary.
+std::string snapshot_storage_key(std::string_view canonical_hash) {
+  return t81::canonfs::storage_key_v1(
+      t81::canonfs::CanonHash{t81::hash::CanonHash81::from_string(std::string(canonical_hash))});
+}
+
 bool is_symlink_path(const fs::path& path) {
   std::error_code ec;
   return fs::is_symlink(fs::symlink_status(path, ec)) && !ec;
@@ -1853,7 +1860,7 @@ std::optional<std::string> canonfs_capture_snapshot_hash(const fs::path& canonfs
           .to_string();
 
   const fs::path snapshots_root = canonfs_root / "snapshots";
-  const fs::path snapshot_dir = snapshots_root / snapshot_hash;
+  const fs::path snapshot_dir = snapshots_root / snapshot_storage_key(snapshot_hash);
   fs::create_directories(snapshots_root, ec);
   if (ec) {
     if (error_message) *error_message = "could not create snapshots directory";
@@ -1910,8 +1917,8 @@ int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash,
     error("canonfs snapshot-diff: " + hash_error);
     return 1;
   }
-  const fs::path lhs_manifest = canonfs_root / "snapshots" / lhs_snapshot_hash / "MANIFEST.txt";
-  const fs::path rhs_manifest = canonfs_root / "snapshots" / rhs_snapshot_hash / "MANIFEST.txt";
+  const fs::path lhs_manifest = canonfs_root / "snapshots" / snapshot_storage_key(lhs_snapshot_hash) / "MANIFEST.txt";
+  const fs::path rhs_manifest = canonfs_root / "snapshots" / snapshot_storage_key(rhs_snapshot_hash) / "MANIFEST.txt";
   if (!fs::exists(lhs_manifest)) {
     error("canonfs snapshot-diff: snapshot not found: " + lhs_snapshot_hash);
     return 1;
@@ -1969,7 +1976,7 @@ int canonfs_rollback(const std::string& snapshot_hash, const fs::path& canonfs_r
     error("canonfs rollback: " + hash_error);
     return 1;
   }
-  const fs::path snapshot_dir = canonfs_root / "snapshots" / snapshot_hash;
+  const fs::path snapshot_dir = canonfs_root / "snapshots" / snapshot_storage_key(snapshot_hash);
   if (!fs::exists(snapshot_dir)) {
     error("canonfs rollback: snapshot not found: " + snapshot_hash);
     return 1;
