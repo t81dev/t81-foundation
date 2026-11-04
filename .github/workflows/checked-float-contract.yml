@@ -1,29 +1,54 @@
-name: Draft checked float conversion reference
-
+name: BASE-01 isolated correctness portability
 on:
-  pull_request:
-    paths:
-      - '.github/workflows/checked-float-contract.yml'
-      - 'experiments/checked_float_contract/**'
-      - 'spec/rfcs/RFC-00D5-checked-floating-point-conversion.md'
-      - 'docs/architecture/adr/ADR-0005-checked-float-conversion.md'
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
-  draft-reference:
-    name: proposed conversion reference / ${{ matrix.os }}
+  correctness:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, macos-latest]
+        os: [ubuntu-24.04, windows-2022]
+        config: [Debug, Release]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 5
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - name: Verify proposed numerical corpus and independent certificates
-        run: python3 experiments/checked_float_contract/test_reference.py
-      - name: Verify preserved audit reference
-        run: python3 experiments/float_conversion_audit/test_oracle.py
+      - name: Checkout validation controller
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          path: control
+          persist-credentials: false
+      - name: Checkout exact PR source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          ref: d953a094126d6315fe5c50280fc40deefb5899e3
+          path: source
+          persist-credentials: false
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: '3.12'
+      - name: Linux compiler prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -qq && sudo apt-get install -y gcc-14 g++-14 ninja-build
+      - name: MSVC environment
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+      - name: Linux correctness only
+        if: runner.os == 'Linux'
+        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source d953a094126d6315fe5c50280fc40deefb5899e3 --system Linux --config ${{ matrix.config }} --cc gcc-14 --cxx g++-14 --output evidence
+      - name: Windows correctness only
+        if: runner.os == 'Windows'
+        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source d953a094126d6315fe5c50280fc40deefb5899e3 --system Windows --config ${{ matrix.config }} --cc cl --cxx cl --output evidence
+      - name: Publish raw records including failures
+        if: always()
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
+        with:
+          name: base01-${{ matrix.os }}-${{ matrix.config }}
+          path: |
+            evidence/*.json
+            evidence/*.stdout
+            evidence/*.stderr
+            evidence/*CMakeCache.txt
+            evidence/mutants/*.cpp
+            evidence/mutants/CMakeLists.txt
+          retention-days: 90
