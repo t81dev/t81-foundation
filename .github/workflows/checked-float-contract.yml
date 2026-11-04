@@ -13,6 +13,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 25
     steps:
+      - name: Preserve exact pinned source and fixture bytes
+        shell: bash
+        run: git config --global core.autocrlf false
       - name: Checkout validation controller
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:

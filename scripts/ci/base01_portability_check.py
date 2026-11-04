@@ -88,6 +88,18 @@ def main():
         report['source_tracked_status'] = subprocess.check_output(
             ['git', 'status', '--porcelain', '--untracked-files=no'], cwd=source, text=True).strip()
         assert not report['source_tracked_status'], 'Tracked source is dirty before execution'
+        fixture_records = []
+        for fixture in sorted((source/'examples/storage-and-canonfs/canonfs-interchange').rglob('*')):
+            if not fixture.is_file(): continue
+            relative = fixture.relative_to(source).as_posix()
+            data = fixture.read_bytes()
+            pinned = subprocess.check_output(['git', 'show', 'HEAD:'+relative], cwd=source)
+            fixture_records.append({'path': relative, 'actual_sha256': hashlib.sha256(data).hexdigest(),
+                                    'pinned_sha256': hashlib.sha256(pinned).hexdigest(),
+                                    'crlf_count': data.count(b'\r\n'), 'matches_pinned_bytes': data == pinned})
+        report['fixture_identities'] = fixture_records
+        save()
+        assert all(x['matches_pinned_bytes'] for x in fixture_records), 'Checkout changed pinned fixture bytes'
         for name, argv in [('compiler', [a.cxx, '--version'] if a.system == 'Linux' else [a.cxx]),
                            ('cmake-version', ['cmake', '--version']),
                            ('ninja-version', ['ninja', '--version'])]:
