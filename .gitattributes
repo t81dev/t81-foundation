@@ -4,3 +4,6 @@ notebooks/* linguist-documentation
 docs/* linguist-documentation
 spec/* linguist-documentation
 examples/* linguist-language=T81Lang
+
+# CanonFS golden references depend on exact fixture bytes on every platform.
+examples/storage-and-canonfs/canonfs-interchange/** -text

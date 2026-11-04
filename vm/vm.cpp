@@ -2197,7 +2197,6 @@ public:
           }
 
           // VALIDATION PASS (Atomicity check)
-          std::size_t future_meta_write_count = state_.meta_write_count;
           for (const auto& cmd : commands) {
             switch (cmd.op) {
               case RefinementCommand::Op::WriteCode:
@@ -2209,17 +2208,6 @@ public:
                   record_axion_event(insn.opcode, insn.b, 0, code_verdict);
                 }
                 trap = Trap::SecurityFault;
-                break;
-                if (future_meta_write_count >= kMaxMetaWritesPerEpoch) {
-                  trap = Trap::SecurityFault;
-                  break;
-                }
-                if (cmd.target < 0 ||
-                    static_cast<std::size_t>(cmd.target) >= program_.insns.size()) {
-                  trap = Trap::BoundsFault;
-                  break;
-                }
-                future_meta_write_count++;
                 break;
               case RefinementCommand::Op::WriteReg:
                 if (!reg_ok(static_cast<int>(cmd.target))) {
