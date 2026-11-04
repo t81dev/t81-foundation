@@ -1697,6 +1697,11 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   # Golden interchange fixtures live in the source tree, including out-of-tree builds.
   set_tests_properties(canonfs_interchange_test PROPERTIES WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
   add_test(NAME t81_cli_repro_hash_test COMMAND $<TARGET_FILE:cli_repro_hash_test> $<TARGET_FILE:t81>)
+  add_test(NAME canonfs_cli_portable_storage_test
+    COMMAND ${Python3_EXECUTABLE}
+      ${PROJECT_SOURCE_DIR}/tests/python/test_canonfs_cli_portable_storage.py
+      --cli $<TARGET_FILE:t81>)
+  set_tests_properties(canonfs_cli_portable_storage_test PROPERTIES TIMEOUT 120)
   if(NOT WIN32)
     add_test(NAME t81_cli_contract_test_runner COMMAND $<TARGET_FILE:t81_cli_contract_test> $<TARGET_FILE:t81>)
     add_test(NAME t81_ai_task_answer_fixed_test_runner COMMAND $<TARGET_FILE:t81_ai_task_answer_fixed_test> $<TARGET_FILE:t81>)
