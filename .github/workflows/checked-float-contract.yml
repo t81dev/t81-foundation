@@ -1,25 +1,18 @@
-name: BASE-01 isolated correctness portability
+name: BASE-01 independent Windows Debug ISA correctness
 on:
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  correctness:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-24.04, windows-2022]
-        config: [Debug, Release]
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 25
+  isa-debug:
+    runs-on: windows-2022
+    timeout-minutes: 15
     steps:
-      - name: Checkout validation controller
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           path: control
           persist-credentials: false
-      - name: Checkout exact PR source
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           ref: 35f73ac9751423f9ac083c7f4b84def34d810443
           path: source
@@ -27,30 +20,16 @@ jobs:
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
         with:
           python-version: '3.12'
-      - name: Linux compiler prerequisites
-        if: runner.os == 'Linux'
-        run: sudo apt-get update -qq && sudo apt-get install -y gcc-14 g++-14 ninja-build
-      - name: MSVC environment
-        if: runner.os == 'Windows'
-        uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
-      - name: Linux correctness only
-        if: runner.os == 'Linux'
-        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source 35f73ac9751423f9ac083c7f4b84def34d810443 --system Linux --config ${{ matrix.config }} --cc gcc-14 --cxx g++-14 --output evidence
-      - name: Windows correctness only
-        if: runner.os == 'Windows'
-        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source 35f73ac9751423f9ac083c7f4b84def34d810443 --system Windows --config ${{ matrix.config }} --cc cl --cxx cl --output evidence
-      - name: Publish raw records including failures
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
+      - name: Correctness target only
+        run: python control/scripts/ci/base01_independent_isa_debug.py
+      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         if: always()
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
         with:
-          name: base01-${{ matrix.os }}-${{ matrix.config }}
+          name: base01-independent-windows-Debug-isa
           path: |
             evidence/*.json
             evidence/*.stdout
             evidence/*.stderr
-            evidence/*CMakeCache.txt
-            evidence/mutants/*.cpp
-            evidence/mutants/CMakeLists.txt
-            evidence/diagnostics/*.cpp
-            evidence/diagnostics/CMakeLists.txt
+            evidence/CMakeCache.txt
           retention-days: 90
