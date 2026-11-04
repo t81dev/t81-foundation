@@ -45,7 +45,7 @@ def main():
               'configuration': a.config, 'platform': platform.platform(),
               'uname': list(platform.uname()), 'python': sys.version,
               'commands': [], 'native_tests': [], 'release_guards': [],
-              'mutant_rejections': [], 'performance_samples': [],
+              'mutant_rejections': [], 'portability_regressions': [], 'performance_samples': [],
               'measurement_authorized': False}
 
     def save():
@@ -99,6 +99,10 @@ def main():
                      '-DT81_ENABLE_TERNARYOS=OFF', '-DT81_ENABLE_DPE=OFF',
                      '-DT81_ENABLE_LLAMA_CPP=OFF', '-DT81_BUILD_DIAGNOSTICS=OFF']
         assert run('configure', configure)['passed'], 'Root configure failed'
+        if a.system == 'Windows':
+            report['portability_regressions'].append(run('msvc-debug-configuration', [sys.executable, '-B',
+                source/'tests/python/check_msvc_debug_configuration.py', '--source', source,
+                '--cmake', shutil.which('cmake'), '--compiler', shutil.which(a.cxx), '--generator', 'Ninja']))
         run('build-core', ['cmake', '--build', build, '--verbose', '--parallel', '2', '--target', *CORE, *GUARDS])
         for target in CORE:
             binary = build/(target+suffix)
@@ -157,9 +161,65 @@ endforeach()
                 report['native_tests'].append(run('test-'+target, [binary], timeout=60))
             else:
                 report['native_tests'].append({'label': target, 'passed': False, 'error': 'not-built'})
+        if a.system == 'Windows':
+            diag = out/'diagnostics'
+            diag.mkdir()
+            (diag/'evidence_probe.cpp').write_text(
+                '#define main underlying_evidence_main\n'
+                '#include "'+(source/'tests/determinism/evidence_collector.cpp').as_posix()+'"\n'
+                '#undef main\n#include <iostream>\n#include <exception>\n'
+                'int main() { std::setvbuf(stdout, nullptr, _IONBF, 0); '
+                'std::setvbuf(stderr, nullptr, _IONBF, 0); '
+                'try { return underlying_evidence_main(); } '
+                'catch (const std::exception& e) { std::cerr << "UNHANDLED_EXCEPTION: " << e.what() << "\\n"; return 1; } }\n',
+                encoding='utf-8')
+            (diag/'path_probe.cpp').write_text('''#include "t81/canonfs/canon_driver.hpp"
+#include "t81/tracing/canonhash.hpp"
+#include <cerrno>
+#include <cstring>
+#include <filesystem>
+#include <iostream>
+#include <string>
+int main() {
+  auto root = std::filesystem::temp_directory_path()/"base01-native-path-diagnostic";
+  std::filesystem::remove_all(root);
+  for (const std::string payload : {"canonfs-read-verify-payload", "canonfs-identity-contract"}) {
+    auto driver = t81::canonfs::make_persistent_driver(root);
+    auto hash = t81::hash::hash_string(payload).to_string();
+    errno = 0;
+    auto result = driver->write_object(t81::canonfs::ObjectType::RawBlock,
+        std::span<const std::byte>(reinterpret_cast<const std::byte*>(payload.data()), payload.size()));
+    const int failure_errno = errno;
+    std::cout << "payload=" << payload << " hash=" << hash
+              << " contains_angle_bracket=" << (hash.find_first_of("<>") != std::string::npos)
+              << " write_success=" << result.has_value() << " errno=" << failure_errno
+              << " diagnostic=" << std::strerror(failure_errno) << "\\n";
+  }
+  std::filesystem::remove_all(root);
+}
+''', encoding='utf-8')
+            (diag/'CMakeLists.txt').write_text('''cmake_minimum_required(VERSION 3.20)
+project(base01_native_diagnostics LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+foreach(probe evidence path)
+  add_executable(${probe}_probe ${probe}_probe.cpp)
+  target_compile_definitions(${probe}_probe PRIVATE NDEBUG T81_DETERMINISTIC)
+  target_include_directories(${probe}_probe PRIVATE "${PR_SOURCE}/include")
+  target_link_libraries(${probe}_probe PRIVATE "${AXION_LIBRARY}" "${CORE_LIBRARY}")
+endforeach()
+''', encoding='utf-8')
+            d_build = out/'diagnostic-build'
+            dconfig = run('diagnostics-configure', ['cmake', '-S', diag, '-B', d_build, '-G', 'Ninja',
+                '-DCMAKE_BUILD_TYPE='+a.config, '-DCMAKE_CXX_COMPILER='+a.cxx,
+                '-DPR_SOURCE='+str(source), '-DAXION_LIBRARY='+str(build/'t81_axion.lib'),
+                '-DCORE_LIBRARY='+str(build/'t81_core.lib')])
+            if dconfig['passed'] and run('diagnostics-build', ['cmake', '--build', d_build, '--verbose'])['passed']:
+                for probe in ['evidence', 'path']:
+                    run('diagnostic-'+probe, [d_build/(probe+'_probe.exe')], timeout=30)
         report['source_tracked_status_after'] = subprocess.check_output(
             ['git', 'status', '--porcelain', '--untracked-files=no'], cwd=source, text=True).strip()
-        groups = ['native_tests', 'release_guards', 'mutant_rejections']
+        groups = ['native_tests', 'release_guards', 'mutant_rejections', 'portability_regressions']
         report['counts'] = {g: {'run': len(report[g]), 'passed': sum(x['passed'] for x in report[g]),
                                      'failed_or_blocked': sum(not x['passed'] for x in report[g])} for g in groups}
         report['status'] = ('PASS' if len(report['native_tests']) == 27 and len(report['release_guards']) == 3
@@ -176,7 +236,7 @@ endforeach()
         save()
         files = {str(p.relative_to(out)): hashlib.sha256(p.read_bytes()).hexdigest()
                  for p in out.rglob('*') if p.is_file() and 'build' not in p.relative_to(out).parts
-                 and 'mutant-build' not in p.relative_to(out).parts}
+                 and 'mutant-build' not in p.relative_to(out).parts and 'diagnostic-build' not in p.relative_to(out).parts}
         (out/'SHA256SUMS.json').write_text(json.dumps(files, indent=2)+'\n', encoding='utf-8')
         print(json.dumps({'status': report['status'], 'counts': report.get('counts'), 'error': report.get('error')}), flush=True)
     return 0 if report['status'] == 'PASS' else 1
