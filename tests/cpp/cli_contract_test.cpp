@@ -1,5 +1,5 @@
-#include "t81/weights.hpp"
 #include "t81/canonfs/storage_key.hpp"
+#include "t81/weights.hpp"
 #include "test_runtime_check.hpp"
 
 #include <signal.h>

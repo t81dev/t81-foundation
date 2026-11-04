@@ -55,14 +55,13 @@
 #include <io.h>
 #endif
 
-#include "tools/cli/logging.hpp"
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/canonfs/interchange_ops.hpp"
+#include "t81/canonfs/performance_cli.hpp"
 #include "t81/canonfs/storage_key.hpp"
 #include "t81/cli/artifact_family.hpp"
-#include "t81/canonfs/performance_cli.hpp"
-#include "t81/canonfs/interchange_ops.hpp"
 #include "t81/cli/driver.hpp"
 #include "t81/config.hpp"
 #include "t81/crypto/sha3.hpp"
@@ -80,6 +79,7 @@
 #include "t81/vm/vm.hpp"
 #include "t81/weights.hpp"
 #include "tools/cli/ai/ai_cli_shared.hpp"
+#include "tools/cli/logging.hpp"
 #include "vm/internal/memory_segments.hpp"
 #if defined(T81_HAS_LLAMA_CPP)
 #include "t81/experimental/llama_cpp_adapter.hpp"
@@ -5029,7 +5029,8 @@ int run_axion(const Args& args) {
     return count;
   };
 
-  auto snapshot_dir_path = [&](const fs::path& root, std::string_view canonical_hash) -> std::optional<fs::path> {
+  auto snapshot_dir_path = [&](const fs::path& root,
+                               std::string_view canonical_hash) -> std::optional<fs::path> {
     try {
       return root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(canonical_hash);
     } catch (...) {
@@ -5227,9 +5228,10 @@ int run_axion(const Args& args) {
     if (!state.present && tier_provided) {
       state.tier = target_tier;
     }
-    const auto active_dir = state.active_snapshot ? snapshot_dir_path(canonfs_root, *state.active_snapshot) : std::nullopt;
-    const bool state_snapshot_present =
-        active_dir && fs::exists(*active_dir / "MANIFEST.txt");
+    const auto active_dir = state.active_snapshot
+                                ? snapshot_dir_path(canonfs_root, *state.active_snapshot)
+                                : std::nullopt;
+    const bool state_snapshot_present = active_dir && fs::exists(*active_dir / "MANIFEST.txt");
     std::vector<std::string> issues;
     if (!canonfs_ready) {
       issues.emplace_back("canonfs_root_missing");
@@ -5729,7 +5731,8 @@ int run_canonfs_command(const Args& args) {
       }
       fs::path snapshot_dir;
       try {
-        snapshot_dir = canonfs_root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(positional[0]);
+        snapshot_dir =
+            canonfs_root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(positional[0]);
       } catch (...) {
         error("canonfs rollback: invalid snapshot hash.");
         return 1;
