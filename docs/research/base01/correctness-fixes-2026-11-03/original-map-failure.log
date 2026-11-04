@@ -1,0 +1,1 @@
+Assertion failed: (items[0].first == s2 && items[0].second == 2), function test_map_determinism, file test_map_determinism.cpp, line 34.
