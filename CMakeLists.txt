@@ -318,6 +318,10 @@ if(T81_BUILD_TESTS)
   add_executable(canonfs_integrity_matrix_test tests/cpp/canonfs_integrity_matrix_test.cpp)
   target_link_libraries(canonfs_integrity_matrix_test PRIVATE t81_core t81_axion)
 
+  add_executable(canonfs_storage_format_test tests/cpp/canonfs_storage_format_test.cpp)
+  target_link_libraries(canonfs_storage_format_test PRIVATE t81_core)
+  add_executable(t81_vm_metarefine_writecode_denial_test tests/cpp/vm_metarefine_writecode_denial_test.cpp)
+  target_link_libraries(t81_vm_metarefine_writecode_denial_test PRIVATE t81_vm t81_core)
   add_executable(canonfs_identity_contract_test tests/cpp/canonfs_identity_contract_test.cpp)
   target_link_libraries(canonfs_identity_contract_test PRIVATE t81_core t81_axion)
 
@@ -1453,6 +1457,8 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
     canonfs_persistent_driver_test
     canonfs_policy_boundary_test
     canonfs_identity_contract_test
+    canonfs_storage_format_test
+    t81_vm_metarefine_writecode_denial_test
     canonfs_read_verify_test
     canonfs_read_verify_env_contract_test
     canonfs_integrity_matrix_test

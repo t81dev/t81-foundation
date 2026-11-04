@@ -37,7 +37,7 @@ CanonFS is legally defined by five invariants. Violation of any is a protocol-le
 1. **Immutability** — Once sealed, objects can never be modified.
 2. **Content Addressing** — Current-release object identity is `CanonHash-81(payload_bytes)`.
 3. **Capability Binding** — The current persistent driver enforces access through published permission masks; richer signed capability objects are future-versioned.
-4. **Deterministic Indexing** — The mapping from CanonRef to on-disk object path MUST remain stable for a given identity function.
+4. **Deterministic Indexing** — The mapping from CanonRef to on-disk object path MUST remain stable for a given identity function and recorded storage-format version.
 5. **Extension Honesty** — Parity, typed envelopes, and compression-aware canonicalization MUST NOT be described as current persistent-driver guarantees unless implemented end to end.
 
 ______________________________________________________________________
@@ -114,7 +114,7 @@ ______________________________________________________________________
 
 ## 6.1 Current Persistent-Driver Capability Contract
 
-The current persistent driver stores capability state as per-object permission masks at `caps/<hash>.cap`.
+The current persistent driver stores capability state as per-object permission masks at `caps/<storage-key>.cap`.
 
 Current guaranteed fields/semantics are:
 
@@ -200,7 +200,7 @@ Maintaining this contract makes CanonFS the canonical source of policy-verified 
 
 ## 7.1 Persistent CanonFS Driver
 
-The reference implementation exposes `make_persistent_driver(root)` (see `include/t81/canonfs/canon_driver.hpp`), creating a directory tree under `root` with `objects/`, `caps/`, and `parity/`. Each object is stored at `objects/<hash>.blk`, while capability masks live at `caps/<hash>.cap` as decimal `perms` values. The driver currently treats `parity/` as a placeholder directory for future repair shards.
+The reference implementation exposes `make_persistent_driver(root)` (see `include/t81/canonfs/canon_driver.hpp`), creating a directory tree under `root` with `objects/`, `caps/`, and `parity/`. The versioned portable layout described below defines `<storage-key>`. Each object is stored at `objects/<storage-key>.blk`, while capability masks live at `caps/<storage-key>.cap` as decimal `perms` values. The driver currently treats `parity/` as a placeholder directory for future repair shards.
 
 With a hook configured, every `write_object`, `read_object_bytes`, `publish_capability`, and `revoke_capability` invocation runs the Axion hook before mutating `objects/` or `caps/`. That hook emits the canonical `meta slot axion event segment=meta addr=<n> action=Write` (for writes) and `action=Read` (for reads), so `scripts/capture-axion-trace.sh` can verify `canonfs_axion_trace_test` produces the same strings auditors expect. Capabilities gate access via the `CANON_PERM_READ`/`CANON_PERM_WRITE` bitmask; when no capabilities exist the driver permits bootstrap writes, but once a capability is published, only callers with the matching mask may read or write the object.
 
@@ -336,7 +336,7 @@ ______________________________________________________________________
 Implementations MUST:
 
 - Verify CanonHash-81 on every read unless explicitly disabled for diagnostics
-- Preserve immutability once `objects/<hash>.blk` is written
+- Preserve immutability once `objects/<storage-key>.blk` is written
 - Expose deterministic capability-mask enforcement once capability state exists
 - Never silently return bytes whose recomputed CanonHash-81 does not match the requested CanonRef
 
@@ -359,7 +359,7 @@ ______________________________________________________________________
 
 | Operation | Behavior (v0.4.1) |
 | --------- | --------------------------------------------------------------------- |
-| Write | Creates new immutable `objects/<hash>.blk` payload object; current identity hashes payload bytes only |
+| Write | Creates new immutable `objects/<storage-key>.blk` payload object; current identity hashes payload bytes only |
 | Read | Capability validation → hash check → return bytes |
 | Search | Out of scope for the current persistent reference driver |
 | Delete | Current driver revokes/removes capability state; tombstone model is future-versioned |
@@ -372,8 +372,8 @@ ______________________________________________________________________
 Must implement:
 
 - deterministic object identity via the T81 CanonHash path
-- payload persistence under `objects/<hash>.blk`
-- capability-mask persistence under `caps/<hash>.cap`
+- payload persistence under `objects/<storage-key>.blk`
+- capability-mask persistence under `caps/<storage-key>.cap`
 - read-back hash verification
 - Axion policy hooks
 
@@ -414,3 +414,27 @@ ______________________________________________________________________
 | Cold archival | Z3std | 10:10 | No |
 
 ______________________________________________________________________
+
+### Portable persistent-driver storage layout (hex-v1)
+
+The filesystem-rooted driver records `.canonfs-format` with the exact binary
+contents `t81-canonfs-hex-v1\n`. Its object and capability filenames are
+`objects/h1-<64 lowercase hex digits>.blk` and `caps/h1-<64 lowercase hex digits>.cap`.
+The digits encode the existing 32 raw CanonHash bytes in order; they are a
+filesystem representation, not a new hash or canonical identifier. The earlier
+legacy layout used raw Base-81 identifiers as filename stems. Public Base-81
+identifiers, content hashing, object bytes, and interchange serialization remain
+unchanged. Deterministic physical paths depend on the recorded storage-format
+version as well as content identity. Snapshot physical paths and consequently
+snapshot manifest identities are storage-format dependent; inventory records
+continue to expose canonical Base-81 content identifiers.
+
+This is an explicit storage compatibility boundary. Empty stores initialize in
+hex-v1; nonempty unmarked stores, unknown/incomplete markers, mixed legacy names,
+and persisted parity shards (not implemented by this driver) are rejected. No
+automatic migration or capability-name fallback occurs. Existing legacy writers
+and readers must not open a hex-v1 root. Preserve the original root: migration
+requires an old-version reader and a new-version writer into a separate empty
+root, independent byte/hash/identifier verification, and explicit recreation and
+verification of authorized capability masks. Do not copy legacy snapshot paths
+into the new live store. This change supplies no migration utility.

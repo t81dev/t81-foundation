@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "t81/canonfs/interchange.hpp"
+#include "t81/canonfs/storage_key.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
 
 namespace {
@@ -687,7 +688,9 @@ int main() {
 
     const fs::path object_path =
         import_options.canonfs_root / "objects" /
-        (import_outcome.imported_objects.front().substr(std::string("sha3-256:").size()) + ".blk");
+        (t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{
+            t81::hash::CanonHash81::from_string(
+                import_outcome.imported_objects.front().substr(std::string("sha3-256:").size()))}) + ".blk");
     const fs::path other_source = root / "other-payload.txt";
     {
       std::ofstream out(other_source);
@@ -697,7 +700,9 @@ int main() {
     if (!expect(other_import.ok(), "other CanonFS object import should succeed")) return 1;
     const fs::path other_object_path =
         import_options.canonfs_root / "objects" /
-        (other_import.imported_objects.front().substr(std::string("sha3-256:").size()) + ".blk");
+        (t81::canonfs::storage_key_v1(t81::canonfs::CanonHash{
+            t81::hash::CanonHash81::from_string(
+                other_import.imported_objects.front().substr(std::string("sha3-256:").size()))}) + ".blk");
     fs::copy_file(other_object_path, object_path, fs::copy_options::overwrite_existing, ec);
     if (!expect(!ec, "tampered object copy should succeed")) return 1;
     const auto tampered_export =

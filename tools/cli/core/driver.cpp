@@ -11,6 +11,7 @@
 #include "t81/c_frontend/compile.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/canonfs/storage_key.hpp"
 #include "t81/canonfs/interchange.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
 #include "t81/canonfs/interchange_policy.hpp"
@@ -588,7 +589,9 @@ std::vector<SnapshotManifestEntry> collect_snapshot_manifest(const fs::path& roo
     SnapshotManifestEntry entry;
     entry.relative_path = rel.generic_string();
     if (*rel.begin() == "objects" && path.extension() == ".blk") {
-      entry.content_hash = "sha3-256:" + path.stem().string();
+      const auto key = path.stem().string();
+      const auto portable_hash = t81::canonfs::parse_storage_key_v1(key);
+      entry.content_hash = "sha3-256:" + (portable_hash ? portable_hash->h.to_string() : key);
     } else {
       auto bytes = read_file_bytes(path);
       entry.content_hash =

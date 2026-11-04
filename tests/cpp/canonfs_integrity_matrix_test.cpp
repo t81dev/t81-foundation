@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/storage_key.hpp"
 
 namespace {
 
@@ -43,7 +44,7 @@ std::vector<std::byte> to_bytes(const std::string& s) {
 }
 
 bool tamper_object_file(const std::filesystem::path& root, const t81::canonfs::CanonRef& ref) {
-  const auto path = root / "objects" / (ref.hash.h.to_string() + ".blk");
+  const auto path = root / "objects" / (t81::canonfs::storage_key_v1(ref.hash) + ".blk");
   std::fstream file(path, std::ios::binary | std::ios::in | std::ios::out);
   if (!file) return false;
   char byte = 0;
@@ -58,7 +59,7 @@ bool tamper_object_file(const std::filesystem::path& root, const t81::canonfs::C
 
 bool truncate_object_file(const std::filesystem::path& root, const t81::canonfs::CanonRef& ref,
                           std::size_t keep_bytes) {
-  const auto path = root / "objects" / (ref.hash.h.to_string() + ".blk");
+  const auto path = root / "objects" / (t81::canonfs::storage_key_v1(ref.hash) + ".blk");
   if (!std::filesystem::exists(path)) return false;
   std::error_code ec;
   std::filesystem::resize_file(path, keep_bytes, ec);
@@ -66,7 +67,7 @@ bool truncate_object_file(const std::filesystem::path& root, const t81::canonfs:
 }
 
 bool append_object_file(const std::filesystem::path& root, const t81::canonfs::CanonRef& ref) {
-  const auto path = root / "objects" / (ref.hash.h.to_string() + ".blk");
+  const auto path = root / "objects" / (t81::canonfs::storage_key_v1(ref.hash) + ".blk");
   std::fstream file(path, std::ios::binary | std::ios::in | std::ios::out | std::ios::app);
   if (!file) return false;
   const char pad[2] = {0x55, 0x2A};

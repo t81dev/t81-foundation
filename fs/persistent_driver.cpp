@@ -1,4 +1,5 @@
 #include "t81/canonfs/canon_driver.hpp"
+#include "t81/canonfs/storage_key.hpp"
 
 #ifdef _WIN32
 #pragma warning(push)
@@ -65,11 +66,11 @@ std::filesystem::path capabilities_dir(const std::filesystem::path& root) { retu
 std::filesystem::path parity_dir(const std::filesystem::path& root) { return root / "parity"; }
 
 std::filesystem::path object_path(const std::filesystem::path& root, const CanonHash& hash) {
-  return objects_dir(root) / (hash.h.to_string() + ".blk");
+  return objects_dir(root) / (storage_key_v1(hash) + ".blk");
 }
 
 std::filesystem::path capability_path(const std::filesystem::path& root, const CanonHash& hash) {
-  return capabilities_dir(root) / (hash.h.to_string() + ".cap");
+  return capabilities_dir(root) / (storage_key_v1(hash) + ".cap");
 }
 
 std::optional<uint16_t> read_capability(const std::filesystem::path& path) {
@@ -111,6 +112,62 @@ bool write_all_fd(int fd, const std::byte* data, std::size_t size) {
   return true;
 }
 
+void require_storage_format(const std::filesystem::path& root) {
+  const auto marker = root / kStorageFormatFile;
+  if (!std::filesystem::exists(marker)) {
+    if (!std::filesystem::is_empty(objects_dir(root)) ||
+        !std::filesystem::is_empty(capabilities_dir(root)) ||
+        !std::filesystem::is_empty(parity_dir(root))) {
+      throw std::runtime_error("CanonFS legacy/unmarked storage requires explicit migration");
+    }
+#ifdef _WIN32
+    const int fd = ::_open(marker.string().c_str(), _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY,
+                           _S_IREAD | _S_IWRITE);
+#else
+    const int fd = ::open(marker.c_str(), O_WRONLY | O_CREAT | O_EXCL, 0644);
+#endif
+    if (fd >= 0) {
+      const bool ok = write_all_fd(fd, reinterpret_cast<const std::byte*>(kStorageFormatV1.data()),
+                                   kStorageFormatV1.size());
+#ifdef _WIN32
+      const int closed = ::_close(fd);
+#else
+      const int closed = ::close(fd);
+#endif
+      if (!ok || closed != 0)
+        throw std::runtime_error("CanonFS storage format initialization failed");
+    } else if (errno != EEXIST) {
+      throw std::runtime_error("CanonFS storage format initialization failed");
+    }
+  }
+  if (std::filesystem::is_symlink(marker) || !std::filesystem::is_regular_file(marker)) {
+    throw std::runtime_error("CanonFS invalid storage format marker file");
+  }
+  // Bounded read; reject partial, unknown, or extended markers rather than guessing.
+  std::ifstream in(marker, std::ios::binary);
+  char bytes[64]{};
+  in.read(bytes, sizeof(bytes));
+  if (in.bad() || in.gcount() != static_cast<std::streamsize>(kStorageFormatV1.size()) ||
+      std::string_view(bytes, kStorageFormatV1.size()) != kStorageFormatV1) {
+    throw std::runtime_error("CanonFS unsupported or incomplete storage format marker");
+  }
+  // Never mix legacy capability names with portable names or silently discard them.
+  for (const auto& [directory, suffix] :
+       {std::pair{objects_dir(root), std::string_view(".blk")},
+        std::pair{capabilities_dir(root), std::string_view(".cap")}}) {
+    for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+      const auto name = entry.path().filename().string();
+      if (entry.is_symlink() || !entry.is_regular_file() || !name.ends_with(suffix) ||
+          !parse_storage_key_v1(std::string_view(name).substr(0, name.size() - suffix.size()))) {
+        throw std::runtime_error("CanonFS invalid/mixed portable storage filename");
+      }
+    }
+  }
+  if (!std::filesystem::is_empty(parity_dir(root))) {
+    throw std::runtime_error("CanonFS portable format does not support persisted parity shards");
+  }
+}
+
 class PersistentDriver final : public Driver {
 public:
   explicit PersistentDriver(std::filesystem::path root)
@@ -125,6 +182,7 @@ public:
     if (ec) {
       throw std::runtime_error("CanonFS persistent driver mkdir failed: " + ec.message());
     }
+    require_storage_format(root_);
     has_capabilities_ = !std::filesystem::is_empty(capabilities_dir_);
   }
 
