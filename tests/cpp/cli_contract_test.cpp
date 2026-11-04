@@ -1,4 +1,5 @@
 #include "t81/weights.hpp"
+#include "t81/canonfs/storage_key.hpp"
 #include "test_runtime_check.hpp"
 
 #include <signal.h>
@@ -1480,9 +1481,12 @@ int main(int argc, char* argv[]) {
            std::isspace(static_cast<unsigned char>(tampered_hash.back()))) {
       tampered_hash.pop_back();
     }
-    const fs::path tampered_object =
-        tampered_root / "objects" /
-        (tampered_hash.substr(std::string("sha3-256:").size()) + ".blk");
+    const auto portable_object_path = [&](const std::string& ref) {
+      t81::canonfs::CanonHash hash;
+      hash.h = t81::hash::CanonHash81::from_string(ref.substr(std::string("sha3-256:").size()));
+      return tampered_root / "objects" / (t81::canonfs::storage_key_v1(hash) + ".blk");
+    };
+    const fs::path tampered_object = portable_object_path(tampered_hash);
     const fs::path tampered_source_two = make_temp_path("t81-cli-contract-tampered-other", ".txt");
     {
       std::ofstream out(tampered_source_two);
@@ -1497,9 +1501,7 @@ int main(int argc, char* argv[]) {
            std::isspace(static_cast<unsigned char>(tampered_hash_two.back()))) {
       tampered_hash_two.pop_back();
     }
-    const fs::path tampered_object_two =
-        tampered_root / "objects" /
-        (tampered_hash_two.substr(std::string("sha3-256:").size()) + ".blk");
+    const fs::path tampered_object_two = portable_object_path(tampered_hash_two);
     fs::copy_file(tampered_object_two, tampered_object, fs::copy_options::overwrite_existing,
                   ignore_ec);
     T81_TEST_CHECK(!ignore_ec);

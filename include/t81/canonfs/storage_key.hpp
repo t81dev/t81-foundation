@@ -21,6 +21,10 @@ inline std::string storage_key_v1(const CanonHash& hash) {
   return key;
 }
 
+inline std::string snapshot_storage_key_v1(std::string_view canonical_hash) {
+  return storage_key_v1(CanonHash{t81::hash::CanonHash81::from_string(std::string(canonical_hash))});
+}
+
 inline std::optional<CanonHash> parse_storage_key_v1(std::string_view key) {
   if (key.size() != 67 || !key.starts_with("h1-")) return std::nullopt;
   auto digit = [](char c) -> int {
