@@ -1,0 +1,185 @@
+{
+  "identity": {
+    "source_commit": "4bba72c6654f749229a35245fe70b3cda2274ad7",
+    "source_tree": "d709da0b4e733a31c42a359c04a87be136bff42c",
+    "source_status": "",
+    "audited_commit": "cda9135d36144d4de2771af174e52ac7b30a83c9",
+    "audited_status": "",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+    "compiler": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin",
+    "cmake": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+    "ninja": "1.13.2"
+  },
+  "foundation_tests": {
+    "run": 25,
+    "passed": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "lane_a_tests": {
+    "run": 11,
+    "passed": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "resource_tests": {
+    "run": 27,
+    "passed": 27,
+    "failed": 0,
+    "skipped": 0
+  },
+  "native_regressions": [
+    {
+      "target": "t81_determinism_codec_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_primitives_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_float_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_containers_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_math_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_vector_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_new_types_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "test_deterministic_float_boundaries",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "test_map_determinism",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "test_t81float_soft_math",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_vm_determinism_property_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_vm_deterministic_fault_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_vm_fault_family_determinism_matrix_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_axion_log_determinism_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_vm_system_registers_deterministic_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_isa_binary_io_determinism_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_vm_workload_determinism_tiers_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_ternary_arith_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_canonfs_driver_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "test_resource_monitoring",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "canonfs_read_verify_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "canonfs_read_verify_env_contract_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "canonfs_integrity_matrix_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "canonfs_identity_contract_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_sha3_test",
+      "exit_code": 0,
+      "status": "passed"
+    },
+    {
+      "target": "t81_determinism_evidence_test",
+      "exit_code": 0,
+      "status": "passed"
+    }
+  ],
+  "pinned_native_suites": {
+    "passed": 4,
+    "failed": 0
+  },
+  "release_guards": {
+    "passed": 3,
+    "failed": 0,
+    "original_bug_mutants_rejected": 3
+  },
+  "r75": {
+    "builder_ledgers": 6,
+    "corrupted_ledger_rejections": 3
+  },
+  "protected_measurements_executed": false
+}
