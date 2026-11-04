@@ -66,9 +66,16 @@ class PortableStorageCLI(unittest.TestCase):
                 self.assertEqual(info["size_bytes"], len(payload))
                 self.assertEqual(info["sha3_512"], hashlib.sha3_512(payload).hexdigest())
             self.assertEqual(block.read_bytes(), serialized)
-        self.cli("snapshot", "--json")
+        snapshot = json.loads(self.cli("snapshot", "--json").stdout)
+        public_id = snapshot["hash"]
+        self.assertTrue(public_id)
         manifests = list((self.root / "snapshots").glob("*/MANIFEST.txt"))
         self.assertEqual(len(manifests), 1)
+        manifest_bytes = manifests[0].read_bytes()
+        self.assertEqual(manifests[0].parent.name,
+                         "h1-" + hashlib.sha3_512(manifest_bytes).digest()[:32].hex())
+        self.assertNotEqual(manifests[0].parent.name, public_id)
+        self.assertFalse(set("<>:\\|?*") & set(manifests[0].parent.name))
         entries = dict(line.split("\t") for line in manifests[0].read_text(encoding="utf-8").splitlines())
         for key, ref in expected.items():
             self.assertEqual(entries["objects/" + key + ".blk"], ref)
