@@ -1,0 +1,747 @@
+{
+  "initial": {
+    "base01-ubuntu-24.04-Release": {
+      "run_id": 41745122920,
+      "artifact": "base01-ubuntu-24.04-Release",
+      "artifact_sha256": "d5069b15aa944f88eeaad5b4e4c9cf7958a7f3f00dcfe35a1a0cd613b5043dec",
+      "source_commit": "d953a094126d6315fe5c50280fc40deefb5899e3",
+      "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+      "configuration": "Release",
+      "status": "PASS",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 27,
+        "failed": 0,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    },
+    "base01-windows-2022-Debug": {
+      "run_id": 41745122920,
+      "artifact": "base01-windows-2022-Debug",
+      "artifact_sha256": "ba602e2832485fa5cb7b9b97fd89f9404849e2570b04422857a46b4b70ed71b6",
+      "source_commit": "d953a094126d6315fe5c50280fc40deefb5899e3",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Debug",
+      "status": "FAIL_OR_BLOCKED",
+      "native": {
+        "planned": 27,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 27
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 3
+      },
+      "mutant_rejections": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [
+        "t81_sha3_test",
+        "test_deterministic_float_boundaries",
+        "test_map_determinism",
+        "t81_determinism_containers_test",
+        "t81_determinism_codec_test",
+        "t81_determinism_primitives_test",
+        "t81_determinism_float_test",
+        "t81_determinism_math_test",
+        "t81_determinism_vector_test",
+        "t81_determinism_new_types_test",
+        "test_t81float_soft_math",
+        "t81_ternary_arith_test",
+        "t81_canonfs_driver_test",
+        "canonfs_read_verify_test",
+        "canonfs_read_verify_env_contract_test",
+        "canonfs_integrity_matrix_test",
+        "canonfs_identity_contract_test",
+        "t81_vm_determinism_property_test",
+        "t81_vm_deterministic_fault_test",
+        "t81_vm_fault_family_determinism_matrix_test",
+        "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+        "t81_axion_log_determinism_test",
+        "t81_vm_system_registers_deterministic_test",
+        "t81_isa_binary_io_determinism_test",
+        "t81_vm_workload_determinism_tiers_test",
+        "test_resource_monitoring",
+        "t81_determinism_evidence_test"
+      ],
+      "affected_four": {
+        "t81_sha3_test": false,
+        "test_deterministic_float_boundaries": false,
+        "test_map_determinism": false,
+        "t81_determinism_containers_test": false
+      }
+    },
+    "base01-ubuntu-24.04-Debug": {
+      "run_id": 41745122920,
+      "artifact": "base01-ubuntu-24.04-Debug",
+      "artifact_sha256": "c4aafda807747affe8c60dfc7bbf7a4cd9ba2b0bc2aaf778b481c90b011c903b",
+      "source_commit": "d953a094126d6315fe5c50280fc40deefb5899e3",
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "configuration": "Debug",
+      "status": "PASS",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 27,
+        "failed": 0,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    },
+    "base01-windows-2022-Release": {
+      "run_id": 41745122920,
+      "artifact": "base01-windows-2022-Release",
+      "artifact_sha256": "e7c8c8427dab586089fc54aa126b84c9cf2f2f268cdeb9af7ca54554bd4b28de",
+      "source_commit": "d953a094126d6315fe5c50280fc40deefb5899e3",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Release",
+      "status": "FAIL_OR_BLOCKED",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 23,
+        "failed": 4,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [
+        "canonfs_read_verify_test",
+        "canonfs_identity_contract_test",
+        "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+        "t81_determinism_evidence_test"
+      ],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    }
+  },
+  "debug-fix": {
+    "base01-ubuntu-24.04-Debug": {
+      "run_id": 41746435152,
+      "artifact": "base01-ubuntu-24.04-Debug",
+      "artifact_sha256": "b6fdfee36864b3b5a5c3fe1bdf694f952ecaa14cbc07ae06537f523d2adfd5e8",
+      "source_commit": "b8e127728ab4b34dce959f6da70784a47e62567f",
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "configuration": "Debug",
+      "status": "PASS",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 27,
+        "failed": 0,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    },
+    "base01-windows-2022-Release": {
+      "run_id": 41746435152,
+      "artifact": "base01-windows-2022-Release",
+      "artifact_sha256": "fa935f59dc49eaeafd7ff63d7c903842fd17181999e1c76d519c22530f6c74da",
+      "source_commit": "b8e127728ab4b34dce959f6da70784a47e62567f",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Release",
+      "status": "FAIL_OR_BLOCKED",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 23,
+        "failed": 4,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [
+        "canonfs_read_verify_test",
+        "canonfs_identity_contract_test",
+        "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+        "t81_determinism_evidence_test"
+      ],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    },
+    "base01-windows-2022-Debug": {
+      "run_id": 41746435152,
+      "artifact": "base01-windows-2022-Debug",
+      "artifact_sha256": "35ceae7a54a79a0a8c6a39c204ba52206ef8e03245aa640f00a6d08a4a2042a1",
+      "source_commit": "b8e127728ab4b34dce959f6da70784a47e62567f",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Debug",
+      "status": "FAIL_OR_BLOCKED",
+      "native": {
+        "planned": 27,
+        "executed": 17,
+        "passed": 15,
+        "failed": 2,
+        "blocked": 10
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 1,
+        "failed": 2,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [
+        "canonfs_read_verify_test",
+        "canonfs_identity_contract_test"
+      ],
+      "blocked_native": [
+        "t81_vm_determinism_property_test",
+        "t81_vm_deterministic_fault_test",
+        "t81_vm_fault_family_determinism_matrix_test",
+        "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+        "t81_axion_log_determinism_test",
+        "t81_vm_system_registers_deterministic_test",
+        "t81_isa_binary_io_determinism_test",
+        "t81_vm_workload_determinism_tiers_test",
+        "test_resource_monitoring",
+        "t81_determinism_evidence_test"
+      ],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    },
+    "base01-ubuntu-24.04-Release": {
+      "run_id": 41746435152,
+      "artifact": "base01-ubuntu-24.04-Release",
+      "artifact_sha256": "8486cdb03de3d376cae0bfd78153ea40f7768a4ed7b3e17818a39f457d53b829",
+      "source_commit": "b8e127728ab4b34dce959f6da70784a47e62567f",
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "configuration": "Release",
+      "status": "PASS",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 27,
+        "failed": 0,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      }
+    }
+  },
+  "final": {
+    "base01-ubuntu-24.04-Debug": {
+      "run_id": 41747549827,
+      "artifact": "base01-ubuntu-24.04-Debug",
+      "artifact_sha256": "d0486030f5d54c14417fd9f408e99a91fc34b450ececd507c15afeb7e24856bf",
+      "source_commit": "35f73ac9751423f9ac083c7f4b84def34d810443",
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "configuration": "Debug",
+      "status": "PASS",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 27,
+        "failed": 0,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      },
+      "guard_observations": {
+        "sha3": {
+          "kind": "sha3",
+          "returncode": 1,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Test 'release correctness guard' failed!\nExpected: deliberately incorrect digest\nActual:   a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26\n"
+        },
+        "float": {
+          "kind": "float",
+          "returncode": -6,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "t81_release_float_guard: /home/runner/work/t81-foundation/t81-foundation/source/tests/cpp/release_correctness_guard.cpp:36: int main(): Assertion `false && \"release correctness guard\"' failed.\n"
+        },
+        "map": {
+          "kind": "map",
+          "returncode": -6,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "t81_release_map_guard: /home/runner/work/t81-foundation/t81-foundation/source/tests/cpp/release_correctness_guard.cpp:36: int main(): Assertion `false && \"release correctness guard\"' failed.\n"
+        }
+      },
+      "compiler_stdout": "g++-14 (Ubuntu 14.2.0-4ubuntu2~24.04.1) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "compiler_stderr": "",
+      "cmake_version": "cmake version 3.31.6\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "ninja_version": "1.13.2\n",
+      "python": "3.12.15 (main, Oct  1 2026, 02:35:59) [GCC 13.3.0]"
+    },
+    "base01-ubuntu-24.04-Release": {
+      "run_id": 41747549827,
+      "artifact": "base01-ubuntu-24.04-Release",
+      "artifact_sha256": "ec54f29ac5ebd33bd322c3714e38800732e1541d63e9a71078e2d9cc6d8acc81",
+      "source_commit": "35f73ac9751423f9ac083c7f4b84def34d810443",
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "configuration": "Release",
+      "status": "PASS",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 27,
+        "failed": 0,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 0,
+        "executed": 0,
+        "passed": 0,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      },
+      "guard_observations": {
+        "sha3": {
+          "kind": "sha3",
+          "returncode": 1,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Test 'release correctness guard' failed!\nExpected: deliberately incorrect digest\nActual:   a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26\n"
+        },
+        "float": {
+          "kind": "float",
+          "returncode": -6,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "t81_release_float_guard: /home/runner/work/t81-foundation/t81-foundation/source/tests/cpp/release_correctness_guard.cpp:36: int main(): Assertion `false && \"release correctness guard\"' failed.\n"
+        },
+        "map": {
+          "kind": "map",
+          "returncode": -6,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "t81_release_map_guard: /home/runner/work/t81-foundation/t81-foundation/source/tests/cpp/release_correctness_guard.cpp:36: int main(): Assertion `false && \"release correctness guard\"' failed.\n"
+        }
+      },
+      "compiler_stdout": "g++-14 (Ubuntu 14.2.0-4ubuntu2~24.04.1) 14.2.0\nCopyright (C) 2024 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+      "compiler_stderr": "",
+      "cmake_version": "cmake version 3.31.6\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "ninja_version": "1.13.2\n",
+      "python": "3.12.15 (main, Oct  1 2026, 02:35:59) [GCC 13.3.0]"
+    },
+    "base01-windows-2022-Release": {
+      "run_id": 41747549827,
+      "artifact": "base01-windows-2022-Release",
+      "artifact_sha256": "e2299668b3ab6b0c8f1f19490ddcfcec9718827af588e04cf280b1449adbe11f",
+      "source_commit": "35f73ac9751423f9ac083c7f4b84def34d810443",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Release",
+      "status": "FAIL_OR_BLOCKED",
+      "native": {
+        "planned": 27,
+        "executed": 27,
+        "passed": 24,
+        "failed": 3,
+        "blocked": 0
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [
+        "canonfs_read_verify_test",
+        "canonfs_identity_contract_test",
+        "t81_vm_tloadhash_decodefault_determinism_matrix_test"
+      ],
+      "blocked_native": [],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      },
+      "guard_observations": {
+        "sha3": {
+          "kind": "sha3",
+          "returncode": 1,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Test 'release correctness guard' failed!\nExpected: deliberately incorrect digest\nActual:   a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26\n"
+        },
+        "float": {
+          "kind": "float",
+          "returncode": 3,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Assertion failed: false && \"release correctness guard\", file D:\\a\\t81-foundation\\t81-foundation\\source\\tests\\cpp\\release_correctness_guard.cpp, line 36\n"
+        },
+        "map": {
+          "kind": "map",
+          "returncode": 3,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Assertion failed: false && \"release correctness guard\", file D:\\a\\t81-foundation\\t81-foundation\\source\\tests\\cpp\\release_correctness_guard.cpp, line 36\n"
+        }
+      },
+      "compiler_stdout": "usage: cl [ option... ] filename... [ /link linkoption... ]\r\n",
+      "compiler_stderr": "Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\r\nCopyright (C) Microsoft Corporation.  All rights reserved.\r\n\r\n",
+      "cmake_version": "cmake version 3.31.6\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "ninja_version": "1.13.2\r\n",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+    },
+    "base01-windows-2022-Debug": {
+      "run_id": 41747549827,
+      "artifact": "base01-windows-2022-Debug",
+      "artifact_sha256": "4893f03a881cdf3c14c3f495338afc101a106883ff42beeb358d71109cb95381",
+      "source_commit": "35f73ac9751423f9ac083c7f4b84def34d810443",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Debug",
+      "status": "FAIL_OR_BLOCKED",
+      "native": {
+        "planned": 27,
+        "executed": 18,
+        "passed": 16,
+        "failed": 2,
+        "blocked": 9
+      },
+      "guards": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "mutant_rejections": {
+        "planned": 3,
+        "executed": 3,
+        "passed": 3,
+        "failed": 0,
+        "blocked": 0
+      },
+      "configuration_regressions": {
+        "planned": 1,
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0
+      },
+      "failed_native": [
+        "canonfs_read_verify_test",
+        "canonfs_identity_contract_test"
+      ],
+      "blocked_native": [
+        "t81_vm_determinism_property_test",
+        "t81_vm_deterministic_fault_test",
+        "t81_vm_fault_family_determinism_matrix_test",
+        "t81_vm_tloadhash_decodefault_determinism_matrix_test",
+        "t81_axion_log_determinism_test",
+        "t81_vm_system_registers_deterministic_test",
+        "t81_isa_binary_io_determinism_test",
+        "t81_vm_workload_determinism_tiers_test",
+        "test_resource_monitoring"
+      ],
+      "affected_four": {
+        "t81_sha3_test": true,
+        "test_deterministic_float_boundaries": true,
+        "test_map_determinism": true,
+        "t81_determinism_containers_test": true
+      },
+      "guard_observations": {
+        "sha3": {
+          "kind": "sha3",
+          "returncode": 1,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Test 'release correctness guard' failed!\nExpected: deliberately incorrect digest\nActual:   a69f73cca23a9ac5c8b567dc185a756e97c982164fe25859e0d1dcc1475c80a615b2123af1f5f94c11e3e9402c3ac558f500199d95b6d3e301758586281dcd26\n"
+        },
+        "float": {
+          "kind": "float",
+          "returncode": 3,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Assertion failed: false && \"release correctness guard\", file D:\\a\\t81-foundation\\t81-foundation\\source\\tests\\cpp\\release_correctness_guard.cpp, line 36\n"
+        },
+        "map": {
+          "kind": "map",
+          "returncode": 3,
+          "status": "PASS",
+          "stdout": "",
+          "stderr": "Assertion failed: false && \"release correctness guard\", file D:\\a\\t81-foundation\\t81-foundation\\source\\tests\\cpp\\release_correctness_guard.cpp, line 36\n"
+        }
+      },
+      "compiler_stdout": "usage: cl [ option... ] filename... [ /link linkoption... ]\r\n",
+      "compiler_stderr": "Microsoft (R) C/C++ Optimizing Compiler Version 19.44.35229 for x64\r\nCopyright (C) Microsoft Corporation.  All rights reserved.\r\n\r\n",
+      "cmake_version": "cmake version 3.31.6\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+      "ninja_version": "1.13.2\r\n",
+      "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+    }
+  },
+  "independent-isa": {
+    "base01-independent-windows-Debug-isa": {
+      "run_id": 41748962832,
+      "artifact": "base01-independent-windows-Debug-isa",
+      "artifact_sha256": "ffb7078852ddbf2b68619d87add9189aba8d08c0cb76c101eb366507eb0d09bd",
+      "source_commit": "35f73ac9751423f9ac083c7f4b84def34d810443",
+      "platform": "Windows-2022Server-10.0.20348-SP0",
+      "configuration": "Debug",
+      "status": "PASS",
+      "native": {
+        "executed": 1,
+        "passed": 1,
+        "failed": 0,
+        "blocked": 0
+      },
+      "target": "t81_isa_binary_io_determinism_test"
+    }
+  }
+}

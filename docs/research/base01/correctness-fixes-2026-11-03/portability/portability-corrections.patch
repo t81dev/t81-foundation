@@ -1,0 +1,135 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 5104938e..58721e5f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1362,6 +1362,14 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
+   target_link_libraries(direct_api_authorization_test PRIVATE t81_direct_api)
+   add_test(NAME direct_api_authorization_test COMMAND direct_api_authorization_test)
+   find_package(Python3 COMPONENTS Interpreter REQUIRED)
++  if(MSVC)
++    add_test(NAME t81_msvc_debug_configuration
++      COMMAND ${Python3_EXECUTABLE}
++        ${PROJECT_SOURCE_DIR}/tests/python/check_msvc_debug_configuration.py
++        --source ${PROJECT_SOURCE_DIR} --cmake ${CMAKE_COMMAND}
++        --compiler ${CMAKE_CXX_COMPILER} --generator ${CMAKE_GENERATOR})
++    set_tests_properties(t81_msvc_debug_configuration PROPERTIES TIMEOUT 120)
++  endif()
+   # Exercise real failure paths with NDEBUG defined, including in Debug builds.
+   foreach(guard sha3 float map)
+     string(TOUPPER "${guard}" guard_kind)
+diff --git a/cmake/Compiler.cmake b/cmake/Compiler.cmake
+index bea424e0..c78fb825 100644
+--- a/cmake/Compiler.cmake
++++ b/cmake/Compiler.cmake
+@@ -16,7 +16,8 @@ endif()
+ 
+ # Global compiler flags (ANSI warnings for GCC/Clang; use /W4 for MSVC)
+ if(MSVC)
+-  add_compile_options(/W4 /O2 /DNDEBUG /WX)
++  # MSVC Debug enables /RTC1, which rejects /O2 with command-line error D8016.
++  add_compile_options(/W4 "$<$<NOT:$<CONFIG:Debug>>:/O2>" /DNDEBUG /WX)
+ else()
+   add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
+ endif()
+diff --git a/tests/cpp/release_correctness_guard.cpp b/tests/cpp/release_correctness_guard.cpp
+index c008d43d..f6d8e518 100644
+--- a/tests/cpp/release_correctness_guard.cpp
++++ b/tests/cpp/release_correctness_guard.cpp
+@@ -16,10 +16,19 @@
+ #undef main
+ 
+ #include <cstdlib>
++#if defined(_MSC_VER) && defined(_DEBUG)
++#include <crtdbg.h>
++#endif
+ 
+ int main() {
+ #ifdef _MSC_VER
+   _set_error_mode(_OUT_TO_STDERR);
++  _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
++#ifdef _DEBUG
++  // Debug assertions use the report channel rather than _set_error_mode.
++  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
++  _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
++#endif
+ #endif
+ #if defined(T81_RELEASE_GUARD_SHA3)
+   run_test("", "deliberately incorrect digest", "release correctness guard");
+diff --git a/tests/determinism/evidence_collector.cpp b/tests/determinism/evidence_collector.cpp
+index eea5822f..01b51628 100644
+--- a/tests/determinism/evidence_collector.cpp
++++ b/tests/determinism/evidence_collector.cpp
+@@ -228,6 +228,7 @@ static void test_write_schema() {
+ 
+   std::ifstream f(out);
+   std::string content((std::istreambuf_iterator<char>(f)), {});
++  f.close();  // Windows cannot remove the evidence directory while this handle is open.
+ 
+   check(contains(content, "schema_version=evidence-schema-v1"),
+         "[C06-05] schema_version line present");
+diff --git a/tests/python/check_msvc_debug_configuration.py b/tests/python/check_msvc_debug_configuration.py
+new file mode 100644
+index 00000000..88425311
+--- /dev/null
++++ b/tests/python/check_msvc_debug_configuration.py
+@@ -0,0 +1,60 @@
++"""Compile the repository's MSVC Debug flags with the actual Windows compiler."""
++import argparse
++import json
++from pathlib import Path
++import platform
++import subprocess
++import tempfile
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--source", type=Path, required=True)
++    parser.add_argument("--cmake", required=True)
++    parser.add_argument("--compiler", required=True)
++    parser.add_argument("--generator", required=True)
++    args = parser.parse_args()
++    if platform.system() != "Windows":
++        parser.error("This regression requires a real Windows/MSVC environment")
++    records = []
++    with tempfile.TemporaryDirectory(prefix="base01-msvc-debug-") as directory:
++        source = Path(directory)
++        build = source / "build"
++        flags = (args.source.resolve() / "cmake/Compiler.cmake").as_posix()
++        (source / "CMakeLists.txt").write_text(
++            "cmake_minimum_required(VERSION 3.20)\n"
++            "project(msvc_debug_regression LANGUAGES CXX)\n"
++            "if(NOT MSVC)\n  message(FATAL_ERROR \"MSVC is required\")\nendif()\n"
++            "set(T81_USE_CXX23 ON)\n"
++            f"include([=[{flags}]=])\n"
++            "add_executable(probe main.cpp)\n"
++            "target_compile_features(probe PRIVATE ${T81_CXX_STD_FEATURE})\n",
++            encoding="utf-8")
++        (source / "main.cpp").write_text("int main() { return 0; }\n", encoding="utf-8")
++        commands = [
++            [args.cmake, "-S", str(source), "-B", str(build), "-G", args.generator,
++             "-DCMAKE_BUILD_TYPE=Debug", "-DCMAKE_CXX_COMPILER=" + args.compiler],
++            [args.cmake, "--build", str(build), "--config", "Debug", "--verbose"],
++        ]
++        for command in commands:
++            result = subprocess.run(command, capture_output=True, timeout=60)
++            records.append({"argv": command, "returncode": result.returncode,
++                            "stdout": result.stdout.decode("utf-8", errors="replace"),
++                            "stderr": result.stderr.decode("utf-8", errors="replace")})
++            if result.returncode != 0:
++                print(json.dumps({"status": "FAIL", "commands": records}))
++                return 1
++        binary = next((p for p in [build / "probe.exe", build / "Debug/probe.exe"]
++                       if p.is_file()), None)
++        if binary is None:
++            print(json.dumps({"status": "FAIL", "error": "probe not built", "commands": records}))
++            return 1
++        result = subprocess.run([str(binary)], capture_output=True, timeout=15)
++        records.append({"argv": [str(binary)], "returncode": result.returncode})
++        print(json.dumps({"status": "PASS" if result.returncode == 0 else "FAIL",
++                          "commands": records}))
++        return 0 if result.returncode == 0 else 1
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
