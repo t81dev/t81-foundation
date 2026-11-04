@@ -16,10 +16,19 @@
 #undef main
 
 #include <cstdlib>
+#if defined(_MSC_VER) && defined(_DEBUG)
+#include <crtdbg.h>
+#endif
 
 int main() {
 #ifdef _MSC_VER
   _set_error_mode(_OUT_TO_STDERR);
+  _set_abort_behavior(0, _WRITE_ABORT_MSG | _CALL_REPORTFAULT);
+#ifdef _DEBUG
+  // Debug assertions use the report channel rather than _set_error_mode.
+  _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE);
+  _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+#endif
 #endif
 #if defined(T81_RELEASE_GUARD_SHA3)
   run_test("", "deliberately incorrect digest", "release correctness guard");
