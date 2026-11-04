@@ -1916,8 +1916,10 @@ int canonfs_snapshot_diff(const std::string& lhs_snapshot_hash,
     error("canonfs snapshot-diff: " + hash_error);
     return 1;
   }
-  const fs::path lhs_manifest = canonfs_root / "snapshots" / snapshot_storage_key(lhs_snapshot_hash) / "MANIFEST.txt";
-  const fs::path rhs_manifest = canonfs_root / "snapshots" / snapshot_storage_key(rhs_snapshot_hash) / "MANIFEST.txt";
+  const fs::path lhs_manifest =
+      canonfs_root / "snapshots" / snapshot_storage_key(lhs_snapshot_hash) / "MANIFEST.txt";
+  const fs::path rhs_manifest =
+      canonfs_root / "snapshots" / snapshot_storage_key(rhs_snapshot_hash) / "MANIFEST.txt";
   if (!fs::exists(lhs_manifest)) {
     error("canonfs snapshot-diff: snapshot not found: " + lhs_snapshot_hash);
     return 1;

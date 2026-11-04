@@ -22,7 +22,8 @@ inline std::string storage_key_v1(const CanonHash& hash) {
 }
 
 inline std::string snapshot_storage_key_v1(std::string_view canonical_hash) {
-  return storage_key_v1(CanonHash{t81::hash::CanonHash81::from_string(std::string(canonical_hash))});
+  return storage_key_v1(
+      CanonHash{t81::hash::CanonHash81::from_string(std::string(canonical_hash))});
 }
 
 inline std::optional<CanonHash> parse_storage_key_v1(std::string_view key) {
