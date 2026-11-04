@@ -59,6 +59,7 @@
 #include "t81/axion/policy_validator.hpp"
 #include "t81/canonfs/canon_driver.hpp"
 #include "t81/canonfs/canon_types.hpp"
+#include "t81/canonfs/storage_key.hpp"
 #include "t81/cli/artifact_family.hpp"
 #include "t81/canonfs/performance_cli.hpp"
 #include "t81/canonfs/interchange_ops.hpp"
@@ -5028,6 +5029,14 @@ int run_axion(const Args& args) {
     return count;
   };
 
+  auto snapshot_dir_path = [&](const fs::path& root, std::string_view canonical_hash) -> std::optional<fs::path> {
+    try {
+      return root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(canonical_hash);
+    } catch (...) {
+      return std::nullopt;
+    }
+  };
+
   auto sorted_snapshot_hashes = [&](const fs::path& root) {
     std::vector<std::string> hashes;
     std::error_code ec;
@@ -5039,7 +5048,12 @@ int run_axion(const Args& args) {
       if (ec || !entry.is_directory()) {
         continue;
       }
-      hashes.push_back(entry.path().filename().string());
+      const auto parsed = t81::canonfs::parse_storage_key_v1(entry.path().filename().string());
+      if (parsed) {
+        hashes.push_back(parsed->h.to_string());
+      } else {
+        hashes.push_back(entry.path().filename().string());
+      }
     }
     std::sort(hashes.begin(), hashes.end(), std::greater<std::string>{});
     return hashes;
@@ -5099,7 +5113,11 @@ int run_axion(const Args& args) {
     if (hash.empty()) {
       return lines;
     }
-    const fs::path manifest = canonfs_root / "snapshots" / hash / "MANIFEST.txt";
+    const auto dir = snapshot_dir_path(canonfs_root, hash);
+    if (!dir) {
+      return lines;
+    }
+    const fs::path manifest = *dir / "MANIFEST.txt";
     std::ifstream in(manifest, std::ios::binary);
     if (!in) {
       return lines;
@@ -5209,9 +5227,9 @@ int run_axion(const Args& args) {
     if (!state.present && tier_provided) {
       state.tier = target_tier;
     }
+    const auto active_dir = state.active_snapshot ? snapshot_dir_path(canonfs_root, *state.active_snapshot) : std::nullopt;
     const bool state_snapshot_present =
-        state.active_snapshot &&
-        fs::exists(canonfs_root / "snapshots" / *state.active_snapshot / "MANIFEST.txt");
+        active_dir && fs::exists(*active_dir / "MANIFEST.txt");
     std::vector<std::string> issues;
     if (!canonfs_ready) {
       issues.emplace_back("canonfs_root_missing");
@@ -5704,7 +5722,18 @@ int run_canonfs_command(const Args& args) {
       return 1;
     }
     if (dry_run) {
-      const fs::path snapshot_dir = canonfs_root / "snapshots" / positional[0];
+      std::string hash_err;
+      if (!is_valid_snapshot_hash_text(positional[0])) {
+        error("canonfs rollback: invalid snapshot hash.");
+        return 1;
+      }
+      fs::path snapshot_dir;
+      try {
+        snapshot_dir = canonfs_root / "snapshots" / t81::canonfs::snapshot_storage_key_v1(positional[0]);
+      } catch (...) {
+        error("canonfs rollback: invalid snapshot hash.");
+        return 1;
+      }
       const bool exists = fs::exists(snapshot_dir);
       if (as_json) {
         std::cout << "{\n"
