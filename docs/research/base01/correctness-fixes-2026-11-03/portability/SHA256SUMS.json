@@ -1,9 +1,9 @@
 {
   "COMMANDS.md": "b01bd1dfe50f1ee91da5f11f1587f42ede9519d3e2015fefeeabc343747f2817",
-  "README.md": "9750124427cfa6a811628e57a8148c42ad0b3f039d65ba8bac62b857a4e14be3",
+  "README.md": "05497ce4f1dc80af8d9fa7c18a09f49755b3bfc6f99bb23e7d709074329372ac",
   "archive-files.sha256.json": "a11f35a786c72838be941bc1174e56d5d6ba63772616cbbbe764cc7b47bf9c49",
   "evidence.tar.gz": "1d002f61d6b68fe43967c57499251930ae1553d1f1a9017bb445992c53e320f5",
   "history.json": "605168b818d787c4bdfe4a9c263cadd56f8c702ebb7429f25b7d926b7073a291",
-  "portability-corrections.patch": "b16147b0d8ec6baa6260aae9e7ab2808716ed8eaef2cbf732e484f3f7a916bca",
+  "portability-corrections.patch.gz": "429515cf3879d3f44d8570136d079784b3a82d1690a42422b75501c74b7eea73",
   "results.json": "8b627c9ed88018a7e6f821109f26304159ea1b0bde01b0faf357696214757e5b"
 }

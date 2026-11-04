@@ -2,7 +2,7 @@
 
 **Status: PARTIAL for the broader Windows regression slice.** The four requested fixes and all three NDEBUG failure-path guards pass on the executed Linux, Windows and macOS configurations. Persistent-storage failures and the audited VM Debug build blocker remain visible; this is not an all-platform green result.
 
-Tested code: `35f73ac9751423f9ac083c7f4b84def34d810443`. This source commit is followed only by the evidence-publication commit. Starting requested head: `d953a094126d6315fe5c50280fc40deefb5899e3`. The original four corrected files are byte-identical to that head. The audited BASE-01 runtime pin remains `cda9135d36144d4de2771af174e52ac7b30a83c9`; no production source under `fs/`, `vm/`, `isa/` or `include/` changed in this portability follow-up.
+Tested code: `35f73ac9751423f9ac083c7f4b84def34d810443`. This source commit is followed only by evidence-publication commits. Starting requested head: `d953a094126d6315fe5c50280fc40deefb5899e3`. The original four corrected files are byte-identical to that head. The audited BASE-01 runtime pin remains `cda9135d36144d4de2771af174e52ac7b30a83c9`; no production source under `fs/`, `vm/`, `isa/` or `include/` changed in this portability follow-up.
 
 ## Final observed coverage
 
@@ -24,7 +24,7 @@ The four affected suites are `t81_sha3_test`, `test_deterministic_float_boundari
 2. **Headless assertion guards:** the intermediate Windows Debug float/map guards timed out after 15 seconds without the expected diagnostic. The guard now routes Debug CRT assertion reports to stderr and disables interactive abort reporting. [Microsoft documents that Debug assertion reports default to a message window](https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/crtsetreportmode?view=msvc-170). All final guards terminate and produce their expected diagnostic. Linux assertion guards returned `-6`; Windows returned `3`; SHA3 failure returned `1`. The checker requires nonzero termination plus the expected message, not a single portable exit/signal number. English runner diagnostics were tested; other locales/CRTs were not.
 3. **Windows evidence cleanup:** the native diagnostic wrapper captured a sharing violation from `remove_all` while the test's `ifstream` was still open. The test now closes the stream after reading its contents. The unchanged evidence-schema and hook-trace checks then pass, including all 15 checks in `t81_determinism_evidence_test`. No runtime or scientific workload logic changed.
 
-The [focused patch](portability-corrections.patch) contains only these build/test corrections and their regression registration. The existing guards, mutant controls and evidence collector provide actual failure-before/pass-after coverage. Original failures remain archived.
+The [focused patch](portability-corrections.patch.gz) contains only these build/test corrections and their regression registration. The existing guards, mutant controls and evidence collector provide actual failure-before/pass-after coverage. Original failures remain archived.
 
 ## Remaining failures and limits
 
