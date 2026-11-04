@@ -236,3 +236,69 @@ A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reported
 **What changed:** Original #672 encode/store/decode/reduce `(sum, nonzero_count)` task was challenged because input inspection can compute outputs and bypass the intended consumer. The revised proposal evaluates exact signed-trit coefficient polynomials modulo `2^64`, but sparse exponentiation versus Horner introduces an algorithm/representation confound. The draft now separates S (causal representation choice), A (algorithm routing), and T (genuinely ternary-specific mechanism). The latter has **no approved experiment**. Even at 5% density, proposed sparse payload can exceed two-bit packed payload for the earlier lengths, so no format crossover or speedup is guaranteed.
 
 **Open gates:** Choose whether M2 is bounded S/A research or deferred pending a T hypothesis; justify a real producer/consumer lifecycle; separate format from algorithm comparisons; freeze a trace, selectors, byte grammar, hardware, statistical method and practical threshold; independently clear seven P1 findings; reconcile M1; obtain explicit commit-scoped authorization. Do not implement, benchmark, merge, or claim radix superiority from these draft documents. These observations are dated; refresh actual GitHub heads and CI.
+
+---
+
+## 2026-11-04 handoff delta — BASE-01, CanonFS portability, and T81-SIA-001 audit
+
+**Session Date:** 2026-11-04
+**Audited Head SHA:** `d836f7edb9b70608ef7476e82e98a0a89084d74b` on `main`
+**Authoritative Baseline Head for Audit:** `9bbc4453ca136251448201cf9166c2bd167e1f67`
+
+### 1. Completed & Integrated Engineering
+- **BASE-01 Reference Baseline Integration:**
+  - PR #694 (`52921bd0`) and PR #695 (`4f9edb9c`) successfully integrated 126 non-colliding files across Lane A, B1 Foundation, and resource accounting without modifying existing repository files or triggering benchmark workflows.
+  - PR #700 (`63d87633`) preserved Release correctness guards (`tests/cpp/release_correctness_guard.cpp`), MSVC Debug optimization rules, and test portability across Linux and Windows.
+  - Review evidence under `docs/research/base01/evidence/` retains byte-for-byte identity; virtualized test suite passed 58/63 with 5 skipped.
+- **CanonFS Storage Portability Initial Merge:**
+  - PR #701 (`9bbc4453`) resolved Windows filesystem reserved-character failures by separating canonical public Base-81 IDs from physical on-disk keys (`storage_key_v1` generating `h1-<hex>` names for objects and capabilities).
+  - Enforced fail-closed refusal of unmigrated legacy files and added VM MetaRefine WriteCode denial protection.
+- **EXP-H04-R03 Candidate A (B729-µ5):**
+  - PR #679 (`d8e1376a`) merged Candidate A codec; PR #680 (`927972f8`) merged acceptance review. Phase C performance measurement remains frozen.
+
+### 2. Active Engineering Workstreams
+- **PR #702 (`origin/fix/canonfs-cli-list-portable-key` at `41f95d4c`):**
+  - Canonical Reference Resolution: decodes portable on-disk `h1-<hex>` filenames back into canonical public Base-81 identifiers for CLI `list-objects` and `read-object` operations.
+  - Subprocess Regressions: adds native CLI round-trip test coverage in CTest via `tests/python/test_canonfs_cli_portable_storage.py` and updates `cli_contract_test.cpp`.
+- **PR #703 (`origin/fix/canonfs-portable-snapshot-paths` at `991f3169`):**
+  - Snapshot Portability: maps snapshot directory paths from raw Base-81 strings to portable `h1-<hex>` directory keys (`snapshot_storage_key_v1`) in `driver.cpp`.
+  - Snapshot Resolvers & Lifecycle Tests: unifies snapshot path lookup across `driver.cpp` and `main.cpp`, asserting that public snapshot IDs and manifest contents remain Base-81 while directories on disk are safe on Windows.
+- **BASE-01 B1 Contract Reconciliation (`audit/base01-b1-contract-reconciliation` at `7f42e2b8` / `8c9e2c7f`):**
+  - Proposes resolving Codex P0/P1 audit findings (100 MiB vs 16 MiB child output ceiling, write-batch first-insertion fractions) prior to any dynamic host qualification.
+
+### 3. New Major Investigation: T81-SIA-001 (End-to-End System Integration Audit)
+Under maintainer authorization, a comprehensive read-only systems integration audit was completed and published across eight canonical reports under `docs/reports/audit/`:
+- `T81_SYSTEM_INTEGRATION_AUDIT.md`: Subsystem maturity overview.
+- `T81_BOOT_EXECUTION_TRACE.md`: Complete firmware-to-kernel boot trace on x86-64 and AArch64.
+- `T81_APPLICATION_LIFECYCLE_MATRIX.md`: Hosted vs freestanding application lifecycles.
+- `T81_SUBSYSTEM_DEPENDENCY_MAP.md`: Call graph and coupling analysis across 13 subsystems.
+- `T81_OS_CAPABILITY_MATRIX.md`: 18-point capability evaluation against conventional operating systems.
+- `T81_INTEGRATION_GAP_REGISTER.md`: Prioritized register of engineering gaps.
+- `T81_VALIDATION_EVIDENCE.md`: Reproducible build commands, test results, logs, and empirical evidence.
+- `T81_SYSTEM_READINESS_VERDICT.md`: Formal dispositions and 5-milestone roadmap.
+
+### 4. Direct Answers to Core Research Continuity Questions
+
+1. **Which subsystems execute inside freestanding Axion OS?**
+   Only the low-level microkernel facilities under `ternaryos/`: UEFI boot handoff, PL011/COM1 UART drivers, GICv3 interrupt distributor, physical timer PPIs, virtio-blk modern MMIO/PCI driver, and TTBR0 MMU page table management.
+2. **Can T81Lang/TISC programs execute independently after boot?**
+   **No.** Freestanding Axion OS does not embed the TISC virtual machine, does not include a bytecode interpreter or JIT, and has no T81Lang runtime or compiler.
+3. **Are Axion policy and CanonFS integrated into the freestanding lifecycle?**
+   **No.** Axion compile-time/runtime policy bundles (`.axionb`) and CanonFS content-addressed stores are currently integrated only within the hosted CLI and T81VM on conventional host OSes. Axion OS accesses disk blocks purely via hardcoded LBA sectors without dynamic CanonFS superblock or policy evaluation.
+4. **Can an application persist output, restart, and verify its artifacts?**
+   - **Hosted Mode:** **Yes.** A T81Lang application can compile to TISC, execute, persist objects and snapshots to CanonFS, restart, and verify byte-for-byte SHA3-256/SHA3-512 cryptographic integrity.
+   - **Freestanding Mode:** **No.** Freestanding tasks can only issue raw sector write commands to virtio-blk.
+5. **Which functionality still depends on a conventional host operating system?**
+   The entire development and application lifecycle: source code editing, lexing/parsing/compiling with `t81lang`, TISC bytecode verification and execution in `t81vm`, policy profiling, model intake bridging, Python bindings, and CI regression suites.
+6. **What useful capability does the integrated platform demonstrate independently of ternary-specific performance?**
+   T81 demonstrates a cohesive model of **verifiable, policy-governed deterministic computing**: bit-exact software execution across x86-64/ARM64/Windows, fail-closed access authorization before state mutation, and tamper-evident content-addressed storage. These properties are valuable for high-assurance, auditable computing regardless of whether native ternary hardware is ever deployed.
+
+### 5. Next Concrete Engineering and Research Decision Gates
+1. **Gate 1 (P0): Complete CanonFS Portability Integration:**
+   Finalize and merge PR #702 (canonical reference listings) and PR #703 (snapshot directory keys), verifying cross-platform CTest suites on Linux and Windows.
+2. **Gate 2 (P0 Milestone 1): Embed TISC Runtime into Axion OS:**
+   Port a lightweight, zero-allocation TISC interpreter into `ternaryos/`, enabling the freestanding kernel to load and execute compiled `.tisc` bytecode from disk on bare metal.
+3. **Gate 3 (P1): Resolve BASE-01 B1 Protocol Findings:**
+   Reconcile the CanonFS 100 MiB vs 16 MiB retention ceiling and batch size fractions in `BASE01_B1_MEASUREMENT_CONTRACT.md` before scheduling physical Linux host qualification.
+4. **Gate 4 (Freeze Enforced): Maintain Phase C & PMU Execution Freezes:**
+   Keep EXP-H04-R03 Phase C and BASE-01 B1 benchmarking strictly frozen until dedicated bare-metal hardware and signed maintainer authorization are secured.

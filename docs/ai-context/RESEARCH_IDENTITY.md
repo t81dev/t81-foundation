@@ -1,8 +1,8 @@
 # T81 Research Continuity — RESEARCH_IDENTITY
 
 **Document ID:** `docs/ai-context/RESEARCH_IDENTITY.md`
-**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Version:** 1.1.0 · **Last Reviewed:** 2026-11-04
+**Source Snapshot:** `main` at `d836f7edb9b70608ef7476e82e98a0a89084d74b` (checked 2026-11-04; refresh before use)
 **Status:** Non-normative research-identity navigation; canonical H01–H08 definitions remain in the JSON register
 
 ---
@@ -171,3 +171,14 @@ The research program has evolved from Knuth/discrete-mathematics and Hanoi/CWEB 
 **The governing discrimination question** is whether a measured advantage arises from *ternary representation itself*, or from compression, adaptive precision, caching, SIMD, policy enforcement, or other representation-independent design choices. A mathematical radix property is not a physical or software speedup. Negative matched comparisons constrain tested implementations/workloads; they do not falsify all future ternary substrates.
 
 **Canonical identities:** H07 asks about comparative auditability against equivalently authorized/evidenced conventional runtime alternatives; tested policy behavior is not comparative superiority or security certification. H08 asks whether AI-assisted scientific research improves discovery/trustworthiness under independent audit; do not conflate it with H09-E1 recursive-cognition investigations. The JSON register remains authoritative if this synthesis differs.
+
+---
+
+## 2026-11-04 system integration and architectural research posture
+
+The publication of the **T81-SIA-001** System Integration Audit (`docs/reports/audit/`) marks a crucial maturation in T81's research identity. The program now explicitly disaggregates the source of value into three distinct mechanisms:
+1. **Ternary-Specific Mechanisms (T):** Exact sign symmetry, zero-cost negation, balanced arithmetic, Base-81 grouping, and theoretical multi-level storage. Bounded experiments have confirmed mathematical properties, but have also produced decisive negative results on conventional CPUs (software ALU tryte addition is $10.6\times$ slower; SIMD VPSHUFB decode limits MatVec speed). In silicon, ternary hardware remains unproven and blocked for simulation preparation (ADR-0007).
+2. **Software Architecture Mechanisms (S):** Deterministic execution profiles (DCP), fail-closed policy enforcement before side effects (Axion), content-addressed verifiable storage (CanonFS), and immutable snapshot manifests. These properties provide substantial engineering value, but are representation-independent and could be implemented with identical efficacy using binary data types.
+3. **End-to-End System Integration (I):** The unified integration of determinism, policy governance, and verifiable storage into a single pipeline.
+
+**Core Research Principle:** Useful software integration does **not** demonstrate ternary computational superiority. A well-engineered, policy-governed runtime running on conventional hardware does not prove that ternary arithmetic is superior in silicon. T81's next major research question is not "Can ternary math be simulated?", but rather: **"How much of T81 functions today as one coherent, independently executable computing system, and what useful capability does the integrated platform demonstrate independently of ternary-specific performance?"**
