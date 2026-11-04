@@ -16,7 +16,8 @@ endif()
 
 # Global compiler flags (ANSI warnings for GCC/Clang; use /W4 for MSVC)
 if(MSVC)
-  add_compile_options(/W4 /O2 /DNDEBUG /WX)
+  # MSVC Debug enables /RTC1, which rejects /O2 with command-line error D8016.
+  add_compile_options(/W4 "$<$<NOT:$<CONFIG:Debug>>:/O2>" /DNDEBUG /WX)
 else()
   add_compile_options(-Wall -Wextra -Wpedantic -O3 -DNDEBUG)
 endif()

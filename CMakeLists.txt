@@ -1362,6 +1362,14 @@ target_link_libraries(axion_policy_segment_event_test PRIVATE t81_isa t81_vm)
   target_link_libraries(direct_api_authorization_test PRIVATE t81_direct_api)
   add_test(NAME direct_api_authorization_test COMMAND direct_api_authorization_test)
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  if(MSVC)
+    add_test(NAME t81_msvc_debug_configuration
+      COMMAND ${Python3_EXECUTABLE}
+        ${PROJECT_SOURCE_DIR}/tests/python/check_msvc_debug_configuration.py
+        --source ${PROJECT_SOURCE_DIR} --cmake ${CMAKE_COMMAND}
+        --compiler ${CMAKE_CXX_COMPILER} --generator ${CMAKE_GENERATOR})
+    set_tests_properties(t81_msvc_debug_configuration PROPERTIES TIMEOUT 120)
+  endif()
   # Exercise real failure paths with NDEBUG defined, including in Debug builds.
   foreach(guard sha3 float map)
     string(TOUPPER "${guard}" guard_kind)
