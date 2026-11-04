@@ -155,6 +155,8 @@ endforeach()
                         [sys.executable, '-B', source/'tests/python/check_release_correctness_guard.py',
                          kind, mbuild/('mutant_'+kind+suffix)], expected=1, timeout=30))
         run('build-vm', ['cmake', '--build', build, '--verbose', '--parallel', '2', '--target', *VM])
+        if not (build/('t81_determinism_evidence_test'+suffix)).exists():
+            run('build-independent-evidence', ['cmake', '--build', build, '--verbose', '--target', 't81_determinism_evidence_test'])
         for target in VM:
             binary = build/(target+suffix)
             if binary.exists():
@@ -220,8 +222,10 @@ endforeach()
         report['source_tracked_status_after'] = subprocess.check_output(
             ['git', 'status', '--porcelain', '--untracked-files=no'], cwd=source, text=True).strip()
         groups = ['native_tests', 'release_guards', 'mutant_rejections', 'portability_regressions']
-        report['counts'] = {g: {'run': len(report[g]), 'passed': sum(x['passed'] for x in report[g]),
-                                     'failed_or_blocked': sum(not x['passed'] for x in report[g])} for g in groups}
+        report['counts'] = {g: {'planned': len(report[g]), 'executed': sum('returncode' in x for x in report[g]),
+                                     'passed': sum(x['passed'] for x in report[g]),
+                                     'failed': sum('returncode' in x and not x['passed'] for x in report[g]),
+                                     'blocked': sum('returncode' not in x for x in report[g])} for g in groups}
         report['status'] = ('PASS' if len(report['native_tests']) == 27 and len(report['release_guards']) == 3
                             and len(report['mutant_rejections']) == 3 and not report['source_tracked_status_after']
                             and all(x['passed'] for g in groups for x in report[g]) else 'FAIL_OR_BLOCKED')

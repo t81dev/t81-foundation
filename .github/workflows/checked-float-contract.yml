@@ -21,7 +21,7 @@ jobs:
       - name: Checkout exact PR source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
-          ref: b8e127728ab4b34dce959f6da70784a47e62567f
+          ref: 35f73ac9751423f9ac083c7f4b84def34d810443
           path: source
           persist-credentials: false
       - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
@@ -35,10 +35,10 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756
       - name: Linux correctness only
         if: runner.os == 'Linux'
-        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source b8e127728ab4b34dce959f6da70784a47e62567f --system Linux --config ${{ matrix.config }} --cc gcc-14 --cxx g++-14 --output evidence
+        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source 35f73ac9751423f9ac083c7f4b84def34d810443 --system Linux --config ${{ matrix.config }} --cc gcc-14 --cxx g++-14 --output evidence
       - name: Windows correctness only
         if: runner.os == 'Windows'
-        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source b8e127728ab4b34dce959f6da70784a47e62567f --system Windows --config ${{ matrix.config }} --cc cl --cxx cl --output evidence
+        run: python control/scripts/ci/base01_portability_check.py --source source --expected-source 35f73ac9751423f9ac083c7f4b84def34d810443 --system Windows --config ${{ matrix.config }} --cc cl --cxx cl --output evidence
       - name: Publish raw records including failures
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
