@@ -1,0 +1,46 @@
+[
+  {
+    "command": [
+      "/tmp/cpa004-results/admission-debug-final"
+    ],
+    "exit_code": 0,
+    "stdout": "CPA004 admission and limit checks passed (also active under NDEBUG)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/tmp/cpa004-build/t81_cpa004_admission_test"
+    ],
+    "exit_code": 0,
+    "stdout": "CPA004 admission and limit checks passed (also active under NDEBUG)\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--exit-code",
+      "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4",
+      "--",
+      "include/t81/isa",
+      "isa",
+      "vm",
+      "spec",
+      "kernel/axion",
+      "lang"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

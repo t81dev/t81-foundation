@@ -24,15 +24,15 @@
 
 // ── QEMU virt AArch64 memory map ─────────────────────────────────────────────
 
-#define QEMU_PL011_BASE  UINT64_C(0x09000000)
+#define QEMU_PL011_BASE UINT64_C(0x09000000)
 
 // PL011 register offsets (byte offsets; access as 32-bit words)
-#define PL011_DR_OFF  0x000u   // Data Register
-#define PL011_FR_OFF  0x018u   // Flag Register
-#define PL011_CR_OFF  0x030u   // Control Register
+#define PL011_DR_OFF 0x000u  // Data Register
+#define PL011_FR_OFF 0x018u  // Flag Register
+#define PL011_CR_OFF 0x030u  // Control Register
 
-#define PL011_FR_TXFF (1u << 5)   // Transmit FIFO full
-#define PL011_CR_UARTEN (1u << 0) // UART enable
+#define PL011_FR_TXFF (1u << 5)    // Transmit FIFO full
+#define PL011_CR_UARTEN (1u << 0)  // UART enable
 
 // ── MMIO helpers ──────────────────────────────────────────────────────────────
 
@@ -41,7 +41,9 @@ static inline void mmio_write32(uint64_t base, uint32_t off, uint32_t val) {
   volatile uint32_t* reg = (volatile uint32_t*)(uintptr_t)(base + off);
   *reg = val;
 #else
-  (void)base; (void)off; (void)val;
+  (void)base;
+  (void)off;
+  (void)val;
 #endif
 }
 
@@ -50,7 +52,8 @@ static inline uint32_t mmio_read32(uint64_t base, uint32_t off) {
   const volatile uint32_t* reg = (const volatile uint32_t*)(uintptr_t)(base + off);
   return *reg;
 #else
-  (void)base; (void)off;
+  (void)base;
+  (void)off;
   return 0;
 #endif
 }
@@ -84,6 +87,10 @@ static void bare_pl011_puts(const char* s) {
 
 extern void qemu_cpp_bridge_entry(void);
 
+#ifdef T81_CPA004_EXPERIMENT
+extern void cpa004_run(void (*emit)(const char*));
+#endif
+
 // ── Bare-metal kernel entry point ─────────────────────────────────────────────
 //
 // Purpose: confirm that ExitBootServices succeeded and that EL1 PL011 MMIO
@@ -102,6 +109,17 @@ void qemu_bare_kernel_entry(void) {
   // Phase 2 probe: confirm EL1 PL011 MMIO access after ExitBootServices.
   bare_pl011_puts("[axion] bare-metal EL1 kernel entry\r\n");
   bare_pl011_puts("[axion] ExitBootServices complete; handing off to C++ kernel\r\n");
+
+#ifdef T81_CPA004_EXPERIMENT
+  // This entry is reached only after a successful ExitBootServices call.
+  // Keep the opt-in experiment isolated from shell/device/scheduler bring-up.
+  cpa004_run(bare_pl011_puts);
+  for (;;) {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    __asm__ volatile("wfi" ::: "memory");
+#endif
+  }
+#endif
 
   // Hand off to the freestanding C++ bridge for the T81 banner and shell.
   // On bare-metal AArch64 this call never returns.
