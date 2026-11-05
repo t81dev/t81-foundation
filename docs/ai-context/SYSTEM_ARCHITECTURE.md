@@ -141,3 +141,13 @@ Draft/informational [RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architectur
 ## 2026-10-31 architecture boundary note
 
 The reported ADM-2 M1 local branch is not an admitted production layer or a verified end-to-end integration. Do not infer expanded DAIOS layer maturity, Axion authority, or DCP coverage from selected macOS ARM64 CTests or successful translation-unit compilation. Architecture changes require inspected diffs, accepted contracts, and scoped validation.
+
+---
+
+## 2026-11-05 execution-profile boundary and pending ISA contract
+
+**Cross-profile experimental boundary:** CPA-004/005 demonstrated the canonical 351-byte program across hosted T81VM and freestanding Axion/TernaryOS after `ExitBootServices`. CPA-006 expanded the *same implemented semantic profile* to 19 frozen cases, including successful Halt, runtime trap, admission rejection and step-budget exhaustion, with 57 hosted and 57 QEMU executions. The freestanding evaluator and CPA-006 artifacts are on the experimental integration branch, **not on current main**. See [PR #710](https://github.com/t81dev/t81-foundation/pull/710), merged into `experiment/cpa005-integration-base`; [PR #709](https://github.com/t81dev/t81-foundation/pull/709) remains an open draft. Do not infer that main contains the evaluator.
+
+**ISA-001 source-level divergence:** Main normative `spec/tisc-spec.md` describes `Load: R[A] = MEM[R[B]]` and `Store: MEM[R[A]] = R[B]`, whereas hosted VM uses direct A/B logical addresses. Main specification calls for register-derived branch targets and FLAGS-tested conditional predicates, whereas hosted VM uses immediate target A and register-tested JZ/JNZ (JN/JP use flags). Scalar TXor implementation is `wrap3(lhs - rhs)` for trit-clamped operands; documentary 'XOR / Sum' wording is ambiguous. Core capability freeze covers bytes 0–173, while header and registry contain conflicting extension assignments. Optional LLVM/MLIR branch lowering also diverges from hosted VM operand conventions; **do not extend CPA conformance claims to these backends**.
+
+**Proposed, not approved:** One forward versioned authoritative TISC transition contract plus explicit historical CPA-profile interpretation. No implicit reinterpretation of raw 13-byte binaries. The new contract must define operands, tags, flags, PC progression, trap/side-effect ordering, opcode profile admission and artifact-to-profile binding before implementation. Preserve CPA evaluators and evidence byte-for-byte. Architecture layers and DAIOS maturity labels above remain unchanged by this assessment.
