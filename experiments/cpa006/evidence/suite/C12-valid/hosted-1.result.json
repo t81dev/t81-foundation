@@ -1,0 +1,20 @@
+{
+  "id": "C12-valid",
+  "profile": "hosted",
+  "run": 1,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C12-valid.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "923dde1579503cb5c62b4d56304a99b584aee16518a14cf87c9a5797e374d543",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "halted",
+    "reason": null,
+    "steps": 5
+  },
+  "observations": 6
+}

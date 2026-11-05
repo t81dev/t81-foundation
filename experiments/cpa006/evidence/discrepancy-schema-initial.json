@@ -1,0 +1,11 @@
+{
+  "exit_code": 2,
+  "rejected_affected_sources": [
+    "spec/tisc-spec.md",
+    "spec/tisc/opcode-semantics.md",
+    "vm/vm.cpp",
+    "experiments/cpa004/contract.json",
+    "experiments/cpa006/frozen/suite.json"
+  ],
+  "reason": "Commons accepts registered evidence identifiers, not unindexed repository paths."
+}

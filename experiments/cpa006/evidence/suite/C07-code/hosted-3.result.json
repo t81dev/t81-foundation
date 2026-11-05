@@ -1,0 +1,20 @@
+{
+  "id": "C07-code",
+  "profile": "hosted",
+  "run": 3,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C07-code.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "717e230b7f92bd9b869cb91f632e0d806dba2c9075d78508e0fa6ed1ba893b5d",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "runtime_trap",
+    "reason": "BoundsFault",
+    "steps": 2
+  },
+  "observations": 3
+}

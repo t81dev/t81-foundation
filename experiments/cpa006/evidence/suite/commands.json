@@ -1,0 +1,903 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++23",
+      "-O3",
+      "-DNDEBUG",
+      "-DT81_DETERMINISTIC",
+      "-I/private/tmp/t81-cpa006/include",
+      "/private/tmp/t81-cpa006/experiments/cpa006/hosted_observer.cpp",
+      "-L/private/tmp/cpa006-build",
+      "-L/opt/homebrew/opt/llvm/lib/c++",
+      "-Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++",
+      "-lt81_vm",
+      "-lt81_isa",
+      "-lt81_axion",
+      "-lt81_ffi",
+      "-lt81_experimental",
+      "-lt81_core",
+      "-o",
+      "/private/tmp/cpa006-build/cpa006_hosted"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "hosted-build.stdout",
+    "stderr": "hosted-build.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C01"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C01-configure.stdout",
+    "stderr": "C01-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C01-build.stdout",
+    "stderr": "C01-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C01-build-commands.stdout",
+    "stderr": "C01-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C02"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C02-configure.stdout",
+    "stderr": "C02-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C02-build.stdout",
+    "stderr": "C02-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C02-build-commands.stdout",
+    "stderr": "C02-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C03"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C03-configure.stdout",
+    "stderr": "C03-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C03-build.stdout",
+    "stderr": "C03-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C03-build-commands.stdout",
+    "stderr": "C03-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C04"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C04-configure.stdout",
+    "stderr": "C04-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C04-build.stdout",
+    "stderr": "C04-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C04-build-commands.stdout",
+    "stderr": "C04-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C05"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C05-configure.stdout",
+    "stderr": "C05-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C05-build.stdout",
+    "stderr": "C05-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C05-build-commands.stdout",
+    "stderr": "C05-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C06"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C06-configure.stdout",
+    "stderr": "C06-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C06-build.stdout",
+    "stderr": "C06-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C06-build-commands.stdout",
+    "stderr": "C06-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C07-negative"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-negative-configure.stdout",
+    "stderr": "C07-negative-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-negative-build.stdout",
+    "stderr": "C07-negative-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-negative-build-commands.stdout",
+    "stderr": "C07-negative-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C07-upper"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-upper-configure.stdout",
+    "stderr": "C07-upper-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-upper-build.stdout",
+    "stderr": "C07-upper-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-upper-build-commands.stdout",
+    "stderr": "C07-upper-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C07-code"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-code-configure.stdout",
+    "stderr": "C07-code-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-code-build.stdout",
+    "stderr": "C07-code-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-code-build-commands.stdout",
+    "stderr": "C07-code-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C08-div"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-div-configure.stdout",
+    "stderr": "C08-div-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-div-build.stdout",
+    "stderr": "C08-div-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-div-build-commands.stdout",
+    "stderr": "C08-div-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C08-mod"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-mod-configure.stdout",
+    "stderr": "C08-mod-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-mod-build.stdout",
+    "stderr": "C08-mod-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-mod-build-commands.stdout",
+    "stderr": "C08-mod-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C09"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C09-configure.stdout",
+    "stderr": "C09-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C09-build.stdout",
+    "stderr": "C09-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C09-build-commands.stdout",
+    "stderr": "C09-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C10-undefined"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-undefined-configure.stdout",
+    "stderr": "C10-undefined-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-undefined-build.stdout",
+    "stderr": "C10-undefined-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-undefined-build-commands.stdout",
+    "stderr": "C10-undefined-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C10-truncated"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-truncated-configure.stdout",
+    "stderr": "C10-truncated-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-truncated-build.stdout",
+    "stderr": "C10-truncated-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-truncated-build-commands.stdout",
+    "stderr": "C10-truncated-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C10-excluded"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-excluded-configure.stdout",
+    "stderr": "C10-excluded-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-excluded-build.stdout",
+    "stderr": "C10-excluded-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-excluded-build-commands.stdout",
+    "stderr": "C10-excluded-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C11"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C11-configure.stdout",
+    "stderr": "C11-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C11-build.stdout",
+    "stderr": "C11-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C11-build-commands.stdout",
+    "stderr": "C11-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C12-valid"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-valid-configure.stdout",
+    "stderr": "C12-valid-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-valid-build.stdout",
+    "stderr": "C12-valid-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-valid-build-commands.stdout",
+    "stderr": "C12-valid-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C12-destination"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-destination-configure.stdout",
+    "stderr": "C12-destination-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-destination-build.stdout",
+    "stderr": "C12-destination-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-destination-build-commands.stdout",
+    "stderr": "C12-destination-build-commands.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/private/tmp/t81-cpa006",
+      "-B",
+      "/private/tmp/cpa006-build",
+      "-DT81_CPA006_CASE=C12-source"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-source-configure.stdout",
+    "stderr": "C12-source-configure.stderr"
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/private/tmp/cpa006-build",
+      "--target",
+      "t81_ternaryos_qemu_slice6_efi",
+      "-j",
+      "4"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-source-build.stdout",
+    "stderr": "C12-source-build.stderr"
+  },
+  {
+    "command": [
+      "ninja",
+      "-C",
+      "/private/tmp/cpa006-build",
+      "-t",
+      "commands",
+      "t81_ternaryos_qemu_slice6_efi"
+    ],
+    "cwd": "/private/tmp/t81-cpa006",
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-source-build-commands.stdout",
+    "stderr": "C12-source-build-commands.stderr"
+  }
+]

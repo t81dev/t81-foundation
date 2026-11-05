@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/private/tmp/t81-cpa006/experiments/cpa006/verify.py", line 51, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/t81-cpa006/experiments/cpa006/verify.py", line 38, in main
+    actual=parse(raw,blob,hosted=(kind=='hosted'));compare(actual,expected)
+                                                   ~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/private/tmp/t81-cpa006/experiments/cpa006/observe.py", line 26, in compare
+    raise RuntimeError('mismatch: '+', '.join(errors))
+RuntimeError: mismatch: sequence 10

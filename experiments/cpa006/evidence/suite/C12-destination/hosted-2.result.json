@@ -1,0 +1,20 @@
+{
+  "id": "C12-destination",
+  "profile": "hosted",
+  "run": 2,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C12-destination.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "2592cf36ca5389a8ae1c02bafcb8fed13da5fa0f657b0a60afacc207657542eb",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "runtime_trap",
+    "reason": "DecodeFault",
+    "steps": 1
+  },
+  "observations": 2
+}

@@ -1,0 +1,20 @@
+{
+  "id": "C04",
+  "profile": "hosted",
+  "run": 2,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C04.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "c475c1a9728dd6322b4d6d2f13a49bb563cbb6e84f97a36cc65b2f3a2c42f008",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "halted",
+    "reason": null,
+    "steps": 12
+  },
+  "observations": 13
+}

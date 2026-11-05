@@ -1,0 +1,92 @@
+[1/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange.cpp.o
+[2/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/bigint.cpp.o
+[3/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/types/fraction.cpp.o
+[4/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/encoding.cpp.o
+[5/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_json_renderer.cpp.o
+[6/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_engine.cpp.o
+[7/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/in_memory_driver.cpp.o
+[8/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/canonfs_interchange_ops.cpp.o
+[9/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/vm/determinism/canon_hash81.cpp.o
+[10/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/persistent_driver.cpp.o
+[11/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/fs/block_backed_driver.cpp.o
+[12/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81.cpp.o
+[13/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/isa/math/t81_soft_math/t81_soft_math.cpp.o
+[14/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base243.cpp.o
+[15/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_balanced.cpp.o
+[16/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/base81_packed.cpp.o
+[17/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/metadata.cpp.o
+[18/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/crypto/sha3.cpp.o
+[19/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/codec/trit_packing.cpp.o
+[20/92] Building CXX object src/core/CMakeFiles/t81_tracing.dir/__/__/vm/tracing/canonhash81.cpp.o
+[21/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/cog/v1/symbolic_graph.cpp.o
+[22/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/engine.cpp.o
+[23/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/axion_api.cpp.o
+[24/92] Building CXX object src/core/CMakeFiles/t81_core.dir/__/__/experimental/setun/bridge.cpp.o
+[25/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ethics.cpp.o
+[26/92] Linking CXX static library libt81_core.a
+[27/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_engine.cpp.o
+[28/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/nondeterminism_detector.cpp.o
+[29/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_serialization.cpp.o
+[30/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/canonfs_hook.cpp.o
+[31/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_hooks.cpp.o
+[32/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/ai_model_loader.cpp.o
+[33/92] Building CXX object src/axion/CMakeFiles/t81_axion.dir/__/__/kernel/axion/policy_validator.cpp.o
+[34/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/interrupt_table.cpp.o
+[35/92] Linking CXX static library libt81_axion.a
+[36/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/virtualbox_platform.cpp.o
+[37/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/hosted_stub.cpp.o
+[38/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/qemu_platform.cpp.o
+[39/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/virtualbox_guest_devices.cpp.o
+[40/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/hal_main.cpp.o
+[41/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/hal_c_abi.cpp.o
+[42/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/qemu_kernel_entry.cpp.o
+[43/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_runtime.cpp.o
+[44/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_actions.cpp.o
+[45/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_abi.cpp.o
+[46/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_executable.cpp.o
+[47/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_abi_wire.cpp.o
+[48/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_faults.cpp.o
+[49/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_interrupts.cpp.o
+[50/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_interrupt_policy.cpp.o
+[51/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_loader.cpp.o
+[52/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_lifecycle.cpp.o
+[53/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_trap_shim.cpp.o
+[54/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/aarch64_trap_entry.cpp.o
+[55/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_pager.cpp.o
+[56/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/hosted_block_dev.cpp.o
+[57/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/virtio_blk_mmio.cpp.o
+[58/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_queries.cpp.o
+[59/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/virtualbox_ahci_dev.cpp.o
+[60/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_runtime_utils.cpp.o
+[61/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/virtualbox_e1000_dev.cpp.o
+[62/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/virtualbox_vmsvga_dev.cpp.o
+[63/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/ttf.cpp.o
+[64/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/framebuffer.cpp.o
+[65/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/pl011_uart.cpp.o
+[66/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/gicv3.cpp.o
+[67/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/kernel/kernel_views.cpp.o
+[68/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/dev/canon_store.cpp.o
+[69/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/mmu/ternary_page_alloc.cpp.o
+[70/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/mmu/page_table.cpp.o
+[71/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/sched/context_switch.cpp.o
+[72/92] Building ASM object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/hal/aarch64_exception_vectors.S.o
+[73/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/sched/run_queue.cpp.o
+[74/92] Generating virtualbox_armv8/BOOTAA64_shim.obj
+[75/92] Generating aarch64/aarch64_exception_vectors.obj
+[76/92] Generating aarch64/BOOTAA64_el0_init.obj
+[77/92] Generating qemu_slice6/BOOTAA64_bare.obj
+[78/92] Generating qemu_slice6/BOOTAA64_cpp.obj
+[79/92] Generating qemu_slice6/BOOTAA64_irq.obj
+[80/92] Generating qemu_slice6/BOOTAA64_el0_mmu.obj
+[81/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/sched/scheduler.cpp.o
+[82/92] Generating qemu_slice6/BOOTAA64_el0_svc_bridge.obj
+[83/92] Generating qemu_slice6/BOOTAA64_crt.obj
+[84/92] Generating qemu_slice6/BOOTAA64_canon_exec.obj
+[85/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_hal.dir/ipc/canon_message.cpp.o
+[86/92] Generating qemu_slice6/BOOTAA64_el0_proc_stub.obj
+[87/92] Linking CXX static library libt81_ternaryos_hal.a
+[88/92] Building CXX object ternaryos/CMakeFiles/t81_ternaryos_qemu_slice6_snapshot.dir/dev/qemu_slice6_startup_snapshot.cpp.o
+[89/92] Linking CXX executable t81_ternaryos_qemu_slice6_snapshot
+[90/92] Generating qemu_slice6/slice6-startup-generated.txt, generated/qemu_slice6_startup.h
+[91/92] Generating qemu_slice6/BOOTAA64.obj
+[92/92] Generating qemu_slice6/BOOTAA64.EFI

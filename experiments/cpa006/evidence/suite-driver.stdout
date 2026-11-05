@@ -1,0 +1,76 @@
+C01 hosted PASS,PASS,PASS
+C02 hosted PASS,PASS,PASS
+C03 hosted PASS,PASS,PASS
+C04 hosted PASS,PASS,PASS
+C05 hosted PASS,PASS,PASS
+C06 hosted PASS,PASS,PASS
+C07-negative hosted PASS,PASS,PASS
+C07-upper hosted PASS,PASS,PASS
+C07-code hosted PASS,PASS,PASS
+C08-div hosted PASS,PASS,PASS
+C08-mod hosted PASS,PASS,PASS
+C09 hosted PASS,PASS,PASS
+C10-undefined hosted PASS,PASS,PASS
+C10-truncated hosted PASS,PASS,PASS
+C10-excluded hosted PASS,PASS,PASS
+C11 hosted PASS,PASS,PASS
+C12-valid hosted PASS,PASS,PASS
+C12-destination hosted PASS,PASS,PASS
+C12-source hosted PASS,PASS,PASS
+C01 guest 1 PASS
+C01 guest 2 PASS
+C01 guest 3 PASS
+C02 guest 1 PASS
+C02 guest 2 PASS
+C02 guest 3 PASS
+C03 guest 1 PASS
+C03 guest 2 PASS
+C03 guest 3 PASS
+C04 guest 1 PASS
+C04 guest 2 PASS
+C04 guest 3 PASS
+C05 guest 1 PASS
+C05 guest 2 PASS
+C05 guest 3 PASS
+C06 guest 1 PASS
+C06 guest 2 PASS
+C06 guest 3 PASS
+C07-negative guest 1 PASS
+C07-negative guest 2 PASS
+C07-negative guest 3 PASS
+C07-upper guest 1 PASS
+C07-upper guest 2 PASS
+C07-upper guest 3 PASS
+C07-code guest 1 PASS
+C07-code guest 2 PASS
+C07-code guest 3 PASS
+C08-div guest 1 PASS
+C08-div guest 2 PASS
+C08-div guest 3 PASS
+C08-mod guest 1 PASS
+C08-mod guest 2 PASS
+C08-mod guest 3 PASS
+C09 guest 1 PASS
+C09 guest 2 PASS
+C09 guest 3 PASS
+C10-undefined guest 1 PASS
+C10-undefined guest 2 PASS
+C10-undefined guest 3 PASS
+C10-truncated guest 1 PASS
+C10-truncated guest 2 PASS
+C10-truncated guest 3 PASS
+C10-excluded guest 1 PASS
+C10-excluded guest 2 PASS
+C10-excluded guest 3 PASS
+C11 guest 1 PASS
+C11 guest 2 PASS
+C11 guest 3 PASS
+C12-valid guest 1 PASS
+C12-valid guest 2 PASS
+C12-valid guest 3 PASS
+C12-destination guest 1 PASS
+C12-destination guest 2 PASS
+C12-destination guest 3 PASS
+C12-source guest 1 PASS
+C12-source guest 2 PASS
+C12-source guest 3 PASS

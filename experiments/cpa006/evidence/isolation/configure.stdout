@@ -1,0 +1,20 @@
+-- The C compiler identification is Clang 22.1.1
+-- The CXX compiler identification is Clang 22.1.1
+-- The ASM compiler identification is Clang with GNU-like command-line
+-- Found assembler: /opt/homebrew/opt/llvm/bin/clang
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /opt/homebrew/opt/llvm/bin/clang - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/homebrew/opt/llvm/bin/clang++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- [t81] Detected LLVM libc++ at /opt/homebrew/opt/llvm/lib/c++
+-- [t81] T81_ENABLE_TERNARYOS=ON — building TernaryOS HAL, shell, and user environment
+-- Found Doxygen: /opt/homebrew/bin/doxygen (found version "1.16.1") found components: doxygen missing components: dot
+-- Configuring done (2.3s)
+-- Generating done (0.1s)
+-- Build files have been written to: /private/tmp/cpa006-build-off

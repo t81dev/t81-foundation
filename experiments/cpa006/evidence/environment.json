@@ -1,0 +1,11 @@
+{
+  "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "python": "3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]",
+  "tools": {
+    "clang": "Homebrew clang version 22.1.1\nTarget: arm64-apple-darwin25.5.0\nThread model: posix\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg",
+    "cmake": "cmake version 4.3.0\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+    "ninja": "1.13.2",
+    "qemu": "QEMU emulator version 10.2.2\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers"
+  }
+}

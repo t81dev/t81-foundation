@@ -1,0 +1,7 @@
+{
+  "issues": [
+    "Initial negative-replay shell wrapper attempted to assign zsh readonly variable status after the deliberately failing replay. Repeated with a task-specific variable; verifier remained correctly failing."
+  ],
+  "semantic_failures": [],
+  "timeouts": []
+}

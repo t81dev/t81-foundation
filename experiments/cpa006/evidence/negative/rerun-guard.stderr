@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/private/tmp/t81-cpa006/experiments/cpa006/run_suite.py", line 13, in <module>
+    raise FileExistsError('Preserve existing CPA006 evidence; choose a fresh output path before a live rerun')
+FileExistsError: Preserve existing CPA006 evidence; choose a fresh output path before a live rerun

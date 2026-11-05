@@ -1,0 +1,45 @@
+{
+  "id": "T81-CPA-006",
+  "schema": "t81.research-commons.experiment-proposal.v1",
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "Suite/oracle/evaluator author; prior CPA005 context"
+  },
+  "repository_revision": "ea6d031a8117341fe03013cc9d5473de1b07727d",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "H07 engineering prerequisites; no auditability advantage inferred"
+    }
+  ],
+  "uncertainty": "Finite selected implementation profile; prior source/expected access and shared agent context; no blinded/independent-person replication.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "User",
+    "record": "CPA006 mission pasted in this session; bounded execution and draft PR only; no merge"
+  },
+  "research_question": "Does one finite varied raw13 suite retain all admitted computational states and failure classifications across hosted and freestanding execution?",
+  "falsification_criterion": "Any reproducible state, input or terminal disagreement rejects equivalence for that case; missing/timeout evidence is not PASS.",
+  "matched_control": "Unchanged hosted T81VM and separate bounded freestanding switch, both against preexecution Python integer oracle; no performance comparator.",
+  "method": "See PROTOCOL.md; frozen suite and oracle precede implementation and execution; three fresh processes and boots per case.",
+  "measurement_plan": "Exact bytes/state equality; report every run, trap/rejection/budget/timeout distinctly; no statistical performance inference.",
+  "expected_artifacts": [
+    "Frozen bytes/oracle/schema/limits",
+    "Raw hosted and QEMU records",
+    "Full comparisons, negative controls, coverage and discrepancies",
+    "Source/hash/command/environment records"
+  ],
+  "resource_requirements": [
+    "At most 3 simultaneous 512MiB TCG guests with 30 second deadlines",
+    "Fixed evaluator workspace below 32KiB with stack headroom; bounded local builds"
+  ],
+  "security_requirements": [
+    "No ISA/production activation or historical evidence changes",
+    "No dynamic allocation, filesystem, networking or hosted VM in freestanding evaluator"
+  ]
+}

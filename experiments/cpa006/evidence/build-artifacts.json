@@ -1,0 +1,122 @@
+{
+  "/private/tmp/cpa006-build/libt81_ffi.a": {
+    "sha256": "056a0558cd3ae3034794e5184cf572521490df375433ed5f1e7313d8a04ebf18",
+    "bytes": 107704
+  },
+  "/private/tmp/cpa006-build/libt81_ternaryos_hal.a": {
+    "sha256": "8032061e30bae07cc14eb21c32e3bb64dad7210f17d12c99d4024e42fc213980",
+    "bytes": 1759400
+  },
+  "/private/tmp/cpa006-build/libt81_axion.a": {
+    "sha256": "154801c5c2f856832c35c9527745fba1458d2b75545cd3986731406d16d658f0",
+    "bytes": 329824
+  },
+  "/private/tmp/cpa006-build/libt81_experimental.a": {
+    "sha256": "4971618728c7a83d07bc79c673acc7c3afe11ac52017292a54bde5342c09ad4c",
+    "bytes": 544032
+  },
+  "/private/tmp/cpa006-build/libt81_core.a": {
+    "sha256": "dbb58d1b9bf1da97fed37bb107bc0d3588f970873876e02230edfce2e5952b9c",
+    "bytes": 1964056
+  },
+  "/private/tmp/cpa006-build/libt81_isa.a": {
+    "sha256": "c57ff311f1a1f7cca0c0202abbc12d6b68cfe2eac76783eb5f08bda796aab8a9",
+    "bytes": 1223576
+  },
+  "/private/tmp/cpa006-build/libt81_vm.a": {
+    "sha256": "0b9a3ae66453f1a509a2988f7d08f4022eb9449b0cc4160d28106a1670f4ea58",
+    "bytes": 2601656
+  },
+  "/private/tmp/cpa006-build/cpa006_hosted": {
+    "sha256": "a546df014987f7fd9d12a34b71bde26522ad1e7804bc8fe0f01aca4f9e5ff29d",
+    "bytes": 1409824
+  },
+  "/private/tmp/cpa006-images/C07-negative.efi": {
+    "sha256": "980363187af464b35e4f0c89afc83c5931d67e825c980b043118f3764377d109",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C12-destination.efi": {
+    "sha256": "55f295fe0cc6c7e9ee8c9f8dd8c7afe20258ae3b5450c31a26a7ee2fe2841dfb",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C05.efi": {
+    "sha256": "f5da0a2d59ea23655aeccd0249d3d1ab99f04d63b9628b8b0bbcd1089c39a4e3",
+    "bytes": 82432
+  },
+  "/private/tmp/cpa006-images/C11.efi": {
+    "sha256": "acdf2b9228cbac6df86f3e28ce8db54f7f38e205ce7532645823d2294813a18e",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C04.efi": {
+    "sha256": "2669c0956849e57f2c3a6369caca6864be59da10d75aefd0c530ec3f6d282e1b",
+    "bytes": 82432
+  },
+  "/private/tmp/cpa006-images/C08-mod.efi": {
+    "sha256": "566928da5e979901d57a79f8ff696115884605161632f9aa1526e472b35f9968",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C10-undefined.efi": {
+    "sha256": "061b9da394b5a4fcf86eebcdee60bce92de777b6268309ddb5fbe60a2d7490bf",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C06.efi": {
+    "sha256": "8f8cb78ae27bb7e4328a2f5c47e07cbf0be644f4554acca2f75d219142f6f19b",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C03.efi": {
+    "sha256": "a3caaf0dc3da90d18d9a418c296209c8e3e3bfc7767c9326087005f245b83bfd",
+    "bytes": 82944
+  },
+  "/private/tmp/cpa006-images/C02.efi": {
+    "sha256": "46f7f8ab733863597c55ce4a44a399a32d22b0066a76fa1b25db95606a4600de",
+    "bytes": 82432
+  },
+  "/private/tmp/cpa006-images/C01.efi": {
+    "sha256": "b35a247fe77466ac5973107fb57985588c21b4594eaf7b8694344e3633711326",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C07-upper.efi": {
+    "sha256": "da1a649b2749efe1487133cd59c60dceded27b8b43cb066cd26359e617b463de",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C07-code.efi": {
+    "sha256": "fa4ed923eb2f85db68c39661b330fa10d2054056900b7fbf3a61021f410692b1",
+    "bytes": 81408
+  },
+  "/private/tmp/cpa006-images/C10-excluded.efi": {
+    "sha256": "ef14d4e9f4d10f9025eb24264484696af419b082a8bef60d0f8b7b40e1d0706f",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C09.efi": {
+    "sha256": "124208c7f9b9ec668614590a67a96b2b8476ed10be3230cc103e827870824c5e",
+    "bytes": 81408
+  },
+  "/private/tmp/cpa006-images/C08-div.efi": {
+    "sha256": "fb708c2fe30bf98f6f383943bf21e6423748a8f8e50ab13d26401520d842bd01",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C12-source.efi": {
+    "sha256": "b2dfc3c31e6b8a9c0875a444d003647011e221e1a5aedca7674aa81a21102c26",
+    "bytes": 81920
+  },
+  "/private/tmp/cpa006-images/C10-truncated.efi": {
+    "sha256": "da1bcb5f96dbe22be5ce0e1bde89b803ab6c718046aaabfd06ec04176ce01922",
+    "bytes": 78336
+  },
+  "/private/tmp/cpa006-images/C12-valid.efi": {
+    "sha256": "9ed986ede8c3a4dbc5015566031157d85898978221ae9a0f8168dcb404718c3e",
+    "bytes": 81408
+  },
+  "experiments/cpa006/evidence/negative/release": {
+    "sha256": "650ba276efbd2c8e31c93b2e94bbef5e1ad905f223a3988341ba0abe84fc60ad",
+    "bytes": 35224
+  },
+  "experiments/cpa006/evidence/negative/debug": {
+    "sha256": "3f5ecbcbfb9f92c0f36b265778fc0534df2b605de96798916a093f326e98d88e",
+    "bytes": 42520
+  },
+  "experiments/cpa006/evidence/negative/sanitized": {
+    "sha256": "abab2807997f18c1ecb60dc81eebb16d7294f59c264697d8981897ed889d74ff",
+    "bytes": 80792
+  }
+}

@@ -1,0 +1,5 @@
+-- [t81] Detected LLVM libc++ at /opt/homebrew/opt/llvm/lib/c++
+-- [t81] T81_ENABLE_TERNARYOS=ON — building TernaryOS HAL, shell, and user environment
+-- Configuring done (0.2s)
+-- Generating done (0.1s)
+-- Build files have been written to: /private/tmp/cpa006-build

@@ -1,0 +1,36 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "CPA006 suite/oracle/evaluator author and execution reviewer; same session as CPA005"
+  },
+  "repository_revision": "ea6d031a8117341fe03013cc9d5473de1b07727d",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "H07 engineering prerequisites; no auditability advantage inferred"
+    }
+  ],
+  "uncertainty": "Finite selected implementation profile; prior source/expected access and shared agent context; no blinded/independent-person replication.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "User",
+    "record": "CPA006 mission pasted in this session; bounded execution and draft PR only; no merge"
+  },
+  "schema": "t81.research-commons.evidence-discrepancy.v1",
+  "id": "T81-CPA-006-discrepancies",
+  "conflicting_claims": [
+    "Normative tisc-spec describes indirect memory/branch targets and FLAGS-tested JZ/JNZ.",
+    "The explicitly selected hosted/freestanding profile uses direct memory/targets and register-tested JZ/JNZ.",
+    "Frozen C01 class text mentions cancellation, while the program does not test nonzero exact cancellation."
+  ],
+  "affected_sources": [
+    "register"
+  ],
+  "observed_difference": "Canonical indexed context is H07/register. Unindexed inspected paths: spec/tisc-spec.md, spec/tisc/opcode-semantics.md, vm/vm.cpp, experiments/cpa004/contract.json, experiments/cpa006/frozen/suite.json. C04 discriminates register vs flags, C06 discriminates direct vs indirect memory. All tested implementations match the chosen profile. C01 wording exceeds its finite instruction coverage. See discrepancies.json for unchanged inherited inventory/TXor conflicts and admission/register scope boundaries.",
+  "proposed_resolution": "Retain all frozen/historical records and qualify coverage; require explicit human contract reconciliation before normative ISA-conformance claims or broader tests."
+}

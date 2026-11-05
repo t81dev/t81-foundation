@@ -1,0 +1,336 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "CPA006 suite/oracle/evaluator author and execution reviewer; same session as CPA005"
+  },
+  "repository_revision": "ea6d031a8117341fe03013cc9d5473de1b07727d",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "H07 engineering prerequisites; no auditability advantage inferred"
+    }
+  ],
+  "uncertainty": "Finite selected implementation profile; prior source/expected access and shared agent context; no blinded/independent-person replication.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "User",
+    "record": "CPA006 mission pasted in this session; bounded execution and draft PR only; no merge"
+  },
+  "schema": "t81.research-commons.reproducibility-report.v1",
+  "id": "T81-CPA-006-reproduction",
+  "target": "Main ea6d031a8117341fe03013cc9d5473de1b07727d + unchanged CPA004 integration tree 70734fd5bcfe06978cea13b4d2d595d4dda71a12 + CPA006 source hashes in evidence/source-identity.json",
+  "environment": "{\n  \"platform\": \"macOS-26.5.2-arm64-arm-64bit-Mach-O\",\n  \"machine\": \"arm64\",\n  \"python\": \"3.14.3 (main, Feb  3 2026, 15:32:20) [Clang 17.0.0 (clang-1700.6.3.2)]\",\n  \"tools\": {\n    \"clang\": \"Homebrew clang version 22.1.1\\nTarget: arm64-apple-darwin25.5.0\\nThread model: posix\\nInstalledDir: /opt/homebrew/Cellar/llvm/22.1.1/bin\\nConfiguration file: /opt/homebrew/Cellar/llvm/22.1.1/etc/clang/arm64-apple-darwin25.cfg\",\n    \"cmake\": \"cmake version 4.3.0\\n\\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\",\n    \"ninja\": \"1.13.2\",\n    \"qemu\": \"QEMU emulator version 10.2.2\\nCopyright (c) 2003-2025 Fabrice Bellard and the QEMU Project developers\"\n  }\n}\n",
+  "commands": [
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++23 -O3 -DNDEBUG -DT81_DETERMINISTIC -I/private/tmp/t81-cpa006/include /private/tmp/t81-cpa006/experiments/cpa006/hosted_observer.cpp -L/private/tmp/cpa006-build -L/opt/homebrew/opt/llvm/lib/c++ -Wl,-rpath,/opt/homebrew/opt/llvm/lib/c++ -lt81_vm -lt81_isa -lt81_axion -lt81_ffi -lt81_experimental -lt81_core -o /private/tmp/cpa006-build/cpa006_hosted",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C01",
+    "cmake --build /private/tmp/cpa006-build --target t81_ternaryos_qemu_slice6_efi -j 4",
+    "ninja -C /private/tmp/cpa006-build -t commands t81_ternaryos_qemu_slice6_efi",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C02",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C03",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C04",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C05",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C06",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C07-negative",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C07-upper",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C07-code",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C08-div",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C08-mod",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C09",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C10-undefined",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C10-truncated",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C10-excluded",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C11",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C12-valid",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C12-destination",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build -DT81_CPA006_CASE=C12-source",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z0vq4h54 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z0vq4h54/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z0vq4h54/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-_puzua4v /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-_puzua4v/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-_puzua4v/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-itjhzdpr /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-itjhzdpr/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-itjhzdpr/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-k76cq_en /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-k76cq_en/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-k76cq_en/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9b9bs0zq /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9b9bs0zq/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9b9bs0zq/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-p0no7rb8 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-p0no7rb8/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-p0no7rb8/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2np215za /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2np215za/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2np215za/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-baviqxp6 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-baviqxp6/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-baviqxp6/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z8gie88v /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z8gie88v/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z8gie88v/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-20vn4j0c /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-20vn4j0c/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-20vn4j0c/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-7tshddu4 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-7tshddu4/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-7tshddu4/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-3cn6bp0m /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-3cn6bp0m/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-3cn6bp0m/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9_9_n0jt /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9_9_n0jt/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9_9_n0jt/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gt0j2b85 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gt0j2b85/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gt0j2b85/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2xf91ibl /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2xf91ibl/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2xf91ibl/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-f7fxeib0 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-f7fxeib0/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-f7fxeib0/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gwjm87kc /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gwjm87kc/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gwjm87kc/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-emddmdzs /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-emddmdzs/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-emddmdzs/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -O1 -g -DNDEBUG -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-duy2_oz3 /private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -o /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-duy2_oz3/guest",
+    "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-duy2_oz3/guest",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -I/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative -I/private/tmp/t81-cpa006/experiments/cpa006 /private/tmp/t81-cpa006/experiments/cpa006/admission_test.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -O0 -g -UNDEBUG -o /private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/debug",
+    "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/debug",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -I/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative -I/private/tmp/t81-cpa006/experiments/cpa006 /private/tmp/t81-cpa006/experiments/cpa006/admission_test.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -O3 -DNDEBUG -o /private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/release",
+    "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/release",
+    "/opt/homebrew/opt/llvm/bin/clang++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -I/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative -I/private/tmp/t81-cpa006/experiments/cpa006 /private/tmp/t81-cpa006/experiments/cpa006/admission_test.cpp /private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp -O1 -DNDEBUG -fsanitize=address,undefined -o /private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/sanitized",
+    "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/sanitized",
+    "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/release wrong-expectation",
+    "cmake -S /private/tmp/t81-cpa006 -B /private/tmp/cpa006-build-off -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang -DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++ -DT81_BUILD_TESTS=OFF -DT81_BUILD_TUI=OFF -DT81_BUILD_EXAMPLES=OFF -DT81_BUILD_BENCHMARKS=OFF -DT81_BUILD_FUZZ_TESTS=OFF -DT81_ENABLE_TERNARYOS=ON -DT81_ENABLE_DPE=OFF",
+    "cmake --build /private/tmp/cpa006-build-off --target t81_ternaryos_qemu_slice6_efi -j 4",
+    "ninja -C /private/tmp/cpa006-build-off -t commands t81_ternaryos_qemu_slice6_efi",
+    "/opt/homebrew/opt/llvm/bin/llvm-objdump -d /private/tmp/cpa006-build-off/ternaryos/qemu_slice6/BOOTAA64_bare.obj",
+    "/opt/homebrew/opt/llvm/bin/llvm-objcopy --dump-section .text=/private/tmp/t81-cpa006/experiments/cpa006/evidence/isolation/off-efi.text /private/tmp/cpa006-build-off/ternaryos/qemu_slice6/BOOTAA64.EFI",
+    "/opt/homebrew/opt/llvm/bin/llvm-objcopy --dump-section .rdata=/private/tmp/t81-cpa006/experiments/cpa006/evidence/isolation/off-efi.rdata /private/tmp/cpa006-build-off/ternaryos/qemu_slice6/BOOTAA64.EFI",
+    "/opt/homebrew/opt/llvm/bin/llvm-readobj --coff-imports /private/tmp/cpa006-build-off/ternaryos/qemu_slice6/BOOTAA64.EFI",
+    "/private/tmp/t81-h04-enforcement-venv/bin/python -B /private/tmp/t81-cpa005-frozen/experiments/cpa004/evidence/acceptance/check.py --hosted-observer /private/tmp/cpa005-build-frozen/hosted_observer --output /private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/frozen/hosted",
+    "/private/tmp/t81-h04-enforcement-venv/bin/python -B /private/tmp/t81-cpa005-frozen/experiments/cpa004/run_qemu.py --build /private/tmp/cpa005-build-frozen --output /private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/frozen/qemu --qemu /opt/homebrew/bin/qemu-system-aarch64 --firmware-code /opt/homebrew/share/qemu/edk2-aarch64-code.fd --firmware-vars /opt/homebrew/share/qemu/edk2-arm-vars.fd",
+    "/private/tmp/t81-h04-enforcement-venv/bin/python -B /private/tmp/t81-cpa005/experiments/cpa004/evidence/acceptance/check.py --hosted-observer /private/tmp/cpa005-build-integrated/hosted_observer --output /private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/integrated/hosted",
+    "/private/tmp/t81-h04-enforcement-venv/bin/python -B /private/tmp/t81-cpa005/experiments/cpa004/run_qemu.py --build /private/tmp/cpa005-build-integrated --output /private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/integrated/qemu --qemu /opt/homebrew/bin/qemu-system-aarch64 --firmware-code /opt/homebrew/share/qemu/edk2-aarch64-code.fd --firmware-vars /opt/homebrew/share/qemu/edk2-arm-vars.fd",
+    "/private/tmp/t81-h04-enforcement-venv/bin/python -B /private/tmp/t81-cpa005/experiments/cpa005/verify.py --evidence /private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline",
+    "/private/tmp/t81-h04-enforcement-venv/bin/python -B /private/tmp/t81-cpa005/experiments/cpa004/verify_evidence.py"
+  ],
+  "artifact_identities": [
+    {
+      "path": "experiments/cpa006/CMakeLists.txt",
+      "sha256": "0aa10501a5e61ca3fce3741a953779851d5d2959e5a895ea5a6af23e5bebb99f"
+    },
+    {
+      "path": "experiments/cpa006/admission_test.cpp",
+      "sha256": "603459f882595fbc73ae1204a1a776dc3fc77542d29e4738e4e03bf63f92ce60"
+    },
+    {
+      "path": "experiments/cpa006/cpa006_evaluator.cpp",
+      "sha256": "6c68e69d4f7a64aade5fe07e17e5de6335f390030e1685593736d7ac343cc47d"
+    },
+    {
+      "path": "experiments/cpa006/cpa006_evaluator.hpp",
+      "sha256": "2ac63e9cb731ca5085823bd8a3ae839e1bacec62c283ea43557dedbc3d5be513"
+    },
+    {
+      "path": "experiments/cpa006/freeze_suite.py",
+      "sha256": "9e5c70908d28efa07a62678f51a51efb6fbfdf6d15bf7c4b0137c18590139d99"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C01.expected.json",
+      "sha256": "c72fad71c7d656354ff3b433c35885bb2de27bf0bc4684da587d7ab2b804bdaa"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C01.raw13",
+      "sha256": "3ea10308a369090046c4eb49c58d22320f2514b9cb156820c5031f4c50bf26de"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C02.expected.json",
+      "sha256": "99a173e3c8fa321267e7a4ee3bc96594a580f1043a9d08a14fdb564206d0073b"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C02.raw13",
+      "sha256": "6f5ffeee010e81b89c4ffd41abbe403af12a39ec8d287da004dd6d9dd43b7007"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C03.expected.json",
+      "sha256": "b91c6e08bebaa6a2507d3e725fa16525f9f1e59f1b71c8e162326e8b1ba6ba76"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C03.raw13",
+      "sha256": "30a331a8b33bd4177b8605bc9ddb6ada3e4b563a90231568b675619023fe3d0c"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C04.expected.json",
+      "sha256": "243d7242eabef3b4ea3fa0a55b0309bca8611729d4b74786d9687484f53f33a1"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C04.raw13",
+      "sha256": "f5dcf0a389cf739db310c493d20d512c36f278dd934d0c47046d773caa8b358d"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C05.expected.json",
+      "sha256": "5d7a06188b57accad259aac783be5d7a9f92d6ab70ac5f2d9d0adb068e461528"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C05.raw13",
+      "sha256": "0c6df1824e88a563ccdaebcb0140b4431c087966130cf30e39f6752e0af9a651"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C06.expected.json",
+      "sha256": "1adceec9354d941035c97edfbef182a48e3cbdede379ce81d573694a23c766d2"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C06.raw13",
+      "sha256": "cc0038d083bd9e204da5b1866a5f7c90b94a585e32f80d0055488643ada3caa8"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C07-code.expected.json",
+      "sha256": "f423aac4978cbfbf71ac604f494669c5801e28dc1dda2ea0e8726b6414b531b4"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C07-code.raw13",
+      "sha256": "655c0662dae8688729e10e0a93082556bb51f28febf8802e0a75063cf2df522e"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C07-negative.expected.json",
+      "sha256": "71afe0d0edac866075873135d7e0a1542aa124ee4354b591d5c7f6992e698d2e"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C07-negative.raw13",
+      "sha256": "9daf104d265eb48514762264d61bc08961c7a1cde2460f082ca4d8f47765b118"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C07-upper.expected.json",
+      "sha256": "b542e1a4504fd535beffcade64e9773cfc4601e09db3705ef9fc5fbfed64df2b"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C07-upper.raw13",
+      "sha256": "b32703c67a4064af4e27674a0ea515ddd64775ca8f5f525f88b65ddcc2b7fbf2"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C08-div.expected.json",
+      "sha256": "a6c75131006e5ee0cec9cb4bc0d747c543016b141f95c7ed27e63f8ec485f6bf"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C08-div.raw13",
+      "sha256": "8031dc05308c9d58ea3af177c90b6a7400f419f345be8eb6d8e084a878254ad3"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C08-mod.expected.json",
+      "sha256": "170b8863cd5a8738db55e4980480aadeef27f1eb12df8da1091e71e2aaf7d392"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C08-mod.raw13",
+      "sha256": "ce28228fe5d82f15a2a8926c3d306cc620119bff2950a10b2788069385d07803"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C09.expected.json",
+      "sha256": "18d90e2f4a1ed188f7ea212666e3c9e060854963b4a3d63247ffac6b84fb8dc7"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C09.raw13",
+      "sha256": "318506773258ae170ff7acc8e0e557693aa9a6c484ef05e4298f174f3c592b6b"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C10-excluded.expected.json",
+      "sha256": "a6419e571fdc44bf8b694cb764e2afd0c9baf2be8a585a04fb034788f2b195aa"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C10-excluded.raw13",
+      "sha256": "d0ad429a5d8fafe213f8c3651b4a9788841a59d9dd56434fe3094df2168a693f"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C10-truncated.expected.json",
+      "sha256": "04bbf8901785c1fdffa2e1526d4ae20532a99b3e973ae9d7e47b091472139e9e"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C10-truncated.raw13",
+      "sha256": "1d91ec82b85744b207789616661b540be670233a6068bc2b25923ecfd442d632"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C10-undefined.expected.json",
+      "sha256": "0576b6d674bcc7b9eabed695ea1329d63870fc76cb5e51146fb3a97f9d3f25bc"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C10-undefined.raw13",
+      "sha256": "97c37d08cb44276a1430926dfe5c242318be05c7841dd62f7de932d41d9f3a41"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C11.expected.json",
+      "sha256": "4bb916f834ca636db79ca74ea7b35c177e0ce59645afdc35e6cc0a3d249280db"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C11.raw13",
+      "sha256": "708baa2e1efdc092316d9504264b87f8f9449bbca0585ae3f69147f8f280bbed"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C12-destination.expected.json",
+      "sha256": "e5d99bb833f4534adde7a073a6ca3d2b49e771f8ca67b0577a84bbd72f004aff"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C12-destination.raw13",
+      "sha256": "a722bf6bce26611b9351e6d2c93a8f32211e123aa57b21b35786df3976ced9f8"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C12-source.expected.json",
+      "sha256": "7db2d88464510abb3b6a0182d124462d4e915a12c4da09431216bd5b82584643"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C12-source.raw13",
+      "sha256": "c997205ed66088dc4a68bc0e7f935e7bdf06526c92ab5394da1fa2c713211d03"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C12-valid.expected.json",
+      "sha256": "bd7156c36d470c738b2705ffae5a90f98f9f599f4591962b0f3a838efd2719cd"
+    },
+    {
+      "path": "experiments/cpa006/frozen/C12-valid.raw13",
+      "sha256": "08926d12ce6b06428783f2e769235c52c9876cad0ae69b5ccde58fb3bcf3833d"
+    },
+    {
+      "path": "experiments/cpa006/frozen/manifest.json",
+      "sha256": "65db0117a2071038822da6e8306ff520a576d6e73402904ad15f9f304dc78d03"
+    },
+    {
+      "path": "experiments/cpa006/frozen/observation.schema.json",
+      "sha256": "78c0a5d354495693daea0c8411816f46755a44279a6df08e042ed54e9b7c7e31"
+    },
+    {
+      "path": "experiments/cpa006/frozen/suite.json",
+      "sha256": "307d46c91c336005b37fe1aaed561f2132daefd8ae22e29955b20f67f75ec5f0"
+    },
+    {
+      "path": "experiments/cpa006/hosted_observer.cpp",
+      "sha256": "4256111c0441bd7a2d71fd7e7b33046dc927e6fd3c414759139bdb205a6d2f11"
+    },
+    {
+      "path": "experiments/cpa006/native_checks.py",
+      "sha256": "e34e363366a66867ca61d243e3245e0fb793aaccd5355549596a08d370a75d98"
+    },
+    {
+      "path": "experiments/cpa006/native_guest.cpp",
+      "sha256": "221d52e77edd7474d69f3f2b1b6f602f3e3e36bdf34089c0f0512d5fb4e11627"
+    },
+    {
+      "path": "experiments/cpa006/observe.py",
+      "sha256": "a25cc0fb97b4cf434b56329e95e1fab7d0507ca0254fe08798d1116756e7658c"
+    },
+    {
+      "path": "experiments/cpa006/run_suite.py",
+      "sha256": "6153691859d64ac968ee260f51bd5600372f421e296f9ac69e87596032089998"
+    },
+    {
+      "path": "experiments/cpa006/verify.py",
+      "sha256": "556d0ef782c8442111459c7fd6c903eff9a18f60cbc6be13b016a5d0410973f7"
+    },
+    {
+      "path": "ternaryos/CMakeLists.txt",
+      "sha256": "ba02b0d03b2ce9f34ba402139bffe6d3337e4141a6cd90f859a6de0c062f5d38"
+    },
+    {
+      "path": "ternaryos/hal/qemu_slice6_bare_kernel.c",
+      "sha256": "0aa11d28e81b67f972c40c0c912ace6c75e804f8a9c82da2b38f62360e32e44c"
+    }
+  ],
+  "outcome": "reproduced_in_scope",
+  "failures": [
+    "Expected negative control: deliberate wrong Halt under NDEBUG exits 1.",
+    "Expected negative control: corrupted expected state causes raw replay to exit 1.",
+    "Expected negative control: rerun guard rejects an existing output directory before writing.",
+    "Preexecution draft schema/R0 corrections and a shell readonly-variable wrapper issue are retained; no semantic execution disagreement or timeout occurred."
+  ],
+  "scope": "PASS \u2014 BOUNDED CONFORMANCE: 19 finite cases, 57 fresh hosted processes, 57 fresh AArch64 QEMU guests, 1190 schema records. 7 Halt, 8 runtime-trap, 3 admission-rejection and 1 budget-exhaustion cases. Not full ISA conformance or independent-person replication."
+}

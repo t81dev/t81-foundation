@@ -1,0 +1,62 @@
+{
+  "schema": "t81.cpa006.discrepancy-register.v1",
+  "inherited": [
+    {
+      "affects_program": true,
+      "classification": "unresolved_discrepancy",
+      "disposition": "Oracle verified for pinned hosted raw13 implementation profile only; require explicit human resolution or acceptance of that scoped profile before guest implementation or normative ISA-conformance claims.",
+      "id": "D-CPA003-MEM-OPERANDS",
+      "implementation": "vm/vm.cpp:1811-1827 and 2486-2501 use B directly as Load address and A directly as Store address. spec/tisc/opcode-semantics.md:34-35 agrees with these immediate address operands.",
+      "scope_effect": "PC11/12/24/25 use direct logical addresses 81-83. Treating those operands as register indices would change the computation and exceed the mandatory R0-R80 register window; no such alternative is silently selected.",
+      "specification": "spec/tisc-spec.md:1291-1304 says LOAD dereferences R[RS] as an address and STORE writes MEM[R[RS]]."
+    },
+    {
+      "affects_program": true,
+      "classification": "unresolved_discrepancy",
+      "disposition": "Do not label matching hosted records as resolution of the specification; future contract needs an explicit approved profile decision.",
+      "id": "D-CPA003-BRANCH-OPERANDS",
+      "implementation": "vm/vm.cpp:2582-2622 and 2644-2654 use A directly as target; JZ/JNZ test R[B], while JN tests negative flag. spec/tisc/opcode-semantics.md:41-42,53,58 describes the same operand interpretation as runtime.",
+      "scope_effect": "At PC19, zero flag is true but R42=1: runtime takes JNZ; a flag-not-zero interpretation would not take it. The text and executable profile are materially different for this fixture.",
+      "specification": "spec/tisc-spec.md:1322-1334 describes register-indirect branch targets and FLAGS-based conditional branches."
+    },
+    {
+      "affects_program": "potential, if an ambiguous label is interpreted as sum",
+      "classification": "unresolved_discrepancy",
+      "disposition": "Retain ambiguity; mathematically explicit difference formula is required in any accepted experimental profile.",
+      "id": "D-CPA003-XOR-LABEL",
+      "implementation": "vm/vm.cpp:3033-3039 implements wrapped lhs-rhs; tests/cpp/test_packed_trit_vector.cpp explicitly describes the difference convention.",
+      "scope_effect": "The frozen profile uses balanced difference; it does not infer arithmetic sum from a label or claim all XOR descriptions are reconciled.",
+      "specification": "spec/tisc/opcode-semantics.md:52 labels TXOR as XOR / Sum; spec/tisc-spec.md:1229-1234 does not spell out a scalar truth table."
+    },
+    {
+      "affects_program": false,
+      "classification": "unresolved_discrepancy",
+      "disposition": "Separate inventory-assessment.json retains exact counts and mapping differences; no ISA changes.",
+      "id": "D-CPA003-INVENTORY",
+      "scope_effect": "174/209/244 inventories and four later assignments conflict; every one of this program's 17 assignments agrees and is below174."
+    }
+  ],
+  "new": [
+    {
+      "id": "D-CPA006-C01-LABEL",
+      "status": "unresolved metadata overstatement",
+      "claim": "Frozen C01 operand class text includes cancellation.",
+      "observed": "The preexecution program exercises zero+zero and mixed signs, but no nonzero exact cancellation. No result depends on that label.",
+      "disposition": "Do not claim nonzero cancellation coverage; retain frozen bytes/expected data and report the limitation."
+    },
+    {
+      "id": "D-CPA006-ADMISSION-SCOPE",
+      "status": "explicit boundary",
+      "claim": "Defined FAdd 36 is rejected.",
+      "observed": "Both experimental observers reject it at subset admission before execution; it is a defined production opcode.",
+      "disposition": "Report experimental admission equivalence, not invalidity or execution failure of native FAdd."
+    },
+    {
+      "id": "D-CPA006-REGISTER-DOMAIN",
+      "status": "explicit boundary",
+      "claim": "Invalid destination 243 and source -1 trap.",
+      "observed": "Native VM has 243 slots while experiment admits only R0..R80; 81..242 are outside this suite, not invalid native registers.",
+      "disposition": "No generalized register-boundary equivalence claim for 81..242."
+    }
+  ]
+}

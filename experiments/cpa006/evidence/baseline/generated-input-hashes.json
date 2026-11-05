@@ -1,0 +1,26 @@
+[
+  {
+    "path": "experiments/cpa006/evidence/baseline/frozen/qemu/boot-1/vars.fd",
+    "sha256": "65f6ea387500bbca7259c79f20c024758a9cef6a7cdbb2ff08f2c7ea5fdabdd9"
+  },
+  {
+    "path": "experiments/cpa006/evidence/baseline/frozen/qemu/boot-2/vars.fd",
+    "sha256": "65f6ea387500bbca7259c79f20c024758a9cef6a7cdbb2ff08f2c7ea5fdabdd9"
+  },
+  {
+    "path": "experiments/cpa006/evidence/baseline/frozen/qemu/boot-3/vars.fd",
+    "sha256": "65f6ea387500bbca7259c79f20c024758a9cef6a7cdbb2ff08f2c7ea5fdabdd9"
+  },
+  {
+    "path": "experiments/cpa006/evidence/baseline/integrated/qemu/boot-1/vars.fd",
+    "sha256": "65f6ea387500bbca7259c79f20c024758a9cef6a7cdbb2ff08f2c7ea5fdabdd9"
+  },
+  {
+    "path": "experiments/cpa006/evidence/baseline/integrated/qemu/boot-2/vars.fd",
+    "sha256": "65f6ea387500bbca7259c79f20c024758a9cef6a7cdbb2ff08f2c7ea5fdabdd9"
+  },
+  {
+    "path": "experiments/cpa006/evidence/baseline/integrated/qemu/boot-3/vars.fd",
+    "sha256": "65f6ea387500bbca7259c79f20c024758a9cef6a7cdbb2ff08f2c7ea5fdabdd9"
+  }
+]

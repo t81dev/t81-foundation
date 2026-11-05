@@ -1,0 +1,38 @@
+{
+  "configure": [
+    "cmake",
+    "-S",
+    ".",
+    "-B",
+    "/private/tmp/cpa006-build",
+    "-G",
+    "Ninja",
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang",
+    "-DCMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++",
+    "-DT81_BUILD_TESTS=OFF",
+    "-DT81_BUILD_TUI=OFF",
+    "-DT81_BUILD_EXAMPLES=OFF",
+    "-DT81_BUILD_BENCHMARKS=OFF",
+    "-DT81_BUILD_FUZZ_TESTS=OFF",
+    "-DT81_ENABLE_TERNARYOS=ON",
+    "-DT81_ENABLE_DPE=OFF",
+    "-DT81_BUILD_CPA006_EXPERIMENT=ON",
+    "-DT81_CPA006_CASE=C01"
+  ],
+  "build": [
+    "cmake",
+    "--build",
+    "/private/tmp/cpa006-build",
+    "--target",
+    "t81_ternaryos_qemu_slice6_efi",
+    "t81_vm",
+    "-j",
+    "4"
+  ],
+  "exit_codes": [
+    0,
+    0
+  ],
+  "cwd": "/private/tmp/t81-cpa006"
+}

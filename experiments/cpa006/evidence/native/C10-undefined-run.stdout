@@ -1,0 +1,4 @@
+[cpa006] live post-ExitBootServices evaluator
+CPA006_ARTIFACT_HEX=ff000000000000000000000000
+CPA006_RESULT={"classification":"admission_rejection","reason":"undefined_opcode","steps":0}
+CPA006_DONE

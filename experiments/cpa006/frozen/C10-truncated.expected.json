@@ -1,0 +1,8 @@
+{
+  "terminal": {
+    "classification": "admission_rejection",
+    "reason": "malformed",
+    "steps": 0
+  },
+  "observations": []
+}

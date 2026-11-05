@@ -1,0 +1,6 @@
+t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp:262:cpa006_evaluate	112	static
+t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp:54:?name@?A0x1F11423F@@YAPEBDE@Z	0	static
+t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp:105:?lineage@?A0x1F11423F@@YA_JPEBE@Z	0	static
+t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp:117:?sync@?A0x1F11423F@@YAX_J@Z	0	static
+t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp:156:?observation@?A0x1F11423F@@YAXP6AXPEBD@ZHPEBUInstruction@?A0x1F11423F@@00@Z	128	static
+t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp:414:cpa006_run	80	static

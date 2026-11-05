@@ -1,0 +1,92 @@
+[
+  {
+    "command": [
+      "/private/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "/private/tmp/t81-cpa005-frozen/experiments/cpa004/evidence/acceptance/check.py",
+      "--hosted-observer",
+      "/private/tmp/cpa005-build-frozen/hosted_observer",
+      "--output",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/frozen/hosted"
+    ],
+    "exit_code": 0,
+    "stdout": "command-0.stdout",
+    "stderr": "command-0.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "/private/tmp/t81-cpa005-frozen/experiments/cpa004/run_qemu.py",
+      "--build",
+      "/private/tmp/cpa005-build-frozen",
+      "--output",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/frozen/qemu",
+      "--qemu",
+      "/opt/homebrew/bin/qemu-system-aarch64",
+      "--firmware-code",
+      "/opt/homebrew/share/qemu/edk2-aarch64-code.fd",
+      "--firmware-vars",
+      "/opt/homebrew/share/qemu/edk2-arm-vars.fd"
+    ],
+    "exit_code": 0,
+    "stdout": "command-1.stdout",
+    "stderr": "command-1.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "/private/tmp/t81-cpa005/experiments/cpa004/evidence/acceptance/check.py",
+      "--hosted-observer",
+      "/private/tmp/cpa005-build-integrated/hosted_observer",
+      "--output",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/integrated/hosted"
+    ],
+    "exit_code": 0,
+    "stdout": "command-2.stdout",
+    "stderr": "command-2.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "/private/tmp/t81-cpa005/experiments/cpa004/run_qemu.py",
+      "--build",
+      "/private/tmp/cpa005-build-integrated",
+      "--output",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline/integrated/qemu",
+      "--qemu",
+      "/opt/homebrew/bin/qemu-system-aarch64",
+      "--firmware-code",
+      "/opt/homebrew/share/qemu/edk2-aarch64-code.fd",
+      "--firmware-vars",
+      "/opt/homebrew/share/qemu/edk2-arm-vars.fd"
+    ],
+    "exit_code": 0,
+    "stdout": "command-3.stdout",
+    "stderr": "command-3.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "/private/tmp/t81-cpa005/experiments/cpa005/verify.py",
+      "--evidence",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/baseline"
+    ],
+    "exit_code": 0,
+    "stdout": "command-4.stdout",
+    "stderr": "command-4.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-h04-enforcement-venv/bin/python",
+      "-B",
+      "/private/tmp/t81-cpa005/experiments/cpa004/verify_evidence.py"
+    ],
+    "exit_code": 0,
+    "stdout": "command-5.stdout",
+    "stderr": "command-5.stderr"
+  }
+]
