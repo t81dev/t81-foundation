@@ -1,0 +1,6 @@
+[1/6] Generating qemu_slice6/BOOTAA64_bare.obj
+[2/6] Building CXX object ternaryos/CMakeFiles/t81_cpa004_admission_test.dir/hal/cpa004_evaluator.cpp.o
+[3/6] Generating qemu_slice6/BOOTAA64_cpa004.obj
+[4/6] Generating qemu_slice6/BOOTAA64.EFI
+[5/6] Building CXX object ternaryos/CMakeFiles/t81_cpa004_admission_test.dir/__/experiments/cpa004/admission_test.cpp.o
+[6/6] Linking CXX executable t81_cpa004_admission_test

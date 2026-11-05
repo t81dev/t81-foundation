@@ -1,0 +1,4 @@
+t81-cpa-004/ternaryos/hal/cpa004_evaluator.cpp:259:cpa004_evaluate	112	static
+t81-cpa-004/ternaryos/hal/cpa004_evaluator.cpp:53:?name@?A0xF93CFFF4@@YAPEBDE@Z	0	static
+t81-cpa-004/ternaryos/hal/cpa004_evaluator.cpp:155:?observation@?A0xF93CFFF4@@YAXP6AXPEBD@ZHPEBUInstruction@?A0xF93CFFF4@@00@Z	128	static
+t81-cpa-004/ternaryos/hal/cpa004_evaluator.cpp:395:cpa004_run	80	static
