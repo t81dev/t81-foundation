@@ -151,3 +151,24 @@ Reported local ADM-2 candidates (`0c22ac323484e37cc85f95201bd4dc01729dedb4` and 
 **Decision posture:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED`. [#671](https://github.com/t81dev/t81-foundation/pull/671) records a *proposed* division into S (adaptive software format selection), A (algorithm routing), and T (ternary-specific attribution). T remains the central long-horizon research objective. A gain in S or A is not proof of T; binary two-bit encoding of three states does not isolate ternary physical benefit. The polynomial design in [#672](https://github.com/t81dev/t81-foundation/pull/672) is unaccepted. [#673](https://github.com/t81dev/t81-foundation/pull/673) has seven P1 protocol acceptance blockers, and [#674](https://github.com/t81dev/t81-foundation/pull/674) is adversarial critique, not authorization.
 
 **No authority transferred:** Updating these documents or accepting review commentary does not accept M1, select B/C, freeze M2, authorize correctness implementation or measurement, merge PRs, modify protected governance, or establish deployment. An explicit maintainer research selection, independently accepted preregistration and separate commit-scoped execution approval remain necessary.
+
+---
+
+## 9. Dated governance and CPA program disposition — 2026-11-05
+
+**Scope:** Non-normative operational addendum recording the status of the Cross-Profile Architecture (CPA) program, PR #709, and associated experimental branches.
+
+| Subject | Checked or recorded status | Governance & evidentiary boundary |
+| :--- | :--- | :--- |
+| **CPA-001** | Historical architectural & experimental assessment | Archived proposal and assessment; no implementation. |
+| **CPA-002** | Opcode conformance matrix test repair (`docs/records/audits/T81_CPA_002_OPCODE_CONFORMANCE.md`) | Head `55223cb` on branch `origin/fix/t81-cpa-002-opcode-conformance` (base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`). Corrects `tisc_opcode_matrix_test.cpp` under `NDEBUG`. Retains undefined opcodes 221–223 and 247–255 without modifying opcode definitions or decoder. |
+| **CPA-003** | Oracle verification and artifact freeze (`experiments/cpa004/evidence/acceptance/CPA003-README.md`) | 351-byte canonical program (SHA-256 `b0649777...`), independent Python integer/truncation oracle, 25 observation boundaries, 17-opcode subset. |
+| **CPA-004** | Dual-profile acceptance report and raw evidence (`experiments/cpa004/README.md`) | Committed on branch `origin/experiment/cpa004-freestanding` (commit `b803bf916a1b1e44129f3a07abf96fa6103c51fc` on base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`). Demonstrates bit-exact agreement between 3 hosted T81VM runs and 3 bare-metal AArch64 QEMU boots post-`ExitBootServices` at all 25 observation boundaries. Opt-in CMake flag `T81_BUILD_CPA004_EXPERIMENT=OFF` by default. |
+| **CPA-005** | Integration baseline and review tree | Pinned on branch `origin/experiment/cpa005-integration-base` (commit `f7e089590020508077607580da271b6570fa8f60`, integrated tree `70734fd5bcfe06978cea13b4d2d595d4dda71a12`) on main base `ea6d031a8117341fe03013cc9d5473de1b07727d`. Replays verified CPA004 binaries against baseline and establishes review baseline without merge commit. |
+| **PR #709** | Open draft PR (unmerged) | Head `b803bf916a1b1e44129f3a07abf96fa6103c51fc` (`experiment/cpa004-freestanding`). Base is main `ea6d031a8117341fe03013cc9d5473de1b07727d`. Unmerged draft; must not be claimed as merged. |
+| **PR #707** | Open unmerged PR | Contains CPA-002 test repairs and audit report on base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`. |
+
+### Maintainer Decision Boundaries
+1. **Scope Boundary Enforcement:** CPA-004 acceptance is explicitly bounded to the admitted 17-opcode profile on the 351-byte canonical program under static limits (64 steps, 81 registers, 1,563 memory words). It does not grant full ISA conformance, full OS certification, or general arbitrary-program execution.
+2. **Preservation of Normative Conflicts:** The four identified discrepancies (memory operands, branch operands, TXor difference vs sum label, opcode inventories) must remain documented in architecture records. They must not be silently resolved or normalized without explicit maintainer RFC adoption.
+3. **Research vs Activation:** Demonstrating that T81 is a working, implemented architecture with dual execution profiles provides research foundation (Track F) to support Track R. It does **not** authorize production activation or constitute proof of ternary performance advantage.

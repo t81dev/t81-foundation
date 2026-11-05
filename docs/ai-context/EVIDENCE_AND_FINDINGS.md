@@ -25,6 +25,7 @@ This document indexes source-reported benchmark results, mathematical models, ne
 | **Integrated System Advantage Inv 08 (H07)** | System Architecture | **Tier A** | Corrective audit established: Computational (NOT SUPPORTED), Assurance (SUPPORTED), Compositional (INCONCLUSIVE), Ternary-Specific (NOT SUPPORTED). | **BOUNDED ASSURANCE SUPPORTED**. |
 | **Accountable Computation precursor (H07)** | Governance / evidence protocol | **Tier B/C here** | Local A/B/C arms reported 0/150, 90/150 and 0/150 unauthorized result creations respectively in the negative-case set; the full Wasmtime/OPA protocol was **not run**. | **INCONCLUSIVE** for custom-VM necessity and conventional parity; draft RFC-00D4 not certified. |
 | **AI Research Methodology (H08)** | Prompt-to-code provenance | **Tier C / E** | Session histories and provenance records exist; no controlled matched productivity study is cited. | **PROCESS DOCUMENTED; comparative benefit UNTESTED**. |
+| **Cross-Profile Architecture CPA-004/005 (H07, Track F)** | Dual-Profile Bounded TISC Execution | **Tier A (committed) / Local (005)** | 351-byte canonical program (SHA-256 `b0649777...`) matches independent math oracle across all 25 boundaries in 3 hosted and 3 bare-metal QEMU boots post-`ExitBootServices`. | **PROVEN BOUNDED ARCHITECTURE**; does not establish ternary performance superiority over binary. |
 
 ---
 
@@ -182,3 +183,34 @@ The provisional comprehensive assessment is a **secondary synthesis**, not a rep
 - **Current [#672](https://github.com/t81dev/t81-foundation/pull/672):** candidate polynomial design only; no validated result, no frozen protocol, no execution. The historical H04-R02 conditional `AT=1210 U < AB=1250 U` at r=1.60 remains **symbolic**, not a CPU speedup. Historical negative CPU packed-ternary comparisons remain workload-specific.
 
 **Evidence verdict:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — NO MEASURED ADVANTAGE`. Never elevate draft hypotheses, review estimates, or documentation edits to measured evidence. Distinguish S (adaptive representation), A (algorithm selection), T (ternary-specific attribution).
+
+---
+
+## 2026-11-05 CPA-001 through CPA-005 Cross-Profile Architecture Evidence
+
+### 1. Program and Oracle Artifacts
+- **Canonical Program Artifact:** A 351-byte frozen binary (`experiments/cpa004/program.raw13`) containing 27 records of 13 bytes each.
+  - SHA-256 Digest: `b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b`.
+  - Hex stream: `program.hex` (SHA-256 `0053d1c83e21dd1f0e77eaaa90fdf36d89f69821d5b583bcee61347c723d43fb`).
+- **Mathematical Oracle:** Independently derived using host Python integers, rational truncation, and exact little-endian hash formulas (`check.py`, `oracle.py`). Oracle state was frozen **before** hosted or guest execution.
+- **Contract & Admitted Opcodes:** Pinned contract SHA-256 `851650fd5136fe6c8f67b924f7721f73beec54e6078b9e841261bc277170705d`. Admitted 17 instructions: Halt (1), LoadImm (2), Load (3), Store (4), Add (5), Mul (7), Div (8), Mod (9), JumpIfZero (11), Cmp (15), TNot (18), TAnd (19), TOr (20), TXor (21), JumpIfNotZero (25), Trap (28, sentinel only), JumpIfNegative (60). All 17 opcodes agree across headers and registries and reside in the `< 174` capability-frozen band.
+
+### 2. Dual-Profile Execution Results
+- **Hosted Execution (T81VM Profile):** Three fresh processes executed `experiments/cpa004/hosted_observer.cpp` with zero differing fields. Raw output stream uncompressed SHA-256: `e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a`.
+- **Freestanding Execution (Axion OS Profile):** Three fresh QEMU AArch64 boots executed `ternaryos/hal/cpa004_evaluator.cpp` after UEFI `ExitBootServices` on `cortex-a57` with zero differing fields. Raw output stream uncompressed SHA-256: `275b59c474731a398aada903e50ab477a1bf056abff411a8b6630ab5da68946f`. Executed EFI image SHA-256: `4b03971e3207205e123e3c3a08ca1da65fd8965d3f339f3cacd092eebd765ab9`.
+- **All 25 State Boundaries Matched:**
+  - Initial state plus 24 instruction steps compared.
+  - Final State: PC=27, SP=283, global `halted=true`. Trap instructions (PCs 18, 20, 23) successfully skipped.
+  - Register verification: All 81 registers (R0–R80) matched across value payloads and type tags. Key results: R43=1, R44=-1, R45=1, R46=-1; R49=162; R50=161, R51=161; R53=-3, R54=-1.
+  - Memory verification: All 1,563 logical memory words matched (e.g., MEM[81]=161, MEM[82]=-1, MEM[83]=-3).
+  - Flags and System Registers: Flags `(Z=false, N=true, P=false)`; R75=24, R76=2110228405636142087, R77=1353750679943106816, R78=0, R79=0, R80=0.
+- **Resource Footprint & Safety:**
+  - Evaluator static machine storage: 14,816 bytes.
+  - Evaluator frame: 128 bytes. Stack headroom: > 1 KiB reserved under 32 KiB workspace.
+  - Explicit checks remained active under `NDEBUG`. Deliberate wrong expectation failed with exit 1.
+
+### 3. Evidentiary Distinctions
+- **Committed vs Local Evidence:** CPA-004 raw evidence and evaluator are committed on branch `origin/experiment/cpa004-freestanding` (commit `b803bf916a1b1e44129f3a07abf96fa6103c51fc`) on base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`. CPA-005 represents local/continuity synthesis (without unverified remote git commits). PR #709 is confirmed unmerged/not present on remote.
+- **Reproduced Experiment vs Independent-Person Replication:** The mathematical derivation and execution switch were developed by the same agent lineage (Codex); this is a reproducible, verified experiment, not an independent third-party replication.
+- **Tested Snapshot vs Current `main`:** The tests were executed against base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`. Current `main` is at `ea6d031a8117341fe03013cc9d5473de1b07727d`.
+- **Architecture Working vs Ternary Advantage:** Bit-exact cross-profile execution proves the computational architecture works; it does not prove ternary superiority in performance, energy, or area over binary.

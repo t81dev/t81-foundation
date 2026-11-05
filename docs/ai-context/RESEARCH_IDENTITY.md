@@ -37,8 +37,9 @@ To overcome trit-level storage overhead, the project introduced Base-81 digit gr
 Modern T81 Foundation integrates Track R alternative representations with Track F systems substrate:
 - Bit-exact cross-platform determinism (DCP) and soft-float math ([RFC-0030](../../spec/rfcs/RFC-0030-deterministic-math-subsystem.md)).
 - Pre-side-effect policy authorization kernel (Axion).
-- Content-addressed artifact storage and foreign file system interchange (CanonFS / [RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)).
-- DAIOS Target Architecture ([RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)).
+- Content-addressed artifact storage and portable storage keys (CanonFS / [RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)).
+- Dual TISC execution profiles: hosted virtual machine (`t81_vm`) and freestanding bare-metal microkernel (`ternaryos` / Axion HAL on AArch64 QEMU).
+- DAIOS Target Architecture ([RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architecture-and-sequencing.md)), maintained as an independent forward-looking research direction.
 
 ---
 
@@ -171,3 +172,14 @@ The research program has evolved from Knuth/discrete-mathematics and Hanoi/CWEB 
 **The governing discrimination question** is whether a measured advantage arises from *ternary representation itself*, or from compression, adaptive precision, caching, SIMD, policy enforcement, or other representation-independent design choices. A mathematical radix property is not a physical or software speedup. Negative matched comparisons constrain tested implementations/workloads; they do not falsify all future ternary substrates.
 
 **Canonical identities:** H07 asks about comparative auditability against equivalently authorized/evidenced conventional runtime alternatives; tested policy behavior is not comparative superiority or security certification. H08 asks whether AI-assisted scientific research improves discovery/trustworthiness under independent audit; do not conflate it with H09-E1 recursive-cognition investigations. The JSON register remains authoritative if this synthesis differs.
+
+---
+
+## 2026-11-05 CPA research milestone note
+
+The completion of CPA-001 through CPA-005 establishes that T81 is an **implemented, working experimental computing architecture**. Bounded cross-profile execution of TISC bytecode between hosted T81VM and freestanding Axion OS (AArch64 QEMU) matches the independently derived mathematical oracle across 25 observation boundaries.
+
+Crucially, **execution correctness must be distinguished from comparative computational advantage**:
+1. Proving that the TISC interpreter and freestanding evaluator produce bit-exact identical register, memory, flag, and system-register traces proves that the dual-profile architecture functions.
+2. It does **not** prove that ternary arithmetic, ternary memory, or ternary execution outperforms, uses less energy than, or is denser than conventional binary computers.
+3. Comparative ternary advantage remains an open scientific question governed by H01–H08, requiring matched, rigorous binary controls.
