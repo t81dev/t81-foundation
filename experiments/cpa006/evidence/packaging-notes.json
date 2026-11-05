@@ -1,0 +1,7 @@
+{
+  "initial_staging_check": "Failed because generated debug.dSYM files were ignored by Git but included in the first packet manifest.",
+  "resolution": "Removed generated debug symbols; regenerated manifest and verified every packaged byte is tracked. Computation/source/oracle evidence unchanged.",
+  "removed_generated_paths": [
+    "evidence/negative/debug.dSYM"
+  ]
+}
