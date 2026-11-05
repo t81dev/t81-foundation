@@ -1,22 +1,19 @@
 # T81 Research Continuity — START_HERE
 
-**Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md) first. PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.
+**Latest operational view (2026-11-04):** Read the November 4 entries in this document and [`ACTIVE_RESEARCH_HANDOFF.md`](ACTIVE_RESEARCH_HANDOFF.md).
+Current repository head is `d836f7edb9b70608ef7476e82e98a0a89084d74b` on `main`.
+Key operational and research milestones reconciled at this head:
+1. **Core Runtime & Hosted Platform:** Fully functional across Linux, macOS, and Windows. T81Lang compiles to frozen TISC v1.9.0 bytecode, executes deterministically in T81VM, enforces fail-closed Axion safety policies, and persists immutable content-addressed objects in CanonFS.
+2. **CanonFS Portability Integration:** PR #700 (`63d87633`, BASE-01 verified correctness & Windows test portability) and PR #701 (`9bbc4453`, portable `h1-<hex>` storage keys & Windows Debug VM denial) are merged. Active follow-ups PR #702 (`origin/fix/canonfs-cli-list-portable-key` at `41f95d4c`, canonical reference restoration & CTest suite) and PR #703 (`origin/fix/canonfs-portable-snapshot-paths` at `991f3169`, portable snapshot directories `h1-<hex>` & CLI lifecycle) are in progress.
+3. **Freestanding Axion OS Distinction:** The bare-metal UEFI kernel under `ternaryos/` boots on bare metal / hypervisors (QEMU AArch64 and x86-64) to an interactive prompt with hardware timers, PL011 UART, and virtio-blk drivers, but does **not** embed T81VM or execute TISC bytecode; it currently executes only raw native assembly stubs (`T81X`).
+4. **BASE-01 & H04-R03 Protection Boundaries:** BASE-01 integration (#694 merged at `52921bd0`, #695 review merged at `4f9edb9c`) and EXP-H04-R03 Candidate A (#679 merged at `d8e1376a`, #680 review merged at `927972f8`) are integrated in **correctness-only mode**. All performance measurements and benchmarking campaigns remain strictly frozen and unauthorized without dedicated hardware qualification and human maintainer sign-off.
+5. **New System Integration Audit (T81-SIA-001):** Published under `docs/reports/audit/` (reports A through H), establishing the exact boundary between demonstrated hosted execution and experimental freestanding microkernel capabilities.
 
-**Latest operational view (2026-11-02):** Read the selected view in
-[`CURRENT_STATE.json`](CURRENT_STATE.json), backed by the bounded
-[PR/source receipt](receipts/2026-11-02-pr678-observations.json), before older status tables.
-Observed main is `8e44c0f667c62e0d4143bb93169fc3235d5ebd66`: #675 is merged with
-arithmetic validation accepted within its declared scope; #676 is merged historical
-backlog-audit evidence; #677 is merged H04-R03 Candidate A preregistration, with
-**Phase C still unauthorized**. #656 remains open pending integration and #678
-remains open with corrections pending acceptance. Local cleanup's audit is reported
-completed; its execution outcome is **not independently verified** by this index.
-The earlier views and snapshots below remain dated history. This update grants no
-merge, measurement, M2 execution or governance authority.
+**Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md). PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.
 
 **Document ID:** `docs/ai-context/START_HERE.md`
-**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
-**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
+**Version:** 1.1.0 · **Last Reviewed:** 2026-11-04
+**Source Snapshot:** `main` at `d836f7edb9b70608ef7476e82e98a0a89084d74b` (checked 2026-11-04; refresh before use)
 **Status:** Non-normative navigation and research handoff index; not an accepted contract or independent verification
 
 ---
@@ -128,7 +125,31 @@ If repository files contain conflicting statements:
 
 ---
 
-## 10. Latest Operational Addenda (2026-10-29)
+## 10. Operational Status Addendum — 2026-11-04 (T81-SIA-001 Integration Audit)
+
+**Authoritative Repository Pin:** `main` at commit `d836f7edb9b70608ef7476e82e98a0a89084d74b`.
+
+The T81 program has reached an inflection point where isolated subsystem achievements must be rigorously evaluated as a unified system. Under direction of the Maintainer, an exhaustive, read-only system integration audit (**T81-SIA-001**) was conducted and published under `docs/reports/audit/` across eight companion reports:
+- `T81_SYSTEM_INTEGRATION_AUDIT.md`: Executive summary and subsystem maturity register.
+- `T81_BOOT_EXECUTION_TRACE.md`: Firmware-to-kernel boot trace on x86-64 and AArch64.
+- `T81_APPLICATION_LIFECYCLE_MATRIX.md`: Hosted vs freestanding application lifecycles and recovery.
+- `T81_SUBSYSTEM_DEPENDENCY_MAP.md`: Call graph and inter-system coupling analysis across 13 subsystems.
+- `T81_OS_CAPABILITY_MATRIX.md`: 18-point capability evaluation against conventional operating systems.
+- `T81_INTEGRATION_GAP_REGISTER.md`: Prioritized register of engineering gaps and minimum viable repairs.
+- `T81_VALIDATION_EVIDENCE.md`: Reproducible build commands, test results, logs, and empirical evidence.
+- `T81_SYSTEM_READINESS_VERDICT.md`: Formal subsystem readiness dispositions, architectural identity, and milestone roadmap.
+
+### Strongest Demonstrated Capabilities
+1. **Hosted Deterministic Toolchain:** T81Lang compiles to frozen TISC v1.9.0 bytecode, executes in T81VM with 100% deterministic repeatability, and integrates register-level policy event hooks.
+2. **Fail-Closed Policy Governance:** Axion policy engine intercepts storage mutations, model intakes, and runtime events before side effects take place.
+3. **Immutable Content-Addressed Storage:** CanonFS stores raw blocks, capability grants, and snapshot manifests using cryptographic hashes (`sha3-256`, `sha3-512`), with active cross-platform portability integration ensuring portable `h1-<hex>` storage keys on disk.
+
+### Critical Execution Boundary (Freestanding Disconnect)
+Freestanding Axion OS (`ternaryos/`) boots independently on bare metal and hypervisors (QEMU/VirtualBox) via UEFI, exits boot services, establishes MMU paging (TTBR0), PL011 UART, and virtio-blk modern drivers. However, **Axion OS does not host T81VM or execute TISC bytecode**. It currently executes only raw position-independent native AArch64 machine-code stubs (`T81X`). Bridging this gap by embedding a zero-allocation TISC runtime into Axion OS represents Milestone 1 (P0) of the system roadmap.
+
+---
+
+## 11. Latest Operational Addenda (2026-10-29)
 
 For any new ChatGPT, Codex or Jules session, **read the latest dated sections before relying on earlier PR tables or next-action instructions**:
 
