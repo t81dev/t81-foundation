@@ -194,3 +194,19 @@ The Cross-Profile Architecture (CPA) program achieved a major milestone:
    - Branch target & condition: Direct immediate target + R[B] zero-test (runtime/semantics) vs register-indirect + FLAGS-based conditional branches (`spec/tisc-spec.md`).
    - TXor truth table: Balanced wrapped difference (`(lhs - rhs + 1) % 3 - 1`) vs ambiguous "Sum" label.
    - Opcode inventory: 174 capability-frozen vs 209 registry entries vs 244 named C++ header opcodes vs 247 numerical interval with 221–223 undefined.
+
+---
+
+## 13. Current research gate — 2026-11-05, after CPA-006 and ISA-001
+
+**Current main:** `7afa4f1a424be6c65fab28f8e5bcf4fddc3ef762` (observed 2026-11-05). This addendum supersedes earlier *live status and next-action* text, not historical source identities or approvals. PR #711 merged the preceding CPA-001–005 continuity refresh to main; its seven changed files were README.md and the six canonical AI-context files.
+
+**Established, bounded:** CPA-006 reports 19/19 frozen-oracle cases, three hosted and three fresh AArch64 QEMU executions per case (57+57), and 1,190 validated state records. Outcomes include normal Halt, runtime traps, admission rejection, and instruction-budget exhaustion. The experiment does not establish full ISA conformance, physical ternary performance, or independent-person replication. See [CPA-006 acceptance report on its merged integration branch](https://github.com/t81dev/t81-foundation/blob/514fa17cf5629a7aea9ebb1b035f01f3ef7687f3/experiments/cpa006/README.md).
+
+**Actual integration:** PR #710 is merged into `experiment/cpa005-integration-base` (merge result `514fa17cf5629a7aea9ebb1b035f01f3ef7687f3`), **not main**. PR #709 (CPA-004 evaluator) remains open draft and PR #707 (CPA-002 matrix correction) remains open. Main describes the CPA findings but does not carry these experimental evaluator paths. Do not equate identical file content, a merged PR, and main-branch ancestry.
+
+**ISA-001 outcome:** Read-only assessment, **READY FOR MAINTAINER DECISION**; no normative decision, RFC acceptance, code change, or new execution test occurred. Proposed direction: version an authoritative TISC contract retaining normative register-indirect memory and flag-based/register-target branches; explicitly define scalar TXor as wrapped balanced difference; preserve frozen 0–173 and reconcile accepted extension assignments; pin the current implemented CPA semantics as a *historical experimental profile*. These are recommendations, **not accepted requirements**. Raw 13-byte instructions have no profile identifier; any semantic transition needs explicit artifact-bound profile selection and the formal breaking-change process.
+
+**Next authorized action:** Draft/review the precise versioned TISC transition-contract RFC and maintainer decision matrix **without changing implementation or historical CPA artifacts**. After approval, separately authorize discriminating tests and one cumulative integration candidate; then preregister an H02 signed-rounding comparison against optimized binary and encoding-cost controls. Do not restart CPA execution-feasibility research.
+
+**Evidence hierarchy:** Normative specification and governance controls decide required semantics; pinned executed artifacts decide observed historical behavior; this non-normative continuity index cannot confer acceptance, merge, or performance authority.
