@@ -1,0 +1,527 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "running",
+              "halted",
+              "trap"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "sequence": {
+            "type": "integer"
+          },
+          "state": {
+            "additionalProperties": false,
+            "properties": {
+              "flags": {
+                "additionalProperties": false,
+                "properties": {
+                  "negative": {
+                    "type": "boolean"
+                  },
+                  "positive": {
+                    "type": "boolean"
+                  },
+                  "zero": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "zero",
+                  "negative",
+                  "positive"
+                ],
+                "type": "object"
+              },
+              "halted": {
+                "type": "boolean"
+              },
+              "memory": {
+                "additionalProperties": false,
+                "properties": {
+                  "default_tag": {
+                    "const": 0
+                  },
+                  "default_value": {
+                    "const": "0"
+                  },
+                  "overrides": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "address": {
+                          "maximum": 1562,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "tag": {
+                          "const": 0
+                        },
+                        "value": {
+                          "pattern": "^(0|-?[1-9][0-9]*)$",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "address",
+                        "value",
+                        "tag"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 1563,
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "word_count": {
+                    "const": 1563
+                  }
+                },
+                "required": [
+                  "word_count",
+                  "default_value",
+                  "default_tag",
+                  "overrides"
+                ],
+                "type": "object"
+              },
+              "pc": {
+                "maximum": 27,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "register_tags": {
+                "items": {
+                  "const": 0
+                },
+                "maxItems": 81,
+                "minItems": 81,
+                "type": "array"
+              },
+              "register_values": {
+                "items": {
+                  "pattern": "^(0|-?[1-9][0-9]*)$",
+                  "type": "string"
+                },
+                "maxItems": 81,
+                "minItems": 81,
+                "type": "array"
+              },
+              "sp": {
+                "const": 283
+              }
+            },
+            "required": [
+              "pc",
+              "sp",
+              "halted",
+              "flags",
+              "register_values",
+              "register_tags",
+              "memory"
+            ],
+            "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "halted"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "properties": {
+              "halted": {
+                "const": true
+              }
+            }
+          },
+          "trap": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "running"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "state": {
+            "properties": {
+              "halted": {
+                "const": false
+              }
+            }
+          },
+          "trap": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "trap"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "instruction": {
+            "additionalProperties": false,
+            "properties": {
+              "a": {
+                "maximum": 2147483647,
+                "minimum": -2147483648,
+                "type": "integer"
+              },
+              "b": {
+                "maximum": 2147483647,
+                "minimum": -2147483648,
+                "type": "integer"
+              },
+              "c": {
+                "maximum": 2147483647,
+                "minimum": -2147483648,
+                "type": "integer"
+              },
+              "name": {
+                "enum": [
+                  "Add",
+                  "Cmp",
+                  "Div",
+                  "Halt",
+                  "JumpIfNegative",
+                  "JumpIfNotZero",
+                  "JumpIfZero",
+                  "Load",
+                  "LoadImm",
+                  "Mod",
+                  "Mul",
+                  "Store",
+                  "TAnd",
+                  "TNot",
+                  "TOr",
+                  "TXor",
+                  "Trap"
+                ]
+              },
+              "opcode": {
+                "enum": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  7,
+                  8,
+                  9,
+                  11,
+                  15,
+                  18,
+                  19,
+                  20,
+                  21,
+                  25,
+                  28,
+                  60
+                ]
+              }
+            },
+            "required": [
+              "opcode",
+              "name",
+              "a",
+              "b",
+              "c"
+            ],
+            "type": "object"
+          },
+          "pc_before": {
+            "type": "integer"
+          },
+          "trap": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "instruction": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "a": {
+              "maximum": 2147483647,
+              "minimum": -2147483648,
+              "type": "integer"
+            },
+            "b": {
+              "maximum": 2147483647,
+              "minimum": -2147483648,
+              "type": "integer"
+            },
+            "c": {
+              "maximum": 2147483647,
+              "minimum": -2147483648,
+              "type": "integer"
+            },
+            "name": {
+              "enum": [
+                "Add",
+                "Cmp",
+                "Div",
+                "Halt",
+                "JumpIfNegative",
+                "JumpIfNotZero",
+                "JumpIfZero",
+                "Load",
+                "LoadImm",
+                "Mod",
+                "Mul",
+                "Store",
+                "TAnd",
+                "TNot",
+                "TOr",
+                "TXor",
+                "Trap"
+              ]
+            },
+            "opcode": {
+              "enum": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                7,
+                8,
+                9,
+                11,
+                15,
+                18,
+                19,
+                20,
+                21,
+                25,
+                28,
+                60
+              ]
+            }
+          },
+          "required": [
+            "opcode",
+            "name",
+            "a",
+            "b",
+            "c"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "pc_before": {
+      "maximum": 26,
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "program_sha256": {
+      "const": "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b"
+    },
+    "schema": {
+      "const": "t81.cpa003.observation.v1"
+    },
+    "sequence": {
+      "maximum": 64,
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "state": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "flags": {
+              "additionalProperties": false,
+              "properties": {
+                "negative": {
+                  "type": "boolean"
+                },
+                "positive": {
+                  "type": "boolean"
+                },
+                "zero": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "zero",
+                "negative",
+                "positive"
+              ],
+              "type": "object"
+            },
+            "halted": {
+              "type": "boolean"
+            },
+            "memory": {
+              "additionalProperties": false,
+              "properties": {
+                "default_tag": {
+                  "const": 0
+                },
+                "default_value": {
+                  "const": "0"
+                },
+                "overrides": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "address": {
+                        "maximum": 1562,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "tag": {
+                        "const": 0
+                      },
+                      "value": {
+                        "pattern": "^(0|-?[1-9][0-9]*)$",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "address",
+                      "value",
+                      "tag"
+                    ],
+                    "type": "object"
+                  },
+                  "maxItems": 1563,
+                  "type": "array",
+                  "uniqueItems": true
+                },
+                "word_count": {
+                  "const": 1563
+                }
+              },
+              "required": [
+                "word_count",
+                "default_value",
+                "default_tag",
+                "overrides"
+              ],
+              "type": "object"
+            },
+            "pc": {
+              "maximum": 27,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "register_tags": {
+              "items": {
+                "const": 0
+              },
+              "maxItems": 81,
+              "minItems": 81,
+              "type": "array"
+            },
+            "register_values": {
+              "items": {
+                "pattern": "^(0|-?[1-9][0-9]*)$",
+                "type": "string"
+              },
+              "maxItems": 81,
+              "minItems": 81,
+              "type": "array"
+            },
+            "sp": {
+              "const": 283
+            }
+          },
+          "required": [
+            "pc",
+            "sp",
+            "halted",
+            "flags",
+            "register_values",
+            "register_tags",
+            "memory"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "status": {
+      "enum": [
+        "running",
+        "halted",
+        "trap",
+        "instruction_limit",
+        "timeout",
+        "admission_failure",
+        "missing_evidence"
+      ]
+    },
+    "trap": {
+      "enum": [
+        null,
+        "DecodeFault",
+        "TypeFault",
+        "BoundsFault",
+        "DivisionFault",
+        "TrapInstruction",
+        "SecurityFault"
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "program_sha256",
+    "sequence",
+    "pc_before",
+    "instruction",
+    "status",
+    "trap",
+    "state"
+  ],
+  "title": "Proposed CPA-003 fixed-artifact normalized observation; not a TISC ABI",
+  "type": "object"
+}
