@@ -1,5 +1,7 @@
 # T81 Research Continuity — START_HERE
 
+**Latest Cross-Profile Architecture & Identity View (2026-11-05):** T81 has demonstrated a functioning bounded computational architecture. Bounded cross-profile TISC execution is verified across hosted T81VM and freestanding Axion OS (AArch64 QEMU) against an independent mathematical oracle across all 25 observation boundaries (CPA-004/CPA-005). Incoming research agents should **not** re-verify whether the bounded cross-profile implementation works; focus on open research hypotheses, remaining ISA discrepancies, and disciplined comparative advantage benchmarks.
+
 **Latest BASE-01 integration and readiness view (2026-11-03):** Read [BASE01_2026-11-03.md](BASE01_2026-11-03.md) first. PRs #694 and #695 are merged; integration acceptance does not authorize B1 measurement. Older dated operational views below remain historical.
 
 **Latest operational view (2026-11-02):** Read the selected view in
@@ -23,7 +25,7 @@ merge, measurement, M2 execution or governance authority.
 
 ## 1. T81 Identity in One Paragraph
 
-T81 Foundation is an experimental computing architecture and scientific research platform investigating alternative digital representations (balanced ternary, Base-81 tryte grouping, adaptive radix tiering) and policy-governed deterministic execution. The program combines scientific research into mathematical, algorithmic, and physical substrate advantages (Track R) with foundation systems engineering for bit-exact cross-platform determinism, content-addressed artifact identity via CanonFS, pre-side-effect policy authorization via Axion, and detached accountable evidence verification (Track F). T81 is not a commercial desktop operating system or a production CPU product; it is a hypothesis-driven empirical research instrument designed to determine under what exact assumptions, workloads, cost models, and physical substrates non-binary computational representations yield defensible advantages over optimized conventional baselines.
+T81 Foundation is an implemented experimental computing architecture and scientific research platform investigating alternative digital representations (balanced ternary, Base-81 tryte grouping, adaptive radix tiering) and policy-governed deterministic execution. T81 defines TISC (Ternary Instruction Set Computer) as its core computational instruction contract, with bounded cross-profile execution demonstrated across both a hosted virtual machine (T81VM) and a bare-metal freestanding microkernel environment (Axion OS on AArch64 QEMU). The program combines scientific research into mathematical, algorithmic, and physical substrate advantages (Track R) with foundation systems engineering for bit-exact cross-platform determinism, content-addressed artifact identity via CanonFS, pre-side-effect policy authorization via Axion, and detached accountable evidence verification (Track F). T81 is not a commercial desktop operating system or a production CPU product; it is a functioning experimental computational architecture and hypothesis-driven empirical research instrument designed to determine under what exact assumptions, workloads, cost models, and physical substrates non-binary computational representations yield defensible advantages over optimized conventional baselines.
 
 ---
 
@@ -96,6 +98,8 @@ Research agents are strictly forbidden from repeating or generating the followin
 2. **PROHIBITED:** Claiming T81 is a commercial operating system running on physical ternary microprocessors (Falsified: no physical ternary silicon exists in the repository; all execution uses binary hardware emulation).
 3. **PROHIBITED:** Claiming that a custom VM is strictly necessary **or** that Wasmtime + OPA has already demonstrated equivalent safety in the complete Baseline-X protocol. The [bounded precursor report](../../examples/governance/accountable-computation/REPORT.md) did not deploy Wasmtime/OPA; the [claim register](../../experiments/research_001/CLAIM_REGISTER.md) leaves that comparison under active test.
 4. **PROHIBITED:** Redefining, renumbering, or silently closing canonical hypotheses H01–H08.
+5. **PROHIBITED:** Treating bounded cross-profile execution correctness (CPA-004/CPA-005) as proof of ternary speed, energy, or hardware performance superiority.
+6. **PROHIBITED:** Asking incoming AI agents to re-establish whether bounded cross-profile TISC execution works. The cross-profile agreement between hosted T81VM and freestanding Axion OS across 25 observation boundaries is established evidence.
 
 ---
 
@@ -174,3 +178,19 @@ The `Source Snapshot` above is a historical observation, not the live repository
 **Read first for current M2:** [active handoff](ACTIVE_RESEARCH_HANDOFF.md), [decision gate #671](https://github.com/t81dev/t81-foundation/pull/671), [candidate protocol #672](https://github.com/t81dev/t81-foundation/pull/672), [Codex audit #673](https://github.com/t81dev/t81-foundation/pull/673), and [Jules review #674](https://github.com/t81dev/t81-foundation/pull/674). These PRs were observed open and unmerged on 2026-11-01; refresh before relying on status.
 
 **Disposition:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — EXECUTION_BLOCKED`. Distinguish S (adaptive software representation), A (algorithm routing), and T (ternary-specific attribution). T is the long-horizon scientific objective; positive S/A findings do not establish T. Polynomial evaluation in #672 is a proposed, **unaccepted** S/A workload, not an approved benchmark. The seven P1 blockers in #673 remain open. No experimental execution, CI bypass, governance activation or merge is authorized by these notes.
+
+---
+
+## 12. Cross-Profile Architecture (CPA-001 through CPA-005) Summary — 2026-11-05
+
+**Verified repository state:** Snapshot base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`; current `main` at `ea6d031a8117341fe03013cc9d5473de1b07727d`; PR #709 is an **open draft PR (unmerged)** at head `b803bf916a1b1e44129f3a07abf96fa6103c51fc` on branch `origin/experiment/cpa004-freestanding`.
+
+The Cross-Profile Architecture (CPA) program achieved a major milestone:
+1. **Implemented Bounded Cross-Profile Architecture:** T81 now has proven cross-profile execution of TISC bytecode between user-space (hosted T81VM) and bare-metal (freestanding Axion OS microkernel on AArch64 QEMU).
+2. **Deterministic Oracle Alignment:** A 351-byte canonical program (SHA-256 `b0649777...`, 17 opcodes) executes across 24 instructions and reaches identical state at all 25 observation boundaries (R0–R80, logical memory, flags, system registers R75–R80).
+3. **Execution Correctness $\neq$ Ternary Superiority:** Proving the engine works across profiles resolves the question of whether T81 is a functioning architecture. It does not establish ternary performance, density, or energy superiority over binary baselines.
+4. **Preserved Discrepancies:** Four normative discrepancies remain documented without silent resolution:
+   - Memory addressing: Direct logical addressing (runtime/semantics) vs register-indirect (`spec/tisc-spec.md`).
+   - Branch target & condition: Direct immediate target + R[B] zero-test (runtime/semantics) vs register-indirect + FLAGS-based conditional branches (`spec/tisc-spec.md`).
+   - TXor truth table: Balanced wrapped difference (`(lhs - rhs + 1) % 3 - 1`) vs ambiguous "Sum" label.
+   - Opcode inventory: 174 capability-frozen vs 209 registry entries vs 244 named C++ header opcodes vs 247 numerical interval with 221–223 undefined.

@@ -10,7 +10,9 @@
 
 ## What is T81?
 
-**T81 Foundation is an open-source experimental computing research program investigating whether alternative computational representations—particularly balanced ternary—can provide measurable advantages over conventional binary systems.**
+**T81 Foundation is an implemented experimental computing architecture and open-source scientific research program investigating whether alternative computational representations—particularly balanced ternary—can provide measurable advantages over conventional binary systems.**
+
+T81 is an **implemented, functioning architecture**: it defines the Ternary Instruction Set Computer (TISC) as its computational instruction contract, with bounded cross-profile execution demonstrated across both a hosted virtual machine (T81VM) and a bare-metal freestanding microkernel environment (Axion OS / TernaryOS on AArch64 QEMU).
 
 The project studies computation at several levels: mathematical representation, algorithms, software execution, storage, hardware architecture, and verifiable system behavior. Its research-first architecture originated in discrete mathematics, CWEB/Hanoi, and investigations of alternative numerical systems before expanding into language, VM, instruction, policy, and research-assurance subsystems.
 
@@ -117,7 +119,17 @@ The H04-R03 matched-codec program compares bounded representation and access alt
 
 An equality of payload lengths is a mathematical property, not a demonstrated latency, energy, or end-to-end benefit. No H04-R03 performance advantage is claimed.
 
-### 5. Physical ternary computing remains an open question
+### 5. Bounded cross-profile execution demonstrated (CPA-004/CPA-005)
+
+Recent research in the Cross-Profile Architecture (CPA) program demonstrated that the computational core of T81 executes consistently across divergent execution environments:
+
+- **Canonical Program Artifact:** A frozen 351-byte canonical program comprising 27 canonical 13-byte records (SHA-256 `b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b`) exercised an admitted subset of 17 TISC instructions.
+- **Cross-Profile Equivalence:** Fresh executions across three hosted T81VM processes and three fresh AArch64 QEMU bare-metal boots (after UEFI `ExitBootServices`) matched an independently derived mathematical oracle at **all 25 observation boundaries** (initial state + 24 instruction steps).
+- **Comprehensive Boundary Matching:** Equivalence was verified across all 81 register values and tags, 1,563 logical memory words and tags, flags, and system registers (R75–R80), halting deterministically at PC=27, SP=283.
+- **Scope & Snapshot:** Tested on repository base snapshot `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4` (with freestanding evaluator and acceptance report committed in branch `origin/experiment/cpa004-freestanding` at commit `b803bf916a1b1e44129f3a07abf96fa6103c51fc`, and local CPA-005 continuity records).
+- **Distinction:** Demonstrating cross-profile execution correctness proves the computational architecture functions as designed; it is **not** evidence of ternary performance, energy, or hardware superiority over binary baselines.
+
+### 6. Physical ternary computing remains an open question
 
 Software-emulated ternary computation is not equivalent to computation on native ternary hardware.
 
@@ -135,16 +147,16 @@ The repository contains several experimental subsystems developed to investigate
 
 ```text
                      T81 FOUNDATION
-                Experimental Research Program
+                Implemented Architecture & Research
                              |
           +------------------+------------------+
           |                  |                  |
     REPRESENTATION       EXECUTION          ASSURANCE
           |                  |                  |
-    Balanced ternary       TISC ISA           Axion
-    Base-81 / Base-243     T81VM              CanonFS
-    Packed data            T81Lang            Evidence
-    Adaptive tiering       Core libraries     Provenance
+    Balanced ternary     TISC ISA (Contract)  Axion Policy
+    Base-81 / Base-243   +-- T81VM (Hosted)   CanonFS
+    Packed data          +-- Axion (Baremetal) Evidence
+    Adaptive tiering     T81Lang Frontend     Provenance
           |                  |                  |
           +------------------+------------------+
                              |
@@ -157,18 +169,25 @@ The repository contains several experimental subsystems developed to investigate
                     Research conclusions
 ```
 
-This is a conceptual organization of the research program, not a claim that every subsystem is fully integrated into one verified production runtime.
+### Computational Contract and Execution Profiles
+
+In the T81 architecture:
+- **TISC (Ternary Instruction Set Computer):** Serves as the central computational instruction contract, defining opcode semantics, 64-bit state vectors, and deterministic transition rules.
+- **Hosted T81VM:** Serves as the hosted execution profile for user-space development, tooling, testing, and deterministic replay on conventional host OSes (Linux, macOS, Windows).
+- **Freestanding Axion OS / TernaryOS:** Serves as the bare-metal execution profile running directly on hardware or hypervisors (e.g., AArch64 QEMU), executing TISC without user-space OS dependencies.
+- **DAIOS (Deterministic AI OS):** Remains an independent, forward-looking experimental research direction for high-level autonomous agent and AI runtime governance, distinct from the implemented low-level TISC execution engine.
 
 ### Principal components
 
-| Component | Research role |
+| Component | Research and architectural role |
 |---|---|
-| **TISC** | Experimental instruction-set semantics |
-| **T81VM** | Virtual-machine execution and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
-| **T81Lang** | Language frontend and compilation infrastructure |
+| **TISC** | The computational instruction contract governing execution semantics |
+| **T81VM** | Hosted execution profile for virtual-machine execution and determinism (bounded by the [Determinism Surface Registry](docs/governance/DETERMINISM_SURFACE_REGISTRY.md)) |
+| **Axion / TernaryOS** | Freestanding execution profile (bare-metal AArch64 microkernel/HAL) and pre-side-effect policy authorization |
+| **T81Lang** | Language frontend and compilation infrastructure targeting TISC |
 | **T81 Core** | Numerical types, containers, and representation primitives |
-| **Axion** | Policy evaluation and controlled authorization |
 | **CanonFS** | Content-addressed artifacts and integrity mechanisms |
+| **DAIOS** | Independent target architecture proposal for deterministic AI operating systems |
 | **Research experiments** | Hypothesis testing, correctness validation, and comparative measurements |
 
 These components have different maturity levels. A working implementation is not automatically a validated performance advantage.

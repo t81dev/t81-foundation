@@ -236,3 +236,37 @@ A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reported
 **What changed:** Original #672 encode/store/decode/reduce `(sum, nonzero_count)` task was challenged because input inspection can compute outputs and bypass the intended consumer. The revised proposal evaluates exact signed-trit coefficient polynomials modulo `2^64`, but sparse exponentiation versus Horner introduces an algorithm/representation confound. The draft now separates S (causal representation choice), A (algorithm routing), and T (genuinely ternary-specific mechanism). The latter has **no approved experiment**. Even at 5% density, proposed sparse payload can exceed two-bit packed payload for the earlier lengths, so no format crossover or speedup is guaranteed.
 
 **Open gates:** Choose whether M2 is bounded S/A research or deferred pending a T hypothesis; justify a real producer/consumer lifecycle; separate format from algorithm comparisons; freeze a trace, selectors, byte grammar, hardware, statistical method and practical threshold; independently clear seven P1 findings; reconcile M1; obtain explicit commit-scoped authorization. Do not implement, benchmark, merge, or claim radix superiority from these draft documents. These observations are dated; refresh actual GitHub heads and CI.
+
+---
+
+## 2026-11-05 CPA-001 through CPA-005 Research Handoff & Architecture Baseline
+
+### 1. Established Reality: Bounded Cross-Profile Implementation Works
+**Future AI research agents must NOT be asked to re-establish or re-verify whether the bounded cross-profile implementation works.**
+The CPA-004 experimental campaign established that:
+- The 351-byte canonical program (SHA-256 `b0649777...`) executes across 24 instructions and halts deterministically (PC=27, SP=283).
+- Hosted T81VM and freestanding Axion OS (AArch64 QEMU post-`ExitBootServices`) match the separately derived mathematical oracle at **all 25 observation boundaries** across registers, memory words, flags, and system registers.
+- All checks pass cleanly under `NDEBUG` on the tested snapshot base `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4` (committed in `origin/experiment/cpa004-freestanding` at `b803bf916a1b1e44129f3a07abf96fa6103c51fc`).
+
+### 2. What Remains Unproven & Active Research Questions
+1. **Full ISA Conformance:** CPA-004 covers an admitted subset of 17 instructions on signed 64-bit integer values and scalar trits. It does not validate arbitrary big integers, floating point, fraction, vector/tensor operations, or the remaining 157+ opcodes.
+2. **Four Preserved Normative Discrepancies:**
+   - *Memory addressing:* Direct immediate address in implementation/semantics vs register-indirect `R[RS]` in `spec/tisc-spec.md`.
+   - *Branch target & condition:* Direct target + R[B] zero-testing in implementation/semantics vs register-indirect + FLAGS in `spec/tisc-spec.md`.
+   - *TXor interpretation:* Wrapped balanced difference `((lhs - rhs + 1) % 3) - 1` vs ambiguous "Sum" label.
+   - *Opcode inventories:* 174 capability-frozen opcodes vs 209 registry entries vs 244 named C++ header opcodes (with undefined opcodes 221–223 and 247–255).
+   *Directive:* Preserve these discrepancies; do not silently normalize or resolve them without explicit RFC approval.
+3. **Comparative Advantage:** Execution correctness across dual profiles is an engineering milestone (Track F). It does **not** prove ternary superiority (Track R). H01–H08 remain open research questions requiring matched, rigorous binary controls.
+
+### 3. Current Git & PR Status
+- Pinned test base: `803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4`.
+- Current `main`: `ea6d031a8117341fe03013cc9d5473de1b07727d`.
+- PR #709: **Open draft PR (unmerged)**; head `b803bf916a1b1e44129f3a07abf96fa6103c51fc` (`experiment/cpa004-freestanding`), base `ea6d031a8117341fe03013cc9d5473de1b07727d`.
+- CPA-005 baseline: pinned on `origin/experiment/cpa005-integration-base` (commit `f7e089590020508077607580da271b6570fa8f60`, integrated tree `70734fd5bcfe06978cea13b4d2d595d4dda71a12`).
+- PR #707: Open unmerged PR (CPA-002 opcode conformance repairs).
+- Working branch: Must preserve tested boundaries and avoid unauthorized merge operations.
+
+### 4. Primary Next Actions for Incoming Agents
+1. Treat bounded dual-profile TISC execution as an established foundation; build on it rather than re-litigating it.
+2. Advance the resolution of the four normative ISA discrepancies via formal specification drafts and maintainer review.
+3. Advance Track R comparative hypotheses (e.g., H04-R03 Candidate A Phase C gates, BASE-01 physical Linux prerequisites) without conflating software emulation correctness with physical hardware advantage.

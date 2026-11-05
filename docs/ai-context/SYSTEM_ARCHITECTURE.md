@@ -16,68 +16,78 @@ graph TD
     UserCLI[T81 CLI / Tooling] --> T81Lang[T81Lang Compiler / AST / IR]
     UserCLI --> AIBridge[AI Model Intake Bridge GGUF/Safetensors]
 
-    T81Lang --> TISCBytecode[TISC Bytecode / Artifacts]
+    T81Lang --> TISCContract[TISC Instruction Set Architecture Contract]
     AIBridge --> ModelTensors[Model Weights & Tensors]
 
-    subgraph "Deterministic Execution Boundary (DCP)"
-        TISCBytecode --> T81VM[T81VM Interpreter / State Core]
+    subgraph "Execution Profile 1: Hosted T81VM (DCP Boundary)"
+        TISCContract --> T81VM[T81VM Interpreter / State Core]
         ModelTensors --> T81VM
-
         T81VM <--> AxionEngine[Axion Policy Kernel eval_axion_call]
         T81VM <--> SoftFloat[Deterministic Soft-Float CORDIC RFC-0030]
         T81VM <--> CanonFS[CanonFS Content-Addressed VFS RFC-00D1]
+        T81VM -. Hosted Execution .-> BinaryHost[Host OS: Linux / macOS / Windows / WASM]
+    end
+
+    subgraph "Execution Profile 2: Freestanding Axion OS / TernaryOS"
+        TISCContract --> FreestandingHAL[cpa004_evaluator / Axion HAL]
+        FreestandingHAL --> BareMetal[Bare-Metal AArch64 / QEMU Virt Post-ExitBootServices]
     end
 
     CanonFS -. proposed evidence interface .-> Evidence[Experimental evidence bundles / draft RFC-00D4]
 
-    subgraph "DAIOS Draft Target Layers (RFC-00D2)"
+    subgraph "Independent Research Direction: DAIOS Target Layers (RFC-00D2)"
         L1[1. Deterministic Execution Substrate - REAL]
         L2[2. Policy & Admission Layer - REAL]
         L3[3. Immutable Artifact & Provenance Layer - REAL]
         L4[4. AI Object Layer - REAL / BOUNDED]
         L5[5. AI Runtime Layer - PARTIAL]
-        L6[6. System / Bare-Metal Layer - DEFERRED]
+        L6[6. System / Bare-Metal Layer - PROPOSED / INDEPENDENT]
     end
-
-    T81VM -. Emulation .-> BinaryHost[Binary Host OS / Hardware x86_64 / ARM64 / WASM]
 ```
 
 ---
 
 ## 2. Core Subsystems and Responsibilities
 
-### 2.1 TISC Instruction Set Architecture (v1.9.0)
-- **Path:** `include/t81/isa/opcodes.hpp`, `src/isa/`
-- **Role:** Frozen 81-opcode instruction set operating on a 64-bit virtual register state machine (`STATE = (R, PC, SP, FLAGS, MEM, META)`).
-- **Maturity:** **FROZEN (v1.9.0)**. Opcode values and state encoding are protected against casual modification.
-- **Key Opcode Domains:** Arithmetic, logic, flow control, CanonFS I/O, Axion policy calls, and tensor descriptors.
+### 2.1 TISC Instruction Set Architecture (Computational Contract)
+- **Path:** `include/t81/isa/opcodes.hpp`, `src/isa/`, `spec/tisc-spec.md`
+- **Role:** The core computational instruction contract defining state transitions on a 64-bit virtual register machine (`STATE = (R, PC, SP, FLAGS, MEM, META)`). It defines opcode semantics across arithmetic, logic, control flow, memory operations, and system interactions.
+- **Maturity:** **FROZEN CONTRACT & ACTIVE DUAL-PROFILE TARGET**.
+- **Execution Profiles:**
+  1. **Hosted Profile (T81VM):** C++ runtime implementing full VM interpretation, JIT exploration, FFI, dynamic Axion policy checks, and CanonFS virtual storage on conventional operating systems.
+  2. **Freestanding Profile (Axion OS / HAL):** Freestanding C++ evaluator (`ternaryos/hal/cpa004_evaluator.{hpp,cpp}`) operating directly on bare-metal AArch64 post-`ExitBootServices`, with zero host OS dependencies, static machine allocation (14,816 bytes machine storage, 128-byte stack frames), and streaming JSON serialization.
 
-### 2.2 T81VM Virtual Machine Core
+### 2.2 T81VM Virtual Machine Core (Hosted Execution Profile)
 - **Path:** `src/vm/vm.cpp`, `include/t81/vm/vm.hpp`
-- **Role:** Deterministic Core Profile (DCP) execution engine. Decodes TISC bytecode, manages VM memory frames, and enforces pre-dispatch policy checks (`eval_axion_call`).
+- **Role:** Deterministic Core Profile (DCP) execution engine on hosted platforms. Decodes TISC bytecode, manages VM memory frames, and enforces pre-dispatch policy checks (`eval_axion_call`).
 - **Maturity:** **BETA RUNTIME**. Specific deterministic call paths have reported tests; parity across all programs, features and platforms is not established by this index.
 
-### 2.3 Axion Policy Governance Engine
+### 2.3 Axion OS / TernaryOS HAL (Freestanding Execution Profile)
+- **Path:** `ternaryos/hal/cpa004_evaluator.cpp`, `ternaryos/hal/`
+- **Role:** Freestanding TISC execution evaluator embedded into bare-metal UEFI/QEMU boot flows. Evaluates admitted instruction subsets without host C runtime, memory allocators, STL, or dynamic operating system services.
+- **Maturity:** **VERIFIED BOUNDED FREESTANDING RUNTIME** (CPA-004/CPA-005: 25 matching state boundaries across hosted and guest runs).
+
+### 2.4 Axion Policy Governance Engine
 - **Path:** `src/axion/`, `include/t81/kernel/axion/`
 - **Role:** Pre-side-effect access control kernel. Evaluates authorization rules prior to state mutations, filesystem I/O, or external FFI dispatches.
 - **Maturity:** **ALPHA GOVERNANCE**. Fails closed; logs explicit rejection reasons in `vm->state().axion_log` on denial.
 
-### 2.4 CanonFS Content-Addressed Identity File System
+### 2.5 CanonFS Content-Addressed Identity File System
 - **Path:** `src/core/fs/`, `include/t81/fs/`
-- **Role:** Content-addressed VFS implementing cryptographic hash verification (CanonHash-81) and foreign file system interchange ([RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)).
+- **Role:** Content-addressed VFS implementing cryptographic hash verification (CanonHash-81), portable storage mapping (`storage_key_v1` and `snapshot_storage_key_v1` using `h1-<64_hex_digits>` paths), and foreign file system interchange ([RFC-00D1](../../spec/rfcs/RFC-00D1-canonfs-foreign-filesystem-interchange.md)).
 - **Maturity:** **BETA IDENTITY FS**. Provides immutable artifact storage, provenance manifests, and export/import contracts (`t81.canonfs-import.v1`, `t81.canonfs-export.v1`).
 
-### 2.5 T81Lang Tooling & Compiler
+### 2.6 T81Lang Tooling & Compiler
 - **Path:** `src/lang/`, `include/t81/lang/`
 - **Role:** High-level source lexer, parser, AST builder, IR generator, and TISC bytecode compiler.
 - **Maturity:** **BETA LANGUAGE**. Supports structured control flow, domain assertions, and TISC compilation.
 
-### 2.6 Deterministic Soft-Float Subsystem (RFC-0030)
+### 2.7 Deterministic Soft-Float Subsystem (RFC-0030)
 - **Path:** `src/core/isa/math/`, `vm/determinism/`
 - **Role:** Software implementation of transcendental math functions (sin, cos, exp, log, CORDIC) to eliminate platform-dependent `libm` floating-point rounding discrepancies.
 - **Maturity:** **FUNCTIONAL / DCP**. Essential for bit-exact cross-platform neural network trace replay.
 
-### 2.7 AI Model Intake & Tensor Bridge
+### 2.8 AI Model Intake & Tensor Bridge
 - **Path:** `src/tools/model/`, `tools/cli/ai/`
 - **Role:** Metadata bridge for inspecting GGUF and Safetensors model headers, inventorying weight tensors, and packing 2-bit tryte weights (`.t81w`).
 - **Maturity:** **METADATA BRIDGE**. Inspects tensor geometry and converts weights; CPU execution uses SWAR emulation.
@@ -120,6 +130,11 @@ Draft/informational [RFC-00D2](../../spec/rfcs/RFC-00D2-daios-target-architectur
 2. **Durable Witness Isolation:** As demonstrated in `experiments/durable_witness/`, an isolated SQLite WAL witness store remains vulnerable to snapshot rollback unless paired with external monotonic sequence counters or append-only HMAC receipt ledgers.
 3. **Draft Interchange Boundaries:** While RFC-00D1 v1 JSON seed contracts are stable enough for tooling, full foreign filesystem interop, symlink postures, and archive bundle exports remain draft surfaces.
 4. **Hardware Substrate Disconnect:** RTL in `rtl/core/t81_top.sv` uses 2-bit binary representations per trit; no physical 3-state semiconductor characterization data exists in the repository.
+5. **Preserved Normative TISC Discrepancies (Unresolved):**
+   - **Memory Operands:** `vm/vm.cpp` and `spec/tisc/opcode-semantics.md` use direct immediate addresses for Load and Store, whereas `spec/tisc-spec.md` specifies register-indirect addressing (`R[RS]`).
+   - **Branch Operands:** `vm/vm.cpp` and `spec/tisc/opcode-semantics.md` evaluate immediate branch targets and test register $R[B]$ for JZ/JNZ, whereas `spec/tisc-spec.md` specifies register-indirect targets and FLAGS-based zero testing.
+   - **TXor Operation:** Runtime evaluates balanced wrapped difference `((lhs - rhs + 1) % 3) - 1`, while historical prose labels TXor as "XOR / Sum".
+   - **Opcode Inventories:** Discrepancy between 174 capability-frozen opcodes, 209 registry entries, and 244 named C++ header opcodes (with undefined opcodes 221–223 and 247–255).
 
 ---
 
