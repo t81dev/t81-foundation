@@ -1,8 +1,8 @@
 # T81 Research Continuity — EVIDENCE_AND_FINDINGS
 
 **Document ID:** `docs/ai-context/EVIDENCE_AND_FINDINGS.md`
-**Version:** 1.1.0 · **Last Reviewed:** 2026-11-04
-**Source Snapshot:** `main` at `d836f7edb9b70608ef7476e82e98a0a89084d74b` (checked 2026-11-04; refresh before use)
+**Version:** 1.0.1 · **Last Reviewed:** 2026-10-29
+**Source Snapshot:** `main` at `f8ac77159ded2c4b93f4cc83abd48f6f35655468` (checked 2026-10-29; refresh before use)
 **Status:** Non-normative index to source-reported findings; no experiments independently rerun in this correction
 
 ---
@@ -25,10 +25,6 @@ This document indexes source-reported benchmark results, mathematical models, ne
 | **Integrated System Advantage Inv 08 (H07)** | System Architecture | **Tier A** | Corrective audit established: Computational (NOT SUPPORTED), Assurance (SUPPORTED), Compositional (INCONCLUSIVE), Ternary-Specific (NOT SUPPORTED). | **BOUNDED ASSURANCE SUPPORTED**. |
 | **Accountable Computation precursor (H07)** | Governance / evidence protocol | **Tier B/C here** | Local A/B/C arms reported 0/150, 90/150 and 0/150 unauthorized result creations respectively in the negative-case set; the full Wasmtime/OPA protocol was **not run**. | **INCONCLUSIVE** for custom-VM necessity and conventional parity; draft RFC-00D4 not certified. |
 | **AI Research Methodology (H08)** | Prompt-to-code provenance | **Tier C / E** | Session histories and provenance records exist; no controlled matched productivity study is cited. | **PROCESS DOCUMENTED; comparative benefit UNTESTED**. |
-| **EXP-H04-R03 Candidate A (H04)** | Matched Space/Access Microblock | **Tier A (Correctness)** | B729-µ5 matches T243 density ($L_{\text{B729-}\mu5}(m) = L_{\text{T243}}(m)$) with bounded 6-byte access; independent witness verified; PR #679 merged, PR #680 review accepted. | **CORRECTNESS ACCEPTED; Phase C performance measurement FROZEN & UNAUTHORIZED.** |
-| **BASE-01 Reference Baseline** | Cross-Platform Performance Baseline | **Tier A (Correctness)** | 126 files integrated from PRs #687–#693 without regression; 58 pass, 5 skip, 0 fail; verified correctness and Windows portability accepted in PR #700. | **INTEGRATION ACCEPTED; B1 dynamic benchmarking BLOCKED pending physical host.** |
-| **CanonFS Storage Portability** | Filesystem Key Separation | **Tier A (Correctness)** | PR #701 merged; public Base-81 IDs preserved; disk keys use `h1-<hex>` filenames; legacy raw-name migration refused; CTests passing. | **PORTABILITY DEMONSTRATED; follow-ups PR #702, #703 active.** |
-| **T81-SIA-001 System Audit** | End-to-End System Integration | **Tier A (Audit)** | Hosted stack fully integrated across Linux/macOS/Windows; freestanding Axion OS boots on UEFI bare metal/QEMU but does not execute TISC bytecode. | **PARTIALLY DEMONSTRATED; freestanding TISC VM integration is primary P0 target.** |
 
 ---
 
@@ -186,25 +182,3 @@ The provisional comprehensive assessment is a **secondary synthesis**, not a rep
 - **Current [#672](https://github.com/t81dev/t81-foundation/pull/672):** candidate polynomial design only; no validated result, no frozen protocol, no execution. The historical H04-R02 conditional `AT=1210 U < AB=1250 U` at r=1.60 remains **symbolic**, not a CPU speedup. Historical negative CPU packed-ternary comparisons remain workload-specific.
 
 **Evidence verdict:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED — NO MEASURED ADVANTAGE`. Never elevate draft hypotheses, review estimates, or documentation edits to measured evidence. Distinguish S (adaptive representation), A (algorithm selection), T (ternary-specific attribution).
-
----
-
-## 2026-11-04 empirical evidence and findings update
-
-### EXP-H04-R03 Candidate A (B729-µ5) Correctness Acceptance
-- **Source Head:** PR #679 merged at `d8e1376a7a77902cc26269c6e8d4991bcde117a7`; independent acceptance review PR #680 merged at `927972f854ca6389304918e7aa96316fa7b1f3c3`.
-- **Implementation & Verification:** `experiments/h04_r03_matched_codec/` implements the proposed 5-value microblock codec where $729^5 = 3^{30} < 2^{48}$ occupies exactly 6 bytes (matching T243's 5 values × 6 trits = 30 trits = 6 bytes), eliminating whole-block decode latency for small reads. Exhaustive pair coverage and independent derivation witness (`independent_witness_b729_u5.py`) passed cleanly.
-- **Protection Boundary:** The acceptance review disposition is **ACCEPT — CORRECTNESS AND PROTOCOL IMPLEMENTATION ONLY**. Phase C performance measurement is explicitly frozen (`measurement_engine.py` and `benchmark_harness.py --run-measurement` exit with error 1). Hardware enforcement feasibility audit (PR #684 at `cda9135d`) assigned `PROTOCOL FEASIBILITY UNRESOLVED — PHYSICAL EXECUTION BLOCKED`.
-
-### BASE-01 Integration & Verified Correctness Boundary
-- **Source Head:** PR #694 merged at `52921bd0`, review PR #695 merged at `4f9edb9c`, verified correctness PR #700 merged at `63d87633`.
-- **Findings:** Successfully integrated 126 files spanning Phase A manifest, Lane A runner, B1 foundation, and resource accounting without modifying existing repository files or triggering benchmark workflows. Restored 8 historical evidence blobs to exact byte-for-byte identity.
-- **Dynamic Measurement Gate:** Disposition is **BLOCKED FOR DYNAMIC HOST QUALIFICATION**. Virtualized Linux test execution (58 pass, 5 skip, 0 fail) verified software interfaces only; bare-metal physical host qualification and human authorization remain mandatory before any benchmark execution.
-
-### CanonFS Storage Portability & Invariants
-- **Source Head:** PR #701 merged at `9bbc4453ca136251448201cf9166c2bd167e1f67`. Follow-ups PR #702 (`origin/fix/canonfs-cli-list-portable-key`) and PR #703 (`origin/fix/canonfs-portable-snapshot-paths`) active.
-- **Findings:** Successfully resolved Windows and cross-platform filesystem character restrictions (`<>:"/\|?*`). Public references remain canonical Base-81 strings (`CanonHash-81`), while physical disk keys use lowercase hex filenames prefixed with `h1-` (`storage_key_v1`). CTests verify round-trip parsing, capability persistence, and explicit rejection of legacy unmigrated files.
-
-### T81-SIA-001 System Integration Audit Findings
-- **Source Pin:** Published across 8 reports under `docs/reports/audit/` at baseline commit `9bbc4453ca136251448201cf9166c2bd167e1f67`.
-- **Findings:** Demonstrated that T81 operates as an integrated, spec-governed software platform on Linux, macOS, and Windows. In contrast, the freestanding Axion OS kernel (`ternaryos/`) boots on bare metal / hypervisors via UEFI but executes only raw native AArch64 machine-code stubs (`T81X`) via SVC ABI. TISC bytecode execution in the freestanding environment is absent, establishing the primary P0 integration milestone.

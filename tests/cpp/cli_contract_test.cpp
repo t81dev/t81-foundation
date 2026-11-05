@@ -2064,15 +2064,15 @@ int main(int argc, char* argv[]) {
     T81_TEST_CHECK(rollback_hash_end != std::string::npos);
     const std::string rollback_hash = rollback_snapshot_result.stdout_text.substr(
         rollback_hash_start, rollback_hash_end - rollback_hash_start);
-    fs::create_symlink(outside_payload, rollback_root / "snapshots" / rollback_hash / "leak.txt",
-                       ignore_ec);
-    if (!ignore_ec) {
-      const auto rollback_result =
-          run_cli(t81_bin, {"canonfs", "rollback", "--canonfs-root", rollback_root.string(), "--to",
-                            rollback_hash, "--json"});
-      T81_TEST_CHECK(rollback_result.exit_code != 0);
-      T81_TEST_CHECK(contains(rollback_result.stdout_text, "symlinks are not permitted"));
-    }
+    const fs::path leak_symlink = rollback_root / "snapshots" /
+                                  t81::canonfs::snapshot_storage_key_v1(rollback_hash) / "leak.txt";
+    fs::create_symlink(outside_payload, leak_symlink, ignore_ec);
+    T81_TEST_CHECK(!ignore_ec);
+    const auto rollback_result =
+        run_cli(t81_bin, {"canonfs", "rollback", "--canonfs-root", rollback_root.string(), "--to",
+                          rollback_hash, "--json"});
+    T81_TEST_CHECK(rollback_result.exit_code != 0);
+    T81_TEST_CHECK(contains(rollback_result.stdout_text, "symlinks are not permitted"));
     ignore_ec.clear();
 #endif
     fs::remove(payload, ignore_ec);
