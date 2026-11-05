@@ -270,3 +270,38 @@ The CPA-004 experimental campaign established that:
 1. Treat bounded dual-profile TISC execution as an established foundation; build on it rather than re-litigating it.
 2. Advance the resolution of the four normative ISA discrepancies via formal specification drafts and maintainer review.
 3. Advance Track R comparative hypotheses (e.g., H04-R03 Candidate A Phase C gates, BASE-01 physical Linux prerequisites) without conflating software emulation correctness with physical hardware advantage.
+
+---
+
+## 2026-11-05 CURRENT HANDOFF — CPA-006 complete; ISA-001 awaiting maintainer decision
+
+**This is the newest operational handoff.** It supersedes earlier *current-status and next-action* sections, while preserving their historical reports and source pins.
+
+### Established and bounded
+- T81's implemented historical TISC profile has a working hosted T81VM and separate freestanding AArch64 QEMU evaluator after `ExitBootServices`. CPA-004/005: canonical 351-byte program, 24 executed instructions, 25 matching observation boundaries.
+- CPA-006: **PASS — BOUNDED CONFORMANCE** for 19/19 frozen-oracle cases; 57 hosted runs and 57 fresh QEMU boots; 1,190 validated state records; Halt, runtime trap, admission rejection and budget exhaustion. See [committed acceptance report](https://github.com/t81dev/t81-foundation/blob/514fa17cf5629a7aea9ebb1b035f01f3ef7687f3/experiments/cpa006/README.md). Do not claim full ISA conformance, independent-person replication, a complete OS or ternary-vs-binary performance advantage.
+- ISA-001: read-only source/lineage and normative-vs-implemented audit, **READY FOR MAINTAINER DECISION**. No implementation changes or new conformance executions. Its recommended normative interpretation is *not approved*.
+
+### Pinned GitHub integration snapshot (2026-11-05)
+| Surface | Observed identity and status |
+|---|---|
+| `main` | `7afa4f1a424be6c65fab28f8e5bcf4fddc3ef762` (PR #711 continuity refresh merged) |
+| PR #707 | Open, independent opcode matrix test repair; head `55223cbd3ee29b5391e151197fe6eee1b8889452` |
+| PR #709 | Open draft CPA-004 evaluator; head `b803bf916a1b1e44129f3a07abf96fa6103c51fc` |
+| CPA-005 integration snapshot | `f7e089590020508077607580da271b6570fa8f60`, tree `70734fd5bcfe06978cea13b4d2d595d4dda71a12` |
+| PR #710 | Merged into **experimental integration branch, not main**; merged result `514fa17cf5629a7aea9ebb1b035f01f3ef7687f3`, tree `f8f01f58901bfd9a57446a97df98bb8d481da022` |
+
+### Outstanding semantic decisions
+1. Direct-address implemented memory vs normative register-indirect memory.
+2. Immediate target / register-tested JZ/JNZ vs normative register-target / FLAGS branch semantics; LLVM/MLIR lowering diverges as well.
+3. Scalar TXor implemented wrapped difference vs ambiguous documentary 'XOR / Sum'.
+4. Core freeze 0–173, registry/header extension assignments and TVecSub/SWAR collisions.
+**No recommendation is accepted by implication.** Preserve historical CPA binaries and evidence; do not reinterpret raw 13-byte records without artifact-bound version selection.
+
+### Primary next action — T81-ISA-002 (documentation and maintainer review only)
+Draft a **versioned authoritative TISC state-transition RFC** with exact operands, tags, FLAGS, PC, traps, side-effect ordering, opcode manifests, profile selection and migration consequences. Present decision points and obtain explicit maintainer approval. Do not change production VM, freestanding evaluator, compiler lowering, tests, frozen CPA artifacts, or branches as part of the RFC drafting task.
+
+**After approval only:** authorize discriminating successor conformance tests and one cumulative main-integration candidate (CPA-004 + CPA-006; handle #707 separately). Then consider a separately preregistered H02 signed-rounding comparison with optimized binary and representation-conversion controls.
+
+### Handoff rules
+Do not restart feasibility experiments, silently resolve the spec, claim merged-to-main status from PR #710, overwrite negative research, or confuse verified content hashes with independently replicated execution. Refresh GitHub PR tips and main before any subsequent action.
