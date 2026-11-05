@@ -838,18 +838,6 @@
       "bytes": 75,
       "sha256": "613ed7bea86c38d9abd6a2cd196a87ec7ea47c74d67bd25705cf1c20973cec85"
     },
-    "evidence/negative/debug.dSYM/Contents/Info.plist": {
-      "bytes": 634,
-      "sha256": "41f9a9ab9bf00403cc534f59ff1cb401e7b528759b6d96249804b49755ce4d65"
-    },
-    "evidence/negative/debug.dSYM/Contents/Resources/DWARF/debug": {
-      "bytes": 86876,
-      "sha256": "a977c756751c6b7c286326ed2d221fab9997b157ce39ba3d3165f745c7d36ab3"
-    },
-    "evidence/negative/debug.dSYM/Contents/Resources/Relocations/aarch64/debug.yml": {
-      "bytes": 152,
-      "sha256": "4a7c8171c0d18e7495ed04e9870ad4c60e65ab0865c58872dfa51ba095f68a29"
-    },
     "evidence/negative/intentional-wrong-expectation.stderr": {
       "bytes": 66,
       "sha256": "5fe337768a3952fc8af031fba44e2cc20444e73ae1245dd90e76d936021ab0bb"
@@ -925,6 +913,10 @@
     "evidence/negative/sanitized-run.stdout": {
       "bytes": 75,
       "sha256": "613ed7bea86c38d9abd6a2cd196a87ec7ea47c74d67bd25705cf1c20973cec85"
+    },
+    "evidence/packaging-notes.json": {
+      "bytes": 373,
+      "sha256": "5b8cd25e7ca6ffd17c2ce4192a14b3196a3f41a4648b86c9b02c800b9348d0cc"
     },
     "evidence/preexecution-draft-corrections.json": {
       "bytes": 434,
@@ -3792,5 +3784,5 @@
       "sha256": "556d0ef782c8442111459c7fd6c903eff9a18f60cbc6be13b016a5d0410973f7"
     }
   },
-  "limitation": "Content identity only; excludes this manifest and Python caches."
+  "limitation": "Content identity only; excludes this manifest, generated debug symbols and Python caches."
 }
