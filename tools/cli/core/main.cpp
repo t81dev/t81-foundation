@@ -5052,8 +5052,6 @@ int run_axion(const Args& args) {
       const auto parsed = t81::canonfs::parse_storage_key_v1(entry.path().filename().string());
       if (parsed) {
         hashes.push_back(parsed->h.to_string());
-      } else {
-        hashes.push_back(entry.path().filename().string());
       }
     }
     std::sort(hashes.begin(), hashes.end(), std::greater<std::string>{});
