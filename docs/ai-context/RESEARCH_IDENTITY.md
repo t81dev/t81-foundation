@@ -183,3 +183,13 @@ Crucially, **execution correctness must be distinguished from comparative comput
 1. Proving that the TISC interpreter and freestanding evaluator produce bit-exact identical register, memory, flag, and system-register traces proves that the dual-profile architecture functions.
 2. It does **not** prove that ternary arithmetic, ternary memory, or ternary execution outperforms, uses less energy than, or is denser than conventional binary computers.
 3. Comparative ternary advantage remains an open scientific question governed by H01–H08, requiring matched, rigorous binary controls.
+
+---
+
+## 2026-11-05 post-CPA-006 scientific identity and open question
+
+CPA-006 extends the previously demonstrated bounded TISC cross-profile result from one canonical program to **19 independently frozen conformance cases** with 57 hosted executions, 57 fresh freestanding AArch64 QEMU boots and 1,190 validated state records, as reported in the [CPA-006 acceptance record](https://github.com/t81dev/t81-foundation/blob/514fa17cf5629a7aea9ebb1b035f01f3ef7687f3/experiments/cpa006/README.md). This is an engineering conformance result for the *implemented historical profile*, not evidence of universal ISA correctness or ternary advantage. It does not change canonical H01–H08 definitions or their evidence tiers.
+
+**Program identity:** T81 is the experimental computational architecture; TISC is the computational instruction contract; hosted T81VM and freestanding Axion/TernaryOS are distinct execution profiles; DAIOS remains a separate experimental direction. The freestanding CPA evaluator is not a completed general-purpose operating system or native three-state processor.
+
+**Next scientific discriminator:** Following formal ISA reconciliation, a separately authorized H02 signed-rounding study may compare balanced-ternary digit truncation/correction for division by `3^k` with optimized conventional integer division at identical exact-rounding semantics. Require an exact-integer oracle, matched value domain, an optimized binary comparator, a binary encoding of the same ternary digits as an attribution control, conversion/storage costs, fixed workload, and a preregistered falsifier. This is a proposal, not an executed experiment; earlier Hanoi arithmetic failures and negative binary-host performance findings remain intact.
