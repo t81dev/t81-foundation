@@ -91,6 +91,10 @@ extern void qemu_cpp_bridge_entry(void);
 extern void cpa004_run(void (*emit)(const char*));
 #endif
 
+#ifdef T81_CPA006_EXPERIMENT
+extern void cpa006_run(void (*emit)(const char*));
+#endif
+
 // ── Bare-metal kernel entry point ─────────────────────────────────────────────
 //
 // Purpose: confirm that ExitBootServices succeeded and that EL1 PL011 MMIO
@@ -114,6 +118,15 @@ void qemu_bare_kernel_entry(void) {
   // This entry is reached only after a successful ExitBootServices call.
   // Keep the opt-in experiment isolated from shell/device/scheduler bring-up.
   cpa004_run(bare_pl011_puts);
+  for (;;) {
+#if defined(__aarch64__) && !defined(__APPLE__)
+    __asm__ volatile("wfi" ::: "memory");
+#endif
+  }
+#endif
+
+#ifdef T81_CPA006_EXPERIMENT
+  cpa006_run(bare_pl011_puts);
   for (;;) {
 #if defined(__aarch64__) && !defined(__APPLE__)
     __asm__ volatile("wfi" ::: "memory");

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/mutated-C01.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "native_accepts_valid_modified_program": true,
+  "original_identity_gate_rejects": true,
+  "identity_error": "actual input identity",
+  "oracle_comparison_rejects": true,
+  "state_error": "mismatch: sequence 0, sequence 1, sequence 2, sequence 3, sequence 4, sequence 5, sequence 6, sequence 7, sequence 8, sequence 9, sequence 10",
+  "scope": "Guest sealed-input byte check rejects the same modified input; native production validity is a separate boundary."
+}

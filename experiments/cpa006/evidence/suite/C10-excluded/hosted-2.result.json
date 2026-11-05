@@ -1,0 +1,20 @@
+{
+  "id": "C10-excluded",
+  "profile": "hosted",
+  "run": 2,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C10-excluded.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "d691cc1555f1236e56b3098aef0384376f1ee9a47699759485214a53ed15679b",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "admission_rejection",
+    "reason": "unsupported_profile",
+    "steps": 0
+  },
+  "observations": 0
+}

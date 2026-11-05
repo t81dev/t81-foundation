@@ -1,0 +1,10 @@
+{
+  "command": [
+    "/private/tmp/t81-h04-enforcement-venv/bin/python",
+    "-B",
+    "experiments/cpa006/verify.py",
+    "--corrupt-expected"
+  ],
+  "exit_code": 1,
+  "expected_nonzero": true
+}

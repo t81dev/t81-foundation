@@ -1,0 +1,5 @@
+{
+  "exit_code": 1,
+  "expected_nonzero": true,
+  "reason": "Existing raw suite evidence preserved before any execution or writes"
+}

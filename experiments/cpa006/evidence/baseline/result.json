@@ -1,0 +1,9 @@
+{
+  "disposition": "PASS",
+  "retained_cpa005_manifest": true,
+  "fresh_hosted": 6,
+  "fresh_guests": 6,
+  "build_policy": "Reused exact hash-verified CPA005 binaries for baseline replay; fresh processes/guests. CPA006 builds will be separate.",
+  "source_tree": "70734fd5bcfe06978cea13b4d2d595d4dda71a12",
+  "default_off": "Prior raw isolation evidence and every CPA005 packaged hash verified; original build/code sections unchanged."
+}

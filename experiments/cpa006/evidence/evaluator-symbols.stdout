@@ -1,0 +1,244 @@
+
+/private/tmp/cpa006-build/ternaryos/qemu_slice6/BOOTAA64_cpa006.obj:	file format coff-arm64
+
+SYMBOL TABLE:
+[ 0](sec  1)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .text
+AUX scnlen 0x14b8 nreloc 221 nlnno 0 checksum 0x94e4929c assoc 1 comdat 0
+[ 2](sec  2)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .data
+AUX scnlen 0x0 nreloc 0 nlnno 0 checksum 0x0 assoc 2 comdat 0
+[ 4](sec  3)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .bss
+AUX scnlen 0x3908 nreloc 0 nlnno 0 checksum 0x0 assoc 3 comdat 0
+[ 6](sec  4)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x8 nreloc 0 nlnno 0 checksum 0xabcba2bc assoc 4 comdat 2
+[ 8](sec  4)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 __real@0000010200000000
+[ 9](sec  5)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xd8 nreloc 4 nlnno 0 checksum 0x8f609320 assoc 5 comdat 0
+[11](sec  6)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x8 nreloc 0 nlnno 0 checksum 0xa0835f52 assoc 6 comdat 2
+[13](sec  6)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 __real@0000000038333531
+[14](sec  7)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x8 nreloc 0 nlnno 0 checksum 0x6a026da4 assoc 7 comdat 2
+[16](sec  7)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_07PANPENDC@running?$AA@
+[17](sec  8)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xc nreloc 0 nlnno 0 checksum 0xdefe364 assoc 8 comdat 2
+[19](sec  8)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0M@IJMFNKPE@DecodeFault?$AA@
+[20](sec  9)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xc nreloc 0 nlnno 0 checksum 0x39b85218 assoc 9 comdat 2
+[22](sec  9)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0M@LNJCGLII@BoundsFault?$AA@
+[23](sec 10)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xe nreloc 0 nlnno 0 checksum 0x254dc1aa assoc 10 comdat 2
+[25](sec 10)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0O@LAJEHJC@DivisionFault?$AA@
+[26](sec 11)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x10 nreloc 0 nlnno 0 checksum 0x2a01413f assoc 11 comdat 2
+[28](sec 11)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BA@DJEFPFJF@TrapInstruction?$AA@
+[29](sec 12)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0xab4ef6f9 assoc 12 comdat 2
+[31](sec 12)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04JCJDPOBL@trap?$AA@
+[32](sec 13)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x7 nreloc 0 nlnno 0 checksum 0x8ce3d492 assoc 13 comdat 2
+[34](sec 13)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_06OOHAPEBD@halted?$AA@
+[35](sec 14)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x44 nreloc 0 nlnno 0 checksum 0xe0e5ad assoc 14 comdat 2
+[37](sec 14)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0EE@OPMIHEPP@?$FLcpa006?$FN?5live?5post?9ExitBootServi@
+[38](sec 15)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x3 nreloc 0 nlnno 0 checksum 0xf2377bd9 assoc 15 comdat 2
+[40](sec 15)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_02PCIJFNDE@?$AN?6?$AA@
+[41](sec 16)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xa nreloc 0 nlnno 0 checksum 0xfc52509a assoc 16 comdat 2
+[43](sec 16)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_09OACHMHBD@malformed?$AA@
+[44](sec 17)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x12 nreloc 0 nlnno 0 checksum 0xd580feae assoc 17 comdat 2
+[46](sec 17)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BC@ENGEMOBM@artifact_mismatch?$AA@
+[47](sec 18)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x10 nreloc 0 nlnno 0 checksum 0x9e402ae1 assoc 18 comdat 2
+[49](sec 18)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BA@INAEJOEL@outside_profile?$AA@
+[50](sec 19)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x14 nreloc 0 nlnno 0 checksum 0x25a0277e assoc 19 comdat 2
+[52](sec 19)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BE@NFIKEDAM@unsupported_profile?$AA@
+[53](sec 20)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xe nreloc 0 nlnno 0 checksum 0xf95453ff assoc 20 comdat 2
+[55](sec 20)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0O@NHBANFMH@CPA006_DONE?$AN?6?$AA@
+[56](sec 21)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0xe1870d58 assoc 21 comdat 2
+[58](sec 21)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04NIFKAFLK@Halt?$AA@
+[59](sec 22)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x8 nreloc 0 nlnno 0 checksum 0xda96bcf2 assoc 22 comdat 2
+[61](sec 22)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_07EAELJMGE@LoadImm?$AA@
+[62](sec 23)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0xb6c25da9 assoc 23 comdat 2
+[64](sec 23)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04IPBPFFEL@Load?$AA@
+[65](sec 24)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x6 nreloc 0 nlnno 0 checksum 0xaaf2f8df assoc 24 comdat 2
+[67](sec 24)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_05OEMPKGID@Store?$AA@
+[68](sec 25)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0x6de7f207 assoc 25 comdat 2
+[70](sec 25)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03LDFMNCOE@Add?$AA@
+[71](sec 26)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0xf20c0ef0 assoc 26 comdat 2
+[73](sec 26)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03CMLHCOBD@Mul?$AA@
+[74](sec 27)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0x2a15e1b5 assoc 27 comdat 2
+[76](sec 27)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03PEKOMBFG@Div?$AA@
+[77](sec 28)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0x2b64a25e assoc 28 comdat 2
+[79](sec 28)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03PFNPICLN@Mod?$AA@
+[80](sec 29)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xb nreloc 0 nlnno 0 checksum 0xe18e3f34 assoc 29 comdat 2
+[82](sec 29)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0L@HFPGHBCH@JumpIfZero?$AA@
+[83](sec 30)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0xe691d656 assoc 30 comdat 2
+[85](sec 30)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03DICKPGLF@Cmp?$AA@
+[86](sec 31)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0xbe8076ea assoc 31 comdat 2
+[88](sec 31)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04IHFNHOAI@TNot?$AA@
+[89](sec 32)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0xade31eda assoc 32 comdat 2
+[91](sec 32)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04JEDOBGDI@TAnd?$AA@
+[92](sec 33)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0x22a0497c assoc 33 comdat 2
+[94](sec 33)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03PMBLGJJP@TOr?$AA@
+[95](sec 34)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0x9da8d92f assoc 34 comdat 2
+[97](sec 34)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04KEHFNBMN@TXor?$AA@
+[98](sec 35)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xe nreloc 0 nlnno 0 checksum 0x2b4db1a5 assoc 35 comdat 2
+[100](sec 35)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0O@FAJDHJN@JumpIfNotZero?$AA@
+[101](sec 36)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0x6a8fd9fd assoc 36 comdat 2
+[103](sec 36)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04FDFCNBBP@Trap?$AA@
+[104](sec 37)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xf nreloc 0 nlnno 0 checksum 0xde391e92 assoc 37 comdat 2
+[106](sec 37)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0P@PGBFOCIK@JumpIfNegative?$AA@
+[107](sec 38)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4c nreloc 0 nlnno 0 checksum 0xf0136ae assoc 38 comdat 2
+[109](sec 38)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0EM@BAMGGIMI@CPA006_OBSERVATION?$DN?$HL?$CCschema?$CC?3?$CCt8@
+[110](sec 39)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x41 nreloc 0 nlnno 0 checksum 0xbf0e65b assoc 39 comdat 2
+[112](sec 39)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0EB@OJMCOOND@c997205ed66088dc4a68bc0e7f935e7b@
+[113](sec 40)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xe nreloc 0 nlnno 0 checksum 0x85d8f38b assoc 40 comdat 2
+[115](sec 40)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0O@KLJMHFLD@?$CC?0?$CCsequence?$CC?3?$AA@
+[116](sec 41)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xe nreloc 0 nlnno 0 checksum 0xfb008087 assoc 41 comdat 2
+[118](sec 41)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0O@NFEEAGLP@?0?$CCpc_before?$CC?3?$AA@
+[119](sec 42)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0xf2668f6d assoc 42 comdat 2
+[121](sec 42)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04MLLLIHIP@null?$AA@
+[122](sec 43)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x10 nreloc 0 nlnno 0 checksum 0xa42401de assoc 43 comdat 2
+[124](sec 43)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BA@LHGALFHE@?0?$CCinstruction?$CC?3?$AA@
+[125](sec 44)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xb nreloc 0 nlnno 0 checksum 0x84f7a803 assoc 44 comdat 2
+[127](sec 44)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0L@BAIPOGBA@?$HL?$CCopcode?$CC?3?$AA@
+[128](sec 45)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xa nreloc 0 nlnno 0 checksum 0x700b19c9 assoc 45 comdat 2
+[130](sec 45)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_09GMHOIOEA@?0?$CCname?$CC?3?$CC?$AA@
+[131](sec 46)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x7 nreloc 0 nlnno 0 checksum 0xeb74d0d assoc 46 comdat 2
+[133](sec 46)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_06GMCEGNIM@?$CC?0?$CCa?$CC?3?$AA@
+[134](sec 47)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x6 nreloc 0 nlnno 0 checksum 0x4420ca56 assoc 47 comdat 2
+[136](sec 47)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_05KBNJEAK@?0?$CCb?$CC?3?$AA@
+[137](sec 48)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x6 nreloc 0 nlnno 0 checksum 0xfc9cad33 assoc 48 comdat 2
+[139](sec 48)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_05LCKBPDGP@?0?$CCc?$CC?3?$AA@
+[140](sec 49)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x2 nreloc 0 nlnno 0 checksum 0x9a9107bb assoc 49 comdat 2
+[142](sec 49)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_01CELHOKLL@?$HN?$AA@
+[143](sec 50)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xc nreloc 0 nlnno 0 checksum 0x16741f8e assoc 50 comdat 2
+[145](sec 50)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0M@JCFOCGBO@?0?$CCstatus?$CC?3?$CC?$AA@
+[146](sec 51)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xa nreloc 0 nlnno 0 checksum 0x1bfe2d15 assoc 51 comdat 2
+[148](sec 51)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_09HILLKJM@?$CC?0?$CCtrap?$CC?3?$AA@
+[149](sec 52)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x2 nreloc 0 nlnno 0 checksum 0xa7b24620 assoc 52 comdat 2
+[151](sec 52)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_01BJJEKLCA@?$CC?$AA@
+[152](sec 53)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x10 nreloc 0 nlnno 0 checksum 0x64ff58bd assoc 53 comdat 2
+[154](sec 53)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BA@HHLLOMBH@?0?$CCstate?$CC?3?$HL?$CCpc?$CC?3?$AA@
+[155](sec 54)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x7 nreloc 0 nlnno 0 checksum 0x895481a1 assoc 54 comdat 2
+[157](sec 54)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_06OLMHKBCA@?0?$CCsp?$CC?3?$AA@
+[158](sec 55)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xb nreloc 0 nlnno 0 checksum 0x1b87f0bc assoc 55 comdat 2
+[160](sec 55)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0L@IPPPLOKP@?0?$CChalted?$CC?3?$AA@
+[161](sec 56)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x12 nreloc 0 nlnno 0 checksum 0x612f9f7b assoc 56 comdat 2
+[163](sec 56)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BC@PJMLKPMJ@?0?$CCflags?$CC?3?$HL?$CCzero?$CC?3?$AA@
+[164](sec 57)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xd nreloc 0 nlnno 0 checksum 0x9f377d28 assoc 57 comdat 2
+[166](sec 57)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0N@GPLMMEFF@?0?$CCnegative?$CC?3?$AA@
+[167](sec 58)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xd nreloc 0 nlnno 0 checksum 0x565c0ae4 assoc 58 comdat 2
+[169](sec 58)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0N@KGNHLDJJ@?0?$CCpositive?$CC?3?$AA@
+[170](sec 59)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x16 nreloc 0 nlnno 0 checksum 0x108afcee assoc 59 comdat 2
+[172](sec 59)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BG@EHFMLCPB@?$HN?0?$CCregister_values?$CC?3?$FL?$AA@
+[173](sec 60)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x2 nreloc 0 nlnno 0 checksum 0x39316bae assoc 60 comdat 2
+[175](sec 60)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_01IHBHIGKO@?0?$AA@
+[176](sec 61)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x14 nreloc 0 nlnno 0 checksum 0x7fe239f8 assoc 61 comdat 2
+[178](sec 61)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BE@IPMIFNIK@?$FN?0?$CCregister_tags?$CC?3?$FL?$AA@
+[179](sec 62)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x1a nreloc 0 nlnno 0 checksum 0x67faf2bb assoc 62 comdat 2
+[181](sec 62)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BK@DHOJLDHG@?$FN?0?$CCmemory?$CC?3?$HL?$CCword_count?$CC?3?$AA@
+[182](sec 63)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x33 nreloc 0 nlnno 0 checksum 0xfcdb885a assoc 63 comdat 2
+[184](sec 63)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0DD@CLDGCCDH@?0?$CCdefault_value?$CC?3?$CC0?$CC?0?$CCdefault_ta@
+[185](sec 64)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xc nreloc 0 nlnno 0 checksum 0x1a75843a assoc 64 comdat 2
+[187](sec 64)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0M@JOFPLNKK@?$HL?$CCaddress?$CC?3?$AA@
+[188](sec 65)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xa nreloc 0 nlnno 0 checksum 0xe2047d65 assoc 65 comdat 2
+[190](sec 65)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_09POHBOKOM@?0?$CCvalue?$CC?3?$AA@
+[191](sec 66)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x8 nreloc 0 nlnno 0 checksum 0x7a8bcdcb assoc 66 comdat 2
+[193](sec 66)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_07OAFGONFN@?0?$CCtag?$CC?3?$AA@
+[194](sec 67)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x7 nreloc 0 nlnno 0 checksum 0x9f9eb18e assoc 67 comdat 2
+[196](sec 67)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_06PNANJBAP@?$FN?$HN?$HN?$HN?$AN?6?$AA@
+[197](sec 68)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x5 nreloc 0 nlnno 0 checksum 0x87d41b41 assoc 68 comdat 2
+[199](sec 68)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_04LOAJBDKD@true?$AA@
+[200](sec 69)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x6 nreloc 0 nlnno 0 checksum 0x4532b3ea assoc 69 comdat 2
+[202](sec 69)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_05LAPONLG@false?$AA@
+[203](sec 70)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x22 nreloc 0 nlnno 0 checksum 0x9b77069d assoc 70 comdat 2
+[205](sec 70)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0CC@CFPJJFEI@CPA006_RESULT?$DN?$HL?$CCclassification?$CC?3@
+[206](sec 71)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xd nreloc 0 nlnno 0 checksum 0xaf770afb assoc 71 comdat 2
+[208](sec 71)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0N@FPPMLDIG@runtime_trap?$AA@
+[209](sec 72)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x12 nreloc 0 nlnno 0 checksum 0x7ab31371 assoc 72 comdat 2
+[211](sec 72)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BC@OCFHCDMD@instruction_limit?$AA@
+[212](sec 73)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x14 nreloc 0 nlnno 0 checksum 0xe12d11c assoc 73 comdat 2
+[214](sec 73)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0BE@PODILFGO@admission_rejection?$AA@
+[215](sec 74)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xc nreloc 0 nlnno 0 checksum 0xbf6da73 assoc 74 comdat 2
+[217](sec 74)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_0M@IPNMODOD@?$CC?0?$CCreason?$CC?3?$AA@
+[218](sec 75)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0xa nreloc 0 nlnno 0 checksum 0x59f1693 assoc 75 comdat 2
+[220](sec 75)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_09BJOKIBBK@?0?$CCsteps?$CC?3?$AA@
+[221](sec 76)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .rdata
+AUX scnlen 0x4 nreloc 0 nlnno 0 checksum 0x6b620398 assoc 76 comdat 2
+[223](sec 76)(fl 0x00)(ty   0)(scl   2) (nx 0) 0x00000000 ??_C@_03LFNJCDHL@?$HN?$AN?6?$AA@
+[224](sec 77)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .debug$S
+AUX scnlen 0x50 nreloc 0 nlnno 0 checksum 0xf305fe2a assoc 77 comdat 0
+[226](sec 78)(fl 0x00)(ty   0)(scl   3) (nx 1) 0x00000000 .llvm_addrsig
+AUX scnlen 0x2 nreloc 0 nlnno 0 checksum 0x663855bd assoc 78 comdat 0
+[228](sec -1)(fl 0x00)(ty   0)(scl   3) (nx 0) 0x00000000 @feat.00
+[229](sec  1)(fl 0x00)(ty  20)(scl   2) (nx 0) 0x00000000 cpa006_evaluate
+[230](sec  1)(fl 0x00)(ty  20)(scl   3) (nx 0) 0x000007f0 ?name@?A0x1F11423F@@YAPEBDE@Z
+[231](sec  5)(fl 0x00)(ty   0)(scl   3) (nx 0) 0x00000090 kCpa006Program
+[232](sec  3)(fl 0x00)(ty   0)(scl   3) (nx 0) 0x00000000 ?state@?A0x1F11423F@@3UMachine@?A0x1F11423F@@A
+[233](sec  1)(fl 0x00)(ty  20)(scl   3) (nx 0) 0x000008e8 ?lineage@?A0x1F11423F@@YA_JPEBE@Z
+[234](sec  1)(fl 0x00)(ty  20)(scl   3) (nx 0) 0x00000a7c ?sync@?A0x1F11423F@@YAX_J@Z
+[235](sec  1)(fl 0x00)(ty  20)(scl   3) (nx 0) 0x00000b54 ?observation@?A0x1F11423F@@YAXP6AXPEBD@ZHPEBUInstruction@?A0x1F11423F@@00@Z
+[236](sec  3)(fl 0x00)(ty   0)(scl   3) (nx 0) 0x00003900 ?last_trap@?A0x1F11423F@@3PEBDEB
+[237](sec  1)(fl 0x00)(ty  20)(scl   2) (nx 0) 0x000012c8 cpa006_run
+[238](sec -2)(fl 0x00)(ty   0)(scl  67) (nx 2) 0x00000000 .file
+AUX cpa006_evaluator.cpp

@@ -1,0 +1,18 @@
+PASS frozen regeneration; no evaluator output used
+{
+  "schema": "t81.cpa006.conformance.v1",
+  "disposition": "PASS \u2014 BOUNDED CONFORMANCE",
+  "hosted_runs": 57,
+  "fresh_guests": 57,
+  "schema_records": 1190,
+  "finite_profile": true,
+  "unsupported": [
+    "all other opcodes",
+    "registers 81..242",
+    "non-Int tags and arbitrary precision",
+    "int64 overflow and INT64_MIN/-1",
+    "arbitrary programs and concurrency",
+    "untested malformed metadata or branch targets",
+    "Linux/Windows hosts and physical hardware"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "id": "C10-truncated",
+  "profile": "hosted",
+  "run": 2,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C10-truncated.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "7a6ce82b5ddb4be2036f160844d89c3f0aa364fed6683b92956e647ade0df4fd",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "admission_rejection",
+    "reason": "malformed",
+    "steps": 0
+  },
+  "observations": 0
+}

@@ -1,0 +1,99 @@
+{
+  "disposition": "PASS",
+  "program_sha256": "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b",
+  "contract_sha256": "851650fd5136fe6c8f67b924f7721f73beec54e6078b9e841261bc277170705d",
+  "independently_derived_boundaries": 25,
+  "schema_records": 325,
+  "comparisons": [
+    {
+      "profile": "frozen",
+      "run": 1,
+      "kind": "hosted",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "frozen",
+      "run": 1,
+      "kind": "guest",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "frozen",
+      "run": 2,
+      "kind": "hosted",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "frozen",
+      "run": 2,
+      "kind": "guest",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "frozen",
+      "run": 3,
+      "kind": "hosted",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "frozen",
+      "run": 3,
+      "kind": "guest",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "integrated",
+      "run": 1,
+      "kind": "hosted",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "integrated",
+      "run": 1,
+      "kind": "guest",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "integrated",
+      "run": 2,
+      "kind": "hosted",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "integrated",
+      "run": 2,
+      "kind": "guest",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "integrated",
+      "run": 3,
+      "kind": "hosted",
+      "boundaries": 25,
+      "equal": true
+    },
+    {
+      "profile": "integrated",
+      "run": 3,
+      "kind": "guest",
+      "boundaries": 25,
+      "equal": true
+    }
+  ],
+  "retained_manifest_entries": 71,
+  "cpa003_packet_files": 57,
+  "cpa003_frozen_files": 8,
+  "full_fields": "All 81 payloads/tags, all 1563 logical memory payloads/tags, flags, PC, SP, halt, instruction, status, trap, sequence, system registers",
+  "comparison_mutation_detected": true,
+  "independence": "Fresh execution and new mathematical derivation by Codex; no independent-person scientific replication claim."
+}

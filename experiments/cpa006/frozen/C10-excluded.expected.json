@@ -1,0 +1,8 @@
+{
+  "terminal": {
+    "classification": "admission_rejection",
+    "reason": "unsupported_profile",
+    "steps": 0
+  },
+  "observations": []
+}

@@ -1,0 +1,40 @@
+{
+  "phase1": "PASS",
+  "program_sha256": "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b",
+  "records": 27,
+  "executed": 24,
+  "final_pc": 27,
+  "sp": 283,
+  "sentinel_pcs_executed": [],
+  "all_initial_and_post_states_equal": true,
+  "system_formulas_verified": true,
+  "fresh_hosted": [
+    {
+      "command": [
+        "/private/tmp/cpa005-build-integrated/hosted_observer",
+        "/private/tmp/t81-cpa005/experiments/cpa004/program.raw13"
+      ],
+      "exit_code": 0,
+      "raw_sha256": "e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a"
+    },
+    {
+      "command": [
+        "/private/tmp/cpa005-build-integrated/hosted_observer",
+        "/private/tmp/t81-cpa005/experiments/cpa004/program.raw13"
+      ],
+      "exit_code": 0,
+      "raw_sha256": "e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a"
+    },
+    {
+      "command": [
+        "/private/tmp/cpa005-build-integrated/hosted_observer",
+        "/private/tmp/t81-cpa005/experiments/cpa004/program.raw13"
+      ],
+      "exit_code": 0,
+      "raw_sha256": "e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a"
+    }
+  ],
+  "admitted_profile": "Pinned hosted raw13 implementation semantics; direct Load/Store addresses, immediate branch targets, register-tested JZ/JNZ and wrapped-difference TXor.",
+  "discrepancy_boundary": "User CPA-004 instruction explicitly tests implemented hosted semantics while preserving normative conflicts. This is a scoped experimental-profile decision, not normative ISA acceptance or specification repair.",
+  "author_relationship": "Same Codex agent and prior context; separate derivation is not independent-person scientific review."
+}

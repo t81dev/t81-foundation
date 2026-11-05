@@ -3,6 +3,11 @@ message(STATUS "[t81] T81_ENABLE_TERNARYOS=ON — building TernaryOS HAL, shell,
 option(T81_BUILD_CPA004_EXPERIMENT
   "Run the bounded CPA-004 raw13 experiment after ExitBootServices (no shell)" OFF)
 
+option(T81_BUILD_CPA006_EXPERIMENT "Run the sealed CPA006 conformance suite case" OFF)
+if(T81_BUILD_CPA006_EXPERIMENT AND T81_BUILD_CPA004_EXPERIMENT)
+  message(FATAL_ERROR "Select one sealed CPA experiment")
+endif()
+
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
@@ -452,6 +457,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
       target_include_directories(t81_cpa004_admission_test PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/hal ${CMAKE_BINARY_DIR}/ternaryos/generated)
       add_test(NAME t81_cpa004_admission_test COMMAND t81_cpa004_admission_test)
+    endif()
+
+    if(T81_BUILD_CPA006_EXPERIMENT)
+      include(${PROJECT_SOURCE_DIR}/experiments/cpa006/CMakeLists.txt)
     endif()
 
     # Bare-metal kernel entry (post-ExitBootServices PL011/GIC/timer probe).

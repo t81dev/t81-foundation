@@ -1,0 +1,20 @@
+{
+  "id": "C11",
+  "profile": "hosted",
+  "run": 3,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C11.raw13",
+    "8"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "12e8d2d7a83c1f9199415941d63fda77b3fb8d6d3306dd6d165e17e88cd3b61c",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "instruction_limit",
+    "reason": null,
+    "steps": 8
+  },
+  "observations": 9
+}

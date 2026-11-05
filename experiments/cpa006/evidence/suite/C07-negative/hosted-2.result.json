@@ -1,0 +1,20 @@
+{
+  "id": "C07-negative",
+  "profile": "hosted",
+  "run": 2,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C07-negative.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "0c91936d99faf3ad0ab06b4c69b8d5fef4fc45571fccf4e2c0d97b02e3f9fb49",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "runtime_trap",
+    "reason": "BoundsFault",
+    "steps": 1
+  },
+  "observations": 2
+}

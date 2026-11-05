@@ -1,0 +1,107 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-I/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative",
+      "-I/private/tmp/t81-cpa006/experiments/cpa006",
+      "/private/tmp/t81-cpa006/experiments/cpa006/admission_test.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-O0",
+      "-g",
+      "-UNDEBUG",
+      "-o",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/debug"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "debug-compile.stdout",
+    "stderr": "debug-compile.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/debug"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "debug-run.stdout",
+    "stderr": "debug-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-I/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative",
+      "-I/private/tmp/t81-cpa006/experiments/cpa006",
+      "/private/tmp/t81-cpa006/experiments/cpa006/admission_test.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-O3",
+      "-DNDEBUG",
+      "-o",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/release"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "release-compile.stdout",
+    "stderr": "release-compile.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/release"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "release-run.stdout",
+    "stderr": "release-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-I/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative",
+      "-I/private/tmp/t81-cpa006/experiments/cpa006",
+      "/private/tmp/t81-cpa006/experiments/cpa006/admission_test.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-O1",
+      "-DNDEBUG",
+      "-fsanitize=address,undefined",
+      "-o",
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/sanitized"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "sanitized-compile.stdout",
+    "stderr": "sanitized-compile.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/sanitized"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "sanitized-run.stdout",
+    "stderr": "sanitized-run.stderr"
+  },
+  {
+    "command": [
+      "/private/tmp/t81-cpa006/experiments/cpa006/evidence/negative/release",
+      "wrong-expectation"
+    ],
+    "exit_code": 1,
+    "expected": 1,
+    "stdout": "intentional-wrong-expectation.stdout",
+    "stderr": "intentional-wrong-expectation.stderr"
+  }
+]

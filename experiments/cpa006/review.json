@@ -1,0 +1,49 @@
+{
+  "status": "proposed",
+  "hypothesis_id": "H07",
+  "attribution": {
+    "name": "Codex",
+    "kind": "agent",
+    "model": null,
+    "role": "CPA006 suite/oracle/evaluator author and execution reviewer; same session as CPA005"
+  },
+  "repository_revision": "ea6d031a8117341fe03013cc9d5473de1b07727d",
+  "evidence": [
+    {
+      "source_ref": "register",
+      "relationship": "context",
+      "scope": "H07 engineering prerequisites; no auditability advantage inferred"
+    }
+  ],
+  "uncertainty": "Finite selected implementation profile; prior source/expected access and shared agent context; no blinded/independent-person replication.",
+  "human_authorization": {
+    "status": "authorized",
+    "human": "User",
+    "record": "CPA006 mission pasted in this session; bounded execution and draft PR only; no merge"
+  },
+  "schema": "t81.research-commons.independent-review.v1",
+  "id": "T81-CPA-006-review",
+  "target": "Main ea6d031a8117341fe03013cc9d5473de1b07727d + unchanged CPA004 integration tree 70734fd5bcfe06978cea13b4d2d595d4dda71a12 + CPA006 source hashes in evidence/source-identity.json",
+  "independence": {
+    "relationship_to_author": "Same Codex author/reviewer, same session as CPA005.",
+    "prior_context": "Historical source, oracle and reports available; CPA006 mathematical expectations frozen before new evaluator implementation and outputs.",
+    "independent_execution": true,
+    "limitations": "Actual fresh execution and separate switch/reference logic; no blinded or independent-person scientific replication."
+  },
+  "adversarial_checks": [
+    "All 19 cases against preexecution oracle and all admitted state fields",
+    "Actual input, ordered post-ExitBootServices path and terminal proof on 57 guests",
+    "Undefined/excluded opcode, truncation, bounds, zero division, Trap and budget cases",
+    "Changed byte, corrupt expectation, NDEBUG wrong expectation and excessive-limit controls",
+    "ASan/UBSan and Debug/Release native checks",
+    "Default-off EFI code/data and link isolation; unchanged ISA freeze check"
+  ],
+  "findings": [
+    "All 19 cases supported in the sealed experimental profile.",
+    "No precomputed expected answers, hosted dependency or dynamic allocation found in the freestanding switch.",
+    "C01 cancellation wording is overbroad and explicitly qualified without changing frozen data.",
+    "Defined FAdd rejection is experimental admission, and native registers 81..242 remain outside the claim.",
+    "Normative memory/branch/TXor/inventory conflicts remain unresolved; see REVIEW.md."
+  ],
+  "verdict": "no_issue_found_in_scope"
+}

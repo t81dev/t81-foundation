@@ -1,0 +1,8 @@
+{
+  "terminal": {
+    "classification": "admission_rejection",
+    "reason": "undefined_opcode",
+    "steps": 0
+  },
+  "observations": []
+}

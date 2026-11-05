@@ -1,0 +1,9 @@
+{
+  "stage": "Final pre-implementation/pre-CPA006-execution freeze",
+  "utc": "2026-11-05T12:24:56.192560+00:00",
+  "manifest_sha256": "65db0117a2071038822da6e8306ff520a576d6e73402904ad15f9f304dc78d03",
+  "oracle_sha256": "9e5c70908d28efa07a62678f51a51efb6fbfdf6d15bf7c4b0137c18590139d99",
+  "case_count": 19,
+  "authorization": "User CPA006 mission; no merge or production activation",
+  "prior_context": "Same session as CPA005; not blinded or independent-person review"
+}

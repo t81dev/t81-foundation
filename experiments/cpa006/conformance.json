@@ -1,0 +1,729 @@
+{
+  "schema": "t81.cpa006.conformance.v1",
+  "disposition": "PASS \u2014 BOUNDED CONFORMANCE",
+  "cases": [
+    {
+      "id": "C01",
+      "status": "SUPPORTED",
+      "title": "Signed/zero addition and multiplication",
+      "instruction_semantics": [
+        "Add",
+        "Halt",
+        "LoadImm",
+        "Mul"
+      ],
+      "operand_classes": "positive, negative, zero; mixed-sign, same-sign, cancellation",
+      "branches": [],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 10
+      },
+      "boundaries": 11,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": "C01 label includes cancellation, but nonzero cancellation is not actually exercised."
+    },
+    {
+      "id": "C02",
+      "status": "SUPPORTED",
+      "title": "Signed division/remainder truncating toward zero",
+      "instruction_semantics": [
+        "Div",
+        "Halt",
+        "LoadImm",
+        "Mod"
+      ],
+      "operand_classes": "all sign combinations; zero dividend; int32 min/max; min32/-1 fits int64",
+      "branches": [],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 29
+      },
+      "boundaries": 30,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C03",
+      "status": "SUPPORTED",
+      "title": "Complete scalar ternary truth tables",
+      "instruction_semantics": [
+        "Halt",
+        "LoadImm",
+        "TAnd",
+        "TNot",
+        "TOr",
+        "TXor"
+      ],
+      "operand_classes": "all 3 unary values and all 9 binary trit pairs; difference XOR",
+      "branches": [],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 55
+      },
+      "boundaries": 56,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C04",
+      "status": "SUPPORTED",
+      "title": "Taken/untaken conditional branches with flag/register discriminator",
+      "instruction_semantics": [
+        "Cmp",
+        "Halt",
+        "JumpIfNegative",
+        "JumpIfNotZero",
+        "JumpIfZero",
+        "LoadImm"
+      ],
+      "operand_classes": "JZ, JNZ and JN both taken and not taken; JNZ true while zero flag true",
+      "branches": [
+        {
+          "pc": 3,
+          "opcode": "JumpIfNotZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 6,
+          "opcode": "JumpIfZero",
+          "taken": false,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 7,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 9,
+          "opcode": "JumpIfNotZero",
+          "taken": false,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 11,
+          "opcode": "JumpIfNegative",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 14,
+          "opcode": "JumpIfNegative",
+          "taken": false,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        }
+      ],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 12
+      },
+      "boundaries": 13,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C05",
+      "status": "SUPPORTED",
+      "title": "Comparison flags and persistence through stores/branches/Halt",
+      "instruction_semantics": [
+        "Cmp",
+        "Halt",
+        "JumpIfNegative",
+        "JumpIfZero",
+        "LoadImm",
+        "Store"
+      ],
+      "operand_classes": "equal, less, greater; Store/branch/Halt preserve flags",
+      "branches": [
+        {
+          "pc": 4,
+          "opcode": "JumpIfZero",
+          "taken": false,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": false
+        },
+        {
+          "pc": 7,
+          "opcode": "JumpIfNegative",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        }
+      ],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 11
+      },
+      "boundaries": 12,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C06",
+      "status": "SUPPORTED",
+      "title": "Direct memory and exact data boundaries",
+      "instruction_semantics": [
+        "Halt",
+        "Load",
+        "LoadImm",
+        "Store"
+      ],
+      "operand_classes": "first data slot, last logical word, zero read; R30=400 differs from direct address 30",
+      "branches": [],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 10
+      },
+      "boundaries": 11,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "Direct memory and exact data boundaries",
+      "metadata_limit": null
+    },
+    {
+      "id": "C07-negative",
+      "status": "SUPPORTED",
+      "title": "Negative memory read traps",
+      "instruction_semantics": [
+        "Load"
+      ],
+      "operand_classes": "address -1",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "BoundsFault",
+        "steps": 1
+      },
+      "boundaries": 2,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "Negative memory read traps",
+      "metadata_limit": null
+    },
+    {
+      "id": "C07-upper",
+      "status": "SUPPORTED",
+      "title": "One-past-memory read traps",
+      "instruction_semantics": [
+        "Load"
+      ],
+      "operand_classes": "address n+1536",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "BoundsFault",
+        "steps": 1
+      },
+      "boundaries": 2,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "One-past-memory read traps",
+      "metadata_limit": null
+    },
+    {
+      "id": "C07-code",
+      "status": "SUPPORTED",
+      "title": "Write into logical code region traps",
+      "instruction_semantics": [
+        "LoadImm",
+        "Store"
+      ],
+      "operand_classes": "address 0 is protected code",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "BoundsFault",
+        "steps": 2
+      },
+      "boundaries": 3,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "Write into logical code region traps",
+      "metadata_limit": null
+    },
+    {
+      "id": "C08-div",
+      "status": "SUPPORTED",
+      "title": "Division/remainder by zero runtime trap",
+      "instruction_semantics": [
+        "Div",
+        "LoadImm"
+      ],
+      "operand_classes": "negative dividend and zero divisor",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "DivisionFault",
+        "steps": 3
+      },
+      "boundaries": 4,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C08-mod",
+      "status": "SUPPORTED",
+      "title": "Division/remainder by zero runtime trap",
+      "instruction_semantics": [
+        "LoadImm",
+        "Mod"
+      ],
+      "operand_classes": "negative dividend and zero divisor",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "DivisionFault",
+        "steps": 3
+      },
+      "boundaries": 4,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C09",
+      "status": "SUPPORTED",
+      "title": "Explicit Trap terminates at executed boundary",
+      "instruction_semantics": [
+        "LoadImm",
+        "Trap"
+      ],
+      "operand_classes": "TrapInstruction; no synthetic post-trap continuation",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "TrapInstruction",
+        "steps": 2
+      },
+      "boundaries": 3,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C10-undefined",
+      "status": "SUPPORTED",
+      "title": "Undefined opcode rejected before execution",
+      "instruction_semantics": [],
+      "operand_classes": "undefined byte 255",
+      "branches": [],
+      "terminal": {
+        "classification": "admission_rejection",
+        "reason": "undefined_opcode",
+        "steps": 0
+      },
+      "boundaries": 0,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C10-truncated",
+      "status": "SUPPORTED",
+      "title": "Truncated raw13 record rejected before execution",
+      "instruction_semantics": [],
+      "operand_classes": "12 bytes: last operand incomplete",
+      "branches": [],
+      "terminal": {
+        "classification": "admission_rejection",
+        "reason": "malformed",
+        "steps": 0
+      },
+      "boundaries": 0,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C10-excluded",
+      "status": "SUPPORTED",
+      "title": "Defined out-of-subset opcode rejected by experimental admission",
+      "instruction_semantics": [],
+      "operand_classes": "FAdd 36 is valid production opcode, outside suite subset",
+      "branches": [],
+      "terminal": {
+        "classification": "admission_rejection",
+        "reason": "unsupported_profile",
+        "steps": 0
+      },
+      "boundaries": 0,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C11",
+      "status": "SUPPORTED",
+      "title": "Instruction budget exhaustion in a bounded loop",
+      "instruction_semantics": [
+        "JumpIfZero"
+      ],
+      "operand_classes": "R0=0; eight taken JZ iterations; no Halt; below JIT hotspot threshold",
+      "branches": [
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        },
+        {
+          "pc": 0,
+          "opcode": "JumpIfZero",
+          "taken": true,
+          "predicate_basis": "Prior observed state plus selected frozen semantics",
+          "outcome_distinguished_by_pc": true
+        }
+      ],
+      "terminal": {
+        "classification": "instruction_limit",
+        "reason": null,
+        "steps": 8
+      },
+      "boundaries": 9,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C12-valid",
+      "status": "SUPPORTED",
+      "title": "Admitted register boundaries and reserved-register reads",
+      "instruction_semantics": [
+        "Add",
+        "Cmp",
+        "Halt",
+        "LoadImm"
+      ],
+      "operand_classes": "R0 write then reset; R74 highest ordinary; R80 seal read",
+      "branches": [],
+      "terminal": {
+        "classification": "halted",
+        "reason": null,
+        "steps": 5
+      },
+      "boundaries": 6,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C12-destination",
+      "status": "SUPPORTED",
+      "title": "Invalid destination register traps",
+      "instruction_semantics": [
+        "LoadImm"
+      ],
+      "operand_classes": "243 is one past native register file; extended 81..242 excluded",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "DecodeFault",
+        "steps": 1
+      },
+      "boundaries": 2,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    },
+    {
+      "id": "C12-source",
+      "status": "SUPPORTED",
+      "title": "Negative source register traps",
+      "instruction_semantics": [
+        "Add"
+      ],
+      "operand_classes": "source -1",
+      "branches": [],
+      "terminal": {
+        "classification": "runtime_trap",
+        "reason": "DecodeFault",
+        "steps": 1
+      },
+      "boundaries": 2,
+      "hosted": {
+        "runs": 3,
+        "result": "PASS"
+      },
+      "freestanding": {
+        "boots": 3,
+        "result": "PASS"
+      },
+      "oracle_agreement": true,
+      "program_identity": true,
+      "evidence_complete": true,
+      "excluded": "Non-integer tags, registers 81..242, arbitrary programs, int64 overflow and full ISA",
+      "memory_behavior": "No dedicated memory boundary claim",
+      "metadata_limit": null
+    }
+  ],
+  "hosted_runs": 57,
+  "fresh_guests": 57,
+  "schema_records": 1190,
+  "finite_profile": true,
+  "unsupported": [
+    "all other opcodes",
+    "registers 81..242",
+    "non-Int tags and arbitrary precision",
+    "int64 overflow and INT64_MIN/-1",
+    "arbitrary programs and concurrency",
+    "untested malformed metadata or branch targets",
+    "Linux/Windows hosts and physical hardware"
+  ]
+}

@@ -1,0 +1,116 @@
+[
+  {
+    "id": "C01",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C02",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C03",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C04",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C05",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C06",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C07-negative",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C07-upper",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C07-code",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C08-div",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C08-mod",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C09",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C10-undefined",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C10-truncated",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C10-excluded",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C11",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C12-valid",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C12-destination",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  },
+  {
+    "id": "C12-source",
+    "match": true,
+    "sanitizers": true,
+    "NDEBUG": true
+  }
+]

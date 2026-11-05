@@ -1,0 +1,9 @@
+{
+  "stage": "Before hosted/guest CPA006 execution or evaluator implementation",
+  "changes": [
+    "Copied observation shape still constrained SP to 283; derive n+256 instead.",
+    "Source vm/vm.cpp set_reg ignores R0 LoadImm and updates flags from actual R0=0. Correct preexecution reference accordingly."
+  ],
+  "original_draft": "preexecution-draft-v0.tar.gz",
+  "basis": "Source call-path inspection, not observed VM output."
+}

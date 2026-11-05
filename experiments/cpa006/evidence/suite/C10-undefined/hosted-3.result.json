@@ -1,0 +1,20 @@
+{
+  "id": "C10-undefined",
+  "profile": "hosted",
+  "run": 3,
+  "command": [
+    "/private/tmp/cpa006-build/cpa006_hosted",
+    "/private/tmp/t81-cpa006/experiments/cpa006/frozen/C10-undefined.raw13",
+    "64"
+  ],
+  "exit_code": 0,
+  "timeout": false,
+  "raw_sha256": "97d479249f8bf9201cb4fe11340bbe2cde764b3657702fd14f8b7e01dc37cae5",
+  "disposition": "PASS",
+  "terminal": {
+    "classification": "admission_rejection",
+    "reason": "undefined_opcode",
+    "steps": 0
+  },
+  "observations": 0
+}

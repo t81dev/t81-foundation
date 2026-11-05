@@ -1,0 +1,10 @@
+{
+  "default_off": true,
+  "neither_evaluator_linked": true,
+  "no_generated_cpa006_program": true,
+  "bare_disassembly_identical_to_main": true,
+  "efi_text_identical_to_main": true,
+  "efi_rdata_identical_to_main": true,
+  "main": "ea6d031a8117341fe03013cc9d5473de1b07727d",
+  "efi_sha256": "f6ac6a94c1c25c658bdb9671f40b1cce3ae8c9dcf1a0dd58821b6362e39d2536"
+}

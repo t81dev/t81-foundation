@@ -1,0 +1,629 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z0vq4h54",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z0vq4h54/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C01-compile.stdout",
+    "stderr": "C01-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z0vq4h54/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C01-run.stdout",
+    "stderr": "C01-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-_puzua4v",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-_puzua4v/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C02-compile.stdout",
+    "stderr": "C02-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-_puzua4v/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C02-run.stdout",
+    "stderr": "C02-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-itjhzdpr",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-itjhzdpr/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C03-compile.stdout",
+    "stderr": "C03-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-itjhzdpr/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C03-run.stdout",
+    "stderr": "C03-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-k76cq_en",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-k76cq_en/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C04-compile.stdout",
+    "stderr": "C04-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-k76cq_en/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C04-run.stdout",
+    "stderr": "C04-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9b9bs0zq",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9b9bs0zq/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C05-compile.stdout",
+    "stderr": "C05-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9b9bs0zq/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C05-run.stdout",
+    "stderr": "C05-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-p0no7rb8",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-p0no7rb8/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C06-compile.stdout",
+    "stderr": "C06-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-p0no7rb8/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C06-run.stdout",
+    "stderr": "C06-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2np215za",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2np215za/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-negative-compile.stdout",
+    "stderr": "C07-negative-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2np215za/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-negative-run.stdout",
+    "stderr": "C07-negative-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-baviqxp6",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-baviqxp6/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-upper-compile.stdout",
+    "stderr": "C07-upper-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-baviqxp6/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-upper-run.stdout",
+    "stderr": "C07-upper-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z8gie88v",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z8gie88v/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-code-compile.stdout",
+    "stderr": "C07-code-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-z8gie88v/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C07-code-run.stdout",
+    "stderr": "C07-code-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-20vn4j0c",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-20vn4j0c/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-div-compile.stdout",
+    "stderr": "C08-div-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-20vn4j0c/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-div-run.stdout",
+    "stderr": "C08-div-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-7tshddu4",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-7tshddu4/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-mod-compile.stdout",
+    "stderr": "C08-mod-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-7tshddu4/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C08-mod-run.stdout",
+    "stderr": "C08-mod-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-3cn6bp0m",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-3cn6bp0m/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C09-compile.stdout",
+    "stderr": "C09-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-3cn6bp0m/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C09-run.stdout",
+    "stderr": "C09-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9_9_n0jt",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9_9_n0jt/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-undefined-compile.stdout",
+    "stderr": "C10-undefined-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-9_9_n0jt/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-undefined-run.stdout",
+    "stderr": "C10-undefined-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gt0j2b85",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gt0j2b85/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-truncated-compile.stdout",
+    "stderr": "C10-truncated-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gt0j2b85/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-truncated-run.stdout",
+    "stderr": "C10-truncated-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2xf91ibl",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2xf91ibl/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-excluded-compile.stdout",
+    "stderr": "C10-excluded-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-2xf91ibl/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C10-excluded-run.stdout",
+    "stderr": "C10-excluded-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-f7fxeib0",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-f7fxeib0/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C11-compile.stdout",
+    "stderr": "C11-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-f7fxeib0/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C11-run.stdout",
+    "stderr": "C11-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gwjm87kc",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gwjm87kc/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-valid-compile.stdout",
+    "stderr": "C12-valid-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-gwjm87kc/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-valid-run.stdout",
+    "stderr": "C12-valid-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-emddmdzs",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-emddmdzs/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-destination-compile.stdout",
+    "stderr": "C12-destination-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-emddmdzs/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-destination-run.stdout",
+    "stderr": "C12-destination-run.stderr"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/llvm/bin/clang++",
+      "-std=c++17",
+      "-O1",
+      "-g",
+      "-DNDEBUG",
+      "-Wall",
+      "-Wextra",
+      "-Wpedantic",
+      "-Werror",
+      "-fsanitize=address,undefined",
+      "-fno-omit-frame-pointer",
+      "-I/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-duy2_oz3",
+      "/private/tmp/t81-cpa006/experiments/cpa006/native_guest.cpp",
+      "/private/tmp/t81-cpa006/experiments/cpa006/cpa006_evaluator.cpp",
+      "-o",
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-duy2_oz3/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-source-compile.stdout",
+    "stderr": "C12-source-compile.stderr"
+  },
+  {
+    "command": [
+      "/var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/cpa006-native-duy2_oz3/guest"
+    ],
+    "exit_code": 0,
+    "expected": 0,
+    "stdout": "C12-source-run.stdout",
+    "stderr": "C12-source-run.stderr"
+  }
+]
