@@ -151,25 +151,3 @@ Reported local ADM-2 candidates (`0c22ac323484e37cc85f95201bd4dc01729dedb4` and 
 **Decision posture:** `M2_RESEARCH_QUESTION_REFINEMENT_REQUIRED`. [#671](https://github.com/t81dev/t81-foundation/pull/671) records a *proposed* division into S (adaptive software format selection), A (algorithm routing), and T (ternary-specific attribution). T remains the central long-horizon research objective. A gain in S or A is not proof of T; binary two-bit encoding of three states does not isolate ternary physical benefit. The polynomial design in [#672](https://github.com/t81dev/t81-foundation/pull/672) is unaccepted. [#673](https://github.com/t81dev/t81-foundation/pull/673) has seven P1 protocol acceptance blockers, and [#674](https://github.com/t81dev/t81-foundation/pull/674) is adversarial critique, not authorization.
 
 **No authority transferred:** Updating these documents or accepting review commentary does not accept M1, select B/C, freeze M2, authorize correctness implementation or measurement, merge PRs, modify protected governance, or establish deployment. An explicit maintainer research selection, independently accepted preregistration and separate commit-scoped execution approval remain necessary.
-
----
-
-## 9. Operational decisions and governance boundaries — 2026-11-04 (T81-SIA-001 Audit)
-
-**Checked main:** `d836f7edb9b70608ef7476e82e98a0a89084d74b`.
-
-### 9.1 Authorization of T81-SIA-001 Integration Audit
-The Maintainer authorized **T81-SIA-001** as a strictly **read-only, non-destructive systems engineering and integration audit** to evaluate end-to-end integration across the 13 repository subsystems.
-- **Scope & Delivery:** Delivered across eight canonical reports under `docs/reports/audit/` at baseline commit `9bbc4453ca136251448201cf9166c2bd167e1f67`.
-- **Authority Boundary:** This audit deliverable does not alter runtime behavior, does not relax any CI check, does not authorize BASE-01 or H04-R03 performance measurements, and does not authorize automated merges.
-
-### 9.2 CanonFS Portability & Identity Invariants
-- **Public ID Invariant:** Public snapshot IDs and object hashes remain immutable Base-81 strings (`CanonHash-81`).
-- **Physical Key Invariant:** All filesystem-level object files and snapshot directories must use lowercase hex keys prefixed with `h1-` (`storage_key_v1` in `include/t81/canonfs/storage_key.hpp`).
-- **No Silent Legacy Migration (Fail-Closed):** Any store or snapshot containing raw Base-81 filenames must fail closed with an explicit error rather than silently migrating or rewriting directory contents in place.
-- **Windows Portability:** Filesystem path operations must strictly forbid Windows-reserved characters (`<>:"/\|?*`).
-
-### 9.3 Protected Experimental Baselines
-- **BASE-01:** Integrated in PR #694/#695 and verified in PR #700 strictly for software correctness. All dynamic benchmarking, PMU counter collection, and performance timing remain frozen pending dedicated bare-metal Linux qualification and signed maintainer permit.
-- **EXP-H04-R03 Candidate A:** Codec implementation (PR #679) and acceptance review (PR #680) are integrated for correctness and protocol compliance only. Phase C benchmarking remains frozen (`measurement_engine.py` exits with code 1).
-- **Freestanding Axion OS Promotion:** TernaryOS remains an experimental bootloader/kernel prototype. Automatic promotion to a general-purpose OS or production runtime is prohibited.
