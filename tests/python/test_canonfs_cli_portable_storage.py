@@ -39,6 +39,20 @@ def canon_hash81(data: bytes) -> str:
     return encode_base81(raw_32)
 
 
+def decode_base81(base81_str: str) -> bytes:
+    val = 0
+    for char in base81_str:
+        val = val * 81 + DIGITS.index(char)
+    return val.to_bytes(32, "big")
+
+
+def snapshot_storage_key(base81_hash: str) -> str:
+    return "h1-" + decode_base81(base81_hash).hex()
+
+
+CLI = Path(__file__).resolve().parents[2] / "build" / "t81"
+
+
 class PortableStorageCLI(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix="t81-cli-portable-")
@@ -193,6 +207,16 @@ class PortableStorageCLI(unittest.TestCase):
         self.assertEqual(len(dir_name), 67)
         self.assertFalse(set("<>:\\|?*") & set(dir_name))
 
+        # Independent test oracle: verify canonical snapshot ID matches manifest hash,
+        # and physical directory matches snapshot_storage_key
+        manifest_path = snap_dirs[0] / "MANIFEST.txt"
+        self.assertTrue(manifest_path.exists())
+        manifest_bytes = manifest_path.read_bytes()
+        expected_snap_hash = canon_hash81(manifest_bytes)
+        self.assertEqual(hash1, expected_snap_hash)
+        expected_dir_name = snapshot_storage_key(hash1)
+        self.assertEqual(dir_name, expected_dir_name)
+
     def test_snapshot_diff_and_rollback(self):
         p1 = b"initial-state-data"
         self.put(p1)
@@ -258,6 +282,38 @@ class PortableStorageCLI(unittest.TestCase):
         res = self.cli("rollback", "--dry-run", "--to", "legacy_raw_snapshot_hash", ok=False)
         self.assertIn("invalid snapshot hash", (res.stdout + res.stderr).lower())
         self.assertTrue((legacy_dir / "MANIFEST.txt").exists())
+
+        # Axion log / snapshot listing must not include legacy raw snapshot dir
+        # Create a valid snapshot as well in a workspace where .t81_canonfs is located
+        axion_base = self.base / "axion_workspace"
+        axion_base.mkdir()
+        axion_root = axion_base / ".t81_canonfs"
+        self.put(b"valid-snapshot-entry")
+        res_put = subprocess.run(
+            [str(CLI), "canonfs", "put-file", str(self.base / "input.bin"), "--canonfs-root", str(axion_root)],
+            cwd=axion_base, env=self.env, capture_output=True, encoding="utf-8", timeout=30,
+        )
+        self.assertEqual(res_put.returncode, 0)
+        res_snap = subprocess.run(
+            [str(CLI), "canonfs", "snapshot", "--canonfs-root", str(axion_root), "--json"],
+            cwd=axion_base, env=self.env, capture_output=True, encoding="utf-8", timeout=30,
+        )
+        self.assertEqual(res_snap.returncode, 0)
+        valid_snap = json.loads(res_snap.stdout)["hash"]
+
+        # Add a legacy raw snapshot dir inside axion_root / "snapshots"
+        legacy_snap_dir = axion_root / "snapshots" / "legacy_raw_snapshot_hash"
+        legacy_snap_dir.mkdir()
+        (legacy_snap_dir / "MANIFEST.txt").write_text("legacy\n", encoding="utf-8")
+
+        axion_res = subprocess.run(
+            [str(CLI), "axion", "log", "--json"],
+            cwd=axion_base, env=self.env, capture_output=True, encoding="utf-8", timeout=30,
+        )
+        self.assertEqual(axion_res.returncode, 0)
+        axion_data = json.loads(axion_res.stdout)
+        self.assertIn(valid_snap, axion_data["recent_snapshots"])
+        self.assertNotIn("legacy_raw_snapshot_hash", axion_data["recent_snapshots"])
 
 
 if __name__ == "__main__":
