@@ -1,6 +1,6 @@
 {
   "schema_version": "2.0.0",
-  "generated_at": "2026-11-02",
+  "generated_at": "2026-11-05",
   "purpose": "Non-normative operational index; never grants authorization",
   "selected_view": "2026-11-02-reconciled",
   "operational_views": {
@@ -563,5 +563,5 @@
     "performance_measurement": false,
     "production_activation": false
   },
-  "next_gate": "Review PR678 corrections for existing PR656; preserve Phase C/M2 execution freeze and independent-verification boundaries."
+  "next_gate": "2026-11-05 research gate: ISA-001 read-only semantic audit is READY FOR MAINTAINER DECISION. Draft T81-ISA-002 versioned TISC state-transition RFC and decision matrix only; do not change implementation, frozen CPA artifacts, or authorize performance measurement. CPA-006 reports 19/19 frozen-oracle cases with 57 hosted and 57 AArch64 QEMU executions and 1,190 validated state records; PR #710 merged to experimental integration branch, not main. selected_view intentionally remains 2026-11-02-reconciled as a dated partial operational inventory; read START_HERE.md section 13 and ACTIVE_RESEARCH_HANDOFF.md latest addendum for the 2026-11-05 research gate. Refresh all live PR/branch states."
 }
