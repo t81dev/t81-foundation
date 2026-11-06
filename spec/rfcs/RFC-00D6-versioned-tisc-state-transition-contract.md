@@ -5,16 +5,16 @@
 **Created:** 2026-11-05
 **Updated:** 2026-11-06
 **Applies-To:** TISC ISA specification (`spec/tisc-spec.md`, `spec/tisc/`), hosted `T81VM` (`vm/vm.cpp`), freestanding Axion OS evaluator (`ternaryos/hal/cpa004_evaluator.cpp`), LLVM/MLIR lowering backends (`lang/llvm/tisc_to_llvm.cpp`), and cross-profile bytecode artifacts
-**Supersedes:** nothing; establishes the formal decision matrix and migration framework for ISA-001 reconciliation findings
+**Supersedes:** nothing; provides the formal decision matrix and migration framework for ISA-001 reconciliation findings
 
 ______________________________________________________________________
 
 ## 1. Executive Summary & Governance Authority
 
-This RFC establishes an authoritative, versioned state-transition contract for the Ternary Instruction Set Computer (TISC) and presents a comprehensive maintainer decision matrix addressing known semantic discrepancies between normative specifications, runtime implementations, compiler backends, and frozen experimental artifacts.
+This RFC proposes a versioned state-transition contract for the Ternary Instruction Set Computer (TISC) and presents a comprehensive maintainer decision matrix addressing known semantic discrepancies between normative specifications, runtime implementations, compiler backends, and frozen experimental artifacts.
 
 ### 1.1 Non-Normative Draft Posture
-This document is an **authoritative draft proposal and maintainer decision instrument** prepared under task **T81-ISA-002**. In accordance with T81 governance rules:
+This document is a **draft proposal and maintainer decision instrument** prepared under task **T81-ISA-002**. In accordance with T81 governance rules:
 - **No silent semantic choices are adopted**: Competing interpretations are explicitly detailed with historical evidence, compatibility impacts, and trade-offs.
 - **No production code or frozen artifacts are altered**: Runtime implementations (`vm/vm.cpp`, `ternaryos/`), test suites, and CPA evidence packets remain untouched.
 - **Explicit maintainer authorization is required**: Any change to normative instruction semantics, opcode registries, or execution profiles requires formal signature in Section 10 before implementation or promotion. Opcode inventory expansion and assignment modifications remain strictly proposed options pending maintainer review.
@@ -343,15 +343,23 @@ ______________________________________________________________________
 
 To eliminate execution ambiguity, raw instruction streams must be encapsulated or explicitly bound at runtime boundaries.
 
-### 5.1 Profile Resolution Precedence Hierarchy
-When multiple conflicting profile sources or hints are present, conforming implementations MUST evaluate profile selection according to the following strict descending order of precedence:
+### 5.1 Profile Resolution Precedence Hierarchy and Fail-Closed Conflict Rule
+
+#### Strict Fail-Closed Rule for Conflicting Explicit Declarations
+When multiple explicit ISA profile declarations are present across different layers and contradict each other (for example, if an explicit CLI flag `--isa-profile tisc-v2.0` contradicts a container manifest specifying `"isa_profile": "tisc-cpa-v1.0"`, or if a container manifest contradicts an embedded `.rodata` note), the execution engine **MUST FAIL CLOSED IMMEDIATELY** with a configuration fault (`Trap::ProfileConflictFault` or equivalent fatal admission rejection).
+
+**No overriding or warning fallback is permitted**: Implementations MUST NOT override contradictory explicit declarations or downgrade a contradiction to a warning. Contradictory declarations constitute an unverified artifact mismatch.
+
+#### Scope of Profile Resolution Precedence
+Profile precedence applies **only when higher-priority information is present and compatible with other explicit declarations**. Missing declarations (such as a raw `.raw13` bytecode binary lacking an envelope or note section, or a container without an internal binary note) are absences, not contradictions, and MUST NOT be treated as conflicts.
 
 ```
 +-------------------------------------------------------------------------+
 |                  Profile Resolution Precedence Hierarchy                |
+|       (Applies when present and compatible; conflicts fail closed)       |
 +-------------------------------------------------------------------------+
   1. Explicit CLI Execution Flag:    --isa-profile <name>
-     Overrides all metadata; enables deterministic operational testing.
+     Supplies profile for raw binaries or compatible unannotated inputs.
                                       |
                                       v
   2. Container Manifest Envelope:    CanonFS manifest / computational object
@@ -363,18 +371,18 @@ When multiple conflicting profile sources or hints are present, conforming imple
                                       |
                                       v
   4. Fail-Closed Default Rejection:  Reject execution immediately
-     Raw .raw13 bytecode lacking flags or metadata fails closed (UnsupportedProfile).
+     Raw .raw13 bytecode lacking any profile declaration fails closed.
 +-------------------------------------------------------------------------+
 ```
 
 1. **Level 1 — Explicit CLI Invocation Flag (`--isa-profile <name>`)**:
-   Highest precedence. An explicit operator or test harness argument directly forces the execution engine into a specific profile (e.g. `t81 vm run --isa-profile tisc-cpa-v1.0 binary.raw13`). If an artifact's embedded metadata conflicts with an explicit CLI flag, the CLI flag MUST either strictly override with an Axion warning log or fail closed with a configuration fault.
+   Highest precedence. Supplies the intended profile for raw bytecode binaries or unannotated inputs. If the target artifact already carries an explicit container manifest or embedded note that declares a different profile, execution MUST fail closed immediately.
 2. **Level 2 — Container Manifest Envelope (CanonFS / ADB)**:
-   Second precedence. Governed object containers (CanonFS objects, Accountable Decision Bundles) declare the intended profile in their canonical manifest metadata (`"isa_profile": "tisc-cpa-v1.0"`).
+   Second precedence. Governed object containers (CanonFS objects, Accountable Decision Bundles) declare the intended profile in their canonical manifest metadata (`"isa_profile": "tisc-cpa-v1.0"`). If the embedded binary inside the container declares a different profile in its note section, execution MUST fail closed immediately.
 3. **Level 3 — Binary Embedded Note Section (.rodata note)**:
    Third precedence. Freestanding EFI executables or compiled TISC binary images embed a dedicated read-only ELF/COFF note section (`.tisc_profile`) declaring profile identity.
 4. **Level 4 — Fail-Closed Default (No Implicit Fallback)**:
-   Lowest precedence / Default. Any raw 13-byte bytecode stream lacking an explicit CLI profile flag, container envelope, or binary note section MUST NOT be executed under an assumed or guessing profile. The runtime MUST halt immediately with `Trap::UnsupportedProfile` before decoding or stepping instructions.
+   Lowest precedence / Default. Any raw 13-byte bytecode stream lacking an explicit CLI profile flag, container envelope, and binary note section MUST NOT be executed under an assumed or guessing profile. The runtime MUST halt immediately with `Trap::UnsupportedProfile` before decoding or stepping instructions.
 
 ______________________________________________________________________
 
