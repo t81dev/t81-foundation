@@ -109,7 +109,7 @@ def supervise(args):
     digest=hashlib.sha256()
     env=os.environ.copy()
     env['ARCH003_AUTHORIZED_WORKER']='owner authorization checked'
-    with open(args.diagnostic,'wb') as diagnostic, open(output,'w+b') as retained:
+    with open(args.diagnostic,'wb') as diagnostic, open(output,'w+b',buffering=0) as retained:
         retained.write(HEADER.pack(b'A2R1',0 if args.oracle else 1,255 if args.oracle else args.profile,args.probe,0,0))
         worker=subprocess.Popen(args.command,stdout=subprocess.PIPE,stderr=diagnostic,env=env)
         # Read exactly one frame at a time; retain valid-size prefixes even on failure.
@@ -139,9 +139,12 @@ def supervise(args):
                     for _ in expectations(Tee(),408034):
                         pass
             else:
-                verify(args.expected,Tee(),guard=args.probe!=0,progress=progress)
+                verify(args.expected,Tee(),guard=args.probe!=0,full=not getattr(args,'component_prefix',False),progress=progress)
         except (ValueError,OSError) as exc:
             error=exc
+            if isinstance(exc,Failure) and exc.status in (65,68):
+                # Publish a completed failure before any child wait or termination.
+                write_json(str(args.receipt)+'.failure.json',{'status_id':exc.status,'probe':args.probe,'message':str(exc),'records':count})
             # Guards must still observe their natural required exits.
             if not args.probe:
                 worker.kill()
@@ -151,7 +154,7 @@ def supervise(args):
         retained.seek(0)
         retained.write(HEADER.pack(b'A2R1',0 if args.oracle else 1,255 if args.oracle else args.profile,args.probe,0,count))
         retained.flush()
-    receipt={'worker_exit':worker.returncode,'worker_peak_rss_raw':usage.ru_maxrss,
+    receipt={'worker_exit':worker.returncode if worker.returncode>=0 else 128-worker.returncode,'worker_wait_status_raw':status,'worker_peak_rss_raw':usage.ru_maxrss,
              'peak_units':'bytes' if sys.platform=='darwin' else 'KiB',
              'records':count,'raw_stream_sha256':digest.hexdigest(),'valid_observations':progress['calls'],'final_digests':[f'{d:016x}' for d in progress['digests']],
              'status_id':getattr(error,'status',67) if error else (68 if args.oracle and worker.returncode else 67 if worker.returncode else 64),
@@ -211,6 +214,7 @@ def main():
     parser.add_argument('--profile',type=int,choices=range(3),default=0)
     parser.add_argument('--probe',type=int,choices=(0,1,2),default=0)
     parser.add_argument('--oracle',action='store_true')
+    parser.add_argument('--component-prefix',action='store_true',help='bounded infrastructure fixture only; cannot qualify a campaign')
     parser.add_argument('command',nargs=argparse.REMAINDER)
     args=parser.parse_args()
     try:

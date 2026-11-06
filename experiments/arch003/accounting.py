@@ -7,7 +7,6 @@ import os
 from pathlib import Path
 import resource
 import signal
-import subprocess
 import sys
 import time
 
@@ -25,53 +24,73 @@ class ResourceExceeded(RuntimeError):
 
 
 class Accountant:
-    def __init__(self, directory, *, clock=time.monotonic_ns):
+    def __init__(self, directory, *, clock=time.monotonic_ns, started_ns=None):
         self.clock=clock
-        self.start=clock()
+        self._start=clock() if started_ns is None else started_ns
         self.directory=Path(directory)
         self.peak_bound=0
         self.samples=[]
         self.jobs=[]
         self.complete=True
         self.last_sample=None
+        self.max_sample_gap_ns=0
+        self.sample_count=0
         if sys.platform!='linux' or not Path('/proc/self/status').is_file() or not hasattr(os,'wait4'):
             self.complete=False
             raise AccountingUnavailable('BLOCKED_RESOURCE_ACCOUNTING: Linux /proc + wait4 required; Darwin/Windows collectors not qualified')
 
+    @property
+    def start(self):
+        return self._start
+
     @staticmethod
     def process(pid):
-        try:
-            status=Path(f'/proc/{pid}/status').read_text()
-            fields=dict(line.split(':',1) for line in status.splitlines() if ':' in line)
-            rss=fields['VmRSS'].split();peak=fields['VmHWM'].split()
-            if rss[1]!='kB' or peak[1]!='kB':raise ValueError('RSS units')
-            # All tasks' children are included, covering sanitizer maintenance threads.
-            children=set()
-            for task in Path(f'/proc/{pid}/task').iterdir():
-                children.update(int(p) for p in (task/'children').read_text().split())
-            return dict(pid=pid,rss_bytes=int(rss[0])*1024,peak_bytes=int(peak[0])*1024,children=sorted(children),threads=int(fields['Threads']))
-        except (OSError,ValueError,KeyError) as exc:
-            # A racing process exit is not silently charged as zero.
-            raise AccountingUnavailable(f'cannot account PID {pid}: {exc}') from exc
+        from linux_trace import read_process
+        return read_process(pid)
+
+    def checkpoint(self):
+        now=self.clock()
+        if now-self.start>DEADLINE_NS:
+            raise ResourceExceeded('inclusive deadline exceeded')
+        if self.last_sample is None or now-self.last_sample>=25_000_000:
+            self.sample(2)
+        elif now-self.start>DEADLINE_NS:
+            raise ResourceExceeded('inclusive deadline exceeded')
 
     def sample(self, max_descendants):
+        try:
+            return self._sample(max_descendants)
+        except AccountingUnavailable:
+            self.complete=False
+            raise
+
+    def _sample(self, max_descendants):
         now=self.clock()
-        if self.last_sample is not None and now-self.last_sample>100_000_000:
+        gap=0 if self.last_sample is None else now-self.last_sample
+        self.max_sample_gap_ns=max(getattr(self,'max_sample_gap_ns',0),gap)
+        self.sample_count=getattr(self,'sample_count',0)+1
+        if gap>100_000_000:
             self.complete=False
             raise AccountingUnavailable('RSS sample interval exceeded 100 ms')
         self.last_sample=now
-        pending=[os.getpid()];rows=[];seen=set()
-        while pending:
-            pid=pending.pop()
-            if pid in seen:continue
-            seen.add(pid)
-            row=self.process(pid);rows.append(row);pending.extend(row['children'])
+        owner=self.process(os.getpid())
+        trace=getattr(self,'_trace',None)
+        if trace is not None:
+            rows=[owner,*trace.snapshot()]
+        else:
+            rows=[owner]
+            pending=list(owner['children'])
+            seen={owner['pid']}
+            while pending:
+                pid=pending.pop()
+                if pid in seen:continue
+                seen.add(pid)
+                row=self.process(pid);rows.append(row);pending.extend(row['children'])
         if len(rows)-1>max_descendants:
             self.complete=False
             raise AccountingUnavailable('unexpected descendant roster')
         live=sum(r['rss_bytes'] for r in rows)
         self.peak_bound=max(self.peak_bound,live)
-        # Bounded summary, not one growing Python object per sample.
         self.samples=rows
         if live>RSS_CAP:raise ResourceExceeded('aggregate absolute RSS exceeded')
         if now-self.start>DEADLINE_NS:raise ResourceExceeded('inclusive deadline exceeded')
@@ -96,45 +115,47 @@ class Accountant:
         if total>OUTPUT_CAP:raise ResourceExceeded('retained output exceeded')
         return total
 
-    def run(self, command, stdout_path, stderr_path, *, env=None, compiler=False):
-        if compiler:
-            # A driver-tree maximum is not the required per-process tool receipt.
-            # Do not execute a campaign build with incomplete accounting.
-            self.complete=False
-            raise AccountingUnavailable('BLOCKED_RESOURCE_ACCOUNTING: compiler-tool per-process peak receipt hook is not implemented')
-        self.last_sample=None
-        with open(stdout_path,'wb') as out,open(stderr_path,'wb') as err:
-            child=subprocess.Popen(command,stdout=out,stderr=err,env=env,start_new_session=True)
-            caught=None
-            try:
-                while True:
-                    self.sample(2)  # L + driver/tool OR L + V/W
-                    pid,status,usage=os.wait4(child.pid,os.WNOHANG)
-                    if pid:break
-                    time.sleep(0.025)
-            except (AccountingUnavailable,ResourceExceeded) as exc:
-                caught=exc
-                try:os.killpg(child.pid,signal.SIGKILL)
-                except ProcessLookupError:pass
-                pid,status,usage=os.wait4(child.pid,0)
-            child.returncode=os.waitstatus_to_exitcode(status)
+    def run(self, command, stdout_path, stderr_path, *, env=None, compiler=False, role=None):
+        from linux_trace import LinuxTrace
+        if not self.complete:raise AccountingUnavailable('incomplete accountant cannot launch replacement work')
+        self.sample(0)  # No unobserved child may predate trace installation.
+        trace=LinuxTrace(self,role or ('compiler' if compiler else 'metadata'))
+        self._trace=trace
+        caught=None
+        # Do not reset last_sample or start between jobs.
+        try:
+            self.checkpoint()
+            with open(stdout_path,'wb') as out,open(stderr_path,'wb') as err:
+                trace.execute([str(c) for c in command],out,err,env)
+        except BaseException as exc:
+            caught=exc
+            if isinstance(exc,AccountingUnavailable):self.complete=False
+        finally:
+            self._trace=None
         owner_peak=int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)*1024
-        # Linux wait4 ru_maxrss bounds each member of the reaped child's tree,
-        # including waited descendants. Charge it twice for the two-role roster.
-        # This intentionally double-counts a sequential child/tool conservative bound.
-        bound=owner_peak+2*int(usage.ru_maxrss)*1024
-        self.peak_bound=max(self.peak_bound,bound)
-        receipt=dict(command=list(command),exit_code=child.returncode,wait4_peak_raw=int(usage.ru_maxrss),
-                     peak_units='KiB',descendant_role_bound=2,aggregate_bound_bytes=bound,
-                     collector='Linux /proc status VmRSS/VmHWM, all task children; wait4 ru_maxrss',
-                     sample_interval_ns=25_000_000,compiler=compiler)
+        receipt=trace.receipt()
+        descendant_bound=receipt['descendants_peak_bound_bytes']
+        bound=owner_peak+descendant_bound if descendant_bound is not None else None
+        if bound is not None:self.peak_bound=max(self.peak_bound,bound)
+        receipt.update(command=list(command),aggregate_bound_bytes=bound,
+                       owner_peak_rss_raw_kib=owner_peak//1024,
+                       collector='Linux ptrace birth/exec/exit stops + /proc VmHWM; wait4 at each reap',
+                       raw_peak_units='KiB',conversion_to_bytes=1024,sample_interval_ns=25_000_000,
+                       compiler=compiler,observed_max_sample_gap_ns=self.max_sample_gap_ns,sample_count=self.sample_count)
+        # Persist an incomplete or failed job receipt before propagating any cap.
         self.jobs.append(receipt)
         if caught:raise caught
+        if not receipt['complete']:
+            self.complete=False
+            raise AccountingUnavailable('incomplete per-process peak receipts')
         if bound>RSS_CAP:raise ResourceExceeded('retrospective peak bound exceeded')
-        self.check_output()
-        if self.clock()-self.start>DEADLINE_NS:raise ResourceExceeded('inclusive deadline exceeded')
+        self.checkpoint()
         return receipt
 
     def resources(self):
-        return dict(rss_peak_bound_bytes=self.peak_bound,elapsed_ns=self.clock()-self.start,
+        owner_peak=int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)*1024
+        self.peak_bound=max(self.peak_bound,owner_peak+max((j['descendants_peak_bound_bytes'] for j in self.jobs if j['descendants_peak_bound_bytes'] is not None),default=0))
+        if self.peak_bound>RSS_CAP:raise ResourceExceeded('retrospective owner peak bound exceeded')
+        self.checkpoint()
+        return dict(rss_peak_bound_bytes=self.peak_bound if self.complete else None,elapsed_ns=self.clock()-self.start,
                     retained_bytes=self.check_output(),accounting_complete=self.complete)

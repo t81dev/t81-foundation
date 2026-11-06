@@ -1,0 +1,7 @@
+[ 16%] Built target arch003_support
+[ 52%] Built target arch003_candidates
+[ 60%] Built target arch003_sink
+[ 72%] Built target arch003_scalar_oracle
+[ 84%] Built target arch003_histogram_oracle
+[ 92%] Built target arch003_worker
+[100%] Built target arch003_component_checks

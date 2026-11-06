@@ -14,7 +14,7 @@ class AccountingChecks(unittest.TestCase):
         self.now=0
         self.acc=object.__new__(Accountant)
         self.acc.clock=lambda:self.now
-        self.acc.start=0;self.acc.last_sample=None;self.acc.peak_bound=0
+        self.acc._start=0;self.acc.last_sample=None;self.acc.peak_bound=0
         self.acc.complete=True;self.acc.directory=Path(self.tmp.name)
         self.acc.jobs=[];self.acc.samples=[]
 
@@ -41,9 +41,9 @@ class AccountingChecks(unittest.TestCase):
         self.now=1800*10**9+1
         with self.assertRaises(ResourceExceeded):self.sample({1:dict(pid=1,rss_bytes=1,peak_bytes=1,children=[],threads=1)})
 
-    def test_compiler_tree_peak_receipts_fail_closed(self):
-        with self.assertRaises(AccountingUnavailable):self.acc.run(['unused'],'unused','unused',compiler=True)
-        self.assertFalse(self.acc.complete)
+    def test_deadline_cannot_be_reset(self):
+        with self.assertRaises(AttributeError):self.acc.start=99
+        self.assertEqual(self.acc.start,0)
 
     def test_diagnostic_subbudget(self):
         path=self.acc.directory/'probe.stderr'

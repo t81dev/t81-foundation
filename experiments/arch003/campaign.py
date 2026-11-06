@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 from accounting import Accountant, AccountingUnavailable, ResourceExceeded
+from finalization import finalize, retain_interruption, preserve_failure_status
 from evidence import (HEADER,EXPECTED,OBSERVED,D0,STATUS,sha,load_json,write_json,
                       manifest_template,seal,fold)
 
@@ -51,6 +52,7 @@ def authorize(path):
 
 
 def main():
+    started=time.monotonic_ns()
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--authorization',required=True,help='canonical exact-commit human authorization JSON')
     args=parser.parse_args()
@@ -63,7 +65,6 @@ def main():
         print('BLOCKED_AUTHORIZATION: output must be a new directory; no overwrite/retry',file=sys.stderr);return 2
     root.mkdir(parents=True)
     # Owner lifetime includes all metadata, builds and sealing; never restart clock.
-    started=time.monotonic_ns()
     protocol_bytes=(SOURCE.parents[1]/'docs/research/arch002/PROTOCOL.md').read_bytes()
     proposal_bytes=(SOURCE.parents[1]/'docs/research/arch002/proposal.json').read_bytes()
     manifest=manifest_template(hashlib.sha256(protocol_bytes).hexdigest(),hashlib.sha256(proposal_bytes).hexdigest(),auth['implementation_revision'])
@@ -76,13 +77,12 @@ def main():
     env=os.environ.copy()
     env.update(ASAN_OPTIONS='halt_on_error=1:detect_leaks=0:symbolize=0',UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=0:symbolize=0',PYTHONDONTWRITEBYTECODE='1',ARCH003_AUTHORIZED_VERIFIER='exact commit checked by owner')
     try:
-        acc=Accountant(root)
-        acc.start=started
-        def run(command,label,compiler=False):
+        acc=Accountant(root,started_ns=started)
+        def run(command,label,compiler=False,role=None):
             nonlocal counter
             counter+=1
             prefix=f'{counter:04d}-{label}'
-            receipt=acc.run([str(c) for c in command],root/(prefix+'.stdout'),root/(prefix+'.stderr'),env=env,compiler=compiler)
+            receipt=acc.run([str(c) for c in command],root/(prefix+'.stdout'),root/(prefix+'.stderr'),env=env,compiler=compiler,role=role)
             write_json(root/(prefix+'.json'),receipt)
             return receipt,prefix
         def metadata(command,label):
@@ -99,7 +99,7 @@ def main():
         require('clang' in version.lower(),69,'Clang-family compiler required')
         write_json(root/'host.json',{'host':socket.gethostname(),'platform':sys.platform,'machine':os.uname().machine,
                                      'python':sys.version,'compiler_version':version,'environment':{k:env[k] for k in ('ASAN_OPTIONS','UBSAN_OPTIONS')},
-                                     'accounting':'Linux /proc + wait4; conservative two-descendant peak bound',
+                                     'accounting':'Linux ptrace birth/exec/exit stops, per-process VmHWM and wait4 receipts',
                                      'sanitizer_runtime_defaults':'toolchain defaults; UAR/scope submodes not qualified'})
         manifest['host_receipt']='host.json'
         # Direct compiler-driver invocations preserve L + driver + at most one tool.
@@ -137,7 +137,7 @@ def main():
         manifest['binary_receipt']='binaries.json'
         # Required S probes are the first post-build worker activity.
         for i,(kind,mode,markers) in enumerate((('asan_heap_end','heap',[b'AddressSanitizer: heap-buffer-overflow']),('ubsan_shift','shift',[b'runtime error:',b'shift exponent']))):
-            r,p=run([binaries[(2,'sanitizer_probe')],mode],'probe-'+mode)
+            r,p=run([binaries[(2,'sanitizer_probe')],mode],'probe-'+mode,role='worker')
             detected=r['exit_code']!=0 and all(m in (root/(p+'.stderr')).read_bytes() for m in markers)
             receipt='probe-'+mode+'.json'
             write_json(root/receipt,dict(kind=kind,binary_sha256=sha(binaries[(2,'sanitizer_probe')]),exit_code=r['exit_code'],diagnostic_file=p+'.stderr',detected=detected))
@@ -158,7 +158,7 @@ def main():
             if expected:command+=['--expected',expected]
             command+=['--',binaries[(profile,kind)],'--campaign' if not probe else '--G'+str(probe)]
             if not oracle:command+=[expected]
-            run_receipt,_=run(command,'supervisor-'+label)
+            run_receipt,_=run(command,'supervisor-'+label,role='runtime')
             require((root/receipt).exists(),67,'missing verifier receipt')
             record=load_json(root/receipt)
             return run_receipt['exit_code'],record
@@ -197,14 +197,7 @@ def main():
         manifest.update(status_id=64,status=STATUS[64],complete=True)
     except (Stop,AccountingUnavailable,ResourceExceeded,OSError,ValueError) as exc:
         status=exc.status if isinstance(exc,Stop) else 70 if isinstance(exc,AccountingUnavailable) else 71 if isinstance(exc,ResourceExceeded) else 67
-        # A complete verifier receipt may precede a retrospective peak rejection.
-        for path in sorted(root.glob('*-supervisor.json')):
-            try:
-                prior=load_json(path)
-                if '-worker-0-supervisor' in path.name and prior['status_id']==65:
-                    status=65;break
-                if 'oracle-0-supervisor' in path.name and prior['status_id']==68:status=68
-            except (OSError,ValueError,KeyError):pass
+        status=preserve_failure_status(root,status)
         # Preserve a previously confirmed mismatch over a later accounting failure.
         if manifest['status_id'] not in (65,66,67,68):manifest['status_id']=status
         manifest['status']=STATUS[manifest['status_id']];manifest['complete']=False
@@ -213,36 +206,19 @@ def main():
     finally:
         if work is not None:shutil.rmtree(work)
     try:
-        manifest['resources']=acc.resources() if acc else dict(rss_peak_bound_bytes=None,elapsed_ns=time.monotonic_ns()-started,retained_bytes=None,accounting_complete=False)
-        if acc:write_json(root/'accounting.json',{'jobs':acc.jobs,'last_live_roster':acc.samples,'resource_summary':manifest['resources']})
-        write_json(root/'campaign.json',manifest)
+        if acc is None:
+            raise AccountingUnavailable('collector unavailable')
         if manifest['complete']:
             (root/'final-verifier.stdout').touch()
             (root/'final-verifier.stderr').touch()
-        seal(root)
+        finalize(acc,root,manifest)
         if manifest['complete']:
-            # Final independent V checks bundle, including every result and receipt.
-            # This final verification is inside the same owner's deadline and caps.
             command=[sys.executable,'-B',SOURCE/'verifier.py','--bundle',root]
-            r=acc.run([str(c) for c in command],root/'final-verifier.stdout',root/'final-verifier.stderr',env=env)
+            r=acc.run([str(c) for c in command],root/'final-verifier.stdout',root/'final-verifier.stderr',env=env,role='verifier')
             require(r['exit_code']==0,67,'final bundle verification failed')
-            manifest['resources']=acc.resources()
-            write_json(root/'campaign.json',manifest)
-            seal(root)
-            # Hashes have fixed size. Settle the retained-byte field after index
-            # creation and check the real deadline after the last seal as well.
-            for _ in range(4):
-                retained=acc.check_output()
-                require(time.monotonic_ns()-started<=1800*10**9,71,'deadline during final sealing')
-                if retained==manifest['resources']['retained_bytes']:break
-                manifest['resources']['retained_bytes']=retained
-                write_json(root/'campaign.json',manifest);seal(root)
-            else:raise Stop(67,'retained-byte accounting failed to settle')
+            finalize(acc,root,manifest)
     except (OSError,ValueError,Stop,ResourceExceeded,AccountingUnavailable) as exc:
-        status=manifest['status_id'] if manifest['status_id'] in (65,66,67,68) else 70 if isinstance(exc,AccountingUnavailable) else 71 if isinstance(exc,ResourceExceeded) else 67
-        manifest.update(complete=False,status_id=status,status=STATUS[status])
-        write_json(root/'failure.json',{'status_id':status,'message':'finalization: '+str(exc)})
-        manifest['failure_receipt']='failure.json';write_json(root/'campaign.json',manifest);seal(root)
+        retain_interruption(acc,root,manifest,exc)
     print(manifest['status'],file=sys.stderr)
     return 0 if manifest['complete'] else 1 if manifest['status_id'] in (65,66,67,68) else 3 if manifest['status_id']==71 else 2
 

@@ -1,13 +1,14 @@
 # ARCH-003 correctness implementation draft
 
-**IMPLEMENTATION PARTIAL. No correctness campaign or performance authorization.**
+**I2: ACCOUNTING VERIFIED for bounded Linux ARM64 fixtures; independent review pending. No correctness campaign or performance authorization.**
 This standalone project implements the ARCH-003-P0 source layout against accepted
 ARCH-002-R1 protocol commit `1454bd63426d21686cfb5ef22dbaebc3c9cae94b`.
 Parent hypothesis: canonical H03, with H05 context. It changes no production
 CMake, CI, representation semantics, historical evidence or research governance.
 
 Read [IMPLEMENTATION_REPORT.md](IMPLEMENTATION_REPORT.md) for the validation scope,
-remaining accounting defect and proposed later authorization boundary.
+accounting closure, retained failures and remaining campaign authorization gates.
+[ACCOUNTING_REVIEW.md](ACCOUNTING_REVIEW.md) is the current accounting assessment.
 [CHANGED_FILES.txt](CHANGED_FILES.txt) is the exact PR-relative file inventory.
 
 ## Bounded development checks
@@ -72,17 +73,35 @@ implementation/protocol/host/compiler identities and human authorization plus
 oracle/verifier/accounting review references. It refuses an existing output
 location. References and hashes do not authenticate the decisions they describe.
 
-## Current campaign blocker
+## Accounting closure and remaining campaign gates
 
-`accounting.py` has Linux `/proc` sampling, roster limits, `wait4` receipts,
-absolute RSS/deadline/output caps and category sub-budgets. Its compiler path
-**deliberately raises BLOCKED_RESOURCE_ACCOUNTING before launching a compiler**:
-a separate compiler-tool per-process peak receipt hook is not implemented.
-A doubled driver-tree maximum cannot replace the protocol's required receipts.
-Darwin/Windows collectors are also unsupported and fail closed. Linux live-tree
-collection and the full L/V/W lifecycle have not been executed on a Linux host.
+`accounting.py` and `linux_trace.py` collect Linux per-process peak observations
+at birth/exec/exit boundaries and wait4 receipts at reap, in L without an extra
+monitor process. The compiler-driver/tool hook no longer has an unconditional
+block. The same 512 MiB / 1,800-second / 100 MiB limits and sampling-gap rejection
+remain active. Missing identities/peaks, unavailable tracing, unexpected process
+rosters and unsupported task transitions still block accounting.
 
-Consequently this commit is for source review and bounded components, and cannot
-qualify a campaign on any host. Repair and review the accounting hook first;
-that source change requires a new exact implementation SHA and authorization.
-Do not remove the block or describe the current draft as campaign-ready.
+Twenty bounded fixtures passed on the recorded Linux ARM64 kernel/toolchain.
+The first failed Linux run and a later fixture setup failure are retained with
+corrections. See [ACCOUNTING_REVIEW.md](ACCOUNTING_REVIEW.md) before interpreting
+those checks. Darwin/Windows campaign accounting remains unsupported; Linux
+x86-64 and other host tuples are untested. There is no full-campaign result.
+
+A Linux reviewer can build the infrastructure fixture and opt in explicitly:
+
+```sh
+clang++ -std=c++20 -Wall -Wextra -Werror -fno-lto -O0 -pthread \
+  experiments/arch003/tests/accounting_fixture.cpp -o /tmp/arch003-accounting-fixture
+ARCH003_LINUX_FIXTURES=1 \
+  ARCH003_ACCOUNTING_FIXTURE=/tmp/arch003-accounting-fixture \
+  ARCH003_LINUX_EVIDENCE_DIR=/tmp/arch003-accounting-evidence \
+  python3 -B -m unittest discover -s experiments/arch003/tests \
+    -p test_accounting_linux.py -v
+```
+
+The fixture build must succeed before running tests. These tests use fixed
+infrastructure payloads and injected clock/proc/PID faults, not campaign cases.
+They never call a candidate count, G1/G2 or diagnostic sanitizer probe.
+Independent acceptance of accounting, both oracles and V, plus new exact-commit
+human authorization for a qualified host, remains required before a campaign.

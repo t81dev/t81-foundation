@@ -1,3 +1,23 @@
+# ARCH-003 current implementation report
+
+**I2 disposition: ACCOUNTING VERIFIED within the bounded Linux ARM64 fixture
+scope; independent review and campaign authorization remain pending.**
+
+I2 continues from implementation `e38574ec935f67542ca15f5679c1e80c22292cfa`
+without changing accepted protocol `1454bd63426d21686cfb5ef22dbaebc3c9cae94b`.
+The new exact implementation SHA is reported in PR #716 and the final handoff.
+The missing compiler-tool receipt hook described in the I1 report below is
+superseded by the implementation and evidence in
+[ACCOUNTING_REVIEW.md](ACCOUNTING_REVIEW.md). That document supplies mechanism,
+Linux evidence, platform limits, independent-review readiness and the remaining
+campaign blockers. The failed development runs remain retained.
+
+No full campaign, campaign G1/G2 qualification, sanitizer diagnostic probe,
+benchmark or timing pilot ran. No `PASS_CORRECTNESS_CORE` claim is made. The
+following I1 report is preserved as the previous implementation assessment.
+
+---
+
 # ARCH-003-I1 implementation report
 
 Disposition: **IMPLEMENTATION PARTIAL**. No `PASS_CORRECTNESS_CORE`, full campaign,

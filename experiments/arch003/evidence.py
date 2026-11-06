@@ -1,6 +1,8 @@
 """Protocol wire constants and canonical artifacts. No mathematical decoding."""
 import hashlib
 import json
+import os
+import tempfile
 import re
 from pathlib import Path, PurePosixPath
 import struct
@@ -49,14 +51,25 @@ def load_json(path):
 
 
 def write_json(path, obj):
-    Path(path).write_bytes(canonical(obj))
+    path=Path(path)
+    data=canonical(obj)
+    fd,temporary=tempfile.mkstemp(prefix='.'+path.name+'.',suffix='.tmp',dir=path.parent)
+    # Publication is atomic: existence means a complete canonical receipt.
+    # An interrupted temporary file is retained as a diagnostic artifact.
+    with os.fdopen(fd,'wb') as stream:
+        stream.write(data)
+        stream.flush()
+        os.fsync(stream.fileno())
+    os.replace(temporary,path)
 
 
-def sha(path):
+def sha(path, checkpoint=None):
     h = hashlib.sha256()
     with open(path, 'rb') as stream:
         for chunk in iter(lambda: stream.read(65536), b''):
+            if checkpoint:checkpoint()
             h.update(chunk)
+    if checkpoint:checkpoint()
     return h.hexdigest()
 
 
@@ -75,18 +88,22 @@ def fold(digest, status, count):
     return digest
 
 
-def seal(directory):
+def seal(directory, checkpoint=None):
     root = Path(directory)
     index = []
     for path in sorted(root.rglob('*')):
+        if checkpoint:checkpoint()
         if path.is_symlink():
             raise ValueError('symlink artifact')
         if path.is_file() and path.relative_to(root).as_posix() not in ('artifact-index.json', 'evidence.sha256'):
             name = safe_path(path.relative_to(root).as_posix())
-            index.append({'path':name, 'bytes':path.stat().st_size, 'sha256':sha(path)})
+            index.append({'path':name, 'bytes':path.stat().st_size, 'sha256':sha(path,checkpoint)})
     index.sort(key=lambda x:x['path'])
+    if checkpoint:checkpoint()
     write_json(root/'artifact-index.json', index)
-    (root/'evidence.sha256').write_text(sha(root/'artifact-index.json')+'\n', encoding='ascii')
+    if checkpoint:checkpoint()
+    (root/'evidence.sha256').write_text(sha(root/'artifact-index.json',checkpoint)+'\n', encoding='ascii')
+    if checkpoint:checkpoint()
 
 
 def verify_index(directory):
