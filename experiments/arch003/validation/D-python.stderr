@@ -1,0 +1,25 @@
+test_aggregate_not_individual_rss (test_accounting.AccountingChecks.test_aggregate_not_individual_rss) ... ok
+test_compiler_tree_peak_receipts_fail_closed (test_accounting.AccountingChecks.test_compiler_tree_peak_receipts_fail_closed) ... ok
+test_deadline (test_accounting.AccountingChecks.test_deadline) ... ok
+test_diagnostic_subbudget (test_accounting.AccountingChecks.test_diagnostic_subbudget) ... ok
+test_no_baseline_subtraction (test_accounting.AccountingChecks.test_no_baseline_subtraction) ... ok
+test_sample_interval (test_accounting.AccountingChecks.test_sample_interval) ... ok
+test_unsupported_host_fails_closed (test_accounting.AccountingChecks.test_unsupported_host_fails_closed) ... ok
+test_separate_oracles_match_fixed_reference (test_oracles.OracleWireChecks.test_separate_oracles_match_fixed_reference) ... ok
+test_canonical_json (test_verifier.ParserChecks.test_canonical_json) ... ok
+test_error_null_and_unknown_status (test_verifier.ParserChecks.test_error_null_and_unknown_status) ... ok
+test_expected_malformed (test_verifier.ParserChecks.test_expected_malformed) ... ok
+test_full_campaign_cannot_pass_prefix (test_verifier.ParserChecks.test_full_campaign_cannot_pass_prefix) ... ok
+test_guard_fixture_rejects_without_candidate (test_verifier.ParserChecks.test_guard_fixture_rejects_without_candidate) ... ok
+test_header (test_verifier.ParserChecks.test_header) ... ok
+test_index_root_and_tamper (test_verifier.ParserChecks.test_index_root_and_tamper) ... ok
+test_manifest_cannot_claim_complete_without_receipts (test_verifier.ParserChecks.test_manifest_cannot_claim_complete_without_receipts) ... ok
+test_rejections (test_verifier.ParserChecks.test_rejections) ... ok
+test_unsafe_paths (test_verifier.ParserChecks.test_unsafe_paths) ... ok
+test_valid_fixed_frame (test_verifier.ParserChecks.test_valid_fixed_frame) ... ok
+test_wrong_count_with_correct_digest_fails_semantics (test_verifier.ParserChecks.test_wrong_count_with_correct_digest_fails_semantics) ... ok
+
+----------------------------------------------------------------------
+Ran 20 tests in 0.025s
+
+OK

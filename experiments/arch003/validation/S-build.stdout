@@ -1,0 +1,35 @@
+[  3%] Building CXX object CMakeFiles/arch003_support.dir/src/schedule.cpp.o
+[  7%] Building CXX object CMakeFiles/arch003_support.dir/src/sha256.cpp.o
+[ 11%] Building CXX object CMakeFiles/arch003_support.dir/src/wire.cpp.o
+[ 14%] Linking CXX static library libarch003_support.a
+[ 14%] Built target arch003_support
+[ 18%] Building CXX object CMakeFiles/arch003_candidates.dir/src/adapters.cpp.o
+[ 22%] Building CXX object CMakeFiles/arch003_candidates.dir/src/admission.cpp.o
+[ 25%] Building CXX object CMakeFiles/arch003_candidates.dir/src/count_tc2.cpp.o
+[ 29%] Building CXX object CMakeFiles/arch003_candidates.dir/src/count_byte.cpp.o
+[ 33%] Building CXX object CMakeFiles/arch003_candidates.dir/src/count_planes.cpp.o
+[ 37%] Building CXX object CMakeFiles/arch003_candidates.dir/src/count_bc2.cpp.o
+[ 40%] Building CXX object CMakeFiles/arch003_candidates.dir/src/count_pt5.cpp.o
+[ 44%] Building CXX object CMakeFiles/arch003_candidates.dir/src/count_native.cpp.o
+[ 48%] Linking CXX static library libarch003_candidates.a
+[ 48%] Built target arch003_candidates
+[ 51%] Building CXX object CMakeFiles/arch003_sink.dir/src/sink.cpp.o
+[ 55%] Linking CXX static library libarch003_sink.a
+[ 55%] Built target arch003_sink
+[ 59%] Building CXX object CMakeFiles/arch003_scalar_oracle.dir/src/oracle_scalar.cpp.o
+[ 62%] Building CXX object CMakeFiles/arch003_scalar_oracle.dir/src/oracle_main.cpp.o
+[ 66%] Linking CXX executable arch003_scalar_oracle
+[ 66%] Built target arch003_scalar_oracle
+[ 70%] Building CXX object CMakeFiles/arch003_histogram_oracle.dir/src/oracle_histogram.cpp.o
+[ 74%] Building CXX object CMakeFiles/arch003_histogram_oracle.dir/src/oracle_main.cpp.o
+[ 77%] Linking CXX executable arch003_histogram_oracle
+[ 77%] Built target arch003_histogram_oracle
+[ 81%] Building CXX object CMakeFiles/arch003_worker.dir/src/worker.cpp.o
+[ 85%] Linking CXX executable arch003_worker
+[ 85%] Built target arch003_worker
+[ 88%] Building CXX object CMakeFiles/arch003_component_checks.dir/tests/component_checks.cpp.o
+[ 92%] Linking CXX executable arch003_component_checks
+[ 92%] Built target arch003_component_checks
+[ 96%] Building CXX object CMakeFiles/arch003_sanitizer_probe.dir/tests/sanitizer_probe.cpp.o
+[100%] Linking CXX executable arch003_sanitizer_probe
+[100%] Built target arch003_sanitizer_probe
