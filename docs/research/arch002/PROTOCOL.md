@@ -1,10 +1,15 @@
-# T81-ARCH-002 — Packed-trit equality/reduction preregistration
+# T81-ARCH-002-R1 — Packed-trit equality correctness protocol closure
 
-**Disposition: GO for a subsequent, separately authorized correctness-only
-implementation.** No experiment, pilot, benchmark, semantic change or merge is
-authorized by this document. Performance sections are design only. Status:
-proposed; date: 2026-11-05; source baseline:
-`d134407ae1059c4d7f6a9418177e695e0e5d3b51`.
+**Recommendation: ACCEPTANCE-READY for independent protocol review.** Status:
+proposed; date: 2026-11-05. Acceptance and commit-scoped correctness-only
+implementation/execution authorization remain separate human decisions. No
+kernel, oracle corpus, correctness experiment, pilot, benchmark or merge is
+authorized or reported here. Section 7 remains performance DESIGN ONLY.
+
+R1 amendment baseline: `182634e0d5e4ac3a80413791d07a27dd7e82bc27` (PR #714).
+The reusable-source inventory and its links retain the original source baseline
+`d134407ae1059c4d7f6a9418177e695e0e5d3b51`; these are different revision roles.
+The decision ledger is in section 9 of this existing document.
 
 Parent: canonical **H03**, with H05 Boolean-equivalence context; ARCH-002 does
 not replace either hypothesis. This is a synthetic representation/kernel-cost
@@ -17,7 +22,8 @@ See [proposal](proposal.json) and [documentation validation](VALIDATION.md).
 
 ## 1. Reuse and non-duplication gate
 
-All paths/line anchors in this table refer to the baseline above. Existing
+All paths/line anchors in this table refer to the original reusable-source
+baseline `d134407ae1059c4d7f6a9418177e695e0e5d3b51`. Existing
 implementations are evidence and reusable interfaces, not independently
 validated behavior in this task. Do not edit them or weaken their tests.
 
@@ -53,47 +59,65 @@ Output is `C = sum([a[i] == b[i]], i=0..N-1)` as unsigned **uint64**, with
 `0 <= C <= N`. Empty arrays return exactly zero. No approximate equality,
 wildcards, reorderings, saturation, carry propagation or early “any equal” exit.
 
-The standalone adapter accepts one named format, two byte spans and two
-uint64 lengths. Mixed formats are rejected; representation transformations are
-tested separately. Valid N is 0..2^24 inclusive. This is a resource/domain limit,
-not the mathematical or uint64 count limit. Payloads are disjoint, immutable
-buffers; identical values do not imply shared addresses. Input generation and
-kernel execution have separate APIs; kernels receive no seeds/distributions,
-expected counts, pair-specific summaries or catalog/index metadata.
+The request is exactly `Request{a,b}`, where each operand is
+`Operand{format:uint8, n:uint64, payload:immutable byte span}`. Span extent is
+the actual accessible byte count, not an advertised N-sized allocation.
+Formats have stable tags BYTE=0, C2=1, PT5=2, NATIVE=3, PLANES=4; 5..255 are
+unknown. No shared request-level format field exists. Thus mixed-format input
+is representable and rejected before decoding or conversion. No implicit
+transcoding occurs in the count API.
 
-Return exactly `(status,count)`: `status=OK` and a uint64 count on success;
-otherwise `count=null`. Error precedence: `ERR_FORMAT` (unknown/mixed format),
-`ERR_LENGTH` (N_a != N_b), `ERR_LIMIT` (N>2^24), `ERR_PAYLOAD_LENGTH` (not exactly
-the required bytes), `ERR_SYMBOL` (invalid active symbol/code), `ERR_PADDING`
-(noncanonical unused digits/bits). Check active symbols of A then B before
-padding of A then B. No count is released for partially valid input. Diagnostic
-strings/error positions are non-governed and not comparison outputs.
+The selected entry point has a fixed registered format (section 4). It receives
+only Request, not seeds, distributions, case IDs, expected counts, input hashes
+or pair summaries. All normal valid calls use its registered format. Payloads
+are disjoint immutable buffers; identical values do not imply shared addresses.
+For N=0 both spans have extent zero and null data pointers; no dereference or
+pointer arithmetic is permitted. Valid N is 0..2^24 inclusive: a resource/domain
+limit, not the mathematical or uint64 count limit.
 
-All primary implementations expose the same checked contract. Validation may
-fuse with counting, but must cover both complete inputs before returning OK.
-Payload length arithmetic uses checked unsigned calculations. N=0 requires
-zero payload bytes in every format; no dereference is allowed. SIMD loads must
-not overread allocation boundaries; use bounded tails, never assume guard bytes.
+Return exactly `(status,count)`, with the following immutable uint8 status IDs.
+Count is uint64 only for OK and null for every error; never release a partial
+count. Diagnostic text/positions are not governed comparison outputs.
 
-Each checked result is consumed by the same opaque, separately compiled harness
-sink, which incorporates status and count into a rolling uint64 digest modulo
-2^64. Record the final digest and per-block expected counts. No output-only
-pointer observation or unused result is sufficient. Disable interprocedural/LTO
-optimization across the timing-call boundary, retain full optimization inside
-kernels, and inspect assembly to rule out count reuse/dead-code elimination.
+| ID | Status | First applicable condition, in this order |
+|---:|---|---|
+| 0 | OK | All checks pass; return the mathematical count |
+| 1 | ERR_FORMAT | Either tag unknown, tags differ, or their common tag differs from this entry point's registered format |
+| 2 | ERR_LENGTH | N_a != N_b |
+| 3 | ERR_LIMIT | Equal N exceeds 2^24 |
+| 4 | ERR_PAYLOAD_LENGTH | Either span is not exactly the size required by section 3 |
+| 5 | ERR_SYMBOL | Invalid active byte, field, PT5 byte or plane overlap |
+| 6 | ERR_PADDING | Noncanonical unused digits/bits |
+
+At each preflight level check A then B. Validate active symbols of all A then
+all B before padding of A then B. In particular, B's active error outranks A's
+padding error. Padding-only code 11 in NATIVE is ERR_PADDING, not ERR_SYMBOL;
+an entire PT5 byte 243..255 is ERR_SYMBOL even in a partial group. Format,
+length and limit rejection must not inspect payload contents. Perform checked
+size arithmetic only after the domain check. No access beyond either span is
+permitted; SIMD tails may not rely on accessible guard bytes.
+
+Each checked result is consumed once by the opaque, separately compiled common
+sink defined in section 4.3. Its status/count frame and uint64 rolling digest
+are fixed there. Full per-case comparison is mandatory; a matching digest alone
+is insufficient. No output-only pointer observation or unused result counts as
+consumption. Disable interprocedural/LTO optimization across the call boundary,
+retain full optimization inside kernels, and inspect the qualified assembly
+before any later timing to rule out count reuse/dead-code elimination.
 
 ## 3. Canonical representations and transformations
 
 All formats encode increasing logical indices from low fields/bits to high.
-Sizes exclude the identical in-memory descriptor (format, N, span lengths);
-record its actual size separately. No ISA/container/wire format is introduced.
+Sizes exclude the identical section-2 Request descriptor (two operand-local
+format tags, lengths and spans); record its actual size separately. No
+ISA/container/wire format is introduced by the payload representation rules.
 
 | Format | Canonical payload and validation |
 |---|---|
 | BYTE | N bytes: `FF=-1`, `00=0`, `01=+1`; reject every other byte. |
 | C2 (ComputeTritVector) | `ceil(N/4)` bytes; slot j at bits `2j..2j+1`: `00=0,01=+1,11=-1`; reject active `10`. Unused fields must be `00`. |
 | PT5 | `ceil(N/5)` bytes; `b=sum((t[j]+1)*3^j,j=0..4)`, 0..242. Reject 243..255 as ERR_SYMBOL, including a partial final byte. Missing trailing trits must be zero, hence their base-3 digits must be 1. Exact re-encoding of the decoded N symbols must reproduce the payload. |
-| NATIVE (optional correctness adapter) | `32*ceil(N/128)` bytes of 32-byte blocks; four fields/byte, `00=-1,01=0,10=+1`; active `11` rejected by this experiment even though production DecodeTrit aliases it. Unused fields through the final block encode zero (`01`, whole zero-padding bytes `55`). Do not call native arithmetic. |
+| NATIVE (mandatory correctness adapter) | `32*ceil(N/128)` bytes of 32-byte blocks; four fields/byte, `00=-1,01=0,10=+1`; active `11` rejected by this experiment even though production DecodeTrit aliases it. Unused fields through the final block encode zero (`01`, whole zero-padding bytes `55`). Do not call native arithmetic. |
 | PLANES | Positive plane followed by negative plane, each `ceil(N/8)` bytes. Bit i%8 of byte i/8 marks +1 or -1; neither means zero; both set on an active position is ERR_SYMBOL. All unused bits in both final bytes are zero. |
 
 The independent BYTE-to-format transform follows these equations, validates
@@ -108,46 +132,402 @@ Payloads are N, ceil(N/4), ceil(N/5), 32*ceil(N/128), and 2*ceil(N/8) bytes
 respectively. PT5's asymptotic 20% reduction from C2 is arithmetic, not a speed
 result. Headers, tables, scratch, alignment and live buffers are additional.
 
-## 4. Independent oracle and correctness case specification
+## 4. Frozen correctness campaign
 
-Oracle author writes explicit scalar mathematical decoders from §3 without
-calling optimized paths, production packers, popcount, SIMD, or candidate LUTs.
-After envelope validation, accumulate `uint64(a_symbol == b_symbol)` in index
-order. For small cases cross-check a separately structured oracle: count the
-three diagonal entries of the 3x3 joint symbol histogram. Candidate-produced
-expected counts/hashes cannot define expected truth.
+Nothing in this section may execute until the separate authorization in section
+8. All counts below are schedule arithmetic, not generated or executed cases.
+The six core entry points are fixed before implementation acceptance:
 
-Mandatory cases, no new execution authorized now:
+| Implementation ID | Entry point | Registered format tag |
+|---:|---|---:|
+| 0 | T-C2 | 1 |
+| 1 | B-BYTE | 0 |
+| 2 | B-PLANES | 4 |
+| 3 | B-C2 | 1 |
+| 4 | B-PT5 | 2 |
+| 5 | NATIVE-ADAPTER | 3 |
 
-1. All nine ordered symbol pairs, plus empty payloads; verify exact counts and
-   every format's zero representation. Same values in separately allocated
-   buffers; equality at first/last position; all equal; no equal; one mismatch.
-2. Exhaust all ordered vector pairs for N=1..5 (the N=5 family has 59,049 pairs).
-   Encode independently; compare all formats with both scalar formulations.
-   This covers every valid PT5 group pair and every valid C2 group pair.
-3. At each N in `{0,1,2,3,4,5,7,8,9,15,16,17,31,32,33,63,64,65,127,128,129,
-   255,256,257,1023,1024,1025,4097}`, test constants, alternating/cycling symbols,
-   one matching position at each boundary, and seeded independent vectors.
-   Test pointer offsets 0..31 with exact-length allocations; test canaries and
-   ASan/UBSan separately from any later timing. Include unequal lengths and
-   domain limit N=2^24+1 without allocating its advertised payload.
-4. Try all 256 single-byte encodings for BYTE, C2 and PT5 in operand A and B
-   against a valid peer; enumerate all forbidden fields/bit-plane overlaps and
-   all unused-slot mutations at partial lengths. Extra/truncated payloads,
-   nonzero C2/plane padding, nonzero PT5 unused trits, native code 11/padding
-   mutations, mixed faults and precedence must produce the specified error.
-5. Seeded correctness vectors: seeds j=0..31, both distributions below, the
-   boundary lengths above. Also validate N=2^20 and 2^24 once per distribution
-   with j=0 using streaming or compact-byte oracles, not Python integer lists.
-6. Build with explicit Debug/Release flags including `-O3 -DNDEBUG`. Checks must
-   remain active. Mutate one computed count by +1 (N=1, a=b=[0]) and require
-   nonzero exit in both modes. A test-driver mutation that suppresses its main
-   comparison must also be detected by that deliberately wrong result. No
-   `assert`-disabled “pass”; preserve commands, binary/source hashes and exits.
-   An external always-active supervisor independently checks the child output
-   against the anchor count 1: count 2 must fail even if the child suppresses
-   its own comparison and exits zero. Seal agreed dual-oracle expectations and
-   hashes before candidate execution; never repair them to match its output.
+NATIVE is mandatory for the entire correctness matrix, including invalids and
+sanitizers. It is a strict encoding/count adapter, never positional arithmetic
+or a performance arm. Its absence blocks core correctness acceptance. The four
+conventional controls and their qualification requirements in section 5 remain
+mandatory. The initial core campaign has exactly one source-frozen entry point
+per row. Additional control/backend variants remain eligible for later strong
+comparator qualification, but must first pass this entire matrix under separate
+commit-scoped correctness authorization; they cannot be silently added to this
+budget or compared after reduced coverage. No performance comparator requirement
+is waived by a core correctness pass.
+Core count coverage does not qualify an unexecuted end-to-end converter:
+section-5 conversion pipelines must additionally match the sealed valid inputs
+in every profile before later performance qualification, under separate approval
+if that work would exceed this frozen campaign.
+
+Two source-independent mathematical oracles must be accepted before candidate
+execution: explicit scalar decoding/equality accumulation, and separately
+implemented decoding plus the three diagonal cells of a 3x3 joint histogram.
+Neither calls candidate/production encoders, decoders, SIMD, popcount or LUTs;
+the two decoders/encoders may not share implementation logic. Both validate the
+full envelope and agree on status/count and canonical input bytes for every
+scheduled request, including streaming large cases. BYTE-to-F-to-BYTE checks
+for each of the five F are part of valid-case preparation, including exact
+re-encoding/padding identity. No extra F-by-G conversion Cartesian product is
+implied. If a production converter will be used by a later end-to-end arm, its
+bytes must match these sealed inputs before it can qualify; it is not an oracle.
+The two oracle streams are compared and sealed before any candidate execution;
+disagreement stops with FAIL_ORACLE. Expected truth is never repaired to match
+candidate output. Streaming/compact byte buffers are required, not per-element
+Python integer lists. Oracle independence is a source-review requirement, not
+a claim that different role labels establish independent-person validation.
+
+### 4.1 Schedule and ordering
+
+Let L be the ascending list
+`[0,1,2,3,4,5,7,8,9,15,16,17,31,32,33,63,64,65,127,128,129,
+255,256,257,1023,1024,1025,4097]` (28 lengths). Let
+`K=[4,5,8,16,32,64,128,256,1024]` and P(N) be the sorted unique in-range
+members of `{0,N-1} union {k-1,k: k in K}`; P(0) is empty.
+Format order is BYTE,C2,PT5,NATIVE,PLANES. Operand order is A,B. Ordered symbol
+pairs are lexicographic over -1,0,+1. Ascending numeric order applies to every
+remaining index/mutation value. These orders, not unordered container iteration,
+define the case sequence. For each logical pair in families 0..5 expand formats
+innermost in that order. Else expand the exact format-specific requests below.
+Emit one expected record per expanded request; assign consecutive case_seq from
+0. Emit observations in increasing case_seq, then implementation ID, using the
+eligible implementation mask in the expected record. Normal calls go only to
+entry points registered for that format; family 10 explicitly tests misrouting.
+The always-active harness verifies disjoint nonempty span ranges and exact
+input immutability against the sealed pair hash before/after calls. Hash only
+actual accessible span bytes, never an advertised invalid N-sized range. This
+verification is charged to correctness resources and lies outside later timed
+regions as already required by section 5.
+
+| Family ID | Frozen expansion (outer loops written first) | Expected records | Calls/profile |
+|---:|---|---:|---:|
+| 0 ANCHOR | Empty pair once, then all nine N=1 ordered symbol pairs | 50 | 60 |
+| 1 EXHAUSTIVE | N=1..5; A ordinal 0..3^N-1; B ordinal 0..3^N-1 | 332145 | 398574 |
+| 2 BOUNDARY | N in L; the 14 patterns below, then each p in P(N) with the two boundary mutations below | 4630 | 5556 |
+| 3 SEEDED | N in L; distribution U then S; j=0..31, phase 0 with endpoint 0/1 respectively | 8960 | 10752 |
+| 4 LARGE | Endpoint 0..3 from the generator definition below, phase 0, j=0 only | 20 | 24 |
+| 5 OFFSET | N in L; o=0..31; allocation mode E then C; one cycle pair with last-position mismatch when N>0 | 8960 | 10752 |
+| 6 ADMISSION | Formats in order; operand A then B; byte/mask v=0..255 as below | 2560 | 3072 |
+| 7 NATIVE_FIELDS | N=128, NATIVE only; operand A then B; field i=0..127 changed to active code 11 | 256 | 256 |
+| 8 PADDING | Formats C2,PT5,NATIVE,PLANES; partial N ascending; operand A then B; unused position ascending; wrong code ascending as below | 49012 | 49048 |
+| 9 ENVELOPE | Unequal lengths, over-limit descriptors, then truncated/extra spans as below | 580 | 696 |
+| 10 FORMAT | Known mixed tags; unknown-tag triples; then known-format misroutes as below | 778 | 4662 |
+| 11 PRECEDENCE | Format order; fault-pair order, then the same-level/opposite-operand cases below | 83 | 101 |
+| **Total** | No other implicit products or repetitions | **408034** | **483553** |
+
+For family 1, ordinal v encodes symbol i as `(floor(v/3^i) mod 3)-1`.
+There are 66,429 logical ordered pairs across N=1..5; N=5 contributes 59,049.
+This includes all valid PT5 group pairs and all valid C2 group pairs.
+For family 2 the 14 patterns are nine constant ordered pairs; three cycling
+pairs A[i]=(-1,0,+1)[i mod 3], B[i]=(-1,0,+1)[(i+k) mod 3], k=0,1,2;
+then two alternating pairs A[i]=(-1,+1)[i mod 2], B[i]=(-1,+1)[(i+k) mod 2],
+k=0,1. For each p, first use A all zero and B all +1 except B[p]=0
+(one match); then A all zero and B all zero except B[p]=+1 (one mismatch).
+Families deliberately overlap as anchors/coverage checks, not independent
+replications. N=0 executes the named empty patterns without reading memory.
+
+Every family except 5 uses offsets (0,0) and mode E. Family 5 uses byte offsets
+`(o,(7*o+3) mod 32)` relative to 32-byte-aligned allocation bases, so every
+offset 0..31 occurs in each operand, in 32 pairs rather than 32^2 pairs. Its A
+is the three-symbol cycle and B=A except its last symbol is advanced once
+cyclically. E has exactly offset+payload_bytes allocated, no accessible trailing
+byte; the span starts at base+offset. For nonempty spans the always-active
+harness verifies the actual payload address modulo 32 equals its declared
+offset before calling the entry point. C adds a 32-byte prefix and 32-byte suffix
+of A5 hex, keeping the same payload address modulo 32; check all guards and
+payload immutability afterward. N=0 uses null, empty spans in both modes.
+ASan E catches allocation-end overreads; C catches guard writes. Prefix reads
+within an allocation are not all detected by these tools; this is scoped
+coverage, not a proof that every possible out-of-span read is observed.
+
+Family 6 starts with separately allocated canonical all-zero pairs. BYTE uses
+N=1, C2 N=4, PT5 N=5, NATIVE N=4: replace the selected operand's first byte by
+v, retaining canonical remaining NATIVE padding. PLANES uses N=8 and sets both
+plane bytes of the selected operand to v. Valid mutations must return their
+oracle count; these are not all error cases. C2's active forbidden fields and
+all PLANES overlaps are covered here, so no additional field-product is implied.
+
+Family 8 starts with canonical all-zero pairs. C2: N=1..3, unused field j=N..3,
+wrong two-bit code 01,10,11. PT5: N=1..4, unused digit j=N..4, replace digit 1
+by 0 then 2 while leaving all other digits 1. NATIVE: N=1..127, unused field
+j=N..127, replace zero code 01 by 00,10,11. PLANES: N=1..7, unused position
+j=N..7, replace its plane state 00 by 01,10,11 (positive bit first in this
+state notation). All are ERR_PADDING; no product of multiple unused positions.
+
+Family 9 loops formats first within each subfamily: (a) unequal (N_a,N_b)
+ordered as (0,1),(1,0),(4,5),(5,4), with each operand's own canonical zero
+payload; (b) equal over-limit N=2^24+1 then UINT64_MAX with empty spans and no
+advertised-size allocation; (c) N in L, operand A then B, truncate one last
+byte when the required span is nonempty, then append one 00 byte. Peer spans
+are canonical. Empty-span truncation produces no case; extra N=0 bytes do.
+
+Family 10 uses N_a=N_b=0 and empty spans: (a) known tag pairs (f,g), f then g
+ascending, f!=g; (b) for each unknown u=5..255 use (u,BYTE),(BYTE,u),(u,u) in
+that order. These 773 requests run on all six entry points. (c) for known f
+ascending, use (f,f) only on entry points whose registered tag differs from f;
+one record holds that complement mask. All return ERR_FORMAT. There is no
+unknown-by-unknown Cartesian product.
+
+Family 11 starts with zero pairs at N=1 in each format. Faults in priority order
+are F (A tag=255), L (N_b=N_a+1), M (N_a=2^24+1 and N_b equal unless L),
+B (append one 00 byte to A), S (invalid active B), P (invalid unused A).
+Use every pair of distinct applicable faults in lexicographic rank order: 10
+pairs for BYTE, 15 for other formats. Build base small spans for the descriptor
+N=1; M never allocates its advertised payload. Apply M then L, then tag/byte
+mutations. Expected status is the higher-priority fault; incidental short spans
+under M cannot outrank M. S uses BYTE byte 02, C2 field-0 code 10, PT5 byte
+243, NATIVE field-0 code 11, PLANES overlapping active bit 0. P uses C2 field
+1 code 01, PT5 digit 1 changed from 1 to 0, NATIVE field 1 changed to 00,
+PLANES unused positive bit 1 set. Then, at canonical descriptor N=1, add:
+both operands active-invalid for every format; and, for each padding format,
+active-invalid A/padding-invalid B followed by both operands padding-invalid.
+The S+P pair already checks padding A versus active-invalid B. BYTE has no P.
+
+There are exactly 483,553 core-entry-point calls per profile, 1,450,659 across
+three profiles. Oracle preparation/replay and the explicitly separate
+guard/probe invocations in section 4.2 are additional charged work, not extra
+core-entry-point cases.
+Each profile replays identical sealed requests; lengths, distributions, offsets,
+mutations and profiles are not multiplied in any other way. A cap breach or
+unavailable required path yields an incomplete result, never case dropping.
+
+### 4.2 Builds, sanitizers and harness-negative controls
+
+After authorization, freeze compiler path/version/hash, target flags, backend,
+source/binary identities and complete commands before data generation. Use the
+same Clang-family toolchain on a given host for all profiles. Common flags are
+`-std=c++20 -Wall -Wextra -Werror -fno-lto`; no warning suppression, fast-math,
+cross-boundary LTO or sanitizer ignorelist is permitted.
+
+| Profile ID | Required compile/link profile, in execution order |
+|---:|---|
+| 0 D | Debug: `-O0 -g`, NDEBUG absent |
+| 1 R | Release: `-O3 -DNDEBUG` |
+| 2 S | Combined ASan+UBSan: `-O1 -g -DNDEBUG -fno-omit-frame-pointer -fsanitize=address,undefined -fno-sanitize-recover=all`; instrument at compilation and link with the compiler driver and both runtimes |
+
+Build all three profiles serially and record their binary identities before
+corpus generation. Next perform the two S diagnostic probes described below.
+Then execute profiles D, R, S in that order. In D, execute the scalar oracle
+producer then histogram producer over all 408,034 records and seal their agreed
+stream; in R and S, execute each producer again over the identical schedule and
+compare its full stream with that seal before that profile's G1/G2 and normal
+candidate run. Thus there are six oracle streams (2,448,204 expected-record
+evaluations), retained once by agreed byte identity with six explicit receipts.
+No candidate runs if an oracle replay disagrees or a required probe is absent.
+
+All 12 families, all six entry points and both allocation modes are required;
+expected inputs/oracle seals are shared unchanged across D/R/S, never regenerated
+with different seeds. The oracle producer executables,
+admission, converters, scalar/tail/SIMD code and common sink used in S must all
+be instrumented; prebuilt uninstrumented study libraries cannot count as S
+coverage. Owner/verifier parsing is separately reviewed always-active code,
+not a claim of C++ sanitizer coverage for their interpreter or the OS. Instrument
+the two independent oracle producers in S and compare their streams to the
+same seal before S candidates. Retain a single agreed expected stream by
+content identity, plus each producer's source/profile/hash/exit/comparison receipt.
+
+S uses `ASAN_OPTIONS=halt_on_error=1:detect_leaks=0:symbolize=0` and
+`UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=0:symbolize=0`. LSan, TSan, MSan
+and complete detection of all undefined behavior are outside this claim.
+Required coverage is the compiler's address instrumentation and undefined-check
+group throughout study-owned C++ code, with the two diagnostic probes below.
+Use-after-return and use-after-scope submodes are not specifically qualified by
+this revision; toolchain defaults must be recorded, not presented as matched
+cross-platform coverage. A sanitizer pass is not a universal memory-safety proof.
+Disabling LSan is explicit scope, not a leak-free result; disabling symbolization
+avoids an extra diagnostic child and does not disable instrumentation. No
+suppression/recovery or omitted study path is allowed. Before any S corpus
+execution require two isolated probes: a volatile one-byte heap-end overwrite
+must exit nonzero with `AddressSanitizer: heap-buffer-overflow`; a volatile
+unsigned shift by that type's bit width must exit nonzero with `runtime error:`
+and `shift exponent`. Preserve raw diagnostics. Compiler flag acceptance alone
+is insufficient. Probes are expected toolchain failures, not scientific cases.
+
+The exact Clang/runtime/OS tuple must support both sanitizers, their diagnostics
+and the required allocation/accounting hooks. Otherwise BLOCKED_TOOLCHAIN (or
+BLOCKED_RESOURCE_ACCOUNTING); retain labeled D/R subsets but no complete pass.
+Do not substitute GCC/MSVC, disable a sanitizer, shorten S to boundary cases, or
+move S to a different host while calling the original host complete. A separate
+host may earn its own fully labeled D/R/S result only under its own authorization
+and single shared budget. macOS/M2 or Linux availability is not assumed from a
+feature macro. ASan virtual mappings are not RSS; do not use an address-space
+ulimit as a substitute for RSS accounting.
+
+References for coverage/flags, not evidence of local availability:
+[Clang ASan](https://clang.llvm.org/docs/AddressSanitizer.html) and
+[Clang UBSan](https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html).
+
+In EACH profile, before the normal matrix, perform G1 then G2 on the fixed
+C2 Request N_a=N_b=1, payloads 00, expected count 1, implementation 0:
+
+- G1: mutate its computed count to 2 before local comparison and sink; the
+  worker emits that result and exits nonzero (1); the independent verifier
+  also rejects and exits 1.
+- G2: retain the same mutation and suppress the worker's own comparison; the
+  worker emits count 2 and exits 0. The independent verifier still compares
+  against the sealed anchor, rejects and exits 1. It must not trust child exit 0.
+
+The owner in section 8 must observe those exact exits and the wrong-count
+record. An unexpected verifier/worker exit, missing output or accepted count 2
+is FAIL_GUARD; no normal candidates run. Expected negative probes do not fail a
+campaign when correctly rejected. These checks remain active under NDEBUG.
+No new performance timing data are produced in D/R/S; resource clocks are
+accounting only. All three builds, probes, oracle work, six guards and normal
+runs share the one section-8 budget; no per-profile or sanitizer budget reset.
+
+### 4.3 Stable evidence serialization and verification
+
+Use uint8 tags and explicit little-endian unsigned integers, never native struct
+layout, addresses or locale-sensitive strings. Normal binary files start with
+16 bytes: ASCII `A2R1` (4), kind (1: E=0 expected/O=1 observed), profile (1:
+255 for expected, otherwise 0/1/2), probe (1: 0 normal, 1 G1, 2 G2, 255 shared
+guard expectation), reserved zero (1), actual record_count uint64 (8). The
+verifier writes/seals file headers, including actual prefix counts on failure.
+Candidate-worker stdout contains only the following fixed-size observation
+frames; oracle-worker stdout contains expected records instead. Neither stream
+has a header, header seeking or diagnostic text. V constructs the file header
+when retaining a stream, and records the raw-record-stream SHA-256 separately
+from the header-inclusive file SHA-256.
+
+Expected record, exactly 88 bytes in field order:
+`case_seq:u64, family:u8, format_a:u8, format_b:u8, expected_status:u8,
+N_a:u64, N_b:u64, bytes_a:u64, bytes_b:u64, expected_count:u64,
+offset_a:u8, offset_b:u8, allocation_mode:u8, implementation_mask:u8,
+pair_sha256:32 raw bytes`.
+Mask bit k selects implementation k; only bits 0..5 may be set and the mask
+must be nonempty. Allocation mode E=0/C=1. Error expected_count bytes are zero
+but mean null, not a successful zero. The frozen schedule determines every
+generation/mutation tuple from case_seq; no worker may choose tuples at runtime.
+Each oracle applies the registered-format rule for every selected mask member
+and must confirm their expected status/count is uniform before emitting the
+single expected record. This is true by construction for the misroute masks;
+the mask never supplies algorithmic expected truth to a kernel.
+
+The pair hash is SHA-256 of the concatenation
+`ASCII("ARCH002-R1-PAIR") || 00 || format_a:u8 || N_a:u64 || bytes_a:u64 ||
+exact A span bytes || format_b:u8 || N_b:u64 || bytes_b:u64 || exact B span bytes`.
+All integers here are little-endian. It binds tags, lengths and exact mutated
+or canonical payloads; no input arrays need be retained. Offsets/allocation mode
+are bound by the enclosing expected-file hash. The two oracle producers must
+agree on complete expected records, not only aggregate counts.
+
+Observed record, exactly 32 bytes in field order:
+`case_seq:u64, implementation_id:u8, status:u8, count_valid:u8,
+reserved8_zero:u8, count:u64, rolling_digest_after:u64, reserved32_zero:u32`.
+Count_valid is exactly 1 for OK and 0 for errors; error count bytes are zero.
+No unknown statuses, omitted/duplicated rows, unexpected implementations,
+reserved bits, trailing bytes or premature EOF can pass. Kernel error output
+therefore still has the abstract value (status,null).
+
+Maintain a separate uint64 digest for EACH implementation in EACH profile,
+reset also for each guard. Initial D is hexadecimal `cbf29ce484222325`.
+For every invocation fold the nine-byte frame `status:u8 || count:u64` (zero
+count bytes on error), in byte order: for each byte x set
+`D=((D xor x)*0x100000001b3) mod 2^64`. Fold once, including errors, and emit
+the updated D in the observation. The opaque common sink performs exactly this
+work; its equivalent status/count work stays inside any later section-5 timed
+boundary, while file hashing/serialization stays outside it. This is an FNV-1a
+consumption checksum, not cryptographic integrity or sufficient correctness proof.
+
+The independent verifier recomputes the digest from observed bytes, joins each
+record to the sealed expected case and eligible implementation, compares status,
+null/range/count, verifies order/completeness, and recomputes expected progress.
+A well-framed wrong count is FAIL_CORRECTNESS, not a passing checksum. A bad
+frame/order/digest is FAIL_EVIDENCE. Both prevent acceptance. The owner retains
+the sealed expected hash and refuses any post-seal replacement.
+
+Files are expected.bin and observed-D.bin/observed-R.bin/observed-S.bin. Retain
+one expected stream when oracle byte streams agree, with both stream hashes
+and comparison receipts; do not store duplicate full copies. On disagreement
+retain the shared-prefix identity and both first divergent records and stop.
+Guard expectation uses one expected record with case_seq=UINT64_MAX, family=255,
+mask=1, and the fixed C2 anchor; observed guards use that sequence, implementation
+0, and files guard-D-G1.bin through guard-S-G2.bin. Normal numbering never uses
+UINT64_MAX. Guard rejections and worker/verifier exits are explicit receipts,
+not ordinary scientific failures or ordinary passing cases.
+
+Canonical JSON J is the Commons convention: sorted ASCII property names,
+compact separators, ensure_ascii=true with lowercase Unicode escapes, no NaN,
+infinity or floating numbers, no insignificant whitespace. Each JSON file is
+UTF-8 J followed by one LF. Uint64 quantities in JSON are 16-digit lowercase
+hex strings; measured elapsed-ns/RSS/exit fields use exact decimal integer values
+within 0..2^53-1 (or null when unavailable), never rounded floats. JSON includes
+authorization reference, protocol/proposal SHA-256, exact source/binary/compiler
+identities/flags, role/profile/roster, expected/actual counts, final per-role
+digests, guard receipts, sanitizer diagnostics, cap events and completeness.
+
+campaign.json has exactly the following required properties (no additional
+properties). All receipt paths are relative artifact paths listed in the index.
+Null means not produced/unavailable; it may never stand for a passing check.
+
+| Property | Exact value/type |
+|---|---|
+| schema | `t81.arch002.correctness-evidence.v1` |
+| protocol_revision | `T81-ARCH-002-R1` |
+| protocol_source_revision, implementation_source_revision | Exact 40-lowercase-hex Git commit identities |
+| protocol_sha256, proposal_sha256 | 64-lowercase-hex hashes of accepted document bytes |
+| authorization_receipt, host_receipt, binary_receipt, failure_receipt | Artifact path or null |
+| build_receipts | Three path-or-null slots in D,R,S order |
+| status_id, status | Corresponding numeric/text campaign status from the table below |
+| complete | Boolean; true only for PASS_CORRECTNESS_CORE |
+| expectations_sealed | Boolean; true only after the initial two oracle streams agree and the owner records the immutable expected-file hash |
+| expected_records, calls_per_profile | Planned uint32 constants 408034 and 483553 |
+| expected_file, guard_expected_file | `expected.bin` / `guard-expected.bin`, or null if not produced |
+| actual_expected_records | Actual retained expected-record count, uint32 |
+| observed_files | Three path-or-null slots in D,R,S order |
+| actual_calls | Three uint32 counts of retained valid observation frames in D,R,S order |
+| final_digests | Three arrays of six fixed 16-lowercase-hex values, implementation-ID order; D0 for a role with no calls |
+| oracle_receipts | Six path-or-null slots: D scalar,histogram; R scalar,histogram; S scalar,histogram |
+| guard_receipts | Six path-or-null slots: D G1,G2; R G1,G2; S G1,G2 |
+| sanitizer_probe_receipts | Two path-or-null slots: ASan heap-end, UBSan shift |
+| resources | Object with exactly rss_peak_bound_bytes, elapsed_ns, retained_bytes (exact nonnegative JSON integers <=2^53-1, or null), and accounting_complete (Boolean) |
+
+Each oracle receipt has exactly profile (0/1/2), kind (`scalar`/`histogram`),
+binary_sha256, raw_stream_sha256 (64 lowercase hex each), records (uint32),
+exit_code (integer), and agreed (Boolean). A passing receipt requires exit 0,
+408034 records, byte agreement and the same raw stream hash as expected.bin
+after its 16-byte header. Each guard receipt has exactly profile, kind
+(`G1`/`G2`), worker_exit, verifier_exit (integers), expected_count and
+observed_count (16-hex uint64 values), rejected (Boolean), and observed_file
+(path). Passing guard checks require counts 1/2, rejected=true, verifier_exit=1,
+and worker_exit=1 for G1 or 0 for G2. Probe receipts have exactly kind
+(`asan_heap_end`/`ubsan_shift`), binary_sha256, exit_code, diagnostic_file (path)
+and detected (Boolean); require nonzero exit and the prescribed diagnostic.
+An interrupted/malformed receipt is retained as a diagnostic artifact and its
+manifest slot stays null, preventing a fabricated completed receipt.
+
+Build/binary/host/failure receipts retain exact commands, flags, source hashes,
+environment, complete exits and raw diagnostics; their tool-specific content
+is opaque evidence, not another numeric result format. The verifier checks the
+fixed manifest and numeric/guard/oracle schemas before declaring completeness.
+
+Stable correctness campaign status IDs are 64 PASS_CORRECTNESS_CORE,
+65 FAIL_CORRECTNESS, 66 FAIL_GUARD, 67 FAIL_EVIDENCE, 68 FAIL_ORACLE,
+69 BLOCKED_TOOLCHAIN, 70 BLOCKED_RESOURCE_ACCOUNTING, 71 INCONCLUSIVE_RESOURCE,
+72 BLOCKED_AUTHORIZATION. Owner exits 0 only for a complete core pass, 1 for
+failures 65..68, 2 for blocking statuses, 3 for resource-incomplete evidence.
+These do not rename section-7 performance outcomes. A confirmed mismatch remains
+a failure even if a later cap breach occurs; it cannot be relabeled inconclusive.
+
+artifact-index.json is exactly a JSON array of objects with exactly the keys
+path (string), bytes (nonnegative integer <=2^53-1), sha256 (64 lowercase hex).
+It lists every retained artifact other than itself and evidence.sha256,
+sorted by unique ASCII relative path (slash
+separators, no absolute paths or dot/dot-dot components). Include the campaign
+JSON, expected/observed streams, commands, qualification and negative receipts.
+SHA-256 hashes exact file bytes, including JSON LF and binary headers. The root
+is SHA256 of the canonical artifact-index.json bytes; evidence.sha256 is its
+64 lowercase hex digits followed by LF. This excludes a self-hash cycle.
+Semantic streams must agree across completed profiles for their fixed case/role
+schedule. Complete bundle roots may differ with host/build/resource receipts;
+reproducibility means recomputing the root from the retained exact bytes, not
+claiming identical host receipts or authenticity/authorization from a hash.
+
+The normal streams occupy exactly 82,328,144 bytes including four headers;
+the shared guard expectation plus six observed guard files add 392 bytes.
+These are static record-layout/cardinality calculations, not produced evidence.
 
 Fixed generator for later authorized implementation: SplitMix64 with uint64
 wrap, initial state S; on each draw add `9E3779B97F4A7C15`, then
@@ -180,7 +560,7 @@ validation.
 | B-PLANES | `valid_mask & ~((Pa xor Pb) | (Na xor Nb))`, population count and uint64 sum; validate no active P&N overlap. Permit scalar hardware popcount and NEON byte-count/reduction variants, with justified ISA availability. |
 | B-C2 | Conventional two-bit symbol equality/reduction over the **same C2 bytes**, independently implemented; permit word/SIMD masks, nibble LUTs and popcount. This same-byte control prevents attributing library tuning to ternary exclusivity. |
 | B-PT5 | Conventional base-243 symbol groups; eligible 243x243 table of equality counts for full groups (59,049 one-byte entries), with scalar partial-group handling, validation, table construction and memory charged. This is the same logical alphabet; do not exclude it as “ternary.” |
-| NATIVE | Correctness/encoding compatibility only; not a fifth performance endpoint or a proxy for positional addition. |
+| NATIVE | Mandatory correctness/encoding adapter in section 4; excluded from all performance arms/endpoints and from positional arithmetic claims. |
 
 All four controls are mandatory on M2. Before pilot, each must pass §4 and have
 source/assembly records confirming intended ISA and non-eliminated work. Permit
@@ -232,7 +612,8 @@ before any performance authorization:
   executable hash, enabled backend and disassembly. No `-ffast-math` relevance
   is assumed; operation is exact integer. Feature macros alone are not a host
   capability receipt. Never execute unavailable instructions.
-- One process and one worker thread; BLAS/OpenMP thread pools disabled. Record
+- One computational worker thread, with the bounded owner/verifier processes
+  in section 8; BLAS/OpenMP thread pools disabled. Record
   scheduling/QoS and migration evidence where available; do not claim physical
   core pinning on macOS without evidence. Do not pool P/E-core or host identities
   as independent architectural measurements.
@@ -362,27 +743,80 @@ on a favorable power result.
 
 ## 8. Resource feasibility, risks and next gate
 
-Caps apply separately to any future authorized correctness or full pilot-plus-
-confirmation campaign: one process/thread; <=512 MiB additional RSS above an
-idle-process baseline; <=30 minutes elapsed from campaign start (generation,
-oracle, warmup and analysis included); <=100 MiB total retained output. Do not
-restart the clock at each phase. No SSD input/output is inside timing; no
-swap-dependent runs or large executable/trace dumps.
+The old "one process/thread" wording means one computational worker, not the
+absence of independent observation. Permitted runtime tree is exactly:
 
-At N=2^24, two immutable BYTE sources use 32 MiB; two C2/PLANES payloads use
-about 8 MiB, two PT5 payloads about 6.4 MiB; two NATIVE payloads use 8 MiB.
-Keep only one arm's working pair live, <=64 MiB scratch and <=64 MiB additional
-source/verification copies, <=1 MiB tables, <=128 MiB runtime/analysis reserve:
-modeled headroom is below 300 MiB. This is arithmetic feasibility on an 8 GB
-machine, not measured RSS or proof of available memory. Use compact byte buffers
-and streaming oracles; never materialize per-element Python objects/JSON.
-Do not retain all input arrays: preserve generator/specification, seeds, exact
-input hashes, per-case expected/observed counts/statuses, all raw block times,
-binary/source identities and host events. Retain bounded mismatch slices and
-their indices; inputs are exactly regenerable. Reserve <=20 MiB numeric logs,
-<=10 MiB host/commands, <=10 MiB diagnostics and <=10 MiB manifests/source diffs;
-stop safely before 100 MiB. Overflow/cap breaches yield inconclusive evidence,
-never silent truncation or a weakened experiment.
+- L: one always-active campaign owner/accountant, holding the single monotonic
+  deadline, sealed expected identity, resource records and verifier exit checks.
+- V: at most one independently implemented supervisor/verifier at a time. It
+  validates worker output against the sealed oracle stream, not the worker's
+  own comparison or exit alone. It must not link candidate/oracle decode logic.
+- W: at most one worker process at a time, with one computation thread, serving
+  an oracle producer, adapter driver, negative guard or sanitizer probe. No
+  concurrent oracle/candidate workers, child pools, nested workers or per-case
+  subprocesses. Batch the normal matrix within one W per profile.
+
+The third role L is needed to observe V's required nonzero guard exits without
+terminating/resetting the campaign clock. V/W are reaped before replacement.
+In compilation mode L may instead own one compiler driver and at most one tool
+child; no V/W execution overlaps compilation, and use one build job. All such
+descendants count. Diagnostic symbolizer children are disabled in S. Runtime
+maintenance threads created by sanitizer/OS libraries must be recorded and may
+not partition study input or run adapter/oracle work; their memory is charged.
+External metadata utilities run only with V/W absent, within the same tree/caps;
+live monitoring uses L's in-process OS interfaces. No extra monitoring process
+or unaccounted helper is permitted while the runtime tree is populated.
+
+Correctness D/R/S are one campaign: <=512 MiB aggregate absolute resident memory
+over the live process tree, <=1,800 seconds from L start through all builds,
+oracle preparation, guards/probes, profiles, output verification and sealing,
+and <=100 MiB total retained output. No phase/profile/restart may reset limits.
+Absolute aggregate RSS is the conservative R1 closure of the old additional-RSS
+cap: record idle baselines for context but subtract none, including sanitizer
+startup/quarantine and supervisor buffers. Count shared resident pages in each
+process, conservatively. Use RSS, not ASan's virtual address mapping size.
+
+L samples live-tree RSS at intervals no greater than 100 ms and obtains OS
+per-process peak-RSS receipts at each reap. For each job, add L's campaign peak
+and its child-role peaks to give a conservative aggregate bound; take the
+maximum across sequential jobs, not a sum of every historical worker. Stop/kill
+on observed excess; a later peak receipt showing excess also invalidates budget
+conformance. This is bounded monitoring plus retrospective rejection, not a
+claim of perfect instantaneous containment. Missing descendant/peak accounting
+is BLOCKED_RESOURCE_ACCOUNTING. On deadline/output/RSS breach terminate the
+process tree, retain the exact completed prefix and reason, and mark
+INCONCLUSIVE_RESOURCE unless a confirmed failure already governs. No auto-retry,
+extra campaign, omitted NATIVE case or shortened sanitizer replay is permitted.
+The collector receipt names the OS API, raw units, conversion to bytes,
+sampling interval and descendant coverage. No raw-unit assumption or missing
+process may be silently treated as zero resident memory.
+
+A separately authorized future pilot-plus-confirmation campaign gets its own
+single identical resource envelope; section 7's calibration, 8+16 pilot blocks,
+confirmation cap, statistical rules and timing boundaries are unchanged. D/R/S
+are correctness configurations, not three performance campaigns. Neither this
+revision nor a resource-incomplete run grants execution or re-execution rights.
+
+At N=2^24 the BYTE pair uses 32 MiB; one C2/PLANES or NATIVE working pair about
+8 MiB, PT5 about 6.4 MiB. Retain one arm's working pair at a time, <=64 MiB
+scratch, <=64 MiB additional source/verification copies, <=1 MiB tables and
+<=128 MiB runtime/analysis planning reserve. The previous major-buffer estimate
+below 300 MiB is arithmetic, not measured RSS; supervisor/compiler/sanitizer
+overheads must actually fit the aggregate cap or the campaign is incomplete.
+Never retain all input arrays or per-element Python objects. Regenerate by the
+frozen schedule and sealed pair hashes. Preserve every confirmed mismatch as
+bounded operand slices/indices plus the full record and source identities.
+
+Correctness output sub-budgets are <=84 MiB numeric streams (82,328,144 normal
+bytes plus 392 guard bytes), <=4 MiB host/commands,
+<=8 MiB diagnostics/assembly/mismatch slices,
+and <=2 MiB manifests/source diffs, leaving 2 MiB global headroom. File sizes and
+duplicates count toward the 100 MiB total; never silently truncate an artifact.
+The original performance allocation (<=20 MiB numeric, <=10 MiB host/commands,
+<=10 MiB diagnostics, <=10 MiB manifests/diffs) remains for section 7 only.
+The distinct correctness allocation pays for complete per-call evidence rather
+than silently replacing it with an aggregate checksum. No SSD I/O belongs to
+later timed regions; elapsed resource accounting includes evidence writing.
 
 | Risk / falsifier | Required disposition |
 |---|---|
@@ -402,3 +836,28 @@ timed calls, pilot-selection runs, performance CI, ISA-002 work or historical
 artifact edits belong to that implementation. After correctness review, a
 separate host/comparator/statistical qualification and explicit performance
 authorization are required. Do not merge this PR automatically.
+
+## 9. R1 decision ledger and acceptance boundary
+
+These are protocol resolutions of the six supplied ARCH-003 readiness
+ambiguities, not experimental findings or independent acceptance. The R1 editor
+is Codex, with the original draft and supplied assessment context; no model
+identity or independent reviewer identity is inferred. Original H03/H05 findings,
+historical negative records, frozen artifacts and source links are unchanged.
+
+| Decision | Resolution | Reason / coverage and acceptance effect |
+|---|---|---|
+| R1-01 Process/accounting | L owner + independent V verifier + one W compute worker; serial jobs; aggregate absolute RSS and one clock | V must really exit on a suppressed-child-check guard while L retains accounting. Replaces an impossible literal single-process requirement; does not expand compute concurrency. Charges all overhead and all three correctness profiles to existing time/output ceilings. |
+| R1-02 Admission | Two operand-local format tags and explicit registered-format binding; stable status IDs and total precedence | Mixed formats are representable without conversion. Invalid domain/length checks precede payload inspection; B symbols outrank A padding. |
+| R1-03 NATIVE | Mandatory strict correctness-only adapter in all families/profiles | Resolves optional wording versus all-format obligations by retaining coverage. No NATIVE speed comparison or production decoder change; unavailable NATIVE blocks a complete pass. |
+| R1-04 Scheduling | Twelve enumerated families, six core entry points, three profiles; 32 paired offsets only in family 5 | Exactly 408,034 requests and 483,553 calls/profile; prevents an accidental lengths x seeds x offsets x mutations x variants explosion without hiding exclusions. Additional variants require their own full qualification. |
+| R1-05 Evidence | 88-byte expectations, 32-byte observations, fixed enum/order/FNV frame and SHA-256 artifact index | Makes truncation, missing rows, null/count confusion and hash reconstruction rules explicit. Both oracle streams agree before candidates; no hash substitutes for correctness or authentic authorization. |
+| R1-06 Sanitizers | Full combined ASan+UBSan S replay with active NDEBUG guards and two diagnostic probes | No boundary-only sanitizer subset or silent toolchain fallback. All D/R/S work shares one budget; LSan/TSan/MSan and undetectable bounds accesses are excluded explicitly. |
+
+R1 does not change section 7's statistical performance criteria. Independent
+maintainer acceptance of this revision, review of the future oracle/comparator
+implementation and explicit commit-scoped correctness-only authorization remain
+outstanding. Compiler/sanitizer availability and budget feasibility are future
+qualification facts, not documentation-validation passes. A complete core pass
+would establish only this fixed schedule/roster/host's correctness, not broader
+kernel, platform, architectural, performance or physical claims.

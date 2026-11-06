@@ -7,9 +7,9 @@
     "name": "Codex",
     "kind": "agent",
     "model": null,
-    "role": "ARCH-001 author and ARCH-002 preregistration drafter; prior context disclosed, not independent-person replication"
+    "role": "ARCH-002-R1 documentation editor; original draft attributes ARCH-001/ARCH-002 to Codex; original draft and supplied ARCH-003 ambiguity context inspected, not independent acceptance or replication"
   },
-  "repository_revision": "d134407ae1059c4d7f6a9418177e695e0e5d3b51",
+  "repository_revision": "182634e0d5e4ac3a80413791d07a27dd7e82bc27",
   "evidence": [
     {
       "source_ref": "register",
@@ -22,32 +22,33 @@
       "scope": "Preserve bounded negative software arithmetic results; no arithmetic rerun or interpretation as a universal hardware result."
     }
   ],
-  "uncertainty": "No equivalent completed two-array equality-count study found in inspected tracked main/Commons/related PR scope. No claim about unpublished branches. Correctness and host/comparator/statistical qualification are outstanding; no kernels, oracle corpus, pilot or performance execution occurred. Parametric confidence and joint-power targets are conditional on independent approximately normal log ratios.",
+  "uncertainty": "No equivalent completed two-array equality-count study found in inspected tracked main/Commons/related PR scope. No claim about unpublished branches. Correctness and host/comparator/statistical qualification are outstanding; no kernels, oracle corpus, pilot or performance execution occurred. Parametric confidence and joint-power targets are conditional on independent approximately normal log ratios. R1 freezes the process tree, complete finite correctness schedule, mandatory NATIVE adapter, evidence bytes and full D/R/S sanitizer replay. Schedule counts and record sizes are documentation arithmetic only. Required toolchain availability, aggregate resource feasibility and independent acceptance remain untested/outstanding.",
   "human_authorization": {
     "status": "not_requested",
     "human": null,
-    "record": "Current user authorizes documentation-only protocol and a narrowly scoped draft PR if coherent/nonduplicative. Subsequent correctness-only implementation/execution and all performance work remain separately unauthorized."
+    "record": "Current user authorizes only closure of six protocol ambiguities in the three existing ARCH-002 documentation files of PR #714. Independent acceptance, correctness-only implementation/execution and all performance work remain separately unauthorized; no merge."
   },
   "research_question": "For C=sum_i[a_i=b_i] on immutable {-1,0,+1} arrays, can a checked T81 C2 implementation reduce qualified M2 end-to-end cost against a separately pilot-selected optimized conventional control? Supporting H03/H05 discriminator, not ternary-exclusive superiority.",
   "falsification_criterion": "STOP on equivalent accepted prior evidence. Any wrong count/admission/padding or ineffective Release control fails correctness. Missing strong controls blocks timing. All four simultaneous lower log-ratio bounds must exceed ln(10/9) for the scoped 10%-lower-latency claim; otherwise classify threshold not supported or inconclusive as PROTOCOL section 7 specifies. No density/resident-only/physical generalization.",
   "matched_control": "B-BYTE native SIMD/auto-vectorized equality and widening count; B-PLANES positive/negative mask plus population count; independent same-byte B-C2; B-PT5 group-LUT count. Identical logical inputs/statuses and total end-to-end cost. Fixed candidate, pilot-separated control selection and disjoint confirmatory seeds.",
-  "method": "PROTOCOL.md sections 1-8 are the complete experimental contract. Strict experimental adapters, independent scalar and histogram oracles, exhaustive N<=5 symbol pairs, boundaries/invalids and deterministic SplitMix64 vectors. Documentation now; future correctness-only gate must precede separate host/comparator/statistics approval and performance authorization.",
+  "method": "PROTOCOL.md sections 1-9, revision T81-ARCH-002-R1, are normative. Two operand-local format tags, exact error precedence, mandatory six-entry-point roster including correctness-only NATIVE; 408034 expected requests and 483553 calls/profile over D/R/S. Independent scalar and histogram oracle streams seal one agreed expectation artifact before candidate execution. Twelve fixed families, paired offsets, full sanitizer replay, external-verifier negative guards and exact 88/32-byte evidence layouts. No kernels, scientific corpus or experimental execution in this documentation revision.",
   "measurement_plan": "Design only: N=2^20,2^24 x uniform/skewed = four endpoints; end-to-end mean paired log(TB/TC); theta0=ln(10/9), planning alternative ln(1.25). Frozen 8-block selection, 16-block variance pilot, common n=20..64 via noncentral-t power >=.975 per endpoint to target >=.90 joint power conditional on the model. Four two-sided 98.75% t intervals give >=.95 simultaneous coverage. Exact rules/seeds/caps in PROTOCOL; no optional stopping or outlier deletion. Resident mode descriptive and separately scheduled/authorized.",
   "expected_artifacts": [
     "Reviewed source/host/comparator/statistical qualification records and explicit authorization boundaries",
-    "Canonical decoder/oracle/candidate identities, frozen dual-oracle expectations and complete correctness results including intentional wrong-result and suppressed-check controls",
-    "Exact regenerable seed/input hashes, output counts/statuses, source/binary hashes and cap/host events",
+    "Independently reviewed oracle/adapter/owner/verifier source identities; sealed expected.bin, all observed-D/R/S.bin records, both oracle comparison receipts, NATIVE coverage and deliberate wrong-count/suppressed-comparison guard exits",
+    "Exact regenerable case schedule and pair hashes, per-call status/count/digest records, canonical JSON artifact index and SHA-256 root; source/binary/toolchain identities and aggregate process/RSS/deadline/output events",
     "Separately authorized calibration/pilot/confirmation raw block data and frozen selection/sample-size receipt, only if later approved",
     "All failures/inconclusive outcomes with no overwritten historical evidence"
   ],
   "resource_requirements": [
-    "Future authorized campaign: one process and worker thread; <=512 MiB additional resident memory; <=30 minutes elapsed including setup/oracle/warmup/analysis; <=100 MiB retained evidence.",
-    "Known target: user-specified 2022 M2 MacBook Air 8 GB RAM/256 GB SSD; modeled working buffers <300 MiB, actual qualification outstanding; no swap-dependent or SSD-bound timings.",
+    "Future authorized correctness campaign: L owner plus independent V verifier and at most one single-computation-thread W worker (three runtime processes); serial compiler jobs only in build mode. Aggregate absolute RSS <=512 MiB, one <=1800-second clock including all builds/oracles/probes/guards/D/R/S/sealing, and <=100 MiB retained output. No per-profile reset, fallback or automatic retries. Future performance campaign remains separately authorized under the same global ceilings; statistical criteria unchanged.",
+    "Known target: user-specified 2022 M2 MacBook Air 8 GB RAM/256 GB SSD; previous <300 MiB major-buffer estimate is arithmetic only. Actual supervisor/compiler/sanitizer RSS must fit the aggregate cap. Correctness evidence: <=84 MiB numeric, <=4 MiB host/commands, <=8 MiB diagnostics, <=2 MiB manifests; no swap-dependent or SSD-bound timing claims.",
     "Jules Linux is UNKNOWN until characterized; no pooled/native M2 inference from it, QEMU or a container."
   ],
   "security_requirements": [
     "Documentation-only current change. No ISA-002, VM, Axion, compiler, governance, frozen CPA or historical-results modifications; no merge.",
     "Standalone future adapters impose experimental strict validation without changing production encoding contracts. No expected-count or pair metadata supplied to kernels.",
-    "Correctness-only implementation/execution and all pilots/benchmarks need separate explicit commit-scoped authorization. No PR/JSON status grants that authorization."
+    "Correctness-only implementation/execution and all pilots/benchmarks need separate explicit commit-scoped authorization. No PR/JSON status grants that authorization.",
+    "Required D/R/S profiles and all six core entry points, including strict NATIVE, cannot be silently omitted. No complete pass without sanitizer diagnostic probes, active negative guards and complete expected/observed evidence; unsupported toolchain/accounting blocks acceptance. Correctness PASS does not waive section-5 strongest-control or section-7 separate performance review."
   ]
 }
