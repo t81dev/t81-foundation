@@ -3,6 +3,7 @@
 **Status:** draft — proposed requirements, not binding production behavior
 **Type:** standards-track
 **Created:** 2026-11-05
+**Updated:** 2026-11-06
 **Applies-To:** TISC ISA specification (`spec/tisc-spec.md`, `spec/tisc/`), hosted `T81VM` (`vm/vm.cpp`), freestanding Axion OS evaluator (`ternaryos/hal/cpa004_evaluator.cpp`), LLVM/MLIR lowering backends (`lang/llvm/tisc_to_llvm.cpp`), and cross-profile bytecode artifacts
 **Supersedes:** nothing; establishes the formal decision matrix and migration framework for ISA-001 reconciliation findings
 
@@ -16,7 +17,7 @@ This RFC establishes an authoritative, versioned state-transition contract for t
 This document is an **authoritative draft proposal and maintainer decision instrument** prepared under task **T81-ISA-002**. In accordance with T81 governance rules:
 - **No silent semantic choices are adopted**: Competing interpretations are explicitly detailed with historical evidence, compatibility impacts, and trade-offs.
 - **No production code or frozen artifacts are altered**: Runtime implementations (`vm/vm.cpp`, `ternaryos/`), test suites, and CPA evidence packets remain untouched.
-- **Explicit maintainer authorization is required**: Any change to normative instruction semantics, opcode registries, or execution profiles requires formal signature in Section 10 before implementation or promotion.
+- **Explicit maintainer authorization is required**: Any change to normative instruction semantics, opcode registries, or execution profiles requires formal signature in Section 10 before implementation or promotion. Opcode inventory expansion and assignment modifications remain strictly proposed options pending maintainer review.
 
 ### 1.2 The Research & Conformance Context
 The Cross-Profile Architecture (CPA) program successfully demonstrated cross-profile deterministic execution across hosted `T81VM` and bare-metal freestanding Axion OS (post-`ExitBootServices` AArch64 QEMU):
@@ -249,34 +250,40 @@ Between `spec/tisc/opcode-registry.md` and `include/t81/isa/opcodes.hpp`:
   - $R_0$ is hardwired to integer 0. Any write to $R_0$ must either be discarded (no-op) or trigger a `DecodeFault`.
   - In CPA evaluators, $R_0$ is enforced as immutable zero; destination $R_0$ is rejected during operand validation (`dest(i.a)` checks $a > 0 \land a < 75$).
 - **System Registers ($R_{75}..R_{80}$)**:
-  - $R_{75}$: Executed primary instruction tick count.
-  - $R_{76}$: Bytecode lineage hash root.
-  - $R_{77}$: Rolling execution step digest.
-  - $R_{78}$: Reserved execution counter.
-  - $R_{79}$: Reserved execution counter.
-  - $R_{80}$: Context status flag ($1 = \text{running}, 0 = \text{halted}$).
-  - In hosted T81VM, JIT traces defer $R_{75}$ synchronization until trace exit or explicit Halt, whereas interpreter steps synchronize continuously.
+  Authoritative implementations in `vm/runtime_state_helpers.cpp:90-111` and verified by `tests/cpp/vm_system_registers_deterministic_test.cpp` define:
+  - $R_{75}$: Global instruction execution tick count (`static_cast<int64_t>(instruction_count)`).
+  - $R_{76}$: Bytecode lineage hash root (`compute_lineage_signature(program)`).
+  - $R_{77}$: Rolling execution step digest / entropy signature (`compute_entropy_signature(...)`).
+  - $R_{78}$: Active Constitutional Mask (`compute_constitutional_mask(state)` bitmask: bit 0 `kPolicyLoaded`, bit 1 `kMaxInstructions`, bit 2 `kMaxRecursion`, bit 3 `kMaxStack`, bit 4 `kMaxReflections`, bit 5 `kMaxMetaWrites`, bit 6 `kAllowedTensorHashes`, bit 7 `kMatchGuards`, bit 8 `kSegmentOrAxionRequirements`, bit 9 `kAlignmentRequirements`).
+  - $R_{79}$: Call / recursion depth counter (`static_cast<int64_t>(std::max(ctx.stack_frames.size(), ctx.call_depth))`).
+  - $R_{80}$: Context status / Axion capability seal word (`state.halted ? 0 : 1`).
 
 ---
 
-### 3.6 Conflict 6: Deterministic PC Progression and Trap/Fault Ordering
+### 3.6 Conflict 6: Deterministic PC Progression and Fault/Trap Side-Effect Ordering
 
-#### Pipeline & Side-Effect Ordering Invariants
-A conformant TISC state transition must follow a deterministic, atomic phase cycle:
-1. **Instruction Fetch**: Read 13-byte instruction record at current `PC`. If `PC >= instruction_limit` or outside executable boundary, trigger `BoundsFault` before decoding.
-2. **Decode & Operand Validation**: Verify opcode validity in active profile and operand ranges ($R_1..R_{74}$ for write targets; valid memory addresses; non-reserved immediate types). Any violation raises `DecodeFault` atomically; state remains unmodified.
-3. **Pre-Execution Resource & Bounds Check**: Verify memory bounds ($27 \le \text{addr} < 1563$), stack bounds ($283 \le \text{SP} < 1563$), and divisor non-zero. A zero divisor raises `DivisionFault` without modifying registers, memory, or `FLAGS`.
-4. **Execution / Arithmetic**: Compute target value and type tag.
-5. **State Commit & Flags Update**:
-   - Write result to `R[Dest]` or `MEM[Addr]`.
-   - Update `FLAGS` (`zero`, `negative`, `positive`) based on committed integer payload.
-6. **System Register & Trace Sync**: Synchronize $R_{75}$, $R_{77}$, and emit observation stream.
-7. **PC Progression**:
-   - If branch taken: `PC = Target`.
-   - If non-branching or branch not taken: `PC = PC + 1`.
+A fundamental semantic divergence exists between the observable trap behavior of the legacy hosted/freestanding runtime and the idealized atomic-fault semantics proposed for forward profiles.
 
-#### Fault Atomicity
-If any fault occurs during Steps 1–3, **zero state changes** (no register updates, no memory updates, no flag changes) may be committed. The fault status is recorded, and execution terminates or vectors to the registered Axion fault handler.
+#### Legacy Hosted & CPA Runtime Behavior (Preserved in Historical Evidence)
+In the existing implementation (`vm/vm.cpp:639, 7220-7245` and `ternaryos/hal/cpa004_evaluator.cpp:202-277`):
+1. **Instruction Fetch & Increment**: Before opcode dispatch, the execution sequence advances: `const unsigned before = state.pc; const Instruction i = decode(bytes, state.pc++); ++state.tick;`.
+2. **Trap Detection**: If an instruction faults (e.g. `BoundsFault` on invalid address in C07, `DivisionFault` on divide-by-zero in C08, `TrapInstruction` in C09):
+   - In hosted VM: `restore_pc_on_trap` is only set for policy/security denials (`Trap::SecurityFault`, `Trap::ActivationFault` in `vm.cpp:6851`). For arithmetic, bounds, and decode faults, `restore_pc_on_trap` remains `false`.
+   - Consequently, **PC advances** to `pc_before + 1`.
+   - **Tick / System Registers Update**: The execution tick increments (`state.tick == sequence == 1`), and system registers $R_{75}$ (tick) and $R_{77}$ (entropy signature) are synchronized to reflect the faulting step.
+   - **No Destination Register or Memory Mutation**: While PC and tick advance, the destination register payload and memory contents are not committed (`write = false`).
+3. **CPA Conformance Trace Reality**:
+   - In CPA-006 Case C07-negative (Load with invalid address `b = -1`): sequence 0 records initial state (`PC=0, sequence=0, R75=0`). Sequence 1 records terminal trap observation: `status: "trap", trap: "BoundsFault", state: { pc: 1, sequence: 1, R75: 1 }`.
+   - In CPA-006 Case C08-div (division by zero at step 3): `state.pc` advances from 2 to 3, sequence increments to 3, and `R75` reflects 3 before trap termination.
+   - **Crucial Rule**: Any attempt to retroactively mandate strict zero-step or zero-PC-advance fault semantics on historical binaries would immediately invalidate 100% of CPA-006 trap cases (C07-negative, C07-upper, C07-code, C08-div, C08-mod, C09).
+
+#### Proposed Forward Profile (`tisc-v2.0` — Atomic Transactional Fault Semantics)
+For the forward specification profile (`tisc-v2.0`), atomic transactional fault semantics are proposed for clean exception/interrupt recovery:
+1. **Atomic Phase Ordering**:
+   - Step 1 (Fetch & Decode): Read instruction at `PC`. Decode operands.
+   - Step 2 (Pre-Commit Checks): Verify address bounds, alignment, stack limits, and divisor non-zero.
+   - Step 3 (Fault Boundary): If any check fails, generate fault immediately. In `tisc-v2.0`, `PC` remains pointing to the faulting instruction (`PC = pc_before`), tick counters do not increment, and no register/memory mutations occur.
+   - Step 4 (Commit): Only on complete success, commit result, update `FLAGS`, increment tick/lineage, and advance `PC = PC + 1` (or branch target).
 
 ______________________________________________________________________
 
@@ -301,6 +308,7 @@ Because raw 13-byte binaries contain no embedded metadata or version flags, T81 
 | * Wrapped Diff TXor           |                         | * Register Target JMP/CALL    |
 | * Admitted 17-Opcode Subset   |                         | * Pure FLAGS-based Branches   |
 | * Architectural R0..R80       |                         | * Full 244-Opcode Canonical   |
+| * Observable Trap Side-Effects|                         | * Atomic Fault Transactions   |
 | * Bit-for-bit CPA Validation  |                         | * Explicit Container / Magic  |
 +-------------------------------+                         +-------------------------------+
 ```
@@ -311,6 +319,7 @@ Because raw 13-byte binaries contain no embedded metadata or version flags, T81 
 - **Memory**: Immediate addressing (`Load A, B` $\implies R[A] = \text{MEM}[B]$; `Store A, B` $\implies \text{MEM}[A] = R[B]$).
 - **Branches**: Immediate target `A`; `JZ`/`JNZ` test register `R[B]`; `JN` tests `FLAGS.negative`.
 - **TXor**: Wrapped difference $\text{wrap}_3(x - y)$.
+- **Faults**: Preserves legacy observable fault behavior (PC advances to next instruction, tick increments, system registers sync).
 - **Guarantees**: All historical raw13 binaries, golden traces (`expected.json`), and SHA-256 witnesses remain 100% valid and verified without modification.
 
 ### 4.2 Profile 2: `tisc-v2.0` (Forward Canonical Unified Profile)
@@ -325,58 +334,74 @@ Because raw 13-byte binaries contain no embedded metadata or version flags, T81 
   - `JMPABS Addr`: Immediate jump.
   - `JZ / JNZ / JN / JP`: Pure `FLAGS`-driven conditional branching.
 - **TXor**: Formally codified scalar balanced difference, with documentation updated to remove ambiguous "Sum" terminology.
-- **Inventory**: Header enum, registry markdown, and capability contracts unified at 244 defined opcodes, reserving 221–223 and 247–255.
+- **Faults**: Strict atomic fault semantics (zero state changes, PC preserved at faulting instruction).
+- **Inventory**: Subject to maintainer approval under DM-06 and DM-07, formalizes 244 opcodes with holes 221–223 and 247–255 reserved.
 
 ______________________________________________________________________
 
-## 5. Artifact Binding and Envelope Specification
+## 5. Artifact Binding, Envelope Specification, and Precedence
 
-To prevent profile ambiguity, raw instruction streams must be encapsulated or explicitly bound at execution boundaries:
+To eliminate execution ambiguity, raw instruction streams must be encapsulated or explicitly bound at runtime boundaries.
 
-### 5.1 Container-Bound Profile Selection
-1. **CanonFS Object Metadata**:
-   When stored in CanonFS, computational objects must include the manifest metadata field:
-   ```json
-   {
-     "format": "tisc-bytecode-v1",
-     "isa_profile": "tisc-cpa-v1.0",
-     "entry_point": 0,
-     "stack_initial": 283
-   }
-   ```
-2. **Freestanding UEFI / ELF Container**:
-   Standalone images targeting freestanding execution embed the profile string in a dedicated `.rodata` note section (`.tisc_profile`).
-3. **Execution CLI Explicit Flag**:
-   The T81 VM runner requires explicit profile selection when executing raw `.raw13` binaries lacking container envelopes:
-   ```bash
-   t81 vm run --isa-profile tisc-cpa-v1.0 program.raw13
-   ```
-   If omitted, the runner defaults to fail-closed admission rejection (`Trap::UnsupportedProfile`).
+### 5.1 Profile Resolution Precedence Hierarchy
+When multiple conflicting profile sources or hints are present, conforming implementations MUST evaluate profile selection according to the following strict descending order of precedence:
+
+```
++-------------------------------------------------------------------------+
+|                  Profile Resolution Precedence Hierarchy                |
++-------------------------------------------------------------------------+
+  1. Explicit CLI Execution Flag:    --isa-profile <name>
+     Overrides all metadata; enables deterministic operational testing.
+                                      |
+                                      v
+  2. Container Manifest Envelope:    CanonFS manifest / computational object
+     Explicit JSON metadata field ("isa_profile": "tisc-cpa-v1.0").
+                                      |
+                                      v
+  3. Binary Embedded Note Section:   Standalone UEFI / ELF .rodata note
+     Embedded string in .rodata note section (.tisc_profile).
+                                      |
+                                      v
+  4. Fail-Closed Default Rejection:  Reject execution immediately
+     Raw .raw13 bytecode lacking flags or metadata fails closed (UnsupportedProfile).
++-------------------------------------------------------------------------+
+```
+
+1. **Level 1 — Explicit CLI Invocation Flag (`--isa-profile <name>`)**:
+   Highest precedence. An explicit operator or test harness argument directly forces the execution engine into a specific profile (e.g. `t81 vm run --isa-profile tisc-cpa-v1.0 binary.raw13`). If an artifact's embedded metadata conflicts with an explicit CLI flag, the CLI flag MUST either strictly override with an Axion warning log or fail closed with a configuration fault.
+2. **Level 2 — Container Manifest Envelope (CanonFS / ADB)**:
+   Second precedence. Governed object containers (CanonFS objects, Accountable Decision Bundles) declare the intended profile in their canonical manifest metadata (`"isa_profile": "tisc-cpa-v1.0"`).
+3. **Level 3 — Binary Embedded Note Section (.rodata note)**:
+   Third precedence. Freestanding EFI executables or compiled TISC binary images embed a dedicated read-only ELF/COFF note section (`.tisc_profile`) declaring profile identity.
+4. **Level 4 — Fail-Closed Default (No Implicit Fallback)**:
+   Lowest precedence / Default. Any raw 13-byte bytecode stream lacking an explicit CLI profile flag, container envelope, or binary note section MUST NOT be executed under an assumed or guessing profile. The runtime MUST halt immediately with `Trap::UnsupportedProfile` before decoding or stepping instructions.
 
 ______________________________________________________________________
 
 ## 6. Comprehensive Maintainer Decision Matrix
 
-The following decision matrix enumerates all unresolved semantic conflicts. Each item presents the competing alternatives, compatibility impact, and a recommended resolution requiring formal maintainer signature.
+The following decision matrix enumerates all unresolved semantic conflicts. Each item presents the competing alternatives, compatibility impact, and a proposed resolution requiring formal maintainer signature. **All items remain strictly PENDING REVIEW.**
 
 | ID | Topic / Discrepancy | Option A | Option B | Option C (Alternative) | Historical Compatibility Impact | Proposed Resolution | Status |
 | :---: | :--- | :--- | :--- | :--- | :--- | :--- | :---: |
-| **DM-01** | **Memory Operands** (`LOAD`/`STORE`) | Retain direct immediate addressing as sole meaning of `0x03`/`0x04`. | Enforce register-indirect `MEM[R[B]]` per `tisc-spec.md`; reject immediate operands. | Split into Profiles: `tisc-cpa-v1.0` uses direct; `tisc-v2.0` introduces separate indirect and direct opcodes. | Option B breaks 100% of CPA-004/CPA-006 binaries. Option A prevents dynamic pointer dereferencing. Option C preserves historical artifacts while unlocking dynamic memory for compiler backends. | **Adopt Option C**: Ratify `tisc-cpa-v1.0` for legacy binaries; introduce explicit indirect vs direct mnemonics in `tisc-v2.0`. | **PENDING REVIEW** |
-| **DM-02** | **Branch Targets** (`JMP`, `JZ`, `JNZ`) | Target is immediate PC index in operand `A`. | Target is register-indirect `PC = R[RS]`. | Immediate target in legacy profile; register target in `tisc-v2.0` (with dedicated `JMPABS` for immediate). | Option B breaks all CPA control flow and LLVM lowering. Option C maintains CFG simplicity. | **Adopt Option C**: Retain immediate target in `tisc-cpa-v1.0`; standardize separate immediate/indirect opcodes in `tisc-v2.0`. | **PENDING REVIEW** |
-| **DM-03** | **Branch Conditions** (`JZ`, `JNZ`) | Test register `R[B] == 0` directly, bypassing `FLAGS`. | Test `FLAGS.zero` set by preceding arithmetic/`CMP`. | Support both: `JZ_REG` vs `JZ_FLAG`. | Option B breaks CPA-004 fixture at PC19 where $R_{42}=1$ while `FLAGS.zero=true`. Option A decouples condition from standard ALU flags. | **Adopt Option C**: Ratify register-test in `tisc-cpa-v1.0`; mandate pure `FLAGS`-based condition testing in `tisc-v2.0`. | **PENDING REVIEW** |
-| **DM-04** | **LLVM Lowering Bug** | Keep LLVM using operand `C` for condition test. | Align LLVM lowering to operand `B` immediately. | Defer LLVM backend changes until profile versioning is adopted. | LLVM lowering is currently broken relative to VM runtime. | **Adopt Option B**: Correct LLVM backend to test operand `B` in alignment with hosted VM. | **PENDING REVIEW** |
-| **DM-05** | **Scalar TXor Semantics** | Formally ratify wrapped difference `wrap3(lhs - rhs)`. | Re-implement as symmetric balanced sum `wrap3(lhs + rhs)`. | Rename opcode to `TSUB3` and introduce separate commutative `TXOR`. | Option B breaks CPA-004 PC15 and CPA-006 C03. Option A maintains 100% test parity but requires documentation correction. | **Adopt Option A**: Formally ratify wrapped difference as normative scalar `TXor`; correct `opcode-semantics.md` to remove "Sum". | **PENDING REVIEW** |
-| **DM-06** | **Opcode Inventory Unification** | Freeze core strictly at 174; deprecate 175–246. | Expand canonical registry to 244 named opcodes matching header, reserving 221–223 and 247–255. | Retain 209 in registry and treat 210–246 as experimental unverified. | Option A breaks AI-native and SWAR instructions. Option B unifies header, test matrix, and specification. | **Adopt Option B**: Update `opcode-registry.md` and capability contracts to 244 opcodes, formalizing holes 221–223. | **PENDING REVIEW** |
-| **DM-07** | **SWAR / Extension Collisions** | Ratify header assignments (205, 206, 207, 220). | Ratify registry assignments (212, 213, 214, 215). | Reallocate SWAR opcodes to a clean reserved block in 224–246. | C++ header and `tisc_opcode_matrix_test.cpp` already assert 205–207, 220. Registry values collide with polynomial opcodes. | **Adopt Option A**: Ratify C++ header assignments (205–207, 220); update `opcode-registry.md` accordingly. | **PENDING REVIEW** |
-| **DM-08** | **Register $R_0$ Invariance** | Enforce destination $R_0$ as `DecodeFault`. | Allow writes to $R_0$ but silently discard (hardwired zero). | Allow unrestricted writes to $R_0$. | CPA evaluators reject destination $R_0$ during operand admission. Discarding writes is standard in RISC (e.g., MIPS/RISC-V). | **Adopt Option A**: Enforce $R_0$ destination as immediate `DecodeFault` in all profiles. | **PENDING REVIEW** |
-| **DM-09** | **Profile Binding Mechanism** | Reject standalone `.raw13`; require CanonFS or container envelope. | Embed 16-byte magic header into all new bytecode binaries. | Allow raw binaries but require explicit CLI flag `--isa-profile`. | Raw binaries lack self-description. Option C provides seamless backward compatibility for testing. | **Adopt Options B & C**: Introduce container envelope with magic header for v2; allow raw binaries with mandatory `--isa-profile` flag. | **PENDING REVIEW** |
+| **DM-01** | **Memory Operands** (`LOAD`/`STORE`) | Retain direct immediate addressing as sole meaning of `0x03`/`0x04`. | Enforce register-indirect `MEM[R[B]]` per `tisc-spec.md`; reject immediate operands. | Split into Profiles: `tisc-cpa-v1.0` uses direct; `tisc-v2.0` introduces separate indirect and direct opcodes. | Option B breaks 100% of CPA-004/CPA-006 binaries. Option A prevents dynamic pointer dereferencing. Option C preserves historical artifacts while unlocking dynamic memory for compiler backends. | **Proposed: Option C** (Preserve legacy profile; introduce distinct opcodes in v2). | **PENDING REVIEW** |
+| **DM-02** | **Branch Targets** (`JMP`, `JZ`, `JNZ`) | Target is immediate PC index in operand `A`. | Target is register-indirect `PC = R[RS]`. | Immediate target in legacy profile; register target in `tisc-v2.0` (with dedicated `JMPABS` for immediate). | Option B breaks all CPA control flow and LLVM lowering. Option C maintains CFG simplicity. | **Proposed: Option C** (Immediate target in legacy; indirect target in v2). | **PENDING REVIEW** |
+| **DM-03** | **Branch Conditions** (`JZ`, `JNZ`) | Test register `R[B] == 0` directly, bypassing `FLAGS`. | Test `FLAGS.zero` set by preceding arithmetic/`CMP`. | Support both: `JZ_REG` vs `JZ_FLAG`. | Option B breaks CPA-004 fixture at PC19 where $R_{42}=1$ while `FLAGS.zero=true`. Option A decouples condition from standard ALU flags. | **Proposed: Option C** (Register-test in legacy; pure FLAGS in v2). | **PENDING REVIEW** |
+| **DM-04** | **LLVM Lowering Bug** | Keep LLVM using operand `C` for condition test. | Align LLVM lowering to operand `B` immediately. | Defer LLVM backend changes until profile versioning is adopted. | LLVM lowering is currently broken relative to VM runtime. | **Proposed: Option B** (Align LLVM lowering to operand B). | **PENDING REVIEW** |
+| **DM-05** | **Scalar TXor Semantics** | Formally ratify wrapped difference `wrap3(lhs - rhs)`. | Re-implement as symmetric balanced sum `wrap3(lhs + rhs)`. | Rename opcode to `TSUB3` and introduce separate commutative `TXOR`. | Option B breaks CPA-004 PC15 and CPA-006 C03. Option A maintains 100% test parity but requires documentation correction. | **Proposed: Option A** (Ratify wrapped difference; correct docs to remove "Sum"). | **PENDING REVIEW** |
+| **DM-06** | **Opcode Inventory Unification** | Freeze core strictly at 174; deprecate 175–246. | Expand canonical registry to 244 named opcodes matching header, reserving 221–223 and 247–255. | Retain 209 in registry and treat 210–246 as experimental unverified. | Option A breaks AI-native and SWAR instructions. Option B unifies header, test matrix, and specification. | **Proposed: Option B** (Unify at 244 opcodes pending maintainer sign-off). | **PENDING REVIEW** |
+| **DM-07** | **SWAR / Extension Collisions** | Ratify header assignments (205, 206, 207, 220). | Ratify registry assignments (212, 213, 214, 215). | Reallocate SWAR opcodes to a clean reserved block in 224–246. | C++ header and `tisc_opcode_matrix_test.cpp` already assert 205–207, 220. Registry values collide with polynomial opcodes. | **Proposed: Option A** (Ratify header assignments 205–207, 220). | **PENDING REVIEW** |
+| **DM-08** | **Register $R_0$ Invariance** | Enforce destination $R_0$ as `DecodeFault`. | Allow writes to $R_0$ but silently discard (hardwired zero). | Allow unrestricted writes to $R_0$. | CPA evaluators reject destination $R_0$ during operand admission. Discarding writes is standard in RISC (e.g., MIPS/RISC-V). | **Proposed: Option A** (Enforce destination R0 as DecodeFault). | **PENDING REVIEW** |
+| **DM-09** | **Profile Binding Mechanism** | Reject standalone `.raw13`; require CanonFS or container envelope. | Embed 16-byte magic header into all new bytecode binaries. | Allow raw binaries but require explicit CLI flag `--isa-profile`. | Raw binaries lack self-description. Option C provides seamless backward compatibility for testing. | **Proposed: Options B & C** (Container envelope for v2; CLI flag for raw binaries). | **PENDING REVIEW** |
 
 ______________________________________________________________________
 
 ## 7. Determinism and Safety Considerations
 
-1. **Trap Determinism**: All implementations must enforce identical trap precedence (Fetch Fault $\to$ Decode Fault $\to$ Bounds/Division Fault). Partial register or memory commits on trapped instructions are strictly prohibited.
-2. **Flag Determinism**: Flag updates occur solely upon valid instruction commit. Trapped instructions must preserve existing flag state.
+1. **Profile-Specific Trap Determinism**:
+   - In profile `tisc-cpa-v1.0`: Implementations MUST preserve observable historical trap behavior (PC increments to `pc_before + 1`, execution tick advances, system registers $R_{75}/R_{77}$ synchronize, destination registers remain uncommitted).
+   - In profile `tisc-v2.0`: Implementations MUST enforce atomic fault transactions (zero PC progression, zero tick advancement, zero register/memory modifications).
+2. **Flag Determinism**: Flag updates occur solely upon valid instruction commit. Trapped instructions preserve pre-instruction flag state.
 3. **Execution Budgeting**: Step limits (tick budgets) terminate execution with status `instruction_limit` without modifying current state registers.
 
 ______________________________________________________________________
@@ -411,6 +436,8 @@ ______________________________________________________________________
 - `include/t81/isa/opcodes.hpp`: Canonical C++ enum class Opcode definition (244 entries).
 - `tests/cpp/tisc_opcode_matrix_test.cpp`: Conformance test matrix validating 244 defined and 12 undefined opcodes.
 - `vm/vm.cpp`: Hosted virtual machine reference implementation.
+- `vm/runtime_state_helpers.cpp`: System register synchronization and constitutional mask computation.
+- `tests/cpp/vm_system_registers_deterministic_test.cpp`: Verification suite for R76 lineage and R78 constitutional mask.
 - `ternaryos/hal/cpa004_evaluator.cpp`: Freestanding Axion OS evaluator implementation.
 - `lang/llvm/tisc_to_llvm.cpp`: LLVM IR translation backend.
 - `experiments/cpa004/README.md`: Cross-Profile Architecture evaluation report (canonical 351-byte program).
