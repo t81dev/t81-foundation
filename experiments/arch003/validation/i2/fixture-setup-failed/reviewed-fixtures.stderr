@@ -1,0 +1,38 @@
+tests/accounting_fixture.cpp:33:14: error: unused function 'thread_exec' [-Werror,-Wunused-function]
+   33 | static void* thread_exec(void* arg) {
+      |              ^~~~~~~~~~~
+1 error generated.
+test_abnormal_signal_reaped_with_peak (test_accounting_linux.LinuxLifecycle.test_abnormal_signal_reaped_with_peak) ... ok
+test_actual_L_V_W_fixed_frame (test_accounting_linux.LinuxLifecycle.test_actual_L_V_W_fixed_frame) ... ok
+test_actual_driver_and_linker_receipts (test_accounting_linux.LinuxLifecycle.test_actual_driver_and_linker_receipts) ... ok
+test_deadline_during_seal_removes_success_root (test_accounting_linux.LinuxLifecycle.test_deadline_during_seal_removes_success_root) ... ok
+test_failure_and_prefix_survive_accounting_tree_termination (test_accounting_linux.LinuxLifecycle.test_failure_and_prefix_survive_accounting_tree_termination) ... ok
+test_failure_and_prefix_survive_deadline_tree_termination (test_accounting_linux.LinuxLifecycle.test_failure_and_prefix_survive_deadline_tree_termination) ... ok
+test_finalization_and_seal_inside_limits (test_accounting_linux.LinuxLifecycle.test_finalization_and_seal_inside_limits) ... ok
+test_metadata_cannot_spawn_worker (test_accounting_linux.LinuxLifecycle.test_metadata_cannot_spawn_worker) ... ok
+test_nonleader_exec_blocks_before_pid_transition (test_accounting_linux.LinuxLifecycle.test_nonleader_exec_blocks_before_pid_transition) ... FAIL
+test_output_cap_during_finalization_preserves_failure (test_accounting_linux.LinuxLifecycle.test_output_cap_during_finalization_preserves_failure) ... ok
+test_peak_survives_free_then_exec (test_accounting_linux.LinuxLifecycle.test_peak_survives_free_then_exec) ... ok
+test_pid_identity_race_mid_job (test_accounting_linux.LinuxLifecycle.test_pid_identity_race_mid_job) ... ok
+test_ptrace_options_unavailable_is_reaped (test_accounting_linux.LinuxLifecycle.test_ptrace_options_unavailable_is_reaped) ... ok
+test_runtime_maintenance_thread_accounted_once (test_accounting_linux.LinuxLifecycle.test_runtime_maintenance_thread_accounted_once) ... ok
+test_sampling_gap_while_live (test_accounting_linux.LinuxLifecycle.test_sampling_gap_while_live) ... ok
+test_short_tool_between_rss_samples (test_accounting_linux.LinuxLifecycle.test_short_tool_between_rss_samples) ... ok
+test_unavailable_exit_peak_is_null_not_zero (test_accounting_linux.LinuxLifecycle.test_unavailable_exit_peak_is_null_not_zero) ... ok
+test_unavailable_proc_at_launch_is_reaped (test_accounting_linux.LinuxLifecycle.test_unavailable_proc_at_launch_is_reaped) ... ok
+test_unavailable_proc_mid_job (test_accounting_linux.LinuxLifecycle.test_unavailable_proc_mid_job) ... ok
+test_unexpected_nested_descendant (test_accounting_linux.LinuxLifecycle.test_unexpected_nested_descendant) ... ok
+
+======================================================================
+FAIL: test_nonleader_exec_blocks_before_pid_transition (test_accounting_linux.LinuxLifecycle.test_nonleader_exec_blocks_before_pid_transition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/experiments/arch003/tests/test_accounting_linux.py", line 113, in test_nonleader_exec_blocks_before_pid_transition
+    with self.assertRaisesRegex(AccountingUnavailable,'nonleader exec'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: AccountingUnavailable not raised
+
+----------------------------------------------------------------------
+Ran 20 tests in 1.722s
+
+FAILED (failures=1)

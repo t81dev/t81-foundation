@@ -1,0 +1,138 @@
+000000010000a800 s GCC_except_table0
+000000010000a854 s GCC_except_table0
+000000010000a9e0 s GCC_except_table1
+000000010000ab00 s GCC_except_table1
+000000010000abd8 s GCC_except_table1
+000000010000abc8 s GCC_except_table11
+000000010000aae4 s GCC_except_table17
+000000010000aa00 s GCC_except_table2
+000000010000abe8 s GCC_except_table2
+000000010000ab14 s GCC_except_table3
+000000010000ac70 s GCC_except_table3
+000000010000ab4c s GCC_except_table4
+000000010000ad44 s GCC_except_table4
+000000010000aa78 s GCC_except_table5
+000000010000a828 s GCC_except_table6
+000000010000ab70 s GCC_except_table6
+000000010000ae98 s GCC_except_table6
+000000010000a844 s GCC_except_table7
+000000010000aa88 s GCC_except_table8
+000000010000aacc s GCC_except_table9
+00000001000035d8 t _OUTLINED_FUNCTION_0
+                 U __Unwind_Resume
+0000000100002a6c t evaluate(arch003::Case const&)
+000000010000a648 t evaluate(arch003::Case const&) (.cold.1)
+000000010000a654 t evaluate(arch003::Case const&) (.cold.2)
+0000000100002c88 t roundtrip(arch003::Case const&)
+00000001000035ec T arch003::SplitMix64::next()
+0000000100003640 T arch003::SplitMix64::bounded(unsigned long long)
+000000010000a660 t arch003::SplitMix64::bounded(unsigned long long) (.cold.1)
+00000001000063ac T arch003::materialize(arch003::Descriptor const&, std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> (*)(unsigned char, std::__1::span<signed char const, 18446744073709551615ul>))
+0000000100007b4c T arch003::write_bytes(std::__1::basic_ostream<char, std::__1::char_traits<char>>&, std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> const&)
+000000010000a67c t arch003::write_bytes(std::__1::basic_ostream<char, std::__1::char_traits<char>>&, std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> const&) (.cold.1)
+0000000100001a28 T arch003::oracle_decode(arch003::Operand const&)
+0000000100000d68 T arch003::oracle_encode(unsigned char, std::__1::span<signed char const, 18446744073709551615ul>)
+000000010000a62c t arch003::oracle_encode(unsigned char, std::__1::span<signed char const, 18446744073709551615ul>) (.cold.1)
+00000001000082a4 T arch003::expected_frame(arch003::Case const&, arch003::Result)
+0000000100008d10 T arch003::observed_frame(unsigned long long, unsigned char, arch003::Result, unsigned long long)
+0000000100001384 T arch003::oracle_evaluate(arch003::Request const&, unsigned char)
+000000010000308c t arch003::Case::~Case()
+0000000100007868 T arch003::Sha256::finish()
+00000001000077e4 T arch003::Sha256::update(std::__1::span<unsigned char const, 18446744073709551615ul>)
+000000010000753c T arch003::Sha256::compress()
+0000000100007518 T arch003::Sha256::Sha256()
+00000001000074f4 T arch003::Sha256::Sha256()
+0000000100007a5c T arch003::little(std::__1::vector<unsigned char, std::__1::allocator<unsigned char>>&, unsigned long long, unsigned int)
+0000000100003a18 T arch003::enumerate(std::__1::function<void (arch003::Descriptor const&)> const&)
+0000000100007bc8 T arch003::pair_hash(arch003::Request const&)
+0000000100003734 T arch003::positions(unsigned long long)
+000000010000b070 s arch003::registered
+00000001000016d4 t arch003::pad(arch003::Operand const&)
+0000000100001910 t arch003::symbol(arch003::Operand const&, unsigned long long)
+00000001000015c4 t arch003::invalid(arch003::Operand const&)
+000000010000b1c0 s arch003::lengths
+00000001000035cc t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::target_type() const
+000000010000356c t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::target(std::type_info const&) const
+0000000100003440 t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::__clone(std::__1::__function::__base<void (arch003::Descriptor const&)>*) const
+000000010000341c t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::__clone() const
+                 U std::__1::locale::use_facet(std::__1::locale::id&) const
+                 U std::__1::ios_base::getloc() const
+                 U std::logic_error::logic_error(char const*)
+0000000100001bd4 t std::length_error::length_error[abi:nqe210106](char const*)
+                 U std::length_error::~length_error()
+                 U std::runtime_error::runtime_error(char const*)
+                 U std::runtime_error::~runtime_error()
+0000000100001360 t std::invalid_argument::invalid_argument[abi:nqe210106](char const*)
+                 U std::invalid_argument::~invalid_argument()
+                 U std::bad_array_new_length::bad_array_new_length()
+                 U std::bad_array_new_length::~bad_array_new_length()
+0000000100003454 t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::destroy_deallocate()
+0000000100003450 t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::destroy()
+0000000100003418 t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::~__func()
+0000000100003414 t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::~__func()
+0000000100003468 t std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>::operator()(arch003::Descriptor const&)
+0000000100003400 t std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char>>::__throw_length_error[abi:nqe210106]()
+                 U std::__1::basic_ostream<char, std::__1::char_traits<char>>::write(char const*, long)
+                 U std::__1::basic_ostream<char, std::__1::char_traits<char>>::sentry::sentry(std::__1::basic_ostream<char, std::__1::char_traits<char>>&)
+                 U std::__1::basic_ostream<char, std::__1::char_traits<char>>::sentry::~sentry()
+000000010000325c t std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>> std::__1::__pad_and_output[abi:nqe210106]<char, std::__1::char_traits<char>>(std::__1::ostreambuf_iterator<char, std::__1::char_traits<char>>, char const*, char const*, char const*, std::__1::ios_base&, char)
+                 U std::__1::bad_function_call::~bad_function_call()
+0000000100001b84 t std::__1::__throw_length_error[abi:nqe210106](char const*)
+00000001000030f0 t std::__1::basic_ostream<char, std::__1::char_traits<char>>& std::__1::__put_character_sequence[abi:nqe210106]<char, std::__1::char_traits<char>>(std::__1::basic_ostream<char, std::__1::char_traits<char>>&, char const*, unsigned long)
+00000001000074c0 t std::__1::__throw_bad_function_call[abi:nqe210106]()
+                 U std::__1::cerr
+                 U std::__1::cout
+                 U std::__1::ctype<char>::id
+                 U void std::__1::__sort<std::__1::__less<unsigned long long, unsigned long long>&, unsigned long long*>(unsigned long long*, unsigned long long*, std::__1::__less<unsigned long long, unsigned long long>&)
+                 U std::__1::locale::~locale()
+0000000100001bf8 t std::__1::vector<signed char, std::__1::allocator<signed char>>::__throw_length_error[abi:nqe210106]()
+0000000100009d98 t std::__1::__wrap_iter<unsigned char*> std::__1::vector<unsigned char, std::__1::allocator<unsigned char>>::__insert_with_size[abi:nqe210106]<unsigned char const*, unsigned char const*>(std::__1::__wrap_iter<unsigned char const*>, unsigned char const*, unsigned char const*, long)
+000000010000a214 t std::__1::__wrap_iter<unsigned char*> std::__1::vector<unsigned char, std::__1::allocator<unsigned char>>::__insert_with_size[abi:nqe210106]<unsigned char*, unsigned char*>(std::__1::__wrap_iter<unsigned char const*>, unsigned char*, unsigned char*, long)
+00000001000030dc t std::__1::vector<unsigned char, std::__1::allocator<unsigned char>>::__throw_length_error[abi:nqe210106]()
+0000000100007484 t std::__1::vector<unsigned long long, std::__1::allocator<unsigned long long>>::__throw_length_error[abi:nqe210106]()
+                 U std::__1::ios_base::__set_badbit_and_consider_rethrow()
+                 U std::__1::ios_base::clear(unsigned int)
+0000000100007498 t std::__throw_bad_array_new_length[abi:nqe210106]()
+                 U std::terminate()
+000000010000c1f8 s typeinfo for std::__1::__function::__base<void (arch003::Descriptor const&)>
+000000010000c1e0 s typeinfo for std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>
+                 U typeinfo for std::__1::bad_function_call
+                 U typeinfo for std::length_error
+                 U typeinfo for std::runtime_error
+                 U typeinfo for std::invalid_argument
+                 U typeinfo for std::bad_array_new_length
+                 U typeinfo for std::exception
+000000010000c208 s typeinfo for main::$_0
+000000010000b0ba s typeinfo name for std::__1::__function::__base<void (arch003::Descriptor const&)>
+000000010000b076 s typeinfo name for std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>
+000000010000b0f3 s typeinfo name for main::$_0
+                 U vtable for __cxxabiv1::__class_type_info
+                 U vtable for __cxxabiv1::__si_class_type_info
+000000010000c188 s vtable for std::__1::__function::__func<main::$_0, void (arch003::Descriptor const&)>
+                 U vtable for std::__1::bad_function_call
+                 U vtable for std::length_error
+                 U vtable for std::invalid_argument
+0000000100007194 t arch003::materialize(arch003::Descriptor const&, std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> (*)(unsigned char, std::__1::span<signed char const, 18446744073709551615ul>))::$_0::operator()(unsigned long long, unsigned long long) const
+0000000100007370 t arch003::materialize(arch003::Descriptor const&, std::__1::vector<unsigned char, std::__1::allocator<unsigned char>> (*)(unsigned char, std::__1::span<signed char const, 18446744073709551615ul>))::$_2::operator()(unsigned long long, unsigned int, unsigned int) const
+00000001000061b4 t arch003::enumerate(std::__1::function<void (arch003::Descriptor const&)> const&)::$_1::operator()(unsigned int, std::__1::array<unsigned long long, 6ul>) const
+                 U operator delete(void*)
+                 U operator new(unsigned long)
+00000001000030cc t ___clang_call_terminate
+                 U ___cxa_allocate_exception
+                 U ___cxa_begin_catch
+                 U ___cxa_end_catch
+                 U ___cxa_free_exception
+                 U ___cxa_throw
+                 U ___gxx_personality_v0
+                 U ___stack_chk_fail
+                 U ___stack_chk_guard
+0000000100000000 T __mh_execute_header
+                 U _bzero
+                 U _getenv
+0000000100001c0c T _main
+                 U _memcmp
+                 U _memcpy
+                 U _memmove
+                 U _memset
+                 U _strcmp
+                 U _strlen

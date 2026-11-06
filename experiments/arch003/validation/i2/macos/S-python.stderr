@@ -1,0 +1,45 @@
+test_aggregate_not_individual_rss (test_accounting.AccountingChecks.test_aggregate_not_individual_rss) ... ok
+test_deadline (test_accounting.AccountingChecks.test_deadline) ... ok
+test_deadline_cannot_be_reset (test_accounting.AccountingChecks.test_deadline_cannot_be_reset) ... ok
+test_diagnostic_subbudget (test_accounting.AccountingChecks.test_diagnostic_subbudget) ... ok
+test_no_baseline_subtraction (test_accounting.AccountingChecks.test_no_baseline_subtraction) ... ok
+test_sample_interval (test_accounting.AccountingChecks.test_sample_interval) ... ok
+test_unsupported_host_fails_closed (test_accounting.AccountingChecks.test_unsupported_host_fails_closed) ... ok
+test_abnormal_signal_reaped_with_peak (test_accounting_linux.LinuxLifecycle.test_abnormal_signal_reaped_with_peak) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_actual_L_V_W_fixed_frame (test_accounting_linux.LinuxLifecycle.test_actual_L_V_W_fixed_frame) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_actual_driver_and_linker_receipts (test_accounting_linux.LinuxLifecycle.test_actual_driver_and_linker_receipts) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_deadline_during_seal_removes_success_root (test_accounting_linux.LinuxLifecycle.test_deadline_during_seal_removes_success_root) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_failure_and_prefix_survive_accounting_tree_termination (test_accounting_linux.LinuxLifecycle.test_failure_and_prefix_survive_accounting_tree_termination) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_failure_and_prefix_survive_deadline_tree_termination (test_accounting_linux.LinuxLifecycle.test_failure_and_prefix_survive_deadline_tree_termination) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_finalization_and_seal_inside_limits (test_accounting_linux.LinuxLifecycle.test_finalization_and_seal_inside_limits) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_metadata_cannot_spawn_worker (test_accounting_linux.LinuxLifecycle.test_metadata_cannot_spawn_worker) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_nonleader_exec_blocks_before_pid_transition (test_accounting_linux.LinuxLifecycle.test_nonleader_exec_blocks_before_pid_transition) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_output_cap_during_finalization_preserves_failure (test_accounting_linux.LinuxLifecycle.test_output_cap_during_finalization_preserves_failure) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_peak_survives_free_then_exec (test_accounting_linux.LinuxLifecycle.test_peak_survives_free_then_exec) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_pid_identity_race_mid_job (test_accounting_linux.LinuxLifecycle.test_pid_identity_race_mid_job) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_ptrace_options_unavailable_is_reaped (test_accounting_linux.LinuxLifecycle.test_ptrace_options_unavailable_is_reaped) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_runtime_maintenance_thread_accounted_once (test_accounting_linux.LinuxLifecycle.test_runtime_maintenance_thread_accounted_once) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_sampling_gap_while_live (test_accounting_linux.LinuxLifecycle.test_sampling_gap_while_live) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_short_tool_between_rss_samples (test_accounting_linux.LinuxLifecycle.test_short_tool_between_rss_samples) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_unavailable_exit_peak_is_null_not_zero (test_accounting_linux.LinuxLifecycle.test_unavailable_exit_peak_is_null_not_zero) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_unavailable_proc_at_launch_is_reaped (test_accounting_linux.LinuxLifecycle.test_unavailable_proc_at_launch_is_reaped) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_unavailable_proc_mid_job (test_accounting_linux.LinuxLifecycle.test_unavailable_proc_mid_job) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_unexpected_nested_descendant (test_accounting_linux.LinuxLifecycle.test_unexpected_nested_descendant) ... skipped 'explicit Linux infrastructure fixture opt-in required'
+test_separate_oracles_match_fixed_reference (test_oracles.OracleWireChecks.test_separate_oracles_match_fixed_reference) ... ok
+test_canonical_json (test_verifier.ParserChecks.test_canonical_json) ... ok
+test_error_null_and_unknown_status (test_verifier.ParserChecks.test_error_null_and_unknown_status) ... ok
+test_expected_malformed (test_verifier.ParserChecks.test_expected_malformed) ... ok
+test_full_campaign_cannot_pass_prefix (test_verifier.ParserChecks.test_full_campaign_cannot_pass_prefix) ... ok
+test_guard_fixture_rejects_without_candidate (test_verifier.ParserChecks.test_guard_fixture_rejects_without_candidate) ... ok
+test_header (test_verifier.ParserChecks.test_header) ... ok
+test_index_root_and_tamper (test_verifier.ParserChecks.test_index_root_and_tamper) ... ok
+test_manifest_cannot_claim_complete_without_receipts (test_verifier.ParserChecks.test_manifest_cannot_claim_complete_without_receipts) ... ok
+test_rejections (test_verifier.ParserChecks.test_rejections) ... ok
+test_unsafe_paths (test_verifier.ParserChecks.test_unsafe_paths) ... ok
+test_valid_fixed_frame (test_verifier.ParserChecks.test_valid_fixed_frame) ... ok
+test_wrong_count_with_correct_digest_fails_semantics (test_verifier.ParserChecks.test_wrong_count_with_correct_digest_fails_semantics) ... ok
+
+----------------------------------------------------------------------
+Ran 40 tests in 0.194s
+
+OK (skipped=20)

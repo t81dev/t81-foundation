@@ -1,0 +1,53 @@
+test_abnormal_signal_reaped_with_peak (test_accounting_linux.LinuxLifecycle.test_abnormal_signal_reaped_with_peak) ... ok
+test_actual_L_V_W_fixed_frame (test_accounting_linux.LinuxLifecycle.test_actual_L_V_W_fixed_frame) ... ok
+test_actual_driver_and_linker_receipts (test_accounting_linux.LinuxLifecycle.test_actual_driver_and_linker_receipts) ... ok
+test_deadline_during_seal_removes_success_root (test_accounting_linux.LinuxLifecycle.test_deadline_during_seal_removes_success_root) ... ok
+test_failure_and_prefix_survive_deadline_tree_termination (test_accounting_linux.LinuxLifecycle.test_failure_and_prefix_survive_deadline_tree_termination) ... FAIL
+test_finalization_and_seal_inside_limits (test_accounting_linux.LinuxLifecycle.test_finalization_and_seal_inside_limits) ... ok
+test_metadata_cannot_spawn_worker (test_accounting_linux.LinuxLifecycle.test_metadata_cannot_spawn_worker) ... ok
+test_peak_survives_free_then_exec (test_accounting_linux.LinuxLifecycle.test_peak_survives_free_then_exec) ... ok
+test_pid_identity_race_mid_job (test_accounting_linux.LinuxLifecycle.test_pid_identity_race_mid_job) ... ok
+test_sampling_gap_while_live (test_accounting_linux.LinuxLifecycle.test_sampling_gap_while_live) ... ok
+test_short_tool_between_rss_samples (test_accounting_linux.LinuxLifecycle.test_short_tool_between_rss_samples) ... ok
+test_unavailable_proc_mid_job (test_accounting_linux.LinuxLifecycle.test_unavailable_proc_mid_job) ... ok
+test_unexpected_nested_descendant (test_accounting_linux.LinuxLifecycle.test_unexpected_nested_descendant) ... FAIL
+
+======================================================================
+FAIL: test_failure_and_prefix_survive_deadline_tree_termination (test_accounting_linux.LinuxLifecycle.test_failure_and_prefix_survive_deadline_tree_termination)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/experiments/arch003/tests/test_accounting_linux.py", line 172, in test_failure_and_prefix_survive_deadline_tree_termination
+    self.assertEqual(preserve_failure_status(self.root,71),65)
+AssertionError: 71 != 65
+
+======================================================================
+FAIL: test_unexpected_nested_descendant (test_accounting_linux.LinuxLifecycle.test_unexpected_nested_descendant)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/work/experiments/arch003/linux_trace.py", line 273, in execute
+    if not self.drain_one():time.sleep(0.0002)
+           ^^^^^^^^^^^^^^^^
+  File "/work/experiments/arch003/linux_trace.py", line 223, in drain_one
+    self.stopped(pid,status)
+  File "/work/experiments/arch003/linux_trace.py", line 155, in stopped
+    self.register(child.value, pid, {1:'fork',2:'vfork',3:'clone'}[event])
+  File "/work/experiments/arch003/linux_trace.py", line 102, in register
+    raise AccountingUnavailable('unexpected descendant: process roster exceeded')
+accounting.AccountingUnavailable: unexpected descendant: process roster exceeded
+
+During handling of the above exception, another exception occurred:
+
+accounting.AccountingUnavailable: trace tree could not be completely reaped
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/work/experiments/arch003/tests/test_accounting_linux.py", line 86, in test_unexpected_nested_descendant
+    with self.assertRaisesRegex(AccountingUnavailable,'unexpected descendant'):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "unexpected descendant" does not match "trace tree could not be completely reaped"
+
+----------------------------------------------------------------------
+Ran 13 tests in 1.233s
+
+FAILED (failures=2)

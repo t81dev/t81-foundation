@@ -1,0 +1,81 @@
+acl-libs-2.3.2-r1 - Access control list utilities (libraries)
+alpine-base-3.22.2-r0 - Meta package for minimal alpine base
+alpine-baselayout-3.7.0-r0 - Alpine base dir structure and init scripts
+alpine-baselayout-data-3.7.0-r0 - Alpine base dir structure and init scripts
+alpine-conf-3.20.0-r0 - Alpine configuration management scripts
+alpine-keys-2.5-r0 - Public keys for Alpine Linux packages
+alpine-release-3.22.2-r0 - Alpine release data
+apk-tools-2.14.9-r3 - Alpine Package Keeper - package manager for alpine
+binutils-2.44-r3 - Tools necessary to build programs
+bridge-1.5-r5 - Scripts for configuring network bridge interfaces
+busybox-1.37.0-r19 - Size optimized toolbox of many common UNIX utilities
+busybox-binsh-1.37.0-r19 - busybox ash /bin/sh
+busybox-mdev-openrc-1.37.0-r19 - Size optimized toolbox of many common UNIX utilities
+busybox-openrc-1.37.0-r19 - Size optimized toolbox of many common UNIX utilities
+busybox-suid-1.37.0-r19 - suid binaries of Busybox
+ca-certificates-bundle-20250911-r0 - Pre generated bundle of Mozilla certificates
+clang20-20.1.8-r0 - C language family front-end for LLVM
+clang20-headers-20.1.8-r0 - C language family front-end for LLVM
+clang20-libs-20.1.8-r0 - C language family front-end for LLVM (libraries)
+cmake-3.31.7-r1 - Cross-platform, open-source make system
+fortify-headers-1.1-r5 - standalone fortify source implementation
+g++-14.2.0-r6 - GNU C++ standard library and compiler
+gcc-14.2.0-r6 - The GNU Compiler Collection
+gdbm-1.24-r0 - GNU dbm is a set of database routines that use extensible hashing
+gmp-6.3.0-r3 - free library for arbitrary precision arithmetic
+ifupdown-ng-0.12.1-r7 - tools for managing network configuration
+isl26-0.26-r1 - An Integer Set Library for the Polyhedral Model
+jansson-2.14.1-r0 - lightweight JSON library
+libapk2-2.14.9-r3 - Alpine Package Keeper - package manager for alpine
+libarchive-3.8.11-r0 - library that can create and read several streaming archive formats
+libatomic-14.2.0-r6 - GCC Atomic library
+libbz2-1.0.8-r6 - Shared library for bz2
+libcap2-2.76-r0 - POSIX 1003.1e capabilities (libraries)
+libcrypto3-3.5.4-r0 - Crypto library from openssl
+libedit-20250104.3.1-r1 - BSD line editing library
+libexpat-2.10.0-r0 - XML Parser library written in C (libraries)
+libffi-3.4.8-r0 - portable, high level programming interface to various calling conventions.
+libgcc-14.2.0-r6 - GNU C compiler runtime libraries
+libgomp-14.2.0-r6 - GCC shared-memory parallel programming API library
+libncursesw-6.5_p20250503-r0 - Console display library (libncursesw)
+libpanelw-6.5_p20250503-r0 - Console display library (libpanelw)
+libssl3-3.5.4-r0 - SSL shared libraries
+libstdc++-14.2.0-r6 - GNU C++ standard runtime library
+libstdc++-dev-14.2.0-r6 - GNU C++ standard runtime library (development files)
+libuv-1.51.0-r0 - Cross-platform asychronous I/O
+libxml2-2.13.9-r1 - XML parsing library, version 2
+llvm20-libs-20.1.8-r0 - LLVM 20 runtime library
+llvm20-linker-tools-20.1.8-r0 - Low Level Virtual Machine compiler system, version 20 (linker plugins)
+lz4-libs-1.10.0-r0 - LZ4 is lossless compression algorithm with fast decoder @ multiple GB/s per core. (libraries)
+make-4.4.1-r3 - GNU make utility to maintain groups of programs
+mdev-conf-4.8-r0 - Configuration files for mdev and mdevd
+mpc1-1.3.1-r1 - Multiprecision C library
+mpdecimal-4.0.1-r0 - complete implementation of the General Decimal Arithmetic Specification
+mpfr4-4.2.1_p1-r0 - multiple-precision floating-point library
+musl-1.2.5-r13 - the musl c library (libc) implementation
+musl-dev-1.2.5-r13 - the musl c library (libc) implementation (development files)
+musl-utils-1.2.5-r10 - the musl c library (libc) implementation
+ncurses-terminfo-base-6.5_p20250503-r0 - Descriptions of common terminals
+openrc-0.62.6-r0 - OpenRC manages the services, startup and shutdown of a host
+openrc-user-0.62.6-r0 - OpenRC user services without PAM support
+openssh-10.0_p1-r11 - Port of OpenBSD's free SSH release
+openssh-client-common-10.0_p1-r11 - OpenBSD's SSH client common files
+openssh-client-default-10.0_p1-r11 - OpenBSD's SSH client
+openssh-keygen-10.0_p1-r11 - ssh helper program for generating keys
+openssh-server-10.0_p1-r11 - OpenSSH server
+openssh-server-common-10.0_p1-r11 - OpenSSH server configuration files
+openssh-server-common-openrc-10.0_p1-r11 - Port of OpenBSD's free SSH release (OpenRC init scripts)
+openssh-sftp-server-10.0_p1-r11 - ssh sftp server module
+openssl-3.5.4-r0 - Toolkit for Transport Layer Security (TLS)
+pyc-3.12.16-r0 - Meta package for pulling in all -pyc packages
+python3-3.12.16-r0 - High-level scripting language
+python3-pyc-3.12.16-r0 - High-level scripting language (install .pyc cache files)
+python3-pycache-pyc0-3.12.16-r0 - High-level scripting language (.pyc pycache files)
+readline-8.2.13-r1 - GNU readline library
+rhash-libs-1.4.5-r0 - Utility for calculation and verification of hash sums and magnet links (libraries)
+scanelf-1.3.8-r1 - Scan ELF binaries for stuff
+sqlite-libs-3.49.2-r1 - C library that implements an SQL database engine (libraries)
+ssl_client-1.37.0-r19 - External ssl_client for busybox wget
+xz-libs-5.8.4-r0 - Library and CLI tools for XZ and LZMA compressed files (libraries)
+zlib-1.3.1-r2 - A compression/decompression Library
+zstd-libs-1.5.7-r0 - Zstandard - Fast real-time compression algorithm (libraries)

@@ -1,0 +1,5 @@
+Alpine clang version 20.1.8
+Target: aarch64-alpine-linux-musl
+Thread model: posix
+InstalledDir: /usr/lib/llvm20/bin
+Configuration file: /etc/clang20/aarch64-alpine-linux-musl.cfg
