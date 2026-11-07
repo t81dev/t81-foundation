@@ -13,42 +13,50 @@
 
 ## 1. Executive Summary & Review Findings Resolution
 
-This evidence receipt documents the corrective implementation resolving three Codex review findings reported on PR #679 in study EXP-H04-R03.
+This evidence receipt documents the corrective implementation addressing three Codex review findings reported on PR #679 in study EXP-H04-R03.
 
 ### Per-Finding Dispositions
 
 | Finding | Severity | Description | Final Disposition | Summary of Evidence |
 |---|---|---|---|---|
-| **Finding 1** | P1 | Fallback Confidence Intervals & Statistical Integrity | **FIXED** | Removed all five `(1.0, 1.0, 1.0)` fallback confidence intervals. Preserved Step 1 protocol integrity and Step 2 CV > 5.0% early noise stop. Prior to Step 3/4 evaluation, missing, incomplete, nonfinite, nonpositive, or inverted required CI inputs fail closed as `INVALID`. Deterministic negative tests added in `test_harness.py` (10/10 PASS). |
-| **Finding 2** | P2 | Alignment-Padding Integrity & Access Contract | **FIXED** | Verified both Codex counterexamples (`k=5, A=8` byte 10; `k=5, A=64` byte 8). Analyzed exact access-accounting trade-offs against frozen §4.5/4.6 byte budgets. Implemented explicit `validate_frame()` for immutable-frame boundary validation in $O(B)$ space. Deterministic negative regressions added in `test_b729_u5.py` and `test_matched_codec.py` (28/28 PASS). |
-| **Finding 3** | P1 | Phase 4 Retention Verification Reporting | **REPORTING CORRECTED — FUNCTIONAL REQUIREMENT OPEN** | Withdrew unsupported claims that Phase 4 wire-frame-only retention was verified. Updated dry-run validation to report Phase 4 as `UNVERIFIED / UNIMPLEMENTED` and status as `PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED`. Removed `self.u_symbols` leak. Functional retention requirement remains open. |
+| **Finding 1** | P1 | Fallback Confidence Intervals & Statistical Integrity | **FIXED (DEFENSIVE HARDENING)** | Removed all five `(1.0, 1.0, 1.0)` fallback confidence intervals in `benchmark_harness.py`. Clarified that at base `1103356`, required CI validation already returned `INVALID` for missing mandatory intervals; removal of dead fallback code eliminates misleading dead branches. Hardened CI validation with `_is_valid_ci()` so non-tuple, non-numeric, boolean, nonpositive, or nonfinite values fail closed as `INVALID` without raising uncaught exceptions. Preserved Step 1 protocol integrity and Step 2 CV > 5.0% early noise stop (`INCONCLUSIVE`). Negative tests added in `test_harness.py` (10/10 PASS). |
+| **Finding 2** | P2 | Alignment-Padding Integrity & Admission Boundary | **FIXED** | Reproduced both Codex counterexamples (`k=5, A=8` byte 10; `k=5, A=64` byte 8). Analyzed access-accounting trade-offs against frozen §4.5/4.6 byte budgets: scanning alignment gaps and block padding inside individual queries would violate the $\le 6$ payload byte limit and $O(1)$ random access operation count. Implemented an explicit, enforced immutable-frame admission boundary: `validate_frame()` returns an immutable `ValidatedFrame`, and `admitted_random_access()` requires a `ValidatedFrame`. Direct `admitted_random_access()` refuses raw unvalidated bytes, preventing corrupted frames from reaching admitted queries. Added deterministic regression tests in `test_b729_u5.py` and `test_matched_codec.py` (29/29 PASS). |
+| **Finding 3** | P1 | Phase 4 Retention Verification Reporting | **REPORTING CORRECTED — FUNCTIONAL REQUIREMENT OPEN** | Withdrew unsupported claims that Phase 4 wire-frame-only retention was verified. Updated dry-run validation to report Phase 4 as `UNVERIFIED / UNIMPLEMENTED` in a structured `phase_status` dictionary, excluded Phase 4 from `phases_verified`, and reported overall status as `PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED`. Removed instance symbol caching. Functional retention requirement remains explicitly open. |
 
 ---
 
-## 2. Before-and-After Reproductions
+## 2. Before-and-After Reproductions & Analysis
 
-### 2.1 Finding 1 — Statistical Decision Fallbacks
+### 2.1 Finding 1 — Statistical Decision Fallbacks & Defensive Hardening
 
-#### Pre-Fix Behavior
-In `experiments/h04_r03_matched_codec/benchmark_harness.py`:
-`evaluate_decision_rules` fetched confidence intervals with `.get(..., (1.0, 1.0, 1.0))`. If required arms (e.g. `B10`, `B729`, `B729-u5`) were missing or partial, fallback intervals shaped like valid observations could produce `REJECT` or `ACCEPT` instead of failing closed as `INVALID`.
+#### Baseline Context & Evaluation
+In `benchmark_harness.py` at pinned base `1103356`:
+`evaluate_decision_rules` fetched confidence intervals with `.get(..., (1.0, 1.0, 1.0))`. However, the harness already checked:
+```python
+if not all(
+    arm in intervals and len(intervals[arm]) == 3
+    ...
+    for intervals, arms in ((ci_life, ARMS[1:]), (ci_query, ("B10", "B729-u5")))
+    for arm in arms
+):
+    return {"classification": "INVALID", "reason": "Incomplete or invalid confidence intervals"}
+```
+Because this validation ran before the `.get(..., (1.0, 1.0, 1.0))` lookups, missing required arms were already caught and returned `INVALID`. The fallback tuples were dead code that misleadingly suggested missing evidence could produce `ACCEPT` or `REJECT`. Furthermore, malformed types (e.g. non-tuples, non-numeric values, booleans) could cause uncaught `TypeError` exceptions.
 
-#### Post-Fix Verification
-- Removed all default tuples.
-- Enforced complete dictionary key containment and interval validation for required arms:
-  `ci_life` must contain valid 3-tuples for `("B10", "B729", "B729-u5")`.
-  `ci_query` must contain valid 3-tuples for `("B10", "B729-u5")`.
-- If system CV > 5.0%, Step 2 legitimately returns `INCONCLUSIVE` due to excessive noise without requiring CIs to be calculated.
-- If system CV $\le$ 5.0%, any missing, partial, nonfinite, nonpositive, or inverted CI returns `INVALID`.
-- Validated via `test_09_decision_rule_missing_or_partial_ci_rejected_as_invalid` and `test_10_high_noise_early_stop_without_calculating_ci` in `test_harness.py`.
+#### Corrective Action Taken
+- Completely removed all five `(1.0, 1.0, 1.0)` fallback tuples.
+- Implemented `_is_valid_ci(ci)` helper ensuring every required CI is a 3-element tuple or list of finite, positive numbers (`int` or `float`, strictly excluding `bool`), with `ci[1] <= ci[2]`.
+- Enforced that if `ci_life` or `ci_query` are not dictionaries, or if any required arm is missing or invalid, `evaluate_decision_rules` fails closed as `INVALID`.
+- Preserved Step 2 early noise stop: when run-to-run variation CV > 5.0%, the harness returns `INCONCLUSIVE` without requiring CI calculations.
+- Verified in `test_harness.py` via `test_09` and `test_10`.
 
 ---
 
-### 2.2 Finding 2 — Alignment Padding & Access Accounting
+### 2.2 Finding 2 — Alignment-Padding Integrity & Admission Boundary
 
-#### Pre-Fix Counterexamples
-1. Counterexample 1: `k=5, A=8`, encode `[0]` with `B729-u5`, corrupt byte 10 (block 0 alignment padding). `decode()` rejected with `CodecError`, but `random_access(..., 0)` returned `0` without error.
-2. Counterexample 2: `k=5, A=64`, encode `[0]` with `B729-u5`, corrupt byte 8 (header alignment gap $D - H$). `decode()` rejected with `CodecError`, but `random_access(..., 0)` returned `0` without error.
+#### Counterexample Reproduction
+1. **Counterexample 1 (Block Alignment Padding):** `k=5, A=8`, encode `[0]` with `B729-u5`, corrupt byte 10. `decode()` failed closed with `CodecError`, but `random_access(..., 0)` returned `0` without error.
+2. **Counterexample 2 (Header Alignment Gap):** `k=5, A=64`, encode `[0]` with `B729-u5`, corrupt byte 8. `decode()` failed closed with `CodecError`, but `random_access(..., 0)` returned `0` without error.
 
 #### Access-Accounting Analysis Against Frozen §4.5/4.6 Contract
 
@@ -62,29 +70,34 @@ In `experiments/h04_r03_matched_codec/benchmark_harness.py`:
 | Target-block alignment padding | $\text{aligned}_j - \text{raw}_j$ (up to $A-1$ B) | $\text{aligned}_j - \text{raw}_j$ | $\text{aligned}_j - \text{raw}_j$ | If scanned per query, violates test_16/test_05 access limits | **CONFLICT IF PER-QUERY** |
 | All blocks alignment padding | $\sum (\text{aligned}_j - \text{raw}_j)$ ($O(B)$ B) | $O(B)$ bytes | $O(B)$ bytes | Violates $O(1)$ random-access operation count | **CONFLICT IF PER-QUERY** |
 
-#### Resolution & Immutable-Frame Boundary
-Per Section 6.6 of `SPECIFICATION.md`:
+#### Implemented Resolution: Enforced Validated-Frame Pathway
+Per `SPECIFICATION.md` Section 6.6:
 > *"Validate complete inputs and canonical framing before admitted queries. Full validation work is reported separately and included in the end-to-end cost; a previously validated immutable buffer may amortize validation identically for all arms. Do not scan/validate the whole file silently inside one arm's lookup while giving others prevalidated input."*
 
-Rather than violating the six-payload-byte random-access guarantee by scanning whole alignment gaps and block padding on every random lookup, we introduced the explicit immutable-frame validation boundary:
-- Added `validate_frame(blob, arm, k, A, access_mode)` in `experiments/h04_r03_matched_codec/codec.py`.
-- `validate_frame()` checks total length, header alignment gaps, canonical block index offsets (if RA-INDEXED), and all block alignment padding in $O(B)$ time before queries begin.
-- Both counterexamples are verified in `test_10` and `test_11` in `test_b729_u5.py` and `test_13` in `test_matched_codec.py`, ensuring fail-closed rejection.
+To satisfy both padding integrity and the frozen $\le 6$ payload byte access limit:
+1. Implemented `ValidatedFrame` in `codec.py`, encapsulating an immutable `bytes` copy and verified framing metadata.
+2. `validate_frame(blob, arm, k, A, access_mode)` performs complete $O(B)$ frame validation (header, total length, alignment gaps, index offsets, and all block alignment paddings) and returns a `ValidatedFrame`.
+3. Implemented `admitted_random_access(frame: ValidatedFrame, index: int)`:
+   - Strictly requires a `ValidatedFrame` token; refuses raw unvalidated `bytes` or `bytearray` (raises `TypeError`).
+   - Slices only the target microblock (at most 6 payload bytes for B729-µ5).
+   - Proven in `test_10`, `test_11`, and `test_12` in `test_b729_u5.py`: neither corrupted counterexample can produce a `ValidatedFrame` or reach an admitted query.
 
 ---
 
 ### 2.3 Finding 3 — Phase 4 Retention Verification Reporting
 
 #### Pre-Fix Behavior
-`BenchmarkHarness.run_dry_run_validation()` retained `self.u_symbols` and used `symbols` in subsequent phases while emitting `"dry_run_status": "PASSED"` and listing `"Phase 4: Retention Boundary"` as verified.
+`BenchmarkHarness.run_dry_run_validation()` retained `self.u_symbols` and used `symbols` in subsequent phases while emitting `"dry_run_status": "PASSED"` and listing `"Phase 4: Retention Boundary"` in `phases_verified`.
 
 #### Post-Fix Correction
 - Removed `self.u_symbols` instance caching.
-- Explicitly documented that physical wire-frame-only retention and symbol erasure are not enforced in the dry-run harness.
-- Updated Phase 4 status to `"Phase 4: Retention Boundary (UNVERIFIED / UNIMPLEMENTED)"`.
-- Updated overall dry run status to `"PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED"`.
+- Updated `run_dry_run_validation()` to return:
+  - `"dry_run_status": "PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED"`
+  - `"phase_status"` dictionary mapping Phase 4 explicitly to `"UNVERIFIED / UNIMPLEMENTED"` and Phases 1-3, 5-8 to `"VERIFIED"`.
+  - `"phases_verified"` containing only the 7 truly verified phases, strictly excluding Phase 4.
+- In Phase 5 and 6, the harness uses `validate_frame` and `admitted_random_access`, asserting admission boundary enforcement.
 - Updated `test_01_dry_run_validation` in `test_harness.py`.
-- Maintained per directive that this is a **reporting correction, not functional closure**. The functional requirement remains OPEN.
+- Functional retention requirement remains explicitly **OPEN**.
 
 ---
 
@@ -97,9 +110,9 @@ All relevant test suites were executed independently:
 python3 -m unittest -v experiments.h04_r03_matched_codec.test_matched_codec
 # Result: Ran 17 tests - OK
 
-# 2. Candidate A B729-µ5 correctness test suite (11 tests, +2 regression tests)
+# 2. Candidate A B729-µ5 correctness test suite (12 tests, +3 regression tests)
 python3 -m unittest -v experiments.h04_r03_matched_codec.test_b729_u5
-# Result: Ran 11 tests - OK
+# Result: Ran 12 tests - OK
 
 # 3. Deterministic PRNG & workload generators (4 tests)
 python3 -m unittest -v experiments.h04_r03_matched_codec.test_workload
@@ -125,17 +138,17 @@ python3 -m experiments.h04_r03_matched_codec.benchmark_harness --run-measurement
 # Output: ERROR: Phase C performance measurement is FROZEN. Exit code: 1
 ```
 
-Total tests executed and verified: **72 passing tests across all active suites with 0 regressions**.
+Total tests verified across all active suites: **73 tests passing with zero regressions**.
 
 ---
 
 ## 4. Frozen-Protocol Compatibility Analysis
 
 1. **Protocol Integrity Precedence (§9.1):**
-   Step 1 (Protocol Integrity) and Step 2 (CV Noise Stop) are strictly preserved. Missing required CI inputs now map to `INVALID` instead of substituting fabricated values.
+   Step 1 (Protocol Integrity) and Step 2 (CV Noise Stop) are strictly preserved.
 2. **Noise Threshold (§8.3, §9.1):**
-   The CV > 5.0% threshold is checked before CI requirements, preserving the early inconclusive stop without generating unnecessary CIs.
+   CV > 5.0% early stop operates cleanly without generating unneeded CIs.
 3. **Random-Access Payload Limits (§4.5):**
-   The $\le 6$ payload byte read guarantee for B729-µ5 and 0 touched bytes from other microblocks are preserved.
+   The $\le 6$ payload byte read guarantee for B729-µ5 and 0 touched bytes from other microblocks are preserved by decoupling admission validation from element retrieval.
 4. **Execution Freeze:**
    `--run-measurement` remains frozen and guarded. No performance or hardware advantage claims are made.

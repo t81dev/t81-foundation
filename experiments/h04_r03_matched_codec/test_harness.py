@@ -16,8 +16,13 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
         harness = BenchmarkHarness(n=1000, k=64, a=1)
         res = harness.run_dry_run_validation()
         self.assertEqual(res["dry_run_status"], "PARTIAL — PHASE 4 UNVERIFIED / UNIMPLEMENTED")
-        self.assertEqual(len(res["phases_verified"]), 8)
-        self.assertIn("Phase 4: Retention Boundary (UNVERIFIED / UNIMPLEMENTED)", res["phases_verified"])
+        # Ensure Phase 4 is explicitly excluded from phases_verified
+        self.assertEqual(len(res["phases_verified"]), 7)
+        self.assertNotIn("Phase 4: Retention Boundary", res["phases_verified"])
+        # Check structured phase_status report
+        self.assertIn("phase_status", res)
+        self.assertEqual(res["phase_status"]["Phase 4: Retention Boundary"], "UNVERIFIED / UNIMPLEMENTED")
+        self.assertEqual(res["phase_status"]["Phase 5: Frame Validation"], "VERIFIED")
         # Ensure raw input symbols are not leaked or retained as harness instance attributes
         self.assertFalse(hasattr(harness, "u_symbols"))
 
@@ -173,6 +178,18 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
         malformed_tuple_life["B729-u5"] = (1.18, 1.12)  # type: ignore
         res_len = evaluate_decision_rules(cv_good, malformed_tuple_life, full_query)
         self.assertEqual(res_len["classification"], "INVALID")
+
+        # Malformed non-numeric type (e.g., string or bool inside tuple)
+        bad_type_life = dict(full_life)
+        bad_type_life["B729-u5"] = (1.18, "invalid", 1.25)  # type: ignore
+        res_type = evaluate_decision_rules(cv_good, bad_type_life, full_query)
+        self.assertEqual(res_type["classification"], "INVALID")
+
+        # Malformed non-tuple type entirely (e.g., int or None instead of tuple)
+        bad_obj_life = dict(full_life)
+        bad_obj_life["B10"] = 1.23  # type: ignore
+        res_obj = evaluate_decision_rules(cv_good, bad_obj_life, full_query)
+        self.assertEqual(res_obj["classification"], "INVALID")
 
     def test_10_high_noise_early_stop_without_calculating_ci(self):
         """Check Step 2: High noise stop legitimately returns INCONCLUSIVE without requiring CIs."""

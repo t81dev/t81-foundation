@@ -223,10 +223,9 @@ class TestB729U5Correctness(unittest.TestCase):
         """Codex finding counterexample 1: k=5, A=8, encode [0] using B729-u5, corrupt byte 10.
 
         Demonstrates that corrupted block alignment padding is rejected by decode() and
-        validate_frame(). Documents that direct unvalidated random_access() does not scan
-        block alignment padding to preserve the O(1) bounded-access payload byte limit.
+        validate_frame(), and cannot reach an admitted query.
         """
-        from experiments.h04_r03_matched_codec.codec import validate_frame
+        from experiments.h04_r03_matched_codec.codec import validate_frame, admitted_random_access, ValidatedFrame
         frame = bytearray(encode([0], arm="B729-u5", k=5, A=8, access_mode="RA-FIXED"))
         self.assertEqual(len(frame), 16)
         # Byte 10 is inside block 0 alignment padding (raw payload is 2 bytes at offsets 8, 9; padding is 10..15)
@@ -237,17 +236,21 @@ class TestB729U5Correctness(unittest.TestCase):
         with self.assertRaises(CodecError):
             decode(corrupted, arm="B729-u5", k=5, A=8, access_mode="RA-FIXED")
 
-        # validate_frame() must fail closed
+        # validate_frame() must fail closed, preventing admission token creation
         with self.assertRaises(CodecError):
             validate_frame(corrupted, arm="B729-u5", k=5, A=8, access_mode="RA-FIXED")
+
+        # Admitted random access refuses unvalidated raw bytes
+        with self.assertRaises(TypeError):
+            admitted_random_access(corrupted, 0)  # type: ignore
 
     def test_11_adversarial_counterexample_2_header_alignment_gap_corruption(self):
         """Codex finding counterexample 2: k=5, A=64, encode [0] using B729-u5, corrupt byte 8.
 
         Demonstrates that corrupted header alignment gap (D - H) is rejected by decode() and
-        validate_frame().
+        validate_frame(), and cannot reach an admitted query.
         """
-        from experiments.h04_r03_matched_codec.codec import validate_frame
+        from experiments.h04_r03_matched_codec.codec import validate_frame, admitted_random_access, ValidatedFrame
         frame = bytearray(encode([0], arm="B729-u5", k=5, A=64, access_mode="RA-FIXED"))
         self.assertEqual(len(frame), 128)
         # Byte 8 is inside header alignment gap (H=8, D=64, gap is bytes 8..63)
@@ -258,9 +261,23 @@ class TestB729U5Correctness(unittest.TestCase):
         with self.assertRaises(CodecError):
             decode(corrupted, arm="B729-u5", k=5, A=64, access_mode="RA-FIXED")
 
-        # validate_frame() must fail closed
+        # validate_frame() must fail closed, preventing admission token creation
         with self.assertRaises(CodecError):
             validate_frame(corrupted, arm="B729-u5", k=5, A=64, access_mode="RA-FIXED")
+
+        # Admitted random access refuses unvalidated raw bytes
+        with self.assertRaises(TypeError):
+            admitted_random_access(corrupted, 0)  # type: ignore
+
+    def test_12_admitted_random_access_end_to_end_validation(self):
+        """Verify that admitted random access works cleanly on valid frames and preserves bounded reads."""
+        from experiments.h04_r03_matched_codec.codec import validate_frame, admitted_random_access
+        vals = [10, -20, 30, -40, 50]
+        blob = encode(vals, arm="B729-u5", k=5, A=8, access_mode="RA-FIXED")
+        valid_frame = validate_frame(blob, arm="B729-u5", k=5, A=8, access_mode="RA-FIXED")
+        for idx, expected in enumerate(vals):
+            self.assertEqual(admitted_random_access(valid_frame, idx), expected)
+            self.assertEqual(valid_frame.random_access(idx), expected)
 
 
 if __name__ == "__main__":
