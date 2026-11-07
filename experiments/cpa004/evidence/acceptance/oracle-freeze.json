@@ -1,0 +1,42 @@
+{
+  "status": "experimental_artifact_freeze_not_accepted_finding",
+  "source_revision": "803075e9f7e36ed4b5318a8d2ddaacf62ae0a7e4",
+  "program_format": "raw opcode:u8 A:i32le B:i32le C:i32le; no container header/pools",
+  "phase_boundary": "Created before any CPA-003 hosted program execution; no hosted output is an oracle input.",
+  "attribution": "Codex, prior CPA-001 proposal author, same conversation; independent mathematical implementation only, not independent-person review.",
+  "authorization": "CPA-003 authorizes artifact/oracle construction and hosted validation. No freestanding evaluator implementation or execution authorization.",
+  "files": {
+    "program.raw13": {
+      "sha256": "b0649777cfa1c9e0fa1febb8bdfb1191c5cd3deea0d313791a4a32d5f207c80b",
+      "bytes": 351
+    },
+    "program.hex": {
+      "sha256": "0053d1c83e21dd1f0e77eaaa90fdf36d89f69821d5b583bcee61347c723d43fb",
+      "bytes": 703
+    },
+    "program.sha256": {
+      "sha256": "85921c24e038aab638c54a89e1845d91c77bc21a63c7e0809cb08702b8c3c54a",
+      "bytes": 80
+    },
+    "instruction-listing.json": {
+      "sha256": "40e1a356cccaeeff6ea02f7b1dfed4ccf9ef7297b2ca1c275dd7d6231ab047d2",
+      "bytes": 4575
+    },
+    "oracle.py": {
+      "sha256": "2124d9a2977734c5a2fae9433947b521f809b01af8a3714857ca80cc4c50f3a1",
+      "bytes": 11040
+    },
+    "oracle-trace.json": {
+      "sha256": "699f8f2626047e5426ead38a9e70e22153e187be56a58d79b3abcf450440c952",
+      "bytes": 935511
+    },
+    "oracle-normalized.json": {
+      "sha256": "03708ee4f5b5d63313b5dd3265e1c32db2deb20b6f794f93bba5dc27ed4e5324",
+      "bytes": 69506
+    },
+    "oracle-summary.json": {
+      "sha256": "b572119455252a241f87cb2ea56629622255f0369f677379c44297a030047b6b",
+      "bytes": 1162
+    }
+  }
+}

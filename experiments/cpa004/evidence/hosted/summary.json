@@ -1,0 +1,41 @@
+{
+  "runs": [
+    {
+      "run": 1,
+      "command": [
+        "/tmp/cpa004-results/hosted_observer",
+        "/tmp/t81-cpa-004/experiments/cpa004/program.raw13"
+      ],
+      "exit_code": 0,
+      "observations": 25,
+      "all_states_equal": true,
+      "raw_sha256": "e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a",
+      "pass_check": true
+    },
+    {
+      "run": 2,
+      "command": [
+        "/tmp/cpa004-results/hosted_observer",
+        "/tmp/t81-cpa-004/experiments/cpa004/program.raw13"
+      ],
+      "exit_code": 0,
+      "observations": 25,
+      "all_states_equal": true,
+      "raw_sha256": "e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a",
+      "pass_check": true
+    },
+    {
+      "run": 3,
+      "command": [
+        "/tmp/cpa004-results/hosted_observer",
+        "/tmp/t81-cpa-004/experiments/cpa004/program.raw13"
+      ],
+      "exit_code": 0,
+      "observations": 25,
+      "all_states_equal": true,
+      "raw_sha256": "e26c41cd709c87213904e5bfe11d3b6f20fc7124f2350e6714d9806f95cec30a",
+      "pass_check": true
+    }
+  ],
+  "disposition": "PASS"
+}
