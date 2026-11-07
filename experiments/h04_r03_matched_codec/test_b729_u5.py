@@ -219,6 +219,49 @@ class TestB729U5Correctness(unittest.TestCase):
         self.assertEqual(dec, rev_vals)
         self.assertNotEqual(dec, vals)
 
+    def test_10_adversarial_counterexample_1_block_alignment_padding_corruption(self):
+        """Codex finding counterexample 1: k=5, A=8, encode [0] using B729-u5, corrupt byte 10.
+
+        Demonstrates that corrupted block alignment padding is rejected by decode() and
+        validate_frame(). Documents that direct unvalidated random_access() does not scan
+        block alignment padding to preserve the O(1) bounded-access payload byte limit.
+        """
+        from experiments.h04_r03_matched_codec.codec import validate_frame
+        frame = bytearray(encode([0], arm="B729-u5", k=5, A=8, access_mode="RA-FIXED"))
+        self.assertEqual(len(frame), 16)
+        # Byte 10 is inside block 0 alignment padding (raw payload is 2 bytes at offsets 8, 9; padding is 10..15)
+        frame[10] = 1
+        corrupted = bytes(frame)
+
+        # decode() must fail closed
+        with self.assertRaises(CodecError):
+            decode(corrupted, arm="B729-u5", k=5, A=8, access_mode="RA-FIXED")
+
+        # validate_frame() must fail closed
+        with self.assertRaises(CodecError):
+            validate_frame(corrupted, arm="B729-u5", k=5, A=8, access_mode="RA-FIXED")
+
+    def test_11_adversarial_counterexample_2_header_alignment_gap_corruption(self):
+        """Codex finding counterexample 2: k=5, A=64, encode [0] using B729-u5, corrupt byte 8.
+
+        Demonstrates that corrupted header alignment gap (D - H) is rejected by decode() and
+        validate_frame().
+        """
+        from experiments.h04_r03_matched_codec.codec import validate_frame
+        frame = bytearray(encode([0], arm="B729-u5", k=5, A=64, access_mode="RA-FIXED"))
+        self.assertEqual(len(frame), 128)
+        # Byte 8 is inside header alignment gap (H=8, D=64, gap is bytes 8..63)
+        frame[8] = 1
+        corrupted = bytes(frame)
+
+        # decode() must fail closed
+        with self.assertRaises(CodecError):
+            decode(corrupted, arm="B729-u5", k=5, A=64, access_mode="RA-FIXED")
+
+        # validate_frame() must fail closed
+        with self.assertRaises(CodecError):
+            validate_frame(corrupted, arm="B729-u5", k=5, A=64, access_mode="RA-FIXED")
+
 
 if __name__ == "__main__":
     unittest.main()
