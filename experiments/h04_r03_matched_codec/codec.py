@@ -503,6 +503,64 @@ def compute_expected_total_bytes(N: int, k: int, A: int, access_mode: str, arm: 
         return D + (B - 1) * stride + aligned_last
 
 
+def validate_frame(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> int:
+    """Explicitly validate immutable-frame boundary integrity in O(B) space/time.
+
+    Validates:
+    - 8-byte element count header N.
+    - Exact canonical frame length matching compute_expected_total_bytes.
+    - Zero padding in header-data alignment gap (D - H).
+    - If RA-INDEXED, canonical block offset index values.
+    - Zero padding in all block alignment padding regions.
+
+    Returns element count N upon successful validation, or raises CodecError.
+    Per SPECIFICATION.md Section 6.6, a previously validated immutable frame
+    amortizes validation across repeated random-access queries without
+    compromising the O(1) bounded-byte random access guarantee.
+    """
+    if len(blob) < 8:
+        raise CodecError(f"Corrupted frame: blob length {len(blob)} < 8 bytes")
+    (N,) = struct.unpack('<Q', blob[:8])
+    if N == 0:
+        if len(blob) != 8:
+            raise CodecError(f"Extra trailing bytes for N=0: length {len(blob)} != 8")
+        return 0
+
+    expected_total = compute_expected_total_bytes(N, k, A, access_mode, arm)
+    if len(blob) != expected_total:
+        raise CodecError(f"Invalid frame total bytes for N={N}, k={k}, A={A}: expected {expected_total}, got {len(blob)}")
+
+    N, B, block_offsets, D = parse_framing(blob, k, A, access_mode)
+
+    raw_func = {
+        "B10": L_B10,
+        "T243": L_T243,
+        "B243-CLONE": L_T243,
+        "B729": L_B729,
+        "B729-u5": L_B729_u5,
+        "B729-µ5": L_B729_u5,
+    }[arm]
+    stride = align_up(raw_func(k), A)
+
+    if access_mode == "RA-INDEXED":
+        for j in range(B):
+            expected_off = D + j * stride
+            if block_offsets[j] != expected_off:
+                raise CodecError(f"Non-canonical block offset in index at {j}: got {block_offsets[j]}, expected {expected_off}")
+
+    for j in range(B):
+        m_j = min(k, N - j * k)
+        off_j = D + j * stride
+        raw_l = raw_func(m_j)
+        aligned_l = align_up(raw_l, A)
+        if aligned_l > raw_l:
+            pad_data = blob[off_j + raw_l : off_j + aligned_l]
+            if any(b != 0 for b in pad_data):
+                raise CodecError(f"Nonzero padding in block {j} alignment padding")
+
+    return N
+
+
 def decode(blob: bytes, arm: str, k: int, A: int, access_mode: str = "RA-FIXED") -> List[int]:
     """Decode complete framed wire artifact into a list of signed integers.
 
