@@ -500,6 +500,7 @@ jobs:
             /benchmarks/**
             /spec/**
             /third_party/**
+            /development_tests/**
             /README.md
             /LICENSE
           sparse-checkout-cone-mode: false
