@@ -38,7 +38,7 @@ T81 is studying representation advantage (Track R), bounded deterministic/policy
 
 ## 3. Unresolved Architectural Contradictions
 
-1. **Software Compression vs CPU Execution Speed:** On-disk 2-bit tryte packing saves $75\%$ memory footprint, but SIMD vector decode instruction tax limits CPU MatVec execution speed to $75.3\%$ of INT8 AVX2 in cache.
+1. **Software Compression vs CPU Execution Speed:** In the historical cache-resident packed 2-bit ternary AVX2 matrix-vector benchmark, **12.91 GFLOP/s** versus **17.15 GFLOP/s** for native INT8 AVX2 means ternary reached **75.3%** of binary throughput (binary approximately **32.8%** faster); 2-bit packing reported a $75\%$ footprint reduction. These are bounded workload results, not general radix claims.
    *Resolution:* Retain 2-bit packing strictly for storage/interchange while treating CPU software arithmetic speedup as falsified.
 2. **Custom VM vs Runtime-Agnostic Governance:** [Research Protocol 001](../../experiments/research_001/RESEARCH_PROPOSAL.md) specifies a Wasmtime/OPA comparator, but the [precursor report](../../examples/governance/accountable-computation/REPORT.md) tested different local A/B/C arms. The observed B-arm authorization failures (90/150 negative requests) must remain visible.
    *Unresolved:* Equivalence or necessity cannot be concluded until the actual conventional comparator, identical threat model and [draft RFC-00D4](../../spec/rfcs/RFC-00D4-accountable-decision-bundle.md) conformance obligations are tested and accepted.
@@ -215,6 +215,8 @@ A follows pinned baseline `f775680aba7db200691c0f4e2a3174b0e7e51581`; B reported
 **PR #658 — H04-R03 Phase B:** Deterministic correctness accepted at `983e258ed4b57b4cd6e010f036c1eb8656856e88`; current head observed `0a48054510e79e753d5152ccb3f9f130c17bbafd`. The reported integration gate is **BLOCKED** by broader required CI failures, attributed in an operator report to baseline fixture, Windows CMake, GCC GoogleBenchmark, macOS toolchain, and sanitizer issues. See [integration-only directive](https://github.com/t81dev/t81-foundation/pull/658#issuecomment-6552858759) and [separate CI maintenance directive](https://github.com/t81dev/t81-foundation/pull/658#issuecomment-6552913472). Those comments authorize neither a merge nor Phase C. Do not reopen accepted scientific correctness to resolve unrelated CI.
 
 **PR #660 — baseline research inventory:** Head observed `114a5ef82960366d2326dc8d404ef4fcbe3da4ff`, open/unmerged. Independent Codex review of the earlier `aa8fe207ceacfc08dd0364cd48c6bd8a612d44a7` returned substantive findings; [six-item correction directive](https://github.com/t81dev/t81-foundation/pull/660#issuecomment-6552761518) is outstanding as of this snapshot. Treat RFC/capability/benchmark counts and evidence tiers as provisional pending final-SHA review.
+
+**H04-R03 historical status (as of 2026-11-02):** Candidate A implementation and correctness validation were reported; PRs #679/#680 were open and Phase C was not authorized. A 2026-11-06 repository check found both PRs merged, which does not by itself authorize performance measurement. Refresh live authorization before relying on this dated snapshot.
 
 **Workstream separation:** (1) scientific report and primary-source citation audit; (2) PR #660 evidence-inventory corrections; (3) separate baseline CI maintenance to unblock #658. None automatically authorizes the others. Preserve negative results and existing research scope. **No merge, benchmark, Phase C, protection bypass, or production claim is implied.**
 
