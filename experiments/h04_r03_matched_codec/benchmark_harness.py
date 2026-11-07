@@ -217,32 +217,49 @@ class BenchmarkHarness:
         self.a = a
         self.access_mode = WORKLOAD_ACCESS_MODE
 
-    def run_dry_run_validation(self, retention_barrier_factory=None) -> Dict[str, Any]:
-        """Execute a deterministic dry-run verification across the 4 arms.
+    def run_dry_run_validation(
+        self,
+        n: int = 1000,
+        num_queries: int = 50,
+        fence_binary: Optional[str] = None,
+        fence_sha256: Optional[str] = None,
+        retention_barrier_factory: Optional[Any] = None,
+    ) -> Dict[str, Any]:
+        """Execute a deterministic dry-run verification across the 4 arms in smoke-test mode.
+
+        CRITICAL WORKLOAD SCALE BOUNDARY:
+        This execution is strictly a bounded SMOKE-TEST verification model (defaulting to
+        n=1000 symbols and 50 queries) designed for test-suite correctness and lifecycle
+        enforcement checks. It does NOT execute or claim full-scale frozen H04-R03 workload
+        verification (which requires N=2^20 elements, Q=2^20 queries, and dedicated qualified host).
 
         Phase 4 Wire-Frame-Only Retention Enforcement:
         - Source symbols and mapped inputs are owned buffers monitored via weak references.
         - Pre-computed independent verification digests (query schedule witness and full
           output checksum) are established before Phase 4.
         - In Phase 4, all raw symbols and mapped inputs are released, garbage collection is
-          executed, and the retention barrier confirms zero live aliases remain.
+          executed, and the native RetentionBarrier confirms zero live aliases remain.
         - Subsequent query checks (Phase 6) and output decode verification (Phase 7) use
           strictly the wire frames and independent witness digests without retaining any
           second raw-symbol array.
         """
         import gc
         import hashlib
+        from pathlib import Path
+        import platform
         import struct
+        import subprocess
+        import tempfile
         from .retention import OwnedSymbols, OwnedBuffer, RetentionBarrier
 
-        # Phase 1: Input Mapping & Generation
-        raw_symbols = generate_dataset_symbols(n=1000, seed=DATASET_SEED)
+        # Phase 1: Input Mapping & Generation (Smoke-Test Bounded Scale)
+        raw_symbols = generate_dataset_symbols(n=n, seed=DATASET_SEED)
         symbols = OwnedSymbols(raw_symbols)
         raw_bytes = OwnedBuffer(struct.pack(f"<{len(symbols)}h", *symbols))
         del raw_symbols
 
         # Compute independent witness digests for queries and full decoded output
-        query_schedule = [i % len(symbols) for i in range(50)]
+        query_schedule = [i % len(symbols) for i in range(min(num_queries, len(symbols)))]
         query_hasher = hashlib.sha256()
         for q_idx in query_schedule:
             query_hasher.update(struct.pack("<q", symbols[q_idx]))
@@ -256,16 +273,32 @@ class BenchmarkHarness:
             output_bytes.extend(packed)
         expected_output_witness = output_hasher.hexdigest()
 
-        # Compute reference xxHash64 if xxhash is available
+        # Compute reference xxHash64
         from .checksum_witness import reference_xxh64
         expected_xxh64 = f"{reference_xxh64(output_bytes):016x}"
         del output_bytes
 
-        # Establish retention barrier on owned input representations
-        if retention_barrier_factory is not None:
-            barrier = retention_barrier_factory([symbols, raw_bytes])
+        # Compile or locate native retention fence helper if not provided
+        tmp_dir = None
+        if retention_barrier_factory is None:
+            if fence_binary is None or fence_sha256 is None:
+                tmp_dir = tempfile.TemporaryDirectory()
+                bin_name = "fence.dylib" if platform.system() == "Darwin" else "fence.so"
+                compiled_bin = Path(tmp_dir.name) / bin_name
+                source = Path(__file__).with_name("retention_fence.c")
+                flag = "-dynamiclib" if platform.system() == "Darwin" else "-shared"
+                subprocess.run(
+                    ["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-fPIC", flag,
+                     str(source), "-o", str(compiled_bin)],
+                    check=True,
+                    capture_output=True,
+                )
+                fence_binary = str(compiled_bin)
+                fence_sha256 = hashlib.sha256(compiled_bin.read_bytes()).hexdigest()
+
+            barrier = RetentionBarrier([symbols, raw_bytes], fence_binary, fence_sha256)
         else:
-            barrier = RetentionBarrier([symbols, raw_bytes])
+            barrier = retention_barrier_factory([symbols, raw_bytes])
 
         # Phase 2: Frame Allocation & Oracle Layout Verification
         layouts = {arm: compute_layout(len(symbols), self.k, self.a, self.access_mode, arm) for arm in ARMS}
@@ -281,6 +314,10 @@ class BenchmarkHarness:
 
         retention_evidence = barrier.verify_release()
         phase_4_status = "VERIFIED"
+
+        # Clean up temporary compiled fence if created
+        if tmp_dir is not None:
+            tmp_dir.cleanup()
 
         # Phase 5: Frame Validation (using admission boundary)
         validated_frames = {}
@@ -323,6 +360,21 @@ class BenchmarkHarness:
 
         return {
             "dry_run_status": "PASSED",
+            "workload_mode": "SMOKE_TEST",
+            "smoke_configuration": {
+                "n": n,
+                "num_queries": len(query_schedule),
+                "k": self.k,
+                "a": self.a,
+                "access_mode": self.access_mode,
+            },
+            "frozen_workload_reference": {
+                "n": WORKLOAD_N,
+                "num_queries": WORKLOAD_N,
+                "k": WORKLOAD_K,
+                "a": WORKLOAD_A,
+                "access_mode": WORKLOAD_ACCESS_MODE,
+            },
             "arms_verified": ARMS,
             "retention_evidence": retention_evidence,
             "phase_status": {

@@ -16,6 +16,11 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
         harness = BenchmarkHarness(n=1000, k=64, a=1)
         res = harness.run_dry_run_validation()
         self.assertEqual(res["dry_run_status"], "PASSED")
+        # Explicit smoke test labeling
+        self.assertEqual(res["workload_mode"], "SMOKE_TEST")
+        self.assertEqual(res["smoke_configuration"]["n"], 1000)
+        self.assertEqual(res["smoke_configuration"]["num_queries"], 50)
+        self.assertEqual(res["frozen_workload_reference"]["n"], 1048576)
         # Ensure all 8 phases are verified including Phase 4
         self.assertEqual(len(res["phases_verified"]), 8)
         self.assertIn("Phase 4: Retention Boundary", res["phases_verified"])
@@ -23,9 +28,10 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
         self.assertIn("phase_status", res)
         self.assertEqual(res["phase_status"]["Phase 4: Retention Boundary"], "VERIFIED")
         self.assertEqual(res["phase_status"]["Phase 5: Frame Validation"], "VERIFIED")
-        # Ensure retention evidence is present and zero live input aliases remain
+        # Ensure retention evidence is present, ordering fence was called, and zero live input aliases remain
         self.assertIn("retention_evidence", res)
         self.assertEqual(res["retention_evidence"]["live_owned_buffers"], 0)
+        self.assertTrue(res["retention_evidence"]["ordering_fence_called"])
         # Ensure raw input symbols are not leaked or retained as harness instance attributes
         self.assertFalse(hasattr(harness, "u_symbols"))
         self.assertFalse(hasattr(harness, "symbols"))
@@ -207,20 +213,35 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
         """Negative test: Retention barrier fails closed when an input alias remains live across Phase 4."""
         from experiments.h04_r03_matched_codec.retention import RetentionBarrier
         from experiments.h04_r03_matched_codec.measurement_engine import ProtocolError
+        import hashlib
+        from pathlib import Path
+        import platform
+        import subprocess
+        import tempfile
+
+        tmp = tempfile.TemporaryDirectory()
+        bin_name = "fence.dylib" if platform.system() == "Darwin" else "fence.so"
+        binary = Path(tmp.name) / bin_name
+        source_path = Path(__file__).with_name("retention_fence.c")
+        flag = "-dynamiclib" if platform.system() == "Darwin" else "-shared"
+        subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-fPIC", flag,
+                        str(source_path), "-o", str(binary)], check=True, capture_output=True)
+        sha = hashlib.sha256(binary.read_bytes()).hexdigest()
 
         retained_leak = []
 
         def leaky_barrier_factory(owners):
             # Adversarially capture and leak a strong reference to one of the owned input buffers
             retained_leak.append(owners[0])
-            return RetentionBarrier(owners)
+            return RetentionBarrier(owners, str(binary), sha)
 
         harness = BenchmarkHarness(n=1000, k=64, a=1)
         with self.assertRaisesRegex(ProtocolError, "aliases remain live"):
             harness.run_dry_run_validation(retention_barrier_factory=leaky_barrier_factory)
 
-        # Clear leaked reference
+        # Clear leaked reference and clean up
         retained_leak.clear()
+        tmp.cleanup()
 
     def test_12_query_witness_negative_corrupted_query_detected(self):
         """Negative test: Corrupted random access queries fail closed against the query witness."""
@@ -229,7 +250,6 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
 
         harness = BenchmarkHarness(n=1000, k=64, a=1)
 
-        # Patch admitted_random_access to return a corrupt value on a specific query
         original_admitted_ra = codec_mod.admitted_random_access
 
         def corrupt_admitted_ra(frame, index):
@@ -241,6 +261,56 @@ class TestBenchmarkHarnessAndStatistics(unittest.TestCase):
         with patch("experiments.h04_r03_matched_codec.codec.admitted_random_access", side_effect=corrupt_admitted_ra):
             with self.assertRaisesRegex(ValueError, "Query mismatch in .* against independent query witness"):
                 harness.run_dry_run_validation()
+
+    def test_13_retention_limitation_untracked_surviving_representation(self):
+        """Document and verify retention boundary limitation regarding untracked surviving representations.
+
+        Weak-reference retention enforcement tracks ONLY explicitly registered owners in RetentionBarrier.
+        If an independent closure, external container, or undiscovered data structure captures a copy
+        or slice of the raw input without being passed to RetentionBarrier, it is NOT detected by
+        weak references alone. This test proves that:
+        1. An untracked reference does not increment live_owned_buffers on registered owners.
+        2. Therefore, retention guarantees are bounded to registered application buffers and
+           cooperative lifecycle contracts, NOT absolute OS-level process memory guarantees.
+        """
+        from experiments.h04_r03_matched_codec.retention import OwnedSymbols, RetentionBarrier
+        import hashlib
+        from pathlib import Path
+        import platform
+        import subprocess
+        import tempfile
+
+        tmp = tempfile.TemporaryDirectory()
+        bin_name = "fence.dylib" if platform.system() == "Darwin" else "fence.so"
+        binary = Path(tmp.name) / bin_name
+        source_path = Path(__file__).with_name("retention_fence.c")
+        flag = "-dynamiclib" if platform.system() == "Darwin" else "-shared"
+        subprocess.run(["cc", "-std=c11", "-Wall", "-Wextra", "-Werror", "-fPIC", flag,
+                        str(source_path), "-o", str(binary)], check=True, capture_output=True)
+        sha = hashlib.sha256(binary.read_bytes()).hexdigest()
+
+        # Registered input symbol array
+        raw_symbols = OwnedSymbols([1, -2, 3, -4])
+
+        # Adversarially create an untracked surviving representation (e.g. detached list copy)
+        untracked_copy = list(raw_symbols)
+
+        # Barrier registers only raw_symbols
+        barrier = RetentionBarrier([raw_symbols], str(binary), sha)
+
+        # Release registered symbols
+        del raw_symbols
+
+        # Barrier passes because registered owner was released, despite untracked_copy existing
+        evidence = barrier.verify_release()
+        self.assertEqual(evidence["live_owned_buffers"], 0)
+        self.assertTrue(evidence["ordering_fence_called"])
+
+        # untracked_copy survived undetected by the barrier
+        self.assertEqual(len(untracked_copy), 4)
+
+        del untracked_copy
+        tmp.cleanup()
 
 
 if __name__ == "__main__":

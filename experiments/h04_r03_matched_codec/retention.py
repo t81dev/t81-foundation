@@ -4,7 +4,7 @@ import ctypes
 import gc
 import hashlib
 from pathlib import Path
-from typing import List, Optional, Sequence
+from typing import Sequence
 import weakref
 
 from .measurement_engine import ProtocolError
@@ -23,28 +23,33 @@ class OwnedArray(array):
 
 
 class RetentionBarrier:
-    def __init__(self, owners: Sequence[object], fence_path: Optional[str] = None, fence_sha256: Optional[str] = None):
-        self.references = [weakref.ref(owner) for owner in owners]
-        self.fence = None
-        self.binary_sha256 = fence_sha256
+    """Enforces retention verification on owned references and invokes native ordering fence.
 
-        if fence_path is not None:
-            binary = Path(fence_path)
-            if hashlib.sha256(binary.read_bytes()).hexdigest() != fence_sha256:
-                raise ProtocolError("retention fence binary identity mismatch")
-            self.library = ctypes.CDLL(str(binary.resolve()))
-            self.fence = self.library.h04_retention_fence
-            self.fence.argtypes, self.fence.restype = [], None
+    IMPORTANT RETENTION LIMITATIONS:
+    Weak references track only registered Python-owned objects, not arbitrary undiscovered
+    aliases, C allocator heap arenas, or OS physical memory reclamation.
+    The native ordering fence enforces CPU memory ordering; it does not flush CPU caches
+    or force resident page reclamation.
+    """
+
+    def __init__(self, owners: Sequence[object], fence_path: str, fence_sha256: str):
+        self.references = [weakref.ref(owner) for owner in owners]
+        binary = Path(fence_path)
+        if hashlib.sha256(binary.read_bytes()).hexdigest() != fence_sha256:
+            raise ProtocolError("retention fence binary identity mismatch")
+        self.library = ctypes.CDLL(str(binary.resolve()))
+        self.fence = self.library.h04_retention_fence
+        self.fence.argtypes, self.fence.restype = [], None
+        self.binary_sha256 = fence_sha256
 
     def verify_release(self):
         gc.collect()
-        if self.fence is not None:
-            self.fence()
+        self.fence()
         aliases = sum(reference() is not None for reference in self.references)
         evidence = {
             "live_owned_buffers": aliases,
             "ordering_fence_sha256": self.binary_sha256,
-            "ordering_fence_called": self.fence is not None,
+            "ordering_fence_called": True,
             "allocator_pages_reclaimed": None,
             "physical_bytes_erased": False,
             "cache_flushed": False,
