@@ -1,0 +1,1 @@
+Initial download attempted per-file .sha256 metadata; server returned HTTP 404. No unchecked boot assets were accepted. See corrected SHA256SUMS procedure.

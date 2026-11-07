@@ -1,0 +1,8 @@
+/sys/devices/system/cpu/online=0
+/sys/devices/system/cpu/isolated=
+/sys/devices/system/cpu/nohz_full=
+/sys/devices/system/cpu/smt/active=0
+/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor=UNAVAILABLE
+/sys/devices/system/cpu/intel_pstate/no_turbo=UNAVAILABLE
+/sys/devices/system/cpu/cpufreq/boost=UNAVAILABLE
+cbd3b94d00a164a73837fb1d53c88726e959ec84be4bbb0d0d7fe7793b11a355  guest_diagnostics.sh
