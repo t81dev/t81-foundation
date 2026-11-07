@@ -30,7 +30,7 @@ This revision directly resolves all six established review findings in one bound
 | Finding / Topic | Issue Summary | Proposal Disposition | Section References | Unresolved Limitations |
 |---|---|---|---|---|
 | **Finding 1: Clock Correctness** | Linux `BOOTTIME`/`MONOTONIC_RAW` clock pairing suffers from uncoupled rate drift (`adjtime`/NTP frequency disciplining on BOOTTIME but not MONOTONIC_RAW); sleep threshold semantics must be consistent ($\ge 100\text{ ms}$). | **RESOLVED:** Replaced `CLOCK_MONOTONIC_RAW` with matching-rate `CLOCK_MONOTONIC` on Linux, ensuring both clocks track identical kernel frequency scaling and NTP discipline while `CLOCK_BOOTTIME` adds suspend duration. On Darwin, paired matching-rate `mach_continuous_time` with `mach_absolute_time`. Explicitly bounded residual NTP adjustment uncertainty ($\epsilon_{adj} \ll 100\text{ ms}$, sub-millisecond over 1,800s). Standardized uniform $\ge 100,000,000\text{ ns}$ ($\ge 100\text{ ms}$) fail-closed sleep threshold. | Section 2.3 (§2.3.1), Section 3 (§3), Section 8 (§8) | Clocks share frequency slew rate; kernel tick resolution dictates nanosecond timestamp granularity. |
-| **Finding 2: Deadline Closure & Authoritative Timestamp** | Terminal sealing and ACK must not occur outside the 1,800s envelope; pre-deadline timestamps cannot certify post-deadline work; need unambiguous host completion timestamp. | **RESOLVED:** Specified authoritative completion timestamp $T_{host\_complete}$ sampled by Role H after sealing, receipt generation, durable disk sync (`fsync`), terminal ACK to guest, and guest process tree reaping. Mandated $T_{host\_complete} - T_{host\_start} \le 1,800 \times 10^9\text{ ns}$. Enforced that any receipt signing or acknowledgment completing $>1,800\text{ s}$ fails closed as Status 71 (`INCONCLUSIVE_RESOURCE`). | Section 2.3 (§2.3.3), Section 2.6 (§2.6), Section 3 (§3), Section 8 (§8) | Host-side deadline enforcement operates strictly externally via POSIX signals and suspend-aware timers. |
+| **Finding 2: Deadline Closure & Authoritative Timestamp** | Terminal sealing, signing, and publication must not occur outside the 1,800s envelope; pre-deadline timestamps cannot certify post-deadline work; need noncircular host publication evidence. | **RESOLVED:** Decoupled Stage 1 receipt sealing from Stage 2 terminal publication attestation (`host-publication-attestation.json`). Authoritative publication timestamp $T_{host\_published\_boot\_ns}$ is sampled strictly after the durable `fsync` of `host-terminal-receipt.json`, binding its SHA-256 digest $H_{receipt}$. Mandated $T_{host\_published\_boot\_ns} - T_{host\_start} \le 1,800 \times 10^9\text{ ns}$. Any publication finishing $>1,800\text{ s}$ fails closed as Status 71 (`INCONCLUSIVE_RESOURCE`). | Section 2.3 (§2.3.3, §2.3.4), Section 2.6 (§2.6), Section 2.11 (§2.11), Section 2.12 (§2.12), Section 3 (§3), Section 8 (§8) | Host-side deadline enforcement operates strictly externally via POSIX timers, kernel SIGKILL, and suspend-aware clocks. |
 | **Finding 3: Receipt Authentication** | Host receipt signature specification lacked exact versioned signing payload schema, canonical serialization, explicit signature exclusion, and duplicate-key rejection. | **RESOLVED:** Defined exact versioned Ed25519 signing schema `t81.arch003.host-terminal-receipt.v1`. Mandated ASCII canonical JSON serialization (RFC 8785 subset: keys sorted lexicographically, compact separators, no float representations, no trailing newline before hashing). Explicitly excluded `host_signature_hex` from the signing payload. Mandated strict schema validation, unknown property rejection, and duplicate-key rejection. | Section 2.3 (§2.3.2, §2.3.4), Section 2.11 (§2.11) | Requires standard cryptographic implementation (Ed25519 / RFC 8032) available to host watchdog and verifier. |
 | **Finding 4: Evidence Integrity & Artifact Inventory** | Host receipt must bind exact campaign identity and root digest; external verifier must inspect complete artifact inventory and reject conflicting terminal records. | **RESOLVED:** Bound `host-terminal-receipt.json` cryptographically to both `campaign_uuid` and `guest_sealed_root_sha256`. Required host acceptance verifier to independently compute SHA-256 digests for all files indexed in `artifact-index.json` (mandating presence of all expected artifacts, e.g. `observed-S.bin`) and reject missing, malformed, forged, duplicate, or conflicting terminal receipts. | Section 2.3 (§2.3.3), Section 2.4 (§2.4), Section 2.11 (§2.11), Section 2.12 (§2.12) | Offline verifier must read full guest artifact inventory bytes to compute and match file hashes. |
 | **Finding 5: Scientific Verification & Contract Preservation** | Verification contract cannot substitute `manifest.status` for full independent validation; reconcile `campaign.json` manifest terminology; preserve full R1/I2 scientific matrix. | **RESOLVED:** Reaffirmed that independent verification strictly requires full re-verification of all 1,450,659 calls across Debug, Release, and Sanitizer profiles against `expected.bin` and recomputation of rolling digests; `manifest.status` / `campaign.json` status alone is strictly insufficient. Clarified that `campaign.json` is the on-disk file serialization of the campaign manifest object. Preserved 100% of R1 workloads, oracles, and controls. | Section 2.9 (§2.9), Section 2.10 (§2.10), Section 2.11 (§2.11) | Independent verification is computationally O(N) over all 1.45M observations; run offline outside campaign budget. |
@@ -133,12 +133,21 @@ Circularity between guest evidence sealing and host deadline certification is re
    - Heartbeat sequence continuous and intact.
 6. **Pre-Exit Acknowledgment:** Role H sends pre-exit ACK `{"status": "READY_TO_REAP"}` to Guest over IPC.
 7. **Guest Process Termination:** Upon receiving the pre-exit ACK, Guest L terminates all child processes, closes file descriptors, and cleanly exits (exit code 0).
-8. **Authoritative Process Reaping & Final Completion Timestamp:** Role H reaps the guest process group (`waitpid`), ensures no lingering guest processes remain, and immediately samples the **authoritative host completion timestamp**:
+8. **Authoritative Process Reaping & Post-Reap Host Timestamp:** Role H reaps the guest process group (`waitpid`), ensures no lingering guest processes remain, and immediately samples the **post-reap host completion timestamp**:
    $$T_{host\_complete\_boot\_ns} = \text{clock\_gettime}(\text{CLOCK\_BOOTTIME})$$
-9. **Receipt Construction, Signing, and Durable Publication:** Role H constructs the canonical signing dictionary $D_{sign}$ incorporating $T_{host\_complete\_boot\_ns}$ and the final elapsed time $\Delta T_{host\_total} \equiv T_{host\_complete\_boot\_ns} - T_{start\_boot\_ns}$, signs $D_{sign}$ with $SK_{host}$, writes `host-terminal-receipt.json` atomically via a temporary file, and performs durable fsync to persistent host storage.
-10. **Terminal Budget Enforcement Rule:** The total host campaign elapsed time through final receipt publication is evaluated as:
-    $$\Delta T_{host\_publish} = \text{clock\_gettime}(\text{CLOCK\_BOOTTIME}) - T_{start\_boot\_ns}$$
-    If $\Delta T_{host\_complete} > 1,800 \times 10^9\text{ ns}$ or final receipt publication completes after $1,800.0\text{ seconds}$ ($> 1,800 \times 10^9\text{ ns}$), Role H must mark `termination_issued: true`, emit Status 71 (`INCONCLUSIVE_RESOURCE`), and refuse to issue a valid completion certification. Any campaign with a missing, incomplete, or post-deadline final receipt fails closed. **A pre-deadline intermediate timestamp cannot certify post-deadline work.**
+9. **Receipt Construction, Signing, and Durable Sealing (Stage 1 Record):** Role H constructs the canonical signing dictionary $D_{sign}$ incorporating $T_{host\_complete\_boot\_ns}$ and the elapsed time through reaping $\Delta T_{host\_total} \equiv T_{host\_complete\_boot\_ns} - T_{start\_boot\_ns}$, signs $D_{sign}$ with $SK_{host}$, writes `host-terminal-receipt.json` atomically via a temporary file, and performs durable fsync to persistent host storage.
+10. **Post-Publication Timestamp Sampling & Attestation (Stage 2 Record):** Immediately following the completed `fsync` of `host-terminal-receipt.json`, Role H samples the definitive **authoritative terminal publication timestamp**:
+    $$T_{host\_published\_boot\_ns} = \text{clock\_gettime}(\text{CLOCK\_BOOTTIME})$$
+    Role H reads the raw bytes of the durably written `host-terminal-receipt.json` from disk, computes its cryptographic digest:
+    $$H_{receipt} \equiv \text{SHA256}(\text{read\_bytes}(host\text{-}terminal\text{-}receipt.json))$$
+    Role H verifies that the total campaign elapsed time through publication remains strictly within budget:
+    $$\Delta T_{host\_published} \equiv T_{host\_published\_boot\_ns} - T_{start\_boot\_ns} \le 1,800 \times 10^9\text{ ns}\quad (1,800.0\text{ seconds})$$
+    Role H constructs the canonical signing dictionary for `host-publication-attestation.json` binding $H_{receipt}$, `campaign_uuid`, $T_{host\_published\_boot\_ns}$, $\Delta T_{host\_published}$, and host public key, signs it with $SK_{host}$, writes `host-publication-attestation.json` atomically via temporary file, and executes a final durable `fsync`.
+11. **Hard Watchdog Abort & Noncircular Deadline Enforcement:**
+    - To eliminate circularity where signing an attestation could itself experience an unobserved delay, Role H arms an asynchronous POSIX kernel timer (`timer_create(CLOCK_BOOTTIME)` or `SIGALRM`) configured to deliver an uncatchable `SIGKILL` to Role H at exactly $T_{start\_boot\_ns} + 1,800 \times 10^9\text{ ns}$.
+    - If durable publication of `host-publication-attestation.json` does not complete before 1,800.0s, Role H is abruptly terminated by the kernel prior to attestation publication. The absence of `host-publication-attestation.json` ensures deterministic, fail-closed campaign rejection by the offline verifier.
+    - If publication completes, Role H disarms the timer, flushes remaining file descriptors, and cleanly exits (exit code 0).
+    - **A timestamp signed prior to an event cannot certify that the event completed within budget; acceptance strictly requires both the sealed receipt and the host publication attestation proving post-fsync completion $\le 1,800\text{ seconds}$.**
 
 ```
 Guest (L / V / W)                                             Host Watchdog (Role H)
@@ -163,18 +172,19 @@ Guest (L / V / W)                                             Host Watchdog (Rol
     |  5. Guest cleanly exits 0.                                        |
     |------------------------------------------------------------------>|
     |                                                                   |  6. Host reaps guest (`waitpid`);
-    |                                                                   |  7. Host records authoritative
-    |                                                                   |     T_host_complete_boot_ns;
-    |                                                                   |  8. Host generates & signs
-    |                                                                   |     `host-terminal-receipt.json`;
-    |                                                                   |  9. Host durably writes (`fsync`)
-    |                                                                   |     receipt to host storage;
-    |                                                                   | 10. Asserts total elapsed
-    |                                                                   |     through publication <= 1,800s.
+    |                                                                   |  7. Host records T_host_complete;
+    |                                                                   |  8. Host signs & writes `host-terminal-receipt.json`;
+    |                                                                   |  9. Host performs durable fsync;
+    |                                                                   | 10. Host records T_host_published_boot_ns;
+    |                                                                   | 11. Host computes H_receipt = SHA256(receipt);
+    |                                                                   | 12. Host asserts T_host_published <= 1,800s;
+    |                                                                   | 13. Host signs & durably publishes
+    |                                                                   |     `host-publication-attestation.json`;
+    |                                                                   | 14. Host disarms timer & exits 0.
     v                                                                   v
 ```
 
-**Contents and Fields of `host-terminal-receipt.json`:**
+**Contents and Fields of `host-terminal-receipt.json` (Stage 1 Record):**
 ```json
 {
   "schema": "t81.arch003.host-terminal-receipt.v1",
@@ -195,7 +205,23 @@ Guest (L / V / W)                                             Host Watchdog (Rol
 }
 ```
 
-The terminal host receipt is created strictly **after** the guest has sealed its evidence root and transmitted the root digest. It binds the exact `guest_sealed_root_sha256`. Both the guest evidence archive and `host-terminal-receipt.json` are required for final campaign acceptance.
+**Contents and Fields of `host-publication-attestation.json` (Stage 2 Record):**
+```json
+{
+  "schema": "t81.arch003.host-publication-attestation.v1",
+  "protocol": "T81-ARCH-003-R2",
+  "campaign_uuid": "...",
+  "host_start_boot_ns": 1234567890000000,
+  "host_published_boot_ns": 1234747895000000,
+  "host_elapsed_published_ns": 180005000000,
+  "terminal_receipt_sha256": "...",
+  "watchdog_peak_rss_kib": 4120,
+  "host_public_key_hex": "...",
+  "host_signature_hex": "..."
+}
+```
+
+The terminal host receipt is created strictly **after** the guest has sealed its evidence root and transmitted the root digest. It binds the exact `guest_sealed_root_sha256`. The host publication attestation is created strictly **after** durable `fsync` of the receipt, binding the exact SHA-256 digest of `host-terminal-receipt.json` ($H_{receipt}$) and certifying publication within the 1,800-second envelope. Both records, alongside the complete guest evidence archive, are mandatory for campaign acceptance.
 
 #### 2.3.4 Cryptographic Receipt Authentication, Canonical Serialization, and Strict Payload Schema
 To ensure non-repudiation and prevent signature-wrapping or mutation attacks, receipt generation and verification must strictly follow the Ed25519 (RFC 8032 / PureEd25519) specification with deterministic canonical serialization:
@@ -235,6 +261,23 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
    - Any unrecognized or unexpected keys outside the exact 15 defined fields of the complete receipt (or 14 fields of $D_{sign}$) must fail validation immediately.
    - Any type mismatch, uppercase hex characters, or integer out of range must fail validation immediately.
 
+6. **Host Publication Attestation Schema Specification (`t81.arch003.host-publication-attestation.v1`):**
+   - The Stage 2 record `host-publication-attestation.json` certifies post-`fsync` completion and binds $H_{receipt}$.
+   - The signing payload $D_{pub\_sign}$ consists of exactly 9 non-signature fields:
+     - `schema` (string: `"t81.arch003.host-publication-attestation.v1"`)
+     - `protocol` (string: `"T81-ARCH-003-R2"`)
+     - `campaign_uuid` (string: 36-char canonical RFC 4122 UUID matching `host-terminal-receipt.json`)
+     - `host_start_boot_ns` (integer: $0 \le n \le 2^{63}-1$ matching receipt)
+     - `host_published_boot_ns` (integer: $0 \le n \le 2^{63}-1$)
+     - `host_elapsed_published_ns` (integer: $0 \le n \le 2^{63}-1$, where $host\_elapsed\_published\_ns \equiv host\_published\_boot\_ns - host\_start\_boot\_ns$)
+     - `terminal_receipt_sha256` (string: 64 lowercase hexadecimal digits matching $H_{receipt}$)
+     - `watchdog_peak_rss_kib` (integer: $0 \le n \le 16,384$)
+     - `host_public_key_hex` (string: 64 lowercase hexadecimal digits matching receipt and $PK_{host}$)
+   - The complete `host-publication-attestation.json` file contains exactly 10 fields (the 9 signing payload fields above plus `host_signature_hex`).
+   - Serialized identically using ASCII canonical JSON (RFC 8785 subset, keys sorted, no trailing newline before signing).
+   - Signed with $SK_{host}$; 64-byte signature stored as 128 lowercase hex characters in `host_signature_hex`.
+   - Strict validation: unknown fields, duplicate keys, or signature mismatch fails closed immediately.
+
 ---
 
 ### 2.4 Item 4: Fail-Closed Semantics for All Boundary Faults
@@ -249,6 +292,9 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
 | **Terminal Receipt Tampering** | Ed25519 signature fails verification against $PK_{host}$ | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
 | **Digest Mismatch** | `guest_sealed_root_sha256` $\ne \text{sha256}(artifact\text{-}index.json)$ or $\ne \text{read\_text}(evidence.sha256).\text{strip}()$ | Host acceptance verifier rejects campaign | `FAIL_CORRECTNESS` (Status 65). |
 | **Missing Terminal Receipt** | Guest directory present but no valid terminal receipt exists | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
+| **Missing Publication Attestation** | Terminal receipt exists but `host-publication-attestation.json` missing | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
+| **Publication Overrun (>1,800s)** | Attestation `host_elapsed_published_ns` $> 1,800 \times 10^9\text{ ns}$ | Host acceptance verifier rejects campaign | `INCONCLUSIVE_RESOURCE` (Status 71). |
+| **Receipt Digest Mismatch in Attestation** | `terminal_receipt_sha256` $\ne \text{sha256}(host\text{-}terminal\text{-}receipt.json)$ | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
 | **Missing Required Artifact** | Any required artifact (e.g. `observed-S.bin`) omitted or deleted | Host acceptance verifier rejects campaign | `FAIL_EVIDENCE` (Status 67). |
 | **Artifact Checksum Divergence** | Any file SHA-256 differs from `artifact-index.json` | Host acceptance verifier rejects campaign | `FAIL_EVIDENCE` (Status 67). |
 | **Conflicting Terminal Records** | Duplicate terminal receipts or concurrent termination notices | Host acceptance verifier rejects campaign | `BLOCKED_RESOURCE_ACCOUNTING` (Status 70). |
@@ -288,25 +334,30 @@ The complete receipt file `host-terminal-receipt.json` consists of exactly 15 fi
 
 ### 2.6 Item 6: Inclusive 1,800-Second Campaign Envelope and Authoritative Completion Ordering
 
-The 1,800-second ($30.0$ minute) wall-clock deadline is absolute, monotonic, suspend-inclusive, and non-resettable. It encompasses every required in-budget campaign operation from initial host setup through final process termination:
+The 1,800-second ($30.0$ minute) wall-clock deadline is absolute, monotonic, suspend-inclusive, and non-resettable. It encompasses every required in-budget campaign operation from initial host setup through final process termination and durable publication:
 
-$$\sum T = T_{host\_setup} + T_{guest\_launch} + T_{configure} + T_{compile} + T_{link} + T_{oracles} + T_{guards} + T_{probes} + T_{profiles(D,R,S)} + T_{verify} + T_{manifest} + T_{hash\_seal} + T_{pre\_exit\_ack} + T_{guest\_reap} + T_{receipt\_sign} + T_{receipt\_fsync} \le 1,800.0\text{ seconds}$$
+$$\sum T = T_{host\_setup} + T_{guest\_launch} + T_{configure} + T_{compile} + T_{link} + T_{oracles} + T_{guards} + T_{probes} + T_{profiles(D,R,S)} + T_{verify} + T_{manifest} + T_{hash\_seal} + T_{pre\_exit\_ack} + T_{guest\_reap} + T_{receipt\_fsync} + T_{attestation\_fsync} \le 1,800.0\text{ seconds}$$
 
 - **No reset** on profile boundary ($D \to R \to S$).
 - **No reset** on worker transitions ($W_i \to W_{i+1}$).
-- **No exclusion** of file system I/O, artifact writing, SHA-256 tree hashing, pre-exit acknowledgment, guest process reaping, final receipt signing, or durable storage syncing (`fsync`).
+- **No exclusion** of file system I/O, artifact writing, SHA-256 tree hashing, pre-exit acknowledgment, guest process reaping, final receipt signing, durable storage syncing (`fsync`), or publication attestation.
 - **Strict Ordering of Finalization:**
-  1. Guest seals evidence and computes `evidence.sha256`.
+  1. Guest seals evidence and computes `evidence.sha256` ($H_{root}$).
   2. Guest transmits sealing notification with sealed root digest to Role H.
   3. Role H verifies intermediate suspend divergence and power invariants.
   4. Role H transmits pre-exit ACK (`READY_TO_REAP`) to Guest.
   5. Guest exits cleanly (exit code 0).
   6. Role H reaps the guest process tree (`waitpid`).
-  7. Role H samples the authoritative completion timestamp $T_{host\_complete\_boot\_ns}$.
+  7. Role H samples post-reap timestamp $T_{host\_complete\_boot\_ns}$.
   8. Role H generates, signs, and durably flushes (`fsync`) `host-terminal-receipt.json` to disk.
-- **Authoritative Host Completion Timestamp and Final Publication Ceiling:**
-  The authoritative completion timestamp $T_{host\_complete\_boot\_ns}$ is sampled strictly after reaping all guest descendant processes. Furthermore, the complete campaign deadline encompasses durable publication on disk: the final write and `fsync` of `host-terminal-receipt.json` must conclude within the 1,800-second envelope. Under no circumstances may an earlier intermediate timestamp certify compliance if subsequent guest exit, process reaping, receipt signing, or durable storage sync exceeds the 1,800-second mark.
-- If $T_{host\_complete\_boot\_ns} - T_{host\_start\_boot\_ns} > 1,800 \times 10^9\text{ ns}$, or if final receipt publication completes after 1,800 seconds, the campaign is rejected fail-closed with Status 71 (`INCONCLUSIVE_RESOURCE`); no valid passing certificate or success root may be formed.
+  9. Role H samples definitive terminal publication timestamp $T_{host\_published\_boot\_ns}$.
+  10. Role H computes $H_{receipt} = \text{SHA256}(\text{read\_bytes}(host\text{-}terminal\text{-}receipt.json))$.
+  11. Role H verifies $T_{host\_published\_boot\_ns} - T_{host\_start\_boot\_ns} \le 1,800 \times 10^9\text{ ns}$.
+  12. Role H signs and durably flushes (`fsync`) `host-publication-attestation.json` to disk.
+  13. Role H disarms its watchdog abort timer and cleanly exits 0.
+- **Authoritative Host Publication Timestamp and Final Publication Ceiling:**
+  The authoritative publication timestamp $T_{host\_published\_boot\_ns}$ is sampled strictly after the durable `fsync` of `host-terminal-receipt.json`. Furthermore, the complete campaign deadline encompasses durable publication on disk: both `host-terminal-receipt.json` and `host-publication-attestation.json` must be durably written and fsynced within the 1,800-second envelope. Under no circumstances may an earlier intermediate timestamp (such as guest-side timer or post-reap timestamp) certify compliance if subsequent receipt signing, durable storage sync, or publication attestation exceeds the 1,800-second mark.
+- If $T_{host\_published\_boot\_ns} - T_{host\_start\_boot\_ns} > 1,800 \times 10^9\text{ ns}$, or if publication attestation is missing or completes after 1,800 seconds, the campaign is rejected fail-closed with Status 71 (`INCONCLUSIVE_RESOURCE`); no valid passing certificate or success root may be formed.
 
 ---
 
@@ -385,29 +436,44 @@ The guest supervisor `verifier.py` cannot be the sole acceptance judge of extern
 
 **Independent Acceptance Algorithm:**
 1. **Host Public Key Ingestion:** Ingest $PK_{host}$ from the immutable host authorization record (`host-authorization.json`), strictly ignoring any public key found in the guest directory.
-2. **Terminal Receipt Parsing and Strict Schema Verification:**
+2. **Terminal Receipt Parsing and Strict Schema Verification (Stage 1 Record):**
    - Locate `host-terminal-receipt.json` on the host evidence path.
    - Parse JSON bytes strictly rejecting duplicate object keys or unescaped control characters.
    - Assert `"schema" == "t81.arch003.host-terminal-receipt.v1"` and `"protocol" == "T81-ARCH-003-R2"`.
    - Assert exact match with the defined 15-field complete receipt schema; reject any unexpected properties.
    - Assert $PK_{host}$ in `host_public_key_hex` matches trusted $PK_{host}$ from `host-authorization.json`.
-   - Extract `host_signature_hex`, decode 128 hex chars to 64 bytes $\sigma$.
-   - Reconstruct signing dictionary $D_{sign}$ by excluding `host_signature_hex`.
-   - Format canonical ASCII UTF-8 signing payload $M = \text{canonical}(D_{sign})$ (keys sorted, compact separators, no trailing newline).
-   - Verify $\text{Ed25519\_Verify}(PK_{host}, M, \sigma) == \text{valid}$. If verification fails, reject immediately.
+   - Extract `host_signature_hex`, decode 128 hex chars to 64 bytes $\sigma_1$.
+   - Reconstruct signing dictionary $D_{sign}$ by excluding `host_signature_hex` (exactly 14 fields).
+   - Format canonical ASCII UTF-8 signing payload $M_1 = \text{canonical}(D_{sign})$ (keys sorted, compact separators, no trailing newline).
+   - Verify $\text{Ed25519\_Verify}(PK_{host}, M_1, \sigma_1) == \text{valid}$. If verification fails, reject immediately as `BLOCKED_RESOURCE_ACCOUNTING` (Status 70).
    - Verify `termination_issued == false`.
    - Verify `host_elapsed_ns <= 1800 * 10^9`.
    - Verify `max_sleep_divergence_ns < 100_000_000`.
    - Verify `power_source == "AC_MAINS"`.
    - Verify `watchdog_peak_rss_kib <= 16384` (16 MiB).
-3. **Evidence-Root Identity & Guest Root Binding Verification:**
+3. **Publication Attestation Parsing and Post-Publication Deadline Verification (Stage 2 Record):**
+   - Locate `host-publication-attestation.json` on the host evidence path. If missing, fail closed immediately as `BLOCKED_RESOURCE_ACCOUNTING` (Status 70).
+   - Parse JSON bytes strictly rejecting duplicate object keys or unescaped control characters.
+   - Assert `"schema" == "t81.arch003.host-publication-attestation.v1"` and `"protocol" == "T81-ARCH-003-R2"`.
+   - Assert exact match with the defined 10-field complete attestation schema; reject any unexpected properties.
+   - Assert $PK_{host}$ in attestation `host_public_key_hex` matches trusted $PK_{host}$ from `host-authorization.json`.
+   - Extract `host_signature_hex`, decode 128 hex chars to 64 bytes $\sigma_2$.
+   - Reconstruct signing dictionary $D_{pub\_sign}$ by excluding `host_signature_hex` (exactly 9 fields).
+   - Format canonical ASCII UTF-8 signing payload $M_2 = \text{canonical}(D_{pub\_sign})$.
+   - Verify $\text{Ed25519\_Verify}(PK_{host}, M_2, \sigma_2) == \text{valid}$. If verification fails, reject immediately as `BLOCKED_RESOURCE_ACCOUNTING` (Status 70).
+   - **Receipt Digest Binding Check:** Compute $H_{receipt\_disk} \equiv \text{SHA256}(\text{read\_bytes}(host\text{-}terminal\text{-}receipt.json))$.
+   - Assert $H_{receipt\_disk} == \text{attestation.terminal\_receipt\_sha256}$.
+   - **Authoritative Inclusive Deadline Verification:**
+     Assert $\text{attestation.host\_elapsed\_published\_ns} \le 1,800 \times 10^9\text{ ns}$ ($1,800.0\text{ seconds}$).
+     If $\text{attestation.host\_elapsed\_published\_ns} > 1,800 \times 10^9\text{ ns}$, reject immediately fail-closed as `INCONCLUSIVE_RESOURCE` (Status 71).
+4. **Evidence-Root Identity & Guest Root Binding Verification:**
    - The normative definition of the guest evidence-root digest throughout R1, I2, and R2 is strictly the SHA-256 hash of `artifact-index.json`:
      $$H_{root} \equiv \text{SHA256}(\text{read\_bytes}(artifact\text{-}index.json))$$
    - Ingest `evidence.sha256` from the guest directory; verify that its stripped text content matches $H_{root}$:
      $$\text{read\_text}(evidence.sha256).\text{strip}() == H_{root}$$
    - Ingest `guest_sealed_root_sha256` from `host-terminal-receipt.json`.
    - Assert $H_{root} == \text{guest\_sealed\_root\_sha256}$. Any disagreement between $H_{root}$, the content of `evidence.sha256`, and `guest_sealed_root_sha256` in the signed host receipt causes immediate fail-closed rejection as `FAIL_CORRECTNESS` (Status 65).
-4. **Complete Artifact Inventory & Digest Verification:**
+5. **Complete Artifact Inventory & Digest Verification:**
    - Ingest `artifact-index.json` from the guest directory.
    - Verify that `sha256(artifact-index.json)` matches the root hash verified above.
    - Traverse every entry in `artifact-index.json`. For every indexed path:
@@ -423,17 +489,17 @@ The guest supervisor `verifier.py` cannot be the sole acceptance judge of extern
      - `guard-expected.bin`, `guard-observed-*.bin`
      - All 6 oracle receipts, all 6 guard receipts, all 2 sanitizer probe receipts, build receipts, binary receipts, and `authorization.json`.
    - Any missing file (including specifically `observed-S.bin`) or hash mismatch fails immediately as `FAIL_EVIDENCE` (Status 67).
-5. **Detection and Rejection of Conflicting Terminal Records:**
-   - Assert that exactly one terminal receipt file exists in the host evidence directory.
+6. **Detection and Rejection of Conflicting Terminal Records:**
+   - Assert that exactly one terminal receipt file (`host-terminal-receipt.json`) and exactly one publication attestation (`host-publication-attestation.json`) exist in the host evidence directory.
    - Scan for conflicting or duplicate terminal artifacts (e.g. `host-terminal-receipt.json` co-existing with `host-watchdog-termination.json`, duplicate receipt copies, or contradictory exit records).
    - If conflicting terminal records exist, fail closed immediately as `BLOCKED_RESOURCE_ACCOUNTING` (Status 70).
-6. **Guest Manifest Verification and Terminology Reconciliation:**
+7. **Guest Manifest Verification and Terminology Reconciliation:**
    - Ingest the on-disk campaign manifest file `campaign.json` from the guest directory.
    - Validate schema `t81.arch002.correctness-evidence.v1`, asserting `manifest.status == "PASS_CORRECTNESS_CORE"` (Status 64).
    - Note: While `campaign.json` status must be PASS, this status check is strictly necessary but **not sufficient** on its own; full independent call re-verification against `expected.bin` is mandatory.
-7. **Acceptance Verdict:**
+8. **Acceptance Verdict:**
    - If all checks pass: Emit `ACCEPTANCE_CONFIRMED: ARCH-003-R2 CAMPAIGN VALID`. Exit 0.
-   - If any check fails, receipt is missing/malformed, or digests disagree: Emit `ACCEPTANCE_REJECTED: <REASON>`. Exit 1.
+   - If any check fails, receipt or attestation is missing/malformed, or digests disagree: Emit `ACCEPTANCE_REJECTED: <REASON>`. Exit 1.
 
 ---
 
@@ -444,9 +510,11 @@ To eliminate specification ambiguity, the protocol mandates four explicit counte
 1. **Counterexample 1: Deletion or Omission of `observed-S.bin`**
    - *Scenario:* A campaign completes with all tests passing, but the artifact `observed-S.bin` is omitted from `artifact-index.json` or deleted from disk after sealing.
    - *Deterministic Outcome:* Rejected immediately with exit code 1 as `FAIL_EVIDENCE` (Status 67). Verification of the complete artifact inventory explicitly mandates that `observed-D.bin`, `observed-R.bin`, and `observed-S.bin` must all be present on disk, match their exact indexed byte lengths, and match their SHA-256 digests. No subset of profile evidence can ever be accepted.
-2. **Counterexample 2: Receipt Signing or Acknowledgment Completing After 1,800 Seconds**
-   - *Scenario:* Guest execution completes at 1,795 seconds, but host receipt signing, durable disk `fsync`, terminal ACK transmission, or guest reaping takes 6 seconds, resulting in $T_{host\_complete\_boot\_ns} - T_{host\_start\_boot\_ns} = 1,801\text{ seconds}$.
-   - *Deterministic Outcome:* Rejected immediately as `INCONCLUSIVE_RESOURCE` (Status 71). A pre-deadline intermediate timestamp cannot certify post-deadline work. The host watchdog marks `termination_issued: true`, refuses to publish a valid passing receipt, and the host acceptance verifier exits with code 1.
+2. **Counterexample 2: Publication Completing at 1,801 Seconds (Post-Deadline Publication Overrun)**
+   - *Scenario:* Guest execution and reaping complete cleanly at 1,795 seconds, and Role H signs `host-terminal-receipt.json` bearing post-reap timestamp $T_{host\_complete\_boot\_ns} = T_{start} + 1,795\text{ s}$. However, host disk I/O, storage fsync, or publication attestation experiences a 6-second host stall, completing durable publication at $T_{host\_published\_boot\_ns} = T_{start} + 1,801.0\text{ seconds}$ ($1,801 \times 10^9\text{ ns}$).
+   - *Deterministic Outcome:* Rejected immediately fail-closed as `INCONCLUSIVE_RESOURCE` (Status 71). A pre-publication timestamp cannot certify that publication completed within the 1,800s envelope.
+     - *Watchdog Behavior:* The host watchdog's asynchronous 1,800s kernel timer fires at 1,800.0s, delivering SIGKILL to Role H before it can publish `host-publication-attestation.json`. Even if the attestation file were somehow written before termination, its recorded field `host_elapsed_published_ns` would equal $1,801,000,000,000\text{ ns} > 1,800 \times 10^9\text{ ns}$.
+     - *Verifier Behavior:* The offline host acceptance verifier (`host_acceptance_verifier.py`) inspects `host-publication-attestation.json`. If missing, it rejects with code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70). If present with `host_elapsed_published_ns > 1,800 * 10^9`, it rejects with code 1 (`INCONCLUSIVE_RESOURCE`, Status 71). No valid passing certificate can be formed.
 3. **Counterexample 3: Missing, Malformed, Forged, Duplicate, or Conflicting Receipts**
    - *Scenario A (Missing Receipt):* Guest evidence is sealed, but `host-terminal-receipt.json` was not generated or was deleted.
      - *Outcome:* Rejection with exit code 1 (`BLOCKED_RESOURCE_ACCOUNTING`, Status 70).
@@ -516,12 +584,13 @@ External host watchdog H operates under the bounded exception that live monitori
 and abort authority may reside on the host to prevent unobserved guest freezing.
 All guest descendant processes (L, V, W, compiler, and tools) remain bound by the
 <=512 MiB aggregate absolute resident memory cap, <=1,800 seconds total elapsed
-time (measured to the authoritative post-reap completion timestamp T_host_complete),
+time (measured to the authoritative post-fsync publication timestamp T_host_published),
 and <=100 MiB retained output ceiling. Offline audit (independent verification and
 reviews) executes strictly after campaign finalization outside the 1,800-second
-budget. Final acceptance requires both a valid sealed guest evidence bundle (with
-complete artifact inventory including observed-S.bin) and an independently verified
-terminal host receipt signed by H."
+budget. Final acceptance requires a valid sealed guest evidence bundle (with
+complete artifact inventory including observed-S.bin), an independently verified
+terminal host receipt, and a signed host publication attestation issued by H certifying
+post-fsync completion <= 1,800 seconds."
 ```
 
 ---
@@ -602,7 +671,7 @@ Independent maintainers and reviewers should use the following checklist to eval
 - [ ] **R2-CHK-04 (Independent Key Identity):** Is $PK_{host}$ anchored in pre-launch authorization rather than trusting guest-controlled files?
 - [ ] **R2-CHK-05 (Dual Acceptance Verification):** Does final acceptance require verification by an external host verifier without relying solely on the guest?
 - [ ] **R2-CHK-06 (Memory Boundary):** Is Role H explicitly isolated from the guest 512 MiB RSS limit, and is Role H capped at $\le 16\text{ MiB}$ host RSS?
-- [ ] **R2-CHK-07 (Inclusive 1,800s Deadline):** Does the 1,800-second deadline unequivocally encompass configuration, compilation, linking, all D/R/S profiles, oracles, guards, probes, evidence sealing, receipt signing, durable fsync, ACK, and process reaping without resets, measured to the authoritative post-reap timestamp?
+- [ ] **R2-CHK-07 (Inclusive 1,800s Deadline & Publication Attestation):** Does the 1,800-second deadline unequivocally encompass configuration, compilation, linking, all D/R/S profiles, oracles, guards, probes, evidence sealing, receipt signing, durable fsync, ACK, guest process reaping, and publication attestation without resets, measured to the authoritative post-fsync publication timestamp?
 - [ ] **R2-CHK-08 (macOS Battery Hardening):** Does the proposal explicitly reject `caffeinate -s` on battery power and mandate automated AC power verification?
 - [ ] **R2-CHK-09 (Fail-Closed Guarantees):** Are deadline breaches, watchdog terminations, heartbeat losses, and receipt corruptions guaranteed to fail closed with no success root?
 - [ ] **R2-CHK-10 (Scientific Preservation):** Are all 12 schedule families, 408,034 expected requests, 483,553 calls/profile, representations, and oracle independence strictly preserved?
