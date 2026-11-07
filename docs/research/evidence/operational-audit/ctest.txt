@@ -1,0 +1,28 @@
+Test project /private/tmp/t81-operational-build
+    Start  80: canonfs_policy_boundary_test
+1/5 Test  #80: canonfs_policy_boundary_test ..................   Passed    0.29 sec
+    Start  81: canonfs_identity_contract_test
+2/5 Test  #81: canonfs_identity_contract_test ................   Passed    0.26 sec
+    Start 150: t81_vm_predispatch_policy_deny_logging_test
+3/5 Test #150: t81_vm_predispatch_policy_deny_logging_test ...   Passed    0.28 sec
+    Start 198: tisc_opcode_family_semantics_test
+4/5 Test #198: tisc_opcode_family_semantics_test .............   Passed    0.28 sec
+    Start 293: t81_cli_contract_test_runner
+5/5 Test #293: t81_cli_contract_test_runner ..................***Failed    0.49 sec
+[cli] /private/tmp/t81-operational-build/t81 help compile
+[cli] /private/tmp/t81-operational-build/t81 code check /var/folders/m9/2qsp_jmj3hl5lmh13__wt1h00000gn/T/t81-cli-contract-invalid-17169249763767564373.t81
+[cli] /private/tmp/t81-operational-build/t81 --help
+[cli] /private/tmp/t81-operational-build/t81 help advanced
+[cli] /private/tmp/t81-operational-build/t81 help benchmark
+[cli] /private/tmp/t81-operational-build/t81 bench
+[cli] /private/tmp/t81-operational-build/t81 help model
+test check failed: (fs::exists(safetensors_fixture)) at /private/tmp/t81-operational-audit/tests/cpp/cli_contract_test.cpp:491
+
+
+80% tests passed, 1 tests failed out of 5
+
+Total Test time (real) =   1.62 sec
+
+The following tests FAILED:
+	293 - t81_cli_contract_test_runner (Failed)
+Errors while running CTest
